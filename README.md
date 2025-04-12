@@ -1,0 +1,2 @@
+# exogibbs
+Differentiable Thermochemical Equilibrium 
