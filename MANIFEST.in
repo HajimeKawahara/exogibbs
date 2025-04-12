@@ -1,0 +1,2 @@
+include src/exogibbs/data/matrix_v3.dat
+include src/exogibbs/data/molname_v3.dat
