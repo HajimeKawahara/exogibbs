@@ -9,6 +9,7 @@ on:
 permissions:
   checks: write
   contents: write
+  pull-requests: read
 
 jobs:
   pytest:
