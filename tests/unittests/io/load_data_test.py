@@ -1,22 +1,16 @@
-
-TESTDATA_DIR = "data/"
-
-def get_data_filename(filename):
-    """get the full path of the data file
-
-    Args:
-        filename (str): filename of the test data
-        dirname (str): directory name of the test data  (default: "data/testdata/")
-
-    Returns:
-        str: full path of the test data file
-
-    """
-    from importlib.resources import files
-    return files('exogibbs').joinpath(TESTDATA_DIR + filename)
+from exogibbs.io.load_data import get_data_filename
 
 
-#def load_matrix():
+def get_data_filename_existing_file_test():
+    import os
+    filename = "testdata.dat"
+    fullpath = get_data_filename(filename)
+
+    assert os.path.exists(fullpath)
 
 
 #def test_load_matrix():
+
+if __name__ == "__main__":
+    get_data_filename_existing_file_test()
+    
