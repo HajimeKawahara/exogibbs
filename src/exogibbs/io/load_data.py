@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 TESTDATA_DIR = "data/"
 MOLNAME_V3 = "molname_v3.dat"
@@ -31,11 +32,12 @@ def load_molname():
 def load_formula_matrix():
     """load the formula matrix data
     Returns:
-        pd.DataFrame: formula matrix data
+        ndarray: formula matrix
     """
     fullpath = get_data_filepath(FORMULA_MATRIX_V3)
     df = pd.read_csv(fullpath, sep="\t", header=None, dtype=int)
-    return df
+    fm_np = np.array(df).T
+    return fm_np
 
 if __name__ == "__main__":
     # Test the functions
