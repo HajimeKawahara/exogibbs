@@ -1,7 +1,10 @@
+import pandas as pd
+
 TESTDATA_DIR = "data/"
+MOLNAME_V3 = "molname_v3.dat"
+FORMULA_MATRIX_V3 = "matrix_v3.dat"
 
-
-def get_data_filename(filename):
+def get_data_filepath(filename):
     """get the full path of the data file
 
     Args:
@@ -14,3 +17,27 @@ def get_data_filename(filename):
     """
     from importlib.resources import files
     return files('exogibbs').joinpath(TESTDATA_DIR + filename)
+
+def load_molname():
+    """load the molname data
+    Returns:
+        pd.DataFrame: molname data
+    """
+    fullpath = get_data_filepath(MOLNAME_V3)
+    df = pd.read_csv(fullpath, sep="\t")
+    return df
+
+
+def load_formula_matrix():
+    """load the formula matrix data
+    Returns:
+        pd.DataFrame: formula matrix data
+    """
+    fullpath = get_data_filepath(FORMULA_MATRIX_V3)
+    df = pd.read_csv(fullpath, sep="\t", header=None, dtype=int)
+    return df
+
+if __name__ == "__main__":
+    # Test the functions
+    df = load_formula_matrix()
+        
