@@ -1,9 +1,12 @@
 import pandas as pd
 import numpy as np
+import pathlib
 
 TESTDATA_DIR = "data/"
 MOLNAME_V3 = "molname_v3.dat"
 FORMULA_MATRIX_V3 = "matrix_v3.dat"
+JANAF_SAMPLE = "janaf_raw_sample.txt"
+
 
 def get_data_filepath(filename):
     """get the full path of the data file
@@ -17,7 +20,9 @@ def get_data_filepath(filename):
 
     """
     from importlib.resources import files
-    return files('exogibbs').joinpath(TESTDATA_DIR + filename)
+
+    return files("exogibbs").joinpath(TESTDATA_DIR + filename)
+
 
 def load_molname():
     """load the molname data
@@ -30,7 +35,7 @@ def load_molname():
 
 
 def load_formula_matrix():
-    """load the formula matrix data
+    """loads the formula matrix data
     Returns:
         ndarray: formula matrix
     """
@@ -39,7 +44,37 @@ def load_formula_matrix():
     fm_np = np.array(df).T
     return fm_np
 
+
+def load_JANAF_rawtxt(filename):
+    """loads the JANAF raw text file
+
+    Args:
+        filename (str): filename of the JANAF raw text file, e.g. 'H2(g).txt'
+
+    Returns:
+        pd.DataFrame: DataFrame containing the data from the JANAF raw text file
+    """
+
+    def _convert_value(x):
+        if x.strip() == "INFINITE":
+            return np.inf
+        try:
+            return float(x)
+        except ValueError:
+            return x
+
+    df = pd.read_csv(
+        filename,
+        sep="\t",
+        skiprows=1,
+        converters={i: _convert_value for i in range(8)},
+    )
+    return df
+
+
 if __name__ == "__main__":
     # Test the functions
-    df = load_formula_matrix()
-        
+    # df = load_formula_matrix()
+    filename = get_data_filepath(JANAF_SAMPLE)
+    df = load_JANAF_rawtxt(filename)
+    print(df)
