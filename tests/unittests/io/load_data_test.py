@@ -12,8 +12,9 @@ def get_data_filename_existing_file_test():
     assert os.path.exists(fullpath)
 
 def load_molname_test():
-    load_molname()
-
+    df = load_molname()
+    print(df)
+    
 def load_formula_matrix_test():
     load_formula_matrix()
 

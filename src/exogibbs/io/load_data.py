@@ -25,13 +25,17 @@ def get_data_filepath(filename):
 
 
 def load_molname():
-    """load the molname data
+    """load the molecular name data
     Returns:
-        pd.DataFrame: molname data
+        pd.DataFrame: molname dataframe
     """
     fullpath = get_data_filepath(MOLNAME_V3)
-    df = pd.read_csv(fullpath, sep="\t")
-    return df
+    df_molname = pd.read_csv(fullpath, sep="\t", header=None, dtype=str)
+    df_molname.columns = [
+        "Molecule",
+        "color"
+    ]
+    return df_molname
 
 
 def load_formula_matrix():

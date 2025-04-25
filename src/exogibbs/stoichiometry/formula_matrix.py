@@ -14,7 +14,6 @@ def analyze_fmatrix(fm_sp):
 
 if __name__ == "__main__":
     from exogibbs.io.load_data import load_formula_matrix
-    import numpy as np
     fm_np = load_formula_matrix()
     fm_sp = sp.Matrix(fm_np)
     analyze_fmatrix(fm_sp)
