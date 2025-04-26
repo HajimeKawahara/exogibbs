@@ -4,15 +4,14 @@ import numpy as np
 from typing import Dict
 import jax
 import jax.numpy as jnp
-from functools import partial
+from jax import jit
 
 _INF_STRINGS = {"inf", "Inf", "INFINITE"}
 _NINF_STRINGS = {"-inf", "-Inf", "-INFINITE"}
 
 
 def _coerce_to_float(a):
-    """convert "inf" string to np.inf and -inf
-    """
+    """convert "inf" string to np.inf and -inf"""
     a = np.asarray(a, dtype=object)
 
     is_str = np.vectorize(lambda x: isinstance(x, str))
@@ -36,14 +35,14 @@ def pad_gibbs_data(
     gibbs_matrices: Dict[str, pd.DataFrame],
     temperature_key: str = "T(K)",
     checmical_potential_key: str = "delta-f G",
-    pad_mode="edge",
 ):
-    """
+    """padding of gibbs data to the same length
 
     Args:
         gibbs_matrices (Dict[str, pd.DataFrame]): needs to have the key of temperature_key and checmecal_potential_key
         temperature_key (str): key for temperature
         checmical_potential_key (str): key for chemical potential
+    
     Returns:
         molecules (list): list of molecules
         T_table (ndarray): temperature table (Nmolecules, Lmax)
@@ -55,25 +54,15 @@ def pad_gibbs_data(
     )
     Lmax = int(grid_lens.max())
 
-    def _pad(arr, L, mode):
+    def _pad(arr, L):
         arr = _coerce_to_float(arr)
-        if mode == "edge":
-            return np.pad(arr, (0, L - arr.size), mode="edge")
-        elif mode == "nan":
-            return np.pad(
-                arr, (0, L - arr.size), mode="constant", constant_values=np.nan
-            )
-        else:
-            raise ValueError("pad_mode must be 'edge' or 'nan'")
+        return np.pad(arr, (0, L - arr.size), mode="edge")
 
     T_table = np.stack(
-        [_pad(gibbs_matrices[m][temperature_key], Lmax, pad_mode) for m in molecules]
+        [_pad(gibbs_matrices[m][temperature_key], Lmax) for m in molecules]
     ).astype(np.float64)
     G_table = np.stack(
-        [
-            _pad(gibbs_matrices[m][checmical_potential_key], Lmax, pad_mode)
-            for m in molecules
-        ]
+        [_pad(gibbs_matrices[m][checmical_potential_key], Lmax) for m in molecules]
     ).astype(np.float64)
 
     return (
@@ -84,28 +73,41 @@ def pad_gibbs_data(
     )  # shape (M,),      int32
 
 
-@partial(jax.jit, static_argnums=(3,))
-def _interp_one(T_target, T_vec, G_vec, n):
+@jit
+def _interp_one(T_target, T_vec, G_vec):
+    """interpolate one chemical potential at T_target
+    Args:
+        T_target (scalar): target temperature (K)
+        T_vec (1D array): temeprature grid（Lmax)
+        G_vec (1D array): chemical potential grid（Lmax)
     """
-    T_target : scalar
-    T_vec, G_vec : 1-D（Lmax)
-    n : actual data number
-    """
-    idx = jnp.clip(jnp.searchsorted(T_vec[:n], T_target) - 1, 0, n - 2)
+    n = T_vec.size
+    idx = jnp.clip(jnp.searchsorted(T_vec, T_target) - 1, 0, n - 2)
     T0, T1 = T_vec[idx], T_vec[idx + 1]
     G0, G1 = G_vec[idx], G_vec[idx + 1]
     w = (T_target - T0) / (T1 - T0)
     return (1 - w) * G0 + w * G1
 
 
-def interpolate_gibbs_all(T_target, T_table, G_table, grid_lens):
+def interpolate_gibbs_all(T_target, T_table, G_table)
+    """interpolate the chemical potential at T_target for all molecules
+    Args:
+        T_target (scalar): target temperature (K)
+        T_table (ndarray): array of temeprature grid（Lmax)
+        G_table (ndarray): array of chemical potential grid（Lmax)
+    
+    Returns:
+        gibbs_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
+    """
     return jax.lax.map(
         lambda args: _interp_one(T_target, *args),
-        (T_table, G_table, grid_lens),
+        (T_table, G_table),
     )
 
 
 if __name__ == "__main__":
+
+    # Example usage of interpolating the chemical potential, deriving the Gibbs energy at 700K
     from exogibbs.io.load_data import load_JANAF_molecules
     from exogibbs.io.load_data import load_molname
 
@@ -113,10 +115,17 @@ if __name__ == "__main__":
     path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
     gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
     molecules, T_table, G_table, grid_lens = pad_gibbs_data(gibbs_matrices)
-    print(molecules)
-    print(T_table)
-    print(G_table)
 
     T_query = 700.0
-    gibbs_vec = interpolate_gibbs_all(T_query, T_table, G_table, grid_lens)  # shape (M,)
-    # print(dict(zip(molecules, gibbs_vec)))
+    gibbs_vec = interpolate_gibbs_all(T_query, T_table, G_table)  # shape (M,)
+    Tdict = dict(zip(molecules, gibbs_vec))
+
+    import matplotlib.pyplot as plt
+
+    t = gibbs_matrices["C1O2"]["T(K)"]
+    g = gibbs_matrices["C1O2"]["delta-f G"]
+    plt.plot(t, g)
+    plt.plot(T_query, Tdict["C1O2"], "o")
+    plt.xlabel("T(K)")
+    plt.ylabel("delta-f G")
+    plt.show()
