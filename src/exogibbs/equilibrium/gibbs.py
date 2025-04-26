@@ -89,7 +89,7 @@ def _interp_one(T_target, T_vec, G_vec):
     return (1 - w) * G0 + w * G1
 
 
-def interpolate_gibbs_all(T_target, T_table, G_table)
+def interpolate_gibbs_all(T_target, T_table, G_table):
     """interpolate the chemical potential at T_target for all molecules
     Args:
         T_target (scalar): target temperature (K)
