@@ -88,6 +88,7 @@ def load_JANAF_molecules(
     df_molname: pd.DataFrame,
     path_JANAF_data: str | Path,
     *,
+    tag: str = "(g)",
     save_hdf5: Optional[str] = None,
     hdf5_compression: str = "zlib",
 ) -> Dict[str, pd.DataFrame]:
@@ -100,6 +101,8 @@ def load_JANAF_molecules(
             Must contain a column named ``"Molecule"`` with file prefixes.
         path_JANAF_data : str or Path
             Directory that holds ``<molecule>(g).txt`` files.
+        tag : str
+            tag for JANAF file default to "(g)" 
         save_hdf5 : str, optional
             If given, the dict is additionally written to an HDF5 file whose
             *key* is the molecule name (e.g. ``/H2O``).  Passing ``None`` skips
@@ -129,7 +132,7 @@ def load_JANAF_molecules(
     # load every molecule into an in-memory dict                         #
     # ------------------------------------------------------------------ #
     for mol in df_molname["Molecule"]:
-        file_path = path_JANAF_data / f"{mol}(g).txt"
+        file_path = path_JANAF_data / Path(mol+tag+".txt")
         if not file_path.is_file():
             warnings.warn(f"Missing file: {file_path}", RuntimeWarning)
             continue
