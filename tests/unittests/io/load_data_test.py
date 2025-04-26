@@ -5,24 +5,24 @@ from exogibbs.io.load_data import load_JANAF_rawtxt
 from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.io.load_data import JANAF_SAMPLE
 
-def get_data_filename_existing_file_test():
+def test_get_data_filename_existing_file():
     import os
     filename = "testdata.dat"
     fullpath = get_data_filepath(filename)
 
     assert os.path.exists(fullpath)
 
-def load_molname_test():
+def test_load_molname():
     df = load_molname()
     
-def load_formula_matrix_test():
+def test_load_formula_matrix():
     load_formula_matrix()
 
-def load_JANAF_rawtxt_test():
+def test_load_JANAF_rawtxt():
     filename = get_data_filepath(JANAF_SAMPLE)
     load_JANAF_rawtxt(filename)
     
-def load_JANAF_molecules_test():
+def test_load_JANAF_molecules():
     import pandas as pd
     df_molecules = pd.DataFrame({
         "Molecule": ["janaf_raw"],
@@ -34,8 +34,8 @@ def load_JANAF_molecules_test():
     assert matrices["janaf_raw"].shape == (10,8)
     
 if __name__ == "__main__":
-    get_data_filename_existing_file_test()
-    load_molname_test()
-    load_formula_matrix_test()
-    load_JANAF_rawtxt_test()
-    load_JANAF_molecules_test()
+    test_get_data_filename_existing_file()
+    test_load_molname()
+    test_load_formula_matrix()
+    test_load_JANAF_rawtxt()
+    test_load_JANAF_molecules()
