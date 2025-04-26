@@ -126,7 +126,7 @@ def load_JANAF_molecules(
     """
     path_JANAF_data = Path(path_JANAF_data).expanduser().resolve()
 
-    matrices: Dict[str, pd.DataFrame] = {}
+    gibbs_matrices: Dict[str, pd.DataFrame] = {}
 
     # ------------------------------------------------------------------ #
     # load every molecule into an in-memory dict                         #
@@ -143,9 +143,9 @@ def load_JANAF_molecules(
             warnings.warn(f"Failed to load {file_path}: {exc}", RuntimeWarning)
             continue
 
-        matrices[mol] = df_single
+        gibbs_matrices[mol] = df_single
 
-    if not matrices:
+    if not gibbs_matrices:
         raise RuntimeError("No JANAF files were successfully loaded.")
 
     # ------------------------------------------------------------------ #
@@ -153,16 +153,16 @@ def load_JANAF_molecules(
     # ------------------------------------------------------------------ #
     if save_hdf5 is not None:
         with pd.HDFStore(save_hdf5, mode="w", complevel=9, complib=hdf5_compression) as store:
-            for mol, df in matrices.items():
+            for mol, df in gibbs_matrices.items():
                 store.put(f"/{mol}", df, format="table")
 
-    return matrices
+    return gibbs_matrices
 
 
         
 if __name__ == "__main__":
     df_molname = load_molname()
     path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
-    matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
-    mat = matrices["C1O2"].to_numpy()
-    
+    gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
+    mat = gibbs_matrices["C1O2"]#.to_numpy()
+    print(mat.keys())
