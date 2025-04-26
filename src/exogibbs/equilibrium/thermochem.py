@@ -9,12 +9,12 @@ class ThermoChem:
     def __init__(self):
         pass
 
-    def setting(self):
+    def setting(self, path_JANAF_data):
         """
         Set the molecules, elements, 
         """
         self.df_molname = load_molname()
-        
+
 
 
 def thermochemical_equilibrium(pressures, temperatures):
