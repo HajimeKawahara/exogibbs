@@ -3,7 +3,7 @@ from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.io.load_data import load_formula_matrix
 from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.equilibrium.gibbs import pad_gibbs_data
-from exogibbs.equilibrium.gibbs import interpolate_gibbs_all
+from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_all
 from exogibbs.equilibrium.gibbs import robust_temperature_range
 
 
@@ -33,7 +33,7 @@ class ThermoChem:
     
 
     def gibbs_matrices_interpolated(self, T):
-        return interpolate_gibbs_all(T, self.T_table, self.G_table)  # shape (M,)
+        return interpolate_chemical_potential_all(T, self.T_table, self.G_table)  # shape (M,)
         
 
     def set_initial_values(self):

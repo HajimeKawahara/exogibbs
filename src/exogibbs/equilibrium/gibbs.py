@@ -41,14 +41,15 @@ def pad_gibbs_data(
     """padding of gibbs data to the same length
 
     Args:
-        gibbs_matrices (Dict[str, pd.DataFrame]): needs to have the key of temperature_key and checmecal_potential_key
+        gibbs_matrices (Dict[str, pd.DataFrame]): chemical potential matrices, needs to have the key of temperature_key and checmecal_potential_key
         temperature_key (str): key for temperature
-        checmical_potential_key (str): key for chemical potential
+        checmical_potential_key (str): key for chemical potential, default to "delta-f G" (standard mol chemcical potential, Pst=1 bar IUPAC since 1982)
 
     Returns:
         molecules (list): list of molecules
         T_table (ndarray): temperature table (Nmolecules, Lmax)
-        G_table (ndarray): gibbs energy table (Nmolecules, Lmax)
+        mu_table (ndarray): chemical potential table (Nmolecules, Lmax)
+        grid_length (tuple): tuple of grid lengths for each molecule
     """
     molecules = list(gibbs_matrices.keys())
     grid_lens = np.asarray(
@@ -63,47 +64,47 @@ def pad_gibbs_data(
     T_table = np.stack(
         [_pad(gibbs_matrices[m][temperature_key], Lmax) for m in molecules]
     ).astype(np.float64)
-    G_table = np.stack(
+    mu_table = np.stack(
         [_pad(gibbs_matrices[m][checmical_potential_key], Lmax) for m in molecules]
     ).astype(np.float64)
 
     return (
         molecules,
         jnp.asarray(T_table),  # shape (M, Lmax), float64
-        jnp.asarray(G_table),  # shape (M, Lmax), float64
+        jnp.asarray(mu_table),  # shape (M, Lmax), float64
         tuple(grid_lens),
     )  # shape (M,),      int32
 
 
 @jit
-def _interp_one(T_target, T_vec, G_vec):
+def _interp_one(T_target, T_vec, mu_vec):
     """interpolate one chemical potential at T_target
     Args:
         T_target (scalar): target temperature (K)
         T_vec (1D array): temeprature grid（Lmax)
-        G_vec (1D array): chemical potential grid（Lmax)
+        mu_vec (1D array): chemical potential grid（Lmax)
     """
     n = T_vec.size
     idx = jnp.clip(jnp.searchsorted(T_vec, T_target) - 1, 0, n - 2)
     T0, T1 = T_vec[idx], T_vec[idx + 1]
-    G0, G1 = G_vec[idx], G_vec[idx + 1]
+    mu0, mu1 = mu_vec[idx], mu_vec[idx + 1]
     w = (T_target - T0) / (T1 - T0)
-    return (1 - w) * G0 + w * G1
+    return (1 - w) * mu0 + w * mu1
 
 
-def interpolate_gibbs_all(T_target, T_table, G_table):
+def interpolate_chemical_potential_all(T_target, T_table, mu_table):
     """interpolate the chemical potential at T_target for all molecules
     Args:
         T_target (scalar): target temperature (K)
         T_table (ndarray): array of temeprature grid（Lmax)
-        G_table (ndarray): array of chemical potential grid（Lmax)
+        mu_table (ndarray): array of chemical potential grid（Lmax)
 
     Returns:
-        gibbs_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
+        chemical_potential_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
     """
     return jax.lax.map(
         lambda args: _interp_one(T_target, *args),
-        (T_table, G_table),
+        (T_table, mu_table),
     )
 
 
@@ -120,27 +121,27 @@ def robust_temperature_range(T_table):
     return Tmin, Tmax
 
 
-def computes_total_gibbs_energy(number_of_species, T, P, T_table, G_table, Pref=1.0):
+def computes_total_gibbs_energy(number_of_species, T, P, T_table, mu_table, Pref=1.0):
     """computes the total gibbs energy at T and P
     Args:
         number_of_species (ndarray): array of number of species (Nmol)
         T (float): temperature (K)
         P (float): pressure (bar)
         T_table (ndarray): array of temeprature grid（Lmax)
-        G_table (ndarray): array of chemical potential grid（Lmax)
-        Pref (float): reference pressure (bar) default to 1.0 (JANAF)
+        mu_table (ndarray): array of chemical potential grid（Lmax)
+        Pref (float): reference pressure (bar) for the checmical potential data. default to the standard pressure Pst = 1.0 bar (IUPAC since 1982)
 
     Returns:
-        gibbs_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
+        (ndarray): total gibbs energy, Gtot 
     """
-    gibbs_vec = interpolate_gibbs_all(T, T_table, G_table)  # shape (M,)
+    chemical_potential_vec = interpolate_chemical_potential_all(T, T_table, mu_table)  # shape (M,)
     total_number_of_species = jnp.sum(number_of_species)
+    x_i = number_of_species / total_number_of_species
 
-    #fac = number_of_species*jnp.log(P * number_of_species / total_number_of_species / Pref)
-    fac = xlogy(R_gas_constant_si * T * number_of_species, P * number_of_species / total_number_of_species / Pref)
-    total_gibbs = jnp.nansum(gibbs_vec) +  jnp.nansum(fac)
-
-    return
+    # 3.5-1 (p46) and 3.7-12  (p51) in Smith and Missen (Ideal gas)
+    nRT = total_number_of_species * R_gas_constant_si * T
+    mui0 = number_of_species * chemical_potential_vec
+    return jnp.sum(mui0) + nRT * (jnp.sum(xlogy(x_i, x_i)) + jnp.log(P / Pref))
 
 
 if __name__ == "__main__":
@@ -151,21 +152,22 @@ if __name__ == "__main__":
 
     df_molname = load_molname()
     path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
-    gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
-    molecules, T_table, G_table, grid_lens = pad_gibbs_data(gibbs_matrices)
+    mu_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
+    molecules, T_table, G_table, grid_lens = pad_gibbs_data(mu_matrices)
 
     T_query = 700.0
-    gibbs_vec = interpolate_gibbs_all(T_query, T_table, G_table)  # shape (M,)
-    Tdict = dict(zip(molecules, gibbs_vec))
+    mu_vec = interpolate_chemical_potential_all(T_query, T_table, G_table)  # shape (M,)
+    Tdict = dict(zip(molecules, mu_vec))
     Tmin, Tmax = robust_temperature_range(T_table)
     print(f"robust temperature range: {Tmin} - {Tmax}")
 
     import matplotlib.pyplot as plt
 
-    t = gibbs_matrices["C1O2"]["T(K)"]
-    g = gibbs_matrices["C1O2"]["delta-f G"]
-    plt.plot(t, g)
+    t = mu_matrices["C1O2"]["T(K)"]
+    mu = mu_matrices["C1O2"]["delta-f G"]
+    plt.plot(t, mu)
     plt.plot(T_query, Tdict["C1O2"], "o")
     plt.xlabel("T(K)")
     plt.ylabel("delta-f G")
+    plt.title("C1O2 mol standard chemical potential")
     plt.show()

@@ -1,7 +1,7 @@
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.equilibrium.gibbs import pad_gibbs_data
-from exogibbs.equilibrium.gibbs import interpolate_gibbs_all
+from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_all
 from exogibbs.equilibrium.gibbs import robust_temperature_range
 
 
@@ -28,7 +28,7 @@ def test_interpolation_gibbs(fig=False):
     gibbs_matrices, molecules, T_table, G_table = _compute_table_gibbs_data()
     T_query = 150.0
 
-    gibbs_vec = interpolate_gibbs_all(T_query, T_table, G_table)  # shape (M,)
+    gibbs_vec = interpolate_chemical_potential_all(T_query, T_table, G_table)  # shape (M,)
     Tdict = dict(zip(molecules, gibbs_vec))
 
     assert Tdict["janaf_raw"] == 0.15
