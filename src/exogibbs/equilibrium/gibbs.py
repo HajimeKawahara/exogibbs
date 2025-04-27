@@ -5,6 +5,8 @@ from typing import Dict
 import jax
 import jax.numpy as jnp
 from jax import jit
+from exogibbs.utils.constants import R_gas_constant_si
+from jax.scipy.special import xlogy
 
 _INF_STRINGS = {"inf", "Inf", "INFINITE"}
 _NINF_STRINGS = {"-inf", "-Inf", "-INFINITE"}
@@ -42,7 +44,7 @@ def pad_gibbs_data(
         gibbs_matrices (Dict[str, pd.DataFrame]): needs to have the key of temperature_key and checmecal_potential_key
         temperature_key (str): key for temperature
         checmical_potential_key (str): key for chemical potential
-    
+
     Returns:
         molecules (list): list of molecules
         T_table (ndarray): temperature table (Nmolecules, Lmax)
@@ -95,7 +97,7 @@ def interpolate_gibbs_all(T_target, T_table, G_table):
         T_target (scalar): target temperature (K)
         T_table (ndarray): array of temeprature grid（Lmax)
         G_table (ndarray): array of chemical potential grid（Lmax)
-    
+
     Returns:
         gibbs_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
     """
@@ -113,28 +115,32 @@ def robust_temperature_range(T_table):
         Tmin (float): minimum temperature (K)
         Tmax (float): maximum temperature (K)
     """
-    Tmin = np.max(np.min(T_table,axis=1))
-    Tmax = np.min(np.max(T_table,axis=1))
+    Tmin = np.max(np.min(T_table, axis=1))
+    Tmax = np.min(np.max(T_table, axis=1))
     return Tmin, Tmax
+
 
 def computes_total_gibbs_energy(number_of_species, T, P, T_table, G_table, Pref=1.0):
     """computes the total gibbs energy at T and P
     Args:
         number_of_species (ndarray): array of number of species (Nmol)
         T (float): temperature (K)
-        P (float): pressure (Pa)
+        P (float): pressure (bar)
         T_table (ndarray): array of temeprature grid（Lmax)
         G_table (ndarray): array of chemical potential grid（Lmax)
         Pref (float): reference pressure (bar) default to 1.0 (JANAF)
-    
+
     Returns:
         gibbs_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
     """
     gibbs_vec = interpolate_gibbs_all(T, T_table, G_table)  # shape (M,)
     total_number_of_species = jnp.sum(number_of_species)
-    
-    gibbs_vec + R_gas_constant_si*T*jnp.log(P*number_of_species / total_number_of_species/Pref)
-    
+
+    #fac = number_of_species*jnp.log(P * number_of_species / total_number_of_species / Pref)
+    fac = xlogy(R_gas_constant_si * T * number_of_species, P * number_of_species / total_number_of_species / Pref)
+    total_gibbs = jnp.nansum(gibbs_vec) +  jnp.nansum(fac)
+
+    return
 
 
 if __name__ == "__main__":
@@ -153,7 +159,7 @@ if __name__ == "__main__":
     Tdict = dict(zip(molecules, gibbs_vec))
     Tmin, Tmax = robust_temperature_range(T_table)
     print(f"robust temperature range: {Tmin} - {Tmax}")
-    
+
     import matplotlib.pyplot as plt
 
     t = gibbs_matrices["C1O2"]["T(K)"]
