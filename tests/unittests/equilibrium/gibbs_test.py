@@ -45,7 +45,7 @@ def test_interpolation_gibbs(fig=False):
         plt.show()
 
 def test_robust_temperature_range():
-    _, molecules, T_table, G_table = _compute_table_gibbs_data()
+    _, _, T_table, _ = _compute_table_gibbs_data()
     Tmin, Tmax = robust_temperature_range(T_table)
     assert Tmin == 0.0
     assert Tmax == 500.0
