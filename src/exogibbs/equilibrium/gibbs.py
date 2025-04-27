@@ -117,6 +117,25 @@ def robust_temperature_range(T_table):
     Tmax = np.min(np.max(T_table,axis=1))
     return Tmin, Tmax
 
+def computes_total_gibbs_energy(number_of_species, T, P, T_table, G_table, Pref=1.0):
+    """computes the total gibbs energy at T and P
+    Args:
+        number_of_species (ndarray): array of number of species (Nmol)
+        T (float): temperature (K)
+        P (float): pressure (Pa)
+        T_table (ndarray): array of temeprature grid（Lmax)
+        G_table (ndarray): array of chemical potential grid（Lmax)
+        Pref (float): reference pressure (bar) default to 1.0 (JANAF)
+    
+    Returns:
+        gibbs_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
+    """
+    gibbs_vec = interpolate_gibbs_all(T, T_table, G_table)  # shape (M,)
+    total_number_of_species = jnp.sum(number_of_species)
+    
+    gibbs_vec + R_gas_constant_si*T*jnp.log(P*number_of_species / total_number_of_species/Pref)
+    
+
 
 if __name__ == "__main__":
 
