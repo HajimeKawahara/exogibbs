@@ -105,6 +105,19 @@ def interpolate_gibbs_all(T_target, T_table, G_table):
     )
 
 
+def robust_temperature_range(T_table):
+    """get the robust temperature range for all molecules
+    Args:
+        T_table (ndarray): array of temeprature grid（Lmax)
+    Returns:
+        Tmin (float): minimum temperature (K)
+        Tmax (float): maximum temperature (K)
+    """
+    Tmin = np.max(np.min(T_table,axis=1))
+    Tmax = np.min(np.max(T_table,axis=1))
+    return Tmin, Tmax
+
+
 if __name__ == "__main__":
 
     # Example usage of interpolating the chemical potential, deriving the Gibbs energy at 700K
@@ -119,7 +132,9 @@ if __name__ == "__main__":
     T_query = 700.0
     gibbs_vec = interpolate_gibbs_all(T_query, T_table, G_table)  # shape (M,)
     Tdict = dict(zip(molecules, gibbs_vec))
-
+    Tmin, Tmax = robust_temperature_range(T_table)
+    print(f"robust temperature range: {Tmin} - {Tmax}")
+    
     import matplotlib.pyplot as plt
 
     t = gibbs_matrices["C1O2"]["T(K)"]
