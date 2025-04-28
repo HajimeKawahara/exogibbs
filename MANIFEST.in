@@ -3,3 +3,4 @@ include src/exogibbs/data/testdata.dat
 include src/exogibbs/data/matrix_v3.dat
 include src/exogibbs/data/molname_v3.dat
 include src/exogibbs/data/gibbs_matrices.npz
+include src/exogibbs/data/number_of_species.sample.list

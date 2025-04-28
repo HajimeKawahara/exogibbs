@@ -11,6 +11,8 @@ TESTDATA_DIR = "data/"
 MOLNAME_V3 = "molname_v3.dat"
 FORMULA_MATRIX_V3 = "matrix_v3.dat"
 JANAF_SAMPLE = "janaf_raw_sample.txt"
+DEFAULT_JANAF_GIBBS_MATRICES = "gibbs_matrices.npz"
+NUMBER_OF_SPECIES_SAMPLE = "number_of_species.sample.list"  # this is a sample file of number_of_species for testing
 
 
 def get_data_filepath(filename):
@@ -36,10 +38,7 @@ def load_molname():
     """
     fullpath = get_data_filepath(MOLNAME_V3)
     df_molname = pd.read_csv(fullpath, sep="\t", header=None, dtype=str)
-    df_molname.columns = [
-        "Molecule",
-        "color"
-    ]
+    df_molname.columns = ["Molecule", "color"]
     return df_molname
 
 
@@ -81,9 +80,6 @@ def load_JANAF_rawtxt(filename):
     return df
 
 
-
-
-
 def load_JANAF_molecules(
     df_molname: pd.DataFrame,
     path_JANAF_data: str | Path,
@@ -102,7 +98,7 @@ def load_JANAF_molecules(
         path_JANAF_data : str or Path
             Directory that holds ``<molecule>(g).txt`` files.
         tag : str
-            tag for JANAF file default to "(g)" 
+            tag for JANAF file default to "(g)"
         save_hdf5 : str, optional
             If given, the dict is additionally written to an HDF5 file whose
             *key* is the molecule name (e.g. ``/H2O``).  Passing ``None`` skips
@@ -122,7 +118,7 @@ def load_JANAF_molecules(
         >>> path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
         >>> matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
         >>> mat = matrices["C1O2"].to_numpy()
-        
+
     """
     path_JANAF_data = Path(path_JANAF_data).expanduser().resolve()
 
@@ -132,14 +128,14 @@ def load_JANAF_molecules(
     # load every molecule into an in-memory dict                         #
     # ------------------------------------------------------------------ #
     for mol in df_molname["Molecule"]:
-        file_path = path_JANAF_data / Path(mol+tag+".txt")
+        file_path = path_JANAF_data / Path(mol + tag + ".txt")
         if not file_path.is_file():
             warnings.warn(f"Missing file: {file_path}", RuntimeWarning)
             continue
 
         try:
             df_single = load_JANAF_rawtxt(file_path)  # -> pd.DataFrame
-        except Exception as exc:                      # pragma: no cover
+        except Exception as exc:  # pragma: no cover
             warnings.warn(f"Failed to load {file_path}: {exc}", RuntimeWarning)
             continue
 
@@ -152,17 +148,18 @@ def load_JANAF_molecules(
     # optional on-disk storage (HDF5, one key per molecule)              #
     # ------------------------------------------------------------------ #
     if save_hdf5 is not None:
-        with pd.HDFStore(save_hdf5, mode="w", complevel=9, complib=hdf5_compression) as store:
+        with pd.HDFStore(
+            save_hdf5, mode="w", complevel=9, complib=hdf5_compression
+        ) as store:
             for mol, df in gibbs_matrices.items():
                 store.put(f"/{mol}", df, format="table")
 
     return gibbs_matrices
 
 
-        
 if __name__ == "__main__":
     df_molname = load_molname()
     path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
     gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
-    mat = gibbs_matrices["C1O2"]#.to_numpy()
+    mat = gibbs_matrices["C1O2"]  # .to_numpy()
     print(mat.keys())
