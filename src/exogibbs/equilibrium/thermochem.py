@@ -2,7 +2,7 @@ from exogibbs.io.load_data import load_molname
 from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.io.load_data import load_formula_matrix
 from exogibbs.io.load_data import load_JANAF_molecules
-from exogibbs.equilibrium.gibbs import pad_gibbs_data
+from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
 from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_all
 from exogibbs.equilibrium.gibbs import robust_temperature_range
 
@@ -28,7 +28,7 @@ class ThermoChem:
             path_JANAF_data,
         )
         self.formula_matrix = load_formula_matrix()
-        self.molecules, self.T_table, self.G_table, self.grid_lens = pad_gibbs_data(self.gibbs_matrices)
+        self.molecules, self.T_table, self.G_table, self.grid_lens = extract_and_pad_gibbs_data(self.gibbs_matrices)
         self.Tmin, self.Tmax = robust_temperature_range(self.T_table)
     
 

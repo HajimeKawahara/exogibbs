@@ -1,6 +1,6 @@
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import load_JANAF_molecules
-from exogibbs.equilibrium.gibbs import pad_gibbs_data
+from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
 from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_all
 from exogibbs.equilibrium.gibbs import robust_temperature_range
 
@@ -15,7 +15,7 @@ def _compute_table_gibbs_data():
     )
     filepath = get_data_filepath("")
     gibbs_matrices = load_JANAF_molecules(df_molecules, filepath, tag="_sample")
-    molecules, T_table, G_table, _ = pad_gibbs_data(gibbs_matrices)
+    molecules, T_table, G_table, _ = extract_and_pad_gibbs_data(gibbs_matrices)
     return gibbs_matrices, molecules, T_table, G_table
 
 def test_pad_gibbs_data():
