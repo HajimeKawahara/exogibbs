@@ -151,6 +151,6 @@ def computes_total_gibbs_energy(number_of_species, T, P, T_table, mu_table, Pref
     # 3.5-1 (p46) and 3.7-12  (p51) in Smith and Missen (Ideal gas)
     nRT = total_number_of_species * R_gas_constant_si * T
     mui0 = number_of_species * chemical_potential_vec
-    return jnp.sum(mui0) + nRT * (jnp.sum(xlogy(x_i, x_i)) + jnp.log(P / Pref))
+    return jnp.sum(mui0) + nRT * (jnp.sum(xlogy(x_i, x_i+1.e-10)) + jnp.log(P / Pref))
 
 
