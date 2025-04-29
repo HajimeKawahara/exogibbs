@@ -7,9 +7,12 @@ import jax.numpy as jnp
 from jax import jit
 from exogibbs.utils.constants import R_gas_constant_si
 from jax.scipy.special import xlogy
+from jax import custom_jvp
 
 _INF_STRINGS = {"inf", "Inf", "INFINITE"}
 _NINF_STRINGS = {"-inf", "-Inf", "-INFINITE"}
+EPS = 1e-20
+LOG_EPS = jnp.log(EPS)
 
 
 def _coerce_to_float(a):
@@ -151,6 +154,36 @@ def computes_total_gibbs_energy(number_of_species, T, P, T_table, mu_table, Pref
     # 3.5-1 (p46) and 3.7-12  (p51) in Smith and Missen (Ideal gas)
     nRT = total_number_of_species * R_gas_constant_si * T
     mui0 = number_of_species * chemical_potential_vec
-    return jnp.sum(mui0) + nRT * (jnp.sum(xlogy(x_i, x_i+1.e-10)) + jnp.log(P / Pref))
+    #return jnp.sum(mui0) + nRT * (jnp.sum(xlogy(x_i, x_i+1.e-10)) + jnp.log(P / Pref))
+    return jnp.sum(mui0) + nRT * (jnp.sum(safe_xlogx(x_i)) + jnp.log(P / Pref))
 
+    
+@custom_jvp
+def safe_xlogx(x):
+    """"""
+    positive = x > EPS
+    # positive branch: as is
+    branch1 = jax.scipy.special.xlogy(x, x)
+    # non-positive: x*log(eps) + (x-eps)  (first-order)
+    branch2 = x * LOG_EPS + (x - EPS)
+    return jnp.where(positive, branch1, branch2)
 
+@safe_xlogx.defjvp
+def safe_xlogx_jvp(primals, tangents):
+    (x,), (dx,) = primals, tangents
+    positive = x > EPS
+    y = safe_xlogx(x)
+    # gradient: 1 + log x   (x>eps) /  log(eps) const  (x<=eps)
+    grad_pos = 1.0 + jnp.log(jnp.clip(x, a_min=EPS))
+    grad = jnp.where(positive, grad_pos, 1.0 + LOG_EPS)
+    return y, grad * dx
+
+if __name__ == "__main__":
+    from jax.scipy.special import xlogy
+    from jax import grad
+
+    print(xlogy(0.0, 0.0))  # should be 0.0
+    def f(x):
+        return safe_xlogx(x)
+    gf = grad(f)
+    print(gf(0.0))  # should be 1.0
