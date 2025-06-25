@@ -144,6 +144,13 @@ def computes_total_gibbs_energy(number_of_species, T, P, T_table, mu_table, Pref
 
     Returns:
         (ndarray): total gibbs energy, Gtot
+
+    Notes:
+        Gtot = sum_i^N n_i mu_i (n_i:number of species i, mu_i: chemical potential of species i 3.5-1 p46 in Smith and Missen)
+        mu_i = mu_i^0 + RT ln pi (mu_i^0: standard molar chemical potential, pi: partial pressure of species i, 3.7-12 p51)
+        x_i = n_i/n_tot is mole fraction of species i, i.e. p_i = x_i P, sum_i x_i = 1, where n_tot is the total number of species
+        Then we obtain, Gtot = \sum_i n_i mu_i^0 + n_tot R T (\sum_i x_i ln x_i + ln P ), R: gas constant, T: temperature
+
     """
     chemical_potential_vec = interpolate_chemical_potential_all(
         T, T_table, mu_table
@@ -153,11 +160,11 @@ def computes_total_gibbs_energy(number_of_species, T, P, T_table, mu_table, Pref
 
     # 3.5-1 (p46) and 3.7-12  (p51) in Smith and Missen (Ideal gas)
     nRT = total_number_of_species * R_gas_constant_si * T
-    mui0 = number_of_species * chemical_potential_vec
-    #return jnp.sum(mui0) + nRT * (jnp.sum(xlogy(x_i, x_i+1.e-10)) + jnp.log(P / Pref))
-    return jnp.sum(mui0) + nRT * (jnp.sum(safe_xlogx(x_i)) + jnp.log(P / Pref))
+    zero_term = jnp.sum(number_of_species * chemical_potential_vec)
+    temperature_factor = nRT * (jnp.sum(safe_xlogx(x_i)) + jnp.log(P / Pref))
+    return zero_term + temperature_factor
 
-    
+
 @custom_jvp
 def safe_xlogx(x):
     """"""
@@ -167,6 +174,7 @@ def safe_xlogx(x):
     # non-positive: x*log(eps) + (x-eps)  (first-order)
     branch2 = x * LOG_EPS + (x - EPS)
     return jnp.where(positive, branch1, branch2)
+
 
 @safe_xlogx.defjvp
 def safe_xlogx_jvp(primals, tangents):
@@ -178,12 +186,15 @@ def safe_xlogx_jvp(primals, tangents):
     grad = jnp.where(positive, grad_pos, 1.0 + LOG_EPS)
     return y, grad * dx
 
+
 if __name__ == "__main__":
     from jax.scipy.special import xlogy
     from jax import grad
 
     print(xlogy(0.0, 0.0))  # should be 0.0
+
     def f(x):
         return safe_xlogx(x)
+
     gf = grad(f)
     print(gf(0.0))  # should be 1.0
