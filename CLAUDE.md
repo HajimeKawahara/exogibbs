@@ -30,7 +30,8 @@ python -m pytest tests/unittests/
 
 ## Important Notes
 
-- The project uses JAX for auto-differentiation and JIT compilation - ensure JAX operations are used consistently
+- **JAX Compatibility**: The project uses JAX for auto-differentiation and JIT compilation - ensure JAX operations are used consistently. Be careful with JAX compatibility when adding new functions
+- **Keep It Simple**: Stay simple, do not add complex tests and functions
 - Chemical potential data is interpolated from JANAF tables stored in `src/exogibbs/data/`
 - Optimization operates in log-space to handle numerical stability with exponential functions
 - Formula matrices encode stoichiometric constraints for mass balance during equilibrium calculation
