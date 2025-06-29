@@ -88,7 +88,7 @@ def extract_and_pad_gibbs_data(
 
 
 @jit
-def _interp_one(T_target, T_vec, mu_vec):
+def interpolate_chemical_potential_one(T_target, T_vec, mu_vec):
     """interpolate one chemical potential at T_target
     Args:
         T_target (scalar): target temperature (K)
@@ -108,13 +108,13 @@ def interpolate_chemical_potential_all(T_target, T_table, mu_table):
     Args:
         T_target (scalar): target temperature (K)
         T_table (ndarray): array of temeprature grid（Lmax)
-        mu_table (ndarray): array of chemical potential grid（Lmax)
+        mu_table (ndarray): array of chemical potential grid（Nmol, Lmax)
 
     Returns:
         chemical_potential_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
     """
     return jax.lax.map(
-        lambda args: _interp_one(T_target, *args),
+        lambda args: interpolate_chemical_potential_one(T_target, *args),
         (T_table, mu_table),
     )
 
@@ -150,7 +150,7 @@ def computes_total_gibbs_energy(number_of_species, T, P, T_table, mu_table, Pref
         mu_i = mu_i^0 + RT ln pi (mu_i^0: standard molar chemical potential, pi: partial pressure of species i, 3.7-12 p51)
         x_i = n_i/n_tot is mole fraction of species i, i.e. p_i = x_i P, sum_i x_i = 1, where n_tot is the total number of species
         Then we obtain, Gtot = \sum_i n_i mu_i^0 + n_tot R T (\sum_i x_i ln x_i + ln P ), R: gas constant, T: temperature
-
+    
     """
     chemical_potential_vec = interpolate_chemical_potential_all(
         T, T_table, mu_table
