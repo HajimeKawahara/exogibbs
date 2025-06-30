@@ -87,20 +87,68 @@ def extract_and_pad_gibbs_data(
     )  # shape (M,),      int32
 
 
-@jit
-def interpolate_chemical_potential_one(T_target, T_vec, mu_vec):
+def interpolate_chemical_potential_one(T_target, T_vec, mu_vec, order=1):
     """interpolate one chemical potential at T_target
     Args:
-        T_target (scalar): target temperature (K)
+        T_target (scalar or array): target temperature(s) (K)
         T_vec (1D array): temeprature grid（Lmax)
         mu_vec (1D array): chemical potential grid（Lmax)
+        order (int): polynomial order for interpolation (default=1 for linear)
     """
+    if order == 1:
+        # Use JAX-compatible linear interpolation (handles both scalar and array)
+        return _linear_interpolation_jit(T_target, T_vec, mu_vec)
+    else:
+        # For polynomial, keep simple - use numpy for now to avoid JAX complexity
+        return _polynomial_interpolation(T_target, T_vec, mu_vec, order)
+
+
+@jit
+def _linear_interpolation_jit(T_target, T_vec, mu_vec):
+    """JIT-compiled linear interpolation"""
     n = T_vec.size
     idx = jnp.clip(jnp.searchsorted(T_vec, T_target) - 1, 0, n - 2)
     T0, T1 = T_vec[idx], T_vec[idx + 1]
     mu0, mu1 = mu_vec[idx], mu_vec[idx + 1]
     w = (T_target - T0) / (T1 - T0)
     return (1 - w) * mu0 + w * mu1
+
+
+def _polynomial_interpolation(T_target, T_vec, mu_vec, order):
+    """Polynomial interpolation - simple numpy implementation to avoid JAX complexity"""
+    import numpy as np
+    
+    # Convert to numpy for polynomial operations
+    T_target = np.asarray(T_target)
+    T_vec = np.asarray(T_vec)
+    mu_vec = np.asarray(mu_vec)
+    
+    # Handle array inputs with vectorization
+    T_target_flat = T_target.flatten()
+    results = np.zeros_like(T_target_flat)
+    
+    n = len(T_vec)
+    order = min(max(order, 1), n - 1)  # Ensure valid order
+    
+    for i, t in enumerate(T_target_flat):
+        # Find center index
+        idx_center = np.clip(np.searchsorted(T_vec, t) - 1, 0, n - 2)
+        
+        # Select points around target for polynomial fit
+        half_window = order // 2
+        start_idx = max(0, min(idx_center - half_window, n - order - 1))
+        end_idx = start_idx + order + 1
+        
+        # Extract subset for fitting
+        T_sub = T_vec[start_idx:end_idx]
+        mu_sub = mu_vec[start_idx:end_idx]
+        
+        # Use numpy polynomial fit and evaluation
+        coeffs = np.polyfit(T_sub, mu_sub, order)
+        results[i] = np.polyval(coeffs, t)
+    
+    # Return in original shape
+    return results.reshape(T_target.shape) if T_target.ndim > 0 else float(results[0])
 
 
 def interpolate_chemical_potential_all(T_target, T_table, mu_table):

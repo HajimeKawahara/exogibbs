@@ -81,8 +81,47 @@ def test_total_gibbs_energy():
     print("total Gibbs energy ", gibbs_energy, "should be about 8014")
     assert gibbs_energy == pytest.approx(8014.834042286333)
 
+
+def test_polynomial_interpolation_order2():
+    import jax.numpy as jnp
+    import numpy as np
+    from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_one
+    
+    # Simple test data: quadratic function y = x^2
+    T_vec = jnp.array([1.0, 2.0, 3.0, 4.0, 5.0])
+    mu_vec = jnp.array([1.0, 4.0, 9.0, 16.0, 25.0])  # x^2 values
+    
+    # Test scalar input
+    T_target = 2.5
+    expected = 6.25  # 2.5^2
+    
+    # Test linear interpolation (should not be exact for quadratic)
+    result_linear = interpolate_chemical_potential_one(T_target, T_vec, mu_vec, order=1)
+    print(f"Linear interpolation: {result_linear}")
+    
+    # Test quadratic interpolation (should be exact for quadratic data)
+    result_quad = interpolate_chemical_potential_one(T_target, T_vec, mu_vec, order=2)
+    print(f"Quadratic interpolation: {result_quad}, expected: {expected}")
+    
+    # Quadratic should be more accurate than linear for quadratic data
+    assert abs(result_quad - expected) < abs(result_linear - expected)
+    
+    # Test array input (like in tce_two_species.ipynb)
+    T_array = np.array([2.0, 2.5, 3.0])
+    expected_array = T_array**2  # [4.0, 6.25, 9.0]
+    
+    result_array_linear = interpolate_chemical_potential_one(T_array, T_vec, mu_vec, order=1)
+    result_array_quad = interpolate_chemical_potential_one(T_array, T_vec, mu_vec, order=2)
+    
+    print(f"Array linear: {result_array_linear}")
+    print(f"Array quadratic: {result_array_quad}, expected: {expected_array}")
+    
+    # Check that array results are close to expected (quadratic should be exact)
+    assert np.allclose(result_array_quad, expected_array, atol=1e-10)
+
 if __name__ == "__main__":
     test_pad_gibbs_data()
     test_interpolation_gibbs(fig=True)
     test_robust_temperature_range()
     test_total_gibbs_energy()
+    test_polynomial_interpolation_order2()
