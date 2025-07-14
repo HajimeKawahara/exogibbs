@@ -6,7 +6,6 @@ from jax.lax import scan
 from jax import grad
 from jax import jit
 from functools import partial
-from jaxopt import projection
 
 # def optimize_gibbs_pgd(T, P, T_table, mu_table, formula_matrix, b):
 def optimize_gibbs_pgd(
