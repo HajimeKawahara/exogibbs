@@ -1,3 +1,4 @@
+import jax.numpy as jnp
 from exogibbs.optimize.lagrange import _A_diagn_At
 
 def test_A_diag_At():

@@ -9,10 +9,11 @@ ExoGibbs is an auto-differentiable thermochemical equilibrium solver implemented
 ## Key Architecture
 
 - **Core equilibrium calculations**: `src/exogibbs/equilibrium/gibbs.py` - Contains Gibbs energy computation and chemical potential interpolation
-- **Optimization algorithms**: `src/exogibbs/optimize/` - KL mirror descent (`klmirror.py`) and projected gradient descent (`naive_pgd.py`) for constrained optimization
-- **Data handling**: `src/exogibbs/io/load_data.py` - Loads JANAF thermochemical data
-- **Stoichiometry**: `src/exogibbs/stoichiometry/analyze_formula_matrix.py` - Chemical formula matrix analysis
+- **Optimization algorithms**: `src/exogibbs/optimize/` - KL mirror descent (`klmirror.py`), projected gradient descent (`naive_pgd.py`), and Lagrange multiplier methods (`lagrange.py`) for constrained optimization
+- **Data handling**: `src/exogibbs/io/load_data.py` - Loads JANAF thermochemical data from `src/exogibbs/data/`
+- **Stoichiometry**: `src/exogibbs/stoichiometry/analyze_formula_matrix.py` - Chemical formula matrix analysis for mass balance constraints
 - **Test data generation**: `src/exogibbs/test/generate_gibbs.py` - Creates test cases for equilibrium calculations
+- **Testing**: Uses pytest framework with tests in `tests/unittests/` organized by module structure
 
 ## Development Commands
 
@@ -23,10 +24,17 @@ pip install -e .
 
 **Testing**:
 ```bash
-python -m pytest tests/unittests/
+# Run all tests
+/home/kawahara/anaconda3/envs/py310/bin/python -m pytest tests/unittests/
+
+# Run specific test file
+/home/kawahara/anaconda3/envs/py310/bin/python -m pytest tests/unittests/equilibrium/gibbs_test.py
+
+# Run individual test function
+/home/kawahara/anaconda3/envs/py310/bin/python -m pytest tests/unittests/equilibrium/gibbs_test.py::test_total_gibbs_energy
 ```
 
-**Key Dependencies**: JAX/JAXlib for auto-differentiation, pandas for data handling, tqdm for progress bars
+**Key Dependencies**: JAX/JAXlib for auto-differentiation, pandas for data handling, pytest for testing
 
 ## Important Notes
 
