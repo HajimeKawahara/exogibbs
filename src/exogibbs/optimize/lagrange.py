@@ -262,15 +262,13 @@ if __name__ == "__main__":
 
     # does not work with vmap
     from jax import vmap
-    vmap_minimize_gibbs = vmap(minimize_gibbs, in_axes=(0, None, None, None, 0, None, None))
+    vmap_minimize_gibbs = vmap(minimize_gibbs, in_axes=(0, None, None, None, None, None, 0))
     Tarr = jnp.linspace(100.0, 6000.0, 300)
     
-    def compute_chemical_potential_vector(temperature):
-        return jnp.array([mu_h(temperature), mu_h2(temperature)])
+    muH = mu_h(Tarr)
+    muH2 = mu_h2(Tarr)
+    chemical_potential_vector = jnp.array([muH, muH2]).T
 
-    vmap_chemical_potential_vector = vmap(compute_chemical_potential_vector, in_axes=0)
-    chemical_potential_vector = vmap_chemical_potential_vector(Tarr)
-    print(chemical_potential_vector.shape)
     
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
@@ -297,7 +295,9 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
     plt.plot(Tarr, vmrH, label='H')
     plt.plot(Tarr, vmrH2, label='H2')
-    plt.plot(Tarr, vmr_h(karr), label='analytical H')
+    plt.plot(Tarr, vmr_h(karr), ls="dashed",label='analytical H', alpha=0.5)
+    plt.plot(Tarr, vmr_h2(karr), ls="dashed",label='analytical H2', alpha=0.5)
+    plt.yscale('log')
     plt.xlabel('Temperature (K)')
     plt.ylabel('Number Density')
     plt.legend()
