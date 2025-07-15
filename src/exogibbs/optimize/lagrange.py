@@ -159,3 +159,7 @@ if __name__ == "__main__":
 
     k = compute_k(P,T, P_ref)
     print(jnp.log(nh(k)), jnp.log(nh2(k)))
+    diff = jnp.log(nh(k)) - ln_nk[0]
+    diff2 = jnp.log(nh2(k)) - ln_nk[1]
+    print(f"Difference for H: {diff}, Difference for H2: {diff2}")
+    
