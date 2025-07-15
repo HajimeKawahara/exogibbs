@@ -122,8 +122,10 @@ def update_all(
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations(
         jnp.exp(ln_nk), jnp.exp(ln_ntot), formula_matrix, b, gk, An
     )
-    ln_ntot += delta_ln_ntot
-    ln_nk += update_ln_nk(pi_vector, delta_ln_ntot, formula_matrix, gk)
+
+    under_relax = 0.1 # need to reconsider
+    ln_ntot += under_relax*delta_ln_ntot
+    ln_nk += under_relax*update_ln_nk(pi_vector, delta_ln_ntot, formula_matrix, gk)
 
     nk = jnp.exp(ln_nk)
     ntot = jnp.exp(ln_ntot)
@@ -143,7 +145,7 @@ def minimize_gibbs(
     formula_matrix,
     chemical_potential_vec,
     epsilon_crit=1.0e-11,
-    max_iter=100,
+    max_iter=1000,
 ):
     def cond_fun(carry):
         _, _, _, _, epsilon, counter = carry
@@ -173,10 +175,10 @@ def minimize_gibbs(
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
 
-    ln_nk, _, _, _, _, _ = while_loop(
+    ln_nk, _, _, _, _, counter = while_loop(
         cond_fun, body_fun, (ln_nk_init, ln_ntot_init, gk, An, jnp.inf, 0)
     )
-    return ln_nk
+    return ln_nk, counter
 
 
 if __name__ == "__main__":
@@ -243,7 +245,7 @@ if __name__ == "__main__":
     b_element_vector = jnp.array([1.0])  # Assuming no element abundance constraints
 
     # minimize Gibbs energy
-    ln_nk = minimize_gibbs(
+    ln_nk, counter = minimize_gibbs(
         temperature,
         normalized_pressure,
         b_element_vector,
@@ -273,7 +275,7 @@ if __name__ == "__main__":
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
 
-    ln_nk_arr = vmap_minimize_gibbs(
+    ln_nk_arr, counter_arr = vmap_minimize_gibbs(
         Tarr,
         normalized_pressure,
         b_element_vector,
@@ -293,12 +295,16 @@ if __name__ == "__main__":
     vmrH = n_H / ntot
     vmrH2 = n_H2 / ntot
     import matplotlib.pyplot as plt
-    plt.plot(Tarr, vmrH, label='H')
-    plt.plot(Tarr, vmrH2, label='H2')
-    plt.plot(Tarr, vmr_h(karr), ls="dashed",label='analytical H', alpha=0.5)
-    plt.plot(Tarr, vmr_h2(karr), ls="dashed",label='analytical H2', alpha=0.5)
-    plt.yscale('log')
+    fig = plt.figure(figsize=(10, 6))
+    ax = fig.add_subplot(212)
+    plt.plot(Tarr, vmrH, label='H', alpha=0.5)
+    plt.plot(Tarr, vmrH2, label='H2', alpha=0.5)
+    plt.plot(Tarr, vmr_h(karr), ls="dashed",label='analytical H')
+    plt.plot(Tarr, vmr_h2(karr), ls="dashed",label='analytical H2')
+    #plt.yscale('log')
     plt.xlabel('Temperature (K)')
     plt.ylabel('Number Density')
     plt.legend()
+    ax = fig.add_subplot(211)
+    plt.plot(Tarr, counter_arr, label='Counter')
     plt.show()
