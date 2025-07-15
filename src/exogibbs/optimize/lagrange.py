@@ -94,7 +94,6 @@ def compute_residuals(
 
     resn = jnp.sum(nk) - ntotk
     resn_squared = jnp.dot(resn, resn)
-    print(ress_squared, resj_squared, resn_squared)
     return jnp.sqrt(ress_squared + resj_squared + resn_squared)
 
 
@@ -135,26 +134,49 @@ def update_all(
     return ln_nk, ln_ntot, epsilon, gk, An
 
 
-def iteration_gibbs(max_iter=100):
+def minimize_gibbs(
+    temperature,
+    normalized_pressure,
+    b_element_vector,
+    ln_nk_init,
+    ln_ntot_init,
+    formula_matrix,
+    chemical_potential_vec,
+    epsilon_crit=1.0e-11,
+    max_iter=100,
+):
     def cond_fun(carry):
-        ln_nk, ln_ntot, counter = carry
-        return jnp.abs(E - E_prev) > 1e-6 and counter < max_iter
+        _, _, _, _, epsilon, counter = carry
+        return (epsilon > epsilon_crit) & (counter < max_iter)
 
     def body_fun(carry):
-        ln_nk, ln_ntot, counter = carry
-        ln_nk_new, ln_ntot_new = update_all(
+        ln_nk, ln_ntot, gk, An, _, counter = carry
+        ln_nk_new, ln_ntot_new, epsilon, gk, An = update_all(
             ln_nk,
             ln_ntot,
             formula_matrix,
-            b,
-            T,
+            b_element_vector,
+            temperature,
             normalized_pressure,
             chemical_potential_vec,
+            gk,
+            An,
         )
-        return ln_nk_new, ln_ntot_new, counter + 1
+        return ln_nk_new, ln_ntot_new, gk, An, epsilon, counter + 1
 
-    _, E_star = while_loop(cond_fun, body_fun, (jnp.inf, Eini))
-    return E_star
+    gk = compute_gk(
+        temperature,
+        ln_nk_init,
+        ln_ntot_init,
+        chemical_potential_vec,
+        normalized_pressure,
+    )
+    An = formula_matrix @ jnp.exp(ln_nk_init)
+
+    ln_nk, _, _, _, _, _ = while_loop(
+        cond_fun, body_fun, (ln_nk_init, ln_ntot_init, gk, An, jnp.inf, 0)
+    )
+    return ln_nk
 
 
 if __name__ == "__main__":
@@ -197,46 +219,86 @@ if __name__ == "__main__":
     def nh2(k):
         return 0.5 * (1.0 - nh(k))
 
+    def ntotal(k):
+        return nh(k) + nh2(k)
+
+
+    def vmr_h(k):
+        return nh(k) / ntotal(k)
+
+
+    def vmr_h2(k):
+        return nh2(k) / ntotal(k)
+
+
     formula_matrix = jnp.array([[1.0, 2.0]])
-    T = 3700.0
+    temperature = 3500.0
     P = 1.0  # bar
     P_ref = 1.0  # bar
 
     normalized_pressure = P / P_ref
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
-    chemical_potential_vec = jnp.array([mu_h(T), mu_h2(T)])
-    b = jnp.array([1.0])  # Assuming no element abundance constraints
+    chemical_potential_vector = jnp.array([mu_h(temperature), mu_h2(temperature)])
+    b_element_vector = jnp.array([1.0])  # Assuming no element abundance constraints
 
-    # requires to compute (initial) gk and An before the loop
-    gk = compute_gk(T, ln_nk, ln_ntot, chemical_potential_vec, normalized_pressure)
-    An = formula_matrix @ jnp.exp(ln_nk)
+    # minimize Gibbs energy
+    ln_nk = minimize_gibbs(
+        temperature,
+        normalized_pressure,
+        b_element_vector,
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        chemical_potential_vector,
+    )
 
-    for i in range(10):
-
-        # Solve the Gibbs iteration equations to get pi_vector and delta_ln_ntot
-        pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations(
-            jnp.exp(ln_nk), jnp.exp(ln_ntot), formula_matrix, b, gk, An
-        )
-
-        #update ln_nk and ln_ntot
-        ln_ntot += delta_ln_ntot
-        ln_nk += update_ln_nk(pi_vector, delta_ln_ntot, formula_matrix, gk)
-
-        # evaluate the residual (epsilon)
-        nk = jnp.exp(ln_nk)
-        ntot = jnp.exp(ln_ntot)
-        gk = compute_gk(T, ln_nk, ln_ntot, chemical_potential_vec, normalized_pressure)
-        An = formula_matrix @ nk
-        epsilon = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
-        
-    
-        print(
-            f"Iteration {i}: ln_nk = {ln_nk}, ln_ntot = {ln_ntot}, epsilon = {epsilon}"
-        )
-
-    k = compute_k(P, T, P_ref)
-    print(jnp.log(nh(k)), jnp.log(nh2(k)))
+    k = compute_k(P, temperature, P_ref)
     diff = jnp.log(nh(k)) - ln_nk[0]
     diff2 = jnp.log(nh2(k)) - ln_nk[1]
     print(f"Difference for H: {diff}, Difference for H2: {diff2}")
+
+
+
+    # does not work with vmap
+    from jax import vmap
+    vmap_minimize_gibbs = vmap(minimize_gibbs, in_axes=(0, None, None, None, 0, None, None))
+    Tarr = jnp.linspace(100.0, 6000.0, 300)
+    
+    def compute_chemical_potential_vector(temperature):
+        return jnp.array([mu_h(temperature), mu_h2(temperature)])
+
+    vmap_chemical_potential_vector = vmap(compute_chemical_potential_vector, in_axes=0)
+    chemical_potential_vector = vmap_chemical_potential_vector(Tarr)
+    print(chemical_potential_vector.shape)
+    
+    ln_nk = jnp.array([0.0, 0.0])
+    ln_ntot = 0.0
+
+    ln_nk_arr = vmap_minimize_gibbs(
+        Tarr,
+        normalized_pressure,
+        b_element_vector,
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        chemical_potential_vector,
+    )
+    print(ln_nk_arr.shape)
+
+    karr = compute_k(P, Tarr, P_ref)
+    
+
+    n_H = jnp.exp(ln_nk_arr[:, 0])
+    n_H2 = jnp.exp(ln_nk_arr[:, 1])
+    ntot = n_H + n_H2
+    vmrH = n_H / ntot
+    vmrH2 = n_H2 / ntot
+    import matplotlib.pyplot as plt
+    plt.plot(Tarr, vmrH, label='H')
+    plt.plot(Tarr, vmrH2, label='H2')
+    plt.plot(Tarr, vmr_h(karr), label='analytical H')
+    plt.xlabel('Temperature (K)')
+    plt.ylabel('Number Density')
+    plt.legend()
+    plt.show()
