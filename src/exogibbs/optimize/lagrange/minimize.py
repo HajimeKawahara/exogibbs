@@ -3,41 +3,10 @@ from jax import custom_vjp
 from jax.lax import while_loop
 from typing import Tuple
 from exogibbs.utils.constants import R_gas_constant_si
+from jax import jit
 
-# def lagrange_newton(T, P, T_table, mu_table, x0, formula_matrix, b, stepsize=1e-2, num_steps=1000):
-
-
-def _A_diagn_At(number_density_vector, formula_matrix):
-    return jnp.einsum(
-        "ik,k,jk->ij", formula_matrix, number_density_vector, formula_matrix
-    )
-
-
-# @custom_vjp
-
-
-def compute_gk(
-    T: float,
-    ln_nk: jnp.ndarray,
-    ln_ntot: float,
-    chemical_potential_vec: jnp.ndarray,
-    normalized_pressure: float,
-) -> jnp.ndarray:
-    """computes gk vector for the Gibbs iteration
-
-    Args:
-        T: temperature (K)
-        ln_nk: log of number density vector (n_species, )
-        ln_ntot: log of total number density
-        chemical_potential_over_RT_vec: chemical potential over RT vector (n_species, )
-        normalized_pressure: normalized pressure P/Pref
-
-    Returns:
-        chemical potential vector (n_species, )
-    """
-    RT = R_gas_constant_si * T
-    return chemical_potential_vec / RT + ln_nk - ln_ntot + jnp.log(normalized_pressure)
-
+from exogibbs.optimize.lagrange.core import _A_diagn_At
+from exogibbs.optimize.lagrange.core import compute_gk
 
 def solve_gibbs_iteration_equations(
     nk: jnp.ndarray,
@@ -48,7 +17,7 @@ def solve_gibbs_iteration_equations(
     An: jnp.ndarray,
 ) -> Tuple[jnp.ndarray, float]:
     """
-    Solve the Gibbs iteration equations for the Lagrange multipliers.
+    Solve the Gibbs iteration equations using the Lagrange multipliers.
     This function computes the matrix and vector to solve the system of equations
     that arises from the Gibbs energy minimization problem.
 
@@ -123,9 +92,9 @@ def update_all(
         jnp.exp(ln_nk), jnp.exp(ln_ntot), formula_matrix, b, gk, An
     )
 
-    under_relax = 0.1 # need to reconsider
-    ln_ntot += under_relax*delta_ln_ntot
-    ln_nk += under_relax*update_ln_nk(pi_vector, delta_ln_ntot, formula_matrix, gk)
+    under_relax = 0.1  # need to reconsider
+    ln_ntot += under_relax * delta_ln_ntot
+    ln_nk += under_relax * update_ln_nk(pi_vector, delta_ln_ntot, formula_matrix, gk)
 
     nk = jnp.exp(ln_nk)
     ntot = jnp.exp(ln_ntot)
@@ -135,8 +104,7 @@ def update_all(
     epsilon = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
     return ln_nk, ln_ntot, epsilon, gk, An
 
-
-def minimize_gibbs(
+def minimize_gibbs_core(
     temperature,
     normalized_pressure,
     b_element_vector,
@@ -145,8 +113,10 @@ def minimize_gibbs(
     formula_matrix,
     chemical_potential_vec,
     epsilon_crit=1.0e-11,
-    max_iter=1000,
+    max_iter=1000,    
 ):
+    """compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method."""
+
     def cond_fun(carry):
         _, _, _, _, epsilon, counter = carry
         return (epsilon > epsilon_crit) & (counter < max_iter)
@@ -175,11 +145,65 @@ def minimize_gibbs(
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
 
-    ln_nk, _, _, _, _, counter = while_loop(
+    ln_nk, ln_tot, _, _, _, counter = while_loop(
         cond_fun, body_fun, (ln_nk_init, ln_ntot_init, gk, An, jnp.inf, 0)
     )
-    return ln_nk, counter
+    return ln_nk, ln_tot, counter
 
+#@custom_vjp
+def minimize_gibbs(
+    temperature,
+    normalized_pressure,
+    b_element_vector,
+    ln_nk_init,
+    ln_ntot_init,
+    formula_matrix,
+    chemical_potential_vec,
+    epsilon_crit=1.0e-11,
+    max_iter=1000,
+):
+    """compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method."""
+
+    ln_nk, _, _ = minimize_gibbs_core(
+    temperature,
+    normalized_pressure,
+    b_element_vector,
+    ln_nk_init,
+    ln_ntot_init,
+    formula_matrix,
+    chemical_potential_vec,
+    epsilon_crit,
+    max_iter,
+    )   
+
+    return ln_nk
+
+"""
+def minimize_gibbs_fwd(
+    temperature,
+    normalized_pressure,
+    b_element_vector,
+    ln_nk_init,
+    ln_ntot_init,
+    formula_matrix,
+    chemical_potential_vec,
+    epsilon_crit=1.0e-11,
+    max_iter=1000,
+):
+    ln_nk, ln_ntot, _ = minimize_gibbs(
+        temperature,
+        normalized_pressure,
+        b_element_vector,
+        ln_nk_init,
+        ln_ntot_init,
+        formula_matrix,
+        chemical_potential_vec,
+        epsilon_crit,
+        max_iter,
+    )
+
+    return ln_nk, (None, )
+"""
 
 if __name__ == "__main__":
     from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_one
@@ -224,14 +248,11 @@ if __name__ == "__main__":
     def ntotal(k):
         return nh(k) + nh2(k)
 
-
     def vmr_h(k):
         return nh(k) / ntotal(k)
 
-
     def vmr_h2(k):
         return nh2(k) / ntotal(k)
-
 
     formula_matrix = jnp.array([[1.0, 2.0]])
     temperature = 3500.0
@@ -245,7 +266,7 @@ if __name__ == "__main__":
     b_element_vector = jnp.array([1.0])  # Assuming no element abundance constraints
 
     # minimize Gibbs energy
-    ln_nk, counter = minimize_gibbs(
+    ln_nk, _, counter = minimize_gibbs_core(
         temperature,
         normalized_pressure,
         b_element_vector,
@@ -260,22 +281,22 @@ if __name__ == "__main__":
     diff2 = jnp.log(nh2(k)) - ln_nk[1]
     print(f"Difference for H: {diff}, Difference for H2: {diff2}")
 
-
-
     # does not work with vmap
-    from jax import vmap
-    vmap_minimize_gibbs = vmap(minimize_gibbs, in_axes=(0, None, None, None, None, None, 0))
+    from jax import vmap, jit
+
+    vmap_minimize_gibbs = jit(
+        vmap(minimize_gibbs_core, in_axes=(0, None, None, None, None, None, 0))
+    )
     Tarr = jnp.linspace(100.0, 6000.0, 300)
-    
+
     muH = mu_h(Tarr)
     muH2 = mu_h2(Tarr)
     chemical_potential_vector = jnp.array([muH, muH2]).T
 
-    
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
 
-    ln_nk_arr, counter_arr = vmap_minimize_gibbs(
+    ln_nk_arr, _, counter_arr = vmap_minimize_gibbs(
         Tarr,
         normalized_pressure,
         b_element_vector,
@@ -287,7 +308,6 @@ if __name__ == "__main__":
     print(ln_nk_arr.shape)
 
     karr = compute_k(P, Tarr, P_ref)
-    
 
     n_H = jnp.exp(ln_nk_arr[:, 0])
     n_H2 = jnp.exp(ln_nk_arr[:, 1])
@@ -295,16 +315,17 @@ if __name__ == "__main__":
     vmrH = n_H / ntot
     vmrH2 = n_H2 / ntot
     import matplotlib.pyplot as plt
+
     fig = plt.figure(figsize=(10, 6))
     ax = fig.add_subplot(212)
-    plt.plot(Tarr, vmrH, label='H', alpha=0.5)
-    plt.plot(Tarr, vmrH2, label='H2', alpha=0.5)
-    plt.plot(Tarr, vmr_h(karr), ls="dashed",label='analytical H')
-    plt.plot(Tarr, vmr_h2(karr), ls="dashed",label='analytical H2')
-    #plt.yscale('log')
-    plt.xlabel('Temperature (K)')
-    plt.ylabel('Number Density')
+    plt.plot(Tarr, vmrH, label="H", alpha=0.5)
+    plt.plot(Tarr, vmrH2, label="H2", alpha=0.5)
+    plt.plot(Tarr, vmr_h(karr), ls="dashed", label="analytical H")
+    plt.plot(Tarr, vmr_h2(karr), ls="dashed", label="analytical H2")
+    # plt.yscale('log')
+    plt.xlabel("Temperature (K)")
+    plt.ylabel("Number Density")
     plt.legend()
     ax = fig.add_subplot(211)
-    plt.plot(Tarr, counter_arr, label='Counter')
+    plt.plot(Tarr, counter_arr, label="Counter")
     plt.show()
