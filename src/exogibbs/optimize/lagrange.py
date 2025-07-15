@@ -17,14 +17,16 @@ def _A_diagn_At(number_density_vector, formula_matrix):
 
 
 def compute_gk(
+    T: float,
     ln_nk: jnp.ndarray, 
     ln_ntot: float, 
-    chemical_potential_over_RT_vec: jnp.ndarray, 
+    chemical_potential_vec: jnp.ndarray, 
     normalized_pressure: float
 ) -> jnp.ndarray:
     """ computes gk vector for the Gibbs iteration
 
     Args:
+        T: temperature (K)
         ln_nk: log of number density vector (n_species, )
         ln_ntot: log of total number density
         chemical_potential_over_RT_vec: chemical potential over RT vector (n_species, )
@@ -33,7 +35,8 @@ def compute_gk(
     Returns:
         chemical potential vector (n_species, )
     """
-    return chemical_potential_over_RT_vec  + ln_nk - ln_ntot + jnp.log(normalized_pressure)
+    RT = R_gas_constant_si * T
+    return chemical_potential_vec / RT  + ln_nk - ln_ntot + jnp.log(normalized_pressure)
 
 
 def solve_gibbs_iteration_equations(
@@ -108,20 +111,22 @@ if __name__ == "__main__":
     path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
     gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
 
+    kJtoJ = 1000.0  # conversion factor from kJ to J
     T_h_table = gibbs_matrices["H1"]["T(K)"].to_numpy()
-    mu_over_RT_h_table = gibbs_matrices["H1"]["delta-f G"].to_numpy()/R_gas_constant_si
+    mu_h_table = gibbs_matrices["H1"]["delta-f G"].to_numpy() * kJtoJ
     T_h2_table = gibbs_matrices["H2"]["T(K)"].to_numpy()
-    mu_over_RT_h2_table = gibbs_matrices["H2"]["delta-f G"].to_numpy()/R_gas_constant_si
+    mu_h2_table = gibbs_matrices["H2"]["delta-f G"].to_numpy() * kJtoJ
 
-    def mu_over_RT_h(T):
-        return interpolate_chemical_potential_one(T, T_h_table, mu_over_RT_h_table, order=2)
+    def mu_h(T):
+        return interpolate_chemical_potential_one(T, T_h_table, mu_h_table, order=2)
 
-    def mu_over_RT_h2(T):
-        return interpolate_chemical_potential_one(T, T_h2_table, mu_over_RT_h2_table, order=2)
+    def mu_h2(T):
+        return interpolate_chemical_potential_one(T, T_h2_table, mu_h2_table, order=2)
 
     def compute_k(P, T, Pref=1.0):
-        delta_mu = mu_over_RT_h2(T) - 2.0 * mu_over_RT_h(T)
-        return np.exp(-delta_mu) * P / Pref
+        delta_mu = mu_h2(T) - 2.0 * mu_h(T)
+        RT = R_gas_constant_si * T
+        return np.exp(-delta_mu/RT) * P / Pref
 
     def nh(k):
         return 1.0 / np.sqrt(4.0*k + 1.0)
@@ -140,11 +145,11 @@ if __name__ == "__main__":
     normalized_pressure = P / P_ref
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
-    chemical_potential_vec = jnp.array([mu_over_RT_h(T), mu_over_RT_h2(T)])
+    chemical_potential_vec = jnp.array([mu_h(T), mu_h2(T)])
     b = jnp.array([1.0])  # Assuming no element abundance constraints
     
     for i in range(10):
-        gk = compute_gk(ln_nk, ln_ntot, chemical_potential_vec, normalized_pressure)
+        gk = compute_gk(T, ln_nk, ln_ntot, chemical_potential_vec, normalized_pressure)
         pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations(
             jnp.exp(ln_nk), jnp.exp(ln_ntot), formula_matrix, b, gk
         )
