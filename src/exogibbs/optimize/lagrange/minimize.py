@@ -99,17 +99,35 @@ def update_all(
 
 
 def minimize_gibbs_core(
-    temperature,
-    normalized_pressure,
-    b_element_vector,
-    ln_nk_init,
-    ln_ntot_init,
-    formula_matrix,
-    hvector,
-    epsilon_crit=1.0e-11,
-    max_iter=1000,
-):
-    """compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method."""
+    temperature: float,
+    normalized_pressure: float,
+    b_element_vector: jnp.ndarray,
+    ln_nk_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    hvector: jnp.ndarray,
+    epsilon_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+) -> Tuple[jnp.ndarray, float, int]:
+    """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
+    
+    Args:
+        temperature: Temperature in Kelvin.
+        normalized_pressure: Pressure normalized by reference pressure (P/Pref).
+        b_element_vector: Element abundance vector (n_elements,).
+        ln_nk_init: Initial log number density vector (n_species,).
+        ln_ntot_init: Initial log total number density.
+        formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
+        hvector: Chemical potential over RT vector (n_species,).
+        epsilon_crit: Convergence tolerance for residual norm.
+        max_iter: Maximum number of iterations allowed.
+        
+    Returns:
+        Tuple containing:
+            - Final log number density vector (n_species,).
+            - Final log total number density.
+            - Number of iterations performed.
+    """
 
     def cond_fun(carry):
         _, _, _, _, epsilon, counter = carry
