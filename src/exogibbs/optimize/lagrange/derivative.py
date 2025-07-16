@@ -26,7 +26,7 @@ def solve_gibbs_equations_temperature_derivative(
     """
     AnAt = _A_diagn_At(nspecies, formula_matrix)
     Anh = formula_matrix @ (nspecies * hdot)
-    nk_cdot_hdot = jnp.dot(An, hdot)
+    nk_cdot_hdot = jnp.dot(nspecies, hdot)
 
     assemble_mat = jnp.block([[AnAt, An[:, None]], [An[None, :], jnp.array([[0.0]])]])
     assemble_vec = jnp.concatenate([Anh, jnp.array([nk_cdot_hdot])])

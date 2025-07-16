@@ -110,7 +110,7 @@ def minimize_gibbs_core(
     max_iter: int = 1000,
 ) -> Tuple[jnp.ndarray, float, int]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
-    
+
     Args:
         temperature: Temperature in Kelvin.
         normalized_pressure: Pressure normalized by reference pressure (P/Pref).
@@ -121,7 +121,7 @@ def minimize_gibbs_core(
         hvector: Chemical potential over RT vector (n_species,).
         epsilon_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations allowed.
-        
+
     Returns:
         Tuple containing:
             - Final log number density vector (n_species,).
@@ -220,17 +220,17 @@ def minimize_gibbs_fwd(
 """
 
 if __name__ == "__main__":
-    #from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_one
+    # from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_one
     from exogibbs.equilibrium.gibbs import interpolate_hvector_one
-    
+
     from exogibbs.io.load_data import get_data_filepath
     from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
     import numpy as np
-    
+
     from jax import config
 
     config.update("jax_enable_x64", True)
-    
+
     path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
     gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
 
@@ -239,7 +239,7 @@ if __name__ == "__main__":
     mu_h_table = gibbs_matrices["H1"]["delta-f G"].to_numpy() * kJtoJ
     T_h2_table = gibbs_matrices["H2"]["T(K)"].to_numpy()
     mu_h2_table = gibbs_matrices["H2"]["delta-f G"].to_numpy() * kJtoJ
-    
+
     """
     def mu_h(T):
         return interpolate_chemical_potential_one(T, T_h_table, mu_h_table, order=2)
@@ -253,7 +253,6 @@ if __name__ == "__main__":
 
     def hv_h2(T):
         return interpolate_hvector_one(T, T_h2_table, mu_h2_table)
-    
 
     def compute_k(P, T, Pref=1.0):
         delta_h = hv_h2(T) - 2.0 * hv_h(T)
@@ -282,7 +281,7 @@ if __name__ == "__main__":
     normalized_pressure = P / P_ref
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
-    #chemical_potential_vector = jnp.array([hv_h(temperature), hv_h2(temperature)])
+    # chemical_potential_vector = jnp.array([hv_h(temperature), hv_h2(temperature)])
     hvector = jnp.array([hv_h(temperature), hv_h2(temperature)])
     b_element_vector = jnp.array([1.0])  # Assuming no element abundance constraints
 
@@ -301,9 +300,10 @@ if __name__ == "__main__":
     diff = jnp.log(nh(k)) - ln_nk[0]
     diff2 = jnp.log(nh2(k)) - ln_nk[1]
     print(f"Difference for H: {diff}, Difference for H2: {diff2}")
-    
-    #derivative
+
+    # derivative
     from jax import grad
+    from jax import vmap
     from exogibbs.optimize.lagrange.derivative import derivative_temperature
 
     def dot_hv_h(T):
@@ -311,22 +311,41 @@ if __name__ == "__main__":
 
     def dot_hv_h2(T):
         return grad(hv_h2)(T)
-    
+
+    def delta(T):
+        return 2.0 * hv_h(T) - hv_h2(T)
+
+    def delta_dT(Tarr):
+        return vmap(grad(delta),in_axes=0)(Tarr)
+
+    def ln_nH_dT(Tarr):
+        k = compute_k(P, Tarr, P_ref)
+        return -2.0 * nh2(k) * ntotal(k) * delta_dT(Tarr)
+
+    def ln_nH2_dT(Tarr):
+        k = compute_k(P, Tarr, P_ref)
+        return nh(k) * ntotal(k) * delta_dT(Tarr)
+
     hdot = jnp.array([dot_hv_h(temperature), dot_hv_h2(temperature)])
     nk = jnp.exp(ln_nk)
     An = formula_matrix @ nk
-    
-    ln_nspecies_dT = derivative_temperature(nk, formula_matrix,hdot, An)
-    print(ln_nspecies_dT)
-    
 
-    exit()
+    ln_nspecies_dT = derivative_temperature(nk, formula_matrix, hdot, An)
+
+    diff = ln_nH_dT(jnp.array([temperature]))[0] - ln_nspecies_dT[0]
+    diff2 = ln_nH2_dT(jnp.array([temperature]))[0] - ln_nspecies_dT[1]
+    print(f"Difference for H: {diff}, Difference for H2: {diff2}")
+
     # does not work with vmap
     from jax import vmap, jit
 
     vmap_minimize_gibbs = jit(
         vmap(minimize_gibbs_core, in_axes=(0, None, None, None, None, None, 0))
     )
+    vmap_derivative_temperature = jit(
+        vmap(derivative_temperature, in_axes=(0, None, 0, 0))
+    )
+
     Tarr = jnp.linspace(100.0, 6000.0, 300)
 
     muH = hv_h(Tarr)
@@ -354,27 +373,51 @@ if __name__ == "__main__":
     ntot = n_H + n_H2
     vmrH = n_H / ntot
     vmrH2 = n_H2 / ntot
+
+    #derivative 
+    vmap_dot_hv_h = vmap(dot_hv_h, in_axes=0)
+    vmap_dot_hv_h2 = vmap(dot_hv_h2, in_axes=0)
+    vdot_hv_h = vmap_dot_hv_h(Tarr)
+    vdot_hv_h2 = vmap_dot_hv_h2(Tarr)
+
+    
+    hdot_arr = jnp.array([vdot_hv_h, vdot_hv_h2]).T
+    
+    nk_arr = jnp.exp(ln_nk_arr)
+    An_arr = jnp.einsum("ij,kj -> ki", formula_matrix, nk_arr)
+    ln_nspecies_dT = vmap_derivative_temperature(nk_arr, formula_matrix, hdot_arr, An_arr)
+    
     import matplotlib.pyplot as plt
 
     fig = plt.figure(figsize=(10, 10))
-    ax = fig.add_subplot(312)
+    ax = fig.add_subplot(412)
     plt.plot(Tarr, vmrH, label="H", alpha=0.5)
     plt.plot(Tarr, vmrH2, label="H2", alpha=0.5)
     plt.plot(Tarr, vmr_h(karr), ls="dashed", label="analytical H")
     plt.plot(Tarr, vmr_h2(karr), ls="dashed", label="analytical H2")
-    plt.ylabel("Number Density")
+    plt.ylabel("Species VMR")
     plt.legend()
-    ax = fig.add_subplot(313)
+    ax = fig.add_subplot(413)
     plt.plot(Tarr, vmrH, label="H", alpha=0.5)
     plt.plot(Tarr, vmrH2, label="H2", alpha=0.5)
     plt.plot(Tarr, vmr_h(karr), ls="dashed", label="analytical H")
     plt.plot(Tarr, vmr_h2(karr), ls="dashed", label="analytical H2")
-    plt.yscale('log')
-    plt.xlabel("Temperature (K)")
-    plt.ylabel("Number Density")
+    plt.yscale("log")
+    plt.ylabel("Species VMR")
     plt.legend()
-    ax = fig.add_subplot(311)
+    ax = fig.add_subplot(411)
     plt.plot(Tarr, counter_arr, label="Counter")
     plt.ylabel("# of iterations")
+    ax = fig.add_subplot(414)
+    plt.plot(Tarr, jnp.abs(ln_nspecies_dT[:,0]), label="H", alpha=0.5)
+    plt.plot(Tarr, jnp.abs(ln_nspecies_dT[:,1]), label="H2", alpha=0.5)
+    plt.plot(Tarr, jnp.abs(ln_nH_dT(Tarr)), ls="dashed", label="analytical H")
+    plt.plot(Tarr, jnp.abs(ln_nH2_dT(Tarr)), ls="dashed", label="analytical H2")
+    plt.yscale("log")
+    plt.ylabel("|Derivative of log number|")
+    plt.legend()
+    plt.xlabel("Temperature (K)")
+    
+    
     plt.savefig("gibbs_minimization.png")
     plt.show()
