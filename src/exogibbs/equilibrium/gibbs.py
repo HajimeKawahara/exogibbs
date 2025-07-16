@@ -5,10 +5,9 @@ from typing import Dict
 import jax
 import jax.numpy as jnp
 from jax import jit
-from regex import R
-from exogibbs.utils.constants import R_gas_constant_si
 from jax.scipy.special import xlogy
 from jax import custom_jvp
+from exogibbs.utils.constants import R_gas_constant_si
 
 _INF_STRINGS = {"inf", "Inf", "INFINITE"}
 _NINF_STRINGS = {"-inf", "-Inf", "-INFINITE"}
@@ -132,6 +131,42 @@ def _linear_interpolation_jit(T_target, T_vec, mu_vec):
 
 
 def _polynomial_interpolation(T_target, T_vec, mu_vec, order):
+    """Polynomial interpolation - simple numpy implementation to avoid JAX complexity"""
+    import numpy as np
+    
+    # Convert to numpy for polynomial operations
+    T_target = np.asarray(T_target)
+    T_vec = np.asarray(T_vec)
+    mu_vec = np.asarray(mu_vec)
+    
+    # Handle array inputs with vectorization
+    T_target_flat = T_target.flatten()
+    results = np.zeros_like(T_target_flat)
+    
+    n = len(T_vec)
+    order = min(max(order, 1), n - 1)  # Ensure valid order
+    
+    for i, t in enumerate(T_target_flat):
+        # Find center index
+        idx_center = np.clip(np.searchsorted(T_vec, t) - 1, 0, n - 2)
+        
+        # Select points around target for polynomial fit
+        half_window = order // 2
+        start_idx = max(0, min(idx_center - half_window, n - order - 1))
+        end_idx = start_idx + order + 1
+        
+        # Extract subset for fitting
+        T_sub = T_vec[start_idx:end_idx]
+        mu_sub = mu_vec[start_idx:end_idx]
+        
+        # Use numpy polynomial fit and evaluation
+        coeffs = np.polyfit(T_sub, mu_sub, order)
+        results[i] = np.polyval(coeffs, t)
+    
+    # Return in original shape
+    return results.reshape(T_target.shape) if T_target.ndim > 0 else float(results[0])
+
+def _polynomial_interpolation_numpy(T_target, T_vec, mu_vec, order):
     """Polynomial interpolation - simple numpy implementation to avoid JAX complexity"""
     import numpy as np
     

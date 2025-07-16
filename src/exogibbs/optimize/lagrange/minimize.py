@@ -226,11 +226,12 @@ if __name__ == "__main__":
     from exogibbs.io.load_data import get_data_filepath
     from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
     import numpy as np
-
+    exit()
+    
     from jax import config
 
     config.update("jax_enable_x64", True)
-
+    
     path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
     gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
 
@@ -239,7 +240,7 @@ if __name__ == "__main__":
     mu_h_table = gibbs_matrices["H1"]["delta-f G"].to_numpy() * kJtoJ
     T_h2_table = gibbs_matrices["H2"]["T(K)"].to_numpy()
     mu_h2_table = gibbs_matrices["H2"]["delta-f G"].to_numpy() * kJtoJ
-
+    
     """
     def mu_h(T):
         return interpolate_chemical_potential_one(T, T_h_table, mu_h_table, order=2)
@@ -287,7 +288,7 @@ if __name__ == "__main__":
     b_element_vector = jnp.array([1.0])  # Assuming no element abundance constraints
 
     # minimize Gibbs energy
-    ln_nk, _, counter = minimize_gibbs_core(
+    ln_nk, ln_ntot, counter = minimize_gibbs_core(
         temperature,
         normalized_pressure,
         b_element_vector,
@@ -301,7 +302,26 @@ if __name__ == "__main__":
     diff = jnp.log(nh(k)) - ln_nk[0]
     diff2 = jnp.log(nh2(k)) - ln_nk[1]
     print(f"Difference for H: {diff}, Difference for H2: {diff2}")
+    
+    #derivative
+    from jax import grad
+    from exogibbs.optimize.lagrange.derivative import derivative_temperature
 
+    def dot_hv_h(T):
+        return grad(hv_h)(T)
+
+    def dot_hv_h2(T):
+        return grad(hv_h2)(T)
+    
+    hdot = jnp.array([dot_hv_h(temperature), dot_hv_h2(temperature)])
+    nk = jnp.exp(ln_nk)
+    An = formula_matrix @ nk
+    
+    ln_nspecies_dT = derivative_temperature(nk, formula_matrix,hdot, An)
+    print(ln_nspecies_dT)
+    
+
+    exit()
     # does not work with vmap
     from jax import vmap, jit
 

@@ -2,4 +2,5 @@ jax
 jaxlib
 tqdm
 pandas
+interpax
 thermochem

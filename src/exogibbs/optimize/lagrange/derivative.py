@@ -3,7 +3,7 @@ from typing import Tuple
 from exogibbs.optimize.lagrange.core import _A_diagn_At 
 
 def solve_gibbs_equations_temperature_derivative(
-    nk: jnp.ndarray,
+    nspecies: jnp.ndarray,
     formula_matrix: jnp.ndarray,
     hdot: jnp.ndarray,
     An: jnp.ndarray,
@@ -14,7 +14,7 @@ def solve_gibbs_equations_temperature_derivative(
     that arises from the Gibbs energy minimization problem.
 
     Args:
-        nk: Number density vector (n_species,) for k-th iteration.
+        nspecies: species number vector (n_species,) for k-th iteration.
         formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
         hdot: temperature derivative of h(T) = mu^o(T)/RT.
         An: formula_matrix @ nk vector (n_elements, ).
@@ -24,11 +24,32 @@ def solve_gibbs_equations_temperature_derivative(
             - The pi vector (nspecies, ).
             - The update of the  log total number density (delta_ln_ntot).
     """
-    AnAt = _A_diagn_At(nk, formula_matrix)
-    Anh = formula_matrix @ (nk * hdot)
+    AnAt = _A_diagn_At(nspecies, formula_matrix)
+    Anh = formula_matrix @ (nspecies * hdot)
     nk_cdot_hdot = jnp.dot(An, hdot)
 
     assemble_mat = jnp.block([[AnAt, An[:, None]], [An[None, :], jnp.array([[0.0]])]])
     assemble_vec = jnp.concatenate([Anh, jnp.array([nk_cdot_hdot])])
     assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
     return assemble_variable[:-1], assemble_variable[-1]
+
+def derivative_temperature(
+    nspecies: jnp.ndarray,
+    formula_matrix: jnp.ndarray,
+    hdot: jnp.ndarray,
+    An: jnp.ndarray,
+) -> jnp.ndarray:
+    """
+    Compute the temperature derivative of the Gibbs energy.
+
+    Args:
+        nspecies: species number vector (n_species,).
+        formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
+        hdot: temperature derivative of h(T) = mu^o(T)/RT.
+        An: formula_matrix @ nk vector (n_elements, ).
+
+    Returns:
+        The temperature derivative of log species number (n_species,).
+    """
+    pi, ln_ntot_dT = solve_gibbs_equations_temperature_derivative(nspecies, formula_matrix, hdot, An)
+    return ln_ntot_dT + formula_matrix.T @ pi - hdot
