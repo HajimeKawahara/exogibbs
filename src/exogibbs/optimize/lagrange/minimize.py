@@ -226,7 +226,6 @@ if __name__ == "__main__":
     from exogibbs.io.load_data import get_data_filepath
     from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
     import numpy as np
-    exit()
     
     from jax import config
 
@@ -250,10 +249,10 @@ if __name__ == "__main__":
     """
 
     def hv_h(T):
-        return interpolate_hvector_one(T, T_h_table, mu_h_table, order=2)
+        return interpolate_hvector_one(T, T_h_table, mu_h_table)
 
     def hv_h2(T):
-        return interpolate_hvector_one(T, T_h2_table, mu_h2_table, order=2)
+        return interpolate_hvector_one(T, T_h2_table, mu_h2_table)
     
 
     def compute_k(P, T, Pref=1.0):

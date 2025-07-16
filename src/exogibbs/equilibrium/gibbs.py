@@ -7,6 +7,8 @@ import jax.numpy as jnp
 from jax import jit
 from jax.scipy.special import xlogy
 from jax import custom_jvp
+from interpax import interp1d
+    
 from exogibbs.utils.constants import R_gas_constant_si
 
 _INF_STRINGS = {"inf", "Inf", "INFINITE"}
@@ -87,121 +89,47 @@ def extract_and_pad_gibbs_data(
     )  # shape (M,),      int32
 
 
-def interpolate_chemical_potential_one(T_target, T_vec, mu_vec, order=1):
+def interpolate_chemical_potential_one(T_target, T_vec, mu_vec, method="cubic"):
     """interpolate one chemical potential at T_target
     Args:
         T_target (scalar or array): target temperature(s) (K)
         T_vec (1D array): temeprature grid（Lmax)
         mu_vec (1D array): chemical potential grid（Lmax)
-        order (int): polynomial order for interpolation (default=1 for linear)
+        method (str):  method of interpolation used in interpax.interp1d
+            'nearest': nearest neighbor interpolation
+            'linear': linear interpolation
+            'cubic': C1 cubic splines (aka local splines)
+            'cubic2': C2 cubic splines (aka natural splines)
+            'catmull-rom': C1 cubic centripetal “tension” splines
+            'cardinal': C1 cubic general tension splines. If used, can also pass keyword parameter c in float[0,1] to specify tension
+            'monotonic': C1 cubic splines that attempt to preserve monotonicity in the data, and will not introduce new extrema in the interpolated points
+            'monotonic-0': same as 'monotonic' but with 0 first derivatives at both endpoints
+            'akima': C1 cubic splines that appear smooth and natural
+        
     """
-    if order == 1:
-        # Use JAX-compatible linear interpolation (handles both scalar and array)
-        return _linear_interpolation_jit(T_target, T_vec, mu_vec)
-    else:
-        # For polynomial, keep simple - use numpy for now to avoid JAX complexity
-        return _polynomial_interpolation(T_target, T_vec, mu_vec, order)
-
-def interpolate_hvector_one(T_target, T_vec, mu_vec, order=1):
+    return interp1d(T_target, T_vec, mu_vec, method=method)
+    
+def interpolate_hvector_one(T_target, T_vec, mu_vec, method="cubic"):
     """interpolate one hvector = (chemical_potential/RT)  at T_target
     Args:
         T_target (scalar or array): target temperature(s) (K)
         T_vec (1D array): temeprature grid（Lmax)
         mu_vec (1D array): chemical potential grid（Lmax)
-        order (int): polynomial order for interpolation (default=1 for linear)
+        method (str):  method of interpolation used in interpax.interp1d
+            'nearest': nearest neighbor interpolation
+            'linear': linear interpolation
+            'cubic': C1 cubic splines (aka local splines)
+            'cubic2': C2 cubic splines (aka natural splines)
+            'catmull-rom': C1 cubic centripetal “tension” splines
+            'cardinal': C1 cubic general tension splines. If used, can also pass keyword parameter c in float[0,1] to specify tension
+            'monotonic': C1 cubic splines that attempt to preserve monotonicity in the data, and will not introduce new extrema in the interpolated points
+            'monotonic-0': same as 'monotonic' but with 0 first derivatives at both endpoints
+            'akima': C1 cubic splines that appear smooth and natural
+
     """
     RT = R_gas_constant_si * T_vec
-    if order == 1:
-        # Use JAX-compatible linear interpolation (handles both scalar and array)
-        return _linear_interpolation_jit(T_target, T_vec, mu_vec/RT)
-    else:
-        # For polynomial, keep simple - use numpy for now to avoid JAX complexity
-        return _polynomial_interpolation(T_target, T_vec, mu_vec/RT, order)
-
-
-@jit
-def _linear_interpolation_jit(T_target, T_vec, mu_vec):
-    """JIT-compiled linear interpolation"""
-    n = T_vec.size
-    idx = jnp.clip(jnp.searchsorted(T_vec, T_target) - 1, 0, n - 2)
-    T0, T1 = T_vec[idx], T_vec[idx + 1]
-    mu0, mu1 = mu_vec[idx], mu_vec[idx + 1]
-    w = (T_target - T0) / (T1 - T0)
-    return (1 - w) * mu0 + w * mu1
-
-
-def _polynomial_interpolation(T_target, T_vec, mu_vec, order):
-    """Polynomial interpolation - simple numpy implementation to avoid JAX complexity"""
-    import numpy as np
+    return interp1d(T_target, T_vec, mu_vec/RT, method=method) 
     
-    # Convert to numpy for polynomial operations
-    T_target = np.asarray(T_target)
-    T_vec = np.asarray(T_vec)
-    mu_vec = np.asarray(mu_vec)
-    
-    # Handle array inputs with vectorization
-    T_target_flat = T_target.flatten()
-    results = np.zeros_like(T_target_flat)
-    
-    n = len(T_vec)
-    order = min(max(order, 1), n - 1)  # Ensure valid order
-    
-    for i, t in enumerate(T_target_flat):
-        # Find center index
-        idx_center = np.clip(np.searchsorted(T_vec, t) - 1, 0, n - 2)
-        
-        # Select points around target for polynomial fit
-        half_window = order // 2
-        start_idx = max(0, min(idx_center - half_window, n - order - 1))
-        end_idx = start_idx + order + 1
-        
-        # Extract subset for fitting
-        T_sub = T_vec[start_idx:end_idx]
-        mu_sub = mu_vec[start_idx:end_idx]
-        
-        # Use numpy polynomial fit and evaluation
-        coeffs = np.polyfit(T_sub, mu_sub, order)
-        results[i] = np.polyval(coeffs, t)
-    
-    # Return in original shape
-    return results.reshape(T_target.shape) if T_target.ndim > 0 else float(results[0])
-
-def _polynomial_interpolation_numpy(T_target, T_vec, mu_vec, order):
-    """Polynomial interpolation - simple numpy implementation to avoid JAX complexity"""
-    import numpy as np
-    
-    # Convert to numpy for polynomial operations
-    T_target = np.asarray(T_target)
-    T_vec = np.asarray(T_vec)
-    mu_vec = np.asarray(mu_vec)
-    
-    # Handle array inputs with vectorization
-    T_target_flat = T_target.flatten()
-    results = np.zeros_like(T_target_flat)
-    
-    n = len(T_vec)
-    order = min(max(order, 1), n - 1)  # Ensure valid order
-    
-    for i, t in enumerate(T_target_flat):
-        # Find center index
-        idx_center = np.clip(np.searchsorted(T_vec, t) - 1, 0, n - 2)
-        
-        # Select points around target for polynomial fit
-        half_window = order // 2
-        start_idx = max(0, min(idx_center - half_window, n - order - 1))
-        end_idx = start_idx + order + 1
-        
-        # Extract subset for fitting
-        T_sub = T_vec[start_idx:end_idx]
-        mu_sub = mu_vec[start_idx:end_idx]
-        
-        # Use numpy polynomial fit and evaluation
-        coeffs = np.polyfit(T_sub, mu_sub, order)
-        results[i] = np.polyval(coeffs, t)
-    
-    # Return in original shape
-    return results.reshape(T_target.shape) if T_target.ndim > 0 else float(results[0])
-
 
 def interpolate_chemical_potential_all(T_target, T_table, mu_table):
     """interpolate the chemical potential at T_target for all molecules
