@@ -6,7 +6,8 @@ from exogibbs.utils.constants import R_gas_constant_si
 from jax import jit
 
 from exogibbs.optimize.lagrange.core import _A_diagn_At
-from exogibbs.optimize.lagrange.core import compute_gk
+from exogibbs.optimize.lagrange.core import _compute_gk
+
 
 def solve_gibbs_iteration_equations(
     nk: jnp.ndarray,
@@ -66,16 +67,6 @@ def compute_residuals(
     return jnp.sqrt(ress_squared + resj_squared + resn_squared)
 
 
-def update_ln_nk(
-    pi_vector: jnp.ndarray,
-    delta_ln_ntot: float,
-    formula_matrix: jnp.ndarray,
-    gk: jnp.ndarray,
-) -> jnp.ndarray:
-
-    return formula_matrix.T @ pi_vector + delta_ln_ntot - gk
-
-
 def update_all(
     ln_nk,
     ln_ntot,
@@ -83,7 +74,7 @@ def update_all(
     b,
     T,
     normalized_pressure,
-    chemical_potential_vec,
+    hvector,
     gk,
     An,
 ):
@@ -91,18 +82,21 @@ def update_all(
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations(
         jnp.exp(ln_nk), jnp.exp(ln_ntot), formula_matrix, b, gk, An
     )
+    delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
 
+    # relaxation and update
     under_relax = 0.1  # need to reconsider
     ln_ntot += under_relax * delta_ln_ntot
-    ln_nk += under_relax * update_ln_nk(pi_vector, delta_ln_ntot, formula_matrix, gk)
+    ln_nk += under_relax * delta_ln_nk
 
+    # computes new gk,An and residuals
     nk = jnp.exp(ln_nk)
     ntot = jnp.exp(ln_ntot)
-    gk = compute_gk(T, ln_nk, ln_ntot, chemical_potential_vec, normalized_pressure)
+    gk = _compute_gk(T, ln_nk, ln_ntot, hvector, normalized_pressure)
     An = formula_matrix @ nk
-
     epsilon = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
     return ln_nk, ln_ntot, epsilon, gk, An
+
 
 def minimize_gibbs_core(
     temperature,
@@ -111,9 +105,9 @@ def minimize_gibbs_core(
     ln_nk_init,
     ln_ntot_init,
     formula_matrix,
-    chemical_potential_vec,
+    hvector,
     epsilon_crit=1.0e-11,
-    max_iter=1000,    
+    max_iter=1000,
 ):
     """compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method."""
 
@@ -130,17 +124,17 @@ def minimize_gibbs_core(
             b_element_vector,
             temperature,
             normalized_pressure,
-            chemical_potential_vec,
+            hvector,
             gk,
             An,
         )
         return ln_nk_new, ln_ntot_new, gk, An, epsilon, counter + 1
 
-    gk = compute_gk(
+    gk = _compute_gk(
         temperature,
         ln_nk_init,
         ln_ntot_init,
-        chemical_potential_vec,
+        hvector,
         normalized_pressure,
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
@@ -150,7 +144,8 @@ def minimize_gibbs_core(
     )
     return ln_nk, ln_tot, counter
 
-#@custom_vjp
+
+# @custom_vjp
 def minimize_gibbs(
     temperature,
     normalized_pressure,
@@ -165,18 +160,19 @@ def minimize_gibbs(
     """compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method."""
 
     ln_nk, _, _ = minimize_gibbs_core(
-    temperature,
-    normalized_pressure,
-    b_element_vector,
-    ln_nk_init,
-    ln_ntot_init,
-    formula_matrix,
-    chemical_potential_vec,
-    epsilon_crit,
-    max_iter,
-    )   
+        temperature,
+        normalized_pressure,
+        b_element_vector,
+        ln_nk_init,
+        ln_ntot_init,
+        formula_matrix,
+        chemical_potential_vec,
+        epsilon_crit,
+        max_iter,
+    )
 
     return ln_nk
+
 
 """
 def minimize_gibbs_fwd(
@@ -206,7 +202,9 @@ def minimize_gibbs_fwd(
 """
 
 if __name__ == "__main__":
-    from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_one
+    #from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_one
+    from exogibbs.equilibrium.gibbs import interpolate_hvector_one
+    
     from exogibbs.io.load_data import get_data_filepath
     from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
     import numpy as np
@@ -218,26 +216,30 @@ if __name__ == "__main__":
     path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
     gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
 
-    # df_molname = load_molname()
-    # path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
-    # gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
-
     kJtoJ = 1000.0  # conversion factor from kJ to J
     T_h_table = gibbs_matrices["H1"]["T(K)"].to_numpy()
     mu_h_table = gibbs_matrices["H1"]["delta-f G"].to_numpy() * kJtoJ
     T_h2_table = gibbs_matrices["H2"]["T(K)"].to_numpy()
     mu_h2_table = gibbs_matrices["H2"]["delta-f G"].to_numpy() * kJtoJ
 
+    """
     def mu_h(T):
         return interpolate_chemical_potential_one(T, T_h_table, mu_h_table, order=2)
 
     def mu_h2(T):
         return interpolate_chemical_potential_one(T, T_h2_table, mu_h2_table, order=2)
+    """
+
+    def hv_h(T):
+        return interpolate_hvector_one(T, T_h_table, mu_h_table, order=2)
+
+    def hv_h2(T):
+        return interpolate_hvector_one(T, T_h2_table, mu_h2_table, order=2)
+    
 
     def compute_k(P, T, Pref=1.0):
-        delta_mu = mu_h2(T) - 2.0 * mu_h(T)
-        RT = R_gas_constant_si * T
-        return np.exp(-delta_mu / RT) * P / Pref
+        delta_h = hv_h2(T) - 2.0 * hv_h(T)
+        return np.exp(-delta_h) * P / Pref
 
     def nh(k):
         return 1.0 / np.sqrt(4.0 * k + 1.0)
@@ -262,7 +264,8 @@ if __name__ == "__main__":
     normalized_pressure = P / P_ref
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
-    chemical_potential_vector = jnp.array([mu_h(temperature), mu_h2(temperature)])
+    #chemical_potential_vector = jnp.array([hv_h(temperature), hv_h2(temperature)])
+    hvector = jnp.array([hv_h(temperature), hv_h2(temperature)])
     b_element_vector = jnp.array([1.0])  # Assuming no element abundance constraints
 
     # minimize Gibbs energy
@@ -273,7 +276,7 @@ if __name__ == "__main__":
         ln_nk,
         ln_ntot,
         formula_matrix,
-        chemical_potential_vector,
+        hvector,
     )
 
     k = compute_k(P, temperature, P_ref)
@@ -289,9 +292,9 @@ if __name__ == "__main__":
     )
     Tarr = jnp.linspace(100.0, 6000.0, 300)
 
-    muH = mu_h(Tarr)
-    muH2 = mu_h2(Tarr)
-    chemical_potential_vector = jnp.array([muH, muH2]).T
+    muH = hv_h(Tarr)
+    muH2 = hv_h2(Tarr)
+    hvector = jnp.array([muH, muH2]).T
 
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
@@ -303,7 +306,7 @@ if __name__ == "__main__":
         ln_nk,
         ln_ntot,
         formula_matrix,
-        chemical_potential_vector,
+        hvector,
     )
     print(ln_nk_arr.shape)
 

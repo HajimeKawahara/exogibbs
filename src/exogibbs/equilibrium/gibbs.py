@@ -5,6 +5,7 @@ from typing import Dict
 import jax
 import jax.numpy as jnp
 from jax import jit
+from regex import R
 from exogibbs.utils.constants import R_gas_constant_si
 from jax.scipy.special import xlogy
 from jax import custom_jvp
@@ -102,6 +103,22 @@ def interpolate_chemical_potential_one(T_target, T_vec, mu_vec, order=1):
         # For polynomial, keep simple - use numpy for now to avoid JAX complexity
         return _polynomial_interpolation(T_target, T_vec, mu_vec, order)
 
+def interpolate_hvector_one(T_target, T_vec, mu_vec, order=1):
+    """interpolate one hvector = (chemical_potential/RT)  at T_target
+    Args:
+        T_target (scalar or array): target temperature(s) (K)
+        T_vec (1D array): temeprature grid（Lmax)
+        mu_vec (1D array): chemical potential grid（Lmax)
+        order (int): polynomial order for interpolation (default=1 for linear)
+    """
+    RT = R_gas_constant_si * T_vec
+    if order == 1:
+        # Use JAX-compatible linear interpolation (handles both scalar and array)
+        return _linear_interpolation_jit(T_target, T_vec, mu_vec/RT)
+    else:
+        # For polynomial, keep simple - use numpy for now to avoid JAX complexity
+        return _polynomial_interpolation(T_target, T_vec, mu_vec/RT, order)
+
 
 @jit
 def _linear_interpolation_jit(T_target, T_vec, mu_vec):
@@ -163,6 +180,21 @@ def interpolate_chemical_potential_all(T_target, T_table, mu_table):
     """
     return jax.lax.map(
         lambda args: interpolate_chemical_potential_one(T_target, *args),
+        (T_table, mu_table),
+    )
+
+def interpolate_hvector_all(T_target, T_table, mu_table):
+    """interpolate hvector = the chemical potential/RT at T_target for all molecules
+    Args:
+        T_target (scalar): target temperature (K)
+        T_table (ndarray): array of temeprature grid（Lmax)
+        mu_table (ndarray): array of chemical potential grid（Nmol, Lmax)
+
+    Returns:
+        chemical_potential_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
+    """
+    return jax.lax.map(
+        lambda args: interpolate_hvector_one(T_target, *args),
         (T_table, mu_table),
     )
 
