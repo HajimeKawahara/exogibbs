@@ -1,5 +1,6 @@
 from jax import grad
 from jax import vmap
+import jax.numpy as jnp
 
 from exogibbs.equilibrium.gibbs import interpolate_hvector_one
 from exogibbs.io.load_data import get_data_filepath
@@ -73,7 +74,7 @@ class HSystem:
             Equilibrium constant K = exp(-Δμ/RT) * P/P_ref.
         """
         delta_h = self.hv_h2(T) - 2.0 * self.hv_h(T)
-        return np.exp(-delta_h) * P / self.P_ref
+        return jnp.exp(-delta_h) * P / self.P_ref
 
     def nh(self, k):
         """Compute number density of atomic hydrogen.
@@ -84,7 +85,7 @@ class HSystem:
         Returns:
             Number density of H normalized by total hydrogen nuclei.
         """
-        return 1.0 / np.sqrt(4.0 * k + 1.0)
+        return 1.0 / jnp.sqrt(4.0 * k + 1.0)
 
     def nh2(self, k):
         """Compute number density of molecular hydrogen.
