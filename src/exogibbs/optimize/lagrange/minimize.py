@@ -1,10 +1,8 @@
 import jax.numpy as jnp
 from jax import custom_vjp
 from jax.lax import while_loop
-from typing import Tuple
-from exogibbs.utils.constants import R_gas_constant_si
 from jax import jit
-
+from typing import Tuple
 from exogibbs.optimize.lagrange.core import _A_diagn_At
 from exogibbs.optimize.lagrange.core import _compute_gk
 
@@ -220,9 +218,7 @@ def minimize_gibbs_fwd(
 """
 
 if __name__ == "__main__":
-    # from exogibbs.equilibrium.gibbs import interpolate_chemical_potential_one
     from exogibbs.equilibrium.gibbs import interpolate_hvector_one
-
     from exogibbs.io.load_data import get_data_filepath
     from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
     import numpy as np
