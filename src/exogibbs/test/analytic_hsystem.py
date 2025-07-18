@@ -10,9 +10,10 @@ import numpy as np
 
 class HSystem:
     """
-    A class to represent the H system for chemical equilibrium calculations.
-    It provides methods to compute the number densities and volume mixing ratios
-    of H and H2 based on temperature and pressure.
+    A class to represent the H system (2H <-> H2) for chemical equilibrium calculations.
+    It provides analytical methods to compute the number densities and volume mixing ratios
+    of H and H2 based on temperature and pressure. 
+    Because it's analytic, it is useful for testing Gibbs minimization etc.
     """
 
     def __init__(self):

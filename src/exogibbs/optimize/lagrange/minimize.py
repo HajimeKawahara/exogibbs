@@ -103,7 +103,7 @@ def minimize_gibbs_core(
     ln_nk_init: jnp.ndarray,
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
-    hvector: jnp.ndarray,
+    hvector_func,
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> Tuple[jnp.ndarray, float, int]:
@@ -126,6 +126,8 @@ def minimize_gibbs_core(
             - Final log total number density.
             - Number of iterations performed.
     """
+
+    hvector= hvector_func(temperature)
 
     def cond_fun(carry):
         _, _, _, _, epsilon, counter = carry
@@ -169,7 +171,7 @@ def minimize_gibbs(
     ln_nk_init,
     ln_ntot_init,
     formula_matrix,
-    chemical_potential_vec,
+    hvector,
     epsilon_crit=1.0e-11,
     max_iter=1000,
 ):
@@ -182,13 +184,12 @@ def minimize_gibbs(
         ln_nk_init,
         ln_ntot_init,
         formula_matrix,
-        chemical_potential_vec,
+        hvector,
         epsilon_crit,
         max_iter,
     )
 
     return ln_nk
-
 
 """
 def minimize_gibbs_fwd(
@@ -198,30 +199,40 @@ def minimize_gibbs_fwd(
     ln_nk_init,
     ln_ntot_init,
     formula_matrix,
-    chemical_potential_vec,
+    hvector,
     epsilon_crit=1.0e-11,
     max_iter=1000,
 ):
-    ln_nk, ln_ntot, _ = minimize_gibbs(
+    ln_nk, ln_ntot, _ = minimize_gibbs_core(
         temperature,
         normalized_pressure,
         b_element_vector,
         ln_nk_init,
         ln_ntot_init,
         formula_matrix,
-        chemical_potential_vec,
+        hvector,
         epsilon_crit,
         max_iter,
     )
+    An = formula_matrix @ nk
 
-    return ln_nk, (None, )
+    residuals = (ln_nk, formula_matrix, An)
+    return ln_nk, residuals
+
+def minimize_gibbs_bwd(res, g):
+    ln_nk, formula_matrix, hdot, An= res
+    nk = jnp.exp(ln_nk)
+
+    ln_nspecies_dT = derivative_temperature(nk, formula_matrix, hdot, An)
+    return (ln_nspecies_dT * g, None, None, None, None, None, None, None, None)
 """
+
 
 if __name__ == "__main__":
 
-    ### FROM HERE
     from exogibbs.test.analytic_hsystem import HSystem
     import numpy as np
+    from jax import jacrev
     from jax import config
 
     config.update("jax_enable_x64", True)
@@ -236,25 +247,27 @@ if __name__ == "__main__":
     normalized_pressure = P / hsystem.P_ref
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
-    hvector = jnp.array([hsystem.hv_h(temperature), hsystem.hv_h2(temperature)])
+    def hvector_func(temperature): 
+        return jnp.array([hsystem.hv_h(temperature), hsystem.hv_h2(temperature)])
     b_element_vector = jnp.array([1.0])  # Total hydrogen nuclei abundance
 
-    # minimize Gibbs energy
-    ln_nk, ln_ntot, counter = minimize_gibbs_core(
+    #set criterions
+    epsilon_crit = 1e-11
+    max_iter = 1000
+
+    # Run Gibbs minimization
+    ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
         temperature,
         normalized_pressure,
         b_element_vector,
         ln_nk,
         ln_ntot,
         formula_matrix,
-        hvector,
+        hvector_func,
+        epsilon_crit=epsilon_crit,
+        max_iter=max_iter,
     )
-
-    k = hsystem.compute_k(P, temperature)
-    diff = jnp.log(hsystem.nh(k)) - ln_nk[0]
-    diff2 = jnp.log(hsystem.nh2(k)) - ln_nk[1]
-    print(f"Difference for H: {diff}, Difference for H2: {diff2}")
-    ### TO HERE
+    
     exit()
 
     # derivative
@@ -265,11 +278,29 @@ if __name__ == "__main__":
     nk = jnp.exp(ln_nk)
     An = formula_matrix @ nk
 
+    
+    dqdT = jacrev(minimize_gibbs, argnums=0)
+    ln_nspecies_dT = dqdT(
+        temperature,
+        normalized_pressure,
+        b_element_vector,
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        hvector,
+        epsilon_crit=1.e-11,
+        max_iter=1000,
+    )
+    print(f"ln_nspecies_dT: {ln_nspecies_dT}")
+    
     ln_nspecies_dT = derivative_temperature(nk, formula_matrix, hdot, An)
+    print(f"ln_nspecies_dT: {ln_nspecies_dT}")
 
     diff = hsystem.ln_nH_dT(jnp.array([temperature]), P)[0] - ln_nspecies_dT[0]
     diff2 = hsystem.ln_nH2_dT(jnp.array([temperature]), P)[0] - ln_nspecies_dT[1]
     print(f"Difference for H: {diff}, Difference for H2: {diff2}")
+
+    exit()
 
     # Vectorized computation over temperature range
     from jax import vmap, jit

@@ -20,7 +20,9 @@ def test_minimize_gibbs_core_h_system():
     normalized_pressure = P / hsystem.P_ref
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
-    hvector = jnp.array([hsystem.hv_h(temperature), hsystem.hv_h2(temperature)])
+    def hvector_func(temperature): 
+        return jnp.array([hsystem.hv_h(temperature), hsystem.hv_h2(temperature)])
+    
     b_element_vector = jnp.array([1.0])
     
     #set criterions
@@ -35,7 +37,7 @@ def test_minimize_gibbs_core_h_system():
         ln_nk,
         ln_ntot,
         formula_matrix,
-        hvector,
+        hvector_func,
         epsilon_crit=epsilon_crit,
         max_iter=max_iter,
     )
