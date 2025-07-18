@@ -218,6 +218,8 @@ def minimize_gibbs_fwd(
 """
 
 if __name__ == "__main__":
+
+    ### FROM HERE
     from exogibbs.test.analytic_hsystem import HSystem
     import numpy as np
     from jax import config
@@ -252,9 +254,10 @@ if __name__ == "__main__":
     diff = jnp.log(hsystem.nh(k)) - ln_nk[0]
     diff2 = jnp.log(hsystem.nh2(k)) - ln_nk[1]
     print(f"Difference for H: {diff}, Difference for H2: {diff2}")
+    ### TO HERE
+    exit()
 
     # derivative
-    from jax import grad
     from jax import vmap
     from exogibbs.optimize.lagrange.derivative import derivative_temperature
 
