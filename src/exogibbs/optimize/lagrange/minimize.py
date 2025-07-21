@@ -251,7 +251,7 @@ def minimize_gibbs_bwd(ln_nk_init, ln_ntot_init, formula_matrix, hvector_func,
 minimize_gibbs.defvjp(minimize_gibbs_fwd, minimize_gibbs_bwd)
 
 if __name__ == "__main__":
-
+    #FROM HERE
     from exogibbs.test.analytic_hsystem import HSystem
     import numpy as np
     from jax import jacrev
@@ -302,6 +302,37 @@ if __name__ == "__main__":
         max_iter=max_iter,
     )
     
+    print(f"ln_nk_result: {ln_nk_result}")
+    print(f"ln_ntot_result: {ln_ntot_result}")
+    print(f"Counter: {counter}")
+    # Compare with analytical solution
+    k = hsystem.compute_k(P, temperature)
+    diff_h = jnp.log(hsystem.nh(k)) - ln_nk_result[0]
+    diff_h2 = jnp.log(hsystem.nh2(k)) - ln_nk_result[1]     
+    print(f"Difference for H: {diff_h}, Difference for H2: {diff_h2}")
+
+    
+    
+    from jax import vmap
+    from exogibbs.optimize.lagrange.derivative import derivative_temperature
+
+    hdot = jnp.array([hsystem.dot_hv_h(temperature), hsystem.dot_hv_h2(temperature)])
+    nk_result = jnp.exp(ln_nk_result)
+    
+    
+    ln_nspecies_dT = derivative_temperature(nk_result, formula_matrix, hdot, b_element_vector)
+    print(f"ln_nspecies_dT: {ln_nspecies_dT}")
+    refH = hsystem.ln_nH_dT(jnp.array([temperature]), P)[0]
+    refH2 = hsystem.ln_nH2_dT(jnp.array([temperature]), P)[0]
+    print(f"Reference ln_nH_dT: {refH}, Reference ln_nH2_dT: {refH2}")
+    diff = refH - ln_nspecies_dT[0]
+    diff2 = refH2 - ln_nspecies_dT[1]
+    print(f"Difference for H: {diff}, Difference for H2: {diff2}")
+
+    #TO HERE
+
+    # derivative
+    
     dln_dT = jacrev(lambda temperature_in: minimize_gibbs(
         temperature_in,
         normalized_pressure,
@@ -314,40 +345,8 @@ if __name__ == "__main__":
         max_iter=max_iter,
     ))(temperature)
 
-    exit()
-
-    # derivative
-    from jax import vmap
-    from exogibbs.optimize.lagrange.derivative import derivative_temperature
-
-    hdot = jnp.array([hsystem.dot_hv_h(temperature), hsystem.dot_hv_h2(temperature)])
-    nk = jnp.exp(ln_nk)
-    An = formula_matrix @ nk
-
-    
-    dqdT = jacrev(minimize_gibbs, argnums=0)
-    ln_nspecies_dT = dqdT(
-        temperature,
-        normalized_pressure,
-        b_element_vector,
-        ln_nk,
-        ln_ntot,
-        formula_matrix,
-        hvector,
-        epsilon_crit=1.e-11,
-        max_iter=1000,
-    )
-    print(f"ln_nspecies_dT: {ln_nspecies_dT}")
-    
-    ln_nspecies_dT = derivative_temperature(nk, formula_matrix, hdot, An)
-    print(f"ln_nspecies_dT: {ln_nspecies_dT}")
-
-    diff = hsystem.ln_nH_dT(jnp.array([temperature]), P)[0] - ln_nspecies_dT[0]
-    diff2 = hsystem.ln_nH2_dT(jnp.array([temperature]), P)[0] - ln_nspecies_dT[1]
-    print(f"Difference for H: {diff}, Difference for H2: {diff2}")
 
     exit()
-
     # Vectorized computation over temperature range
     from jax import vmap, jit
 
