@@ -21,8 +21,8 @@ def _compute_gk(
 
     Args:
         T: temperature (K)
-        ln_nk: log of number density vector (n_species, )
-        ln_ntot: log of total number density
+        ln_nk: log of number of species vector (n_species, )
+        ln_ntot: log of total number of species
         hvector: chemical potential over RT vector (n_species, )
         normalized_pressure: normalized pressure P/Pref
 

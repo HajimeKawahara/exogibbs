@@ -22,7 +22,7 @@ def solve_gibbs_equations_temperature_derivative(
     Returns:
         Tuple containing:
             - The pi vector (nspecies, ).
-            - The update of the  log total number density (delta_ln_ntot).
+            - The update of the  log total number of species (delta_ln_ntot).
     """
     AnAt = _A_diagn_At(nspecies, formula_matrix)
     Anh = formula_matrix @ (nspecies * hdot)

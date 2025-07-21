@@ -1,10 +1,13 @@
 import jax.numpy as jnp
 from jax import custom_vjp
+from jax import jacrev
 from jax.lax import while_loop
 from jax import jit
-from typing import Tuple
+from functools import partial
+from typing import Tuple, Callable
 from exogibbs.optimize.lagrange.core import _A_diagn_At
 from exogibbs.optimize.lagrange.core import _compute_gk
+from exogibbs.optimize.lagrange.derivative import derivative_temperature
 
 
 def solve_gibbs_iteration_equations(
@@ -21,8 +24,8 @@ def solve_gibbs_iteration_equations(
     that arises from the Gibbs energy minimization problem.
 
     Args:
-        nk: Number density vector (n_species,) for k-th iteration.
-        ntotk: Total number density for k-th iteration.
+        nk: number of species vector (n_species,) for k-th iteration.
+        ntotk: Total number of species for k-th iteration.
         formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
         b: Element abundance vector (n_elements, ).
         gk: gk vector (n_species,) for k-th iteration.
@@ -31,7 +34,7 @@ def solve_gibbs_iteration_equations(
     Returns:
         Tuple containing:
             - The pi vector (nspecies, ).
-            - The update of the  log total number density (delta_ln_ntot).
+            - The update of the  log total number of species (delta_ln_ntot).
     """
     resn = jnp.sum(nk) - ntotk
     AnAt = _A_diagn_At(nk, formula_matrix)
@@ -113,8 +116,8 @@ def minimize_gibbs_core(
         temperature: Temperature in Kelvin.
         normalized_pressure: Pressure normalized by reference pressure (P/Pref).
         b_element_vector: Element abundance vector (n_elements,).
-        ln_nk_init: Initial log number density vector (n_species,).
-        ln_ntot_init: Initial log total number density.
+        ln_nk_init: Initial log number of species vector (n_species,).
+        ln_ntot_init: Initial log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
         hvector: Chemical potential over RT vector (n_species,).
         epsilon_crit: Convergence tolerance for residual norm.
@@ -122,8 +125,8 @@ def minimize_gibbs_core(
 
     Returns:
         Tuple containing:
-            - Final log number density vector (n_species,).
-            - Final log total number density.
+            - Final log number of species vector (n_species,).
+            - Final log total number of species.
             - Number of iterations performed.
     """
 
@@ -163,19 +166,34 @@ def minimize_gibbs_core(
     return ln_nk, ln_tot, counter
 
 
-# @custom_vjp
+@partial(custom_vjp, nondiff_argnums=(3,4,5,6,7,8))
 def minimize_gibbs(
-    temperature,
-    normalized_pressure,
-    b_element_vector,
-    ln_nk_init,
-    ln_ntot_init,
-    formula_matrix,
-    hvector,
-    epsilon_crit=1.0e-11,
-    max_iter=1000,
-):
-    """compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method."""
+    temperature: float,
+    normalized_pressure: float,
+    b_element_vector: jnp.ndarray,
+    ln_nk_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    epsilon_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+) -> jnp.ndarray:
+    """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
+    
+    Args:
+        temperature: Temperature in Kelvin.
+        normalized_pressure: Pressure normalized by reference pressure (P/Pref).
+        b_element_vector: Element abundance vector (n_elements,).
+        ln_nk_init: Initial log number of species vector (n_species,).
+        ln_ntot_init: Initial log total number of species.
+        formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
+        hvector_func: Function that returns chemical potential over RT vector (n_species,).
+        epsilon_crit: Convergence tolerance for residual norm.
+        max_iter: Maximum number of iterations allowed.
+        
+    Returns:
+        Final log number of species vector (n_species,).
+    """
 
     ln_nk, _, _ = minimize_gibbs_core(
         temperature,
@@ -184,14 +202,13 @@ def minimize_gibbs(
         ln_nk_init,
         ln_ntot_init,
         formula_matrix,
-        hvector,
+        hvector_func,
         epsilon_crit,
         max_iter,
     )
 
     return ln_nk
 
-"""
 def minimize_gibbs_fwd(
     temperature,
     normalized_pressure,
@@ -199,7 +216,7 @@ def minimize_gibbs_fwd(
     ln_nk_init,
     ln_ntot_init,
     formula_matrix,
-    hvector,
+    hvector_func,
     epsilon_crit=1.0e-11,
     max_iter=1000,
 ):
@@ -210,23 +227,28 @@ def minimize_gibbs_fwd(
         ln_nk_init,
         ln_ntot_init,
         formula_matrix,
-        hvector,
+        hvector_func,
         epsilon_crit,
         max_iter,
     )
-    An = formula_matrix @ nk
-
-    residuals = (ln_nk, formula_matrix, An)
+    dfunc = jacrev(hvector_func)
+    hdot = dfunc(temperature)
+    
+    residuals = (ln_nk, hdot)
     return ln_nk, residuals
 
-def minimize_gibbs_bwd(res, g):
-    ln_nk, formula_matrix, hdot, An= res
+def minimize_gibbs_bwd(ln_nk_init, ln_ntot_init, formula_matrix, hvector_func,
+    epsilon_crit, max_iter, res, g):
+    
+    ln_nk, hdot= res
     nk = jnp.exp(ln_nk)
+    An = formula_matrix @ nk
 
     ln_nspecies_dT = derivative_temperature(nk, formula_matrix, hdot, An)
-    return (ln_nspecies_dT * g, None, None, None, None, None, None, None, None)
-"""
+    cot_T = jnp.dot(ln_nspecies_dT, g)
+    return (cot_T, None, None)
 
+minimize_gibbs.defvjp(minimize_gibbs_fwd, minimize_gibbs_bwd)
 
 if __name__ == "__main__":
 
@@ -268,6 +290,30 @@ if __name__ == "__main__":
         max_iter=max_iter,
     )
     
+    ln_nk_result = minimize_gibbs(
+        temperature,
+        normalized_pressure,
+        b_element_vector,
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit=epsilon_crit,
+        max_iter=max_iter,
+    )
+    
+    dln_dT = jacrev(lambda temperature_in: minimize_gibbs(
+        temperature_in,
+        normalized_pressure,
+        b_element_vector,
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit=epsilon_crit,
+        max_iter=max_iter,
+    ))(temperature)
+
     exit()
 
     # derivative

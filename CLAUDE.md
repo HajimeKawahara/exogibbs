@@ -25,13 +25,13 @@ pip install -e .
 **Testing**:
 ```bash
 # Run all tests
-/home/kawahara/anaconda3/envs/py310/bin/python -m pytest tests/unittests/
+python -m pytest tests/unittests/
 
 # Run specific test file
-/home/kawahara/anaconda3/envs/py310/bin/python -m pytest tests/unittests/equilibrium/gibbs_test.py
+python -m pytest tests/unittests/equilibrium/gibbs_test.py
 
 # Run individual test function
-/home/kawahara/anaconda3/envs/py310/bin/python -m pytest tests/unittests/equilibrium/gibbs_test.py::test_total_gibbs_energy
+python -m pytest tests/unittests/equilibrium/gibbs_test.py::test_total_gibbs_energy
 ```
 
 **Key Dependencies**: JAX/JAXlib for auto-differentiation, pandas for data handling, pytest for testing
