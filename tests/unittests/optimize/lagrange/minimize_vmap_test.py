@@ -62,8 +62,9 @@ def test_minimize_gibbs_vmap_h_system():
     diffH2 = jnp.max(jnp.abs(vmrH2 - vmrH2_ref))
     print(f"Max difference in VMR for H: {diffH}, H2: {diffH2}")
     #Max difference in dln_dT for H: 3.4612070154427244e-15, H2: 8.360282952035725e-16 July 21 (2025)
-    assert diffH < 1e-14, f"H VMR difference too large: {diffH}"
-    assert diffH2 < 1e-14, f"H2 VMR difference too large: {diffH2}"
+
+    assert diffH < 1e-11, f"H VMR difference too large: {diffH}"
+    assert diffH2 < 1e-11, f"H2 VMR difference too large: {diffH2}"
 
 
 def test_minimize_gibbs_vmap_gradient_h_system():

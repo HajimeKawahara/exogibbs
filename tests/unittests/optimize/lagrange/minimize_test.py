@@ -97,8 +97,8 @@ def test_minimize_gibbs_gradient_h_system(h_system_setup):
     diff_h = refH - dln_dT[0]
     diff_h2 = refH2 - dln_dT[1]
     
-    assert jnp.abs(diff_h) < 1e-6, f"H gradient difference too large: {diff_h}"
-    assert jnp.abs(diff_h2) < 1e-6, f"H2 gradient difference too large: {diff_h2}"
+    assert jnp.abs(diff_h) < 1e-11, f"H gradient difference too large: {diff_h}"
+    assert jnp.abs(diff_h2) < 1e-11, f"H2 gradient difference too large: {diff_h2}"
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from jax import config
 from exogibbs.optimize.lagrange.minimize import minimize_gibbs_core
 from exogibbs.optimize.lagrange.derivative import derivative_temperature
 from exogibbs.test.analytic_hsystem import HSystem
+from exogibbs.optimize.lagrange.core import _A_diagn_At 
 
 
 def test_derivative_temperature_h_system():
@@ -45,8 +46,10 @@ def test_derivative_temperature_h_system():
     nk_result = jnp.exp(ln_nk_result)
     
     # Compute derivatives
-    ln_nspecies_dT = derivative_temperature(nk_result, formula_matrix, hdot, b_element_vector)
-    
+    Bmatrix = _A_diagn_At(nk_result, formula_matrix)
+    nk_cdot_hdot = jnp.dot(nk_result, hdot)    
+    ln_nspecies_dT = derivative_temperature(nk_result, formula_matrix, hdot, nk_cdot_hdot, Bmatrix, b_element_vector)
+
     # Get reference analytical derivatives
     refH = hsystem.ln_nH_dT(jnp.array([temperature]), P)[0]
     refH2 = hsystem.ln_nH2_dT(jnp.array([temperature]), P)[0]
