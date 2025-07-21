@@ -234,17 +234,16 @@ def minimize_gibbs_fwd(
     dfunc = jacrev(hvector_func)
     hdot = dfunc(temperature)
     
-    residuals = (ln_nk, hdot)
+    residuals = (ln_nk, hdot, b_element_vector)
     return ln_nk, residuals
 
 def minimize_gibbs_bwd(ln_nk_init, ln_ntot_init, formula_matrix, hvector_func,
     epsilon_crit, max_iter, res, g):
     
-    ln_nk, hdot= res
+    ln_nk, hdot, b_element_vector= res
     nk = jnp.exp(ln_nk)
-    An = formula_matrix @ nk
-
-    ln_nspecies_dT = derivative_temperature(nk, formula_matrix, hdot, An)
+    
+    ln_nspecies_dT = derivative_temperature(nk, formula_matrix, hdot, b_element_vector)
     cot_T = jnp.dot(ln_nspecies_dT, g)
     return (cot_T, None, None)
 
@@ -302,37 +301,6 @@ if __name__ == "__main__":
         max_iter=max_iter,
     )
     
-    print(f"ln_nk_result: {ln_nk_result}")
-    print(f"ln_ntot_result: {ln_ntot_result}")
-    print(f"Counter: {counter}")
-    # Compare with analytical solution
-    k = hsystem.compute_k(P, temperature)
-    diff_h = jnp.log(hsystem.nh(k)) - ln_nk_result[0]
-    diff_h2 = jnp.log(hsystem.nh2(k)) - ln_nk_result[1]     
-    print(f"Difference for H: {diff_h}, Difference for H2: {diff_h2}")
-
-    
-    
-    from jax import vmap
-    from exogibbs.optimize.lagrange.derivative import derivative_temperature
-
-    hdot = jnp.array([hsystem.dot_hv_h(temperature), hsystem.dot_hv_h2(temperature)])
-    nk_result = jnp.exp(ln_nk_result)
-    
-    
-    ln_nspecies_dT = derivative_temperature(nk_result, formula_matrix, hdot, b_element_vector)
-    print(f"ln_nspecies_dT: {ln_nspecies_dT}")
-    refH = hsystem.ln_nH_dT(jnp.array([temperature]), P)[0]
-    refH2 = hsystem.ln_nH2_dT(jnp.array([temperature]), P)[0]
-    print(f"Reference ln_nH_dT: {refH}, Reference ln_nH2_dT: {refH2}")
-    diff = refH - ln_nspecies_dT[0]
-    diff2 = refH2 - ln_nspecies_dT[1]
-    print(f"Difference for H: {diff}, Difference for H2: {diff2}")
-
-    #TO HERE
-
-    # derivative
-    
     dln_dT = jacrev(lambda temperature_in: minimize_gibbs(
         temperature_in,
         normalized_pressure,
@@ -344,6 +312,18 @@ if __name__ == "__main__":
         epsilon_crit=epsilon_crit,
         max_iter=max_iter,
     ))(temperature)
+    print(f"dln_dT: {dln_dT}")
+    
+    # Compare with analytical solution
+    k = hsystem.compute_k(P, temperature)
+    refH = hsystem.ln_nH_dT(jnp.array([temperature]), P)[0]
+    refH2 = hsystem.ln_nH2_dT(jnp.array([temperature]), P)[0]
+    print(f"Reference ln_nH_dT: {refH}, Reference ln_nH2_dT: {refH2}")
+    diff = refH - dln_dT[0]
+    diff2 = refH2 - dln_dT[1]
+    print(f"Difference for H: {diff}, Difference for H2: {diff2}")
+
+    #TO HERE
 
 
     exit()

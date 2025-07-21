@@ -1,18 +1,19 @@
 import pytest
 import jax.numpy as jnp
 from jax import config
-from exogibbs.optimize.lagrange.minimize import minimize_gibbs_core
+from jax import jacrev
+from exogibbs.optimize.lagrange.minimize import minimize_gibbs_core, minimize_gibbs
 from exogibbs.test.analytic_hsystem import HSystem
 
 
-def test_minimize_gibbs_core_h_system():
-    """Test minimize_gibbs_core against analytical H system solution."""
+@pytest.fixture
+def h_system_setup():
+    """Setup common test parameters for H system tests."""
     config.update("jax_enable_x64", True)
     
-    # Initialize H system
     hsystem = HSystem()
     
-    # Test parameters from main section
+    # Common test parameters
     formula_matrix = jnp.array([[1.0, 2.0]])
     temperature = 3500.0
     P = 1.0
@@ -20,39 +21,86 @@ def test_minimize_gibbs_core_h_system():
     normalized_pressure = P / hsystem.P_ref
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
+    
     def hvector_func(temperature): 
         return jnp.array([hsystem.hv_h(temperature), hsystem.hv_h2(temperature)])
     
     b_element_vector = jnp.array([1.0])
-    
-    #set criterions
     epsilon_crit = 1e-11
     max_iter = 1000
+    
+    return {
+        'hsystem': hsystem,
+        'formula_matrix': formula_matrix,
+        'temperature': temperature,
+        'P': P,
+        'normalized_pressure': normalized_pressure,
+        'ln_nk': ln_nk,
+        'ln_ntot': ln_ntot,
+        'hvector_func': hvector_func,
+        'b_element_vector': b_element_vector,
+        'epsilon_crit': epsilon_crit,
+        'max_iter': max_iter
+    }
 
+
+def test_minimize_gibbs_core_h_system(h_system_setup):
+    """Test minimize_gibbs_core against analytical H system solution."""
+    setup = h_system_setup
+    
     # Run Gibbs minimization
     ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
-        temperature,
-        normalized_pressure,
-        b_element_vector,
-        ln_nk,
-        ln_ntot,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit=epsilon_crit,
-        max_iter=max_iter,
+        setup['temperature'],
+        setup['normalized_pressure'],
+        setup['b_element_vector'],
+        setup['ln_nk'],
+        setup['ln_ntot'],
+        setup['formula_matrix'],
+        setup['hvector_func'],
+        epsilon_crit=setup['epsilon_crit'],
+        max_iter=setup['max_iter'],
     )
     
     # Compare with analytical solution
-    k = hsystem.compute_k(P, temperature)
-    diff_h = jnp.log(hsystem.nh(k)) - ln_nk_result[0]
-    diff_h2 = jnp.log(hsystem.nh2(k)) - ln_nk_result[1]
+    k = setup['hsystem'].compute_k(setup['P'], setup['temperature'])
+    diff_h = jnp.log(setup['hsystem'].nh(k)) - ln_nk_result[0]
+    diff_h2 = jnp.log(setup['hsystem'].nh2(k)) - ln_nk_result[1]
     
     # Validate numerical accuracy
-    assert jnp.abs(diff_h) < epsilon_crit
-    assert jnp.abs(diff_h2) < epsilon_crit
-    assert counter < max_iter
+    assert jnp.abs(diff_h) < setup['epsilon_crit']
+    assert jnp.abs(diff_h2) < setup['epsilon_crit']
+    assert counter < setup['max_iter']
+
+
+def test_minimize_gibbs_gradient_h_system(h_system_setup):
+    """Test minimize_gibbs temperature gradient against analytical H system."""
+    setup = h_system_setup
+    
+    # Compute temperature gradient using jacrev
+    dln_dT = jacrev(lambda temperature_in: minimize_gibbs(
+        temperature_in,
+        setup['normalized_pressure'],
+        setup['b_element_vector'],
+        setup['ln_nk'],
+        setup['ln_ntot'],
+        setup['formula_matrix'],
+        setup['hvector_func'],
+        epsilon_crit=setup['epsilon_crit'],
+        max_iter=setup['max_iter'],
+    ))(setup['temperature'])
+    
+    # Get analytical reference derivatives
+    refH = setup['hsystem'].ln_nH_dT(jnp.array([setup['temperature']]), setup['P'])[0]
+    refH2 = setup['hsystem'].ln_nH2_dT(jnp.array([setup['temperature']]), setup['P'])[0]
+    
+    # Test differences are small
+    diff_h = refH - dln_dT[0]
+    diff_h2 = refH2 - dln_dT[1]
+    
+    assert jnp.abs(diff_h) < 1e-6, f"H gradient difference too large: {diff_h}"
+    assert jnp.abs(diff_h2) < 1e-6, f"H2 gradient difference too large: {diff_h2}"
 
 
 if __name__ == "__main__":
-    test_minimize_gibbs_core_h_system()
-    print("Test passed!")
+    import pytest
+    pytest.main([__file__, "-v"])
