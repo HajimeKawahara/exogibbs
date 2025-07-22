@@ -61,7 +61,7 @@ def derivative_temperature(
     return ln_ntot_dT + formula_matrix.T @ pi - hdot
 
 def _solve_gibbs_equations_pressure_derivative(
-    ln_ntot: float,
+    ntot: float,
     Bmatrix: jnp.ndarray,
     b_element_vector: jnp.ndarray,
 ) -> Tuple[jnp.ndarray, float]:
@@ -71,7 +71,7 @@ def _solve_gibbs_equations_pressure_derivative(
     that arises from the Gibbs energy minimization problem.
 
     Args:
-        ln_ntot: log total number of species.
+        ntot: total number of species.
         Bmatrix: A (diag(n) A^T (n_elements, n_elements)
         b_element_vector: element abundance vector (n_elements, ).
 
@@ -82,12 +82,12 @@ def _solve_gibbs_equations_pressure_derivative(
     """
     
     assemble_mat = jnp.block([[Bmatrix, b_element_vector[:, None]], [b_element_vector[None, :], jnp.array([[0.0]])]])
-    assemble_vec = jnp.concatenate([b_element_vector, jnp.array([ln_ntot])])
+    assemble_vec = jnp.concatenate([b_element_vector, jnp.array([ntot])])
     assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
     return assemble_variable[:-1], assemble_variable[-1]
 
 def derivative_pressure(
-    ln_ntot: float,
+    ntot: float,
     formula_matrix: jnp.ndarray,
     Bmatrix: jnp.ndarray,
     b_element_vector: jnp.ndarray,
@@ -96,7 +96,7 @@ def derivative_pressure(
     Compute the temperature derivative of the Gibbs energy.
 
     Args:
-        ln_ntot: log total number of species.
+        ntot: total number of species.
         formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
         Bmatrix: A (diag(n) A^T (n_elements, n_elements)
         b_element_vector: element abundance vector (n_elements, ).
@@ -104,7 +104,7 @@ def derivative_pressure(
     Returns:
         The pressure derivative of log species number (n_species,).
     """
-    
-    L, ln_ntot_dlogp = _solve_gibbs_equations_pressure_derivative(ln_ntot, Bmatrix, b_element_vector)
-    
+
+    L, ln_ntot_dlogp = _solve_gibbs_equations_pressure_derivative(ntot, Bmatrix, b_element_vector)
+
     return formula_matrix.T @ L + ln_ntot_dlogp - 1.0

@@ -253,6 +253,7 @@ def minimize_gibbs_bwd(
 
     ln_nk, hdot, b_element_vector, ln_ntot = res
     nk_result = jnp.exp(ln_nk)
+    ntot_result = jnp.exp(ln_ntot)
     Bmatrix = _A_diagn_At(nk_result, formula_matrix)
     nk_cdot_hdot = jnp.dot(nk_result, hdot)    
     
@@ -261,7 +262,7 @@ def minimize_gibbs_bwd(
     cot_T = jnp.dot(ln_nspecies_dT, g)
 
     #pressure derivative
-    ln_nspecies_dlogp = derivative_pressure(ln_ntot, formula_matrix, Bmatrix, b_element_vector)
+    ln_nspecies_dlogp = derivative_pressure(ntot_result, formula_matrix, Bmatrix, b_element_vector)
     cot_P = jnp.dot(ln_nspecies_dlogp, g)
     return (cot_T, cot_P, None)
 
