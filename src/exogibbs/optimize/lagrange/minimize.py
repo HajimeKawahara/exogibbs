@@ -75,7 +75,7 @@ def update_all(
     formula_matrix,
     b,
     T,
-    normalized_pressure,
+    ln_normalized_pressure,
     hvector,
     gk,
     An,
@@ -94,7 +94,7 @@ def update_all(
     # computes new gk,An and residuals
     nk = jnp.exp(ln_nk)
     ntot = jnp.exp(ln_ntot)
-    gk = _compute_gk(T, ln_nk, ln_ntot, hvector, normalized_pressure)
+    gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
     epsilon = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
     return ln_nk, ln_ntot, epsilon, gk, An
@@ -102,7 +102,7 @@ def update_all(
 
 def minimize_gibbs_core(
     temperature: float,
-    normalized_pressure: float,
+    ln_normalized_pressure: float,
     b_element_vector: jnp.ndarray,
     ln_nk_init: jnp.ndarray,
     ln_ntot_init: float,
@@ -115,7 +115,7 @@ def minimize_gibbs_core(
 
     Args:
         temperature: Temperature in Kelvin.
-        normalized_pressure: Pressure normalized by reference pressure (P/Pref).
+        ln_normalized_pressure: natural log of pressure normalized by reference pressure (P/Pref).
         b_element_vector: Element abundance vector (n_elements,).
         ln_nk_init: Initial log number of species vector (n_species,).
         ln_ntot_init: Initial log total number of species.
@@ -145,7 +145,7 @@ def minimize_gibbs_core(
             formula_matrix,
             b_element_vector,
             temperature,
-            normalized_pressure,
+            ln_normalized_pressure,
             hvector,
             gk,
             An,
@@ -157,7 +157,7 @@ def minimize_gibbs_core(
         ln_nk_init,
         ln_ntot_init,
         hvector,
-        normalized_pressure,
+        ln_normalized_pressure,
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
 
@@ -170,7 +170,7 @@ def minimize_gibbs_core(
 @partial(custom_vjp, nondiff_argnums=(3, 4, 5, 6, 7, 8))
 def minimize_gibbs(
     temperature: float,
-    normalized_pressure: float,
+    ln_normalized_pressure: float,
     b_element_vector: jnp.ndarray,
     ln_nk_init: jnp.ndarray,
     ln_ntot_init: float,
@@ -183,7 +183,7 @@ def minimize_gibbs(
 
     Args:
         temperature: Temperature in Kelvin.
-        normalized_pressure: Pressure normalized by reference pressure (P/Pref).
+        ln_normalized_pressure: natural log pressure normalized by the reference pressure jnp.log(P/Pref), or use optimize.lagrange.core.compute_ln_normalized_pressure.
         b_element_vector: Element abundance vector (n_elements,).
         ln_nk_init: Initial log number of species vector (n_species,).
         ln_ntot_init: Initial log total number of species.
@@ -195,10 +195,10 @@ def minimize_gibbs(
     Returns:
         Final log number of species vector (n_species,).
     """
-
+    
     ln_nk, _, _ = minimize_gibbs_core(
         temperature,
-        normalized_pressure,
+        ln_normalized_pressure,
         b_element_vector,
         ln_nk_init,
         ln_ntot_init,
@@ -213,7 +213,7 @@ def minimize_gibbs(
 
 def minimize_gibbs_fwd(
     temperature,
-    normalized_pressure,
+    ln_normalized_pressure,
     b_element_vector,
     ln_nk_init,
     ln_ntot_init,
@@ -224,7 +224,7 @@ def minimize_gibbs_fwd(
 ):
     ln_nk, ln_ntot, _ = minimize_gibbs_core(
         temperature,
-        normalized_pressure,
+        ln_normalized_pressure,
         b_element_vector,
         ln_nk_init,
         ln_ntot_init,
@@ -271,6 +271,7 @@ minimize_gibbs.defvjp(minimize_gibbs_fwd, minimize_gibbs_bwd)
 
 if __name__ == "__main__":
     from exogibbs.test.analytic_hsystem import HSystem
+    from exogibbs.optimize.lagrange.core import compute_ln_normalized_pressure
     import numpy as np
     from jax import jacrev
     from jax import config
@@ -283,8 +284,9 @@ if __name__ == "__main__":
     formula_matrix = jnp.array([[1.0, 2.0]])
     temperature = 3500.0
     P = 1.0  # bar
+    Pref = 1.0  # bar, reference pressure
+    ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
 
-    normalized_pressure = P / hsystem.P_ref
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
 
@@ -300,7 +302,7 @@ if __name__ == "__main__":
     # Run Gibbs minimization
     ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
         temperature,
-        normalized_pressure,
+        ln_normalized_pressure,
         b_element_vector,
         ln_nk,
         ln_ntot,
@@ -312,7 +314,7 @@ if __name__ == "__main__":
 
     ln_nk_result = minimize_gibbs(
         temperature,
-        normalized_pressure,
+        ln_normalized_pressure,
         b_element_vector,
         ln_nk,
         ln_ntot,
@@ -325,7 +327,7 @@ if __name__ == "__main__":
     dln_dT = jacrev(
         lambda temperature_in: minimize_gibbs(
             temperature_in,
-            normalized_pressure,
+            ln_normalized_pressure,
             b_element_vector,
             ln_nk,
             ln_ntot,
@@ -340,9 +342,9 @@ if __name__ == "__main__":
     
 
     # Compare with analytical solution
-    k = hsystem.compute_k(P, temperature)
-    refH = hsystem.ln_nH_dT(jnp.array([temperature]), P)[0]
-    refH2 = hsystem.ln_nH2_dT(jnp.array([temperature]), P)[0]
+    k = hsystem.compute_k(ln_normalized_pressure, temperature)
+    refH = hsystem.ln_nH_dT(jnp.array([temperature]), ln_normalized_pressure)[0]
+    refH2 = hsystem.ln_nH2_dT(jnp.array([temperature]), ln_normalized_pressure)[0]
     print(f"Reference ln_nH_dT: {refH}, Reference ln_nH2_dT: {refH2}")
     diff = refH - dln_dT[0]
     diff2 = refH2 - dln_dT[1]
@@ -350,9 +352,9 @@ if __name__ == "__main__":
 
 
     dln_dlogp = jacrev(
-        lambda normalized_pressure: minimize_gibbs(
+        lambda ln_normalized_pressure: minimize_gibbs(
             temperature,
-            normalized_pressure,
+            ln_normalized_pressure,
             b_element_vector,
             ln_nk,
             ln_ntot,
@@ -361,18 +363,15 @@ if __name__ == "__main__":
             epsilon_crit=epsilon_crit,
             max_iter=max_iter,
         )
-    )(normalized_pressure)
+    )(ln_normalized_pressure)
     print(f"dln_dlogp: {dln_dlogp}")
-    refH = hsystem.ln_nH_dlogp(jnp.array([temperature]), normalized_pressure)[0]
-    refH2 = hsystem.ln_nH2_dlogp(jnp.array([temperature]), normalized_pressure)[0]
+    refH = hsystem.ln_nH_dlogp(jnp.array([temperature]), ln_normalized_pressure)[0]
+    refH2 = hsystem.ln_nH2_dlogp(jnp.array([temperature]), ln_normalized_pressure)[0]
     print(f"Reference ln_nH_dlogp: {refH}, Reference ln_nH2_dlogp: {refH2}")
-    exit()
-
-
     diff = refH - dln_dlogp[0]
     diff2 = refH2 - dln_dlogp[1]
     print(f"Difference for H: {diff}, Difference for H2: {diff2}")
-
+    exit()
 
     # Vectorized computation over temperature range
     from jax import vmap, jit
@@ -388,7 +387,7 @@ if __name__ == "__main__":
 
     ln_nk_arr = vmap_minimize_gibbs(
         Tarr,
-        normalized_pressure,
+        ln_normalized_pressure,
         b_element_vector,
         ln_nk_init,
         ln_ntot_init,
@@ -403,7 +402,7 @@ if __name__ == "__main__":
     )
     dln_dT_arr = vmap_minimize_gibbs_dT(
         Tarr,
-        normalized_pressure,
+        ln_normalized_pressure,
         b_element_vector,
         ln_nk_init,
         ln_ntot_init,
@@ -414,7 +413,7 @@ if __name__ == "__main__":
     )
 
     # vmapped analytical computation
-    karr = vmap(hsystem.compute_k, in_axes=(None, 0))(P, Tarr)
+    karr = vmap(hsystem.compute_k, in_axes=(None, 0))(ln_normalized_pressure, Tarr)
 
     n_H = jnp.exp(ln_nk_arr[:, 0])
     n_H2 = jnp.exp(ln_nk_arr[:, 1])
@@ -425,10 +424,10 @@ if __name__ == "__main__":
 
     diffH = vmrH - vmap(hsystem.vmr_h)(karr)
     diffH2 = vmrH2 - vmap(hsystem.vmr_h2)(karr)
-    
-    diff_dT_H = dln_dT_arr[:, 0] - hsystem.ln_nH_dT(Tarr, P)
-    diff_dT_H2 = dln_dT_arr[:, 1] - hsystem.ln_nH2_dT(Tarr, P)
-    
+
+    diff_dT_H = dln_dT_arr[:, 0] - hsystem.ln_nH_dT(Tarr, ln_normalized_pressure)
+    diff_dT_H2 = dln_dT_arr[:, 1] - hsystem.ln_nH2_dT(Tarr, ln_normalized_pressure)
+
     print(f"Max difference in VMR for H: {jnp.max(jnp.abs(diffH))}")
     print(f"Max difference in VMR for H2: {jnp.max(jnp.abs(diffH2))}")
     print(f"Max difference in dln_dT for H: {jnp.max(jnp.abs(diff_dT_H))}")
@@ -458,10 +457,10 @@ if __name__ == "__main__":
     plt.plot(Tarr, jnp.abs(dln_dT_arr[:, 0]), label="H", alpha=0.5)
     plt.plot(Tarr, jnp.abs(dln_dT_arr[:, 1]), label="H2", alpha=0.5)
     plt.plot(
-        Tarr, jnp.abs(hsystem.ln_nH_dT(Tarr, P)), ls="dashed", label="analytical H"
+        Tarr, jnp.abs(hsystem.ln_nH_dT(Tarr, ln_normalized_pressure)), ls="dashed", label="analytical H"
     )
     plt.plot(
-        Tarr, jnp.abs(hsystem.ln_nH2_dT(Tarr, P)), ls="dashed", label="analytical H2"
+        Tarr, jnp.abs(hsystem.ln_nH2_dT(Tarr, ln_normalized_pressure)), ls="dashed", label="analytical H2"
     )
     plt.yscale("log")
     plt.ylabel("|Derivative of log number|")

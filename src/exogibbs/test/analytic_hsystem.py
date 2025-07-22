@@ -17,7 +17,6 @@ class HSystem:
     """
 
     def __init__(self):
-        self.P_ref = 1.0  # bar, reference pressure for chemical potential data
         self.T_h_table, self.mu_h_table, self.T_h2_table, self.mu_h2_table = (
             self.get_hsystem_tables()
         )
@@ -64,18 +63,18 @@ class HSystem:
         """
         return interpolate_hvector_one(T, self.T_h2_table, self.mu_h2_table)
 
-    def compute_k(self, P, T):
+    def compute_k(self, ln_normalized_pressure, T):
         """Compute equilibrium constant for H2 dissociation reaction.
         
         Args:
-            P: Pressure in bar.
+            ln_normalized_pressure: natural log pressure normalized by reference pressure (P/Pref).
             T: Temperature in Kelvin.
             
         Returns:
             Equilibrium constant K = exp(-Δμ/RT) * P/P_ref.
         """
         delta_h = self.hv_h2(T) - 2.0 * self.hv_h(T)
-        return jnp.exp(-delta_h) * P / self.P_ref
+        return jnp.exp(-delta_h) * jnp.exp(ln_normalized_pressure) 
 
     def nh(self, k):
         """Compute number density of atomic hydrogen.
@@ -176,54 +175,54 @@ class HSystem:
         """
         return vmap(grad(self.delta), in_axes=0)(Tarr)
 
-    def ln_nH_dT(self, Tarr, P):
+    def ln_nH_dT(self, Tarr, ln_normalized_pressure):
         """Compute temperature derivative of log(n_H).
         
         Args:
             Tarr: Array of temperatures in Kelvin.
-            P: Pressure in bar.
+            ln_normalized_pressure: natural log pressure normalized by reference pressure (P/Pref).
             
         Returns:
             Array of d(ln n_H)/dT values.
         """
-        k = self.compute_k(P, Tarr)
+        k = self.compute_k(ln_normalized_pressure, Tarr)
         return -2.0 * self.nh2(k) * self.ntotal(k) * self.delta_dT(Tarr)
 
-    def ln_nH2_dT(self, Tarr, P):
+    def ln_nH2_dT(self, Tarr, ln_normalized_pressure):
         """Compute temperature derivative of log(n_H2).
         
         Args:
             Tarr: Array of temperatures in Kelvin.
-            P: Pressure in bar.
+            ln_normalized_pressure: natural log pressure normalized by reference pressure (P/Pref).
             
         Returns:
             Array of d(ln n_H2)/dT values.
         """
-        k = self.compute_k(P, Tarr)
+        k = self.compute_k(ln_normalized_pressure, Tarr)
         return self.nh(k) * self.ntotal(k) * self.delta_dT(Tarr)
 
-    def ln_nH_dlogp(self, Tarr, normalized_pressure):
+    def ln_nH_dlogp(self, Tarr, ln_normalized_pressure):
         """Compute log pressure derivative of log(n_H).
         
         Args:
             Tarr: Array of temperatures in Kelvin.
-            normalized_pressure: Pressure normalized by reference pressure (P/Pref).
+            ln_normalized_pressure: natural log pressure normalized by reference pressure (P/Pref).
             
         Returns:
             Array of d(ln n_H)/dT values.
         """
-        k = self.compute_k(normalized_pressure, Tarr)
-        return -2.0 * self.nh2(k) * self.ntotal(k) 
+        k = self.compute_k(ln_normalized_pressure, Tarr)
+        return -2.0 * self.nh2(k) * self.ntotal(k)
 
-    def ln_nH2_dlogp(self, Tarr, normalized_pressure):
+    def ln_nH2_dlogp(self, Tarr, ln_normalized_pressure):
         """Compute pressure derivative of log(n_H2).
         
         Args:
             Tarr: Array of temperatures in Kelvin.
-            normalized_pressure: Pressure normalized by reference pressure (P/Pref).
+            ln_normalized_pressure: natural log pressure normalized by reference pressure (P/Pref).
             
         Returns:
             Array of d(ln n_H2)/dT values.
         """
-        k = self.compute_k(normalized_pressure, Tarr)
+        k = self.compute_k(ln_normalized_pressure, Tarr)
         return self.nh(k) * self.ntotal(k)
