@@ -202,8 +202,8 @@ class HSystem:
         k = self.compute_k(P, Tarr)
         return self.nh(k) * self.ntotal(k) * self.delta_dT(Tarr)
 
-    def ln_nH_dP(self, Tarr, normalized_pressure):
-        """Compute pressure derivative of log(n_H).
+    def ln_nH_dlogp(self, Tarr, normalized_pressure):
+        """Compute log pressure derivative of log(n_H).
         
         Args:
             Tarr: Array of temperatures in Kelvin.
@@ -213,9 +213,9 @@ class HSystem:
             Array of d(ln n_H)/dT values.
         """
         k = self.compute_k(normalized_pressure, Tarr)
-        return -2.0 * self.nh2(k) * self.ntotal(k) /normalized_pressure
+        return -2.0 * self.nh2(k) * self.ntotal(k) 
 
-    def ln_nH2_dP(self, Tarr, normalized_pressure):
+    def ln_nH2_dlogp(self, Tarr, normalized_pressure):
         """Compute pressure derivative of log(n_H2).
         
         Args:
@@ -226,4 +226,4 @@ class HSystem:
             Array of d(ln n_H2)/dT values.
         """
         k = self.compute_k(normalized_pressure, Tarr)
-        return self.nh(k) * self.ntotal(k) / normalized_pressure
+        return self.nh(k) * self.ntotal(k)

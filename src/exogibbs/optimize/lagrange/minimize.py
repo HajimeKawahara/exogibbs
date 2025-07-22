@@ -236,7 +236,7 @@ def minimize_gibbs_fwd(
     dfunc = jacrev(hvector_func)
     hdot = dfunc(temperature)
 
-    residuals = (ln_nk, hdot, b_element_vector, normalized_pressure)
+    residuals = (ln_nk, hdot, b_element_vector, ln_ntot)
     return ln_nk, residuals
 
 
@@ -251,7 +251,7 @@ def minimize_gibbs_bwd(
     g,
 ):
 
-    ln_nk, hdot, b_element_vector, normalized_pressure = res
+    ln_nk, hdot, b_element_vector, ln_ntot = res
     nk_result = jnp.exp(ln_nk)
     Bmatrix = _A_diagn_At(nk_result, formula_matrix)
     nk_cdot_hdot = jnp.dot(nk_result, hdot)    
@@ -261,10 +261,8 @@ def minimize_gibbs_bwd(
     cot_T = jnp.dot(ln_nspecies_dT, g)
 
     #pressure derivative
-    ln_nspecies_dP = derivative_pressure(
-        normalized_pressure, formula_matrix, nk_cdot_hdot, Bmatrix, b_element_vector
-    )
-    cot_P = jnp.dot(ln_nspecies_dP, g)
+    ln_nspecies_dlogp = derivative_pressure(ln_ntot, formula_matrix, Bmatrix, b_element_vector)
+    cot_P = jnp.dot(ln_nspecies_dlogp, g)
     return (cot_T, cot_P, None)
 
 
@@ -350,7 +348,7 @@ if __name__ == "__main__":
     print(f"Difference for H: {diff}, Difference for H2: {diff2}")
 
 
-    dln_dP = jacrev(
+    dln_dlogp = jacrev(
         lambda normalized_pressure: minimize_gibbs(
             temperature,
             normalized_pressure,
@@ -363,12 +361,15 @@ if __name__ == "__main__":
             max_iter=max_iter,
         )
     )(normalized_pressure)
-    print(f"dln_dP: {dln_dP}")
-    refH = hsystem.ln_nH_dP(jnp.array([temperature]), normalized_pressure)[0]
-    refH2 = hsystem.ln_nH2_dP(jnp.array([temperature]), normalized_pressure)[0]
-    print(f"Reference ln_nH_dP: {refH}, Reference ln_nH2_dP: {refH2}")
-    diff = refH - dln_dP[0]
-    diff2 = refH2 - dln_dP[1]
+    print(f"dln_dlogp: {dln_dlogp}")
+    refH = hsystem.ln_nH_dlogp(jnp.array([temperature]), normalized_pressure)[0]
+    refH2 = hsystem.ln_nH2_dlogp(jnp.array([temperature]), normalized_pressure)[0]
+    print(f"Reference ln_nH_dlogp: {refH}, Reference ln_nH2_dlogp: {refH2}")
+    exit()
+
+
+    diff = refH - dln_dlogp[0]
+    diff2 = refH2 - dln_dlogp[1]
     print(f"Difference for H: {diff}, Difference for H2: {diff2}")
 
 
