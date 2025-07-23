@@ -3,6 +3,7 @@ import jax.numpy as jnp
 from jax import config
 from jax import jacrev
 from exogibbs.optimize.lagrange.minimize import minimize_gibbs_core, minimize_gibbs
+from exogibbs.optimize.lagrange.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
 
 
@@ -17,8 +18,9 @@ def h_system_setup():
     formula_matrix = jnp.array([[1.0, 2.0]])
     temperature = 3500.0
     P = 1.0
+    Pref = 1.0
     
-    normalized_pressure = P / hsystem.P_ref
+    ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
     
@@ -34,7 +36,7 @@ def h_system_setup():
         'formula_matrix': formula_matrix,
         'temperature': temperature,
         'P': P,
-        'normalized_pressure': normalized_pressure,
+        'ln_normalized_pressure': ln_normalized_pressure,
         'ln_nk': ln_nk,
         'ln_ntot': ln_ntot,
         'hvector_func': hvector_func,
@@ -51,7 +53,7 @@ def test_minimize_gibbs_core_h_system(h_system_setup):
     # Run Gibbs minimization
     ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
         setup['temperature'],
-        setup['normalized_pressure'],
+        setup['ln_normalized_pressure'],
         setup['b_element_vector'],
         setup['ln_nk'],
         setup['ln_ntot'],
@@ -62,7 +64,7 @@ def test_minimize_gibbs_core_h_system(h_system_setup):
     )
     
     # Compare with analytical solution
-    k = setup['hsystem'].compute_k(setup['P'], setup['temperature'])
+    k = setup['hsystem'].compute_k(setup['ln_normalized_pressure'], setup['temperature'])
     diff_h = jnp.log(setup['hsystem'].nh(k)) - ln_nk_result[0]
     diff_h2 = jnp.log(setup['hsystem'].nh2(k)) - ln_nk_result[1]
     
@@ -79,7 +81,7 @@ def test_minimize_gibbs_gradient_h_system(h_system_setup):
     # Compute temperature gradient using jacrev
     dln_dT = jacrev(lambda temperature_in: minimize_gibbs(
         temperature_in,
-        setup['normalized_pressure'],
+        setup['ln_normalized_pressure'],
         setup['b_element_vector'],
         setup['ln_nk'],
         setup['ln_ntot'],
@@ -90,8 +92,8 @@ def test_minimize_gibbs_gradient_h_system(h_system_setup):
     ))(setup['temperature'])
     
     # Get analytical reference derivatives
-    refH = setup['hsystem'].ln_nH_dT(jnp.array([setup['temperature']]), setup['P'])[0]
-    refH2 = setup['hsystem'].ln_nH2_dT(jnp.array([setup['temperature']]), setup['P'])[0]
+    refH = setup['hsystem'].ln_nH_dT(jnp.array([setup['temperature']]), setup['ln_normalized_pressure'])[0]
+    refH2 = setup['hsystem'].ln_nH2_dT(jnp.array([setup['temperature']]), setup['ln_normalized_pressure'])[0]
     
     # Test differences are small
     diff_h = refH - dln_dT[0]
