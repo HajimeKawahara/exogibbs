@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 from jax import custom_vjp
 from jax import jacrev
+from jax import vmap
 from jax.lax import while_loop
 from jax import jit
 from functools import partial
@@ -469,3 +470,5 @@ if __name__ == "__main__":
 
     plt.savefig("gibbs_minimization.png")
     plt.show()
+
+    # Vectorized computation over log pressure range

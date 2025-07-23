@@ -74,7 +74,7 @@ def test_minimize_gibbs_core_h_system(h_system_setup):
     assert counter < setup['max_iter']
 
 
-def test_minimize_gibbs_gradient_h_system(h_system_setup):
+def test_minimize_gibbs_temperature_gradient_h_system(h_system_setup):
     """Test minimize_gibbs temperature gradient against analytical H system."""
     setup = h_system_setup
     
@@ -101,6 +101,35 @@ def test_minimize_gibbs_gradient_h_system(h_system_setup):
     
     assert jnp.abs(diff_h) < 1e-11, f"H gradient difference too large: {diff_h}"
     assert jnp.abs(diff_h2) < 1e-11, f"H2 gradient difference too large: {diff_h2}"
+
+
+def test_minimize_gibbs_pressure_gradient_h_system(h_system_setup):
+    """Test minimize_gibbs pressure gradient against analytical H system."""
+    setup = h_system_setup
+    
+    # Compute pressure gradient using jacrev
+    dln_dlogp = jacrev(lambda ln_normalized_pressure_in: minimize_gibbs(
+        setup['temperature'],
+        ln_normalized_pressure_in,
+        setup['b_element_vector'],
+        setup['ln_nk'],
+        setup['ln_ntot'],
+        setup['formula_matrix'],
+        setup['hvector_func'],
+        epsilon_crit=setup['epsilon_crit'],
+        max_iter=setup['max_iter'],
+    ))(setup['ln_normalized_pressure'])
+    
+    # Get analytical reference pressure derivatives
+    refH = setup['hsystem'].ln_nH_dlogp(jnp.array([setup['temperature']]), setup['ln_normalized_pressure'])[0]
+    refH2 = setup['hsystem'].ln_nH2_dlogp(jnp.array([setup['temperature']]), setup['ln_normalized_pressure'])[0]
+    
+    # Test differences are small
+    diff_h = refH - dln_dlogp[0]
+    diff_h2 = refH2 - dln_dlogp[1]
+    
+    assert jnp.abs(diff_h) < 1e-11, f"H pressure gradient difference too large: {diff_h}"
+    assert jnp.abs(diff_h2) < 1e-11, f"H2 pressure gradient difference too large: {diff_h2}"
 
 
 if __name__ == "__main__":
