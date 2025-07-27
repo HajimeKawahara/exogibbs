@@ -108,3 +108,51 @@ def derivative_pressure(
     L, ln_ntot_dlogp = _solve_gibbs_equations_pressure_derivative(ntot, Bmatrix, b_element_vector)
 
     return formula_matrix.T @ L + ln_ntot_dlogp - 1.0
+
+def _solve_gibbs_equations_element_derivative_one(
+    Bmatrix: jnp.ndarray,
+    b_element_vector: jnp.ndarray,
+    i_element: int,
+) -> Tuple[jnp.ndarray, float]:
+    """
+    Solve the Gibbs equations for pressure derivative.
+    This function computes the matrix and vector to solve the system of equations
+    that arises from the Gibbs energy minimization problem.
+
+    Args:
+        Bmatrix: A (diag(n) A^T (n_elements, n_elements)
+        b_element_vector: element abundance vector (n_elements, ).
+        i_element: index of the element for which the derivative is computed.
+    Returns:
+        Tuple containing:
+            - The pi vector (nspecies, ).
+            - The update of the  log total number of species (delta_ln_ntot).
+    """
+    unit_vector_i = jnp.eye(len(b_element_vector))[i_element]
+    assemble_mat = jnp.block([[Bmatrix, b_element_vector[:, None]], [b_element_vector[None, :], jnp.array([[0.0]])]])
+    assemble_vec = jnp.concatenate([unit_vector_i, jnp.array([0.0])])
+    assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
+    return assemble_variable[:-1], assemble_variable[-1]
+
+def derivative_element_one(
+    formula_matrix: jnp.ndarray,
+    Bmatrix: jnp.ndarray,
+    b_element_vector: jnp.ndarray,
+    i_element: int,
+) -> jnp.ndarray:
+    """
+    Compute the temperature derivative of the Gibbs energy.
+
+    Args:
+        formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
+        Bmatrix: A (diag(n) A^T (n_elements, n_elements)
+        b_element_vector: element abundance vector (n_elements, ).
+        i_element: index of the element for which the derivative is computed.
+        
+    Returns:
+        The pressure derivative of log species number (n_species,).
+    """
+
+    L, ln_ntot_dbi = _solve_gibbs_equations_element_derivative_one(Bmatrix, b_element_vector, i_element)
+
+    return formula_matrix.T @ L + ln_ntot_dbi - 1.0
