@@ -185,8 +185,8 @@ def minimize_gibbs(
         temperature: Temperature in Kelvin.
         ln_normalized_pressure: natural log pressure normalized by the reference pressure jnp.log(P/Pref), or use optimize.lagrange.core.compute_ln_normalized_pressure.
         b_element_vector: Element abundance vector (n_elements,).
-        ln_nk_init: Initial log number of species vector (n_species,).
-        ln_ntot_init: Initial log total number of species.
+        ln_nk_init: Initial natural log number of species vector (n_species,).
+        ln_ntot_init: Initial natural log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
         hvector_func: Function that returns chemical potential over RT vector (n_species,).
         epsilon_crit: Convergence tolerance for residual norm.
