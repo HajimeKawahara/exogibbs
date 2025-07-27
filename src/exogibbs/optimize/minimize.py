@@ -6,10 +6,10 @@ from jax.lax import while_loop
 from jax import jit
 from functools import partial
 from typing import Tuple, Callable
-from exogibbs.optimize.lagrange.core import _A_diagn_At
-from exogibbs.optimize.lagrange.core import _compute_gk
-from exogibbs.optimize.lagrange.derivative import derivative_temperature
-from exogibbs.optimize.lagrange.derivative import derivative_pressure
+from exogibbs.optimize.core import _A_diagn_At
+from exogibbs.optimize.core import _compute_gk
+from exogibbs.optimize.derivative import derivative_temperature
+from exogibbs.optimize.derivative import derivative_pressure
 
 
 def solve_gibbs_iteration_equations(

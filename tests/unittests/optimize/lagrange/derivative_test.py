@@ -1,11 +1,11 @@
 import pytest
 import jax.numpy as jnp
 from jax import config
-from exogibbs.optimize.lagrange.minimize import minimize_gibbs_core
-from exogibbs.optimize.lagrange.derivative import derivative_temperature, derivative_pressure, derivative_element_one
-from exogibbs.optimize.lagrange.core import compute_ln_normalized_pressure
+from exogibbs.optimize.minimize import minimize_gibbs_core
+from exogibbs.optimize.derivative import derivative_temperature, derivative_pressure, derivative_element_one
+from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
-from exogibbs.optimize.lagrange.core import _A_diagn_At 
+from exogibbs.optimize.core import _A_diagn_At 
 
 
 @pytest.fixture(params=[1.0, 2.0])

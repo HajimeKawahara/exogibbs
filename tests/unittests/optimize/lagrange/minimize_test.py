@@ -2,8 +2,8 @@ import pytest
 import jax.numpy as jnp
 from jax import config
 from jax import jacrev
-from exogibbs.optimize.lagrange.minimize import minimize_gibbs_core, minimize_gibbs
-from exogibbs.optimize.lagrange.core import compute_ln_normalized_pressure
+from exogibbs.optimize.minimize import minimize_gibbs_core, minimize_gibbs
+from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
 
 

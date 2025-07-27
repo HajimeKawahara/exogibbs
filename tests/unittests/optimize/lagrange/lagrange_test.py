@@ -1,4 +1,4 @@
-from exogibbs.optimize.lagrange.core import _A_diagn_At
+from exogibbs.optimize.core import _A_diagn_At
 
 def test_A_diag_At():
     """ Test the _A_diag_At function to ensure it computes the expected result.
