@@ -155,4 +155,4 @@ def derivative_element_one(
 
     L, ln_ntot_dbi = _solve_gibbs_equations_element_derivative_one(Bmatrix, b_element_vector, i_element)
 
-    return formula_matrix.T @ L + ln_ntot_dbi - 1.0
+    return formula_matrix.T @ L + ln_ntot_dbi

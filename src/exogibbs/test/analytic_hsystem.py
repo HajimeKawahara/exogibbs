@@ -226,3 +226,21 @@ class HSystem:
         """
         k = self.compute_k(ln_normalized_pressure, Tarr)
         return self.nh(k) * self.ntotal(k)
+
+    def ln_nH_dbH(self, bH):
+        """Compute element abundance derivative of log(n_H).
+        
+        Returns:
+            d(ln n_H)/dB_H = 1/bH.
+        """
+
+        return 1.0/bH
+    
+    def ln_nH2_dbH(self, bH):
+        """Compute element abundance derivative of log(n_H2).
+        
+        Returns:
+            d(ln n_H2)/dB_H = 1/bH.
+        """
+
+        return 1.0/bH
