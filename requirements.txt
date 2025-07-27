@@ -1,4 +1,4 @@
-jax
+jax < 0.7 #interpax requires jax < 0.7
 jaxlib
 tqdm
 pandas
