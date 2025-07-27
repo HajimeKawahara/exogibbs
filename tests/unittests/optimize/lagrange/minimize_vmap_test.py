@@ -2,6 +2,7 @@ import pytest
 import jax.numpy as jnp
 from jax import config, vmap, jacrev
 from exogibbs.optimize.lagrange.minimize import minimize_gibbs
+from exogibbs.optimize.lagrange.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
 
 
@@ -15,7 +16,8 @@ def test_minimize_gibbs_vmap_h_system():
     # Test parameters
     formula_matrix = jnp.array([[1.0, 2.0]])
     P = 1.0
-    normalized_pressure = P / hsystem.P_ref
+    Pref = 1.0
+    ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
     ln_nk_init = jnp.array([0.0, 0.0])
     ln_ntot_init = 0.0
     b_element_vector = jnp.array([1.0])
@@ -35,7 +37,7 @@ def test_minimize_gibbs_vmap_h_system():
     
     ln_nk_arr = vmap_minimize_gibbs(
         Tarr,
-        normalized_pressure,
+        ln_normalized_pressure,
         b_element_vector,
         ln_nk_init,
         ln_ntot_init,
@@ -53,7 +55,7 @@ def test_minimize_gibbs_vmap_h_system():
     vmrH2 = n_H2 / ntot
     
     # Analytical reference
-    karr = vmap(hsystem.compute_k, in_axes=(None, 0))(P, Tarr)
+    karr = vmap(hsystem.compute_k, in_axes=(None, 0))(ln_normalized_pressure, Tarr)
     vmrH_ref = vmap(hsystem.vmr_h)(karr)
     vmrH2_ref = vmap(hsystem.vmr_h2)(karr)
     
@@ -77,7 +79,8 @@ def test_minimize_gibbs_vmap_gradient_h_system():
     # Test parameters
     formula_matrix = jnp.array([[1.0, 2.0]])
     P = 1.0
-    normalized_pressure = P / hsystem.P_ref
+    Pref = 1.0
+    ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
     ln_nk_init = jnp.array([0.0, 0.0])
     ln_ntot_init = 0.0
     b_element_vector = jnp.array([1.0])
@@ -98,7 +101,7 @@ def test_minimize_gibbs_vmap_gradient_h_system():
     
     dln_dT_arr = vmap_minimize_gibbs_dT(
         Tarr,
-        normalized_pressure,
+        ln_normalized_pressure,
         b_element_vector,
         ln_nk_init,
         ln_ntot_init,
@@ -109,8 +112,8 @@ def test_minimize_gibbs_vmap_gradient_h_system():
     )
     
     # Analytical reference gradients
-    dln_dT_H_ref = hsystem.ln_nH_dT(Tarr, P)
-    dln_dT_H2_ref = hsystem.ln_nH2_dT(Tarr, P)
+    dln_dT_H_ref = hsystem.ln_nH_dT(Tarr, ln_normalized_pressure)
+    dln_dT_H2_ref = hsystem.ln_nH2_dT(Tarr, ln_normalized_pressure)
     
     # Test differences are small
     diff_dT_H = jnp.max(jnp.abs(dln_dT_arr[:, 0] - dln_dT_H_ref))

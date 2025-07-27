@@ -3,6 +3,7 @@ import jax.numpy as jnp
 from jax import config
 from exogibbs.optimize.lagrange.minimize import minimize_gibbs_core
 from exogibbs.optimize.lagrange.derivative import derivative_temperature
+from exogibbs.optimize.lagrange.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
 from exogibbs.optimize.lagrange.core import _A_diagn_At 
 
@@ -18,8 +19,9 @@ def test_derivative_temperature_h_system():
     formula_matrix = jnp.array([[1.0, 2.0]])
     temperature = 3500.0
     P = 1.0
+    Pref = 1.0
     
-    normalized_pressure = P / hsystem.P_ref
+    ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
     ln_nk = jnp.array([0.0, 0.0])
     ln_ntot = 0.0
     
@@ -31,7 +33,7 @@ def test_derivative_temperature_h_system():
     # Run Gibbs minimization
     ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
         temperature,
-        normalized_pressure,
+        ln_normalized_pressure,
         b_element_vector,
         ln_nk,
         ln_ntot,
@@ -51,8 +53,8 @@ def test_derivative_temperature_h_system():
     ln_nspecies_dT = derivative_temperature(nk_result, formula_matrix, hdot, nk_cdot_hdot, Bmatrix, b_element_vector)
 
     # Get reference analytical derivatives
-    refH = hsystem.ln_nH_dT(jnp.array([temperature]), P)[0]
-    refH2 = hsystem.ln_nH2_dT(jnp.array([temperature]), P)[0]
+    refH = hsystem.ln_nH_dT(jnp.array([temperature]), ln_normalized_pressure)[0]
+    refH2 = hsystem.ln_nH2_dT(jnp.array([temperature]), ln_normalized_pressure)[0]
     
     # Test differences are small
     diff_h = refH - ln_nspecies_dT[0]

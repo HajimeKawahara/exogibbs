@@ -89,13 +89,13 @@ def extract_and_pad_gibbs_data(
     )  # shape (M,),      int32
 
 
-def interpolate_chemical_potential_one(T_target, T_vec, mu_vec, method="cubic"):
+def interpolate_chemical_potential_one(T_target, T_vec, mu_vec, method="linear"):
     """interpolate one chemical potential at T_target
     Args:
         T_target (scalar or array): target temperature(s) (K)
         T_vec (1D array): temeprature grid（Lmax)
         mu_vec (1D array): chemical potential grid（Lmax)
-        method (str):  method of interpolation used in interpax.interp1d
+        method (str):  method of interpolation used in interpax.interp1d. Note that "cubic" sometimes causes problems with interpolation.
             'nearest': nearest neighbor interpolation
             'linear': linear interpolation
             'cubic': C1 cubic splines (aka local splines)
@@ -109,7 +109,7 @@ def interpolate_chemical_potential_one(T_target, T_vec, mu_vec, method="cubic"):
     """
     return interp1d(T_target, T_vec, mu_vec, method=method)
     
-def interpolate_hvector_one(T_target, T_vec, mu_vec, method="cubic"):
+def interpolate_hvector_one(T_target, T_vec, mu_vec, method="linear"):
     """interpolate one hvector = (chemical_potential/RT)  at T_target
     Args:
         T_target (scalar or array): target temperature(s) (K)
