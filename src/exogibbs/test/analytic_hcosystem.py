@@ -2,6 +2,7 @@ from jax.lax import while_loop
 from jax import grad
 from jax import custom_vjp
 import jax.numpy as jnp
+from sympy import root
 from exogibbs.utils.constants import R_gas_constant_si
 from exogibbs.equilibrium.gibbs import interpolate_hvector_one
 from exogibbs.io.load_data import get_data_filepath
@@ -63,6 +64,14 @@ class HCOSystem:
 
         return jnp.array([hv_h2, hv_co, hv_ch4, hv_h2o])
 
+    def deltaT(self, temperature):
+        RT = R_gas_constant_si * temperature
+        hv_h2, hv_co, hv_ch4, hv_h2o = self.hv_hco(temperature)
+        deltaT = - (hv_ch4 + hv_h2o - hv_h2 - hv_co) / RT
+        return deltaT
+    
+    def equilibrium_constant(self, temperature, normalized_pressure):
+        return normalized_pressure**2*jnp.exp(self.deltaT(temperature))
 
 def function_equilibrium(x_CO, k, bC, bH, bO):
     """Function to compute the equilibrium condition for the HCO system.
@@ -127,3 +136,9 @@ if __name__ == "__main__":
     # Example usage
     hco_system = HCOSystem()
     T = 298.15
+    P = 1.0  # Normalized pressure
+    k = hco_system.equilibrium_constant(T, P)
+    print(f"Equilibrium constant at T={T} K and P={P}: {k}")
+    root_x = root_equilibrium(k, 1.0, 3.0, 1.0, x0=0.5)
+    print(f"Root x: {root_x}")
+    
