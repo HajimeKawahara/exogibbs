@@ -15,7 +15,7 @@ class HCOSystem:
     """
 
     def __init__(self):
-        self.species = ["H2", "CO", "CH4", "H2O"]
+        self.species = ["H2", "C1O1", "C1H4", "H2O1"]
         self.T_tables, self.mu_tables = (
             self.get_hcosystem_tables()
         )
@@ -31,6 +31,9 @@ class HCOSystem:
         path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
         gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
 
+        self.T_tables = {}
+        self.mu_tables = {}
+
         kJtoJ = 1000.0  # conversion factor from kJ to J
         for species in self.species:
             T_table = gibbs_matrices[species]["T(K)"].to_numpy()
@@ -39,7 +42,19 @@ class HCOSystem:
             self.mu_tables[species] = mu_table
         return self.T_tables, self.mu_tables
 
-    def DeltaT(self, T):
+    def hv_hco(self, T):
+        """Compute chemical potential over RT for HCO system.
         
+        Args:
+            T: Temperature in Kelvin.
+            
+        Returns:
+            Chemical potential divided by RT (dimensionless).
+        """
+        hv_h2 = interpolate_hvector_one(T, self.T_tables["H2"], self.mu_tables["H2"])
+        hv_co = interpolate_hvector_one(T, self.T_tables["C1O1"], self.mu_tables["C1O1"])
+        hv_ch4 = interpolate_hvector_one(T, self.T_tables["C1H4"], self.mu_tables["C1H4"])
+        hv_h2o = interpolate_hvector_one(T, self.T_tables["H2O1"], self.mu_tables["H2O1"])
         
-        return 
+        return jnp.array([hv_h2, hv_co, hv_ch4, hv_h2o])
+        
