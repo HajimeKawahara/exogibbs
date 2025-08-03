@@ -40,9 +40,10 @@ config.update("jax_enable_x64", True)
 hcosystem = HCOSystem()
 
 # Define stoichiometric constraint matrix: [H atoms per species]
-# Species order: [H, H₂]
+# Species order: [H₂, CO, CH₄, H₂O]
+# Elements order: [H, C, O]
 formula_matrix = jnp.array(
-    [[2.0, 0.0, 0.0], [2.0, 1.0, 0.0], [4.0, 0.0, 1.0], [0.0, 1.0, 1.0]]
+    [[2.0, 0.0, 0.0], [0.0, 1.0, 1.0], [4.0, 1.0, 0.0], [2.0, 0.0, 1.0]]
 ).T
 
 # Thermodynamic conditions
@@ -62,7 +63,7 @@ def hvector_func(temperature):
 
 
 # Element abundance constraint: total H nuclei = 1.0
-b_element_vector = jnp.array([1.0, 1.0, 1.0])  # H, C, O
+b_element_vector = jnp.array([1.0, 0.001, 0.001])  # H, C, O
 
 # Convergence criteria
 epsilon_crit = 1e-11
@@ -89,7 +90,7 @@ ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
 
 print(f"Convergence: {counter} iterations")
 print(
-    f"Log number densities: ln(n_H)={ln_nk_result[0]:.6f}, ln(n_H₂)={ln_nk_result[1]:.6f}"
+    f"Log number densities: ln(n_H2)={ln_nk_result[0]:.6f}, ln(n_CO)={ln_nk_result[1]:.6f}, ln(n_CH4)={ln_nk_result[2]:.6f}, ln(n_H2O)={ln_nk_result[3]:.6f}"
 )
 
 # Run using main minimize_gibbs function (auto-differentiable version)
