@@ -1,5 +1,6 @@
+from jax.lax import while_loop
 from jax import grad
-from jax import vmap
+from jax import custom_vjp
 import jax.numpy as jnp
 from exogibbs.utils.constants import R_gas_constant_si
 from exogibbs.equilibrium.gibbs import interpolate_hvector_one
@@ -16,13 +17,11 @@ class HCOSystem:
 
     def __init__(self):
         self.species = ["H2", "C1O1", "C1H4", "H2O1"]
-        self.T_tables, self.mu_tables = (
-            self.get_hcosystem_tables()
-        )
+        self.T_tables, self.mu_tables = self.get_hcosystem_tables()
 
     def get_hcosystem_tables(self):
         """Load thermochemical data tables for H and H2 from JANAF database.
-        
+
         Returns:
             Tuple containing:
                 - T_tables: Temperature tables for H (K).
@@ -44,17 +43,87 @@ class HCOSystem:
 
     def hv_hco(self, T):
         """Compute chemical potential over RT for HCO system.
-        
+
         Args:
             T: Temperature in Kelvin.
-            
+
         Returns:
             Chemical potential divided by RT (dimensionless).
         """
         hv_h2 = interpolate_hvector_one(T, self.T_tables["H2"], self.mu_tables["H2"])
-        hv_co = interpolate_hvector_one(T, self.T_tables["C1O1"], self.mu_tables["C1O1"])
-        hv_ch4 = interpolate_hvector_one(T, self.T_tables["C1H4"], self.mu_tables["C1H4"])
-        hv_h2o = interpolate_hvector_one(T, self.T_tables["H2O1"], self.mu_tables["H2O1"])
-        
+        hv_co = interpolate_hvector_one(
+            T, self.T_tables["C1O1"], self.mu_tables["C1O1"]
+        )
+        hv_ch4 = interpolate_hvector_one(
+            T, self.T_tables["C1H4"], self.mu_tables["C1H4"]
+        )
+        hv_h2o = interpolate_hvector_one(
+            T, self.T_tables["H2O1"], self.mu_tables["H2O1"]
+        )
+
         return jnp.array([hv_h2, hv_co, hv_ch4, hv_h2o])
-        
+
+
+def function_equilibrium(x_CO, k, bC, bH, bO):
+    """Function to compute the equilibrium condition for the HCO system.
+
+    Args:
+        x_CO: number of CO over bC, nCO/bC
+        k: Equilibrium constant.
+        bC: Total number of carbon atoms.
+        bH: Total number of hydrogen atoms.
+        bO: Total number of oxygen atoms.
+    """
+
+    aH = bH / bC
+    aO = bO / bC
+    x_CH4 = 1.0 - x_CO
+    x_H2O = aO - x_CO
+    x_H2 = 0.5 * aH - 2.0 * x_CH4 - x_H2O
+    x_tot = 0.5 * aH + 2.0 * x_CO - 1.0
+    return x_CH4 * x_H2O * x_tot**2 - k * x_CO * x_H2**3
+
+
+def newton_scalar(init_x, *, k, bC, bH, bO, tol=1e-12, maxiter=50):
+    def cond_fn(state):
+        x, fval, it = state
+        return jnp.logical_and(jnp.abs(fval) > tol, it < maxiter)
+
+    def body_fn(state):
+        x, fval, it = state
+        dfdx = grad(function_equilibrium, 0)(x, k, bC, bH, bO)
+        dfdx = jnp.where(dfdx == 0.0, 1e-14, dfdx)
+        x_new = x - fval / dfdx
+        x_new = jnp.clip(x_new, 0.0, 1.0)
+        return (x_new, function_equilibrium(x_new, k, bC, bH, bO), it + 1)
+
+    x0 = jnp.clip(init_x, 0.0, 1.0)
+    f0 = function_equilibrium(x0, k, bC, bH, bO)
+    x, _, _ = while_loop(cond_fn, body_fn, (x0, f0, 0))
+    return x
+
+@custom_vjp
+def root_equilibrium(k, bC, bH, bO, x0=0.5):
+    return newton_scalar(x0, k=k, bC=bC, bH=bH, bO=bO)
+
+# ── forward pass ─────────────────────────────────────────
+def root_equilibrium_fwd(k, bC, bH, bO, x0=0.5):
+    x_star = newton_scalar(x0, k=k, bC=bC, bH=bH, bO=bO)
+    aux = (x_star, k, bC, bH, bO)
+    return x_star, aux
+
+# ── backward pass (implicit function theorem) ────────────
+def root_equilibrium_bwd(aux, g):
+    x_star, k, bC, bH, bO = aux
+    dFdx = grad(function_equilibrium, 0)(x_star, k, bC, bH, bO)
+    dFdtheta = grad(function_equilibrium, (1,2,3,4))(x_star, k, bC, bH, bO)
+    coef = -g / dFdx
+    return tuple(coef * d for d in dFdtheta) + (None,)
+
+root_equilibrium.defvjp(root_equilibrium_fwd, root_equilibrium_bwd)
+
+
+if __name__ == "__main__":
+    # Example usage
+    hco_system = HCOSystem()
+    T = 298.15
