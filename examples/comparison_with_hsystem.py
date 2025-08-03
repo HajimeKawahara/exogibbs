@@ -19,10 +19,10 @@ Key validations performed:
 - Volume mixing ratio (VMR) calculations
 """
 
-from exogibbs.optimize.lagrange.minimize import minimize_gibbs_core
-from exogibbs.optimize.lagrange.minimize import minimize_gibbs
+from exogibbs.optimize.minimize import minimize_gibbs_core
+from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.test.analytic_hsystem import HSystem
-from exogibbs.optimize.lagrange.core import compute_ln_normalized_pressure
+from exogibbs.optimize.core import compute_ln_normalized_pressure
 import numpy as np
 from jax import jacrev
 import jax.numpy as jnp
