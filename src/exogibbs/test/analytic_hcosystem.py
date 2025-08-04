@@ -26,7 +26,7 @@ class HCOSystem:
         Returns:
             Tuple containing:
                 - T_tables: Temperature tables for H (K).
-                - mu_tables: Chemical potential tables for CO, H2, CH4, H2O (J/mol).
+                - mu_tables: Chemical potential tables for H2, CO, CH4, H2O (J/mol).
         """
         path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
         gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
@@ -65,9 +65,8 @@ class HCOSystem:
         return jnp.array([hv_h2, hv_co, hv_ch4, hv_h2o])
 
     def deltaT(self, temperature):
-        RT = R_gas_constant_si * temperature
         hv_h2, hv_co, hv_ch4, hv_h2o = self.hv_hco(temperature)
-        deltaT = (hv_ch4 + hv_h2o - hv_h2 - hv_co) / RT
+        deltaT = - 3.0*hv_h2 - hv_co + hv_ch4 + hv_h2o 
         return deltaT
     
     def equilibrium_constant(self, temperature, normalized_pressure):
