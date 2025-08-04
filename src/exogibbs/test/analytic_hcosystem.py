@@ -67,7 +67,7 @@ class HCOSystem:
     def deltaT(self, temperature):
         RT = R_gas_constant_si * temperature
         hv_h2, hv_co, hv_ch4, hv_h2o = self.hv_hco(temperature)
-        deltaT = - (hv_ch4 + hv_h2o - hv_h2 - hv_co) / RT
+        deltaT = (hv_ch4 + hv_h2o - hv_h2 - hv_co) / RT
         return deltaT
     
     def equilibrium_constant(self, temperature, normalized_pressure):
@@ -93,7 +93,7 @@ def function_equilibrium(x_CO, k, bC, bH, bO):
     return x_CH4 * x_H2O * x_tot**2 - k * x_CO * x_H2**3
 
 
-def newton_scalar(init_x, *, k, bC, bH, bO, tol=1e-12, maxiter=50):
+def newton_scalar(init_x, *, k, bC, bH, bO, tol=1e-12, maxiter=500):
     def cond_fn(state):
         x, fval, it = state
         return jnp.logical_and(jnp.abs(fval) > tol, it < maxiter)

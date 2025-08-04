@@ -22,6 +22,7 @@ Key validations performed:
 from exogibbs.optimize.minimize import minimize_gibbs_core
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.test.analytic_hcosystem import HCOSystem
+from exogibbs.test.analytic_hcosystem import root_equilibrium
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 import numpy as np
 from jax import jacrev
@@ -48,7 +49,7 @@ formula_matrix = jnp.array(
 
 # Thermodynamic conditions
 temperature = 3500.0  # K
-P = 1.0  # bar
+P = 1.5  # bar
 Pref = 1.0  # bar, reference pressure
 ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
 
@@ -63,7 +64,10 @@ def hvector_func(temperature):
 
 
 # Element abundance constraint: total H nuclei = 1.0
-b_element_vector = jnp.array([1.0, 0.001, 0.001])  # H, C, O
+bH = 1.0 
+bC = 0.01
+bO = 0.01
+b_element_vector = jnp.array([bH, bC, bO])  # H, C, O
 
 # Convergence criteria
 epsilon_crit = 1e-11
@@ -92,7 +96,13 @@ print(f"Convergence: {counter} iterations")
 print(
     f"Log number densities: ln(n_H2)={ln_nk_result[0]:.6f}, ln(n_CO)={ln_nk_result[1]:.6f}, ln(n_CH4)={ln_nk_result[2]:.6f}, ln(n_H2O)={ln_nk_result[3]:.6f}"
 )
-
+hco_system = HCOSystem()    
+k = hco_system.equilibrium_constant(temperature, P/Pref)
+print(f"Equilibrium constant at T={temperature} K and P={P}: {k}")
+root_x = root_equilibrium(k, bH, bC, bO, x0=0.5)
+print(f"Root x: {root_x}")
+print(f"ln(nCO): {jnp.log(root_x * bC):.6f}")
+exit()
 # Run using main minimize_gibbs function (auto-differentiable version)
 ln_nk_result = minimize_gibbs(
     temperature,
