@@ -16,12 +16,12 @@ class HCOSystem:
         self.T_tables, self.mu_tables = self.get_hcosystem_tables()
 
     def get_hcosystem_tables(self):
-        """Load thermochemical data tables for H and H2 from JANAF database.
+        """Load thermochemical data tables for H2, CO, CH4, and H2O from the JANAF database.
 
         Returns:
             Tuple containing:
-                - T_tables: Temperature tables for H (K).
-                - mu_tables: Chemical potential tables for H2, CO, CH4, H2O (J/mol).
+                - T_tables: Temperature tables for H2, CO, CH4, and H2O (K).
+                - mu_tables: Chemical potential tables for H2, CO, CH4, and H2O (J/mol).
         """
         path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
         gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
