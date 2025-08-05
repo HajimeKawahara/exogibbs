@@ -18,11 +18,10 @@ Key validations performed:
 - Vectorized computation over temperature range
 - Volume mixing ratio (VMR) calculations
 """
-
+#FROM HERE
 from exogibbs.optimize.minimize import minimize_gibbs_core
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.test.analytic_hcosystem import HCOSystem
-from exogibbs.test.analytic_hcosystem import root_equilibrium
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 import numpy as np
 from jax import jacrev
@@ -48,7 +47,7 @@ formula_matrix = jnp.array(
 ).T
 
 # Thermodynamic conditions
-temperature = 3500.0  # K
+temperature = 1500.0  # K
 P = 1.5  # bar
 Pref = 1.0  # bar, reference pressure
 ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
@@ -64,9 +63,9 @@ def hvector_func(temperature):
 
 
 # Element abundance constraint: total H nuclei = 1.0
-bH = 1.0 
-bC = 0.01
-bO = 0.01
+bH = 0.5 
+bC = 0.2
+bO = 0.3
 b_element_vector = jnp.array([bH, bC, bO])  # H, C, O
 
 # Convergence criteria
@@ -96,12 +95,14 @@ print(f"Convergence: {counter} iterations")
 print(
     f"Log number densities: ln(n_H2)={ln_nk_result[0]:.6f}, ln(n_CO)={ln_nk_result[1]:.6f}, ln(n_CH4)={ln_nk_result[2]:.6f}, ln(n_H2O)={ln_nk_result[3]:.6f}"
 )
+from exogibbs.test.analytic_hcosystem import function_equilibrium
+
 hco_system = HCOSystem()    
 k = hco_system.equilibrium_constant(temperature, P/Pref)
-print(f"Equilibrium constant at T={temperature} K and P={P}: {k}")
-root_x = root_equilibrium(k, bH, bC, bO, x0=0.5)
-print(f"Root x: {root_x}")
-print(f"ln(nCO): {jnp.log(root_x * bC):.6f}")
+x_CO = jnp.exp(ln_nk_result[1]) / bC  # n_CO / bC
+res = function_equilibrium(x_CO, k, bC, bH, bO)
+assert jnp.abs(res) < epsilon_crit*10.0
+#TO HERE
 exit()
 # Run using main minimize_gibbs function (auto-differentiable version)
 ln_nk_result = minimize_gibbs(
@@ -138,7 +139,7 @@ dln_dT = jacrev(
 )(temperature)
 print(f"Numerical dln_dT: {dln_dT}")
 
-exit()
+
 # Compare with analytical solution
 k = hcosystem.compute_k(ln_normalized_pressure, temperature)
 refH = hcosystem.ln_nH_dT(jnp.array([temperature]), ln_normalized_pressure)[0]

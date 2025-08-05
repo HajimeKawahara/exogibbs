@@ -1,9 +1,4 @@
-from jax.lax import while_loop
-from jax import grad
-from jax import custom_vjp
 import jax.numpy as jnp
-from sympy import root
-from exogibbs.utils.constants import R_gas_constant_si
 from exogibbs.equilibrium.gibbs import interpolate_hvector_one
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
@@ -70,7 +65,7 @@ class HCOSystem:
         return deltaT
     
     def equilibrium_constant(self, temperature, normalized_pressure):
-        return normalized_pressure**2*jnp.exp(self.deltaT(temperature))
+        return normalized_pressure**2*jnp.exp(-self.deltaT(temperature))
 
 def function_equilibrium(x_CO, k, bC, bH, bO):
     """Function to compute the equilibrium condition for the HCO system.
@@ -88,56 +83,6 @@ def function_equilibrium(x_CO, k, bC, bH, bO):
     x_CH4 = 1.0 - x_CO
     x_H2O = aO - x_CO
     x_H2 = 0.5 * aH - 2.0 * x_CH4 - x_H2O
-    x_tot = 0.5 * aH + 2.0 * x_CO - 1.0
+    x_tot = x_H2 + x_CO + x_CH4 + x_H2O
     return x_CH4 * x_H2O * x_tot**2 - k * x_CO * x_H2**3
 
-
-def newton_scalar(init_x, *, k, bC, bH, bO, tol=1e-12, maxiter=500):
-    def cond_fn(state):
-        x, fval, it = state
-        return jnp.logical_and(jnp.abs(fval) > tol, it < maxiter)
-
-    def body_fn(state):
-        x, fval, it = state
-        dfdx = grad(function_equilibrium, 0)(x, k, bC, bH, bO)
-        dfdx = jnp.where(dfdx == 0.0, 1e-14, dfdx)
-        x_new = x - fval / dfdx
-        x_new = jnp.clip(x_new, 0.0, 1.0)
-        return (x_new, function_equilibrium(x_new, k, bC, bH, bO), it + 1)
-
-    x0 = jnp.clip(init_x, 0.0, 1.0)
-    f0 = function_equilibrium(x0, k, bC, bH, bO)
-    x, _, _ = while_loop(cond_fn, body_fn, (x0, f0, 0))
-    return x
-
-@custom_vjp
-def root_equilibrium(k, bC, bH, bO, x0=0.5):
-    return newton_scalar(x0, k=k, bC=bC, bH=bH, bO=bO)
-
-# ── forward pass ─────────────────────────────────────────
-def root_equilibrium_fwd(k, bC, bH, bO, x0=0.5):
-    x_star = newton_scalar(x0, k=k, bC=bC, bH=bH, bO=bO)
-    aux = (x_star, k, bC, bH, bO)
-    return x_star, aux
-
-# ── backward pass (implicit function theorem) ────────────
-def root_equilibrium_bwd(aux, g):
-    x_star, k, bC, bH, bO = aux
-    dFdx = grad(function_equilibrium, 0)(x_star, k, bC, bH, bO)
-    dFdtheta = grad(function_equilibrium, (1,2,3,4))(x_star, k, bC, bH, bO)
-    coef = -g / dFdx
-    return tuple(coef * d for d in dFdtheta) + (None,)
-
-root_equilibrium.defvjp(root_equilibrium_fwd, root_equilibrium_bwd)
-
-
-if __name__ == "__main__":
-    # Example usage
-    hco_system = HCOSystem()
-    T = 298.15
-    P = 1.0  # Normalized pressure
-    k = hco_system.equilibrium_constant(T, P)
-    print(f"Equilibrium constant at T={T} K and P={P}: {k}")
-    root_x = root_equilibrium(k, 1.0, 3.0, 1.0, x0=0.5)
-    print(f"Root x: {root_x}")
-    
