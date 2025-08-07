@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+from jax import grad
 from exogibbs.equilibrium.gibbs import interpolate_hvector_one
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
@@ -67,17 +68,17 @@ class HCOSystem:
     def equilibrium_constant(self, temperature, normalized_pressure):
         return normalized_pressure**2*jnp.exp(-self.deltaT(temperature))
 
-def function_equilibrium(x_CO, k, bC, bH, bO):
+def function_equilibrium(n_CO, k, bC, bH, bO):
     """Function to compute the equilibrium condition for the HCO system.
 
     Args:
-        x_CO: number of CO over bC, nCO/bC
+        n_CO: number of CO
         k: Equilibrium constant.
         bC: Total number of carbon atoms.
         bH: Total number of hydrogen atoms.
         bO: Total number of oxygen atoms.
     """
-
+    x_CO = n_CO / bC
     aH = bH / bC
     aO = bO / bC
     x_CH4 = 1.0 - x_CO
@@ -86,3 +87,22 @@ def function_equilibrium(x_CO, k, bC, bH, bO):
     x_tot = x_H2 + x_CO + x_CH4 + x_H2O
     return x_CH4 * x_H2O * x_tot**2 - k * x_CO * x_H2**3
 
+def derivative_dlnnCO_db(ln_nCO, bC, bH, bO, k):
+    """Derivative of ln(n_CO) with respect to bH, bC, bO.
+
+    Args:
+        ln_nCO: Natural log of number density of CO.
+        bC: Total number of carbon atoms.
+        bH: Total number of hydrogen atoms.
+        bO: Total number of oxygen atoms.
+        k: Equilibrium constant.
+    Returns:
+        Tuple containing derivatives with respect to bC, bH, bO.
+
+    """
+    def f(ln_nCO, bC, bH, bO, k):
+        n_CO = jnp.exp(ln_nCO)
+        return function_equilibrium(n_CO, k, bC, bH, bO)
+    
+    gradf = grad(f, argnums=(0,1,2,3))(ln_nCO, bC, bH, bO, k)
+    return jnp.array([- gradf[2]/gradf[0], - gradf[1]/gradf[0], - gradf[3]/gradf[0]])

@@ -9,7 +9,7 @@ ExoGibbs is an auto-differentiable thermochemical equilibrium solver implemented
 ## Key Architecture
 
 - **Core equilibrium calculations**: `src/exogibbs/equilibrium/gibbs.py` - Contains Gibbs energy computation and chemical potential interpolation
-- **Optimization algorithms**: `src/exogibbs/optimize/` - KL mirror descent (`klmirror.py`), projected gradient descent (`naive_pgd.py`), and Lagrange multiplier methods (`lagrange.py`) for constrained optimization
+- **Optimization algorithms**: `src/exogibbs/optimize/` - Core optimization functions (`minimize.py`), KL mirror descent, projected gradient descent, and Lagrange multiplier methods for constrained optimization
 - **Data handling**: `src/exogibbs/io/load_data.py` - Loads JANAF thermochemical data from `src/exogibbs/data/`
 - **Stoichiometry**: `src/exogibbs/stoichiometry/analyze_formula_matrix.py` - Chemical formula matrix analysis for mass balance constraints
 - **Test data generation**: `src/exogibbs/test/generate_gibbs.py` - Creates test cases for equilibrium calculations
