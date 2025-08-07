@@ -89,8 +89,7 @@ def test_derivative_temperature_h_system(h_system_setup):
     hdot = jnp.array([setup['hsystem'].dot_hv_h(setup['temperature']), setup['hsystem'].dot_hv_h2(setup['temperature'])])
     
     # Compute derivatives
-    nk_cdot_hdot = jnp.dot(setup['nk_result'], hdot)    
-    ln_nspecies_dT = derivative_temperature(setup['nk_result'], setup['formula_matrix'], hdot, nk_cdot_hdot, setup['Bmatrix'], setup['b_element_vector'])
+    ln_nspecies_dT = derivative_temperature(setup['nk_result'], setup['formula_matrix'], hdot, setup['Bmatrix'], setup['b_element_vector'])
 
     # Get reference analytical derivatives
     refH = setup['hsystem'].ln_nH_dT(jnp.array([setup['temperature']]), setup['ln_normalized_pressure'])[0]

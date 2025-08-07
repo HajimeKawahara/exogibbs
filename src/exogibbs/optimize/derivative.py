@@ -39,7 +39,6 @@ def derivative_temperature(
     nspecies: jnp.ndarray,
     formula_matrix: jnp.ndarray,
     hdot: jnp.ndarray,
-    nk_cdot_hdot: float,
     Bmatrix: jnp.ndarray,
     b_element_vector: jnp.ndarray,
 ) -> jnp.ndarray:
@@ -50,14 +49,13 @@ def derivative_temperature(
         nspecies: species number vector (n_species,).
         formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
         hdot: temperature derivative of h(T) = mu^o(T)/RT.
-        nk_cdot_hdot: dot product of species number and hdot.
         Bmatrix: A (diag(n) A^T (n_elements, n_elements)
         b_element_vector: element abundance vector (n_elements, ).
 
     Returns:
         The temperature derivative of log species number (n_species,).
     """
-    
+    nk_cdot_hdot = jnp.vdot(nspecies, hdot)    
     pi, ln_ntot_dT = _solve_gibbs_equations_temperature_derivative(nspecies, formula_matrix, hdot, nk_cdot_hdot, Bmatrix, b_element_vector)
     return ln_ntot_dT + formula_matrix.T @ pi - hdot
 

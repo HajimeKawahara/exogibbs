@@ -257,10 +257,9 @@ def minimize_gibbs_bwd(
     nk_result = jnp.exp(ln_nk)
     ntot_result = jnp.exp(ln_ntot)
     Bmatrix = _A_diagn_At(nk_result, formula_matrix)
-    nk_cdot_hdot = jnp.dot(nk_result, hdot)    
     
     #temperature derivative
-    ln_nspecies_dT = derivative_temperature(nk_result, formula_matrix, hdot, nk_cdot_hdot, Bmatrix, b_element_vector)
+    ln_nspecies_dT = derivative_temperature(nk_result, formula_matrix, hdot, Bmatrix, b_element_vector)
     cot_T = jnp.dot(ln_nspecies_dT, g)
 
     #pressure derivative
