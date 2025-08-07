@@ -1,3 +1,6 @@
+"""test minimize_gibbs_core for HCO system equilibrium validation."""
+
+
 import pytest
 import jax.numpy as jnp
 from jax import config
@@ -75,12 +78,14 @@ def test_minimize_gibbs_core_hco_system(hco_system_setup):
     
     # Validate against analytical equilibrium function
     k = setup['hcosystem'].equilibrium_constant(setup['temperature'], setup['P']/setup['Pref'])
-    x_CO = jnp.exp(ln_nk_result[1]) / setup['bC']  # n_CO / bC
-    res = function_equilibrium(x_CO, k, setup['bC'], setup['bH'], setup['bO'])
+    n_CO = jnp.exp(ln_nk_result[1]) 
+    res = function_equilibrium(n_CO, k, setup['bC'], setup['bH'], setup['bO'])
     
     # Check convergence and equilibrium constraint
     assert jnp.abs(res) < setup['epsilon_crit'] * 10.0
     assert counter < setup['max_iter']
+
+
 
 
 if __name__ == "__main__":
