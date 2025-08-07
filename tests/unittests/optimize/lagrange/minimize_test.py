@@ -2,9 +2,12 @@ import pytest
 import jax.numpy as jnp
 from jax import config
 from jax import jacrev
-from exogibbs.optimize.minimize import minimize_gibbs_core, minimize_gibbs
+from exogibbs.optimize.minimize import minimize_gibbs_core
+from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
+from exogibbs.test.analytic_hcosystem import HCOSystem
+from exogibbs.test.analytic_hcosystem import derivative_dlnnCO_db
 
 
 @pytest.fixture
@@ -130,6 +133,71 @@ def test_minimize_gibbs_pressure_gradient_h_system(h_system_setup):
     
     assert jnp.abs(diff_h) < 1e-11, f"H pressure gradient difference too large: {diff_h}"
     assert jnp.abs(diff_h2) < 1e-11, f"H2 pressure gradient difference too large: {diff_h2}"
+
+
+def test_minimize_gibbs_element_gradient_hco_system():
+    """Test minimize_gibbs element gradient using analytical HCO system."""
+    config.update("jax_enable_x64", True)
+    
+    hcosystem = HCOSystem()
+    
+    formula_matrix = jnp.array(
+        [[2.0, 0.0, 0.0], [0.0, 1.0, 1.0], [4.0, 1.0, 0.0], [2.0, 0.0, 1.0]]
+    ).T
+    
+    temperature = 1500.0
+    P = 1.5
+    Pref = 1.0
+    ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
+    
+    ln_nk = jnp.array([0.0, 0.0, 0.0, 0.0])
+    ln_ntot = 0.0
+    
+    def hvector_func(temperature):
+        return hcosystem.hv_hco(temperature)
+    
+    bH = 0.5
+    bC = 0.2
+    bO = 0.3
+    b_element_vector = jnp.array([bH, bC, bO])
+    
+    epsilon_crit = 1e-11
+    max_iter = 1000
+    
+    # Get equilibrium solution first
+    ln_nk_result = minimize_gibbs(
+        temperature,
+        ln_normalized_pressure,
+        b_element_vector,
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit=epsilon_crit,
+        max_iter=max_iter,
+    )
+    
+    # Compute element gradient using jacrev
+    dlnn_db = jacrev(
+        lambda b_element_vector_in: minimize_gibbs(
+            temperature,
+            ln_normalized_pressure,
+            b_element_vector_in,
+            ln_nk,
+            ln_ntot,
+            formula_matrix,
+            hvector_func,
+            epsilon_crit=epsilon_crit,
+            max_iter=max_iter,
+        )
+    )(b_element_vector)
+    
+    # Analytical derivatives
+    k = hcosystem.equilibrium_constant(temperature, P/Pref)
+    gradf = derivative_dlnnCO_db(ln_nk_result[1], bC, bH, bO, k)
+    
+    diff = jnp.abs(dlnn_db[1,:] / gradf - 1.0)
+    assert jnp.all(diff < 1.0e-5), f"Derivative mismatch: {diff}"
 
 
 if __name__ == "__main__":

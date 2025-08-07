@@ -10,6 +10,7 @@ from exogibbs.optimize.core import _A_diagn_At
 from exogibbs.optimize.core import _compute_gk
 from exogibbs.optimize.derivative import derivative_temperature
 from exogibbs.optimize.derivative import derivative_pressure
+from exogibbs.optimize.derivative import derivative_element_all
 
 
 def solve_gibbs_iteration_equations(
@@ -265,7 +266,12 @@ def minimize_gibbs_bwd(
     #pressure derivative
     ln_nspecies_dlogp = derivative_pressure(ntot_result, formula_matrix, Bmatrix, b_element_vector)
     cot_P = jnp.dot(ln_nspecies_dlogp, g)
-    return (cot_T, cot_P, None)
+
+    #element derivative
+    ln_nspecies_db = derivative_element_all(formula_matrix, Bmatrix, b_element_vector)
+    cot_b = ln_nspecies_db @ g
+
+    return (jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b)
 
 
 minimize_gibbs.defvjp(minimize_gibbs_fwd, minimize_gibbs_bwd)

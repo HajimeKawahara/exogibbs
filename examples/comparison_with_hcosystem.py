@@ -18,7 +18,7 @@ Key validations performed:
 - Vectorized computation over temperature range
 - Volume mixing ratio (VMR) calculations
 """
-from exogibbs.optimize.minimize import minimize_gibbs_core
+
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.test.analytic_hcosystem import HCOSystem
 from exogibbs.optimize.core import compute_ln_normalized_pressure
@@ -62,7 +62,7 @@ def hvector_func(temperature):
 
 
 # Element abundance constraint: total H nuclei = 1.0
-bH = 0.5 
+bH = 0.5
 bC = 0.2
 bO = 0.3
 b_element_vector = jnp.array([bH, bC, bO])  # H, C, O
@@ -96,49 +96,39 @@ print(
     f"Log number densities: ln(n_H2)={ln_nk_result[0]:.6f}, ln(n_CO)={ln_nk_result[1]:.6f}, ln(n_CH4)={ln_nk_result[2]:.6f}, ln(n_H2O)={ln_nk_result[3]:.6f}"
 )
 from exogibbs.test.analytic_hcosystem import function_equilibrium
-hco_system = HCOSystem()    
-k = hco_system.equilibrium_constant(temperature, P/Pref)
-n_CO = jnp.exp(ln_nk_result[1]) 
-res = function_equilibrium(n_CO, k, bC, bH, bO)
-assert jnp.abs(res) < epsilon_crit*10.0
 
-#mainly from here
+hco_system = HCOSystem()
+k = hco_system.equilibrium_constant(temperature, P / Pref)
+n_CO = jnp.exp(ln_nk_result[1])
+res = function_equilibrium(n_CO, k, bC, bH, bO)
+assert jnp.abs(res) < epsilon_crit * 10.0
+
+# mainly from here
 
 # element derivatives
-from exogibbs.optimize.derivative import derivative_element_one
-from exogibbs.optimize.core import _A_diagn_At
 from exogibbs.test.analytic_hcosystem import derivative_dlnnCO_db
 
-nk_result = jnp.exp(ln_nk_result)
-Bmatrix = _A_diagn_At(nk_result, formula_matrix)
+dlnn_db = jacrev(
+    lambda b_element_vector_in: minimize_gibbs(
+        temperature,
+        ln_normalized_pressure,
+        b_element_vector_in,
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit=epsilon_crit,
+        max_iter=max_iter,
+    )
+)(b_element_vector) # (n_species, n_elements)
 
-dlnn_dbH = derivative_element_one(
-    formula_matrix,
-    Bmatrix,
-    b_element_vector,
-    0,
-)
-
-dlnn_dbC = derivative_element_one(
-    formula_matrix,
-    Bmatrix,
-    b_element_vector,
-    1,
-)
-
-dlnn_dbO = derivative_element_one(
-    formula_matrix,
-    Bmatrix,
-    b_element_vector,
-    2,
-)
-dlnnCO_db = jnp.array([dlnn_dbH[1],dlnn_dbC[1],dlnn_dbO[1]])
-
-#analytical derivatives
+# analytical derivatives
 gradf = derivative_dlnnCO_db(ln_nk_result[1], bC, bH, bO, k)
 
-diff = jnp.abs(dlnnCO_db/gradf - 1.0)
+diff = jnp.abs(dlnn_db[1,:] / gradf - 1.0)
 
-assert jnp.all(diff < 1.e-5), f"Derivative mismatch: {diff}" #2.32238010e-06 4.02220479e-11 1.80632038e-06 2025/8/7
+assert jnp.all(
+    diff < 1.0e-5
+), f"Derivative mismatch: {diff}"  # 2.32238010e-06 4.02220479e-11 1.80632038e-06 2025/8/7
 
-#to here
+# to here

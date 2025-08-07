@@ -2,7 +2,10 @@ import pytest
 import jax.numpy as jnp
 from jax import config
 from exogibbs.optimize.minimize import minimize_gibbs_core
-from exogibbs.optimize.derivative import derivative_temperature, derivative_pressure, derivative_element_one
+from exogibbs.optimize.derivative import derivative_temperature
+from exogibbs.optimize.derivative import derivative_pressure
+from exogibbs.optimize.derivative import derivative_element_one
+from exogibbs.optimize.derivative import derivative_element_all
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
 from exogibbs.test.analytic_hcosystem import HCOSystem, derivative_dlnnCO_db
@@ -141,13 +144,13 @@ def test_derivative_element_one_h_system(h_system_setup):
     assert jnp.abs(diff_h2) < 1e-11, f"H2 element derivative difference too large: {diff_h2}"
 
 
-def test_derivative_element_one_hcosystem():
-    """Test derivative_element_one using analytical HCO system solution."""
+@pytest.fixture
+def hco_system_setup():
+    """Setup common test parameters for HCO system derivative tests."""
     config.update("jax_enable_x64", True)
     
     hcosystem = HCOSystem()
     
-    # Formula matrix: [H, C, O] x [H2, CO, CH4, H2O]
     formula_matrix = jnp.array(
         [[2.0, 0.0, 0.0], [0.0, 1.0, 1.0], [4.0, 1.0, 0.0], [2.0, 0.0, 1.0]]
     ).T
@@ -188,17 +191,38 @@ def test_derivative_element_one_hcosystem():
     nk_result = jnp.exp(ln_nk_result)
     Bmatrix = _A_diagn_At(nk_result, formula_matrix)
     
-    # Compute derivatives
-    dlnn_dbH = derivative_element_one(formula_matrix, Bmatrix, b_element_vector, 0)
-    dlnn_dbC = derivative_element_one(formula_matrix, Bmatrix, b_element_vector, 1)
-    dlnn_dbO = derivative_element_one(formula_matrix, Bmatrix, b_element_vector, 2)
-    dlnnCO_db = jnp.array([dlnn_dbH[1], dlnn_dbC[1], dlnn_dbO[1]])
-    
-    # Analytical derivatives
     k = hcosystem.equilibrium_constant(temperature, P/Pref)
     gradf = derivative_dlnnCO_db(ln_nk_result[1], bC, bH, bO, k)
     
-    diff = jnp.abs(dlnnCO_db/gradf - 1.0)
+    return {
+        'formula_matrix': formula_matrix,
+        'ln_nk_result': ln_nk_result,
+        'nk_result': nk_result,
+        'Bmatrix': Bmatrix,
+        'b_element_vector': b_element_vector,
+        'gradf': gradf
+    }
+
+
+def test_derivative_element_one_hcosystem(hco_system_setup):
+    """Test derivative_element_one using analytical HCO system solution."""
+    setup = hco_system_setup
+    
+    dlnn_dbH = derivative_element_one(setup['formula_matrix'], setup['Bmatrix'], setup['b_element_vector'], 0)
+    dlnn_dbC = derivative_element_one(setup['formula_matrix'], setup['Bmatrix'], setup['b_element_vector'], 1)
+    dlnn_dbO = derivative_element_one(setup['formula_matrix'], setup['Bmatrix'], setup['b_element_vector'], 2)
+    dlnnCO_db = jnp.array([dlnn_dbH[1], dlnn_dbC[1], dlnn_dbO[1]])
+    
+    diff = jnp.abs(dlnnCO_db/setup['gradf'] - 1.0)
+    assert jnp.all(diff < 1.e-5), f"Derivative mismatch: {diff}"
+
+def test_derivative_element_all_hcosystem(hco_system_setup):
+    """Test derivative_element_all using analytical HCO system solution."""
+    setup = hco_system_setup
+    
+    dlnn_db = derivative_element_all(setup['formula_matrix'], setup['Bmatrix'], setup['b_element_vector'])
+    
+    diff = jnp.abs(dlnn_db[:,1]/setup['gradf'] - 1.0)
     assert jnp.all(diff < 1.e-5), f"Derivative mismatch: {diff}"
 
 
