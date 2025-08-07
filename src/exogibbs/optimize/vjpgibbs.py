@@ -9,7 +9,6 @@ def vjp_temperature(
     nspecies: jnp.ndarray,
     formula_matrix: jnp.ndarray,
     hdot: jnp.ndarray,
-    nk_cdot_hdot: float,
     Bmatrix: jnp.ndarray,
     b_element_vector: jnp.ndarray,
 ) -> jnp.ndarray:
@@ -21,18 +20,22 @@ def vjp_temperature(
         nspecies: species number vector (n_species,).
         formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
         hdot: temperature derivative of h(T) = mu^o(T)/RT.
-        nk_cdot_hdot: dot product of species number and hdot.
-        Bmatrix: A (diag(n) A^T (n_elements, n_elements) Semipsitive Definite matrix.
+        Bmatrix: A (diag(n) A^T (n_elements, n_elements), positive definite matrix.
         b_element_vector: element abundance vector (n_elements, ).
 
     Returns:
-        The temperature derivative of log species number (.
+        The temperature VJP of log species number.
     """
+    nk_cdot_hdot = jnp.vdot(nspecies, hdot)    
+    Anh = formula_matrix @ (nspecies * hdot)
+    # solves the linear systems
     c, lower = cho_factor(Bmatrix)
     alpha = cho_solve((c, lower), formula_matrix@gvector)
     beta = cho_solve((c, lower), b_element_vector)
+    # derives the temperature derivative of qtot
     bsquared_inverse = 1.0/jnp.vdot(b_element_vector, b_element_vector)
-    Anh = formula_matrix @ (nspecies * hdot)
     dqtot_dT = bsquared_inverse * (jnp.vdot(beta, Anh) - nk_cdot_hdot)
+    # derives the g^T A^T Pi term
+    gTATPi = jnp.vdot(alpha, Anh) - dqtot_dT*jnp.vdot(alpha, b_element_vector)
 
-    return cot_T
+    return dqtot_dT*jnp.sum(gvector) + gTATPi - jnp.vdot(gvector, hdot)
