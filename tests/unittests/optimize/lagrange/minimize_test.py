@@ -194,8 +194,10 @@ def test_minimize_gibbs_element_gradient_hco_system():
     
     # Analytical derivatives
     k = hcosystem.equilibrium_constant(temperature, P/Pref)
+    # Index 1 corresponds to the CO species in ln_nk_result
     gradf = derivative_dlnnCO_db(ln_nk_result[1], bC, bH, bO, k)
     
+    # Index 1 corresponds to the CO species in dlnn_db
     diff = jnp.abs(dlnn_db[1,:] / gradf - 1.0)
     assert jnp.all(diff < 1.0e-5), f"Derivative mismatch: {diff}"
 
