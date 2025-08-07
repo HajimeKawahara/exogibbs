@@ -222,6 +222,7 @@ def test_derivative_element_all_hcosystem(hco_system_setup):
     
     dlnn_db = derivative_element_all(setup['formula_matrix'], setup['Bmatrix'], setup['b_element_vector'])
     
+    # Index 1 corresponds to the CO species
     diff = jnp.abs(dlnn_db[:,1]/setup['gradf'] - 1.0)
     assert jnp.all(diff < 1.e-5), f"Derivative mismatch: {diff}"
 
