@@ -68,7 +68,7 @@ def vjp_elements(
     beta_vector: jnp.ndarray,
     b_element_vector: jnp.ndarray,
     beta_dot_b_element: float,
-) -> float:
+) -> jnp.ndarray:
     """
     Compute the elements vector-Jacobian product of the Gibbs energy.
 
