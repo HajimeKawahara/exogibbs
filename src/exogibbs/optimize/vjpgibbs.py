@@ -27,15 +27,14 @@ def vjp_temperature(
         The temperature VJP of log species number.
     """
     nk_cdot_hdot = jnp.vdot(nspecies, hdot)    
-    Anh = formula_matrix @ (nspecies * hdot)
+    etav = formula_matrix @ (nspecies * hdot)
     # solves the linear systems
     c, lower = cho_factor(Bmatrix)
     alpha = cho_solve((c, lower), formula_matrix@gvector)
     beta = cho_solve((c, lower), b_element_vector)
     # derives the temperature derivative of qtot
-    
-    dqtot_dT = (jnp.vdot(beta, Anh) - nk_cdot_hdot)/jnp.vdot(beta, b_element_vector)
+    dqtot_dT = (jnp.vdot(beta, etav) - nk_cdot_hdot)/jnp.vdot(beta, b_element_vector)
     # derives the g^T A^T Pi term
-    gTATPi = jnp.vdot(alpha, Anh) - dqtot_dT*jnp.vdot(alpha, b_element_vector)
+    gTATPi = jnp.vdot(alpha, etav - dqtot_dT*b_element_vector)
 
     return dqtot_dT*jnp.sum(gvector) + gTATPi - jnp.vdot(gvector, hdot)
