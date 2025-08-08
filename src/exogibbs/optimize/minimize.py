@@ -4,6 +4,9 @@ from jax import jacrev
 from jax import vmap
 from jax.lax import while_loop
 from jax import jit
+from jax.scipy.linalg import cho_factor
+from jax.scipy.linalg import cho_solve
+
 from functools import partial
 from typing import Tuple, Callable
 from exogibbs.optimize.core import _A_diagn_At
@@ -12,6 +15,7 @@ from exogibbs.optimize.derivative import derivative_temperature
 from exogibbs.optimize.derivative import derivative_pressure
 from exogibbs.optimize.derivative import derivative_element_all
 from exogibbs.optimize.vjpgibbs import vjp_temperature
+
 
 def solve_gibbs_iteration_equations(
     nk: jnp.ndarray,
@@ -197,7 +201,7 @@ def minimize_gibbs(
     Returns:
         Final log number of species vector (n_species,).
     """
-    
+
     ln_nk, _, _ = minimize_gibbs_core(
         temperature,
         ln_normalized_pressure,
@@ -254,20 +258,27 @@ def minimize_gibbs_bwd(
 ):
 
     ln_nk, hdot, b_element_vector, ln_ntot = res
-    nk_result = jnp.exp(ln_nk)
+    nk = jnp.exp(ln_nk)
     ntot_result = jnp.exp(ln_ntot)
-    Bmatrix = _A_diagn_At(nk_result, formula_matrix)
     
-    #temperature derivative
-    #ln_nspecies_dT = derivative_temperature(nk_result, formula_matrix, hdot, Bmatrix, b_element_vector)
-    #cot_T = jnp.dot(ln_nspecies_dT, g)
-    cot_T = vjp_temperature(g, nk_result, formula_matrix, hdot, Bmatrix, b_element_vector)
+    # solves the linear systems
+    Bmatrix = _A_diagn_At(nk, formula_matrix)
+    c, lower = cho_factor(Bmatrix)
+    alpha = cho_solve((c, lower), formula_matrix @ g)
+    beta = cho_solve((c, lower), b_element_vector)
 
-    #pressure derivative
-    ln_nspecies_dlogp = derivative_pressure(ntot_result, formula_matrix, Bmatrix, b_element_vector)
+    # temperature derivative
+    # ln_nspecies_dT = derivative_temperature(nk, formula_matrix, hdot, Bmatrix, b_element_vector)
+    # cot_T = jnp.dot(ln_nspecies_dT, g)
+    cot_T = vjp_temperature(g, nk, formula_matrix, hdot, alpha, beta, b_element_vector)
+
+    # pressure derivative
+    ln_nspecies_dlogp = derivative_pressure(
+        ntot_result, formula_matrix, Bmatrix, b_element_vector
+    )
     cot_P = jnp.dot(ln_nspecies_dlogp, g)
 
-    #element derivative
+    # element derivative
     ln_nspecies_db = derivative_element_all(formula_matrix, Bmatrix, b_element_vector)
     cot_b = ln_nspecies_db @ g
 
@@ -275,4 +286,3 @@ def minimize_gibbs_bwd(
 
 
 minimize_gibbs.defvjp(minimize_gibbs_fwd, minimize_gibbs_bwd)
-
