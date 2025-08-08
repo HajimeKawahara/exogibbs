@@ -34,3 +34,26 @@ def vjp_temperature(
     gTATPi = jnp.vdot(alpha_vector, etav - dqtot_dT*b_element_vector)
 
     return dqtot_dT*jnp.sum(gvector) + gTATPi - jnp.vdot(gvector, hdot)
+
+
+def vjp_pressure(
+    gvector: jnp.ndarray,
+    ntot: jnp.ndarray,
+    alpha_vector: jnp.ndarray,
+    beta_vector: jnp.ndarray,
+    b_element_vector: jnp.ndarray,
+) -> float:
+    """
+    Compute the pressure vector-Jacobian product of the Gibbs energy.
+
+    Args:
+        gvector: vector for vjp (n_species,).
+        ntot: total number of species (scalar).
+        alpha_vector: (A (diag(n) A^T) @ alpha_vector = formula_matrix @ gvector
+        beta_vector: (A (diag(n) A^T) @ beta_vector = b_element_vector
+        b_element_vector: element abundance vector (n_elements, ).
+
+    Returns:
+        The pressure VJP of log species number.
+    """
+    return ntot * (alpha_vector @ b_element_vector - jnp.sum(gvector)) / jnp.vdot(beta_vector, b_element_vector)

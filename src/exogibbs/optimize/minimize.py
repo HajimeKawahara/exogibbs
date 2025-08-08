@@ -11,10 +11,9 @@ from functools import partial
 from typing import Tuple, Callable
 from exogibbs.optimize.core import _A_diagn_At
 from exogibbs.optimize.core import _compute_gk
-from exogibbs.optimize.derivative import derivative_temperature
-from exogibbs.optimize.derivative import derivative_pressure
 from exogibbs.optimize.derivative import derivative_element_all
 from exogibbs.optimize.vjpgibbs import vjp_temperature
+from exogibbs.optimize.vjpgibbs import vjp_pressure
 
 
 def solve_gibbs_iteration_equations(
@@ -267,17 +266,9 @@ def minimize_gibbs_bwd(
     alpha = cho_solve((c, lower), formula_matrix @ g)
     beta = cho_solve((c, lower), b_element_vector)
 
-    # temperature derivative
-    # ln_nspecies_dT = derivative_temperature(nk, formula_matrix, hdot, Bmatrix, b_element_vector)
-    # cot_T = jnp.dot(ln_nspecies_dT, g)
+    #VJPs
     cot_T = vjp_temperature(g, nk, formula_matrix, hdot, alpha, beta, b_element_vector)
-
-    # pressure derivative
-    ln_nspecies_dlogp = derivative_pressure(
-        ntot_result, formula_matrix, Bmatrix, b_element_vector
-    )
-    cot_P = jnp.dot(ln_nspecies_dlogp, g)
-
+    cot_P = vjp_pressure(g, ntot_result, alpha, beta, b_element_vector)
     # element derivative
     ln_nspecies_db = derivative_element_all(formula_matrix, Bmatrix, b_element_vector)
     cot_b = ln_nspecies_db @ g
