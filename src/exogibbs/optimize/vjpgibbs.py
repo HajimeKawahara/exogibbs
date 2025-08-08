@@ -20,8 +20,8 @@ def vjp_temperature(
         nspecies: species number vector (n_species,).
         formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
         hdot: temperature derivative of h(T) = mu^o(T)/RT.
-        alpha_vector: (A (diag(n) A^T) @ alpha_vector = formula_matrix @ gvector
-        beta_vector: (A (diag(n) A^T) @ beta_vector = b_element_vector
+        alpha_vector: Solution to the linear system (A diag(n) A^T) @ alpha_vector = formula_matrix @ gvector.
+        beta_vector: Solution to the linear system (A diag(n) A^T) @ beta_vector = b_element_vector.
         b_element_vector: element abundance vector (n_elements, ).
         beta_dot_b_element: dot product of beta_vector and b_element_vector, i.e. jnp.vdot(beta_vector, b_element_vector).
 
