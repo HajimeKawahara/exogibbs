@@ -33,8 +33,8 @@ def vjp_temperature(
     alpha = cho_solve((c, lower), formula_matrix@gvector)
     beta = cho_solve((c, lower), b_element_vector)
     # derives the temperature derivative of qtot
-    bsquared_inverse = 1.0/jnp.vdot(b_element_vector, b_element_vector)
-    dqtot_dT = bsquared_inverse * (jnp.vdot(beta, Anh) - nk_cdot_hdot)
+    
+    dqtot_dT = (jnp.vdot(beta, Anh) - nk_cdot_hdot)/jnp.vdot(beta, b_element_vector)
     # derives the g^T A^T Pi term
     gTATPi = jnp.vdot(alpha, Anh) - dqtot_dT*jnp.vdot(alpha, b_element_vector)
 
