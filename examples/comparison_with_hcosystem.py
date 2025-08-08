@@ -45,6 +45,10 @@ formula_matrix = jnp.array(
     [[2.0, 0.0, 0.0], [0.0, 1.0, 1.0], [4.0, 1.0, 0.0], [2.0, 0.0, 1.0]]
 ).T
 
+# check if the formula matrix is full raw rank
+rank = np.linalg.matrix_rank(formula_matrix)
+print("formula matrix is row-full rank",rank == formula_matrix.shape[0])
+
 # Thermodynamic conditions
 temperature = 1500.0  # K
 P = 1.5  # bar
