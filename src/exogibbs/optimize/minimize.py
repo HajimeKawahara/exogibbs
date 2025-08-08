@@ -1,19 +1,20 @@
 import jax.numpy as jnp
 from jax import custom_vjp
 from jax import jacrev
-from jax import vmap
-from jax.lax import while_loop
 from jax import jit
+from jax.lax import while_loop
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
 
 from functools import partial
 from typing import Tuple, Callable
+
 from exogibbs.optimize.core import _A_diagn_At
 from exogibbs.optimize.core import _compute_gk
-from exogibbs.optimize.derivative import derivative_element_all
 from exogibbs.optimize.vjpgibbs import vjp_temperature
 from exogibbs.optimize.vjpgibbs import vjp_pressure
+from exogibbs.optimize.vjpgibbs import vjp_elements
+
 
 
 def solve_gibbs_iteration_equations(
@@ -103,7 +104,6 @@ def update_all(
     An = formula_matrix @ nk
     epsilon = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
     return ln_nk, ln_ntot, epsilon, gk, An
-
 
 def minimize_gibbs_core(
     temperature: float,
@@ -265,13 +265,12 @@ def minimize_gibbs_bwd(
     c, lower = cho_factor(Bmatrix)
     alpha = cho_solve((c, lower), formula_matrix @ g)
     beta = cho_solve((c, lower), b_element_vector)
-
+    beta_dot_b_element = jnp.vdot(beta, b_element_vector)
+    
     #VJPs
-    cot_T = vjp_temperature(g, nk, formula_matrix, hdot, alpha, beta, b_element_vector)
-    cot_P = vjp_pressure(g, ntot_result, alpha, beta, b_element_vector)
-    # element derivative
-    ln_nspecies_db = derivative_element_all(formula_matrix, Bmatrix, b_element_vector)
-    cot_b = ln_nspecies_db @ g
+    cot_T = vjp_temperature(g, nk, formula_matrix, hdot, alpha, beta, b_element_vector, beta_dot_b_element)
+    cot_P = vjp_pressure(g, ntot_result, alpha, b_element_vector, beta_dot_b_element)
+    cot_b = vjp_elements(g, alpha, beta, b_element_vector, beta_dot_b_element)
 
     return (jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b)
 
