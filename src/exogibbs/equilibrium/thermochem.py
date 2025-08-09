@@ -41,5 +41,3 @@ class ThermoChem:
         """
         return
 
-def thermochemical_equilibrium(pressures, temperatures):
-    return None
