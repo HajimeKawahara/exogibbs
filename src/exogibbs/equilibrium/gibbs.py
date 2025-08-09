@@ -5,9 +5,11 @@ from typing import Dict
 import jax
 import jax.numpy as jnp
 from jax import jit
-from exogibbs.utils.constants import R_gas_constant_si
 from jax.scipy.special import xlogy
 from jax import custom_jvp
+from interpax import interp1d
+    
+from exogibbs.utils.constants import R_gas_constant_si
 
 _INF_STRINGS = {"inf", "Inf", "INFINITE"}
 _NINF_STRINGS = {"-inf", "-Inf", "-INFINITE"}
@@ -87,21 +89,47 @@ def extract_and_pad_gibbs_data(
     )  # shape (M,),      int32
 
 
-@jit
-def interpolate_chemical_potential_one(T_target, T_vec, mu_vec):
+def interpolate_chemical_potential_one(T_target, T_vec, mu_vec, method="linear"):
     """interpolate one chemical potential at T_target
     Args:
-        T_target (scalar): target temperature (K)
+        T_target (scalar or array): target temperature(s) (K)
         T_vec (1D array): temeprature grid（Lmax)
         mu_vec (1D array): chemical potential grid（Lmax)
+        method (str):  method of interpolation used in interpax.interp1d. Note that "cubic" sometimes causes problems with interpolation.
+            'nearest': nearest neighbor interpolation
+            'linear': linear interpolation
+            'cubic': C1 cubic splines (aka local splines)
+            'cubic2': C2 cubic splines (aka natural splines)
+            'catmull-rom': C1 cubic centripetal “tension” splines
+            'cardinal': C1 cubic general tension splines. If used, can also pass keyword parameter c in float[0,1] to specify tension
+            'monotonic': C1 cubic splines that attempt to preserve monotonicity in the data, and will not introduce new extrema in the interpolated points
+            'monotonic-0': same as 'monotonic' but with 0 first derivatives at both endpoints
+            'akima': C1 cubic splines that appear smooth and natural
+        
     """
-    n = T_vec.size
-    idx = jnp.clip(jnp.searchsorted(T_vec, T_target) - 1, 0, n - 2)
-    T0, T1 = T_vec[idx], T_vec[idx + 1]
-    mu0, mu1 = mu_vec[idx], mu_vec[idx + 1]
-    w = (T_target - T0) / (T1 - T0)
-    return (1 - w) * mu0 + w * mu1
+    return interp1d(T_target, T_vec, mu_vec, method=method)
+    
+def interpolate_hvector_one(T_target, T_vec, mu_vec, method="linear"):
+    """interpolate one hvector = (chemical_potential/RT)  at T_target
+    Args:
+        T_target (scalar or array): target temperature(s) (K)
+        T_vec (1D array): temeprature grid（Lmax)
+        mu_vec (1D array): chemical potential grid（Lmax)
+        method (str):  method of interpolation used in interpax.interp1d
+            'nearest': nearest neighbor interpolation
+            'linear': linear interpolation
+            'cubic': C1 cubic splines (aka local splines)
+            'cubic2': C2 cubic splines (aka natural splines)
+            'catmull-rom': C1 cubic centripetal “tension” splines
+            'cardinal': C1 cubic general tension splines. If used, can also pass keyword parameter c in float[0,1] to specify tension
+            'monotonic': C1 cubic splines that attempt to preserve monotonicity in the data, and will not introduce new extrema in the interpolated points
+            'monotonic-0': same as 'monotonic' but with 0 first derivatives at both endpoints
+            'akima': C1 cubic splines that appear smooth and natural
 
+    """
+    RT = R_gas_constant_si * T_vec
+    return interp1d(T_target, T_vec, mu_vec/RT, method=method) 
+    
 
 def interpolate_chemical_potential_all(T_target, T_table, mu_table):
     """interpolate the chemical potential at T_target for all molecules
@@ -115,6 +143,21 @@ def interpolate_chemical_potential_all(T_target, T_table, mu_table):
     """
     return jax.lax.map(
         lambda args: interpolate_chemical_potential_one(T_target, *args),
+        (T_table, mu_table),
+    )
+
+def interpolate_hvector_all(T_target, T_table, mu_table):
+    """interpolate hvector = the chemical potential/RT at T_target for all molecules
+    Args:
+        T_target (scalar): target temperature (K)
+        T_table (ndarray): array of temeprature grid（Lmax)
+        mu_table (ndarray): array of chemical potential grid（Nmol, Lmax)
+
+    Returns:
+        chemical_potential_vec (ndarray): array of chemical potential at T_target (Nmol,Lmax)
+    """
+    return jax.lax.map(
+        lambda args: interpolate_hvector_one(T_target, *args),
         (T_table, mu_table),
     )
 
