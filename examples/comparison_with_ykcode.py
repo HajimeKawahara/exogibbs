@@ -1,19 +1,10 @@
 """
-Validation of Gibbs Minimization Against Analytical HCO System
+Validation of Gibbs Minimization Against ykawashima's B4 code
 ============================================================
 
 This example demonstrates and validates the ExoGibbs thermochemical equilibrium
-solver against the analytical solution for the hydrogen dissociation equilibrium:
+solver against the code by ykawashima when she was at B4.
 
-    CO + 3H₂ ⇌ CH₄ + H₂O
-
-The HCO system provides analytical solutions that can be used to verify
-the numerical accuracy of the Gibbs energy minimization algorithm and its
-automatic differentiation capabilities.
-
-Key validations performed:
-- Single-point equilibrium composition
-- Elements derivatives (∂ln n/∂b)
 """
 
 from exogibbs.optimize.minimize import minimize_gibbs
@@ -29,13 +20,13 @@ config.update("jax_enable_x64", True)
 ##############################################################################
 # Setup Test System and Parameters
 # ---------------------------------
-# We initialize the analytical HCO system and define the thermochemical
+# We initialize the analytical H system and define the thermochemical
 # equilibrium problem parameters.
 
 # Initialize the analytic HCO system
 hcosystem = HCOSystem()
 
-# Define stoichiometric constraint matrix:
+# Define stoichiometric constraint matrix: [H atoms per species]
 # Species order: [H₂, CO, CH₄, H₂O]
 # Elements order: [H, C, O]
 formula_matrix = jnp.array(
@@ -62,7 +53,7 @@ def hvector_func(temperature):
     return hcosystem.hv_hco(temperature)
 
 
-# Element abundance constraint:
+# Element abundance constraint: total H nuclei = 1.0
 bH = 0.5
 bC = 0.2
 bO = 0.3
@@ -104,6 +95,8 @@ n_CO = jnp.exp(ln_nk_result[1])
 res = function_equilibrium(n_CO, k, bC, bH, bO)
 assert jnp.abs(res) < epsilon_crit * 10.0
 
+# mainly from here
+
 # element derivatives
 from exogibbs.test.analytic_hcosystem import derivative_dlnnCO_db
 
@@ -129,3 +122,5 @@ diff = jnp.abs(dlnn_db[1,:] / gradf - 1.0)
 assert jnp.all(
     diff < 1.0e-5
 ), f"Derivative mismatch: {diff}"  # 2.32238010e-06 4.02220479e-11 1.80632038e-06 2025/8/7
+
+# to here
