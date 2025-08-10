@@ -54,7 +54,7 @@ def test_interpolation_gibbs(fig=False):
         
             plt.plot(T_query, chemical_potential_dict["janaf_raw"], "o")
         plt.xlabel("T(K)")
-        plt.ylabel("delta-f G (J/mol)/RT")
+        plt.ylabel("h-vector")
         plt.show()
 
 
