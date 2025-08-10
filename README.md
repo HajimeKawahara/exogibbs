@@ -1,5 +1,6 @@
-# exogibbs
-Differentiable Thermochemical Equilibrium 
+# ExoGibbs
 
+Differentiable Thermochemical Equilibrium, Powered by JAX. 
 
-The terminology follows Smith and Missen. The original code is from ykawashima's B4 code.
+The optimization scheme is based on the Lagrange multiplier, similar to NASA/CEA algorithm. 
+The terminology follows Smith and Missen. 
