@@ -1,8 +1,8 @@
-__all__ = []
-
-__version__ = '0.0.1'
-__uri__ = 'http://secondearths.sakura.ne.jp/exogibbs'
-__author__ = 'HajimeKawahara, ykawashima'
-__email__ = 'divrot@gmail.com'
-__license__ = 'MIT'
-__description__ = 'Auto-differentiable Thermochemical Equilibrium Solver'
+try:
+    from .ExoGibbs_version import __version__
+except Exception:
+    try:
+        from importlib.metadata import version as _pkg_version
+        __version__ = _pkg_version("ExoGibbs")
+    except Exception:
+        __version__ = "0.0.0.dev0"
