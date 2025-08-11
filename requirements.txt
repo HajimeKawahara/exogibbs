@@ -1,5 +1,0 @@
-interpax
-jax >=0.4.30, < 0.7 #interpax requires jax < 0.7
-tqdm
-pandas
-thermochem
