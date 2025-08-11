@@ -8,6 +8,8 @@ solver against the code by ykawashima when she was at B4.
 """
 
 from exogibbs.optimize.minimize import minimize_gibbs
+from exogibbs.optimize.minimize import minimize_gibbs_core
+
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
 from exogibbs.equilibrium.gibbs import interpolate_hvector_all
@@ -17,6 +19,7 @@ from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
 from exogibbs.io.load_data import NUMBER_OF_SPECIES_SAMPLE
 import numpy as np
 import pandas as pd
+from jax import jacrev
 import jax.numpy as jnp
 
 from jax import config
@@ -75,7 +78,7 @@ max_iter = 1000
 
 # Run Gibbs minimization using core function (returns iteration count)
 
-ln_nk_result = minimize_gibbs(
+ln_nk_result, _, icount = minimize_gibbs_core(
     temperature,
     ln_normalized_pressure,
     b_element_vector,
@@ -87,11 +90,11 @@ ln_nk_result = minimize_gibbs(
     max_iter=max_iter,
 )
 nk_result = jnp.exp(ln_nk_result)
-print("nk_result", nk_result)
+print("icount", icount) 
+#702 for clfac = 0.1, 347 for _cea_lambda
 
 # load yk's results for 10 bar
 dat = np.loadtxt("../data/p10.txt", delimiter=",")
-print("dat", dat)
 
 mask = dat > 1.e-14
 mask_nk_result = nk_result[mask]
@@ -100,7 +103,7 @@ mask_dat = dat[mask]
 res = mask_nk_result/mask_dat - 1.0
 print(res,"diff for n>1.e-14")
 assert np.max(np.abs(res)) < 0.051
-# 8/9/2025
+# 8/9/2025, 0.1
 #[-0.00163185 -0.00163185  0.02571018 -0.00203837 -0.05069541 -0.00163185
 # -0.00481986 -0.00420364 -0.00161074 -0.00163182 -0.00163185 -0.00163183
 # -0.00163184 -0.00163178 -0.00163185 -0.00163184]
