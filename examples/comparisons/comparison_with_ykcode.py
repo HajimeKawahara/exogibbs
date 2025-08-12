@@ -11,6 +11,7 @@ from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
 from exogibbs.equilibrium.gibbs import interpolate_hvector_all
+from exogibbs.io.load_data import load_molname
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import load_formula_matrix
 from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
@@ -23,6 +24,13 @@ from jax import config
 
 config.update("jax_enable_x64", True)
 
+#ceamolname = ['C1H3', 'C1H4', 'C1O1', 'C1O2', 'C1OOH', 'H1', 'C1H1O1', 'H2', 'HCHO', 'HCOOH', 'H2O1', 'H1O1']
+#val = [6.872e-10, 1.4632e-06, 0.38369, 0.060749, 5.832e-10, 9.0328e-06, 8.2267e-09, 0.39407, 1.0136e-07, 4.7157e-08, 0.16147, 1.2455e-07]
+
+#df_molname = load_molname()
+#mol_to_idx = df_molname.reset_index().set_index("Molecule")["index"].to_dict()
+#cea_index = np.array([mol_to_idx.get(m, np.nan) for m in ceamolname])
+#cea_molarity = np.array(val, dtype=float)
 ##############################################################################
 # Setup Test System and Parameters
 # ---------------------------------
@@ -105,9 +113,15 @@ assert np.max(np.abs(res)) < 0.051
 # -0.00481986 -0.00420364 -0.00161074 -0.00163182 -0.00163185 -0.00163183
 # -0.00163184 -0.00163178 -0.00163185 -0.00163184]
 
+#CEA
+
+
+
+
 import matplotlib.pyplot as plt
 plt.plot(nk_result, "+", label="ExoGibbs")
 plt.plot(dat, ".", alpha=0.5, label="yk B4 code")
+#plt.plot(cea_index, cea_molarity, "o", alpha=0.3, label="CEA molarity")
 plt.xlabel("Species Index")
 plt.ylabel("Number (log scale)")
 plt.yscale("log")
