@@ -24,13 +24,7 @@ from jax import config
 
 config.update("jax_enable_x64", True)
 
-#ceamolname = ['C1H3', 'C1H4', 'C1O1', 'C1O2', 'C1OOH', 'H1', 'C1H1O1', 'H2', 'HCHO', 'HCOOH', 'H2O1', 'H1O1']
-#val = [6.872e-10, 1.4632e-06, 0.38369, 0.060749, 5.832e-10, 9.0328e-06, 8.2267e-09, 0.39407, 1.0136e-07, 4.7157e-08, 0.16147, 1.2455e-07]
 
-#df_molname = load_molname()
-#mol_to_idx = df_molname.reset_index().set_index("Molecule")["index"].to_dict()
-#cea_index = np.array([mol_to_idx.get(m, np.nan) for m in ceamolname])
-#cea_molarity = np.array(val, dtype=float)
 ##############################################################################
 # Setup Test System and Parameters
 # ---------------------------------
@@ -95,12 +89,9 @@ ln_nk_result = minimize_gibbs(
     max_iter=max_iter,
 )
 nk_result = jnp.exp(ln_nk_result)
-print("nk_result", nk_result)
 
 # load yk's results for 10 bar
 dat = np.loadtxt("../data/p10.txt", delimiter=",")
-print("dat", dat)
-
 mask = dat > 1.e-14
 mask_nk_result = nk_result[mask]
 mask_dat = dat[mask]
@@ -116,12 +107,22 @@ assert np.max(np.abs(res)) < 0.051
 #CEA
 
 
+##############################################################################
+# CEA
+ceamolname = ['CH4', '*H2', 'H2O', 'H2S', '*He', 'NH3', '*N2', 'PH3', 'H3PO4(L)', 'K2S(cr)', 'Na2S(cr)', 'TiO2(cr)', 'V2O3(cr)']
+vals = [0.00048854, 0.83667, 0.00097288, 2.8592e-05, 0.1617, 0.00013457, 3.0595e-09, 1.0058e-07, 4.7727e-07, 1.274e-07, 1.9845e-06, 1.6715e-07, 9.9517e-09]
+ceamolname = [m.replace("*", "") for m in ceamolname]
+df_molname = load_molname()
+mol_to_idx = df_molname.reset_index().set_index("conventional")["index"].to_dict()
 
+cea_index = np.array([mol_to_idx.get(m, -1) for m in ceamolname])
+cea_molarity = np.array(vals, dtype=float)
 
+ind = np.arange(len(nk_result))
 import matplotlib.pyplot as plt
-plt.plot(nk_result, "+", label="ExoGibbs")
-plt.plot(dat, ".", alpha=0.5, label="yk B4 code")
-#plt.plot(cea_index, cea_molarity, "o", alpha=0.3, label="CEA molarity")
+plt.plot(ind, nk_result, "+", label="ExoGibbs")
+plt.plot(ind, dat, ".", alpha=0.5, label="yk B4 code")
+plt.plot(cea_index, cea_molarity, "o", alpha=0.3, label="CEA molarity")
 plt.xlabel("Species Index")
 plt.ylabel("Number (log scale)")
 plt.yscale("log")

@@ -4,6 +4,7 @@ from exogibbs.io.load_data import load_formula_matrix
 from exogibbs.io.load_data import load_JANAF_rawtxt
 from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.io.load_data import JANAF_SAMPLE
+from exogibbs.io.load_data import JANAF_NAME_KEY
 
 def test_get_data_filename_existing_file():
     import os
@@ -25,7 +26,7 @@ def test_load_JANAF_rawtxt():
 def test_load_JANAF_molecules():
     import pandas as pd
     df_molecules = pd.DataFrame({
-        "Molecule": ["janaf_raw"],
+        JANAF_NAME_KEY: ["janaf_raw"],
     })
     filepath = get_data_filepath("")
     

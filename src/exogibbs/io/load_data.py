@@ -8,7 +8,9 @@ from typing import Dict, Optional
 
 
 TESTDATA_DIR = "data/"
-MOLNAME_V3 = "molname_v3.dat"
+#MOLNAME_V3 = "molname_v3.dat"
+MOLNAME = "molecule_names.csv"
+JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
 FORMULA_MATRIX_V3 = "matrix_v3.dat"
 JANAF_SAMPLE = "janaf_raw_sample.txt"
 DEFAULT_JANAF_GIBBS_MATRICES = "gibbs_matrices.npz"
@@ -36,9 +38,8 @@ def load_molname():
     Returns:
         pd.DataFrame: molname dataframe
     """
-    fullpath = get_data_filepath(MOLNAME_V3)
-    df_molname = pd.read_csv(fullpath, sep="\t", header=None, dtype=str)
-    df_molname.columns = ["Molecule", "color"]
+    fullpath = get_data_filepath(MOLNAME)
+    df_molname = pd.read_csv(fullpath, sep=",", dtype=str)
     return df_molname
 
 
@@ -127,7 +128,7 @@ def load_JANAF_molecules(
     # ------------------------------------------------------------------ #
     # load every molecule into an in-memory dict                         #
     # ------------------------------------------------------------------ #
-    for mol in df_molname["Molecule"]:
+    for mol in df_molname[JANAF_NAME_KEY]:
         file_path = path_JANAF_data / Path(mol + tag + ".txt")
         if not file_path.is_file():
             warnings.warn(f"Missing file: {file_path}", RuntimeWarning)
