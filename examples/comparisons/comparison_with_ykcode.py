@@ -6,7 +6,7 @@ This example demonstrates and validates the ExoGibbs thermochemical equilibrium
 solver against the code by ykawashima when she was at B4.
 
 """
-
+from exogibbs.api.thermochem import ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
@@ -53,6 +53,9 @@ npath = get_data_filepath(NUMBER_OF_SPECIES_SAMPLE)
 number_of_species_init = pd.read_csv(npath, header=None, sep=",").values[0]
 b_element_vector = formula_matrix @ number_of_species_init
 
+# ThermoState instance
+thermo_state = ThermoState(temperature, ln_normalized_pressure, b_element_vector)
+
 # Gibbs matrix
 ref = pd.read_csv("../data/yk.list", header=None, sep=",").values[0]
 print("ref", ref.shape)
@@ -78,9 +81,7 @@ max_iter = 1000
 # Run Gibbs minimization using core function (returns iteration count)
 
 ln_nk_result = minimize_gibbs(
-    temperature,
-    ln_normalized_pressure,
-    b_element_vector,
+    thermo_state,
     ln_nk,
     ln_ntot,
     formula_matrix,
