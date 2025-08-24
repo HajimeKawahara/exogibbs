@@ -120,14 +120,14 @@ def parse_simple_formula(formula: str) -> Dict[str, int]:
         raise ValueError("Empty formula string.")
 
     pos = 0
-    d: Dict[str, int] = {}
+    element_counts: Dict[str, int] = {}
     for m in _ELNUM.finditer(formula):
         if m.start() != pos:
             unknown = formula[pos : m.start()]
             raise ValueError(f"Unsupported token '{unknown}' in formula '{formula}'.")
         elem, num = m.groups()
         coeff = int(num) if num else 1
-        d[elem] = d.get(elem, 0) + coeff
+        element_counts[elem] = element_counts.get(elem, 0) + coeff
         pos = m.end()
 
     if pos != len(formula):
