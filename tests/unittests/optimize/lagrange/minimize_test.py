@@ -197,9 +197,6 @@ def test_minimize_gibbs_element_gradient_hco_system():
 
 
 if __name__ == "__main__":
-    #import pytest
-    #pytest.main([__file__, "-v"])
-    #test_minimize_gibbs_core_h_system(h_system_setup())
-    test_minimize_gibbs_temperature_gradient_h_system(h_system_setup())
-    #test_minimize_gibbs_pressure_gradient_h_system(h_system_setup())
-    #test_minimize_gibbs_element_gradient_hco_system()
+    import pytest
+    pytest.main([__file__, "-v"])
+    
