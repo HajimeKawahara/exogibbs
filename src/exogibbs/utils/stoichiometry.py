@@ -145,10 +145,10 @@ def build_formula_matrix(
     element_order: Optional[Sequence[str]] = None,
     sanitize: bool = True,
     species_names: str = "raw",  # NEW: "raw" | "clean" | "both"
-) -> (
-    Tuple[np.ndarray, List[str], List[str]]
-    | Tuple[np.ndarray, List[str], List[str], List[str]]
-):
+) -> Union[
+    Tuple[np.ndarray, List[str], List[str]],
+    Tuple[np.ndarray, List[str], List[str], List[str]]
+]:
     """
     Build a stoichiometric matrix A (elements x species) from df_molname.
 
