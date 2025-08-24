@@ -9,7 +9,8 @@
 # log number densities of species in the HCO system.
 #
 
-# Generates Ground-Truth\
+# Generates Ground-Truth
+from exogibbs.api.thermochem import ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.test.analytic_hcosystem import HCOSystem
 from exogibbs.optimize.core import compute_ln_normalized_pressure
@@ -59,13 +60,14 @@ bC_gt = 0.2
 bO_gt = 0.3
 b_element_vector_gt = jnp.array([bH_gt, bC_gt, bO_gt])  # H, C, O
 
+# ThermoState instance
+thermo_state_gt = ThermoState(temperature_gt, ln_normalized_pressure, b_element_vector_gt)
+
 # Convergence criteria
 epsilon_crit = 1e-11
 max_iter = 1000
 ln_nk_ground_truth = minimize_gibbs(
-    temperature_gt,
-    ln_normalized_pressure,
-    b_element_vector_gt,
+    thermo_state_gt,
     ln_nk,
     ln_ntot,
     formula_matrix,
@@ -101,10 +103,11 @@ def model_prob(ln_nk_obs):
     temperature = 10**(logT)
     numpyro.deterministic('temperature', temperature)
     
+    # ThermoState instance
+    thermo_state = ThermoState(temperature, ln_normalized_pressure, b_element_vector)
+
     mu_ln_nk = minimize_gibbs(
-    temperature,
-    ln_normalized_pressure,
-    b_element_vector,
+    thermo_state,
     ln_nk,
     ln_ntot,
     formula_matrix,
