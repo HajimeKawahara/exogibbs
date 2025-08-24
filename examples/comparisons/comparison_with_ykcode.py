@@ -8,19 +8,11 @@ solver against the code by ykawashima when she was at B4.
 """
 
 from exogibbs.api.chemistry import ThermoState
+from exogibbs.presets.ykb4 import prepare_ykb4_setup
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.optimize.core import compute_ln_normalized_pressure
-from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
-from exogibbs.equilibrium.gibbs import interpolate_hvector_all
-from exogibbs.io.load_data import load_molname
-from exogibbs.io.load_data import get_data_filepath
-from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
-from exogibbs.io.load_data import NUMBER_OF_SPECIES_SAMPLE
-from exogibbs.thermo.stoichiometry import build_formula_matrix
-from exogibbs.presets.ykb4 import prepare_ykb4_setup
 
 import numpy as np
-import pandas as pd
 import jax.numpy as jnp
 
 from jax import config
@@ -48,13 +40,12 @@ chem = prepare_ykb4_setup()
 
 # ThermoState instance
 thermo_state = ThermoState(temperature, ln_normalized_pressure, chem.b_element_vector)
-rank = np.linalg.matrix_rank(chem.formula_matrix)
-print("formula matrix is row-full rank",rank == chem.formula_matrix.shape[0])
+#rank = np.linalg.matrix_rank(chem.formula_matrix)
+#print("formula matrix is row-full rank",rank == chem.formula_matrix.shape[0])
 
 # Initial guess for log number densities
 ln_nk = jnp.zeros(chem.formula_matrix.shape[1])  # log(n_species)  
 ln_ntot = 0.0  # log(total number density)
-
 
 # Convergence criteria
 epsilon_crit = 1e-11

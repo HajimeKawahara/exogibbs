@@ -7,6 +7,7 @@ solver against the code by ykawashima when she was at B4.
 
 """
 from exogibbs.api.chemistry import ThermoState
+from exogibbs.presets.ykb4 import prepare_ykb4_setup
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.optimize.minimize import minimize_gibbs_core
 
@@ -35,12 +36,9 @@ config.update("jax_enable_x64", True)
 # equilibrium problem parameters.
 
 
-# Define stoichiometric constraint matrix
-df_molname = load_molname()
-formula_matrix, elems, specs = build_formula_matrix(df_molname)
-# check if the formula matrix is full raw rank
-rank = np.linalg.matrix_rank(formula_matrix)
-print("formula matrix is row-full rank",rank == formula_matrix.shape[0])
+
+#chemical setup
+chem = prepare_ykb4_setup()
 
 # Thermodynamic conditions
 temperature = 500.0  # K
@@ -49,31 +47,16 @@ Pref = 1.0  # bar, reference pressure
 ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
 
 # Initial guess for log number densities
-ln_nk = jnp.zeros(formula_matrix.shape[1])  # log(n_species)  
+ln_nk = jnp.zeros(chem.formula_matrix.shape[1])  # log(n_species)
 ln_ntot = 0.0  # log(total number density)
 
-# Element abundance constraint
-npath = get_data_filepath(NUMBER_OF_SPECIES_SAMPLE)
-number_of_species_init = pd.read_csv(npath, header=None, sep=",").values[0]
-b_element_vector = formula_matrix @ number_of_species_init
 
 # ThermoState instance
 thermo_state = ThermoState(
     temperature=temperature,
     ln_normalized_pressure=ln_normalized_pressure,
-    b_element_vector=b_element_vector
+    b_element_vector=chem.b_element_vector
 )
-
-# Gibbs matrix
-ref = pd.read_csv("../data/yk.list", header=None, sep=",").values[0]
-print("ref", ref.shape)
-path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
-gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
-molecules, T_table, mu_table, grid_lens = extract_and_pad_gibbs_data(gibbs_matrices)
-
-
-def hvector_func(temperature):
-    return interpolate_hvector_all(temperature, T_table, mu_table)
 
 
 # Convergence criteria
@@ -92,8 +75,8 @@ ln_nk_result, _, icount = minimize_gibbs_core(
     thermo_state,
     ln_nk,
     ln_ntot,
-    formula_matrix,
-    hvector_func,
+    chem.formula_matrix,
+    chem.hvector_func,
     epsilon_crit=epsilon_crit,
     max_iter=max_iter,
 )
