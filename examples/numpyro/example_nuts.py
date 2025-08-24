@@ -125,7 +125,7 @@ num_warmup, num_samples = 1500, 1000
 #kernel = NUTS(model_prob, forward_mode_differentiation=True)
 kernel = NUTS(model_prob, forward_mode_differentiation=False)
 
-# Run MCMC
+# Run MCMC it took 2:12 August 24
 mcmc = MCMC(kernel, num_warmup=num_warmup, num_samples=num_samples)
 mcmc.run(rng_key_, ln_nk_obs=jnp.array(ln_nk_obs))
 mcmc.print_summary()
