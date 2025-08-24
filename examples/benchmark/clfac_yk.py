@@ -6,7 +6,7 @@ This example demonstrates and validates the ExoGibbs thermochemical equilibrium
 solver against the code by ykawashima when she was at B4.
 
 """
-from exogibbs.api.thermochem import ThermoState
+from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.optimize.minimize import minimize_gibbs_core
 

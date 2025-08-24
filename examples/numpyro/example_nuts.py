@@ -10,7 +10,7 @@
 #
 
 # Generates Ground-Truth
-from exogibbs.api.thermochem import ThermoState
+from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.test.analytic_hcosystem import HCOSystem
 from exogibbs.optimize.core import compute_ln_normalized_pressure
