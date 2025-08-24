@@ -5,10 +5,10 @@ from jax import jit
 from jax.lax import while_loop
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
-
 from functools import partial
 from typing import Tuple, Callable
 
+from exogibbs.api.thermochem import ThermoState
 from exogibbs.optimize.core import _A_diagn_At
 from exogibbs.optimize.core import _compute_gk
 from exogibbs.optimize.vjpgibbs import vjp_temperature
@@ -129,9 +129,7 @@ def update_all(
     return ln_nk, ln_ntot, epsilon, gk, An
 
 def minimize_gibbs_core(
-    temperature: float,
-    ln_normalized_pressure: float,
-    b_element_vector: jnp.ndarray,
+    state: ThermoState,
     ln_nk_init: jnp.ndarray,
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
@@ -142,9 +140,7 @@ def minimize_gibbs_core(
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
     Args:
-        temperature: Temperature in Kelvin.
-        ln_normalized_pressure: natural log of pressure normalized by reference pressure (P/Pref).
-        b_element_vector: Element abundance vector (n_elements,).
+        state: Thermodynamic state containing temperature, pressure, and element abundances.
         ln_nk_init: Initial log number of species vector (n_species,).
         ln_ntot_init: Initial log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
@@ -159,7 +155,7 @@ def minimize_gibbs_core(
             - Number of iterations performed.
     """
 
-    hvector = hvector_func(temperature)
+    hvector = hvector_func(state.temperature)
 
     def cond_fun(carry):
         _, _, _, _, epsilon, counter = carry
@@ -171,9 +167,9 @@ def minimize_gibbs_core(
             ln_nk,
             ln_ntot,
             formula_matrix,
-            b_element_vector,
-            temperature,
-            ln_normalized_pressure,
+            state.b_element_vector,
+            state.temperature,
+            state.ln_normalized_pressure,
             hvector,
             gk,
             An,
@@ -181,11 +177,11 @@ def minimize_gibbs_core(
         return ln_nk_new, ln_ntot_new, gk, An, epsilon, counter + 1
 
     gk = _compute_gk(
-        temperature,
+        state.temperature,
         ln_nk_init,
         ln_ntot_init,
         hvector,
-        ln_normalized_pressure,
+        state.ln_normalized_pressure,
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
 
@@ -195,11 +191,9 @@ def minimize_gibbs_core(
     return ln_nk, ln_tot, counter
 
 
-@partial(custom_vjp, nondiff_argnums=(3, 4, 5, 6, 7, 8))
+@partial(custom_vjp, nondiff_argnums=(1, 2, 3, 4, 5, 6))
 def minimize_gibbs(
-    temperature: float,
-    ln_normalized_pressure: float,
-    b_element_vector: jnp.ndarray,
+    state: ThermoState,
     ln_nk_init: jnp.ndarray,
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
@@ -210,9 +204,7 @@ def minimize_gibbs(
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
     Args:
-        temperature: Temperature in Kelvin.
-        ln_normalized_pressure: natural log pressure normalized by the reference pressure jnp.log(P/Pref), or use optimize.lagrange.core.compute_ln_normalized_pressure.
-        b_element_vector: Element abundance vector (n_elements,).
+        state: Thermodynamic state containing temperature, pressure, and element abundances.
         ln_nk_init: Initial natural log number of species vector (n_species,).
         ln_ntot_init: Initial natural log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
@@ -225,9 +217,7 @@ def minimize_gibbs(
     """
 
     ln_nk, _, _ = minimize_gibbs_core(
-        temperature,
-        ln_normalized_pressure,
-        b_element_vector,
+        state,
         ln_nk_init,
         ln_ntot_init,
         formula_matrix,
@@ -240,9 +230,7 @@ def minimize_gibbs(
 
 
 def minimize_gibbs_fwd(
-    temperature,
-    ln_normalized_pressure,
-    b_element_vector,
+    state,
     ln_nk_init,
     ln_ntot_init,
     formula_matrix,
@@ -251,9 +239,7 @@ def minimize_gibbs_fwd(
     max_iter=1000,
 ):
     ln_nk, ln_ntot, _ = minimize_gibbs_core(
-        temperature,
-        ln_normalized_pressure,
-        b_element_vector,
+        state,
         ln_nk_init,
         ln_ntot_init,
         formula_matrix,
@@ -262,9 +248,9 @@ def minimize_gibbs_fwd(
         max_iter,
     )
     dfunc = jacrev(hvector_func)
-    hdot = dfunc(temperature)
+    hdot = dfunc(state.temperature)
 
-    residuals = (ln_nk, hdot, b_element_vector, ln_ntot)
+    residuals = (ln_nk, hdot, state.b_element_vector, ln_ntot)
     return ln_nk, residuals
 
 
@@ -295,7 +281,7 @@ def minimize_gibbs_bwd(
     cot_P = vjp_pressure(g, ntot_result, alpha, b_element_vector, beta_dot_b_element)
     cot_b = vjp_elements(g, alpha, beta, b_element_vector, beta_dot_b_element)
 
-    return (jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b)
+    return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b),)
 
 
 minimize_gibbs.defvjp(minimize_gibbs_fwd, minimize_gibbs_bwd)
