@@ -12,7 +12,7 @@ any specific chemical potential source (JANAF, CEA, GGchem, etc.).
 """
 
 import re
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 import numpy as np
 import pandas as pd
 
@@ -83,7 +83,7 @@ def parse_formula_with_charge(formula: str) -> Dict[str, int]:
     me = _ELECTRON_BASE.fullmatch(base)
     if me:
         n = int(me.group(1)) if me.group(1) else 1  # default 1
-        d: Dict[str, int] = {"e-": n}
+        element_count_dict: Dict[str, int] = {"e-": n}
 
         # Optional consistency check: if a charge suffix exists, it should equal -n
         # e.g., "e1-" => charge = -1 matches n=1
@@ -91,16 +91,16 @@ def parse_formula_with_charge(formula: str) -> Dict[str, int]:
         # if m and charge != -n:
         #     raise ValueError(f"Inconsistent electron charge in '{formula}': base implies {n} e-, "
         #                      f"but suffix implies total charge {charge}.")
-        return d
+        return element_count_dict
 
     # ---- Normal molecules/ions path ----
-    d = parse_simple_formula(base)  # may raise on unsupported tokens (parentheses etc.)
+    element_count_dict = parse_simple_formula(base)  # may raise on unsupported tokens (parentheses etc.)
 
     if charge != 0:
         # Positive charge => missing electrons; negative charge => extra electrons
-        d["e-"] = d.get("e-", 0) - charge
+        element_count_dict["e-"] = element_count_dict.get("e-", 0) - charge
 
-    return d
+    return element_count_dict
 
 
 def parse_simple_formula(formula: str) -> Dict[str, int]:
@@ -120,14 +120,14 @@ def parse_simple_formula(formula: str) -> Dict[str, int]:
         raise ValueError("Empty formula string.")
 
     pos = 0
-    element_counts: Dict[str, int] = {}
+    element_counts_dict: Dict[str, int] = {}
     for m in _ELNUM.finditer(formula):
         if m.start() != pos:
             unknown = formula[pos : m.start()]
             raise ValueError(f"Unsupported token '{unknown}' in formula '{formula}'.")
         elem, num = m.groups()
         coeff = int(num) if num else 1
-        element_counts[elem] = element_counts.get(elem, 0) + coeff
+        element_counts_dict[elem] = element_counts_dict.get(elem, 0) + coeff
         pos = m.end()
 
     if pos != len(formula):
@@ -135,7 +135,7 @@ def parse_simple_formula(formula: str) -> Dict[str, int]:
         raise ValueError(
             f"Unsupported trailing token '{unknown}' in formula '{formula}'."
         )
-    return d
+    return element_counts_dict
 
 
 def build_formula_matrix(
