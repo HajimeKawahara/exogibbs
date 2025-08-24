@@ -196,21 +196,3 @@ def build_formula_matrix(
         raise ValueError("species_names must be 'raw', 'clean', or 'both'.")
 
 
-if __name__ == "__main__":
-    from exogibbs.io.load_data import load_molname
-    from exogibbs.io.load_data import load_formula_matrix
-
-    # Example usage
-    df_example = pd.DataFrame({"JANAF": ["H3O+", "CO2-", "CH4", "*NH3", "C2H6", "He1"]})
-    df_example = load_molname()
-    # print(df_example)
-
-    A, elems, specs = build_formula_matrix(df_example)
-    print("Formula Matrix A:\n", A)
-    print("Elements:", elems)
-    print("Species:", specs)
-
-    formula_matrix = load_formula_matrix()
-
-    assert np.array_equal(A, formula_matrix), "Loaded formula matrix does not match computed one."
-    
