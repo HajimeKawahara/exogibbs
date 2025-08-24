@@ -4,6 +4,7 @@
 import pytest
 import jax.numpy as jnp
 from jax import config
+from exogibbs.api.thermochem import ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs_core
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hcosystem import HCOSystem, function_equilibrium
@@ -40,6 +41,8 @@ def hco_system_setup():
     epsilon_crit = 1e-11
     max_iter = 1000
     
+    thermo_state = ThermoState(temperature, ln_normalized_pressure, b_element_vector)
+    
     return {
         'hcosystem': hcosystem,
         'formula_matrix': formula_matrix,
@@ -55,7 +58,8 @@ def hco_system_setup():
         'bC': bC,
         'bO': bO,
         'epsilon_crit': epsilon_crit,
-        'max_iter': max_iter
+        'max_iter': max_iter,
+        'thermo_state': thermo_state
     }
 
 
@@ -65,9 +69,7 @@ def test_minimize_gibbs_core_hco_system(hco_system_setup):
     
     # Run Gibbs minimization
     ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
-        setup['temperature'],
-        setup['ln_normalized_pressure'],
-        setup['b_element_vector'],
+        setup['thermo_state'],
         setup['ln_nk'],
         setup['ln_ntot'],
         setup['formula_matrix'],

@@ -5,6 +5,30 @@ from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
 from exogibbs.equilibrium.gibbs import robust_temperature_range
 
+import jax.numpy as jnp
+from jax import tree_util
+
+from dataclasses import dataclass
+
+@tree_util.register_pytree_node_class
+@dataclass
+class ThermoState:
+    temperature: float
+    ln_normalized_pressure: float
+    b_element_vector: jnp.ndarray
+
+    def tree_flatten(self):
+        children = (
+            self.temperature,
+            self.ln_normalized_pressure,
+            self.b_element_vector,
+        )
+        return children, None
+
+    @classmethod
+    def tree_unflatten(cls, aux_data, children):
+        temperature, ln_normalized_pressure, b_element_vector = children
+        return cls(temperature, ln_normalized_pressure, b_element_vector)
 
 
 class ThermoChem:
@@ -15,7 +39,7 @@ class ThermoChem:
     def __init__(self):
         """Initialize the ThermoChem class.
         """
-        self.set_equations(path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"):
+        self.set_equations(path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF")
         
 
     def set_equations(self, path_JANAF_data):
