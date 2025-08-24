@@ -43,17 +43,6 @@ def load_molname():
     return df_molname
 
 
-def load_formula_matrix():
-    """loads the formula matrix data
-    Returns:
-        ndarray: formula matrix
-    """
-    fullpath = get_data_filepath(FORMULA_MATRIX_V3)
-    df = pd.read_csv(fullpath, sep="\t", header=None, dtype=int)
-    fm_np = np.array(df).T
-    return fm_np
-
-
 def load_JANAF_rawtxt(filename):
     """loads a JANAF raw text file
 
