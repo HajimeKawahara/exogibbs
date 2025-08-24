@@ -4,7 +4,7 @@ from jax import config
 from jax import jacrev
 from exogibbs.optimize.minimize import minimize_gibbs_core
 from exogibbs.optimize.minimize import minimize_gibbs
-from exogibbs.optimize.minimize import ThermoState
+from exogibbs.api.thermochem import ThermoState
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
 from exogibbs.test.analytic_hcosystem import HCOSystem
