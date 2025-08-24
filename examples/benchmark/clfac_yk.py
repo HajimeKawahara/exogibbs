@@ -15,7 +15,7 @@ from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
 from exogibbs.equilibrium.gibbs import interpolate_hvector_all
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import load_molname
-from exogibbs.utils.stoichiometry import build_formula_matrix
+from exogibbs.thermo.stoichiometry import build_formula_matrix
 
 from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
 from exogibbs.io.load_data import NUMBER_OF_SPECIES_SAMPLE

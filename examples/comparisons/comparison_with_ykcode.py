@@ -16,7 +16,7 @@ from exogibbs.io.load_data import load_molname
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
 from exogibbs.io.load_data import NUMBER_OF_SPECIES_SAMPLE
-from exogibbs.utils.stoichiometry import build_formula_matrix
+from exogibbs.thermo.stoichiometry import build_formula_matrix
 from exogibbs.presets.ykb4 import prepare_ykb4_setup
 
 import numpy as np
@@ -35,22 +35,12 @@ config.update("jax_enable_x64", True)
 # equilibrium problem parameters.
 
 
-# Define stoichiometric constraint matrix
-# check if the formula matrix is full raw rank
-df_molname = load_molname()
-formula_matrix, elems, specs = build_formula_matrix(df_molname)
-rank = np.linalg.matrix_rank(formula_matrix)
-print("formula matrix is row-full rank",rank == formula_matrix.shape[0])
-
 # Thermodynamic conditions
 temperature = 500.0  # K
 P = 10.0  # bar
 Pref = 1.0  # bar, reference pressure
 ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
 
-# Initial guess for log number densities
-ln_nk = jnp.zeros(formula_matrix.shape[1])  # log(n_species)  
-ln_ntot = 0.0  # log(total number density)
 
 
 #chemical setup
@@ -58,7 +48,12 @@ chem = prepare_ykb4_setup()
 
 # ThermoState instance
 thermo_state = ThermoState(temperature, ln_normalized_pressure, chem.b_element_vector)
+rank = np.linalg.matrix_rank(chem.formula_matrix)
+print("formula matrix is row-full rank",rank == chem.formula_matrix.shape[0])
 
+# Initial guess for log number densities
+ln_nk = jnp.zeros(chem.formula_matrix.shape[1])  # log(n_species)  
+ln_ntot = 0.0  # log(total number density)
 
 
 # Convergence criteria
@@ -98,24 +93,11 @@ assert np.max(np.abs(res)) < 0.051
 # -0.00481986 -0.00420364 -0.00161074 -0.00163182 -0.00163185 -0.00163183
 # -0.00163184 -0.00163178 -0.00163185 -0.00163184]
 
-#CEA
-
-
-##############################################################################
-# CEA
-ceamolname = ['CH4', '*H2', 'H2O', 'H2S', '*He', 'NH3', '*N2', 'PH3', 'H3PO4(L)', 'K2S(cr)', 'Na2S(cr)', 'TiO2(cr)', 'V2O3(cr)']
-vals = [0.00048854, 0.83667, 0.00097288, 2.8592e-05, 0.1617, 0.00013457, 3.0595e-09, 1.0058e-07, 4.7727e-07, 1.274e-07, 1.9845e-06, 1.6715e-07, 9.9517e-09]
-ceamolname = [m.replace("*", "") for m in ceamolname]
-mol_to_idx = df_molname.reset_index().set_index("conventional")["index"].to_dict()
-
-cea_index = np.array([mol_to_idx.get(m, -1) for m in ceamolname])
-cea_molarity = np.array(vals, dtype=float)
 
 ind = np.arange(len(nk_result))
 import matplotlib.pyplot as plt
 plt.plot(ind, nk_result, "+", label="ExoGibbs")
 plt.plot(ind, dat, ".", alpha=0.5, label="yk B4 code")
-plt.plot(cea_index, cea_molarity, "o", alpha=0.3, label="CEA molarity")
 plt.xlabel("Species Index")
 plt.ylabel("Number (log scale)")
 plt.yscale("log")
