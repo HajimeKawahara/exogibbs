@@ -14,9 +14,9 @@ from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
 from exogibbs.equilibrium.gibbs import interpolate_hvector_all
 from exogibbs.io.load_data import load_molname
 from exogibbs.io.load_data import get_data_filepath
-from exogibbs.io.load_data import load_formula_matrix
 from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
 from exogibbs.io.load_data import NUMBER_OF_SPECIES_SAMPLE
+from exogibbs.utils.stoichiometry import build_formula_matrix
 import numpy as np
 import pandas as pd
 import jax.numpy as jnp
@@ -34,8 +34,9 @@ config.update("jax_enable_x64", True)
 
 
 # Define stoichiometric constraint matrix
-formula_matrix = load_formula_matrix()
 # check if the formula matrix is full raw rank
+df_molname = load_molname()
+formula_matrix, elems, specs = build_formula_matrix(df_molname)
 rank = np.linalg.matrix_rank(formula_matrix)
 print("formula matrix is row-full rank",rank == formula_matrix.shape[0])
 
@@ -114,7 +115,6 @@ assert np.max(np.abs(res)) < 0.051
 ceamolname = ['CH4', '*H2', 'H2O', 'H2S', '*He', 'NH3', '*N2', 'PH3', 'H3PO4(L)', 'K2S(cr)', 'Na2S(cr)', 'TiO2(cr)', 'V2O3(cr)']
 vals = [0.00048854, 0.83667, 0.00097288, 2.8592e-05, 0.1617, 0.00013457, 3.0595e-09, 1.0058e-07, 4.7727e-07, 1.274e-07, 1.9845e-06, 1.6715e-07, 9.9517e-09]
 ceamolname = [m.replace("*", "") for m in ceamolname]
-df_molname = load_molname()
 mol_to_idx = df_molname.reset_index().set_index("conventional")["index"].to_dict()
 
 cea_index = np.array([mol_to_idx.get(m, -1) for m in ceamolname])
