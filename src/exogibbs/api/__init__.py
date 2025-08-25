@@ -6,8 +6,6 @@ from .equilibrium import (
     EquilibriumInit,
     EquilibriumResult,
     equilibrium,
-    equilibrium_diagnostics,
-    equilibrium_map,
 )
 
 __all__ = [
@@ -17,6 +15,4 @@ __all__ = [
     "EquilibriumInit",
     "EquilibriumResult",
     "equilibrium",
-    "equilibrium_diagnostics",
-    "equilibrium_map",
 ]
