@@ -266,11 +266,25 @@ def minimize_gibbs_bwd(
 ):
 
     ln_nk, hdot, b_element_vector, ln_ntot = res
+    
+    # Guard against underflow and ensure strictly positive species for SPD matrix
+    # dtype = ln_nk.dtype
+    #tiny = jnp.finfo(dtype).tiny
+    # nk = jnp.maximum(jnp.exp(ln_nk), tiny)
+    # ntot_result = jnp.maximum(jnp.exp(ln_ntot), tiny)
     nk = jnp.exp(ln_nk)
     ntot_result = jnp.exp(ln_ntot)
-    
+
     # solves the linear systems
     Bmatrix = _A_diagn_At(nk, formula_matrix)
+    
+    # Add a tiny diagonal jitter to stabilize Cholesky for near-singular cases
+    # size_e = Bmatrix.shape[0]
+    # Scale jitter relative to matrix magnitude
+    #rel = jnp.maximum(jnp.linalg.norm(Bmatrix, ord=jnp.inf), 1.0)
+    #jitter = jnp.asarray(1e-12, dtype=Bmatrix.dtype) * rel
+    #Bmatrix = Bmatrix + jitter * jnp.eye(size_e, dtype=Bmatrix.dtype)
+    
     c, lower = cho_factor(Bmatrix)
     alpha = cho_solve((c, lower), formula_matrix @ g)
     beta = cho_solve((c, lower), b_element_vector)
