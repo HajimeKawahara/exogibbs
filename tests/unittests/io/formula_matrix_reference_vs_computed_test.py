@@ -4,7 +4,7 @@ from typing import Optional, Sequence, Tuple, List
 
 from exogibbs.test.reference_data import load_formula_matrix_reference_v3
 from exogibbs.io.load_data import load_molname
-from exogibbs.utils.stoichiometry import build_formula_matrix
+from exogibbs.thermo.stoichiometry import build_formula_matrix
 
 def _compute_formula_matrix_from_catalog(
     *,

@@ -8,7 +8,7 @@ from jax.scipy.linalg import cho_solve
 from functools import partial
 from typing import Tuple, Callable
 
-from exogibbs.api.thermochem import ThermoState
+from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _A_diagn_At
 from exogibbs.optimize.core import _compute_gk
 from exogibbs.optimize.vjpgibbs import vjp_temperature

@@ -19,7 +19,7 @@ Key validations performed:
 - Volume mixing ratio (VMR) calculations
 """
 
-from exogibbs.api.thermochem import ThermoState
+from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs_core
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.test.analytic_hsystem import HSystem
