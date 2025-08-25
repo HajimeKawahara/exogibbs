@@ -28,15 +28,17 @@ def vjp_temperature(
     Returns:
         The temperature VJP of log species number.
     """
+    hdot =jnp.ones_like(hdot) #injection for debugging
     nk_cdot_hdot = jnp.vdot(nspecies, hdot)
     etav = formula_matrix @ (nspecies * hdot)
     # derives the temperature derivative of qtot
     dqtot_dT = (jnp.vdot(beta_vector, etav) - nk_cdot_hdot) / beta_dot_b_element
+    
     # derives the g^T A^T Pi term
-    gTATPi = jnp.vdot(alpha_vector, etav - dqtot_dT * b_element_vector)
-
-    return dqtot_dT * jnp.sum(gvector) + gTATPi - jnp.vdot(gvector, hdot)
-
+    gTATPi = jnp.vdot(alpha_vector, etav - dqtot_dT * b_element_vector) #original
+    
+    return dqtot_dT * jnp.sum(gvector) + gTATPi - jnp.vdot(gvector, hdot) #original
+    
 @jit
 def vjp_pressure(
     gvector: jnp.ndarray,

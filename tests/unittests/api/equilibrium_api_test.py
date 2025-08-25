@@ -84,11 +84,11 @@ if __name__ == "__main__":
 
     def f(T):
         ln_n = equilibrium(setup, T, 1.0, b_vec).ln_n
-        return jnp.exp(ln_n)
+        return ln_n
     
     Tin = 900.0
     from jax import jacrev
     g = jacrev(f)(Tin)
     print("df/dT(Tin)=",g)
 
-    print("f(Tin)=",f(Tin))
+    
