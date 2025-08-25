@@ -1,6 +1,7 @@
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
 from exogibbs.equilibrium.gibbs import interpolate_hvector_all
+from exogibbs.equilibrium.gibbs import robust_temperature_range
 from exogibbs.io.load_data import load_molname
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
@@ -46,6 +47,11 @@ def prepare_ykb4_setup() -> ChemicalSetup:
     T_table = jnp.asarray(T_table_np)
     mu_table = jnp.asarray(mu_table_np)
 
+    # Compute robust temperature overlap across species to avoid OOB interpolation
+    Tmin_np, Tmax_np = robust_temperature_range(T_table_np)
+    Tmin = jnp.asarray(Tmin_np)
+    Tmax = jnp.asarray(Tmax_np)
+
     # Define a JAX-differentiable h-vector function
     # hvector_func(T): R -> R^K
     # IMPORTANT:
@@ -54,7 +60,9 @@ def prepare_ykb4_setup() -> ChemicalSetup:
     #   * Returns a DeviceArray so grad/jit can propagate
     def hvector_func(T: Union[float, jnp.ndarray]) -> jnp.ndarray:
         T = jnp.asarray(T)
-        return interpolate_hvector_all(T, T_table, mu_table)
+        # Clamp to shared valid range to avoid NaN/Inf from OOB
+        T_clamped = jnp.clip(T, Tmin, Tmax)
+        return interpolate_hvector_all(T_clamped, T_table, mu_table)
 
     # JIT-compile once (optional but helps in loops)
     hvector_func_jit = jax.jit(hvector_func)

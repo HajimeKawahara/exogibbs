@@ -5,26 +5,16 @@ Validation of Gibbs Minimization Against ykawashima's B4 code
 This example demonstrates and validates the ExoGibbs thermochemical equilibrium
 solver against the code by ykawashima when she was at B4.
 
+Updated to use the high-level API: exogibbs.api.equilibrium.equilibrium.
 """
-from exogibbs.api.chemistry import ThermoState
 from exogibbs.presets.ykb4 import prepare_ykb4_setup
-from exogibbs.optimize.minimize import minimize_gibbs_core
-
-from exogibbs.optimize.core import compute_ln_normalized_pressure
+from exogibbs.api.equilibrium import equilibrium, EquilibriumOptions
 import numpy as np
 import jax.numpy as jnp
 
 from jax import config
 
 config.update("jax_enable_x64", True)
-
-##############################################################################
-# Setup Test System and Parameters
-# ---------------------------------
-# We initialize the analytical H system and define the thermochemical
-# equilibrium problem parameters.
-
-
 
 #chemical setup
 chem = prepare_ykb4_setup()
@@ -33,45 +23,16 @@ chem = prepare_ykb4_setup()
 temperature = 500.0  # K
 P = 10.0  # bar
 Pref = 1.0  # bar, reference pressure
-ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
-
-# Initial guess for log number densities
-ln_nk = jnp.zeros(chem.formula_matrix.shape[1])  # log(n_species)
-ln_ntot = 0.0  # log(total number density)
-
-
-# ThermoState instance
-thermo_state = ThermoState(
-    temperature=temperature,
-    ln_normalized_pressure=ln_normalized_pressure,
-    b_element_vector=chem.b_element_vector_reference
+opts = EquilibriumOptions(epsilon_crit=1e-11, max_iter=1000)
+res = equilibrium(
+    chem,
+    T=temperature,
+    P=P,
+    b=chem.b_element_vector_reference,
+    Pref=Pref,
+    options=opts,
 )
-
-
-# Convergence criteria
-epsilon_crit = 1e-11
-max_iter = 1000
-
-##############################################################################
-# Single-Point Equilibrium Validation
-# ------------------------------------
-# First, we solve for equilibrium at a single temperature and pressure point
-# using both the core and main minimize_gibbs functions.
-
-# Run Gibbs minimization using core function (returns iteration count)
-
-ln_nk_result, _, icount = minimize_gibbs_core(
-    thermo_state,
-    ln_nk,
-    ln_ntot,
-    chem.formula_matrix,
-    chem.hvector_func,
-    epsilon_crit=epsilon_crit,
-    max_iter=max_iter,
-)
-nk_result = jnp.exp(ln_nk_result)
-print("icount", icount) 
-#702 for clfac = 0.1, 347 for _cea_lambda
+nk_result = res.n
 
 # load yk's results for 10 bar
 dat = np.loadtxt("../data/p10.txt", delimiter=",")
@@ -97,5 +58,4 @@ plt.yscale("log")
 plt.legend()
 plt.grid()
 plt.show()
-
 
