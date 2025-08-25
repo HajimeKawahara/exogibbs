@@ -39,7 +39,7 @@ ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
 chem = prepare_ykb4_setup()
 
 # ThermoState instance
-thermo_state = ThermoState(temperature, ln_normalized_pressure, chem.b_element_vector)
+thermo_state = ThermoState(temperature, ln_normalized_pressure, chem.b_element_vector_reference)
 #rank = np.linalg.matrix_rank(chem.formula_matrix)
 #print("formula matrix is row-full rank",rank == chem.formula_matrix.shape[0])
 

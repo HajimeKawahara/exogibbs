@@ -8,21 +8,10 @@ solver against the code by ykawashima when she was at B4.
 """
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.presets.ykb4 import prepare_ykb4_setup
-from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.optimize.minimize import minimize_gibbs_core
 
 from exogibbs.optimize.core import compute_ln_normalized_pressure
-from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
-from exogibbs.equilibrium.gibbs import interpolate_hvector_all
-from exogibbs.io.load_data import get_data_filepath
-from exogibbs.io.load_data import load_molname
-from exogibbs.thermo.stoichiometry import build_formula_matrix
-
-from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
-from exogibbs.io.load_data import NUMBER_OF_SPECIES_SAMPLE
 import numpy as np
-import pandas as pd
-from jax import jacrev
 import jax.numpy as jnp
 
 from jax import config
@@ -55,7 +44,7 @@ ln_ntot = 0.0  # log(total number density)
 thermo_state = ThermoState(
     temperature=temperature,
     ln_normalized_pressure=ln_normalized_pressure,
-    b_element_vector=chem.b_element_vector
+    b_element_vector=chem.b_element_vector_reference
 )
 
 
