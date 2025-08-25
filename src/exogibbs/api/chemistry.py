@@ -6,6 +6,8 @@ from typing import Callable
 from typing import Tuple
 from typing import Optional
 from typing import Mapping
+
+
 @tree_util.register_pytree_node_class
 @dataclass
 class ThermoState:
@@ -26,24 +28,38 @@ class ThermoState:
         temperature, ln_normalized_pressure, b_element_vector = children
         return cls(temperature, ln_normalized_pressure, b_element_vector)
 
+
+from dataclasses import dataclass
+from typing import Callable, Tuple, Optional, Mapping, Union
+import jax.numpy as jnp
+
+Array = jnp.ndarray
+
 @dataclass(frozen=True)
 class ChemicalSetup:
-    """
-    A minimal, immutable container for thermochemical pre-setup.
+    """Minimal, immutable container for thermochemical pre-setup.
 
-    Fields:
-        formula_matrix: Fixed stoichiometric constraint matrix A (E x K).
-        b_element_vector: Elemental abundance vector b (E,).
-        hvector_func: Callable h(T) used by the optimizer. MUST be JAX-differentiable w.r.t. T.
-        elems: Tuple of element symbols if needed (e.g., ("H", "He", "C", ...)).
-        species: Tuple of species names if needed (e.g., ("H2", "He1", "C2H4", ...)).
-        metadata: Tuple of misc. info if needed (e.g., source tag).
+    Fields
+    ------
+    formula_matrix : (E, K) jnp.ndarray
+        Fixed stoichiometric constraint matrix A.
+    hvector_func : Callable[[float|Array], Array]
+        h(T) used by the optimizer (JAX-differentiable).
+
+    elems : Optional[tuple[str, ...]]
+        Element symbols (E,) if available.
+    species : Optional[tuple[str, ...]]
+        Species names (K,) if available.
+    b_element_vector_reference : Optional[np.ndarray]
+        Sample elemental abundance b (E,) for reference only.
+    metadata : Optional[Mapping[str, str]]
+        Free-form provenance info (e.g., source="JANAF", preset="ykb4").
     """
-    formula_matrix: jnp.ndarray
-    b_element_vector: jnp.ndarray
-    hvector_func: Callable[[jnp.ndarray], jnp.ndarray]
-    
-        # Optional metadata (host-side; NOT traced)
-    elems: Optional[Tuple[str, ...]] = None    # element symbols (E,) or None
-    species: Optional[Tuple[str, ...]] = None  # species names (K,) or None
+    formula_matrix: Array
+    hvector_func: Callable[[Union[float, Array]], Array]
+
+    # Optional metadata (host-side; NOT traced)
+    elems: Optional[Tuple[str, ...]] = None
+    species: Optional[Tuple[str, ...]] = None
+    b_element_vector_reference: Optional["np.ndarray"] = None  # host-side
     metadata: Optional[Mapping[str, str]] = None

@@ -29,11 +29,11 @@ def prepare_ykb4_setup() -> ChemicalSetup:
     # Keep the matrix fixed as requested, but move to device
     formula_matrix = jnp.asarray(formula_matrix_np)
 
-    # Element abundance b from the provided sample number densities
+    # Reference elemental abundance b from the provided sample number densities
     npath = get_data_filepath(NUMBER_OF_SPECIES_SAMPLE)
     number_of_species_init = pd.read_csv(npath, header=None, sep=",").values[0]
     b_element_vector_np = formula_matrix_np @ number_of_species_init
-    b_element_vector = jnp.asarray(b_element_vector_np)
+    b_element_vector_ref = jnp.asarray(b_element_vector_np)
 
     # Gibbs matrices -> (molecules, T_table, mu_table, grid_lens)
     path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
@@ -61,9 +61,9 @@ def prepare_ykb4_setup() -> ChemicalSetup:
 
     return ChemicalSetup(
         formula_matrix=formula_matrix,
-        b_element_vector=b_element_vector,
         hvector_func=hvector_func_jit,
         elems=tuple(elems) if elems is not None else None,
         species=tuple(species) if species is not None else None,
+        b_element_vector_reference=b_element_vector_ref,
         metadata={"source": "JANAF"},
     )
