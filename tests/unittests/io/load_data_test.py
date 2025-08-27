@@ -1,5 +1,4 @@
 from exogibbs.io.load_data import get_data_filepath
-from exogibbs.io.load_data import load_molname
 from exogibbs.io.load_data import load_JANAF_rawtxt
 from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.io.load_data import JANAF_SAMPLE
@@ -13,10 +12,6 @@ def test_get_data_filename_existing_file():
     fullpath = get_data_filepath(filename)
 
     assert os.path.exists(fullpath)
-
-
-def test_load_molname():
-    df = load_molname()
 
 
 def test_load_JANAF_rawtxt():

@@ -2,7 +2,8 @@ import jax.numpy as jnp
 from jax import grad
 from exogibbs.equilibrium.gibbs import interpolate_hvector_one
 from exogibbs.io.load_data import get_data_filepath
-from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
+from exogibbs.presets.ykb4 import JANAF_GIBBS_MATRICES_YKB4
+
 import numpy as np
 
 
@@ -24,7 +25,7 @@ class HCOSystem:
                 - T_tables: Temperature tables for H2, CO, CH4, and H2O (K).
                 - mu_tables: Chemical potential tables for H2, CO, CH4, and H2O (J/mol).
         """
-        path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
+        path = get_data_filepath(JANAF_GIBBS_MATRICES_YKB4)
         gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
 
         self.T_tables = {}
