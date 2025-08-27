@@ -2,6 +2,7 @@ import pytest
 import jax.numpy as jnp
 from jax import config, vmap, jacrev
 from exogibbs.optimize.minimize import minimize_gibbs
+from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
 
@@ -31,21 +32,18 @@ def test_minimize_gibbs_vmap_h_system():
     Tarr = jnp.linspace(1000.0, 4000.0, 10)  # Small range for fast testing
     
     # Vectorized minimize_gibbs
-    vmap_minimize_gibbs = vmap(
-        minimize_gibbs, in_axes=(0, None, None, None, None, None, None, None, None)
-    )
-    
-    ln_nk_arr = vmap_minimize_gibbs(
-        Tarr,
-        ln_normalized_pressure,
-        b_element_vector,
-        ln_nk_init,
-        ln_ntot_init,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit,
-        max_iter,
-    )
+    def func(T):
+        return minimize_gibbs(
+            ThermoState(T, ln_normalized_pressure, b_element_vector),
+            ln_nk_init,
+            ln_ntot_init,
+            formula_matrix,
+            hvector_func,
+            epsilon_crit,
+            max_iter,
+        )
+
+    ln_nk_arr = vmap(func)(Tarr)
     
     # Compute VMRs from results
     n_H = jnp.exp(ln_nk_arr[:, 0])
@@ -94,22 +92,18 @@ def test_minimize_gibbs_vmap_gradient_h_system():
     Tarr = jnp.linspace(2000.0, 3000.0, 5)  # Small range for fast testing
     
     # Vectorized temperature gradients
-    vmap_minimize_gibbs_dT = vmap(
-        jacrev(minimize_gibbs),
-        in_axes=(0, None, None, None, None, None, None, None, None),
-    )
-    
-    dln_dT_arr = vmap_minimize_gibbs_dT(
-        Tarr,
-        ln_normalized_pressure,
-        b_element_vector,
-        ln_nk_init,
-        ln_ntot_init,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit,
-        max_iter,
-    )
+    def func(T):
+        return minimize_gibbs(
+            ThermoState(T, ln_normalized_pressure, b_element_vector),
+            ln_nk_init,
+            ln_ntot_init,
+            formula_matrix,
+            hvector_func,
+            epsilon_crit,
+            max_iter,
+        )
+
+    dln_dT_arr = vmap(jacrev(func))(Tarr)
     
     # Analytical reference gradients
     dln_dT_H_ref = hsystem.ln_nH_dT(Tarr, ln_normalized_pressure)

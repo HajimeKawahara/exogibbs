@@ -4,6 +4,7 @@ from jax import config
 from jax import jacrev
 from exogibbs.optimize.minimize import minimize_gibbs_core
 from exogibbs.optimize.minimize import minimize_gibbs
+from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import compute_ln_normalized_pressure
 from exogibbs.test.analytic_hsystem import HSystem
 from exogibbs.test.analytic_hcosystem import HCOSystem
@@ -34,6 +35,8 @@ def h_system_setup():
     epsilon_crit = 1e-11
     max_iter = 1000
     
+    thermo_state = ThermoState(temperature, ln_normalized_pressure, b_element_vector)
+    
     return {
         'hsystem': hsystem,
         'formula_matrix': formula_matrix,
@@ -44,6 +47,7 @@ def h_system_setup():
         'ln_ntot': ln_ntot,
         'hvector_func': hvector_func,
         'b_element_vector': b_element_vector,
+        'thermo_state': thermo_state,
         'epsilon_crit': epsilon_crit,
         'max_iter': max_iter
     }
@@ -55,9 +59,7 @@ def test_minimize_gibbs_core_h_system(h_system_setup):
     
     # Run Gibbs minimization
     ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
-        setup['temperature'],
-        setup['ln_normalized_pressure'],
-        setup['b_element_vector'],
+        setup['thermo_state'],
         setup['ln_nk'],
         setup['ln_ntot'],
         setup['formula_matrix'],
@@ -83,9 +85,7 @@ def test_minimize_gibbs_temperature_gradient_h_system(h_system_setup):
     
     # Compute temperature gradient using jacrev
     dln_dT = jacrev(lambda temperature_in: minimize_gibbs(
-        temperature_in,
-        setup['ln_normalized_pressure'],
-        setup['b_element_vector'],
+        ThermoState(temperature_in, setup['ln_normalized_pressure'], setup['b_element_vector']),
         setup['ln_nk'],
         setup['ln_ntot'],
         setup['formula_matrix'],
@@ -112,9 +112,7 @@ def test_minimize_gibbs_pressure_gradient_h_system(h_system_setup):
     
     # Compute pressure gradient using jacrev
     dln_dlogp = jacrev(lambda ln_normalized_pressure_in: minimize_gibbs(
-        setup['temperature'],
-        ln_normalized_pressure_in,
-        setup['b_element_vector'],
+        ThermoState(setup['temperature'], ln_normalized_pressure_in, setup['b_element_vector']),
         setup['ln_nk'],
         setup['ln_ntot'],
         setup['formula_matrix'],
@@ -166,9 +164,7 @@ def test_minimize_gibbs_element_gradient_hco_system():
     
     # Get equilibrium solution first
     ln_nk_result = minimize_gibbs(
-        temperature,
-        ln_normalized_pressure,
-        b_element_vector,
+        ThermoState(temperature, ln_normalized_pressure, b_element_vector),
         ln_nk,
         ln_ntot,
         formula_matrix,
@@ -180,9 +176,7 @@ def test_minimize_gibbs_element_gradient_hco_system():
     # Compute element gradient using jacrev
     dlnn_db = jacrev(
         lambda b_element_vector_in: minimize_gibbs(
-            temperature,
-            ln_normalized_pressure,
-            b_element_vector_in,
+            ThermoState(temperature, ln_normalized_pressure, b_element_vector_in),
             ln_nk,
             ln_ntot,
             formula_matrix,
@@ -205,3 +199,4 @@ def test_minimize_gibbs_element_gradient_hco_system():
 if __name__ == "__main__":
     import pytest
     pytest.main([__file__, "-v"])
+    

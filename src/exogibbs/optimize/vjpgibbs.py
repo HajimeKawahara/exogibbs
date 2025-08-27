@@ -32,11 +32,12 @@ def vjp_temperature(
     etav = formula_matrix @ (nspecies * hdot)
     # derives the temperature derivative of qtot
     dqtot_dT = (jnp.vdot(beta_vector, etav) - nk_cdot_hdot) / beta_dot_b_element
+    
     # derives the g^T A^T Pi term
-    gTATPi = jnp.vdot(alpha_vector, etav - dqtot_dT * b_element_vector)
-
-    return dqtot_dT * jnp.sum(gvector) + gTATPi - jnp.vdot(gvector, hdot)
-
+    gTATPi = jnp.vdot(alpha_vector, etav - dqtot_dT * b_element_vector) #original
+    
+    return dqtot_dT * jnp.sum(gvector) + gTATPi - jnp.vdot(gvector, hdot) #original
+    
 @jit
 def vjp_pressure(
     gvector: jnp.ndarray,
@@ -57,9 +58,9 @@ def vjp_pressure(
     Returns:
         The pressure VJP of log species number.
     """
-    return (
-        ntot * (alpha_vector @ b_element_vector - jnp.sum(gvector)) / beta_dot_b_element
-    )
+    eps = jnp.asarray(1e-20, dtype=beta_dot_b_element.dtype)
+    denom = jnp.where(jnp.abs(beta_dot_b_element) < eps, eps, beta_dot_b_element)
+    return ntot * (alpha_vector @ b_element_vector - jnp.sum(gvector)) / denom
 
 @jit
 def vjp_elements(
@@ -82,6 +83,8 @@ def vjp_elements(
         The elements VJP of log species number.
     """
 
-    dqtot_db = beta_vector / beta_dot_b_element
+    eps = jnp.asarray(1e-20, dtype=beta_dot_b_element.dtype)
+    denom = jnp.where(jnp.abs(beta_dot_b_element) < eps, eps, beta_dot_b_element)
+    dqtot_db = beta_vector / denom
     Xmatrix = jnp.eye(len(b_element_vector)) - jnp.outer(b_element_vector, dqtot_db)
     return jnp.sum(gvector) * dqtot_db + alpha_vector @ Xmatrix

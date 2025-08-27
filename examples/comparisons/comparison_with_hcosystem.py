@@ -15,7 +15,8 @@ Key validations performed:
 - Single-point equilibrium composition
 - Elements derivatives (∂ln n/∂b)
 """
-
+from regex import T
+from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.test.analytic_hcosystem import HCOSystem
 from exogibbs.optimize.core import compute_ln_normalized_pressure
@@ -68,6 +69,9 @@ bC = 0.2
 bO = 0.3
 b_element_vector = jnp.array([bH, bC, bO])  # H, C, O
 
+# ThermoState instance
+thermo_state = ThermoState(temperature, ln_normalized_pressure, b_element_vector)
+
 # Convergence criteria
 epsilon_crit = 1e-11
 max_iter = 1000
@@ -81,9 +85,7 @@ max_iter = 1000
 # Run Gibbs minimization using core function (returns iteration count)
 
 ln_nk_result = minimize_gibbs(
-    temperature,
-    ln_normalized_pressure,
-    b_element_vector,
+    thermo_state,
     ln_nk,
     ln_ntot,
     formula_matrix,
@@ -109,9 +111,7 @@ from exogibbs.test.analytic_hcosystem import derivative_dlnnCO_db
 
 dlnn_db = jacrev(
     lambda b_element_vector_in: minimize_gibbs(
-        temperature,
-        ln_normalized_pressure,
-        b_element_vector_in,
+        ThermoState(temperature, ln_normalized_pressure, b_element_vector_in),
         ln_nk,
         ln_ntot,
         formula_matrix,

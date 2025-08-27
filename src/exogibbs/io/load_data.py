@@ -8,11 +8,8 @@ from typing import Dict, Optional
 
 
 TESTDATA_DIR = "data/"
-MOLNAME_V3 = "molname_v3.dat"
-FORMULA_MATRIX_V3 = "matrix_v3.dat"
+JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
 JANAF_SAMPLE = "janaf_raw_sample.txt"
-DEFAULT_JANAF_GIBBS_MATRICES = "gibbs_matrices.npz"
-NUMBER_OF_SPECIES_SAMPLE = "number_of_species.sample.list"  # this is a sample file of number_of_species for testing
 
 
 def get_data_filepath(filename):
@@ -31,26 +28,6 @@ def get_data_filepath(filename):
     return files("exogibbs").joinpath(TESTDATA_DIR + filename)
 
 
-def load_molname():
-    """load the molecular name dataframe (df_molname)
-    Returns:
-        pd.DataFrame: molname dataframe
-    """
-    fullpath = get_data_filepath(MOLNAME_V3)
-    df_molname = pd.read_csv(fullpath, sep="\t", header=None, dtype=str)
-    df_molname.columns = ["Molecule", "color"]
-    return df_molname
-
-
-def load_formula_matrix():
-    """loads the formula matrix data
-    Returns:
-        ndarray: formula matrix
-    """
-    fullpath = get_data_filepath(FORMULA_MATRIX_V3)
-    df = pd.read_csv(fullpath, sep="\t", header=None, dtype=int)
-    fm_np = np.array(df).T
-    return fm_np
 
 
 def load_JANAF_rawtxt(filename):
@@ -114,7 +91,7 @@ def load_JANAF_molecules(
         * Use ``jax.numpy.asarray(df.to_numpy())`` when you need a JAX array.
 
     Examples:
-        >>> df_molname = load_molname()
+        >>> df_molname = load_molname_ykb4()
         >>> path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
         >>> matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
         >>> mat = matrices["C1O2"].to_numpy()
@@ -127,7 +104,7 @@ def load_JANAF_molecules(
     # ------------------------------------------------------------------ #
     # load every molecule into an in-memory dict                         #
     # ------------------------------------------------------------------ #
-    for mol in df_molname["Molecule"]:
+    for mol in df_molname[JANAF_NAME_KEY]:
         file_path = path_JANAF_data / Path(mol + tag + ".txt")
         if not file_path.is_file():
             warnings.warn(f"Missing file: {file_path}", RuntimeWarning)
@@ -158,7 +135,7 @@ def load_JANAF_molecules(
 
 
 if __name__ == "__main__":
-    df_molname = load_molname()
+    df_molname = load_molname_ykb4()
     path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
     gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
     mat = gibbs_matrices["H2"]  # .to_numpy()
