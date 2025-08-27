@@ -4,7 +4,7 @@ import jax.numpy as jnp
 
 from exogibbs.equilibrium.gibbs import interpolate_hvector_one
 from exogibbs.io.load_data import get_data_filepath
-from exogibbs.io.load_data import DEFAULT_JANAF_GIBBS_MATRICES
+from exogibbs.presets.ykb4 import JANAF_GIBBS_MATRICES_YKB4
 import numpy as np
 
 
@@ -31,7 +31,7 @@ class HSystem:
                 - T_h2_table: Temperature table for H2 (K).
                 - mu_h2_table: Chemical potential table for H2 (J/mol).
         """
-        path = get_data_filepath(DEFAULT_JANAF_GIBBS_MATRICES)
+        path = get_data_filepath(JANAF_GIBBS_MATRICES_YKB4)
         gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
 
         kJtoJ = 1000.0  # conversion factor from kJ to J
