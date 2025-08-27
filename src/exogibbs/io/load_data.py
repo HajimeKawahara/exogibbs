@@ -151,7 +151,6 @@ if __name__ == "__main__":
     df_molname = load_molname()
     path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
     gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
-    
     mat = gibbs_matrices["H2"]  # .to_numpy()
     print(mat.keys())
     print(-mat['-[G-H(Tr)]/T']*mat['T(K)']) #J/mol
