@@ -56,7 +56,7 @@ def test_hvector_func_grad_and_jit():
         return jnp.sum(setup.hvector_func(T))
 
     # grad at a scalar temperature
-    g = jax.grad(f)(500.0)
+    g = jax.grad(f)(900.0)
     assert jnp.isfinite(g)
 
     # jit-compiled call

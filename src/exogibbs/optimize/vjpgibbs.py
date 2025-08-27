@@ -28,7 +28,6 @@ def vjp_temperature(
     Returns:
         The temperature VJP of log species number.
     """
-    #hdot =jnp.ones_like(hdot) #injection for debugging
     nk_cdot_hdot = jnp.vdot(nspecies, hdot)
     etav = formula_matrix @ (nspecies * hdot)
     # derives the temperature derivative of qtot

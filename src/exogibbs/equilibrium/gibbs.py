@@ -39,7 +39,7 @@ def _coerce_to_float(a):
 def extract_and_pad_gibbs_data(
     gibbs_matrices: Dict[str, pd.DataFrame],
     temperature_key: str = "T(K)",
-    checmical_potential_key: str = "delta-f G",
+    chemical_potential_key: str = "delta-f G",
     unit_conversion_factor=1.0e3,
 ):
     """Extracting molar chemical potential from gibbs_matrices and perform padding to the same length
@@ -47,7 +47,7 @@ def extract_and_pad_gibbs_data(
     Args:
         gibbs_matrices (Dict[str, pd.DataFrame]): chemical potential matrices, needs to have the key of temperature_key and checmecal_potential_key
         temperature_key (str): key for temperature
-        checmical_potential_key (str): key for chemical potential, default to "delta-f G" (standard mol chemcical potential, Pst=1 bar IUPAC since 1982)
+        chemical_potential_key (str): key for chemical potential, default to "delta-f G" (standard mol chemcical potential, Pst=1 bar IUPAC since 1982)
         unit_conversion_factor (float): conversion factor for chemical potential, default to 1.e3 (kJ/mol -> J/mol), #44 in Kawashima's code (eq_subprog.f90)
 
     Notes:
@@ -73,10 +73,10 @@ def extract_and_pad_gibbs_data(
     T_table = np.stack(
         [_pad(gibbs_matrices[m][temperature_key], Lmax) for m in molecules]
     ).astype(np.float64)
-    mu_table = np.stack(
-        [_pad(gibbs_matrices[m][checmical_potential_key], Lmax) for m in molecules]
-    ).astype(np.float64)
 
+    mu_table = np.stack(
+        [_pad(gibbs_matrices[m][chemical_potential_key], Lmax) for m in molecules]
+    ).astype(np.float64)
     mu_table = mu_table * unit_conversion_factor  # from kJ/mol to J/mol
 
     return (
