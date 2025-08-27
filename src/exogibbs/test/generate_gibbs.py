@@ -6,6 +6,9 @@ def generate_gibbs_matrices(path_JANAF_data = "/home/kawahara/thermochemical_equ
     from exogibbs.io.load_data import load_molname
     df_molname = load_molname()
     gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
+    print(len(gibbs_matrices.keys()))
+    print((gibbs_matrices.keys()))
+    
     np.savez("gibbs_matrices.npz", gibbs_matrices)
         
 if __name__ == "__main__":

@@ -56,7 +56,7 @@ def test_hvector_func_grad_and_jit():
         return jnp.sum(setup.hvector_func(T))
 
     # grad at a scalar temperature
-    g = jax.grad(f)(500.0)
+    g = jax.grad(f)(900.0)
     assert jnp.isfinite(g)
 
     # jit-compiled call
@@ -83,3 +83,6 @@ def test_optional_b_reference_host_side():
         # Treat as reference only; ensure it’s not an unexpectedly huge DeviceArray
         assert isinstance(b_ref, (np.ndarray, jnp.ndarray))
         assert b_ref.ndim == 1 and b_ref.size == setup.formula_matrix.shape[0]
+
+if __name__ == "__main__":
+    test_prepare_ykb4_setup_basic()
