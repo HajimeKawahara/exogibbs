@@ -8,8 +8,7 @@ Updated to use the high-level API: exogibbs.api.equilibrium.equilibrium.
 """
 
 from exogibbs.presets.ykb4 import prepare_ykb4_setup
-from exogibbs.api.equilibrium import equilibrium, EquilibriumOptions
-from jax import vmap
+from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 import numpy as np
 import jax.numpy as jnp
 from jax import config
@@ -31,19 +30,14 @@ chem = prepare_ykb4_setup()
 # ------------------------------------
 opts = EquilibriumOptions(epsilon_crit=1e-11, max_iter=1000)
 
-# Vectorize over T and P via a wrapper to avoid mapping kwargs
-equilibrium_layer = vmap(
-    lambda T, P: equilibrium(
-        chem,
-        T,
-        P,
-        chem.b_element_vector_reference,
-        Pref=Pref,
-        options=opts,
-    ),
-    in_axes=(0, 0),
+res = equilibrium_profile(
+    chem,
+    Tarr,
+    Parr,
+    chem.b_element_vector_reference,
+    Pref=Pref,
+    options=opts,
 )
-res = equilibrium_layer(Tarr, Parr)
 
 ##############################################################################
 nk_result = res.n

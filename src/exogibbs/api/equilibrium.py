@@ -150,4 +150,63 @@ def equilibrium(
         ln_n=ln_n, n=n, x=x, ntot=ntot, iterations=None, metadata=None
     )
 
-__all__ = ["equilibrium", "EquilibriumOptions", "EquilibriumInit", "EquilibriumResult"]
+def equilibrium_profile(
+    setup: ChemicalSetup,
+    T: Array,
+    P: Array,
+    b: Array,
+    *,
+    Pref: float = 1.0,
+    options: Optional[EquilibriumOptions] = None,
+) -> EquilibriumResult:
+    """Vectorized equilibrium along a 1D T/P profile (layers).
+
+    This computes equilibrium independently for each (T[i], P[i]) pair while
+    keeping the elemental abundances ``b`` fixed across layers.
+
+    Args:
+        setup: ChemicalSetup with formula matrix and hvector_func(T).
+        T: Temperatures, shape (N,).
+        P: Pressures, shape (N,).
+        b: Elemental abundances, shape (E,), shared across layers.
+        Pref: Reference pressure (bar).
+        options: Solver options.
+
+    Returns:
+        Batched EquilibriumResult with fields stacked over the leading dimension N:
+        - ln_n: (N, K)
+        - n: (N, K)
+        - x: (N, K)
+        - ntot: (N,)
+    """
+    T = jnp.asarray(T)
+    P = jnp.asarray(P)
+    if T.ndim != 1 or P.ndim != 1:
+        raise ValueError("T and P must be 1D arrays of equal length.")
+    if T.shape[0] != P.shape[0]:
+        raise ValueError("T and P must have the same length.")
+    if b.ndim != 1:
+        raise ValueError("b must be a 1D array shared across layers.")
+
+    # Vectorize over T and P; keep setup and b static. Pass Pref/options as kwargs.
+    layer_fn = jax.vmap(
+        lambda Ti, Pi: equilibrium(
+            setup,
+            Ti,
+            Pi,
+            b,
+            Pref=Pref,
+            options=options,
+        ),
+        in_axes=(0, 0),
+    )
+    return layer_fn(T, P)
+
+
+__all__ = [
+    "equilibrium",
+    "equilibrium_profile",
+    "EquilibriumOptions",
+    "EquilibriumInit",
+    "EquilibriumResult",
+]
