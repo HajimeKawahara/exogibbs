@@ -60,7 +60,9 @@ class EquilibriumResult:
 
     # Make this dataclass a JAX pytree (so vmap/jit can pass it around)
     def tree_flatten(self):
-        children = (self.ln_n, self.n, self.x, jnp.asarray(self.ntot))
+        # Avoid coercing to jnp.asarray here to keep compatibility with
+        # transformation-time abstract values (e.g., vmap/jit tracing).
+        children = (self.ln_n, self.n, self.x, self.ntot)
         aux = (self.iterations, self.metadata)
         return children, aux
 
