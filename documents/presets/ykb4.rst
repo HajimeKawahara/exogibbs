@@ -26,6 +26,8 @@ The following elements are included in this preset (including electrons as "e-")
 
 ``C, H, He, K, N, Na, O, P, S, Ti, V, e-``
 
+The reference elemental abundances (`b_element_vector_ref`) are taken from Asplund, Amarsi & Grevesse (2021).
+
 Species (JANAF key)
 -------------------
 The species list corresponds to the ``JANAF`` column in ``molecule_names.csv``.
