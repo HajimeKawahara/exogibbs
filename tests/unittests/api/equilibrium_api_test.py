@@ -41,9 +41,9 @@ from exogibbs.api.equilibrium import EquilibriumInit, EquilibriumOptions
 
 class FakeSetup:
     """Minimal stand-in for ChemicalSetup for interface testing."""
-    def __init__(self, A, elems=None):
+    def __init__(self, A, elements=None):
         self.formula_matrix = A
-        self.elems = elems
+        self.elements = elements
 
     def hvector_func(self, T):
         # Shape must be (K,), but values are irrelevant for these tests
