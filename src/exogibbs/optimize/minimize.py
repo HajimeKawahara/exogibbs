@@ -1,11 +1,9 @@
 import jax.numpy as jnp
 from jax import custom_vjp
 from jax import jacrev
-from jax import jit
 from jax.lax import while_loop
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
-from functools import partial
 from typing import Tuple, Callable
 
 from exogibbs.api.chemistry import ThermoState
@@ -14,7 +12,6 @@ from exogibbs.optimize.core import _compute_gk
 from exogibbs.optimize.vjpgibbs import vjp_temperature
 from exogibbs.optimize.vjpgibbs import vjp_pressure
 from exogibbs.optimize.vjpgibbs import vjp_elements
-
 
 
 def solve_gibbs_iteration_equations(
@@ -52,7 +49,6 @@ def solve_gibbs_iteration_equations(
     assemble_vec = jnp.concatenate([Angk + b - An, jnp.array([ngk - resn])])
     assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
     return assemble_variable[:-1], assemble_variable[-1]
-
 
 def compute_residuals(
     nk: jnp.ndarray,
@@ -156,7 +152,7 @@ def minimize_gibbs_core(
     """
 
     hvector = hvector_func(state.temperature)
-
+    
     def cond_fun(carry):
         _, _, _, _, epsilon, counter = carry
         return (epsilon > epsilon_crit) & (counter < max_iter)

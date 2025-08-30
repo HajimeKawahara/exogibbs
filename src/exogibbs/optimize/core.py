@@ -1,8 +1,4 @@
 import jax.numpy as jnp
-from jax import grad
-from jax import vmap
-
-from typing import Tuple
 
 def _A_diagn_At(number_density_vector, formula_matrix):
     return jnp.einsum(

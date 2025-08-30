@@ -15,6 +15,8 @@ from jax import tree_util
 import jax
 from exogibbs.api.chemistry import ChemicalSetup, ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs
+from jax import jit
+from functools import partial
 
 Array = jax.Array
 
@@ -157,6 +159,7 @@ def equilibrium_profile(
     b: Array,
     *,
     Pref: float = 1.0,
+    init: Optional[EquilibriumInit] = None,
     options: Optional[EquilibriumOptions] = None,
 ) -> EquilibriumResult:
     """Vectorized equilibrium along a 1D T/P profile (layers).
@@ -170,6 +173,8 @@ def equilibrium_profile(
         P: Pressures, shape (N,).
         b: Elemental abundances, shape (E,), shared across layers.
         Pref: Reference pressure (bar).
+        init: Optional warm start. Accepts per-layer arrays ``ln_nk`` (N,K)
+            and ``ln_ntot`` (N,), or single-layer values that broadcast.
         options: Solver options.
 
     Returns:
@@ -188,19 +193,40 @@ def equilibrium_profile(
     if b.ndim != 1:
         raise ValueError("b must be a 1D array shared across layers.")
 
-    # Vectorize over T and P; keep setup and b static. Pass Pref/options as kwargs.
+    N = int(T.shape[0])
+
+    # No init: vectorize over T and P only.
+    if init is None or init.ln_nk is None or init.ln_ntot is None:
+        layer_fn = jax.vmap(
+            lambda Ti, Pi: equilibrium(
+                setup, Ti, Pi, b, Pref=Pref, options=options
+            ),
+            in_axes=(0, 0),
+        )
+        return layer_fn(T, P)
+
+    # Per-layer warm start: broadcast to (N, K) and (N,) if needed.
+    K = int(setup.formula_matrix.shape[1])
+    ln_nk0 = jnp.asarray(init.ln_nk)
+    ln_ntot0 = jnp.asarray(init.ln_ntot)
+    if ln_nk0.shape != (N, K):
+        ln_nk0 = jnp.broadcast_to(ln_nk0, (N, K))
+    if ln_ntot0.shape != (N,):
+        ln_ntot0 = jnp.broadcast_to(ln_ntot0, (N,))
+
     layer_fn = jax.vmap(
-        lambda Ti, Pi: equilibrium(
+        lambda Ti, Pi, ln_nk_i, ln_ntot_i: equilibrium(
             setup,
             Ti,
             Pi,
             b,
             Pref=Pref,
+            init=EquilibriumInit(ln_nk=ln_nk_i, ln_ntot=ln_ntot_i),
             options=options,
         ),
-        in_axes=(0, 0),
+        in_axes=(0, 0, 0, 0),
     )
-    return layer_fn(T, P)
+    return layer_fn(T, P, ln_nk0, ln_ntot0)
 
 
 __all__ = [
