@@ -46,7 +46,7 @@ class ChemicalSetup:
     hvector_func : Callable[[float|Array], Array]
         h(T) used by the optimizer (JAX-differentiable).
 
-    elems : Optional[tuple[str, ...]]
+    elements : Optional[tuple[str, ...]]
         Element symbols (E,) if available.
     species : Optional[tuple[str, ...]]
         Species names (K,) if available.
@@ -59,7 +59,7 @@ class ChemicalSetup:
     hvector_func: Callable[[Union[float, Array]], Array]
 
     # Optional metadata (host-side; NOT traced)
-    elems: Optional[Tuple[str, ...]] = None
+    elements: Optional[Tuple[str, ...]] = None
     species: Optional[Tuple[str, ...]] = None
     b_element_vector_reference: Optional["np.ndarray"] = None  # host-side
     metadata: Optional[Mapping[str, str]] = None

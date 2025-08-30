@@ -11,9 +11,9 @@ import jax.numpy as jnp
 import jax
 
 JANAF_GIBBS_MATRICES_YKB4 = "gibbs_matrices.npz"
-NUMBER_OF_SPECIES_SAMPLE = "number_of_species.sample.list"  # this is a sample file of number_of_species for testing
 MOLNAME_YKB4 = "molecule_names.csv"
 JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
+
 
 def load_molname_ykb4() -> pd.DataFrame:
     """Load the YKB4 molecular names table.
@@ -30,7 +30,6 @@ def load_molname_ykb4() -> pd.DataFrame:
     return df_molname
 
 
-
 def prepare_ykb4_setup() -> ChemicalSetup:
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
@@ -43,16 +42,28 @@ def prepare_ykb4_setup() -> ChemicalSetup:
     """
     # Species / formula matrix (fixed)
     df_molname = load_molname_ykb4()
-    formula_matrix_np, elems, species = build_formula_matrix(df_molname)
+    formula_matrix_np, elements, species = build_formula_matrix(df_molname)
     # Keep the matrix fixed as requested, but move to device
     formula_matrix = jnp.asarray(formula_matrix_np)
-
-    # Reference elemental abundance b from the provided sample number densities
-    npath = get_data_filepath(NUMBER_OF_SPECIES_SAMPLE)
-    number_of_species_init = pd.read_csv(npath, header=None, sep=",").values[0]
-    b_element_vector_np = formula_matrix_np @ number_of_species_init
-    b_element_vector_ref = jnp.asarray(b_element_vector_np)
-
+    
+    # Reference elemental solar abundance b from AAG21 (from exojax.utils.zsol import nsol)
+    # AAG21 = Asplund, M., Amarsi, A. M., & Grevesse, N. 2021, arXiv:2105.01661
+    b_element_vector_ref = jnp.array(
+        [
+            2.6627135e-04,
+            9.2326087e-01,
+            7.5739846e-02,
+            1.0847369e-07,
+            6.2420098e-05,
+            1.5322316e-06,
+            4.5219361e-04,
+            2.3731458e-07,
+            1.2170949e-05,
+            8.6163716e-08,
+            7.3337216e-09,
+            0.0,
+        ]
+    )
     # Gibbs matrices -> (molecules, T_table, mu_table, grid_lens)
     path = get_data_filepath(JANAF_GIBBS_MATRICES_YKB4)
     gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
@@ -87,7 +98,7 @@ def prepare_ykb4_setup() -> ChemicalSetup:
     return ChemicalSetup(
         formula_matrix=formula_matrix,
         hvector_func=hvector_func_jit,
-        elems=tuple(elems) if elems is not None else None,
+        elements=tuple(elements) if elements is not None else None,
         species=tuple(species) if species is not None else None,
         b_element_vector_reference=b_element_vector_ref,
         metadata={"source": "JANAF"},
