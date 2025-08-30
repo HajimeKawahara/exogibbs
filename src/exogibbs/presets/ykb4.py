@@ -42,7 +42,7 @@ def prepare_ykb4_setup() -> ChemicalSetup:
     """
     # Species / formula matrix (fixed)
     df_molname = load_molname_ykb4()
-    formula_matrix_np, elems, species = build_formula_matrix(df_molname)
+    formula_matrix_np, elements, species = build_formula_matrix(df_molname)
     # Keep the matrix fixed as requested, but move to device
     formula_matrix = jnp.asarray(formula_matrix_np)
     
@@ -98,7 +98,7 @@ def prepare_ykb4_setup() -> ChemicalSetup:
     return ChemicalSetup(
         formula_matrix=formula_matrix,
         hvector_func=hvector_func_jit,
-        elems=tuple(elems) if elems is not None else None,
+        elements=tuple(elements) if elements is not None else None,
         species=tuple(species) if species is not None else None,
         b_element_vector_reference=b_element_vector_ref,
         metadata={"source": "JANAF"},

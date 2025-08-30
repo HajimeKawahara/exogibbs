@@ -171,8 +171,8 @@ def build_formula_matrix(
     # Parse using the clean base (never use raw for parsing)
     parsed_list = [parse_formula_with_charge(s) for s in species_clean]
 
-    all_elems = set().union(*parsed_list) if parsed_list else set()
-    elements = sorted(all_elems) if element_order is None else list(element_order)
+    all_elements = set().union(*parsed_list) if parsed_list else set()
+    elements = sorted(all_elements) if element_order is None else list(element_order)
 
     A = np.zeros((len(elements), len(species_clean)), dtype=np.int64)
     elem_index = {e: i for i, e in enumerate(elements)}
