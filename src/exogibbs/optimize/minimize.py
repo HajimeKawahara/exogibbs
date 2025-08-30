@@ -191,7 +191,9 @@ def minimize_gibbs_core(
     return ln_nk, ln_tot, counter
 
 
-@partial(custom_vjp, nondiff_argnums=(1, 2, 3, 4, 5, 6))
+# Only function and scalar options are non-differentiable.
+# Array-valued args (init vectors, matrices) must NOT be in nondiff_argnums
+# to avoid UnexpectedTracerError under vmap/jit.
 def minimize_gibbs(
     state: ThermoState,
     ln_nk_init: jnp.ndarray,
@@ -215,87 +217,66 @@ def minimize_gibbs(
     Returns:
         Final log number of species vector (n_species,).
     """
+    # Define an inner custom_vjp function that captures static arrays
+    # (ln_nk_init, ln_ntot_init, formula_matrix) to avoid passing them as
+    # arguments, which can become JAX Tracers under vmap/jit.
+    @custom_vjp
+    def _solve(inner_state: ThermoState) -> jnp.ndarray:
+        ln_nk, _, _ = minimize_gibbs_core(
+            inner_state,
+            ln_nk_init,
+            ln_ntot_init,
+            formula_matrix,
+            hvector_func,
+            epsilon_crit,
+            max_iter,
+        )
+        return ln_nk
 
-    ln_nk, _, _ = minimize_gibbs_core(
-        state,
-        ln_nk_init,
-        ln_ntot_init,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit,
-        max_iter,
-    )
+    def _solve_fwd(inner_state: ThermoState):
+        ln_nk, ln_ntot, _ = minimize_gibbs_core(
+            inner_state,
+            ln_nk_init,
+            ln_ntot_init,
+            formula_matrix,
+            hvector_func,
+            epsilon_crit,
+            max_iter,
+        )
+        dfunc = jacrev(hvector_func)
+        hdot = dfunc(inner_state.temperature)
+        residuals = (ln_nk, hdot, inner_state.b_element_vector, ln_ntot)
+        return ln_nk, residuals
 
-    return ln_nk
+    def _solve_bwd(res, g):
+        ln_nk, hdot, b_element_vector, ln_ntot = res
 
+        nk = jnp.exp(ln_nk)
+        ntot_result = jnp.exp(ln_ntot)
 
-def minimize_gibbs_fwd(
-    state,
-    ln_nk_init,
-    ln_ntot_init,
-    formula_matrix,
-    hvector_func,
-    epsilon_crit=1.0e-11,
-    max_iter=1000,
-):
-    ln_nk, ln_ntot, _ = minimize_gibbs_core(
-        state,
-        ln_nk_init,
-        ln_ntot_init,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit,
-        max_iter,
-    )
-    dfunc = jacrev(hvector_func)
-    hdot = dfunc(state.temperature)
+        Bmatrix = _A_diagn_At(nk, formula_matrix)
+        c, lower = cho_factor(Bmatrix)
+        alpha = cho_solve((c, lower), formula_matrix @ g)
+        beta = cho_solve((c, lower), b_element_vector)
+        beta_dot_b_element = jnp.vdot(beta, b_element_vector)
 
-    residuals = (ln_nk, hdot, state.b_element_vector, ln_ntot)
-    return ln_nk, residuals
+        cot_T = vjp_temperature(
+            g,
+            nk,
+            formula_matrix,
+            hdot,
+            alpha,
+            beta,
+            b_element_vector,
+            beta_dot_b_element,
+        )
+        cot_P = vjp_pressure(g, ntot_result, alpha, b_element_vector, beta_dot_b_element)
+        cot_b = vjp_elements(g, alpha, beta, b_element_vector, beta_dot_b_element)
+        return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b),)
 
+    _solve.defvjp(_solve_fwd, _solve_bwd)
 
-def minimize_gibbs_bwd(
-    ln_nk_init,
-    ln_ntot_init,
-    formula_matrix,
-    hvector_func,
-    epsilon_crit,
-    max_iter,
-    res,
-    g,
-):
-
-    ln_nk, hdot, b_element_vector, ln_ntot = res
-    
-    # Guard against underflow and ensure strictly positive species for SPD matrix
-    # dtype = ln_nk.dtype
-    #tiny = jnp.finfo(dtype).tiny
-    # nk = jnp.maximum(jnp.exp(ln_nk), tiny)
-    # ntot_result = jnp.maximum(jnp.exp(ln_ntot), tiny)
-    nk = jnp.exp(ln_nk)
-    ntot_result = jnp.exp(ln_ntot)
-
-    # solves the linear systems
-    Bmatrix = _A_diagn_At(nk, formula_matrix)
-    
-    # Add a tiny diagonal jitter to stabilize Cholesky for near-singular cases
-    # size_e = Bmatrix.shape[0]
-    # Scale jitter relative to matrix magnitude
-    #rel = jnp.maximum(jnp.linalg.norm(Bmatrix, ord=jnp.inf), 1.0)
-    #jitter = jnp.asarray(1e-12, dtype=Bmatrix.dtype) * rel
-    #Bmatrix = Bmatrix + jitter * jnp.eye(size_e, dtype=Bmatrix.dtype)
-    
-    c, lower = cho_factor(Bmatrix)
-    alpha = cho_solve((c, lower), formula_matrix @ g)
-    beta = cho_solve((c, lower), b_element_vector)
-    beta_dot_b_element = jnp.vdot(beta, b_element_vector)
-    
-    #VJPs
-    cot_T = vjp_temperature(g, nk, formula_matrix, hdot, alpha, beta, b_element_vector, beta_dot_b_element)
-    cot_P = vjp_pressure(g, ntot_result, alpha, b_element_vector, beta_dot_b_element)
-    cot_b = vjp_elements(g, alpha, beta, b_element_vector, beta_dot_b_element)
-
-    return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b),)
+    return _solve(state)
 
 
-minimize_gibbs.defvjp(minimize_gibbs_fwd, minimize_gibbs_bwd)
+# Note: custom_vjp is defined inside minimize_gibbs to capture static arrays.
