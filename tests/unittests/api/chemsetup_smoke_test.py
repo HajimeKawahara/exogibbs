@@ -22,7 +22,7 @@ def test_prepare_ykb4_setup_basic():
     assert E > 0 and K > 0
 
     # optional metadata
-    assert (setup.elems is None) or isinstance(setup.elems, tuple)
+    assert (setup.elements is None) or isinstance(setup.elements, tuple)
     assert (setup.species is None) or isinstance(setup.species, tuple)
     assert (setup.b_element_vector_reference is None) or isinstance(
         setup.b_element_vector_reference, (np.ndarray, jnp.ndarray)
