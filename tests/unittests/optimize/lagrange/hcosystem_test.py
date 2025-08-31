@@ -36,12 +36,12 @@ def hco_system_setup():
     bH = 0.5 
     bC = 0.2
     bO = 0.3
-    b_element_vector = jnp.array([bH, bC, bO])
+    element_vector = jnp.array([bH, bC, bO])
     
     epsilon_crit = 1e-11
     max_iter = 1000
     
-    thermo_state = ThermoState(temperature, ln_normalized_pressure, b_element_vector)
+    thermo_state = ThermoState(temperature, ln_normalized_pressure, element_vector)
     
     return {
         'hcosystem': hcosystem,
@@ -53,7 +53,7 @@ def hco_system_setup():
         'ln_nk': ln_nk,
         'ln_ntot': ln_ntot,
         'hvector_func': hvector_func,
-        'b_element_vector': b_element_vector,
+        'element_vector': element_vector,
         'bH': bH,
         'bC': bC,
         'bO': bO,

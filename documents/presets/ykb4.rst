@@ -16,7 +16,7 @@ Quick Start
 
    setup = prepare_ykb4_setup()
    T, P = 1500.0, 1.0  # K, bar
-   b = setup.b_element_vector_reference  # or your own jnp.array([...])
+   b = setup.element_vector_reference  # or your own jnp.array([...])
    result = equilibrium(setup, T=T, P=P, b=b)
    print(result.x)  # mole fractions (K,)
 
@@ -26,7 +26,7 @@ The following elements are included in this preset (including electrons as "e-")
 
 ``C, H, He, K, N, Na, O, P, S, Ti, V, e-``
 
-The reference elemental abundances (`b_element_vector_ref`) are taken from Asplund, Amarsi & Grevesse (2021).
+The reference elemental abundances (`element_vector_ref`) are taken from Asplund, Amarsi & Grevesse (2021).
 
 Species (JANAF key)
 -------------------

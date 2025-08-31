@@ -167,7 +167,7 @@ def minimize_gibbs_core(
             ln_nk,
             ln_ntot,
             formula_matrix,
-            state.b_element_vector,
+            state.element_vector,
             state.temperature,
             state.ln_normalized_pressure,
             hvector,
@@ -245,11 +245,11 @@ def minimize_gibbs(
         )
         dfunc = jacrev(hvector_func)
         hdot = dfunc(inner_state.temperature)
-        residuals = (ln_nk, hdot, inner_state.b_element_vector, ln_ntot)
+        residuals = (ln_nk, hdot, inner_state.element_vector, ln_ntot)
         return ln_nk, residuals
 
     def _solve_bwd(res, g):
-        ln_nk, hdot, b_element_vector, ln_ntot = res
+        ln_nk, hdot, element_vector, ln_ntot = res
 
         nk = jnp.exp(ln_nk)
         ntot_result = jnp.exp(ln_ntot)
@@ -257,8 +257,8 @@ def minimize_gibbs(
         Bmatrix = _A_diagn_At(nk, formula_matrix)
         c, lower = cho_factor(Bmatrix)
         alpha = cho_solve((c, lower), formula_matrix @ g)
-        beta = cho_solve((c, lower), b_element_vector)
-        beta_dot_b_element = jnp.vdot(beta, b_element_vector)
+        beta = cho_solve((c, lower), element_vector)
+        beta_dot_b_element = jnp.vdot(beta, element_vector)
 
         cot_T = vjp_temperature(
             g,
@@ -267,11 +267,11 @@ def minimize_gibbs(
             hdot,
             alpha,
             beta,
-            b_element_vector,
+            element_vector,
             beta_dot_b_element,
         )
-        cot_P = vjp_pressure(g, ntot_result, alpha, b_element_vector, beta_dot_b_element)
-        cot_b = vjp_elements(g, alpha, beta, b_element_vector, beta_dot_b_element)
+        cot_P = vjp_pressure(g, ntot_result, alpha, element_vector, beta_dot_b_element)
+        cot_b = vjp_elements(g, alpha, beta, element_vector, beta_dot_b_element)
         # No gradients for initialization arguments
         return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b), None, None)
 

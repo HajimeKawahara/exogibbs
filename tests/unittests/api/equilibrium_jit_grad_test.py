@@ -20,7 +20,7 @@ def test_equilibrium_profile_jit_under_grad():
     It should compile and return a finite gradient.
     """
     setup = prepare_ykb4_setup()
-    b = setup.b_element_vector_reference
+    b = setup.element_vector_reference
 
     # Small profile to keep runtime minimal
     N = 5
