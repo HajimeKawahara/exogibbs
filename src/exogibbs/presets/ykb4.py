@@ -48,7 +48,7 @@ def prepare_ykb4_setup() -> ChemicalSetup:
     
     # Reference elemental solar abundance b from AAG21 (from exojax.utils.zsol import nsol)
     # AAG21 = Asplund, M., Amarsi, A. M., & Grevesse, N. 2021, arXiv:2105.01661
-    b_element_vector_ref = jnp.array(
+    element_vector_ref = jnp.array(
         [
             2.6627135e-04,
             9.2326087e-01,
@@ -100,6 +100,6 @@ def prepare_ykb4_setup() -> ChemicalSetup:
         hvector_func=hvector_func_jit,
         elements=tuple(elements) if elements is not None else None,
         species=tuple(species) if species is not None else None,
-        b_element_vector_reference=b_element_vector_ref,
+        element_vector_reference=element_vector_ref,
         metadata={"source": "JANAF"},
     )

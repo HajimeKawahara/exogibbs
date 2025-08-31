@@ -67,10 +67,10 @@ def hvector_func(temperature):
 bH = 0.5
 bC = 0.2
 bO = 0.3
-b_element_vector = jnp.array([bH, bC, bO])  # H, C, O
+element_vector = jnp.array([bH, bC, bO])  # H, C, O
 
 # ThermoState instance
-thermo_state = ThermoState(temperature, ln_normalized_pressure, b_element_vector)
+thermo_state = ThermoState(temperature, ln_normalized_pressure, element_vector)
 
 # Convergence criteria
 epsilon_crit = 1e-11
@@ -110,8 +110,8 @@ assert jnp.abs(res) < epsilon_crit * 10.0
 from exogibbs.test.analytic_hcosystem import derivative_dlnnCO_db
 
 dlnn_db = jacrev(
-    lambda b_element_vector_in: minimize_gibbs(
-        ThermoState(temperature, ln_normalized_pressure, b_element_vector_in),
+    lambda element_vector_in: minimize_gibbs(
+        ThermoState(temperature, ln_normalized_pressure, element_vector_in),
         ln_nk,
         ln_ntot,
         formula_matrix,
@@ -119,7 +119,7 @@ dlnn_db = jacrev(
         epsilon_crit=epsilon_crit,
         max_iter=max_iter,
     )
-)(b_element_vector) # (n_species, n_elements)
+)(element_vector) # (n_species, n_elements)
 
 # analytical derivatives
 gradf = derivative_dlnnCO_db(ln_nk_result[1], bC, bH, bO, k)
