@@ -21,7 +21,7 @@ config.update("jax_enable_x64", True)
 @pytest.mark.smoke
 def test_equilibrium_grad_wrt_temperature():
     setup = prepare_ykb4_setup()
-    b_vec = setup.b_element_vector_reference
+    b_vec = setup.element_vector_reference
 
     def f(T):
         return jnp.sum(equilibrium(setup, T, 1.0, b_vec).ln_n)
@@ -159,7 +159,7 @@ def test_equilibrium_respects_init(monkeypatch):
 
 if __name__ == "__main__":
     setup = prepare_ykb4_setup()
-    b_vec = setup.b_element_vector_reference
+    b_vec = setup.element_vector_reference
 
     def f(T):
         return jnp.sum(equilibrium(setup, T, 1.0, b_vec).ln_n)

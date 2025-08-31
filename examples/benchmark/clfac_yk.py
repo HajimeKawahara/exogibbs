@@ -52,7 +52,7 @@ b_old_ref = jnp.array(
 thermo_state = ThermoState(
     temperature=temperature,
     ln_normalized_pressure=ln_normalized_pressure,
-    b_element_vector=b_old_ref,
+    element_vector=b_old_ref,
 )
 
 # Convergence criteria

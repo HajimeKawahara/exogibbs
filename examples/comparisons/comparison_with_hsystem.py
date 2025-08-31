@@ -61,10 +61,10 @@ def hvector_func(temperature):
 
 
 # Element abundance constraint: total H nuclei = 1.0
-b_element_vector = jnp.array([1.0])
+element_vector = jnp.array([1.0])
 
 # ThermoState instance
-thermo_state = ThermoState(temperature, ln_normalized_pressure, b_element_vector)
+thermo_state = ThermoState(temperature, ln_normalized_pressure, element_vector)
 
 # Convergence criteria
 epsilon_crit = 1e-11
@@ -116,7 +116,7 @@ dln_dT = jacrev(
         ThermoState(
             temperature_in,
             ln_normalized_pressure,
-            b_element_vector,
+            element_vector,
         ),
         ln_nk,
         ln_ntot,
@@ -152,7 +152,7 @@ dln_dlogp = jacrev(
         ThermoState(
             temperature,
             ln_normalized_pressure,
-            b_element_vector,
+            element_vector,
         ),
         ln_nk,
         ln_ntot,
@@ -193,7 +193,7 @@ ln_ntot_init = 0.0
 # Vectorize minimize_gibbs over temperature axis
 def func(T):
         return minimize_gibbs(
-            ThermoState(T, ln_normalized_pressure, b_element_vector),
+            ThermoState(T, ln_normalized_pressure, element_vector),
             ln_nk_init,
             ln_ntot_init,
             formula_matrix,
@@ -327,7 +327,7 @@ print(f"Pressure range: {Parr[0]:.3f} to {Parr[-1]:.0f} bar ({len(Parr)} points)
 # Vectorize minimize_gibbs over temperature axis
 def funcp(logpin):
         return minimize_gibbs(
-            ThermoState(temperature, logpin, b_element_vector),
+            ThermoState(temperature, logpin, element_vector),
             ln_nk_init,
             ln_ntot_init,
             formula_matrix,

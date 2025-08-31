@@ -58,10 +58,10 @@ def hvector_func(temperature):
 bH_gt = 0.5
 bC_gt = 0.2
 bO_gt = 0.3
-b_element_vector_gt = jnp.array([bH_gt, bC_gt, bO_gt])  # H, C, O
+element_vector_gt = jnp.array([bH_gt, bC_gt, bO_gt])  # H, C, O
 
 # ThermoState instance
-thermo_state_gt = ThermoState(temperature_gt, ln_normalized_pressure, b_element_vector_gt)
+thermo_state_gt = ThermoState(temperature_gt, ln_normalized_pressure, element_vector_gt)
 
 # Convergence criteria
 epsilon_crit = 1e-11
@@ -98,13 +98,13 @@ def model_prob(ln_nk_obs):
     bH = numpyro.sample('bH', dist.Uniform(0.1, 1.0))
     bC = numpyro.sample('bC', dist.Uniform(0.1, 0.3))
     bO = numpyro.sample('bO', dist.Uniform(0.1, 0.5))
-    b_element_vector = jnp.array([bH, bC, bO]) 
+    element_vector = jnp.array([bH, bC, bO]) 
     logT = numpyro.sample('logT', dist.Uniform(3.0, 3.5)) 
     temperature = 10**(logT)
     numpyro.deterministic('temperature', temperature)
     
     # ThermoState instance
-    thermo_state = ThermoState(temperature, ln_normalized_pressure, b_element_vector)
+    thermo_state = ThermoState(temperature, ln_normalized_pressure, element_vector)
 
     mu_ln_nk = minimize_gibbs(
     thermo_state,

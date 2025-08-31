@@ -34,7 +34,7 @@ res = equilibrium_profile(
     chem,
     Tarr,
     Parr,
-    chem.b_element_vector_reference,
+    chem.element_vector_reference,
     Pref=Pref,
     options=opts,
 )

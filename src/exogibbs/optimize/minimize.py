@@ -2,7 +2,7 @@ import jax.numpy as jnp
 from jax import custom_vjp
 from jax import jacrev
 from jax import jit
-from jax.lax import while_loop
+from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
 from functools import partial
@@ -167,7 +167,7 @@ def minimize_gibbs_core(
             ln_nk,
             ln_ntot,
             formula_matrix,
-            state.b_element_vector,
+            state.element_vector,
             state.temperature,
             state.ln_normalized_pressure,
             hvector,
@@ -221,11 +221,11 @@ def minimize_gibbs(
     # (ln_nk_init, ln_ntot_init, formula_matrix) to avoid passing them as
     # arguments, which can become JAX Tracers under vmap/jit.
     @custom_vjp
-    def _solve(inner_state: ThermoState) -> jnp.ndarray:
+    def _solve(inner_state: ThermoState, ln_nk0: jnp.ndarray, ln_ntot0: float) -> jnp.ndarray:
         ln_nk, _, _ = minimize_gibbs_core(
             inner_state,
-            ln_nk_init,
-            ln_ntot_init,
+            ln_nk0,
+            ln_ntot0,
             formula_matrix,
             hvector_func,
             epsilon_crit,
@@ -233,11 +233,11 @@ def minimize_gibbs(
         )
         return ln_nk
 
-    def _solve_fwd(inner_state: ThermoState):
+    def _solve_fwd(inner_state: ThermoState, ln_nk0: jnp.ndarray, ln_ntot0: float):
         ln_nk, ln_ntot, _ = minimize_gibbs_core(
             inner_state,
-            ln_nk_init,
-            ln_ntot_init,
+            ln_nk0,
+            ln_ntot0,
             formula_matrix,
             hvector_func,
             epsilon_crit,
@@ -245,11 +245,11 @@ def minimize_gibbs(
         )
         dfunc = jacrev(hvector_func)
         hdot = dfunc(inner_state.temperature)
-        residuals = (ln_nk, hdot, inner_state.b_element_vector, ln_ntot)
+        residuals = (ln_nk, hdot, inner_state.element_vector, ln_ntot)
         return ln_nk, residuals
 
     def _solve_bwd(res, g):
-        ln_nk, hdot, b_element_vector, ln_ntot = res
+        ln_nk, hdot, element_vector, ln_ntot = res
 
         nk = jnp.exp(ln_nk)
         ntot_result = jnp.exp(ln_ntot)
@@ -257,8 +257,8 @@ def minimize_gibbs(
         Bmatrix = _A_diagn_At(nk, formula_matrix)
         c, lower = cho_factor(Bmatrix)
         alpha = cho_solve((c, lower), formula_matrix @ g)
-        beta = cho_solve((c, lower), b_element_vector)
-        beta_dot_b_element = jnp.vdot(beta, b_element_vector)
+        beta = cho_solve((c, lower), element_vector)
+        beta_dot_b_element = jnp.vdot(beta, element_vector)
 
         cot_T = vjp_temperature(
             g,
@@ -267,16 +267,20 @@ def minimize_gibbs(
             hdot,
             alpha,
             beta,
-            b_element_vector,
+            element_vector,
             beta_dot_b_element,
         )
-        cot_P = vjp_pressure(g, ntot_result, alpha, b_element_vector, beta_dot_b_element)
-        cot_b = vjp_elements(g, alpha, beta, b_element_vector, beta_dot_b_element)
-        return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b),)
+        cot_P = vjp_pressure(g, ntot_result, alpha, element_vector, beta_dot_b_element)
+        cot_b = vjp_elements(g, alpha, beta, element_vector, beta_dot_b_element)
+        # No gradients for initialization arguments
+        return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b), None, None)
 
     _solve.defvjp(_solve_fwd, _solve_bwd)
 
-    return _solve(state)
+    # Treat initial guesses as non-differentiable inputs
+    ln_nk0 = stop_gradient(ln_nk_init)
+    ln_ntot0 = stop_gradient(ln_ntot_init)
+    return _solve(state, ln_nk0, ln_ntot0)
 
 
 # Note: custom_vjp is defined inside minimize_gibbs to capture static arrays.

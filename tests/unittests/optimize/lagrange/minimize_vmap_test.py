@@ -21,7 +21,7 @@ def test_minimize_gibbs_vmap_h_system():
     ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
     ln_nk_init = jnp.array([0.0, 0.0])
     ln_ntot_init = 0.0
-    b_element_vector = jnp.array([1.0])
+    element_vector = jnp.array([1.0])
     epsilon_crit = 1e-11
     max_iter = 1000
     
@@ -34,7 +34,7 @@ def test_minimize_gibbs_vmap_h_system():
     # Vectorized minimize_gibbs
     def func(T):
         return minimize_gibbs(
-            ThermoState(T, ln_normalized_pressure, b_element_vector),
+            ThermoState(T, ln_normalized_pressure, element_vector),
             ln_nk_init,
             ln_ntot_init,
             formula_matrix,
@@ -81,7 +81,7 @@ def test_minimize_gibbs_vmap_gradient_h_system():
     ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
     ln_nk_init = jnp.array([0.0, 0.0])
     ln_ntot_init = 0.0
-    b_element_vector = jnp.array([1.0])
+    element_vector = jnp.array([1.0])
     epsilon_crit = 1e-11
     max_iter = 1000
     
@@ -94,7 +94,7 @@ def test_minimize_gibbs_vmap_gradient_h_system():
     # Vectorized temperature gradients
     def func(T):
         return minimize_gibbs(
-            ThermoState(T, ln_normalized_pressure, b_element_vector),
+            ThermoState(T, ln_normalized_pressure, element_vector),
             ln_nk_init,
             ln_ntot_init,
             formula_matrix,
