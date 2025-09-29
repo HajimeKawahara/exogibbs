@@ -7,7 +7,7 @@ solver against the code by ykawashima when she was at B4.
 
 Updated to use the high-level API: exogibbs.api.equilibrium.equilibrium.
 """
-from exogibbs.presets.ykb4 import prepare_ykb4_setup
+from exogibbs.presets.ykb4 import chemsetup
 import jax.numpy as jnp
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs_core
@@ -19,7 +19,7 @@ from jax import config
 config.update("jax_enable_x64", True)
 
 #chemical setup
-chem = prepare_ykb4_setup()
+chem = chemsetup()
 
 # Thermodynamic conditions
 temperature = 500.0  # K

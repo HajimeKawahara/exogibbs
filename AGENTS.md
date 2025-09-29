@@ -1,34 +1,34 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Source: `src/exogibbs/` with subpackages `io/`, `equilibrium/`, `thermo/`, `optimize/`, `api/`, `presets/`, `utils/`; data files under `src/exogibbs/data/`.
-- Tests: `tests/unittests/` organized by domain (e.g., `io/`, `equilibrium/`); files named `*_test.py`.
-- Examples & docs: `examples/` and `documents/`.
+- Core Python packages live in `src/exogibbs/` with domain-focused subpackages (`io/`, `equilibrium/`, `thermo/`, `optimize/`, `api/`, `presets/`, `utils/`).
+- Shared datasets reside under `src/exogibbs/data/`; update `MANIFEST.in` if shipping new files.
+- Unit tests sit in `tests/unittests/` mirroring the source layout (e.g., `tests/unittests/io/`); name files `*_test.py`.
+- Working examples belong in `examples/`; long-form references or design notes belong in `documents/`.
 
 ## Build, Test, and Development Commands
-- Install (editable): `python -m pip install -e .` (Python >= 3.9).
-- Run tests: `pytest tests/unittests` (CI exports `results/pytest.xml`).
-- Optional build: `python -m pip install build && python -m build` (ensure Git tags for correct versioning).
+- `python -m pip install -e .` installs the project in editable mode (Python ≥ 3.9).
+- `pytest tests/unittests` runs the full deterministic test suite; CI exports results to `results/pytest.xml`.
+- `python -m pip install build && python -m build` produces source and wheel artifacts; tag releases before publishing.
 
 ## Coding Style & Naming Conventions
-- Language: Python with type hints where practical; 4-space indentation; keep functions short and focused.
-- Naming: modules/functions/variables `snake_case`; classes `CapWords`; constants `UPPER_SNAKE_CASE`.
-- Imports: standard lib, third-party, then local; avoid unused imports.
+- Use Python with type hints where practical, 4-space indentation, and focused functions.
+- Follow naming: modules/functions/variables in `snake_case`, classes in `CapWords`, constants in `UPPER_SNAKE_CASE`.
+- Order imports as standard library, third-party, then local modules; remove unused imports before committing.
+- Favor concise inline comments only for non-obvious logic.
 
 ## Testing Guidelines
-- Framework: `pytest`; keep tests deterministic (no network/GPU). Use small fixtures and cover edge cases (e.g., parsing, interpolation bounds).
-- Location/pattern: place tests under `tests/unittests/<area>/`, name `*_test.py`.
-- Run locally: `pytest tests/unittests`. Aim to maintain/raise coverage of changed code.
+- Write tests with `pytest`, colocated by domain; prefer small fixtures and deterministic behavior (no network/GPU access).
+- Keep high-value edge coverage (parsers, interpolation bounds, stoichiometry balancing) and extend tests when touching those areas.
+- Run `pytest tests/unittests` prior to pushing; add regression tests alongside bug fixes.
 
 ## Commit & Pull Request Guidelines
-- Commits: concise, imperative (e.g., "thermo: fix electron parsing"); group related changes; reference issues (`#123`) when applicable.
-- PRs: include a clear description, motivation, and testing notes; link issues; add/adjust tests; update data packaging (`MANIFEST.in`) when adding files under `src/exogibbs/data/`.
-- CI: PRs to `develop`/`main` must pass the pytest workflow.
+- Author commits in imperative mood (e.g., `thermo: fix electron parsing`); group related changes and reference issues (`#123`) when relevant.
+- Pull requests require a clear motivation, summary of code changes, and local test evidence; link issues and update docs/examples when behavior shifts.
+- Ensure CI passes before requesting review; include data packaging updates if `src/exogibbs/data/` changes.
 
-## Architecture Overview (Quick)
-- `io.load_data`: loads molecule catalogs and JANAF-like tables.
-- `thermo.stoichiometry`: builds formula matrices from species names.
-- `equilibrium.gibbs`: pads tables and provides JAX-friendly interpolation of h-vectors.
-- `optimize.*`: JAX-based core, VJP, and minimization routines.
-- `api.chemistry` and `presets/`: typed containers and ready-to-use setups.
-
+## Architecture Notes
+- `io.load_data` ingests molecule catalogs and JANAF-style tables.
+- `thermo.stoichiometry` builds formula matrices from species lists.
+- `equilibrium.gibbs` handles interpolation/padding for JAX computations, while `optimize.*` wraps core minimization and VJP routines.
+- High-level APIs live in `api/chemistry` and `presets/` for reusable setups.

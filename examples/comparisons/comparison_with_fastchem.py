@@ -68,11 +68,11 @@ else:
 
 #ExoGibbs comparison###############################################################
 # Thermodynamic conditions
-from exogibbs.presets.ykb4 import prepare_ykb4_setup
+from exogibbs.presets.ykb4 import chemsetup
 from exojax.utils.zsol import nsol
 import jax.numpy as jnp
 
-chem = prepare_ykb4_setup()
+chem = chemsetup()
 solar_abundance = nsol(database="AGSS09")
 nsol_vector = jnp.array([solar_abundance[el] for el in chem.elements[:-1]]) # no solar abundance for e-
 element_vector = jnp.append(nsol_vector, 0)

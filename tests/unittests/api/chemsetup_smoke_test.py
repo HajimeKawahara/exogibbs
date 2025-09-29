@@ -5,13 +5,13 @@ import jax.numpy as jnp
 
 # --- Imports under test -------------------------------------------------------
 # Adjust paths/names if you moved things.
-from exogibbs.presets.ykb4 import prepare_ykb4_setup
+from exogibbs.presets.ykb4 import chemsetup
 from exogibbs.api.chemistry import ChemicalSetup
 
 
 def test_prepare_ykb4_setup_basic():
     """Builds ChemicalSetup without raising, and fields look sane."""
-    setup = prepare_ykb4_setup()
+    setup = setup()
     assert isinstance(setup, ChemicalSetup)
 
     # core
@@ -31,7 +31,7 @@ def test_prepare_ykb4_setup_basic():
 
 def test_hvector_func_shape_and_types():
     """hvector_func(T) returns (K,) and is JAX-friendly."""
-    setup = prepare_ykb4_setup()
+    setup = setup()
     K = setup.formula_matrix.shape[1]
 
     # scalar T
@@ -47,7 +47,7 @@ def test_hvector_func_shape_and_types():
 
 def test_hvector_func_grad_and_jit():
     """grad/jit should work through T."""
-    setup = prepare_ykb4_setup()
+    setup = setup()
 
     def f(T):
         return jnp.sum(setup.hvector_func(T))
@@ -64,7 +64,7 @@ def test_hvector_func_grad_and_jit():
 
 def test_dimension_consistency():
     """K (species dim) consistent between formula_matrix and h(T)."""
-    setup = prepare_ykb4_setup()
+    setup = setup()
     K = setup.formula_matrix.shape[1]
     out = setup.hvector_func(300.0)
     assert out.shape[-1] == K
@@ -72,7 +72,7 @@ def test_dimension_consistency():
 
 def test_optional_b_reference_host_side():
     """element_vector_reference is optional and (if present) host-side array."""
-    setup = prepare_ykb4_setup()
+    setup = setup()
     b_ref = setup.element_vector_reference
     if b_ref is not None:
         # Treat as reference only; ensure it’s not an unexpectedly huge DeviceArray
