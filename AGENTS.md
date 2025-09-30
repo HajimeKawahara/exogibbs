@@ -1,40 +1,21 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Source: `src/exogibbs/` with domain subpackages `io/`, `equilibrium/`, `thermo/`, `optimize/`, `api/`, `presets/`, `utils/`.
-- Data: `src/exogibbs/data/` for shared datasets. If adding files, update `MANIFEST.in`.
-- Tests: `tests/unittests/` mirrors source layout (e.g., `tests/unittests/io/`); name tests `*_test.py`.
-- Examples live in `examples/`; long-form references and design notes in `documents/`.
+The Python package lives in `src/exogibbs/`, organized into domain subpackages such as `io/`, `thermo/`, `equilibrium/`, `optimize/`, `api/`, `presets/`, and `utils/`. Shared datasets belong in `src/exogibbs/data/`; add new assets there only when necessary and remember to update `MANIFEST.in` for packaging. Deterministic tests mirror the tree under `tests/unittests/`, so prefer paths like `tests/unittests/thermo/matrix_test.py` when expanding coverage. Place runnable tutorials in `examples/` and longer design notes in `documents/`.
 
 ## Build, Test, and Development Commands
-- `python -m pip install -e .` (Python ≥ 3.9): editable install for local development.
-- `pytest tests/unittests`: runs the deterministic suite; CI exports `results/pytest.xml`.
-- `python -m pip install build && python -m build`: produce sdist/wheel artifacts; tag releases before publishing.
+- `python -m pip install -e .` creates an editable install of the package for iterative development.
+- `pytest tests/unittests` runs the deterministic suite; CI expects the same invocation and captures `results/pytest.xml`.
+- `python -m pip install build && python -m build` produces both sdist and wheel artifacts before release tags.
 
 ## Coding Style & Naming Conventions
-- Python with type hints, 4-space indentation, focused, small functions.
-- Names: `snake_case` for modules/functions/variables, `CapWords` for classes, `UPPER_SNAKE_CASE` for constants.
-- Imports ordered stdlib → third-party → local; remove unused imports before committing. Keep inline comments for non-obvious logic only.
+Write Python with 4-space indentation, type annotations, and focused functions. Use `snake_case` for modules, functions, and variables, `CapWords` for classes, and `UPPER_SNAKE_CASE` for constants. Group imports by stdlib, third-party, then local modules, removing any unused entries before committing. Keep comments brief and only where logic is non-obvious.
 
 ## Testing Guidelines
-- Framework: `pytest`. Keep tests deterministic (no network/GPU access).
-- Colocate by domain under `tests/unittests/`; use `*_test.py` naming.
-- Prioritize edge coverage: parsers, interpolation bounds, stoichiometry balancing.
-- Run `pytest tests/unittests` before pushing; add regression tests with bug fixes.
+Rely exclusively on `pytest`; keep tests offline and deterministic. Name test files `*_test.py` and colocate them with their domain areas in `tests/unittests/`. When fixing bugs or adding parsing edge cases, add regression tests alongside the change. Run `pytest tests/unittests` locally before pushing.
 
 ## Commit & Pull Request Guidelines
-- Commits: imperative mood with scope (e.g., `thermo: fix electron parsing`); group related changes; reference issues (e.g., `#123`).
-- PRs: include motivation, summary of changes, local test evidence; link issues; update docs/examples when behavior changes. Include data packaging updates if `src/exogibbs/data/` changes.
-- Ensure CI passes before requesting review.
-
-## Architecture Overview
-- `io.load_data`: ingests molecule catalogs and JANAF-style tables.
-- `thermo.stoichiometry`: builds formula matrices from species lists.
-- `equilibrium.gibbs`: interpolation/padding for JAX computations.
-- `optimize.*`: wraps core minimization and VJP routines.
-- High-level APIs in `api/chemistry`; reusable setups in `presets/`.
+Commits use imperative, scoped subjects such as `thermo: fix electron parsing` and may reference issues with `#123`. Pull requests should outline motivation, enumerate key changes, link related issues, and attach recent `pytest` output. Update docs, examples, or packaged data whenever behavior shifts.
 
 ## Security & Configuration Tips
-- Keep runs offline and deterministic; avoid network access in tests.
-- Use Python ≥ 3.9 and pin your environment as needed.
-
+Work offline; network access is disabled in CI. Target Python 3.9 or newer and pin dependencies when determinism matters. Avoid commands that alter system-wide state or require elevated privileges; any dataset or config changes should remain within the repository.

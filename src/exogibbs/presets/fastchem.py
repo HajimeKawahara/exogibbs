@@ -6,6 +6,8 @@ import jax.numpy as jnp
 # Capture the full species token (including digits, underscores, and charge signs)
 # up to the first whitespace or colon, e.g., "Al1Cl1F1+", "Al1H1O1_2".
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
+_FASTCHEM_LOGK_DIRECTORY = "fastchem/logK/"
+
 
 
 def parse_fastchem_coeffs(text: str) -> Dict[str, List[float]]:
