@@ -43,5 +43,5 @@ Copyright 2025-, Contributors
 - `Yui Kawashima <https://sites.google.com/view/yuikawashima/home>`_ (@ykawashima, the reference code author we inherit, the presets ykb4 originally comes from this code.)
 -
 
-ExoGibbs is free software made available under the MIT License.
+ExoGibbs is free software made available under the GPLv3 License.
    
