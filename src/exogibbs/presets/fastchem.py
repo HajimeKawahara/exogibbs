@@ -1,9 +1,11 @@
 from typing import Dict, List
 import re
-
 import numpy as np
+import jax.numpy as jnp
 
-_SPECIES_PATTERN = re.compile(r"^\s*([A-Za-z][A-Za-z0-9]*)\b")
+# Capture the full species token (including digits, underscores, and charge signs)
+# up to the first whitespace or colon, e.g., "Al1Cl1F1+", "Al1H1O1_2".
+_SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
 
 def parse_fastchem_coeffs(text: str) -> Dict[str, List[float]]:
@@ -37,9 +39,17 @@ def parse_fastchem_coeffs(text: str) -> Dict[str, List[float]]:
     return coeffs
 
 
+def logk(T, coeff):
+    a1, a2, a3, a4, a5 = coeff
+    return a1 / T + a2 * jnp.log(T) + a3 + a4 * T + a5 * T**2
+
+#log K = a1/T + a2 ln T + a3 + a4 T + a5 T^2 
+
 if __name__ == "__main__":
     from pathlib import Path
-
-    txt = Path("logK.dat").read_text(encoding="utf-8")
+    # Resolve data file relative to this script so it runs from any CWD
+    path_fastchem_data = Path(__file__).with_name("logK.dat")
+    txt = path_fastchem_data.read_text(encoding="utf-8")
     fastchem_coeffs = parse_fastchem_coeffs(txt)
-    print(fastchem_coeffs)
+    print(fastchem_coeffs["Al1Cl1F1+"])
+    print(fastchem_coeffs["Al1Cl1F1"])
