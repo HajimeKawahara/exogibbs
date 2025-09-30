@@ -31,4 +31,4 @@ nk_result = res.x #mixing ratio
 ```
 
 ExoGibbs is designed to plug into [ExoJAX](https://github.com/HajimeKawahara/exojax) and enable gradient-based equilibrium retrievals. 
-It is still in a very beta stage, so please use it at your own risk.
+It is still in a beta stage, so please use it at your own risk.
