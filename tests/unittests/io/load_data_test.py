@@ -27,8 +27,7 @@ def test_load_JANAF_molecules():
             JANAF_NAME_KEY: ["janaf_raw"],
         }
     )
-    filepath = get_data_filepath("")
-
+    filepath = get_data_filepath("test")
     matrices = load_JANAF_molecules(df_molecules, filepath, tag="_sample")
 
     assert matrices["janaf_raw"].shape == (10, 8)

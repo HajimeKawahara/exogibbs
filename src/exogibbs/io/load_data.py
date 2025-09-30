@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 
-TESTDATA_DIR = "data/"
+DATA_DIR = "data/"
 JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
 JANAF_SAMPLE = "test/janaf_raw_sample.txt"
 
@@ -25,7 +25,7 @@ def get_data_filepath(filename):
     """
     from importlib.resources import files
 
-    return files("exogibbs").joinpath(TESTDATA_DIR + filename)
+    return files("exogibbs").joinpath(DATA_DIR + filename)
 
 
 

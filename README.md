@@ -9,11 +9,11 @@ The terminology follows Smith and Missen, [Chemical Reaction Equilibrium Analysi
 ## Basic Use
 
 ```python
-from exogibbs.presets.ykb4 import prepare_ykb4_setup
+from exogibbs.presets.ykb4 import chemsetup
 from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 
 # chemical setup
-chem = prepare_ykb4_setup()
+chem = chemsetup()
 
 # Thermodynamic conditions
 Pref = 1.0  # bar, reference pressure
@@ -32,3 +32,8 @@ nk_result = res.x #mixing ratio
 
 ExoGibbs is designed to plug into [ExoJAX](https://github.com/HajimeKawahara/exojax) and enable gradient-based equilibrium retrievals. 
 It is still in a beta stage, so please use it at your own risk.
+
+
+This package bundles logK data from [FastChem](https://github.com/NewStrangeWorlds/FastChem) in `fastchem` presets,
+which is distributed under the GNU General Public License v3 (GPLv3).
+Accordingly, ExoGibbs is also distributed under the GPLv3 license.
