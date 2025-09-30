@@ -15,7 +15,7 @@ authors = [
 maintainers = [
   { name = "Hajime Kawahara", email = "divrot@gmail.com" }
 ]
-license = { text = "MIT" }
+license = { text = "GPL-3.0-or-later" }
 classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.9",
