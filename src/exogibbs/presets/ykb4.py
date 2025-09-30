@@ -10,8 +10,8 @@ import pandas as pd
 import jax.numpy as jnp
 import jax
 
-JANAF_GIBBS_MATRICES_YKB4 = "gibbs_matrices.npz"
-MOLNAME_YKB4 = "molecule_names.csv"
+JANAF_GIBBS_MATRICES_YKB4 = "ykb4/gibbs_matrices.npz"
+MOLNAME_YKB4 = "ykb4/molecule_names.csv"
 JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
 
 

@@ -20,7 +20,7 @@ config.update("jax_enable_x64", True)
 
 @pytest.mark.smoke
 def test_equilibrium_grad_wrt_temperature():
-    setup = setup()
+    setup = chemsetup()
     b_vec = setup.element_vector_reference
 
     def f(T):

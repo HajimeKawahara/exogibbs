@@ -19,7 +19,7 @@ def test_equilibrium_profile_jit_under_grad():
     This test differentiates through a jitted equilibrium_profile call.
     It should compile and return a finite gradient.
     """
-    setup = setup()
+    setup = chemsetup()
     b = setup.element_vector_reference
 
     # Small profile to keep runtime minimal

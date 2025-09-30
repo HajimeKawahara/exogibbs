@@ -9,7 +9,7 @@ from typing import Dict, Optional
 
 TESTDATA_DIR = "data/"
 JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
-JANAF_SAMPLE = "janaf_raw_sample.txt"
+JANAF_SAMPLE = "test/janaf_raw_sample.txt"
 
 
 def get_data_filepath(filename):

@@ -8,7 +8,7 @@ from exogibbs.io.load_data import JANAF_NAME_KEY
 def test_get_data_filename_existing_file():
     import os
 
-    filename = "testdata.dat"
+    filename = "test/testdata.dat"
     fullpath = get_data_filepath(filename)
 
     assert os.path.exists(fullpath)
