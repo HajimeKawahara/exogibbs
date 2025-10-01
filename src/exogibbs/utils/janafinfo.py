@@ -1,19 +1,18 @@
 import re
 from typing import Tuple
+from exogibbs.io.load_data import get_data_filepath
 
-def load_ref_dict(filename: str) -> Tuple[dict[str, str], dict[str, int]]:
+JANAF_REFERENCE_SPECIES_FILE = "janaf/ref.txt"
+
+def reference_species_dict() -> Tuple[dict[str, str], dict[str, int]]:
     """Load the JANAF reference species dictionary from a text file.
     
-    Args:
-        filename: path to the reference species text file
-
     Returns:
         ref: mapping from element symbol to reference species string
         nu: mapping from element symbol to number of atoms (stoichiometric coefficient) in reference species
-    
-        
-
     """
+    
+    filename = get_data_filepath(JANAF_REFERENCE_SPECIES_FILE)
     ref = {}
     nu = {}
     with open(filename, encoding="utf-8") as f:
@@ -33,14 +32,3 @@ def load_ref_dict(filename: str) -> Tuple[dict[str, str], dict[str, int]]:
             ref[key] = token
             nu[key] = num
     return ref, nu
-
-
-if __name__ == "__main__":
-    # Resolve data file relative to this script so it runs from any CWD
-    from exogibbs.io.load_data import get_data_filepath
-
-    path_ref = get_data_filepath("janaf/ref.txt")
-    ref, nu = load_ref_dict(path_ref)
-    print(ref["Al"])
-    print(ref["e-"])
-

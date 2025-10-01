@@ -1,11 +1,9 @@
-from exogibbs.utils.janafinfo import load_ref_dict
-from exogibbs.io.load_data import get_data_filepath
+from exogibbs.utils.janafinfo import reference_species_dict
 
 
 def test_load_ref_dict_parses_reference_tokens():
 
-    path_ref = get_data_filepath("janaf/ref.txt")
-    ref, nu = load_ref_dict(path_ref)
+    ref, nu = reference_species_dict()
 
     assert ref["Al"] == "Al1"
     assert ref["O"] == "O2"
