@@ -19,7 +19,6 @@ from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 chem = chemsetup()
 
 # Thermodynamic conditions
-Pref = 1.0  # bar, reference pressure
 opts = EquilibriumOptions(epsilon_crit=1e-11, max_iter=1000)
 
 res = equilibrium_profile(
@@ -27,11 +26,17 @@ res = equilibrium_profile(
     temperature_profile,
     pressure_profile,
     chem.element_vector_reference,
-    Pref=Pref,
+    Pref=1.0,
     options=opts,
 )
 nk_result = res.x #mixing ratio
 ```
+
+## presets
+
+- ykb4: number of species: 160     elements: 12
+- fastchem: number of species: 523    elements: 28
+
 
 ExoGibbs is designed to plug into [ExoJAX](https://github.com/HajimeKawahara/exojax) and enable gradient-based equilibrium retrievals. 
 It is still in a beta stage, so please use it at your own risk.

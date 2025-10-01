@@ -15,7 +15,6 @@ MOLNAME_YKB4 = "ykb4/molecule_names.csv"
 JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
 
 
-
 def chemsetup() -> ChemicalSetup:
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
@@ -31,7 +30,7 @@ def chemsetup() -> ChemicalSetup:
     formula_matrix_np, elements, species = build_formula_matrix(df_molname)
     # Keep the matrix fixed as requested, but move to device
     formula_matrix = jnp.asarray(formula_matrix_np)
-    
+
     # Reference elemental solar abundance b from AAG21 (from exojax.utils.zsol import nsol)
     # AAG21 = Asplund, M., Amarsi, A. M., & Grevesse, N. 2021, arXiv:2105.01661
     element_vector_ref = jnp.array(
@@ -89,6 +88,7 @@ def chemsetup() -> ChemicalSetup:
         metadata={"source": "JANAF"},
     )
 
+
 def _load_molname() -> pd.DataFrame:
     """Load the YKB4 molecular names table.
 
@@ -102,6 +102,7 @@ def _load_molname() -> pd.DataFrame:
     fullpath = get_data_filepath(MOLNAME_YKB4)
     df_molname = pd.read_csv(fullpath, sep=",", dtype=str)
     return df_molname
+
 
 def _load_gibbs_matrix():
     path = get_data_filepath(JANAF_GIBBS_MATRICES_YKB4)

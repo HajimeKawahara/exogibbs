@@ -1,12 +1,15 @@
-from typing import Dict, List, Tuple
 import re
 import numpy as np
 import jax.numpy as jnp
-from sympy import comp
+from jax import vmap
+from jax import jit
+from typing import Union
+from typing import Dict
+from typing import List
+from typing import Tuple
+
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.io.load_data import get_data_filepath
-from jax import vmap, jit
-from typing import Union
 
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
@@ -15,11 +18,10 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
 
-    Notes
-    -----
-    * Ensures that all tables (T_table, mu_table) live on device as jnp.arrays.
-    * hvector_func(T) stays purely JAX/NumPy to allow grad/jit/vmap through T.
-    * formula_matrix is fixed, built from df_molname.
+    Notes:
+        The species in FastChem consists of element species and molecule species.
+        The element species are the reference, therefore its coefficients are all zero.
+        The element species are automatically added in this function.
     """
 
     path_fastchem_data = get_data_filepath(path)
@@ -28,7 +30,7 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
         open(path_fastchem_data, "r", encoding="utf-8").read()
     )
     species_molecule = list(acoeff_molecule.keys())
-    
+
     #elements and element species
     elements = _set_elements(components_molecule)
     element_vector_ref = _elements_ref_AAG21()
@@ -40,14 +42,15 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     components = {**components_element, **components_molecule}
     
     formula_matrix = generate_formula_matrix(components, elements)
-    print("ExoGibbs number of species:", len(species), "elements:", len(elements), "molecules:", len(species_molecule))
+    print("fastchem presets in ExoGibbs")
+    print("number of species:", len(species), "elements:", len(elements), "molecules:", len(species_molecule))
 
-    ccoeff_array = np.array([acoeff[spec] for spec in species])  # (Ns, 5)
+    ccoeff_array = np.array([acoeff[spec] for spec in species])
     vmap_logk = vmap(logk, in_axes=(None, 0), out_axes=0)
 
     def hvector_func(T: Union[float, jnp.ndarray]) -> jnp.ndarray:
         T = jnp.asarray(T)
-        return -vmap_logk(T, ccoeff_array)  # shape (Ns,) or (T.shape, Ns)
+        return -vmap_logk(T, ccoeff_array) 
 
     hvector_func_jit = jit(hvector_func)
 
@@ -59,7 +62,6 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
         element_vector_reference=element_vector_ref,
         metadata={"source": "fastchem v3.1.3"},
     )
-
 
 
 def logk(T, ccoeff):
@@ -221,6 +223,3 @@ def _parse_fastchem_coeffs(
 
     return coeffs, components
 
-
-if __name__ == "__main__":
-    chemsetup()

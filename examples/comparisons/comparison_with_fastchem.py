@@ -1,9 +1,7 @@
 # comparison_with_fastchem.py
-# This script compares the chemical equilibrium calculations of FastChem and ExoGibbs
+# This script compares the chemical equilibrium calculations of FastChem and ExoGibbs (fastchem preset).
 # It requires the FastChem Python bindings to be installed
-# fastchem sample originates from fastchem/python/fastchem.py
-# make soft link to this file in fastchem/python, and run from there
-
+# also ExoJAX is required to set solar abundances (you can cahnge if you want)
 import pyfastchem
 import numpy as np
 import matplotlib.pyplot as plt
@@ -25,25 +23,16 @@ pressure = np.logspace(-6, 1, num=Nlayer)
 # here, we currently use the standard one from FastChem
 output_dir = "../output"
 
-
 # the chemical species we want to plot later
 # note that the standard FastChem input files use the Hill notation
 plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1"]
 # for the plot labels, we therefore use separate strings in the usual notation
 plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3"]
 
-
 # First, we have to create a FastChem object
 fastchem = pyfastchem.FastChem(
     "../input/element_abundances/asplund_2020.dat", "../input/logK/logK.dat", 1
 )
-
-
-# we could also create a FastChem object by using the parameter file
-# note, however, that the file locations in the parameter file are relative
-# to the location from where this Python script is called from
-# fastchem = pyfastchem.FastChem('../input/parameters_py.dat', 1)
-
 
 # create the input and output structures for FastChem
 input_data = pyfastchem.FastChemInput()
@@ -58,13 +47,6 @@ fastchem_flag = fastchem.calcDensities(input_data, output_data)
 
 print("FastChem reports:")
 print("  -", pyfastchem.FASTCHEM_MSG[fastchem_flag])
-
-if np.amin(output_data.element_conserved[:]) == 1:
-    print("  - element conservation: ok")
-else:
-    print("  - element conservation: fail")
-
-print(fastchem)
 
 # ExoGibbs comparison###############################################################
 # Thermodynamic conditions
@@ -136,7 +118,10 @@ gas_number_density = pressure * 1e6 / (const.k_B.cgs * temperature)
 # and plot...
 for i in range(0, len(plot_species_symbols)):
     fig = plt.plot(
-        number_densities[:, plot_species_indices[i]] / gas_number_density, pressure, alpha=0.3)
+        number_densities[:, plot_species_indices[i]] / gas_number_density,
+        pressure,
+        alpha=0.3,
+    )
 
 plt.plot(vmr_h2o, pressure, ls="dashed", color="C0")
 plt.plot(vmr_co2, pressure, ls="dashed", color="C1")
@@ -154,6 +139,3 @@ plt.legend(plot_species_symbols)
 plt.title("Comparison of FastChem (solid) and ExoGibbs setting (dashed)")
 plt.savefig("comparison_fastchem_exogibbs.png", dpi=300)
 plt.show()
-
-# we could also save the figure as a pdf
-# plt.savefig(output_dir + '/fastchem_fig.pdf')
