@@ -18,6 +18,12 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
 
+    Args:
+        path (str): Path to the FastChem logK data file.
+
+    Returns:
+        ChemicalSetup: The chemical setup object.
+
     Notes:
         The species in FastChem consists of element species and molecule species.
         The element species are the reference, therefore its coefficients are all zero.
@@ -25,32 +31,31 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     """
 
     path_fastchem_data = get_data_filepath(path)
-    #molecules species
+    # molecules species
     acoeff_molecule, components_molecule = _parse_fastchem_coeffs(
         open(path_fastchem_data, "r", encoding="utf-8").read()
     )
     species_molecule = list(acoeff_molecule.keys())
 
-    #elements and element species
+    # elements and element species
     elements = _set_elements(components_molecule)
     element_vector_ref = _elements_ref_AAG21()
     species_element, components_element, acoeff_element = _set_element_species(elements)
-    
-    #combine
+
+    # combine
     acoeff = {**acoeff_element, **acoeff_molecule}
     species = species_element + species_molecule
     components = {**components_element, **components_molecule}
-    
-    formula_matrix = generate_formula_matrix(components, elements)
-    print("fastchem presets in ExoGibbs")
-    print("number of species:", len(species), "elements:", len(elements), "molecules:", len(species_molecule))
+
+    formula_matrix = _generate_formula_matrix(components, elements)
+    _print_status(species_molecule, elements, species)
 
     ccoeff_array = np.array([acoeff[spec] for spec in species])
     vmap_logk = vmap(logk, in_axes=(None, 0), out_axes=0)
 
     def hvector_func(T: Union[float, jnp.ndarray]) -> jnp.ndarray:
         T = jnp.asarray(T)
-        return -vmap_logk(T, ccoeff_array) 
+        return -vmap_logk(T, ccoeff_array)
 
     hvector_func_jit = jit(hvector_func)
 
@@ -64,9 +69,22 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     )
 
 
+def _print_status(species_molecule, elements, species):
+    print("fastchem presets in ExoGibbs")
+    print(
+        "number of species:",
+        len(species),
+        "elements:",
+        len(elements),
+        "molecules:",
+        len(species_molecule),
+    )
+
+
 def logk(T, ccoeff):
     a1, a2, a3, a4, a5 = ccoeff
     return a1 / T + a2 * jnp.log(T) + a3 + a4 * T + a5 * T**2
+
 
 def _set_element_species(elements):
     # Map element symbols to their corresponding species
@@ -80,9 +98,9 @@ def _set_element_species(elements):
             components_element["e1-"] = {el: 1}
             acoeff_element["e1-"] = [0.0, 0.0, 0.0, 0.0, 0.0]
         else:
-            species_element.append(el+"1")
-            components_element[el+"1"] = {el: 1}
-            acoeff_element[el+"1"] = zerolist
+            species_element.append(el + "1")
+            components_element[el + "1"] = {el: 1}
+            acoeff_element[el + "1"] = zerolist
 
     return species_element, components_element, acoeff_element
 
@@ -124,7 +142,7 @@ def _elements_ref_AAG21():
     )
 
 
-def generate_formula_matrix(
+def _generate_formula_matrix(
     components: Dict[str, Dict[str, int]], elements: List[str]
 ) -> np.ndarray:
     """
@@ -222,4 +240,3 @@ def _parse_fastchem_coeffs(
             raise ValueError(f"{species}: missing coefficient line")
 
     return coeffs, components
-
