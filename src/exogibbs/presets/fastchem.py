@@ -40,7 +40,7 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     components = {**components_element, **components_molecule}
     
     formula_matrix = generate_formula_matrix(components, elements)
-    print("number of species:", len(species), "elements:", len(elements), "molecules:", len(species_molecule))
+    print("ExoGibbs number of species:", len(species), "elements:", len(elements), "molecules:", len(species_molecule))
 
     ccoeff_array = np.array([acoeff[spec] for spec in species])  # (Ns, 5)
     vmap_logk = vmap(logk, in_axes=(None, 0), out_axes=0)
@@ -55,7 +55,7 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
         formula_matrix=formula_matrix,
         hvector_func=hvector_func_jit,
         elements=tuple(elements) if elements is not None else None,
-        species=tuple(species_molecule) if species_molecule is not None else None,
+        species=tuple(species) if species is not None else None,
         element_vector_reference=element_vector_ref,
         metadata={"source": "fastchem v3.1.3"},
     )

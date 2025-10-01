@@ -80,9 +80,7 @@ solar_abundance = nsol()
 nsol_vector = jnp.array(
     [solar_abundance[el] for el in chem.elements[:-1]]
 )  # no solar abundance for e-
-element_vector = jnp.append(nsol_vector, 0)
-print("solar_abundance:", solar_abundance)
-print("element_vector:", element_vector)
+element_vector = jnp.append(nsol_vector, 0.0)
 
 idx_h2o = chem.species.index("H2O1")  # H2O
 idx_co2 = chem.species.index("C1O2")  # CO2
@@ -92,7 +90,7 @@ idx_nh3 = chem.species.index("H3N1")  # NH3
 idx_h2 = chem.species.index("H2")
 
 Pref = 1.0  # bar, reference pressure
-opts = EquilibriumOptions(epsilon_crit=1e-11, max_iter=10000)
+opts = EquilibriumOptions(epsilon_crit=1e-11, max_iter=1000)
 
 res = equilibrium_profile(
     chem,
@@ -103,7 +101,7 @@ res = equilibrium_profile(
     options=opts,
 )
 nk_result = res.x
-
+print(nk_result)
 vmr_h2o = nk_result[:, idx_h2o]
 vmr_co2 = nk_result[:, idx_co2]
 vmr_co = nk_result[:, idx_co]
@@ -138,8 +136,7 @@ gas_number_density = pressure * 1e6 / (const.k_B.cgs * temperature)
 # and plot...
 for i in range(0, len(plot_species_symbols)):
     fig = plt.plot(
-        number_densities[:, plot_species_indices[i]] / gas_number_density, pressure
-    )
+        number_densities[:, plot_species_indices[i]] / gas_number_density, pressure, alpha=0.3)
 
 plt.plot(vmr_h2o, pressure, ls="dashed", color="C0")
 plt.plot(vmr_co2, pressure, ls="dashed", color="C1")
