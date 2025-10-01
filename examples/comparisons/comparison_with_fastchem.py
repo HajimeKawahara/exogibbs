@@ -15,8 +15,9 @@ from jax import config
 config.update("jax_enable_x64", True)
 
 #some input values for temperature (in K) and pressure (in bar)
-temperature = np.full(1000, 500)
-pressure = np.logspace(-6, 1, num=1000)
+Nlayer = 100
+temperature = np.full(Nlayer, 1500)
+pressure = np.logspace(-6, 1, num=Nlayer)
 
 
 #define the directory for the output
@@ -68,7 +69,9 @@ else:
 
 #ExoGibbs comparison###############################################################
 # Thermodynamic conditions
-from exogibbs.presets.ykb4 import chemsetup
+from exogibbs.presets.fastchem import chemsetup
+#from exogibbs.presets.ykb4 import chemsetup
+
 from exojax.utils.zsol import nsol
 import jax.numpy as jnp
 
@@ -86,7 +89,7 @@ idx_nh3 = chem.species.index("H3N1") #NH3
 idx_h2 = chem.species.index("H2")
 
 Pref = 1.0  # bar, reference pressure
-opts = EquilibriumOptions(epsilon_crit=1e-11, max_iter=1000)
+opts = EquilibriumOptions(epsilon_crit=1e-11, max_iter=10000)
 
 res = equilibrium_profile(
     chem,
@@ -145,8 +148,8 @@ plt.gca().set_ylim(plt.gca().get_ylim()[::-1])
 plt.xlabel("Mixing ratios")
 plt.ylabel("Pressure (bar)")
 plt.legend(plot_species_symbols)
-plt.title("Comparison of FastChem (solid) and ExoGibbs/yk4b setting (dashed)")
-plt.savefig("comparison_fastchem_exogibbs_yk4b.png", dpi=300)
+plt.title("Comparison of FastChem (solid) and ExoGibbs setting (dashed)")
+plt.savefig("comparison_fastchem_exogibbs.png", dpi=300)
 plt.show()
 
 #we could also save the figure as a pdf
