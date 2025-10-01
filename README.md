@@ -9,6 +9,9 @@ The terminology follows Smith and Missen, [Chemical Reaction Equilibrium Analysi
 ## Basic Use
 
 ```python
+from jax import config
+config.update("jax_enable_x64", True)
+
 from exogibbs.presets.ykb4 import chemsetup
 from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 
@@ -23,7 +26,7 @@ res = equilibrium_profile(
     chem,
     temperature_profile,
     pressure_profile,
-    chem.element_vector,
+    chem.element_vector_reference,
     Pref=Pref,
     options=opts,
 )
