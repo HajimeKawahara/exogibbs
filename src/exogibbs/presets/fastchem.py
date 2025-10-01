@@ -2,6 +2,7 @@ from typing import Dict, List, Tuple
 import re
 import numpy as np
 import jax.numpy as jnp
+from sympy import comp
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.io.load_data import get_data_filepath
 from jax import vmap, jit
@@ -22,21 +23,31 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     """
 
     path_fastchem_data = get_data_filepath(path)
-    acoeff, components = _parse_fastchem_coeffs(
+    #molecules species
+    acoeff_molecule, components_molecule = _parse_fastchem_coeffs(
         open(path_fastchem_data, "r", encoding="utf-8").read()
     )
-    species = list(acoeff.keys())
-    elements = _set_elements(components)
+    species_molecule = list(acoeff_molecule.keys())
+    
+    #elements and element species
+    elements = _set_elements(components_molecule)
     element_vector_ref = _elements_ref_AAG21()
+    species_element, components_element, acoeff_element = _set_element_species(elements)
+    
+    #combine
+    acoeff = {**acoeff_element, **acoeff_molecule}
+    species = species_element + species_molecule
+    components = {**components_element, **components_molecule}
+    
     formula_matrix = generate_formula_matrix(components, elements)
+    print("number of species:", len(species), "elements:", len(elements), "molecules:", len(species_molecule))
 
     ccoeff_array = np.array([acoeff[spec] for spec in species])  # (Ns, 5)
-
     vmap_logk = vmap(logk, in_axes=(None, 0), out_axes=0)
 
     def hvector_func(T: Union[float, jnp.ndarray]) -> jnp.ndarray:
         T = jnp.asarray(T)
-        return - vmap_logk(T, ccoeff_array)  # shape (Ns,) or (T.shape, Ns)
+        return -vmap_logk(T, ccoeff_array)  # shape (Ns,) or (T.shape, Ns)
 
     hvector_func_jit = jit(hvector_func)
 
@@ -44,15 +55,34 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
         formula_matrix=formula_matrix,
         hvector_func=hvector_func_jit,
         elements=tuple(elements) if elements is not None else None,
-        species=tuple(species) if species is not None else None,
+        species=tuple(species_molecule) if species_molecule is not None else None,
         element_vector_reference=element_vector_ref,
         metadata={"source": "fastchem v3.1.3"},
     )
 
 
+
 def logk(T, ccoeff):
     a1, a2, a3, a4, a5 = ccoeff
     return a1 / T + a2 * jnp.log(T) + a3 + a4 * T + a5 * T**2
+
+def _set_element_species(elements):
+    # Map element symbols to their corresponding species
+    species_element = []
+    components_element = {}
+    acoeff_element = {}
+    zerolist = [0.0, 0.0, 0.0, 0.0, 0.0]
+    for el in elements:
+        if el == "e-":
+            species_element.append("e1-")
+            components_element["e1-"] = {el: 1}
+            acoeff_element["e1-"] = [0.0, 0.0, 0.0, 0.0, 0.0]
+        else:
+            species_element.append(el+"1")
+            components_element[el+"1"] = {el: 1}
+            acoeff_element[el+"1"] = zerolist
+
+    return species_element, components_element, acoeff_element
 
 
 def _elements_ref_AAG21():
@@ -70,6 +100,7 @@ def _elements_ref_AAG21():
             1.3974118788763213e-08,
             2.319126458480869e-08,
             2.662713442014047e-05,
+            9.667728169366614e-10,  # Ge
             0.9232608725415705,
             0.07573984826087723,
             1.0847369417204286e-07,
@@ -124,7 +155,7 @@ def _set_elements(components: Dict[str, Dict[str, int]]) -> List[str]:
     for spec in components.keys():
         for el in components[spec].keys():
             element_set.add(el)
-    elements = sorted(list(element_set))
+    elements = sorted(list(element_set) + ["Ge"])
     return elements
 
 
