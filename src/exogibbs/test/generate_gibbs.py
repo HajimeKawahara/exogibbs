@@ -3,8 +3,8 @@
 def generate_gibbs_matrices(path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"):
     import numpy as np
     from exogibbs.io.load_data import load_JANAF_molecules
-    from exogibbs.presets.ykb4 import load_molname_ykb4
-    df_molname = load_molname_ykb4()
+    from exogibbs.presets.ykb4 import _load_molname
+    df_molname = _load_molname()
     gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
     np.savez("gibbs_matrices.npz", gibbs_matrices)
         

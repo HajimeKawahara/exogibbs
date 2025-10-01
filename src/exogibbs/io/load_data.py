@@ -7,9 +7,9 @@ from pathlib import Path
 from typing import Dict, Optional
 
 
-TESTDATA_DIR = "data/"
+DATA_DIR = "data/"
 JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
-JANAF_SAMPLE = "janaf_raw_sample.txt"
+JANAF_SAMPLE = "test/janaf_raw_sample.txt"
 
 
 def get_data_filepath(filename):
@@ -25,7 +25,7 @@ def get_data_filepath(filename):
     """
     from importlib.resources import files
 
-    return files("exogibbs").joinpath(TESTDATA_DIR + filename)
+    return files("exogibbs").joinpath(DATA_DIR + filename)
 
 
 
@@ -134,10 +134,3 @@ def load_JANAF_molecules(
     return gibbs_matrices
 
 
-if __name__ == "__main__":
-    df_molname = load_molname_ykb4()
-    path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
-    gibbs_matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
-    mat = gibbs_matrices["H2"]  # .to_numpy()
-    print(mat.keys())
-    print(-mat['-[G-H(Tr)]/T']*mat['T(K)']) #J/mol

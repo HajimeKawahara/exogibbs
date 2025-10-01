@@ -1,5 +1,13 @@
-include src/exogibbs/data/janaf_raw_sample.txt
-include src/exogibbs/data/testdata.dat
-include src/exogibbs/data/matrix_v3.dat
-include src/exogibbs/data/molecule_names.csv
-include src/exogibbs/data/gibbs_matrices.npz
+include src/exogibbs/data/test/janaf_raw_sample.txt
+include src/exogibbs/data/test/testdata.dat
+include src/exogibbs/data/test/matrix_v3.dat
+
+#ykb4 presets
+include src/exogibbs/data/ykb4/molecule_names.csv
+include src/exogibbs/data/ykb4/gibbs_matrices.npz
+
+#fastchem presets v3.1.3
+include src/exogibbs/data/fastchem/logK/logK.dat
+include src/exogibbs/data/fastchem/logK/logK_condensates.dat
+include src/exogibbs/data/fastchem/logK/logK_extended.dat
+include src/exogibbs/data/fastchem/logK/logK_wo_ions.dat

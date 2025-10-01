@@ -3,7 +3,7 @@ import numpy as np
 from typing import Optional, Sequence, Tuple, List
 
 from exogibbs.test.reference_data import load_formula_matrix_reference_v3
-from exogibbs.presets.ykb4 import load_molname_ykb4
+from exogibbs.presets.ykb4 import _load_molname
 from exogibbs.thermo.stoichiometry import build_formula_matrix
 
 def _compute_formula_matrix_from_catalog(
@@ -16,7 +16,7 @@ def _compute_formula_matrix_from_catalog(
     Compute A by parsing the current species catalog via build_formula_matrix(load_molname_ykb4()).
     Used for production code; compare against load_formula_matrix_reference_v3() in tests.
     """
-    df = load_molname_ykb4()
+    df = _load_molname()
     A, elements, species = build_formula_matrix(
         df, species_col=species_col, element_order=element_order, species_names=species_names
     )

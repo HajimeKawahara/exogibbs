@@ -14,7 +14,7 @@ def _compute_table_gibbs_data():
             JANAF_NAME_KEY: ["janaf_raw"],
         }
     )
-    filepath = get_data_filepath("")
+    filepath = get_data_filepath("test")
     gibbs_matrices = load_JANAF_molecules(df_molecules, filepath, tag="_sample")
     molecules, T_table, G_table, _ = extract_and_pad_gibbs_data(gibbs_matrices)
     return gibbs_matrices, molecules, T_table, G_table
