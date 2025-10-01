@@ -36,7 +36,7 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
 
     def hvector_func(T: Union[float, jnp.ndarray]) -> jnp.ndarray:
         T = jnp.asarray(T)
-        return vmap_logk(T, ccoeff_array)  # shape (Ns,) or (T.shape, Ns)
+        return - vmap_logk(T, ccoeff_array)  # shape (Ns,) or (T.shape, Ns)
 
     hvector_func_jit = jit(hvector_func)
 
