@@ -2,7 +2,7 @@ from jax import grad
 from jax import vmap
 import jax.numpy as jnp
 
-from exogibbs.equilibrium.gibbs import interpolate_hvector_one
+from exogibbs.thermo.gibbs import interpolate_hvector_one
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.presets.ykb4 import JANAF_GIBBS_MATRICES_YKB4
 import numpy as np
