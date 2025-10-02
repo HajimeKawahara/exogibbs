@@ -26,9 +26,13 @@ class EquilibriumOptions:
     Attributes:
         epsilon_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations.
+
+    Note:
+        these default values are chosen based on the comparison with FastChem 
+        in the range of 300-3000K and 1e-8 - 1e2 bar. See #17 and comparison_with_fastchem.py
     """
 
-    epsilon_crit: float = 1.0e-11
+    epsilon_crit: float = 1.0e-15
     max_iter: int = 1000
 
 
