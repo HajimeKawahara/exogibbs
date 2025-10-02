@@ -11,10 +11,10 @@ Quick Start
 -----------
 .. code-block:: python
 
-   from exogibbs.presets.ykb4 import prepare_ykb4_setup
+   from exogibbs.presets.ykb4 import chemsetup
    from exogibbs.api.equilibrium import equilibrium
 
-   setup = prepare_ykb4_setup()
+   setup = chemsetup()
    T, P = 1500.0, 1.0  # K, bar
    b = setup.element_vector_reference  # or your own jnp.array([...])
    result = equilibrium(setup, T=T, P=P, b=b)
@@ -26,7 +26,7 @@ The following elements are included in this preset (including electrons as "e-")
 
 ``C, H, He, K, N, Na, O, P, S, Ti, V, e-``
 
-The reference elemental abundances (`element_vector_ref`) are taken from Asplund, Amarsi & Grevesse (2021).
+The reference elemental abundances (`element_vector_reference`) are taken from Asplund, Amarsi & Grevesse (2021).
 
 Species (JANAF key)
 -------------------

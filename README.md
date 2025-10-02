@@ -19,7 +19,7 @@ from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 chem = chemsetup()
 
 # Thermodynamic conditions
-opts = EquilibriumOptions(epsilon_crit=1e-11, max_iter=1000)
+opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
 
 res = equilibrium_profile(
     chem,

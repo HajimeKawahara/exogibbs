@@ -6,7 +6,7 @@
 ExoGibbs
 ==================================
 
-Version 0.2
+Version 0.3
 
 |:frog:| `DeepWiki for ExoGibbs <https://deepwiki.com/HajimeKawahara/exogibbs>`_
 
@@ -19,10 +19,11 @@ Contents
 ==================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: PRESETS:
 
    presets/ykb4.rst
+   presets/fastchem.rst
    
    
 .. toctree::
