@@ -10,27 +10,12 @@ import pandas as pd
 import jax.numpy as jnp
 import jax
 
-JANAF_GIBBS_MATRICES_YKB4 = "gibbs_matrices.npz"
-MOLNAME_YKB4 = "molecule_names.csv"
+JANAF_GIBBS_MATRICES_YKB4 = "ykb4/gibbs_matrices.npz"
+MOLNAME_YKB4 = "ykb4/molecule_names.csv"
 JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
 
 
-def load_molname_ykb4() -> pd.DataFrame:
-    """Load the YKB4 molecular names table.
-
-    Returns:
-        pd.DataFrame: Molecule catalog as parsed from the packaged CSV.
-    """
-    # Lazily import to avoid any potential circular import when other modules
-    # import constants from this module.
-    from exogibbs.io.load_data import get_data_filepath
-
-    fullpath = get_data_filepath(MOLNAME_YKB4)
-    df_molname = pd.read_csv(fullpath, sep=",", dtype=str)
-    return df_molname
-
-
-def prepare_ykb4_setup() -> ChemicalSetup:
+def chemsetup() -> ChemicalSetup:
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
 
@@ -41,11 +26,11 @@ def prepare_ykb4_setup() -> ChemicalSetup:
     * formula_matrix is fixed, built from df_molname.
     """
     # Species / formula matrix (fixed)
-    df_molname = load_molname_ykb4()
+    df_molname = _load_molname()
     formula_matrix_np, elements, species = build_formula_matrix(df_molname)
     # Keep the matrix fixed as requested, but move to device
     formula_matrix = jnp.asarray(formula_matrix_np)
-    
+
     # Reference elemental solar abundance b from AAG21 (from exojax.utils.zsol import nsol)
     # AAG21 = Asplund, M., Amarsi, A. M., & Grevesse, N. 2021, arXiv:2105.01661
     element_vector_ref = jnp.array(
@@ -65,8 +50,7 @@ def prepare_ykb4_setup() -> ChemicalSetup:
         ]
     )
     # Gibbs matrices -> (molecules, T_table, mu_table, grid_lens)
-    path = get_data_filepath(JANAF_GIBBS_MATRICES_YKB4)
-    gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
+    gibbs_matrices = _load_gibbs_matrix()
     molecules, T_table_np, mu_table_np, grid_lens = extract_and_pad_gibbs_data(
         gibbs_matrices
     )
@@ -103,3 +87,24 @@ def prepare_ykb4_setup() -> ChemicalSetup:
         element_vector_reference=element_vector_ref,
         metadata={"source": "JANAF"},
     )
+
+
+def _load_molname() -> pd.DataFrame:
+    """Load the YKB4 molecular names table.
+
+    Returns:
+        pd.DataFrame: Molecule catalog as parsed from the packaged CSV.
+    """
+    # Lazily import to avoid any potential circular import when other modules
+    # import constants from this module.
+    from exogibbs.io.load_data import get_data_filepath
+
+    fullpath = get_data_filepath(MOLNAME_YKB4)
+    df_molname = pd.read_csv(fullpath, sep=",", dtype=str)
+    return df_molname
+
+
+def _load_gibbs_matrix():
+    path = get_data_filepath(JANAF_GIBBS_MATRICES_YKB4)
+    gibbs_matrices = np.load(path, allow_pickle=True)["arr_0"].item()
+    return gibbs_matrices

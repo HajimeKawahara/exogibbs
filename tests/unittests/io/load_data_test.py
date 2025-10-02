@@ -8,7 +8,7 @@ from exogibbs.io.load_data import JANAF_NAME_KEY
 def test_get_data_filename_existing_file():
     import os
 
-    filename = "testdata.dat"
+    filename = "test/testdata.dat"
     fullpath = get_data_filepath(filename)
 
     assert os.path.exists(fullpath)
@@ -27,8 +27,7 @@ def test_load_JANAF_molecules():
             JANAF_NAME_KEY: ["janaf_raw"],
         }
     )
-    filepath = get_data_filepath("")
-
+    filepath = get_data_filepath("test")
     matrices = load_JANAF_molecules(df_molecules, filepath, tag="_sample")
 
     assert matrices["janaf_raw"].shape == (10, 8)

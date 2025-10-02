@@ -7,7 +7,7 @@ This example demonstrates and validates the ExoGibbs thermochemical equilibrium 
 Updated to use the high-level API: exogibbs.api.equilibrium.equilibrium.
 """
 
-from exogibbs.presets.ykb4 import prepare_ykb4_setup
+from exogibbs.presets.ykb4 import chemsetup
 from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 import numpy as np
 import jax.numpy as jnp
@@ -23,7 +23,7 @@ Tarr = 1500*Parr**0.1
 
 
 #chemical setup
-chem = prepare_ykb4_setup()
+chem = chemsetup()
 
 ##############################################################################
 # Solve equilibrium via high-level API

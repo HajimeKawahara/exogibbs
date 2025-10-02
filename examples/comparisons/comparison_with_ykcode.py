@@ -8,7 +8,7 @@ solver against the code by ykawashima when she was at B4.
 Updated to use the high-level API: exogibbs.api.equilibrium.equilibrium.
 """
 
-from exogibbs.presets.ykb4 import prepare_ykb4_setup
+from exogibbs.presets.ykb4 import chemsetup
 from exogibbs.api.equilibrium import equilibrium, EquilibriumOptions
 import numpy as np
 import jax.numpy as jnp
@@ -23,7 +23,7 @@ P = 10.0  # bar
 Pref = 1.0  # bar, reference pressure
 
 # chemical setup
-chem = prepare_ykb4_setup()
+chem = chemsetup()
 
 # old reference elemental abundance b from yk's sample number densities
 b_old_ref = jnp.array(

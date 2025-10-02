@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from exogibbs.io.load_data import get_data_filepath
 
-FORMULA_MATRIX_V3 = "matrix_v3.dat"
+FORMULA_MATRIX_V3 = "test/matrix_v3.dat"
 
 def load_formula_matrix_reference_v3() -> np.ndarray:
     """
