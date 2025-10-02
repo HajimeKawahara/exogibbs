@@ -1,9 +1,9 @@
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.io.load_data import JANAF_NAME_KEY
-from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
-from exogibbs.equilibrium.gibbs import interpolate_hvector_all
-from exogibbs.equilibrium.gibbs import robust_temperature_range
+from exogibbs.thermo.gibbs import extract_and_pad_gibbs_data
+from exogibbs.thermo.gibbs import interpolate_hvector_all
+from exogibbs.thermo.gibbs import robust_temperature_range
 import pytest
 
 def _compute_table_gibbs_data():
