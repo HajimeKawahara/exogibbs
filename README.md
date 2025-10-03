@@ -15,12 +15,8 @@ config.update("jax_enable_x64", True)
 from exogibbs.presets.ykb4 import chemsetup
 from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 
-# chemical setup
 chem = chemsetup()
-
-# Thermodynamic conditions
 opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
-
 res = equilibrium_profile(
     chem,
     temperature_profile,
