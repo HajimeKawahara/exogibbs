@@ -9,11 +9,11 @@ an h(T) function). No JANAF or I/O details leak into this layer.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping, Optional, Tuple, Union
+from typing import Literal, Mapping, Optional, Tuple, Union
 import jax.numpy as jnp
 from jax import tree_util
 import jax
-from exogibbs.api.chemistry import ChemicalSetup, ThermoState
+from exogibbs.api.chemistry import ChemicalSetup, ChemicalSetupCond, ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs
 
 Array = jax.Array
@@ -26,6 +26,11 @@ class EquilibriumOptions:
     Attributes:
         epsilon_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations.
+        enable_condensed: Enable condensed species handling when present.
+        nonneg_param: Strategy for keeping condensed amounts non-negative.
+        barrier_init: Initial barrier parameter for interior-style updates.
+        kkt_tol: Complementarity tolerance for condensed KKT checks.
+        max_active_set_iter: Max iterations for active-set switching.
 
     Note:
         these default values are chosen based on the comparison with FastChem 
@@ -34,6 +39,11 @@ class EquilibriumOptions:
 
     epsilon_crit: float = 1.0e-15
     max_iter: int = 1000
+    enable_condensed: bool = True
+    nonneg_param: Literal["softplus", "projection", "logfloor"] = "softplus"
+    barrier_init: float = 1.0e-3
+    kkt_tol: float = 1.0e-12
+    max_active_set_iter: int = 10
 
 
 @dataclass(frozen=True)
@@ -45,6 +55,17 @@ class EquilibriumInit:
 
     ln_nk: Optional[Array] = None
     ln_ntot: Optional[Array] = None
+
+
+@dataclass(frozen=True)
+class EquilibriumInitCond:
+    """Optional initial guesses for condensed equilibrium runs.
+
+    Only the gas initialization is used by the placeholder implementation.
+    """
+
+    gas: Optional[EquilibriumInit] = None
+    condensed: Optional[Array] = None
 
 
 @tree_util.register_pytree_node_class
@@ -79,6 +100,37 @@ class EquilibriumResult:
         )
 
 
+@tree_util.register_pytree_node_class
+@dataclass(frozen=True)
+class EquilibriumResultCond:
+    """Placeholder container for condensate-aware results."""
+
+    gas: EquilibriumResult
+    condensed_ln_n: Array
+    condensed_n: Array
+    condensed_species: Tuple[str, ...]
+    status: str
+    metadata: Optional[Mapping[str, Union[bool, float, int, str]]] = None
+
+    def tree_flatten(self):
+        children = (self.gas, self.condensed_ln_n, self.condensed_n)
+        aux = (self.condensed_species, self.status, self.metadata)
+        return children, aux
+
+    @classmethod
+    def tree_unflatten(cls, aux_data, children):
+        condensed_species, status, metadata = aux_data
+        gas, condensed_ln_n, condensed_n = children
+        return cls(
+            gas=gas,
+            condensed_ln_n=condensed_ln_n,
+            condensed_n=condensed_n,
+            condensed_species=condensed_species,
+            status=status,
+            metadata=metadata,
+        )
+
+
 def _default_init(b_vec: Array, K: int) -> Tuple[Array, float]:
     """Numerically robust uniform initialization: n_k = 1 for all species."""
     ln_nk0 = jnp.zeros((K,), dtype=jnp.result_type(b_vec.dtype, jnp.float32))
@@ -98,7 +150,19 @@ def _ln_normalized_pressure(P: float, Pref: float) -> float:
     return jnp.log(P / Pref)
 
 
-def equilibrium(
+def _extract_gas_init(
+    init: Optional[Union[EquilibriumInit, EquilibriumInitCond]]
+) -> Optional[EquilibriumInit]:
+    if init is None:
+        return None
+    if isinstance(init, EquilibriumInit):
+        return init
+    if isinstance(init, EquilibriumInitCond):
+        return init.gas
+    raise TypeError("Unsupported init type for equilibrium.")
+
+
+def _equilibrium_gas(
     setup: ChemicalSetup,
     T: float,
     P: float,
@@ -106,32 +170,16 @@ def equilibrium(
     *,
     Pref: float = 1.0,
     init: Optional[EquilibriumInit] = None,
-    options: Optional[EquilibriumOptions] = None,
+    options: EquilibriumOptions,
 ) -> EquilibriumResult:
-    """Compute equilibrium composition at (T, P, b) via Gibbs minimization.
-
-    Args:
-        setup: ChemicalSetup with formula matrix and hvector_func(T).
-        T: Temperature (K).
-        P: Pressure (bar).
-        b: Elemental abundances; array of shape (E,).
-        Pref: Reference pressure (bar) for normalization.
-        init: Optional initial guess for ln n and ln n_tot.
-        options: Solver options.
-
-    Returns:
-        EquilibriumResult with ln n, n, mole fractions x, and n_tot.
-    """
-    opts = options or EquilibriumOptions()
     A = setup.formula_matrix
     K = int(A.shape[1])
 
-    # Validate b dimension and size
     if b.ndim != 1:
         raise ValueError("b must be a 1D array.")
     if b.shape[0] != A.shape[0]:
         raise ValueError(f"b has length {b.shape[0]} but A expects {A.shape[0]} elements.")
-    
+
     lnP = _ln_normalized_pressure(P, Pref)
     ln_nk0, ln_ntot0 = _prepare_init(init, b, K)
 
@@ -143,8 +191,8 @@ def equilibrium(
         ln_ntot0,
         A,
         hfunc,
-        epsilon_crit=opts.epsilon_crit,
-        max_iter=opts.max_iter,
+        epsilon_crit=options.epsilon_crit,
+        max_iter=options.max_iter,
     )
 
     n = jnp.exp(ln_n)
@@ -153,6 +201,94 @@ def equilibrium(
     return EquilibriumResult(
         ln_n=ln_n, n=n, x=x, ntot=ntot, iterations=None, metadata=None
     )
+
+
+def _condensed_placeholder_result(
+    gas_result: EquilibriumResult,
+    setup: ChemicalSetupCond,
+) -> EquilibriumResultCond:
+    cond_indices = tuple(setup.phase_registry.cond_indices)
+    cond_count = len(cond_indices)
+    if cond_count == 0:
+        condensed_ln_n = jnp.zeros((0,), dtype=gas_result.ln_n.dtype)
+        condensed_n = jnp.zeros((0,), dtype=gas_result.n.dtype)
+        condensed_names: Tuple[str, ...] = tuple()
+    else:
+        condensed_ln_n = jnp.full((cond_count,), -jnp.inf, dtype=gas_result.ln_n.dtype)
+        condensed_n = jnp.zeros((cond_count,), dtype=gas_result.n.dtype)
+        condensed_names = tuple(setup.species[idx].name for idx in cond_indices)
+    metadata = {
+        "condensed_stub": True,
+        "condensed_species_count": cond_count,
+    }
+    return EquilibriumResultCond(
+        gas=gas_result,
+        condensed_ln_n=condensed_ln_n,
+        condensed_n=condensed_n,
+        condensed_species=condensed_names,
+        status="condensed_not_implemented",
+        metadata=metadata,
+    )
+
+
+def _equilibrium_cond_placeholder(
+    setup: ChemicalSetupCond,
+    T: float,
+    P: float,
+    b: Array,
+    *,
+    Pref: float,
+    init: Optional[EquilibriumInit],
+    options: EquilibriumOptions,
+) -> EquilibriumResultCond:
+    if not options.enable_condensed and setup.phase_registry.cond_indices:
+        raise ValueError("enable_condensed=False but condensed species are registered.")
+    gas_result = _equilibrium_gas(
+        setup.gas_setup,
+        T,
+        P,
+        b,
+        Pref=Pref,
+        init=init,
+        options=options,
+    )
+    return _condensed_placeholder_result(gas_result, setup)
+
+
+def equilibrium(
+    setup: Union[ChemicalSetup, ChemicalSetupCond],
+    T: float,
+    P: float,
+    b: Array,
+    *,
+    Pref: float = 1.0,
+    init: Optional[Union[EquilibriumInit, EquilibriumInitCond]] = None,
+    options: Optional[EquilibriumOptions] = None,
+) -> Union[EquilibriumResult, EquilibriumResultCond]:
+    opts = options or EquilibriumOptions()
+    gas_init = _extract_gas_init(init)
+    if isinstance(setup, ChemicalSetupCond):
+        return _equilibrium_cond_placeholder(
+            setup,
+            T,
+            P,
+            b,
+            Pref=Pref,
+            init=gas_init,
+            options=opts,
+        )
+    if isinstance(setup, ChemicalSetup):
+        return _equilibrium_gas(
+            setup,
+            T,
+            P,
+            b,
+            Pref=Pref,
+            init=gas_init,
+            options=opts,
+        )
+    raise TypeError("Unsupported setup type for equilibrium.")
+
 
 def equilibrium_profile(
     setup: ChemicalSetup,
@@ -163,26 +299,9 @@ def equilibrium_profile(
     Pref: float = 1.0,
     options: Optional[EquilibriumOptions] = None,
 ) -> EquilibriumResult:
-    """Vectorized equilibrium along a 1D T/P profile (layers).
+    if isinstance(setup, ChemicalSetupCond):
+        raise NotImplementedError("Condensed equilibrium profiles are not implemented yet.")
 
-    This computes equilibrium independently for each (T[i], P[i]) pair while
-    keeping the elemental abundances ``b`` fixed across layers.
-
-    Args:
-        setup: ChemicalSetup with formula matrix and hvector_func(T).
-        T: Temperatures, shape (N,).
-        P: Pressures, shape (N,).
-        b: Elemental abundances, shape (E,), shared across layers.
-        Pref: Reference pressure (bar).
-        options: Solver options.
-
-    Returns:
-        Batched EquilibriumResult with fields stacked over the leading dimension N:
-        - ln_n: (N, K)
-        - n: (N, K)
-        - x: (N, K)
-        - ntot: (N,)
-    """
     T = jnp.asarray(T)
     P = jnp.asarray(P)
     if T.ndim != 1 or P.ndim != 1:
@@ -192,7 +311,6 @@ def equilibrium_profile(
     if b.ndim != 1:
         raise ValueError("b must be a 1D array shared across layers.")
 
-    # Vectorize over T and P; keep setup and b static. Pass Pref/options as kwargs.
     layer_fn = jax.vmap(
         lambda Ti, Pi: equilibrium(
             setup,
@@ -200,11 +318,20 @@ def equilibrium_profile(
             Pi,
             b,
             Pref=Pref,
+            init=None,
             options=options,
         ),
         in_axes=(0, 0),
     )
-    return layer_fn(T, P)
+    batched = layer_fn(T, P)
+    return EquilibriumResult(
+        ln_n=batched.ln_n,
+        n=batched.n,
+        x=batched.x,
+        ntot=batched.ntot,
+        iterations=None,
+        metadata=batched.metadata,
+    )
 
 
 __all__ = [
@@ -212,5 +339,7 @@ __all__ = [
     "equilibrium_profile",
     "EquilibriumOptions",
     "EquilibriumInit",
+    "EquilibriumInitCond",
     "EquilibriumResult",
+    "EquilibriumResultCond",
 ]

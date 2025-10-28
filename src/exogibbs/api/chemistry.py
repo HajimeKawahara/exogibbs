@@ -6,6 +6,8 @@ from typing import Callable, Iterable
 from typing import Tuple
 from typing import Optional
 from typing import Mapping
+from typing import Literal
+from typing import Sequence
 
 
 @tree_util.register_pytree_node_class
@@ -35,6 +37,7 @@ import jax.numpy as jnp
 
 Array = jnp.ndarray
 
+
 @dataclass(frozen=True)
 class ChemicalSetup:
     """Minimal, immutable container for thermochemical pre-setup.
@@ -62,6 +65,41 @@ class ChemicalSetup:
     elements: Optional[Tuple[str, ...]] = None
     species: Optional[Tuple[str, ...]] = None
     element_vector_reference: Optional["np.ndarray"] = None  # host-side
+    metadata: Optional[Mapping[str, str]] = None
+
+
+PhaseLabel = Literal["gas", "cond"]
+
+
+@dataclass(frozen=True)
+class SpeciesCond:
+    """Species definition aware of gas/condensed phases."""
+
+    name: str
+    phase: PhaseLabel
+    elem_coeffs: Mapping[str, int]
+    mu0_func: Callable[..., float]
+    molar_mass: Optional[float] = None
+    density: Optional[float] = None
+
+
+@dataclass(frozen=True)
+class PhaseRegistryCond:
+    """Index bookkeeping separating gas and condensed species."""
+
+    gas_indices: Sequence[int]
+    cond_indices: Sequence[int]
+
+
+@dataclass(frozen=True)
+class ChemicalSetupCond:
+    """Container extending ``ChemicalSetup`` with condensed phase metadata."""
+
+    gas_setup: ChemicalSetup
+    species: Sequence[SpeciesCond]
+    phase_registry: PhaseRegistryCond
+    condensed_formula_matrix: Array
+    condensed_mu0_funcs: Sequence[Callable[[float], float]]
     metadata: Optional[Mapping[str, str]] = None
 
 
