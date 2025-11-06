@@ -1,22 +1,19 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Keep Python sources inside `src/exogibbs/`, organized by domain modules such as `io/`, `thermo/`, `equilibrium/`, `optimize/`, `api/`, `presets/`, and `utils/`. Shared assets belong in `src/exogibbs/data/`; only add new datasets when necessary and list them in `MANIFEST.in` so they ship with releases. Deterministic tests mirror the package layout under `tests/unittests/` (e.g., `tests/unittests/equilibrium/gibbs_test.py`). Examples that demonstrate workflows live in `examples/`, while longer notes or Sphinx-ready docs go in `documents/`. CI writes artifacts such as `results/pytest.xml`; avoid committing transient files outside these directories.
+Python packages live in `src/exogibbs/` under focused modules (`io/`, `thermo/`, `equilibrium/`, `optimize/`, `api/`, `presets/`, `utils/`). Place shared datasets in `src/exogibbs/data/` and list new assets in `MANIFEST.in`. Tests mirror the package tree at `tests/unittests/`, e.g., `tests/unittests/equilibrium/gibbs_test.py`. Workflow demos sit in `examples/`; long-form background and Sphinx-ready docs belong in `documents/`. Ignore transient build outputs except under `results/`.
 
 ## Build, Test, and Development Commands
-- `python -m pip install -e .` installs an editable copy with local dependencies.
-- `pytest tests/unittests` runs the deterministic suite used by CI.
-- `python -m pip install build && python -m build` produces the sdist and wheel for release validation.
-- `./update_doc.sh` refreshes generated documentation when docs change.
+`python -m pip install -e .` creates an editable install with local extras. Use `pytest tests/unittests` for the CI-aligned deterministic suite; target subpackages with `pytest tests/unittests/thermo`. Run `python -m pip install build && python -m build` before release review to produce sdist and wheel. Execute `./update_doc.sh` whenever documentation sources change.
 
 ## Coding Style & Naming Conventions
-Target Python 3.9+ and four-space indentation. Annotate functions and public APIs with type hints and prefer small, composable helpers. Use `snake_case` for modules, functions, and variables; `CapWords` for classes; `UPPER_SNAKE_CASE` for constants. Order imports stdlib → third-party → local, and delete unused imports. Keep comments succinct and reserve them for clarifying non-obvious decisions.
+Support Python 3.9+, using four-space indentation and type annotations on public APIs. Favor small, composable helpers and prune unused code. Imports follow stdlib → third-party → local order. Apply `snake_case` for modules, functions, and variables, `CapWords` for classes, and `UPPER_SNAKE_CASE` for constants. Keep comments purposeful, explaining only non-obvious choices.
 
 ## Testing Guidelines
-Use `pytest` exclusively, keeping tests offline and deterministic. Name files `*_test.py` and colocate them with the corresponding module inside `tests/unittests/`. When fixing a bug or adding a feature, accompany the change with a focused regression test. Run `pytest tests/unittests` (or a targeted subset such as `pytest tests/unittests/thermo`) before sending a review.
+Write deterministic, offline PyTest cases named `*_test.py`, colocated with their modules under `tests/unittests/`. Each bug fix or feature requires a targeted regression test. Run the full suite—`pytest tests/unittests`—before submitting reviews, and note any skipped tests or fixtures you add.
 
 ## Commit & Pull Request Guidelines
-Write imperative, scoped commit subjects (e.g., `thermo: fix electron parsing`) and reference tracker issues with `#123` when relevant. Pull requests should explain motivation, summarize key changes, link issues, and paste recent `pytest` output. Update docs, examples, or packaged data whenever behavior changes, and call out any follow-up work or known limitations.
+Use imperative, scoped commit subjects (e.g., `thermo: fix electron parsing`) and reference issues with `#123` when applicable. Pull requests should outline motivation, summarize key changes, link relevant issues, and attach the latest `pytest` output. Update docs, examples, or packaged data alongside behavioral changes, and flag follow-up tasks or known limitations.
 
 ## Security & Configuration Tips
-Develop offline—CI has no network access—so vendor any required resources. Avoid privileged commands or system-wide installs. Pin dependencies when deterministic behavior matters, and keep credentials or API keys out of the repository.
+Work offline; CI has no network egress. Avoid privileged commands and system-wide installations. Vendor any external resources, pin dependencies when determinism matters, and never commit secrets or credentials.

@@ -25,5 +25,4 @@ def chemsetup(path: str = "fastchem/logK/logK_condensates.dat") -> ChemicalSetup
         ChemicalSetup configured from the specified condensates dataset.
     """
 
-    return _chemsetup_base(path=path)
-
+    return _chemsetup_base(path=path, add_element_species=False)
