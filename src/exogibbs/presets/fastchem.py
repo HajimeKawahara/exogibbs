@@ -14,7 +14,7 @@ from exogibbs.io.load_data import get_data_filepath
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
 
-def chemsetup(path="fastchem/logK/logK.dat", add_element_species=True) -> ChemicalSetup:
+def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
 
@@ -27,10 +27,8 @@ def chemsetup(path="fastchem/logK/logK.dat", add_element_species=True) -> Chemic
 
     Notes:
         The species in FastChem consists of element species and molecule species for gas (logK.dat).
-        So set add_element_species=True to include both.
         The element species are the reference, therefore its coefficients are all zero.
         The element species are automatically added in this function.
-        For condensates (logK_condensates.dat), only molecule species are included. So set add_element_species=False.
     """
 
     path_fastchem_data = get_data_filepath(path)
@@ -43,18 +41,13 @@ def chemsetup(path="fastchem/logK/logK.dat", add_element_species=True) -> Chemic
     # elements and element species
     elements = _set_elements(components_molecule)
     element_vector_ref = _elements_ref_AAG21()
-    if add_element_species:
-        species_element, components_element, acoeff_element = _set_element_species(
-            elements
-        )
-        # combine
-        acoeff = {**acoeff_element, **acoeff_molecule}
-        species = species_element + species_molecule
-        components = {**components_element, **components_molecule}
-    else:
-        acoeff = acoeff_molecule
-        species = species_molecule
-        components = components_molecule
+    species_element, components_element, acoeff_element = _set_element_species(
+        elements
+    )
+    # combine
+    acoeff = {**acoeff_element, **acoeff_molecule}
+    species = species_element + species_molecule
+    components = {**components_element, **components_molecule}
 
     formula_matrix = _generate_formula_matrix(components, elements)
     _print_status(species_molecule, elements, species)
@@ -234,28 +227,18 @@ def _parse_fastchem_coeffs(
         if comp:
             components[species] = comp
         j = i + 1
-        found_coeffs = False
         while j < len(lines):
             candidate = lines[j].strip()
             if not candidate or candidate.startswith("#"):
                 j += 1
                 continue
 
-            if not any(ch.isdigit() for ch in candidate):
-                j += 1
-                continue
-
             arr = np.fromstring(candidate, sep=" ")
-            if arr.size == 5:
-                coeffs[species] = arr.tolist()
-                found_coeffs = True
-                break
-
-            # Skip auxiliary metadata lines (e.g., phase flags or
-            # temperature breakpoints) that appear in condensate datasets.
-            j += 1
-
-        if not found_coeffs:
+            if arr.size != 5:
+                raise ValueError(f"{species}: not 5 coefficients (found {arr.size})")
+            coeffs[species] = arr.tolist()
+            break
+        else:
             raise ValueError(f"{species}: missing coefficient line")
 
     return coeffs, components

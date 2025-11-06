@@ -11,6 +11,9 @@ Quick Start
 -----------
 .. code-block:: python
 
+   from jax import config
+   config.update("jax_enable_x64", True)
+   
    from exogibbs.presets.ykb4 import chemsetup
    from exogibbs.api.equilibrium import equilibrium
 
