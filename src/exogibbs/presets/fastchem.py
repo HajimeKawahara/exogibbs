@@ -16,13 +16,13 @@ from exogibbs.utils.nameparser import set_elements_from_components
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
 
-def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
+def chemsetup(path="fastchem/logK/logK.dat", silent=False) -> ChemicalSetup:
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
 
     Args:
         path (str): Path to the FastChem logK data file.
-        add_element_species (bool): Whether to add element species in species.
+        silent (bool): If True, suppress status output.
 
     Returns:
         ChemicalSetup: The chemical setup object.
@@ -50,7 +50,8 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     components = {**components_element, **components_molecule}
 
     formula_matrix = build_formula_matrix(components, elements)
-    _print_status(species_molecule, elements, species)
+    if not silent:
+        _print_status(species_molecule, elements, species)
 
     ccoeff_array = np.array([acoeff[spec] for spec in species])
     vmap_logk = vmap(logk, in_axes=(None, 0), out_axes=0)
@@ -71,8 +72,8 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     )
 
 
-def _print_status(species_molecule, elements, species):
-    print("fastchem presets in ExoGibbs")
+def _print_status(species_molecule, elements, species, preset_name="fastchem"):
+    print(preset_name+" presets in ExoGibbs")
     print(
         "number of species:",
         len(species),
