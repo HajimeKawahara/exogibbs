@@ -10,6 +10,7 @@ from typing import Tuple
 
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.io.load_data import get_data_filepath
+from exogibbs.thermo.stoichiometry import build_formula_matrix
 
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
@@ -49,7 +50,7 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     species = species_element + species_molecule
     components = {**components_element, **components_molecule}
 
-    formula_matrix = _generate_formula_matrix(components, elements)
+    formula_matrix = build_formula_matrix(components, elements)
     _print_status(species_molecule, elements, species)
 
     ccoeff_array = np.array([acoeff[spec] for spec in species])
@@ -144,29 +145,6 @@ def _elements_ref_AAG21():
     )
 
 
-def _generate_formula_matrix(
-    components: Dict[str, Dict[str, int]], elements: List[str]
-) -> np.ndarray:
-    """
-    Generate the formula matrix from the components dict and elements list.
-
-    Args:
-        components: mapping ``species -> {element_symbol: count}``
-        elements: list of element symbols
-
-    Returns:
-        np.ndarray: formula matrix of shape (num_elements, num_species)
-    """
-    num_species = len(components)
-    num_elements = len(elements)
-    formula_matrix = np.zeros((num_elements, num_species), dtype=int)
-    species_list = list(components.keys())
-    for j, spec in enumerate(species_list):
-        comp = components[spec]
-        for i, el in enumerate(elements):
-            if el in comp:
-                formula_matrix[i, j] = comp[el]
-    return formula_matrix
 
 
 def _set_elements(components: Dict[str, Dict[str, int]]) -> List[str]:

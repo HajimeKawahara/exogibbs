@@ -3,7 +3,7 @@ from exogibbs.thermo.gibbs import extract_and_pad_gibbs_data
 from exogibbs.thermo.gibbs import interpolate_hvector_all
 from exogibbs.thermo.gibbs import robust_temperature_range
 from exogibbs.io.load_data import get_data_filepath
-from exogibbs.thermo.stoichiometry import build_formula_matrix
+from exogibbs.thermo.stoichiometry import build_formula_matrix_from_JANAF
 from typing import Union
 import numpy as np
 import pandas as pd
@@ -27,7 +27,7 @@ def chemsetup() -> ChemicalSetup:
     """
     # Species / formula matrix (fixed)
     df_molname = _load_molname()
-    formula_matrix_np, elements, species = build_formula_matrix(df_molname)
+    formula_matrix_np, elements, species = build_formula_matrix_from_JANAF(df_molname)
     # Keep the matrix fixed as requested, but move to device
     formula_matrix = jnp.asarray(formula_matrix_np)
 

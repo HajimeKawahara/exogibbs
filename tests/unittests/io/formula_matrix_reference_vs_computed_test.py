@@ -4,7 +4,7 @@ from typing import Optional, Sequence, Tuple, List
 
 from exogibbs.test.reference_data import load_formula_matrix_reference_v3
 from exogibbs.presets.ykb4 import _load_molname
-from exogibbs.thermo.stoichiometry import build_formula_matrix
+from exogibbs.thermo.stoichiometry import build_formula_matrix_from_JANAF
 
 def _compute_formula_matrix_from_catalog(
     *,
@@ -17,7 +17,7 @@ def _compute_formula_matrix_from_catalog(
     Used for production code; compare against load_formula_matrix_reference_v3() in tests.
     """
     df = _load_molname()
-    A, elements, species = build_formula_matrix(
+    A, elements, species = build_formula_matrix_from_JANAF(
         df, species_col=species_col, element_order=element_order, species_names=species_names
     )
     return A, elements, species
