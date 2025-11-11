@@ -54,6 +54,7 @@ def test_sanitize_formula():
     assert sanitize_formula("Fe2O3(s)") == "Fe2O3"
     assert sanitize_formula("NaCl") == "NaCl"
     assert sanitize_formula("e-") == "e-"
+    assert sanitize_formula("H2O(s,l)") == "H2O"
 
 def test_parse_formula_with_charge():
     assert parse_formula_with_charge("CH4") == {"C": 1, "H": 4}

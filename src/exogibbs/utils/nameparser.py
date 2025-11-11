@@ -5,8 +5,8 @@
 
 import re
 from typing import Dict, List
-# Matches one or more trailing parenthetical annotation groups, e.g. "(CNN)", "(g)", "(NCN)"
-_PAREN_ANNOT_TAIL = re.compile(r"(?:\([A-Za-z0-9+\-]*\))+$")
+# Matches trailing parenthetical annotations such as "(CNN)", "(g)", "(s,l)".
+_PAREN_ANNOT_TAIL = re.compile(r"(?:\([A-Za-z0-9+\-_,\s]*\))+$")
 # Add this near the top with the other imports/regexes
 _ELECTRON_BASE = re.compile(r"^[eE](\d*)$")  # matches 'e', 'e1', 'E2', etc.
 _CHARGE = re.compile(r"^([A-Za-z0-9*]+)([+-]\d*)$")  # unchanged
@@ -69,7 +69,7 @@ def generate_components_from_formula_list(formula_list: List[str]) -> Dict[str, 
     Returns:
         Dict[str, Dict[str, int]]: A dictionary mapping each formula to its element count dictionary.
     """
-    return dict([[x, parse_formula_with_charge(x)] for x in formula_list])
+    return dict([[x, parse_formula_with_charge(sanitize_formula(x))] for x in formula_list])
 
 
 
@@ -160,5 +160,4 @@ def parse_simple_formula(formula: str) -> Dict[str, int]:
             f"Unsupported trailing token '{unknown}' in formula '{formula}'."
         )
     return element_counts_dict
-
 
