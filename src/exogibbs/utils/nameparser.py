@@ -13,29 +13,29 @@ _CHARGE = re.compile(r"^([A-Za-z0-9*]+)([+-]\d*)$")  # unchanged
 _ELNUM = re.compile(r"([A-Z][a-z]?)(\d*)")
 
 
-def set_elements_from_species(species: Dict[str, Dict[str, int]]) -> List[str]:
+def set_elements_from_components(components: Dict[str, Dict[str, int]]) -> List[str]:
     """
-    Extract a set of unique element symbols from the given species dictionary.
+    Extract a set of unique element symbols from the given species components dictionary.
 
     Args:
-        species (Dict[str, Dict[str, int]]): A dictionary mapping species names to their elemental compositions.
+        components (Dict[str, Dict[str, int]]): A dictionary mapping species names to their elemental compositions.
 
     Example:
-        species = {
+        components = {
             "H2O": {"H": 2, "O": 1},
             "CO2": {"C": 1, "O": 2},
             "CH4": {"C": 1, "H": 4},
             "e-": {"e-": 1}
         }
-        elements = set_elements_from_species(species)
+        elements = set_elements_from_components(components)
         # elements will be {'H', 'O', 'C', 'e-'}
 
     Returns:
         set: A set of unique element symbols.
     """
     element_set = set()
-    for spec in species.keys():
-        for el in species[spec].keys():
+    for spec in components.keys():
+        for el in components[spec].keys():
             element_set.add(el)
     return element_set
 

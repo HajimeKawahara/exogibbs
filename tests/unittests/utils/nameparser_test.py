@@ -1,16 +1,16 @@
 from exogibbs.utils.nameparser import parse_simple_formula
 from exogibbs.utils.nameparser import sanitize_formula
 from exogibbs.utils.nameparser import parse_formula_with_charge
-from exogibbs.utils.nameparser import set_elements_from_species
+from exogibbs.utils.nameparser import set_elements_from_components
 
-def test_set_elements_from_species():
-    species = {
+def test_set_elements_from_components():
+    components  = {
         "H2O": {"H": 2, "O": 1},
         "CO2": {"C": 1, "O": 2},
         "CH4": {"C": 1, "H": 4},
         "e-": {"e-": 1}
     }
-    elements = set_elements_from_species(species)
+    elements = set_elements_from_components(components)
     assert elements == {'H', 'O', 'C', 'e-'}, "Element set does not match expected output."
 
 

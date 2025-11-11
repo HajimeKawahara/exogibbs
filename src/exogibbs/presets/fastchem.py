@@ -11,7 +11,7 @@ from typing import Tuple
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.thermo.stoichiometry import build_formula_matrix
-from exogibbs.utils.nameparser import set_elements_from_species
+from exogibbs.utils.nameparser import set_elements_from_components
 
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
@@ -43,9 +43,7 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     # elements and element species
     elements = _set_elements_with_adding_Ge(components_molecule)
     element_vector_ref = _elements_ref_AAG21()
-    species_element, components_element, acoeff_element = _set_element_species(
-        elements
-    )
+    species_element, components_element, acoeff_element = _set_element_species(elements)
     # combine
     acoeff = {**acoeff_element, **acoeff_molecule}
     species = species_element + species_molecule
@@ -146,13 +144,21 @@ def _elements_ref_AAG21():
     )
 
 
-
-
 def _set_elements_with_adding_Ge(components: Dict[str, Dict[str, int]]) -> List[str]:
+    """set elements adding Ge to the elements from components.
+
+    Args:
+        components (Dict[str, Dict[str, int]]): A dictionary mapping species names to their elemental compositions.
+
+    Returns:
+        List[str]: A list of unique element symbols including Ge.
+
+    Notes:
+        This function extends the set of elements extracted from the components dictionary
+        by adding Germanium (Ge) to the list of elements.
+
     """
-    element_vector =['Al', 'Ar', 'Ba', 'Be', 'B', 'Ca', 'C', ...]
-    """
-    element_set = set_elements_from_species(components)
+    element_set = set_elements_from_components(components)
     elements = sorted(list(element_set) + ["Ge"])
     return elements
 
