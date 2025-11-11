@@ -14,14 +14,13 @@ from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.presets.fastchem import (
     _elements_ref_AAG21,
-    _generate_formula_matrix,
     _set_element_species as _base_set_element_species,
     _set_elements as _base_set_elements,
 )
+from exogibbs.thermo.stoichiometry import build_formula_matrix
 
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 _COEFFS_PER_SEGMENT = 5
-
 
 @dataclass
 class _SpeciesEntry:
@@ -65,7 +64,7 @@ def chemsetup(path: str = "fastchem/logK/logK_condensates.dat") -> ChemicalSetup
     components = {**components_element, **components_molecule}
     species = species_element + species_molecule
 
-    formula_matrix = _generate_formula_matrix(components, elements)
+    formula_matrix = build_formula_matrix(components, elements)
     setup = _build_chemical_setup(
         coeffs_all,
         uppers_all,
