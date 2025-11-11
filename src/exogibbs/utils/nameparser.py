@@ -60,6 +60,18 @@ def sanitize_formula(s: str) -> str:
 
     return s
 
+def generate_components_from_formula_list(formula_list: List[str]) -> Dict[str, Dict[str, int]]:
+    """
+    Generate a components dictionary from a list of chemical formula strings.
+
+    Args:
+        formula_list (List[str]): A list of chemical formula strings.
+    Returns:
+        Dict[str, Dict[str, int]]: A dictionary mapping each formula to its element count dictionary.
+    """
+    return dict([[x, parse_formula_with_charge(x)] for x in formula_list])
+
+
 
 def parse_formula_with_charge(formula: str) -> Dict[str, int]:
     """
