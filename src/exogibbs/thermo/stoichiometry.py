@@ -1,5 +1,4 @@
-"""
-Stoichiometry utilities: build a formula matrix from molecular formulae.
+"""Stoichiometry utilities: build a formula matrices from molecular formulae.
 
 This module provides:
 - A parser that converts chemical formula strings (e.g., "H2O", "C1O2")
@@ -11,10 +10,36 @@ Intended to be used as a low-level utility in ExoGibbs, decoupled from
 any specific chemical potential source (JANAF, CEA, GGchem, etc.).
 """
 
-from typing import List, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 import numpy as np
 import pandas as pd
 from exogibbs.utils.nameparser import parse_formula_with_charge, sanitize_formula
+
+
+def build_formula_matrix(
+    components: Dict[str, Dict[str, int]], elements: List[str]
+) -> np.ndarray:
+    """
+    Generate the formula matrix from the components dict and elements list.
+
+    Args:
+        components: mapping ``species -> {element_symbol: count}``
+        elements: list of element symbols
+
+    Returns:
+        np.ndarray: formula matrix of shape (num_elements, num_species)
+    """
+    num_species = len(components)
+    num_elements = len(elements)
+    formula_matrix = np.zeros((num_elements, num_species), dtype=int)
+    species_list = list(components.keys())
+    for j, spec in enumerate(species_list):
+        comp = components[spec]
+        for i, el in enumerate(elements):
+            if el in comp:
+                formula_matrix[i, j] = comp[el]
+    return formula_matrix
+
 
 def build_formula_matrix_from_JANAF(
     df_molname: pd.DataFrame,

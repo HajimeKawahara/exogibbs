@@ -1,10 +1,10 @@
+#
+# Utility functions for parsing chemical species names and formulas.
+#
+
+
 import re
 from typing import Dict
-
-# Regex to match an element (capital letter + optional lowercase letter)
-# followed by an optional integer coefficient
-# Add near the top with other regexes
-
 # Matches one or more trailing parenthetical annotation groups, e.g. "(CNN)", "(g)", "(NCN)"
 _PAREN_ANNOT_TAIL = re.compile(r"(?:\([A-Za-z0-9+\-]*\))+$")
 # Add this near the top with the other imports/regexes

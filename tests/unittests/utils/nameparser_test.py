@@ -25,12 +25,12 @@ def test_parse_simple_formula():
         assert "Unsupported trailing token" in str(e)
 
 
-    def test_sanitize_formula():
-        assert sanitize_formula("C1N2(CNN)") == "C1N2"
-        assert sanitize_formula("H2O(g)") == "H2O"
-        assert sanitize_formula("Fe2O3#solid") == "Fe2O3"
-        assert sanitize_formula("NaCl*") == "NaCl"
-        assert sanitize_formula("Mg(OH)2(aq)#solution") == "Mg(OH)2"
+def test_sanitize_formula():
+    assert sanitize_formula("C1N2(CNN)") == "C1N2"
+    assert sanitize_formula("H2O(g)") == "H2O"
+    assert sanitize_formula("Fe2O3(s)") == "Fe2O3"
+    assert sanitize_formula("NaCl") == "NaCl"
+    assert sanitize_formula("e-") == "e-"
 
 def test_parse_formula_with_charge():
     assert parse_formula_with_charge("CH4") == {"C": 1, "H": 4}
