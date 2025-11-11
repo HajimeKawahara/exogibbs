@@ -11,6 +11,7 @@ from typing import Tuple
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.thermo.stoichiometry import build_formula_matrix
+from exogibbs.utils.nameparser import set_elements_from_species
 
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
@@ -40,7 +41,7 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     species_molecule = list(acoeff_molecule.keys())
 
     # elements and element species
-    elements = _set_elements(components_molecule)
+    elements = _set_elements_with_adding_Ge(components_molecule)
     element_vector_ref = _elements_ref_AAG21()
     species_element, components_element, acoeff_element = _set_element_species(
         elements
@@ -99,7 +100,7 @@ def _set_element_species(elements):
         if el == "e-":
             species_element.append("e1-")
             components_element["e1-"] = {el: 1}
-            acoeff_element["e1-"] = [0.0, 0.0, 0.0, 0.0, 0.0]
+            acoeff_element["e1-"] = zerolist
         else:
             species_element.append(el + "1")
             components_element[el + "1"] = {el: 1}
@@ -147,14 +148,11 @@ def _elements_ref_AAG21():
 
 
 
-def _set_elements(components: Dict[str, Dict[str, int]]) -> List[str]:
+def _set_elements_with_adding_Ge(components: Dict[str, Dict[str, int]]) -> List[str]:
     """
     element_vector =['Al', 'Ar', 'Ba', 'Be', 'B', 'Ca', 'C', ...]
     """
-    element_set = set()
-    for spec in components.keys():
-        for el in components[spec].keys():
-            element_set.add(el)
+    element_set = set_elements_from_species(components)
     elements = sorted(list(element_set) + ["Ge"])
     return elements
 

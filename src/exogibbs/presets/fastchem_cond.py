@@ -15,7 +15,7 @@ from exogibbs.io.load_data import get_data_filepath
 from exogibbs.presets.fastchem import (
     _elements_ref_AAG21,
     _set_element_species as _base_set_element_species,
-    _set_elements as _base_set_elements,
+    _set_elements_with_adding_Ge as _base_set_elements,
 )
 from exogibbs.thermo.stoichiometry import build_formula_matrix
 
