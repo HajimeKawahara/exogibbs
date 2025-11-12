@@ -1,12 +1,42 @@
-import math
-
+import numpy as np    
 import jax.numpy as jnp
 import pytest
 
 
 def _logk(temp: float, coeffs) -> float:
     a1, a2, a3, a4, a5 = coeffs
-    return a1 / temp + a2 * math.log(temp) + a3 + a4 * temp + a5 * temp * temp
+    return a1 / temp + a2 * np.log(temp) + a3 + a4 * temp + a5 * temp * temp
+
+def test_hvector_for_h2o():
+    from exogibbs.presets.fastchem_cond import chemsetup as condsetup
+    
+    from jax import config
+    config.update("jax_enable_x64", True)
+    
+    cond = condsetup()
+    cond_species = list(cond.species)
+    index_h2o_cond = cond_species.index('H2O(s,l)')  
+
+    T1=273.16 
+    T2=647.10
+    coeff_ice = np.array([1.1610444238898961e+05, -3.7180754189807614e+00, -9.9697686374472188e+00, -3.4870743183681364e-02, 5.8028334311999769e-05])
+    coeff_water = np.array([  1.1592048349840334e+05, -1.2230111683190726e+01, 2.2781352565814203e+01, 4.4780347912393416e-02, -2.3737039228581724e-05])
+
+    def _hice(T):
+        return - _logk(T, coeff_ice)
+
+    def _hwater(T):
+        return - _logk(T, coeff_water)
+
+    def _hh2o(T):
+        mask = T < T1
+        h = np.where(mask, _hice(T), _hwater(T))
+        return h
+        
+    T = np.linspace(100, 700, 100)
+    h2o_cond_h_values = cond.hvector_func(T)[:, index_h2o_cond] #mu_c(T)/RT
+    
+    assert np.all(h2o_cond_h_values/_hh2o(T) - 1 ) == 0.0
 
 
 def test_chemsetup_piecewise_segments():
