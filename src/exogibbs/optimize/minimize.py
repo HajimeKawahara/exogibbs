@@ -23,7 +23,7 @@ def solve_gibbs_iteration_equations(
     formula_matrix: jnp.ndarray,
     b: jnp.ndarray,
     gk: jnp.ndarray,
-    An: jnp.ndarray,
+    bk: jnp.ndarray,
 ) -> Tuple[jnp.ndarray, float]:
     """
     Solve the Gibbs iteration equations using the Lagrange multipliers.
@@ -33,10 +33,10 @@ def solve_gibbs_iteration_equations(
     Args:
         nk: number of species vector (n_species,) for k-th iteration.
         ntotk: Total number of species for k-th iteration.
-        formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
+        formula_matrix: (gas) Formula matrix for stoichiometric constraints (n_elements, n_species).
         b: Element abundance vector (n_elements, ).
         gk: gk vector (n_species,) for k-th iteration.
-        An: formula_matrix @ nk vector (n_elements, ).
+        bk: (gas) formula_matrix @ nk vector (n_elements, ).
 
     Returns:
         Tuple containing:
@@ -44,13 +44,14 @@ def solve_gibbs_iteration_equations(
             - The update of the  log total number of species (delta_ln_ntot).
     """
     resn = jnp.sum(nk) - ntotk
-    AnAt = _A_diagn_At(nk, formula_matrix)
+    Qk = _A_diagn_At(nk, formula_matrix)
     Angk = formula_matrix @ (gk * nk)
     ngk = jnp.dot(nk, gk)
-
-    assemble_mat = jnp.block([[AnAt, An[:, None]], [An[None, :], jnp.array([[resn]])]])
-    assemble_vec = jnp.concatenate([Angk + b - An, jnp.array([ngk - resn])])
+    
+    assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
+    assemble_vec = jnp.concatenate([Angk + b - bk, jnp.array([ngk - resn])])
     assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
+    
     return assemble_variable[:-1], assemble_variable[-1]
 
 
