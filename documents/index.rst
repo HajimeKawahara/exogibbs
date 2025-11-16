@@ -24,6 +24,14 @@ Contents
 
    presets/ykb4.rst
    presets/fastchem.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: notebooks:
+
+   ipynb/chemical_potential.rst
+   ipynb/tce_two_species.rst
+   ipynb/fastchem_cond_chemical_potential.rst
    
    
 .. toctree::
