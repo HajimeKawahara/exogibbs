@@ -11,22 +11,24 @@ from typing import Tuple
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.thermo.stoichiometry import build_formula_matrix
+from exogibbs.utils.nameparser import set_elements_from_components
 
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
 
-def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
+def chemsetup(path="fastchem/logK/logK.dat", silent=False) -> ChemicalSetup:
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
 
     Args:
         path (str): Path to the FastChem logK data file.
+        silent (bool): If True, suppress status output.
 
     Returns:
         ChemicalSetup: The chemical setup object.
 
     Notes:
-        The species in FastChem consists of element species and molecule species.
+        The species in FastChem consists of element species and molecule species for gas (logK.dat).
         The element species are the reference, therefore its coefficients are all zero.
         The element species are automatically added in this function.
     """
@@ -39,17 +41,17 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     species_molecule = list(acoeff_molecule.keys())
 
     # elements and element species
-    elements = _set_elements(components_molecule)
+    elements = _set_elements_with_adding_Ge(components_molecule)
     element_vector_ref = _elements_ref_AAG21()
     species_element, components_element, acoeff_element = _set_element_species(elements)
-
     # combine
     acoeff = {**acoeff_element, **acoeff_molecule}
     species = species_element + species_molecule
     components = {**components_element, **components_molecule}
 
     formula_matrix = build_formula_matrix(components, elements)
-    _print_status(species_molecule, elements, species)
+    if not silent:
+        _print_status(species_molecule, elements, species)
 
     ccoeff_array = np.array([acoeff[spec] for spec in species])
     vmap_logk = vmap(logk, in_axes=(None, 0), out_axes=0)
@@ -70,8 +72,8 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     )
 
 
-def _print_status(species_molecule, elements, species):
-    print("fastchem presets in ExoGibbs")
+def _print_status(species_molecule, elements, species, preset_name="fastchem"):
+    print(preset_name+" presets in ExoGibbs")
     print(
         "number of species:",
         len(species),
@@ -97,7 +99,7 @@ def _set_element_species(elements):
         if el == "e-":
             species_element.append("e1-")
             components_element["e1-"] = {el: 1}
-            acoeff_element["e1-"] = [0.0, 0.0, 0.0, 0.0, 0.0]
+            acoeff_element["e1-"] = zerolist
         else:
             species_element.append(el + "1")
             components_element[el + "1"] = {el: 1}
@@ -143,16 +145,21 @@ def _elements_ref_AAG21():
     )
 
 
+def _set_elements_with_adding_Ge(components: Dict[str, Dict[str, int]]) -> List[str]:
+    """set elements adding Ge to the elements from components.
 
+    Args:
+        components (Dict[str, Dict[str, int]]): A dictionary mapping species names to their elemental compositions.
 
-def _set_elements(components: Dict[str, Dict[str, int]]) -> List[str]:
+    Returns:
+        List[str]: A list of unique element symbols including Ge.
+
+    Notes:
+        This function extends the set of elements extracted from the components dictionary
+        by adding Germanium (Ge) to the list of elements.
+
     """
-    element_vector =['Al', 'Ar', 'Ba', 'Be', 'B', 'Ca', 'C', ...]
-    """
-    element_set = set()
-    for spec in components.keys():
-        for el in components[spec].keys():
-            element_set.add(el)
+    element_set = set_elements_from_components(components)
     elements = sorted(list(element_set) + ["Ge"])
     return elements
 
@@ -205,15 +212,15 @@ def _parse_fastchem_coeffs(
         j = i + 1
         while j < len(lines):
             candidate = lines[j].strip()
-            if candidate and not candidate.startswith("#"):
-                arr = np.fromstring(candidate, sep=" ")
-                if arr.size != 5:
-                    raise ValueError(
-                        f"{species}: not 5 coefficients (found {arr.size})"
-                    )
-                coeffs[species] = arr.tolist()
-                break
-            j += 1
+            if not candidate or candidate.startswith("#"):
+                j += 1
+                continue
+
+            arr = np.fromstring(candidate, sep=" ")
+            if arr.size != 5:
+                raise ValueError(f"{species}: not 5 coefficients (found {arr.size})")
+            coeffs[species] = arr.tolist()
+            break
         else:
             raise ValueError(f"{species}: missing coefficient line")
 

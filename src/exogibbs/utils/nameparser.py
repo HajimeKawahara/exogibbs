@@ -4,14 +4,40 @@
 
 
 import re
-from typing import Dict
-# Matches one or more trailing parenthetical annotation groups, e.g. "(CNN)", "(g)", "(NCN)"
-_PAREN_ANNOT_TAIL = re.compile(r"(?:\([A-Za-z0-9+\-]*\))+$")
+from typing import Dict, List
+# Matches trailing parenthetical annotations such as "(CNN)", "(g)", "(s,l)".
+_PAREN_ANNOT_TAIL = re.compile(r"(?:\([A-Za-z0-9+\-_,\s]*\))+$")
 # Add this near the top with the other imports/regexes
 _ELECTRON_BASE = re.compile(r"^[eE](\d*)$")  # matches 'e', 'e1', 'E2', etc.
 _CHARGE = re.compile(r"^([A-Za-z0-9*]+)([+-]\d*)$")  # unchanged
 _ELNUM = re.compile(r"([A-Z][a-z]?)(\d*)")
 
+
+def set_elements_from_components(components: Dict[str, Dict[str, int]]) -> List[str]:
+    """
+    Extract a set of unique element symbols from the given species components dictionary.
+
+    Args:
+        components (Dict[str, Dict[str, int]]): A dictionary mapping species names to their elemental compositions.
+
+    Example:
+        components = {
+            "H2O": {"H": 2, "O": 1},
+            "CO2": {"C": 1, "O": 2},
+            "CH4": {"C": 1, "H": 4},
+            "e-": {"e-": 1}
+        }
+        elements = set_elements_from_components(components)
+        # elements will be {'H', 'O', 'C', 'e-'}
+
+    Returns:
+        set: A set of unique element symbols.
+    """
+    element_set = set()
+    for spec in components.keys():
+        for el in components[spec].keys():
+            element_set.add(el)
+    return element_set
 
 
 def sanitize_formula(s: str) -> str:
@@ -33,6 +59,18 @@ def sanitize_formula(s: str) -> str:
     s = _PAREN_ANNOT_TAIL.sub("", s)
 
     return s
+
+def generate_components_from_formula_list(formula_list: List[str]) -> Dict[str, Dict[str, int]]:
+    """
+    Generate a components dictionary from a list of chemical formula strings.
+
+    Args:
+        formula_list (List[str]): A list of chemical formula strings.
+    Returns:
+        Dict[str, Dict[str, int]]: A dictionary mapping each formula to its element count dictionary.
+    """
+    return dict([[x, parse_formula_with_charge(sanitize_formula(x))] for x in formula_list])
+
 
 
 def parse_formula_with_charge(formula: str) -> Dict[str, int]:
@@ -122,5 +160,4 @@ def parse_simple_formula(formula: str) -> Dict[str, int]:
             f"Unsupported trailing token '{unknown}' in formula '{formula}'."
         )
     return element_counts_dict
-
 
