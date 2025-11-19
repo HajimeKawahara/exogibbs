@@ -126,8 +126,8 @@ def update_all(
     ntot = jnp.exp(ln_ntot)
     gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
-    epsilon = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
-    return ln_nk, ln_ntot, epsilon, gk, An
+    residual = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
+    return ln_nk, ln_ntot, residual, gk, An
 
 def minimize_gibbs_core(
     state: ThermoState,
