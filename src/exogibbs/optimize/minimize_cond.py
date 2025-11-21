@@ -44,7 +44,7 @@ def solve_gibbs_iteration_equations_cond(
 
     Returns:
         Tuple containing:
-            - The pi vector (nspecies, ).
+            - The pi vector (nelements, ).
             - The update of the  log total number of species (delta_ln_ntot).
     """
 
@@ -66,7 +66,7 @@ def solve_gibbs_iteration_equations_cond(
     return assemble_variable[:-1], assemble_variable[-1]
 
 
-def compute_residuals(
+def _compute_residuals(
     nk: jnp.ndarray,
     mk: jnp.ndarray,
     ntotk: float,
@@ -100,7 +100,7 @@ def compute_residuals(
     )
 
 
-def update_all(
+def _update_all(
     ln_nk,
     ln_mk,
     ln_etak,
@@ -118,24 +118,11 @@ def update_all(
     epsilon,
     eta_clip: float = 1e-30,
 ):
-    """
-    nk: jnp.ndarray,
-    mk: jnp.ndarray,
-    etak: jnp.ndarray,
-    ntotk: float,
-    formula_matrix: jnp.ndarray,
-    formula_matrix_cond: jnp.ndarray,
-    b: jnp.ndarray,
-    gk: jnp.ndarray,
-    bk: jnp.ndarray -> An, 
-    sk: jnp.ndarray,
-    eta_clip: float = 1e-30,
-    """
     sk = ln_mk + ln_etak - epsilon
-    
-    #etak = jnp.exp(ln_etak)
+
+    # etak = jnp.exp(ln_etak)
     etak = jnp.clip(jnp.exp(ln_etak), a_min=eta_clip)
-    
+
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
         jnp.exp(ln_nk),
         jnp.exp(ln_mk),
@@ -151,8 +138,8 @@ def update_all(
     )
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
     delta_ln_etak = (hvector_cond - formula_matrix_cond.T @ pi_vector) / etak - 1.0
-    delta_ln_mk = - delta_ln_etak - sk
-    
+    delta_ln_mk = -delta_ln_etak - sk
+
     # relaxation and update
     lam = 0.1  # need to reconsider
     # lam = _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
@@ -160,7 +147,6 @@ def update_all(
     ln_nk += lam * delta_ln_nk
     ln_mk += lam * delta_ln_mk
     ln_etak += lam * delta_ln_etak
-    
 
     # computes new gk,An and residuals
     nk = jnp.exp(ln_nk)
@@ -171,5 +157,111 @@ def update_all(
     Am = formula_matrix_cond @ mk
     sk = ln_mk + ln_etak - epsilon
 
-    residual = compute_residuals(nk, mk, ntot, formula_matrix, formula_matrix_cond, b, gk, hvector_cond, sk, An, Am, pi_vector)
-    return ln_nk, ln_mk, ln_etak, ln_ntot, residual, gk, An, Am
+    residual = _compute_residuals(
+        nk,
+        mk,
+        ntot,
+        formula_matrix,
+        formula_matrix_cond,
+        b,
+        gk,
+        hvector_cond,
+        sk,
+        An,
+        Am,
+        pi_vector,
+    )
+    return ln_nk, ln_mk, ln_etak, ln_ntot, gk, An, Am, residual
+
+
+def minimize_gibbs_cond_core(
+    state: ThermoState,
+    ln_nk_init: jnp.ndarray,
+    ln_mk_init: jnp.ndarray,
+    ln_etak_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    b: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    epsilon: float,  ### new argument
+    residual_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, float, int]:
+    """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
+
+        Args:
+            state: Thermodynamic state containing temperature, pressure, and element abundances.
+            ln_nk_init: Initial log number of species vector (n_species,).
+            ln_ntot_init: Initial log total number of species.
+            formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
+            hvector: Chemical potential over RT vector (n_species,).
+            residual_crit: Convergence tolerance for residual norm.
+            max_iter: Maximum number of iterations allowed.
+    
+        Returns:
+            Tuple containing:
+                - Final log number of species vector (n_species,).
+                - Final log number of condensed species vector (n_condensed_species,).
+                - Final log eta vector (n_condensed_species,).
+                - Final log total number of species.
+                - Number of iterations performed.
+    """
+
+    hvector = hvector_func(state.temperature)
+    hvector_cond = hvector_cond_func(state.temperature)
+
+    def cond_fun(carry):
+        *_, residual, counter = carry
+        return (residual > residual_crit) & (counter < max_iter)
+
+    def body_fun(carry):
+        ln_nk, ln_mk, ln_etak, ln_ntot, gk, An, Am, residual, counter = carry
+        ln_nk_new, ln_mk_new, ln_etak_new, ln_ntot_new, gk, An, Am, residual = (
+            _update_all(
+                ln_nk,
+                ln_mk,
+                ln_etak,
+                ln_ntot,
+                formula_matrix,
+                formula_matrix_cond,
+                state.element_vector,
+                state.temperature,
+                state.ln_normalized_pressure,
+                hvector,
+                hvector_cond,
+                gk,
+                An,
+                Am,
+                epsilon,
+            )
+        )
+        return (
+            ln_nk_new,
+            ln_mk_new,
+            ln_etak_new,
+            ln_ntot_new,
+            gk,
+            An,
+            Am,
+            residual,
+            counter + 1,
+        )
+
+    gk = _compute_gk(
+        state.temperature,
+        ln_nk_init,
+        ln_ntot_init,
+        hvector,
+        state.ln_normalized_pressure,
+    )
+    An = formula_matrix @ jnp.exp(ln_nk_init)
+    Am = formula_matrix_cond @ jnp.exp(ln_mk_init)
+
+    ln_nk, ln_mk, ln_etak, ln_ntot, _, _, _, _, counter = while_loop(
+        cond_fun,
+        body_fun,
+        (ln_nk_init, ln_mk_init, ln_etak_init, ln_ntot_init, gk, An, Am, jnp.inf, 0),
+    )
+    return ln_nk, ln_mk, ln_etak, ln_ntot, counter

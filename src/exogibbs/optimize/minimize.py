@@ -40,7 +40,7 @@ def solve_gibbs_iteration_equations(
 
     Returns:
         Tuple containing:
-            - The pi vector (nspecies, ).
+            - The pi vector (nelements, ).
             - The update of the  log total number of species (delta_ln_ntot).
     """
     resn = jnp.sum(nk) - ntotk
@@ -55,7 +55,7 @@ def solve_gibbs_iteration_equations(
     return assemble_variable[:-1], assemble_variable[-1]
 
 
-def compute_residuals(
+def _compute_residuals(
     nk: jnp.ndarray,
     ntotk: float,
     formula_matrix: jnp.ndarray,
@@ -98,7 +98,7 @@ def _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot, size=CEA_SIZE):
     lam = jnp.clip(lam, 1e-6, 1.0)
     return lam
 
-def update_all(
+def _update_all(
     ln_nk,
     ln_ntot,
     formula_matrix,
@@ -126,7 +126,7 @@ def update_all(
     ntot = jnp.exp(ln_ntot)
     gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
-    residual = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
+    residual = _compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
     return ln_nk, ln_ntot, residual, gk, An
 
 def minimize_gibbs_core(
@@ -135,7 +135,7 @@ def minimize_gibbs_core(
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
     hvector_func,
-    epsilon_crit: float = 1.0e-11,
+    residual_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> Tuple[jnp.ndarray, float, int]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
@@ -146,7 +146,7 @@ def minimize_gibbs_core(
         ln_ntot_init: Initial log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
         hvector: Chemical potential over RT vector (n_species,).
-        epsilon_crit: Convergence tolerance for residual norm.
+        residual_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations allowed.
 
     Returns:
@@ -159,12 +159,12 @@ def minimize_gibbs_core(
     hvector = hvector_func(state.temperature)
 
     def cond_fun(carry):
-        _, _, _, _, epsilon, counter = carry
-        return (epsilon > epsilon_crit) & (counter < max_iter)
+        _, _, _, _, residual, counter = carry
+        return (residual > residual_crit) & (counter < max_iter)
 
     def body_fun(carry):
         ln_nk, ln_ntot, gk, An, _, counter = carry
-        ln_nk_new, ln_ntot_new, epsilon, gk, An = update_all(
+        ln_nk_new, ln_ntot_new, residual, gk, An = _update_all(
             ln_nk,
             ln_ntot,
             formula_matrix,
@@ -175,7 +175,7 @@ def minimize_gibbs_core(
             gk,
             An,
         )
-        return ln_nk_new, ln_ntot_new, gk, An, epsilon, counter + 1
+        return ln_nk_new, ln_ntot_new, gk, An, residual, counter + 1
 
     gk = _compute_gk(
         state.temperature,
@@ -186,10 +186,10 @@ def minimize_gibbs_core(
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
 
-    ln_nk, ln_tot, _, _, _, counter = while_loop(
+    ln_nk, ln_ntot, _, _, _, counter = while_loop(
         cond_fun, body_fun, (ln_nk_init, ln_ntot_init, gk, An, jnp.inf, 0)
     )
-    return ln_nk, ln_tot, counter
+    return ln_nk, ln_ntot, counter
 
 
 # Only function and scalar options are non-differentiable.
@@ -201,7 +201,7 @@ def minimize_gibbs(
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
     hvector_func: Callable[[float], jnp.ndarray],
-    epsilon_crit: float = 1.0e-11,
+    residual_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> jnp.ndarray:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
@@ -212,7 +212,7 @@ def minimize_gibbs(
         ln_ntot_init: Initial natural log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
         hvector_func: Function that returns chemical potential over RT vector (n_species,).
-        epsilon_crit: Convergence tolerance for residual norm.
+        residual_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations allowed.
 
     Returns:
@@ -229,7 +229,7 @@ def minimize_gibbs(
             ln_ntot0,
             formula_matrix,
             hvector_func,
-            epsilon_crit,
+            residual_crit,
             max_iter,
         )
         return ln_nk
@@ -241,7 +241,7 @@ def minimize_gibbs(
             ln_ntot0,
             formula_matrix,
             hvector_func,
-            epsilon_crit,
+            residual_crit,
             max_iter,
         )
         dfunc = jacrev(hvector_func)

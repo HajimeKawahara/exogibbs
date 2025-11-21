@@ -72,7 +72,7 @@ ln_nk_ground_truth = minimize_gibbs(
     ln_ntot,
     formula_matrix,
     hvector_func,
-    epsilon_crit=epsilon_crit,
+    residual_crit=epsilon_crit,
     max_iter=max_iter,
 )
 
@@ -112,7 +112,7 @@ def model_prob(ln_nk_obs):
     ln_ntot,
     formula_matrix,
     hvector_func,
-    epsilon_crit=epsilon_crit,
+    residual_crit=epsilon_crit,
     max_iter=max_iter,
     )
 

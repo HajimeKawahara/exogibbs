@@ -90,7 +90,7 @@ def test_minimize_gibbs_temperature_gradient_h_system(h_system_setup):
         setup['ln_ntot'],
         setup['formula_matrix'],
         setup['hvector_func'],
-        epsilon_crit=setup['epsilon_crit'],
+        residual_crit=setup['epsilon_crit'],
         max_iter=setup['max_iter'],
     ))(setup['temperature'])
     
@@ -117,7 +117,7 @@ def test_minimize_gibbs_pressure_gradient_h_system(h_system_setup):
         setup['ln_ntot'],
         setup['formula_matrix'],
         setup['hvector_func'],
-        epsilon_crit=setup['epsilon_crit'],
+        residual_crit=setup['epsilon_crit'],
         max_iter=setup['max_iter'],
     ))(setup['ln_normalized_pressure'])
     
@@ -169,7 +169,7 @@ def test_minimize_gibbs_element_gradient_hco_system():
         ln_ntot,
         formula_matrix,
         hvector_func,
-        epsilon_crit=epsilon_crit,
+        residual_crit=epsilon_crit,
         max_iter=max_iter,
     )
     
@@ -181,7 +181,7 @@ def test_minimize_gibbs_element_gradient_hco_system():
             ln_ntot,
             formula_matrix,
             hvector_func,
-            epsilon_crit=epsilon_crit,
+            residual_crit=epsilon_crit,
             max_iter=max_iter,
         )
     )(element_vector)
