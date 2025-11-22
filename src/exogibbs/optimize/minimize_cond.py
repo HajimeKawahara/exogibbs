@@ -6,7 +6,7 @@ from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
 from functools import partial
-from typing import Tuple, Callable
+from typing import Tuple, Callable, Optional
 
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _A_diagn_At
@@ -116,7 +116,7 @@ def _update_all(
     An,
     Am,
     epsilon,
-    eta_clip: float = 1e-30,
+    eta_clip: float = 1e-20,
 ):
     sk = ln_mk + ln_etak - epsilon
 
@@ -182,12 +182,12 @@ def minimize_gibbs_cond_core(
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
     formula_matrix_cond: jnp.ndarray,
-    b: jnp.ndarray,
     hvector_func,
     hvector_cond_func,
     epsilon: float,  ### new argument
     residual_crit: float = 1.0e-11,
     max_iter: int = 1000,
+    element_indices: Optional[jnp.ndarray] = None,
 ) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, float, int]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
@@ -199,6 +199,9 @@ def minimize_gibbs_cond_core(
             hvector: Chemical potential over RT vector (n_species,).
             residual_crit: Convergence tolerance for residual norm.
             max_iter: Maximum number of iterations allowed.
+            element_indices: Optional indices mapping ``state.element_vector`` onto the
+                element ordering used by ``formula_matrix``/``formula_matrix_cond``.
+                Use this when ``state.element_vector`` stores a superset of elements.
     
         Returns:
             Tuple containing:
@@ -208,6 +211,24 @@ def minimize_gibbs_cond_core(
                 - Final log total number of species.
                 - Number of iterations performed.
     """
+
+    n_elements = formula_matrix.shape[0]
+    if formula_matrix_cond.shape[0] != n_elements:
+        raise ValueError(
+            "formula_matrix and formula_matrix_cond must have the same number of element rows."
+        )
+
+    b = (
+        jnp.asarray(state.element_vector)
+        if element_indices is None
+        else jnp.asarray(state.element_vector)[jnp.asarray(element_indices)]
+    )
+    if b.shape[0] != n_elements:
+        raise ValueError(
+            "ThermoState.element_vector length does not match the number of element rows "
+            f"in the formula matrices (got {b.shape[0]}, expected {n_elements}). "
+            "Provide element_indices that map the state vector onto the reduced element set."
+        )
 
     hvector = hvector_func(state.temperature)
     hvector_cond = hvector_cond_func(state.temperature)
@@ -226,7 +247,7 @@ def minimize_gibbs_cond_core(
                 ln_ntot,
                 formula_matrix,
                 formula_matrix_cond,
-                state.element_vector,
+                b,
                 state.temperature,
                 state.ln_normalized_pressure,
                 hvector,

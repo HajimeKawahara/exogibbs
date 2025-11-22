@@ -32,7 +32,7 @@ def h_system_setup():
         return jnp.array([hsystem.hv_h(temperature), hsystem.hv_h2(temperature)])
     
     element_vector = jnp.array([1.0])
-    epsilon_crit = 1e-11
+    residual_crit = 1e-11
     max_iter = 1000
     
     thermo_state = ThermoState(temperature, ln_normalized_pressure, element_vector)
@@ -48,7 +48,7 @@ def h_system_setup():
         'hvector_func': hvector_func,
         'element_vector': element_vector,
         'thermo_state': thermo_state,
-        'epsilon_crit': epsilon_crit,
+        'residual_crit': residual_crit,
         'max_iter': max_iter
     }
 
@@ -64,7 +64,7 @@ def test_minimize_gibbs_core_h_system(h_system_setup):
         setup['ln_ntot'],
         setup['formula_matrix'],
         setup['hvector_func'],
-        epsilon_crit=setup['epsilon_crit'],
+        residual_crit=setup['residual_crit'],
         max_iter=setup['max_iter'],
     )
     
@@ -74,8 +74,8 @@ def test_minimize_gibbs_core_h_system(h_system_setup):
     diff_h2 = jnp.log(setup['hsystem'].nh2(k)) - ln_nk_result[1]
     
     # Validate numerical accuracy
-    assert jnp.abs(diff_h) < setup['epsilon_crit']
-    assert jnp.abs(diff_h2) < setup['epsilon_crit']
+    assert jnp.abs(diff_h) < setup['residual_crit']
+    assert jnp.abs(diff_h2) < setup['residual_crit']
     assert counter < setup['max_iter']
 
 
@@ -90,7 +90,7 @@ def test_minimize_gibbs_temperature_gradient_h_system(h_system_setup):
         setup['ln_ntot'],
         setup['formula_matrix'],
         setup['hvector_func'],
-        residual_crit=setup['epsilon_crit'],
+        residual_crit=setup['residual_crit'],
         max_iter=setup['max_iter'],
     ))(setup['temperature'])
     
@@ -117,7 +117,7 @@ def test_minimize_gibbs_pressure_gradient_h_system(h_system_setup):
         setup['ln_ntot'],
         setup['formula_matrix'],
         setup['hvector_func'],
-        residual_crit=setup['epsilon_crit'],
+        residual_crit=setup['residual_crit'],
         max_iter=setup['max_iter'],
     ))(setup['ln_normalized_pressure'])
     
@@ -159,7 +159,7 @@ def test_minimize_gibbs_element_gradient_hco_system():
     bO = 0.3
     element_vector = jnp.array([bH, bC, bO])
     
-    epsilon_crit = 1e-11
+    residual_crit = 1e-11
     max_iter = 1000
     
     # Get equilibrium solution first
@@ -169,7 +169,7 @@ def test_minimize_gibbs_element_gradient_hco_system():
         ln_ntot,
         formula_matrix,
         hvector_func,
-        residual_crit=epsilon_crit,
+        residual_crit=residual_crit,
         max_iter=max_iter,
     )
     
@@ -181,7 +181,7 @@ def test_minimize_gibbs_element_gradient_hco_system():
             ln_ntot,
             formula_matrix,
             hvector_func,
-            residual_crit=epsilon_crit,
+            residual_crit=residual_crit,
             max_iter=max_iter,
         )
     )(element_vector)
