@@ -139,22 +139,25 @@ potential of the gas is always lower and only the gas is present.
     bH = 0.01
     p = 1.0 # bar
     nh2os = np.logspace(-8, np.log10(bH/2), 1000)
+    def plotfig():
+        plt.figure(figsize=(8,6))
+        for i, T in enumerate([200.0, 250.0, 300.0]):
+            plt.plot(nh2os, h2o_gas_h_values(T, p, nh2os, bN/2)- h2o_cond_h_values(T), label='T='+str(T)+" K", ls=['solid', '--', '-.'][i])
+        plt.axhline(0.0, color='k', lw=0.5)
+        plt.axvline(bH/2, color='k', lw=0.5, ls='dotted')
+        plt.xscale("log")
+        plt.ylabel("$\mu_{H_2O}^{gas} - \mu_{H_2O}^{cond}$", fontsize=14)
+        plt.xlabel("n(H2O)", fontsize=14)
+        plt.legend()
+        return plt
     
-    plt.figure(figsize=(8,6))
-    for i, T in enumerate([200.0, 250.0, 300.0]):
-        plt.plot(nh2os, h2o_gas_h_values(T, p, nh2os, bN/2)- h2o_cond_h_values(T), label='T='+str(T)+" K", ls=['solid', '--', '-.'][i])
-    plt.axhline(0.0, color='k', lw=0.5)
-    plt.axvline(bH/2, color='k', lw=0.5, ls='dotted')
-    plt.xscale("log")
-    plt.ylabel("$\mu_{H_2O}^{gas} - \mu_{H_2O}^{cond}$", fontsize=14)
-    plt.xlabel("n(H2O)", fontsize=14)
-    plt.legend()
+    plt = plotfig()
     plt.show()
 
 
 
 
-.. image:: fastchem_cond_chemical_potential_files/fastchem_cond_chemical_potential_11_0.png
+.. image:: h2ocond_files/h2ocond_11_0.png
 
 
 The amount of nH2O can also be verified directly by minimizing the total
@@ -198,7 +201,7 @@ Gibbs energy.
 
 
 
-.. image:: fastchem_cond_chemical_potential_files/fastchem_cond_chemical_potential_15_1.png
+.. image:: h2ocond_files/h2ocond_15_1.png
 
 
 Derive the minimum using a grid search.
@@ -227,7 +230,7 @@ Derive the minimum using a grid search.
 
 .. parsed-literal::
 
-    100%|██████████| 100/100 [00:15<00:00,  6.37it/s]
+    100%|██████████| 100/100 [00:17<00:00,  5.59it/s]
 
 
 .. code:: ipython3
@@ -258,7 +261,7 @@ gas.
 
 
 
-.. image:: fastchem_cond_chemical_potential_files/fastchem_cond_chemical_potential_21_0.png
+.. image:: h2ocond_files/h2ocond_21_0.png
 
 
 minimization using minimize_gibbs_cond_core
@@ -279,26 +282,18 @@ minimization using minimize_gibbs_cond_core
 
     
     # Thermodynamic conditions
-    temperature = 500.0  # K
-    P = 10.0  # bar
+    P = 1.0  # bar
     Pref = 1.0  # bar, reference pressure
     ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
     
     # Initial guess for log number densities
-    ln_etak = jnp.zeros(formula_matrix_cond.shape[1])  # log(eta)
-    ln_nk = jnp.zeros(formula_matrix_gas.shape[1])  # log(n_species)
-    ln_mk = jnp.zeros(formula_matrix_cond.shape[1])  # log(n_condensates)
+    ln_etak = jnp.zeros(formula_matrix_cond_eff.shape[1])  # log(eta)
+    ln_nk = jnp.zeros(formula_matrix_gas_eff.shape[1])  # log(n_species)
+    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])  # log(n_condensates)
     ln_ntot = 0.0  # log(total number density)
     
-    fastchem_elements = list(gas.elements)
-    element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
-    b_ref = jnp.asarray(gas.element_vector_reference)[element_indices]
-    # ThermoState instance
-    thermo_state = ThermoState(
-        temperature=temperature,
-        ln_normalized_pressure=ln_normalized_pressure,
-        element_vector=b_ref,
-    )
+    b_ref = jnp.array([0.01,0.99]) #bH,bN
+    
     
     def hvector_cond_func(T): 
         return  jnp.array([cond.hvector_func(T)[index_h2o_cond]])
@@ -306,61 +301,47 @@ minimization using minimize_gibbs_cond_core
     def hvector_func(T):
         return  jnp.array([gas.hvector_func(T)[index_h2o_gas],gas.hvector_func(T)[index_n2_gas]])
     
-    epsilon = -30.0
+    epsilon = -15.0
+    plt = plotfig()
     
-    print(ln_etak, ln_nk, ln_mk, ln_ntot)
+    
+    for i, temperature in enumerate([200.0, 250.0, 300.0]):
+    
+        thermo_state = ThermoState(
+            temperature=temperature,
+            ln_normalized_pressure=ln_normalized_pressure,
+            element_vector=b_ref,
+        )
+    
+        ln_nk, ln_mk, ln_etak, ln_ntot, counter = minimize_gibbs_cond_core(
+            thermo_state,
+            ln_nk_init=ln_nk,
+            ln_mk_init=ln_mk,
+            ln_etak_init=ln_etak,
+            ln_ntot_init=ln_ntot,
+            formula_matrix=formula_matrix_gas_eff,
+            formula_matrix_cond=formula_matrix_cond_eff,
+            hvector_func=hvector_func,
+            hvector_cond_func=hvector_cond_func,
+            epsilon=epsilon,  ### new argument
+            residual_crit=1.0e-11,
+            max_iter=1000,
+        )
+    
+    
+        print(jnp.exp(ln_etak), jnp.exp(ln_nk), jnp.exp(ln_mk), jnp.exp(ln_ntot), jnp.exp(epsilon))
+        plt.plot(jnp.exp(ln_nk)[0],0.0,"o", color="C"+str(i))
 
 
 .. parsed-literal::
 
-    [0.] [0. 0.] [0.] 0.0
+    [6.11906591e-05] [8.33052748e-07 4.95000000e-01] [0.00499917] 0.49500083305272097 3.059023205018258e-07
+    [6.63634247e-05] [3.90498274e-04 4.95000000e-01] [0.0046095] 0.4953904982741037 3.059023205018258e-07
+    [1.291123] [0.00499976 0.495     ] [2.36927326e-07] 0.499999763072703 3.059023205018258e-07
 
 
-.. code:: ipython3
 
-    temperature = 200.0  # K
-    P = 1.0  # bar
-    Pref = 1.0  # bar, reference pressure
-    ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
-    
-    # Initial guess for log number densities
-    ln_etak = jnp.zeros(formula_matrix_cond.shape[1])  # log(eta)
-    ln_nk = jnp.zeros(formula_matrix_gas.shape[1])  # log(n_species)
-    ln_mk = jnp.zeros(formula_matrix_cond.shape[1])  # log(n_condensates)
-    ln_ntot = 0.0  # log(total number density)
-    
-    fastchem_elements = list(gas.elements)
-    element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
-    b_ref = jnp.asarray(gas.element_vector_reference)[element_indices]
-    # ThermoState instance
-    thermo_state = ThermoState(
-        temperature=temperature,
-        ln_normalized_pressure=ln_normalized_pressure,
-        element_vector=b_ref,
-    )
-    epsilon = -30.0
-    ln_nk, ln_mk, ln_etak, ln_ntot, counter = minimize_gibbs_cond_core(
-        thermo_state,
-        ln_nk_init=ln_nk,
-        ln_mk_init=ln_mk,
-        ln_etak_init=ln_etak,
-        ln_ntot_init=ln_ntot,
-        formula_matrix=formula_matrix_gas,
-        formula_matrix_cond=formula_matrix_cond,
-        hvector_func=hvector_func,
-        hvector_cond_func=hvector_cond_func,
-        epsilon=epsilon,  ### new argument
-        residual_crit=1.0e-11,
-        max_iter=1,
-        element_indices=element_indices,
-    )
-    
-    print(ln_etak, ln_nk, ln_mk, ln_ntot)
-
-
-.. parsed-literal::
-
-    [nan] [nan nan] [nan] 0.37057664408441726
+.. image:: h2ocond_files/h2ocond_25_1.png
 
 
 

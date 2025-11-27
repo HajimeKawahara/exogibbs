@@ -31,7 +31,7 @@ Contents
 
    ipynb/chemical_potential.rst
    ipynb/tce_two_species.rst
-   ipynb/fastchem_cond_chemical_potential.rst
+   ipynb/h2ocond.rst
    
    
 .. toctree::
