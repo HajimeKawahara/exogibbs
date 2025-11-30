@@ -44,7 +44,9 @@ def solve_gibbs_iteration_equations_cond(
 
     Returns:
         Tuple containing:
-            - The pi vector (nelements, ).
+            - The pi vector (nelements, ).fastchem_elements = list(gas.elements)
+element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
+
             - The update of the  log total number of species (delta_ln_ntot).
     """
 
@@ -120,8 +122,8 @@ def _update_all(
 ):
     sk = ln_mk + ln_etak - epsilon
 
-    # etak = jnp.exp(ln_etak)
-    etak = jnp.clip(jnp.exp(ln_etak), a_min=eta_clip)
+    etak = jnp.exp(ln_etak)
+    #etak = jnp.clip(jnp.exp(ln_etak), a_min=eta_clip)
 
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
         jnp.exp(ln_nk),
@@ -141,7 +143,7 @@ def _update_all(
     delta_ln_mk = -delta_ln_etak - sk
 
     # relaxation and update
-    lam = 0.1  # need to reconsider
+    lam = 0.01  # need to reconsider
     # lam = _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
