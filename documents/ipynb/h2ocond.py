@@ -199,7 +199,7 @@ for i, temperature in enumerate([250.0]):
             hvector_cond_func=hvector_cond_func,
             epsilon=epsilon,  ### new argument
             residual_crit=1.0e-10,
-            max_iter=100,
+            max_iter=10000,
         )
 
         nkpath.append(jnp.exp(ln_nk)[0])

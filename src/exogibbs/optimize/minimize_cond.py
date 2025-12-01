@@ -134,7 +134,7 @@ def _update_all(
     delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0  
 
     # relaxation and update
-    lam = 0.1  # need to reconsider
+    lam = 0.001  # need to reconsider
     # lam = _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
