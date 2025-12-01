@@ -16,7 +16,6 @@ from exogibbs.optimize.core import _compute_gk
 def solve_gibbs_iteration_equations_cond(
     nk: jnp.ndarray,
     mk: jnp.ndarray,
-    etak: jnp.ndarray,
     ntotk: float,
     formula_matrix: jnp.ndarray,
     formula_matrix_cond: jnp.ndarray,
@@ -33,6 +32,7 @@ def solve_gibbs_iteration_equations_cond(
 
     Args:
         nk: number of species vector (n_species,) for k-th iteration.
+        mk: number of condensed species vector (n_cond,) for k-th iteration.
         ntotk: Total number of species for k-th iteration.
         formula_matrix: Gas Formula matrix for stoichiometric constraints (n_elements, n_species).
         formula_matrix_cond: Condensates Formula matrix for stoichiometric constraints (n_elements, n_cond).
@@ -40,7 +40,7 @@ def solve_gibbs_iteration_equations_cond(
         gk: gk vector (n_species,) for k-th iteration.
         bk: (gas) formula_matrix @ nk vector (n_elements, ).
         hvector_cond: chemical_potentials for condensates divided by RT (n_cond, )
-        sk: rk + ln_etak - epsilon (n_cond, )
+        sk: mk^2/nu (n_cond, )
 
     Returns:
         Tuple containing:
@@ -50,15 +50,15 @@ element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
             - The update of the  log total number of species (delta_ln_ntot).
     """
 
-    jk = mk / etak
+    #sk = mk*mk / nu
 
     resn = jnp.sum(nk) - ntotk
-    Qk = _A_diagn_At(nk, formula_matrix) + _A_diagn_At(jk, formula_matrix_cond)
+    Qk = _A_diagn_At(nk, formula_matrix) + _A_diagn_At(sk, formula_matrix_cond)
     Angk = formula_matrix @ (gk * nk)
     ngk = jnp.dot(nk, gk)
 
-    delta_bk_hat = b - (bk + formula_matrix_cond @ mk)
-    condvec = formula_matrix_cond @ (jk * hvector_cond + mk * sk - mk)
+    delta_bk_hat = b - (bk + formula_matrix_cond @ mk) # b - (Ag nk + Ac mk)
+    condvec = formula_matrix_cond @ (sk * hvector_cond - mk) # Ac(sk*ck - mk)
 
     assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
     assemble_vec = jnp.concatenate(
@@ -77,7 +77,7 @@ def _compute_residuals(
     b: jnp.ndarray,
     gk: jnp.ndarray,
     hvector_cond: jnp.ndarray,
-    sk: jnp.ndarray,
+    nu: float,
     An: jnp.ndarray,
     Am: jnp.ndarray,
     pi_vector: jnp.ndarray,
@@ -86,26 +86,23 @@ def _compute_residuals(
     ress = nk * (formula_matrix.T @ pi_vector - gk)
     ress_squared = jnp.dot(ress, ress)
 
-    resc = mk * (formula_matrix_cond.T @ pi_vector - hvector_cond)
+    resc = mk * (formula_matrix_cond.T @ pi_vector - hvector_cond) + nu
     resc_squared = jnp.dot(resc, resc)
 
     deltabhat = An + Am - b
     resj_squared = jnp.dot(deltabhat, deltabhat)
 
-    resr_squared = jnp.dot(sk, sk)
-
     resn = jnp.sum(nk) - ntotk
     resn_squared = jnp.dot(resn, resn)
 
     return jnp.sqrt(
-        ress_squared + resc_squared + resj_squared + resr_squared + resn_squared
+        ress_squared + resc_squared + resj_squared + resn_squared
     )
 
 
 def _update_all(
     ln_nk,
     ln_mk,
-    ln_etak,
     ln_ntot,
     formula_matrix,
     formula_matrix_cond,
@@ -118,17 +115,12 @@ def _update_all(
     An,
     Am,
     epsilon,
-    eta_clip: float = 1e-20,
 ):
-    sk = ln_mk + ln_etak - epsilon
-
-    etak = jnp.exp(ln_etak)
-    #etak = jnp.clip(jnp.exp(ln_etak), a_min=eta_clip)
-
+    sk = jnp.exp(2.0 * ln_mk - epsilon) # mk*mk / nu
+    
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
         jnp.exp(ln_nk),
         jnp.exp(ln_mk),
-        etak,
         jnp.exp(ln_ntot),
         formula_matrix,
         formula_matrix_cond,
@@ -139,17 +131,15 @@ def _update_all(
         sk,
     )
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
-    delta_ln_etak = (hvector_cond - formula_matrix_cond.T @ pi_vector) / etak - 1.0
-    delta_ln_mk = -delta_ln_etak - sk
+    delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0  
 
     # relaxation and update
-    lam = 0.01  # need to reconsider
+    lam = 0.1  # need to reconsider
     # lam = _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
     ln_mk += lam * delta_ln_mk
-    ln_etak += lam * delta_ln_etak
-
+    
     # computes new gk,An and residuals
     nk = jnp.exp(ln_nk)
     mk = jnp.exp(ln_mk)
@@ -157,8 +147,7 @@ def _update_all(
     gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
     Am = formula_matrix_cond @ mk
-    sk = ln_mk + ln_etak - epsilon
-
+    
     residual = _compute_residuals(
         nk,
         mk,
@@ -168,19 +157,18 @@ def _update_all(
         b,
         gk,
         hvector_cond,
-        sk,
+        jnp.exp(epsilon),
         An,
         Am,
         pi_vector,
     )
-    return ln_nk, ln_mk, ln_etak, ln_ntot, gk, An, Am, residual
+    return ln_nk, ln_mk, ln_ntot, gk, An, Am, residual
 
 
 def minimize_gibbs_cond_core(
     state: ThermoState,
     ln_nk_init: jnp.ndarray,
     ln_mk_init: jnp.ndarray,
-    ln_etak_init: jnp.ndarray,
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
     formula_matrix_cond: jnp.ndarray,
@@ -240,12 +228,11 @@ def minimize_gibbs_cond_core(
         return (residual > residual_crit) & (counter < max_iter)
 
     def body_fun(carry):
-        ln_nk, ln_mk, ln_etak, ln_ntot, gk, An, Am, residual, counter = carry
-        ln_nk_new, ln_mk_new, ln_etak_new, ln_ntot_new, gk, An, Am, residual = (
+        ln_nk, ln_mk, ln_ntot, gk, An, Am, residual, counter = carry
+        ln_nk_new, ln_mk_new, ln_ntot_new, gk, An, Am, residual = (
             _update_all(
                 ln_nk,
                 ln_mk,
-                ln_etak,
                 ln_ntot,
                 formula_matrix,
                 formula_matrix_cond,
@@ -263,7 +250,6 @@ def minimize_gibbs_cond_core(
         return (
             ln_nk_new,
             ln_mk_new,
-            ln_etak_new,
             ln_ntot_new,
             gk,
             An,
@@ -279,12 +265,12 @@ def minimize_gibbs_cond_core(
         hvector,
         state.ln_normalized_pressure,
     )
-    An = formula_matrix @ jnp.exp(ln_nk_init)
-    Am = formula_matrix_cond @ jnp.exp(ln_mk_init)
+    An_in = formula_matrix @ jnp.exp(ln_nk_init)
+    Am_in = formula_matrix_cond @ jnp.exp(ln_mk_init)
 
-    ln_nk, ln_mk, ln_etak, ln_ntot, _, _, _, _, counter = while_loop(
+    ln_nk, ln_mk, ln_ntot, gk, Am, An, residual, counter = while_loop(
         cond_fun,
         body_fun,
-        (ln_nk_init, ln_mk_init, ln_etak_init, ln_ntot_init, gk, An, Am, jnp.inf, 0),
+        (ln_nk_init, ln_mk_init, ln_ntot_init, gk, An_in, Am_in, jnp.inf, 0),
     )
-    return ln_nk, ln_mk, ln_etak, ln_ntot, counter
+    return ln_nk, ln_mk, ln_ntot, counter
