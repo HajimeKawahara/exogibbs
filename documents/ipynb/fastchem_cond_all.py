@@ -119,7 +119,7 @@ for i, temperature in enumerate([200.0]):
 
     while epsilon > epsilon_crit:
         epsilon = epsilon - 0.1
-
+        rcrit = jnp.exp(epsilon)
         ln_nk, ln_mk, ln_ntot, counter = minimize_gibbs_cond_core(
             thermo_state,
             ln_nk_init=ln_nk,
@@ -130,14 +130,14 @@ for i, temperature in enumerate([200.0]):
             hvector_func=gas.hvector_func,
             hvector_cond_func=cond.hvector_func,
             epsilon=epsilon,  ### new argument
-            residual_crit=1.0e-10,
-            max_iter=100,
+            residual_crit=rcrit,
+            max_iter=1000,
         )
 
         nkpath.append(jnp.exp(ln_nk)[0])
         mkpath.append(jnp.exp(ln_mk)[0])
         eppath.append(epsilon)
-        print("Optimization:", ln_nk, "counter=", counter, "epsilon=", epsilon)
+        print("Optimization:", ln_nk, "counter=", counter, "epsilon=", epsilon, "rcrit=", rcrit)
     
 
     

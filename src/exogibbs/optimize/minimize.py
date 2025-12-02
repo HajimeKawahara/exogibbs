@@ -14,7 +14,7 @@ from exogibbs.optimize.core import _compute_gk
 from exogibbs.optimize.vjpgibbs import vjp_temperature
 from exogibbs.optimize.vjpgibbs import vjp_pressure
 from exogibbs.optimize.vjpgibbs import vjp_elements
-from exogibbs.optimize.stepsize import lambda_cea_gas
+from exogibbs.optimize.stepsize import stepsize_cea_gas
 
 
 def solve_gibbs_iteration_equations(
@@ -95,7 +95,7 @@ def _update_all(
 
     # relaxation and update
     #lam = 0.1  # need to reconsider
-    lam = lambda_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
+    lam = stepsize_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
 

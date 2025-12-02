@@ -12,6 +12,11 @@ from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _A_diagn_At
 from exogibbs.optimize.core import _compute_gk
 
+# heuristic step size functions for condensates
+from exogibbs.optimize.stepsize import stepsize_cea_gas
+from exogibbs.optimize.stepsize import stepsize_cond_heurstic
+from exogibbs.optimize.stepsize import stepsize_sk
+
 
 def solve_gibbs_iteration_equations_cond(
     nk: jnp.ndarray,
@@ -134,8 +139,14 @@ def _update_all(
     delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0  
 
     # relaxation and update
-    lam = 0.001  # need to reconsider
-    # lam = _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
+    #lam = 0.001  # need to reconsider
+    
+    lam1_gas  = stepsize_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
+    lam1_cond = stepsize_cond_heurstic(delta_ln_mk)
+    lam2_cond = stepsize_sk(delta_ln_mk, ln_mk, epsilon)
+    lam = jnp.minimum(1.0, jnp.minimum(lam1_gas, jnp.minimum(lam1_cond, lam2_cond)))
+    lam = jnp.clip(lam, 1e-3, 1.0)
+    
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
     ln_mk += lam * delta_ln_mk
