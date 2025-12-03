@@ -95,6 +95,7 @@ the formulation using the matrix contraction.
     print(formula_matrix_cond_eff)
     print("independent elements:")
     print(elements_eff)
+    
 
 
 
@@ -127,6 +128,17 @@ temperature ( T ).
         ntot = nH2 + nN2
         return  gas.hvector_func(T)[index_n2_gas] + np.log(p*nN2/ntot)
 
+We have the analytic solution this system, in fact…
+
+.. code:: ipython3
+
+    import jax.numpy as jnp
+    def nh2o_analytic(p, delta_hvector, n_gas_max, n_bkgd_max):
+        k = jnp.exp(- delta_hvector)
+        nast = n_bkgd_max * k / (p - k)
+        return jnp.min(jnp.array([n_gas_max, nast]))
+            
+
 If there exists an nH2O for which the chemical potential of the gas
 equals that of the condensate, the gas and condensate coexist in a
 gas–condensate equilibrium. If no such value exists, the chemical
@@ -138,26 +150,34 @@ potential of the gas is always lower and only the gas is present.
     bN = 0.99
     bH = 0.01
     p = 1.0 # bar
+            
+    
     nh2os = np.logspace(-8, np.log10(bH/2), 1000)
     def plotfig():
-        plt.figure(figsize=(8,6))
+        fig = plt.figure(figsize=(8,6))
         for i, T in enumerate([200.0, 250.0, 300.0]):
             plt.plot(nh2os, h2o_gas_h_values(T, p, nh2os, bN/2)- h2o_cond_h_values(T), label='T='+str(T)+" K", ls=['solid', '--', '-.'][i])
+            # analytic solution    
+            dh = gas.hvector_func(T)[index_h2o_gas] - cond.hvector_func(T)[index_h2o_cond]
+            plt.axvline(nh2o_analytic(p, dh, bH/2, bN/2), color='C'+str(i), alpha=0.5)
+        
         plt.axhline(0.0, color='k', lw=0.5)
         plt.axvline(bH/2, color='k', lw=0.5, ls='dotted')
+        
+        
         plt.xscale("log")
         plt.ylabel("$\mu_{H_2O}^{gas} - \mu_{H_2O}^{cond}$", fontsize=14)
         plt.xlabel("n(H2O)", fontsize=14)
         plt.legend()
-        return plt
+        return fig
     
-    plt = plotfig()
+    fig = plotfig()
     plt.show()
 
 
 
 
-.. image:: h2ocond_files/h2ocond_11_0.png
+.. image:: h2ocond_files/h2ocond_13_0.png
 
 
 The amount of nH2O can also be verified directly by minimizing the total
@@ -182,8 +202,11 @@ Gibbs energy.
 .. code:: ipython3
 
     nh2os = np.logspace(-8,np.log10(bH/2),1000)
-    for T in [200,250,300]:
+    for i, T in enumerate([200,250,300]):
         plt.plot(nh2os, gibbs_given(nh2os,T) - np.nanmin(gibbs_given(nh2os,T)), label=str(T)+" K")
+        dh =  gas.hvector_func(T)[index_h2o_gas] - cond.hvector_func(T)[index_h2o_cond]
+        plt.axvline(nh2o_analytic(p, dh, bH/2, bN/2), color='C'+str(i), alpha=0.3)
+        
     plt.legend()
     plt.xscale("log")
     plt.yscale("log")
@@ -201,7 +224,7 @@ Gibbs energy.
 
 
 
-.. image:: h2ocond_files/h2ocond_15_1.png
+.. image:: h2ocond_files/h2ocond_17_1.png
 
 
 Derive the minimum using a grid search.
@@ -216,8 +239,8 @@ Derive the minimum using a grid search.
 
     from tqdm import tqdm
     
-    Parr = np.logspace(-3, 3, 100)
-    Tarr = np.linspace(100, 500, 100)
+    Parr = np.logspace(-3, 3, 25)
+    Tarr = np.linspace(100, 500, 25)
     
     nh2os_arr = []
     for p in tqdm(Parr):
@@ -230,7 +253,7 @@ Derive the minimum using a grid search.
 
 .. parsed-literal::
 
-    100%|██████████| 100/100 [00:17<00:00,  5.59it/s]
+      0%|          | 0/25 [00:00<?, ?it/s]100%|██████████| 25/25 [00:01<00:00, 21.11it/s]
 
 
 .. code:: ipython3
@@ -258,20 +281,21 @@ gas.
     ax.set_title("nH2o")
     plt.legend()
     plt.show()
+    plt.close()
 
 
 
-.. image:: h2ocond_files/h2ocond_21_0.png
+.. image:: h2ocond_files/h2ocond_23_0.png
 
 
-minimization using minimize_gibbs_cond_core
--------------------------------------------
+minimization using Primary Interior Point Method (pIPM)
+-------------------------------------------------------
 
 
 
 .. code:: ipython3
 
-    from exogibbs.optimize.minimize_cond import minimize_gibbs_cond_core
+    from exogibbs.optimize.pipm_cond import minimize_gibbs_cond_core
     import jax.numpy as jnp
     from exogibbs.api.chemistry import ThermoState
     
@@ -282,17 +306,23 @@ minimization using minimize_gibbs_cond_core
 
     
     # Thermodynamic conditions
+    
+    
     P = 1.0  # bar
     Pref = 1.0  # bar, reference pressure
     ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
     
     # Initial guess for log number densities
-    ln_etak = jnp.zeros(formula_matrix_cond_eff.shape[1])  # log(eta)
-    ln_nk = jnp.zeros(formula_matrix_gas_eff.shape[1])  # log(n_species)
-    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])  # log(n_condensates)
-    ln_ntot = 0.0  # log(total number density)
+    epsilon = -3.0
+    epsilon_crit = -20.0
+    bN = 0.99
+    bH = 0.01
     
-    b_ref = jnp.array([0.01,0.99]) #bH,bN
+    b_ref = jnp.array([bH,bN]) #bH,bN
+    ln_nk = jnp.log(jnp.ones(formula_matrix_gas_eff.shape[1])* jnp.array([bH/4.0, bN/2.0]) ) # log(n_species)
+    ln_mk = jnp.log(jnp.ones(formula_matrix_cond_eff.shape[1])*bH/4.0) 
+    ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)) ) # log(total number density)
+    
     
     
     def hvector_cond_func(T): 
@@ -300,48 +330,120 @@ minimization using minimize_gibbs_cond_core
     
     def hvector_func(T):
         return  jnp.array([gas.hvector_func(T)[index_h2o_gas],gas.hvector_func(T)[index_n2_gas]])
+
+
+.. code:: ipython3
+
     
-    epsilon = -15.0
-    plt = plotfig()
     
+    for i, temperature in enumerate([300.0]):
     
-    for i, temperature in enumerate([200.0, 250.0, 300.0]):
+        #analytic solution
+        dh =  gas.hvector_func(temperature)[index_h2o_gas] - cond.hvector_func(temperature)[index_h2o_cond]
+        nh2_ana = nh2o_analytic(P, dh, bH/2, bN/2)
     
+        #PD-IPM
+        nkpath=[]
+        mkpath=[]
+        eppath=[]
+        
         thermo_state = ThermoState(
             temperature=temperature,
             ln_normalized_pressure=ln_normalized_pressure,
             element_vector=b_ref,
         )
     
-        ln_nk, ln_mk, ln_etak, ln_ntot, counter = minimize_gibbs_cond_core(
-            thermo_state,
-            ln_nk_init=ln_nk,
-            ln_mk_init=ln_mk,
-            ln_etak_init=ln_etak,
-            ln_ntot_init=ln_ntot,
-            formula_matrix=formula_matrix_gas_eff,
-            formula_matrix_cond=formula_matrix_cond_eff,
-            hvector_func=hvector_func,
-            hvector_cond_func=hvector_cond_func,
-            epsilon=epsilon,  ### new argument
-            residual_crit=1.0e-11,
-            max_iter=1000,
-        )
     
     
-        print(jnp.exp(ln_etak), jnp.exp(ln_nk), jnp.exp(ln_mk), jnp.exp(ln_ntot), jnp.exp(epsilon))
-        plt.plot(jnp.exp(ln_nk)[0],0.0,"o", color="C"+str(i))
+        while epsilon > epsilon_crit:
+            epsilon = epsilon - 1.0
+            rcrit = jnp.exp(epsilon)*1.e-4
+            ln_nk, ln_mk, ln_ntot, counter = minimize_gibbs_cond_core(
+                thermo_state,
+                ln_nk_init=ln_nk,
+                ln_mk_init=ln_mk,
+                ln_ntot_init=ln_ntot,
+                formula_matrix=formula_matrix_gas_eff,
+                formula_matrix_cond=formula_matrix_cond_eff,
+                hvector_func=hvector_func,
+                hvector_cond_func=hvector_cond_func,
+                epsilon=epsilon,  ### new argument
+                residual_crit=rcrit,
+                max_iter=1000,
+            )
+    
+            nkpath.append(jnp.exp(ln_nk)[0])
+            mkpath.append(jnp.exp(ln_mk)[0])
+            eppath.append(epsilon)
+            print("Optimization:", jnp.exp(ln_nk)[0], "Analytic:",nh2_ana, "counter=", counter, "epsilon=", epsilon, "rcrit=", rcrit)
+        
+    
+            print("Optimization:", jnp.exp(ln_nk)[0], "Analytic:",nh2_ana, "counter=", counter, "epsilon=", epsilon, "rcrit=", rcrit)
+        
+    
+
 
 
 .. parsed-literal::
 
-    [6.11906591e-05] [8.33052748e-07 4.95000000e-01] [0.00499917] 0.49500083305272097 3.059023205018258e-07
-    [6.63634247e-05] [3.90498274e-04 4.95000000e-01] [0.0046095] 0.4953904982741037 3.059023205018258e-07
-    [1.291123] [0.00499976 0.495     ] [2.36927326e-07] 0.499999763072703 3.059023205018258e-07
+    Optimization: 0.00035063084283953845 Analytic: 0.005 counter= 4 epsilon= -4.0 rcrit= 1.8315638888734179e-06
+    Optimization: 0.00035063084283953845 Analytic: 0.005 counter= 4 epsilon= -4.0 rcrit= 1.8315638888734179e-06
+    Optimization: 0.0019640762146466845 Analytic: 0.005 counter= 4 epsilon= -5.0 rcrit= 6.737946999085468e-07
+    Optimization: 0.0019640762146466845 Analytic: 0.005 counter= 4 epsilon= -5.0 rcrit= 6.737946999085468e-07
+    Optimization: 0.003494388232301187 Analytic: 0.005 counter= 4 epsilon= -6.0 rcrit= 2.478752176666359e-07
+    Optimization: 0.003494388232301187 Analytic: 0.005 counter= 4 epsilon= -6.0 rcrit= 2.478752176666359e-07
+    Optimization: 0.0043607921538842695 Analytic: 0.005 counter= 4 epsilon= -7.0 rcrit= 9.118819655545163e-08
+    Optimization: 0.0043607921538842695 Analytic: 0.005 counter= 4 epsilon= -7.0 rcrit= 9.118819655545163e-08
+    Optimization: 0.0047500045073690725 Analytic: 0.005 counter= 4 epsilon= -8.0 rcrit= 3.3546262790251186e-08
+    Optimization: 0.0047500045073690725 Analytic: 0.005 counter= 4 epsilon= -8.0 rcrit= 3.3546262790251186e-08
+    Optimization: 0.004905794902122293 Analytic: 0.005 counter= 4 epsilon= -9.0 rcrit= 1.2340980408667956e-08
+    Optimization: 0.004905794902122293 Analytic: 0.005 counter= 4 epsilon= -9.0 rcrit= 1.2340980408667956e-08
+    Optimization: 0.004965023866124624 Analytic: 0.005 counter= 5 epsilon= -10.0 rcrit= 4.5399929762484855e-09
+    Optimization: 0.004965023866124624 Analytic: 0.005 counter= 5 epsilon= -10.0 rcrit= 4.5399929762484855e-09
+    Optimization: 0.004987089332938164 Analytic: 0.005 counter= 5 epsilon= -11.0 rcrit= 1.670170079024566e-09
+    Optimization: 0.004987089332938164 Analytic: 0.005 counter= 5 epsilon= -11.0 rcrit= 1.670170079024566e-09
+    Optimization: 0.004995244484593076 Analytic: 0.005 counter= 5 epsilon= -12.0 rcrit= 6.14421235332821e-10
+    Optimization: 0.004995244484593076 Analytic: 0.005 counter= 5 epsilon= -12.0 rcrit= 6.14421235332821e-10
+    Optimization: 0.004998249737041044 Analytic: 0.005 counter= 5 epsilon= -13.0 rcrit= 2.2603294069810542e-10
+    Optimization: 0.004998249737041044 Analytic: 0.005 counter= 5 epsilon= -13.0 rcrit= 2.2603294069810542e-10
+    Optimization: 0.004999356004986045 Analytic: 0.005 counter= 5 epsilon= -14.0 rcrit= 8.315287191035679e-11
+    Optimization: 0.004999356004986045 Analytic: 0.005 counter= 5 epsilon= -14.0 rcrit= 8.315287191035679e-11
+    Optimization: 0.004999763072683337 Analytic: 0.005 counter= 5 epsilon= -15.0 rcrit= 3.059023205018258e-11
+    Optimization: 0.004999763072683337 Analytic: 0.005 counter= 5 epsilon= -15.0 rcrit= 3.059023205018258e-11
+    Optimization: 0.004999912837309393 Analytic: 0.005 counter= 5 epsilon= -16.0 rcrit= 1.1253517471925913e-11
+    Optimization: 0.004999912837309393 Analytic: 0.005 counter= 5 epsilon= -16.0 rcrit= 1.1253517471925913e-11
+    Optimization: 0.004999967934367307 Analytic: 0.005 counter= 5 epsilon= -17.0 rcrit= 4.139937718785167e-12
+    Optimization: 0.004999967934367307 Analytic: 0.005 counter= 5 epsilon= -17.0 rcrit= 4.139937718785167e-12
+    Optimization: 0.0049999882036766505 Analytic: 0.005 counter= 5 epsilon= -18.0 rcrit= 1.522997974471263e-12
+    Optimization: 0.0049999882036766505 Analytic: 0.005 counter= 5 epsilon= -18.0 rcrit= 1.522997974471263e-12
+    Optimization: 0.0049999956603703774 Analytic: 0.005 counter= 5 epsilon= -19.0 rcrit= 5.602796437537268e-13
+    Optimization: 0.0049999956603703774 Analytic: 0.005 counter= 5 epsilon= -19.0 rcrit= 5.602796437537268e-13
+    Optimization: 0.004999998403538636 Analytic: 0.005 counter= 5 epsilon= -20.0 rcrit= 2.0611536224385579e-13
+    Optimization: 0.004999998403538636 Analytic: 0.005 counter= 5 epsilon= -20.0 rcrit= 2.0611536224385579e-13
+
+
+.. code:: ipython3
+
+    %matplotlib inline
+    import matplotlib.pyplot as plt
+    nkpath = jnp.array(nkpath)
+    mkpath = jnp.array(mkpath)
+    eppath = jnp.array(eppath)
+    c = plt.scatter(nkpath, mkpath, c=eppath, cmap='viridis')
+    cb = plt.colorbar(c)
+    cb.set_label('epsilon')
+    plt.plot(nkpath, mkpath, alpha=0.3, label="center path")
+    plt.plot(nh2_ana, bH/2 - nh2_ana, "rx", markersize=12, label="analytic solution")
+    #plt.xscale("log")
+    #plt.yscale("log")
+    plt.legend()
+    plt.xlabel("n (gas)")
+    plt.ylabel("m (condensate)")
+    plt.show()
+    
 
 
 
-.. image:: h2ocond_files/h2ocond_25_1.png
 
-
+.. image:: h2ocond_files/h2ocond_29_0.png
 
