@@ -13,6 +13,7 @@ any specific chemical potential source (JANAF, CEA, GGchem, etc.).
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 import numpy as np
 import pandas as pd
+from scipy.linalg import qr
 from exogibbs.utils.nameparser import parse_formula_with_charge, sanitize_formula
 
 
@@ -99,4 +100,36 @@ def build_formula_matrix_from_JANAF(
         raise ValueError("species_names must be 'raw', 'clean', or 'both'.")
 
 
+
+def contract_formula_matrix(formula_matrix, formula_matrix_cond):
+    """Contraction of formula matrices
+
+    Args:
+        formula_matrix (ndarray or jax.Array): gas formula matrix
+        formula_matrix_cond (ndarray or jax.Array): condensates formula matrix
+
+    Raises:
+        ValueError: Incompatible shapes for concatenation.
+
+    Returns:
+        tuple: contracted gas formula matrix, contracted condensates formula matrix, and mask of independent elements
+    """
+    try:
+        formula_matrix_all = np.concatenate([formula_matrix, formula_matrix_cond], axis=1)
+    except ValueError:
+        raise ValueError("Incompatible shapes for concatenation.")
+    rank_matrix = np.linalg.matrix_rank(formula_matrix_all)    
+    nelements = formula_matrix_all.shape[0]
+
+    # If the rank is full, no contraction is needed
+    if rank_matrix >= nelements:
+        print("No contraction of the system needed.")
+        return formula_matrix, formula_matrix_cond, np.ones(nelements, dtype=bool)
+    
+    _, _, piv = qr(formula_matrix_all.T, pivoting=True)
+    indep_element_mask = np.sort(piv[:rank_matrix])
+    formula_matrix_gas_eff = formula_matrix[indep_element_mask, :]
+    formula_matrix_cond_eff = formula_matrix_cond[indep_element_mask, :]
+    print("Contraction of the system performed.")
+    return formula_matrix_gas_eff, formula_matrix_cond_eff, indep_element_mask
 

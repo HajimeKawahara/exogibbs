@@ -2,22 +2,22 @@
 
 ## Project Structure & Module Organization
 - Source lives under `src/exogibbs/` in focused modules: `io/`, `thermo/`, `equilibrium/`, `optimize/`, `api/`, `presets/`, `utils/`.
-- Shared datasets go in `src/exogibbs/data/` and must be listed in `MANIFEST.in`.
+- Shared datasets: `src/exogibbs/data/` (must also be listed in `MANIFEST.in`).
 - Tests mirror the package tree in `tests/unittests/` (e.g., `tests/unittests/equilibrium/gibbs_test.py`).
-- Workflow demos are in `examples/`; long‑form docs (Sphinx‑ready) in `documents/`.
-- Ignore transient build outputs; if you must store results, keep them under `results/`.
+- Workflow demos: `examples/`; long‑form docs (Sphinx‑ready): `documents/`.
+- Ignore transient build outputs; if results must be stored, use `results/`.
 
 ## Build, Test, and Development Commands
 - Install (editable, with local extras): `python -m pip install -e .`
-- Run tests (deterministic CI suite): `pytest tests/unittests` or a subpackage, e.g., `pytest tests/unittests/thermo`.
-- Build sdist and wheel before release review: `python -m pip install build && python -m build`.
+- Run tests: `pytest tests/unittests` or a subpackage (e.g., `pytest tests/unittests/thermo`).
+- Build distributions: `python -m pip install build && python -m build` (creates sdist + wheel in `dist/`).
 - Update documentation artifacts after doc changes: `./update_doc.sh`.
 
 ## Coding Style & Naming Conventions
-- Python 3.9+; four‑space indentation; add type annotations on public APIs.
-- Imports are ordered: stdlib → third‑party → local.
+- Python 3.9+; 4‑space indentation; add type annotations on public APIs.
+- Imports ordered: stdlib → third‑party → local.
 - Naming: `snake_case` for modules/functions/variables; `CapWords` for classes; `UPPER_SNAKE_CASE` for constants.
-- Prefer small, composable helpers; remove unused code. Keep comments purposeful (explain non‑obvious choices).
+- Prefer small, composable helpers; remove unused code. Keep comments purposeful and explain non‑obvious choices.
 
 ## Testing Guidelines
 - Framework: PyTest; tests are deterministic and offline.
@@ -32,5 +32,9 @@
 
 ## Security & Configuration Tips
 - Work offline; CI has no network egress.
-- Avoid privileged commands and system‑wide installs. Vendor external resources and pin dependencies when determinism matters. Never commit secrets.
+- Avoid privileged commands and system‑wide installs. Vendor external resources and pin dependencies for determinism.
+- Never commit secrets.
 
+## Agent‑Specific Instructions
+- This file applies repo‑wide. For any files you touch, follow structure, style, and testing rules above.
+- Prefer minimal, focused changes; do not modify unrelated code.

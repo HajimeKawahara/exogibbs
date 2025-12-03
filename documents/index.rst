@@ -6,7 +6,7 @@
 ExoGibbs
 ==================================
 
-Version 0.3
+Version 0.4
 
 |:frog:| `DeepWiki for ExoGibbs <https://deepwiki.com/HajimeKawahara/exogibbs>`_
 
@@ -31,7 +31,7 @@ Contents
 
    ipynb/chemical_potential.rst
    ipynb/tce_two_species.rst
-   ipynb/fastchem_cond_chemical_potential.rst
+   ipynb/h2ocond.rst
    
    
 .. toctree::
