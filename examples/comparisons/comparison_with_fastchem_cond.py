@@ -1,13 +1,14 @@
-# comparison_with_fastchem.py
-# This script compares the chemical equilibrium calculations of FastChem and ExoGibbs (fastchem preset).
+# comparison_with_fastchem_cond.py
+# This script compares the chemical equilibrium calculations of FastChem and ExoGibbs (fastchem_cond preset).
 # It requires the FastChem Python bindings to be installed
 # also ExoJAX is required to set solar abundances (you can cahnge if you want)
-# fastchem original file: python/fastchem.py
+#
+# fastchem original file: python/fastchem_cond.py
 #
 # soft link this file into the fastchem/input directory and run it there:
 #
 # cd fastchem/input
-# python comparison_with_fastchem.py 
+# python comparison_with_fastchem_cond.py 
 #
 import pyfastchem
 import numpy as np
@@ -20,30 +21,44 @@ from jax import config
 
 config.update("jax_enable_x64", True)
 
-# some input values for temperature (in K) and pressure (in bar)
-T = 3000 #K
-Nlayer = 100
-temperature = np.full(Nlayer, T)
-pressure = np.logspace(-8, 2, num=Nlayer)
+
+#we read in a p-T structure for a brown dwarf
+data = np.loadtxt("../input/example_p_t_structures/Brown_dwarf_Sonora.dat")
+
+#and extract temperature and pressure values
+temperature = data[:,1]
+pressure = data[:,0]
 
 
-# define the directory for the output
-# here, we currently use the standard one from FastChem
-output_dir = "../output"
+#define the directory for the output
+#here, we currently use the standard one from FastChem
+output_dir = '../output'
 
 
-# First, we have to create a FastChem object
+#the chemical species we want to plot later
+#note that the standard FastChem input files use the Hill notation
+plot_species = ['H2O1', 'C1O2', 'C1O1', 'C1H4', 'H3N1', 'Fe1S1', 'H2S1']
+#for the plot labels, we therefore use separate strings in the usual notation
+plot_species_labels = ['H2O', 'CO2', 'CO', 'CH4', 'NH3', 'FeS', 'H2S']
+
+#the default condensate data doesn't use the Hill notation
+plot_species_cond = ['Fe(s,l)', 'FeS(s,l)', 'MgSiO3(s,l)', 'Mg2SiO4(s,l)']
+
+
+#create a FastChem object
 fastchem = pyfastchem.FastChem(
-    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK.dat", 1
-)
+  '../input/element_abundances/asplund_2009.dat', 
+  '../input/logK/logK.dat',
+  '../input/logK/logK_condensates.dat',
+  1)
 
+exit()
 # create the input and output structures for FastChem
 input_data = pyfastchem.FastChemInput()
 output_data = pyfastchem.FastChemOutput()
 
 input_data.temperature = temperature
 input_data.pressure = pressure
-
 
 # run FastChem on the entire p-T structure
 fastchem_flag = fastchem.calcDensities(input_data, output_data)
