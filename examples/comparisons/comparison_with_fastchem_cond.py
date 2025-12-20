@@ -8,7 +8,7 @@
 # soft link this file into the fastchem/input directory and run it there:
 #
 # cd fastchem/input
-# python comparison_with_fastchem_cond.py 
+# python comparison_with_fastchem_cond.py
 #
 import pyfastchem
 import numpy as np
@@ -22,40 +22,45 @@ from jax import config
 config.update("jax_enable_x64", True)
 
 
-#we read in a p-T structure for a brown dwarf
+# we read in a p-T structure for a brown dwarf
 data = np.loadtxt("../input/example_p_t_structures/Brown_dwarf_Sonora.dat")
 
-#and extract temperature and pressure values
-temperature = data[:,1]
-pressure = data[:,0]
+# and extract temperature and pressure values
+temperature = data[:, 1]
+pressure = data[:, 0]
 
 
-#define the directory for the output
-#here, we currently use the standard one from FastChem
-output_dir = '../output'
+# define the directory for the output
+# here, we currently use the standard one from FastChem
+output_dir = "../output"
 
 
-#the chemical species we want to plot later
-#note that the standard FastChem input files use the Hill notation
-plot_species = ['H2O1', 'C1O2', 'C1O1', 'C1H4', 'H3N1', 'Fe1S1', 'H2S1']
-#for the plot labels, we therefore use separate strings in the usual notation
-plot_species_labels = ['H2O', 'CO2', 'CO', 'CH4', 'NH3', 'FeS', 'H2S']
+# the chemical species we want to plot later
+# note that the standard FastChem input files use the Hill notation
+plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1", "Fe1S1", "H2S1"]
+# for the plot labels, we therefore use separate strings in the usual notation
+plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3", "FeS", "H2S"]
 
-#the default condensate data doesn't use the Hill notation
-plot_species_cond = ['Fe(s,l)', 'FeS(s,l)', 'MgSiO3(s,l)', 'Mg2SiO4(s,l)']
+# the default condensate data doesn't use the Hill notation
+plot_species_cond = ["Fe(s,l)", "FeS(s,l)", "MgSiO3(s,l)", "Mg2SiO4(s,l)"]
 
 
-#create a FastChem object
+# create a FastChem object
 fastchem = pyfastchem.FastChem(
-  '../input/element_abundances/asplund_2009.dat', 
-  '../input/logK/logK.dat',
-  '../input/logK/logK_condensates.dat',
-  1)
+    "../input/element_abundances/asplund_2009.dat",
+    "../input/logK/logK.dat",
+    "../input/logK/logK_condensates.dat",
+    1,
+)
 
-exit()
+
 # create the input and output structures for FastChem
 input_data = pyfastchem.FastChemInput()
 output_data = pyfastchem.FastChemOutput()
+
+# use equilibrium condensation
+input_data.equilibrium_condensation = True
+
 
 input_data.temperature = temperature
 input_data.pressure = pressure
@@ -66,6 +71,12 @@ fastchem_flag = fastchem.calcDensities(input_data, output_data)
 print("FastChem reports:")
 print("  -", pyfastchem.FASTCHEM_MSG[fastchem_flag])
 
+if np.amin(output_data.element_conserved[:]) == 1:
+    print("  - element conservation: ok")
+else:
+    print("  - element conservation: fail")
+
+exit()
 # ExoGibbs comparison###############################################################
 # Thermodynamic conditions
 # from exogibbs.presets.ykb4 import chemsetup
@@ -91,7 +102,7 @@ res = equilibrium_profile(
 )
 nk_result = res.x
 ##################################################################################
-    
+
 # plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1"]
 # plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3"]
 
