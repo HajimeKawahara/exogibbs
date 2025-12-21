@@ -10,11 +10,16 @@
 # In[1]:
 
 
+from turtle import st
 from jax import config
 config.update("jax_enable_x64", True)
 
+# load reference
+import numpy as np
+import matplotlib.pyplot as plt
 
-# We assume N2+H2O (gas, water, ice) system using fastchem/fastchem_cond presets. 
+vmr_ref = np.load("vmr_fastchem.npy", allow_pickle=True)
+print(vmr_ref)
 
 # In[2]:
 
@@ -28,7 +33,6 @@ gas = gassetup()
 # In[3]:
 
 
-import numpy as np
 from exojax.utils.zsol import nsol
 import jax.numpy as jnp
 
@@ -96,11 +100,21 @@ ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
 
 # Initial guess for log number densities
 ln_nk = jnp.zeros(formula_matrix_gas_eff.shape[1])  # log(n_species)
+
+
+plot_species = gas.species[29:]
+N = len(plot_species)
+if N != len(vmr_ref):
+    raise ValueError("Length mismatch between ln_nk[29:] and vmr_ref")
+#for i in range(0, N):
+#    idx_exogibbs = gas.species.index(plot_species[i])
+#    print(idx_exogibbs)
+
 ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])   # log(n_condensates)
 ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))  # log(total number density)
 
 epsilon = 0.0
-epsilon_crit = -20.0
+epsilon_crit = -40.0
 
 for i, temperature in enumerate([200.0]):
 
@@ -116,7 +130,7 @@ for i, temperature in enumerate([200.0]):
     )
 
 
-
+    iter=0
     while epsilon > epsilon_crit:
         epsilon = epsilon - 0.1
         rcrit = jnp.exp(epsilon)
@@ -140,8 +154,18 @@ for i, temperature in enumerate([200.0]):
         print("Optimization:", ln_nk, "counter=", counter, "epsilon=", epsilon, "rcrit=", rcrit)
     
 
-    
 
+        vmr_exogibbs = np.exp(ln_nk[29:])/np.sum(np.exp(ln_nk))
+
+        fig = plt.figure()
+        plt.plot(vmr_exogibbs, ".", label="ExoGibbs", alpha=0.3)
+        plt.plot(vmr_ref, "o", label="FastChem", alpha=0.3)
+        plt.ylim(1.e-300,1.0)
+        plt.yscale("log")
+        plt.legend()
+        plt.savefig("output/vmr_comparison"+str(iter).zfill(4)+".png") # want to make "output/vmr_comparison0001.png"
+        plt.close()
+        iter = iter+1
 
 # In[ ]:
 
