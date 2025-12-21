@@ -23,9 +23,13 @@ config.update("jax_enable_x64", True)
 
 
 # we read in a p-T structure for a brown dwarf
-#data = np.loadtxt("../input/example_p_t_structures/Brown_dwarf_Sonora.dat")
-data = np.array([[1.0, 200.0]]) # 1 bar, 200 K
-
+prof = True
+if prof:
+    data = np.loadtxt("../input/example_p_t_structures/Brown_dwarf_Sonora.dat")
+    tag = "_prof"
+else:
+    data = np.array([[1.0, 200.0]]) # 1 bar, 200 K
+    tag = ""
 # and extract temperature and pressure values
 temperature = data[:, 1]
 pressure = data[:, 0]
@@ -108,9 +112,11 @@ number_densities = np.array(output_data.number_densities)
 # used later to convert the number densities to mixing ratios
 gas_number_density = pressure * 1e6 / (const.k_B.cgs * temperature)
 
-print(gas_number_density)
 N = len(plot_species_symbols)
 
-vmr_fastchem = np.array(number_densities[:, plot_species_indices] / gas_number_density)[0]
+if prof:
+    vmr_fastchem = np.array(number_densities[:, plot_species_indices] / gas_number_density[:, np.newaxis]) [0]
+else:
+    vmr_fastchem = np.array(number_densities[:, plot_species_indices] / gas_number_density)[0]      
 
-np.save("vmr_fastchem.npy", vmr_fastchem)
+np.savez("vmr_fastchem"+tag+".npz", vmr_fastchem=vmr_fastchem, temperature=temperature, pressure=pressure)

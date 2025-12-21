@@ -11,6 +11,7 @@
 
 
 from turtle import st
+from blosc2 import unpack
 from jax import config
 config.update("jax_enable_x64", True)
 
@@ -18,8 +19,10 @@ config.update("jax_enable_x64", True)
 import numpy as np
 import matplotlib.pyplot as plt
 
-vmr_ref = np.load("vmr_fastchem.npy", allow_pickle=True)
-print(vmr_ref)
+data = np.load("vmr_fastchem.npz")
+vmr_ref = data["vmr_fastchem"]
+tin = data["temperature"][0]
+pin = data["pressure"][0]
 
 # In[2]:
 
@@ -94,7 +97,7 @@ from exogibbs.optimize.core import compute_ln_normalized_pressure
 
 
 # Thermodynamic conditions
-P = 1.0  # bar
+P = pin  # bar
 Pref = 1.0  # bar, reference pressure
 ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
 
@@ -116,7 +119,7 @@ ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))  # log(total number density)
 epsilon = 0.0
 epsilon_crit = -40.0
 
-for i, temperature in enumerate([200.0]):
+for i, temperature in enumerate([tin]):
 
     #PD-IPM
     nkpath=[]
