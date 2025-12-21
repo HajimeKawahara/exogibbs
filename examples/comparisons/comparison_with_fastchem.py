@@ -2,6 +2,13 @@
 # This script compares the chemical equilibrium calculations of FastChem and ExoGibbs (fastchem preset).
 # It requires the FastChem Python bindings to be installed
 # also ExoJAX is required to set solar abundances (you can cahnge if you want)
+# fastchem original file: python/fastchem.py
+#
+# soft link this file into the fastchem/input directory and run it there:
+#
+# cd fastchem/input
+# python comparison_with_fastchem.py 
+#
 import pyfastchem
 import numpy as np
 import matplotlib.pyplot as plt
