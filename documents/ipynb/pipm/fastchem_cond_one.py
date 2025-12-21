@@ -121,7 +121,7 @@ epsilon_crit = -40.0
 
 for i, temperature in enumerate([tin]):
 
-    #PD-IPM
+    #P-IPM
     nkpath=[]
     mkpath=[]
     eppath=[]
