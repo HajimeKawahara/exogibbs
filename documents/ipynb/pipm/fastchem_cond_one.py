@@ -10,8 +10,6 @@
 # In[1]:
 
 
-from turtle import st
-from blosc2 import unpack
 from jax import config
 config.update("jax_enable_x64", True)
 

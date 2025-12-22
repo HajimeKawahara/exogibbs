@@ -121,7 +121,11 @@ def _update_all(
     Am,
     epsilon,
 ):
-    sk = jnp.exp(2.0 * ln_mk - epsilon) # mk*mk / nu
+    #LOG_MIN = -1000.0  
+    #LOG_MAX =  1000.0
+    #log_sk = jnp.clip(2.0 * ln_mk - epsilon, LOG_MIN, LOG_MAX)
+    log_sk = 2.0 * ln_mk - epsilon
+    sk = jnp.exp(log_sk) # mk*mk / nu
     
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
         jnp.exp(ln_nk),
@@ -136,7 +140,19 @@ def _update_all(
         sk,
     )
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
-    delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0  
+
+
+    #log_m_over_nu = jnp.clip(ln_mk - epsilon, LOG_MIN, LOG_MAX)
+    log_m_over_nu = ln_mk - epsilon
+    scale = jnp.exp(log_m_over_nu)
+
+    raw_delta_ln_mk = (
+        scale * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
+    )
+
+    MAX_STEP_M = 1.0  # do not update larger than ln(m) e ~ 2.7 times
+    delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M, MAX_STEP_M)
+    #delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0  
 
     # relaxation and update
     #lam = 0.001  # need to reconsider

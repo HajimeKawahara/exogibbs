@@ -23,12 +23,13 @@ config.update("jax_enable_x64", True)
 
 
 # we read in a p-T structure for a brown dwarf
-prof = True
+prof = False
 if prof:
     data = np.loadtxt("../input/example_p_t_structures/Brown_dwarf_Sonora.dat")
     tag = "_prof"
 else:
-    data = np.array([[1.0, 200.0]]) # 1 bar, 200 K
+    #data = np.array([[1.0, 700.0]]) # 1 bar, 700 K
+    data = np.array([[1.0, 200.0]]) # 1 bar, 700 K
     tag = ""
 # and extract temperature and pressure values
 temperature = data[:, 1]
