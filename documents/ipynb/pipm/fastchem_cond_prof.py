@@ -112,26 +112,37 @@ if N != len(vmr_ref):
 #    idx_exogibbs = gas.species.index(plot_species[i])
 #    print(idx_exogibbs)
 
-def minimize_gibbs_cond(temperature, ln_normalized_pressure):
-    # P-IPM
 
+import jax.numpy as jnp
+from jax import lax, vmap
+
+
+def minimize_gibbs_cond(temperature, ln_normalized_pressure):
     thermo_state = ThermoState(
         temperature=temperature,
         ln_normalized_pressure=ln_normalized_pressure,
         element_vector=b_ref,
     )
-    ln_nk = jnp.zeros(formula_matrix_gas_eff.shape[1])  # log(n_species)
 
-    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])  # log(n_condensates)
-    ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))  # log(total number density)
+    # initial values
+    ln_nk = jnp.zeros(formula_matrix_gas_eff.shape[1])
+    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])
+    ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))
 
-    epsilon = 0.0
+    epsilon_start = 0.0
     epsilon_crit = -40.0
+    n_step = 400
 
-    while epsilon > epsilon_crit:
-        epsilon = epsilon - 0.1
+    # epsilon schedule (static, safe)
+    epsilons = jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:]
+
+    def body_fn(i, state):
+        ln_nk, ln_mk, ln_ntot = state
+
+        epsilon = epsilons[i]
         rcrit = jnp.exp(epsilon)
-        ln_nk, ln_mk, ln_ntot, counter = minimize_gibbs_cond_core(
+
+        ln_nk, ln_mk, ln_ntot, _ = minimize_gibbs_cond_core(
             thermo_state,
             ln_nk_init=ln_nk,
             ln_mk_init=ln_mk,
@@ -140,30 +151,39 @@ def minimize_gibbs_cond(temperature, ln_normalized_pressure):
             formula_matrix_cond=formula_matrix_cond_eff,
             hvector_func=gas.hvector_func,
             hvector_cond_func=cond.hvector_func,
-            epsilon=epsilon,  ### new argument
+            epsilon=epsilon,
             residual_crit=rcrit,
-            max_iter=1000,
+            max_iter=100,
         )
+
+        return (ln_nk, ln_mk, ln_ntot)
+
+    ln_nk, ln_mk, ln_ntot = lax.fori_loop(
+        0,
+        n_step,
+        body_fn,
+        (ln_nk, ln_mk, ln_ntot),
+    )
 
     return ln_nk, ln_mk, ln_ntot
 
-
 from jax import vmap
+from jax import jit
 
 
 vmap_minimize_gibbs_cond = vmap(minimize_gibbs_cond, in_axes=(0, 0))
+jit_vmap_minimize_gibbs_cond = jit(vmap_minimize_gibbs_cond)
 
 import time
 
 start = time.time()
-ln_nk, ln_mk, ln_ntot = vmap_minimize_gibbs_cond(
+ln_nk, ln_mk, ln_ntot = jit_vmap_minimize_gibbs_cond(
     jnp.array(temperatures),
     jnp.array(ln_normalized_pressures),
 )
 end = time.time()
 print("Computation time (s):", end - start)
 
-print(ln_nk)
 
 vmr_exogibbs = np.exp(ln_nk[:, 29:]) / np.sum(np.exp(ln_nk), axis=1)[:, None]
 fig = plt.figure()

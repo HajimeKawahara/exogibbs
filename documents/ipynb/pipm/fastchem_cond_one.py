@@ -9,7 +9,8 @@
 
 # In[1]:
 
-
+import jax.numpy as jnp
+from jax import lax
 from jax import config
 config.update("jax_enable_x64", True)
 
@@ -117,65 +118,94 @@ ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))  # log(total number density)
 epsilon = 0.0
 epsilon_crit = -40.0
 
-for i, temperature in enumerate([tin]):
+temperature = tin
 
-    #P-IPM
-    nkpath=[]
-    mkpath=[]
-    eppath=[]
-    
-    thermo_state = ThermoState(
-        temperature=temperature,
-        ln_normalized_pressure=ln_normalized_pressure,
-        element_vector=b_ref,
+#P-IPM
+
+thermo_state = ThermoState(
+    temperature=temperature,
+    ln_normalized_pressure=ln_normalized_pressure,
+    element_vector=b_ref,
+)
+
+n_step = 400
+epsilons = jnp.linspace(0.0, epsilon_crit, n_step + 1)[1:]
+
+def pipm_fori_body(i, state):
+    ln_nk, ln_mk, ln_ntot = state
+    epsilon = epsilons[i]
+    rcrit = jnp.exp(epsilon)
+
+    ln_nk, ln_mk, ln_ntot, _ = minimize_gibbs_cond_core(
+        thermo_state,
+        ln_nk_init=ln_nk,
+        ln_mk_init=ln_mk,
+        ln_ntot_init=ln_ntot,
+        formula_matrix=formula_matrix_gas_eff,
+        formula_matrix_cond=formula_matrix_cond_eff,
+        hvector_func=gas.hvector_func,
+        hvector_cond_func=cond.hvector_func,
+        epsilon=epsilon,
+        residual_crit=rcrit,
+        max_iter=100,
     )
 
+    return (ln_nk, ln_mk, ln_ntot)
 
-    iter=0
-    while epsilon > epsilon_crit:
-        epsilon = epsilon - 0.1
-        rcrit = jnp.exp(epsilon)
-        ln_nk, ln_mk, ln_ntot, counter = minimize_gibbs_cond_core(
-            thermo_state,
-            ln_nk_init=ln_nk,
-            ln_mk_init=ln_mk,
-            ln_ntot_init=ln_ntot,
-            formula_matrix=formula_matrix_gas_eff,
-            formula_matrix_cond=formula_matrix_cond_eff,
-            hvector_func=gas.hvector_func,
-            hvector_cond_func=cond.hvector_func,
-            epsilon=epsilon,  ### new argument
-            residual_crit=rcrit,
-            max_iter=1000,
-        )
 
-        nkpath.append(jnp.exp(ln_nk)[0])
-        mkpath.append(jnp.exp(ln_mk)[0])
-        eppath.append(epsilon)
-        print("Optimization:", ln_nk, "counter=", counter, "epsilon=", epsilon, "rcrit=", rcrit)
+ln_nk, ln_mk, ln_ntot = lax.fori_loop(
+    0,
+    n_step,
+    pipm_fori_body,
+    (ln_nk, ln_mk, ln_ntot),
+)
+
+vmr_exogibbs = np.exp(ln_nk[29:])/np.sum(np.exp(ln_nk))
+
+fig = plt.figure()
+plt.plot(vmr_exogibbs, ".", label="ExoGibbs", alpha=0.3)
+plt.plot(vmr_ref, "o", label="FastChem", alpha=0.3)
+plt.ylim(1.e-300,1.0)
+plt.yscale("log")
+plt.legend()
+plt.savefig("output/vmr_comparison_final.png") 
+plt.close()
     
+exit()
+
+# %%
+# if you need to see the iteration process, use the following loop instead of lax.while_loop (but slow)
+iter=0
+while epsilon > epsilon_crit:
+    epsilon = epsilon - 0.1
+    rcrit = jnp.exp(epsilon)
+    ln_nk, ln_mk, ln_ntot, counter = minimize_gibbs_cond_core(
+        thermo_state,
+        ln_nk_init=ln_nk,
+        ln_mk_init=ln_mk,
+        ln_ntot_init=ln_ntot,
+        formula_matrix=formula_matrix_gas_eff,
+        formula_matrix_cond=formula_matrix_cond_eff,
+        hvector_func=gas.hvector_func,
+        hvector_cond_func=cond.hvector_func,
+        epsilon=epsilon,  ### new argument
+        residual_crit=rcrit,
+        max_iter=100,
+    )
+
+    print("Optimization:", ln_nk, "counter=", counter, "epsilon=", epsilon, "rcrit=", rcrit)
 
 
-        vmr_exogibbs = np.exp(ln_nk[29:])/np.sum(np.exp(ln_nk))
 
-        fig = plt.figure()
-        plt.plot(vmr_exogibbs, ".", label="ExoGibbs", alpha=0.3)
-        plt.plot(vmr_ref, "o", label="FastChem", alpha=0.3)
-        plt.ylim(1.e-300,1.0)
-        plt.yscale("log")
-        plt.legend()
-        plt.savefig("output/vmr_comparison"+str(iter).zfill(4)+".png") # want to make "output/vmr_comparison0001.png"
-        plt.close()
-        iter = iter+1
+    vmr_exogibbs = np.exp(ln_nk[29:])/np.sum(np.exp(ln_nk))
 
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
+    fig = plt.figure()
+    plt.plot(vmr_exogibbs, ".", label="ExoGibbs", alpha=0.3)
+    plt.plot(vmr_ref, "o", label="FastChem", alpha=0.3)
+    plt.ylim(1.e-300,1.0)
+    plt.yscale("log")
+    plt.legend()
+    plt.savefig("output/vmr_comparison"+str(iter).zfill(4)+".png") # want to make "output/vmr_comparison0001.png"
+    plt.close()
+    iter = iter+1
 

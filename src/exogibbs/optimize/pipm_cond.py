@@ -150,7 +150,7 @@ def _update_all(
         scale * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
     )
 
-    MAX_STEP_M = 1.0  # do not update larger than ln(m) e ~ 2.7 times
+    MAX_STEP_M = 0.1  # do not update larger than ln(m) 0.1e ~ 10% 
     delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M, MAX_STEP_M)
     #delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0  
 
