@@ -5,6 +5,7 @@ from jax import jit
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
+from jax.lax import cond
 from functools import partial
 from typing import Tuple, Callable, Optional
 
@@ -17,8 +18,63 @@ from exogibbs.optimize.stepsize import stepsize_cea_gas
 from exogibbs.optimize.stepsize import stepsize_cond_heurstic
 from exogibbs.optimize.stepsize import stepsize_sk
 
+from typing import Tuple
+import jax.numpy as jnp
+from jax.lax import cond
+from jax.scipy.linalg import cho_factor, cho_solve
+
 
 def solve_gibbs_iteration_equations_cond(
+    nk,
+    mk,
+    ntotk,
+    A,
+    Ac,
+    b,
+    gk,
+    bk,
+    hcond,
+    sk,
+):
+    # determine s in prior to avoid overflow/underflow
+    s = jnp.maximum(
+        1.0, jnp.max(jnp.concatenate([nk, mk, sk, jnp.array([ntotk]), jnp.abs(b)]))
+    )
+
+    nk_s = nk / s
+    mk_s = mk / s
+    sk_s = sk / s
+    ntot_s = ntotk / s
+    b_s = b / s
+
+    # ★ Here, create bk_s (unscaled bk is never created)
+    bk_s = A @ nk_s
+    bm_s = Ac @ mk_s
+
+    resn_s = jnp.sum(nk_s, dtype=nk_s.dtype) - ntot_s
+    Qk_s = _A_diagn_At(nk_s, A) + _A_diagn_At(sk_s, Ac)
+
+    Angk_s = A @ (gk * nk_s)
+    ngk_s = jnp.dot(nk_s, gk)
+
+    delta_bk_hat_s = b_s - (bk_s + bm_s)
+    condvec_s = Ac @ (sk_s * hcond - mk_s)
+
+    assemble_mat = jnp.block(
+        [
+            [Qk_s, bk_s[:, None]],
+            [bk_s[None, :], jnp.array([[resn_s]])],
+        ]
+    )
+    assemble_vec = jnp.concatenate(
+        [Angk_s + condvec_s + delta_bk_hat_s, jnp.array([ngk_s - resn_s])]
+    )
+
+    x = jnp.linalg.solve(assemble_mat, assemble_vec) # original line
+    return x[:-1], x[-1]
+
+
+def _solve_gibbs_iteration_equations_cond(
     nk: jnp.ndarray,
     mk: jnp.ndarray,
     ntotk: float,
@@ -31,39 +87,39 @@ def solve_gibbs_iteration_equations_cond(
     sk: jnp.ndarray,
 ) -> Tuple[jnp.ndarray, float]:
     """
-    Solve the Gibbs iteration equations with condensates using the Lagrange multipliers.
-    This function computes the matrix and vector to solve the system of equations
-    that arises from the Gibbs energy minimization problem.
+        Solve the Gibbs iteration equations with condensates using the Lagrange multipliers.
+        This function computes the matrix and vector to solve the system of equations
+        that arises from the Gibbs energy minimization problem.
 
-    Args:
-        nk: number of species vector (n_species,) for k-th iteration.
-        mk: number of condensed species vector (n_cond,) for k-th iteration.
-        ntotk: Total number of species for k-th iteration.
-        formula_matrix: Gas Formula matrix for stoichiometric constraints (n_elements, n_species).
-        formula_matrix_cond: Condensates Formula matrix for stoichiometric constraints (n_elements, n_cond).
-        b: Element abundance vector (n_elements, ).
-        gk: gk vector (n_species,) for k-th iteration.
-        bk: (gas) formula_matrix @ nk vector (n_elements, ).
-        hvector_cond: chemical_potentials for condensates divided by RT (n_cond, )
-        sk: mk^2/nu (n_cond, )
+        Args:
+            nk: number of species vector (n_species,) for k-th iteration.
+            mk: number of condensed species vector (n_cond,) for k-th iteration.
+            ntotk: Total number of species for k-th iteration.
+            formula_matrix: Gas Formula matrix for stoichiometric constraints (n_elements, n_species).
+            formula_matrix_cond: Condensates Formula matrix for stoichiometric constraints (n_elements, n_cond).
+            b: Element abundance vector (n_elements, ).
+            gk: gk vector (n_species,) for k-th iteration.
+            bk: (gas) formula_matrix @ nk vector (n_elements, ).
+            hvector_cond: chemical_potentials for condensates divided by RT (n_cond, )
+            sk: mk^2/nu (n_cond, )
 
-    Returns:
-        Tuple containing:
-            - The pi vector (nelements, ).fastchem_elements = list(gas.elements)
-element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
+        Returns:
+            Tuple containing:
+                - The pi vector (nelements, ).fastchem_elements = list(gas.elements)
+    element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
 
-            - The update of the  log total number of species (delta_ln_ntot).
+                - The update of the  log total number of species (delta_ln_ntot).
     """
 
-    #sk = mk*mk / nu
+    # sk = mk*mk / nu
 
     resn = jnp.sum(nk) - ntotk
     Qk = _A_diagn_At(nk, formula_matrix) + _A_diagn_At(sk, formula_matrix_cond)
     Angk = formula_matrix @ (gk * nk)
     ngk = jnp.dot(nk, gk)
 
-    delta_bk_hat = b - (bk + formula_matrix_cond @ mk) # b - (Ag nk + Ac mk)
-    condvec = formula_matrix_cond @ (sk * hvector_cond - mk) # Ac(sk*ck - mk)
+    delta_bk_hat = b - (bk + formula_matrix_cond @ mk)  # b - (Ag nk + Ac mk)
+    condvec = formula_matrix_cond @ (sk * hvector_cond - mk)  # Ac(sk*ck - mk)
 
     assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
     assemble_vec = jnp.concatenate(
@@ -100,9 +156,7 @@ def _compute_residuals(
     resn = jnp.sum(nk) - ntotk
     resn_squared = jnp.dot(resn, resn)
 
-    return jnp.sqrt(
-        ress_squared + resc_squared + resj_squared + resn_squared
-    )
+    return jnp.sqrt(ress_squared + resc_squared + resj_squared + resn_squared)
 
 
 def _update_all(
@@ -121,12 +175,17 @@ def _update_all(
     Am,
     epsilon,
 ):
-    LOG_MIN = -1000.0  
-    LOG_MAX =  1000.0
+    
+    #clip to avoid overflow/underflow
+    #dtype = ln_nk.dtype
+    #f = jnp.finfo(dtype)
+    #LOG_MAX = jnp.log(f.max) - 2.0
+    #LOG_MIN = jnp.log(f.tiny) + 2.0 
+
     #log_sk = jnp.clip(2.0 * ln_mk - epsilon, LOG_MIN, LOG_MAX)
     log_sk = 2.0 * ln_mk - epsilon
-    sk = jnp.exp(log_sk) # mk*mk / nu
-    
+    sk = jnp.exp(log_sk)  # mk*mk / nu
+
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
         jnp.exp(ln_nk),
         jnp.exp(ln_mk),
@@ -140,38 +199,35 @@ def _update_all(
         sk,
     )
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
-
-
+    
     #log_m_over_nu = jnp.clip(ln_mk - epsilon, LOG_MIN, LOG_MAX)
     log_m_over_nu = ln_mk - epsilon
     scale = jnp.exp(log_m_over_nu)
 
-    raw_delta_ln_mk = (
-        scale * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
-    )
+    raw_delta_ln_mk = scale * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
 
-    MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10% 
+    MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
     MAX_STEP_M_LOW = 0.1
     delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
-    #delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0  
+    # delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
 
     # relaxation and update
-    #lam = 0.0001  # need to reconsider
-    
-    lam1_gas  = stepsize_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
+    # lam = 0.0001  # need to reconsider
+
+    lam1_gas = stepsize_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
     lam1_cond = stepsize_cond_heurstic(delta_ln_mk)
     lam2_cond = stepsize_sk(delta_ln_mk, ln_mk, epsilon)
     lam = jnp.minimum(1.0, jnp.minimum(lam1_gas, jnp.minimum(lam1_cond, lam2_cond)))
     lam = jnp.clip(lam, 1e-4, 1.0)  # avoid too small or too large steps
-    
+
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
     ln_mk += lam * delta_ln_mk
-    
+
     # clip
-    #ln_nk = jnp.clip(ln_nk, LOG_MIN, LOG_MAX)
-    #ln_ntot = jnp.clip(ln_ntot, LOG_MIN, LOG_MAX)
-    #ln_mk = jnp.clip(ln_mk, LOG_MIN, LOG_MAX)
+    # ln_nk = jnp.clip(ln_nk, LOG_MIN, LOG_MAX)
+    # ln_ntot = jnp.clip(ln_ntot, LOG_MIN, LOG_MAX)
+    # ln_mk = jnp.clip(ln_mk, LOG_MIN, LOG_MAX)
 
     # computes new gk,An and residuals
     nk = jnp.exp(ln_nk)
@@ -180,7 +236,7 @@ def _update_all(
     gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
     Am = formula_matrix_cond @ mk
-    
+
     residual = _compute_residuals(
         nk,
         mk,
@@ -214,25 +270,25 @@ def minimize_gibbs_cond_core(
 ) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, float, int]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
-        Args:
-            state: Thermodynamic state containing temperature, pressure, and element abundances.
-            ln_nk_init: Initial log number of species vector (n_species,).
-            ln_ntot_init: Initial log total number of species.
-            formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
-            hvector: Chemical potential over RT vector (n_species,).
-            residual_crit: Convergence tolerance for residual norm.
-            max_iter: Maximum number of iterations allowed.
-            element_indices: Optional indices mapping ``state.element_vector`` onto the
-                element ordering used by ``formula_matrix``/``formula_matrix_cond``.
-                Use this when ``state.element_vector`` stores a superset of elements.
-    
-        Returns:
-            Tuple containing:
-                - Final log number of species vector (n_species,).
-                - Final log number of condensed species vector (n_condensed_species,).
-                - Final log eta vector (n_condensed_species,).
-                - Final log total number of species.
-                - Number of iterations performed.
+    Args:
+        state: Thermodynamic state containing temperature, pressure, and element abundances.
+        ln_nk_init: Initial log number of species vector (n_species,).
+        ln_ntot_init: Initial log total number of species.
+        formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
+        hvector: Chemical potential over RT vector (n_species,).
+        residual_crit: Convergence tolerance for residual norm.
+        max_iter: Maximum number of iterations allowed.
+        element_indices: Optional indices mapping ``state.element_vector`` onto the
+            element ordering used by ``formula_matrix``/``formula_matrix_cond``.
+            Use this when ``state.element_vector`` stores a superset of elements.
+
+    Returns:
+        Tuple containing:
+            - Final log number of species vector (n_species,).
+            - Final log number of condensed species vector (n_condensed_species,).
+            - Final log eta vector (n_condensed_species,).
+            - Final log total number of species.
+            - Number of iterations performed.
     """
 
     n_elements = formula_matrix.shape[0]
@@ -262,23 +318,21 @@ def minimize_gibbs_cond_core(
 
     def body_fun(carry):
         ln_nk, ln_mk, ln_ntot, gk, An, Am, residual, counter = carry
-        ln_nk_new, ln_mk_new, ln_ntot_new, gk, An, Am, residual = (
-            _update_all(
-                ln_nk,
-                ln_mk,
-                ln_ntot,
-                formula_matrix,
-                formula_matrix_cond,
-                b,
-                state.temperature,
-                state.ln_normalized_pressure,
-                hvector,
-                hvector_cond,
-                gk,
-                An,
-                Am,
-                epsilon,
-            )
+        ln_nk_new, ln_mk_new, ln_ntot_new, gk, An, Am, residual = _update_all(
+            ln_nk,
+            ln_mk,
+            ln_ntot,
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            state.temperature,
+            state.ln_normalized_pressure,
+            hvector,
+            hvector_cond,
+            gk,
+            An,
+            Am,
+            epsilon,
         )
         return (
             ln_nk_new,

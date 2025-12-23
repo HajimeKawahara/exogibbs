@@ -191,7 +191,7 @@ vmr_exogibbs = np.exp(ln_nk[:, 29:] - logsumexp(ln_nk, axis=1)[:, None])
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 for i in range(0, N):
-    plt.plot(vmr_exogibbs[:, i], pressures, alpha=0.3)
+    plt.plot(vmr_exogibbs[:, i], pressures, ".", alpha=0.3)
 
 plt.xlim(1.0e-300, 1.0)
 plt.xscale("log")

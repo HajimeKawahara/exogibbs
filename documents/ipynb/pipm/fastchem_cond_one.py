@@ -23,6 +23,14 @@ vmr_ref = data["vmr_fastchem"]
 tin = data["temperature"][0]
 pin = data["pressure"][0]
 
+
+# we solved nan issue for this set:
+# tin = 1.102800e+03
+# pin = 3.679186e+00	
+
+#still have nan issue for this set:
+#tin = 6.055400e+02
+#pin = 3.583005e-01	
 # In[2]:
 
 
@@ -148,6 +156,7 @@ def pipm_fori_body(i, state):
         epsilon=epsilon,
         residual_crit=rcrit,
         max_iter=100,
+    #    debug_nan=True
     )
 
     return (ln_nk, ln_mk, ln_ntot)
@@ -162,6 +171,10 @@ ln_nk, ln_mk, ln_ntot = lax.fori_loop(
 
 vmr_exogibbs = np.exp(ln_nk[29:])/np.sum(np.exp(ln_nk))
 
+print(vmr_exogibbs)
+
+
+
 fig = plt.figure()
 plt.plot(vmr_exogibbs, ".", label="ExoGibbs", alpha=0.3)
 plt.plot(vmr_ref, "o", label="FastChem", alpha=0.3)
@@ -172,7 +185,6 @@ plt.savefig("output/vmr_comparison_final.png")
 plt.close()
     
 exit()
-
 # %%
 # if you need to see the iteration process, use the following loop instead of lax.while_loop (but slow)
 iter=0
