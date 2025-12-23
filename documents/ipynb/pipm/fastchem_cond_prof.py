@@ -115,7 +115,7 @@ if N != len(vmr_ref):
 
 import jax.numpy as jnp
 from jax import lax, vmap
-
+from jax.scipy.special import logsumexp
 
 def minimize_gibbs_cond(temperature, ln_normalized_pressure):
     thermo_state = ThermoState(
@@ -127,11 +127,12 @@ def minimize_gibbs_cond(temperature, ln_normalized_pressure):
     # initial values
     ln_nk = jnp.zeros(formula_matrix_gas_eff.shape[1])
     ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])
-    ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))
+    ln_ntot = logsumexp(ln_nk)
+
 
     epsilon_start = 0.0
-    epsilon_crit = -40.0
-    n_step = 400
+    epsilon_crit = -30.0
+    n_step = 300
 
     # epsilon schedule (static, safe)
     epsilons = jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:]
@@ -185,7 +186,8 @@ end = time.time()
 print("Computation time (s):", end - start)
 
 
-vmr_exogibbs = np.exp(ln_nk[:, 29:]) / np.sum(np.exp(ln_nk), axis=1)[:, None]
+#vmr_exogibbs = np.exp(ln_nk[:, 29:]) / np.sum(np.exp(ln_nk), axis=1)[:, None]
+vmr_exogibbs = np.exp(ln_nk[:, 29:] - logsumexp(ln_nk, axis=1)[:, None])
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 for i in range(0, N):

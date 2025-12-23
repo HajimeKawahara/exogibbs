@@ -121,8 +121,8 @@ def _update_all(
     Am,
     epsilon,
 ):
-    #LOG_MIN = -1000.0  
-    #LOG_MAX =  1000.0
+    LOG_MIN = -1000.0  
+    LOG_MAX =  1000.0
     #log_sk = jnp.clip(2.0 * ln_mk - epsilon, LOG_MIN, LOG_MAX)
     log_sk = 2.0 * ln_mk - epsilon
     sk = jnp.exp(log_sk) # mk*mk / nu
@@ -150,23 +150,29 @@ def _update_all(
         scale * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
     )
 
-    MAX_STEP_M = 0.1  # do not update larger than ln(m) 0.1e ~ 10% 
-    delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M, MAX_STEP_M)
+    MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10% 
+    MAX_STEP_M_LOW = 0.1
+    delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
     #delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0  
 
     # relaxation and update
-    #lam = 0.001  # need to reconsider
+    #lam = 0.0001  # need to reconsider
     
     lam1_gas  = stepsize_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
     lam1_cond = stepsize_cond_heurstic(delta_ln_mk)
     lam2_cond = stepsize_sk(delta_ln_mk, ln_mk, epsilon)
     lam = jnp.minimum(1.0, jnp.minimum(lam1_gas, jnp.minimum(lam1_cond, lam2_cond)))
-    lam = jnp.clip(lam, 1e-3, 1.0)
+    lam = jnp.clip(lam, 1e-4, 1.0)  # avoid too small or too large steps
     
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
     ln_mk += lam * delta_ln_mk
     
+    # clip
+    #ln_nk = jnp.clip(ln_nk, LOG_MIN, LOG_MAX)
+    #ln_ntot = jnp.clip(ln_ntot, LOG_MIN, LOG_MAX)
+    #ln_mk = jnp.clip(ln_mk, LOG_MIN, LOG_MAX)
+
     # computes new gk,An and residuals
     nk = jnp.exp(ln_nk)
     mk = jnp.exp(ln_mk)
