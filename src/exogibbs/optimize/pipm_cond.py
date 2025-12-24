@@ -214,8 +214,12 @@ def _update_all(
     log_m_over_nu = ln_mk - epsilon
     if debug_nan:
         _debug_array("log_m_over_nu pre-exp", log_m_over_nu, iter_count, exp_overflow_limit)
-    factor = jnp.exp(log_m_over_nu)
-    raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
+    #factor = jnp.exp(log_m_over_nu)
+    #raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
+    w = jnp.log(formula_matrix_cond.T @ pi_vector - hvector_cond)
+    factor = jnp.exp(log_m_over_nu + w)
+    raw_delta_ln_mk = factor  + 1.0 #here we first have NaN
+    
     if debug_nan:
         _debug_array("factor exp(log_m_over_nu)", factor, iter_count)
         _debug_array("raw_delta_ln_mk", raw_delta_ln_mk, iter_count)
