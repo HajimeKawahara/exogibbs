@@ -20,61 +20,8 @@ from exogibbs.optimize.stepsize import stepsize_sk
 
 from typing import Tuple
 import jax.numpy as jnp
-from jax.lax import cond
-from jax.scipy.linalg import cho_factor, cho_solve
-
 
 def solve_gibbs_iteration_equations_cond(
-    nk,
-    mk,
-    ntotk,
-    A,
-    Ac,
-    b,
-    gk,
-    bk,
-    hcond,
-    sk,
-):
-    # determine s in prior to avoid overflow/underflow
-    s = jnp.maximum(
-        1.0, jnp.max(jnp.concatenate([nk, mk, sk, jnp.array([ntotk]), jnp.abs(b)]))
-    )
-
-    nk_s = nk / s
-    mk_s = mk / s
-    sk_s = sk / s
-    ntot_s = ntotk / s
-    b_s = b / s
-
-    # ★ Here, create bk_s (unscaled bk is never created)
-    bk_s = A @ nk_s
-    bm_s = Ac @ mk_s
-
-    resn_s = jnp.sum(nk_s, dtype=nk_s.dtype) - ntot_s
-    Qk_s = _A_diagn_At(nk_s, A) + _A_diagn_At(sk_s, Ac)
-
-    Angk_s = A @ (gk * nk_s)
-    ngk_s = jnp.dot(nk_s, gk)
-
-    delta_bk_hat_s = b_s - (bk_s + bm_s)
-    condvec_s = Ac @ (sk_s * hcond - mk_s)
-
-    assemble_mat = jnp.block(
-        [
-            [Qk_s, bk_s[:, None]],
-            [bk_s[None, :], jnp.array([[resn_s]])],
-        ]
-    )
-    assemble_vec = jnp.concatenate(
-        [Angk_s + condvec_s + delta_bk_hat_s, jnp.array([ngk_s - resn_s])]
-    )
-
-    x = jnp.linalg.solve(assemble_mat, assemble_vec) # original line
-    return x[:-1], x[-1]
-
-
-def _solve_gibbs_iteration_equations_cond(
     nk: jnp.ndarray,
     mk: jnp.ndarray,
     ntotk: float,
@@ -111,7 +58,6 @@ def _solve_gibbs_iteration_equations_cond(
                 - The update of the  log total number of species (delta_ln_ntot).
     """
 
-    # sk = mk*mk / nu
 
     resn = jnp.sum(nk) - ntotk
     Qk = _A_diagn_At(nk, formula_matrix) + _A_diagn_At(sk, formula_matrix_cond)
@@ -176,35 +122,37 @@ def _update_all(
     epsilon,
 ):
     
-    #clip to avoid overflow/underflow
-    #dtype = ln_nk.dtype
-    #f = jnp.finfo(dtype)
-    #LOG_MAX = jnp.log(f.max) - 2.0
-    #LOG_MIN = jnp.log(f.tiny) + 2.0 
-
-    #log_sk = jnp.clip(2.0 * ln_mk - epsilon, LOG_MIN, LOG_MAX)
-    log_sk = 2.0 * ln_mk - epsilon
-    sk = jnp.exp(log_sk)  # mk*mk / nu
+    
+    l_scale = jnp.max(jnp.array([0.0, jnp.max(jnp.concatenate([ln_nk, ln_mk, jnp.array([ln_ntot])]))]))
+    
+    ln_sk_scaled = 2.0 * ln_mk - epsilon - l_scale
+    bk_scaled = formula_matrix @ jnp.exp(ln_nk - l_scale)
+    ln_nk_scaled = ln_nk - l_scale
+    ln_mk_scaled = ln_mk - l_scale
+    ln_ntot_scaled = ln_ntot - l_scale
+    s_scale = jnp.exp(l_scale)
+    b_scaled = b / s_scale
+    
+    
 
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
-        jnp.exp(ln_nk),
-        jnp.exp(ln_mk),
-        jnp.exp(ln_ntot),
+        jnp.exp(ln_nk_scaled),
+        jnp.exp(ln_mk_scaled),
+        jnp.exp(ln_ntot_scaled),
         formula_matrix,
         formula_matrix_cond,
-        b,
+        b_scaled,
         gk,
-        An,
+        bk_scaled,
         hvector_cond,
-        sk,
+        jnp.exp(ln_sk_scaled)
     )
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
     
     #log_m_over_nu = jnp.clip(ln_mk - epsilon, LOG_MIN, LOG_MAX)
     log_m_over_nu = ln_mk - epsilon
-    scale = jnp.exp(log_m_over_nu)
-
-    raw_delta_ln_mk = scale * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
+    factor = jnp.exp(log_m_over_nu)
+    raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
 
     MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
     MAX_STEP_M_LOW = 0.1
