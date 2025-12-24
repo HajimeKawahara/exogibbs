@@ -2,6 +2,7 @@ import jax.numpy as jnp
 from jax import custom_vjp
 from jax import jacrev
 from jax import jit
+from jax import debug as jdebug
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
@@ -105,6 +106,49 @@ def _compute_residuals(
     return jnp.sqrt(ress_squared + resc_squared + resj_squared + resn_squared)
 
 
+def _debug_array(label, array, iter_count, limit=None):
+    arr = jnp.ravel(jnp.asarray(array))
+    max_val = jnp.max(arr)
+    min_val = jnp.min(arr)
+    has_nan = jnp.any(jnp.isnan(arr))
+    has_inf = jnp.any(jnp.isinf(arr))
+    has_over = False if limit is None else (max_val > limit)
+    predicate = has_nan | has_inf | has_over
+    max_idx = jnp.argmax(arr)
+    max_at = arr[max_idx]
+    if limit is None:
+        over_count = jnp.array(0, dtype=jnp.int32)
+        first_over_idx = jnp.array(0, dtype=jnp.int32)
+        first_over_val = jnp.array(0.0)
+    else:
+        over_mask = arr > limit
+        over_count = jnp.sum(over_mask)
+        first_over_idx = jnp.argmax(over_mask)
+        first_over_val = arr[first_over_idx]
+
+    def _print(_):
+        jdebug.print(
+            "iter {i} {label}: min {min_val} max {max_val} nan {nan} inf {inf} "
+            "over {over} max_idx {max_idx} max_at {max_at} over_count {over_count} "
+            "first_over_idx {first_over_idx} first_over_val {first_over_val}",
+            i=iter_count,
+            label=label,
+            min_val=min_val,
+            max_val=max_val,
+            nan=has_nan,
+            inf=has_inf,
+            over=has_over,
+            max_idx=max_idx,
+            max_at=max_at,
+            over_count=over_count,
+            first_over_idx=first_over_idx,
+            first_over_val=first_over_val,
+        )
+        return 0
+
+    return cond(predicate, _print, lambda _: 0, operand=0)
+
+
 def _update_all(
     ln_nk,
     ln_mk,
@@ -120,8 +164,15 @@ def _update_all(
     An,
     Am,
     epsilon,
+    iter_count,
+    debug_nan=False,
 ):
     
+    exp_overflow_limit = 700.0
+    if debug_nan:
+        _debug_array("ln_nk pre-exp", ln_nk, iter_count, exp_overflow_limit)
+        _debug_array("ln_mk pre-exp", ln_mk, iter_count, exp_overflow_limit)
+        _debug_array("ln_ntot pre-exp", jnp.array([ln_ntot]), iter_count, exp_overflow_limit)
     
     l_scale = jnp.max(jnp.array([0.0, jnp.max(jnp.concatenate([ln_nk, ln_mk, jnp.array([ln_ntot])]))]))
     
@@ -133,6 +184,16 @@ def _update_all(
     s_scale = jnp.exp(l_scale)
     b_scaled = b / s_scale
     
+    if debug_nan:
+        _debug_array("ln_nk_scaled pre-exp", ln_nk_scaled, iter_count, exp_overflow_limit)
+        _debug_array("ln_mk_scaled pre-exp", ln_mk_scaled, iter_count, exp_overflow_limit)
+        _debug_array(
+            "ln_ntot_scaled pre-exp",
+            jnp.array([ln_ntot_scaled]),
+            iter_count,
+            exp_overflow_limit,
+        )
+        _debug_array("ln_sk_scaled pre-exp", ln_sk_scaled, iter_count, exp_overflow_limit)
     
 
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
@@ -151,8 +212,13 @@ def _update_all(
     
     #log_m_over_nu = jnp.clip(ln_mk - epsilon, LOG_MIN, LOG_MAX)
     log_m_over_nu = ln_mk - epsilon
+    if debug_nan:
+        _debug_array("log_m_over_nu pre-exp", log_m_over_nu, iter_count, exp_overflow_limit)
     factor = jnp.exp(log_m_over_nu)
-    raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
+    raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
+    if debug_nan:
+        _debug_array("factor exp(log_m_over_nu)", factor, iter_count)
+        _debug_array("raw_delta_ln_mk", raw_delta_ln_mk, iter_count)
 
     MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
     MAX_STEP_M_LOW = 0.1
@@ -178,10 +244,16 @@ def _update_all(
     # ln_mk = jnp.clip(ln_mk, LOG_MIN, LOG_MAX)
 
     # computes new gk,An and residuals
-    nk = jnp.exp(ln_nk)
-    mk = jnp.exp(ln_mk)
-    ntot = jnp.exp(ln_ntot)
-    gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
+    l_scale = jnp.max(jnp.array([0.0, jnp.max(jnp.concatenate([ln_nk, ln_mk, jnp.array([ln_ntot])]))]))
+    
+    ln_nk_scaled = ln_nk - l_scale
+    ln_mk_scaled = ln_mk - l_scale
+    ln_ntot_scaled = ln_ntot - l_scale
+    
+    nk = jnp.exp(ln_nk_scaled)
+    mk = jnp.exp(ln_mk_scaled)
+    ntot = jnp.exp(ln_ntot_scaled)
+    gk = _compute_gk(T, ln_nk_scaled, ln_ntot_scaled, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
     Am = formula_matrix_cond @ mk
 
@@ -199,6 +271,8 @@ def _update_all(
         Am,
         pi_vector,
     )
+    if debug_nan:
+        _debug_array("residual", jnp.array([residual]), iter_count)
     return ln_nk, ln_mk, ln_ntot, gk, An, Am, residual
 
 
@@ -215,6 +289,7 @@ def minimize_gibbs_cond_core(
     residual_crit: float = 1.0e-11,
     max_iter: int = 1000,
     element_indices: Optional[jnp.ndarray] = None,
+    debug_nan: bool = False,
 ) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, float, int]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
@@ -281,6 +356,8 @@ def minimize_gibbs_cond_core(
             An,
             Am,
             epsilon,
+            counter,
+            debug_nan,
         )
         return (
             ln_nk_new,

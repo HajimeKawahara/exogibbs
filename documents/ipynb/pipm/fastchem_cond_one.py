@@ -156,7 +156,7 @@ def pipm_fori_body(i, state):
         epsilon=epsilon,
         residual_crit=rcrit,
         max_iter=100,
-    #    debug_nan=True
+        debug_nan=True,
     )
 
     return (ln_nk, ln_mk, ln_ntot)
@@ -170,8 +170,8 @@ ln_nk, ln_mk, ln_ntot = lax.fori_loop(
 )
 
 vmr_exogibbs = np.exp(ln_nk[29:])/np.sum(np.exp(ln_nk))
-
-print(vmr_exogibbs)
+print(ln_nk)
+#print(vmr_exogibbs)
 
 
 
@@ -203,6 +203,7 @@ while epsilon > epsilon_crit:
         epsilon=epsilon,  ### new argument
         residual_crit=rcrit,
         max_iter=100,
+        debug_nan=True,
     )
 
     print("Optimization:", ln_nk, "counter=", counter, "epsilon=", epsilon, "rcrit=", rcrit)
@@ -220,4 +221,3 @@ while epsilon > epsilon_crit:
     plt.savefig("output/vmr_comparison"+str(iter).zfill(4)+".png") # want to make "output/vmr_comparison0001.png"
     plt.close()
     iter = iter+1
-
