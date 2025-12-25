@@ -249,16 +249,11 @@ def _update_all(
     # ln_mk = jnp.clip(ln_mk, LOG_MIN, LOG_MAX)
 
     # computes new gk,An and residuals
-    l_scale = jnp.max(jnp.array([0.0, jnp.max(jnp.concatenate([ln_nk, ln_mk, jnp.array([ln_ntot])]))]))
     
-    ln_nk_scaled = ln_nk - l_scale
-    ln_mk_scaled = ln_mk - l_scale
-    ln_ntot_scaled = ln_ntot - l_scale
-    
-    nk = jnp.exp(ln_nk_scaled)
-    mk = jnp.exp(ln_mk_scaled)
-    ntot = jnp.exp(ln_ntot_scaled)
-    gk = _compute_gk(T, ln_nk_scaled, ln_ntot_scaled, hvector, ln_normalized_pressure)
+    nk = jnp.exp(ln_nk)
+    mk = jnp.exp(ln_mk)
+    ntot = jnp.exp(ln_ntot)
+    gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
     Am = formula_matrix_cond @ mk
 
