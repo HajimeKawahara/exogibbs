@@ -175,7 +175,8 @@ def _update_all(
         _debug_array("ln_ntot pre-exp", jnp.array([ln_ntot]), iter_count, exp_overflow_limit)
     
     l_scale = jnp.max(jnp.array([0.0, jnp.max(jnp.concatenate([ln_nk, ln_mk, jnp.array([ln_ntot])]))]))
-    
+    #l_scale = jnp.min(jnp.array([80.0, l_scale]))  # to avoid overflow in exp
+
     ln_sk_scaled = 2.0 * ln_mk - epsilon - l_scale
     bk_scaled = formula_matrix @ jnp.exp(ln_nk - l_scale)
     ln_nk_scaled = ln_nk - l_scale
@@ -208,26 +209,26 @@ def _update_all(
         hvector_cond,
         jnp.exp(ln_sk_scaled)
     )
+    
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
+    # this breaks the results. we cannot clip here.
+    #raw_delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
+    #MAX_STEP_N_UP = 10.0  # do not update larger than ln(n) 0.1e ~ 10%
+    #MAX_STEP_N_LOW = 10.0
+    #delta_ln_nk = jnp.clip(raw_delta_ln_nk, -MAX_STEP_N_LOW, MAX_STEP_N_UP)
     
     #log_m_over_nu = jnp.clip(ln_mk - epsilon, LOG_MIN, LOG_MAX)
     log_m_over_nu = ln_mk - epsilon
     if debug_nan:
         _debug_array("log_m_over_nu pre-exp", log_m_over_nu, iter_count, exp_overflow_limit)
-    #factor = jnp.exp(log_m_over_nu)
-    #raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
-    w = jnp.log(formula_matrix_cond.T @ pi_vector - hvector_cond)
-    factor = jnp.exp(log_m_over_nu + w)
-    raw_delta_ln_mk = factor  + 1.0 #here we first have NaN
+        
+    factor = jnp.exp(log_m_over_nu)
+    raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
     
-    if debug_nan:
-        _debug_array("factor exp(log_m_over_nu)", factor, iter_count)
-        _debug_array("raw_delta_ln_mk", raw_delta_ln_mk, iter_count)
-
     MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
     MAX_STEP_M_LOW = 0.1
     delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
-    # delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
+    #delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
 
     # relaxation and update
     # lam = 0.0001  # need to reconsider
