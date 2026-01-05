@@ -218,7 +218,9 @@ def _update_all(
     #raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
     w = jnp.log(formula_matrix_cond.T @ pi_vector - hvector_cond)
     factor = jnp.exp(log_m_over_nu + w)
-    raw_delta_ln_mk = factor  + 1.0 #here we first have NaN
+    if jnp.max(factor) > 700.0:
+        suppress = jnp.max(factor)
+    raw_delta_ln_mk = factor + 1.0 #here we first have NaN
     
     if debug_nan:
         _debug_array("factor exp(log_m_over_nu)", factor, iter_count)
