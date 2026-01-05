@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 
 data = np.load("vmr_fastchem.npz")
 vmr_ref = data["vmr_fastchem"]
-tin = data["temperature"][0]
-pin = data["pressure"][0]
+#tin = data["temperature"][0]
+#pin = data["pressure"][0]
 
 
 # we solved nan issue for this set:
@@ -108,23 +108,39 @@ P = pin  # bar
 Pref = 1.0  # bar, reference pressure
 ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
 
-# Initial guess for log number densities
-ln_nk = jnp.zeros(formula_matrix_gas_eff.shape[1])  # log(n_species)
+#init_setup = "gas_only"  # "zeros" or "gas_only"
+init_setup = "gas_only"
+# (0 setup) Initial guess for log number densities
+if init_setup == "zeros":
+    ln_nk = jnp.zeros(formula_matrix_gas_eff.shape[1])  # log(n_species)
+    plot_species = gas.species[29:]
+    N = len(plot_species)
+    if N != len(vmr_ref):
+        raise ValueError("Length mismatch between ln_nk[29:] and vmr_ref")
+    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])   # log(n_condensates)
+    ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))  # log(total number density)
+
+elif init_setup == "gas_only":
+    from exogibbs.api.equilibrium import equilibrium
+    b = gas.element_vector_reference  # or your own jnp.array([...])
+    result = equilibrium(gas, T=tin, P=pin, b=b)
+    ln_nk = result.ln_n
+    ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))  # log(total number density)
+    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])   # log(n_condensates)
+else:
+    raise ValueError("Invalid init_setup option")
 
 
-plot_species = gas.species[29:]
-N = len(plot_species)
-if N != len(vmr_ref):
-    raise ValueError("Length mismatch between ln_nk[29:] and vmr_ref")
-#for i in range(0, N):
-#    idx_exogibbs = gas.species.index(plot_species[i])
-#    print(idx_exogibbs)
+epsilon_start = 0.0
+epsilon_crit = -30.0
+n_step = 300
 
-ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])   # log(n_condensates)
-ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))  # log(total number density)
+# epsilon schedule (static, safe)
+epsilons = jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:]
 
-epsilon = 0.0
-epsilon_crit = -40.0
+#n_step = 400
+#epsilons = jnp.linspace(-20.0, epsilon_crit, n_step + 1)[1:]
+
 
 temperature = tin
 
@@ -136,8 +152,6 @@ thermo_state = ThermoState(
     element_vector=b_ref,
 )
 
-n_step = 400
-epsilons = jnp.linspace(0.0, epsilon_crit, n_step + 1)[1:]
 
 def pipm_fori_body(i, state):
     ln_nk, ln_mk, ln_ntot = state

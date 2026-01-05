@@ -67,12 +67,23 @@ def solve_gibbs_iteration_equations_cond(
 
     delta_bk_hat = b - (bk + formula_matrix_cond @ mk)  # b - (Ag nk + Ac mk)
     condvec = formula_matrix_cond @ (sk * hvector_cond - mk)  # Ac(sk*ck - mk)
+    
+    # Row-wise scaling for numerical stability in the linear solve.
+    row_scale = jnp.maximum(jnp.max(jnp.abs(Qk), axis=1, keepdims=True), 1.0)
+    Qk = Qk / row_scale
+    bk_scaled = bk / row_scale[:, 0]
+    Angk = Angk / row_scale[:, 0]
+    condvec = condvec / row_scale[:, 0]
+    delta_bk_hat = delta_bk_hat / row_scale[:, 0]
 
-    assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
+    assemble_mat = jnp.block([[Qk, bk_scaled[:, None]], [bk[None, :], jnp.array([[resn]])]])
     assemble_vec = jnp.concatenate(
         [Angk + condvec + delta_bk_hat, jnp.array([ngk - resn])]
     )
+    
     assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
+
+
     return assemble_variable[:-1], assemble_variable[-1]
 
 
@@ -174,62 +185,53 @@ def _update_all(
         _debug_array("ln_mk pre-exp", ln_mk, iter_count, exp_overflow_limit)
         _debug_array("ln_ntot pre-exp", jnp.array([ln_ntot]), iter_count, exp_overflow_limit)
     
-    l_scale = jnp.max(jnp.array([0.0, jnp.max(jnp.concatenate([ln_nk, ln_mk, jnp.array([ln_ntot])]))]))
-    
-    ln_sk_scaled = 2.0 * ln_mk - epsilon - l_scale
-    bk_scaled = formula_matrix @ jnp.exp(ln_nk - l_scale)
-    ln_nk_scaled = ln_nk - l_scale
-    ln_mk_scaled = ln_mk - l_scale
-    ln_ntot_scaled = ln_ntot - l_scale
-    s_scale = jnp.exp(l_scale)
-    b_scaled = b / s_scale
+    ln_sk = 2.0 * ln_mk - epsilon 
+    bk = formula_matrix @ jnp.exp(ln_nk)
     
     if debug_nan:
-        _debug_array("ln_nk_scaled pre-exp", ln_nk_scaled, iter_count, exp_overflow_limit)
-        _debug_array("ln_mk_scaled pre-exp", ln_mk_scaled, iter_count, exp_overflow_limit)
+        _debug_array("ln_nk_scaled pre-exp", ln_nk, iter_count, exp_overflow_limit)
+        _debug_array("ln_mk_scaled pre-exp", ln_mk, iter_count, exp_overflow_limit)
         _debug_array(
             "ln_ntot_scaled pre-exp",
-            jnp.array([ln_ntot_scaled]),
+            jnp.array([ln_ntot]),
             iter_count,
             exp_overflow_limit,
         )
-        _debug_array("ln_sk_scaled pre-exp", ln_sk_scaled, iter_count, exp_overflow_limit)
+        _debug_array("ln_sk_scaled pre-exp", ln_sk, iter_count, exp_overflow_limit)
     
 
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
-        jnp.exp(ln_nk_scaled),
-        jnp.exp(ln_mk_scaled),
-        jnp.exp(ln_ntot_scaled),
+        jnp.exp(ln_nk),
+        jnp.exp(ln_mk),
+        jnp.exp(ln_ntot),
         formula_matrix,
         formula_matrix_cond,
-        b_scaled,
+        b,
         gk,
-        bk_scaled,
+        bk,
         hvector_cond,
-        jnp.exp(ln_sk_scaled)
+        jnp.exp(ln_sk)
     )
+    
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
+    # this breaks the results. we cannot clip here.
+    #raw_delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
+    #MAX_STEP_N_UP = 10.0  # do not update larger than ln(n) 0.1e ~ 10%
+    #MAX_STEP_N_LOW = 10.0
+    #delta_ln_nk = jnp.clip(raw_delta_ln_nk, -MAX_STEP_N_LOW, MAX_STEP_N_UP)
     
     #log_m_over_nu = jnp.clip(ln_mk - epsilon, LOG_MIN, LOG_MAX)
     log_m_over_nu = ln_mk - epsilon
     if debug_nan:
         _debug_array("log_m_over_nu pre-exp", log_m_over_nu, iter_count, exp_overflow_limit)
-    #factor = jnp.exp(log_m_over_nu)
-    #raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
-    w = jnp.log(formula_matrix_cond.T @ pi_vector - hvector_cond)
-    factor = jnp.exp(log_m_over_nu + w)
-    if jnp.max(factor) > 700.0:
-        suppress = jnp.max(factor)
-    raw_delta_ln_mk = factor + 1.0 #here we first have NaN
+        
+    factor = jnp.exp(log_m_over_nu)
+    raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
     
-    if debug_nan:
-        _debug_array("factor exp(log_m_over_nu)", factor, iter_count)
-        _debug_array("raw_delta_ln_mk", raw_delta_ln_mk, iter_count)
-
     MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
     MAX_STEP_M_LOW = 0.1
     delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
-    # delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
+    #delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
 
     # relaxation and update
     # lam = 0.0001  # need to reconsider
@@ -238,7 +240,8 @@ def _update_all(
     lam1_cond = stepsize_cond_heurstic(delta_ln_mk)
     lam2_cond = stepsize_sk(delta_ln_mk, ln_mk, epsilon)
     lam = jnp.minimum(1.0, jnp.minimum(lam1_gas, jnp.minimum(lam1_cond, lam2_cond)))
-    lam = jnp.clip(lam, 1e-4, 1.0)  # avoid too small or too large steps
+    # Do not force a minimum step; allow very small values when needed.
+    lam = jnp.clip(lam, 0.0, 1.0)
 
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
@@ -250,16 +253,11 @@ def _update_all(
     # ln_mk = jnp.clip(ln_mk, LOG_MIN, LOG_MAX)
 
     # computes new gk,An and residuals
-    l_scale = jnp.max(jnp.array([0.0, jnp.max(jnp.concatenate([ln_nk, ln_mk, jnp.array([ln_ntot])]))]))
     
-    ln_nk_scaled = ln_nk - l_scale
-    ln_mk_scaled = ln_mk - l_scale
-    ln_ntot_scaled = ln_ntot - l_scale
-    
-    nk = jnp.exp(ln_nk_scaled)
-    mk = jnp.exp(ln_mk_scaled)
-    ntot = jnp.exp(ln_ntot_scaled)
-    gk = _compute_gk(T, ln_nk_scaled, ln_ntot_scaled, hvector, ln_normalized_pressure)
+    nk = jnp.exp(ln_nk)
+    mk = jnp.exp(ln_mk)
+    ntot = jnp.exp(ln_ntot)
+    gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
     Am = formula_matrix_cond @ mk
 
