@@ -2,9 +2,11 @@ import jax.numpy as jnp
 from jax import custom_vjp
 from jax import jacrev
 from jax import jit
+from jax import debug as jdebug
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
+from jax.lax import cond
 from functools import partial
 from typing import Tuple, Callable, Optional
 
@@ -17,6 +19,8 @@ from exogibbs.optimize.stepsize import stepsize_cea_gas
 from exogibbs.optimize.stepsize import stepsize_cond_heurstic
 from exogibbs.optimize.stepsize import stepsize_sk
 
+from typing import Tuple
+import jax.numpy as jnp
 
 def solve_gibbs_iteration_equations_cond(
     nk: jnp.ndarray,
@@ -31,45 +35,55 @@ def solve_gibbs_iteration_equations_cond(
     sk: jnp.ndarray,
 ) -> Tuple[jnp.ndarray, float]:
     """
-    Solve the Gibbs iteration equations with condensates using the Lagrange multipliers.
-    This function computes the matrix and vector to solve the system of equations
-    that arises from the Gibbs energy minimization problem.
+        Solve the Gibbs iteration equations with condensates using the Lagrange multipliers.
+        This function computes the matrix and vector to solve the system of equations
+        that arises from the Gibbs energy minimization problem.
 
-    Args:
-        nk: number of species vector (n_species,) for k-th iteration.
-        mk: number of condensed species vector (n_cond,) for k-th iteration.
-        ntotk: Total number of species for k-th iteration.
-        formula_matrix: Gas Formula matrix for stoichiometric constraints (n_elements, n_species).
-        formula_matrix_cond: Condensates Formula matrix for stoichiometric constraints (n_elements, n_cond).
-        b: Element abundance vector (n_elements, ).
-        gk: gk vector (n_species,) for k-th iteration.
-        bk: (gas) formula_matrix @ nk vector (n_elements, ).
-        hvector_cond: chemical_potentials for condensates divided by RT (n_cond, )
-        sk: mk^2/nu (n_cond, )
+        Args:
+            nk: number of species vector (n_species,) for k-th iteration.
+            mk: number of condensed species vector (n_cond,) for k-th iteration.
+            ntotk: Total number of species for k-th iteration.
+            formula_matrix: Gas Formula matrix for stoichiometric constraints (n_elements, n_species).
+            formula_matrix_cond: Condensates Formula matrix for stoichiometric constraints (n_elements, n_cond).
+            b: Element abundance vector (n_elements, ).
+            gk: gk vector (n_species,) for k-th iteration.
+            bk: (gas) formula_matrix @ nk vector (n_elements, ).
+            hvector_cond: chemical_potentials for condensates divided by RT (n_cond, )
+            sk: mk^2/nu (n_cond, )
 
-    Returns:
-        Tuple containing:
-            - The pi vector (nelements, ).fastchem_elements = list(gas.elements)
-element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
+        Returns:
+            Tuple containing:
+                - The pi vector (nelements, ).fastchem_elements = list(gas.elements)
+    element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
 
-            - The update of the  log total number of species (delta_ln_ntot).
+                - The update of the  log total number of species (delta_ln_ntot).
     """
 
-    #sk = mk*mk / nu
 
     resn = jnp.sum(nk) - ntotk
     Qk = _A_diagn_At(nk, formula_matrix) + _A_diagn_At(sk, formula_matrix_cond)
     Angk = formula_matrix @ (gk * nk)
     ngk = jnp.dot(nk, gk)
 
-    delta_bk_hat = b - (bk + formula_matrix_cond @ mk) # b - (Ag nk + Ac mk)
-    condvec = formula_matrix_cond @ (sk * hvector_cond - mk) # Ac(sk*ck - mk)
+    delta_bk_hat = b - (bk + formula_matrix_cond @ mk)  # b - (Ag nk + Ac mk)
+    condvec = formula_matrix_cond @ (sk * hvector_cond - mk)  # Ac(sk*ck - mk)
+    
+    # Row-wise scaling for numerical stability in the linear solve.
+    row_scale = jnp.maximum(jnp.max(jnp.abs(Qk), axis=1, keepdims=True), 1.0)
+    Qk = Qk / row_scale
+    bk_scaled = bk / row_scale[:, 0]
+    Angk = Angk / row_scale[:, 0]
+    condvec = condvec / row_scale[:, 0]
+    delta_bk_hat = delta_bk_hat / row_scale[:, 0]
 
-    assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
+    assemble_mat = jnp.block([[Qk, bk_scaled[:, None]], [bk[None, :], jnp.array([[resn]])]])
     assemble_vec = jnp.concatenate(
         [Angk + condvec + delta_bk_hat, jnp.array([ngk - resn])]
     )
+    
     assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
+
+
     return assemble_variable[:-1], assemble_variable[-1]
 
 
@@ -100,9 +114,50 @@ def _compute_residuals(
     resn = jnp.sum(nk) - ntotk
     resn_squared = jnp.dot(resn, resn)
 
-    return jnp.sqrt(
-        ress_squared + resc_squared + resj_squared + resn_squared
-    )
+    return jnp.sqrt(ress_squared + resc_squared + resj_squared + resn_squared)
+
+
+def _debug_array(label, array, iter_count, limit=None):
+    arr = jnp.ravel(jnp.asarray(array))
+    max_val = jnp.max(arr)
+    min_val = jnp.min(arr)
+    has_nan = jnp.any(jnp.isnan(arr))
+    has_inf = jnp.any(jnp.isinf(arr))
+    has_over = False if limit is None else (max_val > limit)
+    predicate = has_nan | has_inf | has_over
+    max_idx = jnp.argmax(arr)
+    max_at = arr[max_idx]
+    if limit is None:
+        over_count = jnp.array(0, dtype=jnp.int32)
+        first_over_idx = jnp.array(0, dtype=jnp.int32)
+        first_over_val = jnp.array(0.0)
+    else:
+        over_mask = arr > limit
+        over_count = jnp.sum(over_mask)
+        first_over_idx = jnp.argmax(over_mask)
+        first_over_val = arr[first_over_idx]
+
+    def _print(_):
+        jdebug.print(
+            "iter {i} {label}: min {min_val} max {max_val} nan {nan} inf {inf} "
+            "over {over} max_idx {max_idx} max_at {max_at} over_count {over_count} "
+            "first_over_idx {first_over_idx} first_over_val {first_over_val}",
+            i=iter_count,
+            label=label,
+            min_val=min_val,
+            max_val=max_val,
+            nan=has_nan,
+            inf=has_inf,
+            over=has_over,
+            max_idx=max_idx,
+            max_at=max_at,
+            over_count=over_count,
+            first_over_idx=first_over_idx,
+            first_over_val=first_over_val,
+        )
+        return 0
+
+    return cond(predicate, _print, lambda _: 0, operand=0)
 
 
 def _update_all(
@@ -120,9 +175,31 @@ def _update_all(
     An,
     Am,
     epsilon,
+    iter_count,
+    debug_nan=False,
 ):
-    sk = jnp.exp(2.0 * ln_mk - epsilon) # mk*mk / nu
     
+    exp_overflow_limit = 700.0
+    if debug_nan:
+        _debug_array("ln_nk pre-exp", ln_nk, iter_count, exp_overflow_limit)
+        _debug_array("ln_mk pre-exp", ln_mk, iter_count, exp_overflow_limit)
+        _debug_array("ln_ntot pre-exp", jnp.array([ln_ntot]), iter_count, exp_overflow_limit)
+    
+    ln_sk = 2.0 * ln_mk - epsilon 
+    bk = formula_matrix @ jnp.exp(ln_nk)
+    
+    if debug_nan:
+        _debug_array("ln_nk_scaled pre-exp", ln_nk, iter_count, exp_overflow_limit)
+        _debug_array("ln_mk_scaled pre-exp", ln_mk, iter_count, exp_overflow_limit)
+        _debug_array(
+            "ln_ntot_scaled pre-exp",
+            jnp.array([ln_ntot]),
+            iter_count,
+            exp_overflow_limit,
+        )
+        _debug_array("ln_sk_scaled pre-exp", ln_sk, iter_count, exp_overflow_limit)
+    
+
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
         jnp.exp(ln_nk),
         jnp.exp(ln_mk),
@@ -131,34 +208,59 @@ def _update_all(
         formula_matrix_cond,
         b,
         gk,
-        An,
+        bk,
         hvector_cond,
-        sk,
+        jnp.exp(ln_sk)
     )
+    
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
-    delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0  
+    # this breaks the results. we cannot clip here.
+    #raw_delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
+    #MAX_STEP_N_UP = 10.0  # do not update larger than ln(n) 0.1e ~ 10%
+    #MAX_STEP_N_LOW = 10.0
+    #delta_ln_nk = jnp.clip(raw_delta_ln_nk, -MAX_STEP_N_LOW, MAX_STEP_N_UP)
+    
+    #log_m_over_nu = jnp.clip(ln_mk - epsilon, LOG_MIN, LOG_MAX)
+    log_m_over_nu = ln_mk - epsilon
+    if debug_nan:
+        _debug_array("log_m_over_nu pre-exp", log_m_over_nu, iter_count, exp_overflow_limit)
+        
+    factor = jnp.exp(log_m_over_nu)
+    raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
+    
+    MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
+    MAX_STEP_M_LOW = 0.1
+    delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
+    #delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
 
     # relaxation and update
-    #lam = 0.001  # need to reconsider
-    
-    lam1_gas  = stepsize_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
+    # lam = 0.0001  # need to reconsider
+
+    lam1_gas = stepsize_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
     lam1_cond = stepsize_cond_heurstic(delta_ln_mk)
     lam2_cond = stepsize_sk(delta_ln_mk, ln_mk, epsilon)
     lam = jnp.minimum(1.0, jnp.minimum(lam1_gas, jnp.minimum(lam1_cond, lam2_cond)))
-    lam = jnp.clip(lam, 1e-3, 1.0)
-    
+    # Do not force a minimum step; allow very small values when needed.
+    lam = jnp.clip(lam, 0.0, 1.0)
+
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
     ln_mk += lam * delta_ln_mk
-    
+
+    # clip
+    # ln_nk = jnp.clip(ln_nk, LOG_MIN, LOG_MAX)
+    # ln_ntot = jnp.clip(ln_ntot, LOG_MIN, LOG_MAX)
+    # ln_mk = jnp.clip(ln_mk, LOG_MIN, LOG_MAX)
+
     # computes new gk,An and residuals
+    
     nk = jnp.exp(ln_nk)
     mk = jnp.exp(ln_mk)
     ntot = jnp.exp(ln_ntot)
     gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
     Am = formula_matrix_cond @ mk
-    
+
     residual = _compute_residuals(
         nk,
         mk,
@@ -173,6 +275,8 @@ def _update_all(
         Am,
         pi_vector,
     )
+    if debug_nan:
+        _debug_array("residual", jnp.array([residual]), iter_count)
     return ln_nk, ln_mk, ln_ntot, gk, An, Am, residual
 
 
@@ -189,28 +293,29 @@ def minimize_gibbs_cond_core(
     residual_crit: float = 1.0e-11,
     max_iter: int = 1000,
     element_indices: Optional[jnp.ndarray] = None,
+    debug_nan: bool = False,
 ) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, float, int]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
-        Args:
-            state: Thermodynamic state containing temperature, pressure, and element abundances.
-            ln_nk_init: Initial log number of species vector (n_species,).
-            ln_ntot_init: Initial log total number of species.
-            formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
-            hvector: Chemical potential over RT vector (n_species,).
-            residual_crit: Convergence tolerance for residual norm.
-            max_iter: Maximum number of iterations allowed.
-            element_indices: Optional indices mapping ``state.element_vector`` onto the
-                element ordering used by ``formula_matrix``/``formula_matrix_cond``.
-                Use this when ``state.element_vector`` stores a superset of elements.
-    
-        Returns:
-            Tuple containing:
-                - Final log number of species vector (n_species,).
-                - Final log number of condensed species vector (n_condensed_species,).
-                - Final log eta vector (n_condensed_species,).
-                - Final log total number of species.
-                - Number of iterations performed.
+    Args:
+        state: Thermodynamic state containing temperature, pressure, and element abundances.
+        ln_nk_init: Initial log number of species vector (n_species,).
+        ln_ntot_init: Initial log total number of species.
+        formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
+        hvector: Chemical potential over RT vector (n_species,).
+        residual_crit: Convergence tolerance for residual norm.
+        max_iter: Maximum number of iterations allowed.
+        element_indices: Optional indices mapping ``state.element_vector`` onto the
+            element ordering used by ``formula_matrix``/``formula_matrix_cond``.
+            Use this when ``state.element_vector`` stores a superset of elements.
+
+    Returns:
+        Tuple containing:
+            - Final log number of species vector (n_species,).
+            - Final log number of condensed species vector (n_condensed_species,).
+            - Final log eta vector (n_condensed_species,).
+            - Final log total number of species.
+            - Number of iterations performed.
     """
 
     n_elements = formula_matrix.shape[0]
@@ -240,23 +345,23 @@ def minimize_gibbs_cond_core(
 
     def body_fun(carry):
         ln_nk, ln_mk, ln_ntot, gk, An, Am, residual, counter = carry
-        ln_nk_new, ln_mk_new, ln_ntot_new, gk, An, Am, residual = (
-            _update_all(
-                ln_nk,
-                ln_mk,
-                ln_ntot,
-                formula_matrix,
-                formula_matrix_cond,
-                b,
-                state.temperature,
-                state.ln_normalized_pressure,
-                hvector,
-                hvector_cond,
-                gk,
-                An,
-                Am,
-                epsilon,
-            )
+        ln_nk_new, ln_mk_new, ln_ntot_new, gk, An, Am, residual = _update_all(
+            ln_nk,
+            ln_mk,
+            ln_ntot,
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            state.temperature,
+            state.ln_normalized_pressure,
+            hvector,
+            hvector_cond,
+            gk,
+            An,
+            Am,
+            epsilon,
+            counter,
+            debug_nan,
         )
         return (
             ln_nk_new,

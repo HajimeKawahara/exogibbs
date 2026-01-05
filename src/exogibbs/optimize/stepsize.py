@@ -21,8 +21,8 @@ def stepsize_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot, size=CEA_SIZE):
     lam2 = jnp.where(jnp.any(safe), jnp.min(jnp.where(safe, cand, jnp.inf)), jnp.inf)
 
     lam = jnp.minimum(1.0, jnp.minimum(lam1, lam2))
-    # safe guard
-    lam = jnp.clip(lam, 1e-6, 1.0)
+    # Do not force a minimum step; allow very small values when needed.
+    lam = jnp.clip(lam, 0.0, 1.0)
     return lam
 
 
