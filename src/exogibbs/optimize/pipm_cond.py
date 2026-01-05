@@ -1,14 +1,9 @@
 import jax.numpy as jnp
-from jax import custom_vjp
-from jax import jacrev
-from jax import jit
 from jax import debug as jdebug
-from jax.lax import while_loop, stop_gradient
-from jax.scipy.linalg import cho_factor
-from jax.scipy.linalg import cho_solve
+from jax.lax import while_loop
 from jax.lax import cond
-from functools import partial
-from typing import Tuple, Callable, Optional
+from jax.scipy.linalg import lu_factor, lu_solve
+from typing import Tuple, Optional
 
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _A_diagn_At
@@ -19,8 +14,6 @@ from exogibbs.optimize.stepsize import stepsize_cea_gas
 from exogibbs.optimize.stepsize import stepsize_cond_heurstic
 from exogibbs.optimize.stepsize import stepsize_sk
 
-from typing import Tuple
-import jax.numpy as jnp
 
 def solve_gibbs_iteration_equations_cond(
     nk: jnp.ndarray,
@@ -59,7 +52,6 @@ def solve_gibbs_iteration_equations_cond(
                 - The update of the  log total number of species (delta_ln_ntot).
     """
 
-
     resn = jnp.sum(nk) - ntotk
     Qk = _A_diagn_At(nk, formula_matrix) + _A_diagn_At(sk, formula_matrix_cond)
     Angk = formula_matrix @ (gk * nk)
@@ -67,24 +59,87 @@ def solve_gibbs_iteration_equations_cond(
 
     delta_bk_hat = b - (bk + formula_matrix_cond @ mk)  # b - (Ag nk + Ac mk)
     condvec = formula_matrix_cond @ (sk * hvector_cond - mk)  # Ac(sk*ck - mk)
-    
-    # Row-wise scaling for numerical stability in the linear solve.
-    row_scale = jnp.maximum(jnp.max(jnp.abs(Qk), axis=1, keepdims=True), 1.0)
-    Qk = Qk / row_scale
-    bk_scaled = bk / row_scale[:, 0]
-    Angk = Angk / row_scale[:, 0]
-    condvec = condvec / row_scale[:, 0]
-    delta_bk_hat = delta_bk_hat / row_scale[:, 0]
 
-    assemble_mat = jnp.block([[Qk, bk_scaled[:, None]], [bk[None, :], jnp.array([[resn]])]])
+    # A) Row-wise scaling
+    # row_scale = jnp.maximum(jnp.max(jnp.abs(Qk), axis=1, keepdims=True), 1.0)
+    # Qk = Qk / row_scale
+    # bk_scaled = bk / row_scale[:, 0]
+    # Angk = Angk / row_scale[:, 0]
+    # condvec = condvec / row_scale[:, 0]
+    # delta_bk_hat = delta_bk_hat / row_scale[:, 0]
+    # assemble_mat = jnp.block([[Qk, bk_scaled[:, None]], [bk[None, :], jnp.array([[resn]])]])
+
+    assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
     assemble_vec = jnp.concatenate(
         [Angk + condvec + delta_bk_hat, jnp.array([ngk - resn])]
     )
-    
-    assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
 
+    # B) whole scaling
+    row_scale = jnp.maximum(jnp.max(jnp.abs(assemble_mat), axis=1, keepdims=True), 1.0)
+    assemble_mat = assemble_mat / row_scale
+    assemble_vec = assemble_vec / row_scale[:, 0]
 
+    # Solver
+    # 1) direct solver
+    # assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
+
+    # 2) LU solver
+    lu, piv = lu_factor(assemble_mat)
+    assemble_variable = lu_solve((lu, piv), assemble_vec)
+
+    # 3) robust KKT solver
+    #assemble_variable = _robust_kkt_solve_3stage(
+    #    assemble_mat,
+    #    assemble_vec,
+    #    damp0=0.0,  # stage1: no damping
+    #    damp1=1e-12,  # stage2: small diagonal damping
+    #    rcond=1e-12,  # stage3: lstsq cutoff
+    #)
     return assemble_variable[:-1], assemble_variable[-1]
+
+
+def _robust_kkt_solve_3stage(
+    A: jnp.ndarray,
+    b: jnp.ndarray,
+    damp0: float = 0.0,
+    damp1: float = 1e-12,
+    rcond: float = 1e-12,
+) -> jnp.ndarray:
+    """
+    3-stage robust linear solve:
+        1) Pivoted LU (lu_factor/lu_solve)
+        2) Pivoted LU on damped system (A + damp * I)
+        3) SVD-based least squares fallback (lstsq)
+
+    """
+
+    n = A.shape[0]
+    I = jnp.eye(n, dtype=A.dtype)
+
+    # --- Stage 1: pivoted LU ---
+    def _solve_lu(A_, b_):
+        lu, piv = lu_factor(A_)
+        return lu_solve((lu, piv), b_)
+
+    x1 = _solve_lu(A + damp0 * I, b)
+    ok1 = jnp.all(jnp.isfinite(x1))
+
+    # --- Stage 2: damped pivoted LU (perturbed Hessian style) ---
+    x2 = _solve_lu(A + damp1 * I, b)
+    ok2 = jnp.all(jnp.isfinite(x2))
+
+    # --- Stage 3: SVD-ish fallback via lstsq ---
+    # jnp.linalg.lstsq is typically more robust near singularity.
+    x3 = jnp.linalg.lstsq(A, b, rcond=rcond)[0]
+
+    # Choose stage output
+    x = cond(
+        ok1,
+        lambda _: x1,
+        lambda _: cond(ok2, lambda __: x2, lambda __: x3, operand=0),
+        operand=0,
+    )
+    return x
 
 
 def _compute_residuals(
@@ -178,16 +233,18 @@ def _update_all(
     iter_count,
     debug_nan=False,
 ):
-    
+
     exp_overflow_limit = 700.0
     if debug_nan:
         _debug_array("ln_nk pre-exp", ln_nk, iter_count, exp_overflow_limit)
         _debug_array("ln_mk pre-exp", ln_mk, iter_count, exp_overflow_limit)
-        _debug_array("ln_ntot pre-exp", jnp.array([ln_ntot]), iter_count, exp_overflow_limit)
-    
-    ln_sk = 2.0 * ln_mk - epsilon 
+        _debug_array(
+            "ln_ntot pre-exp", jnp.array([ln_ntot]), iter_count, exp_overflow_limit
+        )
+
+    ln_sk = 2.0 * ln_mk - epsilon
     bk = formula_matrix @ jnp.exp(ln_nk)
-    
+
     if debug_nan:
         _debug_array("ln_nk_scaled pre-exp", ln_nk, iter_count, exp_overflow_limit)
         _debug_array("ln_mk_scaled pre-exp", ln_mk, iter_count, exp_overflow_limit)
@@ -198,7 +255,6 @@ def _update_all(
             exp_overflow_limit,
         )
         _debug_array("ln_sk_scaled pre-exp", ln_sk, iter_count, exp_overflow_limit)
-    
 
     pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
         jnp.exp(ln_nk),
@@ -210,28 +266,32 @@ def _update_all(
         gk,
         bk,
         hvector_cond,
-        jnp.exp(ln_sk)
+        jnp.exp(ln_sk),
     )
-    
+
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
     # this breaks the results. we cannot clip here.
-    #raw_delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
-    #MAX_STEP_N_UP = 10.0  # do not update larger than ln(n) 0.1e ~ 10%
-    #MAX_STEP_N_LOW = 10.0
-    #delta_ln_nk = jnp.clip(raw_delta_ln_nk, -MAX_STEP_N_LOW, MAX_STEP_N_UP)
-    
-    #log_m_over_nu = jnp.clip(ln_mk - epsilon, LOG_MIN, LOG_MAX)
+    # raw_delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
+    # MAX_STEP_N_UP = 10.0  # do not update larger than ln(n) 0.1e ~ 10%
+    # MAX_STEP_N_LOW = 10.0
+    # delta_ln_nk = jnp.clip(raw_delta_ln_nk, -MAX_STEP_N_LOW, MAX_STEP_N_UP)
+
+    # log_m_over_nu = jnp.clip(ln_mk - epsilon, LOG_MIN, LOG_MAX)
     log_m_over_nu = ln_mk - epsilon
     if debug_nan:
-        _debug_array("log_m_over_nu pre-exp", log_m_over_nu, iter_count, exp_overflow_limit)
-        
+        _debug_array(
+            "log_m_over_nu pre-exp", log_m_over_nu, iter_count, exp_overflow_limit
+        )
+
     factor = jnp.exp(log_m_over_nu)
-    raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0 #here we first have NaN
-    
+    raw_delta_ln_mk = (
+        factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
+    )  # here we first have NaN
+
     MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
     MAX_STEP_M_LOW = 0.1
     delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
-    #delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
+    # delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
 
     # relaxation and update
     # lam = 0.0001  # need to reconsider
@@ -253,7 +313,7 @@ def _update_all(
     # ln_mk = jnp.clip(ln_mk, LOG_MIN, LOG_MAX)
 
     # computes new gk,An and residuals
-    
+
     nk = jnp.exp(ln_nk)
     mk = jnp.exp(ln_mk)
     ntot = jnp.exp(ln_ntot)
