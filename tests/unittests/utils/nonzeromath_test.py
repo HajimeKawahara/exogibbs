@@ -5,8 +5,8 @@
 
 import numpy as np
 import jax.numpy as jnp
-from exogibbs.utils.nonzeromath import np_nonzeromax
-from exogibbs.utils.nonzeromath import jnp_nonzeromax
+from exogibbs.math.nonzeromath import np_nonzeromax
+from exogibbs.math.nonzeromath import nonzeromax
 
 def test_np_nonzeromax():
     A = np.array([[1.0, 0.0, 2.0],
@@ -25,7 +25,7 @@ def test_jnp_nonzeromax():
     m = np_nonzeromax(x, A, fill_value=0.0)
     
     masked_A = jnp.array(A != 0.0)
-    mj = jnp_nonzeromax(x, masked_A)
+    mj = nonzeromax(x, masked_A)
     assert np.all(m == np.array(mj))
 
 if __name__ == "__main__":
