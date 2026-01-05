@@ -138,8 +138,8 @@ def minimize_gibbs_cond(
     ln_ntot = ln_ntot_init
 
     epsilon_start = 0.0
-    epsilon_crit = -30.0
-    n_step = 300
+    epsilon_crit = -40.0
+    n_step = 100
 
     # epsilon schedule (static, safe)
     epsilons = jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:]
@@ -162,7 +162,7 @@ def minimize_gibbs_cond(
             hvector_cond_func=cond.hvector_func,
             epsilon=epsilon,
             residual_crit=rcrit,
-            max_iter=500,
+            max_iter=100,
         )
 
         return (ln_nk, ln_mk, ln_ntot)

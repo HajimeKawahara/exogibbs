@@ -20,13 +20,13 @@ import matplotlib.pyplot as plt
 
 data = np.load("vmr_fastchem.npz")
 vmr_ref = data["vmr_fastchem"]
-#tin = data["temperature"][0]
-#pin = data["pressure"][0]
+tin = data["temperature"][0]
+pin = data["pressure"][0]
 
 
 # we solved nan issue for this set:
-tin = 1.102800e+03
-pin = 3.679186e+00	
+#tin = 1.102800e+03
+#pin = 3.679186e+00	
 
 #still have nan issue for this set:
 #tin = 6.055400e+02
