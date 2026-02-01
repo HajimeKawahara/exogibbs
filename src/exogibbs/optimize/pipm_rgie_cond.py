@@ -82,64 +82,13 @@ def solve_gibbs_iteration_equations_cond(
     # Solver
     # 1) direct solver
     # assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
-
     # 2) LU solver
     lu, piv = lu_factor(assemble_mat)
     assemble_variable = lu_solve((lu, piv), assemble_vec)
 
-    # 3) robust KKT solver
-    #assemble_variable = _robust_kkt_solve_3stage(
-    #    assemble_mat,
-    #    assemble_vec,
-    #    damp0=0.0,  # stage1: no damping
-    #    damp1=1e-12,  # stage2: small diagonal damping
-    #    rcond=1e-12,  # stage3: lstsq cutoff
-    #)
     return assemble_variable[:-1], assemble_variable[-1]
 
 
-def _robust_kkt_solve_3stage(
-    A: jnp.ndarray,
-    b: jnp.ndarray,
-    damp0: float = 0.0,
-    damp1: float = 1e-12,
-    rcond: float = 1e-12,
-) -> jnp.ndarray:
-    """
-    3-stage robust linear solve:
-        1) Pivoted LU (lu_factor/lu_solve)
-        2) Pivoted LU on damped system (A + damp * I)
-        3) SVD-based least squares fallback (lstsq)
-
-    """
-
-    n = A.shape[0]
-    I = jnp.eye(n, dtype=A.dtype)
-
-    # --- Stage 1: pivoted LU ---
-    def _solve_lu(A_, b_):
-        lu, piv = lu_factor(A_)
-        return lu_solve((lu, piv), b_)
-
-    x1 = _solve_lu(A + damp0 * I, b)
-    ok1 = jnp.all(jnp.isfinite(x1))
-
-    # --- Stage 2: damped pivoted LU (perturbed Hessian style) ---
-    x2 = _solve_lu(A + damp1 * I, b)
-    ok2 = jnp.all(jnp.isfinite(x2))
-
-    # --- Stage 3: SVD-ish fallback via lstsq ---
-    # jnp.linalg.lstsq is typically more robust near singularity.
-    x3 = jnp.linalg.lstsq(A, b, rcond=rcond)[0]
-
-    # Choose stage output
-    x = cond(
-        ok1,
-        lambda _: x1,
-        lambda _: cond(ok2, lambda __: x2, lambda __: x3, operand=0),
-        operand=0,
-    )
-    return x
 
 
 def _compute_residuals(

@@ -92,7 +92,7 @@ print(formula_matrix_cond_eff)
 # In[5]:
 
 
-from exogibbs.optimize.pipm_cond import minimize_gibbs_cond_core
+from exogibbs.optimize.pipm_rgie_cond import minimize_gibbs_cond_core
 import jax.numpy as jnp
 from exogibbs.api.chemistry import ThermoState
 
