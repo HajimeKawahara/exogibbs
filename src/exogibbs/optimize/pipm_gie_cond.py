@@ -15,7 +15,7 @@ from exogibbs.optimize.stepsize import stepsize_cond_heurstic
 from exogibbs.optimize.stepsize import stepsize_sk
 
 
-def solve_reduced_gibbs_iteration_equations_cond(
+def solve_gibbs_iteration_equations_cond(
     nk: jnp.ndarray,
     mk: jnp.ndarray,
     ntotk: float,
@@ -28,7 +28,7 @@ def solve_reduced_gibbs_iteration_equations_cond(
     sk: jnp.ndarray,
 ) -> Tuple[jnp.ndarray, float]:
     """
-        Solve the reduced Gibbs iteration equations with condensates using the Lagrange multipliers.
+        Solve the Gibbs iteration equations with condensates using the Lagrange multipliers.
         This function computes the matrix and vector to solve the system of equations
         that arises from the Gibbs energy minimization problem.
 
@@ -60,15 +60,7 @@ def solve_reduced_gibbs_iteration_equations_cond(
     delta_bk_hat = b - (bk + formula_matrix_cond @ mk)  # b - (Ag nk + Ac mk)
     condvec = formula_matrix_cond @ (sk * hvector_cond - mk)  # Ac(sk*ck - mk)
 
-    # A) Row-wise scaling
-    # row_scale = jnp.maximum(jnp.max(jnp.abs(Qk), axis=1, keepdims=True), 1.0)
-    # Qk = Qk / row_scale
-    # bk_scaled = bk / row_scale[:, 0]
-    # Angk = Angk / row_scale[:, 0]
-    # condvec = condvec / row_scale[:, 0]
-    # delta_bk_hat = delta_bk_hat / row_scale[:, 0]
-    # assemble_mat = jnp.block([[Qk, bk_scaled[:, None]], [bk[None, :], jnp.array([[resn]])]])
-
+    
     assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
     assemble_vec = jnp.concatenate(
         [Angk + condvec + delta_bk_hat, jnp.array([ngk - resn])]
