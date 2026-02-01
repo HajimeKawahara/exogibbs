@@ -170,7 +170,7 @@ def pipm_fori_body(i, state):
         epsilon=epsilon,
         residual_crit=rcrit,
         max_iter=100,
-        debug_nan=True,
+        debug_nan=False,
     )
 
     return (ln_nk, ln_mk, ln_ntot)

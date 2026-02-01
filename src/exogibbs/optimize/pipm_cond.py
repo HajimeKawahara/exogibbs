@@ -163,6 +163,7 @@ def _compute_residuals(
     resc = mk * (formula_matrix_cond.T @ pi_vector - hvector_cond) + nu
     resc_squared = jnp.dot(resc, resc)
 
+    
     deltabhat = An + Am - b
     resj_squared = jnp.dot(deltabhat, deltabhat)
 
