@@ -230,6 +230,7 @@ for i in range(0, N):
     #plt.plot(vmr_exogibbs[:, i], pressures, ".", alpha=0.3)
     plt.plot(vmr_exogibbs[:, i], pressures, alpha=0.3)
 
+
 plt.xlim(1.0e-300, 1.0)
 plt.xscale("log")
 plt.yscale("log")
