@@ -1,12 +1,9 @@
 import jax.numpy as jnp
 from jax import debug as jdebug
 from jax.lax import while_loop
-from jax.lax import cond
-from jax.scipy.linalg import lu_factor, lu_solve
 from typing import Tuple, Optional
 
 from exogibbs.api.chemistry import ThermoState
-from exogibbs.optimize.core import _A_diagn_At
 from exogibbs.optimize.core import _compute_gk
 
 # heuristic step size functions for condensates
@@ -91,7 +88,7 @@ def solve_gibbs_iteration_equations_cond(
     # lu, piv = lu_factor(assemble_mat)
     # assemble_variable = lu_solve((lu, piv), assemble_vec)
 
-    return assemble_variable[:-1], assemble_variable[-1]
+    return assemble_variable[:nspecies], assemble_variable[nspecies:nspecies+ncond], assemble_variable[nspecies+ncond:-1], assemble_variable[-1]
 
 
 def _compute_residuals(
@@ -146,7 +143,7 @@ def _update_all(
     nuk = jnp.exp(epsilon)
     bk = formula_matrix @ jnp.exp(ln_nk)
     
-    pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
+    delta_ln_nk, delta_ln_mk, pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
         jnp.exp(ln_nk),
         jnp.exp(ln_mk),
         jnp.exp(ln_ntot),
@@ -159,19 +156,12 @@ def _update_all(
         nuk,
     )
 
-    delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
-    log_m_over_nu = ln_mk - epsilon
     
-    factor = jnp.exp(log_m_over_nu)
-    raw_delta_ln_mk = (
-        factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
-    )  # here we first have NaN
-
-    MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
-    MAX_STEP_M_LOW = 0.1
-    delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
-    # delta_ln_mk = jnp.exp(ln_mk - epsilon) * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
-
+    
+    #MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
+    #MAX_STEP_M_LOW = 0.1
+    #delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
+    
     # relaxation and update
     # lam = 0.0001  # need to reconsider
 
@@ -214,8 +204,6 @@ def _update_all(
         Am,
         pi_vector,
     )
-    if debug_nan:
-        _debug_array("residual", jnp.array([residual]), iter_count)
     return ln_nk, ln_mk, ln_ntot, gk, An, Am, residual
 
 
