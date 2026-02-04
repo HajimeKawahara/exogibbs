@@ -158,9 +158,9 @@ def _update_all(
 
     
     
-    #MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
-    #MAX_STEP_M_LOW = 0.1
-    #delta_ln_mk = jnp.clip(raw_delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
+    MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
+    MAX_STEP_M_LOW = 0.1
+    delta_ln_mk = jnp.clip(delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
     
     # relaxation and update
     # lam = 0.0001  # need to reconsider
