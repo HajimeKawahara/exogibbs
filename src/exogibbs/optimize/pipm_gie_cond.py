@@ -23,64 +23,73 @@ def solve_gibbs_iteration_equations_cond(
     formula_matrix_cond: jnp.ndarray,
     b: jnp.ndarray,
     gk: jnp.ndarray,
+    ck: jnp.ndarray,
     bk: jnp.ndarray,
-    hvector_cond: jnp.ndarray,
-    sk: jnp.ndarray,
+    nuk: jnp.ndarray,
 ) -> Tuple[jnp.ndarray, float]:
     """
-        Solve the Gibbs iteration equations with condensates using the Lagrange multipliers.
-        This function computes the matrix and vector to solve the system of equations
-        that arises from the Gibbs energy minimization problem.
+    Solve the Gibbs iteration equations with condensates using the Lagrange multipliers.
+    This function computes the matrix and vector to solve the system of equations
+    that arises from the Gibbs energy minimization problem.
 
-        Args:
-            nk: number of species vector (n_species,) for k-th iteration.
-            mk: number of condensed species vector (n_cond,) for k-th iteration.
-            ntotk: Total number of species for k-th iteration.
-            formula_matrix: Gas Formula matrix for stoichiometric constraints (n_elements, n_species).
-            formula_matrix_cond: Condensates Formula matrix for stoichiometric constraints (n_elements, n_cond).
-            b: Element abundance vector (n_elements, ).
-            gk: gk vector (n_species,) for k-th iteration.
-            bk: (gas) formula_matrix @ nk vector (n_elements, ).
-            hvector_cond: chemical_potentials for condensates divided by RT (n_cond, )
-            sk: mk^2/nu (n_cond, )
+    Args:
+        nk: number of species vector (n_species,) for k-th iteration.
+        mk: number of condensed species vector (n_cond,) for k-th iteration.
+        ntotk: Total number of species for k-th iteration.
+        formula_matrix: Gas Formula matrix for stoichiometric constraints (n_elements, n_species).
+        formula_matrix_cond: Condensates Formula matrix for stoichiometric constraints (n_elements, n_cond).
+        b: Element abundance vector (n_elements, ).
+        gk: gk vector (n_species,) for k-th iteration.
+        bk: (gas) formula_matrix @ nk vector (n_elements, ).
 
-        Returns:
-            Tuple containing:
-                - The pi vector (nelements, ).fastchem_elements = list(gas.elements)
-                    element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
+    Returns:
+        Tuple containing:
+            - The pi vector (nelements, ).fastchem_elements = list(gas.elements)
+                element_indices = jnp.array([fastchem_elements.index(e) for e in elements])
 
-                - The update of the  log total number of species (delta_ln_ntot).
+            - The update of the  log total number of species (delta_ln_ntot).
     """
+    nspecies = nk.shape[0]
+    ncond = mk.shape[0]
+    nelement = b.shape[0]
 
-    resn = jnp.sum(nk) - ntotk
-    Qk = _A_diagn_At(nk, formula_matrix) + _A_diagn_At(sk, formula_matrix_cond)
-    Angk = formula_matrix @ (gk * nk)
-    ngk = jnp.dot(nk, gk)
-
+    resn = jnp.sum(nk) - ntotk  # delta n_{tot,k}
+    Yg = formula_matrix * nk
+    Yc = formula_matrix_cond * mk
     delta_bk_hat = b - (bk + formula_matrix_cond @ mk)  # b - (Ag nk + Ac mk)
-    condvec = formula_matrix_cond @ (sk * hvector_cond - mk)  # Ac(sk*ck - mk)
 
-    
-    assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
+    EN = jnp.identity(nspecies)
+    ZNM = jnp.zeros((nspecies, ncond))
+    ZB = jnp.zeros((nelement, nelement))
+    zvm = jnp.zeros((ncond, 1))
+    zvb = jnp.zeros((nelement, 1))
+    u = jnp.ones((nspecies, 1))
+
+    assemble_mat = jnp.block(
+        [
+            [EN, ZNM, - formula_matrix.T, -u],
+            [ZNM.T, nuk * jnp.diag(1.0 / mk), -formula_matrix_cond.T, zvm],
+            [Yg, Yc, ZB, zvb],
+            [nk[:, jnp.newaxis].T, zvm.T, zvb.T, jnp.array([[-ntotk]])],
+        ]
+    )
     assemble_vec = jnp.concatenate(
-        [Angk + condvec + delta_bk_hat, jnp.array([ngk - resn])]
+        [-gk, nuk / mk - ck, delta_bk_hat, jnp.array([ntotk - resn])]
     )
 
     # B) whole scaling
-    row_scale = jnp.maximum(jnp.max(jnp.abs(assemble_mat), axis=1, keepdims=True), 1.0)
-    assemble_mat = assemble_mat / row_scale
-    assemble_vec = assemble_vec / row_scale[:, 0]
+    # row_scale = jnp.maximum(jnp.max(jnp.abs(assemble_mat), axis=1, keepdims=True), 1.0)
+    # assemble_mat = assemble_mat / row_scale
+    # assemble_vec = assemble_vec / row_scale[:, 0]
 
     # Solver
     # 1) direct solver
-    # assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
+    assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
     # 2) LU solver
-    lu, piv = lu_factor(assemble_mat)
-    assemble_variable = lu_solve((lu, piv), assemble_vec)
+    # lu, piv = lu_factor(assemble_mat)
+    # assemble_variable = lu_solve((lu, piv), assemble_vec)
 
     return assemble_variable[:-1], assemble_variable[-1]
-
-
 
 
 def _compute_residuals(
@@ -104,7 +113,6 @@ def _compute_residuals(
     resc = mk * (formula_matrix_cond.T @ pi_vector - hvector_cond) + nu
     resc_squared = jnp.dot(resc, resc)
 
-    
     deltabhat = An + Am - b
     resj_squared = jnp.dot(deltabhat, deltabhat)
 
