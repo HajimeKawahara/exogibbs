@@ -73,7 +73,7 @@ def solve_gibbs_iteration_equations_cond(
         ]
     )
     assemble_vec = jnp.concatenate(
-        [-gk, nuk / mk - hvector_cond, delta_bk_hat, jnp.array([ntotk - resn])]
+        [-gk, nuk / mk - hvector_cond, delta_bk_hat, jnp.array([- resn])]
     )
 
     # B) whole scaling
