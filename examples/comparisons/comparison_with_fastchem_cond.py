@@ -23,7 +23,7 @@ config.update("jax_enable_x64", True)
 
 
 # we read in a p-T structure for a brown dwarf
-prof = False
+prof = True
 if prof:
     data = np.loadtxt("../input/example_p_t_structures/Brown_dwarf_Sonora.dat")
     tag = "_prof"
@@ -114,9 +114,9 @@ number_densities = np.array(output_data.number_densities)
 gas_number_density = pressure * 1e6 / (const.k_B.cgs * temperature)
 
 N = len(plot_species_symbols)
-
+print(N)
 if prof:
-    vmr_fastchem = np.array(number_densities[:, plot_species_indices] / gas_number_density[:, np.newaxis]) [0]
+    vmr_fastchem = np.array(number_densities[:, plot_species_indices] / gas_number_density[:, np.newaxis])
 else:
     vmr_fastchem = np.array(number_densities[:, plot_species_indices] / gas_number_density)[0]      
 

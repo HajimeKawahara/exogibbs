@@ -23,6 +23,7 @@ vmr_ref = data["vmr_fastchem"]
 temperatures = np.atleast_1d(data["temperature"])
 pressures = np.atleast_1d(data["pressure"])
 
+
 # In[2]:
 
 
@@ -106,12 +107,12 @@ ln_normalized_pressures = jnp.atleast_1d(ln_normalized_pressures)
 
 plot_species = gas.species[29:]
 N = len(plot_species)
-if N != len(vmr_ref):
+if N != vmr_ref.shape[1]:
     raise ValueError("Length mismatch between ln_nk[29:] and vmr_ref")
 # for i in range(0, N):
 #    idx_exogibbs = gas.species.index(plot_species[i])
 #    print(idx_exogibbs)
-
+print("Set up complete.")
 
 import jax.numpy as jnp
 from jax import lax, vmap
@@ -227,8 +228,9 @@ vmr_exogibbs = np.exp(ln_nk[:, 29:] - logsumexp(ln_nk, axis=1)[:, None])
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 for i in range(0, N):
-    #plt.plot(vmr_exogibbs[:, i], pressures, ".", alpha=0.3)
-    plt.plot(vmr_exogibbs[:, i], pressures, alpha=0.3)
+    color = "C"+str(i)
+    plt.plot(vmr_ref[:, i], pressures, ".", alpha=0.3, color=color)
+    plt.plot(vmr_exogibbs[:, i], pressures, alpha=0.3, color=color)
 
 plt.xlim(1.0e-300, 1.0)
 plt.xscale("log")
