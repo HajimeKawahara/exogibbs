@@ -15,6 +15,7 @@ from exogibbs.optimize.stepsize import stepsize_sk
 def solve_gibbs_iteration_equations_cond(
     nk: jnp.ndarray,
     mk: jnp.ndarray,
+    etak: jnp.ndarray,
     ntotk: float,
     formula_matrix: jnp.ndarray,
     formula_matrix_cond: jnp.ndarray,
@@ -32,6 +33,7 @@ def solve_gibbs_iteration_equations_cond(
     Args:
         nk: number of species vector (n_species,) for k-th iteration.
         mk: number of condensed species vector (n_cond,) for k-th iteration.
+        etak: eta vector (n_cond,) for k-th iteration.
         ntotk: Total number of species for k-th iteration.
         formula_matrix: Gas Formula matrix for stoichiometric constraints (n_elements, n_species).
         formula_matrix_cond: Condensates Formula matrix for stoichiometric constraints (n_elements, n_cond).
@@ -44,7 +46,8 @@ def solve_gibbs_iteration_equations_cond(
     Returns:
         delta (ln nk) vector, i.e. delta q
         delta (ln mk) vector, i.e. delta r
-        The pi vector 
+        The pi vector
+        delta rho vector
         The update of the  log total number of species (delta_ln_ntot).
     """
     nspecies = nk.shape[0]
@@ -57,22 +60,35 @@ def solve_gibbs_iteration_equations_cond(
     delta_bk_hat = b - (bk + formula_matrix_cond @ mk)  # b - (Ag nk + Ac mk)
 
     EN = jnp.identity(nspecies)
+    EM = jnp.identity(ncond)
     ZNM = jnp.zeros((nspecies, ncond))
+    ZBM = jnp.zeros((nelement, ncond))
+    ZM = jnp.zeros((ncond, ncond))
     ZB = jnp.zeros((nelement, nelement))
     zvm = jnp.zeros((ncond, 1))
     zvb = jnp.zeros((nelement, 1))
     u = jnp.ones((nspecies, 1))
 
+    epsilonk = jnp.log(etak * mk)
+
     assemble_mat = jnp.block(
         [
-            [EN, ZNM, - formula_matrix.T, -u],
-            [ZNM.T, nuk * jnp.diag(1.0 / mk), -formula_matrix_cond.T, zvm],
-            [Yg, Yc, ZB, zvb],
-            [nk[:, jnp.newaxis].T, zvm.T, zvb.T, jnp.array([[-ntotk]])],
+            [EN, ZNM, -formula_matrix.T, ZNM, -u],
+            [ZNM.T, ZM, formula_matrix_cond.T, jnp.diag(etak), zvm],
+            [Yg, Yc, ZB, ZBM, zvb],
+            [ZNM.T, EM, ZBM.T, EM, zvm][
+                nk[:, jnp.newaxis].T, zvm.T, zvb.T, zvm.T, jnp.array([[-ntotk]])
+            ],
         ]
     )
     assemble_vec = jnp.concatenate(
-        [-gk, nuk / mk - hvector_cond, delta_bk_hat, jnp.array([- resn])]
+        [
+            -gk,
+            hvector_cond - etak,
+            delta_bk_hat,
+            -jnp.log(mk) - jnp.log(etak) + epsilonk,
+            jnp.array([-resn]),
+        ]
     )
 
     # B) whole scaling
@@ -87,7 +103,13 @@ def solve_gibbs_iteration_equations_cond(
     # lu, piv = lu_factor(assemble_mat)
     # assemble_variable = lu_solve((lu, piv), assemble_vec)
 
-    return assemble_variable[:nspecies], assemble_variable[nspecies:nspecies+ncond], assemble_variable[nspecies+ncond:-1], assemble_variable[-1]
+    return (
+        assemble_variable[:nspecies],
+        assemble_variable[nspecies : nspecies + ncond],
+        assemble_variable[nspecies + ncond : nspecies + ncond + nelement],
+        assemble_variable[nspecies + ncond + nelement : -1],
+        assemble_variable[-1],
+    )
 
 
 def _compute_residuals(
@@ -141,26 +163,26 @@ def _update_all(
 
     nuk = jnp.exp(epsilon)
     bk = formula_matrix @ jnp.exp(ln_nk)
-    
-    delta_ln_nk, delta_ln_mk, pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations_cond(
-        jnp.exp(ln_nk),
-        jnp.exp(ln_mk),
-        jnp.exp(ln_ntot),
-        formula_matrix,
-        formula_matrix_cond,
-        b,
-        gk,
-        hvector_cond,
-        bk,
-        nuk,
+
+    delta_ln_nk, delta_ln_mk, pi_vector, delta_ln_ntot = (
+        solve_gibbs_iteration_equations_cond(
+            jnp.exp(ln_nk),
+            jnp.exp(ln_mk),
+            jnp.exp(ln_ntot),
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            gk,
+            hvector_cond,
+            bk,
+            nuk,
+        )
     )
 
-    
-    
     MAX_STEP_M_UP = 0.1  # do not update larger than ln(m) 0.1e ~ 10%
     MAX_STEP_M_LOW = 0.1
     delta_ln_mk = jnp.clip(delta_ln_mk, -MAX_STEP_M_LOW, MAX_STEP_M_UP)
-    
+
     # relaxation and update
     # lam = 0.0001  # need to reconsider
 
