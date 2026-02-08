@@ -1,13 +1,15 @@
 """Thermpodynamic potential functions for ExoGibbs API."""
 
 import jax.numpy as jnp
+from jax import vmap
 from typing import Optional
+from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.utils.constants import R_gas_constant_si
 
 
 def gibbs_energy(
-    temperature: jnp.ndarray,
-    pressure: jnp.ndarray,
+    temperature: float,
+    pressure: float,
     chem_gas: ChemicalSetup,
     ngas: jnp.ndarray,
     chem_cond: Optional[ChemicalSetup] = None,
@@ -16,10 +18,10 @@ def gibbs_energy(
     """Calculate Gibbs energy from chemical setup, temperature, and pressure.
 
     Args:
-        temperature: jnp.ndarray
-            Temperature(s) at which to evaluate Gibbs energy.
-        pressure: jnp.ndarray
-            Pressure(s) at which to evaluate Gibbs energy.
+        temperature: float
+            Temperature at which to evaluate Gibbs energy.
+        pressure: float
+            Pressure at which to evaluate Gibbs energy.
         chem: ChemicalSetup
             The chemical setup containing formula matrix and enthalpy function.
 
@@ -35,3 +37,66 @@ def gibbs_energy(
         return g_gas + g_cond
 
     return g_gas
+
+
+def gibbs_energies(
+    temperatures: jnp.ndarray,
+    pressures: jnp.ndarray,
+    chem_gas: ChemicalSetup,
+    ngas: jnp.ndarray,
+    chem_cond: Optional[ChemicalSetup] = None,
+    ncond: Optional[jnp.ndarray] = None,
+    ):
+    """Vectorized Gibbs energy calculation over temperature and pressure arrays."""
+    gibbs_energy_vmapped = vmap(
+        gibbs_energy,
+        in_axes=(0, 0, None, None, None, None),
+    )   
+    return gibbs_energy_vmapped(
+        temperatures,
+        pressures,
+        chem_gas,
+        ngas,
+        chem_cond,
+        ncond,
+    )
+
+
+if __name__ == "__main__":
+
+    from exogibbs.presets.fastchem_cond import chemsetup as condsetup
+    from exogibbs.presets.fastchem import chemsetup as gassetup
+
+    from jax import config
+
+    config.update("jax_enable_x64", True)
+
+    gas = gassetup()
+    cond = condsetup()
+    temperature = 1000.0 
+    pressure = 1.0 
+    ngas = jnp.ones(len(gas.species))
+    ncond = jnp.ones(len(cond.species))
+
+    g = gibbs_energy(
+        temperature=temperature,
+        pressure=pressure,
+        chem_gas=gas,
+        ngas=ngas,
+        chem_cond=cond,
+        ncond=ncond,
+    )
+    print("Gibbs energy:", g)
+
+    n=100
+    temperatures = jnp.linspace(500.0, 3000.0, n)
+    pressures = jnp.linspace(0.1, 10.0, n)
+    gs = gibbs_energies(
+        temperatures=temperatures,
+        pressures=pressures,
+        chem_gas=gas,
+        ngas=ngas,
+        chem_cond=cond,
+        ncond=ncond,
+    )
+    print("Gibbs energies:", gs)
