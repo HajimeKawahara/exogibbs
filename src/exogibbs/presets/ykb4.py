@@ -85,7 +85,7 @@ def chemsetup() -> ChemicalSetup:
         elements=tuple(elements) if elements is not None else None,
         species=tuple(species) if species is not None else None,
         element_vector_reference=element_vector_ref,
-        metadata={"source": "JANAF"},
+        metadata={"source": "JANAF", "dataset": "gas"},
     )
 
 
