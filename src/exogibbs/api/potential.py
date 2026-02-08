@@ -14,6 +14,7 @@ def gibbs_energy(
     ngas: jnp.ndarray,
     chem_cond: Optional[ChemicalSetup] = None,
     ncond: Optional[jnp.ndarray] = None,
+    nomalize: bool = False,
 ):
     """Calculate Gibbs energy from chemical setup, temperature, and pressure.
 
@@ -22,11 +23,27 @@ def gibbs_energy(
             Temperature at which to evaluate Gibbs energy.
         pressure: float
             Pressure at which to evaluate Gibbs energy.
-        chem: ChemicalSetup
-            The chemical setup containing formula matrix and enthalpy function.
+        chem_gas: ChemicalSetup
+            The chemical setup for gas phase.
+        ngas: jnp.ndarray
+            Amounts of gas species (K_gas,).
+        chem_cond: Optional[ChemicalSetup]
+            The chemical setup for condensed phase.
+        ncond: Optional[jnp.ndarray]
+            Amounts of condensed species (K_cond,).
+        nomalize: bool
+            If True, return normalized Gibbs energy (G/RT).
+
+    Returns:
+        float
+            Gibbs energy at given temperature and pressure.
 
     """
-    RT = R_gas_constant_si * temperature
+    if nomalize:
+        RT = 1.0
+    else:
+        RT = R_gas_constant_si * temperature
+    
     ntot = jnp.sum(ngas)
     hvector_gas = chem_gas.hvector_func(temperature) + jnp.log(pressure * ngas / ntot)
     g_gas = jnp.dot(ngas, hvector_gas) * RT
@@ -46,11 +63,34 @@ def gibbs_energies(
     ngas: jnp.ndarray,
     chem_cond: Optional[ChemicalSetup] = None,
     ncond: Optional[jnp.ndarray] = None,
+    nomalize: bool = False,
     ):
-    """Vectorized Gibbs energy calculation over temperature and pressure arrays."""
+    """Vectorized Gibbs energy calculation over temperature and pressure arrays.
+    
+    Args:
+        temperatures: jnp.ndarray
+            Array of temperatures at which to evaluate Gibbs energy.
+        pressures: jnp.ndarray
+            Array of pressures at which to evaluate Gibbs energy.
+        chem_gas: ChemicalSetup
+            The chemical setup for gas phase.
+        ngas: jnp.ndarray
+            Amounts of gas species (K_gas,).
+        chem_cond: Optional[ChemicalSetup]
+            The chemical setup for condensed phase.
+        ncond: Optional[jnp.ndarray]
+            Amounts of condensed species (K_cond,).
+        nomalize: bool
+            If True, return normalized Gibbs energy (G/RT).
+
+    Returns:
+        jnp.ndarray
+            Array of Gibbs energies corresponding to input temperatures and pressures.
+    
+    """
     gibbs_energy_vmapped = vmap(
         gibbs_energy,
-        in_axes=(0, 0, None, None, None, None),
+        in_axes=(0, 0, None, None, None, None, None),
     )   
     return gibbs_energy_vmapped(
         temperatures,
@@ -59,6 +99,7 @@ def gibbs_energies(
         ngas,
         chem_cond,
         ncond,
+        nomalize,
     )
 
 
@@ -85,6 +126,7 @@ if __name__ == "__main__":
         ngas=ngas,
         chem_cond=cond,
         ncond=ncond,
+        nomalize=True,
     )
     print("Gibbs energy:", g)
 
@@ -98,5 +140,6 @@ if __name__ == "__main__":
         ngas=ngas,
         chem_cond=cond,
         ncond=ncond,
+        nomalize=True,
     )
     print("Gibbs energies:", gs)
