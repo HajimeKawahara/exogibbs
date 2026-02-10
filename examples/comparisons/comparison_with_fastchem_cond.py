@@ -120,4 +120,6 @@ if prof:
 else:
     vmr_fastchem = np.array(number_densities[:, plot_species_indices] / gas_number_density)[0]      
 
+print(np.sum(number_densities, axis=1)/gas_number_density)
+
 np.savez("vmr_fastchem"+tag+".npz", vmr_fastchem=vmr_fastchem, temperature=temperature, pressure=pressure)

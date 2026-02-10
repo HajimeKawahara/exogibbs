@@ -3,17 +3,19 @@
 import jax.numpy as jnp
 from jax import vmap
 from typing import Optional
+
+from sympy import ln
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.utils.constants import R_gas_constant_si
-
+from jax.scipy.special import logsumexp
 
 def gibbs_energy(
     temperature: float,
     pressure: float,
     chem_gas: ChemicalSetup,
-    ngas: jnp.ndarray,
+    ln_ngas: jnp.ndarray,
     chem_cond: Optional[ChemicalSetup] = None,
-    ncond: Optional[jnp.ndarray] = None,
+    ln_ncond: Optional[jnp.ndarray] = None,
     nomalize: bool = False,
 ):
     """Calculate Gibbs energy from chemical setup, temperature, and pressure.
@@ -25,12 +27,12 @@ def gibbs_energy(
             Pressure at which to evaluate Gibbs energy.
         chem_gas: ChemicalSetup
             The chemical setup for gas phase.
-        ngas: jnp.ndarray
-            Amounts of gas species (K_gas,).
+        ln_ngas: jnp.ndarray
+            Logarithm of amounts of gas species (K_gas,).
         chem_cond: Optional[ChemicalSetup]
             The chemical setup for condensed phase.
-        ncond: Optional[jnp.ndarray]
-            Amounts of condensed species (K_cond,).
+        ln_ncond: Optional[jnp.ndarray]
+            Logarithm of amounts of condensed species (K_cond,).
         nomalize: bool
             If True, return normalized Gibbs energy (G/RT).
 
@@ -44,13 +46,14 @@ def gibbs_energy(
     else:
         RT = R_gas_constant_si * temperature
     
-    ntot = jnp.sum(ngas)
-    hvector_gas = chem_gas.hvector_func(temperature) + jnp.log(pressure * ngas / ntot)
-    g_gas = jnp.dot(ngas, hvector_gas) * RT
+    ln_ntot = logsumexp(ln_ngas)
+    #hvector_gas = chem_gas.hvector_func(temperature) + jnp.log(pressure * ngas / ntot)
+    hvector_gas = chem_gas.hvector_func(temperature) + jnp.log(pressure) + ln_ngas - ln_ntot
+    g_gas = jnp.dot(jnp.exp(ln_ngas), hvector_gas) * RT
 
-    if chem_cond is not None and ncond is not None:
+    if chem_cond is not None and ln_ncond is not None:
         hvector_cond = chem_cond.hvector_func(temperature)
-        g_cond = jnp.dot(ncond, hvector_cond) * RT
+        g_cond = jnp.dot(jnp.exp(ln_ncond), hvector_cond) * RT
         return g_gas + g_cond
 
     return g_gas
@@ -60,9 +63,9 @@ def gibbs_energies(
     temperatures: jnp.ndarray,
     pressures: jnp.ndarray,
     chem_gas: ChemicalSetup,
-    ngas: jnp.ndarray,
+    ln_ngas: jnp.ndarray,
     chem_cond: Optional[ChemicalSetup] = None,
-    ncond: Optional[jnp.ndarray] = None,
+    ln_ncond: Optional[jnp.ndarray] = None,
     nomalize: bool = False,
     ):
     """Vectorized Gibbs energy calculation over temperature and pressure arrays.
@@ -74,12 +77,12 @@ def gibbs_energies(
             Array of pressures at which to evaluate Gibbs energy.
         chem_gas: ChemicalSetup
             The chemical setup for gas phase.
-        ngas: jnp.ndarray
-            Amounts of gas species (K_gas,).
+        ln_ngas: jnp.ndarray
+            Logarithm of amounts of gas species (K_gas,).
         chem_cond: Optional[ChemicalSetup]
             The chemical setup for condensed phase.
-        ncond: Optional[jnp.ndarray]
-            Amounts of condensed species (K_cond,).
+        ln_ncond: Optional[jnp.ndarray]
+            Logarithm of amounts of condensed species (K_cond,).
         nomalize: bool
             If True, return normalized Gibbs energy (G/RT).
 
@@ -96,9 +99,9 @@ def gibbs_energies(
         temperatures,
         pressures,
         chem_gas,
-        ngas,
+        ln_ngas,
         chem_cond,
-        ncond,
+        ln_ncond,
         nomalize,
     )
 
@@ -116,16 +119,15 @@ if __name__ == "__main__":
     cond = condsetup()
     temperature = 1000.0 
     pressure = 1.0 
-    ngas = jnp.ones(len(gas.species))
-    ncond = jnp.ones(len(cond.species))
-
+    ln_ngas = jnp.log(jnp.ones(len(gas.species)))
+    ln_ncond = jnp.log(jnp.ones(len(cond.species)))
     g = gibbs_energy(
         temperature=temperature,
         pressure=pressure,
         chem_gas=gas,
-        ngas=ngas,
+        ln_ngas=ln_ngas,
         chem_cond=cond,
-        ncond=ncond,
+        ln_ncond=ln_ncond,
         nomalize=True,
     )
     print("Gibbs energy:", g)
@@ -137,9 +139,9 @@ if __name__ == "__main__":
         temperatures=temperatures,
         pressures=pressures,
         chem_gas=gas,
-        ngas=ngas,
+        ln_ngas=ln_ngas,
         chem_cond=cond,
-        ncond=ncond,
+        ln_ncond=ln_ncond,
         nomalize=True,
     )
     print("Gibbs energies:", gs)

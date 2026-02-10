@@ -222,6 +222,9 @@ ln_nk, ln_mk, ln_ntot = jit_vmap_minimize_gibbs_cond(
 end = time.time()
 print("Computation time (s):", end - start)
 
+from exogibbs.api.potential import gibbs_energies
+
+
 
 #vmr_exogibbs = np.exp(ln_nk[:, 29:]) / np.sum(np.exp(ln_nk), axis=1)[:, None]
 vmr_exogibbs = np.exp(ln_nk[:, 29:] - logsumexp(ln_nk, axis=1)[:, None])
