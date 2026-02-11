@@ -47,9 +47,12 @@ input_data.pressure = pressure
 
 # run FastChem on the entire p-T structure
 fastchem_flag = fastchem.calcDensities(input_data, output_data)
-
 print("FastChem reports:")
 print("  -", pyfastchem.FASTCHEM_MSG[fastchem_flag])
+
+if fastchem_flag != pyfastchem.FASTCHEM_SUCCESS:
+    raise RuntimeError("FastChem calculation did not complete successfully. maybe try in fastchem/python/ directory?")
+
 
 # ExoGibbs comparison###############################################################
 # Thermodynamic conditions
@@ -66,6 +69,10 @@ nsol_vector = jnp.array(
 )  # no solar abundance for e-
 element_vector = jnp.append(nsol_vector, 0.0)
 opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
+
+from time import time
+
+start_time = time()
 res = equilibrium_profile(
     chem,
     temperature,
@@ -75,6 +82,9 @@ res = equilibrium_profile(
     options=opts,
 )
 nk_result = res.x
+print(nk_result)
+end_time = time()
+print(f"ExoGibbs calculation took {end_time - start_time:.2f} seconds")
 ##################################################################################
     
 # plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1"]

@@ -93,7 +93,9 @@ def _build_chemical_setup(
         T = jnp.asarray(T)
         if T.ndim == 0:
             return -logk_at(T)
-        return -vmap(logk_at)(T)
+        flat_t = T.reshape(-1)
+        hvector = -vmap(logk_at)(flat_t)
+        return hvector.reshape(T.shape + (hvector.shape[-1],))
 
     return ChemicalSetup(
         formula_matrix=formula_matrix,

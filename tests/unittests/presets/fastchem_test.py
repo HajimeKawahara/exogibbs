@@ -26,6 +26,21 @@ def test_run():
     # print(result.x[0]) #2.1066081741146924e-08
     assert result.x[0] == pytest.approx(2.1066081741146924e-08, rel=1e-15)
 
+
+def test_hvector_profile_shape_species_last():
+    import jax.numpy as jnp
+    from exogibbs.presets.fastchem import chemsetup
+
+    setup = chemsetup(silent=True)
+    K = setup.formula_matrix.shape[1]
+    temperatures = jnp.array([800.0, 1000.0, 1200.0])
+
+    h_profile = setup.hvector_func(temperatures)
+    h_profile_vmap = jnp.stack([setup.hvector_func(T) for T in temperatures], axis=0)
+
+    assert h_profile.shape == (temperatures.shape[0], K)
+    assert jnp.allclose(h_profile, h_profile_vmap)
+
 if __name__ == "__main__":
     test_chemsetup()
     test_run()

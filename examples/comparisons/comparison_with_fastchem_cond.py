@@ -77,6 +77,9 @@ fastchem_flag = fastchem.calcDensities(input_data, output_data)
 print("FastChem reports:")
 print("  -", pyfastchem.FASTCHEM_MSG[fastchem_flag])
 
+if fastchem_flag != pyfastchem.FASTCHEM_SUCCESS:
+    raise RuntimeError("FastChem calculation did not complete successfully. maybe try in fastchem/python/ directory?")
+
 if np.amin(output_data.element_conserved[:]) == 1:
     print("  - element conservation: ok")
 else:
