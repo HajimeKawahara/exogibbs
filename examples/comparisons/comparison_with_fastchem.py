@@ -47,9 +47,12 @@ input_data.pressure = pressure
 
 # run FastChem on the entire p-T structure
 fastchem_flag = fastchem.calcDensities(input_data, output_data)
-
 print("FastChem reports:")
 print("  -", pyfastchem.FASTCHEM_MSG[fastchem_flag])
+
+if fastchem_flag != pyfastchem.FASTCHEM_SUCCESS:
+    raise RuntimeError("FastChem calculation did not complete successfully. maybe try in fastchem/python/ directory?")
+
 
 # ExoGibbs comparison###############################################################
 # Thermodynamic conditions
@@ -75,6 +78,7 @@ res = equilibrium_profile(
     options=opts,
 )
 nk_result = res.x
+print(nk_result)
 ##################################################################################
     
 # plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1"]
