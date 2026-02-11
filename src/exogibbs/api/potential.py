@@ -1,61 +1,11 @@
-"""Thermpodynamic potential functions for ExoGibbs API."""
+"""Thermodynamic potential functions for ExoGibbs API."""
 
 import jax.numpy as jnp
-from jax import vmap
 from typing import Optional
 
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.utils.constants import R_gas_constant_si
 from jax.scipy.special import logsumexp
-
-def gibbs_energy(
-    temperature: float,
-    pressure: float,
-    chem_gas: ChemicalSetup,
-    ln_ngas: jnp.ndarray,
-    chem_cond: Optional[ChemicalSetup] = None,
-    ln_ncond: Optional[jnp.ndarray] = None,
-    nomalize: bool = False,
-):
-    """Calculate Gibbs energy from chemical setup, temperature, and pressure.
-
-    Args:
-        temperature: float
-            Temperature at which to evaluate Gibbs energy.
-        pressure: float
-            Pressure at which to evaluate Gibbs energy.
-        chem_gas: ChemicalSetup
-            The chemical setup for gas phase.
-        ln_ngas: jnp.ndarray
-            Logarithm of amounts of gas species (K_gas,).
-        chem_cond: Optional[ChemicalSetup]
-            The chemical setup for condensed phase.
-        ln_ncond: Optional[jnp.ndarray]
-            Logarithm of amounts of condensed species (K_cond,).
-        nomalize: bool
-            If True, return normalized Gibbs energy (G/RT).
-
-    Returns:
-        float
-            Gibbs energy at given temperature and pressure.
-
-    """
-    if nomalize:
-        RT = 1.0
-    else:
-        RT = R_gas_constant_si * temperature
-    
-    ln_ntot = logsumexp(ln_ngas)
-    #hvector_gas = chem_gas.hvector_func(temperature) + jnp.log(pressure * ngas / ntot)
-    hvector_gas = chem_gas.hvector_func(temperature) + jnp.log(pressure) + ln_ngas - ln_ntot
-    g_gas = jnp.dot(jnp.exp(ln_ngas), hvector_gas) * RT
-
-    if chem_cond is not None and ln_ncond is not None:
-        hvector_cond = chem_cond.hvector_func(temperature)
-        g_cond = jnp.dot(jnp.exp(ln_ncond), hvector_cond) * RT
-        return g_gas + g_cond
-
-    return g_gas
 
 
 def gibbs_energies(
@@ -68,7 +18,7 @@ def gibbs_energies(
     nomalize: bool = False,
     ):
     """Vectorized Gibbs energy calculation over temperature and pressure arrays.
-    
+
     Args:
         temperatures: jnp.ndarray
             Array of temperatures at which to evaluate Gibbs energy.
@@ -88,21 +38,43 @@ def gibbs_energies(
     Returns:
         jnp.ndarray
             Array of Gibbs energies corresponding to input temperatures and pressures.
-    
+
     """
-    gibbs_energy_vmapped = vmap(
-        gibbs_energy,
-        in_axes=(0, 0, None, 0, None, 0, None),
-    )   
-    return gibbs_energy_vmapped(
-        temperatures,
-        pressures,
-        chem_gas,
-        ln_ngas,
-        chem_cond,
-        ln_ncond,
-        nomalize,
+    temperatures = jnp.asarray(temperatures)
+    pressures = jnp.asarray(pressures)
+    ln_ngas = jnp.asarray(ln_ngas)
+
+    if temperatures.ndim != 1 or pressures.ndim != 1:
+        raise ValueError("temperatures and pressures must be 1D arrays.")
+    if temperatures.shape[0] != pressures.shape[0]:
+        raise ValueError("temperatures and pressures must have the same length.")
+    if ln_ngas.ndim != 2 or ln_ngas.shape[0] != temperatures.shape[0]:
+        raise ValueError("ln_ngas must have shape (N, K_gas).")
+
+    if nomalize:
+        RT = jnp.ones_like(temperatures)
+    else:
+        RT = R_gas_constant_si * temperatures
+
+    ln_ntot = logsumexp(ln_ngas, axis=1)
+    hvector_gas = (
+        chem_gas.hvector_func(temperatures)
+        + jnp.log(pressures)[:, None]
+        + ln_ngas
+        - ln_ntot[:, None]
     )
+    g_gas = jnp.sum(jnp.exp(ln_ngas) * hvector_gas, axis=1) * RT
+
+    if chem_cond is None or ln_ncond is None:
+        return g_gas
+
+    ln_ncond = jnp.asarray(ln_ncond)
+    if ln_ncond.ndim != 2 or ln_ncond.shape[0] != temperatures.shape[0]:
+        raise ValueError("ln_ncond must have shape (N, K_cond).")
+
+    hvector_cond = chem_cond.hvector_func(temperatures)
+    g_cond = jnp.sum(jnp.exp(ln_ncond) * hvector_cond, axis=1) * RT
+    return g_gas + g_cond
 
 
 if __name__ == "__main__":
@@ -116,13 +88,13 @@ if __name__ == "__main__":
 
     gas = gassetup()
     cond = condsetup()
-    temperature = 1000.0 
-    pressure = 1.0 
-    ln_ngas = jnp.log(jnp.ones(len(gas.species)))
-    ln_ncond = jnp.log(jnp.ones(len(cond.species)))
-    g = gibbs_energy(
-        temperature=temperature,
-        pressure=pressure,
+    temperature = 1000.0
+    pressure = 1.0
+    ln_ngas = jnp.log(jnp.ones((1, len(gas.species))))
+    ln_ncond = jnp.log(jnp.ones((1, len(cond.species))))
+    g = gibbs_energies(
+        temperatures=jnp.array([temperature]),
+        pressures=jnp.array([pressure]),
         chem_gas=gas,
         ln_ngas=ln_ngas,
         chem_cond=cond,
@@ -131,15 +103,14 @@ if __name__ == "__main__":
     )
     print("Gibbs energy:", g)
 
-    n=100
-    
-    
+    n = 100
+
     temperatures = jnp.linspace(500.0, 3000.0, n)
     pressures = jnp.linspace(0.1, 10.0, n)
-    
+
     ln_ngas = jnp.log(jnp.ones((n, len(gas.species))))
     ln_ncond = jnp.log(jnp.ones((n, len(cond.species))))
-    
+
     gs = gibbs_energies(
         temperatures=temperatures,
         pressures=pressures,
