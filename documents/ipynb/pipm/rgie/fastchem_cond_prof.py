@@ -10,9 +10,7 @@
 # In[1]:
 
 
-from cProfile import label
 from jax import config
-from sympy import Ne
 
 config.update("jax_enable_x64", True)
 
