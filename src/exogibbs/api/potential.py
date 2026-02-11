@@ -93,7 +93,7 @@ def gibbs_energies(
     """
     gibbs_energy_vmapped = vmap(
         gibbs_energy,
-        in_axes=(0, 0, None, None, None, None, None),
+        in_axes=(0, 0, None, 0, None, 0, None),
     )   
     return gibbs_energy_vmapped(
         temperatures,
@@ -133,8 +133,14 @@ if __name__ == "__main__":
     print("Gibbs energy:", g)
 
     n=100
+    
+    
     temperatures = jnp.linspace(500.0, 3000.0, n)
     pressures = jnp.linspace(0.1, 10.0, n)
+    
+    ln_ngas = jnp.log(jnp.ones((n, len(gas.species))))
+    ln_ncond = jnp.log(jnp.ones((n, len(cond.species))))
+    
     gs = gibbs_energies(
         temperatures=temperatures,
         pressures=pressures,
