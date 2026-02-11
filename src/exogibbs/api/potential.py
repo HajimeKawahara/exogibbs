@@ -4,7 +4,6 @@ import jax.numpy as jnp
 from jax import vmap
 from typing import Optional
 
-from sympy import ln
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.utils.constants import R_gas_constant_si
 from jax.scipy.special import logsumexp
