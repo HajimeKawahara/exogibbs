@@ -3,7 +3,6 @@ from jax.scipy.special import logsumexp
 
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.api.potential import gibbs_energy, gibbs_energies
-from exogibbs.utils.constants import R_gas_constant_si
 
 
 def test_gibbs_energy_with_condensed_phase_normalized():
@@ -47,14 +46,18 @@ def test_gibbs_energies_vectorized_matches_scalar_non_normalized():
 
     temperatures = jnp.array([1000.0, 1500.0])
     pressures = jnp.array([2.0, 2.0])
-    ln_ngas = jnp.log(jnp.array([2.0, 3.0]))
+    ln_ngas = jnp.log(jnp.array([[2.0, 3.0], [2.0, 3.0]]))
 
-    ln_ntot = logsumexp(ln_ngas)
-    base = jnp.dot(jnp.exp(ln_ngas), jnp.array([1.0, 2.0]) + jnp.log(pressures[0]) + ln_ngas - ln_ntot)
     expected = jnp.array(
         [
-            base * R_gas_constant_si * temperatures[0],
-            base * R_gas_constant_si * temperatures[1],
+            gibbs_energy(
+                temperature=temperatures[i],
+                pressure=pressures[i],
+                chem_gas=chem_gas,
+                ln_ngas=ln_ngas[i],
+                nomalize=False,
+            )
+            for i in range(2)
         ]
     )
 
