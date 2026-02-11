@@ -44,6 +44,11 @@ def test_hvector_func_shape_and_types():
     batched = jax.vmap(setup.hvector_func)(Ts)  # (B, K)
     assert batched.shape == (Ts.shape[0], K)
 
+    # direct batched T should also be species-last
+    batched_direct = setup.hvector_func(Ts)
+    assert batched_direct.shape == (Ts.shape[0], K)
+    assert jnp.allclose(batched_direct, batched)
+
 
 def test_hvector_func_grad_and_jit():
     """grad/jit should work through T."""

@@ -58,7 +58,10 @@ def chemsetup(path="fastchem/logK/logK.dat", silent=False) -> ChemicalSetup:
 
     def hvector_func(T: Union[float, jnp.ndarray]) -> jnp.ndarray:
         T = jnp.asarray(T)
-        return -vmap_logk(T, ccoeff_array)
+        hvector = -vmap_logk(T, ccoeff_array)
+        if T.ndim == 0:
+            return hvector
+        return jnp.moveaxis(hvector, 0, -1)
 
     hvector_func_jit = jit(hvector_func)
 

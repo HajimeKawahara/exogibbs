@@ -74,7 +74,10 @@ def chemsetup() -> ChemicalSetup:
         T = jnp.asarray(T)
         # Clamp to shared valid range to avoid NaN/Inf from OOB
         T_clamped = jnp.clip(T, Tmin, Tmax)
-        return interpolate_hvector_all(T_clamped, T_table, mu_table)
+        hvector = interpolate_hvector_all(T_clamped, T_table, mu_table)
+        if T.ndim == 0:
+            return hvector
+        return jnp.moveaxis(hvector, 0, -1)
 
     # JIT-compile once (optional but helps in loops)
     hvector_func_jit = jax.jit(hvector_func)
