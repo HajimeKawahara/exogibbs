@@ -53,7 +53,7 @@ plt.legend(loc="best")
 plt.savefig("cond_hvector.png")
 plt.show()
 plt.close()
-exit()
+#exit()
 
 
 from exogibbs.presets.fastchem import chemsetup as gassetup
