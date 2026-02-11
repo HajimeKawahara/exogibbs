@@ -1,8 +1,8 @@
 import jax.numpy as jnp
+from jax.scipy.special import logsumexp
 
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.api.potential import gibbs_energy, gibbs_energies
-from exogibbs.utils.constants import R_gas_constant_si
 
 
 def test_gibbs_energy_with_condensed_phase_normalized():
@@ -17,21 +17,21 @@ def test_gibbs_energy_with_condensed_phase_normalized():
 
     temperature = 1000.0
     pressure = 2.0
-    ngas = jnp.array([2.0, 3.0])
-    ncond = jnp.array([5.0])
+    ln_ngas = jnp.log(jnp.array([2.0, 3.0]))
+    ln_ncond = jnp.log(jnp.array([5.0]))
 
-    ntot = jnp.sum(ngas)
-    expected_gas = jnp.dot(ngas, jnp.array([1.0, 2.0]) + jnp.log(pressure * ngas / ntot))
-    expected_cond = jnp.dot(ncond, jnp.array([4.0]))
+    ln_ntot = logsumexp(ln_ngas)
+    expected_gas = jnp.dot(jnp.exp(ln_ngas), jnp.array([1.0, 2.0]) + jnp.log(pressure) + ln_ngas - ln_ntot)
+    expected_cond = jnp.dot(jnp.exp(ln_ncond), jnp.array([4.0]))
     expected = expected_gas + expected_cond
 
     out = gibbs_energy(
         temperature=temperature,
         pressure=pressure,
         chem_gas=chem_gas,
-        ngas=ngas,
+        ln_ngas=ln_ngas,
         chem_cond=chem_cond,
-        ncond=ncond,
+        ln_ncond=ln_ncond,
         nomalize=True,
     )
 
@@ -46,14 +46,18 @@ def test_gibbs_energies_vectorized_matches_scalar_non_normalized():
 
     temperatures = jnp.array([1000.0, 1500.0])
     pressures = jnp.array([2.0, 2.0])
-    ngas = jnp.array([2.0, 3.0])
+    ln_ngas = jnp.log(jnp.array([[2.0, 3.0], [2.0, 3.0]]))
 
-    ntot = jnp.sum(ngas)
-    base = jnp.dot(ngas, jnp.array([1.0, 2.0]) + jnp.log(pressures[0] * ngas / ntot))
     expected = jnp.array(
         [
-            base * R_gas_constant_si * temperatures[0],
-            base * R_gas_constant_si * temperatures[1],
+            gibbs_energy(
+                temperature=temperatures[i],
+                pressure=pressures[i],
+                chem_gas=chem_gas,
+                ln_ngas=ln_ngas[i],
+                nomalize=False,
+            )
+            for i in range(2)
         ]
     )
 
@@ -61,7 +65,7 @@ def test_gibbs_energies_vectorized_matches_scalar_non_normalized():
         temperatures=temperatures,
         pressures=pressures,
         chem_gas=chem_gas,
-        ngas=ngas,
+        ln_ngas=ln_ngas,
         nomalize=False,
     )
 

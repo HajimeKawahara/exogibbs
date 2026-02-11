@@ -145,7 +145,6 @@ def minimize_gibbs_cond(
     # epsilon schedule (static, safe)
     epsilons = jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:]
 
-
     def body_fn(i, state):
         ln_nk, ln_mk, ln_ntot = state
 
@@ -177,6 +176,7 @@ def minimize_gibbs_cond(
 
     return ln_nk, ln_mk, ln_ntot
 
+
 from jax import vmap
 from jax import jit
 
@@ -192,16 +192,10 @@ if init_setup == "gas_only":
         ln_ntot_init_list.append(logsumexp(result.ln_n))
     ln_nk_init = jnp.stack(ln_nk_init_list)
     ln_ntot_init = jnp.stack(ln_ntot_init_list)
-    ln_mk_init = jnp.zeros(
-        (ln_nk_init.shape[0], formula_matrix_cond_eff.shape[1])
-    )
+    ln_mk_init = jnp.zeros((ln_nk_init.shape[0], formula_matrix_cond_eff.shape[1]))
 elif init_setup == "zeros":
-    ln_nk_init = jnp.zeros(
-        (len(temperatures), formula_matrix_gas_eff.shape[1])
-    )
-    ln_mk_init = jnp.zeros(
-        (len(temperatures), formula_matrix_cond_eff.shape[1])
-    )
+    ln_nk_init = jnp.zeros((len(temperatures), formula_matrix_gas_eff.shape[1]))
+    ln_mk_init = jnp.zeros((len(temperatures), formula_matrix_cond_eff.shape[1]))
     ln_ntot_init = logsumexp(ln_nk_init, axis=1)
 else:
     raise ValueError("Invalid init_setup option")
@@ -222,13 +216,41 @@ ln_nk, ln_mk, ln_ntot = jit_vmap_minimize_gibbs_cond(
 end = time.time()
 print("Computation time (s):", end - start)
 
+ln_ntot = logsumexp(ln_nk, axis=1)[:, None]
 
-#vmr_exogibbs = np.exp(ln_nk[:, 29:]) / np.sum(np.exp(ln_nk), axis=1)[:, None]
-vmr_exogibbs = np.exp(ln_nk[:, 29:] - logsumexp(ln_nk, axis=1)[:, None])
+# Gibbs energy
+from exogibbs.api.potential import gibbs_energies
+
+ge = gibbs_energies(
+    temperatures,
+    pressures,
+    gas,
+    ln_nk,
+    cond,
+    ln_mk,
+    nomalize=True,
+)
+
+fig = plt.figure()
+ax = fig.add_subplot(1, 1, 1)
+plt.plot(ge, pressures)
+plt.xscale("log")
+plt.yscale("log")
+plt.xlabel("Normalized Gibbs energy G/RT")
+plt.ylabel("Pressure [bar]")
+ax.invert_yaxis()
+plt.legend()
+plt.show()
+plt.close()
+
+
+
+# plotting
+vmr_exogibbs = np.exp(ln_nk[:, 29:] - ln_ntot)
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
 for i in range(0, N):
-    color = "C"+str(i)
+    color = "C" + str(i)
     plt.plot(vmr_ref[:, i], pressures, ".", alpha=0.3, color=color)
     plt.plot(vmr_exogibbs[:, i], pressures, alpha=0.3, color=color)
 

@@ -30,6 +30,30 @@ pressures = np.atleast_1d(data["pressure"])
 from exogibbs.presets.fastchem_cond import chemsetup as condsetup
 
 cond = condsetup()
+
+
+fig = plt.figure()
+ax1 = fig.add_subplot(1, 2, 1)
+plt.plot(temperatures,pressures)
+ax1.invert_yaxis()
+plt.yscale("log")
+plt.xlabel("Temperature [K]")
+plt.ylabel("Pressure [bar]")
+ax2 = fig.add_subplot(1, 2, 2)
+hmatrix = cond.hvector_func(temperatures)
+for i in range(0, hmatrix.shape[1]):
+    if np.any(hmatrix[:, i] > 0.0):
+        plt.plot(hmatrix[:, i],pressures, label=cond.species[i])
+plt.yscale("log")
+ax2.invert_yaxis()
+plt.xlabel("Condensate h (mu/RT)")
+plt.legend(loc="best")
+plt.savefig("cond_hvector.png")
+plt.show()
+plt.close()
+#exit()
+
+
 from exogibbs.presets.fastchem import chemsetup as gassetup
 
 gas = gassetup()
@@ -222,11 +246,48 @@ ln_nk, ln_mk, ln_ntot = jit_vmap_minimize_gibbs_cond(
 end = time.time()
 print("Computation time (s):", end - start)
 
+ln_ntot = logsumexp(ln_nk, axis=1)[:, None]
 
-#vmr_exogibbs = np.exp(ln_nk[:, 29:]) / np.sum(np.exp(ln_nk), axis=1)[:, None]
-vmr_exogibbs = np.exp(ln_nk[:, 29:] - logsumexp(ln_nk, axis=1)[:, None])
+# Gibbs energy
+from exogibbs.api.potential import gibbs_energies
+
+ge = gibbs_energies(
+    temperatures,
+    pressures,
+    gas,
+    ln_nk,
+    cond,
+    ln_mk,
+    nomalize=True,
+)
+
+print(ge)
+
+
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
+plt.plot(-ge, pressures)
+plt.xscale("log")
+plt.yscale("log")
+plt.xlabel("negative Normalized Gibbs energy - G/RT")
+plt.ylabel("Pressure [bar]")
+ax.invert_yaxis()
+plt.legend()
+plt.savefig("gibbs_energy.png")  # want to make "output/vmr_comparison0001.png"
+plt.show()
+plt.close()
+
+
+
+# plotting
+Nelespec = 29 
+vmr_exogibbs = np.exp(ln_nk[:, Nelespec:] - ln_ntot)
+vmr_elespec_exogibbs = np.exp(ln_nk[:, :Nelespec] - ln_ntot)
+cond_exogibbs = np.exp(ln_mk[:, :] - ln_ntot)
+
+
+fig = plt.figure()
+ax = fig.add_subplot(1, 3, 1)
 for i in range(0, N):
     color = "C"+str(i)
     plt.plot(vmr_ref[:, i], pressures, ".", alpha=0.3, color=color)
@@ -237,6 +298,25 @@ plt.xscale("log")
 plt.yscale("log")
 ax.invert_yaxis()
 plt.legend()
-plt.savefig("prof.png")  # want to make "output/vmr_comparison0001.png"
+
+ax2 = fig.add_subplot(1, 3, 2)
+for i in range(0, Nelespec):
+    color = "C"+str(i)
+    plt.plot(vmr_elespec_exogibbs[:, i], pressures, alpha=0.3, color=color)
+plt.xscale("log")
+plt.yscale("log")
+ax2.invert_yaxis()
+plt.legend()
+
+ax3 = fig.add_subplot(1, 3, 3)
+for i in range(0, cond_exogibbs.shape[1]):
+    color = "C"+str(i)
+    plt.plot(cond_exogibbs[:, i], pressures, alpha=0.3, color=color)
+plt.xscale("log")
+plt.yscale("log")
+ax3.invert_yaxis()
+plt.legend()
+
+plt.savefig("prof.png")  
 plt.show()
 plt.close()
