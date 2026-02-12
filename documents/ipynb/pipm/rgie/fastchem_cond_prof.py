@@ -21,8 +21,8 @@ import matplotlib.pyplot as plt
 data = np.load("vmr_fastchem_prof.npz")
 vmr_ref = data["vmr_fastchem"]
 temperatures = np.atleast_1d(data["temperature"])
-pressures = np.atleast_1d(data["pressure"])
-
+pressures = np.atleast_1d(data["pressure"])  #from bottom to top
+Nelespec = 29 
 
 # In[2]:
 
@@ -250,6 +250,7 @@ ln_ntot = logsumexp(ln_nk, axis=1)[:, None]
 
 # Gibbs energy
 from exogibbs.api.potential import gibbs_energies
+from exogibbs.api.potential import compute_hvector_gases_at_tp
 
 ge = gibbs_energies(
     temperatures,
@@ -260,27 +261,67 @@ ge = gibbs_energies(
     ln_mk,
     nomalize=True,
 )
+hvtp = compute_hvector_gases_at_tp(temperatures, pressures, gas, ln_nk)
+each_gibbs_gas = hvtp*jnp.exp(ln_nk)
+each_gibbs_cond = cond.hvector_func(temperatures)*jnp.exp(ln_mk)
 
-print(ge)
 
-
+gass = []
+conds = []
 fig = plt.figure()
-ax = fig.add_subplot(1, 1, 1)
-plt.plot(-ge, pressures)
+ax = fig.add_subplot(1, 3, 2)
+plt.plot(-ge, pressures, lw=3)
+for i in range(0, each_gibbs_gas.shape[1]):
+    meg = -each_gibbs_gas[:, i]
+    if meg[-1] > 10.0: 
+        gass.append(i)
+        print(gas.species[i])
+        plt.plot(meg, pressures, lw=1, label=gas.species[i])
+    if i < 29: 
+        gass.append(i)
+        print(gas.species[i])
+        plt.plot(meg, pressures, lw=1, label=gas.species[i])
+
+#condensates
+for i in range(0, each_gibbs_cond.shape[1]):
+    meg = -each_gibbs_cond[:, i]
+    if meg[0] > 3.e2: 
+        conds.append(i)
+        print(cond.species[i])
+        plt.plot(meg, pressures, lw=1, label=cond.species[i], alpha=0.3)
+
+
 plt.xscale("log")
 plt.yscale("log")
 plt.xlabel("negative Normalized Gibbs energy - G/RT")
 plt.ylabel("Pressure [bar]")
 ax.invert_yaxis()
 plt.legend()
-plt.savefig("gibbs_energy.png")  # want to make "output/vmr_comparison0001.png"
+
+ax = fig.add_subplot(1, 3, 3)
+for i in conds:
+    print(i, cond.species[i])
+    plt.plot(-cond.hvector_func(temperatures)[:, i], pressures, lw=1, label=cond.species[i])
+
+plt.xscale("log")
+plt.yscale("log")
+plt.ylabel("Pressure [bar]")
+ax.invert_yaxis()
+plt.legend()
+
+ax1 = fig.add_subplot(1, 3, 1)
+plt.plot(temperatures,pressures)
+ax1.invert_yaxis()
+plt.yscale("log")
+plt.xlabel("Temperature [K]")
+plt.ylabel("Pressure [bar]")
+
 plt.show()
 plt.close()
 
 
 
 # plotting
-Nelespec = 29 
 vmr_exogibbs = np.exp(ln_nk[:, Nelespec:] - ln_ntot)
 vmr_elespec_exogibbs = np.exp(ln_nk[:, :Nelespec] - ln_ntot)
 cond_exogibbs = np.exp(ln_mk[:, :] - ln_ntot)

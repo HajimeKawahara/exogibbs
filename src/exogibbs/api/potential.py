@@ -56,14 +56,8 @@ def gibbs_energies(
     else:
         RT = R_gas_constant_si * temperatures
 
-    ln_ntot = logsumexp(ln_ngas, axis=1)
-    hvector_gas = (
-        chem_gas.hvector_func(temperatures)
-        + jnp.log(pressures)[:, None]
-        + ln_ngas
-        - ln_ntot[:, None]
-    )
-    g_gas = jnp.sum(jnp.exp(ln_ngas) * hvector_gas, axis=1) * RT
+    hvector_gases = compute_hvector_gases_at_tp(temperatures, pressures, chem_gas, ln_ngas)
+    g_gas = jnp.sum(jnp.exp(ln_ngas) * hvector_gases, axis=1) * RT
 
     if chem_cond is None or ln_ncond is None:
         return g_gas
@@ -75,6 +69,17 @@ def gibbs_energies(
     hvector_cond = chem_cond.hvector_func(temperatures)
     g_cond = jnp.sum(jnp.exp(ln_ncond) * hvector_cond, axis=1) * RT
     return g_gas + g_cond
+
+def compute_hvector_gases_at_tp(temperatures, pressures, chem_gas, ln_ngas):
+    ln_ntot = logsumexp(ln_ngas, axis=1)
+    hvector_gases = (
+        chem_gas.hvector_func(temperatures)
+        + jnp.log(pressures)[:, None]
+        + ln_ngas
+        - ln_ntot[:, None]
+    )
+    
+    return hvector_gases
 
 
 if __name__ == "__main__":
