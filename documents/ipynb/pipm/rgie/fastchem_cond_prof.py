@@ -49,7 +49,7 @@ ax2.invert_yaxis()
 plt.xlabel("Condensate h (mu/RT)")
 plt.legend(loc="best")
 plt.savefig("cond_hvector.png")
-plt.show()
+#plt.show()
 plt.close()
 #exit()
 
@@ -143,7 +143,7 @@ from jax import lax, vmap
 from jax.scipy.special import logsumexp
 
 init_setup = "gas_only"  # "zeros" or "gas_only"
-
+#init_setup = "ones"
 
 def minimize_gibbs_cond(
     temperature,
@@ -216,7 +216,7 @@ if init_setup == "gas_only":
         ln_ntot_init_list.append(logsumexp(result.ln_n))
     ln_nk_init = jnp.stack(ln_nk_init_list)
     ln_ntot_init = jnp.stack(ln_ntot_init_list)
-    ln_mk_init = jnp.zeros(
+    ln_mk_init = 1.e-10*jnp.ones(
         (ln_nk_init.shape[0], formula_matrix_cond_eff.shape[1])
     )
 elif init_setup == "zeros":
@@ -227,9 +227,45 @@ elif init_setup == "zeros":
         (len(temperatures), formula_matrix_cond_eff.shape[1])
     )
     ln_ntot_init = logsumexp(ln_nk_init, axis=1)
+elif init_setup == "ones":
+    ln_nk_init = jnp.ones(
+        (len(temperatures), formula_matrix_gas_eff.shape[1])
+    )
+    ln_mk_init = jnp.ones(
+        (len(temperatures), formula_matrix_cond_eff.shape[1])
+    )
+    ln_ntot_init = logsumexp(ln_nk_init, axis=1)
+
 else:
     raise ValueError("Invalid init_setup option")
 
+## Example usage of element_budget
+from exogibbs.analysis.budget import element_budget
+eb = element_budget(gas, ln_nk_init, cond, ln_mk_init)
+
+fig = plt.figure()
+ax1 = fig.add_subplot(1, 2, 1)
+plt.plot(temperatures,pressures)
+ax1.invert_yaxis()
+plt.yscale("log")
+plt.xlabel("Temperature [K]")
+plt.ylabel("Pressure [bar]")
+ax2 = fig.add_subplot(1, 2, 2)
+for mol, v in  eb["H"].items():
+    plt.plot(v, pressures, label=mol)
+plt.yscale("log")
+plt.xscale("log")
+ax2.invert_yaxis()
+plt.legend(loc="best")
+plt.savefig("budget.png")
+#plt.show()
+plt.close()
+
+
+
+######
+#exit()
+# computes condensates
 vmap_minimize_gibbs_cond = vmap(minimize_gibbs_cond, in_axes=(0, 0, 0, 0, 0))
 jit_vmap_minimize_gibbs_cond = jit(vmap_minimize_gibbs_cond)
 
@@ -249,7 +285,7 @@ print("Computation time (s):", end - start)
 ln_ntot = logsumexp(ln_nk, axis=1)[:, None]
 
 # Gibbs energy
-from exogibbs.api.potential import gibbs_energies
+from exogibbs.analysis.potential import gibbs_energies
 
 ge = gibbs_energies(
     temperatures,

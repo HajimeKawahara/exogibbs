@@ -1,4 +1,3 @@
-from turtle import reset
 import pytest
 
 def test_chemsetup():
