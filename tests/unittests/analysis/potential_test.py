@@ -2,7 +2,7 @@ import jax.numpy as jnp
 from jax.scipy.special import logsumexp
 
 from exogibbs.api.chemistry import ChemicalSetup
-from exogibbs.api.potential import gibbs_energies
+from exogibbs.api.analysis import gibbs_energies
 from exogibbs.utils.constants import R_gas_constant_si
 
 
