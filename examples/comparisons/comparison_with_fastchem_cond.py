@@ -23,7 +23,7 @@ config.update("jax_enable_x64", True)
 
 
 # we read in a p-T structure for a brown dwarf
-prof = True
+prof = False
 if prof:
     data = np.loadtxt("../input/example_p_t_structures/Brown_dwarf_Sonora.dat")
     tag = "_prof"

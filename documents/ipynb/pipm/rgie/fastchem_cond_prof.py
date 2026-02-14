@@ -9,6 +9,10 @@
 
 # In[1]:
 
+import matplotlib.pyplot as plt
+import colorcet as cc
+
+colors = cc.glasbey + cc.glasbey_dark + cc.glasbey_light
 
 from jax import config
 
@@ -163,8 +167,8 @@ def minimize_gibbs_cond(
     ln_ntot = ln_ntot_init
 
     epsilon_start = 0.0
-    epsilon_crit = -40.0
-    n_step = 100
+    epsilon_crit = -50.0
+    n_step = 300
 
     # epsilon schedule (static, safe)
     epsilons = jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:]
@@ -216,7 +220,7 @@ if init_setup == "gas_only":
         ln_ntot_init_list.append(logsumexp(result.ln_n))
     ln_nk_init = jnp.stack(ln_nk_init_list)
     ln_ntot_init = jnp.stack(ln_ntot_init_list)
-    ln_mk_init = 1.e-10*jnp.ones(
+    ln_mk_init = jnp.zeros(
         (ln_nk_init.shape[0], formula_matrix_cond_eff.shape[1])
     )
 elif init_setup == "zeros":
@@ -233,7 +237,7 @@ elif init_setup == "ones":
     )
     ln_mk_init = jnp.ones(
         (len(temperatures), formula_matrix_cond_eff.shape[1])
-    )
+    ) -30.0
     ln_ntot_init = logsumexp(ln_nk_init, axis=1)
 
 else:
@@ -241,30 +245,33 @@ else:
 
 ## Example usage of element_budget
 from exogibbs.analysis.budget import element_budget
-eb = element_budget(gas, ln_nk_init, cond, ln_mk_init)
-
-fig = plt.figure()
-ax1 = fig.add_subplot(1, 2, 1)
-plt.plot(temperatures,pressures)
-ax1.invert_yaxis()
-plt.yscale("log")
-plt.xlabel("Temperature [K]")
-plt.ylabel("Pressure [bar]")
-ax2 = fig.add_subplot(1, 2, 2)
-for mol, v in  eb["H"].items():
-    plt.plot(v, pressures, label=mol)
-plt.yscale("log")
-plt.xscale("log")
-ax2.invert_yaxis()
-plt.legend(loc="best")
-plt.savefig("budget.png")
-#plt.show()
-plt.close()
+eb_init, identifier_init = element_budget(gas, ln_nk_init, return_identifier=True)
+    
+if False:
+    eb = element_budget(gas, ln_nk_init, cond, ln_mk_init)
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1, 2, 1)
+    plt.plot(temperatures,pressures)
+    ax1.invert_yaxis()
+    plt.yscale("log")
+    plt.xlabel("Temperature [K]")
+    plt.ylabel("Pressure [bar]")
+    ax2 = fig.add_subplot(1, 2, 2)
+    for mol, v in  eb["H"].items():
+        c, ls, mk = next(style_cycle)
+        plt.plot(v, pressures, color=c, linestyle=ls, label=mol)
+        plt.text(v[-1], pressures[-1], mol, color=c, fontsize=8, rotation=270)
+    plt.yscale("log")
+    plt.xscale("log")
+    ax2.invert_yaxis()
+    #plt.legend(loc="best")
+    plt.savefig("budget_init.png")
+    plt.show()
+    plt.close()
 
 
 
 ######
-#exit()
 # computes condensates
 vmap_minimize_gibbs_cond = vmap(minimize_gibbs_cond, in_axes=(0, 0, 0, 0, 0))
 jit_vmap_minimize_gibbs_cond = jit(vmap_minimize_gibbs_cond)
@@ -283,6 +290,46 @@ end = time.time()
 print("Computation time (s):", end - start)
 
 ln_ntot = logsumexp(ln_nk, axis=1)[:, None]
+
+#budget
+eb, identifier = element_budget(gas, ln_nk, cond, ln_mk, return_identifier=True)
+lsarr = {"gas": "-", "cond": "--"}
+for ele in ["H", "O"]:
+    fig = plt.figure()
+    ax1 = fig.add_subplot(1, 3, 1)
+    plt.plot(temperatures,pressures)
+    ax1.invert_yaxis()
+    plt.yscale("log")
+    plt.xlabel("Temperature [K]")
+    plt.ylabel("Pressure [bar]")
+
+    ax2 = fig.add_subplot(1, 3, 2)
+    for i, (mol, v) in enumerate(eb[ele].items()):    
+        gas_or_cond = identifier[ele][mol]
+        plt.plot(v, pressures, color=colors[i % len(colors)], linestyle=lsarr[gas_or_cond], label=mol)
+        plt.text(v[-1], pressures[-1], mol, color=colors[i % len(colors)], fontsize=8, rotation=270)
+        plt.text(v[0], pressures[0], mol, color=colors[i % len(colors)], fontsize=8, rotation=270)
+    plt.yscale("log")
+    plt.xscale("log")
+    ax2.invert_yaxis()
+
+    ax3 = fig.add_subplot(1, 3, 3)
+    for i, (mol, v) in enumerate(eb_init[ele].items()):    
+        plt.plot(v, pressures, color=colors[i % len(colors)], label=mol)
+        plt.text(v[-1], pressures[-1], mol, color=colors[i % len(colors)], fontsize=8, rotation=270)
+        plt.text(v[0], pressures[0], mol, color=colors[i % len(colors)], fontsize=8, rotation=270)
+    plt.yscale("log")
+    plt.xscale("log")
+    ax3.invert_yaxis()
+
+    #plt.legend(loc="best")
+    plt.savefig("budget.png")
+    plt.show()
+    plt.close()
+
+
+
+
 
 # Gibbs energy
 from exogibbs.analysis.potential import gibbs_energies
@@ -326,9 +373,9 @@ fig = plt.figure()
 ax = fig.add_subplot(1, 3, 1)
 for i in range(0, N):
     color = "C"+str(i)
-    plt.plot(vmr_ref[:, i], pressures, ".", alpha=0.3, color=color)
-    plt.plot(vmr_exogibbs[:, i], pressures, alpha=0.3, color=color)
-
+    plt.plot(vmr_ref[:, i], pressures, ".", alpha=0.3, color=colors[i % len(colors)])
+    plt.plot(vmr_exogibbs[:, i], pressures, alpha=0.3, color=colors[i % len(colors)])
+    
 plt.xlim(1.0e-300, 1.0)
 plt.xscale("log")
 plt.yscale("log")
@@ -338,7 +385,7 @@ plt.legend()
 ax2 = fig.add_subplot(1, 3, 2)
 for i in range(0, Nelespec):
     color = "C"+str(i)
-    plt.plot(vmr_elespec_exogibbs[:, i], pressures, alpha=0.3, color=color)
+    plt.plot(vmr_elespec_exogibbs[:, i], pressures, alpha=0.3, color=colors[i % len(colors)])
 plt.xscale("log")
 plt.yscale("log")
 ax2.invert_yaxis()
@@ -347,7 +394,7 @@ plt.legend()
 ax3 = fig.add_subplot(1, 3, 3)
 for i in range(0, cond_exogibbs.shape[1]):
     color = "C"+str(i)
-    plt.plot(cond_exogibbs[:, i], pressures, alpha=0.3, color=color)
+    plt.plot(cond_exogibbs[:, i], pressures, alpha=0.3, color=colors[i % len(colors)])
 plt.xscale("log")
 plt.yscale("log")
 ax3.invert_yaxis()

@@ -117,7 +117,7 @@ if init_setup == "zeros":
     N = len(plot_species)
     if N != len(vmr_ref):
         raise ValueError("Length mismatch between ln_nk[29:] and vmr_ref")
-    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])   # log(n_condensates)
+    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1]) # log(n_condensates)
     ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))  # log(total number density)
 
 elif init_setup == "gas_only":
@@ -126,7 +126,7 @@ elif init_setup == "gas_only":
     result = equilibrium(gas, T=tin, P=pin, b=b)
     ln_nk = result.ln_n
     ln_ntot = jnp.log(jnp.sum(jnp.exp(ln_nk)))  # log(total number density)
-    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1])   # log(n_condensates)
+    ln_mk = jnp.zeros(formula_matrix_cond_eff.shape[1]) #-20.0 # log(n_condensates)
 else:
     raise ValueError("Invalid init_setup option")
 
@@ -186,7 +186,13 @@ ln_nk, ln_mk, ln_ntot = lax.fori_loop(
 vmr_exogibbs = np.exp(ln_nk[29:])/np.sum(np.exp(ln_nk))
 print(ln_nk)
 #print(vmr_exogibbs)
+print(ln_mk)
+#np.savez("ln_mk.npz", ln_mk=ln_mk)
+ln_mk_ref = np.load("ln_mk.npz")["ln_mk"]
 
+diff = ln_mk - ln_mk_ref
+print("Difference in ln_mk:", diff)
+print(ln_mk[0], ln_mk_ref[0])
 
 
 fig = plt.figure()
@@ -195,6 +201,7 @@ plt.plot(vmr_ref, "o", label="FastChem", alpha=0.3)
 plt.ylim(1.e-300,1.0)
 plt.yscale("log")
 plt.legend()
+plt.show()
 plt.savefig("output/vmr_comparison_final.png") 
 plt.close()
     

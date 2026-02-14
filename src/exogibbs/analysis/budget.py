@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, Optional, Tuple, Union
 
 import jax.numpy as jnp
 
@@ -9,7 +9,11 @@ def element_budget(
     ln_ngas: jnp.ndarray,
     chem_cond: Optional[ChemicalSetup] = None,
     ln_ncond: Optional[jnp.ndarray] = None,
-    ) -> Dict[str, Dict[str, jnp.ndarray]]:
+    return_identifier: bool = False,
+    ) -> Union[
+        Dict[str, Dict[str, jnp.ndarray]],
+        Tuple[Dict[str, Dict[str, jnp.ndarray]], Dict[str, Dict[str, str]]],
+    ]:
     """computes element budget in molecules (gas species and condensates)
 
     Args:
@@ -27,6 +31,9 @@ def element_budget(
             such as eb["H"] = {"H2": values, "CH4": values, ...}
             sum(eb["H"].values()) should correspond to
             chem_gas.element_vector_reference[chem_gas.elements.index("H")]
+        identifier (optional)
+            If return_identifier is True, also returns an identifier mapping
+            such as identifier["H"] = {"H2": "gas", "H2O_l": "cond", ...}
         
 
     
@@ -119,9 +126,15 @@ def element_budget(
     cond_labels = tuple(f"cond:{s}" if s in overlap else s for s in cond_species)
 
     eb: Dict[str, Dict[str, jnp.ndarray]] = {}
+    identifier: Dict[str, Dict[str, str]] = {}
     for e_idx, element_name in enumerate(element_names):
         species_budget = {
             species: contrib_gas[:, e_idx, s_idx]
+            for s_idx, species in enumerate(gas_labels)
+            if float(formula_gas[e_idx, s_idx]) != 0.0
+        }
+        species_identifier = {
+            species: "gas"
             for s_idx, species in enumerate(gas_labels)
             if float(formula_gas[e_idx, s_idx]) != 0.0
         }
@@ -133,10 +146,18 @@ def element_budget(
                     if float(formula_cond[e_idx, s_idx]) != 0.0
                 }
             )
+            species_identifier.update(
+                {
+                    species: "cond"
+                    for s_idx, species in enumerate(cond_labels)
+                    if float(formula_cond[e_idx, s_idx]) != 0.0
+                }
+            )
         if single_state:
             species_budget = {
                 name: values[0] for name, values in species_budget.items()
             }
         eb[element_name] = species_budget
+        identifier[element_name] = species_identifier
 
-    return eb
+    return (eb, identifier) if return_identifier else eb
