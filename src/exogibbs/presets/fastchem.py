@@ -175,7 +175,10 @@ def _set_elements(components: Dict[str, Dict[str, int]]) -> List[str]:
     for spec in components.keys():
         for el in components[spec].keys():
             element_set.add(el)
-    elements = sorted(list(element_set) + ["Ge"])
+    if "Ge" not in element_set:
+        elements = sorted(list(element_set) + ["Ge"])
+    else:
+        elements = sorted(list(element_set))
     return elements
 
 

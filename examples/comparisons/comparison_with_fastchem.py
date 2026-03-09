@@ -27,7 +27,7 @@ output_dir = "../output"
 
 # First, we have to create a FastChem object
 fastchem = pyfastchem.FastChem(
-    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK.dat", 1
+    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK.dat", 1    
 )
 
 # create the input and output structures for FastChem
