@@ -143,7 +143,7 @@ def equilibrium(
         ln_ntot0,
         A,
         hfunc,
-        epsilon_crit=opts.epsilon_crit,
+        residual_crit=opts.epsilon_crit,
         max_iter=opts.max_iter,
     )
 
