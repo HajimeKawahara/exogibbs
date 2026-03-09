@@ -2,13 +2,6 @@
 # This script compares the chemical equilibrium calculations of FastChem and ExoGibbs (fastchem preset).
 # It requires the FastChem Python bindings to be installed
 # also ExoJAX is required to set solar abundances (you can cahnge if you want)
-# fastchem original file: python/fastchem.py
-#
-# soft link this file into the fastchem/input directory and run it there:
-#
-# cd fastchem/input
-# python comparison_with_fastchem.py 
-#
 import pyfastchem
 import numpy as np
 import matplotlib.pyplot as plt
@@ -34,7 +27,8 @@ output_dir = "../output"
 
 # First, we have to create a FastChem object
 fastchem = pyfastchem.FastChem(
-    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK.dat", 1    
+#    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK.dat", 1
+    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK_extended.dat", 1
 )
 
 # create the input and output structures for FastChem
@@ -47,12 +41,9 @@ input_data.pressure = pressure
 
 # run FastChem on the entire p-T structure
 fastchem_flag = fastchem.calcDensities(input_data, output_data)
+
 print("FastChem reports:")
 print("  -", pyfastchem.FASTCHEM_MSG[fastchem_flag])
-
-if fastchem_flag != pyfastchem.FASTCHEM_SUCCESS:
-    raise RuntimeError("FastChem calculation did not complete successfully. maybe try in fastchem/python/ directory?")
-
 
 # ExoGibbs comparison###############################################################
 # Thermodynamic conditions
@@ -62,17 +53,19 @@ from exogibbs.presets.fastchem import chemsetup
 from exojax.utils.zsol import nsol
 import jax.numpy as jnp
 
-chem = chemsetup()
+chem = chemsetup(path="fastchem/logK/logK_extended.dat")
 solar_abundance = nsol()
-nsol_vector = jnp.array(
-    [solar_abundance[el] for el in chem.elements[:-1]]
-)  # no solar abundance for e-
+na_value = 1.e-14 # abundance for elements solar abundance is unavailable
+nsol_vector = []
+for el in chem.elements[:-1]:
+    try:
+        nsol_vector.append(solar_abundance[el])
+    except:
+        nsol_vector.append(na_value)
+        print("no info on " ,el, "solar abundance. set",na_value)
+nsol_vector = jnp.array([nsol_vector])  # no solar abundance for e-
 element_vector = jnp.append(nsol_vector, 0.0)
 opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
-
-from time import time
-
-start_time = time()
 res = equilibrium_profile(
     chem,
     temperature,
@@ -82,9 +75,6 @@ res = equilibrium_profile(
     options=opts,
 )
 nk_result = res.x
-print(nk_result)
-end_time = time()
-print(f"ExoGibbs calculation took {end_time - start_time:.2f} seconds")
 ##################################################################################
     
 # plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1"]
@@ -130,7 +120,7 @@ for i in range(0, N):
     if np.max(np.array(vmr_fastchem)) > crit:
         lab = plot_species_symbols[i]
 
-        ax1.plot(vmr_fastchem, pressure, alpha=0.3, color=colors[i])
+        ax1.plot(vmr_fastchem, pressure, alpha=0.6, color=colors[i])
 
         idx_exogibbs = chem.species.index(plot_species[i])
         ax1.plot(nk_result[:, idx_exogibbs], pressure, "--", label=lab, color=colors[i])
