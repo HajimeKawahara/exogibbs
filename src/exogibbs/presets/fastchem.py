@@ -14,12 +14,15 @@ from exogibbs.io.load_data import get_data_filepath
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
 
-def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
+def chemsetup(
+    path="fastchem/logK/logK.dat", species_defalt_elements=True
+) -> ChemicalSetup:
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
 
     Args:
         path (str): Path to the FastChem logK data file.
+        species_defalt_elements (bool): If True, species are restricted to those that include only the 28 default elements in _default_elements(). If False, all elements found in the FastChem data are included.
 
     Returns:
         ChemicalSetup: The chemical setup object.
@@ -38,8 +41,19 @@ def chemsetup(path="fastchem/logK/logK.dat") -> ChemicalSetup:
     species_molecule = list(acoeff_molecule.keys())
 
     # elements and element species
-    elements = _set_elements(components_molecule)
-    element_vector_ref = _elements_ref_AAG21()
+    if species_defalt_elements:
+        elements = _default_elements()
+        element_vector_ref = _elements_ref_AAG21()
+        acoeff_molecule, components_molecule = _restrict_species_to_elements(
+            acoeff_molecule,
+            components_molecule,
+            elements,
+        )
+        species_molecule = list(acoeff_molecule.keys())
+    else:
+        elements = _set_elements(components_molecule)
+        element_vector_ref = []
+
     species_element, components_element, acoeff_element = _set_element_species(elements)
 
     # combine
@@ -103,6 +117,39 @@ def _set_element_species(elements):
             acoeff_element[el + "1"] = zerolist
 
     return species_element, components_element, acoeff_element
+
+
+def _default_elements():
+    return [
+        "Al",
+        "Ar",
+        "C",
+        "Ca",
+        "Cl",
+        "Co",
+        "Cr",
+        "Cu",
+        "F",
+        "Fe",
+        "Ge",
+        "H",
+        "He",
+        "K",
+        "Mg",
+        "Mn",
+        "N",
+        "Na",
+        "Ne",
+        "Ni",
+        "O",
+        "P",
+        "S",
+        "Si",
+        "Ti",
+        "V",
+        "Zn",
+        "e-",
+    ]
 
 
 def _elements_ref_AAG21():
@@ -175,8 +222,31 @@ def _set_elements(components: Dict[str, Dict[str, int]]) -> List[str]:
     for spec in components.keys():
         for el in components[spec].keys():
             element_set.add(el)
-    elements = sorted(list(element_set) + ["Ge"])
+    if "Ge" not in element_set:
+        elements = sorted(list(element_set) + ["Ge"])
+    else:
+        elements = sorted(list(element_set))
     return elements
+
+
+def _restrict_species_to_elements(
+    coeffs: Dict[str, List[float]],
+    components: Dict[str, Dict[str, int]],
+    allowed_elements: List[str],
+) -> Tuple[Dict[str, List[float]], Dict[str, Dict[str, int]]]:
+    """Keep only species whose composition uses allowed elements only."""
+    allowed = set(allowed_elements)
+    filtered_components = {
+        species: comp
+        for species, comp in components.items()
+        if set(comp).issubset(allowed)
+    }
+    filtered_coeffs = {
+        species: coeffs[species]
+        for species in filtered_components
+        if species in coeffs
+    }
+    return filtered_coeffs, filtered_components
 
 
 def _parse_fastchem_coeffs(

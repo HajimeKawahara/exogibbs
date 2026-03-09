@@ -27,7 +27,8 @@ output_dir = "../output"
 
 # First, we have to create a FastChem object
 fastchem = pyfastchem.FastChem(
-    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK.dat", 1    
+#    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK.dat", 1
+    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK_extended.dat", 1
 )
 
 # create the input and output structures for FastChem
@@ -52,11 +53,17 @@ from exogibbs.presets.fastchem import chemsetup
 from exojax.utils.zsol import nsol
 import jax.numpy as jnp
 
-chem = chemsetup()
+chem = chemsetup(path="fastchem/logK/logK_extended.dat")
 solar_abundance = nsol()
-nsol_vector = jnp.array(
-    [solar_abundance[el] for el in chem.elements[:-1]]
-)  # no solar abundance for e-
+na_value = 1.e-14 # abundance for elements solar abundance is unavailable
+nsol_vector = []
+for el in chem.elements[:-1]:
+    try:
+        nsol_vector.append(solar_abundance[el])
+    except:
+        nsol_vector.append(na_value)
+        print("no info on " ,el, "solar abundance. set",na_value)
+nsol_vector = jnp.array([nsol_vector])  # no solar abundance for e-
 element_vector = jnp.append(nsol_vector, 0.0)
 opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
 res = equilibrium_profile(
@@ -113,7 +120,7 @@ for i in range(0, N):
     if np.max(np.array(vmr_fastchem)) > crit:
         lab = plot_species_symbols[i]
 
-        ax1.plot(vmr_fastchem, pressure, alpha=0.3, color=colors[i])
+        ax1.plot(vmr_fastchem, pressure, alpha=0.6, color=colors[i])
 
         idx_exogibbs = chem.species.index(plot_species[i])
         ax1.plot(nk_result[:, idx_exogibbs], pressure, "--", label=lab, color=colors[i])
