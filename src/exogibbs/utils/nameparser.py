@@ -161,3 +161,9 @@ def parse_simple_formula(formula: str) -> Dict[str, int]:
         )
     return element_counts_dict
 
+def strip_trailing_one(s: str) -> str:
+    if s == "e1-":
+        return "e-"
+    if s.endswith("1"):
+        return s[:-1]
+    return s
