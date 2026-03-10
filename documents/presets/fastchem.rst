@@ -11,9 +11,12 @@ Quick Start
 -----------
 .. code-block:: python
 
+   from jax import config
+   config.update("jax_enable_x64", True)
+   
    from exogibbs.presets.fastchem import chemsetup
    from exogibbs.api.equilibrium import equilibrium
-
+   
    setup = chemsetup()
    T, P = 1500.0, 1.0  # K, bar
    b = setup.element_vector_reference  # or your own jnp.array([...])

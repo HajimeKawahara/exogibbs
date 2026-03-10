@@ -89,7 +89,7 @@ ln_nk_result = minimize_gibbs(
     ln_ntot,
     formula_matrix,
     hvector_func,
-    epsilon_crit=epsilon_crit,
+    residual_crit=epsilon_crit,
     max_iter=max_iter,
 )
 
@@ -115,7 +115,7 @@ dlnn_db = jacrev(
         ln_ntot,
         formula_matrix,
         hvector_func,
-        epsilon_crit=epsilon_crit,
+        residual_crit=epsilon_crit,
         max_iter=max_iter,
     )
 )(element_vector) # (n_species, n_elements)

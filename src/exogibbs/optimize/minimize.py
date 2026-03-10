@@ -14,7 +14,7 @@ from exogibbs.optimize.core import _compute_gk
 from exogibbs.optimize.vjpgibbs import vjp_temperature
 from exogibbs.optimize.vjpgibbs import vjp_pressure
 from exogibbs.optimize.vjpgibbs import vjp_elements
-
+from exogibbs.optimize.stepsize import stepsize_cea_gas
 
 
 def solve_gibbs_iteration_equations(
@@ -23,7 +23,7 @@ def solve_gibbs_iteration_equations(
     formula_matrix: jnp.ndarray,
     b: jnp.ndarray,
     gk: jnp.ndarray,
-    An: jnp.ndarray,
+    bk: jnp.ndarray,
 ) -> Tuple[jnp.ndarray, float]:
     """
     Solve the Gibbs iteration equations using the Lagrange multipliers.
@@ -33,28 +33,29 @@ def solve_gibbs_iteration_equations(
     Args:
         nk: number of species vector (n_species,) for k-th iteration.
         ntotk: Total number of species for k-th iteration.
-        formula_matrix: Formula matrix for stoichiometric constraints (n_elements, n_species).
+        formula_matrix: (gas) Formula matrix for stoichiometric constraints (n_elements, n_species).
         b: Element abundance vector (n_elements, ).
         gk: gk vector (n_species,) for k-th iteration.
-        An: formula_matrix @ nk vector (n_elements, ).
+        bk: (gas) formula_matrix @ nk vector (n_elements, ).
 
     Returns:
         Tuple containing:
-            - The pi vector (nspecies, ).
+            - The pi vector (nelements, ).
             - The update of the  log total number of species (delta_ln_ntot).
     """
     resn = jnp.sum(nk) - ntotk
-    AnAt = _A_diagn_At(nk, formula_matrix)
+    Qk = _A_diagn_At(nk, formula_matrix)
     Angk = formula_matrix @ (gk * nk)
     ngk = jnp.dot(nk, gk)
-
-    assemble_mat = jnp.block([[AnAt, An[:, None]], [An[None, :], jnp.array([[resn]])]])
-    assemble_vec = jnp.concatenate([Angk + b - An, jnp.array([ngk - resn])])
+    
+    assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
+    assemble_vec = jnp.concatenate([Angk + b - bk, jnp.array([ngk - resn])])
     assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
+    
     return assemble_variable[:-1], assemble_variable[-1]
 
 
-def compute_residuals(
+def _compute_residuals(
     nk: jnp.ndarray,
     ntotk: float,
     formula_matrix: jnp.ndarray,
@@ -74,30 +75,8 @@ def compute_residuals(
     resn_squared = jnp.dot(resn, resn)
     return jnp.sqrt(ress_squared + resj_squared + resn_squared)
 
-CEA_SIZE = 18.420681        # = -ln(1e-8)
-LN_X_CAP = 9.2103404        # = -ln(1e-4)
 
-def _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot, size=CEA_SIZE):
-    # λ1: ensure |Δln n|<=0.4, |Δln n_k|<=2
-    cap_ntot = 5.0 * jnp.abs(delta_ln_ntot)           # 1/0.4
-    cap_sp   = jnp.max(jnp.abs(delta_ln_nk))
-    denom1   = jnp.maximum(jnp.maximum(cap_ntot, cap_sp), 1e-300)
-    lam1     = 2.0 / denom1
-
-    # maintain x_k<=1e-4 if increasing when x_k<=1e-8
-    ln_xk  = ln_nk - ln_ntot
-    small  = (ln_xk <= -size) & (delta_ln_nk >= 0.0)
-    denom2 = delta_ln_nk - delta_ln_ntot
-    safe   = small & (denom2 > 0.0)
-    cand   = ( -LN_X_CAP - ln_xk ) / denom2           # (-ln 1e-4 - ln xk)/(Δln nk - Δln n)
-    lam2   = jnp.where(jnp.any(safe), jnp.min(jnp.where(safe, cand, jnp.inf)), jnp.inf)
-
-    lam = jnp.minimum(1.0, jnp.minimum(lam1, lam2))
-    # safe guard
-    lam = jnp.clip(lam, 1e-6, 1.0)
-    return lam
-
-def update_all(
+def _update_all(
     ln_nk,
     ln_ntot,
     formula_matrix,
@@ -116,7 +95,7 @@ def update_all(
 
     # relaxation and update
     #lam = 0.1  # need to reconsider
-    lam = _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
+    lam = stepsize_cea_gas(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
     ln_ntot += lam * delta_ln_ntot
     ln_nk += lam * delta_ln_nk
 
@@ -125,8 +104,8 @@ def update_all(
     ntot = jnp.exp(ln_ntot)
     gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
     An = formula_matrix @ nk
-    epsilon = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
-    return ln_nk, ln_ntot, epsilon, gk, An
+    residual = _compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
+    return ln_nk, ln_ntot, residual, gk, An
 
 def minimize_gibbs_core(
     state: ThermoState,
@@ -134,7 +113,7 @@ def minimize_gibbs_core(
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
     hvector_func,
-    epsilon_crit: float = 1.0e-11,
+    residual_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> Tuple[jnp.ndarray, float, int]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
@@ -145,7 +124,7 @@ def minimize_gibbs_core(
         ln_ntot_init: Initial log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
         hvector: Chemical potential over RT vector (n_species,).
-        epsilon_crit: Convergence tolerance for residual norm.
+        residual_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations allowed.
 
     Returns:
@@ -158,12 +137,12 @@ def minimize_gibbs_core(
     hvector = hvector_func(state.temperature)
 
     def cond_fun(carry):
-        _, _, _, _, epsilon, counter = carry
-        return (epsilon > epsilon_crit) & (counter < max_iter)
+        _, _, _, _, residual, counter = carry
+        return (residual > residual_crit) & (counter < max_iter)
 
     def body_fun(carry):
         ln_nk, ln_ntot, gk, An, _, counter = carry
-        ln_nk_new, ln_ntot_new, epsilon, gk, An = update_all(
+        ln_nk_new, ln_ntot_new, residual, gk, An = _update_all(
             ln_nk,
             ln_ntot,
             formula_matrix,
@@ -174,7 +153,7 @@ def minimize_gibbs_core(
             gk,
             An,
         )
-        return ln_nk_new, ln_ntot_new, gk, An, epsilon, counter + 1
+        return ln_nk_new, ln_ntot_new, gk, An, residual, counter + 1
 
     gk = _compute_gk(
         state.temperature,
@@ -185,10 +164,10 @@ def minimize_gibbs_core(
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
 
-    ln_nk, ln_tot, _, _, _, counter = while_loop(
+    ln_nk, ln_ntot, _, _, _, counter = while_loop(
         cond_fun, body_fun, (ln_nk_init, ln_ntot_init, gk, An, jnp.inf, 0)
     )
-    return ln_nk, ln_tot, counter
+    return ln_nk, ln_ntot, counter
 
 
 # Only function and scalar options are non-differentiable.
@@ -200,7 +179,7 @@ def minimize_gibbs(
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
     hvector_func: Callable[[float], jnp.ndarray],
-    epsilon_crit: float = 1.0e-11,
+    residual_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> jnp.ndarray:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
@@ -211,7 +190,7 @@ def minimize_gibbs(
         ln_ntot_init: Initial natural log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
         hvector_func: Function that returns chemical potential over RT vector (n_species,).
-        epsilon_crit: Convergence tolerance for residual norm.
+        residual_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations allowed.
 
     Returns:
@@ -228,7 +207,7 @@ def minimize_gibbs(
             ln_ntot0,
             formula_matrix,
             hvector_func,
-            epsilon_crit,
+            residual_crit,
             max_iter,
         )
         return ln_nk
@@ -240,7 +219,7 @@ def minimize_gibbs(
             ln_ntot0,
             formula_matrix,
             hvector_func,
-            epsilon_crit,
+            residual_crit,
             max_iter,
         )
         dfunc = jacrev(hvector_func)
