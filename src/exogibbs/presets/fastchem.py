@@ -17,7 +17,7 @@ _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
 
 
-def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, silent=False) -> ChemicalSetup:
+def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, element_file=None, silent=False) -> ChemicalSetup:
 
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
@@ -25,6 +25,7 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, silen
     Args:
         path (str): Path to the FastChem logK data file.
         species_defalt_elements (bool): If True, species are restricted to those that include only the 28 default elements in _default_elements(). If False, all elements found in the FastChem data are included.
+        element_file (str, optional): Path to an element abundance file. If provided, the abundances will be used as the reference element vector. 
         silent (bool): If True, suppress status output.
 
     Returns:
@@ -45,6 +46,9 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, silen
 
     # elements and element species
     if species_defalt_elements:
+        print("restricting species to those composed of the default elements only.")
+        if element_file is not None:
+            print("WARNING: element_file is ignored when species_defalt_elements is True.")
         elements = _default_elements()
         element_vector_ref = _elements_ref_AAG21()
         acoeff_molecule, components_molecule = _restrict_species_to_elements(
@@ -53,10 +57,20 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, silen
             elements,
         )
         species_molecule = list(acoeff_molecule.keys())
+    elif element_file is not None:
+        print("setting reference element vector from the provided element file:", element_file)
+        import pandas as pd
+        element_df = pd.read_csv(get_data_filepath(element_file), delim_whitespace=True, comment="#", header=None, names=["element", "abundance"])
+        elements = element_df["element"].tolist()[1:]
+        element_vector_ref = jnp.array(element_df["abundance"].tolist()[1:])
+        print("elements from the element file:", elements)
+        exit()
+
     else:
+        print("setting elements from the species in the logK data.")
         elements = _set_elements_with_adding_Ge(components_molecule)
         element_vector_ref = []
-
+    
     species_element, components_element, acoeff_element = _set_element_species(elements)
     # combine
     acoeff = {**acoeff_element, **acoeff_molecule}

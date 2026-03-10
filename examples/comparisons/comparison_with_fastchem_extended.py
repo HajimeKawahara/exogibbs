@@ -27,8 +27,7 @@ output_dir = "../output"
 
 # First, we have to create a FastChem object
 fastchem = pyfastchem.FastChem(
-#    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK.dat", 1
-    "../input/element_abundances/asplund_2020.dat", "../input/logK/logK_extended.dat", 1
+    "../input/element_abundances/asplund_2020_extended.dat", "../input/logK/logK_extended.dat", 1
 )
 
 # create the input and output structures for FastChem
@@ -53,7 +52,7 @@ from exogibbs.presets.fastchem import chemsetup
 from exojax.utils.zsol import nsol
 import jax.numpy as jnp
 
-chem = chemsetup(path="fastchem/logK/logK_extended.dat")
+chem = chemsetup(path="fastchem/logK/logK_extended.dat", species_defalt_elements=False, element_file="fastchem/element_abundances/asplund_2020_extended.dat")
 solar_abundance = nsol()
 na_value = 1.e-14 # abundance for elements solar abundance is unavailable
 nsol_vector = []
