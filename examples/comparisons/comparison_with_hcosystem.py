@@ -15,7 +15,6 @@ Key validations performed:
 - Single-point equilibrium composition
 - Elements derivatives (∂ln n/∂b)
 """
-from regex import T
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs
 from exogibbs.test.analytic_hcosystem import HCOSystem

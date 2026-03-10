@@ -90,7 +90,7 @@ print(f"ExoGibbs calculation took {end_time - start_time:.2f} seconds")
 # plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1"]
 # plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3"]
 
-plot_species = chem.species[29:]
+plot_species = chem.species[len(element_vector):]
 plot_species_labels = plot_species
 
 # check the species we want to plot and get their indices from FastChem
