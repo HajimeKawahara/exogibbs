@@ -64,6 +64,7 @@ for el in chem.elements[:-1]:
         print("no info on " ,el, "solar abundance. set",na_value)
 nsol_vector = jnp.array([nsol_vector])  # no solar abundance for e-
 element_vector = jnp.append(nsol_vector, 0.0)
+
 opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
 res = equilibrium_profile(
     chem,
@@ -79,7 +80,7 @@ nk_result = res.x
 # plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1"]
 # plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3"]
 
-plot_species = chem.species[29:]
+plot_species = chem.species[len(element_vector):]
 plot_species_labels = plot_species
 
 # check the species we want to plot and get their indices from FastChem
@@ -114,19 +115,52 @@ fig, (ax1, ax2) = plt.subplots(
     1, 2, gridspec_kw={"width_ratios": [4, 1]}, figsize=(8, 4)
 )
 crit = 1.0e-10
+label_points = []
 for i in range(0, N):
     vmr_fastchem = number_densities[:, plot_species_indices[i]] / gas_number_density
     if np.max(np.array(vmr_fastchem)) > crit:
         lab = plot_species_symbols[i]
-
         ax1.plot(vmr_fastchem, pressure, alpha=0.6, color=colors[i])
 
         idx_exogibbs = chem.species.index(plot_species[i])
         ax1.plot(nk_result[:, idx_exogibbs], pressure, "--", label=lab, color=colors[i])
+        vmr_fastchem_top = float(np.asarray(vmr_fastchem[0]))
+        nk_result_top = float(np.asarray(nk_result[0, idx_exogibbs]))
+        label_points.append(
+            (
+                lab,
+                nk_result_top,
+                float(pressure[0] * 1.05),
+                colors[i],
+            )
+        )
+        label_points.append(
+            (
+                lab,
+                vmr_fastchem_top,
+                float(pressure[0] * 1.0),
+                colors[i],
+            )
+        )
 
 ax1.set_xscale("log")
 ax1.set_yscale("log")
 ax1.set_ylim(ax1.get_ylim()[::-1])
+ax1.set_xlim(left=max(ax1.get_xlim()[0], 1.0e-30))
+
+xmin, xmax = ax1.get_xlim()
+for lab, xval, yval, color in label_points:
+    xtext = min(max(xval, xmin * 1.05), xmax / 1.05)
+    ax1.text(
+        xtext,
+        yval,
+        lab,
+        color=color,
+        fontsize=8,
+        ha="center",
+        va="bottom",
+        clip_on=True,
+    )
 
 ax1.set_xlabel("Mixing ratios")
 ax1.set_ylabel("Pressure (bar)")
