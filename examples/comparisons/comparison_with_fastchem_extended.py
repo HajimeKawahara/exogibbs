@@ -2,6 +2,8 @@
 # This script compares the chemical equilibrium calculations of FastChem and ExoGibbs (fastchem preset).
 # It requires the FastChem Python bindings to be installed
 # also ExoJAX is required to set solar abundances (you can cahnge if you want)
+from more_itertools import strip
+
 import pyfastchem
 import numpy as np
 import matplotlib.pyplot as plt
@@ -77,19 +79,24 @@ res = equilibrium_profile(
 nk_result = res.x
 ##################################################################################
     
-# plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1"]
-# plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3"]
+plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1", "Fe1", "H1", "e1-"]
+plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3", "Fe", "H", "e-"]
 
-plot_species = chem.species[len(element_vector):]
-plot_species_labels = plot_species
+# when you want to plot all species, use the following lines instead of the above two lines
+#plot_species = chem.species
+#plot_species_labels = plot_species
 
 # check the species we want to plot and get their indices from FastChem
 plot_species_indices = []
 plot_species_symbols = []
-
+from exogibbs.utils.nameparser import strip_trailing_one
 for i, species in enumerate(plot_species):
     index = fastchem.getGasSpeciesIndex(species)
-
+    
+    # try Fe instead of Fe1, etc. if the species is not found in FastChem
+    if index == pyfastchem.FASTCHEM_UNKNOWN_SPECIES:
+        index = fastchem.getGasSpeciesIndex(strip_trailing_one(species))        
+            
     if index != pyfastchem.FASTCHEM_UNKNOWN_SPECIES:
         plot_species_indices.append(index)
         plot_species_symbols.append(plot_species_labels[i])
@@ -140,6 +147,17 @@ for i in range(0, N):
                 vmr_fastchem_top,
                 float(pressure[0] * 1.0),
                 colors[i],
+            )
+        )
+if False:
+    for i in range(0, len(element_vector)):
+        ax1.plot(nk_result[:, i], pressure, ".", label=lab, lw=2, color="black")
+        label_points.append(
+            (
+                chem.elements[i],
+                float(nk_result[0, i]),
+                float(pressure[0] * 1.05),
+                "black",
             )
         )
 
