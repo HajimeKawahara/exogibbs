@@ -1,9 +1,9 @@
 from exogibbs.api.chemistry import ChemicalSetup
-from exogibbs.equilibrium.gibbs import extract_and_pad_gibbs_data
-from exogibbs.equilibrium.gibbs import interpolate_hvector_all
-from exogibbs.equilibrium.gibbs import robust_temperature_range
+from exogibbs.thermo.gibbs import extract_and_pad_gibbs_data
+from exogibbs.thermo.gibbs import interpolate_hvector_all
+from exogibbs.thermo.gibbs import robust_temperature_range
 from exogibbs.io.load_data import get_data_filepath
-from exogibbs.thermo.stoichiometry import build_formula_matrix
+from exogibbs.thermo.stoichiometry import build_formula_matrix_from_JANAF
 from typing import Union
 import numpy as np
 import pandas as pd
@@ -27,7 +27,7 @@ def chemsetup() -> ChemicalSetup:
     """
     # Species / formula matrix (fixed)
     df_molname = _load_molname()
-    formula_matrix_np, elements, species = build_formula_matrix(df_molname)
+    formula_matrix_np, elements, species = build_formula_matrix_from_JANAF(df_molname)
     # Keep the matrix fixed as requested, but move to device
     formula_matrix = jnp.asarray(formula_matrix_np)
 
@@ -74,7 +74,10 @@ def chemsetup() -> ChemicalSetup:
         T = jnp.asarray(T)
         # Clamp to shared valid range to avoid NaN/Inf from OOB
         T_clamped = jnp.clip(T, Tmin, Tmax)
-        return interpolate_hvector_all(T_clamped, T_table, mu_table)
+        hvector = interpolate_hvector_all(T_clamped, T_table, mu_table)
+        if T.ndim == 0:
+            return hvector
+        return jnp.moveaxis(hvector, 0, -1)
 
     # JIT-compile once (optional but helps in loops)
     hvector_func_jit = jax.jit(hvector_func)
@@ -85,7 +88,7 @@ def chemsetup() -> ChemicalSetup:
         elements=tuple(elements) if elements is not None else None,
         species=tuple(species) if species is not None else None,
         element_vector_reference=element_vector_ref,
-        metadata={"source": "JANAF"},
+        metadata={"source": "JANAF", "dataset": "gas"},
     )
 
 

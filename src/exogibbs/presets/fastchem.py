@@ -10,25 +10,29 @@ from typing import Tuple
 
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.io.load_data import get_data_filepath
+from exogibbs.thermo.stoichiometry import build_formula_matrix
+from exogibbs.utils.nameparser import set_elements_from_components
 
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
 
-def chemsetup(
-    path="fastchem/logK/logK.dat", species_defalt_elements=True
-) -> ChemicalSetup:
+
+def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, element_file=None, silent=False) -> ChemicalSetup:
+
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
 
     Args:
         path (str): Path to the FastChem logK data file.
         species_defalt_elements (bool): If True, species are restricted to those that include only the 28 default elements in _default_elements(). If False, all elements found in the FastChem data are included.
+        element_file (str, optional): Path to an element abundance file. If provided, the abundances will be used as the reference element vector. 
+        silent (bool): If True, suppress status output.
 
     Returns:
         ChemicalSetup: The chemical setup object.
 
     Notes:
-        The species in FastChem consists of element species and molecule species.
+        The species in FastChem consists of element species and molecule species for gas (logK.dat).
         The element species are the reference, therefore its coefficients are all zero.
         The element species are automatically added in this function.
     """
@@ -38,38 +42,53 @@ def chemsetup(
     acoeff_molecule, components_molecule = _parse_fastchem_coeffs(
         open(path_fastchem_data, "r", encoding="utf-8").read()
     )
-    species_molecule = list(acoeff_molecule.keys())
-
+    
     # elements and element species
     if species_defalt_elements:
+        print("restricting species to those composed of the default elements only.")
+        if element_file is not None:
+            print("WARNING: element_file is ignored when species_defalt_elements is True.")
         elements = _default_elements()
         element_vector_ref = _elements_ref_AAG21()
-        acoeff_molecule, components_molecule = _restrict_species_to_elements(
+    elif element_file is not None:
+        print("setting reference element vector from the provided element file:", element_file)
+        import pandas as pd
+        element_df = pd.read_csv(get_data_filepath(element_file), sep='\s+', comment="#", header=None, names=["element", "abundance"])
+        elements = element_df["element"].tolist()[1:] + ["e-"]
+        element_vector_ref = jnp.array(element_df["abundance"].tolist()[1:] + [0.0])
+    else:
+        print("setting elements from the species in the logK data.")
+        elements = _set_elements_with_adding_Ge(components_molecule)
+        element_vector_ref = []
+    
+    # cleaning species
+    acoeff_molecule, components_molecule = _restrict_species_to_elements(
             acoeff_molecule,
             components_molecule,
             elements,
         )
-        species_molecule = list(acoeff_molecule.keys())
-    else:
-        elements = _set_elements(components_molecule)
-        element_vector_ref = []
+    species_molecule = list(acoeff_molecule.keys())
+    
 
     species_element, components_element, acoeff_element = _set_element_species(elements)
-
     # combine
     acoeff = {**acoeff_element, **acoeff_molecule}
     species = species_element + species_molecule
     components = {**components_element, **components_molecule}
 
-    formula_matrix = _generate_formula_matrix(components, elements)
-    _print_status(species_molecule, elements, species)
+    formula_matrix = build_formula_matrix(components, elements)
+    if not silent:
+        _print_status(species_molecule, elements, species)
 
     ccoeff_array = np.array([acoeff[spec] for spec in species])
     vmap_logk = vmap(logk, in_axes=(None, 0), out_axes=0)
 
     def hvector_func(T: Union[float, jnp.ndarray]) -> jnp.ndarray:
         T = jnp.asarray(T)
-        return -vmap_logk(T, ccoeff_array)
+        hvector = -vmap_logk(T, ccoeff_array)
+        if T.ndim == 0:
+            return hvector
+        return jnp.moveaxis(hvector, 0, -1)
 
     hvector_func_jit = jit(hvector_func)
 
@@ -79,12 +98,12 @@ def chemsetup(
         elements=tuple(elements) if elements is not None else None,
         species=tuple(species) if species is not None else None,
         element_vector_reference=element_vector_ref,
-        metadata={"source": "fastchem v3.1.3"},
+        metadata={"source": "fastchem v3.1.3", "dataset": "gas"},
     )
 
 
-def _print_status(species_molecule, elements, species):
-    print("fastchem presets in ExoGibbs")
+def _print_status(species_molecule, elements, species, preset_name="fastchem"):
+    print(preset_name+" presets in ExoGibbs")
     print(
         "number of species:",
         len(species),
@@ -110,7 +129,7 @@ def _set_element_species(elements):
         if el == "e-":
             species_element.append("e1-")
             components_element["e1-"] = {el: 1}
-            acoeff_element["e1-"] = [0.0, 0.0, 0.0, 0.0, 0.0]
+            acoeff_element["e1-"] = zerolist
         else:
             species_element.append(el + "1")
             components_element[el + "1"] = {el: 1}
@@ -189,39 +208,22 @@ def _elements_ref_AAG21():
     )
 
 
-def _generate_formula_matrix(
-    components: Dict[str, Dict[str, int]], elements: List[str]
-) -> np.ndarray:
-    """
-    Generate the formula matrix from the components dict and elements list.
+def _set_elements_with_adding_Ge(components: Dict[str, Dict[str, int]]) -> List[str]:
+    """set elements adding Ge to the elements from components.
 
     Args:
-        components: mapping ``species -> {element_symbol: count}``
-        elements: list of element symbols
+        components (Dict[str, Dict[str, int]]): A dictionary mapping species names to their elemental compositions.
 
     Returns:
-        np.ndarray: formula matrix of shape (num_elements, num_species)
-    """
-    num_species = len(components)
-    num_elements = len(elements)
-    formula_matrix = np.zeros((num_elements, num_species), dtype=int)
-    species_list = list(components.keys())
-    for j, spec in enumerate(species_list):
-        comp = components[spec]
-        for i, el in enumerate(elements):
-            if el in comp:
-                formula_matrix[i, j] = comp[el]
-    return formula_matrix
+        List[str]: A list of unique element symbols including Ge.
 
+    Notes:
+        This function extends the set of elements extracted from the components dictionary
+        by adding Germanium (Ge) to the list of elements.
 
-def _set_elements(components: Dict[str, Dict[str, int]]) -> List[str]:
     """
-    element_vector =['Al', 'Ar', 'Ba', 'Be', 'B', 'Ca', 'C', ...]
-    """
-    element_set = set()
-    for spec in components.keys():
-        for el in components[spec].keys():
-            element_set.add(el)
+
+    element_set = set_elements_from_components(components)
     if "Ge" not in element_set:
         elements = sorted(list(element_set) + ["Ge"])
     else:
@@ -297,15 +299,15 @@ def _parse_fastchem_coeffs(
         j = i + 1
         while j < len(lines):
             candidate = lines[j].strip()
-            if candidate and not candidate.startswith("#"):
-                arr = np.fromstring(candidate, sep=" ")
-                if arr.size != 5:
-                    raise ValueError(
-                        f"{species}: not 5 coefficients (found {arr.size})"
-                    )
-                coeffs[species] = arr.tolist()
-                break
-            j += 1
+            if not candidate or candidate.startswith("#"):
+                j += 1
+                continue
+
+            arr = np.fromstring(candidate, sep=" ")
+            if arr.size != 5:
+                raise ValueError(f"{species}: not 5 coefficients (found {arr.size})")
+            coeffs[species] = arr.tolist()
+            break
         else:
             raise ValueError(f"{species}: missing coefficient line")
 

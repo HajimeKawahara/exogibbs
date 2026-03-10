@@ -11,3 +11,9 @@ include src/exogibbs/data/fastchem/logK/logK.dat
 include src/exogibbs/data/fastchem/logK/logK_condensates.dat
 include src/exogibbs/data/fastchem/logK/logK_extended.dat
 include src/exogibbs/data/fastchem/logK/logK_wo_ions.dat
+include src/exogibbs/data/fastchem/element_abundances/asplund_2009.dat
+include src/exogibbs/data/fastchem/element_abundances/asplund_2009_extended.dat
+include src/exogibbs/data/fastchem/element_abundances/asplund_2020.dat
+include src/exogibbs/data/fastchem/element_abundances/asplund_2020_extended.dat
+include src/exogibbs/data/fastchem/element_abundances/lodders_2003.dat
+include src/exogibbs/data/fastchem/element_abundances/lodders_2003_extended.dat
