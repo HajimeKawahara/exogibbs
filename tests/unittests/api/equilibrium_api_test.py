@@ -157,6 +157,47 @@ def test_equilibrium_respects_init(monkeypatch):
     assert out.ntot.shape == ()
     assert jnp.isclose(out.x.sum(), 1.0)
 
+
+def test_equilibrium_return_diagnostics(monkeypatch):
+    E, K = 2, 3
+    A = jnp.array([[1, 0, 1], [0, 1, 0]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+
+    def stub_minimize_gibbs_with_diagnostics(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        assert A_in.shape == A.shape
+        ln_n = jnp.zeros((K,), dtype=jnp.float32)
+        diagnostics = {
+            "n_iter": jnp.asarray(7, dtype=jnp.int32),
+            "converged": jnp.asarray(True),
+            "hit_max_iter": jnp.asarray(False),
+            "final_residual": jnp.asarray(1.0e-12, dtype=jnp.float32),
+            "epsilon_crit": jnp.asarray(kwargs["epsilon_crit"], dtype=jnp.float32),
+            "max_iter": jnp.asarray(kwargs["max_iter"], dtype=jnp.int32),
+        }
+        return ln_n, diagnostics
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium.minimize_gibbs_with_diagnostics",
+        stub_minimize_gibbs_with_diagnostics,
+        raising=True,
+    )
+
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    result, diagnostics = eqmod.equilibrium(
+        setup,
+        T=1000.0,
+        P=1.0,
+        b=b,
+        options=EquilibriumOptions(epsilon_crit=1e-11, max_iter=50),
+        return_diagnostics=True,
+    )
+
+    assert result.ln_n.shape == (K,)
+    assert bool(diagnostics["converged"])
+    assert not bool(diagnostics["hit_max_iter"])
+    assert int(diagnostics["n_iter"]) == 7
+    assert int(diagnostics["max_iter"]) == 50
+
 if __name__ == "__main__":
     chemsetup = chemsetup()
     b_vec = chemsetup.element_vector_reference

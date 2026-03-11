@@ -4,7 +4,7 @@ from jax import jacrev
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
-from typing import Tuple, Callable
+from typing import Tuple, Callable, Dict
 
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _A_diagn_At
@@ -150,7 +150,7 @@ def minimize_gibbs_core(
     hvector_func,
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
-) -> Tuple[jnp.ndarray, float, int]:
+) -> Tuple[jnp.ndarray, float, int, jnp.ndarray]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
     Args:
@@ -167,6 +167,7 @@ def minimize_gibbs_core(
             - Final log number of species vector (n_species,).
             - Final log total number of species.
             - Number of iterations performed.
+            - Final residual norm used in convergence checks.
     """
 
     hvector = hvector_func(state.temperature)
@@ -199,10 +200,10 @@ def minimize_gibbs_core(
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
 
-    ln_nk, ln_tot, _, _, _, counter = while_loop(
+    ln_nk, ln_tot, _, _, epsilon, counter = while_loop(
         cond_fun, body_fun, (ln_nk_init, ln_ntot_init, gk, An, jnp.inf, 0)
     )
-    return ln_nk, ln_tot, counter
+    return ln_nk, ln_tot, counter, epsilon
 
 
 # Only function and scalar options are non-differentiable.
@@ -236,7 +237,7 @@ def minimize_gibbs(
     # arguments, which can become JAX Tracers under vmap/jit.
     @custom_vjp
     def _solve(inner_state: ThermoState, ln_nk0: jnp.ndarray, ln_ntot0: float) -> jnp.ndarray:
-        ln_nk, _, _ = minimize_gibbs_core(
+        ln_nk, _, _, _ = minimize_gibbs_core(
             inner_state,
             ln_nk0,
             ln_ntot0,
@@ -248,7 +249,7 @@ def minimize_gibbs(
         return ln_nk
 
     def _solve_fwd(inner_state: ThermoState, ln_nk0: jnp.ndarray, ln_ntot0: float):
-        ln_nk, ln_ntot, _ = minimize_gibbs_core(
+        ln_nk, ln_ntot, _, _ = minimize_gibbs_core(
             inner_state,
             ln_nk0,
             ln_ntot0,
@@ -295,6 +296,41 @@ def minimize_gibbs(
     ln_nk0 = stop_gradient(ln_nk_init)
     ln_ntot0 = stop_gradient(ln_ntot_init)
     return _solve(state, ln_nk0, ln_ntot0)
+
+
+def minimize_gibbs_with_diagnostics(
+    state: ThermoState,
+    ln_nk_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    epsilon_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+) -> Tuple[jnp.ndarray, Dict[str, jnp.ndarray]]:
+    """Run Gibbs minimization and return lightweight convergence diagnostics."""
+    ln_nk, _, n_iter, final_residual = minimize_gibbs_core(
+        state,
+        ln_nk_init,
+        ln_ntot_init,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit,
+        max_iter,
+    )
+    epsilon_crit_used = jnp.asarray(epsilon_crit, dtype=final_residual.dtype)
+    max_iter_used = jnp.asarray(max_iter, dtype=n_iter.dtype)
+    converged = final_residual <= epsilon_crit_used
+    hit_max_iter = (n_iter >= max_iter_used) & (~converged)
+
+    diagnostics = {
+        "n_iter": n_iter,
+        "converged": converged,
+        "hit_max_iter": hit_max_iter,
+        "final_residual": final_residual,
+        "epsilon_crit": epsilon_crit_used,
+        "max_iter": max_iter_used,
+    }
+    return ln_nk, diagnostics
 
 
 # Note: custom_vjp is defined inside minimize_gibbs to capture static arrays.

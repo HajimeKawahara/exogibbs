@@ -59,3 +59,47 @@ def test_equilibrium_profile_shapes_and_values(monkeypatch):
     assert jnp.allclose(out.ntot, K)
     assert jnp.allclose(jnp.sum(out.x, axis=1), 1.0)
 
+
+def test_equilibrium_profile_return_diagnostics(monkeypatch):
+    E, K, N = 2, 3, 4
+    A = jnp.array([[1, 0, 1], [0, 1, 0]], dtype=jnp.float64)
+    setup = FakeSetup(A)
+
+    def stub_minimize_gibbs_with_diagnostics(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        ln_n = jnp.zeros((K,), dtype=jnp.result_type(ln_nk0, A_in.dtype))
+        diagnostics = {
+            "n_iter": jnp.asarray(3, dtype=jnp.int32),
+            "converged": jnp.asarray(True),
+            "hit_max_iter": jnp.asarray(False),
+            "final_residual": jnp.asarray(1e-12, dtype=jnp.float64),
+            "epsilon_crit": jnp.asarray(kwargs["epsilon_crit"], dtype=jnp.float64),
+            "max_iter": jnp.asarray(kwargs["max_iter"], dtype=jnp.int32),
+        }
+        return ln_n, diagnostics
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium.minimize_gibbs_with_diagnostics",
+        stub_minimize_gibbs_with_diagnostics,
+        raising=True,
+    )
+
+    T = jnp.linspace(1000.0, 2000.0, N)
+    P = jnp.linspace(0.1, 1.0, N)
+    b = jnp.array([1.0, 2.0], dtype=jnp.float64)
+    out, diag = eqmod.equilibrium_profile(
+        setup,
+        T,
+        P,
+        b,
+        options=EquilibriumOptions(epsilon_crit=1e-11, max_iter=50),
+        return_diagnostics=True,
+    )
+
+    assert out.ln_n.shape == (N, K)
+    assert diag["n_iter"].shape == (N,)
+    assert diag["converged"].shape == (N,)
+    assert diag["hit_max_iter"].shape == (N,)
+    assert diag["final_residual"].shape == (N,)
+    assert jnp.all(diag["n_iter"] == 3)
+    assert jnp.all(diag["converged"])
+    assert not jnp.any(diag["hit_max_iter"])
