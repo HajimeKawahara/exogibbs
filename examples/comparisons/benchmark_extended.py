@@ -69,22 +69,26 @@ element_vector = jnp.append(nsol_vector, 0.0)
 
 import time
 ts = time.time()
-opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
-
-for j in range(0, 10):
+#opts = EquilibriumOptions(method="scan_hot_from_top", epsilon_crit=1e-10, max_iter=1000) "1.07sec/run"
+opts = EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-10, max_iter=1000) #1.05sec/run
+#opts = EquilibriumOptions(method="vmap_cold", epsilon_crit=1e-10, max_iter=1000) #2.11sec/run
+niter = 10
+temperature = temperature - niter
+for j in range(0, niter):
     temperature = temperature + 1.0
-    res = equilibrium_profile(
+    res, diag = equilibrium_profile(
         chem,
         temperature,
         pressure,
         element_vector,
         Pref=1.0,
         options=opts,
+        return_diagnostics=True
     )
     nk_result = res.x
+    #print(diag)
 te = time.time() - ts
 print("ExoGibbs calculation time:", te, "seconds")
-
 ##################################################################################
     
 

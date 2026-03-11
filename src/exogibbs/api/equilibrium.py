@@ -27,7 +27,10 @@ class EquilibriumOptions:
     Attributes:
         epsilon_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations.
-
+        method: Method for solving equilibrium along a profile. Options:
+            - "vmap_cold": Independent solves for each layer with cold starts (no state carryover).
+            - "scan_hot_from_top": Sequential solves from top to bottom, carrying converged state as hot start for next layer.
+            - "scan_hot_from_bottom": Sequential solves from bottom to top, carrying converged state as hot start for next layer.
     Note:
         these default values are chosen based on the comparison with FastChem 
         in the range of 300-3000K and 1e-8 - 1e2 bar. See #17 and comparison_with_fastchem.py
@@ -35,7 +38,7 @@ class EquilibriumOptions:
 
     epsilon_crit: float = 1.0e-15
     max_iter: int = 1000
-    method: Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"] = "vmap_cold"
+    method: Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"] = "scan_hot_from_bottom"
 
 
 @dataclass(frozen=True)
