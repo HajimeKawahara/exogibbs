@@ -9,6 +9,7 @@ from typing import List
 from typing import Tuple
 
 from exogibbs.api.chemistry import ChemicalSetup
+from exogibbs.api.chemistry import setup_float_dtype
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.thermo.stoichiometry import build_formula_matrix
 from exogibbs.utils.nameparser import set_elements_from_components
@@ -36,7 +37,7 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
         The element species are the reference, therefore its coefficients are all zero.
         The element species are automatically added in this function.
     """
-
+    float_dtype = setup_float_dtype()
     path_fastchem_data = get_data_filepath(path)
     # molecules species
     acoeff_molecule, components_molecule = _parse_fastchem_coeffs(
@@ -49,13 +50,16 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
         if element_file is not None:
             print("WARNING: element_file is ignored when species_defalt_elements is True.")
         elements = _default_elements()
-        element_vector_ref = _elements_ref_AAG21()
+        element_vector_ref = _elements_ref_AAG21(float_dtype)
     elif element_file is not None:
         print("setting reference element vector from the provided element file:", element_file)
         import pandas as pd
         element_df = pd.read_csv(get_data_filepath(element_file), sep='\s+', comment="#", header=None, names=["element", "abundance"])
         elements = element_df["element"].tolist()[1:] + ["e-"]
-        element_vector_ref = jnp.array(element_df["abundance"].tolist()[1:] + [0.0])
+        element_vector_ref = jnp.asarray(
+            element_df["abundance"].tolist()[1:] + [0.0],
+            dtype=float_dtype,
+        )
     else:
         print("setting elements from the species in the logK data.")
         elements = _set_elements_with_adding_Ge(components_molecule)
@@ -76,11 +80,11 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
     species = species_element + species_molecule
     components = {**components_element, **components_molecule}
 
-    formula_matrix = build_formula_matrix(components, elements)
+    formula_matrix = jnp.asarray(build_formula_matrix(components, elements), dtype=float_dtype)
     if not silent:
         _print_status(species_molecule, elements, species)
 
-    ccoeff_array = np.array([acoeff[spec] for spec in species])
+    ccoeff_array = jnp.asarray([acoeff[spec] for spec in species], dtype=float_dtype)
     vmap_logk = vmap(logk, in_axes=(None, 0), out_axes=0)
 
     def hvector_func(T: Union[float, jnp.ndarray]) -> jnp.ndarray:
@@ -171,10 +175,10 @@ def _default_elements():
     ]
 
 
-def _elements_ref_AAG21():
+def _elements_ref_AAG21(dtype):
     # Reference elemental solar abundance b from AAG21 (from exojax.utils.zsol import nsol)
     # AAG21 = Asplund, M., Amarsi, A. M., & Grevesse, N. 2021, arXiv:2105.01661
-    return jnp.array(
+    return jnp.asarray(
         [
             2.4849887715495676e-06,
             2.214748573895377e-06,
@@ -204,7 +208,8 @@ def _elements_ref_AAG21():
             7.333721790759454e-09,
             3.352157616477396e-08,
             0.0,
-        ]
+        ],
+        dtype=dtype,
     )
 
 
