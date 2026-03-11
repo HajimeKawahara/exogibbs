@@ -9,10 +9,11 @@ an h(T) function). No JANAF or I/O details leak into this layer.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping, Optional, Tuple, Union
+from typing import Literal, Mapping, Optional, Tuple, Union
 import jax.numpy as jnp
 from jax import tree_util
 import jax
+from jax import lax
 from exogibbs.api.chemistry import ChemicalSetup, ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs, minimize_gibbs_with_diagnostics
 
@@ -26,7 +27,10 @@ class EquilibriumOptions:
     Attributes:
         epsilon_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations.
-
+        method: Method for solving equilibrium along a profile. Options:
+            - "vmap_cold": Independent solves for each layer with cold starts (no state carryover).
+            - "scan_hot_from_top": Sequential solves from top to bottom, carrying converged state as hot start for next layer.
+            - "scan_hot_from_bottom": Sequential solves from bottom to top, carrying converged state as hot start for next layer.
     Note:
         these default values are chosen based on the comparison with FastChem 
         in the range of 300-3000K and 1e-8 - 1e2 bar. See #17 and comparison_with_fastchem.py
@@ -34,6 +38,7 @@ class EquilibriumOptions:
 
     epsilon_crit: float = 1.0e-15
     max_iter: int = 1000
+    method: Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"] = "scan_hot_from_bottom"
 
 
 @dataclass(frozen=True)
@@ -211,9 +216,29 @@ def equilibrium_profile(
         raise ValueError("T and P must have the same length.")
     if b.ndim != 1:
         raise ValueError("b must be a 1D array shared across layers.")
+    opts = options or EquilibriumOptions()
+    method = opts.method
+    valid_methods = ("vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom")
+    if method not in valid_methods:
+        raise ValueError(f"Unknown solve method '{method}'. Expected one of {valid_methods}.")
 
-    # Vectorize over T and P; keep setup and b static. Pass Pref/options as kwargs.
-    if return_diagnostics:
+    # Baseline path: independent layer solves with cold starts.
+    if method == "vmap_cold":
+        if return_diagnostics:
+            layer_fn = jax.vmap(
+                lambda Ti, Pi: equilibrium(
+                    setup,
+                    Ti,
+                    Pi,
+                    b,
+                    Pref=Pref,
+                    options=opts,
+                    return_diagnostics=True,
+                ),
+                in_axes=(0, 0),
+            )
+            return layer_fn(T, P)
+
         layer_fn = jax.vmap(
             lambda Ti, Pi: equilibrium(
                 setup,
@@ -221,26 +246,79 @@ def equilibrium_profile(
                 Pi,
                 b,
                 Pref=Pref,
-                options=options,
-                return_diagnostics=True,
+                options=opts,
+                return_diagnostics=False,
             ),
             in_axes=(0, 0),
         )
         return layer_fn(T, P)
 
-    layer_fn = jax.vmap(
-        lambda Ti, Pi: equilibrium(
-            setup,
-            Ti,
-            Pi,
-            b,
-            Pref=Pref,
-            options=options,
-            return_diagnostics=False,
-        ),
-        in_axes=(0, 0),
-    )
-    return layer_fn(T, P)
+    # Hot-start scan path: solve layers sequentially and carry converged state.
+    if method == "scan_hot_from_bottom":
+        T_in = jnp.flip(T, axis=0)
+        P_in = jnp.flip(P, axis=0)
+    else:
+        T_in = T
+        P_in = P
+
+    K = int(setup.formula_matrix.shape[1])
+    ln_nk0, ln_ntot0 = _default_init(b, K)
+
+    if return_diagnostics:
+        def scan_body(carry, tp_pair):
+            ln_nk_prev, ln_ntot_prev = carry
+            Ti, Pi = tp_pair
+            result, diag = equilibrium(
+                setup,
+                Ti,
+                Pi,
+                b,
+                Pref=Pref,
+                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                options=opts,
+                return_diagnostics=True,
+            )
+            ln_ntot_next = jnp.log(jnp.clip(result.ntot, 1e-300))
+            carry_next = (result.ln_n, ln_ntot_next)
+            return carry_next, (result, diag)
+
+        _, (result_seq, diag_seq) = lax.scan(scan_body, (ln_nk0, ln_ntot0), (T_in, P_in))
+    else:
+        def scan_body(carry, tp_pair):
+            ln_nk_prev, ln_ntot_prev = carry
+            Ti, Pi = tp_pair
+            result = equilibrium(
+                setup,
+                Ti,
+                Pi,
+                b,
+                Pref=Pref,
+                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                options=opts,
+                return_diagnostics=False,
+            )
+            ln_ntot_next = jnp.log(jnp.clip(result.ntot, 1e-300))
+            carry_next = (result.ln_n, ln_ntot_next)
+            return carry_next, result
+
+        _, result_seq = lax.scan(scan_body, (ln_nk0, ln_ntot0), (T_in, P_in))
+        diag_seq = None
+
+    if method == "scan_hot_from_bottom":
+        result_seq = EquilibriumResult(
+            ln_n=jnp.flip(result_seq.ln_n, axis=0),
+            n=jnp.flip(result_seq.n, axis=0),
+            x=jnp.flip(result_seq.x, axis=0),
+            ntot=jnp.flip(result_seq.ntot, axis=0),
+            iterations=result_seq.iterations,
+            metadata=result_seq.metadata,
+        )
+        if diag_seq is not None:
+            diag_seq = {k: jnp.flip(v, axis=0) for k, v in diag_seq.items()}
+
+    if return_diagnostics:
+        return result_seq, diag_seq
+    return result_seq
 
 
 __all__ = [

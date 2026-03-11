@@ -103,3 +103,86 @@ def test_equilibrium_profile_return_diagnostics(monkeypatch):
     assert jnp.all(diag["n_iter"] == 3)
     assert jnp.all(diag["converged"])
     assert not jnp.any(diag["hit_max_iter"])
+
+
+def test_equilibrium_profile_scan_hot_from_top_uses_previous_layer_init(monkeypatch):
+    E, K, N = 2, 2, 4
+    A = jnp.array([[1, 0], [0, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+
+    def stub_minimize_gibbs_with_diagnostics(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        # Return ln_n shifted from initial guess so carry behavior is observable.
+        ln_n = ln_nk0 + 1.0
+        diagnostics = {
+            "n_iter": jnp.asarray(2, dtype=jnp.int32),
+            "converged": jnp.asarray(True),
+            "hit_max_iter": jnp.asarray(False),
+            "final_residual": jnp.asarray(1e-12, dtype=jnp.float32),
+            "epsilon_crit": jnp.asarray(kwargs["epsilon_crit"], dtype=jnp.float32),
+            "max_iter": jnp.asarray(kwargs["max_iter"], dtype=jnp.int32),
+        }
+        return ln_n, diagnostics
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium.minimize_gibbs_with_diagnostics",
+        stub_minimize_gibbs_with_diagnostics,
+        raising=True,
+    )
+
+    T = jnp.linspace(1000.0, 1300.0, N)
+    P = jnp.linspace(0.1, 1.0, N)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    out, diag = eqmod.equilibrium_profile(
+        setup,
+        T,
+        P,
+        b,
+        options=EquilibriumOptions(method="scan_hot_from_top", epsilon_crit=1e-11, max_iter=50),
+        return_diagnostics=True,
+    )
+
+    # default init ln_nk = 0; each layer adds +1 from previous layer init
+    expected = jnp.arange(1, N + 1, dtype=jnp.float32)[:, None] * jnp.ones((N, K), dtype=jnp.float32)
+    assert jnp.allclose(out.ln_n, expected)
+    assert jnp.all(diag["converged"])
+
+
+def test_equilibrium_profile_scan_hot_from_bottom_uses_previous_layer_init(monkeypatch):
+    E, K, N = 2, 2, 4
+    A = jnp.array([[1, 0], [0, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+
+    def stub_minimize_gibbs_with_diagnostics(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        ln_n = ln_nk0 + 1.0
+        diagnostics = {
+            "n_iter": jnp.asarray(2, dtype=jnp.int32),
+            "converged": jnp.asarray(True),
+            "hit_max_iter": jnp.asarray(False),
+            "final_residual": jnp.asarray(1e-12, dtype=jnp.float32),
+            "epsilon_crit": jnp.asarray(kwargs["epsilon_crit"], dtype=jnp.float32),
+            "max_iter": jnp.asarray(kwargs["max_iter"], dtype=jnp.int32),
+        }
+        return ln_n, diagnostics
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium.minimize_gibbs_with_diagnostics",
+        stub_minimize_gibbs_with_diagnostics,
+        raising=True,
+    )
+
+    T = jnp.linspace(1000.0, 1300.0, N)
+    P = jnp.linspace(0.1, 1.0, N)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    out, diag = eqmod.equilibrium_profile(
+        setup,
+        T,
+        P,
+        b,
+        options=EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-11, max_iter=50),
+        return_diagnostics=True,
+    )
+
+    # In original index order, the deepest layer gets first solve in bottom-up scan.
+    expected = jnp.array([4, 3, 2, 1], dtype=jnp.float32)[:, None] * jnp.ones((N, K), dtype=jnp.float32)
+    assert jnp.allclose(out.ln_n, expected)
+    assert jnp.all(diag["converged"])
