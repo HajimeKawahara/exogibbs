@@ -14,7 +14,7 @@ import jax.numpy as jnp
 from jax import tree_util
 import jax
 from exogibbs.api.chemistry import ChemicalSetup, ThermoState
-from exogibbs.optimize.minimize import minimize_gibbs
+from exogibbs.optimize.minimize import minimize_gibbs, minimize_gibbs_with_diagnostics
 
 Array = jax.Array
 
@@ -107,7 +107,8 @@ def equilibrium(
     Pref: float = 1.0,
     init: Optional[EquilibriumInit] = None,
     options: Optional[EquilibriumOptions] = None,
-) -> EquilibriumResult:
+    return_diagnostics: bool = False,
+) -> Union[EquilibriumResult, Tuple[EquilibriumResult, Mapping[str, Array]]]:
     """Compute equilibrium composition at (T, P, b) via Gibbs minimization.
 
     Args:
@@ -121,6 +122,8 @@ def equilibrium(
 
     Returns:
         EquilibriumResult with ln n, n, mole fractions x, and n_tot.
+        If ``return_diagnostics=True``, returns ``(result, diagnostics)`` where
+        diagnostics is a pytree-compatible mapping with solver metrics.
     """
     opts = options or EquilibriumOptions()
     A = setup.formula_matrix
@@ -137,22 +140,37 @@ def equilibrium(
 
     hfunc = setup.hvector_func
     state = ThermoState(T, lnP, b)
-    ln_n = minimize_gibbs(
-        state,
-        ln_nk0,
-        ln_ntot0,
-        A,
-        hfunc,
-        epsilon_crit=opts.epsilon_crit,
-        max_iter=opts.max_iter,
-    )
+    diagnostics = None
+    if return_diagnostics:
+        ln_n, diagnostics = minimize_gibbs_with_diagnostics(
+            state,
+            ln_nk0,
+            ln_ntot0,
+            A,
+            hfunc,
+            epsilon_crit=opts.epsilon_crit,
+            max_iter=opts.max_iter,
+        )
+    else:
+        ln_n = minimize_gibbs(
+            state,
+            ln_nk0,
+            ln_ntot0,
+            A,
+            hfunc,
+            epsilon_crit=opts.epsilon_crit,
+            max_iter=opts.max_iter,
+        )
 
     n = jnp.exp(ln_n)
     ntot = jnp.asarray(jnp.sum(n))
     x = n / jnp.clip(ntot, 1e-300)
-    return EquilibriumResult(
+    result = EquilibriumResult(
         ln_n=ln_n, n=n, x=x, ntot=ntot, iterations=None, metadata=None
     )
+    if return_diagnostics:
+        return result, diagnostics
+    return result
 
 def equilibrium_profile(
     setup: ChemicalSetup,
@@ -162,7 +180,8 @@ def equilibrium_profile(
     *,
     Pref: float = 1.0,
     options: Optional[EquilibriumOptions] = None,
-) -> EquilibriumResult:
+    return_diagnostics: bool = False,
+) -> Union[EquilibriumResult, Tuple[EquilibriumResult, Mapping[str, Array]]]:
     """Vectorized equilibrium along a 1D T/P profile (layers).
 
     This computes equilibrium independently for each (T[i], P[i]) pair while
@@ -175,6 +194,7 @@ def equilibrium_profile(
         b: Elemental abundances, shape (E,), shared across layers.
         Pref: Reference pressure (bar).
         options: Solver options.
+        return_diagnostics: If True, returns per-layer solver diagnostics.
 
     Returns:
         Batched EquilibriumResult with fields stacked over the leading dimension N:
@@ -193,6 +213,21 @@ def equilibrium_profile(
         raise ValueError("b must be a 1D array shared across layers.")
 
     # Vectorize over T and P; keep setup and b static. Pass Pref/options as kwargs.
+    if return_diagnostics:
+        layer_fn = jax.vmap(
+            lambda Ti, Pi: equilibrium(
+                setup,
+                Ti,
+                Pi,
+                b,
+                Pref=Pref,
+                options=options,
+                return_diagnostics=True,
+            ),
+            in_axes=(0, 0),
+        )
+        return layer_fn(T, P)
+
     layer_fn = jax.vmap(
         lambda Ti, Pi: equilibrium(
             setup,
@@ -201,6 +236,7 @@ def equilibrium_profile(
             b,
             Pref=Pref,
             options=options,
+            return_diagnostics=False,
         ),
         in_axes=(0, 0),
     )
