@@ -154,6 +154,42 @@ def equilibrium(
         ln_n=ln_n, n=n, x=x, ntot=ntot, iterations=None, metadata=None
     )
 
+
+def _equilibrium_from_init(
+    setup: ChemicalSetup,
+    T: Array,
+    P: Array,
+    b: Array,
+    ln_nk0: Array,
+    ln_ntot0: Array,
+    *,
+    Pref: float = 1.0,
+    options: Optional[EquilibriumOptions] = None,
+) -> EquilibriumResult:
+    """Compute one layer using an explicit initial guess."""
+    opts = options or EquilibriumOptions()
+    A = setup.formula_matrix
+
+    lnP = _ln_normalized_pressure(P, Pref)
+    state = ThermoState(T, lnP, b)
+    ln_n = minimize_gibbs(
+        state,
+        ln_nk0,
+        ln_ntot0,
+        A,
+        setup.hvector_func,
+        epsilon_crit=opts.epsilon_crit,
+        max_iter=opts.max_iter,
+    )
+
+    n = jnp.exp(ln_n)
+    ntot = jnp.asarray(jnp.sum(n))
+    x = n / jnp.clip(ntot, 1e-300)
+    return EquilibriumResult(
+        ln_n=ln_n, n=n, x=x, ntot=ntot, iterations=None, metadata=None
+    )
+
+
 def equilibrium_profile(
     setup: ChemicalSetup,
     T: Array,
@@ -192,19 +228,34 @@ def equilibrium_profile(
     if b.ndim != 1:
         raise ValueError("b must be a 1D array shared across layers.")
 
-    # Vectorize over T and P; keep setup and b static. Pass Pref/options as kwargs.
-    layer_fn = jax.vmap(
-        lambda Ti, Pi: equilibrium(
+    A = setup.formula_matrix
+    K = int(A.shape[1])
+    if b.shape[0] != A.shape[0]:
+        raise ValueError(f"b has length {b.shape[0]} but A expects {A.shape[0]} elements.")
+
+    ln_nk0, ln_ntot0 = _prepare_init(None, b, K)
+
+    def layer_fn(carry, inputs):
+        prev_ln_nk, prev_ln_ntot = carry
+        Ti, Pi = inputs
+        out = _equilibrium_from_init(
             setup,
             Ti,
             Pi,
             b,
+            prev_ln_nk,
+            prev_ln_ntot,
             Pref=Pref,
             options=options,
-        ),
-        in_axes=(0, 0),
+        )
+        next_carry = (out.ln_n, jnp.log(jnp.clip(out.ntot, 1e-300)))
+        stacked = (out.ln_n, out.n, out.x, out.ntot)
+        return next_carry, stacked
+
+    _, (ln_n, n, x, ntot) = jax.lax.scan(layer_fn, (ln_nk0, ln_ntot0), (T, P))
+    return EquilibriumResult(
+        ln_n=ln_n, n=n, x=x, ntot=ntot, iterations=None, metadata=None
     )
-    return layer_fn(T, P)
 
 
 __all__ = [

@@ -67,6 +67,9 @@ for el in chem.elements[:-1]:
 nsol_vector = jnp.array([nsol_vector])  # no solar abundance for e-
 element_vector = jnp.append(nsol_vector, 0.0)
 
+import time
+ts = time.time()
+
 opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
 res = equilibrium_profile(
     chem,
@@ -77,8 +80,12 @@ res = equilibrium_profile(
     options=opts,
 )
 nk_result = res.x
+te = time.time() - ts
+print("ExoGibbs calculation time:", te, "seconds")
+
 ##################################################################################
     
+
 plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1", "Fe1", "H1", "e1-"]
 plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3", "Fe", "H", "e-"]
 

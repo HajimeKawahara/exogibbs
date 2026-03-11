@@ -59,3 +59,24 @@ def test_equilibrium_profile_shapes_and_values(monkeypatch):
     assert jnp.allclose(out.ntot, K)
     assert jnp.allclose(jnp.sum(out.x, axis=1), 1.0)
 
+
+def test_equilibrium_profile_uses_vertical_continuation(monkeypatch):
+    E, K, N = 2, 3, 4
+    A = jnp.array([[1, 0, 1], [0, 1, 0]], dtype=jnp.float64)
+    setup = FakeSetup(A)
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        return ln_nk0 + state.temperature
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium.minimize_gibbs", stub_minimize_gibbs, raising=True
+    )
+
+    T = jnp.array([1.0, 2.0, 3.0, 4.0], dtype=jnp.float64)
+    P = jnp.linspace(0.1, 1.0, N)
+    b = jnp.array([1.0, 2.0], dtype=jnp.float64)
+
+    out = eqmod.equilibrium_profile(setup, T, P, b, options=EquilibriumOptions())
+
+    expected = jnp.cumsum(T)[:, None] * jnp.ones((1, K), dtype=out.ln_n.dtype)
+    assert jnp.allclose(out.ln_n, expected)
