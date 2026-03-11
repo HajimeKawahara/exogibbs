@@ -1,11 +1,9 @@
 import jax.numpy as jnp
 from jax import custom_vjp
 from jax import jacrev
-from jax import jit
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
-from functools import partial
 from typing import Tuple, Callable
 
 from exogibbs.api.chemistry import ThermoState
@@ -15,7 +13,7 @@ from exogibbs.optimize.vjpgibbs import vjp_temperature
 from exogibbs.optimize.vjpgibbs import vjp_pressure
 from exogibbs.optimize.vjpgibbs import vjp_elements
 
-
+_CHO_EPS = 1.0e-18
 
 def solve_gibbs_iteration_equations(
     nk: jnp.ndarray,
@@ -44,14 +42,30 @@ def solve_gibbs_iteration_equations(
             - The update of the  log total number of species (delta_ln_ntot).
     """
     resn = jnp.sum(nk) - ntotk
-    AnAt = _A_diagn_At(nk, formula_matrix)
+    bmatrix = _A_diagn_At(nk, formula_matrix)
     Angk = formula_matrix @ (gk * nk)
     ngk = jnp.dot(nk, gk)
+    rhs = Angk + b - An
+    scalar_rhs = ngk - resn
 
-    assemble_mat = jnp.block([[AnAt, An[:, None]], [An[None, :], jnp.array([[resn]])]])
-    assemble_vec = jnp.concatenate([Angk + b - An, jnp.array([ngk - resn])])
-    assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
-    return assemble_variable[:-1], assemble_variable[-1]
+    # Solve the bordered system through its Schur complement on
+    # B = A diag(n) A^T to avoid assembling the dense (E+1)x(E+1) matrix.
+    jitter = jnp.asarray(_CHO_EPS, dtype=bmatrix.dtype)
+    eye = jnp.eye(bmatrix.shape[0], dtype=bmatrix.dtype)
+    c_factor, lower = cho_factor(bmatrix + jitter * eye)
+
+    binv_rhs = cho_solve((c_factor, lower), rhs)
+    binv_an = cho_solve((c_factor, lower), An)
+
+    schur = resn - jnp.vdot(An, binv_an)
+    schur_safe = jnp.where(
+        jnp.abs(schur) < jitter,
+        jnp.where(schur < 0.0, -jitter, jitter),
+        schur,
+    )
+    delta_ln_ntot = (scalar_rhs - jnp.vdot(An, binv_rhs)) / schur_safe
+    pi_vector = binv_rhs - binv_an * delta_ln_ntot
+    return pi_vector, delta_ln_ntot
 
 
 def compute_residuals(

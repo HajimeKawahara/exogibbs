@@ -4,8 +4,10 @@ from jax import config
 from jax import jacrev
 from exogibbs.optimize.minimize import minimize_gibbs_core
 from exogibbs.optimize.minimize import minimize_gibbs
+from exogibbs.optimize.minimize import solve_gibbs_iteration_equations
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import compute_ln_normalized_pressure
+from exogibbs.optimize.core import _A_diagn_At
 from exogibbs.test.analytic_hsystem import HSystem
 from exogibbs.test.analytic_hcosystem import HCOSystem
 from exogibbs.test.analytic_hcosystem import derivative_dlnnCO_db
@@ -194,6 +196,37 @@ def test_minimize_gibbs_element_gradient_hco_system():
     # Index 1 corresponds to the CO species in dlnn_db
     diff = jnp.abs(dlnn_db[1,:] / gradf - 1.0)
     assert jnp.all(diff < 1.0e-5), f"Derivative mismatch: {diff}"
+
+
+def test_structured_gibbs_iteration_solve_matches_bordered_dense_solve():
+    nk = jnp.array([0.7, 1.1, 0.3], dtype=jnp.float64)
+    ntotk = jnp.asarray(2.2, dtype=jnp.float64)
+    formula_matrix = jnp.array(
+        [[1.0, 0.0, 1.0], [0.0, 2.0, 1.0]],
+        dtype=jnp.float64,
+    )
+    b = jnp.array([1.0, 0.8], dtype=jnp.float64)
+    gk = jnp.array([0.2, -0.1, 0.4], dtype=jnp.float64)
+    An = formula_matrix @ nk
+
+    pi_structured, delta_structured = solve_gibbs_iteration_equations(
+        nk, ntotk, formula_matrix, b, gk, An
+    )
+
+    resn = jnp.sum(nk) - ntotk
+    bmatrix = _A_diagn_At(nk, formula_matrix)
+    Angk = formula_matrix @ (gk * nk)
+    ngk = jnp.dot(nk, gk)
+    assemble_mat = jnp.block(
+        [[bmatrix, An[:, None]], [An[None, :], jnp.array([[resn]], dtype=jnp.float64)]]
+    )
+    assemble_vec = jnp.concatenate(
+        [Angk + b - An, jnp.array([ngk - resn], dtype=jnp.float64)]
+    )
+    dense_solution = jnp.linalg.solve(assemble_mat, assemble_vec)
+
+    assert jnp.allclose(pi_structured, dense_solution[:-1], rtol=1e-10, atol=1e-10)
+    assert jnp.allclose(delta_structured, dense_solution[-1], rtol=1e-10, atol=1e-10)
 
 
 if __name__ == "__main__":

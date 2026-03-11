@@ -35,6 +35,11 @@ import jax.numpy as jnp
 
 Array = jnp.ndarray
 
+
+def setup_float_dtype() -> jnp.dtype:
+    """Return the default floating dtype for setup-time solver inputs."""
+    return jnp.asarray(1.0).dtype
+
 @dataclass(frozen=True)
 class ChemicalSetup:
     """Minimal, immutable container for thermochemical pre-setup.
