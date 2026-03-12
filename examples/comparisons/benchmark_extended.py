@@ -72,9 +72,9 @@ element_vector = jnp.append(nsol_vector, 0.0)
 
 import time
 ts = time.time()
-#opts = EquilibriumOptions(method="scan_hot_from_top", epsilon_crit=1e-10, max_iter=1000) "1.07sec/run"
-opts = EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-10, max_iter=1000) #1.05sec/run
-#opts = EquilibriumOptions(method="vmap_cold", epsilon_crit=1e-10, max_iter=1000) #2.11sec/run
+opts = EquilibriumOptions(method="scan_hot_from_top", epsilon_crit=1e-10, max_iter=1000) #0.15sec/run A100
+#opts = EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-10, max_iter=1000) #0.19 sec/run A100
+#opts = EquilibriumOptions(method="vmap_cold", epsilon_crit=1e-10, max_iter=1000) #1.05sec/run A100
 niter = 100
 temperature = temperature - niter
 for j in range(0, niter):
