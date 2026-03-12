@@ -16,6 +16,71 @@ from exogibbs.optimize.vjpgibbs import vjp_elements
 
 _CHO_EPS = 1.0e-18
 
+
+def _minimize_gibbs_cond_fun(carry):
+    (
+        _ln_nk,
+        _ln_ntot,
+        _gk,
+        _an,
+        epsilon,
+        counter,
+        _formula_matrix,
+        _element_vector,
+        _temperature,
+        _ln_normalized_pressure,
+        _hvector,
+        epsilon_crit,
+        max_iter,
+    ) = carry
+    return (epsilon > epsilon_crit) & (counter < max_iter)
+
+
+def _minimize_gibbs_body_fun(carry):
+    (
+        ln_nk,
+        ln_ntot,
+        gk,
+        An,
+        _epsilon,
+        counter,
+        formula_matrix,
+        element_vector,
+        temperature,
+        ln_normalized_pressure,
+        hvector,
+        epsilon_crit,
+        max_iter,
+    ) = carry
+    ln_nk_new, ln_ntot_new, epsilon, gk, An = update_all(
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        element_vector,
+        temperature,
+        ln_normalized_pressure,
+        hvector,
+        gk,
+        An,
+    )
+    # Keep cond/body at module scope and thread solver context through the
+    # carry so repeated calls reuse the same while_loop callable identities.
+    return (
+        ln_nk_new,
+        ln_ntot_new,
+        gk,
+        An,
+        epsilon,
+        counter + 1,
+        formula_matrix,
+        element_vector,
+        temperature,
+        ln_normalized_pressure,
+        hvector,
+        epsilon_crit,
+        max_iter,
+    )
+
 def solve_gibbs_iteration_equations(
     nk: jnp.ndarray,
     ntotk: float,
@@ -173,25 +238,6 @@ def minimize_gibbs_core(
 
     hvector = hvector_func(state.temperature)
 
-    def cond_fun(carry):
-        _, _, _, _, epsilon, counter = carry
-        return (epsilon > epsilon_crit) & (counter < max_iter)
-
-    def body_fun(carry):
-        ln_nk, ln_ntot, gk, An, _, counter = carry
-        ln_nk_new, ln_ntot_new, epsilon, gk, An = update_all(
-            ln_nk,
-            ln_ntot,
-            formula_matrix,
-            state.element_vector,
-            state.temperature,
-            state.ln_normalized_pressure,
-            hvector,
-            gk,
-            An,
-        )
-        return ln_nk_new, ln_ntot_new, gk, An, epsilon, counter + 1
-
     gk = _compute_gk(
         state.temperature,
         ln_nk_init,
@@ -201,8 +247,25 @@ def minimize_gibbs_core(
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
 
-    ln_nk, ln_tot, _, _, epsilon, counter = while_loop(
-        cond_fun, body_fun, (ln_nk_init, ln_ntot_init, gk, An, jnp.inf, 0)
+    init_carry = (
+        ln_nk_init,
+        ln_ntot_init,
+        gk,
+        An,
+        jnp.inf,
+        0,
+        formula_matrix,
+        state.element_vector,
+        state.temperature,
+        state.ln_normalized_pressure,
+        hvector,
+        epsilon_crit,
+        max_iter,
+    )
+    ln_nk, ln_tot, _, _, epsilon, counter, _, _, _, _, _, _, _ = while_loop(
+        _minimize_gibbs_cond_fun,
+        _minimize_gibbs_body_fun,
+        init_carry,
     )
     return ln_nk, ln_tot, counter, epsilon
 
