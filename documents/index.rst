@@ -6,7 +6,7 @@
 ExoGibbs
 ==================================
 
-Version 0.3
+Version 0.4
 
 |:frog:| `DeepWiki for ExoGibbs <https://deepwiki.com/HajimeKawahara/exogibbs>`_
 
@@ -24,6 +24,14 @@ Contents
 
    presets/ykb4.rst
    presets/fastchem.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: notebooks:
+
+   ipynb/chemical_potential.rst
+   ipynb/tce_two_species.rst
+   ipynb/h2ocond.rst
    
    
 .. toctree::

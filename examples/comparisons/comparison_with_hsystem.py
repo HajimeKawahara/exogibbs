@@ -99,7 +99,7 @@ ln_nk_result = minimize_gibbs(
     ln_ntot,
     formula_matrix,
     hvector_func,
-    epsilon_crit=epsilon_crit,
+    residual_crit=epsilon_crit,
     max_iter=max_iter,
 )
 
@@ -122,7 +122,7 @@ dln_dT = jacrev(
         ln_ntot,
         formula_matrix,
         hvector_func,
-        epsilon_crit=epsilon_crit,
+        residual_crit=epsilon_crit,
         max_iter=max_iter,
     )
 )(temperature)
@@ -158,7 +158,7 @@ dln_dlogp = jacrev(
         ln_ntot,
         formula_matrix,
         hvector_func,
-        epsilon_crit=epsilon_crit,
+        residual_crit=epsilon_crit,
         max_iter=max_iter,
     )
 )(ln_normalized_pressure)
