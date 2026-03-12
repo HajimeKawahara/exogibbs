@@ -2,7 +2,6 @@
 # This script compares the chemical equilibrium calculations of FastChem and ExoGibbs (fastchem preset).
 # It requires the FastChem Python bindings to be installed
 # also ExoJAX is required to set solar abundances (you can cahnge if you want)
-from more_itertools import strip
 
 import pyfastchem
 import numpy as np
@@ -14,6 +13,7 @@ from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 from jax import config
 
 config.update("jax_enable_x64", True)
+#config.update("jax_log_compiles", True)  # log compilation times for debugging  
 
 # some input values for temperature (in K) and pressure (in bar)
 T = 3000 #K
@@ -26,7 +26,8 @@ pressure = np.logspace(-8, 2, num=Nlayer)
 # here, we currently use the standard one from FastChem
 output_dir = "../output"
 
-
+import time
+ts = time.time()
 # First, we have to create a FastChem object
 fastchem = pyfastchem.FastChem(
     "../input/element_abundances/asplund_2020_extended.dat", "../input/logK/logK_extended.dat", 1
@@ -42,6 +43,8 @@ input_data.pressure = pressure
 
 # run FastChem on the entire p-T structure
 fastchem_flag = fastchem.calcDensities(input_data, output_data)
+te = time.time() - ts
+print("FastChem calculation time:", te, "seconds")
 
 print("FastChem reports:")
 print("  -", pyfastchem.FASTCHEM_MSG[fastchem_flag])
@@ -72,7 +75,7 @@ ts = time.time()
 #opts = EquilibriumOptions(method="scan_hot_from_top", epsilon_crit=1e-10, max_iter=1000) "1.07sec/run"
 opts = EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-10, max_iter=1000) #1.05sec/run
 #opts = EquilibriumOptions(method="vmap_cold", epsilon_crit=1e-10, max_iter=1000) #2.11sec/run
-niter = 10
+niter = 100
 temperature = temperature - niter
 for j in range(0, niter):
     temperature = temperature + 1.0
