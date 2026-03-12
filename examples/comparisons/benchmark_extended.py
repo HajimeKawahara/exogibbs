@@ -2,7 +2,6 @@
 # This script compares the chemical equilibrium calculations of FastChem and ExoGibbs (fastchem preset).
 # It requires the FastChem Python bindings to be installed
 # also ExoJAX is required to set solar abundances (you can cahnge if you want)
-from more_itertools import strip
 
 import pyfastchem
 import numpy as np
@@ -14,6 +13,7 @@ from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 from jax import config
 
 config.update("jax_enable_x64", True)
+#config.update("jax_log_compiles", True)  # log compilation times for debugging  
 
 # some input values for temperature (in K) and pressure (in bar)
 T = 3000 #K
@@ -26,7 +26,8 @@ pressure = np.logspace(-8, 2, num=Nlayer)
 # here, we currently use the standard one from FastChem
 output_dir = "../output"
 
-
+import time
+ts = time.time()
 # First, we have to create a FastChem object
 fastchem = pyfastchem.FastChem(
     "../input/element_abundances/asplund_2020_extended.dat", "../input/logK/logK_extended.dat", 1
@@ -42,6 +43,8 @@ input_data.pressure = pressure
 
 # run FastChem on the entire p-T structure
 fastchem_flag = fastchem.calcDensities(input_data, output_data)
+te = time.time() - ts
+print("FastChem calculation time:", te, "seconds")
 
 print("FastChem reports:")
 print("  -", pyfastchem.FASTCHEM_MSG[fastchem_flag])
@@ -66,24 +69,34 @@ for el in chem.elements[:-1]:
         print("no info on " ,el, "solar abundance. set",na_value)
 nsol_vector = jnp.array([nsol_vector])  # no solar abundance for e-
 element_vector = jnp.append(nsol_vector, 0.0)
-opts = EquilibriumOptions(epsilon_crit=1e-10, max_iter=300)
 
 import time
-start_time = time.time()
-res = equilibrium_profile(
-    chem,
-    temperature,
-    pressure,
-    element_vector,
-    Pref=1.0,
-    options=opts,
-)
-end_time = time.time()
-print(f"ExoGibbs equilibrium calculation took {end_time - start_time:.2f} seconds")
+ts = time.time()
+opts = EquilibriumOptions(method="scan_hot_from_top", epsilon_crit=1e-10, max_iter=1000) #0.15sec/run A100
+#opts = EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-10, max_iter=1000) #0.19 sec/run A100
+#opts = EquilibriumOptions(method="vmap_cold", epsilon_crit=1e-10, max_iter=1000) #1.05sec/run A100
+niter = 100
+temperature = temperature - niter
+for j in range(0, niter):
+    temperature = temperature + 1.0
+    res, diag = equilibrium_profile(
+        chem,
+        temperature,
+        pressure,
+        element_vector,
+        Pref=1.0,
+        options=opts,
+        return_diagnostics=True
+    )
+    nk_result = res.x
+    #print(diag)
+te = time.time() - ts
+print("ExoGibbs calculation time:", te, "seconds")
 ##################################################################################
     
-plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1", "Fe1", "H1", "e1-", "O1V1", "O1Ti1", "Fe1H1", "H1O1", "Si1", "Ti1", "V1", "Mg1", "Mn1"]
-plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3", "Fe", "H", "e-", "VO", "TiO", "FeH", "OH", "Si", "Ti", "V", "Mg", "Mn"]
+
+plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1", "Fe1", "H1", "e1-"]
+plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3", "Fe", "H", "e-"]
 
 # when you want to plot all species, use the following lines instead of the above two lines
 #plot_species = chem.species
@@ -150,6 +163,17 @@ for i in range(0, N):
                 vmr_fastchem_top,
                 float(pressure[0] * 1.0),
                 colors[i],
+            )
+        )
+if False:
+    for i in range(0, len(element_vector)):
+        ax1.plot(nk_result[:, i], pressure, ".", label=lab, lw=2, color="black")
+        label_points.append(
+            (
+                chem.elements[i],
+                float(nk_result[0, i]),
+                float(pressure[0] * 1.05),
+                "black",
             )
         )
 

@@ -68,7 +68,7 @@ def test_minimize_gibbs_core_hco_system(hco_system_setup):
     setup = hco_system_setup
     
     # Run Gibbs minimization
-    ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
+    ln_nk_result, ln_ntot_result, counter, _ = minimize_gibbs_core(
         setup['thermo_state'],
         setup['ln_nk'],
         setup['ln_ntot'],

@@ -1,4 +1,5 @@
 from exogibbs.api.chemistry import ChemicalSetup
+from exogibbs.api.chemistry import setup_float_dtype
 from exogibbs.thermo.gibbs import extract_and_pad_gibbs_data
 from exogibbs.thermo.gibbs import interpolate_hvector_all
 from exogibbs.thermo.gibbs import robust_temperature_range
@@ -25,15 +26,16 @@ def chemsetup() -> ChemicalSetup:
     * hvector_func(T) stays purely JAX/NumPy to allow grad/jit/vmap through T.
     * formula_matrix is fixed, built from df_molname.
     """
+    float_dtype = setup_float_dtype()
     # Species / formula matrix (fixed)
     df_molname = _load_molname()
     formula_matrix_np, elements, species = build_formula_matrix_from_JANAF(df_molname)
     # Keep the matrix fixed as requested, but move to device
-    formula_matrix = jnp.asarray(formula_matrix_np)
+    formula_matrix = jnp.asarray(formula_matrix_np, dtype=float_dtype)
 
     # Reference elemental solar abundance b from AAG21 (from exojax.utils.zsol import nsol)
     # AAG21 = Asplund, M., Amarsi, A. M., & Grevesse, N. 2021, arXiv:2105.01661
-    element_vector_ref = jnp.array(
+    element_vector_ref = jnp.asarray(
         [
             2.6627135e-04,
             9.2326087e-01,
@@ -47,7 +49,8 @@ def chemsetup() -> ChemicalSetup:
             8.6163716e-08,
             7.3337216e-09,
             0.0,
-        ]
+        ],
+        dtype=float_dtype,
     )
     # Gibbs matrices -> (molecules, T_table, mu_table, grid_lens)
     gibbs_matrices = _load_gibbs_matrix()
@@ -56,13 +59,13 @@ def chemsetup() -> ChemicalSetup:
     )
 
     # Move interpolation tables to device so autograd can see/track T properly
-    T_table = jnp.asarray(T_table_np)
-    mu_table = jnp.asarray(mu_table_np)
+    T_table = jnp.asarray(T_table_np, dtype=float_dtype)
+    mu_table = jnp.asarray(mu_table_np, dtype=float_dtype)
 
     # Compute robust temperature overlap across species to avoid OOB interpolation
     Tmin_np, Tmax_np = robust_temperature_range(T_table_np)
-    Tmin = jnp.asarray(Tmin_np)
-    Tmax = jnp.asarray(Tmax_np)
+    Tmin = jnp.asarray(Tmin_np, dtype=float_dtype)
+    Tmax = jnp.asarray(Tmax_np, dtype=float_dtype)
 
     # Define a JAX-differentiable h-vector function
     # hvector_func(T): R -> R^K

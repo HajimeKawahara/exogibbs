@@ -7,6 +7,8 @@ import jax.numpy as jnp
 # Adjust paths/names if you moved things.
 from exogibbs.presets.ykb4 import chemsetup
 from exogibbs.api.chemistry import ChemicalSetup
+from exogibbs.api.chemistry import setup_float_dtype
+from exogibbs.presets.fastchem import chemsetup as fastchem_chemsetup
 
 
 def test_prepare_ykb4_setup_basic():
@@ -83,3 +85,21 @@ def test_optional_b_reference_host_side():
         # Treat as reference only; ensure it’s not an unexpectedly huge DeviceArray
         assert isinstance(b_ref, (np.ndarray, jnp.ndarray))
         assert b_ref.ndim == 1 and b_ref.size == setup.formula_matrix.shape[0]
+
+
+def test_ykb4_setup_normalizes_float_dtypes():
+    setup = chemsetup()
+    expected_dtype = setup_float_dtype()
+
+    assert setup.formula_matrix.dtype == expected_dtype
+    assert setup.element_vector_reference.dtype == expected_dtype
+    assert setup.hvector_func(500.0).dtype == expected_dtype
+
+
+def test_fastchem_setup_normalizes_float_dtypes():
+    setup = fastchem_chemsetup(silent=True)
+    expected_dtype = setup_float_dtype()
+
+    assert setup.formula_matrix.dtype == expected_dtype
+    assert setup.element_vector_reference.dtype == expected_dtype
+    assert setup.hvector_func(500.0).dtype == expected_dtype

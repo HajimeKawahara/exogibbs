@@ -1,12 +1,11 @@
 import jax.numpy as jnp
 from jax import custom_vjp
 from jax import jacrev
-from jax import jit
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
 from functools import partial
-from typing import Tuple, Callable
+from typing import Tuple, Callable, Dict
 
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _A_diagn_At
@@ -14,8 +13,73 @@ from exogibbs.optimize.core import _compute_gk
 from exogibbs.optimize.vjpgibbs import vjp_temperature
 from exogibbs.optimize.vjpgibbs import vjp_pressure
 from exogibbs.optimize.vjpgibbs import vjp_elements
-from exogibbs.optimize.stepsize import stepsize_cea_gas
 
+_CHO_EPS = 1.0e-18
+
+
+def _minimize_gibbs_cond_fun(carry):
+    (
+        _ln_nk,
+        _ln_ntot,
+        _gk,
+        _an,
+        epsilon,
+        counter,
+        _formula_matrix,
+        _element_vector,
+        _temperature,
+        _ln_normalized_pressure,
+        _hvector,
+        epsilon_crit,
+        max_iter,
+    ) = carry
+    return (epsilon > epsilon_crit) & (counter < max_iter)
+
+
+def _minimize_gibbs_body_fun(carry):
+    (
+        ln_nk,
+        ln_ntot,
+        gk,
+        An,
+        _epsilon,
+        counter,
+        formula_matrix,
+        element_vector,
+        temperature,
+        ln_normalized_pressure,
+        hvector,
+        epsilon_crit,
+        max_iter,
+    ) = carry
+    ln_nk_new, ln_ntot_new, epsilon, gk, An = update_all(
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        element_vector,
+        temperature,
+        ln_normalized_pressure,
+        hvector,
+        gk,
+        An,
+    )
+    # Keep cond/body at module scope and thread solver context through the
+    # carry so repeated calls reuse the same while_loop callable identities.
+    return (
+        ln_nk_new,
+        ln_ntot_new,
+        gk,
+        An,
+        epsilon,
+        counter + 1,
+        formula_matrix,
+        element_vector,
+        temperature,
+        ln_normalized_pressure,
+        hvector,
+        epsilon_crit,
+        max_iter,
+    )
 
 def solve_gibbs_iteration_equations(
     nk: jnp.ndarray,
@@ -44,15 +108,30 @@ def solve_gibbs_iteration_equations(
             - The update of the  log total number of species (delta_ln_ntot).
     """
     resn = jnp.sum(nk) - ntotk
-    Qk = _A_diagn_At(nk, formula_matrix)
+    bmatrix = _A_diagn_At(nk, formula_matrix)
     Angk = formula_matrix @ (gk * nk)
     ngk = jnp.dot(nk, gk)
-    
-    assemble_mat = jnp.block([[Qk, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
-    assemble_vec = jnp.concatenate([Angk + b - bk, jnp.array([ngk - resn])])
-    assemble_variable = jnp.linalg.solve(assemble_mat, assemble_vec)
-    
-    return assemble_variable[:-1], assemble_variable[-1]
+    rhs = Angk + b - An
+    scalar_rhs = ngk - resn
+
+    # Solve the bordered system through its Schur complement on
+    # B = A diag(n) A^T to avoid assembling the dense (E+1)x(E+1) matrix.
+    jitter = jnp.asarray(_CHO_EPS, dtype=bmatrix.dtype)
+    eye = jnp.eye(bmatrix.shape[0], dtype=bmatrix.dtype)
+    c_factor, lower = cho_factor(bmatrix + jitter * eye)
+
+    binv_rhs = cho_solve((c_factor, lower), rhs)
+    binv_an = cho_solve((c_factor, lower), An)
+
+    schur = resn - jnp.vdot(An, binv_an)
+    schur_safe = jnp.where(
+        jnp.abs(schur) < jitter,
+        jnp.where(schur < 0.0, -jitter, jitter),
+        schur,
+    )
+    delta_ln_ntot = (scalar_rhs - jnp.vdot(An, binv_rhs)) / schur_safe
+    pi_vector = binv_rhs - binv_an * delta_ln_ntot
+    return pi_vector, delta_ln_ntot
 
 
 def _compute_residuals(
@@ -115,7 +194,7 @@ def minimize_gibbs_core(
     hvector_func,
     residual_crit: float = 1.0e-11,
     max_iter: int = 1000,
-) -> Tuple[jnp.ndarray, float, int]:
+) -> Tuple[jnp.ndarray, float, int, jnp.ndarray]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
     Args:
@@ -132,28 +211,10 @@ def minimize_gibbs_core(
             - Final log number of species vector (n_species,).
             - Final log total number of species.
             - Number of iterations performed.
+            - Final residual norm used in convergence checks.
     """
 
     hvector = hvector_func(state.temperature)
-
-    def cond_fun(carry):
-        _, _, _, _, residual, counter = carry
-        return (residual > residual_crit) & (counter < max_iter)
-
-    def body_fun(carry):
-        ln_nk, ln_ntot, gk, An, _, counter = carry
-        ln_nk_new, ln_ntot_new, residual, gk, An = _update_all(
-            ln_nk,
-            ln_ntot,
-            formula_matrix,
-            state.element_vector,
-            state.temperature,
-            state.ln_normalized_pressure,
-            hvector,
-            gk,
-            An,
-        )
-        return ln_nk_new, ln_ntot_new, gk, An, residual, counter + 1
 
     gk = _compute_gk(
         state.temperature,
@@ -164,15 +225,136 @@ def minimize_gibbs_core(
     )
     An = formula_matrix @ jnp.exp(ln_nk_init)
 
-    ln_nk, ln_ntot, _, _, _, counter = while_loop(
-        cond_fun, body_fun, (ln_nk_init, ln_ntot_init, gk, An, jnp.inf, 0)
+    init_carry = (
+        ln_nk_init,
+        ln_ntot_init,
+        gk,
+        An,
+        jnp.inf,
+        0,
+        formula_matrix,
+        state.element_vector,
+        state.temperature,
+        state.ln_normalized_pressure,
+        hvector,
+        epsilon_crit,
+        max_iter,
     )
-    return ln_nk, ln_ntot, counter
+    ln_nk, ln_tot, _, _, epsilon, counter, _, _, _, _, _, _, _ = while_loop(
+        _minimize_gibbs_cond_fun,
+        _minimize_gibbs_body_fun,
+        init_carry,
+    )
+    return ln_nk, ln_tot, counter, epsilon
 
 
-# Only function and scalar options are non-differentiable.
-# Array-valued args (init vectors, matrices) must NOT be in nondiff_argnums
-# to avoid UnexpectedTracerError under vmap/jit.
+def _minimize_gibbs_solve_impl(
+    state: ThermoState,
+    ln_nk0: jnp.ndarray,
+    ln_ntot0: float,
+    formula_matrix: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    epsilon_crit: float,
+    max_iter: int,
+) -> jnp.ndarray:
+    ln_nk, _, _, _ = minimize_gibbs_core(
+        state,
+        ln_nk0,
+        ln_ntot0,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit,
+        max_iter,
+    )
+    return ln_nk
+
+
+# Keep the transformed solver at module scope so repeated calls reuse the same
+# Python callable identity instead of rebuilding a new custom_vjp closure.
+@partial(custom_vjp, nondiff_argnums=(3, 4, 5, 6))
+def _minimize_gibbs_solve(
+    state: ThermoState,
+    ln_nk0: jnp.ndarray,
+    ln_ntot0: float,
+    formula_matrix: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    epsilon_crit: float,
+    max_iter: int,
+) -> jnp.ndarray:
+    return _minimize_gibbs_solve_impl(
+        state,
+        ln_nk0,
+        ln_ntot0,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit,
+        max_iter,
+    )
+
+
+def _minimize_gibbs_solve_fwd(
+    state: ThermoState,
+    ln_nk0: jnp.ndarray,
+    ln_ntot0: float,
+    formula_matrix: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    epsilon_crit: float,
+    max_iter: int,
+):
+    ln_nk, ln_ntot, _, _ = minimize_gibbs_core(
+        state,
+        ln_nk0,
+        ln_ntot0,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit,
+        max_iter,
+    )
+    dfunc = jacrev(hvector_func)
+    hdot = dfunc(state.temperature)
+    residuals = (ln_nk, hdot, state.element_vector, ln_ntot)
+    return ln_nk, residuals
+
+
+def _minimize_gibbs_solve_bwd(
+    formula_matrix: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    epsilon_crit: float,
+    max_iter: int,
+    res,
+    g,
+):
+    del hvector_func, epsilon_crit, max_iter
+    ln_nk, hdot, element_vector, ln_ntot = res
+
+    nk = jnp.exp(ln_nk)
+    ntot_result = jnp.exp(ln_ntot)
+
+    Bmatrix = _A_diagn_At(nk, formula_matrix)
+    c, lower = cho_factor(Bmatrix)
+    alpha = cho_solve((c, lower), formula_matrix @ g)
+    beta = cho_solve((c, lower), element_vector)
+    beta_dot_b_element = jnp.vdot(beta, element_vector)
+
+    cot_T = vjp_temperature(
+        g,
+        nk,
+        formula_matrix,
+        hdot,
+        alpha,
+        beta,
+        element_vector,
+        beta_dot_b_element,
+    )
+    cot_P = vjp_pressure(g, ntot_result, alpha, element_vector, beta_dot_b_element)
+    cot_b = vjp_elements(g, alpha, beta, element_vector, beta_dot_b_element)
+    # No gradients for initialization arguments.
+    return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b), None, None)
+
+
+_minimize_gibbs_solve.defvjp(_minimize_gibbs_solve_fwd, _minimize_gibbs_solve_bwd)
+
+
 def minimize_gibbs(
     state: ThermoState,
     ln_nk_init: jnp.ndarray,
@@ -196,70 +378,50 @@ def minimize_gibbs(
     Returns:
         Final log number of species vector (n_species,).
     """
-    # Define an inner custom_vjp function that captures static arrays
-    # (ln_nk_init, ln_ntot_init, formula_matrix) to avoid passing them as
-    # arguments, which can become JAX Tracers under vmap/jit.
-    @custom_vjp
-    def _solve(inner_state: ThermoState, ln_nk0: jnp.ndarray, ln_ntot0: float) -> jnp.ndarray:
-        ln_nk, _, _ = minimize_gibbs_core(
-            inner_state,
-            ln_nk0,
-            ln_ntot0,
-            formula_matrix,
-            hvector_func,
-            residual_crit,
-            max_iter,
-        )
-        return ln_nk
-
-    def _solve_fwd(inner_state: ThermoState, ln_nk0: jnp.ndarray, ln_ntot0: float):
-        ln_nk, ln_ntot, _ = minimize_gibbs_core(
-            inner_state,
-            ln_nk0,
-            ln_ntot0,
-            formula_matrix,
-            hvector_func,
-            residual_crit,
-            max_iter,
-        )
-        dfunc = jacrev(hvector_func)
-        hdot = dfunc(inner_state.temperature)
-        residuals = (ln_nk, hdot, inner_state.element_vector, ln_ntot)
-        return ln_nk, residuals
-
-    def _solve_bwd(res, g):
-        ln_nk, hdot, element_vector, ln_ntot = res
-
-        nk = jnp.exp(ln_nk)
-        ntot_result = jnp.exp(ln_ntot)
-
-        Bmatrix = _A_diagn_At(nk, formula_matrix)
-        c, lower = cho_factor(Bmatrix)
-        alpha = cho_solve((c, lower), formula_matrix @ g)
-        beta = cho_solve((c, lower), element_vector)
-        beta_dot_b_element = jnp.vdot(beta, element_vector)
-
-        cot_T = vjp_temperature(
-            g,
-            nk,
-            formula_matrix,
-            hdot,
-            alpha,
-            beta,
-            element_vector,
-            beta_dot_b_element,
-        )
-        cot_P = vjp_pressure(g, ntot_result, alpha, element_vector, beta_dot_b_element)
-        cot_b = vjp_elements(g, alpha, beta, element_vector, beta_dot_b_element)
-        # No gradients for initialization arguments
-        return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b), None, None)
-
-    _solve.defvjp(_solve_fwd, _solve_bwd)
-
     # Treat initial guesses as non-differentiable inputs
     ln_nk0 = stop_gradient(ln_nk_init)
     ln_ntot0 = stop_gradient(ln_ntot_init)
-    return _solve(state, ln_nk0, ln_ntot0)
+    return _minimize_gibbs_solve(
+        state,
+        ln_nk0,
+        ln_ntot0,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit,
+        max_iter,
+    )
 
 
-# Note: custom_vjp is defined inside minimize_gibbs to capture static arrays.
+def minimize_gibbs_with_diagnostics(
+    state: ThermoState,
+    ln_nk_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    epsilon_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+) -> Tuple[jnp.ndarray, Dict[str, jnp.ndarray]]:
+    """Run Gibbs minimization and return lightweight convergence diagnostics."""
+    ln_nk, _, n_iter, final_residual = minimize_gibbs_core(
+        state,
+        ln_nk_init,
+        ln_ntot_init,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit,
+        max_iter,
+    )
+    epsilon_crit_used = jnp.asarray(epsilon_crit, dtype=final_residual.dtype)
+    max_iter_used = jnp.asarray(max_iter, dtype=n_iter.dtype)
+    converged = final_residual <= epsilon_crit_used
+    hit_max_iter = (n_iter >= max_iter_used) & (~converged)
+
+    diagnostics = {
+        "n_iter": n_iter,
+        "converged": converged,
+        "hit_max_iter": hit_max_iter,
+        "final_residual": final_residual,
+        "epsilon_crit": epsilon_crit_used,
+        "max_iter": max_iter_used,
+    }
+    return ln_nk, diagnostics

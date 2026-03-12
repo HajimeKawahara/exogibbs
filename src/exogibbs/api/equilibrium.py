@@ -9,14 +9,18 @@ an h(T) function). No JANAF or I/O details leak into this layer.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping, Optional, Tuple, Union
+from typing import Callable, Dict, Literal, Mapping, Optional, Tuple, Union
 import jax.numpy as jnp
 from jax import tree_util
 import jax
+from jax import lax
 from exogibbs.api.chemistry import ChemicalSetup, ThermoState
-from exogibbs.optimize.minimize import minimize_gibbs
+from exogibbs.optimize.minimize import minimize_gibbs, minimize_gibbs_with_diagnostics
 
 Array = jax.Array
+
+
+_PROFILE_SCAN_BODY_CACHE: Dict[Tuple[int, int, float, int, bool], Callable] = {}
 
 
 @dataclass(frozen=True)
@@ -26,7 +30,10 @@ class EquilibriumOptions:
     Attributes:
         epsilon_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations.
-
+        method: Method for solving equilibrium along a profile. Options:
+            - "vmap_cold": Independent solves for each layer with cold starts (no state carryover).
+            - "scan_hot_from_top": Sequential solves from top to bottom, carrying converged state as hot start for next layer.
+            - "scan_hot_from_bottom": Sequential solves from bottom to top, carrying converged state as hot start for next layer.
     Note:
         these default values are chosen based on the comparison with FastChem 
         in the range of 300-3000K and 1e-8 - 1e2 bar. See #17 and comparison_with_fastchem.py
@@ -34,6 +41,7 @@ class EquilibriumOptions:
 
     epsilon_crit: float = 1.0e-15
     max_iter: int = 1000
+    method: Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"] = "scan_hot_from_top"
 
 
 @dataclass(frozen=True)
@@ -98,6 +106,59 @@ def _ln_normalized_pressure(P: float, Pref: float) -> float:
     return jnp.log(P / Pref)
 
 
+def _get_profile_scan_body(
+    setup: ChemicalSetup,
+    b: Array,
+    Pref: float,
+    opts: "EquilibriumOptions",
+    return_diagnostics: bool,
+) -> Callable:
+    # Reuse one body callable per stable input bundle so repeated profile calls
+    # do not hand lax.scan a fresh Python function identity each time.
+    key = (id(setup), id(b), float(Pref), id(opts), return_diagnostics)
+    scan_body = _PROFILE_SCAN_BODY_CACHE.get(key)
+    if scan_body is not None:
+        return scan_body
+
+    if return_diagnostics:
+        def scan_body(carry, tp_pair):
+            ln_nk_prev, ln_ntot_prev = carry
+            Ti, Pi = tp_pair
+            result, diag = equilibrium(
+                setup,
+                Ti,
+                Pi,
+                b,
+                Pref=Pref,
+                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                options=opts,
+                return_diagnostics=True,
+            )
+            ln_ntot_next = jnp.log(jnp.clip(result.ntot, 1e-300))
+            carry_next = (result.ln_n, ln_ntot_next)
+            return carry_next, (result, diag)
+    else:
+        def scan_body(carry, tp_pair):
+            ln_nk_prev, ln_ntot_prev = carry
+            Ti, Pi = tp_pair
+            result = equilibrium(
+                setup,
+                Ti,
+                Pi,
+                b,
+                Pref=Pref,
+                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                options=opts,
+                return_diagnostics=False,
+            )
+            ln_ntot_next = jnp.log(jnp.clip(result.ntot, 1e-300))
+            carry_next = (result.ln_n, ln_ntot_next)
+            return carry_next, result
+
+    _PROFILE_SCAN_BODY_CACHE[key] = scan_body
+    return scan_body
+
+
 def equilibrium(
     setup: ChemicalSetup,
     T: float,
@@ -107,7 +168,8 @@ def equilibrium(
     Pref: float = 1.0,
     init: Optional[EquilibriumInit] = None,
     options: Optional[EquilibriumOptions] = None,
-) -> EquilibriumResult:
+    return_diagnostics: bool = False,
+) -> Union[EquilibriumResult, Tuple[EquilibriumResult, Mapping[str, Array]]]:
     """Compute equilibrium composition at (T, P, b) via Gibbs minimization.
 
     Args:
@@ -121,6 +183,8 @@ def equilibrium(
 
     Returns:
         EquilibriumResult with ln n, n, mole fractions x, and n_tot.
+        If ``return_diagnostics=True``, returns ``(result, diagnostics)`` where
+        diagnostics is a pytree-compatible mapping with solver metrics.
     """
     opts = options or EquilibriumOptions()
     A = setup.formula_matrix
@@ -137,22 +201,37 @@ def equilibrium(
 
     hfunc = setup.hvector_func
     state = ThermoState(T, lnP, b)
-    ln_n = minimize_gibbs(
-        state,
-        ln_nk0,
-        ln_ntot0,
-        A,
-        hfunc,
-        residual_crit=opts.epsilon_crit,
-        max_iter=opts.max_iter,
-    )
+    diagnostics = None
+    if return_diagnostics:
+        ln_n, diagnostics = minimize_gibbs_with_diagnostics(
+            state,
+            ln_nk0,
+            ln_ntot0,
+            A,
+            hfunc,
+            epsilon_crit=opts.epsilon_crit,
+            max_iter=opts.max_iter,
+        )
+    else:
+        ln_n = minimize_gibbs(
+            state,
+            ln_nk0,
+            ln_ntot0,
+            A,
+            hfunc,
+            epsilon_crit=opts.epsilon_crit,
+            max_iter=opts.max_iter,
+        )
 
     n = jnp.exp(ln_n)
     ntot = jnp.asarray(jnp.sum(n))
     x = n / jnp.clip(ntot, 1e-300)
-    return EquilibriumResult(
+    result = EquilibriumResult(
         ln_n=ln_n, n=n, x=x, ntot=ntot, iterations=None, metadata=None
     )
+    if return_diagnostics:
+        return result, diagnostics
+    return result
 
 def equilibrium_profile(
     setup: ChemicalSetup,
@@ -162,7 +241,8 @@ def equilibrium_profile(
     *,
     Pref: float = 1.0,
     options: Optional[EquilibriumOptions] = None,
-) -> EquilibriumResult:
+    return_diagnostics: bool = False,
+) -> Union[EquilibriumResult, Tuple[EquilibriumResult, Mapping[str, Array]]]:
     """Vectorized equilibrium along a 1D T/P profile (layers).
 
     This computes equilibrium independently for each (T[i], P[i]) pair while
@@ -175,6 +255,7 @@ def equilibrium_profile(
         b: Elemental abundances, shape (E,), shared across layers.
         Pref: Reference pressure (bar).
         options: Solver options.
+        return_diagnostics: If True, returns per-layer solver diagnostics.
 
     Returns:
         Batched EquilibriumResult with fields stacked over the leading dimension N:
@@ -191,20 +272,77 @@ def equilibrium_profile(
         raise ValueError("T and P must have the same length.")
     if b.ndim != 1:
         raise ValueError("b must be a 1D array shared across layers.")
+    opts = options or EquilibriumOptions()
+    method = opts.method
+    valid_methods = ("vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom")
+    if method not in valid_methods:
+        raise ValueError(f"Unknown solve method '{method}'. Expected one of {valid_methods}.")
 
-    # Vectorize over T and P; keep setup and b static. Pass Pref/options as kwargs.
-    layer_fn = jax.vmap(
-        lambda Ti, Pi: equilibrium(
-            setup,
-            Ti,
-            Pi,
-            b,
-            Pref=Pref,
-            options=options,
-        ),
-        in_axes=(0, 0),
-    )
-    return layer_fn(T, P)
+    # Baseline path: independent layer solves with cold starts.
+    if method == "vmap_cold":
+        if return_diagnostics:
+            layer_fn = jax.vmap(
+                lambda Ti, Pi: equilibrium(
+                    setup,
+                    Ti,
+                    Pi,
+                    b,
+                    Pref=Pref,
+                    options=opts,
+                    return_diagnostics=True,
+                ),
+                in_axes=(0, 0),
+            )
+            return layer_fn(T, P)
+
+        layer_fn = jax.vmap(
+            lambda Ti, Pi: equilibrium(
+                setup,
+                Ti,
+                Pi,
+                b,
+                Pref=Pref,
+                options=opts,
+                return_diagnostics=False,
+            ),
+            in_axes=(0, 0),
+        )
+        return layer_fn(T, P)
+
+    # Hot-start scan path: solve layers sequentially and carry converged state.
+    if method == "scan_hot_from_bottom":
+        T_in = jnp.flip(T, axis=0)
+        P_in = jnp.flip(P, axis=0)
+    else:
+        T_in = T
+        P_in = P
+
+    K = int(setup.formula_matrix.shape[1])
+    ln_nk0, ln_ntot0 = _default_init(b, K)
+
+    if return_diagnostics:
+        scan_body = _get_profile_scan_body(setup, b, Pref, opts, True)
+        _, (result_seq, diag_seq) = lax.scan(scan_body, (ln_nk0, ln_ntot0), (T_in, P_in))
+    else:
+        scan_body = _get_profile_scan_body(setup, b, Pref, opts, False)
+        _, result_seq = lax.scan(scan_body, (ln_nk0, ln_ntot0), (T_in, P_in))
+        diag_seq = None
+
+    if method == "scan_hot_from_bottom":
+        result_seq = EquilibriumResult(
+            ln_n=jnp.flip(result_seq.ln_n, axis=0),
+            n=jnp.flip(result_seq.n, axis=0),
+            x=jnp.flip(result_seq.x, axis=0),
+            ntot=jnp.flip(result_seq.ntot, axis=0),
+            iterations=result_seq.iterations,
+            metadata=result_seq.metadata,
+        )
+        if diag_seq is not None:
+            diag_seq = {k: jnp.flip(v, axis=0) for k, v in diag_seq.items()}
+
+    if return_diagnostics:
+        return result_seq, diag_seq
+    return result_seq
 
 
 __all__ = [
