@@ -41,7 +41,7 @@ class EquilibriumOptions:
 
     epsilon_crit: float = 1.0e-15
     max_iter: int = 1000
-    method: Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"] = "scan_hot_from_bottom"
+    method: Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"] = "scan_hot_from_top"
 
 
 @dataclass(frozen=True)
