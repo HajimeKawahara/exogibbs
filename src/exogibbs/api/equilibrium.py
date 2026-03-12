@@ -9,7 +9,7 @@ an h(T) function). No JANAF or I/O details leak into this layer.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Mapping, Optional, Tuple, Union
+from typing import Callable, Dict, Literal, Mapping, Optional, Tuple, Union
 import jax.numpy as jnp
 from jax import tree_util
 import jax
@@ -18,6 +18,9 @@ from exogibbs.api.chemistry import ChemicalSetup, ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs, minimize_gibbs_with_diagnostics
 
 Array = jax.Array
+
+
+_PROFILE_SCAN_BODY_CACHE: Dict[Tuple[int, int, float, int, bool], Callable] = {}
 
 
 @dataclass(frozen=True)
@@ -101,6 +104,59 @@ def _prepare_init(
 
 def _ln_normalized_pressure(P: float, Pref: float) -> float:
     return jnp.log(P / Pref)
+
+
+def _get_profile_scan_body(
+    setup: ChemicalSetup,
+    b: Array,
+    Pref: float,
+    opts: "EquilibriumOptions",
+    return_diagnostics: bool,
+) -> Callable:
+    # Reuse one body callable per stable input bundle so repeated profile calls
+    # do not hand lax.scan a fresh Python function identity each time.
+    key = (id(setup), id(b), float(Pref), id(opts), return_diagnostics)
+    scan_body = _PROFILE_SCAN_BODY_CACHE.get(key)
+    if scan_body is not None:
+        return scan_body
+
+    if return_diagnostics:
+        def scan_body(carry, tp_pair):
+            ln_nk_prev, ln_ntot_prev = carry
+            Ti, Pi = tp_pair
+            result, diag = equilibrium(
+                setup,
+                Ti,
+                Pi,
+                b,
+                Pref=Pref,
+                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                options=opts,
+                return_diagnostics=True,
+            )
+            ln_ntot_next = jnp.log(jnp.clip(result.ntot, 1e-300))
+            carry_next = (result.ln_n, ln_ntot_next)
+            return carry_next, (result, diag)
+    else:
+        def scan_body(carry, tp_pair):
+            ln_nk_prev, ln_ntot_prev = carry
+            Ti, Pi = tp_pair
+            result = equilibrium(
+                setup,
+                Ti,
+                Pi,
+                b,
+                Pref=Pref,
+                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                options=opts,
+                return_diagnostics=False,
+            )
+            ln_ntot_next = jnp.log(jnp.clip(result.ntot, 1e-300))
+            carry_next = (result.ln_n, ln_ntot_next)
+            return carry_next, result
+
+    _PROFILE_SCAN_BODY_CACHE[key] = scan_body
+    return scan_body
 
 
 def equilibrium(
@@ -265,42 +321,10 @@ def equilibrium_profile(
     ln_nk0, ln_ntot0 = _default_init(b, K)
 
     if return_diagnostics:
-        def scan_body(carry, tp_pair):
-            ln_nk_prev, ln_ntot_prev = carry
-            Ti, Pi = tp_pair
-            result, diag = equilibrium(
-                setup,
-                Ti,
-                Pi,
-                b,
-                Pref=Pref,
-                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
-                options=opts,
-                return_diagnostics=True,
-            )
-            ln_ntot_next = jnp.log(jnp.clip(result.ntot, 1e-300))
-            carry_next = (result.ln_n, ln_ntot_next)
-            return carry_next, (result, diag)
-
+        scan_body = _get_profile_scan_body(setup, b, Pref, opts, True)
         _, (result_seq, diag_seq) = lax.scan(scan_body, (ln_nk0, ln_ntot0), (T_in, P_in))
     else:
-        def scan_body(carry, tp_pair):
-            ln_nk_prev, ln_ntot_prev = carry
-            Ti, Pi = tp_pair
-            result = equilibrium(
-                setup,
-                Ti,
-                Pi,
-                b,
-                Pref=Pref,
-                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
-                options=opts,
-                return_diagnostics=False,
-            )
-            ln_ntot_next = jnp.log(jnp.clip(result.ntot, 1e-300))
-            carry_next = (result.ln_n, ln_ntot_next)
-            return carry_next, result
-
+        scan_body = _get_profile_scan_body(setup, b, Pref, opts, False)
         _, result_seq = lax.scan(scan_body, (ln_nk0, ln_ntot0), (T_in, P_in))
         diag_seq = None
 
