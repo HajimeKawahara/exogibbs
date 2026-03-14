@@ -89,7 +89,7 @@ class EquilibriumResult:
 
 def _default_init(b_vec: Array, K: int) -> Tuple[Array, float]:
     """Numerically robust uniform initialization: n_k = 1 for all species."""
-    ln_nk0 = jnp.zeros((K,), dtype=jnp.result_type(b_vec.dtype, jnp.float32)) 
+    ln_nk0 = jnp.zeros((K,), dtype=jnp.result_type(b_vec.dtype, jnp.float32))
     ln_ntot0 = jnp.log(jnp.asarray(K, dtype=jnp.result_type(b_vec.dtype, jnp.float32)))
     return ln_nk0, ln_ntot0
 
