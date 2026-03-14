@@ -75,7 +75,7 @@ ts = time.time()
 opts = EquilibriumOptions(method="scan_hot_from_top", epsilon_crit=1e-10, max_iter=1000) #0.15sec/run A100
 #opts = EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-10, max_iter=1000) #0.19 sec/run A100
 #opts = EquilibriumOptions(method="vmap_cold", epsilon_crit=1e-10, max_iter=1000) #1.05sec/run A100
-niter = 100
+niter = 10
 temperature = temperature - niter
 for j in range(0, niter):
     temperature = temperature + 1.0
@@ -89,7 +89,7 @@ for j in range(0, niter):
         return_diagnostics=True
     )
     nk_result = res.x
-    #print(diag)
+    #print(diag["n_iter"])
 te = time.time() - ts
 print("ExoGibbs calculation time:", te, "seconds")
 ##################################################################################
