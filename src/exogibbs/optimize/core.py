@@ -5,9 +5,7 @@ from jax import vmap
 from typing import Tuple
 
 def _A_diagn_At(number_density_vector, formula_matrix):
-    return jnp.einsum(
-        "ik,k,jk->ij", formula_matrix, number_density_vector, formula_matrix
-    )
+    return jnp.einsum("ik,k,jk->ij", formula_matrix, number_density_vector, formula_matrix)
 
 def compute_ln_normalized_pressure(
     P: float, Pref: float = 1.0
@@ -43,5 +41,3 @@ def _compute_gk(
         chemical potential vector (n_species, )
     """
     return hvector + ln_nk - ln_ntot + ln_normalized_pressure
-
-
