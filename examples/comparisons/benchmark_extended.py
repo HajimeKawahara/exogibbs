@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy import constants as const
 from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
-
+import jax
 
 from jax import config
 
@@ -72,11 +72,13 @@ element_vector = jnp.append(nsol_vector, 0.0)
 
 import time
 ts = time.time()
-opts = EquilibriumOptions(method="scan_hot_from_top", epsilon_crit=1e-10, max_iter=1000) #0.15sec/run A100
-#opts = EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-10, max_iter=1000) #0.19 sec/run A100
-#opts = EquilibriumOptions(method="vmap_cold", epsilon_crit=1e-10, max_iter=1000) #1.05sec/run A100
-niter = 10
+#opts = EquilibriumOptions(method="scan_hot_from_top", epsilon_crit=1e-10, max_iter=1000) #0.13sec/run A100
+opts = EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-10, max_iter=1000) #0.125 sec/run A100
+#opts = EquilibriumOptions(method="vmap_cold", epsilon_crit=1e-10, max_iter=1000) #0.18sec/run A100
+niter = 100
 temperature = temperature - niter
+tset = time.time()
+times = []
 for j in range(0, niter):
     temperature = temperature + 1.0
     res, diag = equilibrium_profile(
@@ -89,9 +91,16 @@ for j in range(0, niter):
         return_diagnostics=True
     )
     nk_result = res.x
+    jax.block_until_ready(nk_result)
+    times.append(time.time() - tset)
+    tset = time.time()
+
     #print(diag["n_iter"])
 te = time.time() - ts
-print("ExoGibbs calculation time:", te, "seconds")
+print("Exogibbs time:", te, "seconds")
+print("average incl 1st :", te/niter, "seconds/run")
+print("mean_time (excl. 1st) =", sum(times[1:]) / len(times[1:]), "seconds/run")
+
 ##################################################################################
     
 
