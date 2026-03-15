@@ -78,6 +78,7 @@ res = equilibrium_profile(
     Pref=1.0,
     options=opts,
 )
+nk_result = res.x
 end_time = time.time()
 print(f"ExoGibbs equilibrium calculation took {end_time - start_time:.2f} seconds")
 ##################################################################################

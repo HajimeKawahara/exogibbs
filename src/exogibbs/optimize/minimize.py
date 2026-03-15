@@ -1,3 +1,6 @@
+import time
+
+import jax
 import jax.numpy as jnp
 from jax import custom_vjp
 from jax import jacrev
@@ -109,7 +112,8 @@ def solve_gibbs_iteration_equations(
     """
     resn = jnp.sum(nk) - ntotk
     bmatrix = _A_diagn_At(nk, formula_matrix)
-    Angk = formula_matrix @ (gk * nk)
+    gk_nk = gk * nk
+    Angk = formula_matrix @ gk_nk
     ngk = jnp.dot(nk, gk)
     rhs = Angk + b - An
     scalar_rhs = ngk - resn
@@ -120,8 +124,10 @@ def solve_gibbs_iteration_equations(
     eye = jnp.eye(bmatrix.shape[0], dtype=bmatrix.dtype)
     c_factor, lower = cho_factor(bmatrix + jitter * eye)
 
-    binv_rhs = cho_solve((c_factor, lower), rhs)
-    binv_an = cho_solve((c_factor, lower), An)
+    rhs_pair = jnp.stack((rhs, An), axis=1)
+    solved_pair = cho_solve((c_factor, lower), rhs_pair)
+    binv_rhs = solved_pair[:, 0]
+    binv_an = solved_pair[:, 1]
 
     schur = resn - jnp.vdot(An, binv_an)
     schur_safe = jnp.where(
@@ -134,17 +140,15 @@ def solve_gibbs_iteration_equations(
     return pi_vector, delta_ln_ntot
 
 
-def compute_residuals(
+def compute_residuals_with_at_pi(
     nk: jnp.ndarray,
     ntotk: float,
-    formula_matrix: jnp.ndarray,
     b: jnp.ndarray,
     gk: jnp.ndarray,
     An: jnp.ndarray,
-    pi_vector: jnp.ndarray,
+    at_pi: jnp.ndarray,
 ) -> float:
-
-    ress = nk * (formula_matrix.T @ pi_vector - gk)
+    ress = nk * (at_pi - gk)
     ress_squared = jnp.dot(ress, ress)
 
     An_b = An - b
@@ -177,6 +181,89 @@ def _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot, size=CEA_SIZE):
     lam = jnp.clip(lam, 1e-6, 1.0)
     return lam
 
+
+def _prepare_iteration_system(
+    ln_nk,
+    ln_ntot,
+    formula_matrix,
+    b,
+    gk,
+    An,
+):
+    nk = jnp.exp(ln_nk)
+    ntot = jnp.exp(ln_ntot)
+    resn = jnp.sum(nk) - ntot
+    bmatrix = _A_diagn_At(nk, formula_matrix)
+    gk_nk = gk * nk
+    Angk = formula_matrix @ gk_nk
+    ngk = jnp.dot(nk, gk)
+    rhs = Angk + b - An
+    scalar_rhs = ngk - resn
+    return nk, ntot, resn, bmatrix, rhs, scalar_rhs
+
+
+def _solve_iteration_system(bmatrix, rhs, An, resn):
+    jitter = jnp.asarray(_CHO_EPS, dtype=bmatrix.dtype)
+    eye = jnp.eye(bmatrix.shape[0], dtype=bmatrix.dtype)
+    c_factor, lower = cho_factor(bmatrix + jitter * eye)
+
+    rhs_pair = jnp.stack((rhs, An), axis=1)
+    solved_pair = cho_solve((c_factor, lower), rhs_pair)
+    binv_rhs = solved_pair[:, 0]
+    binv_an = solved_pair[:, 1]
+
+    schur = resn - jnp.vdot(An, binv_an)
+    schur_safe = jnp.where(
+        jnp.abs(schur) < jitter,
+        jnp.where(schur < 0.0, -jitter, jitter),
+        schur,
+    )
+    return binv_rhs, binv_an, schur_safe
+
+
+def _finish_iteration_solve(binv_rhs, binv_an, An, scalar_rhs, schur_safe):
+    delta_ln_ntot = (scalar_rhs - jnp.vdot(An, binv_rhs)) / schur_safe
+    pi_vector = binv_rhs - binv_an * delta_ln_ntot
+    return pi_vector, delta_ln_ntot
+
+
+def _apply_iteration_step(
+    ln_nk,
+    ln_ntot,
+    formula_matrix,
+    gk,
+    pi_vector,
+    delta_ln_ntot,
+):
+    at_pi = formula_matrix.T @ pi_vector
+    delta_ln_nk = at_pi + delta_ln_ntot - gk
+    lam = _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
+    ln_ntot_new = ln_ntot + lam * delta_ln_ntot
+    ln_nk_new = ln_nk + lam * delta_ln_nk
+    return ln_nk_new, ln_ntot_new, lam, delta_ln_nk, at_pi
+
+
+def _evaluate_iteration_state(
+    ln_nk,
+    ln_ntot,
+    formula_matrix,
+    b,
+    T,
+    ln_normalized_pressure,
+    hvector,
+    gk_prev,
+    lam,
+    at_pi,
+    pi_vector,
+):
+    nk = jnp.exp(ln_nk)
+    ntot = jnp.exp(ln_ntot)
+    del T, ln_normalized_pressure, hvector, pi_vector
+    gk = gk_prev + lam * (at_pi - gk_prev)
+    An = formula_matrix @ nk
+    epsilon = compute_residuals_with_at_pi(nk, ntot, b, gk, An, at_pi)
+    return gk, An, epsilon
+
 def update_all(
     ln_nk,
     ln_ntot,
@@ -188,25 +275,185 @@ def update_all(
     gk,
     An,
 ):
-
-    pi_vector, delta_ln_ntot = solve_gibbs_iteration_equations(
-        jnp.exp(ln_nk), jnp.exp(ln_ntot), formula_matrix, b, gk, An
+    _, _, resn, bmatrix, rhs, scalar_rhs = _prepare_iteration_system(
+        ln_nk, ln_ntot, formula_matrix, b, gk, An
     )
-    delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
-
-    # relaxation and update
-    #lam = 0.1  # need to reconsider
-    lam = _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
-    ln_ntot += lam * delta_ln_ntot
-    ln_nk += lam * delta_ln_nk
-
-    # computes new gk,An and residuals
-    nk = jnp.exp(ln_nk)
-    ntot = jnp.exp(ln_ntot)
-    gk = _compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)
-    An = formula_matrix @ nk
-    epsilon = compute_residuals(nk, ntot, formula_matrix, b, gk, An, pi_vector)
+    binv_rhs, binv_an, schur_safe = _solve_iteration_system(bmatrix, rhs, An, resn)
+    pi_vector, delta_ln_ntot = _finish_iteration_solve(
+        binv_rhs, binv_an, An, scalar_rhs, schur_safe
+    )
+    ln_nk, ln_ntot, lam, _, at_pi = _apply_iteration_step(
+        ln_nk, ln_ntot, formula_matrix, gk, pi_vector, delta_ln_ntot
+    )
+    gk, An, epsilon = _evaluate_iteration_state(
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        b,
+        T,
+        ln_normalized_pressure,
+        hvector,
+        gk,
+        lam,
+        at_pi,
+        pi_vector,
+    )
     return ln_nk, ln_ntot, epsilon, gk, An
+
+
+def profile_minimize_gibbs_iterations(
+    state: ThermoState,
+    ln_nk_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    epsilon_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+) -> Dict[str, object]:
+    """Run the same Newton iterations in Python and time major sub-steps.
+
+    This is a profiling helper, not the production solve path.
+    """
+
+    def _block(x):
+        return jax.tree_util.tree_map(
+            lambda y: y.block_until_ready() if hasattr(y, "block_until_ready") else y,
+            x,
+        )
+
+    prepare_system = jax.jit(_prepare_iteration_system)
+    solve_system = jax.jit(_solve_iteration_system)
+    finish_solve = jax.jit(_finish_iteration_solve)
+    apply_step = jax.jit(_apply_iteration_step)
+    eval_state = jax.jit(_evaluate_iteration_state)
+
+    hvector = hvector_func(state.temperature)
+    _block(hvector)
+
+    gk = _compute_gk(
+        state.temperature,
+        ln_nk_init,
+        ln_ntot_init,
+        hvector,
+        state.ln_normalized_pressure,
+    )
+    An = formula_matrix @ jnp.exp(ln_nk_init)
+    _block((gk, An))
+
+    ln_nk = ln_nk_init
+    ln_ntot = ln_ntot_init
+    epsilon = jnp.asarray(jnp.inf, dtype=ln_nk.dtype)
+    epsilon_host = float("inf")
+    counter = 0
+
+    # Compile the per-part kernels once outside the timed loop.
+    _, _, resn0, bmatrix0, rhs0, scalar_rhs0 = prepare_system(
+        ln_nk, ln_ntot, formula_matrix, state.element_vector, gk, An
+    )
+    _block((resn0, bmatrix0, rhs0, scalar_rhs0))
+    binv_rhs0, binv_an0, schur_safe0 = solve_system(bmatrix0, rhs0, An, resn0)
+    _block((binv_rhs0, binv_an0, schur_safe0))
+    pi_vector0, delta_ln_ntot0 = finish_solve(
+        binv_rhs0, binv_an0, An, scalar_rhs0, schur_safe0
+    )
+    _block((pi_vector0, delta_ln_ntot0))
+    ln_nk1, ln_ntot1, lam1, _, at_pi1 = apply_step(
+        ln_nk, ln_ntot, formula_matrix, gk, pi_vector0, delta_ln_ntot0
+    )
+    _block((ln_nk1, ln_ntot1))
+    gk1, An1, epsilon1 = eval_state(
+        ln_nk1,
+        ln_ntot1,
+        formula_matrix,
+        state.element_vector,
+        state.temperature,
+        state.ln_normalized_pressure,
+        hvector,
+        gk,
+        lam1,
+        at_pi1,
+        pi_vector0,
+    )
+    _block((gk1, An1, epsilon1))
+
+    timings_s = {
+        "prepare_system": 0.0,
+        "linear_solve": 0.0,
+        "finish_solve": 0.0,
+        "step_update_damping": 0.0,
+        "residual_evaluation": 0.0,
+        "convergence_check": 0.0,
+    }
+
+    while True:
+        t0 = time.perf_counter()
+        keep_going = (epsilon_host > epsilon_crit) and (counter < max_iter)
+        timings_s["convergence_check"] += time.perf_counter() - t0
+        if not keep_going:
+            break
+
+        t0 = time.perf_counter()
+        _, _, resn, bmatrix, rhs, scalar_rhs = prepare_system(
+            ln_nk, ln_ntot, formula_matrix, state.element_vector, gk, An
+        )
+        _block((resn, bmatrix, rhs, scalar_rhs))
+        timings_s["prepare_system"] += time.perf_counter() - t0
+
+        t0 = time.perf_counter()
+        binv_rhs, binv_an, schur_safe = solve_system(bmatrix, rhs, An, resn)
+        _block((binv_rhs, binv_an, schur_safe))
+        timings_s["linear_solve"] += time.perf_counter() - t0
+
+        t0 = time.perf_counter()
+        pi_vector, delta_ln_ntot = finish_solve(
+            binv_rhs, binv_an, An, scalar_rhs, schur_safe
+        )
+        _block((pi_vector, delta_ln_ntot))
+        timings_s["finish_solve"] += time.perf_counter() - t0
+
+        t0 = time.perf_counter()
+        ln_nk, ln_ntot, lam, _, at_pi = apply_step(
+            ln_nk, ln_ntot, formula_matrix, gk, pi_vector, delta_ln_ntot
+        )
+        _block((ln_nk, ln_ntot))
+        timings_s["step_update_damping"] += time.perf_counter() - t0
+
+        t0 = time.perf_counter()
+        gk, An, epsilon = eval_state(
+            ln_nk,
+            ln_ntot,
+            formula_matrix,
+            state.element_vector,
+            state.temperature,
+            state.ln_normalized_pressure,
+            hvector,
+            gk,
+            lam,
+            at_pi,
+            pi_vector,
+        )
+        _block((gk, An, epsilon))
+        epsilon_host = float(jax.device_get(epsilon))
+        timings_s["residual_evaluation"] += time.perf_counter() - t0
+
+        counter += 1
+
+    total_profiled_s = sum(timings_s.values())
+    average_iteration_s = total_profiled_s / counter if counter else 0.0
+    average_breakdown_s = {
+        key: value / counter if counter else 0.0 for key, value in timings_s.items()
+    }
+
+    return {
+        "ln_nk": ln_nk,
+        "ln_ntot": ln_ntot,
+        "n_iter": counter,
+        "final_residual": epsilon,
+        "timings_s": timings_s,
+        "average_iteration_s": average_iteration_s,
+        "average_breakdown_s": average_breakdown_s,
+        "total_profiled_s": total_profiled_s,
+    }
 
 def minimize_gibbs_core(
     state: ThermoState,
