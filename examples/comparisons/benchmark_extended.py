@@ -92,7 +92,6 @@ for j in range(0, niter):
     )
     nk_result = res.x
     jax.block_until_ready(nk_result)
-    jax.block_until_ready(nk_result)
     times.append(time.time() - tset)
     tset = time.time()
 
