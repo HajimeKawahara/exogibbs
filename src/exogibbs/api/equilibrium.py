@@ -9,7 +9,7 @@ an h(T) function). No JANAF or I/O details leak into this layer.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Dict, Literal, Mapping, Optional, Tuple, Union
+from typing import Callable, Dict, Literal, Mapping, Optional, Protocol, Tuple, Union, runtime_checkable
 import jax.numpy as jnp
 from jax import tree_util
 import jax
@@ -20,7 +20,7 @@ from exogibbs.optimize.minimize import minimize_gibbs, minimize_gibbs_with_diagn
 Array = jax.Array
 
 
-_PROFILE_SCAN_BODY_CACHE: Dict[Tuple[int, int, float, int, bool], Callable] = {}
+_PROFILE_SCAN_BODY_CACHE: Dict[Tuple[int, int, float, int, int, bool], Callable] = {}
 
 
 @dataclass(frozen=True)
@@ -53,6 +53,71 @@ class EquilibriumInit:
 
     ln_nk: Optional[Array] = None
     ln_ntot: Optional[Array] = None
+
+
+@dataclass(frozen=True)
+class EquilibriumInitRequest:
+    """Inputs available to an initializer for one layer's Newton guess.
+
+    This request always describes a single layer/state. In profile solves,
+    ``T`` and ``P`` are the per-layer values for the current layer, while
+    ``b`` is currently shared across all layers in the profile.
+    """
+
+    setup: ChemicalSetup
+    T: float
+    P: float
+    b: Array
+    K: int
+    user_init: Optional[EquilibriumInit] = None
+    previous_solution: Optional[EquilibriumInit] = None
+
+
+@runtime_checkable
+class EquilibriumInitializer(Protocol):
+    """Produce an initial guess for one layer's Newton solve."""
+
+    def __call__(self, request: EquilibriumInitRequest) -> EquilibriumInit:
+        ...
+
+
+@dataclass(frozen=True)
+class DefaultEquilibriumInitializer:
+    """Current one-layer initialization behavior: explicit init, then hot start, else uniform."""
+
+    def __call__(self, request: EquilibriumInitRequest) -> EquilibriumInit:
+        if request.user_init is not None and request.user_init.ln_nk is not None and request.user_init.ln_ntot is not None:
+            return EquilibriumInit(
+                ln_nk=jnp.asarray(request.user_init.ln_nk),
+                ln_ntot=jnp.asarray(request.user_init.ln_ntot),
+            )
+        if (
+            request.previous_solution is not None
+            and request.previous_solution.ln_nk is not None
+            and request.previous_solution.ln_ntot is not None
+        ):
+            return EquilibriumInit(
+                ln_nk=jnp.asarray(request.previous_solution.ln_nk),
+                ln_ntot=jnp.asarray(request.previous_solution.ln_ntot),
+            )
+        ln_nk0, ln_ntot0 = _default_init(request.b, request.K)
+        return EquilibriumInit(ln_nk=ln_nk0, ln_ntot=ln_ntot0)
+
+
+@dataclass(frozen=True)
+class GridEquilibriumInitializer:
+    """Placeholder for a future grid-based one-layer initializer."""
+
+    def __call__(self, request: EquilibriumInitRequest) -> EquilibriumInit:
+        raise NotImplementedError("GridEquilibriumInitializer is not implemented yet.")
+
+
+@dataclass(frozen=True)
+class LearnedEquilibriumInitializer:
+    """Placeholder for a future learned one-layer initializer."""
+
+    def __call__(self, request: EquilibriumInitRequest) -> EquilibriumInit:
+        raise NotImplementedError("LearnedEquilibriumInitializer is not implemented yet.")
 
 
 @tree_util.register_pytree_node_class
@@ -102,6 +167,16 @@ def _prepare_init(
     return _default_init(b_vec, K)
 
 
+_DEFAULT_INITIALIZER = DefaultEquilibriumInitializer()
+
+
+def _resolve_initial_guess(
+    initializer: Optional[EquilibriumInitializer], request: EquilibriumInitRequest
+) -> EquilibriumInit:
+    active_initializer = initializer or _DEFAULT_INITIALIZER
+    return active_initializer(request)
+
+
 def _ln_normalized_pressure(P: float, Pref: float) -> float:
     return jnp.log(P / Pref)
 
@@ -111,26 +186,40 @@ def _get_profile_scan_body(
     b: Array,
     Pref: float,
     opts: "EquilibriumOptions",
+    initializer: Optional[EquilibriumInitializer],
     return_diagnostics: bool,
 ) -> Callable:
     # Reuse one body callable per stable input bundle so repeated profile calls
     # do not hand lax.scan a fresh Python function identity each time.
-    key = (id(setup), id(b), float(Pref), id(opts), return_diagnostics)
+    key = (id(setup), id(b), float(Pref), id(opts), id(initializer or _DEFAULT_INITIALIZER), return_diagnostics)
     scan_body = _PROFILE_SCAN_BODY_CACHE.get(key)
     if scan_body is not None:
         return scan_body
+
+    K = int(setup.formula_matrix.shape[1])
 
     if return_diagnostics:
         def scan_body(carry, tp_pair):
             ln_nk_prev, ln_ntot_prev = carry
             Ti, Pi = tp_pair
+            solver_init = _resolve_initial_guess(
+                initializer,
+                EquilibriumInitRequest(
+                    setup=setup,
+                    T=Ti,
+                    P=Pi,
+                    b=b,
+                    K=K,
+                    previous_solution=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                ),
+            )
             result, diag = equilibrium(
                 setup,
                 Ti,
                 Pi,
                 b,
                 Pref=Pref,
-                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                init=solver_init,
                 options=opts,
                 return_diagnostics=True,
             )
@@ -141,13 +230,24 @@ def _get_profile_scan_body(
         def scan_body(carry, tp_pair):
             ln_nk_prev, ln_ntot_prev = carry
             Ti, Pi = tp_pair
+            solver_init = _resolve_initial_guess(
+                initializer,
+                EquilibriumInitRequest(
+                    setup=setup,
+                    T=Ti,
+                    P=Pi,
+                    b=b,
+                    K=K,
+                    previous_solution=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                ),
+            )
             result = equilibrium(
                 setup,
                 Ti,
                 Pi,
                 b,
                 Pref=Pref,
-                init=EquilibriumInit(ln_nk=ln_nk_prev, ln_ntot=ln_ntot_prev),
+                init=solver_init,
                 options=opts,
                 return_diagnostics=False,
             )
@@ -167,6 +267,7 @@ def equilibrium(
     *,
     Pref: float = 1.0,
     init: Optional[EquilibriumInit] = None,
+    initializer: Optional[EquilibriumInitializer] = None,
     options: Optional[EquilibriumOptions] = None,
     return_diagnostics: bool = False,
 ) -> Union[EquilibriumResult, Tuple[EquilibriumResult, Mapping[str, Array]]]:
@@ -178,7 +279,8 @@ def equilibrium(
         P: Pressure (bar).
         b: Elemental abundances; array of shape (E,).
         Pref: Reference pressure (bar) for normalization.
-        init: Optional initial guess for ln n and ln n_tot.
+        init: Optional explicit initial guess for ln n and ln n_tot.
+        initializer: Optional strategy object that produces an initial guess.
         options: Solver options.
 
     Returns:
@@ -197,7 +299,11 @@ def equilibrium(
         raise ValueError(f"b has length {b.shape[0]} but A expects {A.shape[0]} elements.")
     
     lnP = _ln_normalized_pressure(P, Pref)
-    ln_nk0, ln_ntot0 = _prepare_init(init, b, K)
+    solver_init = _resolve_initial_guess(
+        initializer,
+        EquilibriumInitRequest(setup=setup, T=T, P=P, b=b, K=K, user_init=init),
+    )
+    ln_nk0, ln_ntot0 = _prepare_init(solver_init, b, K)
 
     hfunc = setup.hvector_func
     state = ThermoState(T, lnP, b)
@@ -240,13 +346,15 @@ def equilibrium_profile(
     b: Array,
     *,
     Pref: float = 1.0,
+    initializer: Optional[EquilibriumInitializer] = None,
     options: Optional[EquilibriumOptions] = None,
     return_diagnostics: bool = False,
 ) -> Union[EquilibriumResult, Tuple[EquilibriumResult, Mapping[str, Array]]]:
     """Vectorized equilibrium along a 1D T/P profile (layers).
 
-    This computes equilibrium independently for each (T[i], P[i]) pair while
-    keeping the elemental abundances ``b`` fixed across layers.
+    This computes equilibrium over layers indexed by ``i``. ``T[i]`` and
+    ``P[i]`` vary by layer, while the elemental abundances ``b`` are currently
+    shared across all layers.
 
     Args:
         setup: ChemicalSetup with formula matrix and hvector_func(T).
@@ -254,6 +362,7 @@ def equilibrium_profile(
         P: Pressures, shape (N,).
         b: Elemental abundances, shape (E,), shared across layers.
         Pref: Reference pressure (bar).
+        initializer: Optional strategy object that produces each layer's initial guess.
         options: Solver options.
         return_diagnostics: If True, returns per-layer solver diagnostics.
 
@@ -278,7 +387,8 @@ def equilibrium_profile(
     if method not in valid_methods:
         raise ValueError(f"Unknown solve method '{method}'. Expected one of {valid_methods}.")
 
-    # Baseline path: independent layer solves with cold starts.
+    # Baseline path: vmap over layers for T and P, with b shared across layers.
+    # Each layer solve uses a cold start unless an initializer overrides it.
     if method == "vmap_cold":
         if return_diagnostics:
             layer_fn = jax.vmap(
@@ -288,6 +398,7 @@ def equilibrium_profile(
                     Pi,
                     b,
                     Pref=Pref,
+                    initializer=initializer,
                     options=opts,
                     return_diagnostics=True,
                 ),
@@ -302,6 +413,7 @@ def equilibrium_profile(
                 Pi,
                 b,
                 Pref=Pref,
+                initializer=initializer,
                 options=opts,
                 return_diagnostics=False,
             ),
@@ -318,13 +430,17 @@ def equilibrium_profile(
         P_in = P
 
     K = int(setup.formula_matrix.shape[1])
-    ln_nk0, ln_ntot0 = _default_init(b, K)
+    first_init = _resolve_initial_guess(
+        initializer,
+        EquilibriumInitRequest(setup=setup, T=T_in[0], P=P_in[0], b=b, K=K),
+    )
+    ln_nk0, ln_ntot0 = _prepare_init(first_init, b, K)
 
     if return_diagnostics:
-        scan_body = _get_profile_scan_body(setup, b, Pref, opts, True)
+        scan_body = _get_profile_scan_body(setup, b, Pref, opts, initializer, True)
         _, (result_seq, diag_seq) = lax.scan(scan_body, (ln_nk0, ln_ntot0), (T_in, P_in))
     else:
-        scan_body = _get_profile_scan_body(setup, b, Pref, opts, False)
+        scan_body = _get_profile_scan_body(setup, b, Pref, opts, initializer, False)
         _, result_seq = lax.scan(scan_body, (ln_nk0, ln_ntot0), (T_in, P_in))
         diag_seq = None
 
@@ -348,7 +464,12 @@ def equilibrium_profile(
 __all__ = [
     "equilibrium",
     "equilibrium_profile",
+    "EquilibriumInitializer",
     "EquilibriumOptions",
     "EquilibriumInit",
+    "EquilibriumInitRequest",
     "EquilibriumResult",
+    "DefaultEquilibriumInitializer",
+    "GridEquilibriumInitializer",
+    "LearnedEquilibriumInitializer",
 ]

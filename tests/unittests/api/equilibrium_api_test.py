@@ -11,7 +11,14 @@ import pytest
 import jax.numpy as jnp
 
 import exogibbs.api.equilibrium as eqmod
-from exogibbs.api.equilibrium import EquilibriumInit, EquilibriumOptions
+from exogibbs.api.equilibrium import (
+    DefaultEquilibriumInitializer,
+    EquilibriumInit,
+    EquilibriumInitRequest,
+    GridEquilibriumInitializer,
+    LearnedEquilibriumInitializer,
+    EquilibriumOptions,
+)
 
 from jax import config
 
@@ -156,6 +163,99 @@ def test_equilibrium_respects_init(monkeypatch):
     assert out.x.shape == (K,)
     assert out.ntot.shape == ()
     assert jnp.isclose(out.x.sum(), 1.0)
+
+
+def test_default_initializer_prefers_explicit_user_init():
+    E, K = 2, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+
+    user_init = EquilibriumInit(
+        ln_nk=jnp.full((K,), 0.3, dtype=jnp.float32),
+        ln_ntot=jnp.asarray(0.7, dtype=jnp.float32),
+    )
+    previous_solution = EquilibriumInit(
+        ln_nk=jnp.full((K,), 9.0, dtype=jnp.float32),
+        ln_ntot=jnp.asarray(10.0, dtype=jnp.float32),
+    )
+
+    init = DefaultEquilibriumInitializer()(
+        EquilibriumInitRequest(
+            setup=setup,
+            T=800.0,
+            P=0.1,
+            b=b,
+            K=K,
+            user_init=user_init,
+            previous_solution=previous_solution,
+        )
+    )
+
+    assert jnp.allclose(init.ln_nk, user_init.ln_nk)
+    assert jnp.allclose(init.ln_ntot, user_init.ln_ntot)
+
+
+def test_grid_initializer_placeholder_raises_not_implemented():
+    E, K = 2, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    request = EquilibriumInitRequest(setup=setup, T=800.0, P=0.1, b=b, K=K)
+
+    with pytest.raises(NotImplementedError, match="GridEquilibriumInitializer is not implemented yet."):
+        GridEquilibriumInitializer()(request)
+
+
+def test_learned_initializer_placeholder_raises_not_implemented():
+    E, K = 2, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    request = EquilibriumInitRequest(setup=setup, T=800.0, P=0.1, b=b, K=K)
+
+    with pytest.raises(NotImplementedError, match="LearnedEquilibriumInitializer is not implemented yet."):
+        LearnedEquilibriumInitializer()(request)
+
+
+def test_equilibrium_uses_custom_initializer(monkeypatch):
+    E, K = 2, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+
+    captured = {}
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        captured["ln_nk0"] = ln_nk0
+        captured["ln_ntot0"] = ln_ntot0
+        return ln_nk0
+
+    class FixedInitializer:
+        def __call__(self, request):
+            captured["request"] = request
+            return EquilibriumInit(
+                ln_nk=jnp.full((K,), 0.5, dtype=jnp.float32),
+                ln_ntot=jnp.asarray(1.5, dtype=jnp.float32),
+            )
+
+    monkeypatch.setattr("exogibbs.api.equilibrium.minimize_gibbs", stub_minimize_gibbs, raising=True)
+
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    out = eqmod.equilibrium(
+        setup,
+        T=800.0,
+        P=0.1,
+        b=b,
+        initializer=FixedInitializer(),
+        options=EquilibriumOptions(),
+    )
+
+    assert captured["request"].T == 800.0
+    assert captured["request"].P == 0.1
+    assert captured["request"].previous_solution is None
+    assert jnp.allclose(captured["ln_nk0"], 0.5)
+    assert jnp.allclose(captured["ln_ntot0"], 1.5)
+    assert jnp.allclose(out.ln_n, 0.5)
 
 
 def test_equilibrium_return_diagnostics(monkeypatch):
