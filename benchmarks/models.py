@@ -38,8 +38,10 @@ class BenchmarkCase:
 
 @dataclass(frozen=True)
 class BenchmarkResult:
+    benchmark_version: str
     case_id: str
     category: str
+    timestamp_utc: str
     setup_metadata: JsonDict
     axes: JsonDict
     solver_options: JsonDict
@@ -51,4 +53,3 @@ class BenchmarkResult:
         payload = asdict(self)
         payload["execution_config"] = self.execution_config.to_dict()
         return payload
-

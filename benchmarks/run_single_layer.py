@@ -25,6 +25,7 @@ from benchmarks.cases import get_single_layer_case
 from benchmarks.common import device_for_platform
 from benchmarks.common import extract_diag_value
 from benchmarks.common import has_nan_tree
+from benchmarks.common import current_timestamp_utc
 from benchmarks.common import load_normalized_element_abundances
 from benchmarks.common import to_python
 from benchmarks.models import BenchmarkResult
@@ -170,7 +171,9 @@ def _build_result(
         "epsilon_crit": diag_epsilon_crit,
         "has_nan": has_nan,
         "first_call_wall_s": timing.first_call_wall_s,
+        "first_call_s": timing.first_call_wall_s,
         "warm_call_wall_s": timing.warm_call_wall_s,
+        "warm_call_times_s": timing.warm_call_wall_s,
         "warm_call_mean_s": timing.warm_call_mean_s,
         "warm_call_median_s": timing.warm_call_median_s,
         "warm_call_p95_s": timing.warm_call_p95_s,
@@ -182,10 +185,13 @@ def _build_result(
     setup_metadata = dict(case.setup_metadata)
     setup_metadata["n_elements"] = int(setup.formula_matrix.shape[0])
     setup_metadata["n_species"] = int(setup.formula_matrix.shape[1])
+    setup_metadata["diagnostics_collection"] = "separate_jitted_call"
 
     return BenchmarkResult(
+        benchmark_version="0.1",
         case_id=case.case_id,
         category=case.category,
+        timestamp_utc=current_timestamp_utc(),
         setup_metadata=setup_metadata,
         axes=dict(case.axes),
         solver_options=dict(case.solver_options),

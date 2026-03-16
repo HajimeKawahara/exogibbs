@@ -27,6 +27,7 @@ from benchmarks.cases import get_profile_case
 from benchmarks.common import device_for_platform
 from benchmarks.common import extract_diag_value
 from benchmarks.common import has_nan_tree
+from benchmarks.common import current_timestamp_utc
 from benchmarks.common import load_normalized_element_abundances
 from benchmarks.common import to_python
 from benchmarks.models import BenchmarkResult
@@ -260,7 +261,9 @@ def _build_result(
         "has_nan": has_nan,
         "epsilon_crit": epsilon_crit,
         "max_iter": max_iter,
+        "first_call_wall_s": timing.first_call_wall_s,
         "first_call_s": timing.first_call_wall_s,
+        "warm_call_wall_s": timing.warm_call_wall_s,
         "warm_call_times_s": timing.warm_call_wall_s,
         "warm_call_mean_s": timing.warm_call_mean_s,
         "warm_call_median_s": timing.warm_call_median_s,
@@ -275,8 +278,10 @@ def _build_result(
     }
 
     return BenchmarkResult(
+        benchmark_version="0.1",
         case_id=case.case_id,
         category=case.category,
+        timestamp_utc=current_timestamp_utc(),
         setup_metadata=setup_metadata,
         axes=axes,
         solver_options={

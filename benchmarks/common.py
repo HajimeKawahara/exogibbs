@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import datetime
+from datetime import timezone
 import math
 from pathlib import Path
 from typing import Any
@@ -85,3 +87,7 @@ def load_normalized_element_abundances(
     abundances = jnp.asarray(linear_abundances)
     total = jnp.sum(abundances)
     return abundances / jnp.where(total > 0.0, total, 1.0)
+
+
+def current_timestamp_utc() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
