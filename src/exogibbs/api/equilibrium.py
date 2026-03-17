@@ -9,7 +9,7 @@ an h(T) function). No JANAF or I/O details leak into this layer.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Dict, Literal, Mapping, Optional, Protocol, Tuple, Union, runtime_checkable
+from typing import TYPE_CHECKING, Callable, Dict, Literal, Mapping, Optional, Protocol, Tuple, Union, runtime_checkable
 import jax.numpy as jnp
 from jax import tree_util
 import jax
@@ -18,6 +18,9 @@ from exogibbs.api.chemistry import ChemicalSetup, ThermoState
 from exogibbs.optimize.minimize import minimize_gibbs, minimize_gibbs_with_diagnostics
 
 Array = jax.Array
+
+if TYPE_CHECKING:
+    from exogibbs.api.equilibrium_grid import EquilibriumGrid
 
 
 _PROFILE_SCAN_BODY_CACHE: Dict[Tuple[int, int, float, int, int, bool], Callable] = {}
@@ -39,7 +42,7 @@ class EquilibriumOptions:
         in the range of 300-3000K and 1e-8 - 1e2 bar. See #17 and comparison_with_fastchem.py
     """
 
-    epsilon_crit: float = 1.0e-15
+    epsilon_crit: float = 1.0e-10
     max_iter: int = 1000
     method: Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"] = "scan_hot_from_top"
 
@@ -106,10 +109,28 @@ class DefaultEquilibriumInitializer:
 
 @dataclass(frozen=True)
 class GridEquilibriumInitializer:
-    """Placeholder for a future grid-based one-layer initializer."""
+    """Minimal shell for a future grid-based one-layer initializer.
+
+    The stored grid is validated against the runtime setup/preset when the
+    initializer is called. Actual grid lookup/interpolation is not implemented yet.
+    """
+
+    grid: "EquilibriumGrid"
+    preset_name: str
+    expected_composition_axis_name: str = "log10(Z/Zsun)"
 
     def __call__(self, request: EquilibriumInitRequest) -> EquilibriumInit:
-        raise NotImplementedError("GridEquilibriumInitializer is not implemented yet.")
+        from exogibbs.api.equilibrium_grid import validate_equilibrium_grid_compatibility
+
+        validate_equilibrium_grid_compatibility(
+            self.grid,
+            request.setup,
+            self.preset_name,
+            expected_composition_axis_name=self.expected_composition_axis_name,
+        )
+        raise NotImplementedError(
+            "GridEquilibriumInitializer grid lookup/interpolation is not implemented yet."
+        )
 
 
 @dataclass(frozen=True)
