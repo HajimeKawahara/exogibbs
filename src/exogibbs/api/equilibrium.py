@@ -72,6 +72,7 @@ class EquilibriumInitRequest:
     P: float
     b: Array
     K: int
+    explicit_log10_z_over_z_sun: Optional[float] = None
     user_init: Optional[EquilibriumInit] = None
     previous_solution: Optional[EquilibriumInit] = None
 
@@ -109,18 +110,17 @@ class DefaultEquilibriumInitializer:
 
 @dataclass(frozen=True)
 class GridEquilibriumInitializer:
-    """Minimal shell for a future grid-based one-layer initializer.
-
-    The stored grid is validated against the runtime setup/preset when the
-    initializer is called. Actual grid lookup/interpolation is not implemented yet.
-    """
+    """Minimal grid-backed one-layer initializer using explicit metallicity only."""
 
     grid: "EquilibriumGrid"
     preset_name: str
     expected_composition_axis_name: str = "log10(Z/Zsun)"
 
     def __call__(self, request: EquilibriumInitRequest) -> EquilibriumInit:
-        from exogibbs.api.equilibrium_grid import validate_equilibrium_grid_compatibility
+        from exogibbs.api.equilibrium_grid import (
+            interpolate_equilibrium_grid,
+            validate_equilibrium_grid_compatibility,
+        )
 
         validate_equilibrium_grid_compatibility(
             self.grid,
@@ -128,9 +128,18 @@ class GridEquilibriumInitializer:
             self.preset_name,
             expected_composition_axis_name=self.expected_composition_axis_name,
         )
-        raise NotImplementedError(
-            "GridEquilibriumInitializer grid lookup/interpolation is not implemented yet."
+        if request.explicit_log10_z_over_z_sun is None:
+            raise NotImplementedError(
+                "GridEquilibriumInitializer requires an explicit log10(Z/Zsun) value; "
+                "b -> log10(Z/Zsun) mapping is not implemented yet."
+            )
+        interpolated = interpolate_equilibrium_grid(
+            self.grid,
+            temperature=request.T,
+            pressure=request.P,
+            log10_z_over_z_sun=request.explicit_log10_z_over_z_sun,
         )
+        return interpolated.to_equilibrium_init()
 
 
 @dataclass(frozen=True)

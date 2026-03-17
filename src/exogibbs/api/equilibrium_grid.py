@@ -4,15 +4,17 @@ from dataclasses import dataclass
 from dataclasses import fields
 import json
 from pathlib import Path
-from typing import Callable, Literal, Mapping, Optional, Sequence, Tuple
+from typing import Callable, Literal, Mapping, Optional, Sequence, Tuple, Union
 
 import jax
 import jax.numpy as jnp
 import numpy as np
+from interpax import Interpolator3D
 
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.api.chemistry import update_element_vector
 from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
+from exogibbs.api.equilibrium import EquilibriumInit
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.utils.nameparser import strip_trailing_one
 
@@ -150,6 +152,51 @@ class EquilibriumGrid:
     outputs: EquilibriumGridOutputs
     metadata: EquilibriumGridMetadata
 
+    def interpolate(
+        self,
+        temperature: float,
+        pressure: float,
+        log10_z_over_z_sun: float,
+        *,
+        options: Optional["EquilibriumGridInterpolationOptions"] = None,
+    ) -> "EquilibriumGridInterpolationResult":
+        """Interpolate stored equilibrium fields at one grid point."""
+        return interpolate_equilibrium_grid(
+            self,
+            temperature,
+            pressure,
+            log10_z_over_z_sun,
+            options=options,
+        )
+
+
+@dataclass(frozen=True)
+class EquilibriumGridInterpolationOptions:
+    """Minimal interpolation controls for ``EquilibriumGrid`` lookups."""
+
+    method: str = "linear"
+    extrap: Union[bool, float, Tuple[object, ...]] = False
+    interpolator_kwargs: Optional[Mapping[str, object]] = None
+
+
+@dataclass(frozen=True)
+class EquilibriumGridInterpolationResult:
+    """Interpolated equilibrium state at one ``(T, P, log10(Z/Zsun))`` query."""
+
+    ln_n: Array
+    x: Array
+    ntot: Array
+
+    @property
+    def ln_ntot(self) -> Array:
+        return jnp.log(jnp.clip(self.ntot, 1e-300))
+
+    def to_equilibrium_init(self) -> EquilibriumInit:
+        return EquilibriumInit(
+            ln_nk=jnp.asarray(self.ln_n),
+            ln_ntot=jnp.asarray(self.ln_ntot),
+        )
+
 
 def validate_equilibrium_grid_compatibility(
     grid: EquilibriumGrid,
@@ -200,6 +247,91 @@ def validate_equilibrium_grid_compatibility(
             "Equilibrium grid preset signature mismatch: the stored preset/setup "
             "signature is not compatible with the runtime setup."
         )
+
+
+def _as_scalar_query(value: float, name: str) -> Array:
+    scalar = jnp.asarray(value)
+    if scalar.ndim != 0:
+        raise NotImplementedError(
+            "EquilibriumGrid interpolation currently supports only scalar queries; "
+            f"got {name} with shape {scalar.shape}."
+        )
+    return scalar
+
+
+def _interpolate_grid_field(
+    grid: EquilibriumGrid,
+    field: Array,
+    temperature: Array,
+    pressure: Array,
+    log10_z_over_z_sun: Array,
+    options: EquilibriumGridInterpolationOptions,
+) -> Array:
+    interpolator_kwargs = dict(options.interpolator_kwargs or {})
+    if "period" in interpolator_kwargs:
+        raise NotImplementedError(
+            "EquilibriumGrid interpolation does not expose interpax periodic interpolation yet."
+        )
+    interpolator = Interpolator3D(
+        grid.temperature_axis,
+        grid.pressure_axis,
+        grid.log10_z_over_z_sun_axis,
+        field,
+        method=options.method,
+        extrap=options.extrap,
+        **interpolator_kwargs,
+    )
+    interpolated = jnp.asarray(interpolator(temperature, pressure, log10_z_over_z_sun))
+    if options.extrap is False and bool(jnp.any(jnp.isnan(interpolated))):
+        raise ValueError(
+            "Interpolation query lies outside the stored equilibrium grid bounds. "
+            "Pass EquilibriumGridInterpolationOptions(extrap=...) to opt into extrapolation."
+        )
+    return interpolated
+
+
+def interpolate_equilibrium_grid(
+    grid: EquilibriumGrid,
+    temperature: float,
+    pressure: float,
+    log10_z_over_z_sun: float,
+    *,
+    options: Optional[EquilibriumGridInterpolationOptions] = None,
+) -> EquilibriumGridInterpolationResult:
+    """Interpolate one equilibrium state from a stored grid.
+
+    The query must currently be scalar in all three coordinates.
+    """
+    active_options = options or EquilibriumGridInterpolationOptions()
+    temperature_query = _as_scalar_query(temperature, "temperature")
+    pressure_query = _as_scalar_query(pressure, "pressure")
+    composition_query = _as_scalar_query(log10_z_over_z_sun, "log10_z_over_z_sun")
+    return EquilibriumGridInterpolationResult(
+        ln_n=_interpolate_grid_field(
+            grid,
+            grid.outputs.ln_n,
+            temperature_query,
+            pressure_query,
+            composition_query,
+            active_options,
+        ),
+        x=_interpolate_grid_field(
+            grid,
+            grid.outputs.x,
+            temperature_query,
+            pressure_query,
+            composition_query,
+            active_options,
+        ),
+        ntot=_interpolate_grid_field(
+            grid,
+            grid.outputs.ntot,
+            temperature_query,
+            pressure_query,
+            composition_query,
+            active_options,
+        ),
+    )
 
 
 def _serialize_metadata_attr(value):

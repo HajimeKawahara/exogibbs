@@ -4,12 +4,14 @@ import xarray as xr
 from exogibbs.api import (
     ChemicalSetup,
     EquilibriumGrid,
+    EquilibriumGridInterpolationOptions,
     EquilibriumGridMetadata,
     EquilibriumGridOutputs,
     build_equilibrium_grid,
     build_h_he_element_vector_from_log10_z_over_z_sun,
     equilibrium_grid_from_dataset,
     equilibrium_grid_to_dataset,
+    interpolate_equilibrium_grid,
     load_equilibrium_grid_netcdf,
     save_equilibrium_grid_netcdf,
     validate_equilibrium_grid_compatibility,
@@ -379,3 +381,278 @@ def test_validate_equilibrium_grid_compatibility_rejects_composition_axis_mismat
         assert "composition axis mismatch" in str(exc)
     else:
         raise AssertionError("Expected ValueError for composition-axis mismatch.")
+
+
+def test_interpolate_equilibrium_grid_returns_species_ordered_state():
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([1000.0, 2000.0]),
+        pressure_axis=jnp.asarray([1.0, 10.0]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0, 1.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.asarray(
+                [
+                    [
+                        [[1.0, 10.0, 100.0], [2.0, 20.0, 200.0]],
+                        [[3.0, 30.0, 300.0], [4.0, 40.0, 400.0]],
+                    ],
+                    [
+                        [[5.0, 50.0, 500.0], [6.0, 60.0, 600.0]],
+                        [[7.0, 70.0, 700.0], [8.0, 80.0, 800.0]],
+                    ],
+                ]
+            ),
+            x=jnp.asarray(
+                [
+                    [
+                        [[0.1, 0.2, 0.7], [0.2, 0.3, 0.5]],
+                        [[0.3, 0.4, 0.3], [0.4, 0.4, 0.2]],
+                    ],
+                    [
+                        [[0.5, 0.3, 0.2], [0.6, 0.2, 0.2]],
+                        [[0.7, 0.2, 0.1], [0.8, 0.1, 0.1]],
+                    ],
+                ]
+            ),
+            n=jnp.zeros((2, 2, 2, 3)),
+            ntot=jnp.asarray(
+                [
+                    [[11.0, 12.0], [13.0, 14.0]],
+                    [[15.0, 16.0], [17.0, 18.0]],
+                ]
+            ),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "test"},
+            preset_elements=("H",),
+            preset_species=("species_a", "species_b", "species_c"),
+            source="exogibbs",
+            verify_exogibbs_against_fastchem=False,
+        ),
+    )
+
+    result = interpolate_equilibrium_grid(
+        grid,
+        1500.0,
+        5.5,
+        0.5,
+    )
+
+    assert result.ln_n.shape == (3,)
+    assert result.x.shape == (3,)
+    assert result.ntot.shape == ()
+    assert jnp.allclose(result.ln_n, jnp.asarray([4.5, 45.0, 450.0]))
+    assert jnp.allclose(result.x, jnp.asarray([0.45, 0.2625, 0.2875]))
+    assert jnp.isclose(result.ntot, 14.5)
+    init = result.to_equilibrium_init()
+    assert jnp.allclose(init.ln_nk, result.ln_n)
+    assert jnp.isclose(init.ln_ntot, jnp.log(result.ntot))
+
+
+def test_equilibrium_grid_interpolate_method_works_after_netcdf_roundtrip(tmp_path):
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([1000.0, 2000.0]),
+        pressure_axis=jnp.asarray([1.0, 10.0]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0, 1.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.asarray(
+                [
+                    [
+                        [[1.0, 10.0], [2.0, 20.0]],
+                        [[3.0, 30.0], [4.0, 40.0]],
+                    ],
+                    [
+                        [[5.0, 50.0], [6.0, 60.0]],
+                        [[7.0, 70.0], [8.0, 80.0]],
+                    ],
+                ]
+            ),
+            x=jnp.asarray(
+                [
+                    [
+                        [[0.1, 0.9], [0.2, 0.8]],
+                        [[0.3, 0.7], [0.4, 0.6]],
+                    ],
+                    [
+                        [[0.5, 0.5], [0.6, 0.4]],
+                        [[0.7, 0.3], [0.8, 0.2]],
+                    ],
+                ]
+            ),
+            n=jnp.zeros((2, 2, 2, 2)),
+            ntot=jnp.asarray(
+                [
+                    [[11.0, 12.0], [13.0, 14.0]],
+                    [[15.0, 16.0], [17.0, 18.0]],
+                ]
+            ),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "test"},
+            preset_elements=("H",),
+            preset_species=("A", "B"),
+            source="exogibbs",
+            verify_exogibbs_against_fastchem=False,
+        ),
+    )
+    path = tmp_path / "grid.nc"
+    save_equilibrium_grid_netcdf(grid, str(path))
+
+    loaded = load_equilibrium_grid_netcdf(str(path))
+    result = loaded.interpolate(1500.0, 5.5, 0.5)
+
+    assert jnp.allclose(result.ln_n, jnp.asarray([4.5, 45.0]))
+    assert jnp.allclose(result.x, jnp.asarray([0.45, 0.55]))
+    assert jnp.isclose(result.ntot, 14.5)
+    assert loaded.metadata.preset_species == ("A", "B")
+
+
+def test_interpolate_equilibrium_grid_forwards_interpax_options(monkeypatch):
+    captured = {}
+
+    class StubInterpolator3D:
+        def __init__(self, x, y, z, f, method="cubic", extrap=False, **kwargs):
+            captured["x"] = x
+            captured["y"] = y
+            captured["z"] = z
+            captured["f_shape"] = f.shape
+            captured["method"] = method
+            captured["extrap"] = extrap
+            captured["kwargs"] = kwargs
+
+        def __call__(self, xq, yq, zq, dx=0, dy=0, dz=0):
+            return jnp.asarray(123.0)
+
+    monkeypatch.setattr("exogibbs.api.equilibrium_grid.Interpolator3D", StubInterpolator3D)
+
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([1000.0, 2000.0]),
+        pressure_axis=jnp.asarray([1.0, 10.0]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0, 1.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.zeros((2, 2, 2, 3)),
+            n=jnp.zeros((2, 2, 2, 3)),
+            x=jnp.zeros((2, 2, 2, 3)),
+            ntot=jnp.zeros((2, 2, 2)),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "test"},
+            preset_elements=("H",),
+            preset_species=("A", "B", "C"),
+            source="exogibbs",
+            verify_exogibbs_against_fastchem=False,
+        ),
+    )
+
+    result = interpolate_equilibrium_grid(
+        grid,
+        1500.0,
+        5.5,
+        0.5,
+        options=EquilibriumGridInterpolationOptions(
+            method="nearest",
+            extrap=True,
+            interpolator_kwargs={"c": 0.25},
+        ),
+    )
+
+    assert captured["method"] == "nearest"
+    assert captured["extrap"] is True
+    assert captured["kwargs"] == {"c": 0.25}
+    assert captured["f_shape"] == (2, 2, 2)
+    assert jnp.isclose(result.ntot, 123.0)
+
+
+def test_interpolate_equilibrium_grid_rejects_out_of_bounds_by_default():
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([1000.0, 2000.0]),
+        pressure_axis=jnp.asarray([1.0, 10.0]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0, 1.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.zeros((2, 2, 2, 1)),
+            n=jnp.zeros((2, 2, 2, 1)),
+            x=jnp.zeros((2, 2, 2, 1)),
+            ntot=jnp.ones((2, 2, 2)),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "test"},
+            preset_elements=("H",),
+            preset_species=("A",),
+            source="exogibbs",
+            verify_exogibbs_against_fastchem=False,
+        ),
+    )
+
+    try:
+        interpolate_equilibrium_grid(grid, 500.0, 5.0, 0.5)
+    except ValueError as exc:
+        assert "outside the stored equilibrium grid bounds" in str(exc)
+    else:
+        raise AssertionError("Expected ValueError for out-of-bounds interpolation.")
+
+
+def test_interpolate_equilibrium_grid_rejects_non_scalar_queries():
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([1000.0, 2000.0]),
+        pressure_axis=jnp.asarray([1.0, 10.0]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0, 1.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.zeros((2, 2, 2, 1)),
+            n=jnp.zeros((2, 2, 2, 1)),
+            x=jnp.zeros((2, 2, 2, 1)),
+            ntot=jnp.ones((2, 2, 2)),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "test"},
+            preset_elements=("H",),
+            preset_species=("A",),
+            source="exogibbs",
+            verify_exogibbs_against_fastchem=False,
+        ),
+    )
+
+    try:
+        interpolate_equilibrium_grid(grid, jnp.asarray([1500.0]), 5.0, 0.5)
+    except NotImplementedError as exc:
+        assert "scalar queries" in str(exc)
+    else:
+        raise AssertionError("Expected NotImplementedError for non-scalar interpolation query.")
+
+
+def test_interpolate_equilibrium_grid_rejects_period_option():
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([1000.0, 2000.0]),
+        pressure_axis=jnp.asarray([1.0, 10.0]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0, 1.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.zeros((2, 2, 2, 1)),
+            n=jnp.zeros((2, 2, 2, 1)),
+            x=jnp.zeros((2, 2, 2, 1)),
+            ntot=jnp.ones((2, 2, 2)),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "test"},
+            preset_elements=("H",),
+            preset_species=("A",),
+            source="exogibbs",
+            verify_exogibbs_against_fastchem=False,
+        ),
+    )
+
+    try:
+        interpolate_equilibrium_grid(
+            grid,
+            1500.0,
+            5.0,
+            0.5,
+            options=EquilibriumGridInterpolationOptions(interpolator_kwargs={"period": 1.0}),
+        )
+    except NotImplementedError as exc:
+        assert "periodic interpolation" in str(exc)
+    else:
+        raise AssertionError("Expected NotImplementedError for unsupported period option.")
