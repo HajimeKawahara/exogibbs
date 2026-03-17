@@ -30,6 +30,7 @@ dependencies = [
   "tqdm",
   "pandas",
   "xarray",
+  "pyfastchem",
   "thermochem",
 ]
 
