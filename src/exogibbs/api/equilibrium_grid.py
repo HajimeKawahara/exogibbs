@@ -191,6 +191,11 @@ class EquilibriumGridMetadata:
     verification_points_checked: Optional[int] = None
     verification_species_compared: Optional[int] = None
     verification_max_abs_percent_deviation: Optional[float] = None
+    verification_worst_temperature: Optional[float] = None
+    verification_worst_pressure: Optional[float] = None
+    verification_worst_log10_z_over_z_sun: Optional[float] = None
+    verification_worst_species_index: Optional[int] = None
+    verification_worst_species_name: Optional[str] = None
     verification_passed: Optional[bool] = None
 
     @classmethod
@@ -208,6 +213,11 @@ class EquilibriumGridMetadata:
         verification_points_checked: Optional[int] = None,
         verification_species_compared: Optional[int] = None,
         verification_max_abs_percent_deviation: Optional[float] = None,
+        verification_worst_temperature: Optional[float] = None,
+        verification_worst_pressure: Optional[float] = None,
+        verification_worst_log10_z_over_z_sun: Optional[float] = None,
+        verification_worst_species_index: Optional[int] = None,
+        verification_worst_species_name: Optional[str] = None,
         verification_passed: Optional[bool] = None,
     ) -> "EquilibriumGridMetadata":
         return cls(
@@ -224,6 +234,11 @@ class EquilibriumGridMetadata:
             verification_points_checked=verification_points_checked,
             verification_species_compared=verification_species_compared,
             verification_max_abs_percent_deviation=verification_max_abs_percent_deviation,
+            verification_worst_temperature=verification_worst_temperature,
+            verification_worst_pressure=verification_worst_pressure,
+            verification_worst_log10_z_over_z_sun=verification_worst_log10_z_over_z_sun,
+            verification_worst_species_index=verification_worst_species_index,
+            verification_worst_species_name=verification_worst_species_name,
             verification_passed=verification_passed,
         )
 
@@ -777,6 +792,11 @@ def _verify_exogibbs_grid_against_fastchem(
 
     solve_point_fastchem, _ = _create_fastchem_point_solver(setup)
     max_abs_percent_deviation = 0.0
+    worst_temperature = None
+    worst_pressure = None
+    worst_log10_z_over_z_sun = None
+    worst_species_index = None
+    worst_species_name = None
     included_species_total = 0
     points_checked = 0
 
@@ -801,8 +821,18 @@ def _verify_exogibbs_grid_against_fastchem(
                     - 1.0
                 )
                 percent_deviation = 100.0 * relative_deviation
-                point_max = float(jnp.max(jnp.abs(percent_deviation)))
-                max_abs_percent_deviation = max(max_abs_percent_deviation, point_max)
+                abs_percent_deviation = jnp.abs(percent_deviation)
+                point_max_index = int(jnp.argmax(abs_percent_deviation))
+                point_max = float(abs_percent_deviation[point_max_index])
+                if point_max > max_abs_percent_deviation:
+                    max_abs_percent_deviation = point_max
+                    worst_temperature = float(temperature)
+                    worst_pressure = float(pressure)
+                    worst_log10_z_over_z_sun = float(log10_z_over_z_sun)
+                    included_species_indices = np.flatnonzero(np.asarray(included_mask))
+                    worst_species_index = int(included_species_indices[point_max_index])
+                    if setup.species is not None:
+                        worst_species_name = str(setup.species[worst_species_index])
                 included_species_total += included_species
                 points_checked += 1
 
@@ -813,6 +843,11 @@ def _verify_exogibbs_grid_against_fastchem(
         "verification_points_checked": points_checked,
         "verification_species_compared": included_species_total,
         "verification_max_abs_percent_deviation": max_abs_percent_deviation,
+        "verification_worst_temperature": worst_temperature,
+        "verification_worst_pressure": worst_pressure,
+        "verification_worst_log10_z_over_z_sun": worst_log10_z_over_z_sun,
+        "verification_worst_species_index": worst_species_index,
+        "verification_worst_species_name": worst_species_name,
         "verification_passed": verification_passed,
     }
 
@@ -913,11 +948,25 @@ def build_equilibrium_grid(
                 tolerance_percent=verification_tolerance_percent,
             )
             if not verification_results["verification_passed"]:
+                species_detail = ""
+                if verification_results.get("verification_worst_species_name") is not None:
+                    species_detail = (
+                        f", species={verification_results['verification_worst_species_name']}"
+                    )
+                elif verification_results.get("verification_worst_species_index") is not None:
+                    species_detail = (
+                        f", species_index={verification_results['verification_worst_species_index']}"
+                    )
                 raise ValueError(
                     "ExoGibbs grid verification against FastChem failed: "
                     f"max abs percent deviation "
                     f"{verification_results['verification_max_abs_percent_deviation']:.6g}% "
-                    f"exceeds tolerance {verification_tolerance_percent:.6g}%."
+                    f"exceeds tolerance {verification_tolerance_percent:.6g}% "
+                    f"at T={verification_results['verification_worst_temperature']:.6g} K, "
+                    f"P={verification_results['verification_worst_pressure']:.6g} bar, "
+                    f"log10(Z/Zsun)="
+                    f"{verification_results['verification_worst_log10_z_over_z_sun']:.6g}"
+                    f"{species_detail}."
                     f"{_verification_dtype_warning()}"
                 )
     elif source == "fastchem":
@@ -944,6 +993,17 @@ def build_equilibrium_grid(
         verification_species_compared=verification_results.get("verification_species_compared"),
         verification_max_abs_percent_deviation=verification_results.get(
             "verification_max_abs_percent_deviation"
+        ),
+        verification_worst_temperature=verification_results.get("verification_worst_temperature"),
+        verification_worst_pressure=verification_results.get("verification_worst_pressure"),
+        verification_worst_log10_z_over_z_sun=verification_results.get(
+            "verification_worst_log10_z_over_z_sun"
+        ),
+        verification_worst_species_index=verification_results.get(
+            "verification_worst_species_index"
+        ),
+        verification_worst_species_name=verification_results.get(
+            "verification_worst_species_name"
         ),
         verification_passed=verification_results.get("verification_passed"),
     )
