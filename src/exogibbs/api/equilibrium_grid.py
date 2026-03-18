@@ -16,6 +16,7 @@ from exogibbs.api.chemistry import update_element_vector
 from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
 from exogibbs.api.equilibrium import EquilibriumInit
 from exogibbs.io.load_data import get_data_filepath
+from exogibbs.utils.elements import element_mass
 from exogibbs.utils.nameparser import strip_trailing_one
 
 Array = jax.Array
@@ -24,7 +25,8 @@ _COMPOSITION_AXIS_NAME = "log10(Z/Zsun)"
 _COMPOSITION_AXIS_DEFINITION = (
     "H/He atmosphere metallicity axis. For each grid value m = log10(Z/Zsun), "
     "the solver input element vector is built from the preset reference abundance "
-    "vector by scaling all non-H, non-He, non-electron elements by 10**m, while "
+    "vector by solving for the uniform non-H, non-He, non-electron abundance scaling "
+    "that yields the target physical metal mass fraction Z = Zsun * 10**m, while "
     "keeping H and He at their preset reference abundances and setting electrons to 0."
 )
 _FASTCHEM_COMPARISON_ABUNDANCE_FLOOR = 1.0e-10
@@ -59,6 +61,99 @@ def _verification_dtype_warning() -> str:
     if jnp.asarray(1.0).dtype != jnp.float64:
         return " JAX is currently running in float32; enable jax_enable_x64=True for tighter FastChem comparisons."
     return ""
+
+
+def _require_h_he_reference_abundance_setup(setup: ChemicalSetup) -> Array:
+    if setup.element_vector_reference is None:
+        raise ValueError("setup.element_vector_reference is required for grid generation.")
+    if setup.elements is None:
+        raise ValueError("setup.elements is required for H/He metallicity grid generation.")
+    if "H" not in setup.elements or "He" not in setup.elements:
+        raise ValueError("H/He metallicity grid generation requires H and He in setup.elements.")
+    return jnp.asarray(setup.element_vector_reference)
+
+
+def _element_mass_vector(setup: ChemicalSetup, dtype: jnp.dtype) -> Array:
+    if setup.elements is None:
+        raise ValueError("setup.elements is required for H/He metallicity grid generation.")
+    try:
+        masses = [0.0 if element == "e-" else element_mass[element] for element in setup.elements]
+    except KeyError as exc:
+        raise KeyError(f"Missing elemental mass for '{exc.args[0]}'.") from exc
+    return jnp.asarray(masses, dtype=dtype)
+
+
+def _validated_element_vector(setup: ChemicalSetup, element_vector: Array) -> Array:
+    if setup.elements is None:
+        raise ValueError("setup.elements is required for metallicity calculations.")
+
+    b = jnp.asarray(element_vector)
+    if b.ndim != 1:
+        raise ValueError(
+            f"element_vector must be one-dimensional with shape ({len(setup.elements)},), got {b.shape}."
+        )
+    if b.shape[0] != len(setup.elements):
+        raise ValueError(
+            f"element_vector length must match setup.elements ({len(setup.elements)}), got {b.shape[0]}."
+        )
+    return b
+
+
+def compute_physical_metal_mass_fraction(setup: ChemicalSetup, element_vector: Array) -> Array:
+    """Return the physical metal mass fraction Z for an elemental abundance vector."""
+    b = _validated_element_vector(setup, element_vector)
+    masses = _element_mass_vector(setup, b.dtype)
+    non_electron_mask = jnp.asarray([element != "e-" for element in setup.elements], dtype=bool)
+    metal_mask = jnp.asarray(
+        [element not in {"H", "He", "e-"} for element in setup.elements],
+        dtype=bool,
+    )
+    weighted_abundances = masses * b
+    total_mass = jnp.sum(weighted_abundances[non_electron_mask])
+    metal_mass = jnp.sum(weighted_abundances[metal_mask])
+    return metal_mass / jnp.clip(total_mass, 1e-300)
+
+
+def compute_reference_physical_metal_mass_fraction(setup: ChemicalSetup) -> Array:
+    """Return the reference physical metal mass fraction Zsun for a setup."""
+    return compute_physical_metal_mass_fraction(
+        setup,
+        _require_h_he_reference_abundance_setup(setup),
+    )
+
+
+def compute_physical_log10_z_over_z_sun(
+    setup: ChemicalSetup,
+    element_vector: Array,
+) -> Array:
+    """Return physical ``log10(Z/Zsun)`` for an elemental abundance vector."""
+    z = compute_physical_metal_mass_fraction(setup, element_vector)
+    if float(z) <= 0.0:
+        raise ValueError(
+            "Physical log10(Z/Zsun) is undefined when the elemental abundance vector has Z <= 0."
+        )
+
+    z_sun = compute_reference_physical_metal_mass_fraction(setup)
+    if float(z_sun) <= 0.0:
+        raise ValueError(
+            "Physical log10(Z/Zsun) is undefined when setup.element_vector_reference has Zsun <= 0."
+        )
+
+    return jnp.log10(z / z_sun)
+
+
+def _h_he_metallicity_scale_from_log10_z_over_z_sun(
+    setup: ChemicalSetup,
+    log10_z_over_z_sun: float,
+) -> Array:
+    b_ref = _require_h_he_reference_abundance_setup(setup)
+    z_sun = compute_reference_physical_metal_mass_fraction(setup)
+    target_z = z_sun * jnp.asarray(10.0**log10_z_over_z_sun, dtype=b_ref.dtype)
+    if float(target_z) >= 1.0:
+        raise ValueError(
+            "Target physical metallicity requires Z >= 1, which is not valid for an H/He atmosphere."
+        )
+    return (target_z * (1.0 - z_sun)) / jnp.clip(z_sun * (1.0 - target_z), 1e-300)
 
 
 @dataclass(frozen=True)
@@ -730,18 +825,15 @@ def build_h_he_element_vector_from_log10_z_over_z_sun(
 
     The input ``log10_z_over_z_sun`` is interpreted as ``m = log10(Z/Zsun)``.
     The solver input vector is constructed from ``setup.element_vector_reference`` by
-    scaling all non-H, non-He, non-electron entries by ``10**m``, leaving H and He
-    unchanged, and forcing the electron abundance to zero when present.
+    solving for the uniform metal abundance scaling that yields the target physical
+    metal mass fraction, while leaving H and He unchanged and forcing the electron
+    abundance to zero when present.
     """
-    if setup.element_vector_reference is None:
-        raise ValueError("setup.element_vector_reference is required for grid generation.")
-    if setup.elements is None:
-        raise ValueError("setup.elements is required for H/He metallicity grid generation.")
-    if "H" not in setup.elements or "He" not in setup.elements:
-        raise ValueError("H/He metallicity grid generation requires H and He in setup.elements.")
-
-    b_ref = jnp.asarray(setup.element_vector_reference)
-    metallicity_scale = jnp.asarray(10.0**log10_z_over_z_sun, dtype=b_ref.dtype)
+    b_ref = _require_h_he_reference_abundance_setup(setup)
+    metallicity_scale = _h_he_metallicity_scale_from_log10_z_over_z_sun(
+        setup,
+        log10_z_over_z_sun,
+    )
     metal_indices = jnp.asarray(
         [i for i, element in enumerate(setup.elements) if element not in {"H", "He", "e-"}],
         dtype=jnp.int32,
