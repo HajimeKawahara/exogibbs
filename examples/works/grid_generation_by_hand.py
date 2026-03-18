@@ -17,114 +17,111 @@ from exogibbs.api.equilibrium import (
     EquilibriumOptions,
     GridEquilibriumInitializer,
 )
+from exogibbs.api.equilibrium_grid import compute_physical_metal_mass_fraction
 from exogibbs.presets.fastchem import chemsetup as fastchem_chemsetup
 
-# ---- small test axes ----
-temperature_axis = np.array([1000.0, 3000.0], dtype=float)
-pressure_axis = np.array([1.0e-3, 1.0e-1], dtype=float)
-log10_z_over_z_sun_axis = np.array([1.0, 1.0], dtype=float)
+SCRIPT_DIR = Path(__file__).resolve().parent
+OUTDIR = SCRIPT_DIR / "tmp_grid_check"
 
-# ---- ExoGibbs solver options ----
-# Change these by hand when you want tighter or looser ExoGibbs convergence.
-equilibrium_options = EquilibriumOptions(
-#epsilon_crit=1.0e-10, # HERE
-#max_iter=1000, # HERE
-)
 
-outdir = Path("tmp_grid_check")
-outdir.mkdir(exist_ok=True)
+def main() -> None:
+    # Small manual smoke-test axes.
+    temperature_axis = np.array([1000.0, 2000.0, 3000.0], dtype=float)
+    pressure_axis = np.array([1.0e-3, 1.0e-2, 1.0e-1], dtype=float)
+    log10_z_over_z_sun_axis = np.array([-0.1, 0.1, 0.2], dtype=float)
 
-# ---- 1) ExoGibbs-backed grid with verification ----
-print("Building ExoGibbs-backed grid...")
-print(
-    "Using ExoGibbs options:",
-    f"epsilon_crit={equilibrium_options.epsilon_crit},",
-    f"max_iter={equilibrium_options.max_iter}",
-)
-grid_exo = build_equilibrium_grid(
-    preset_name="fastchem",
-    temperature_axis=temperature_axis,
-    pressure_axis=pressure_axis,
-    log10_z_over_z_sun_axis=log10_z_over_z_sun_axis,
-    source="exogibbs",
-    options=equilibrium_options,
-    verify_exogibbs_against_fastchem=True,
-)
+    # Change these by hand when you want tighter or looser ExoGibbs convergence.
+    equilibrium_options = EquilibriumOptions(
+        # epsilon_crit=1.0e-10,
+        # max_iter=1000,
+    )
 
-print("ExoGibbs grid built.")
-print("ln_n shape:", grid_exo.outputs.ln_n.shape)
-print("n shape:", grid_exo.outputs.n.shape)
-print("x shape:", grid_exo.outputs.x.shape)
-print("ntot shape:", grid_exo.outputs.ntot.shape)
-print("metadata verification_passed:", grid_exo.metadata.verification_passed)
-print("metadata verification_max_abs_percent_deviation:",
-      grid_exo.metadata.verification_max_abs_percent_deviation)
+    OUTDIR.mkdir(exist_ok=True)
+    path_exo = OUTDIR / "grid_exogibbs.nc"
+    print("== Grid Generation Smoke Check ==")
+    print("Output directory:", OUTDIR)
+    print("Temperature axis [K]:", temperature_axis)
+    print("Pressure axis [bar]:", pressure_axis)
+    print("Composition axis log10(Z/Zsun):", log10_z_over_z_sun_axis)
+    print(
+        "Using ExoGibbs options:",
+        f"epsilon_crit={equilibrium_options.epsilon_crit},",
+        f"max_iter={equilibrium_options.max_iter}",
+    )
 
-# ---- 2) FastChem-backed grid ----
-print("\nBuilding FastChem-backed grid...")
-grid_fc = build_equilibrium_grid(
-    preset_name="fastchem",
-    temperature_axis=temperature_axis,
-    pressure_axis=pressure_axis,
-    log10_z_over_z_sun_axis=log10_z_over_z_sun_axis,
-    source="fastchem",
-)
+    print("\n[1/5] Build ExoGibbs-backed grid with FastChem verification")
+    grid_exo = build_equilibrium_grid(
+        preset_name="fastchem",
+        temperature_axis=temperature_axis,
+        pressure_axis=pressure_axis,
+        log10_z_over_z_sun_axis=log10_z_over_z_sun_axis,
+        source="exogibbs",
+        options=equilibrium_options,
+        verify_exogibbs_against_fastchem=True,
+    )
+    print("ln_n shape:", grid_exo.outputs.ln_n.shape)
+    print("ntot shape:", grid_exo.outputs.ntot.shape)
+    print("verification_passed:", grid_exo.metadata.verification_passed)
+    print(
+        "verification_max_abs_percent_deviation:",
+        grid_exo.metadata.verification_max_abs_percent_deviation,
+    )
 
-print("FastChem grid built.")
-print("ln_n shape:", grid_fc.outputs.ln_n.shape)
-print("metadata source:", grid_fc.metadata.source)
+    print("\n[2/5] Build FastChem-backed comparison grid")
+    grid_fc = build_equilibrium_grid(
+        preset_name="fastchem",
+        temperature_axis=temperature_axis,
+        pressure_axis=pressure_axis,
+        log10_z_over_z_sun_axis=log10_z_over_z_sun_axis,
+        source="fastchem",
+    )
+    print("FastChem grid ln_n shape:", grid_fc.outputs.ln_n.shape)
+    print("FastChem grid metadata source:", grid_fc.metadata.source)
 
-# ---- 3) save/load roundtrip ----
-path_exo = outdir / "grid_exogibbs.nc"
-print(f"\nSaving ExoGibbs grid to {path_exo} ...")
-save_equilibrium_grid_netcdf(grid_exo, path_exo)
+    print(f"\n[3/5] Save and load ExoGibbs grid: {path_exo}")
+    save_equilibrium_grid_netcdf(grid_exo, path_exo)
+    grid_exo_loaded = load_equilibrium_grid_netcdf(path_exo)
+    print("Loaded ln_n shape:", grid_exo_loaded.outputs.ln_n.shape)
+    print("Loaded metadata source:", grid_exo_loaded.metadata.source)
+    print("Loaded composition axis name:", grid_exo_loaded.metadata.composition_axis_name)
 
-print("Loading back...")
-grid_exo_loaded = load_equilibrium_grid_netcdf(path_exo)
+    print("\n[4/5] Validate loaded-grid compatibility")
+    setup = fastchem_chemsetup(silent=True)
+    b_ref = np.asarray(setup.element_vector_reference)
+    Z_sun = float(compute_physical_metal_mass_fraction(setup, b_ref))
+    print(Z_sun)
+    validate_equilibrium_grid_compatibility(
+        grid_exo_loaded,
+        setup=setup,
+        preset_name="fastchem",
+    )
+    print("Compatibility check passed.")
+    print("\n[5/5] Check GridEquilibriumInitializer on a matching request")
+    initializer = GridEquilibriumInitializer(
+        grid=grid_exo_loaded,
+        preset_name="fastchem",
+    )
+    request = EquilibriumInitRequest(
+        setup=setup,
+        T=float(temperature_axis[0]),
+        P=float(pressure_axis[0]),
+        b=np.asarray(setup.element_vector_reference),
+        K=len(setup.species),
+    )
+    init = initializer(request)
+    print("Initializer returned ln_nk shape:", np.asarray(init.ln_nk).shape)
+    print("Initializer returned ln_ntot:", float(init.ln_ntot))
 
-print("Loaded.")
-print("loaded ln_n shape:", grid_exo_loaded.outputs.ln_n.shape)
-print("loaded metadata source:", grid_exo_loaded.metadata.source)
-print("loaded composition axis name:", grid_exo_loaded.metadata.composition_axis_name)
+    assert grid_exo.outputs.ln_n.shape == (3, 3, 3, len(grid_exo.metadata.preset_species))
+    assert grid_exo.outputs.ntot.shape == (3, 3, 3)
+    assert np.all(np.isfinite(grid_exo.outputs.ln_n))
+    assert np.all(np.isfinite(grid_exo.outputs.ntot))
+    assert np.all(grid_exo.outputs.ntot > 0.0)
 
-# ---- 4) compatibility check ----
-print("\nChecking compatibility...")
-setup = fastchem_chemsetup(silent=True)
-validate_equilibrium_grid_compatibility(
-    grid_exo_loaded,
-    setup=setup,
-    preset_name="fastchem",
-)
-print("Compatibility check passed.")
+    xsum = np.sum(grid_exo.outputs.x, axis=-1)
+    print("Species-fraction sum min/max:", np.min(xsum), np.max(xsum))
+    print("\nGrid generation smoke check completed successfully.")
 
-# ---- 5) grid initializer shell ----
-print("\nChecking GridEquilibriumInitializer shell...")
-initializer = GridEquilibriumInitializer(
-    grid=grid_exo_loaded,
-    preset_name="fastchem",
-)
-request = EquilibriumInitRequest(
-    setup=setup,
-    T=float(temperature_axis[0]),
-    P=float(pressure_axis[0]),
-    b=np.asarray(setup.element_vector_reference),
-    K=len(setup.species),
-)
-try:
-    initializer(request)
-except NotImplementedError as exc:
-    print("Initializer validation passed, lookup is still unimplemented:")
-    print(" ", exc)
 
-# ---- 6) simple numerical sanity checks ----
-assert grid_exo.outputs.ln_n.shape == (2, 2, 2, len(grid_exo.metadata.preset_species))
-assert grid_exo.outputs.ntot.shape == (2, 2, 2)
-assert np.all(np.isfinite(grid_exo.outputs.ln_n))
-assert np.all(np.isfinite(grid_exo.outputs.ntot))
-assert np.all(grid_exo.outputs.ntot > 0.0)
-
-# x should sum to ~1 along species axis
-xsum = np.sum(grid_exo.outputs.x, axis=-1)
-print("x sum min/max:", np.min(xsum), np.max(xsum))
-
-print("\nSmoke test completed successfully.")
+if __name__ == "__main__":
+    main()

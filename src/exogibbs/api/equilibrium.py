@@ -110,7 +110,7 @@ class DefaultEquilibriumInitializer:
 
 @dataclass(frozen=True)
 class GridEquilibriumInitializer:
-    """Minimal grid-backed one-layer initializer using explicit metallicity only."""
+    """Minimal grid-backed one-layer initializer using explicit or inferred metallicity."""
 
     grid: "EquilibriumGrid"
     preset_name: str
@@ -118,6 +118,7 @@ class GridEquilibriumInitializer:
 
     def __call__(self, request: EquilibriumInitRequest) -> EquilibriumInit:
         from exogibbs.api.equilibrium_grid import (
+            compute_physical_log10_z_over_z_sun,
             interpolate_equilibrium_grid,
             validate_equilibrium_grid_compatibility,
         )
@@ -128,16 +129,23 @@ class GridEquilibriumInitializer:
             self.preset_name,
             expected_composition_axis_name=self.expected_composition_axis_name,
         )
-        if request.explicit_log10_z_over_z_sun is None:
-            raise NotImplementedError(
-                "GridEquilibriumInitializer requires an explicit log10(Z/Zsun) value; "
-                "b -> log10(Z/Zsun) mapping is not implemented yet."
-            )
+        if request.explicit_log10_z_over_z_sun is not None:
+            log10_z_over_z_sun = request.explicit_log10_z_over_z_sun
+        else:
+            try:
+                log10_z_over_z_sun = float(
+                    compute_physical_log10_z_over_z_sun(request.setup, request.b)
+                )
+            except (ValueError, KeyError) as exc:
+                raise ValueError(
+                    "GridEquilibriumInitializer could not infer physical log10(Z/Zsun) "
+                    f"from request.b: {exc}"
+                ) from exc
         interpolated = interpolate_equilibrium_grid(
             self.grid,
             temperature=request.T,
             pressure=request.P,
-            log10_z_over_z_sun=request.explicit_log10_z_over_z_sun,
+            log10_z_over_z_sun=log10_z_over_z_sun,
         )
         return interpolated.to_equilibrium_init()
 

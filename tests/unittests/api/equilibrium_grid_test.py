@@ -1,6 +1,7 @@
 import jax.numpy as jnp
 import xarray as xr
 
+import exogibbs.api.equilibrium_grid as eqgridmod
 from exogibbs.api import (
     ChemicalSetup,
     EquilibriumGrid,
@@ -9,6 +10,7 @@ from exogibbs.api import (
     EquilibriumGridOutputs,
     build_equilibrium_grid,
     build_h_he_element_vector_from_log10_z_over_z_sun,
+    compute_physical_log10_z_over_z_sun,
     equilibrium_grid_from_dataset,
     equilibrium_grid_to_dataset,
     interpolate_equilibrium_grid,
@@ -41,13 +43,136 @@ def test_equilibrium_grid_metadata_from_setup_captures_preset_and_settings():
     assert metadata.preset_species == ("H2", "He", "H")
     assert metadata.source == "exogibbs"
     assert metadata.composition_axis_name == "log10(Z/Zsun)"
-    assert "10**m" in metadata.composition_axis_definition
+    assert "target physical metal mass fraction" in metadata.composition_axis_definition
     assert metadata.exogibbs_epsilon_crit == 1.0e-15
     assert metadata.exogibbs_max_iter == 1000
     assert metadata.verify_exogibbs_against_fastchem is True
     assert metadata.verification_abundance_floor is None
     assert metadata.verification_tolerance_percent is None
     assert metadata.verification_passed is None
+
+
+def test_compute_physical_metal_mass_fraction_ignores_electrons():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+    )
+
+    z = eqgridmod.compute_physical_metal_mass_fraction(
+        setup,
+        jnp.asarray([1.0, 0.5, 0.1, 1.0e6]),
+    )
+
+    expected = 1.59994 / (1.00794 + 2.001301 + 1.59994)
+    assert jnp.isclose(z, expected)
+
+
+def test_compute_reference_physical_metal_mass_fraction_uses_reference_vector():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01, 1.0e-8]),
+    )
+
+    z_sun = eqgridmod.compute_reference_physical_metal_mass_fraction(setup)
+
+    expected = 0.159994 / (1.00794 + 0.4002602 + 0.159994)
+    assert jnp.isclose(z_sun, expected)
+
+
+def test_compute_physical_log10_z_over_z_sun_matches_forward_definition():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01, 1.0e-8]),
+    )
+
+    b = build_h_he_element_vector_from_log10_z_over_z_sun(setup, 0.5)
+    log10_z_over_z_sun = compute_physical_log10_z_over_z_sun(setup, b)
+
+    assert jnp.isclose(log10_z_over_z_sun, 0.5, rtol=1.0e-6)
+
+
+def test_compute_physical_log10_z_over_z_sun_raises_for_zero_metal_mass_fraction():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01, 1.0e-8]),
+    )
+
+    try:
+        compute_physical_log10_z_over_z_sun(setup, jnp.asarray([1.0, 0.1, 0.0, 0.0]))
+    except ValueError as exc:
+        assert "Z <= 0" in str(exc)
+    else:
+        raise AssertionError("Expected ValueError for zero metal mass fraction.")
+
+
+def test_compute_physical_log10_z_over_z_sun_raises_for_negative_metal_mass_fraction():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01, 1.0e-8]),
+    )
+
+    try:
+        compute_physical_log10_z_over_z_sun(setup, jnp.asarray([1.0, 0.1, -0.01, 0.0]))
+    except ValueError as exc:
+        assert "Z <= 0" in str(exc)
+    else:
+        raise AssertionError("Expected ValueError for negative metal mass fraction.")
+
+
+def test_compute_physical_metal_mass_fraction_rejects_malformed_element_vector():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+    )
+
+    try:
+        eqgridmod.compute_physical_metal_mass_fraction(setup, jnp.asarray([1.0, 0.1, 0.01]))
+    except ValueError as exc:
+        assert "length must match setup.elements" in str(exc)
+    else:
+        raise AssertionError("Expected ValueError for malformed element vector length.")
+
+
+def test_compute_physical_log10_z_over_z_sun_raises_for_zero_reference_metallicity():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.0, 1.0e-8]),
+    )
+
+    try:
+        compute_physical_log10_z_over_z_sun(setup, jnp.asarray([1.0, 0.1, 0.01, 0.0]))
+    except ValueError as exc:
+        assert "Zsun <= 0" in str(exc)
+    else:
+        raise AssertionError("Expected ValueError for zero reference metallicity.")
+
+
+def test_compute_physical_log10_z_over_z_sun_propagates_missing_element_mass():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((3, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "Xx"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01]),
+    )
+
+    try:
+        compute_physical_log10_z_over_z_sun(setup, jnp.asarray([1.0, 0.1, 0.01]))
+    except KeyError as exc:
+        assert "Missing elemental mass for 'Xx'" in str(exc)
+    else:
+        raise AssertionError("Expected KeyError for missing elemental mass.")
 
 
 def test_equilibrium_grid_metadata_matches_setup_checks_preset_signature():
@@ -110,17 +235,23 @@ def test_equilibrium_grid_container_holds_axes_outputs_and_metadata():
     assert grid.metadata.source == "fastchem"
 
 
-def test_build_h_he_element_vector_from_log10_z_over_z_sun_scales_metals_only():
+def test_build_h_he_element_vector_from_log10_z_over_z_sun_matches_physical_target():
     setup = ChemicalSetup(
         formula_matrix=jnp.ones((4, 2)),
         hvector_func=lambda T: jnp.asarray([T, T]),
         elements=("H", "He", "O", "e-"),
-        element_vector_reference=jnp.asarray([0.9, 0.09, 0.01, 1.0e-8]),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01, 1.0e-8]),
     )
 
-    b = build_h_he_element_vector_from_log10_z_over_z_sun(setup, 2.0)
+    z_sun = eqgridmod.compute_reference_physical_metal_mass_fraction(setup)
+    b = build_h_he_element_vector_from_log10_z_over_z_sun(setup, 0.5)
+    z = eqgridmod.compute_physical_metal_mass_fraction(setup, b)
 
-    assert jnp.allclose(b, jnp.asarray([0.9, 0.09, 1.0, 0.0]))
+    assert jnp.isclose(b[0], 1.0)
+    assert jnp.isclose(b[1], 0.1)
+    assert jnp.isclose(b[3], 0.0)
+    assert jnp.isclose(z / z_sun, 10.0**0.5, rtol=1.0e-6)
+    assert not jnp.isclose(b[2], 0.01 * (10.0**0.5))
 
 
 def test_build_equilibrium_grid_exogibbs_path_returns_grid():

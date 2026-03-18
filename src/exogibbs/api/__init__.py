@@ -5,6 +5,7 @@ __all__ = [
     "ThermoState",
     "build_equilibrium_grid",
     "build_h_he_element_vector_from_log10_z_over_z_sun",
+    "compute_physical_log10_z_over_z_sun",
     "equilibrium_grid_from_dataset",
     "equilibrium_grid_to_dataset",
     "validate_equilibrium_grid_compatibility",
@@ -29,6 +30,7 @@ def __getattr__(name):
     if name in {
         "build_equilibrium_grid",
         "build_h_he_element_vector_from_log10_z_over_z_sun",
+        "compute_physical_log10_z_over_z_sun",
         "equilibrium_grid_from_dataset",
         "equilibrium_grid_to_dataset",
         "validate_equilibrium_grid_compatibility",
@@ -49,6 +51,7 @@ def __getattr__(name):
             EquilibriumGridOutputs,
             build_equilibrium_grid,
             build_h_he_element_vector_from_log10_z_over_z_sun,
+            compute_physical_log10_z_over_z_sun,
             equilibrium_grid_from_dataset,
             equilibrium_grid_to_dataset,
             interpolate_equilibrium_grid,
@@ -60,6 +63,7 @@ def __getattr__(name):
         return {
             "build_equilibrium_grid": build_equilibrium_grid,
             "build_h_he_element_vector_from_log10_z_over_z_sun": build_h_he_element_vector_from_log10_z_over_z_sun,
+            "compute_physical_log10_z_over_z_sun": compute_physical_log10_z_over_z_sun,
             "equilibrium_grid_from_dataset": equilibrium_grid_from_dataset,
             "equilibrium_grid_to_dataset": equilibrium_grid_to_dataset,
             "validate_equilibrium_grid_compatibility": validate_equilibrium_grid_compatibility,
