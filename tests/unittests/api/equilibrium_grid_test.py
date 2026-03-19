@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import pytest
 import xarray as xr
 
 import exogibbs.api.equilibrium_grid as eqgridmod
@@ -49,6 +50,11 @@ def test_equilibrium_grid_metadata_from_setup_captures_preset_and_settings():
     assert metadata.verify_exogibbs_against_fastchem is True
     assert metadata.verification_abundance_floor is None
     assert metadata.verification_tolerance_percent is None
+    assert metadata.verification_worst_temperature is None
+    assert metadata.verification_worst_pressure is None
+    assert metadata.verification_worst_log10_z_over_z_sun is None
+    assert metadata.verification_worst_species_index is None
+    assert metadata.verification_worst_species_name is None
     assert metadata.verification_passed is None
 
 
@@ -294,7 +300,98 @@ def test_build_equilibrium_grid_exogibbs_fastchem_preset_verifies_by_default():
     assert grid.metadata.verification_species_compared is not None
     assert grid.metadata.verification_species_compared > 0
     assert grid.metadata.verification_max_abs_percent_deviation is not None
+    assert grid.metadata.verification_worst_temperature == pytest.approx(1000.0)
+    assert grid.metadata.verification_worst_pressure == pytest.approx(1.0)
+    assert grid.metadata.verification_worst_log10_z_over_z_sun == pytest.approx(0.0)
+    assert grid.metadata.verification_worst_species_index is not None
+    assert grid.metadata.verification_worst_species_name in grid.metadata.preset_species
     assert grid.metadata.verification_passed is True
+
+
+def test_verify_exogibbs_grid_against_fastchem_tracks_worst_point_and_species(monkeypatch):
+    setup = ChemicalSetup(
+        formula_matrix=jnp.zeros((2, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He"),
+        species=("A", "B"),
+        metadata={"source": "fastchem"},
+    )
+    exogibbs_outputs = EquilibriumGridOutputs(
+        ln_n=jnp.zeros((2, 1, 1, 2)),
+        n=jnp.zeros((2, 1, 1, 2)),
+        x=jnp.asarray(
+            [
+                [[[0.20, 0.80]]],
+                [[[0.40, 0.60]]],
+            ]
+        ),
+        ntot=jnp.ones((2, 1, 1)),
+    )
+
+    def fake_create_fastchem_point_solver(_setup):
+        def solve_point_fastchem(temperature, pressure, log10_z_over_z_sun):
+            if temperature == 500.0:
+                x = jnp.asarray([0.21, 0.76])
+            else:
+                x = jnp.asarray([0.60, 0.60])
+            return jnp.zeros_like(x), jnp.zeros_like(x), x, jnp.asarray(1.0)
+
+        return solve_point_fastchem, ()
+
+    monkeypatch.setattr(eqgridmod, "_create_fastchem_point_solver", fake_create_fastchem_point_solver)
+
+    results = eqgridmod._verify_exogibbs_grid_against_fastchem(
+        setup,
+        temperature_axis=jnp.asarray([500.0, 700.0]),
+        pressure_axis=jnp.asarray([2.0]),
+        log10_z_over_z_sun_axis=jnp.asarray([-0.5]),
+        exogibbs_outputs=exogibbs_outputs,
+        abundance_floor=1.0e-10,
+        tolerance_percent=0.5,
+    )
+
+    assert results["verification_passed"] is False
+    assert results["verification_max_abs_percent_deviation"] == pytest.approx(50.0)
+    assert results["verification_worst_temperature"] == pytest.approx(700.0)
+    assert results["verification_worst_pressure"] == pytest.approx(2.0)
+    assert results["verification_worst_log10_z_over_z_sun"] == pytest.approx(-0.5)
+    assert results["verification_worst_species_index"] == 0
+    assert results["verification_worst_species_name"] == "A"
+
+
+def test_build_equilibrium_grid_verification_failure_reports_worst_point(monkeypatch):
+    def fake_verify(*args, **kwargs):
+        return {
+            "verification_abundance_floor": 1.0e-10,
+            "verification_tolerance_percent": 0.5,
+            "verification_points_checked": 1,
+            "verification_species_compared": 1,
+            "verification_max_abs_percent_deviation": 12.5,
+            "verification_worst_temperature": 1200.0,
+            "verification_worst_pressure": 0.1,
+            "verification_worst_log10_z_over_z_sun": -1.0,
+            "verification_worst_species_index": 3,
+            "verification_worst_species_name": "H2O",
+            "verification_passed": False,
+        }
+
+    monkeypatch.setattr(eqgridmod, "_verify_exogibbs_grid_against_fastchem", fake_verify)
+
+    with pytest.raises(ValueError) as excinfo:
+        build_equilibrium_grid(
+            "fastchem",
+            temperature_axis=jnp.asarray([1200.0]),
+            pressure_axis=jnp.asarray([0.1]),
+            log10_z_over_z_sun_axis=jnp.asarray([-1.0]),
+            source="exogibbs",
+        )
+
+    message = str(excinfo.value)
+    assert "max abs percent deviation 12.5%" in message
+    assert "T=1200 K" in message
+    assert "P=0.1 bar" in message
+    assert "log10(Z/Zsun)=-1" in message
+    assert "species=H2O" in message
 
 
 def test_build_equilibrium_grid_fastchem_path_returns_grid():
