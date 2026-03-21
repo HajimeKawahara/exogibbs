@@ -737,9 +737,18 @@ def _create_fastchem_point_solver(
             "FastChem-backed grid generation currently supports only the FastChem preset."
         )
 
+    metadata = setup.metadata or {}
+    fastchem_element_file = metadata.get(
+        "fastchem_element_file",
+        "fastchem/element_abundances/asplund_2020.dat",
+    )
+    fastchem_logk_file = metadata.get(
+        "fastchem_logk_file",
+        "fastchem/logK/logK.dat",
+    )
     fastchem = pyfastchem.FastChem(
-        str(get_data_filepath("fastchem/element_abundances/asplund_2020.dat")),
-        str(get_data_filepath("fastchem/logK/logK.dat")),
+        str(get_data_filepath(fastchem_element_file)),
+        str(get_data_filepath(fastchem_logk_file)),
         1,
     )
     fastchem.setVerboseLevel(0)
@@ -902,6 +911,7 @@ def build_equilibrium_grid(
     verify_exogibbs_against_fastchem: bool = True,
     verification_abundance_floor: float = _FASTCHEM_COMPARISON_ABUNDANCE_FLOOR,
     verification_tolerance_percent: float = _FASTCHEM_COMPARISON_TOLERANCE_PERCENT,
+    setup_builder: Optional[Callable[[], ChemicalSetup]] = None,
 ) -> EquilibriumGrid:
     """Generate an in-memory equilibrium grid for a preset and source.
 
@@ -909,7 +919,7 @@ def build_equilibrium_grid(
     When ``source="exogibbs"``, verification against FastChem at the same grid
     points is enabled by default for supported presets.
     """
-    setup = _resolve_preset_builder(preset_name)()
+    setup = setup_builder() if setup_builder is not None else _resolve_preset_builder(preset_name)()
     opts = options or EquilibriumOptions()
     temperature_axis = jnp.asarray(temperature_axis)
     pressure_axis = jnp.asarray(pressure_axis)

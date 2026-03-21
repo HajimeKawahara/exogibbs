@@ -56,8 +56,14 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
         import pandas as pd
         element_df = pd.read_csv(get_data_filepath(element_file), sep='\s+', comment="#", header=None, names=["element", "abundance"])
         elements = element_df["element"].tolist()[1:] + ["e-"]
+        element_abundances = np.asarray(
+            element_df["abundance"].tolist()[1:],
+            dtype=float,
+        )
+        # FastChem element-abundance files use the astronomical A(X)=log10(n_X/n_H)+12 scale.
+        # Convert them to linear abundances referenced to hydrogen before storing b_ref.
         element_vector_ref = jnp.asarray(
-            element_df["abundance"].tolist()[1:] + [0.0],
+            np.concatenate((10.0 ** (element_abundances - 12.0), [0.0])),
             dtype=float_dtype,
         )
     else:
@@ -102,7 +108,15 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
         elements=tuple(elements) if elements is not None else None,
         species=tuple(species) if species is not None else None,
         element_vector_reference=element_vector_ref,
-        metadata={"source": "fastchem v3.1.3", "dataset": "gas"},
+        metadata={
+            "source": "fastchem v3.1.3",
+            "dataset": "gas",
+            "fastchem_logk_file": path,
+            "fastchem_element_file": (
+                element_file if element_file is not None else "fastchem/element_abundances/asplund_2020.dat"
+            ),
+            "fastchem_species_default_elements": str(species_defalt_elements),
+        },
     )
 
 
