@@ -5,6 +5,8 @@ Execute from the repository root, for example:
     PYTHONPATH=src python -m benchmarks.run_profile --method vmap_cold
     PYTHONPATH=src python -m benchmarks.run_profile --method scan_hot_from_top
     PYTHONPATH=src python -m benchmarks.run_profile --method scan_hot_from_bottom
+    PYTHONPATH=src python -m benchmarks.run_profile --method vmap_cold --initializer-mode grid \
+        --grid-path examples/grids/tmp_grid_check_extended/grid_exogibbs_extended.nc
 """
 
 from __future__ import annotations
@@ -34,7 +36,9 @@ from benchmarks.models import BenchmarkResult
 from benchmarks.models import ExecutionConfig
 from benchmarks.timing import block_tree
 from benchmarks.timing import time_first_and_repeated_calls
+from exogibbs.api import load_equilibrium_grid_netcdf
 from exogibbs.api.equilibrium import EquilibriumOptions
+from exogibbs.api.equilibrium import GridEquilibriumInitializer
 from exogibbs.api.equilibrium import equilibrium_profile
 from exogibbs.presets.fastchem import chemsetup
 
@@ -71,6 +75,23 @@ def build_parser() -> argparse.ArgumentParser:
         help="Number of measured repeated warm calls.",
     )
     parser.add_argument(
+        "--initializer-mode",
+        choices=("none", "grid"),
+        default="none",
+        help="Initialization mode for profile solves.",
+    )
+    parser.add_argument(
+        "--grid-path",
+        type=Path,
+        default=None,
+        help="Path to a saved NetCDF equilibrium grid used when --initializer-mode=grid.",
+    )
+    parser.add_argument(
+        "--grid-preset-name",
+        default="fastchem",
+        help="Preset name passed to GridEquilibriumInitializer when --initializer-mode=grid.",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=Path("results/benchmarks/profile.json"),
@@ -93,6 +114,22 @@ def _build_profile_inputs(case_axes: dict[str, Any], dtype: jnp.dtype) -> tuple[
         layer_count,
     )
     return temperature, pressure
+
+
+def _resolve_initializer_config(
+    initializer_mode: str,
+    grid_path: Optional[Path],
+    grid_preset_name: str,
+) -> tuple[str, Optional[Path], Optional[str]]:
+    if initializer_mode == "none":
+        if grid_path is not None:
+            raise ValueError("--grid-path may be used only when --initializer-mode=grid")
+        return initializer_mode, None, None
+    if initializer_mode == "grid":
+        if grid_path is None:
+            raise ValueError("--grid-path is required when --initializer-mode=grid")
+        return initializer_mode, grid_path, grid_preset_name
+    raise ValueError(f"Unknown initializer mode: {initializer_mode!r}")
 
 
 def _diag_array(diagnostics: Optional[dict[str, Any]], key: str) -> Any:
@@ -146,6 +183,9 @@ def _build_result(
     warmup: int,
     repeat: int,
     output_path: Path,
+    initializer_mode: str,
+    grid_path: Optional[Path],
+    grid_preset_name: Optional[str],
 ) -> BenchmarkResult:
     case = get_profile_case(case_id)
     backend, device = device_for_platform(platform)
@@ -158,6 +198,14 @@ def _build_result(
             tuple(setup.elements),
         ).astype(dtype)
         temperature, pressure = _build_profile_inputs(case.axes, dtype)
+
+        initializer = None
+        if initializer_mode == "grid":
+            grid = load_equilibrium_grid_netcdf(str(grid_path))
+            initializer = GridEquilibriumInitializer(
+                grid=grid,
+                preset_name=str(grid_preset_name),
+            )
 
         opts = EquilibriumOptions(
             epsilon_crit=float(case.solver_options["epsilon_crit"]),
@@ -172,6 +220,7 @@ def _build_result(
                 P_in,
                 b_in,
                 Pref=case.pref_bar,
+                initializer=initializer,
                 options=opts,
                 return_diagnostics=False,
             )
@@ -196,6 +245,7 @@ def _build_result(
                     P_in,
                     b_in,
                     Pref=case.pref_bar,
+                    initializer=initializer,
                     options=opts,
                     return_diagnostics=True,
                 )
@@ -241,11 +291,17 @@ def _build_result(
         dtype=str(dtype),
         warmup_count=warmup,
         repeat_count=repeat,
+        initializer_mode=initializer_mode,
+        initializer_grid_path=(str(grid_path) if grid_path is not None else None),
+        initializer_preset_name=grid_preset_name,
     )
     setup_metadata = dict(case.setup_metadata)
     setup_metadata["n_elements"] = int(setup.formula_matrix.shape[0])
     setup_metadata["n_species"] = int(setup.formula_matrix.shape[1])
     setup_metadata["diagnostics_collection"] = "separate_jitted_call"
+    setup_metadata["initializer_mode"] = initializer_mode
+    setup_metadata["initializer_grid_path"] = str(grid_path) if grid_path is not None else None
+    setup_metadata["initializer_preset_name"] = grid_preset_name
 
     axes = dict(case.axes)
     axes["method"] = method
@@ -275,6 +331,9 @@ def _build_result(
         "converged_per_layer": converged_per_layer,
         "result_ntot_per_layer": to_python(jax.device_get(timing.last_result.ntot)),
         "output_path": str(output_path),
+        "initializer_mode": initializer_mode,
+        "initializer_grid_path": str(grid_path) if grid_path is not None else None,
+        "initializer_preset_name": grid_preset_name,
     }
 
     return BenchmarkResult(
@@ -301,6 +360,12 @@ def main() -> None:
     if args.warmup < 0:
         raise ValueError("--warmup must be non-negative")
 
+    initializer_mode, grid_path, grid_preset_name = _resolve_initializer_config(
+        args.initializer_mode,
+        args.grid_path,
+        args.grid_preset_name,
+    )
+
     result = _build_result(
         case_id=args.case_id,
         method=args.method,
@@ -308,6 +373,9 @@ def main() -> None:
         warmup=args.warmup,
         repeat=args.repeat,
         output_path=args.output,
+        initializer_mode=initializer_mode,
+        grid_path=grid_path,
+        grid_preset_name=grid_preset_name,
     )
 
     payload = result.to_dict()
