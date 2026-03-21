@@ -1,3 +1,4 @@
+import jax
 import jax.numpy as jnp
 import pytest
 import xarray as xr
@@ -100,6 +101,20 @@ def test_compute_physical_log10_z_over_z_sun_matches_forward_definition():
     log10_z_over_z_sun = compute_physical_log10_z_over_z_sun(setup, b)
 
     assert jnp.isclose(log10_z_over_z_sun, 0.5, rtol=1.0e-6)
+
+
+def test_compute_physical_log10_z_over_z_sun_is_jit_trace_safe():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01, 1.0e-8]),
+    )
+
+    b = build_h_he_element_vector_from_log10_z_over_z_sun(setup, 0.5)
+    traced_fn = jax.jit(lambda element_vector: compute_physical_log10_z_over_z_sun(setup, element_vector))
+
+    assert jnp.isclose(traced_fn(b), 0.5, rtol=1.0e-6)
 
 
 def test_compute_physical_log10_z_over_z_sun_raises_for_zero_metal_mass_fraction():
@@ -820,6 +835,41 @@ def test_interpolate_equilibrium_grid_rejects_out_of_bounds_by_default():
         assert "outside the stored equilibrium grid bounds" in str(exc)
     else:
         raise AssertionError("Expected ValueError for out-of-bounds interpolation.")
+
+
+def test_interpolate_equilibrium_grid_is_trace_safe_when_extrapolation_is_disabled(monkeypatch):
+    class StubInterpolator3D:
+        def __init__(self, x, y, z, f, method="cubic", extrap=False, **kwargs):
+            self._f = f
+
+        def __call__(self, xq, yq, zq, dx=0, dy=0, dz=0):
+            return jnp.asarray(xq + yq + zq, dtype=self._f.dtype)
+
+    monkeypatch.setattr("exogibbs.api.equilibrium_grid.Interpolator3D", StubInterpolator3D)
+
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([1000.0, 2000.0]),
+        pressure_axis=jnp.asarray([1.0, 10.0]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0, 1.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.zeros((2, 2, 2, 1)),
+            n=jnp.zeros((2, 2, 2, 1)),
+            x=jnp.zeros((2, 2, 2, 1)),
+            ntot=jnp.ones((2, 2, 2)),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "test"},
+            preset_elements=("H",),
+            preset_species=("A",),
+            source="exogibbs",
+            verify_exogibbs_against_fastchem=False,
+        ),
+    )
+
+    traced_fn = jax.jit(lambda temperature: interpolate_equilibrium_grid(grid, temperature, 5.0, 0.5).ntot)
+
+    assert jnp.isclose(traced_fn(1500.0), 1505.5)
 
 
 def test_interpolate_equilibrium_grid_rejects_non_scalar_queries():

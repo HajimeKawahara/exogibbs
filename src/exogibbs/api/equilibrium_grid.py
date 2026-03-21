@@ -8,6 +8,7 @@ from typing import Callable, Literal, Mapping, Optional, Sequence, Tuple, Union
 
 import jax
 import jax.numpy as jnp
+from jax import core
 import numpy as np
 from interpax import Interpolator3D
 
@@ -103,14 +104,14 @@ def compute_physical_metal_mass_fraction(setup: ChemicalSetup, element_vector: A
     """Return the physical metal mass fraction Z for an elemental abundance vector."""
     b = _validated_element_vector(setup, element_vector)
     masses = _element_mass_vector(setup, b.dtype)
-    non_electron_mask = jnp.asarray([element != "e-" for element in setup.elements], dtype=bool)
+    non_electron_mask = jnp.asarray([element != "e-" for element in setup.elements], dtype=b.dtype)
     metal_mask = jnp.asarray(
         [element not in {"H", "He", "e-"} for element in setup.elements],
-        dtype=bool,
+        dtype=b.dtype,
     )
     weighted_abundances = masses * b
-    total_mass = jnp.sum(weighted_abundances[non_electron_mask])
-    metal_mass = jnp.sum(weighted_abundances[metal_mask])
+    total_mass = jnp.sum(weighted_abundances * non_electron_mask)
+    metal_mass = jnp.sum(weighted_abundances * metal_mask)
     return metal_mass / jnp.clip(total_mass, 1e-300)
 
 
@@ -128,13 +129,13 @@ def compute_physical_log10_z_over_z_sun(
 ) -> Array:
     """Return physical ``log10(Z/Zsun)`` for an elemental abundance vector."""
     z = compute_physical_metal_mass_fraction(setup, element_vector)
-    if float(z) <= 0.0:
+    if not isinstance(z, core.Tracer) and float(z) <= 0.0:
         raise ValueError(
             "Physical log10(Z/Zsun) is undefined when the elemental abundance vector has Z <= 0."
         )
 
     z_sun = compute_reference_physical_metal_mass_fraction(setup)
-    if float(z_sun) <= 0.0:
+    if not isinstance(z_sun, core.Tracer) and float(z_sun) <= 0.0:
         raise ValueError(
             "Physical log10(Z/Zsun) is undefined when setup.element_vector_reference has Zsun <= 0."
         )
@@ -392,11 +393,13 @@ def _interpolate_grid_field(
         **interpolator_kwargs,
     )
     interpolated = jnp.asarray(interpolator(temperature, pressure, log10_z_over_z_sun))
-    if options.extrap is False and bool(jnp.any(jnp.isnan(interpolated))):
-        raise ValueError(
-            "Interpolation query lies outside the stored equilibrium grid bounds. "
-            "Pass EquilibriumGridInterpolationOptions(extrap=...) to opt into extrapolation."
-        )
+    if options.extrap is False:
+        has_nan = jnp.any(jnp.isnan(interpolated))
+        if not isinstance(has_nan, core.Tracer) and bool(has_nan):
+            raise ValueError(
+                "Interpolation query lies outside the stored equilibrium grid bounds. "
+                "Pass EquilibriumGridInterpolationOptions(extrap=...) to opt into extrapolation."
+            )
     return interpolated
 
 
