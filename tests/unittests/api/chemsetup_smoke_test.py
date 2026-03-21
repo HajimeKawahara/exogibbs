@@ -103,3 +103,22 @@ def test_fastchem_setup_normalizes_float_dtypes():
     assert setup.formula_matrix.dtype == expected_dtype
     assert setup.element_vector_reference.dtype == expected_dtype
     assert setup.hvector_func(500.0).dtype == expected_dtype
+
+
+def test_fastchem_extended_element_file_converts_log_abundances_to_linear_reference_vector():
+    setup = fastchem_chemsetup(
+        path="fastchem/logK/logK_extended.dat",
+        species_defalt_elements=False,
+        element_file="fastchem/element_abundances/asplund_2020_extended.dat",
+        silent=True,
+    )
+
+    b_ref = np.asarray(setup.element_vector_reference)
+    h_index = setup.elements.index("H")
+    he_index = setup.elements.index("He")
+    o_index = setup.elements.index("O")
+
+    assert np.isclose(b_ref[h_index], 1.0)
+    assert np.isclose(b_ref[he_index], 10.0 ** (10.914 - 12.0))
+    assert np.isclose(b_ref[o_index], 10.0 ** (8.69 - 12.0))
+    assert np.all(b_ref >= 0.0)
