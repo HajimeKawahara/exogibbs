@@ -133,8 +133,9 @@ class GridEquilibriumInitializer:
             log10_z_over_z_sun = request.explicit_log10_z_over_z_sun
         else:
             try:
-                log10_z_over_z_sun = float(
-                    compute_physical_log10_z_over_z_sun(request.setup, request.b)
+                log10_z_over_z_sun = compute_physical_log10_z_over_z_sun(
+                    request.setup,
+                    request.b,
                 )
             except (ValueError, KeyError) as exc:
                 raise ValueError(
