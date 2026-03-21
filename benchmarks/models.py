@@ -17,6 +17,9 @@ class ExecutionConfig:
     dtype: Optional[str]
     warmup_count: int
     repeat_count: int
+    initializer_mode: str = "none"
+    initializer_grid_path: Optional[str] = None
+    initializer_preset_name: Optional[str] = None
 
     def to_dict(self) -> JsonDict:
         return asdict(self)
