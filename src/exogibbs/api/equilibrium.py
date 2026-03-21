@@ -37,6 +37,9 @@ class EquilibriumOptions:
             - "vmap_cold": Independent solves for each layer with cold starts (no state carryover).
             - "scan_hot_from_top": Sequential solves from top to bottom, carrying converged state as hot start for next layer.
             - "scan_hot_from_bottom": Sequential solves from bottom to top, carrying converged state as hot start for next layer.
+            - None: Use the profile default-selection policy. This chooses
+              "vmap_cold" when an initializer is provided and
+              "scan_hot_from_bottom" otherwise.
     Note:
         these default values are chosen based on the comparison with FastChem 
         in the range of 300-3000K and 1e-8 - 1e2 bar. See #17 and comparison_with_fastchem.py
@@ -44,7 +47,7 @@ class EquilibriumOptions:
 
     epsilon_crit: float = 1.0e-10
     max_iter: int = 1000
-    method: Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"] = "scan_hot_from_top"
+    method: Optional[Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"]] = None
 
 
 @dataclass(frozen=True)
@@ -207,6 +210,18 @@ def _prepare_init(
 
 
 _DEFAULT_INITIALIZER = DefaultEquilibriumInitializer()
+
+
+def _resolve_profile_method(
+    method: Optional[Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"]],
+    initializer: Optional[EquilibriumInitializer],
+) -> Literal["vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"]:
+    """Resolve the profile solve method from an explicit choice or default policy."""
+    if method is not None:
+        return method
+    if initializer is not None:
+        return "vmap_cold"
+    return "scan_hot_from_bottom"
 
 
 def _resolve_initial_guess(
@@ -402,7 +417,9 @@ def equilibrium_profile(
         b: Elemental abundances, shape (E,), shared across layers.
         Pref: Reference pressure (bar).
         initializer: Optional strategy object that produces each layer's initial guess.
-        options: Solver options.
+        options: Solver options. If ``options.method`` is not specified, the
+            default policy uses ``"vmap_cold"`` when ``initializer`` is
+            provided and ``"scan_hot_from_bottom"`` otherwise.
         return_diagnostics: If True, returns per-layer solver diagnostics.
 
     Returns:
@@ -421,7 +438,7 @@ def equilibrium_profile(
     if b.ndim != 1:
         raise ValueError("b must be a 1D array shared across layers.")
     opts = options or EquilibriumOptions()
-    method = opts.method
+    method = _resolve_profile_method(opts.method, initializer)
     valid_methods = ("vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom")
     if method not in valid_methods:
         raise ValueError(f"Unknown solve method '{method}'. Expected one of {valid_methods}.")

@@ -106,6 +106,114 @@ def test_equilibrium_profile_return_diagnostics(monkeypatch):
     assert not jnp.any(diag["hit_max_iter"])
 
 
+def test_equilibrium_profile_explicit_method_still_wins_over_initializer_default(monkeypatch):
+    E, K, N = 2, 2, 4
+    A = jnp.array([[1, 0], [0, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        return ln_nk0 + 1.0
+
+    class PassThroughInitializer:
+        def __call__(self, request):
+            if request.previous_solution is None:
+                return EquilibriumInit(
+                    ln_nk=jnp.zeros((K,), dtype=jnp.float32),
+                    ln_ntot=jnp.asarray(jnp.log(K), dtype=jnp.float32),
+                )
+            return request.previous_solution
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
+
+    T = jnp.linspace(1000.0, 1300.0, N)
+    P = jnp.linspace(0.1, 1.0, N)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    out = eqmod.equilibrium_profile(
+        setup,
+        T,
+        P,
+        b,
+        initializer=PassThroughInitializer(),
+        options=EquilibriumOptions(method="scan_hot_from_bottom", epsilon_crit=1e-11, max_iter=50),
+    )
+
+    expected = jnp.array([4, 3, 2, 1], dtype=jnp.float32)[:, None] * jnp.ones((N, K), dtype=jnp.float32)
+    assert jnp.allclose(out.ln_n, expected)
+
+
+def test_equilibrium_profile_default_method_uses_vmap_cold_with_initializer(monkeypatch):
+    E, K, N = 2, 2, 4
+    A = jnp.array([[1, 0], [0, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+    captured_previous = []
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        return ln_nk0 + 1.0
+
+    class PassThroughInitializer:
+        def __call__(self, request):
+            captured_previous.append(request.previous_solution)
+            return EquilibriumInit(
+                ln_nk=jnp.zeros((K,), dtype=jnp.float32),
+                ln_ntot=jnp.asarray(jnp.log(K), dtype=jnp.float32),
+            )
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
+
+    T = jnp.linspace(1000.0, 1300.0, N)
+    P = jnp.linspace(0.1, 1.0, N)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    out = eqmod.equilibrium_profile(
+        setup,
+        T,
+        P,
+        b,
+        initializer=PassThroughInitializer(),
+        options=EquilibriumOptions(epsilon_crit=1e-11, max_iter=50),
+    )
+
+    expected = jnp.ones((N, K), dtype=jnp.float32)
+    assert all(prev is None for prev in captured_previous)
+    assert jnp.allclose(out.ln_n, expected)
+
+
+def test_equilibrium_profile_default_method_uses_scan_hot_from_bottom_without_initializer(monkeypatch):
+    E, K, N = 2, 2, 4
+    A = jnp.array([[1, 0], [0, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        return ln_nk0 + 1.0
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
+
+    T = jnp.linspace(1000.0, 1300.0, N)
+    P = jnp.linspace(0.1, 1.0, N)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    out = eqmod.equilibrium_profile(
+        setup,
+        T,
+        P,
+        b,
+        options=EquilibriumOptions(epsilon_crit=1e-11, max_iter=50),
+    )
+
+    expected = jnp.array([4, 3, 2, 1], dtype=jnp.float32)[:, None] * jnp.ones((N, K), dtype=jnp.float32)
+    assert jnp.allclose(out.ln_n, expected)
+
+
 def test_equilibrium_profile_scan_hot_from_top_uses_previous_layer_init(monkeypatch):
     E, K, N = 2, 2, 4
     A = jnp.array([[1, 0], [0, 1]], dtype=jnp.float32)
