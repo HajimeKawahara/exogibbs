@@ -17,3 +17,7 @@ include src/exogibbs/data/fastchem/element_abundances/asplund_2020.dat
 include src/exogibbs/data/fastchem/element_abundances/asplund_2020_extended.dat
 include src/exogibbs/data/fastchem/element_abundances/lodders_2003.dat
 include src/exogibbs/data/fastchem/element_abundances/lodders_2003_extended.dat
+
+#grids for GridEquilibriumInitializer 
+include src/exogibbs/data/grids/fastchem/grid_exogibbs.nc
+include src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc
