@@ -5,6 +5,7 @@ from jax import config
 # Keep the example aligned with the manual grid-generation workflow.
 config.update("jax_enable_x64", True)
 
+from exogibbs.api import get_default_equilibrium_grid_path
 from exogibbs.api import load_equilibrium_grid_netcdf
 
 
@@ -12,7 +13,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 
 
 def main() -> None:
-    grid_path = SCRIPT_DIR / "tmp_grid_check" / "grid_exogibbs.nc"
+    grid_path = get_default_equilibrium_grid_path("fastchem")
 
     temperature = 2500.0
     pressure = 3.0 * 10.0 ** (-2.5)
@@ -24,7 +25,7 @@ def main() -> None:
     print("Query pressure [bar]:", pressure)
     print("Query log10(Z/Zsun):", log10_z_over_z_sun)
 
-    grid = load_equilibrium_grid_netcdf(grid_path)
+    grid = load_equilibrium_grid_netcdf(str(grid_path))
     result = grid.interpolate(
         temperature=temperature,
         pressure=pressure,

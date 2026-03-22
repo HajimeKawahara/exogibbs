@@ -12,7 +12,7 @@ This note is for a quick manual check of the equilibrium-grid workflow after loc
 - Checks that `GridEquilibriumInitializer` returns an initialization state on a matching request
 
 `examples/works/grid_interpolation_by_hand.py`
-- Loads the saved grid from `examples/works/tmp_grid_check/grid_exogibbs.nc`
+- Loads the packaged default FastChem grid from `exogibbs.data.grids.fastchem/grid_exogibbs.nc`
 - Interpolates one state at a chosen `(T, P, log10(Z/Zsun))`
 - Prints `ntot`, `ln_ntot`, `sum(x)`, and the first few species values for visual inspection
 

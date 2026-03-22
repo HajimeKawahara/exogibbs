@@ -36,6 +36,7 @@ from benchmarks.models import BenchmarkResult
 from benchmarks.models import ExecutionConfig
 from benchmarks.timing import block_tree
 from benchmarks.timing import time_first_and_repeated_calls
+from exogibbs.api import get_default_equilibrium_grid_path
 from exogibbs.api import load_equilibrium_grid_netcdf
 from exogibbs.api.equilibrium import EquilibriumOptions
 from exogibbs.api.equilibrium import GridEquilibriumInitializer
@@ -126,10 +127,19 @@ def _resolve_initializer_config(
             raise ValueError("--grid-path may be used only when --initializer-mode=grid")
         return initializer_mode, None, None
     if initializer_mode == "grid":
-        if grid_path is None:
-            raise ValueError("--grid-path is required when --initializer-mode=grid")
         return initializer_mode, grid_path, grid_preset_name
     raise ValueError(f"Unknown initializer mode: {initializer_mode!r}")
+
+
+def _resolve_default_grid_kind(case_id: str) -> str:
+    case = get_profile_case(case_id)
+    grid_kind = case.setup_metadata.get("preset")
+    if grid_kind in {"fastchem", "fastchem_extended"}:
+        return str(grid_kind)
+    raise ValueError(
+        f"No packaged default equilibrium grid is configured for profile case '{case_id}'. "
+        "Pass --grid-path explicitly."
+    )
 
 
 def _diag_array(diagnostics: Optional[dict[str, Any]], key: str) -> Any:
@@ -201,11 +211,17 @@ def _build_result(
 
         initializer = None
         if initializer_mode == "grid":
-            grid = load_equilibrium_grid_netcdf(str(grid_path))
+            resolved_grid_path = (
+                grid_path
+                if grid_path is not None
+                else get_default_equilibrium_grid_path(_resolve_default_grid_kind(case_id))
+            )
+            grid = load_equilibrium_grid_netcdf(str(resolved_grid_path))
             initializer = GridEquilibriumInitializer(
                 grid=grid,
                 preset_name=str(grid_preset_name),
             )
+            grid_path = resolved_grid_path
 
         opts = EquilibriumOptions(
             epsilon_crit=float(case.solver_options["epsilon_crit"]),

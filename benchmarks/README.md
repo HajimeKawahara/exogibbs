@@ -17,10 +17,18 @@ PYTHONPATH=src python -m benchmarks.run_single_layer --output results/benchmarks
 
 Profile benchmark:
 
+for bash
+
 ```bash
 PYTHONPATH=src python -m benchmarks.run_profile --method vmap_cold --output results/benchmarks/profile_vmap_cold.json
 PYTHONPATH=src python -m benchmarks.run_profile --method scan_hot_from_top --output results/benchmarks/profile_scan_hot_from_top.json
 PYTHONPATH=src python -m benchmarks.run_profile --method scan_hot_from_bottom --output results/benchmarks/profile_scan_hot_from_bottom.json
+```
+
+for csh
+
+```sh
+(setenv PYTHONPATH src; python -m benchmarks.run_profile --method scan_hot_from_top --warmup 3 --repeat 20 --output /home/kawahara/tmp/profile_benchmark_0.3.6_.json)
 ```
 
 Recommended bring-up run:
