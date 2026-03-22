@@ -10,6 +10,7 @@ from exojax.utils.zsol import nsol
 from jax import config
 import jax.numpy as jnp
 
+from exogibbs.api import get_default_equilibrium_grid_path
 from exogibbs.api import load_equilibrium_grid_netcdf
 from exogibbs.api.equilibrium import (
     EquilibriumOptions,
@@ -23,29 +24,24 @@ config.update("jax_enable_x64", True)
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_DIR = SCRIPT_DIR.parent.parent
-GRID_PATH = REPO_DIR / "examples" / "grids" / "tmp_grid_check" / "grid_exogibbs.nc"
 FASTCHEM_INPUT_DIR = REPO_DIR / "ref" / "FastChem" / "input"
 FASTCHEM_ELEMENT_FILE = FASTCHEM_INPUT_DIR / "element_abundances" / "asplund_2020.dat"
 FASTCHEM_LOGK_FILE = FASTCHEM_INPUT_DIR / "logK" / "logK.dat"
 
 
 def main() -> None:
+    grid_path = get_default_equilibrium_grid_path("fastchem")
     T = 2870.0
     nlayer = 100
     temperature = np.full(nlayer, T)
     pressure = np.logspace(-8, 2, num=nlayer)
 
     print("== FastChem / ExoGibbs Grid-Initializer Comparison ==")
-    print("Loaded grid file:", GRID_PATH)
+    print("Loaded grid file:", grid_path)
     print("Using initializer: GridEquilibriumInitializer")
     print("FastChem element file:", FASTCHEM_ELEMENT_FILE)
     print("FastChem logK file:", FASTCHEM_LOGK_FILE)
 
-    if not GRID_PATH.exists():
-        raise FileNotFoundError(
-            f"Saved grid not found at {GRID_PATH}. "
-            "Generate it first with examples/grids/grid_generation_v0_1.py."
-        )
     if not FASTCHEM_ELEMENT_FILE.exists():
         raise FileNotFoundError(f"FastChem element abundance file not found at {FASTCHEM_ELEMENT_FILE}.")
     if not FASTCHEM_LOGK_FILE.exists():
@@ -78,7 +74,7 @@ def main() -> None:
 
     opts = EquilibriumOptions(epsilon_crit=1e-10, max_iter=1000, method=method)
 
-    grid = load_equilibrium_grid_netcdf(str(GRID_PATH))
+    grid = load_equilibrium_grid_netcdf(str(grid_path))
     initializer = GridEquilibriumInitializer(grid=grid, preset_name="fastchem")
 
     print("Abundance setup: solar abundances from exojax.utils.zsol.nsol()")

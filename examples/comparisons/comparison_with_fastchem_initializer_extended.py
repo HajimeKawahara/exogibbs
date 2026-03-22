@@ -10,6 +10,7 @@ from exojax.utils.zsol import nsol
 from jax import config
 import jax.numpy as jnp
 
+from exogibbs.api import get_default_equilibrium_grid_path
 from exogibbs.api import load_equilibrium_grid_netcdf
 from exogibbs.api.equilibrium import (
     EquilibriumOptions,
@@ -24,29 +25,23 @@ from exogibbs.utils.nameparser import strip_trailing_one
 config.update("jax_enable_x64", True)
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-REPO_DIR = SCRIPT_DIR.parent.parent
-GRID_PATH = REPO_DIR / "examples" / "grids" / "tmp_grid_check_extended" / "grid_exogibbs_extended.nc"
 FASTCHEM_ELEMENT_FILE = Path(get_data_filepath("fastchem/element_abundances/asplund_2020_extended.dat"))
 FASTCHEM_LOGK_FILE = Path(get_data_filepath("fastchem/logK/logK_extended.dat"))
 
 
 def main() -> None:
+    grid_path = get_default_equilibrium_grid_path("fastchem_extended")
     T = 2870.0
     nlayer = 100
     temperature = np.full(nlayer, T)
     pressure = np.logspace(-8, 2, num=nlayer)
 
     print("== Extended FastChem / ExoGibbs Grid-Initializer Comparison ==")
-    print("Loaded extended grid file:", GRID_PATH)
+    print("Loaded extended grid file:", grid_path)
     print("Using initializer: GridEquilibriumInitializer")
     print("Using extended FastChem element file:", FASTCHEM_ELEMENT_FILE)
     print("Using extended FastChem logK file:", FASTCHEM_LOGK_FILE)
 
-    if not GRID_PATH.exists():
-        raise FileNotFoundError(
-            f"Saved extended grid not found at {GRID_PATH}. "
-            "Generate it first with examples/grids/grid_generation_v0_1_extended.py."
-        )
     if not FASTCHEM_ELEMENT_FILE.exists():
         raise FileNotFoundError(f"FastChem element abundance file not found at {FASTCHEM_ELEMENT_FILE}.")
     if not FASTCHEM_LOGK_FILE.exists():
@@ -92,7 +87,7 @@ def main() -> None:
 
     opts = EquilibriumOptions(epsilon_crit=1e-10, max_iter=1000, method=method)
 
-    grid = load_equilibrium_grid_netcdf(str(GRID_PATH))
+    grid = load_equilibrium_grid_netcdf(str(grid_path))
     initializer = GridEquilibriumInitializer(grid=grid, preset_name="fastchem")
 
     print("Abundance setup: exojax solar abundances with fallback for extended-only elements")
