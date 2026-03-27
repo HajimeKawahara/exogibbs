@@ -38,7 +38,7 @@ def hco_system_setup():
     bO = 0.3
     element_vector = jnp.array([bH, bC, bO])
     
-    residual_crit = 1e-11
+    epsilon_crit = 1e-11
     max_iter = 1000
     
     thermo_state = ThermoState(temperature, ln_normalized_pressure, element_vector)
@@ -57,7 +57,7 @@ def hco_system_setup():
         'bH': bH,
         'bC': bC,
         'bO': bO,
-        'residual_crit': residual_crit,
+        'epsilon_crit': epsilon_crit,
         'max_iter': max_iter,
         'thermo_state': thermo_state
     }
@@ -74,7 +74,7 @@ def test_minimize_gibbs_core_hco_system(hco_system_setup):
         setup['ln_ntot'],
         setup['formula_matrix'],
         setup['hvector_func'],
-        residual_crit=setup['residual_crit'],
+        epsilon_crit=setup['epsilon_crit'],
         max_iter=setup['max_iter'],
     )
     
@@ -84,7 +84,7 @@ def test_minimize_gibbs_core_hco_system(hco_system_setup):
     res = function_equilibrium(n_CO, k, setup['bC'], setup['bH'], setup['bO'])
     
     # Check convergence and equilibrium constraint
-    assert jnp.abs(res) < setup['residual_crit'] * 10.0
+    assert jnp.abs(res) < setup['epsilon_crit'] * 10.0
     assert counter < setup['max_iter']
 
 

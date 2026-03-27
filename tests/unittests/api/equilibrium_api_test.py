@@ -11,7 +11,16 @@ import pytest
 import jax.numpy as jnp
 
 import exogibbs.api.equilibrium as eqmod
-from exogibbs.api.equilibrium import EquilibriumInit, EquilibriumOptions
+import exogibbs.api.equilibrium_grid as eqgridmod
+from exogibbs.api.equilibrium_grid import EquilibriumGrid, EquilibriumGridMetadata, EquilibriumGridOutputs
+from exogibbs.api.equilibrium import (
+    DefaultEquilibriumInitializer,
+    EquilibriumInit,
+    EquilibriumInitRequest,
+    GridEquilibriumInitializer,
+    LearnedEquilibriumInitializer,
+    EquilibriumOptions,
+)
 
 from jax import config
 
@@ -155,6 +164,371 @@ def test_equilibrium_respects_init(monkeypatch):
     assert out.n.shape == (K,)
     assert out.x.shape == (K,)
     assert out.ntot.shape == ()
+    assert jnp.isclose(out.x.sum(), 1.0)
+
+
+def test_default_initializer_prefers_explicit_user_init():
+    E, K = 2, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+
+    user_init = EquilibriumInit(
+        ln_nk=jnp.full((K,), 0.3, dtype=jnp.float32),
+        ln_ntot=jnp.asarray(0.7, dtype=jnp.float32),
+    )
+    previous_solution = EquilibriumInit(
+        ln_nk=jnp.full((K,), 9.0, dtype=jnp.float32),
+        ln_ntot=jnp.asarray(10.0, dtype=jnp.float32),
+    )
+
+    init = DefaultEquilibriumInitializer()(
+        EquilibriumInitRequest(
+            setup=setup,
+            T=800.0,
+            P=0.1,
+            b=b,
+            K=K,
+            user_init=user_init,
+            previous_solution=previous_solution,
+        )
+    )
+
+    assert jnp.allclose(init.ln_nk, user_init.ln_nk)
+    assert jnp.allclose(init.ln_ntot, user_init.ln_ntot)
+
+
+def test_grid_initializer_returns_interpolated_equilibrium_init_for_explicit_metallicity(monkeypatch):
+    E, K = 2, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A, elements=("E1", "E2"))
+    setup.species = ("S1", "S2", "S3", "S4")
+    setup.metadata = {"source": "fastchem v3.1.3", "dataset": "gas"}
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    request = EquilibriumInitRequest(
+        setup=setup,
+        T=800.0,
+        P=0.1,
+        b=b,
+        K=K,
+        explicit_log10_z_over_z_sun=0.0,
+    )
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([800.0]),
+        pressure_axis=jnp.asarray([0.1]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.asarray([[[[0.1, 0.2, 0.3, 0.4]]]], dtype=jnp.float32),
+            n=jnp.ones((1, 1, 1, K)),
+            x=jnp.full((1, 1, 1, K), 0.25),
+            ntot=jnp.asarray([[[2.5]]], dtype=jnp.float32),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "fastchem v3.1.3", "dataset": "gas"},
+            preset_elements=("E1", "E2"),
+            preset_species=("S1", "S2", "S3", "S4"),
+            source="fastchem",
+        ),
+    )
+
+    captured = {}
+
+    class FakeInterpolationResult:
+        def to_equilibrium_init(self):
+            return EquilibriumInit(
+                ln_nk=jnp.asarray([0.1, 0.2, 0.3, 0.4], dtype=jnp.float32),
+                ln_ntot=jnp.asarray(0.9, dtype=jnp.float32),
+            )
+
+    def stub_interpolate_equilibrium_grid(grid_in, temperature, pressure, log10_z_over_z_sun, *, options=None):
+        captured["grid"] = grid_in
+        captured["temperature"] = temperature
+        captured["pressure"] = pressure
+        captured["log10_z_over_z_sun"] = log10_z_over_z_sun
+        captured["options"] = options
+        return FakeInterpolationResult()
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium_grid.interpolate_equilibrium_grid",
+        stub_interpolate_equilibrium_grid,
+        raising=True,
+    )
+
+    init = GridEquilibriumInitializer(grid=grid, preset_name="fake")(request)
+
+    assert captured["grid"] is grid
+    assert captured["temperature"] == 800.0
+    assert captured["pressure"] == 0.1
+    assert captured["log10_z_over_z_sun"] == 0.0
+    assert captured["options"] is None
+    assert jnp.allclose(init.ln_nk, jnp.asarray([0.1, 0.2, 0.3, 0.4], dtype=jnp.float32))
+    assert jnp.isclose(init.ln_ntot, jnp.asarray(0.9, dtype=jnp.float32))
+
+
+def test_grid_initializer_infers_metallicity_from_b_when_explicit_value_is_absent(monkeypatch):
+    E, K = 4, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]], dtype=jnp.float32)
+    setup = FakeSetup(A, elements=("H", "He", "O", "e-"))
+    setup.species = ("S1", "S2", "S3", "S4")
+    setup.metadata = {"source": "fastchem v3.1.3", "dataset": "gas"}
+    setup.element_vector_reference = jnp.asarray([1.0, 0.1, 0.01, 1.0e-8], dtype=jnp.float32)
+    b = jnp.asarray([1.0, 0.1, 0.02, 0.0], dtype=jnp.float32)
+    request = EquilibriumInitRequest(setup=setup, T=800.0, P=0.1, b=b, K=K)
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([800.0]),
+        pressure_axis=jnp.asarray([0.1]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.zeros((1, 1, 1, K)),
+            n=jnp.ones((1, 1, 1, K)),
+            x=jnp.full((1, 1, 1, K), 0.25),
+            ntot=jnp.ones((1, 1, 1)),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "fastchem v3.1.3", "dataset": "gas"},
+            preset_elements=("H", "He", "O", "e-"),
+            preset_species=("S1", "S2", "S3", "S4"),
+            source="fastchem",
+        ),
+    )
+
+    captured = {}
+
+    class FakeInterpolationResult:
+        def to_equilibrium_init(self):
+            return EquilibriumInit(
+                ln_nk=jnp.asarray([0.4, 0.3, 0.2, 0.1], dtype=jnp.float32),
+                ln_ntot=jnp.asarray(1.1, dtype=jnp.float32),
+            )
+
+    def stub_interpolate_equilibrium_grid(grid_in, temperature, pressure, log10_z_over_z_sun, *, options=None):
+        captured["grid"] = grid_in
+        captured["temperature"] = temperature
+        captured["pressure"] = pressure
+        captured["log10_z_over_z_sun"] = log10_z_over_z_sun
+        captured["options"] = options
+        return FakeInterpolationResult()
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium_grid.interpolate_equilibrium_grid",
+        stub_interpolate_equilibrium_grid,
+        raising=True,
+    )
+
+    init = GridEquilibriumInitializer(grid=grid, preset_name="fake")(request)
+
+    assert captured["grid"] is grid
+    assert captured["temperature"] == 800.0
+    assert captured["pressure"] == 0.1
+    assert jnp.isclose(
+        captured["log10_z_over_z_sun"],
+        eqgridmod.compute_physical_log10_z_over_z_sun(setup, b),
+        rtol=1.0e-6,
+    )
+    assert captured["options"] is None
+    assert jnp.allclose(init.ln_nk, jnp.asarray([0.4, 0.3, 0.2, 0.1], dtype=jnp.float32))
+    assert jnp.isclose(init.ln_ntot, jnp.asarray(1.1, dtype=jnp.float32))
+
+
+def test_grid_initializer_raises_clear_error_when_inferred_metallicity_is_invalid():
+    E, K = 4, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]], dtype=jnp.float32)
+    setup = FakeSetup(A, elements=("H", "He", "O", "e-"))
+    setup.species = ("S1", "S2", "S3", "S4")
+    setup.metadata = {"source": "fastchem v3.1.3", "dataset": "gas"}
+    setup.element_vector_reference = jnp.asarray([1.0, 0.1, 0.01, 1.0e-8], dtype=jnp.float32)
+    b = jnp.asarray([1.0, 0.1, 0.0, 0.0], dtype=jnp.float32)
+    request = EquilibriumInitRequest(setup=setup, T=800.0, P=0.1, b=b, K=K)
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([800.0]),
+        pressure_axis=jnp.asarray([0.1]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.zeros((1, 1, 1, K)),
+            n=jnp.ones((1, 1, 1, K)),
+            x=jnp.full((1, 1, 1, K), 0.25),
+            ntot=jnp.ones((1, 1, 1)),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "fastchem v3.1.3", "dataset": "gas"},
+            preset_elements=("H", "He", "O", "e-"),
+            preset_species=("S1", "S2", "S3", "S4"),
+            source="fastchem",
+        ),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="could not infer physical log10\\(Z/Zsun\\) from request\\.b: .*Z <= 0",
+    ):
+        GridEquilibriumInitializer(grid=grid, preset_name="fake")(request)
+
+
+def test_grid_initializer_raises_validation_error_on_incompatible_grid():
+    E, K = 2, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A, elements=("E1", "E2"))
+    setup.species = ("S1", "S2", "S3", "S4")
+    setup.metadata = {"source": "fastchem v3.1.3", "dataset": "gas"}
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    request = EquilibriumInitRequest(setup=setup, T=800.0, P=0.1, b=b, K=K)
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([800.0]),
+        pressure_axis=jnp.asarray([0.1]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.zeros((1, 1, 1, K)),
+            n=jnp.ones((1, 1, 1, K)),
+            x=jnp.full((1, 1, 1, K), 0.25),
+            ntot=jnp.ones((1, 1, 1)),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "fastchem v3.1.3", "dataset": "gas"},
+            preset_elements=("E1", "E2"),
+            preset_species=("S1", "S2", "S3"),
+            source="fastchem",
+        ),
+    )
+
+    with pytest.raises(ValueError, match="species mismatch"):
+        GridEquilibriumInitializer(grid=grid, preset_name="fake")(request)
+
+
+def test_learned_initializer_placeholder_raises_not_implemented():
+    E, K = 2, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    request = EquilibriumInitRequest(setup=setup, T=800.0, P=0.1, b=b, K=K)
+
+    with pytest.raises(NotImplementedError, match="LearnedEquilibriumInitializer is not implemented yet."):
+        LearnedEquilibriumInitializer()(request)
+
+
+def test_equilibrium_uses_custom_initializer(monkeypatch):
+    E, K = 2, 4
+    A = jnp.array([[1, 1, 0, 0], [0, 0, 1, 1]], dtype=jnp.float32)
+    setup = FakeSetup(A)
+
+    captured = {}
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        captured["ln_nk0"] = ln_nk0
+        captured["ln_ntot0"] = ln_ntot0
+        return ln_nk0
+
+    class FixedInitializer:
+        def __call__(self, request):
+            captured["request"] = request
+            return EquilibriumInit(
+                ln_nk=jnp.full((K,), 0.5, dtype=jnp.float32),
+                ln_ntot=jnp.asarray(1.5, dtype=jnp.float32),
+            )
+
+    monkeypatch.setattr("exogibbs.api.equilibrium.minimize_gibbs", stub_minimize_gibbs, raising=True)
+
+    b = jnp.array([1.0, 1.0], dtype=jnp.float32)
+    out = eqmod.equilibrium(
+        setup,
+        T=800.0,
+        P=0.1,
+        b=b,
+        initializer=FixedInitializer(),
+        options=EquilibriumOptions(),
+    )
+
+    assert captured["request"].T == 800.0
+    assert captured["request"].P == 0.1
+    assert captured["request"].previous_solution is None
+    assert jnp.allclose(captured["ln_nk0"], 0.5)
+    assert jnp.allclose(captured["ln_ntot0"], 1.5)
+
+
+def test_equilibrium_uses_grid_initializer_with_inferred_metallicity(monkeypatch):
+    E, K = 4, 4
+    A = jnp.array(
+        [[1, 1, 0, 0], [0, 0, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]],
+        dtype=jnp.float32,
+    )
+    setup = FakeSetup(A, elements=("H", "He", "O", "e-"))
+    setup.species = ("S1", "S2", "S3", "S4")
+    setup.metadata = {"source": "fastchem v3.1.3", "dataset": "gas"}
+    setup.element_vector_reference = jnp.asarray([1.0, 0.1, 0.01, 1.0e-8], dtype=jnp.float32)
+
+    b = jnp.asarray([1.0, 0.1, 0.02, 0.0], dtype=jnp.float32)
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([800.0]),
+        pressure_axis=jnp.asarray([0.1]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.zeros((1, 1, 1, K)),
+            n=jnp.ones((1, 1, 1, K)),
+            x=jnp.full((1, 1, 1, K), 0.25),
+            ntot=jnp.ones((1, 1, 1)),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "fastchem v3.1.3", "dataset": "gas"},
+            preset_elements=("H", "He", "O", "e-"),
+            preset_species=("S1", "S2", "S3", "S4"),
+            source="fastchem",
+        ),
+    )
+
+    captured = {}
+
+    class FakeInterpolationResult:
+        def to_equilibrium_init(self):
+            return EquilibriumInit(
+                ln_nk=jnp.full((K,), 0.25, dtype=jnp.float32),
+                ln_ntot=jnp.asarray(1.75, dtype=jnp.float32),
+            )
+
+    def stub_interpolate_equilibrium_grid(grid_in, temperature, pressure, log10_z_over_z_sun, *, options=None):
+        captured["grid"] = grid_in
+        captured["temperature"] = temperature
+        captured["pressure"] = pressure
+        captured["log10_z_over_z_sun"] = log10_z_over_z_sun
+        return FakeInterpolationResult()
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        captured["ln_nk0"] = ln_nk0
+        captured["ln_ntot0"] = ln_ntot0
+        return ln_nk0
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium_grid.interpolate_equilibrium_grid",
+        stub_interpolate_equilibrium_grid,
+        raising=True,
+    )
+    monkeypatch.setattr("exogibbs.api.equilibrium.minimize_gibbs", stub_minimize_gibbs, raising=True)
+
+    out = eqmod.equilibrium(
+        setup,
+        T=800.0,
+        P=0.1,
+        b=b,
+        initializer=GridEquilibriumInitializer(grid=grid, preset_name="fake"),
+        options=EquilibriumOptions(),
+    )
+
+    assert captured["grid"] is grid
+    assert captured["temperature"] == 800.0
+    assert captured["pressure"] == 0.1
+    assert jnp.isclose(
+        captured["log10_z_over_z_sun"],
+        eqgridmod.compute_physical_log10_z_over_z_sun(setup, b),
+        rtol=1.0e-6,
+    )
+    assert jnp.allclose(captured["ln_nk0"], 0.25)
+    assert jnp.isclose(captured["ln_ntot0"], 1.75)
+    assert out.ln_n.shape == (K,)
+    assert out.ntot.shape == ()
+    assert out.x.shape == (K,)
     assert jnp.isclose(out.x.sum(), 1.0)
 
 
