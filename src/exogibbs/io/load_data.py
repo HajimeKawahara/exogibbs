@@ -10,6 +10,10 @@ from typing import Dict, Optional
 DATA_DIR = "data/"
 JANAF_NAME_KEY = "JANAF"  # key for JANAF name in the molecule names file
 JANAF_SAMPLE = "test/janaf_raw_sample.txt"
+_DEFAULT_EQUILIBRIUM_GRID_FILES = {
+    "fastchem": "grids/fastchem/grid_exogibbs.nc",
+    "fastchem_extended": "grids/fastchem_extended/grid_exogibbs_extended.nc",
+}
 
 
 def get_data_filepath(filename):
@@ -28,6 +32,23 @@ def get_data_filepath(filename):
     return files("exogibbs").joinpath(DATA_DIR + filename)
 
 
+def get_default_equilibrium_grid_path(kind: str) -> Path:
+    """Return the installed-package path to a packaged default equilibrium grid."""
+    try:
+        relative_path = _DEFAULT_EQUILIBRIUM_GRID_FILES[kind]
+    except KeyError as exc:
+        supported = ", ".join(sorted(_DEFAULT_EQUILIBRIUM_GRID_FILES))
+        raise ValueError(
+            f"Unknown default equilibrium grid kind '{kind}'. Expected one of: {supported}."
+        ) from exc
+
+    resource = get_data_filepath(relative_path)
+    grid_path = Path(resource)
+    if not grid_path.is_file():
+        raise FileNotFoundError(
+            f"Packaged default equilibrium grid '{kind}' is missing: {grid_path}"
+        )
+    return grid_path
 
 
 def load_JANAF_rawtxt(filename):

@@ -68,11 +68,15 @@ nsol_vector = jnp.array(
     [solar_abundance[el] for el in chem.elements[:-1]]
 )  # no solar abundance for e-
 element_vector = jnp.append(nsol_vector, 0.0)
+<<<<<<< HEAD
 opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
 
 from time import time
 
 start_time = time()
+=======
+opts = EquilibriumOptions(epsilon_crit=1e-10, max_iter=1000)
+>>>>>>> 238633341c1381f87dac3fd5147210829208e028
 res = equilibrium_profile(
     chem,
     temperature,
