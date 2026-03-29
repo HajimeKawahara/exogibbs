@@ -114,7 +114,7 @@ print(formula_matrix_cond_eff)
 # In[5]:
 
 
-from exogibbs.optimize.pipm_rgie_cond import minimize_gibbs_cond_core
+from exogibbs.optimize.pipm_rgie_cond import minimize_gibbs_cond_with_diagnostics
 import jax.numpy as jnp
 from exogibbs.api.chemistry import ThermoState
 
@@ -176,7 +176,7 @@ def minimize_gibbs_cond(
         epsilon = epsilons[i]
         rcrit = jnp.exp(epsilon)
 
-        ln_nk, ln_mk, ln_ntot, _ = minimize_gibbs_cond_core(
+        ln_nk, ln_mk, ln_ntot, diagnostics = minimize_gibbs_cond_with_diagnostics(
             thermo_state,
             ln_nk_init=ln_nk,
             ln_mk_init=ln_mk,
@@ -190,6 +190,7 @@ def minimize_gibbs_cond(
             max_iter=100,
         )
 
+        _ = diagnostics
         return (ln_nk, ln_mk, ln_ntot)
 
     ln_nk, ln_mk, ln_ntot = lax.fori_loop(
@@ -200,6 +201,35 @@ def minimize_gibbs_cond(
     )
 
     return ln_nk, ln_mk, ln_ntot
+
+
+def minimize_gibbs_cond_diagnostics(
+    temperature,
+    ln_normalized_pressure,
+    ln_nk_init,
+    ln_mk_init,
+    ln_ntot_init,
+):
+    thermo_state = ThermoState(
+        temperature=temperature,
+        ln_normalized_pressure=ln_normalized_pressure,
+        element_vector=b_ref,
+    )
+    epsilon = jnp.asarray(-40.0)
+    residual_crit = jnp.exp(epsilon)
+    return minimize_gibbs_cond_with_diagnostics(
+        thermo_state,
+        ln_nk_init=ln_nk_init,
+        ln_mk_init=ln_mk_init,
+        ln_ntot_init=ln_ntot_init,
+        formula_matrix=formula_matrix_gas_eff,
+        formula_matrix_cond=formula_matrix_cond_eff,
+        hvector_func=gas.hvector_func,
+        hvector_cond_func=cond.hvector_func,
+        epsilon=epsilon,
+        residual_crit=residual_crit,
+        max_iter=100,
+    )
 
 from jax import vmap
 from jax import jit
@@ -245,6 +275,14 @@ ln_nk, ln_mk, ln_ntot = jit_vmap_minimize_gibbs_cond(
 )
 end = time.time()
 print("Computation time (s):", end - start)
+_, _, _, profile_diag0 = minimize_gibbs_cond_diagnostics(
+    jnp.array(temperatures)[0],
+    jnp.array(ln_normalized_pressures)[0],
+    ln_nk_init[0],
+    ln_mk_init[0],
+    ln_ntot_init[0],
+)
+print("Layer-0 condensate diagnostics:", profile_diag0)
 
 ln_ntot = logsumexp(ln_nk, axis=1)[:, None]
 

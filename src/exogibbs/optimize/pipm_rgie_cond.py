@@ -3,7 +3,7 @@ from jax import debug as jdebug
 from jax.lax import while_loop
 from jax.lax import cond
 from jax.scipy.linalg import lu_factor, lu_solve
-from typing import Tuple, Optional
+from typing import Dict, Tuple, Optional
 
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _A_diagn_At
@@ -287,7 +287,127 @@ def _update_all(
     )
     if debug_nan:
         _debug_array("residual", jnp.array([residual]), iter_count)
-    return ln_nk, ln_mk, ln_ntot, gk, An, Am, residual
+    return ln_nk, ln_mk, ln_ntot, gk, An, Am, residual, lam
+
+
+def _contains_invalid_numbers(*arrays) -> jnp.ndarray:
+    invalid_flags = []
+    for array in arrays:
+        arr = jnp.asarray(array)
+        invalid_flags.append(jnp.any(jnp.isnan(arr) | jnp.isinf(arr)))
+    return jnp.any(jnp.stack(invalid_flags))
+
+
+def _minimize_gibbs_cond_core_impl(
+    state: ThermoState,
+    ln_nk_init: jnp.ndarray,
+    ln_mk_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    epsilon: float,
+    residual_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+    element_indices: Optional[jnp.ndarray] = None,
+    debug_nan: bool = False,
+) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
+    """Shared implementation for condensate solves and diagnostics wrappers."""
+
+    n_elements = formula_matrix.shape[0]
+    if formula_matrix_cond.shape[0] != n_elements:
+        raise ValueError(
+            "formula_matrix and formula_matrix_cond must have the same number of element rows."
+        )
+
+    b = (
+        jnp.asarray(state.element_vector)
+        if element_indices is None
+        else jnp.asarray(state.element_vector)[jnp.asarray(element_indices)]
+    )
+    if b.shape[0] != n_elements:
+        raise ValueError(
+            "ThermoState.element_vector length does not match the number of element rows "
+            f"in the formula matrices (got {b.shape[0]}, expected {n_elements}). "
+            "Provide element_indices that map the state vector onto the reduced element set."
+        )
+
+    hvector = hvector_func(state.temperature)
+    hvector_cond = hvector_cond_func(state.temperature)
+
+    def cond_fun(carry):
+        *_, residual, counter, _last_step_size = carry
+        return (residual > residual_crit) & (counter < max_iter)
+
+    def body_fun(carry):
+        ln_nk, ln_mk, ln_ntot, gk, An, Am, residual, counter, _last_step_size = carry
+        (
+            ln_nk_new,
+            ln_mk_new,
+            ln_ntot_new,
+            gk,
+            An,
+            Am,
+            residual,
+            last_step_size,
+        ) = _update_all(
+            ln_nk,
+            ln_mk,
+            ln_ntot,
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            state.temperature,
+            state.ln_normalized_pressure,
+            hvector,
+            hvector_cond,
+            gk,
+            An,
+            Am,
+            epsilon,
+            counter,
+            debug_nan,
+        )
+        return (
+            ln_nk_new,
+            ln_mk_new,
+            ln_ntot_new,
+            gk,
+            An,
+            Am,
+            residual,
+            counter + 1,
+            last_step_size,
+        )
+
+    gk = _compute_gk(
+        state.temperature,
+        ln_nk_init,
+        ln_ntot_init,
+        hvector,
+        state.ln_normalized_pressure,
+    )
+    An_in = formula_matrix @ jnp.exp(ln_nk_init)
+    Am_in = formula_matrix_cond @ jnp.exp(ln_mk_init)
+    init_last_step_size = jnp.asarray(0.0, dtype=ln_nk_init.dtype)
+
+    ln_nk, ln_mk, ln_ntot, _gk, _An, _Am, residual, counter, last_step_size = while_loop(
+        cond_fun,
+        body_fun,
+        (
+            ln_nk_init,
+            ln_mk_init,
+            ln_ntot_init,
+            gk,
+            An_in,
+            Am_in,
+            jnp.inf,
+            0,
+            init_last_step_size,
+        ),
+    )
+    return ln_nk, ln_mk, ln_ntot, counter, residual, last_step_size
 
 
 def minimize_gibbs_cond_core(
@@ -328,75 +448,79 @@ def minimize_gibbs_cond_core(
             - Number of iterations performed.
     """
 
-    n_elements = formula_matrix.shape[0]
-    if formula_matrix_cond.shape[0] != n_elements:
-        raise ValueError(
-            "formula_matrix and formula_matrix_cond must have the same number of element rows."
-        )
-
-    b = (
-        jnp.asarray(state.element_vector)
-        if element_indices is None
-        else jnp.asarray(state.element_vector)[jnp.asarray(element_indices)]
-    )
-    if b.shape[0] != n_elements:
-        raise ValueError(
-            "ThermoState.element_vector length does not match the number of element rows "
-            f"in the formula matrices (got {b.shape[0]}, expected {n_elements}). "
-            "Provide element_indices that map the state vector onto the reduced element set."
-        )
-
-    hvector = hvector_func(state.temperature)
-    hvector_cond = hvector_cond_func(state.temperature)
-
-    def cond_fun(carry):
-        *_, residual, counter = carry
-        return (residual > residual_crit) & (counter < max_iter)
-
-    def body_fun(carry):
-        ln_nk, ln_mk, ln_ntot, gk, An, Am, residual, counter = carry
-        ln_nk_new, ln_mk_new, ln_ntot_new, gk, An, Am, residual = _update_all(
-            ln_nk,
-            ln_mk,
-            ln_ntot,
-            formula_matrix,
-            formula_matrix_cond,
-            b,
-            state.temperature,
-            state.ln_normalized_pressure,
-            hvector,
-            hvector_cond,
-            gk,
-            An,
-            Am,
-            epsilon,
-            counter,
-            debug_nan,
-        )
-        return (
-            ln_nk_new,
-            ln_mk_new,
-            ln_ntot_new,
-            gk,
-            An,
-            Am,
-            residual,
-            counter + 1,
-        )
-
-    gk = _compute_gk(
-        state.temperature,
+    ln_nk, ln_mk, ln_ntot, counter, _residual, _last_step_size = _minimize_gibbs_cond_core_impl(
+        state,
         ln_nk_init,
+        ln_mk_init,
         ln_ntot_init,
-        hvector,
-        state.ln_normalized_pressure,
-    )
-    An_in = formula_matrix @ jnp.exp(ln_nk_init)
-    Am_in = formula_matrix_cond @ jnp.exp(ln_mk_init)
-
-    ln_nk, ln_mk, ln_ntot, gk, Am, An, residual, counter = while_loop(
-        cond_fun,
-        body_fun,
-        (ln_nk_init, ln_mk_init, ln_ntot_init, gk, An_in, Am_in, jnp.inf, 0),
+        formula_matrix,
+        formula_matrix_cond,
+        hvector_func,
+        hvector_cond_func,
+        epsilon,
+        residual_crit=residual_crit,
+        max_iter=max_iter,
+        element_indices=element_indices,
+        debug_nan=debug_nan,
     )
     return ln_nk, ln_mk, ln_ntot, counter
+
+
+def minimize_gibbs_cond_with_diagnostics(
+    state: ThermoState,
+    ln_nk_init: jnp.ndarray,
+    ln_mk_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    epsilon: float,
+    residual_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+    element_indices: Optional[jnp.ndarray] = None,
+    debug_nan: bool = False,
+) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, Dict[str, jnp.ndarray]]:
+    """Run the active condensate solver and return lightweight convergence diagnostics."""
+
+    ln_nk, ln_mk, ln_ntot, n_iter, final_residual, last_step_size = _minimize_gibbs_cond_core_impl(
+        state,
+        ln_nk_init,
+        ln_mk_init,
+        ln_ntot_init,
+        formula_matrix,
+        formula_matrix_cond,
+        hvector_func,
+        hvector_cond_func,
+        epsilon,
+        residual_crit=residual_crit,
+        max_iter=max_iter,
+        element_indices=element_indices,
+        debug_nan=debug_nan,
+    )
+
+    residual_crit_used = jnp.asarray(residual_crit, dtype=final_residual.dtype)
+    max_iter_used = jnp.asarray(max_iter, dtype=n_iter.dtype)
+    epsilon_used = jnp.asarray(epsilon, dtype=final_residual.dtype)
+    converged = final_residual <= residual_crit_used
+    hit_max_iter = (n_iter >= max_iter_used) & (~converged)
+    invalid_numbers_detected = _contains_invalid_numbers(
+        ln_nk,
+        ln_mk,
+        ln_ntot,
+        last_step_size,
+    )
+
+    diagnostics = {
+        "n_iter": n_iter,
+        "converged": converged,
+        "hit_max_iter": hit_max_iter,
+        "final_residual": final_residual,
+        "residual_crit": residual_crit_used,
+        "max_iter": max_iter_used,
+        "epsilon": epsilon_used,
+        "final_step_size": last_step_size,
+        "invalid_numbers_detected": invalid_numbers_detected,
+        "debug_nan": jnp.asarray(debug_nan),
+    }
+    return ln_nk, ln_mk, ln_ntot, diagnostics
