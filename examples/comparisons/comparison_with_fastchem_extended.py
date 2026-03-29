@@ -66,7 +66,7 @@ for el in chem.elements[:-1]:
         print("no info on " ,el, "solar abundance. set",na_value)
 nsol_vector = jnp.array([nsol_vector])  # no solar abundance for e-
 element_vector = jnp.append(nsol_vector, 0.0)
-opts = EquilibriumOptions(epsilon_crit=1e-14, max_iter=10000)
+opts = EquilibriumOptions(epsilon_crit=1e-12, max_iter=2000)
 
 import time
 start_time = time.time()
