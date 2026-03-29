@@ -93,6 +93,7 @@ print(formula_matrix_cond_eff)
 
 
 from exogibbs.optimize.pipm_rgie_cond import minimize_gibbs_cond_core
+from exogibbs.optimize.pipm_rgie_cond import minimize_gibbs_cond_with_diagnostics
 import jax.numpy as jnp
 from exogibbs.api.chemistry import ThermoState
 
@@ -153,12 +154,8 @@ thermo_state = ThermoState(
 )
 
 
-def pipm_fori_body(i, state):
-    ln_nk, ln_mk, ln_ntot = state
-    epsilon = epsilons[i]
-    rcrit = jnp.exp(epsilon)
-
-    ln_nk, ln_mk, ln_ntot, _ = minimize_gibbs_cond_core(
+def run_condensate_step(ln_nk, ln_mk, ln_ntot, epsilon, residual_crit):
+    return minimize_gibbs_cond_with_diagnostics(
         thermo_state,
         ln_nk_init=ln_nk,
         ln_mk_init=ln_mk,
@@ -168,11 +165,22 @@ def pipm_fori_body(i, state):
         hvector_func=gas.hvector_func,
         hvector_cond_func=cond.hvector_func,
         epsilon=epsilon,
-        residual_crit=rcrit,
+        residual_crit=residual_crit,
         max_iter=100,
         debug_nan=False,
     )
 
+
+def pipm_fori_body(i, state):
+    ln_nk, ln_mk, ln_ntot = state
+    epsilon = epsilons[i]
+    rcrit = jnp.exp(epsilon)
+
+    ln_nk, ln_mk, ln_ntot, diagnostics = run_condensate_step(
+        ln_nk, ln_mk, ln_ntot, epsilon, rcrit
+    )
+
+    _ = diagnostics
     return (ln_nk, ln_mk, ln_ntot)
 
 
@@ -183,8 +191,15 @@ ln_nk, ln_mk, ln_ntot = lax.fori_loop(
     (ln_nk, ln_mk, ln_ntot),
 )
 
+final_epsilon = epsilons[-1]
+final_rcrit = jnp.exp(final_epsilon)
+_, _, _, diagnostics = run_condensate_step(
+    ln_nk, ln_mk, ln_ntot, final_epsilon, final_rcrit
+)
+
 vmr_exogibbs = np.exp(ln_nk[29:])/np.sum(np.exp(ln_nk))
 print(ln_nk)
+print("Final condensate diagnostics:", diagnostics)
 #print(vmr_exogibbs)
 
 
