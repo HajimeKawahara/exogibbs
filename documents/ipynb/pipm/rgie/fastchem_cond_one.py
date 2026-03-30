@@ -93,7 +93,8 @@ print(formula_matrix_cond_eff)
 
 
 from exogibbs.optimize.pipm_rgie_cond import minimize_gibbs_cond_core
-from exogibbs.optimize.pipm_rgie_cond import minimize_gibbs_cond_with_diagnostics
+from exogibbs.optimize.minimize_cond import CondensateEquilibriumInit
+from exogibbs.optimize.minimize_cond import minimize_gibbs_cond as structured_minimize_gibbs_cond
 import jax.numpy as jnp
 from exogibbs.api.chemistry import ThermoState
 
@@ -154,12 +155,10 @@ thermo_state = ThermoState(
 )
 
 
-def run_condensate_step(ln_nk, ln_mk, ln_ntot, epsilon, residual_crit):
-    return minimize_gibbs_cond_with_diagnostics(
+def run_condensate_step(init, epsilon, residual_crit):
+    return structured_minimize_gibbs_cond(
         thermo_state,
-        ln_nk_init=ln_nk,
-        ln_mk_init=ln_mk,
-        ln_ntot_init=ln_ntot,
+        init=init,
         formula_matrix=formula_matrix_gas_eff,
         formula_matrix_cond=formula_matrix_cond_eff,
         hvector_func=gas.hvector_func,
@@ -171,31 +170,34 @@ def run_condensate_step(ln_nk, ln_mk, ln_ntot, epsilon, residual_crit):
     )
 
 
-def pipm_fori_body(i, state):
-    ln_nk, ln_mk, ln_ntot = state
+init = CondensateEquilibriumInit(
+    ln_nk=ln_nk,
+    ln_mk=ln_mk,
+    ln_ntot=ln_ntot,
+)
+
+
+def pipm_fori_body(i, init_state):
     epsilon = epsilons[i]
     rcrit = jnp.exp(epsilon)
-
-    ln_nk, ln_mk, ln_ntot, diagnostics = run_condensate_step(
-        ln_nk, ln_mk, ln_ntot, epsilon, rcrit
-    )
-
-    _ = diagnostics
-    return (ln_nk, ln_mk, ln_ntot)
+    result = run_condensate_step(init_state, epsilon, rcrit)
+    return result.to_init()
 
 
-ln_nk, ln_mk, ln_ntot = lax.fori_loop(
+final_init = lax.fori_loop(
     0,
     n_step,
     pipm_fori_body,
-    (ln_nk, ln_mk, ln_ntot),
+    init,
 )
 
 final_epsilon = epsilons[-1]
 final_rcrit = jnp.exp(final_epsilon)
-_, _, _, diagnostics = run_condensate_step(
-    ln_nk, ln_mk, ln_ntot, final_epsilon, final_rcrit
-)
+final_result = run_condensate_step(final_init, final_epsilon, final_rcrit)
+ln_nk = final_result.ln_nk
+ln_mk = final_result.ln_mk
+ln_ntot = final_result.ln_ntot
+diagnostics = final_result.diagnostics.asdict()
 
 vmr_exogibbs = np.exp(ln_nk[29:])/np.sum(np.exp(ln_nk))
 print(ln_nk)
