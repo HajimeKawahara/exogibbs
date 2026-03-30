@@ -116,6 +116,7 @@ print(formula_matrix_cond_eff)
 
 from exogibbs.optimize.minimize_cond import CondensateEquilibriumInit
 from exogibbs.optimize.minimize_cond import minimize_gibbs_cond as structured_minimize_gibbs_cond
+from exogibbs.optimize.minimize_cond import minimize_gibbs_cond_profile
 import jax.numpy as jnp
 from exogibbs.api.chemistry import ThermoState
 
@@ -140,69 +141,10 @@ if N != vmr_ref.shape[1]:
 print("Set up complete.")
 
 import jax.numpy as jnp
-from jax import lax, vmap
 from jax.scipy.special import logsumexp
 
 init_setup = "gas_only"  # "zeros" or "gas_only"
-
-
-def minimize_gibbs_cond_layer(
-    temperature,
-    ln_normalized_pressure,
-    ln_nk_init,
-    ln_mk_init,
-    ln_ntot_init,
-):
-    thermo_state = ThermoState(
-        temperature=temperature,
-        ln_normalized_pressure=ln_normalized_pressure,
-        element_vector=b_ref,
-    )
-
-    ln_nk = ln_nk_init
-    ln_mk = ln_mk_init
-    ln_ntot = ln_ntot_init
-
-    epsilon_start = 0.0
-    epsilon_crit = -40.0
-    n_step = 100
-
-    # epsilon schedule (static, safe)
-    epsilons = jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:]
-
-
-    def body_fn(i, state):
-        ln_nk, ln_mk, ln_ntot = state
-
-        epsilon = epsilons[i]
-        rcrit = jnp.exp(epsilon)
-
-        result = structured_minimize_gibbs_cond(
-            thermo_state,
-            init=CondensateEquilibriumInit(
-                ln_nk=ln_nk,
-                ln_mk=ln_mk,
-                ln_ntot=ln_ntot,
-            ),
-            formula_matrix=formula_matrix_gas_eff,
-            formula_matrix_cond=formula_matrix_cond_eff,
-            hvector_func=gas.hvector_func,
-            hvector_cond_func=cond.hvector_func,
-            epsilon=epsilon,
-            residual_crit=rcrit,
-            max_iter=100,
-        )
-
-        return result.ln_nk, result.ln_mk, result.ln_ntot
-
-    ln_nk, ln_mk, ln_ntot = lax.fori_loop(
-        0,
-        n_step,
-        body_fn,
-        (ln_nk, ln_mk, ln_ntot),
-    )
-
-    return ln_nk, ln_mk, ln_ntot
+profile_method = "scan_hot_from_bottom"  # or "vmap_cold" or "scan_hot_from_top"
 
 
 def minimize_gibbs_cond_diagnostics(
@@ -235,10 +177,6 @@ def minimize_gibbs_cond_diagnostics(
         max_iter=100,
     )
 
-from jax import vmap
-from jax import jit
-
-
 if init_setup == "gas_only":
     from exogibbs.api.equilibrium import equilibrium
 
@@ -264,42 +202,37 @@ elif init_setup == "zeros":
 else:
     raise ValueError("Invalid init_setup option")
 
-def minimize_gibbs_cond(temperature, ln_normalized_pressure, ln_nk_init, ln_mk_init, ln_ntot_init):
-    result = minimize_gibbs_cond_layer(
-        temperature,
-        ln_normalized_pressure,
-        ln_nk_init,
-        ln_mk_init,
-        ln_ntot_init,
-    )
-    return result
-
-
-vmap_minimize_gibbs_cond = vmap(minimize_gibbs_cond, in_axes=(0, 0, 0, 0, 0))
-jit_vmap_minimize_gibbs_cond = jit(vmap_minimize_gibbs_cond)
-
 import time
 
 start = time.time()
-ln_nk, ln_mk, ln_ntot = jit_vmap_minimize_gibbs_cond(
+profile_result = minimize_gibbs_cond_profile(
     jnp.array(temperatures),
     jnp.array(ln_normalized_pressures),
-    ln_nk_init,
-    ln_mk_init,
-    ln_ntot_init,
+    b_ref,
+    init=CondensateEquilibriumInit(
+        ln_nk=ln_nk_init,
+        ln_mk=ln_mk_init,
+        ln_ntot=ln_ntot_init,
+    ),
+    formula_matrix=formula_matrix_gas_eff,
+    formula_matrix_cond=formula_matrix_cond_eff,
+    hvector_func=gas.hvector_func,
+    hvector_cond_func=cond.hvector_func,
+    epsilon_start=0.0,
+    epsilon_crit=-40.0,
+    n_step=100,
+    max_iter=100,
+    method=profile_method,
 )
 end = time.time()
 print("Computation time (s):", end - start)
-profile_result0 = minimize_gibbs_cond_diagnostics(
-    jnp.array(temperatures)[0],
-    jnp.array(ln_normalized_pressures)[0],
-    ln_nk_init[0],
-    ln_mk_init[0],
-    ln_ntot_init[0],
-)
-print("Layer-0 condensate diagnostics:", profile_result0.diagnostics.asdict())
+print("Profile solve method:", profile_method)
 
-ln_ntot = logsumexp(ln_nk, axis=1)[:, None]
+ln_nk = profile_result.ln_nk
+ln_mk = profile_result.ln_mk
+ln_ntot = profile_result.ln_ntot[:, None]
+profile_diagnostics = profile_result.diagnostics.asdict()
+print("Layer-0 condensate diagnostics:", {k: v[0] for k, v in profile_diagnostics.items()})
 
 # Gibbs energy
 from exogibbs.api.potential import gibbs_energies
