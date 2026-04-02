@@ -13,6 +13,12 @@ from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.stepsize import LOG_S_MAX
 from exogibbs.optimize.pdipm_cond import minimize_gibbs_cond_core
 from exogibbs.optimize.pipm_rgie_cond import (
+    diagnose_full_vs_reduced_gie_direction as _diagnose_full_vs_reduced_gie_direction_raw,
+    diagnose_pdipm_vs_pipm_direction as _diagnose_pdipm_vs_pipm_direction_raw,
+    diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories as _diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories_raw,
+    diagnose_reduced_solver_backend_experiments as _diagnose_reduced_solver_backend_experiments_raw,
+    diagnose_gas_step_limiter_and_direction as _diagnose_gas_step_limiter_and_direction_raw,
+    diagnose_iteration_lambda_trials as _diagnose_iteration_lambda_trials_raw,
     minimize_gibbs_cond_with_diagnostics as _minimize_gibbs_cond_with_diagnostics_raw,
 )
 
@@ -382,6 +388,9 @@ def _run_adaptive_condensate_layer_schedule(
     epsilon_guard_margin: float,
     min_epsilon_step: float,
     max_adaptive_schedule_steps: Optional[int],
+    reduced_solver: str,
+    regularization_mode: str,
+    regularization_strength: float,
     condensate_species: Optional[Sequence[str]] = None,
     top_k: int = 5,
 ):
@@ -467,6 +476,9 @@ def _run_adaptive_condensate_layer_schedule(
             max_iter=max_iter,
             element_indices=element_indices,
             debug_nan=debug_nan,
+            reduced_solver=reduced_solver,
+            regularization_mode=regularization_mode,
+            regularization_strength=regularization_strength,
         )
         current_init = last_result.to_init()
         current_epsilon = float(guarded_epsilon)
@@ -512,6 +524,9 @@ def _run_adaptive_condensate_layer_schedule(
             max_iter=max_iter,
             element_indices=element_indices,
             debug_nan=debug_nan,
+            reduced_solver=reduced_solver,
+            regularization_mode=regularization_mode,
+            regularization_strength=regularization_strength,
         )
         actual_final_epsilon = requested_epsilon
     else:
@@ -559,6 +574,9 @@ def minimize_gibbs_cond(
     max_iter: int = 1000,
     element_indices: Optional[jnp.ndarray] = None,
     debug_nan: bool = False,
+    reduced_solver: str = "augmented_lu_row_scaled",
+    regularization_mode: str = "none",
+    regularization_strength: float = 0.0,
 ) -> CondensateEquilibriumResult:
     """Run the active condensate solver using a structured init/result interface."""
 
@@ -577,6 +595,9 @@ def minimize_gibbs_cond(
         max_iter=max_iter,
         element_indices=element_indices,
         debug_nan=debug_nan,
+        reduced_solver=reduced_solver,
+        regularization_mode=regularization_mode,
+        regularization_strength=regularization_strength,
     )
     return CondensateEquilibriumResult(
         ln_nk=ln_nk,
@@ -613,6 +634,9 @@ def minimize_gibbs_cond_profile(
     epsilon_guard_margin: float = 1.0e-6,
     min_epsilon_step: float = 1.0e-6,
     max_adaptive_schedule_steps: Optional[int] = None,
+    reduced_solver: str = "augmented_lu_row_scaled",
+    regularization_mode: str = "none",
+    regularization_strength: float = 0.0,
 ) -> CondensateEquilibriumResult:
     """Run the condensate solver over a 1D profile with cold- or hot-start execution.
 
@@ -683,6 +707,9 @@ def minimize_gibbs_cond_profile(
                 epsilon_guard_margin=epsilon_guard_margin,
                 min_epsilon_step=min_epsilon_step,
                 max_adaptive_schedule_steps=max_adaptive_schedule_steps,
+                reduced_solver=reduced_solver,
+                regularization_mode=regularization_mode,
+                regularization_strength=regularization_strength,
             )
             return result
 
@@ -772,6 +799,9 @@ def minimize_gibbs_cond_profile(
                 max_iter=max_iter,
                 element_indices=element_indices,
                 debug_nan=debug_nan,
+                reduced_solver=reduced_solver,
+                regularization_mode=regularization_mode,
+                regularization_strength=regularization_strength,
             )
             return result.to_init()
 
@@ -796,6 +826,9 @@ def minimize_gibbs_cond_profile(
             max_iter=max_iter,
             element_indices=element_indices,
             debug_nan=debug_nan,
+            reduced_solver=reduced_solver,
+            regularization_mode=regularization_mode,
+            regularization_strength=regularization_strength,
         )
 
     if method == "vmap_cold":
@@ -883,6 +916,9 @@ def trace_adaptive_condensate_schedule(
     max_adaptive_schedule_steps: Optional[int] = None,
     condensate_species: Optional[Sequence[str]] = None,
     top_k: int = 5,
+    reduced_solver: str = "augmented_lu_row_scaled",
+    regularization_mode: str = "none",
+    regularization_strength: float = 0.0,
 ):
     """Trace the adaptive sk-guarded epsilon path for one layer."""
 
@@ -903,10 +939,233 @@ def trace_adaptive_condensate_schedule(
         epsilon_guard_margin=epsilon_guard_margin,
         min_epsilon_step=min_epsilon_step,
         max_adaptive_schedule_steps=max_adaptive_schedule_steps,
+        reduced_solver=reduced_solver,
+        regularization_mode=regularization_mode,
+        regularization_strength=regularization_strength,
         condensate_species=condensate_species,
         top_k=top_k,
     )
     return trace
+
+
+def trace_condensate_iteration_lambda_trials(
+    state: ThermoState,
+    init: CondensateEquilibriumInit,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    epsilon: float,
+    element_indices: Optional[jnp.ndarray] = None,
+    lambda_trials: Optional[Sequence[float]] = None,
+    lambda_multipliers: Sequence[float] = (1.0, 0.5, 0.2, 0.1, 0.05),
+    extra_lambda_trials: Sequence[float] = (1.0, 0.5, 0.2, 0.1, 0.05),
+    reduced_solver: str = "augmented_lu_row_scaled",
+    regularization_mode: str = "none",
+    regularization_strength: float = 0.0,
+):
+    """Diagnostic-only wrapper for trial lambdas along one fixed current direction."""
+
+    init_prepared = _prepare_condensate_init(init)
+    return _diagnose_iteration_lambda_trials_raw(
+        state,
+        ln_nk=init_prepared.ln_nk,
+        ln_mk=init_prepared.ln_mk,
+        ln_ntot=init_prepared.ln_ntot,
+        formula_matrix=formula_matrix,
+        formula_matrix_cond=formula_matrix_cond,
+        hvector_func=hvector_func,
+        hvector_cond_func=hvector_cond_func,
+        epsilon=epsilon,
+        element_indices=element_indices,
+        lambda_trials=lambda_trials,
+        lambda_multipliers=lambda_multipliers,
+        extra_lambda_trials=extra_lambda_trials,
+        reduced_solver=reduced_solver,
+        regularization_mode=regularization_mode,
+        regularization_strength=regularization_strength,
+    )
+
+
+def trace_condensate_gas_limiter_diagnostics(
+    state: ThermoState,
+    init: CondensateEquilibriumInit,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    epsilon: float,
+    element_indices: Optional[jnp.ndarray] = None,
+    gas_species_names: Optional[Sequence[str]] = None,
+    top_k: int = 10,
+    reduced_solver: str = "augmented_lu_row_scaled",
+    regularization_mode: str = "none",
+    regularization_strength: float = 0.0,
+):
+    """Diagnostic-only wrapper for gas limiter decomposition and direction comparison."""
+
+    init_prepared = _prepare_condensate_init(init)
+    return _diagnose_gas_step_limiter_and_direction_raw(
+        state,
+        ln_nk=init_prepared.ln_nk,
+        ln_mk=init_prepared.ln_mk,
+        ln_ntot=init_prepared.ln_ntot,
+        formula_matrix=formula_matrix,
+        formula_matrix_cond=formula_matrix_cond,
+        hvector_func=hvector_func,
+        hvector_cond_func=hvector_cond_func,
+        epsilon=epsilon,
+        element_indices=element_indices,
+        gas_species_names=gas_species_names,
+        top_k=top_k,
+        reduced_solver=reduced_solver,
+        regularization_mode=regularization_mode,
+        regularization_strength=regularization_strength,
+    )
+
+
+def trace_condensate_reduced_solver_backends(
+    state: ThermoState,
+    init: CondensateEquilibriumInit,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    epsilon: float,
+    element_indices: Optional[jnp.ndarray] = None,
+    backend_configs: Optional[Sequence[dict]] = None,
+):
+    """Diagnostic-only wrapper for one-step reduced-solver backend comparisons."""
+
+    init_prepared = _prepare_condensate_init(init)
+    return _diagnose_reduced_solver_backend_experiments_raw(
+        state,
+        ln_nk=init_prepared.ln_nk,
+        ln_mk=init_prepared.ln_mk,
+        ln_ntot=init_prepared.ln_ntot,
+        formula_matrix=formula_matrix,
+        formula_matrix_cond=formula_matrix_cond,
+        hvector_func=hvector_func,
+        hvector_cond_func=hvector_cond_func,
+        epsilon=epsilon,
+        element_indices=element_indices,
+        backend_configs=backend_configs,
+    )
+
+
+def trace_condensate_full_vs_reduced_gie_direction(
+    state: ThermoState,
+    init: CondensateEquilibriumInit,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    epsilon: float,
+    element_indices: Optional[jnp.ndarray] = None,
+    reduced_solver: str = "augmented_lu_row_scaled",
+    regularization_mode: str = "none",
+    regularization_strength: float = 0.0,
+):
+    """Diagnostic-only wrapper for one-state reduced-vs-full GIE direction comparisons."""
+
+    init_prepared = _prepare_condensate_init(init)
+    return _diagnose_full_vs_reduced_gie_direction_raw(
+        state,
+        ln_nk=init_prepared.ln_nk,
+        ln_mk=init_prepared.ln_mk,
+        ln_ntot=init_prepared.ln_ntot,
+        formula_matrix=formula_matrix,
+        formula_matrix_cond=formula_matrix_cond,
+        hvector_func=hvector_func,
+        hvector_cond_func=hvector_cond_func,
+        epsilon=epsilon,
+        element_indices=element_indices,
+        reduced_solver=reduced_solver,
+        regularization_mode=regularization_mode,
+        regularization_strength=regularization_strength,
+    )
+
+
+def trace_condensate_pdipm_vs_pipm_direction(
+    state: ThermoState,
+    init: CondensateEquilibriumInit,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    epsilon: float,
+    element_indices: Optional[jnp.ndarray] = None,
+    lambda_trials: Optional[Sequence[float]] = None,
+    reduced_solver: str = "augmented_lu_row_scaled",
+    regularization_mode: str = "none",
+    regularization_strength: float = 0.0,
+):
+    """Diagnostic-only wrapper for one-state PDIPM-vs-PIPM direction comparisons."""
+
+    init_prepared = _prepare_condensate_init(init)
+    return _diagnose_pdipm_vs_pipm_direction_raw(
+        state,
+        ln_nk=init_prepared.ln_nk,
+        ln_mk=init_prepared.ln_mk,
+        ln_ntot=init_prepared.ln_ntot,
+        formula_matrix=formula_matrix,
+        formula_matrix_cond=formula_matrix_cond,
+        hvector_func=hvector_func,
+        hvector_cond_func=hvector_cond_func,
+        epsilon=epsilon,
+        element_indices=element_indices,
+        lambda_trials=lambda_trials,
+        reduced_solver=reduced_solver,
+        regularization_mode=regularization_mode,
+        regularization_strength=regularization_strength,
+    )
+
+
+def trace_condensate_pdipm_vs_pipm_fixed_epsilon_trajectories(
+    state: ThermoState,
+    init: CondensateEquilibriumInit,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    epsilon: float,
+    rho_offsets: Sequence[float] = (0.0, 1.0, -1.0),
+    max_iter: int = 10,
+    min_lambda: float = 1.0e-6,
+    backtrack_factor: float = 0.5,
+    element_indices: Optional[jnp.ndarray] = None,
+    reduced_solver: str = "augmented_lu_row_scaled",
+    regularization_mode: str = "none",
+    regularization_strength: float = 0.0,
+):
+    """Diagnostic-only wrapper for fixed-epsilon PDIPM-vs-PIPM trajectory comparisons."""
+
+    init_prepared = _prepare_condensate_init(init)
+    return _diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories_raw(
+        state,
+        ln_nk=init_prepared.ln_nk,
+        ln_mk=init_prepared.ln_mk,
+        ln_ntot=init_prepared.ln_ntot,
+        formula_matrix=formula_matrix,
+        formula_matrix_cond=formula_matrix_cond,
+        hvector_func=hvector_func,
+        hvector_cond_func=hvector_cond_func,
+        epsilon=epsilon,
+        rho_offsets=rho_offsets,
+        max_iter=max_iter,
+        min_lambda=min_lambda,
+        backtrack_factor=backtrack_factor,
+        element_indices=element_indices,
+        reduced_solver=reduced_solver,
+        regularization_mode=regularization_mode,
+        regularization_strength=regularization_strength,
+    )
 
 
 def trace_condensate_sk_stage_feasibility(
@@ -1025,5 +1284,11 @@ __all__ = [
     "minimize_gibbs_cond_core",
     "minimize_gibbs_cond_with_diagnostics",
     "trace_adaptive_condensate_schedule",
+    "trace_condensate_gas_limiter_diagnostics",
+    "trace_condensate_iteration_lambda_trials",
+    "trace_condensate_full_vs_reduced_gie_direction",
+    "trace_condensate_pdipm_vs_pipm_direction",
+    "trace_condensate_pdipm_vs_pipm_fixed_epsilon_trajectories",
+    "trace_condensate_reduced_solver_backends",
     "trace_condensate_sk_stage_feasibility",
 ]
