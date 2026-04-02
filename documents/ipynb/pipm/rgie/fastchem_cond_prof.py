@@ -144,8 +144,9 @@ import jax.numpy as jnp
 from jax.scipy.special import logsumexp
 
 init_setup = "gas_only"  # "zeros" or "gas_only"
-profile_method = "scan_hot_from_bottom"  # or "vmap_cold" or "scan_hot_from_top"
-
+#profile_method = "scan_hot_from_bottom"  # or "vmap_cold" or "scan_hot_from_top"
+#profile_method = "scan_hot_from_top"  # or "vmap_cold" or "scan_hot_from_top"
+profile_method = "vmap_cold"
 
 def minimize_gibbs_cond_diagnostics(
     temperature,
