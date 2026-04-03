@@ -11,6 +11,22 @@ from jax import lax, tree_util
 
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.stepsize import LOG_S_MAX
+from exogibbs.optimize.condensate_outer_diagnostics import (
+    diagnose_dynamic_support_outer_objective_layer as _diagnose_dynamic_support_outer_objective_layer,
+    diagnose_augmented_semismooth_candidate_condensate_layer as _diagnose_augmented_semismooth_candidate_condensate_layer,
+    diagnose_semismooth_candidate_condensate_layer as _diagnose_semismooth_candidate_condensate_layer,
+    diagnose_smoothed_semismooth_candidate_condensate_layer as _diagnose_smoothed_semismooth_candidate_condensate_layer,
+    diagnose_support_updating_active_set_layer as _diagnose_support_updating_active_set_layer,
+    diagnose_condensate_outer_active_set_layer as _diagnose_condensate_outer_active_set_layer,
+    diagnose_outer_objective_candidate_condensate_layer as _diagnose_outer_objective_candidate_condensate_layer,
+    evaluate_outer_objective_on_candidate_support as _evaluate_outer_objective_on_candidate_support,
+    optimize_outer_objective_on_candidate_support as _optimize_outer_objective_on_candidate_support,
+    solve_augmented_semismooth_candidate_condensate_layer as _solve_augmented_semismooth_candidate_condensate_layer,
+    solve_gas_equilibrium_with_duals as _solve_gas_equilibrium_with_duals,
+    solve_restricted_support_condensate_layer as _solve_restricted_support_condensate_layer,
+    solve_semismooth_candidate_condensate_layer as _solve_semismooth_candidate_condensate_layer,
+    solve_smoothed_semismooth_candidate_condensate_layer as _solve_smoothed_semismooth_candidate_condensate_layer,
+)
 from exogibbs.optimize.pdipm_cond import minimize_gibbs_cond_core
 from exogibbs.optimize.pipm_rgie_cond import (
     diagnose_full_vs_reduced_gie_direction as _diagnose_full_vs_reduced_gie_direction_raw,
@@ -611,6 +627,90 @@ def minimize_gibbs_cond_with_diagnostics(*args, **kwargs) -> CondensateEquilibri
     """Alias of :func:`minimize_gibbs_cond` kept for explicit diagnostics-oriented callers."""
 
     return minimize_gibbs_cond(*args, **kwargs)
+
+
+def solve_gas_equilibrium_with_duals(*args, **kwargs):
+    """Diagnostic-only gas solve that also recovers the converged gas dual vector."""
+
+    return _solve_gas_equilibrium_with_duals(*args, **kwargs)
+
+
+def diagnose_condensate_outer_active_set_layer(*args, **kwargs):
+    """Diagnostic-only condensate-outer / gas-inner active-set prototype for one layer."""
+
+    return _diagnose_condensate_outer_active_set_layer(*args, **kwargs)
+
+
+def solve_restricted_support_condensate_layer(*args, **kwargs):
+    """Diagnostic-only restricted-support nonlinear condensate outer solve for one layer."""
+
+    return _solve_restricted_support_condensate_layer(*args, **kwargs)
+
+
+def diagnose_support_updating_active_set_layer(*args, **kwargs):
+    """Diagnostic-only support-updating condensate active-set outer loop for one layer."""
+
+    return _diagnose_support_updating_active_set_layer(*args, **kwargs)
+
+
+def solve_semismooth_candidate_condensate_layer(*args, **kwargs):
+    """Diagnostic-only semismooth complementarity solve on a restricted candidate set."""
+
+    return _solve_semismooth_candidate_condensate_layer(*args, **kwargs)
+
+
+def diagnose_semismooth_candidate_condensate_layer(*args, **kwargs):
+    """Diagnostic-only LP-seeded semismooth complementarity prototype for one layer."""
+
+    return _diagnose_semismooth_candidate_condensate_layer(*args, **kwargs)
+
+
+def solve_smoothed_semismooth_candidate_condensate_layer(*args, **kwargs):
+    """Diagnostic-only smoothed semismooth continuation solve on a restricted candidate set."""
+
+    return _solve_smoothed_semismooth_candidate_condensate_layer(*args, **kwargs)
+
+
+def diagnose_smoothed_semismooth_candidate_condensate_layer(*args, **kwargs):
+    """Diagnostic-only LP-seeded smoothed semismooth continuation prototype for one layer."""
+
+    return _diagnose_smoothed_semismooth_candidate_condensate_layer(*args, **kwargs)
+
+
+def solve_augmented_semismooth_candidate_condensate_layer(*args, **kwargs):
+    """Diagnostic-only augmented semismooth solve with active and inactive KKT residuals."""
+
+    return _solve_augmented_semismooth_candidate_condensate_layer(*args, **kwargs)
+
+
+def diagnose_augmented_semismooth_candidate_condensate_layer(*args, **kwargs):
+    """Diagnostic-only LP-seeded augmented semismooth prototype for one layer."""
+
+    return _diagnose_augmented_semismooth_candidate_condensate_layer(*args, **kwargs)
+
+
+def evaluate_outer_objective_on_candidate_support(*args, **kwargs):
+    """Diagnostic-only outer objective evaluation on a fixed condensate support."""
+
+    return _evaluate_outer_objective_on_candidate_support(*args, **kwargs)
+
+
+def optimize_outer_objective_on_candidate_support(*args, **kwargs):
+    """Diagnostic-only constrained outer objective optimization on a fixed support."""
+
+    return _optimize_outer_objective_on_candidate_support(*args, **kwargs)
+
+
+def diagnose_outer_objective_candidate_condensate_layer(*args, **kwargs):
+    """Diagnostic-only LP-seeded outer objective optimization prototype for one layer."""
+
+    return _diagnose_outer_objective_candidate_condensate_layer(*args, **kwargs)
+
+
+def diagnose_dynamic_support_outer_objective_layer(*args, **kwargs):
+    """Diagnostic-only LP-seeded dynamic-support outer objective prototype."""
+
+    return _diagnose_dynamic_support_outer_objective_layer(*args, **kwargs)
 
 
 def minimize_gibbs_cond_profile(
@@ -1279,6 +1379,17 @@ __all__ = [
     "CondensateProfileMethod",
     "CondensateEquilibriumResult",
     "compute_sk_feasible_epsilon_floor",
+    "solve_gas_equilibrium_with_duals",
+    "diagnose_condensate_outer_active_set_layer",
+    "solve_restricted_support_condensate_layer",
+    "diagnose_support_updating_active_set_layer",
+    "solve_semismooth_candidate_condensate_layer",
+    "diagnose_semismooth_candidate_condensate_layer",
+    "solve_smoothed_semismooth_candidate_condensate_layer",
+    "diagnose_smoothed_semismooth_candidate_condensate_layer",
+    "solve_augmented_semismooth_candidate_condensate_layer",
+    "diagnose_augmented_semismooth_candidate_condensate_layer",
+    "diagnose_dynamic_support_outer_objective_layer",
     "minimize_gibbs_cond",
     "minimize_gibbs_cond_profile",
     "minimize_gibbs_cond_core",
