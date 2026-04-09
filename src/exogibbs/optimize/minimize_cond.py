@@ -13,6 +13,7 @@ from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.stepsize import LOG_S_MAX
 from exogibbs.optimize.condensate_outer_diagnostics import (
     diagnose_dynamic_support_outer_objective_layer as _diagnose_dynamic_support_outer_objective_layer,
+    diagnose_dynamic_support_outer_objective_layer_with_start_portfolio as _diagnose_dynamic_support_outer_objective_layer_with_start_portfolio,
     diagnose_augmented_semismooth_candidate_condensate_layer as _diagnose_augmented_semismooth_candidate_condensate_layer,
     diagnose_semismooth_candidate_condensate_layer as _diagnose_semismooth_candidate_condensate_layer,
     diagnose_smoothed_semismooth_candidate_condensate_layer as _diagnose_smoothed_semismooth_candidate_condensate_layer,
@@ -713,6 +714,12 @@ def diagnose_dynamic_support_outer_objective_layer(*args, **kwargs):
     return _diagnose_dynamic_support_outer_objective_layer(*args, **kwargs)
 
 
+def diagnose_dynamic_support_outer_objective_layer_with_start_portfolio(*args, **kwargs):
+    """Diagnostic-only dynamic-support outer loop with online local-start portfolio selection."""
+
+    return _diagnose_dynamic_support_outer_objective_layer_with_start_portfolio(*args, **kwargs)
+
+
 def minimize_gibbs_cond_profile(
     temperatures: Array,
     ln_normalized_pressures: Array,
@@ -1390,6 +1397,7 @@ __all__ = [
     "solve_augmented_semismooth_candidate_condensate_layer",
     "diagnose_augmented_semismooth_candidate_condensate_layer",
     "diagnose_dynamic_support_outer_objective_layer",
+    "diagnose_dynamic_support_outer_objective_layer_with_start_portfolio",
     "minimize_gibbs_cond",
     "minimize_gibbs_cond_profile",
     "minimize_gibbs_cond_core",

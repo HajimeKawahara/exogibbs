@@ -782,6 +782,1035 @@ def _compute_dynamic_support_merit(
     }
 
 
+def _support_amounts_from_previous_names(
+    support_names: Sequence[str],
+    previous_support_names: Optional[Sequence[str]],
+    previous_amounts: Optional[jnp.ndarray],
+    *,
+    default_amount: float,
+    dtype: jnp.dtype,
+) -> Optional[jnp.ndarray]:
+    if previous_support_names is None or previous_amounts is None:
+        return None
+    previous_map = {
+        str(name): max(float(previous_amounts[idx]), float(default_amount))
+        for idx, name in enumerate(previous_support_names)
+    }
+    return jnp.asarray(
+        [previous_map.get(str(name), float(default_amount)) for name in support_names],
+        dtype=dtype,
+    )
+
+
+def _normalize_portfolio_metric(value: float, floor: float = 1.0e-16) -> float:
+    return max(float(value), float(floor))
+
+
+def _portfolio_support_choice_score(run: dict[str, Any]) -> float:
+    complementarity = run.get("complementarity_residual_inf")
+    complementarity_value = 0.0 if complementarity is None else _normalize_portfolio_metric(float(complementarity))
+    status_penalty = 0.0 if str(run.get("status")) == "ok" else 1.0e18
+    solver_penalty = 0.0 if bool(run.get("solver_success")) else 1.0e9
+    self_consistency_penalty = 0.0 if bool(run.get("candidate_self_consistent")) else 1.0e6
+    return (
+        status_penalty
+        + solver_penalty
+        + self_consistency_penalty
+        + 1.0e12 * float(run.get("feasibility_residual_inf", jnp.inf))
+        + 1.0e6 * _normalize_portfolio_metric(float(run.get("true_stationarity_residual_inf", jnp.inf)))
+        + _normalize_portfolio_metric(float(run.get("max_positive_inactive_driving", jnp.inf)))
+        + complementarity_value
+    )
+
+
+def _compact_portfolio_run(
+    run: dict[str, Any],
+    *,
+    start_mode: str,
+    available: bool,
+    init_amounts: Optional[jnp.ndarray],
+    support_choice_score: float,
+    unavailable_message: Optional[str] = None,
+) -> dict[str, Any]:
+    if not available or run is None:
+        return {
+            "start_mode": start_mode,
+            "available": False,
+            "status": "not_available",
+            "solver_success": False,
+            "solver_status": -999,
+            "solver_message": unavailable_message,
+            "support_choice_score": float("inf"),
+            "outer_objective": float("nan"),
+            "true_stationarity_residual_inf": float("inf"),
+            "feasibility_residual_inf": float("inf"),
+            "complementarity_residual_inf": None,
+            "max_positive_inactive_driving": float("inf"),
+            "inactive_positive_count": -1,
+            "runtime_seconds": 0.0,
+            "candidate_self_consistent": False,
+            "init_amounts": None,
+            "result": None,
+        }
+    return {
+        "start_mode": start_mode,
+        "available": True,
+        "status": run["status"],
+        "solver_success": bool(run["solver_success"]),
+        "solver_status": int(run["solver_status"]),
+        "solver_message": str(run["solver_message"]),
+        "support_choice_score": float(support_choice_score),
+        "outer_objective": float(run["outer_objective"]),
+        "true_stationarity_residual_inf": float(run["true_stationarity_residual_inf"]),
+        "feasibility_residual_inf": float(run["feasibility_residual_inf"]),
+        "complementarity_residual_inf": None
+        if run["complementarity_residual_inf"] is None
+        else float(run["complementarity_residual_inf"]),
+        "max_positive_inactive_driving": float(run["max_positive_inactive_driving"]),
+        "inactive_positive_count": int(run["inactive_positive_count"]),
+        "runtime_seconds": float(run["runtime_seconds"]),
+        "candidate_self_consistent": bool(run["candidate_self_consistent"]),
+        "init_amounts": None if init_amounts is None else jnp.asarray(init_amounts, dtype=jnp.asarray(run["m_candidate"]).dtype),
+        "result": run,
+    }
+
+
+def _evaluate_support_start_candidates(
+    *,
+    state: ThermoState,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    hvector_cond_func: Callable[[float], jnp.ndarray],
+    support_indices: Sequence[int],
+    condensate_species: Optional[Sequence[str]],
+    element_names: Optional[Sequence[str]],
+    start_candidates: Sequence[tuple[str, Optional[jnp.ndarray], Optional[str]]],
+    optimizer_method: str,
+    optimizer_maxiter: int,
+    optimizer_ftol: float,
+    gas_epsilon_crit: float,
+    gas_max_iter: int,
+    budget_negative_tol: float,
+    objective_infeasible_penalty_weight: float,
+    inactive_top_k: int,
+    default_initial_amount: float,
+    active_m_threshold: float,
+) -> dict[str, Any]:
+    dtype = jnp.result_type(jnp.asarray(formula_matrix_cond).dtype, state.element_vector.dtype, jnp.float64)
+    support_indices = [int(i) for i in support_indices]
+    support_names = _restricted_support_names(support_indices, condensate_species)
+    if support_names is None:
+        support_names = [str(idx) for idx in support_indices]
+
+    runs: list[dict[str, Any]] = []
+    realized_starts: list[tuple[str, jnp.ndarray, dict[str, Any]]] = []
+    for start_mode, init_amounts, unavailable_message in start_candidates:
+        if init_amounts is None:
+            runs.append(
+                _compact_portfolio_run(
+                    None,
+                    start_mode=start_mode,
+                    available=False,
+                    init_amounts=None,
+                    support_choice_score=float("inf"),
+                    unavailable_message=unavailable_message,
+                )
+            )
+            continue
+        duplicate = next(
+            (
+                (previous_mode, previous_run)
+                for previous_mode, previous_init, previous_run in realized_starts
+                if previous_init.shape == init_amounts.shape
+                and bool(jnp.allclose(previous_init, init_amounts, rtol=0.0, atol=0.0))
+            ),
+            None,
+        )
+        if duplicate is not None:
+            duplicate_mode, previous_run = duplicate
+            duplicated = dict(previous_run)
+            duplicated["start_mode"] = start_mode
+            duplicated["init_amounts"] = jnp.asarray(init_amounts, dtype=dtype)
+            duplicated["duplicated_from_start_mode"] = duplicate_mode
+            runs.append(duplicated)
+            continue
+        result = optimize_outer_objective_on_candidate_support(
+            state,
+            formula_matrix,
+            formula_matrix_cond,
+            hvector_func,
+            hvector_cond_func,
+            candidate_indices=support_indices,
+            candidate_amounts_init=init_amounts,
+            condensate_species=condensate_species,
+            element_names=element_names,
+            optimizer_method=optimizer_method,
+            gas_epsilon_crit=gas_epsilon_crit,
+            gas_max_iter=gas_max_iter,
+            budget_negative_tol=budget_negative_tol,
+            objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+            inactive_top_k=inactive_top_k,
+            default_initial_amount=default_initial_amount,
+            optimizer_maxiter=optimizer_maxiter,
+            optimizer_ftol=optimizer_ftol,
+            active_m_threshold=active_m_threshold,
+        )
+        score = _portfolio_support_choice_score(result)
+        runs.append(
+            _compact_portfolio_run(
+                result,
+                start_mode=start_mode,
+                available=True,
+                init_amounts=init_amounts,
+                support_choice_score=score,
+            )
+        )
+        realized_starts.append((start_mode, jnp.asarray(init_amounts, dtype=dtype), runs[-1]))
+
+    return {
+        "support_indices": support_indices,
+        "support_names": support_names,
+        "support_size": len(support_indices),
+        "runs": runs,
+    }
+
+
+def _format_cache_float(value: float) -> str:
+    return f"{float(value):.17e}"
+
+
+def _amounts_cache_fingerprint(amounts: Optional[jnp.ndarray]) -> Optional[tuple[str, ...]]:
+    if amounts is None:
+        return None
+    flattened = np.asarray(jnp.asarray(amounts), dtype=np.float64).reshape(-1)
+    return tuple(_format_cache_float(entry) for entry in flattened.tolist())
+
+
+def _build_support_local_solve_cache_key(
+    *,
+    diagnostic_context: Optional[dict[str, Any]],
+    state: ThermoState,
+    support_names: Sequence[str],
+    start_mode: str,
+    optimizer_method: str,
+    optimizer_maxiter: int,
+    optimizer_ftol: float,
+    gas_epsilon_crit: float,
+    gas_max_iter: int,
+    budget_negative_tol: float,
+    objective_infeasible_penalty_weight: float,
+    inactive_top_k: int,
+    default_initial_amount: float,
+    active_m_threshold: float,
+    init_amounts: Optional[jnp.ndarray],
+) -> tuple[Any, ...]:
+    context = diagnostic_context or {}
+    return (
+        str(context.get("config_name")) if context.get("config_name") is not None else None,
+        None if context.get("layer_index") is None else int(context.get("layer_index")),
+        tuple(str(name) for name in support_names),
+        str(start_mode),
+        str(optimizer_method),
+        int(optimizer_maxiter),
+        _format_cache_float(optimizer_ftol),
+        _format_cache_float(gas_epsilon_crit),
+        int(gas_max_iter),
+        _format_cache_float(budget_negative_tol),
+        _format_cache_float(objective_infeasible_penalty_weight),
+        int(inactive_top_k),
+        _format_cache_float(default_initial_amount),
+        _format_cache_float(active_m_threshold),
+        _format_cache_float(float(state.temperature)),
+        _format_cache_float(float(state.ln_normalized_pressure)),
+        tuple(_format_cache_float(entry) for entry in np.asarray(jnp.asarray(state.element_vector), dtype=np.float64).tolist()),
+        _amounts_cache_fingerprint(init_amounts),
+    )
+
+
+def _initialize_local_solve_accounting(accounting: Optional[dict[str, Any]]) -> Optional[dict[str, Any]]:
+    if accounting is None:
+        return None
+    accounting.setdefault(
+        "cache_policy",
+        {
+            "cacheable_start_modes": ["original_init", "zero_default"],
+            "uncached_start_modes": ["warm_previous_support"],
+            "warm_previous_support_not_cached_reason": (
+                "warm_previous_support depends on path-local checkpoint lineage; "
+                "no stable lineage key is defined yet, so it remains uncached."
+            ),
+        },
+    )
+    accounting.setdefault("events", [])
+    return accounting
+
+
+def _run_online_support_portfolio(
+    *,
+    state: ThermoState,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    hvector_cond_func: Callable[[float], jnp.ndarray],
+    support_indices: Sequence[int],
+    condensate_species: Optional[Sequence[str]],
+    element_names: Optional[Sequence[str]],
+    original_init_amounts: Optional[jnp.ndarray],
+    previous_support_names: Optional[Sequence[str]],
+    previous_support_amounts: Optional[jnp.ndarray],
+    support_start_history: Optional[Sequence[dict[str, Any]]] = None,
+    optimizer_method: str,
+    optimizer_maxiter: int,
+    optimizer_ftol: float,
+    gas_epsilon_crit: float,
+    gas_max_iter: int,
+    budget_negative_tol: float,
+    objective_infeasible_penalty_weight: float,
+    inactive_top_k: int,
+    default_initial_amount: float,
+    active_m_threshold: float,
+    stage_a_optimizer_maxiter: Optional[int] = None,
+    stage_a_optimizer_ftol: Optional[float] = None,
+    gating_feasibility_tol: float = 1.0e-8,
+    gating_stationarity_tol: float = 1.0e-8,
+    gating_complementarity_tol: float = 1.0e-8,
+    gating_inactive_max_positive_tol: float = 250.0,
+    stage_b_optimizer_maxiter: Optional[int] = None,
+    stage_b_optimizer_ftol: Optional[float] = None,
+    stage_b_top_k: int = 1,
+    max_available_screening_starts: Optional[int] = None,
+    selection_mode: str = "support_aware_gated_conditional_escalation",
+    evaluation_origin: str = "current_support",
+    diagnostic_context: Optional[dict[str, Any]] = None,
+    local_solve_cache: Optional[dict[tuple[Any, ...], dict[str, Any]]] = None,
+    local_solve_accounting: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+    if selection_mode not in (
+        "support_aware_gated_conditional_escalation",
+        "calibrated_topk_shortlist_refine",
+        "experimental_sparse_outer_variant_a",
+    ):
+        raise ValueError(
+            "selection_mode must be one of "
+            "('support_aware_gated_conditional_escalation', "
+            "'calibrated_topk_shortlist_refine', 'experimental_sparse_outer_variant_a')."
+        )
+    dtype = jnp.result_type(jnp.asarray(formula_matrix_cond).dtype, state.element_vector.dtype, jnp.float64)
+    support_indices = [int(i) for i in support_indices]
+    support_names = _restricted_support_names(support_indices, condensate_species)
+    if support_names is None:
+        support_names = [str(idx) for idx in support_indices]
+    local_solve_accounting = _initialize_local_solve_accounting(local_solve_accounting)
+
+    warm_previous = _support_amounts_from_previous_names(
+        support_names,
+        previous_support_names,
+        previous_support_amounts,
+        default_amount=default_initial_amount,
+        dtype=dtype,
+    )
+    zero_default = jnp.full((len(support_indices),), float(default_initial_amount), dtype=dtype)
+    start_candidates: list[tuple[str, Optional[jnp.ndarray], Optional[str]]] = [
+        (
+            "warm_previous_support",
+            warm_previous,
+            "warm_previous_support unavailable for this support"
+            if warm_previous is None
+            else None,
+        ),
+        (
+            "original_init",
+            None if original_init_amounts is None else jnp.asarray(original_init_amounts, dtype=dtype),
+            "original_init unavailable for this support"
+            if original_init_amounts is None
+            else None,
+        ),
+        ("zero_default", zero_default, None),
+    ]
+
+    fallback_start_order = ["warm_previous_support", "original_init", "zero_default"]
+
+    def _support_aware_ranked_candidates() -> tuple[list[tuple[str, Optional[jnp.ndarray], Optional[str]]], dict[str, Any]]:
+        available_by_mode = {start_mode: (init_amounts is not None) for start_mode, init_amounts, _ in start_candidates}
+        ranked_modes: list[str] = []
+        ranking_sources: list[dict[str, Any]] = []
+        support_history_list = list(support_start_history or [])
+        current_support_key = tuple(support_names)
+        current_support_set = set(support_names)
+
+        def _append_mode(start_mode: Optional[str], source: str, detail: dict[str, Any]) -> None:
+            if start_mode is None or start_mode in ranked_modes or not available_by_mode.get(start_mode, False):
+                return
+            ranked_modes.append(str(start_mode))
+            ranking_sources.append({"start_mode": str(start_mode), "source": str(source), **detail})
+
+        for offset, history_entry in enumerate(reversed(support_history_list)):
+            history_support_names = tuple(history_entry.get("support_names", ()))
+            chosen_start_mode = history_entry.get("chosen_start_mode")
+            if history_support_names == current_support_key:
+                _append_mode(
+                    None if chosen_start_mode is None else str(chosen_start_mode),
+                    "exact_support_match",
+                    {
+                        "history_outer_iter": history_entry.get("outer_iter"),
+                        "history_origin": history_entry.get("evaluation_origin"),
+                        "history_offset": int(offset),
+                    },
+                )
+                if ranked_modes:
+                    break
+
+        nearest_history = None
+        nearest_score = None
+        for offset, history_entry in enumerate(reversed(support_history_list)):
+            history_support_names = tuple(history_entry.get("support_names", ()))
+            history_support_set = set(history_support_names)
+            if not history_support_set or history_support_names == current_support_key:
+                continue
+            overlap = len(current_support_set.intersection(history_support_set))
+            if overlap <= 0:
+                continue
+            history_size = len(history_support_set)
+            current_size = len(current_support_set)
+            score = (
+                1 if history_support_set.issubset(current_support_set) or current_support_set.issubset(history_support_set) else 0,
+                overlap,
+                overlap / max(len(current_support_set.union(history_support_set)), 1),
+                -abs(history_size - current_size),
+                -offset,
+            )
+            if nearest_score is None or score > nearest_score:
+                nearest_score = score
+                nearest_history = {"offset": int(offset), **history_entry}
+        if nearest_history is not None:
+            _append_mode(
+                None if nearest_history.get("chosen_start_mode") is None else str(nearest_history.get("chosen_start_mode")),
+                "nearest_overlap_support",
+                {
+                    "history_outer_iter": nearest_history.get("outer_iter"),
+                    "history_origin": nearest_history.get("evaluation_origin"),
+                    "history_offset": nearest_history.get("offset"),
+                    "overlap_count": len(current_support_set.intersection(set(nearest_history.get("support_names", ())))),
+                },
+            )
+
+        nearby_size_modes: dict[str, tuple[int, int]] = {}
+        current_size = len(current_support_set)
+        for offset, history_entry in enumerate(reversed(support_history_list)):
+            chosen_start_mode = history_entry.get("chosen_start_mode")
+            if chosen_start_mode is None or not available_by_mode.get(str(chosen_start_mode), False):
+                continue
+            support_size = int(history_entry.get("support_size", 0))
+            mode = str(chosen_start_mode)
+            score = (abs(support_size - current_size), offset)
+            previous_score = nearby_size_modes.get(mode)
+            if previous_score is None or score < previous_score:
+                nearby_size_modes[mode] = score
+        for mode, score in sorted(nearby_size_modes.items(), key=lambda item: (item[1][0], item[1][1], fallback_start_order.index(item[0]))):
+            _append_mode(
+                mode,
+                "nearby_support_size",
+                {
+                    "size_gap": int(score[0]),
+                    "history_offset": int(score[1]),
+                },
+            )
+
+        for mode in fallback_start_order:
+            _append_mode(mode, "fallback_default_order", {})
+
+        ranked_candidates = []
+        for mode in ranked_modes:
+            for candidate in start_candidates:
+                if candidate[0] == mode:
+                    ranked_candidates.append(candidate)
+                    break
+        for candidate in start_candidates:
+            if candidate[0] not in ranked_modes:
+                ranked_candidates.append(candidate)
+        predicted_first_choice_start = None
+        for mode in ranked_modes:
+            if available_by_mode.get(mode, False):
+                predicted_first_choice_start = mode
+                break
+        return ranked_candidates, {
+            "predicted_first_choice_start": predicted_first_choice_start,
+            "ranked_start_modes": ranked_modes,
+            "ranking_sources": ranking_sources,
+            "fallback_order": list(fallback_start_order),
+        }
+
+    ranked_start_candidates, support_aware_prediction = _support_aware_ranked_candidates()
+    if selection_mode in ("calibrated_topk_shortlist_refine", "experimental_sparse_outer_variant_a"):
+        ranked_start_candidates = list(start_candidates)
+        support_aware_prediction = {
+            "predicted_first_choice_start": None,
+            "ranked_start_modes": [start_mode for start_mode, _, _ in start_candidates],
+            "ranking_sources": [
+                {"start_mode": str(start_mode), "source": "evaluate_all_available_starts_then_rank_by_current_score"}
+                for start_mode, _, _ in start_candidates
+            ],
+            "fallback_order": [str(start_mode) for start_mode, _, _ in start_candidates],
+        }
+
+    screening_maxiter = int(optimizer_maxiter if stage_a_optimizer_maxiter is None else stage_a_optimizer_maxiter)
+    screening_ftol = float(optimizer_ftol if stage_a_optimizer_ftol is None else stage_a_optimizer_ftol)
+    refine_maxiter = int(optimizer_maxiter if stage_b_optimizer_maxiter is None else stage_b_optimizer_maxiter)
+    refine_ftol = float(optimizer_ftol if stage_b_optimizer_ftol is None else stage_b_optimizer_ftol)
+
+    def _evaluate_single_start(
+        start_mode: str,
+        init_amounts: Optional[jnp.ndarray],
+        unavailable_message: Optional[str],
+        *,
+        realized_starts: list[tuple[str, jnp.ndarray, dict[str, Any]]],
+        local_maxiter: int,
+        local_ftol: float,
+        stage_label: str,
+    ) -> dict[str, Any]:
+        if init_amounts is None:
+            return _compact_portfolio_run(
+                None,
+                start_mode=start_mode,
+                available=False,
+                init_amounts=None,
+                support_choice_score=float("inf"),
+                unavailable_message=unavailable_message,
+            )
+        duplicate = next(
+            (
+                (previous_mode, previous_run)
+                for previous_mode, previous_init, previous_run in realized_starts
+                if previous_init.shape == init_amounts.shape
+                and bool(jnp.allclose(previous_init, init_amounts, rtol=0.0, atol=0.0))
+            ),
+            None,
+        )
+        if duplicate is not None:
+            duplicate_mode, previous_run = duplicate
+            duplicated = dict(previous_run)
+            duplicated["start_mode"] = start_mode
+            duplicated["init_amounts"] = jnp.asarray(init_amounts, dtype=dtype)
+            duplicated["duplicated_from_start_mode"] = duplicate_mode
+            return duplicated
+        budget_role = "cheap" if stage_label == "stage_a" else "strong"
+        cache_allowed = start_mode in ("original_init", "zero_default")
+        cache_key = None
+        result = None
+        cache_status = "uncached"
+        if cache_allowed:
+            cache_key = _build_support_local_solve_cache_key(
+                diagnostic_context=diagnostic_context,
+                state=state,
+                support_names=support_names,
+                start_mode=start_mode,
+                optimizer_method=optimizer_method,
+                optimizer_maxiter=local_maxiter,
+                optimizer_ftol=local_ftol,
+                gas_epsilon_crit=gas_epsilon_crit,
+                gas_max_iter=gas_max_iter,
+                budget_negative_tol=budget_negative_tol,
+                objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+                inactive_top_k=inactive_top_k,
+                default_initial_amount=default_initial_amount,
+                active_m_threshold=active_m_threshold,
+                init_amounts=init_amounts,
+            )
+            if local_solve_cache is not None and cache_key in local_solve_cache:
+                result = local_solve_cache[cache_key]
+                cache_status = "hit"
+            else:
+                cache_status = "miss"
+        if result is None:
+            result = optimize_outer_objective_on_candidate_support(
+                state,
+                formula_matrix,
+                formula_matrix_cond,
+                hvector_func,
+                hvector_cond_func,
+                candidate_indices=support_indices,
+                candidate_amounts_init=init_amounts,
+                condensate_species=condensate_species,
+                element_names=element_names,
+                optimizer_method=optimizer_method,
+                gas_epsilon_crit=gas_epsilon_crit,
+                gas_max_iter=gas_max_iter,
+                budget_negative_tol=budget_negative_tol,
+                objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+                inactive_top_k=inactive_top_k,
+                default_initial_amount=default_initial_amount,
+                optimizer_maxiter=local_maxiter,
+                optimizer_ftol=local_ftol,
+                active_m_threshold=active_m_threshold,
+            )
+            if cache_allowed and local_solve_cache is not None and cache_key is not None:
+                local_solve_cache[cache_key] = result
+        if local_solve_accounting is not None:
+            local_solve_accounting["events"].append(
+                {
+                    "evaluation_origin": str(evaluation_origin),
+                    "stage_label": str(stage_label),
+                    "budget_role": str(budget_role),
+                    "support_size": int(len(support_indices)),
+                    "support_names": list(support_names),
+                    "start_mode": str(start_mode),
+                    "optimizer_method": str(optimizer_method),
+                    "optimizer_maxiter": int(local_maxiter),
+                    "optimizer_ftol_gtol_xtol_barrier_tol": float(local_ftol),
+                    "cache_status": str(cache_status),
+                    "cacheable": bool(cache_allowed),
+                    "cache_key": None if cache_key is None else list(cache_key),
+                    "runtime_seconds": float(result["runtime_seconds"]),
+                    "solver_success": bool(result["solver_success"]),
+                    "status": str(result["status"]),
+                    "candidate_size": int(result["candidate_size"]),
+                }
+            )
+        compact = _compact_portfolio_run(
+            result,
+            start_mode=start_mode,
+            available=True,
+            init_amounts=init_amounts,
+            support_choice_score=_portfolio_support_choice_score(result),
+        )
+        realized_starts.append((start_mode, jnp.asarray(init_amounts, dtype=dtype), compact))
+        return compact
+
+    gating_thresholds = {
+        "solver_success_required": True,
+        "status_must_equal": "ok",
+        "feasibility_residual_inf_max": float(gating_feasibility_tol),
+        "true_stationarity_residual_inf_max": float(gating_stationarity_tol),
+        "complementarity_residual_inf_max": float(gating_complementarity_tol),
+        "max_positive_inactive_driving_max": float(gating_inactive_max_positive_tol),
+    }
+
+    def _screening_acceptance(run: dict[str, Any]) -> dict[str, Any]:
+        reasons: list[str] = []
+        if not bool(run["available"]):
+            reasons.append("start_unavailable")
+        else:
+            if not bool(run["solver_success"]):
+                reasons.append("solver_success_false")
+            if str(run["status"]) != "ok":
+                reasons.append(f"status={run['status']}")
+            if float(run["feasibility_residual_inf"]) > float(gating_feasibility_tol):
+                reasons.append("feasibility_above_threshold")
+            if float(run["true_stationarity_residual_inf"]) > float(gating_stationarity_tol):
+                reasons.append("stationarity_above_threshold")
+            complementarity = run.get("complementarity_residual_inf")
+            if complementarity is not None and float(complementarity) > float(gating_complementarity_tol):
+                reasons.append("complementarity_above_threshold")
+            if float(run["max_positive_inactive_driving"]) > float(gating_inactive_max_positive_tol):
+                reasons.append("inactive_driving_above_threshold")
+        return {
+            "good_enough": not reasons,
+            "reasons": reasons,
+            "thresholds": dict(gating_thresholds),
+        }
+
+    stage_a_runs: list[dict[str, Any]] = []
+    stage_b_runs: list[dict[str, Any]] = []
+    stage_b_start_modes: list[str] = []
+    escalation_events: list[dict[str, Any]] = []
+    realized_starts: list[tuple[str, jnp.ndarray, dict[str, Any]]] = []
+    tried_start_modes: list[str] = []
+    best_screening_run: Optional[dict[str, Any]] = None
+    accepted_without_escalation = False
+    available_screening_evals = 0
+
+    if selection_mode in ("calibrated_topk_shortlist_refine", "experimental_sparse_outer_variant_a"):
+        for start_mode, init_amounts, unavailable_message in ranked_start_candidates:
+            run = _evaluate_single_start(
+                start_mode,
+                None if init_amounts is None else jnp.asarray(init_amounts, dtype=dtype),
+                unavailable_message,
+                realized_starts=realized_starts,
+                local_maxiter=screening_maxiter,
+                local_ftol=screening_ftol,
+                stage_label="stage_a",
+            )
+            acceptance = _screening_acceptance(run)
+            run = dict(run)
+            run["gating_acceptance"] = acceptance
+            stage_a_runs.append(run)
+            tried_start_modes.append(str(start_mode))
+            if bool(run["available"]):
+                available_screening_evals += 1
+
+        available_stage_a_runs = [run for run in stage_a_runs if bool(run["available"])]
+        if not available_stage_a_runs:
+            raise RuntimeError("At least one screening start must be available.")
+        available_stage_a_runs = sorted(
+            available_stage_a_runs,
+            key=lambda run: (
+                float(run["support_choice_score"]),
+                float(run["runtime_seconds"]),
+            ),
+        )
+        best_screening_run = available_stage_a_runs[0]
+        shortlist_size = max(0, min(int(stage_b_top_k), len(available_stage_a_runs)))
+        if shortlist_size <= 0:
+            chosen = best_screening_run
+        else:
+            stage_b_start_modes = [str(run["start_mode"]) for run in available_stage_a_runs[:shortlist_size]]
+            for stage_a_run in available_stage_a_runs[:shortlist_size]:
+                refined = _evaluate_single_start(
+                    str(stage_a_run["start_mode"]),
+                    None if stage_a_run["init_amounts"] is None else jnp.asarray(stage_a_run["init_amounts"], dtype=dtype),
+                    None,
+                    realized_starts=[],
+                    local_maxiter=refine_maxiter,
+                    local_ftol=refine_ftol,
+                    stage_label="stage_b",
+                )
+                refined = dict(refined)
+                refined["gating_acceptance"] = _screening_acceptance(refined)
+                refined["refined_from_screening_start_mode"] = str(stage_a_run["start_mode"])
+                stage_b_runs.append(refined)
+            chosen = min(
+                stage_b_runs,
+                key=lambda run: (
+                    float(run["support_choice_score"]),
+                    float(run["runtime_seconds"]),
+                ),
+            )
+        chosen_result = chosen["result"]
+        return {
+            "support_indices": support_indices,
+            "support_names": support_names,
+            "support_size": len(support_indices),
+            "original_init_amounts": None if original_init_amounts is None else jnp.asarray(original_init_amounts, dtype=dtype),
+            "stage_a_runs": stage_a_runs,
+            "stage_b_runs": stage_b_runs,
+            "stage_b_refined_start_modes": stage_b_start_modes,
+            "predicted_first_choice_start": support_aware_prediction["predicted_first_choice_start"],
+            "ranked_start_modes": [
+                str(run["start_mode"])
+                for run in sorted(
+                    available_stage_a_runs,
+                    key=lambda run: (
+                        float(run["support_choice_score"]),
+                        float(run["runtime_seconds"]),
+                    ),
+                )
+            ],
+            "ranking_sources": support_aware_prediction["ranking_sources"],
+            "tried_start_modes": tried_start_modes,
+            "escalation_events": escalation_events,
+            "accepted_without_refinement": len(stage_b_runs) == 0,
+            "chosen_run": chosen,
+            "chosen_result": chosen_result,
+            "portfolio_policy": {
+                "stage_a": {
+                    "optimizer_method": str(optimizer_method),
+                    "optimizer_maxiter": screening_maxiter,
+                    "optimizer_ftol_gtol_xtol_barrier_tol": screening_ftol,
+                    "start_modes": [run[0] for run in ranked_start_candidates],
+                    "selection_mode": str(selection_mode),
+                },
+                "stage_b": {
+                    "optimizer_method": str(optimizer_method),
+                    "optimizer_maxiter": refine_maxiter,
+                    "optimizer_ftol_gtol_xtol_barrier_tol": refine_ftol,
+                    "top_k": int(stage_b_top_k),
+                    "refined_start_modes": stage_b_start_modes,
+                },
+                "gating_thresholds": gating_thresholds,
+                "support_aware_prediction": support_aware_prediction,
+                "max_available_screening_starts": None
+                if max_available_screening_starts is None
+                else int(max_available_screening_starts),
+                "support_choice_score_definition": (
+                    "status_penalty + solver_penalty + self_consistency_penalty + "
+                    "1e12*feasibility + 1e6*stationarity + inactive_max + complementarity"
+                ),
+            },
+        }
+
+    for start_index, (start_mode, init_amounts, unavailable_message) in enumerate(ranked_start_candidates):
+        run = _evaluate_single_start(
+            start_mode,
+            None if init_amounts is None else jnp.asarray(init_amounts, dtype=dtype),
+            unavailable_message,
+            realized_starts=realized_starts,
+            local_maxiter=screening_maxiter,
+            local_ftol=screening_ftol,
+            stage_label="stage_a",
+        )
+        acceptance = _screening_acceptance(run)
+        run = dict(run)
+        run["gating_acceptance"] = acceptance
+        stage_a_runs.append(run)
+        tried_start_modes.append(str(start_mode))
+        if bool(run["available"]):
+            available_screening_evals += 1
+        if bool(run["available"]) and (
+            best_screening_run is None
+            or (float(run["support_choice_score"]), float(run["runtime_seconds"]))
+            < (float(best_screening_run["support_choice_score"]), float(best_screening_run["runtime_seconds"]))
+        ):
+            best_screening_run = run
+        if acceptance["good_enough"]:
+            accepted_without_escalation = start_index == 0
+            break
+        if max_available_screening_starts is not None and available_screening_evals >= int(max_available_screening_starts):
+            break
+        next_start_mode = None
+        for candidate_start_mode, candidate_init, _ in ranked_start_candidates[start_index + 1 :]:
+            if candidate_init is not None:
+                next_start_mode = candidate_start_mode
+                break
+        if next_start_mode is not None:
+            escalation_events.append(
+                {
+                    "after_start_mode": str(start_mode),
+                    "triggered_next_start_mode": str(next_start_mode),
+                    "reasons": list(acceptance["reasons"]),
+                    "thresholds": dict(acceptance["thresholds"]),
+                }
+            )
+
+    if best_screening_run is None:
+        raise RuntimeError("At least one screening start must be available.")
+
+    chosen = best_screening_run
+    chosen_acceptance = _screening_acceptance(chosen)
+    if int(stage_b_top_k) > 0 and (not chosen_acceptance["good_enough"] or len(tried_start_modes) > 1):
+        stage_b_start_modes = [str(chosen["start_mode"])]
+        refined = _evaluate_single_start(
+            str(chosen["start_mode"]),
+            None if chosen["init_amounts"] is None else jnp.asarray(chosen["init_amounts"], dtype=dtype),
+            None,
+            realized_starts=[],
+            local_maxiter=refine_maxiter,
+            local_ftol=refine_ftol,
+            stage_label="stage_b",
+        )
+        refined = dict(refined)
+        refined["gating_acceptance"] = _screening_acceptance(refined)
+        refined["refined_from_screening_start_mode"] = str(chosen["start_mode"])
+        stage_b_runs.append(refined)
+        chosen = refined
+    chosen_result = chosen["result"]
+    return {
+        "support_indices": support_indices,
+        "support_names": support_names,
+        "support_size": len(support_indices),
+        "original_init_amounts": None if original_init_amounts is None else jnp.asarray(original_init_amounts, dtype=dtype),
+        "stage_a_runs": stage_a_runs,
+        "stage_b_runs": stage_b_runs,
+        "stage_b_refined_start_modes": stage_b_start_modes,
+        "predicted_first_choice_start": support_aware_prediction["predicted_first_choice_start"],
+        "ranked_start_modes": support_aware_prediction["ranked_start_modes"],
+        "ranking_sources": support_aware_prediction["ranking_sources"],
+        "tried_start_modes": tried_start_modes,
+        "escalation_events": escalation_events,
+        "accepted_without_refinement": len(stage_b_runs) == 0,
+        "chosen_run": chosen,
+        "chosen_result": chosen_result,
+        "portfolio_policy": {
+            "stage_a": {
+                "optimizer_method": str(optimizer_method),
+                "optimizer_maxiter": screening_maxiter,
+                "optimizer_ftol_gtol_xtol_barrier_tol": screening_ftol,
+                "start_modes": [run[0] for run in ranked_start_candidates],
+                "selection_mode": "support_aware_gated_conditional_escalation",
+            },
+            "stage_b": {
+                "optimizer_method": str(optimizer_method),
+                "optimizer_maxiter": refine_maxiter,
+                "optimizer_ftol_gtol_xtol_barrier_tol": refine_ftol,
+                "top_k": int(stage_b_top_k),
+                "refined_start_modes": stage_b_start_modes,
+            },
+            "gating_thresholds": gating_thresholds,
+            "support_aware_prediction": support_aware_prediction,
+            "max_available_screening_starts": None
+            if max_available_screening_starts is None
+            else int(max_available_screening_starts),
+            "support_choice_score_definition": (
+                "status_penalty + solver_penalty + self_consistency_penalty + "
+                "1e12*feasibility + 1e6*stationarity + inactive_max + complementarity"
+            ),
+        },
+    }
+
+
+def _is_same_support_checkpoint(left: dict[str, Any], right: dict[str, Any]) -> bool:
+    return (
+        list(left["support_names"]) == list(right["support_names"])
+        and str(left.get("checkpoint_origin")) == str(right.get("checkpoint_origin"))
+        and int(left.get("outer_iter", -1)) == int(right.get("outer_iter", -1))
+    )
+
+
+def _path_active_side_score(checkpoint: dict[str, Any]) -> tuple[float, float, float, float]:
+    chosen = checkpoint["chosen_run"]
+    complementarity = chosen.get("complementarity_residual_inf")
+    return (
+        float(chosen["feasibility_residual_inf"]),
+        float(chosen["true_stationarity_residual_inf"]),
+        float("inf") if complementarity is None else float(complementarity),
+        float(chosen["max_positive_inactive_driving"]),
+    )
+
+
+def _path_compromise_score(
+    checkpoint: dict[str, Any],
+    *,
+    min_feas: float,
+    min_stat: float,
+    min_comp: float,
+    min_inactive: float,
+) -> float:
+    chosen = checkpoint["chosen_run"]
+    complementarity = chosen.get("complementarity_residual_inf")
+    complementarity_value = min_comp if complementarity is None else float(complementarity)
+    return (
+        _normalize_portfolio_metric(float(chosen["feasibility_residual_inf"])) / _normalize_portfolio_metric(min_feas)
+        + _normalize_portfolio_metric(float(chosen["true_stationarity_residual_inf"])) / _normalize_portfolio_metric(min_stat)
+        + _normalize_portfolio_metric(complementarity_value) / _normalize_portfolio_metric(min_comp)
+        + _normalize_portfolio_metric(float(chosen["max_positive_inactive_driving"])) / _normalize_portfolio_metric(min_inactive)
+    )
+
+
+def _build_online_path_checkpoint_summary(
+    checkpoints: Sequence[dict[str, Any]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    best_active = min(checkpoints, key=_path_active_side_score)
+    min_feas = min(_normalize_portfolio_metric(rec["chosen_run"]["feasibility_residual_inf"]) for rec in checkpoints)
+    min_stat = min(_normalize_portfolio_metric(rec["chosen_run"]["true_stationarity_residual_inf"]) for rec in checkpoints)
+    min_comp = min(
+        _normalize_portfolio_metric(
+            rec["chosen_run"]["complementarity_residual_inf"]
+            if rec["chosen_run"]["complementarity_residual_inf"] is not None
+            else 0.0
+        )
+        for rec in checkpoints
+    )
+    min_inactive = min(_normalize_portfolio_metric(rec["chosen_run"]["max_positive_inactive_driving"]) for rec in checkpoints)
+    best_compromise = min(
+        checkpoints,
+        key=lambda rec: _path_compromise_score(
+            rec,
+            min_feas=min_feas,
+            min_stat=min_stat,
+            min_comp=min_comp,
+            min_inactive=min_inactive,
+        ),
+    )
+    best_active_record = {
+        **best_active,
+        "selection_definition": "lexicographic(feasibility_residual_inf, stationarity_residual_inf, complementarity_residual_inf, inactive_max_positive_driving)",
+    }
+    best_compromise_record = {
+        **best_compromise,
+        "compromise_definition": (
+            "feas/min_path_feas + stat/min_path_stat + comp/min_path_comp + "
+            "inactive_max/min_path_inactive over chosen on-path checkpoints"
+        ),
+        "compromise_score": float(
+            _path_compromise_score(
+                best_compromise,
+                min_feas=min_feas,
+                min_stat=min_stat,
+                min_comp=min_comp,
+                min_inactive=min_inactive,
+            )
+        ),
+    }
+    return best_active_record, best_compromise_record
+
+
+def _proposal_matches_forced_acceptance_rule(
+    *,
+    rule: Optional[dict[str, Any]],
+    outer_iter: int,
+    support_before_names: Sequence[str],
+    proposal: dict[str, Any],
+) -> bool:
+    if rule is None or bool(rule.get("applied", False)):
+        return False
+    if "outer_iter" in rule and int(rule["outer_iter"]) != int(outer_iter):
+        return False
+    if "proposal_type" in rule and str(rule["proposal_type"]) != str(proposal.get("proposal_type")):
+        return False
+    if "support_before_names" in rule and list(rule["support_before_names"]) != list(support_before_names):
+        return False
+    if "proposal_names" in rule and list(rule["proposal_names"]) != list(proposal.get("names") or ()):
+        return False
+    if bool(rule.get("only_if_rejected", True)) and bool(proposal.get("accepted", False)):
+        return False
+    return True
+
+
+def _should_trigger_addition_lookahead(
+    *,
+    proposal: dict[str, Any],
+    trigger_mode: str,
+) -> tuple[bool, str]:
+    if str(proposal.get("proposal_type")) != "addition":
+        return False, "not_addition"
+    if len(list(proposal.get("indices", ()))) != 1:
+        return False, "not_singleton_addition"
+    if trigger_mode == "all_singleton_additions":
+        return True, "all_singleton_additions"
+    if trigger_mode == "rejected_singleton_additions":
+        if bool(proposal.get("accepted")):
+            return False, "already_accepted_by_merit"
+        return True, "rejected_singleton_additions"
+    if trigger_mode == "inactive_dominated_rejected_singletons":
+        if bool(proposal.get("accepted")):
+            return False, "already_accepted_by_merit"
+        current_merit = proposal.get("current_merit") or {}
+        proposal_merit = proposal.get("merit") or {}
+        inactive_delta = float(proposal_merit.get("inactive_max", 0.0)) - float(current_merit.get("inactive_max", 0.0))
+        other_delta = (
+            float(proposal_merit.get("stationarity", 0.0)) - float(current_merit.get("stationarity", 0.0))
+            + float(proposal_merit.get("feasibility", 0.0)) - float(current_merit.get("feasibility", 0.0))
+            + float((proposal_merit.get("complementarity") or 0.0) - (current_merit.get("complementarity") or 0.0))
+        )
+        if inactive_delta > max(other_delta, 0.0):
+            return True, "inactive_dominated_rejected_singletons"
+        return False, "regression_not_inactive_dominated"
+    raise ValueError(
+        "lookahead trigger_mode must be one of "
+        "('rejected_singleton_additions', 'all_singleton_additions', "
+        "'inactive_dominated_rejected_singletons')."
+    )
+
+
+def _proposal_passes_lookahead_sanity(
+    *,
+    proposal_result: dict[str, Any],
+    feasibility_tol: float,
+    inactive_max_tol: Optional[float],
+) -> tuple[bool, list[str]]:
+    reasons = []
+    if str(proposal_result.get("status")) != "ok":
+        reasons.append("status_not_ok")
+    for key in (
+        "true_stationarity_residual_inf",
+        "feasibility_residual_inf",
+        "max_positive_inactive_driving",
+    ):
+        value = proposal_result.get(key)
+        if value is None or not np.isfinite(float(value)):
+            reasons.append(f"{key}_not_finite")
+    complementarity_value = proposal_result.get("complementarity_residual_inf")
+    if complementarity_value is not None and not np.isfinite(float(complementarity_value)):
+        reasons.append("complementarity_not_finite")
+    if float(proposal_result.get("feasibility_residual_inf", np.inf)) > float(feasibility_tol):
+        reasons.append("feasibility_above_tol")
+    if inactive_max_tol is not None:
+        inactive_value = proposal_result.get("max_positive_inactive_driving")
+        if inactive_value is None or float(inactive_value) > float(inactive_max_tol):
+            reasons.append("inactive_max_above_tol")
+    return len(reasons) == 0, reasons
+
+
 def _build_addition_proposals(
     *,
     solve: dict[str, Any],
@@ -3165,6 +4194,11 @@ def diagnose_dynamic_support_outer_objective_layer(
     drop_driving_threshold: float = -1.0e-1,
     drop_m_hysteresis_factor: float = 1.0,
     drop_driving_hysteresis: float = 0.0,
+    progress_callback: Optional[Callable[[dict[str, Any]], None]] = None,
+    resume_state: Optional[dict[str, Any]] = None,
+    diagnostic_context: Optional[dict[str, Any]] = None,
+    local_solve_cache: Optional[dict[tuple[Any, ...], dict[str, Any]]] = None,
+    local_solve_accounting: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     """Diagnostic-only merit-controlled dynamic-support outer objective loop.
 
@@ -3429,7 +4463,7 @@ def diagnose_dynamic_support_outer_objective_layer(
                 addition_penalty=addition_penalty,
             )
             merit_delta = float(current_merit["value"] - proposal_merit["value"])
-            accepted = merit_delta >= required_merit_improvement
+            accepted_by_merit = merit_delta >= required_merit_improvement
             record = {
                 "proposal_type": "addition",
                 "proposal_kind": proposal["proposal_kind"],
@@ -3440,11 +4474,11 @@ def diagnose_dynamic_support_outer_objective_layer(
                 "support_names": _restricted_support_names(proposed_support, condensate_species),
                 "merit": proposal_merit,
                 "merit_delta": merit_delta,
-                "accepted": bool(accepted),
+                "accepted": bool(accepted_by_merit),
                 "solve": proposal_result,
             }
             candidate_proposals.append(record)
-            if accepted and (
+            if accepted_by_merit and (
                 accepted_proposal is None
                 or float(record["merit"]["value"]) < float(accepted_proposal["merit"]["value"])
             ):
@@ -3698,6 +4732,1493 @@ def diagnose_dynamic_support_outer_objective_layer(
         "support_stabilized": bool(support_stabilized),
         "solver_like_stabilized": final_solver_like_stabilized,
         "outer_iterations_completed": len(history),
+        "runtime_seconds": float(elapsed),
+    }
+
+
+def diagnose_dynamic_support_outer_objective_layer_with_start_portfolio(
+    state: ThermoState,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func: Callable[[float], jnp.ndarray],
+    hvector_cond_func: Callable[[float], jnp.ndarray],
+    *,
+    initial_lp_top_k: int = 20,
+    initial_bottleneck_augment: int = 0,
+    update_policy: Optional[str] = None,
+    add_rule: str = "naive_topk",
+    bottleneck_tiebreak: bool = False,
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
+    m0: Optional[jnp.ndarray] = None,
+    ln_nk_gas_init: Optional[jnp.ndarray] = None,
+    ln_ntot_gas_init: Optional[jnp.ndarray] = None,
+    gas_epsilon_crit: float = 1.0e-10,
+    gas_max_iter: int = 1000,
+    budget_negative_tol: float = 1.0e-14,
+    objective_infeasible_penalty_weight: float = 1.0e12,
+    inactive_top_k: int = 5,
+    default_initial_amount: float = 1.0e-30,
+    optimizer_method: str = "trust-constr",
+    optimizer_maxiter: int = 500,
+    optimizer_ftol: float = 1.0e-10,
+    portfolio_stage_a_optimizer_maxiter: int = 150,
+    portfolio_stage_a_optimizer_ftol: float = 1.0e-10,
+    proposal_stage_a_optimizer_maxiter: Optional[int] = 80,
+    proposal_stage_a_optimizer_ftol: Optional[float] = None,
+    portfolio_gating_feasibility_tol: float = 1.0e-8,
+    portfolio_gating_stationarity_tol: float = 1.0e-8,
+    portfolio_gating_complementarity_tol: float = 1.0e-8,
+    portfolio_gating_inactive_max_positive_tol: float = 250.0,
+    portfolio_stage_b_optimizer_maxiter: Optional[int] = None,
+    portfolio_stage_b_optimizer_ftol: Optional[float] = None,
+    portfolio_stage_b_top_k: int = 1,
+    proposal_portfolio_stage_b_top_k: int = 0,
+    accepted_portfolio_stage_b_top_k: Optional[int] = None,
+    current_portfolio_selection_mode: str = "support_aware_gated_conditional_escalation",
+    proposal_portfolio_selection_mode: str = "support_aware_gated_conditional_escalation",
+    returned_checkpoint_policy: str = "endpoint",
+    outer_max_iter: int = 10,
+    active_m_threshold: float = 1.0e-24,
+    add_threshold: float = 1.0e-3,
+    max_additions_per_iter: int = 4,
+    reduced_cost_threshold: float = 1.0,
+    reduced_cost_fraction: float = 2.0e-1,
+    require_settled_before_add: bool = True,
+    settle_inactive_ratio: float = 5.0e-2,
+    settle_stationarity_abs_tol: float = 1.0e-2,
+    settle_feasibility_tol: float = 2.5e-1,
+    settle_complementarity_abs_tol: float = 1.0e-2,
+    proposal_batch_sizes: Sequence[int] = (1, 2, 3),
+    max_drop_proposals: int = 3,
+    merit_stationarity_weight: float = 1.0,
+    merit_feasibility_weight: float = 1.0e3,
+    merit_complementarity_weight: float = 1.0,
+    merit_inactive_weight: float = 1.0,
+    merit_inactive_count_weight: float = 1.0e-2,
+    support_size_penalty: float = 0.0,
+    addition_penalty: float = 0.0,
+    merit_improve_abs_tol: float = 1.0e-3,
+    merit_improve_rel_tol: float = 1.0e-3,
+    stabilization_inactive_tol: float = 1.0,
+    support_size_cap: Optional[int] = None,
+    max_batch_size: Optional[int] = None,
+    drop_m_threshold: float = 1.0e-18,
+    drop_driving_threshold: float = -1.0e-1,
+    drop_m_hysteresis_factor: float = 1.0,
+    drop_driving_hysteresis: float = 0.0,
+    progress_callback: Optional[Callable[[dict[str, Any]], None]] = None,
+    resume_state: Optional[dict[str, Any]] = None,
+    diagnostic_context: Optional[dict[str, Any]] = None,
+    local_solve_cache: Optional[dict[tuple[Any, ...], dict[str, Any]]] = None,
+    local_solve_accounting: Optional[dict[str, Any]] = None,
+    forced_acceptance_rule: Optional[dict[str, Any]] = None,
+    acceptance_lookahead_policy: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
+    """Diagnostic-only sparse outer loop with support-aware gated local-start selection.
+
+    This reuses the current sparse add/drop logic unchanged and only replaces
+    the per-support fixed-support solve policy. Each encountered support first
+    predicts a promising start mode from on-path support history, then
+    escalates through the remaining available starts only when the current
+    start fails explicit diagnostic thresholds. Proposal supports remain cheap
+    screening-only; only accepted supports are refined with the higher
+    trust-constr budget.
+    """
+
+    if update_policy is not None:
+        if update_policy == "naive_topk":
+            add_rule = "naive_topk"
+            bottleneck_tiebreak = False
+        elif update_policy == "bottleneck_aware":
+            add_rule = "naive_topk"
+            bottleneck_tiebreak = True
+        elif update_policy == "reduced_cost_threshold":
+            add_rule = "reduced_cost_threshold"
+            bottleneck_tiebreak = False
+        elif update_policy == "reduced_cost_threshold_bottleneck":
+            add_rule = "reduced_cost_threshold"
+            bottleneck_tiebreak = True
+        else:
+            raise ValueError(
+                "update_policy must be one of "
+                "('naive_topk', 'bottleneck_aware', 'reduced_cost_threshold', "
+                "'reduced_cost_threshold_bottleneck')."
+            )
+    if add_rule not in ("naive_topk", "reduced_cost_threshold"):
+        raise ValueError("add_rule must be one of ('naive_topk', 'reduced_cost_threshold').")
+    if returned_checkpoint_policy not in ("endpoint", "best_active_side_kkt", "best_compromise"):
+        raise ValueError(
+            "returned_checkpoint_policy must be one of "
+            "('endpoint', 'best_active_side_kkt', 'best_compromise')."
+        )
+    if support_size_cap is not None and int(support_size_cap) < 0:
+        raise ValueError("support_size_cap must be non-negative when provided.")
+    if max_batch_size is not None and int(max_batch_size) < 0:
+        raise ValueError("max_batch_size must be non-negative when provided.")
+    if float(drop_m_hysteresis_factor) < 0.0:
+        raise ValueError("drop_m_hysteresis_factor must be non-negative.")
+    if float(drop_driving_hysteresis) < 0.0:
+        raise ValueError("drop_driving_hysteresis must be non-negative.")
+
+    formula_matrix = jnp.asarray(formula_matrix)
+    formula_matrix_cond = jnp.asarray(formula_matrix_cond)
+    n_cond = int(formula_matrix_cond.shape[1])
+    dtype = jnp.result_type(formula_matrix_cond.dtype, state.element_vector.dtype, jnp.float64)
+    diagnostic_context = dict(diagnostic_context or {})
+    local_solve_accounting = _initialize_local_solve_accounting(local_solve_accounting)
+    resume_state = None if resume_state is None else dict(resume_state)
+    forced_acceptance_rule = None if forced_acceptance_rule is None else dict(forced_acceptance_rule)
+    acceptance_lookahead_policy = None if acceptance_lookahead_policy is None else dict(acceptance_lookahead_policy)
+    lookahead_accounting = {
+        "enabled": bool(acceptance_lookahead_policy is not None and acceptance_lookahead_policy.get("enabled", True)),
+        "trigger_count": 0,
+        "sanity_pass_count": 0,
+        "accepted_count": 0,
+        "runtime_seconds": 0.0,
+    }
+    if acceptance_lookahead_policy is not None:
+        acceptance_lookahead_policy.setdefault("enabled", True)
+        acceptance_lookahead_policy.setdefault("trigger_mode", "rejected_singleton_additions")
+        acceptance_lookahead_policy.setdefault("feasibility_tol", 1.0e-4)
+        acceptance_lookahead_policy.setdefault("inactive_max_tol", None)
+        acceptance_lookahead_policy.setdefault("improvement_abs_tol", 0.0)
+    if m0 is None:
+        m0 = jnp.zeros((n_cond,), dtype=dtype)
+    else:
+        m0 = jnp.asarray(m0, dtype=dtype)
+
+    if resume_state is None:
+        initial_diag = diagnose_condensate_outer_active_set_layer(
+            state,
+            formula_matrix,
+            formula_matrix_cond,
+            hvector_func,
+            hvector_cond_func,
+            m=m0,
+            condensate_species=condensate_species,
+            element_names=element_names,
+            ln_nk_gas_init=ln_nk_gas_init,
+            ln_ntot_gas_init=ln_ntot_gas_init,
+            gas_epsilon_crit=gas_epsilon_crit,
+            gas_max_iter=gas_max_iter,
+            budget_negative_tol=budget_negative_tol,
+            active_m_threshold=active_m_threshold,
+            joint_activation_top_k=(initial_lp_top_k,),
+        )
+        if initial_diag["initial"]["status"] != "ok":
+            return {
+                "prototype_family": "dynamic_support_outer_objective_online_portfolio_diagnostic",
+                "initial_diagnostic": initial_diag,
+                "status": initial_diag["initial"]["status"],
+                "history": [],
+                "support_evaluations": [],
+                "path_checkpoints": [],
+            }
+
+        initial_record = initial_diag["initial"]
+        initial_lp = initial_record["joint_activation"][str(initial_lp_top_k)]
+        current_support = list(initial_lp["support_indices"])
+        current_amounts = jnp.asarray(initial_lp["support_amounts"], dtype=dtype)
+        initial_seed_additions: list[int] = []
+        if initial_bottleneck_augment > 0:
+            initial_seed_additions = _rank_inactive_candidates(
+                driving_full=jnp.asarray(initial_record["driving"], dtype=dtype),
+                current_support=current_support,
+                formula_matrix_cond=formula_matrix_cond,
+                binding_element_indices=initial_record["element_bottlenecks"].get("tightest_budget_indices", []),
+                add_threshold=0.0,
+                prefer_binding_elements=True,
+            )[:initial_bottleneck_augment]
+            if initial_seed_additions:
+                current_support = sorted(set(current_support).union(initial_seed_additions))
+                current_amounts = _support_amounts_from_full(
+                    current_support,
+                    jnp.zeros((n_cond,), dtype=dtype),
+                    default_amount=default_initial_amount,
+                    dtype=dtype,
+                )
+
+        history: list[dict[str, Any]] = []
+        support_evaluations: list[dict[str, Any]] = []
+        path_checkpoints: list[dict[str, Any]] = []
+        support_stabilized = False
+        final_result: Optional[dict[str, Any]] = None
+        repeated_no_change = 0
+        previous_support_names: Optional[list[str]] = None
+        previous_support_amounts: Optional[jnp.ndarray] = None
+        support_start_history: list[dict[str, Any]] = []
+        outer_iter_start = 0
+        elapsed_completed_seconds = 0.0
+    else:
+        initial_diag = resume_state["initial_diagnostic"]
+        initial_seed_additions = [int(idx) for idx in resume_state.get("initial_seed_additions", ())]
+        current_support = [int(idx) for idx in resume_state["current_support"]]
+        current_amounts = jnp.asarray(resume_state["current_amounts"], dtype=dtype)
+        history = list(resume_state.get("history", ()))
+        support_evaluations = list(resume_state.get("support_evaluations", ()))
+        path_checkpoints = list(resume_state.get("path_checkpoints", ()))
+        support_stabilized = bool(resume_state.get("support_stabilized", False))
+        final_result = resume_state.get("final_result")
+        repeated_no_change = int(resume_state.get("repeated_no_change", 0))
+        previous_support_names = None
+        if resume_state.get("previous_support_names") is not None:
+            previous_support_names = [str(name) for name in resume_state["previous_support_names"]]
+        previous_support_amounts = None
+        if resume_state.get("previous_support_amounts") is not None:
+            previous_support_amounts = jnp.asarray(resume_state["previous_support_amounts"], dtype=dtype)
+        support_start_history = list(resume_state.get("support_start_history", ()))
+        outer_iter_start = int(resume_state.get("next_outer_iter", len(history)))
+        elapsed_completed_seconds = float(resume_state.get("elapsed_completed_seconds", 0.0))
+        initial_lp = initial_diag["initial"]["joint_activation"][str(initial_lp_top_k)]
+
+    accepted_stage_b_top_k = (
+        int(portfolio_stage_b_top_k)
+        if accepted_portfolio_stage_b_top_k is None
+        else int(accepted_portfolio_stage_b_top_k)
+    )
+
+    def _build_resume_state(next_outer_iter: int, elapsed_seconds: float) -> dict[str, Any]:
+        return {
+            "initial_diagnostic": initial_diag,
+            "initial_seed_additions": list(initial_seed_additions),
+            "next_outer_iter": int(next_outer_iter),
+            "current_support": list(current_support),
+            "current_amounts": jnp.asarray(current_amounts, dtype=dtype),
+            "history": history,
+            "support_evaluations": support_evaluations,
+            "path_checkpoints": path_checkpoints,
+            "support_stabilized": bool(support_stabilized),
+            "final_result": final_result,
+            "repeated_no_change": int(repeated_no_change),
+            "previous_support_names": previous_support_names,
+            "previous_support_amounts": previous_support_amounts,
+            "support_start_history": support_start_history,
+            "elapsed_completed_seconds": float(elapsed_seconds),
+        }
+
+    def _emit_progress(
+        *,
+        event_type: str,
+        evaluation_record: Optional[dict[str, Any]] = None,
+        outer_iter: Optional[int] = None,
+        resume_payload: Optional[dict[str, Any]] = None,
+    ) -> None:
+        if progress_callback is None:
+            return
+        best_active_checkpoint = None
+        best_compromise_checkpoint = None
+        endpoint_checkpoint = None
+        endpoint_equals_best_active = None
+        endpoint_equals_best_compromise = None
+        if path_checkpoints:
+            best_active_checkpoint, best_compromise_checkpoint = _build_online_path_checkpoint_summary(path_checkpoints)
+            endpoint_checkpoint = path_checkpoints[-1]
+            endpoint_equals_best_active = _is_same_support_checkpoint(endpoint_checkpoint, best_active_checkpoint)
+            endpoint_equals_best_compromise = _is_same_support_checkpoint(endpoint_checkpoint, best_compromise_checkpoint)
+        progress_callback(
+            {
+                "event_type": str(event_type),
+                "outer_iter": None if outer_iter is None else int(outer_iter),
+                "support_evaluations": support_evaluations,
+                "path_checkpoints": path_checkpoints,
+                "history": history,
+                "support_start_history": support_start_history,
+                "support_trajectory": [step["support_size_before"] for step in history]
+                + ([] if not history else [history[-1]["support_size_after"]]),
+                "current_support": list(current_support),
+                "current_support_names": _restricted_support_names(current_support, condensate_species),
+                "evaluation_record": evaluation_record,
+                "resume_state": resume_payload,
+                "best_active_side_kkt_checkpoint": best_active_checkpoint,
+                "best_compromise_checkpoint": best_compromise_checkpoint,
+                "final_endpoint_checkpoint": endpoint_checkpoint,
+                "endpoint_equals_best_active_side_kkt": endpoint_equals_best_active,
+                "endpoint_equals_best_compromise": endpoint_equals_best_compromise,
+                "local_solve_accounting": local_solve_accounting,
+            }
+        )
+
+    def _evaluate_addition_lookahead(
+        *,
+        proposal_record: dict[str, Any],
+        proposal_result: dict[str, Any],
+        current_merit: dict[str, Any],
+    ) -> Optional[dict[str, Any]]:
+        if acceptance_lookahead_policy is None or not bool(acceptance_lookahead_policy.get("enabled", True)):
+            return None
+        triggered, trigger_reason = _should_trigger_addition_lookahead(
+            proposal=proposal_record,
+            trigger_mode=str(acceptance_lookahead_policy["trigger_mode"]),
+        )
+        evaluation = {
+            "triggered": bool(triggered),
+            "trigger_reason": str(trigger_reason),
+            "sanity_passed": False,
+            "sanity_reasons": [],
+            "accepted_by_lookahead": False,
+            "acceptance_reason": "lookahead_not_triggered",
+            "runtime_seconds": 0.0,
+        }
+        if not triggered:
+            return evaluation
+        lookahead_accounting["trigger_count"] += 1
+        sanity_passed, sanity_reasons = _proposal_passes_lookahead_sanity(
+            proposal_result=proposal_result,
+            feasibility_tol=float(acceptance_lookahead_policy["feasibility_tol"]),
+            inactive_max_tol=acceptance_lookahead_policy.get("inactive_max_tol"),
+        )
+        evaluation["sanity_passed"] = bool(sanity_passed)
+        evaluation["sanity_reasons"] = list(sanity_reasons)
+        if not sanity_passed:
+            evaluation["acceptance_reason"] = "lookahead_sanity_failed"
+            return evaluation
+        lookahead_accounting["sanity_pass_count"] += 1
+        lookahead_start = time.perf_counter()
+        accepted_refined = _run_online_support_portfolio(
+            state=state,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond=formula_matrix_cond,
+            hvector_func=hvector_func,
+            hvector_cond_func=hvector_cond_func,
+            support_indices=proposal_record["support_indices"],
+            condensate_species=condensate_species,
+            element_names=element_names,
+            original_init_amounts=jnp.asarray(proposal_record["original_init_amounts"], dtype=dtype),
+            previous_support_names=support_before_names,
+            previous_support_amounts=current_support_amounts,
+            support_start_history=support_start_history,
+            optimizer_method=optimizer_method,
+            optimizer_maxiter=optimizer_maxiter,
+            optimizer_ftol=optimizer_ftol,
+            gas_epsilon_crit=gas_epsilon_crit,
+            gas_max_iter=gas_max_iter,
+            budget_negative_tol=budget_negative_tol,
+            objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+            inactive_top_k=inactive_top_k,
+            default_initial_amount=default_initial_amount,
+            active_m_threshold=active_m_threshold,
+            stage_a_optimizer_maxiter=portfolio_stage_a_optimizer_maxiter,
+            stage_a_optimizer_ftol=portfolio_stage_a_optimizer_ftol,
+            gating_feasibility_tol=portfolio_gating_feasibility_tol,
+            gating_stationarity_tol=portfolio_gating_stationarity_tol,
+            gating_complementarity_tol=portfolio_gating_complementarity_tol,
+            gating_inactive_max_positive_tol=portfolio_gating_inactive_max_positive_tol,
+            stage_b_optimizer_maxiter=portfolio_stage_b_optimizer_maxiter,
+            stage_b_optimizer_ftol=portfolio_stage_b_optimizer_ftol,
+            stage_b_top_k=accepted_stage_b_top_k,
+            max_available_screening_starts=None,
+            selection_mode=current_portfolio_selection_mode,
+            evaluation_origin="lookahead_accepted_proposal_refinement",
+            diagnostic_context=diagnostic_context,
+            local_solve_cache=local_solve_cache,
+            local_solve_accounting=local_solve_accounting,
+        )
+        accepted_result = accepted_refined["chosen_result"]
+        previous_amounts = _support_amounts_from_full(
+            proposal_record["support_indices"],
+            jnp.asarray(accepted_result["m_full"], dtype=dtype),
+            default_amount=default_initial_amount,
+            dtype=dtype,
+        )
+        lookahead_portfolio = _run_online_support_portfolio(
+            state=state,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond=formula_matrix_cond,
+            hvector_func=hvector_func,
+            hvector_cond_func=hvector_cond_func,
+            support_indices=proposal_record["support_indices"],
+            condensate_species=condensate_species,
+            element_names=element_names,
+            original_init_amounts=previous_amounts,
+            previous_support_names=list(proposal_record["support_names"]),
+            previous_support_amounts=previous_amounts,
+            support_start_history=support_start_history,
+            optimizer_method=optimizer_method,
+            optimizer_maxiter=optimizer_maxiter,
+            optimizer_ftol=optimizer_ftol,
+            gas_epsilon_crit=gas_epsilon_crit,
+            gas_max_iter=gas_max_iter,
+            budget_negative_tol=budget_negative_tol,
+            objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+            inactive_top_k=inactive_top_k,
+            default_initial_amount=default_initial_amount,
+            active_m_threshold=active_m_threshold,
+            stage_a_optimizer_maxiter=portfolio_stage_a_optimizer_maxiter,
+            stage_a_optimizer_ftol=portfolio_stage_a_optimizer_ftol,
+            gating_feasibility_tol=portfolio_gating_feasibility_tol,
+            gating_stationarity_tol=portfolio_gating_stationarity_tol,
+            gating_complementarity_tol=portfolio_gating_complementarity_tol,
+            gating_inactive_max_positive_tol=portfolio_gating_inactive_max_positive_tol,
+            stage_b_optimizer_maxiter=portfolio_stage_b_optimizer_maxiter,
+            stage_b_optimizer_ftol=portfolio_stage_b_optimizer_ftol,
+            stage_b_top_k=portfolio_stage_b_top_k,
+            max_available_screening_starts=None,
+            selection_mode=current_portfolio_selection_mode,
+            evaluation_origin="lookahead_current_support",
+            diagnostic_context=diagnostic_context,
+            local_solve_cache=local_solve_cache,
+            local_solve_accounting=local_solve_accounting,
+        )
+        evaluation["runtime_seconds"] = float(time.perf_counter() - lookahead_start)
+        lookahead_accounting["runtime_seconds"] += float(evaluation["runtime_seconds"])
+        lookahead_result = lookahead_portfolio["chosen_result"]
+        lookahead_merit = _compute_dynamic_support_merit(
+            solve=lookahead_result,
+            stationarity_weight=merit_stationarity_weight,
+            feasibility_weight=merit_feasibility_weight,
+            complementarity_weight=merit_complementarity_weight,
+            inactive_weight=merit_inactive_weight,
+            inactive_count_weight=merit_inactive_count_weight,
+            support_size=len(proposal_record["support_indices"]),
+            support_size_penalty=support_size_penalty,
+            added_count=0,
+            addition_penalty=addition_penalty,
+        )
+        evaluation["accepted_refinement_portfolio"] = {
+            "support_size": int(accepted_refined["support_size"]),
+            "support_indices": list(accepted_refined["support_indices"]),
+            "support_names": list(accepted_refined["support_names"]),
+            "predicted_first_choice_start": accepted_refined["predicted_first_choice_start"],
+            "tried_start_modes": list(accepted_refined["tried_start_modes"]),
+            "chosen_run": {
+                key: value
+                for key, value in accepted_refined["chosen_run"].items()
+                if key not in ("result", "init_amounts")
+            },
+        }
+        evaluation["lookahead_portfolio"] = {
+            "support_size": int(lookahead_portfolio["support_size"]),
+            "support_indices": list(lookahead_portfolio["support_indices"]),
+            "support_names": list(lookahead_portfolio["support_names"]),
+            "predicted_first_choice_start": lookahead_portfolio["predicted_first_choice_start"],
+            "tried_start_modes": list(lookahead_portfolio["tried_start_modes"]),
+            "chosen_run": {
+                key: value
+                for key, value in lookahead_portfolio["chosen_run"].items()
+                if key not in ("result", "init_amounts")
+            },
+        }
+        evaluation["lookahead_merit"] = lookahead_merit
+        evaluation["lookahead_improvement"] = float(current_merit["value"] - lookahead_merit["value"])
+        accepted_by_lookahead = float(lookahead_merit["value"]) <= (
+            float(current_merit["value"]) - float(acceptance_lookahead_policy["improvement_abs_tol"])
+        )
+        evaluation["accepted_by_lookahead"] = bool(accepted_by_lookahead)
+        evaluation["acceptance_reason"] = (
+            "lookahead_merit_improved"
+            if accepted_by_lookahead
+            else "lookahead_merit_not_improved"
+        )
+        if accepted_by_lookahead:
+            lookahead_accounting["accepted_count"] += 1
+        return evaluation
+
+    start = time.perf_counter()
+
+    for outer_iter in range(int(outer_iter_start), int(outer_max_iter)):
+        support_before = list(current_support)
+        support_before_names = _restricted_support_names(support_before, condensate_species)
+        if support_before_names is None:
+            support_before_names = [str(idx) for idx in support_before]
+        current_solve = _run_online_support_portfolio(
+            state=state,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond=formula_matrix_cond,
+            hvector_func=hvector_func,
+            hvector_cond_func=hvector_cond_func,
+            support_indices=support_before,
+            condensate_species=condensate_species,
+            element_names=element_names,
+            original_init_amounts=current_amounts,
+            previous_support_names=previous_support_names,
+            previous_support_amounts=previous_support_amounts,
+            support_start_history=support_start_history,
+            optimizer_method=optimizer_method,
+            optimizer_maxiter=optimizer_maxiter,
+            optimizer_ftol=optimizer_ftol,
+            gas_epsilon_crit=gas_epsilon_crit,
+            gas_max_iter=gas_max_iter,
+            budget_negative_tol=budget_negative_tol,
+            objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+            inactive_top_k=inactive_top_k,
+            default_initial_amount=default_initial_amount,
+            active_m_threshold=active_m_threshold,
+            stage_a_optimizer_maxiter=portfolio_stage_a_optimizer_maxiter,
+            stage_a_optimizer_ftol=portfolio_stage_a_optimizer_ftol,
+            gating_feasibility_tol=portfolio_gating_feasibility_tol,
+            gating_stationarity_tol=portfolio_gating_stationarity_tol,
+            gating_complementarity_tol=portfolio_gating_complementarity_tol,
+            gating_inactive_max_positive_tol=portfolio_gating_inactive_max_positive_tol,
+            stage_b_optimizer_maxiter=portfolio_stage_b_optimizer_maxiter,
+            stage_b_optimizer_ftol=portfolio_stage_b_optimizer_ftol,
+            stage_b_top_k=portfolio_stage_b_top_k,
+            max_available_screening_starts=None,
+            selection_mode=current_portfolio_selection_mode,
+            evaluation_origin="current_support",
+            diagnostic_context=diagnostic_context,
+            local_solve_cache=local_solve_cache,
+            local_solve_accounting=local_solve_accounting,
+        )
+        solve = current_solve["chosen_result"]
+        final_result = solve
+        current_checkpoint = {
+            "outer_iter": int(outer_iter),
+            "checkpoint_origin": "current_support",
+            "support_size": int(current_solve["support_size"]),
+            "support_names": list(current_solve["support_names"]),
+            "chosen_run": {
+                key: value
+                for key, value in current_solve["chosen_run"].items()
+                if key not in ("result", "init_amounts")
+            },
+        }
+        path_checkpoints.append(current_checkpoint)
+        current_support_evaluation = {
+            "outer_iter": int(outer_iter),
+            "evaluation_origin": "current_support",
+            "support_size": int(current_solve["support_size"]),
+            "support_indices": list(current_solve["support_indices"]),
+            "support_names": list(current_solve["support_names"]),
+            "original_init_amounts": current_solve["original_init_amounts"],
+            "stage_a_runs": current_solve["stage_a_runs"],
+            "stage_b_runs": current_solve["stage_b_runs"],
+            "stage_b_refined_start_modes": current_solve["stage_b_refined_start_modes"],
+            "predicted_first_choice_start": current_solve["predicted_first_choice_start"],
+            "ranked_start_modes": current_solve["ranked_start_modes"],
+            "ranking_sources": current_solve["ranking_sources"],
+            "tried_start_modes": current_solve["tried_start_modes"],
+            "escalation_events": current_solve["escalation_events"],
+            "accepted_without_refinement": current_solve["accepted_without_refinement"],
+            "chosen_run": current_solve["chosen_run"],
+        }
+        support_evaluations.append(current_support_evaluation)
+        _emit_progress(
+            event_type="support_evaluation_completed",
+            evaluation_record=current_support_evaluation,
+            outer_iter=outer_iter,
+        )
+        support_start_history.append(
+            {
+                "outer_iter": int(outer_iter),
+                "evaluation_origin": "current_support",
+                "support_names": list(current_solve["support_names"]),
+                "support_size": int(current_solve["support_size"]),
+                "chosen_start_mode": str(current_solve["chosen_run"]["start_mode"]),
+                "predicted_first_choice_start": current_solve["predicted_first_choice_start"],
+                "tried_start_modes": list(current_solve["tried_start_modes"]),
+                "support_choice_score": float(current_solve["chosen_run"]["support_choice_score"]),
+            }
+        )
+        current_merit = _compute_dynamic_support_merit(
+            solve=solve,
+            stationarity_weight=merit_stationarity_weight,
+            feasibility_weight=merit_feasibility_weight,
+            complementarity_weight=merit_complementarity_weight,
+            inactive_weight=merit_inactive_weight,
+            inactive_count_weight=merit_inactive_count_weight,
+            support_size=len(support_before),
+            support_size_penalty=support_size_penalty,
+            added_count=0,
+            addition_penalty=addition_penalty,
+        )
+        required_merit_improvement = max(
+            float(merit_improve_abs_tol),
+            float(merit_improve_rel_tol) * max(float(current_merit["value"]), 1.0),
+        )
+
+        naive_additions = _rank_inactive_candidates_with_tiebreak(
+            driving_full=jnp.asarray(solve["driving_full"], dtype=dtype),
+            current_support=support_before,
+            formula_matrix_cond=formula_matrix_cond,
+            binding_element_indices=[],
+            add_threshold=add_threshold,
+            bottleneck_tiebreak=False,
+        )[: max(proposal_batch_sizes) if proposal_batch_sizes else 0]
+        bottleneck_additions = _rank_inactive_candidates_with_tiebreak(
+            driving_full=jnp.asarray(solve["driving_full"], dtype=dtype),
+            current_support=support_before,
+            formula_matrix_cond=formula_matrix_cond,
+            binding_element_indices=solve["binding_element_indices"],
+            add_threshold=add_threshold,
+            bottleneck_tiebreak=True,
+        )[: max(proposal_batch_sizes) if proposal_batch_sizes else 0]
+        add_decision = _select_working_set_additions(
+            solve=solve,
+            current_support=support_before,
+            formula_matrix_cond=formula_matrix_cond,
+            add_rule=add_rule,
+            add_threshold=add_threshold,
+            max_additions_per_iter=max_additions_per_iter,
+            reduced_cost_threshold=reduced_cost_threshold,
+            reduced_cost_fraction=reduced_cost_fraction,
+            binding_element_indices=solve["binding_element_indices"],
+            bottleneck_tiebreak=bottleneck_tiebreak,
+            require_settled=require_settled_before_add,
+            settle_inactive_ratio=settle_inactive_ratio,
+            settle_stationarity_abs_tol=settle_stationarity_abs_tol,
+            settle_feasibility_tol=settle_feasibility_tol,
+            settle_complementarity_abs_tol=settle_complementarity_abs_tol,
+        )
+        candidate_proposals: list[dict[str, Any]] = []
+        accepted_proposal: Optional[dict[str, Any]] = None
+        accepted_result: Optional[dict[str, Any]] = None
+
+        if (not require_settled_before_add) or add_decision["settled_for_addition"]:
+            addition_proposals = _build_addition_proposals(
+                solve=solve,
+                current_support=support_before,
+                formula_matrix_cond=formula_matrix_cond,
+                add_threshold=add_threshold,
+                reduced_cost_threshold=reduced_cost_threshold,
+                reduced_cost_fraction=reduced_cost_fraction,
+                binding_element_indices=solve["binding_element_indices"],
+                bottleneck_tiebreak=bottleneck_tiebreak,
+                proposal_batch_sizes=proposal_batch_sizes,
+                current_support_size=len(support_before),
+                support_size_cap=support_size_cap,
+                max_batch_size=max_batch_size,
+            )
+        else:
+            addition_proposals = []
+        eligible_drop_indices, drop_proposals = _build_drop_proposals(
+            solve=solve,
+            current_support=support_before,
+            drop_m_threshold=drop_m_threshold,
+            drop_driving_threshold=drop_driving_threshold,
+            drop_m_hysteresis_factor=drop_m_hysteresis_factor,
+            drop_driving_hysteresis=drop_driving_hysteresis,
+            max_drop_proposals=max_drop_proposals,
+        )
+
+        warm_start_full = jnp.asarray(solve["m_full"], dtype=dtype)
+        current_support_amounts = jnp.asarray(solve["m_candidate"], dtype=dtype)
+        for proposal in addition_proposals:
+            proposal_indices = list(proposal["indices"])
+            if not proposal_indices:
+                continue
+            proposed_support = sorted(set(support_before).union(proposal_indices))
+            if support_size_cap is not None and len(proposed_support) > int(support_size_cap):
+                continue
+            proposal_portfolio = _run_online_support_portfolio(
+                state=state,
+                formula_matrix=formula_matrix,
+                formula_matrix_cond=formula_matrix_cond,
+                hvector_func=hvector_func,
+                hvector_cond_func=hvector_cond_func,
+                support_indices=proposed_support,
+                condensate_species=condensate_species,
+                element_names=element_names,
+                original_init_amounts=_support_amounts_from_full(
+                    proposed_support,
+                    warm_start_full,
+                    default_amount=default_initial_amount,
+                    dtype=dtype,
+                ),
+                previous_support_names=support_before_names,
+                previous_support_amounts=current_support_amounts,
+                support_start_history=support_start_history,
+                optimizer_method=optimizer_method,
+                optimizer_maxiter=optimizer_maxiter,
+                optimizer_ftol=optimizer_ftol,
+                gas_epsilon_crit=gas_epsilon_crit,
+                gas_max_iter=gas_max_iter,
+                budget_negative_tol=budget_negative_tol,
+                objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+                inactive_top_k=inactive_top_k,
+                default_initial_amount=default_initial_amount,
+                active_m_threshold=active_m_threshold,
+                stage_a_optimizer_maxiter=(
+                    portfolio_stage_a_optimizer_maxiter
+                    if proposal_stage_a_optimizer_maxiter is None
+                    else proposal_stage_a_optimizer_maxiter
+                ),
+                stage_a_optimizer_ftol=(
+                    portfolio_stage_a_optimizer_ftol
+                    if proposal_stage_a_optimizer_ftol is None
+                    else proposal_stage_a_optimizer_ftol
+                ),
+                gating_feasibility_tol=portfolio_gating_feasibility_tol,
+                gating_stationarity_tol=portfolio_gating_stationarity_tol,
+                gating_complementarity_tol=portfolio_gating_complementarity_tol,
+                gating_inactive_max_positive_tol=portfolio_gating_inactive_max_positive_tol,
+                stage_b_optimizer_maxiter=portfolio_stage_b_optimizer_maxiter,
+                stage_b_optimizer_ftol=portfolio_stage_b_optimizer_ftol,
+                stage_b_top_k=proposal_portfolio_stage_b_top_k,
+                max_available_screening_starts=1,
+                selection_mode=proposal_portfolio_selection_mode,
+                evaluation_origin="addition_proposal",
+                diagnostic_context=diagnostic_context,
+                local_solve_cache=local_solve_cache,
+                local_solve_accounting=local_solve_accounting,
+            )
+            proposal_result = proposal_portfolio["chosen_result"]
+            proposal_merit = _compute_dynamic_support_merit(
+                solve=proposal_result,
+                stationarity_weight=merit_stationarity_weight,
+                feasibility_weight=merit_feasibility_weight,
+                complementarity_weight=merit_complementarity_weight,
+                inactive_weight=merit_inactive_weight,
+                inactive_count_weight=merit_inactive_count_weight,
+                support_size=len(proposed_support),
+                support_size_penalty=support_size_penalty,
+                added_count=len(proposal_indices),
+                addition_penalty=addition_penalty,
+            )
+            merit_delta = float(current_merit["value"] - proposal_merit["value"])
+            accepted_by_merit = merit_delta >= required_merit_improvement
+            record = {
+                "proposal_type": "addition",
+                "proposal_kind": proposal["proposal_kind"],
+                "selection_threshold": proposal.get("selection_threshold"),
+                "indices": proposal_indices,
+                "names": _restricted_support_names(proposal_indices, condensate_species),
+                "support_indices": proposed_support,
+                "support_names": _restricted_support_names(proposed_support, condensate_species),
+                "original_init_amounts": proposal_portfolio["original_init_amounts"],
+                "stage_a_runs": proposal_portfolio["stage_a_runs"],
+                "stage_b_runs": proposal_portfolio["stage_b_runs"],
+                "stage_b_refined_start_modes": proposal_portfolio["stage_b_refined_start_modes"],
+                "predicted_first_choice_start": proposal_portfolio["predicted_first_choice_start"],
+                "ranked_start_modes": proposal_portfolio["ranked_start_modes"],
+                "ranking_sources": proposal_portfolio["ranking_sources"],
+                "tried_start_modes": proposal_portfolio["tried_start_modes"],
+                "escalation_events": proposal_portfolio["escalation_events"],
+                "accepted_without_refinement": proposal_portfolio["accepted_without_refinement"],
+                "chosen_run": {
+                    key: value
+                    for key, value in proposal_portfolio["chosen_run"].items()
+                    if key not in ("result", "init_amounts")
+                },
+                "current_merit": current_merit,
+                "merit": proposal_merit,
+                "merit_delta": merit_delta,
+                    "accepted": bool(accepted_by_merit),
+                "acceptance_decision": {
+                    "accepted_by_merit": bool(accepted_by_merit),
+                    "required_merit_improvement": float(required_merit_improvement),
+                    "reason": (
+                        "merit_threshold_met"
+                        if accepted_by_merit
+                        else "merit_delta_below_required_improvement"
+                    ),
+                },
+                "solve": proposal_result,
+            }
+            lookahead_evaluation = _evaluate_addition_lookahead(
+                proposal_record=record,
+                proposal_result=proposal_result,
+                current_merit=current_merit,
+            )
+            if lookahead_evaluation is not None:
+                record["lookahead_evaluation"] = lookahead_evaluation
+                if (not bool(record["accepted"])) and bool(lookahead_evaluation.get("accepted_by_lookahead", False)):
+                    record["accepted"] = True
+                    record["acceptance_decision"] = {
+                        **dict(record.get("acceptance_decision") or {}),
+                        "accepted_by_lookahead": True,
+                        "reason": str(lookahead_evaluation["acceptance_reason"]),
+                    }
+            candidate_proposals.append(record)
+            addition_proposal_evaluation = {
+                "outer_iter": int(outer_iter),
+                "evaluation_origin": "addition_proposal",
+                "proposal_kind": proposal["proposal_kind"],
+                "support_size": int(proposal_portfolio["support_size"]),
+                "support_indices": list(proposal_portfolio["support_indices"]),
+                "support_names": list(proposal_portfolio["support_names"]),
+                "original_init_amounts": proposal_portfolio["original_init_amounts"],
+                "stage_a_runs": proposal_portfolio["stage_a_runs"],
+                "stage_b_runs": proposal_portfolio["stage_b_runs"],
+                "stage_b_refined_start_modes": proposal_portfolio["stage_b_refined_start_modes"],
+                "predicted_first_choice_start": proposal_portfolio["predicted_first_choice_start"],
+                "ranked_start_modes": proposal_portfolio["ranked_start_modes"],
+                "ranking_sources": proposal_portfolio["ranking_sources"],
+                "tried_start_modes": proposal_portfolio["tried_start_modes"],
+                "escalation_events": proposal_portfolio["escalation_events"],
+                "accepted_without_refinement": proposal_portfolio["accepted_without_refinement"],
+                "chosen_run": proposal_portfolio["chosen_run"],
+            }
+            support_evaluations.append(addition_proposal_evaluation)
+            _emit_progress(
+                event_type="support_evaluation_completed",
+                evaluation_record=addition_proposal_evaluation,
+                outer_iter=outer_iter,
+            )
+            if record["accepted"] and (
+                accepted_proposal is None
+                or float(
+                    (
+                        record.get("lookahead_evaluation", {}).get("lookahead_merit", {}).get("value")
+                        if record.get("lookahead_evaluation", {}).get("accepted_by_lookahead", False)
+                        else record["merit"]["value"]
+                    )
+                )
+                < float(
+                    (
+                        accepted_proposal.get("lookahead_evaluation", {}).get("lookahead_merit", {}).get("value")
+                        if accepted_proposal.get("lookahead_evaluation", {}).get("accepted_by_lookahead", False)
+                        else accepted_proposal["merit"]["value"]
+                    )
+                )
+            ):
+                accepted_proposal = record
+                accepted_result = proposal_result
+
+        for proposal in drop_proposals:
+            proposal_indices = list(proposal["indices"])
+            if not proposal_indices:
+                continue
+            proposed_support = [idx for idx in support_before if idx not in set(proposal_indices)]
+            proposal_portfolio = _run_online_support_portfolio(
+                state=state,
+                formula_matrix=formula_matrix,
+                formula_matrix_cond=formula_matrix_cond,
+                hvector_func=hvector_func,
+                hvector_cond_func=hvector_cond_func,
+                support_indices=proposed_support,
+                condensate_species=condensate_species,
+                element_names=element_names,
+                original_init_amounts=_support_amounts_from_full(
+                    proposed_support,
+                    warm_start_full,
+                    default_amount=default_initial_amount,
+                    dtype=dtype,
+                ),
+                previous_support_names=support_before_names,
+                previous_support_amounts=current_support_amounts,
+                support_start_history=support_start_history,
+                optimizer_method=optimizer_method,
+                optimizer_maxiter=optimizer_maxiter,
+                optimizer_ftol=optimizer_ftol,
+                gas_epsilon_crit=gas_epsilon_crit,
+                gas_max_iter=gas_max_iter,
+                budget_negative_tol=budget_negative_tol,
+                objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+                inactive_top_k=inactive_top_k,
+                default_initial_amount=default_initial_amount,
+                active_m_threshold=active_m_threshold,
+                stage_a_optimizer_maxiter=(
+                    portfolio_stage_a_optimizer_maxiter
+                    if proposal_stage_a_optimizer_maxiter is None
+                    else proposal_stage_a_optimizer_maxiter
+                ),
+                stage_a_optimizer_ftol=(
+                    portfolio_stage_a_optimizer_ftol
+                    if proposal_stage_a_optimizer_ftol is None
+                    else proposal_stage_a_optimizer_ftol
+                ),
+                gating_feasibility_tol=portfolio_gating_feasibility_tol,
+                gating_stationarity_tol=portfolio_gating_stationarity_tol,
+                gating_complementarity_tol=portfolio_gating_complementarity_tol,
+                gating_inactive_max_positive_tol=portfolio_gating_inactive_max_positive_tol,
+                stage_b_optimizer_maxiter=portfolio_stage_b_optimizer_maxiter,
+                stage_b_optimizer_ftol=portfolio_stage_b_optimizer_ftol,
+                stage_b_top_k=proposal_portfolio_stage_b_top_k,
+                max_available_screening_starts=1,
+                selection_mode=proposal_portfolio_selection_mode,
+                evaluation_origin="drop_proposal",
+                diagnostic_context=diagnostic_context,
+                local_solve_cache=local_solve_cache,
+                local_solve_accounting=local_solve_accounting,
+            )
+            proposal_result = proposal_portfolio["chosen_result"]
+            proposal_merit = _compute_dynamic_support_merit(
+                solve=proposal_result,
+                stationarity_weight=merit_stationarity_weight,
+                feasibility_weight=merit_feasibility_weight,
+                complementarity_weight=merit_complementarity_weight,
+                inactive_weight=merit_inactive_weight,
+                inactive_count_weight=merit_inactive_count_weight,
+                support_size=len(proposed_support),
+                support_size_penalty=support_size_penalty,
+                added_count=0,
+                addition_penalty=addition_penalty,
+            )
+            merit_delta = float(current_merit["value"] - proposal_merit["value"])
+            accepted = merit_delta >= 0.0
+            record = {
+                "proposal_type": "drop",
+                "proposal_kind": proposal["proposal_kind"],
+                "selection_threshold": None,
+                "indices": proposal_indices,
+                "names": _restricted_support_names(proposal_indices, condensate_species),
+                "support_indices": proposed_support,
+                "support_names": _restricted_support_names(proposed_support, condensate_species),
+                "original_init_amounts": proposal_portfolio["original_init_amounts"],
+                "stage_a_runs": proposal_portfolio["stage_a_runs"],
+                "stage_b_runs": proposal_portfolio["stage_b_runs"],
+                "stage_b_refined_start_modes": proposal_portfolio["stage_b_refined_start_modes"],
+                "predicted_first_choice_start": proposal_portfolio["predicted_first_choice_start"],
+                "ranked_start_modes": proposal_portfolio["ranked_start_modes"],
+                "ranking_sources": proposal_portfolio["ranking_sources"],
+                "tried_start_modes": proposal_portfolio["tried_start_modes"],
+                "escalation_events": proposal_portfolio["escalation_events"],
+                "accepted_without_refinement": proposal_portfolio["accepted_without_refinement"],
+                "chosen_run": {
+                    key: value
+                    for key, value in proposal_portfolio["chosen_run"].items()
+                    if key not in ("result", "init_amounts")
+                },
+                "merit": proposal_merit,
+                "merit_delta": merit_delta,
+                "accepted": bool(accepted),
+                "acceptance_decision": {
+                    "accepted_by_merit": bool(accepted),
+                    "required_merit_improvement": 0.0,
+                    "reason": (
+                        "merit_nonworsening"
+                        if accepted
+                        else "merit_delta_negative"
+                    ),
+                },
+                "solve": proposal_result,
+            }
+            candidate_proposals.append(record)
+            drop_proposal_evaluation = {
+                "outer_iter": int(outer_iter),
+                "evaluation_origin": "drop_proposal",
+                "proposal_kind": proposal["proposal_kind"],
+                "support_size": int(proposal_portfolio["support_size"]),
+                "support_indices": list(proposal_portfolio["support_indices"]),
+                "support_names": list(proposal_portfolio["support_names"]),
+                "original_init_amounts": proposal_portfolio["original_init_amounts"],
+                "stage_a_runs": proposal_portfolio["stage_a_runs"],
+                "stage_b_runs": proposal_portfolio["stage_b_runs"],
+                "stage_b_refined_start_modes": proposal_portfolio["stage_b_refined_start_modes"],
+                "predicted_first_choice_start": proposal_portfolio["predicted_first_choice_start"],
+                "ranked_start_modes": proposal_portfolio["ranked_start_modes"],
+                "ranking_sources": proposal_portfolio["ranking_sources"],
+                "tried_start_modes": proposal_portfolio["tried_start_modes"],
+                "escalation_events": proposal_portfolio["escalation_events"],
+                "accepted_without_refinement": proposal_portfolio["accepted_without_refinement"],
+                "chosen_run": proposal_portfolio["chosen_run"],
+            }
+            support_evaluations.append(drop_proposal_evaluation)
+            _emit_progress(
+                event_type="support_evaluation_completed",
+                evaluation_record=drop_proposal_evaluation,
+                outer_iter=outer_iter,
+            )
+            if accepted and (
+                accepted_proposal is None
+                or float(record["merit"]["value"]) < float(accepted_proposal["merit"]["value"])
+            ):
+                accepted_proposal = record
+                accepted_result = proposal_result
+
+        accepted_add_indices: list[int] = []
+        accepted_drop_indices: list[int] = []
+        next_support = support_before
+        forced_acceptance_applied = None
+        if forced_acceptance_rule is not None:
+            for proposal in candidate_proposals:
+                if not _proposal_matches_forced_acceptance_rule(
+                    rule=forced_acceptance_rule,
+                    outer_iter=outer_iter,
+                    support_before_names=support_before_names,
+                    proposal=proposal,
+                ):
+                    continue
+                proposal["accepted"] = True
+                proposal["acceptance_decision"] = {
+                    **dict(proposal.get("acceptance_decision") or {}),
+                    "accepted_by_merit": False,
+                    "forced_acceptance_applied": True,
+                    "forced_acceptance_reason": "forced_acceptance_rule",
+                }
+                forced_acceptance_applied = {
+                    "outer_iter": int(outer_iter),
+                    "support_before_names": list(support_before_names),
+                    "proposal_type": str(proposal["proposal_type"]),
+                    "proposal_kind": str(proposal["proposal_kind"]),
+                    "proposal_names": list(proposal["names"]),
+                    "required_merit_improvement": float(required_merit_improvement),
+                    "merit_delta": float(proposal["merit_delta"]),
+                }
+                proposal["forced_acceptance"] = forced_acceptance_applied
+                forced_acceptance_rule["applied"] = True
+                forced_acceptance_rule["applied_outer_iter"] = int(outer_iter)
+                accepted_proposal = proposal
+                accepted_result = proposal["solve"]
+                break
+        if accepted_proposal is not None and accepted_result is not None:
+            accepted_refined = _run_online_support_portfolio(
+                state=state,
+                formula_matrix=formula_matrix,
+                formula_matrix_cond=formula_matrix_cond,
+                hvector_func=hvector_func,
+                hvector_cond_func=hvector_cond_func,
+                support_indices=list(accepted_proposal["support_indices"]),
+                condensate_species=condensate_species,
+                element_names=element_names,
+                original_init_amounts=jnp.asarray(accepted_proposal["original_init_amounts"], dtype=dtype),
+                previous_support_names=support_before_names,
+                previous_support_amounts=current_support_amounts,
+                support_start_history=support_start_history,
+                optimizer_method=optimizer_method,
+                optimizer_maxiter=optimizer_maxiter,
+                optimizer_ftol=optimizer_ftol,
+                gas_epsilon_crit=gas_epsilon_crit,
+                gas_max_iter=gas_max_iter,
+                budget_negative_tol=budget_negative_tol,
+                objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+                inactive_top_k=inactive_top_k,
+                default_initial_amount=default_initial_amount,
+                active_m_threshold=active_m_threshold,
+                stage_a_optimizer_maxiter=portfolio_stage_a_optimizer_maxiter,
+                stage_a_optimizer_ftol=portfolio_stage_a_optimizer_ftol,
+                gating_feasibility_tol=portfolio_gating_feasibility_tol,
+                gating_stationarity_tol=portfolio_gating_stationarity_tol,
+                gating_complementarity_tol=portfolio_gating_complementarity_tol,
+                gating_inactive_max_positive_tol=portfolio_gating_inactive_max_positive_tol,
+                stage_b_optimizer_maxiter=portfolio_stage_b_optimizer_maxiter,
+                stage_b_optimizer_ftol=portfolio_stage_b_optimizer_ftol,
+                stage_b_top_k=accepted_stage_b_top_k,
+                max_available_screening_starts=None,
+                selection_mode=current_portfolio_selection_mode,
+                evaluation_origin="accepted_proposal_refinement",
+                diagnostic_context=diagnostic_context,
+                local_solve_cache=local_solve_cache,
+                local_solve_accounting=local_solve_accounting,
+            )
+            accepted_proposal["stage_a_runs"] = accepted_refined["stage_a_runs"]
+            accepted_proposal["stage_b_runs"] = accepted_refined["stage_b_runs"]
+            accepted_proposal["stage_b_refined_start_modes"] = accepted_refined["stage_b_refined_start_modes"]
+            accepted_proposal["predicted_first_choice_start"] = accepted_refined["predicted_first_choice_start"]
+            accepted_proposal["ranked_start_modes"] = accepted_refined["ranked_start_modes"]
+            accepted_proposal["ranking_sources"] = accepted_refined["ranking_sources"]
+            accepted_proposal["tried_start_modes"] = accepted_refined["tried_start_modes"]
+            accepted_proposal["escalation_events"] = accepted_refined["escalation_events"]
+            accepted_proposal["accepted_without_refinement"] = accepted_refined["accepted_without_refinement"]
+            accepted_proposal["chosen_run"] = {
+                key: value
+                for key, value in accepted_refined["chosen_run"].items()
+                if key not in ("result", "init_amounts")
+            }
+            accepted_result = accepted_refined["chosen_result"]
+            accepted_refinement_evaluation = {
+                "outer_iter": int(outer_iter),
+                "evaluation_origin": "accepted_proposal_refinement",
+                "proposal_kind": accepted_proposal["proposal_kind"],
+                "support_size": int(accepted_refined["support_size"]),
+                "support_indices": list(accepted_refined["support_indices"]),
+                "support_names": list(accepted_refined["support_names"]),
+                "original_init_amounts": accepted_refined["original_init_amounts"],
+                "stage_a_runs": accepted_refined["stage_a_runs"],
+                "stage_b_runs": accepted_refined["stage_b_runs"],
+                "stage_b_refined_start_modes": accepted_refined["stage_b_refined_start_modes"],
+                "predicted_first_choice_start": accepted_refined["predicted_first_choice_start"],
+                "ranked_start_modes": accepted_refined["ranked_start_modes"],
+                "ranking_sources": accepted_refined["ranking_sources"],
+                "tried_start_modes": accepted_refined["tried_start_modes"],
+                "escalation_events": accepted_refined["escalation_events"],
+                "accepted_without_refinement": accepted_refined["accepted_without_refinement"],
+                "chosen_run": accepted_refined["chosen_run"],
+            }
+            support_evaluations.append(accepted_refinement_evaluation)
+            _emit_progress(
+                event_type="support_evaluation_completed",
+                evaluation_record=accepted_refinement_evaluation,
+                outer_iter=outer_iter,
+            )
+            support_start_history.append(
+                {
+                    "outer_iter": int(outer_iter),
+                    "evaluation_origin": "accepted_proposal_refinement",
+                    "support_names": list(accepted_refined["support_names"]),
+                    "support_size": int(accepted_refined["support_size"]),
+                    "chosen_start_mode": str(accepted_refined["chosen_run"]["start_mode"]),
+                    "predicted_first_choice_start": accepted_refined["predicted_first_choice_start"],
+                    "tried_start_modes": list(accepted_refined["tried_start_modes"]),
+                    "support_choice_score": float(accepted_refined["chosen_run"]["support_choice_score"]),
+                }
+            )
+            next_support = list(accepted_proposal["support_indices"])
+            final_result = accepted_result
+            accepted_checkpoint = {
+                "outer_iter": int(outer_iter),
+                "checkpoint_origin": "accepted_proposal",
+                "support_size": int(len(next_support)),
+                "support_names": list(accepted_proposal["support_names"]),
+                "chosen_run": dict(accepted_proposal["chosen_run"]),
+            }
+            if not _is_same_support_checkpoint(accepted_checkpoint, path_checkpoints[-1]):
+                path_checkpoints.append(accepted_checkpoint)
+            if accepted_proposal["proposal_type"] == "addition":
+                accepted_add_indices = list(accepted_proposal["indices"])
+            else:
+                accepted_drop_indices = list(accepted_proposal["indices"])
+
+        no_changes = next_support == support_before
+        repeated_no_change = repeated_no_change + 1 if no_changes else 0
+        reference_result = solve if accepted_result is None else accepted_result
+        inactive_clear = float(reference_result["max_positive_inactive_driving"]) <= max(
+            add_threshold,
+            reduced_cost_threshold,
+            stabilization_inactive_tol,
+        )
+        support_stabilized = bool(
+            no_changes
+            and (
+                inactive_clear
+                or repeated_no_change >= 2
+                or (accepted_proposal is None and not add_decision["settled_for_addition"] and not eligible_drop_indices)
+            )
+        )
+        solver_like_stabilized = _solver_like_support_stabilized(
+            solve=reference_result,
+            no_changes=no_changes,
+            add_threshold=add_threshold,
+            reduced_cost_threshold=reduced_cost_threshold,
+            stabilization_inactive_tol=stabilization_inactive_tol,
+            settle_stationarity_abs_tol=settle_stationarity_abs_tol,
+            settle_feasibility_tol=settle_feasibility_tol,
+            settle_complementarity_abs_tol=settle_complementarity_abs_tol,
+        )
+        history.append(
+            {
+                "outer_iter": outer_iter,
+                "support_before_indices": support_before,
+                "support_before_names": support_before_names,
+                "support_size_before": len(support_before),
+                "solve": solve,
+                "current_support_portfolio": {
+                    "original_init_amounts": current_solve["original_init_amounts"],
+                    "stage_a_runs": current_solve["stage_a_runs"],
+                    "stage_b_runs": current_solve["stage_b_runs"],
+                    "stage_b_refined_start_modes": current_solve["stage_b_refined_start_modes"],
+                    "predicted_first_choice_start": current_solve["predicted_first_choice_start"],
+                    "ranked_start_modes": current_solve["ranked_start_modes"],
+                    "ranking_sources": current_solve["ranking_sources"],
+                    "tried_start_modes": current_solve["tried_start_modes"],
+                    "escalation_events": current_solve["escalation_events"],
+                    "accepted_without_refinement": current_solve["accepted_without_refinement"],
+                    "chosen_run": {
+                        key: value
+                        for key, value in current_solve["chosen_run"].items()
+                        if key not in ("result", "init_amounts")
+                    },
+                },
+                "add_rule": add_rule,
+                "bottleneck_tiebreak": bool(bottleneck_tiebreak),
+                "settled_for_addition": add_decision["settled_for_addition"],
+                "addition_gate_stationarity": add_decision["stationarity"],
+                "addition_gate_stationarity_limit": add_decision["stationarity_limit"],
+                "addition_gate_feasibility": add_decision["feasibility"],
+                "addition_gate_complementarity": add_decision["complementarity"],
+                "addition_gate_complementarity_limit": add_decision["complementarity_limit"],
+                "add_selection_threshold": add_decision["selection_threshold"],
+                "eligible_add_indices": add_decision["eligible_ranked_indices"],
+                "eligible_add_names": _restricted_support_names(
+                    add_decision["eligible_ranked_indices"][: min(10, len(add_decision["eligible_ranked_indices"]))],
+                    condensate_species,
+                ),
+                "eligible_add_driving": add_decision["eligible_ranked_driving"],
+                "naive_add_indices": naive_additions,
+                "naive_add_names": _restricted_support_names(naive_additions, condensate_species),
+                "bottleneck_add_indices": bottleneck_additions,
+                "bottleneck_add_names": _restricted_support_names(bottleneck_additions, condensate_species),
+                "current_merit": current_merit,
+                "required_merit_improvement": float(required_merit_improvement),
+                "eligible_drop_indices": eligible_drop_indices,
+                "eligible_drop_names": _restricted_support_names(eligible_drop_indices, condensate_species),
+                "proposal_count": len(candidate_proposals),
+                "proposals": candidate_proposals,
+                "accepted_proposal": accepted_proposal,
+                "rejected_proposals": [proposal for proposal in candidate_proposals if not proposal["accepted"]],
+                "forced_acceptance_applied": forced_acceptance_applied,
+                "add_indices": accepted_add_indices,
+                "add_names": _restricted_support_names(accepted_add_indices, condensate_species),
+                "drop_indices": accepted_drop_indices,
+                "drop_names": _restricted_support_names(accepted_drop_indices, condensate_species),
+                "support_after_indices": next_support,
+                "support_after_names": _restricted_support_names(next_support, condensate_species),
+                "support_size_after": len(next_support),
+                "support_stabilized": support_stabilized,
+                "solver_like_stabilized": solver_like_stabilized,
+                "no_support_changes": no_changes,
+            }
+        )
+
+        previous_support_names = list(_restricted_support_names(next_support, condensate_species) or [str(idx) for idx in next_support])
+        previous_support_amounts = _support_amounts_from_full(
+            next_support,
+            jnp.asarray(reference_result["m_full"], dtype=dtype),
+            default_amount=default_initial_amount,
+            dtype=dtype,
+        )
+
+        current_support = next_support
+        current_amounts = previous_support_amounts
+        completed_elapsed_seconds = elapsed_completed_seconds + (time.perf_counter() - start)
+        _emit_progress(
+            event_type="outer_iteration_completed",
+            outer_iter=outer_iter,
+            resume_payload=_build_resume_state(outer_iter + 1, completed_elapsed_seconds),
+        )
+
+        if solver_like_stabilized or support_stabilized:
+            break
+
+    if final_result is not None and list(final_result["candidate_indices"]) != list(current_support):
+        final_portfolio = _run_online_support_portfolio(
+            state=state,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond=formula_matrix_cond,
+            hvector_func=hvector_func,
+            hvector_cond_func=hvector_cond_func,
+            support_indices=current_support,
+            condensate_species=condensate_species,
+            element_names=element_names,
+            original_init_amounts=current_amounts,
+            previous_support_names=previous_support_names,
+            previous_support_amounts=previous_support_amounts,
+            support_start_history=support_start_history,
+            optimizer_method=optimizer_method,
+            optimizer_maxiter=optimizer_maxiter,
+            optimizer_ftol=optimizer_ftol,
+            gas_epsilon_crit=gas_epsilon_crit,
+            gas_max_iter=gas_max_iter,
+            budget_negative_tol=budget_negative_tol,
+            objective_infeasible_penalty_weight=objective_infeasible_penalty_weight,
+            inactive_top_k=inactive_top_k,
+            default_initial_amount=default_initial_amount,
+            active_m_threshold=active_m_threshold,
+            stage_a_optimizer_maxiter=portfolio_stage_a_optimizer_maxiter,
+            stage_a_optimizer_ftol=portfolio_stage_a_optimizer_ftol,
+            gating_feasibility_tol=portfolio_gating_feasibility_tol,
+            gating_stationarity_tol=portfolio_gating_stationarity_tol,
+            gating_complementarity_tol=portfolio_gating_complementarity_tol,
+            gating_inactive_max_positive_tol=portfolio_gating_inactive_max_positive_tol,
+            stage_b_optimizer_maxiter=portfolio_stage_b_optimizer_maxiter,
+            stage_b_optimizer_ftol=portfolio_stage_b_optimizer_ftol,
+            stage_b_top_k=portfolio_stage_b_top_k,
+            max_available_screening_starts=None,
+            selection_mode=current_portfolio_selection_mode,
+            evaluation_origin="final_resolve",
+            diagnostic_context=diagnostic_context,
+            local_solve_cache=local_solve_cache,
+            local_solve_accounting=local_solve_accounting,
+        )
+        final_result = final_portfolio["chosen_result"]
+        final_checkpoint = {
+            "outer_iter": int(len(history)),
+            "checkpoint_origin": "final_resolve",
+            "support_size": int(final_portfolio["support_size"]),
+            "support_names": list(final_portfolio["support_names"]),
+            "chosen_run": {
+                key: value
+                for key, value in final_portfolio["chosen_run"].items()
+                if key not in ("result", "init_amounts")
+            },
+        }
+        path_checkpoints.append(final_checkpoint)
+        final_resolve_evaluation = {
+            "outer_iter": int(len(history)),
+            "evaluation_origin": "final_resolve",
+            "support_size": int(final_portfolio["support_size"]),
+            "support_indices": list(final_portfolio["support_indices"]),
+            "support_names": list(final_portfolio["support_names"]),
+            "original_init_amounts": final_portfolio["original_init_amounts"],
+            "stage_a_runs": final_portfolio["stage_a_runs"],
+            "stage_b_runs": final_portfolio["stage_b_runs"],
+            "stage_b_refined_start_modes": final_portfolio["stage_b_refined_start_modes"],
+            "predicted_first_choice_start": final_portfolio["predicted_first_choice_start"],
+            "ranked_start_modes": final_portfolio["ranked_start_modes"],
+            "ranking_sources": final_portfolio["ranking_sources"],
+            "tried_start_modes": final_portfolio["tried_start_modes"],
+            "escalation_events": final_portfolio["escalation_events"],
+            "accepted_without_refinement": final_portfolio["accepted_without_refinement"],
+            "chosen_run": final_portfolio["chosen_run"],
+        }
+        support_evaluations.append(final_resolve_evaluation)
+        _emit_progress(
+            event_type="support_evaluation_completed",
+            evaluation_record=final_resolve_evaluation,
+            outer_iter=len(history),
+        )
+        support_start_history.append(
+            {
+                "outer_iter": int(len(history)),
+                "evaluation_origin": "final_resolve",
+                "support_names": list(final_portfolio["support_names"]),
+                "support_size": int(final_portfolio["support_size"]),
+                "chosen_start_mode": str(final_portfolio["chosen_run"]["start_mode"]),
+                "predicted_first_choice_start": final_portfolio["predicted_first_choice_start"],
+                "tried_start_modes": list(final_portfolio["tried_start_modes"]),
+                "support_choice_score": float(final_portfolio["chosen_run"]["support_choice_score"]),
+            }
+        )
+
+    elapsed = time.perf_counter() - start
+    final_merit = None
+    if final_result is not None:
+        final_merit = _compute_dynamic_support_merit(
+            solve=final_result,
+            stationarity_weight=merit_stationarity_weight,
+            feasibility_weight=merit_feasibility_weight,
+            complementarity_weight=merit_complementarity_weight,
+            inactive_weight=merit_inactive_weight,
+            inactive_count_weight=merit_inactive_count_weight,
+            support_size=len(current_support),
+            support_size_penalty=support_size_penalty,
+            added_count=0,
+            addition_penalty=addition_penalty,
+        )
+    final_solver_like_stabilized = bool(history[-1]["solver_like_stabilized"]) if history else False
+    best_active_checkpoint = None
+    best_compromise_checkpoint = None
+    endpoint_checkpoint = None
+    endpoint_equals_best_active = None
+    endpoint_equals_best_compromise = None
+    if path_checkpoints:
+        best_active_checkpoint, best_compromise_checkpoint = _build_online_path_checkpoint_summary(path_checkpoints)
+        endpoint_checkpoint = path_checkpoints[-1]
+        endpoint_equals_best_active = _is_same_support_checkpoint(endpoint_checkpoint, best_active_checkpoint)
+        endpoint_equals_best_compromise = _is_same_support_checkpoint(endpoint_checkpoint, best_compromise_checkpoint)
+    returned_checkpoint = endpoint_checkpoint
+    returned_result = final_result
+    returned_checkpoint_equals_endpoint = True
+    if returned_checkpoint_policy == "best_active_side_kkt":
+        returned_checkpoint = best_active_checkpoint
+        returned_result = None if best_active_checkpoint is None else best_active_checkpoint["chosen_run"]
+    elif returned_checkpoint_policy == "best_compromise":
+        returned_checkpoint = best_compromise_checkpoint
+        returned_result = None if best_compromise_checkpoint is None else best_compromise_checkpoint["chosen_run"]
+    if returned_checkpoint is not None and endpoint_checkpoint is not None:
+        returned_checkpoint_equals_endpoint = _is_same_support_checkpoint(returned_checkpoint, endpoint_checkpoint)
+    elif returned_checkpoint is None and endpoint_checkpoint is None:
+        returned_checkpoint_equals_endpoint = True
+    else:
+        returned_checkpoint_equals_endpoint = False
+    _emit_progress(
+        event_type="path_completed",
+        outer_iter=len(history),
+        resume_payload=None,
+    )
+
+    return {
+        "prototype_family": "dynamic_support_outer_objective_online_portfolio_diagnostic",
+        "initial_diagnostic": initial_diag,
+        "initial_lp_top_k": int(initial_lp_top_k),
+        "initial_lp_support_indices": list(initial_lp["support_indices"]),
+        "initial_lp_support_names": initial_lp["support_names"],
+        "initial_lp_support_size": int(initial_lp["support_size"]),
+        "initial_seed_additions": initial_seed_additions,
+        "initial_seed_addition_names": _restricted_support_names(initial_seed_additions, condensate_species),
+        "update_policy": "bottleneck_aware" if (add_rule == "naive_topk" and bottleneck_tiebreak) else add_rule,
+        "add_rule": add_rule,
+        "bottleneck_tiebreak": bool(bottleneck_tiebreak),
+        "reduced_cost_threshold": float(reduced_cost_threshold),
+        "reduced_cost_fraction": float(reduced_cost_fraction),
+        "require_settled_before_add": bool(require_settled_before_add),
+        "local_solver_policy": {
+            "screening_stage": {
+                "optimizer_method": str(optimizer_method),
+                "optimizer_maxiter": int(portfolio_stage_a_optimizer_maxiter),
+                "optimizer_ftol_gtol_xtol_barrier_tol": float(portfolio_stage_a_optimizer_ftol),
+                "selection_mode": str(current_portfolio_selection_mode),
+                "start_modes": ["warm_previous_support", "original_init", "zero_default"],
+            },
+            "proposal_screening_stage": {
+                "optimizer_method": str(optimizer_method),
+                "optimizer_maxiter": int(
+                    portfolio_stage_a_optimizer_maxiter
+                    if proposal_stage_a_optimizer_maxiter is None
+                    else proposal_stage_a_optimizer_maxiter
+                ),
+                "optimizer_ftol_gtol_xtol_barrier_tol": float(
+                    portfolio_stage_a_optimizer_ftol
+                    if proposal_stage_a_optimizer_ftol is None
+                    else proposal_stage_a_optimizer_ftol
+                ),
+                "selection_mode": str(proposal_portfolio_selection_mode),
+                "max_available_screening_starts": 1,
+                "start_modes": ["warm_previous_support", "original_init", "zero_default"],
+            },
+            "refinement_stage": {
+                "optimizer_method": str(optimizer_method),
+                "optimizer_maxiter": int(
+                    optimizer_maxiter if portfolio_stage_b_optimizer_maxiter is None else portfolio_stage_b_optimizer_maxiter
+                ),
+                "optimizer_ftol_gtol_xtol_barrier_tol": float(
+                    optimizer_ftol if portfolio_stage_b_optimizer_ftol is None else portfolio_stage_b_optimizer_ftol
+                ),
+                "top_k": int(portfolio_stage_b_top_k),
+            },
+            "proposal_refinement_top_k": int(proposal_portfolio_stage_b_top_k),
+            "accepted_proposal_refinement_top_k": int(accepted_stage_b_top_k),
+            "gating_thresholds": {
+                "solver_success_required": True,
+                "status_must_equal": "ok",
+                "feasibility_residual_inf_max": float(portfolio_gating_feasibility_tol),
+                "true_stationarity_residual_inf_max": float(portfolio_gating_stationarity_tol),
+                "complementarity_residual_inf_max": float(portfolio_gating_complementarity_tol),
+                "max_positive_inactive_driving_max": float(portfolio_gating_inactive_max_positive_tol),
+            },
+            "support_aware_ranking_definition": [
+                "exact same support seen earlier on this path",
+                "nearest prior support by overlap or subset relation",
+                "winning start mode on nearby support sizes",
+                "fallback default order",
+            ],
+            "support_choice_score_definition": (
+                "status_penalty + solver_penalty + self_consistency_penalty + "
+                "1e12*feasibility + 1e6*stationarity + inactive_max + complementarity"
+            ),
+            "acceptance_policy": {
+                "mode": "immediate_merit_with_optional_one_step_lookahead",
+                "lookahead_policy": acceptance_lookahead_policy,
+            },
+        },
+        "proposal_batch_sizes": [int(size) for size in proposal_batch_sizes],
+        "max_drop_proposals": int(max_drop_proposals),
+        "support_size_cap": None if support_size_cap is None else int(support_size_cap),
+        "max_batch_size": None if max_batch_size is None else int(max_batch_size),
+        "merit_definition": {
+            "formula": "w_stat*stationarity + w_feas*feasibility + w_comp*complementarity + w_inactive*inactive_max + w_count*inactive_positive_count + lambda_size*support_size + lambda_add*added_count",
+            "weights": {
+                "stationarity": float(merit_stationarity_weight),
+                "feasibility": float(merit_feasibility_weight),
+                "complementarity": float(merit_complementarity_weight),
+                "inactive_max": float(merit_inactive_weight),
+                "inactive_positive_count": float(merit_inactive_count_weight),
+                "support_size": float(support_size_penalty),
+                "added_count": float(addition_penalty),
+            },
+            "improvement_rule": {
+                "absolute_tol": float(merit_improve_abs_tol),
+                "relative_tol": float(merit_improve_rel_tol),
+            },
+        },
+        "support_evaluations": support_evaluations,
+        "support_start_history": support_start_history,
+        "path_checkpoints": path_checkpoints,
+        "local_solve_accounting": local_solve_accounting,
+        "lookahead_accounting": lookahead_accounting,
+        "forced_acceptance_rule": forced_acceptance_rule,
+        "best_active_side_kkt_checkpoint": best_active_checkpoint,
+        "best_compromise_checkpoint": best_compromise_checkpoint,
+        "final_endpoint_checkpoint": endpoint_checkpoint,
+        "returned_checkpoint_policy": str(returned_checkpoint_policy),
+        "returned_checkpoint": returned_checkpoint,
+        "returned_result": returned_result,
+        "returned_checkpoint_equals_endpoint": bool(returned_checkpoint_equals_endpoint),
+        "endpoint_equals_best_active_side_kkt": endpoint_equals_best_active,
+        "endpoint_equals_best_compromise": endpoint_equals_best_compromise,
+        "history": history,
+        "final": final_result,
+        "final_merit": final_merit,
+        "final_support_indices": [] if not history else history[-1]["support_after_indices"],
+        "final_support_names": None if not history else history[-1]["support_after_names"],
+        "final_support_size": 0 if not history else int(history[-1]["support_size_after"]),
+        "support_trajectory": [step["support_size_before"] for step in history]
+        + ([] if not history else [history[-1]["support_size_after"]]),
+        "support_stabilized": bool(support_stabilized),
+        "solver_like_stabilized": final_solver_like_stabilized,
+        "outer_iterations_completed": len(history),
+        "resumed_from_outer_iter": int(outer_iter_start),
         "runtime_seconds": float(elapsed),
     }
 
