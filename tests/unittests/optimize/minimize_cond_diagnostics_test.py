@@ -14,6 +14,7 @@ from exogibbs.optimize.minimize_cond import trace_condensate_reduced_solver_back
 from exogibbs.optimize.minimize_cond import trace_condensate_sk_stage_feasibility
 from exogibbs.optimize.core import _compute_gk
 from exogibbs.optimize.pipm_rgie_cond import _compute_residuals
+from exogibbs.optimize.pipm_rgie_cond import _choose_lambda_by_residual_backtracking
 from exogibbs.optimize.pipm_rgie_cond import _recompute_pi_for_residual
 from exogibbs.optimize.pipm_rgie_cond import _update_all
 from exogibbs.optimize.pipm_rgie_cond import diagnose_full_vs_reduced_gie_direction
@@ -116,6 +117,7 @@ def test_update_all_reports_post_update_residual_with_fresh_pi():
         gk0,
         An0,
         Am0,
+        jnp.asarray(jnp.inf, dtype=jnp.float64),
         epsilon,
         iter_count=0,
         debug_nan=False,
@@ -217,6 +219,13 @@ def test_trace_minimize_gibbs_cond_epsilon_sweep_smoke():
         "lam1_gas",
         "lam1_cond",
         "lam2_cond",
+        "lam_heuristic",
+        "lam_selected",
+        "n_backtracks",
+        "residual_before",
+        "residual_after",
+        "line_search_used",
+        "line_search_accept_kind",
         "max_abs_delta_ln_nk",
         "max_abs_raw_delta_ln_mk",
         "max_abs_clipped_delta_ln_mk",
@@ -487,6 +496,173 @@ def test_trace_condensate_gas_limiter_diagnostics_structured_wrapper(monkeypatch
     assert jnp.allclose(captured["ln_ntot"], init.ln_ntot)
     assert captured["epsilon"] == -5.0
     assert captured["gas_species_names"] == ["g0"]
+
+
+def test_choose_lambda_by_residual_backtracking_accepts_first_monotone_trial(monkeypatch):
+    def stub_evaluate(*args, **kwargs):
+        lam = jnp.asarray(args[3], dtype=jnp.float64)
+        residual = jnp.where(
+            jnp.isclose(lam, 0.8),
+            jnp.asarray(5.0, dtype=jnp.float64),
+            jnp.asarray(jnp.inf, dtype=jnp.float64),
+        )
+        return {
+            "lam": lam,
+            "ln_nk": jnp.asarray([10.0], dtype=jnp.float64) + lam,
+            "ln_mk": jnp.asarray([20.0], dtype=jnp.float64) + lam,
+            "ln_ntot": jnp.asarray(30.0, dtype=jnp.float64) + lam,
+            "gk": jnp.asarray([40.0], dtype=jnp.float64) + lam,
+            "An": jnp.asarray([50.0], dtype=jnp.float64) + lam,
+            "Am": jnp.asarray([60.0], dtype=jnp.float64) + lam,
+            "fresh_residual": jnp.asarray(residual, dtype=jnp.float64),
+            "all_finite": jnp.asarray(True),
+        }
+
+    monkeypatch.setattr("exogibbs.optimize.pipm_rgie_cond._evaluate_trial_step", stub_evaluate)
+
+    selected = _choose_lambda_by_residual_backtracking(
+        ln_nk=jnp.asarray([0.0], dtype=jnp.float64),
+        ln_mk=jnp.asarray([0.0], dtype=jnp.float64),
+        ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+        current_gk=jnp.asarray([1.0], dtype=jnp.float64),
+        current_An=jnp.asarray([2.0], dtype=jnp.float64),
+        current_Am=jnp.asarray([3.0], dtype=jnp.float64),
+        current_residual=jnp.asarray(6.0, dtype=jnp.float64),
+        lam_init=jnp.asarray(0.8, dtype=jnp.float64),
+        delta_ln_nk=jnp.asarray([0.0], dtype=jnp.float64),
+        delta_ln_mk=jnp.asarray([0.0], dtype=jnp.float64),
+        delta_ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0]], dtype=jnp.float64),
+        b=jnp.asarray([1.0], dtype=jnp.float64),
+        temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+        hvector=jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond=jnp.asarray([0.0], dtype=jnp.float64),
+        epsilon=jnp.asarray(-5.0, dtype=jnp.float64),
+    )
+
+    assert float(selected["lam"]) == 0.8
+    assert float(selected["fresh_residual"]) == 5.0
+    assert int(selected["n_backtracks"]) == 0
+    assert int(selected["accept_code"]) == 0
+
+
+def test_choose_lambda_by_residual_backtracking_falls_back_to_best_finite(monkeypatch):
+    def stub_evaluate(*args, **kwargs):
+        lam = jnp.asarray(args[3], dtype=jnp.float64)
+        residual = jnp.select(
+            [
+                jnp.isclose(lam, 0.8),
+                jnp.isclose(lam, 0.4),
+                jnp.isclose(lam, 0.2),
+                jnp.isclose(lam, 0.1),
+                jnp.isclose(lam, 0.05),
+                jnp.isclose(lam, 0.025),
+                jnp.isclose(lam, 0.0125),
+                jnp.isclose(lam, 0.00625),
+                jnp.isclose(lam, 0.003125),
+            ],
+            [
+                jnp.asarray(8.0, dtype=jnp.float64),
+                jnp.asarray(7.5, dtype=jnp.float64),
+                jnp.asarray(7.0, dtype=jnp.float64),
+                jnp.asarray(7.2, dtype=jnp.float64),
+                jnp.asarray(jnp.inf, dtype=jnp.float64),
+                jnp.asarray(7.1, dtype=jnp.float64),
+                jnp.asarray(jnp.inf, dtype=jnp.float64),
+                jnp.asarray(7.4, dtype=jnp.float64),
+                jnp.asarray(7.3, dtype=jnp.float64),
+            ],
+            default=jnp.asarray(jnp.inf, dtype=jnp.float64),
+        )
+        finite = jnp.isfinite(residual)
+        return {
+            "lam": lam,
+            "ln_nk": jnp.asarray([10.0], dtype=jnp.float64) + lam,
+            "ln_mk": jnp.asarray([20.0], dtype=jnp.float64) + lam,
+            "ln_ntot": jnp.asarray(30.0, dtype=jnp.float64) + lam,
+            "gk": jnp.asarray([40.0], dtype=jnp.float64) + lam,
+            "An": jnp.asarray([50.0], dtype=jnp.float64) + lam,
+            "Am": jnp.asarray([60.0], dtype=jnp.float64) + lam,
+            "fresh_residual": jnp.asarray(residual, dtype=jnp.float64),
+            "all_finite": finite,
+        }
+
+    monkeypatch.setattr("exogibbs.optimize.pipm_rgie_cond._evaluate_trial_step", stub_evaluate)
+
+    selected = _choose_lambda_by_residual_backtracking(
+        ln_nk=jnp.asarray([0.0], dtype=jnp.float64),
+        ln_mk=jnp.asarray([0.0], dtype=jnp.float64),
+        ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+        current_gk=jnp.asarray([1.0], dtype=jnp.float64),
+        current_An=jnp.asarray([2.0], dtype=jnp.float64),
+        current_Am=jnp.asarray([3.0], dtype=jnp.float64),
+        current_residual=jnp.asarray(6.0, dtype=jnp.float64),
+        lam_init=jnp.asarray(0.8, dtype=jnp.float64),
+        delta_ln_nk=jnp.asarray([0.0], dtype=jnp.float64),
+        delta_ln_mk=jnp.asarray([0.0], dtype=jnp.float64),
+        delta_ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0]], dtype=jnp.float64),
+        b=jnp.asarray([1.0], dtype=jnp.float64),
+        temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+        hvector=jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond=jnp.asarray([0.0], dtype=jnp.float64),
+        epsilon=jnp.asarray(-5.0, dtype=jnp.float64),
+    )
+
+    assert float(selected["lam"]) == 0.2
+    assert float(selected["fresh_residual"]) == 7.0
+    assert int(selected["n_backtracks"]) == 2
+    assert int(selected["accept_code"]) == 1
+
+
+def test_choose_lambda_by_residual_backtracking_returns_zero_step_when_all_trials_invalid(monkeypatch):
+    def stub_evaluate(*args, **kwargs):
+        return {
+            "lam": jnp.asarray(args[3], dtype=jnp.float64),
+            "ln_nk": jnp.asarray([99.0], dtype=jnp.float64),
+            "ln_mk": jnp.asarray([98.0], dtype=jnp.float64),
+            "ln_ntot": jnp.asarray(97.0, dtype=jnp.float64),
+            "gk": jnp.asarray([96.0], dtype=jnp.float64),
+            "An": jnp.asarray([95.0], dtype=jnp.float64),
+            "Am": jnp.asarray([94.0], dtype=jnp.float64),
+            "fresh_residual": jnp.asarray(jnp.inf, dtype=jnp.float64),
+            "all_finite": jnp.asarray(False),
+        }
+
+    monkeypatch.setattr("exogibbs.optimize.pipm_rgie_cond._evaluate_trial_step", stub_evaluate)
+
+    selected = _choose_lambda_by_residual_backtracking(
+        ln_nk=jnp.asarray([0.0], dtype=jnp.float64),
+        ln_mk=jnp.asarray([1.0], dtype=jnp.float64),
+        ln_ntot=jnp.asarray(2.0, dtype=jnp.float64),
+        current_gk=jnp.asarray([3.0], dtype=jnp.float64),
+        current_An=jnp.asarray([4.0], dtype=jnp.float64),
+        current_Am=jnp.asarray([5.0], dtype=jnp.float64),
+        current_residual=jnp.asarray(6.0, dtype=jnp.float64),
+        lam_init=jnp.asarray(0.8, dtype=jnp.float64),
+        delta_ln_nk=jnp.asarray([0.0], dtype=jnp.float64),
+        delta_ln_mk=jnp.asarray([0.0], dtype=jnp.float64),
+        delta_ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0]], dtype=jnp.float64),
+        b=jnp.asarray([1.0], dtype=jnp.float64),
+        temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+        hvector=jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond=jnp.asarray([0.0], dtype=jnp.float64),
+        epsilon=jnp.asarray(-5.0, dtype=jnp.float64),
+    )
+
+    assert float(selected["lam"]) == 0.0
+    assert float(selected["fresh_residual"]) == 6.0
+    assert jnp.allclose(selected["ln_nk"], jnp.asarray([0.0], dtype=jnp.float64))
+    assert jnp.allclose(selected["ln_mk"], jnp.asarray([1.0], dtype=jnp.float64))
+    assert jnp.allclose(selected["ln_ntot"], jnp.asarray(2.0, dtype=jnp.float64))
+    assert int(selected["accept_code"]) == 2
 
 
 def test_diagnose_reduced_solver_backend_experiments_smoke():
