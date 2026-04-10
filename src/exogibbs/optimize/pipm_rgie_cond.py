@@ -1,4 +1,6 @@
+import jax
 import jax.numpy as jnp
+import math
 from jax import debug as jdebug
 from jax.lax import while_loop
 from jax.lax import cond
@@ -25,6 +27,407 @@ from exogibbs.optimize.stepsize import LOG_S_MAX
 DEFAULT_REDUCED_SOLVER = "augmented_lu_row_scaled"
 DEFAULT_REGULARIZATION_MODE = "none"
 DEFAULT_REGULARIZATION_STRENGTH = 0.0
+
+
+def diagnose_rgie_raw_condensate_update_block(
+    ln_mk: jnp.ndarray,
+    epsilon: float,
+    formula_matrix_cond: jnp.ndarray,
+    pi_vector: jnp.ndarray,
+    hvector_cond: jnp.ndarray,
+) -> Dict[str, jnp.ndarray]:
+    """Return the current RGIE raw condensate update anatomy.
+
+    This is diagnostic-only. It exposes the decomposition behind the current
+    production raw update
+
+        raw_delta_ln_m = 1 + (m / nu) * (A_cond^T pi - h_cond)
+
+    without changing the solver path.
+    """
+
+    ln_mk = jnp.asarray(ln_mk)
+    epsilon = jnp.asarray(epsilon, dtype=ln_mk.dtype)
+    nu = jnp.exp(epsilon)
+    mk = jnp.exp(ln_mk)
+    driving = formula_matrix_cond.T @ jnp.asarray(pi_vector) - jnp.asarray(hvector_cond)
+    factor = mk / nu
+    correction = factor * driving
+    raw_delta_ln_mk_current = 1.0 + correction
+    condensate_stationarity_residual = mk * driving + nu
+    condensate_stationarity_residual_over_nu = condensate_stationarity_residual / nu
+    return {
+        "nu": nu,
+        "mk": mk,
+        "factor": factor,
+        "driving": driving,
+        "correction": correction,
+        "raw_delta_ln_mk_current": raw_delta_ln_mk_current,
+        "condensate_stationarity_residual": condensate_stationarity_residual,
+        "condensate_stationarity_residual_over_nu": condensate_stationarity_residual_over_nu,
+        "raw_identity_max_abs_diff": jnp.max(
+            jnp.abs(raw_delta_ln_mk_current - condensate_stationarity_residual_over_nu)
+        ),
+    }
+
+
+def build_rgie_condensate_direction_variant(
+    raw_update: Dict[str, jnp.ndarray],
+    variant_name: str,
+) -> Dict[str, jnp.ndarray]:
+    """Build a diagnostic condensate-direction variant from the raw RGIE update block."""
+
+    raw_delta_ln_mk_current = jnp.asarray(raw_update["raw_delta_ln_mk_current"])
+    correction = jnp.asarray(raw_update["correction"])
+
+    if variant_name == "production_clipped_current":
+        delta_ln_mk = jnp.clip(raw_delta_ln_mk_current, -0.1, 0.1)
+    elif variant_name == "raw_current_no_clip":
+        delta_ln_mk = raw_delta_ln_mk_current
+    elif variant_name == "correction_only_no_clip":
+        delta_ln_mk = correction
+    elif variant_name == "gas_only":
+        delta_ln_mk = jnp.zeros_like(raw_delta_ln_mk_current)
+    elif variant_name == "correction_only_scalar_rescale_0p1":
+        max_abs_correction = jnp.max(jnp.abs(correction))
+        alpha = jnp.where(max_abs_correction <= 0.1, 1.0, 0.1 / max_abs_correction)
+        delta_ln_mk = alpha * correction
+    else:
+        raise ValueError(
+            "Unknown RGIE condensate direction variant "
+            f"'{variant_name}'. Expected one of "
+            "('production_clipped_current', 'raw_current_no_clip', "
+            "'correction_only_no_clip', 'gas_only', "
+            "'correction_only_scalar_rescale_0p1')."
+        )
+
+    return {
+        "variant_name": variant_name,
+        "delta_ln_mk": delta_ln_mk,
+        "max_abs_delta_ln_mk": jnp.max(jnp.abs(delta_ln_mk)),
+    }
+
+
+def build_rgie_condensate_direction_transform_variant(
+    raw_delta_ln_mk: jnp.ndarray,
+    variant_name: str,
+) -> Dict[str, jnp.ndarray]:
+    """Build a diagnostic condensate direction transform from the raw RGIE update."""
+
+    raw = jnp.asarray(raw_delta_ln_mk)
+    if variant_name == "current_component_clip_0p1":
+        limit = 0.1
+        delta = jnp.clip(raw, -limit, limit)
+        saturated = jnp.abs(raw) > limit + 1.0e-15
+    elif variant_name == "component_clip_0p5":
+        limit = 0.5
+        delta = jnp.clip(raw, -limit, limit)
+        saturated = jnp.abs(raw) > limit + 1.0e-15
+    elif variant_name == "scalar_rescale_inf_0p1":
+        limit = 0.1
+        max_abs = jnp.max(jnp.abs(raw))
+        alpha = jnp.where(max_abs <= limit, 1.0, limit / max_abs)
+        delta = alpha * raw
+        saturated = None
+    elif variant_name == "scalar_rescale_inf_0p5":
+        limit = 0.5
+        max_abs = jnp.max(jnp.abs(raw))
+        alpha = jnp.where(max_abs <= limit, 1.0, limit / max_abs)
+        delta = alpha * raw
+        saturated = None
+    elif variant_name == "raw_no_clip":
+        delta = raw
+        saturated = None
+    else:
+        raise ValueError(
+            "Unknown RGIE condensate direction-transform variant "
+            f"'{variant_name}'. Expected one of "
+            "('current_component_clip_0p1', 'component_clip_0p5', "
+            "'scalar_rescale_inf_0p1', 'scalar_rescale_inf_0p5', 'raw_no_clip')."
+        )
+
+    return {
+        "variant_name": variant_name,
+        "delta_ln_mk": delta,
+        "cosine_raw_vs_variant": jnp.where(
+            jnp.linalg.norm(raw) * jnp.linalg.norm(delta) > 1.0e-300,
+            jnp.clip(
+                jnp.dot(raw, delta)
+                / jnp.maximum(jnp.linalg.norm(raw) * jnp.linalg.norm(delta), 1.0e-300),
+                -1.0,
+                1.0,
+            ),
+            jnp.nan,
+        ),
+        "max_abs_variant_delta_ln_mk": jnp.max(jnp.abs(delta)),
+        "saturated_fraction": None
+        if saturated is None
+        else jnp.mean(saturated.astype(jnp.float64)),
+    }
+
+
+def compute_rgie_lambda_cap_policy(
+    policy_name: str,
+    *,
+    lam1_gas: jnp.ndarray,
+    lam1_cond: jnp.ndarray,
+    lam2_cond: jnp.ndarray,
+) -> Dict[str, jnp.ndarray]:
+    """Compute a diagnostic lambda cap policy from existing RGIE heuristic ceilings."""
+
+    if policy_name == "current_full_cap":
+        lam_cap = jnp.minimum(1.0, jnp.minimum(lam1_gas, jnp.minimum(lam1_cond, lam2_cond)))
+    elif policy_name == "no_cond_cap":
+        lam_cap = jnp.minimum(1.0, jnp.minimum(lam1_gas, lam2_cond))
+    elif policy_name == "no_sk_cap":
+        lam_cap = jnp.minimum(1.0, jnp.minimum(lam1_gas, lam1_cond))
+    elif policy_name == "gas_only_cap":
+        lam_cap = jnp.minimum(1.0, lam1_gas)
+    elif policy_name == "no_heuristic_cap":
+        lam_cap = jnp.asarray(1.0, dtype=jnp.asarray(lam1_gas).dtype)
+    else:
+        raise ValueError(
+            "Unknown RGIE lambda-cap policy "
+            f"'{policy_name}'. Expected one of "
+            "('current_full_cap', 'no_cond_cap', 'no_sk_cap', 'gas_only_cap', 'no_heuristic_cap')."
+        )
+
+    limiter_values = jnp.asarray([1.0, lam1_gas, lam1_cond, lam2_cond], dtype=jnp.asarray(lam1_gas).dtype)
+    limiter_names = ("unit", "lam1_gas", "lam1_cond", "lam2_cond")
+    limiting_index = int(jnp.argmin(limiter_values))
+    return {
+        "policy_name": policy_name,
+        "lam_cap": jnp.clip(lam_cap, 0.0, 1.0),
+        "lam1_gas": lam1_gas,
+        "lam1_cond": lam1_cond,
+        "lam2_cond": lam2_cond,
+        "production_limiting_index": jnp.asarray(limiting_index, dtype=jnp.int32),
+        "production_limiting_name": limiter_names[limiting_index],
+    }
+
+
+def build_rgie_condensate_init_from_policy(
+    epsilon: float,
+    support_indices: jnp.ndarray,
+    startup_policy: str,
+    *,
+    driving: Optional[jnp.ndarray] = None,
+    m0: Optional[float] = None,
+    r0: Optional[float] = None,
+    top_k: Optional[int] = None,
+    tiny_fallback: float = 1.0e-30,
+    dtype: Optional[jnp.dtype] = None,
+) -> jnp.ndarray:
+    """Build a diagnostic-only RGIE condensate initialization from a startup policy.
+
+    The returned vector is defined only on the currently supported condensates.
+    This helper does not change production defaults; callers must explicitly opt
+    into using it.
+    """
+
+    support_indices = jnp.asarray(support_indices)
+    if support_indices.ndim != 1:
+        raise ValueError("support_indices must be a one-dimensional index array.")
+
+    if dtype is None:
+        dtype = jnp.float64
+
+    eps = jnp.asarray(epsilon, dtype=dtype)
+    n_support = int(support_indices.shape[0])
+    if n_support == 0:
+        return jnp.zeros((0,), dtype=dtype)
+
+    if tiny_fallback <= 0.0:
+        raise ValueError("tiny_fallback must be positive.")
+    fallback_ln_m0 = jnp.log(jnp.asarray(tiny_fallback, dtype=dtype))
+
+    if startup_policy == "absolute_uniform_m0":
+        if m0 is None or m0 <= 0.0:
+            raise ValueError("absolute_uniform_m0 requires a positive m0.")
+        return jnp.full((n_support,), jnp.log(jnp.asarray(m0, dtype=dtype)), dtype=dtype)
+
+    target_ln_m0 = None
+    if startup_policy in (
+        "ratio_uniform_r0",
+        "ratio_positive_driving_r0",
+        "ratio_topk_positive_driving_r0",
+    ):
+        if r0 is None or r0 <= 0.0:
+            raise ValueError(f"{startup_policy} requires a positive r0.")
+        target_ln_m0 = eps + jnp.log(jnp.asarray(r0, dtype=dtype))
+
+    if startup_policy == "ratio_uniform_r0":
+        return jnp.full((n_support,), target_ln_m0, dtype=dtype)
+
+    if startup_policy in ("ratio_positive_driving_r0", "ratio_topk_positive_driving_r0"):
+        if driving is None:
+            raise ValueError(f"{startup_policy} requires driving values.")
+        driving = jnp.asarray(driving, dtype=dtype)
+        if driving.shape != (n_support,):
+            raise ValueError(
+                "driving must have the same shape as the supported condensate block "
+                f"(got {driving.shape}, expected {(n_support,)})."
+            )
+        positive = driving > 0.0
+
+        if startup_policy == "ratio_positive_driving_r0":
+            selected = positive
+        else:
+            if top_k is None:
+                raise ValueError("ratio_topk_positive_driving_r0 requires top_k.")
+            if top_k < 0:
+                raise ValueError("top_k must be non-negative.")
+            if top_k == 0:
+                selected = jnp.zeros((n_support,), dtype=bool)
+            else:
+                safe_driving = jnp.where(positive, driving, -jnp.inf)
+                ranked = jnp.argsort(-safe_driving)
+                top_indices = ranked[: min(top_k, n_support)]
+                selected = jnp.zeros((n_support,), dtype=bool).at[top_indices].set(True)
+                selected = selected & positive
+
+        return jnp.where(selected, target_ln_m0, fallback_ln_m0)
+
+    raise ValueError(
+        "Unknown startup_policy "
+        f"'{startup_policy}'. Expected one of "
+        "('absolute_uniform_m0', 'ratio_uniform_r0', "
+        "'ratio_positive_driving_r0', 'ratio_topk_positive_driving_r0')."
+    )
+
+
+def summarize_rgie_inactive_driving(
+    full_driving: jnp.ndarray,
+    support_indices: jnp.ndarray,
+    *,
+    condensate_species_names: Optional[Sequence[str]] = None,
+    top_k: int = 5,
+) -> Dict[str, Any]:
+    """Summarize inactive-driving violations for a current support."""
+
+    full_driving = jnp.asarray(full_driving, dtype=jnp.float64)
+    support_indices = jnp.asarray(support_indices, dtype=jnp.int32)
+    n_cond = int(full_driving.shape[0])
+    support_mask = jnp.zeros((n_cond,), dtype=bool).at[support_indices].set(True)
+    inactive_indices = jnp.nonzero(~support_mask, size=n_cond, fill_value=-1)[0]
+    inactive_indices = inactive_indices[inactive_indices >= 0]
+
+    if inactive_indices.shape[0] == 0:
+        return {
+            "max_positive_inactive_driving": 0.0,
+            "inactive_positive_count": 0,
+            "top_inactive_indices": [],
+            "top_inactive_names": [],
+            "top_inactive_driving": [],
+            "top_positive_inactive_indices": [],
+        }
+
+    inactive_driving = full_driving[inactive_indices]
+    positive_mask = inactive_driving > 0.0
+    positive_indices = inactive_indices[positive_mask]
+    positive_driving = inactive_driving[positive_mask]
+
+    if positive_indices.shape[0] == 0:
+        return {
+            "max_positive_inactive_driving": 0.0,
+            "inactive_positive_count": 0,
+            "top_inactive_indices": [],
+            "top_inactive_names": [],
+            "top_inactive_driving": [],
+            "top_positive_inactive_indices": [],
+        }
+
+    ranked_order = jnp.argsort(-positive_driving)
+    ranked_positive = positive_indices[ranked_order]
+    top_indices = ranked_positive[: min(int(top_k), int(ranked_positive.shape[0]))]
+    top_driving = full_driving[top_indices]
+    if condensate_species_names is None:
+        top_names = [str(int(index)) for index in jax.device_get(top_indices)]
+    else:
+        top_names = [
+            str(condensate_species_names[int(index)]) for index in jax.device_get(top_indices)
+        ]
+
+    return {
+        "max_positive_inactive_driving": float(jnp.max(positive_driving)),
+        "inactive_positive_count": int(positive_indices.shape[0]),
+        "top_inactive_indices": [int(index) for index in jax.device_get(top_indices)],
+        "top_inactive_names": top_names,
+        "top_inactive_driving": [float(value) for value in jax.device_get(top_driving)],
+        "top_positive_inactive_indices": [int(index) for index in jax.device_get(ranked_positive)],
+    }
+
+
+def build_rgie_support_candidate_indices(
+    support_indices: jnp.ndarray,
+    *,
+    full_driving: jnp.ndarray,
+    active_ln_mk: jnp.ndarray,
+    active_driving: jnp.ndarray,
+    mechanism_name: str,
+    inactive_positive_ranked: Optional[Sequence[int]] = None,
+    semismooth_add_top_k: int = 1,
+    smoothed_add_top_k: int = 3,
+) -> Dict[str, Any]:
+    """Build diagnostic-only support candidates from active/inactive scores."""
+
+    support_indices = jnp.asarray(support_indices, dtype=jnp.int32)
+    full_driving = jnp.asarray(full_driving, dtype=jnp.float64)
+    active_ln_mk = jnp.asarray(active_ln_mk, dtype=jnp.float64)
+    active_driving = jnp.asarray(active_driving, dtype=jnp.float64)
+
+    if active_ln_mk.shape != support_indices.shape or active_driving.shape != support_indices.shape:
+        raise ValueError("active_ln_mk and active_driving must match support_indices shape.")
+
+    if inactive_positive_ranked is None:
+        inactive_positive_ranked = summarize_rgie_inactive_driving(
+            full_driving,
+            support_indices,
+            top_k=full_driving.shape[0],
+        )["top_positive_inactive_indices"]
+
+    support_set = {int(index) for index in jax.device_get(support_indices)}
+    ranked_add = [int(index) for index in inactive_positive_ranked if int(index) not in support_set]
+
+    weak_active_order = jnp.argsort(-(active_driving + jnp.maximum(-active_ln_mk, 0.0)))
+    weak_active_ranked = [int(index) for index in jax.device_get(support_indices[weak_active_order])]
+
+    candidate = sorted(support_set)
+    added_indices: list[int] = []
+    dropped_indices: list[int] = []
+
+    if mechanism_name == "current_support_updating_active_set":
+        pass
+    elif mechanism_name == "semismooth_candidate":
+        added_indices = ranked_add[: max(0, int(semismooth_add_top_k))]
+        candidate = sorted(set(candidate).union(added_indices))
+    elif mechanism_name == "smoothed_semismooth_candidate":
+        added_indices = ranked_add[: max(0, int(smoothed_add_top_k))]
+        candidate = sorted(set(candidate).union(added_indices))
+    elif mechanism_name == "augmented_semismooth_candidate":
+        added_indices = ranked_add[:1]
+        candidate = sorted(set(candidate).union(added_indices))
+        if len(candidate) > 1 and weak_active_ranked:
+            drop_index = weak_active_ranked[0]
+            if drop_index in candidate and drop_index not in added_indices:
+                candidate = [index for index in candidate if index != drop_index]
+                dropped_indices = [drop_index]
+    else:
+        raise ValueError(
+            "Unknown RGIE support candidate mechanism "
+            f"'{mechanism_name}'. Expected one of "
+            "('current_support_updating_active_set', 'semismooth_candidate', "
+            "'smoothed_semismooth_candidate', 'augmented_semismooth_candidate')."
+        )
+
+    return {
+        "mechanism_name": mechanism_name,
+        "support_indices": jnp.asarray(candidate, dtype=jnp.int32),
+        "added_indices": added_indices,
+        "dropped_indices": dropped_indices,
+        "inactive_positive_ranked": ranked_add,
+        "weak_active_ranked": weak_active_ranked,
+    }
 
 
 def _assemble_reduced_system_terms(
@@ -528,6 +931,101 @@ def _compare_gas_directions(
         "lam1_gas_full": float(lam1_gas_full),
         "lam1_gas_ref": float(lam1_gas_ref),
         "top_direction_disagreement_species": disagreement_species,
+    }
+
+
+def build_rgie_gas_direction_variant(
+    variant_name: str,
+    *,
+    delta_ln_nk_current: jnp.ndarray,
+    delta_ln_ntot_current: float,
+    delta_ln_nk_ref: jnp.ndarray,
+    delta_ln_ntot_ref: float,
+) -> Dict[str, jnp.ndarray]:
+    """Build a diagnostic gas-side direction variant for RGIE."""
+
+    delta_ln_nk_current = jnp.asarray(delta_ln_nk_current)
+    delta_ln_nk_ref = jnp.asarray(delta_ln_nk_ref)
+    delta_ln_ntot_current = jnp.asarray(delta_ln_ntot_current, dtype=delta_ln_nk_current.dtype)
+    delta_ln_ntot_ref = jnp.asarray(delta_ln_ntot_ref, dtype=delta_ln_nk_current.dtype)
+
+    if variant_name == "current_full_direction":
+        delta_ln_nk = delta_ln_nk_current
+        delta_ln_ntot = delta_ln_ntot_current
+    elif variant_name == "frozen_condensate_gas_only_reference":
+        delta_ln_nk = delta_ln_nk_ref
+        delta_ln_ntot = delta_ln_ntot_ref
+    elif variant_name == "no_common_ntot_shift":
+        delta_ln_nk = delta_ln_nk_current - delta_ln_ntot_current
+        delta_ln_ntot = jnp.asarray(0.0, dtype=delta_ln_nk_current.dtype)
+    elif variant_name == "partial_ntot_shift_0p25":
+        scale = jnp.asarray(0.25, dtype=delta_ln_nk_current.dtype)
+        delta_ln_nk = (delta_ln_nk_current - delta_ln_ntot_current) + scale * delta_ln_ntot_current
+        delta_ln_ntot = scale * delta_ln_ntot_current
+    elif variant_name == "partial_ntot_shift_0p5":
+        scale = jnp.asarray(0.5, dtype=delta_ln_nk_current.dtype)
+        delta_ln_nk = (delta_ln_nk_current - delta_ln_ntot_current) + scale * delta_ln_ntot_current
+        delta_ln_ntot = scale * delta_ln_ntot_current
+    elif variant_name == "gas_only_with_current_condensate_block":
+        delta_ln_nk = delta_ln_nk_ref
+        delta_ln_ntot = delta_ln_ntot_ref
+    else:
+        raise ValueError(
+            "Unknown RGIE gas-direction variant "
+            f"'{variant_name}'. Expected one of "
+            "('current_full_direction', 'frozen_condensate_gas_only_reference', "
+            "'no_common_ntot_shift', 'partial_ntot_shift_0p25', "
+            "'partial_ntot_shift_0p5', 'gas_only_with_current_condensate_block')."
+        )
+
+    return {
+        "variant_name": variant_name,
+        "delta_ln_nk": delta_ln_nk,
+        "delta_ln_ntot": delta_ln_ntot,
+    }
+
+
+def compute_rgie_lam1_gas_ignore_trace_diagnostics(
+    ln_nk: jnp.ndarray,
+    ln_ntot: float,
+    delta_ln_nk: jnp.ndarray,
+    delta_ln_ntot: float,
+    vmr_floor: float,
+) -> Dict[str, Any]:
+    """Diagnostic-only lam1_gas recomputation that ignores ultra-trace species."""
+
+    ln_nk = jnp.asarray(ln_nk)
+    ln_ntot = jnp.asarray(ln_ntot)
+    delta_ln_nk = jnp.asarray(delta_ln_nk)
+    delta_ln_ntot = jnp.asarray(delta_ln_ntot, dtype=delta_ln_nk.dtype)
+    vmr = jnp.exp(ln_nk - ln_ntot)
+    active = vmr >= vmr_floor
+    common_ntot_cap = 2.0 / jnp.maximum(5.0 * jnp.abs(delta_ln_ntot), 1.0e-300)
+    abs_delta_cap = 2.0 / jnp.maximum(jnp.abs(delta_ln_nk), 1.0e-300)
+    cap_candidate = jnp.minimum(common_ntot_cap, abs_delta_cap)
+    ln_xk = ln_nk - ln_ntot
+    denom2 = delta_ln_nk - delta_ln_ntot
+    small = (ln_xk <= -18.420681) & (delta_ln_nk >= 0.0)
+    safe_trace = small & (denom2 > 0.0)
+    trace_candidate = jnp.where(
+        safe_trace,
+        (-9.2103404 - ln_xk) / denom2,
+        jnp.inf,
+    )
+    species_candidate = jnp.minimum(cap_candidate, trace_candidate)
+    active_candidate = jnp.where(active, species_candidate, jnp.inf)
+    top_index = int(jnp.argmin(species_candidate))
+    active_top_index = int(jnp.argmin(active_candidate))
+    lam1_gas_ignore_trace = float(jnp.min(active_candidate))
+    if not math.isfinite(lam1_gas_ignore_trace):
+        lam1_gas_ignore_trace = float(common_ntot_cap)
+    return {
+        "vmr_floor": float(vmr_floor),
+        "lam1_gas_ignore_trace": lam1_gas_ignore_trace,
+        "current_top_limiter_species_index": top_index,
+        "current_top_limiter_active_under_floor": bool(active[top_index]),
+        "active_top_limiter_species_index": active_top_index,
+        "ignored_species_count": int(jnp.sum(~active)),
     }
 
 

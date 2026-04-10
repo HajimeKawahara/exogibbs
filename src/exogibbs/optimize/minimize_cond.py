@@ -13,6 +13,7 @@ from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.stepsize import LOG_S_MAX
 from exogibbs.optimize.pdipm_cond import minimize_gibbs_cond_core
 from exogibbs.optimize.pipm_rgie_cond import (
+    build_rgie_condensate_init_from_policy,
     diagnose_full_vs_reduced_gie_direction as _diagnose_full_vs_reduced_gie_direction_raw,
     diagnose_pdipm_vs_pipm_direction as _diagnose_pdipm_vs_pipm_direction_raw,
     diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories as _diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories_raw,
@@ -31,6 +32,11 @@ CondensateProfileMethod = Literal[
     "scan_hot_from_bottom_final_only",
 ]
 CondensateEpsilonSchedule = Literal["fixed", "adaptive_sk_guard"]
+CondensateRGIEStartupPolicy = Literal[
+    "legacy_absolute_m0",
+    "ratio_uniform_r0",
+    "warm_previous_with_ratio_floor",
+]
 
 
 @tree_util.register_pytree_node_class
@@ -54,6 +60,21 @@ class CondensateEquilibriumInit:
         del aux_data
         ln_nk, ln_mk, ln_ntot = children
         return cls(ln_nk=ln_nk, ln_mk=ln_mk, ln_ntot=ln_ntot)
+
+
+@dataclass(frozen=True)
+class CondensateRGIEStartupConfig:
+    """Optional startup override for the RGIE condensate path.
+
+    ``legacy_absolute_m0`` keeps the current caller-supplied ``ln_mk`` exactly.
+    ``ratio_uniform_r0`` replaces the layer-start condensate state with a
+    uniform ratio-based seed ``m/nu = r0``.
+    ``warm_previous_with_ratio_floor`` keeps the incoming hot start but floors
+    every condensate to ``m/nu >= r0`` at the layer-start epsilon.
+    """
+
+    policy: CondensateRGIEStartupPolicy = "legacy_absolute_m0"
+    r0: Optional[float] = None
 
 
 @tree_util.register_pytree_node_class
@@ -193,6 +214,69 @@ def _prepare_condensate_init(init: CondensateEquilibriumInit) -> CondensateEquil
         ln_nk=jnp.asarray(init.ln_nk),
         ln_mk=jnp.asarray(init.ln_mk),
         ln_ntot=jnp.asarray(init.ln_ntot),
+    )
+
+
+def _prepare_rgie_startup_config(
+    startup_config: Optional[CondensateRGIEStartupConfig],
+) -> CondensateRGIEStartupConfig:
+    if startup_config is None:
+        return CondensateRGIEStartupConfig()
+    valid_policies = (
+        "legacy_absolute_m0",
+        "ratio_uniform_r0",
+        "warm_previous_with_ratio_floor",
+    )
+    if startup_config.policy not in valid_policies:
+        raise ValueError(
+            "Unknown RGIE startup policy "
+            f"'{startup_config.policy}'. Expected one of {valid_policies}."
+        )
+    if startup_config.policy != "legacy_absolute_m0":
+        if startup_config.r0 is None or startup_config.r0 <= 0.0:
+            raise ValueError(
+                f"RGIE startup policy '{startup_config.policy}' requires a positive r0."
+            )
+    return startup_config
+
+
+def _apply_rgie_startup_policy(
+    init: CondensateEquilibriumInit,
+    *,
+    epsilon: float,
+    startup_config: Optional[CondensateRGIEStartupConfig],
+    apply_policy: bool = True,
+) -> CondensateEquilibriumInit:
+    prepared = _prepare_condensate_init(init)
+    config = _prepare_rgie_startup_config(startup_config)
+    if (not apply_policy) or config.policy == "legacy_absolute_m0":
+        return prepared
+
+    support_indices = jnp.arange(prepared.ln_mk.shape[0], dtype=jnp.int32)
+    if config.policy == "ratio_uniform_r0":
+        ln_mk = build_rgie_condensate_init_from_policy(
+            epsilon=epsilon,
+            support_indices=support_indices,
+            startup_policy="ratio_uniform_r0",
+            r0=config.r0,
+            dtype=jnp.asarray(prepared.ln_mk).dtype,
+        )
+    elif config.policy == "warm_previous_with_ratio_floor":
+        floor_ln_mk = build_rgie_condensate_init_from_policy(
+            epsilon=epsilon,
+            support_indices=support_indices,
+            startup_policy="ratio_uniform_r0",
+            r0=config.r0,
+            dtype=jnp.asarray(prepared.ln_mk).dtype,
+        )
+        ln_mk = jnp.maximum(jnp.asarray(prepared.ln_mk), floor_ln_mk)
+    else:
+        raise ValueError(f"Unhandled RGIE startup policy '{config.policy}'.")
+
+    return CondensateEquilibriumInit(
+        ln_nk=jnp.asarray(prepared.ln_nk),
+        ln_mk=ln_mk,
+        ln_ntot=jnp.asarray(prepared.ln_ntot),
     )
 
 
@@ -391,12 +475,19 @@ def _run_adaptive_condensate_layer_schedule(
     reduced_solver: str,
     regularization_mode: str,
     regularization_strength: float,
+    startup_config: Optional[CondensateRGIEStartupConfig] = None,
+    apply_startup_policy: bool = True,
     condensate_species: Optional[Sequence[str]] = None,
     top_k: int = 5,
 ):
     """Run one layer with an sk-feasibility-aware epsilon schedule."""
 
-    current_init = _prepare_condensate_init(init)
+    current_init = _apply_rgie_startup_policy(
+        init,
+        epsilon=(epsilon_start if run_full_schedule else epsilon_crit),
+        startup_config=startup_config,
+        apply_policy=apply_startup_policy,
+    )
     proposed_epsilons = (
         jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:].tolist()
         if run_full_schedule
@@ -577,10 +668,16 @@ def minimize_gibbs_cond(
     reduced_solver: str = "augmented_lu_row_scaled",
     regularization_mode: str = "none",
     regularization_strength: float = 0.0,
+    startup_config: Optional[CondensateRGIEStartupConfig] = None,
 ) -> CondensateEquilibriumResult:
     """Run the active condensate solver using a structured init/result interface."""
 
-    init_prepared = _prepare_condensate_init(init)
+    init_prepared = _apply_rgie_startup_policy(
+        init,
+        epsilon=epsilon,
+        startup_config=startup_config,
+        apply_policy=True,
+    )
     ln_nk, ln_mk, ln_ntot, diagnostics_raw = _minimize_gibbs_cond_with_diagnostics_raw(
         state,
         ln_nk_init=init_prepared.ln_nk,
@@ -637,6 +734,7 @@ def minimize_gibbs_cond_profile(
     reduced_solver: str = "augmented_lu_row_scaled",
     regularization_mode: str = "none",
     regularization_strength: float = 0.0,
+    startup_config: Optional[CondensateRGIEStartupConfig] = None,
 ) -> CondensateEquilibriumResult:
     """Run the condensate solver over a 1D profile with cold- or hot-start execution.
 
@@ -678,12 +776,15 @@ def minimize_gibbs_cond_profile(
     n_layers = int(temperatures.shape[0])
     epsilons = jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:]
 
+    startup_config_prepared = _prepare_rgie_startup_config(startup_config)
+
     if epsilon_schedule == "adaptive_sk_guard":
         def solve_layer_adaptive(
             temperature: Array,
             ln_normalized_pressure: Array,
             layer_init: CondensateEquilibriumInit,
             run_full_schedule: bool,
+            apply_startup_policy: bool,
         ) -> CondensateEquilibriumResult:
             thermo_state = ThermoState(
                 temperature=temperature,
@@ -710,6 +811,8 @@ def minimize_gibbs_cond_profile(
                 reduced_solver=reduced_solver,
                 regularization_mode=regularization_mode,
                 regularization_strength=regularization_strength,
+                startup_config=startup_config_prepared,
+                apply_startup_policy=apply_startup_policy,
             )
             return result
 
@@ -721,6 +824,7 @@ def minimize_gibbs_cond_profile(
                         temperatures[layer_index],
                         ln_normalized_pressures[layer_index],
                         _profile_init_at(init, n_layers, layer_index),
+                        True,
                         True,
                     )
                 )
@@ -737,19 +841,25 @@ def minimize_gibbs_cond_profile(
             carry_init = init0
             run_full_schedule = True
             results = []
+            first_layer = True
             for temperature, ln_normalized_pressure in zip(
                 temperatures_scan.tolist(),
                 ln_pressures_scan.tolist(),
             ):
+                apply_startup_policy = first_layer or (
+                    startup_config_prepared.policy == "warm_previous_with_ratio_floor"
+                )
                 result = solve_layer_adaptive(
                     jnp.asarray(temperature),
                     jnp.asarray(ln_normalized_pressure),
                     carry_init,
                     run_full_schedule,
+                    apply_startup_policy,
                 )
                 results.append(result)
                 carry_init = result.to_init()
                 run_full_schedule = not skip_rewind_after_first_layer
+                first_layer = False
             result_seq = _stack_profile_results(results)
             if reverse_output:
                 return _flip_condensate_profile_result(result_seq)
@@ -777,11 +887,19 @@ def minimize_gibbs_cond_profile(
         ln_normalized_pressure: Array,
         layer_init: CondensateEquilibriumInit,
         run_full_schedule: bool,
+        apply_startup_policy: bool,
     ) -> CondensateEquilibriumResult:
         thermo_state = ThermoState(
             temperature=temperature,
             ln_normalized_pressure=ln_normalized_pressure,
             element_vector=element_vector,
+        )
+        startup_epsilon = epsilons[0] if run_full_schedule else epsilons[-1]
+        prepared_layer_init = _apply_rgie_startup_policy(
+            layer_init,
+            epsilon=startup_epsilon,
+            startup_config=startup_config_prepared,
+            apply_policy=apply_startup_policy,
         )
 
         def body_fn(i, init_state):
@@ -806,7 +924,7 @@ def minimize_gibbs_cond_profile(
             return result.to_init()
 
         final_epsilon = epsilons[-1]
-        prepared_init = _prepare_condensate_init(layer_init)
+        prepared_init = _prepare_condensate_init(prepared_layer_init)
         final_init = lax.cond(
             run_full_schedule,
             lambda init_state: lax.fori_loop(0, n_step, body_fn, init_state),
@@ -840,12 +958,14 @@ def minimize_gibbs_cond_profile(
                 0,
                 CondensateEquilibriumInit(ln_nk=0, ln_mk=0, ln_ntot=0),
                 None,
+                None,
             ),
             out_axes=0,
         )(
             temperatures,
             ln_normalized_pressures,
             batched_init,
+            True,
             True,
         )
 
@@ -857,23 +977,29 @@ def minimize_gibbs_cond_profile(
         skip_rewind_after_first_layer: bool,
         reverse_output: bool,
     ) -> CondensateEquilibriumResult:
-        def scan_body(carry, layer_inputs):
-            carry_init, run_full_schedule = carry
-            temperature, ln_normalized_pressure = layer_inputs
+        carry_init = init0
+        run_full_schedule = True
+        first_layer = True
+        results = []
+        for temperature, ln_normalized_pressure in zip(
+            temperatures_scan.tolist(),
+            ln_pressures_scan.tolist(),
+        ):
+            apply_startup_policy = first_layer or (
+                startup_config_prepared.policy == "warm_previous_with_ratio_floor"
+            )
             result = solve_layer(
-                temperature,
-                ln_normalized_pressure,
+                jnp.asarray(temperature),
+                jnp.asarray(ln_normalized_pressure),
                 carry_init,
                 run_full_schedule,
+                apply_startup_policy,
             )
-            next_run_full_schedule = jnp.asarray(not skip_rewind_after_first_layer)
-            return (result.to_init(), next_run_full_schedule), result
-
-        init_carry = (
-            init0,
-            jnp.asarray(True),
-        )
-        _, result_seq = lax.scan(scan_body, init_carry, (temperatures_scan, ln_pressures_scan))
+            results.append(result)
+            carry_init = result.to_init()
+            run_full_schedule = not skip_rewind_after_first_layer
+            first_layer = False
+        result_seq = _stack_profile_results(results)
         if reverse_output:
             return _flip_condensate_profile_result(result_seq)
         return result_seq
@@ -1277,6 +1403,8 @@ __all__ = [
     "CondensateEquilibriumInit",
     "CondensateEpsilonSchedule",
     "CondensateProfileMethod",
+    "CondensateRGIEStartupConfig",
+    "CondensateRGIEStartupPolicy",
     "CondensateEquilibriumResult",
     "compute_sk_feasible_epsilon_floor",
     "minimize_gibbs_cond",

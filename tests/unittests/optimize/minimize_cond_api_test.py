@@ -79,6 +79,173 @@ def test_minimize_gibbs_cond_structured_wrapper(monkeypatch):
     assert not bool(result.diagnostics.hit_max_iter)
 
 
+def test_minimize_gibbs_cond_default_startup_keeps_existing_ln_mk(monkeypatch):
+    captured = {}
+
+    def stub_raw(state, ln_nk_init, ln_mk_init, ln_ntot_init, **kwargs):
+        del state, ln_nk_init, ln_ntot_init, kwargs
+        captured["ln_mk_init"] = ln_mk_init
+        return (
+            jnp.asarray([0.1], dtype=jnp.float64),
+            jnp.asarray([0.2, 0.3], dtype=jnp.float64),
+            jnp.asarray(0.4, dtype=jnp.float64),
+            {
+                "n_iter": jnp.asarray(0, dtype=jnp.int32),
+                "converged": jnp.asarray(False),
+                "hit_max_iter": jnp.asarray(True),
+                "final_residual": jnp.asarray(1.0, dtype=jnp.float64),
+                "residual_crit": jnp.asarray(1.0e-8, dtype=jnp.float64),
+                "max_iter": jnp.asarray(0, dtype=jnp.int32),
+                "epsilon": jnp.asarray(-5.0, dtype=jnp.float64),
+                "final_step_size": jnp.asarray(0.0, dtype=jnp.float64),
+                "invalid_numbers_detected": jnp.asarray(False),
+                "debug_nan": jnp.asarray(False),
+            },
+        )
+
+    monkeypatch.setattr(condmod, "_minimize_gibbs_cond_with_diagnostics_raw", stub_raw)
+
+    init = condmod.CondensateEquilibriumInit(
+        ln_nk=jnp.asarray([1.0], dtype=jnp.float64),
+        ln_mk=jnp.asarray([-11.0, -7.0], dtype=jnp.float64),
+        ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+    )
+    state = ThermoState(
+        temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+        element_vector=jnp.asarray([1.0], dtype=jnp.float64),
+    )
+
+    condmod.minimize_gibbs_cond(
+        state,
+        init=init,
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0, 0.0]], dtype=jnp.float64),
+        hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond_func=lambda temperature: jnp.asarray([0.0, 0.0], dtype=jnp.float64),
+        epsilon=-5.0,
+        residual_crit=1.0e-8,
+        max_iter=0,
+    )
+
+    assert jnp.allclose(captured["ln_mk_init"], init.ln_mk)
+
+
+def test_minimize_gibbs_cond_ratio_uniform_startup_overrides_ln_mk(monkeypatch):
+    captured = {}
+
+    def stub_raw(state, ln_nk_init, ln_mk_init, ln_ntot_init, **kwargs):
+        del state, ln_nk_init, ln_ntot_init, kwargs
+        captured["ln_mk_init"] = ln_mk_init
+        return (
+            jnp.asarray([0.1], dtype=jnp.float64),
+            jnp.asarray([0.2, 0.3], dtype=jnp.float64),
+            jnp.asarray(0.4, dtype=jnp.float64),
+            {
+                "n_iter": jnp.asarray(0, dtype=jnp.int32),
+                "converged": jnp.asarray(False),
+                "hit_max_iter": jnp.asarray(True),
+                "final_residual": jnp.asarray(1.0, dtype=jnp.float64),
+                "residual_crit": jnp.asarray(1.0e-8, dtype=jnp.float64),
+                "max_iter": jnp.asarray(0, dtype=jnp.int32),
+                "epsilon": jnp.asarray(-5.0, dtype=jnp.float64),
+                "final_step_size": jnp.asarray(0.0, dtype=jnp.float64),
+                "invalid_numbers_detected": jnp.asarray(False),
+                "debug_nan": jnp.asarray(False),
+            },
+        )
+
+    monkeypatch.setattr(condmod, "_minimize_gibbs_cond_with_diagnostics_raw", stub_raw)
+
+    state = ThermoState(
+        temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+        element_vector=jnp.asarray([1.0], dtype=jnp.float64),
+    )
+
+    condmod.minimize_gibbs_cond(
+        state,
+        init=condmod.CondensateEquilibriumInit(
+            ln_nk=jnp.asarray([1.0], dtype=jnp.float64),
+            ln_mk=jnp.asarray([-20.0, -19.0], dtype=jnp.float64),
+            ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+        ),
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0, 0.0]], dtype=jnp.float64),
+        hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond_func=lambda temperature: jnp.asarray([0.0, 0.0], dtype=jnp.float64),
+        epsilon=-5.0,
+        residual_crit=1.0e-8,
+        max_iter=0,
+        startup_config=condmod.CondensateRGIEStartupConfig(
+            policy="ratio_uniform_r0",
+            r0=1.0e-3,
+        ),
+    )
+
+    expected = -5.0 + jnp.log(jnp.asarray(1.0e-3, dtype=jnp.float64))
+    assert jnp.allclose(captured["ln_mk_init"], expected)
+
+
+def test_minimize_gibbs_cond_warm_previous_with_ratio_floor_applies_floor(monkeypatch):
+    captured = {}
+
+    def stub_raw(state, ln_nk_init, ln_mk_init, ln_ntot_init, **kwargs):
+        del state, ln_nk_init, ln_ntot_init, kwargs
+        captured["ln_mk_init"] = ln_mk_init
+        return (
+            jnp.asarray([0.1], dtype=jnp.float64),
+            ln_mk_init,
+            jnp.asarray(0.4, dtype=jnp.float64),
+            {
+                "n_iter": jnp.asarray(0, dtype=jnp.int32),
+                "converged": jnp.asarray(False),
+                "hit_max_iter": jnp.asarray(True),
+                "final_residual": jnp.asarray(1.0, dtype=jnp.float64),
+                "residual_crit": jnp.asarray(1.0e-8, dtype=jnp.float64),
+                "max_iter": jnp.asarray(0, dtype=jnp.int32),
+                "epsilon": jnp.asarray(-5.0, dtype=jnp.float64),
+                "final_step_size": jnp.asarray(0.0, dtype=jnp.float64),
+                "invalid_numbers_detected": jnp.asarray(False),
+                "debug_nan": jnp.asarray(False),
+            },
+        )
+
+    monkeypatch.setattr(condmod, "_minimize_gibbs_cond_with_diagnostics_raw", stub_raw)
+
+    state = ThermoState(
+        temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+        element_vector=jnp.asarray([1.0], dtype=jnp.float64),
+    )
+
+    condmod.minimize_gibbs_cond(
+        state,
+        init=condmod.CondensateEquilibriumInit(
+            ln_nk=jnp.asarray([1.0], dtype=jnp.float64),
+            ln_mk=jnp.asarray([-20.0, -2.0], dtype=jnp.float64),
+            ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+        ),
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0, 0.0]], dtype=jnp.float64),
+        hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond_func=lambda temperature: jnp.asarray([0.0, 0.0], dtype=jnp.float64),
+        epsilon=-5.0,
+        residual_crit=1.0e-8,
+        max_iter=0,
+        startup_config=condmod.CondensateRGIEStartupConfig(
+            policy="warm_previous_with_ratio_floor",
+            r0=1.0e-3,
+        ),
+    )
+
+    floor_value = -5.0 + jnp.log(jnp.asarray(1.0e-3, dtype=jnp.float64))
+    assert jnp.allclose(
+        captured["ln_mk_init"],
+        jnp.asarray([floor_value, -2.0], dtype=jnp.float64),
+    )
+
+
 def test_condensate_result_to_init_roundtrip():
     diagnostics = condmod.CondensateEquilibriumDiagnostics(
         n_iter=jnp.asarray(3, dtype=jnp.int32),
@@ -220,6 +387,68 @@ def test_minimize_gibbs_cond_profile_scan_hot_from_bottom_carries_structured_sta
     assert jnp.allclose(result.ln_ntot, jnp.asarray([318.0, 312.0, 306.0], dtype=jnp.float64))
     assert result.diagnostics.n_iter.shape == (3,)
     assert jnp.all(result.diagnostics.converged)
+
+
+def test_minimize_gibbs_cond_profile_scan_hot_from_bottom_applies_startup_policy_hook(monkeypatch):
+    captured_ln_mk = []
+
+    def stub_minimize_gibbs_cond(state, init, **kwargs):
+        del state, kwargs
+        captured_ln_mk.append(jnp.asarray(init.ln_mk))
+        next_ln_mk = (
+            jnp.asarray([-20.0], dtype=jnp.float64)
+            if len(captured_ln_mk) == 1
+            else jnp.asarray(init.ln_mk)
+        )
+        return condmod.CondensateEquilibriumResult(
+            ln_nk=jnp.asarray(init.ln_nk),
+            ln_mk=next_ln_mk,
+            ln_ntot=jnp.asarray(init.ln_ntot),
+            diagnostics=condmod.CondensateEquilibriumDiagnostics(
+                n_iter=jnp.asarray(1, dtype=jnp.int32),
+                converged=jnp.asarray(True),
+                hit_max_iter=jnp.asarray(False),
+                final_residual=jnp.asarray(1.0e-12, dtype=jnp.float64),
+                residual_crit=jnp.asarray(1.0e-8, dtype=jnp.float64),
+                max_iter=jnp.asarray(1, dtype=jnp.int32),
+                epsilon=jnp.asarray(-5.0, dtype=jnp.float64),
+                final_step_size=jnp.asarray(0.25, dtype=jnp.float64),
+                invalid_numbers_detected=jnp.asarray(False),
+                debug_nan=jnp.asarray(False),
+            ),
+        )
+
+    monkeypatch.setattr(condmod, "minimize_gibbs_cond", stub_minimize_gibbs_cond)
+
+    condmod.minimize_gibbs_cond_profile(
+        temperatures=jnp.asarray([1000.0, 1100.0], dtype=jnp.float64),
+        ln_normalized_pressures=jnp.asarray([-1.0, 0.0], dtype=jnp.float64),
+        element_vector=jnp.asarray([1.0], dtype=jnp.float64),
+        init=condmod.CondensateEquilibriumInit(
+            ln_nk=jnp.asarray([[10.0], [20.0]], dtype=jnp.float64),
+            ln_mk=jnp.asarray([[-30.0], [-30.0]], dtype=jnp.float64),
+            ln_ntot=jnp.asarray([100.0, 200.0], dtype=jnp.float64),
+        ),
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0]], dtype=jnp.float64),
+        hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        epsilon_start=0.0,
+        epsilon_crit=-5.0,
+        n_step=1,
+        max_iter=1,
+        method="scan_hot_from_bottom_final_only",
+        epsilon_schedule="adaptive_sk_guard",
+        startup_config=condmod.CondensateRGIEStartupConfig(
+            policy="warm_previous_with_ratio_floor",
+            r0=1.0e-3,
+        ),
+    )
+
+    startup_floor = jnp.log(jnp.asarray(1.0e-3, dtype=jnp.float64))
+    final_only_floor = -5.0 + jnp.log(jnp.asarray(1.0e-3, dtype=jnp.float64))
+    assert jnp.allclose(captured_ln_mk[0], jnp.asarray([startup_floor], dtype=jnp.float64))
+    assert jnp.allclose(captured_ln_mk[-1], jnp.asarray([final_only_floor], dtype=jnp.float64))
 
 
 def test_minimize_gibbs_cond_profile_scan_hot_from_top_runs_in_input_order(monkeypatch):
