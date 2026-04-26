@@ -27,6 +27,910 @@ from exogibbs.optimize.stepsize import LOG_S_MAX
 DEFAULT_REDUCED_SOLVER = "augmented_lu_row_scaled"
 DEFAULT_REGULARIZATION_MODE = "none"
 DEFAULT_REGULARIZATION_STRENGTH = 0.0
+KL_DENSITY_GAUGE_P0_CGS = 1.0e6
+KL_DENSITY_GAUGE_K_B_CGS = 1.380649e-16
+
+
+def density_gauge_log_p0_over_kbt(
+    temperature: float,
+    *,
+    p0_cgs: float = KL_DENSITY_GAUGE_P0_CGS,
+    k_b_cgs: float = KL_DENSITY_GAUGE_K_B_CGS,
+) -> jnp.ndarray:
+    """Return ``ln(p0 / (k_B T))`` for KL audit-only pressure-density bridges."""
+
+    if float(temperature) <= 0.0:
+        raise ValueError("temperature must be positive.")
+    return jnp.log(
+        jnp.asarray(p0_cgs, dtype=jnp.float64)
+        / (jnp.asarray(k_b_cgs, dtype=jnp.float64) * jnp.asarray(temperature, dtype=jnp.float64))
+    )
+
+
+def gas_molecule_density_gauge_bridge(
+    formula_matrix_molecule: jnp.ndarray,
+    temperature: float,
+) -> jnp.ndarray:
+    """Return ``(sum_j nu_ij - 1) ln(p0/(k_B T))`` for gas molecules."""
+
+    formula_mol = jnp.asarray(formula_matrix_molecule, dtype=jnp.float64)
+    delta_nu = jnp.sum(formula_mol, axis=0) - 1.0
+    return delta_nu * density_gauge_log_p0_over_kbt(temperature)
+
+
+def condensate_density_gauge_bridge(
+    formula_matrix_cond: jnp.ndarray,
+    temperature: float,
+) -> jnp.ndarray:
+    """Return ``sum_j nu_cj ln(p0/(k_B T))`` for condensate activities."""
+
+    formula_cond = jnp.asarray(formula_matrix_cond, dtype=jnp.float64)
+    return jnp.sum(formula_cond, axis=0) * density_gauge_log_p0_over_kbt(temperature)
+
+
+def compute_condensate_budget_limits(
+    formula_matrix_cond: jnp.ndarray,
+    b: jnp.ndarray,
+    m: Optional[jnp.ndarray] = None,
+    *,
+    element_names: Optional[Sequence[str]] = None,
+) -> Dict[str, Any]:
+    """Return inventory-based per-condensate budget limits.
+
+    For condensate ``c`` this computes ``min_j b_j / nu_cj`` over positive
+    stoichiometric entries. The helper is diagnostic/correction
+    infrastructure; it does not alter the RGIE/PIPM equations.
+    """
+
+    formula = jnp.asarray(formula_matrix_cond, dtype=jnp.float64)
+    budget = jnp.asarray(b, dtype=formula.dtype)
+    if formula.ndim != 2:
+        raise ValueError("formula_matrix_cond must be a two-dimensional array.")
+    if budget.ndim != 1 or budget.shape[0] != formula.shape[0]:
+        raise ValueError(
+            "b must be a one-dimensional vector with one entry per element row."
+        )
+
+    positive = formula > 0.0
+    ratios = jnp.where(positive, budget[:, None] / formula, jnp.inf)
+    m_c_max_budget = jnp.min(ratios, axis=0)
+    has_positive = jnp.any(positive, axis=0)
+    limiting_element_index = jnp.where(
+        has_positive,
+        jnp.argmin(ratios, axis=0).astype(jnp.int32),
+        jnp.asarray(-1, dtype=jnp.int32),
+    )
+    m_c_max_budget = jnp.where(has_positive, m_c_max_budget, jnp.inf)
+
+    out: Dict[str, Any] = {
+        "m_c_max_budget": m_c_max_budget,
+        "limiting_element_index": limiting_element_index,
+    }
+    if element_names is not None:
+        limiting_host = jax.device_get(limiting_element_index)
+        out["limiting_element_name"] = [
+            None if int(index) < 0 else str(element_names[int(index)])
+            for index in limiting_host
+        ]
+    if m is not None:
+        amount = jnp.asarray(m, dtype=formula.dtype)
+        if amount.shape != m_c_max_budget.shape:
+            raise ValueError(
+                "m must have one entry per condensate column "
+                f"(got {amount.shape}, expected {m_c_max_budget.shape})."
+            )
+        out["budget_ratio"] = amount / m_c_max_budget
+    return out
+
+
+def build_inventory_capped_rgie_startup_ln_mk(
+    *,
+    epsilon: float,
+    r0: float,
+    formula_matrix_cond: jnp.ndarray,
+    b: jnp.ndarray,
+    alpha_init: float,
+    dtype: Optional[jnp.dtype] = None,
+) -> jnp.ndarray:
+    """Build ``min(nu * r0, alpha_init * m_c_max_budget)`` in log space."""
+
+    if r0 <= 0.0:
+        raise ValueError("r0 must be positive.")
+    if alpha_init <= 0.0:
+        raise ValueError("alpha_init must be positive.")
+    if dtype is None:
+        dtype = jnp.float64
+    eps = jnp.asarray(epsilon, dtype=dtype)
+    base_m0 = jnp.exp(eps) * jnp.asarray(r0, dtype=dtype)
+    limits = compute_condensate_budget_limits(formula_matrix_cond, b)["m_c_max_budget"]
+    capped = jnp.minimum(base_m0, jnp.asarray(alpha_init, dtype=dtype) * limits)
+    capped = jnp.maximum(capped, jnp.asarray(1.0e-300, dtype=dtype))
+    return jnp.log(capped.astype(dtype))
+
+
+def budget_guard_accepts_condensate_burden(
+    formula_matrix_cond: jnp.ndarray,
+    m: jnp.ndarray,
+    b: jnp.ndarray,
+    *,
+    budget_margin: float = 0.0,
+) -> jnp.ndarray:
+    """Return whether the aggregate condensate burden fits the element budget."""
+
+    formula = jnp.asarray(formula_matrix_cond)
+    amount = jnp.asarray(m, dtype=formula.dtype)
+    budget = jnp.asarray(b, dtype=formula.dtype)
+    margin = jnp.asarray(budget_margin, dtype=formula.dtype)
+    burden = formula @ amount
+    return jnp.all(burden <= (1.0 - margin) * budget)
+
+
+def apply_emergency_budget_projection(
+    formula_matrix_cond: jnp.ndarray,
+    m: jnp.ndarray,
+    b: jnp.ndarray,
+    *,
+    budget_margin: float = 0.0,
+) -> Dict[str, jnp.ndarray]:
+    """Fallback global scaling for budget violations.
+
+    This is intentionally a diagnostic emergency mechanism, not the primary
+    inventory-aware step control.
+    """
+
+    formula = jnp.asarray(formula_matrix_cond)
+    amount = jnp.asarray(m, dtype=formula.dtype)
+    budget = jnp.asarray(b, dtype=formula.dtype)
+    margin = jnp.asarray(budget_margin, dtype=formula.dtype)
+    burden = formula @ amount
+    target = (1.0 - margin) * budget
+    alpha_candidates = jnp.where(burden > 0.0, target / burden, jnp.inf)
+    alpha = jnp.minimum(1.0, jnp.min(alpha_candidates))
+    alpha = jnp.where(jnp.isfinite(alpha), jnp.clip(alpha, 0.0, 1.0), 1.0)
+    projected = amount * alpha
+    return {
+        "m": projected,
+        "alpha": alpha,
+        "projection_used": alpha < 1.0,
+        "burden_before": burden,
+        "burden_after": formula @ projected,
+    }
+
+
+def assemble_inventory_capped_reduced_coupling_variant(
+    nk: jnp.ndarray,
+    mk: jnp.ndarray,
+    ntotk: float,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    b: jnp.ndarray,
+    gk: jnp.ndarray,
+    hvector_cond: jnp.ndarray,
+    epsilon: float,
+    *,
+    variant_name: str = "current_reduced_coupling",
+    alpha_coupling: float = 1.0,
+) -> Dict[str, jnp.ndarray]:
+    """Assemble diagnostic reduced RGIE terms with optional inventory capping.
+
+    This helper is diagnostic-only. It changes neither the production equations
+    nor the default solver path.
+    """
+
+    if alpha_coupling <= 0.0:
+        raise ValueError("alpha_coupling must be positive.")
+    valid = (
+        "current_reduced_coupling",
+        "capped_s_only",
+        "capped_rhs_only",
+        "capped_both",
+    )
+    if variant_name not in valid:
+        raise ValueError(f"Unknown reduced-coupling variant '{variant_name}'. Expected one of {valid}.")
+
+    nk = jnp.asarray(nk, dtype=jnp.float64)
+    mk = jnp.asarray(mk, dtype=jnp.float64)
+    ntotk = jnp.asarray(ntotk, dtype=jnp.float64)
+    formula_matrix = jnp.asarray(formula_matrix, dtype=jnp.float64)
+    formula_matrix_cond = jnp.asarray(formula_matrix_cond, dtype=jnp.float64)
+    b = jnp.asarray(b, dtype=jnp.float64)
+    gk = jnp.asarray(gk, dtype=jnp.float64)
+    hvector_cond = jnp.asarray(hvector_cond, dtype=jnp.float64)
+    nu = jnp.exp(jnp.asarray(epsilon, dtype=jnp.float64))
+
+    limits = compute_condensate_budget_limits(formula_matrix_cond, b, mk)
+    m_cap = jnp.minimum(
+        mk,
+        jnp.asarray(alpha_coupling, dtype=mk.dtype) * limits["m_c_max_budget"],
+    )
+    s_current = (mk * mk) / nu
+    s_cap = (m_cap * m_cap) / nu
+    use_cap_s = variant_name in ("capped_s_only", "capped_both")
+    use_cap_rhs = variant_name in ("capped_rhs_only", "capped_both")
+    sk_q = jnp.where(use_cap_s, s_cap, s_current)
+    sk_rhs = jnp.where(use_cap_rhs, s_cap, s_current)
+    m_rhs = jnp.where(use_cap_rhs, m_cap, mk)
+
+    resn = jnp.sum(nk) - ntotk
+    bk = formula_matrix @ nk
+    q_gas = _A_diagn_At(nk, formula_matrix)
+    q_cond = _A_diagn_At(sk_q, formula_matrix_cond)
+    q_block = q_gas + q_cond
+    Angk = formula_matrix @ (gk * nk)
+    ngk = jnp.dot(nk, gk)
+    delta_b_hat = b - (bk + formula_matrix_cond @ m_rhs)
+    condvec = formula_matrix_cond @ (sk_rhs * hvector_cond - m_rhs)
+    rhs = Angk + condvec + delta_b_hat
+    scalar_rhs = ngk - resn
+    assemble_mat = jnp.block([[q_block, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
+    assemble_vec = jnp.concatenate([rhs, jnp.array([scalar_rhs])])
+    return {
+        "variant_name": variant_name,
+        "alpha_coupling": jnp.asarray(alpha_coupling, dtype=jnp.float64),
+        "m_c_max_budget": limits["m_c_max_budget"],
+        "budget_ratio": limits["budget_ratio"],
+        "limiting_element_index": limits["limiting_element_index"],
+        "m_cap": m_cap,
+        "s_current": s_current,
+        "s_cap": s_cap,
+        "sk_q": sk_q,
+        "sk_rhs": sk_rhs,
+        "m_rhs": m_rhs,
+        "q_gas": q_gas,
+        "q_cond": q_cond,
+        "q_block": q_block,
+        "condvec": condvec,
+        "delta_b_hat": delta_b_hat,
+        "rhs": rhs,
+        "resn": resn,
+        "bk": bk,
+        "scalar_rhs": scalar_rhs,
+        "assemble_mat": assemble_mat,
+        "assemble_vec": assemble_vec,
+        "uses_capped_s": jnp.asarray(use_cap_s),
+        "uses_capped_rhs": jnp.asarray(use_cap_rhs),
+        "capped_count": jnp.sum(m_cap < mk).astype(jnp.int32),
+    }
+
+
+def compute_hybrid_candidate_log_activity_proxy(
+    formula_matrix_cond: jnp.ndarray,
+    pi_g: jnp.ndarray,
+    hvector_cond: jnp.ndarray,
+) -> jnp.ndarray:
+    """Return the FastChem-like condensate activity proxy ``A_cond.T @ pi_g - h``.
+
+    The current ExoGibbs condensate RGIE state is expressed with ``ln_mk`` and
+    the complementarity barrier, not FastChem's atomic-density activity state.
+    Until an exact atomic-density activity proxy is carried through the solver,
+    this opt-in experimental branch uses the recovered gas-only dual vector as
+    the branch definition and records that choice in audit diagnostics.
+    """
+
+    return (
+        jnp.asarray(formula_matrix_cond, dtype=jnp.float64).T
+        @ jnp.asarray(pi_g, dtype=jnp.float64)
+        - jnp.asarray(hvector_cond, dtype=jnp.float64)
+    )
+
+
+def build_hybrid_candidate_masks(
+    log_activity_proxy: jnp.ndarray,
+    *,
+    near_margin: float = -0.1,
+    weighted: bool = False,
+) -> Dict[str, jnp.ndarray]:
+    """Build FastChem-like active and near-active condensate masks.
+
+    ``active`` follows the structural audit rule ``log_activity >= 0``.
+    ``near_active`` follows the optional Jacobian margin
+    ``log_activity > -0.1``.  The weighted diagnostic variant replaces the hard
+    near-active mask with a narrow linear ramp over ``[-0.1, 0]`` while keeping a
+    separate hard active indicator for reporting.
+    """
+
+    proxy = jnp.asarray(log_activity_proxy, dtype=jnp.float64)
+    active_bool = proxy >= 0.0
+    near_bool = proxy > near_margin
+    active = active_bool.astype(proxy.dtype)
+    if weighted:
+        width = jnp.maximum(jnp.asarray(-near_margin, dtype=proxy.dtype), 1.0e-12)
+        near = jnp.clip((proxy - near_margin) / width, 0.0, 1.0)
+        active_for_rhs = near
+    else:
+        near = near_bool.astype(proxy.dtype)
+        active_for_rhs = active
+    return {
+        "active_bool": active_bool,
+        "near_active_bool": near_bool,
+        "active": active,
+        "near_active": near,
+        "active_for_rhs": active_for_rhs,
+    }
+
+
+def compute_condensed_element_gas_recoupling_terms(
+    formula_matrix_cond: jnp.ndarray,
+    m_active: jnp.ndarray,
+    b: jnp.ndarray,
+) -> Dict[str, jnp.ndarray]:
+    """Return condensed-element gas recoupling bookkeeping.
+
+    The diagnostic replay uses the FastChem-style element recoupling view
+    ``d_elem = A_cond m_active`` and ``b_eff = b - d_elem``.  ``phi`` is a
+    condensed-element fraction proxy, useful for identifying which condensed
+    elements control the gas-only replay.
+    """
+
+    formula = jnp.asarray(formula_matrix_cond, dtype=jnp.float64)
+    m_active = jnp.asarray(m_active, dtype=jnp.float64)
+    budget = jnp.asarray(b, dtype=jnp.float64)
+    d_elem = formula @ m_active
+    b_eff = budget - d_elem
+    phi = jnp.where(budget > 0.0, d_elem / budget, 0.0)
+    return {"d_elem": d_elem, "b_eff": b_eff, "phi": phi}
+
+
+def build_internal_complementarity_tau(
+    candidate_indices: jnp.ndarray,
+    epsilon: float,
+    *,
+    tau_scale: float = 1.0,
+    dtype: Optional[jnp.dtype] = None,
+) -> jnp.ndarray:
+    """Return fixed-tau bookkeeping for the internal complementarity branch.
+
+    The experimental branch preserves ExoGibbs' gas-side RGIE variables but
+    replaces the eliminated condensate barrier equation
+    ``m * (A_c.T @ pi - h_c) + nu = 0`` by explicit variables
+    ``r = log(m)`` and ``chi = log(zeta)`` satisfying
+    ``A_c.T @ pi - h_c + zeta = 0`` and ``r + chi - log(tau) = 0``.
+    We use ``tau = tau_scale * exp(epsilon)`` by default so the branch remains
+    tied to the current RGIE barrier schedule while exposing the complementarity
+    pair internally.  This is still a pi-proxy transplant, not a true
+    atomic-density KL/FastChem inner branch.
+    """
+
+    if tau_scale <= 0.0:
+        raise ValueError("tau_scale must be positive.")
+    indices = jnp.asarray(candidate_indices, dtype=jnp.int32)
+    if indices.ndim != 1:
+        raise ValueError("candidate_indices must be a one-dimensional array.")
+    if dtype is None:
+        dtype = jnp.float64
+    tau = jnp.asarray(tau_scale, dtype=dtype) * jnp.exp(jnp.asarray(epsilon, dtype=dtype))
+    return jnp.full((indices.shape[0],), tau, dtype=dtype)
+
+
+def compute_internal_complementarity_residual(
+    q: jnp.ndarray,
+    r_c: jnp.ndarray,
+    chi_c: jnp.ndarray,
+    pi: jnp.ndarray,
+    q_tot: jnp.ndarray,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond_c: jnp.ndarray,
+    b: jnp.ndarray,
+    hvector_gas: jnp.ndarray,
+    hvector_cond_c: jnp.ndarray,
+    ln_normalized_pressure: jnp.ndarray,
+    tau_c: jnp.ndarray,
+) -> Dict[str, jnp.ndarray]:
+    """Build residual blocks for the opt-in internal complementarity branch.
+
+    Preserved from current RGIE: gas variables ``q = ln(n)``, ``pi``, and
+    ``q_tot = ln(n_tot)`` plus gas stationarity, element conservation, and
+    total-number closure.  Changed only inside the candidate condensate block:
+    explicit ``r_c = ln(m_c)`` and ``chi_c = ln(zeta_c)`` replace the
+    barrier-eliminated condensate residual.
+    """
+
+    q = jnp.asarray(q, dtype=jnp.float64)
+    r_c = jnp.asarray(r_c, dtype=jnp.float64)
+    chi_c = jnp.asarray(chi_c, dtype=jnp.float64)
+    pi = jnp.asarray(pi, dtype=jnp.float64)
+    q_tot = jnp.asarray(q_tot, dtype=jnp.float64)
+    formula_matrix = jnp.asarray(formula_matrix, dtype=jnp.float64)
+    formula_matrix_cond_c = jnp.asarray(formula_matrix_cond_c, dtype=jnp.float64)
+    b = jnp.asarray(b, dtype=jnp.float64)
+    hvector_gas = jnp.asarray(hvector_gas, dtype=jnp.float64)
+    hvector_cond_c = jnp.asarray(hvector_cond_c, dtype=jnp.float64)
+    tau_c = jnp.asarray(tau_c, dtype=jnp.float64)
+
+    n = jnp.exp(q)
+    m_c = jnp.exp(r_c)
+    zeta_c = jnp.exp(chi_c)
+    n_tot = jnp.exp(q_tot)
+    g = hvector_gas + q - q_tot + ln_normalized_pressure
+    gas_stationarity = n * (formula_matrix.T @ pi - g)
+    element_conservation = formula_matrix @ n + formula_matrix_cond_c @ m_c - b
+    total_number_closure = jnp.asarray([jnp.sum(n) - n_tot], dtype=jnp.float64)
+    activity_complementarity = formula_matrix_cond_c.T @ pi - hvector_cond_c + zeta_c
+    fixed_tau_complementarity = r_c + chi_c - jnp.log(tau_c)
+    flat = jnp.concatenate(
+        [
+            gas_stationarity,
+            element_conservation,
+            total_number_closure,
+            activity_complementarity,
+            fixed_tau_complementarity,
+        ]
+    )
+    return {
+        "gas_stationarity": gas_stationarity,
+        "element_conservation": element_conservation,
+        "total_number_closure": total_number_closure,
+        "activity_complementarity": activity_complementarity,
+        "fixed_tau_complementarity": fixed_tau_complementarity,
+        "flat": flat,
+        "max_abs_activity_complementarity": jnp.max(jnp.abs(activity_complementarity))
+        if activity_complementarity.size
+        else jnp.asarray(0.0, dtype=jnp.float64),
+        "max_abs_fixed_tau_complementarity": jnp.max(jnp.abs(fixed_tau_complementarity))
+        if fixed_tau_complementarity.size
+        else jnp.asarray(0.0, dtype=jnp.float64),
+    }
+
+
+def reconstruct_kl_atomic_gas_from_u(
+    u: jnp.ndarray,
+    formula_matrix_gas: jnp.ndarray,
+    hvector_gas: jnp.ndarray,
+    *,
+    temperature: Optional[float] = None,
+    apply_density_gauge_bridge: bool = False,
+) -> Dict[str, jnp.ndarray]:
+    """Reconstruct gas densities from KL/FastChem-style atomic variables.
+
+    This helper is diagnostic-only.  It intentionally does not enter the
+    current RGIE/PIPM production algebra.  The FastChem presets list element
+    gas species first and store ``h = -logK``.  The KL-like branch therefore
+    keeps ``u = log(n_atom)`` for those element species and reconstructs
+    molecules with ``log(n_mol) = logK + A_mol.T @ u``.  The optional density
+    bridge is guarded for audit-only KL branches and leaves the legacy
+    diagnostic path unchanged by default.
+    """
+
+    u = jnp.asarray(u, dtype=jnp.float64)
+    formula = jnp.asarray(formula_matrix_gas, dtype=jnp.float64)
+    hvector = jnp.asarray(hvector_gas, dtype=jnp.float64)
+    n_elements = int(u.shape[0])
+    if formula.shape[0] != n_elements:
+        raise ValueError(
+            "u must have one entry per element row "
+            f"(got {n_elements}, expected {formula.shape[0]})."
+        )
+    if hvector.shape[0] != formula.shape[1]:
+        raise ValueError("hvector_gas must have one entry per gas species column.")
+
+    log_atom = u
+    formula_mol = formula[:, n_elements:]
+    h_mol = hvector[n_elements:]
+    bridge_mol = jnp.zeros_like(h_mol)
+    if apply_density_gauge_bridge:
+        if temperature is None:
+            raise ValueError("temperature is required when apply_density_gauge_bridge=True.")
+        bridge_mol = gas_molecule_density_gauge_bridge(formula_mol, temperature)
+    h_mol_density = h_mol + bridge_mol
+    log_mol = formula_mol.T @ u - h_mol_density
+    ln_nk = jnp.concatenate([log_atom, log_mol])
+    nk = jnp.exp(ln_nk)
+    return {
+        "ln_nk": ln_nk,
+        "nk": nk,
+        "ln_ntot": jnp.log(jnp.maximum(jnp.sum(nk), jnp.asarray(1.0e-300, dtype=nk.dtype))),
+        "atom_n": jnp.exp(log_atom),
+        "molecule_n": jnp.exp(log_mol),
+        "formula_matrix_molecule": formula_mol,
+        "h_molecule_raw": h_mol,
+        "density_gauge_bridge_molecule": bridge_mol,
+        "h_molecule_density_gauge": h_mol_density,
+        "density_gauge_bridge_applied": jnp.asarray(apply_density_gauge_bridge),
+    }
+
+
+def compute_kl_condensate_log_activity(
+    u: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_cond: jnp.ndarray,
+    *,
+    temperature: Optional[float] = None,
+    apply_density_gauge_bridge: bool = False,
+) -> jnp.ndarray:
+    """Return true KL/FastChem-like condensate activity ``logK + A_C.T @ u``.
+
+    This differs from the earlier RGIE-preserving pi-proxy branch, which used
+    ``A_C.T @ pi_g - h_C``.  Here ``u`` is the atomic-density state itself.
+    """
+
+    formula_cond = jnp.asarray(formula_matrix_cond, dtype=jnp.float64)
+    hcond = jnp.asarray(hvector_cond, dtype=jnp.float64)
+    if apply_density_gauge_bridge:
+        if temperature is None:
+            raise ValueError("temperature is required when apply_density_gauge_bridge=True.")
+        hcond = hcond + condensate_density_gauge_bridge(formula_cond, temperature)
+    return formula_cond.T @ jnp.asarray(u, dtype=jnp.float64) - hcond
+
+
+def build_kl_atomic_candidate_masks(
+    log_activity: jnp.ndarray,
+    *,
+    near_margin: float = -0.1,
+) -> Dict[str, jnp.ndarray]:
+    """Build active and near-active sets from true KL-like ``ell_c(u)``."""
+
+    ell = jnp.asarray(log_activity, dtype=jnp.float64)
+    active_bool = ell >= 0.0
+    near_active_bool = ell > near_margin
+    return {
+        "active_bool": active_bool,
+        "near_active_bool": near_active_bool,
+        "active": active_bool.astype(ell.dtype),
+        "near_active": near_active_bool.astype(ell.dtype),
+    }
+
+
+def compute_kl_atomic_complementarity_residual(
+    u: jnp.ndarray,
+    r_c: jnp.ndarray,
+    chi_c: jnp.ndarray,
+    formula_matrix_gas: jnp.ndarray,
+    formula_matrix_cond_c: jnp.ndarray,
+    b: jnp.ndarray,
+    hvector_gas: jnp.ndarray,
+    hvector_cond_c: jnp.ndarray,
+    tau_c: jnp.ndarray,
+) -> Dict[str, jnp.ndarray]:
+    """Build residual blocks for the opt-in KL-like atomic branch.
+
+    Shared ExoGibbs infrastructure: FastChem thermodynamic tables, formula
+    matrices, parity-fixed abundances, and gas replay tooling.  Mathematically
+    different from RGIE: gas densities are reconstructed from atomic density
+    variables ``u`` via mass action, and condensates use true
+    ``ell_C(u) = logK_C + A_C.T @ u`` rather than a recovered RGIE dual proxy.
+    """
+
+    u = jnp.asarray(u, dtype=jnp.float64)
+    r_c = jnp.asarray(r_c, dtype=jnp.float64)
+    chi_c = jnp.asarray(chi_c, dtype=jnp.float64)
+    formula = jnp.asarray(formula_matrix_gas, dtype=jnp.float64)
+    formula_cond_c = jnp.asarray(formula_matrix_cond_c, dtype=jnp.float64)
+    b = jnp.asarray(b, dtype=jnp.float64)
+    hvector_cond_c = jnp.asarray(hvector_cond_c, dtype=jnp.float64)
+    tau_c = jnp.asarray(tau_c, dtype=jnp.float64)
+
+    gas = reconstruct_kl_atomic_gas_from_u(u, formula, hvector_gas)
+    m_c = jnp.exp(r_c)
+    zeta_c = jnp.exp(chi_c)
+    ell_c = compute_kl_condensate_log_activity(u, formula_cond_c, hvector_cond_c)
+    element_conservation = b - gas["atom_n"] - gas["formula_matrix_molecule"] @ gas["molecule_n"] - formula_cond_c @ m_c
+    activity_slack = ell_c + zeta_c
+    fixed_tau_complementarity = r_c + chi_c - jnp.log(tau_c)
+    flat = jnp.concatenate(
+        [element_conservation, activity_slack, fixed_tau_complementarity]
+    )
+    return {
+        "element_conservation": element_conservation,
+        "activity_slack": activity_slack,
+        "fixed_tau_complementarity": fixed_tau_complementarity,
+        "flat": flat,
+        "ell_c": ell_c,
+        "ln_nk": gas["ln_nk"],
+        "ln_ntot": gas["ln_ntot"],
+        "nk": gas["nk"],
+        "max_abs_activity_slack": jnp.max(jnp.abs(activity_slack))
+        if activity_slack.size
+        else jnp.asarray(0.0, dtype=jnp.float64),
+        "max_abs_fixed_tau_complementarity": jnp.max(jnp.abs(fixed_tau_complementarity))
+        if fixed_tau_complementarity.size
+        else jnp.asarray(0.0, dtype=jnp.float64),
+        "max_abs_element_conservation": jnp.max(jnp.abs(element_conservation))
+        if element_conservation.size
+        else jnp.asarray(0.0, dtype=jnp.float64),
+    }
+
+
+def _recover_gas_dual_from_state(
+    nk: jnp.ndarray,
+    formula_matrix: jnp.ndarray,
+    gk: jnp.ndarray,
+) -> jnp.ndarray:
+    q_gas = _A_diagn_At(nk, formula_matrix)
+    rhs = formula_matrix @ (gk * nk)
+    return jnp.linalg.lstsq(q_gas, rhs)[0]
+
+
+def solve_hybrid_candidate_selected_reduced_coupling_direction(
+    ln_nk: jnp.ndarray,
+    ln_mk: jnp.ndarray,
+    ln_ntot: float,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    b: jnp.ndarray,
+    gk: jnp.ndarray,
+    hvector_cond: jnp.ndarray,
+    epsilon: float,
+    *,
+    candidate_mode: str = "candidate_selected_active_plus_near_jacobian",
+    near_margin: float = -0.1,
+) -> Dict[str, jnp.ndarray]:
+    """Solve one opt-in hybrid candidate-selected RGIE direction.
+
+    This is a diagnostic/experimental transplant of the FastChem Cond
+    structural audit:
+
+    * recover a gas-only dual ``pi_g`` from the current gas state,
+    * define ``log_activity_proxy_c = A_cond[:, c].T @ pi_g - h_cond[c]``,
+    * select active condensates with ``log_activity_proxy >= 0``,
+    * optionally include ``log_activity_proxy > -0.1`` in the Jacobian only,
+    * assemble ``Q_hybrid``, ``delta_b_hat_hybrid``, and ``condvec_hybrid``
+      without changing ExoGibbs state variables or support handling.
+    """
+
+    valid = (
+        "candidate_selected_active_only",
+        "candidate_selected_active_plus_near_jacobian",
+        "candidate_selected_weighted_mask",
+    )
+    if candidate_mode not in valid:
+        raise ValueError(f"Unknown candidate_mode '{candidate_mode}'. Expected one of {valid}.")
+
+    nk = jnp.exp(jnp.asarray(ln_nk, dtype=jnp.float64))
+    mk = jnp.exp(jnp.asarray(ln_mk, dtype=jnp.float64))
+    ntot = jnp.exp(jnp.asarray(ln_ntot, dtype=jnp.float64))
+    formula_matrix = jnp.asarray(formula_matrix, dtype=jnp.float64)
+    formula_matrix_cond = jnp.asarray(formula_matrix_cond, dtype=jnp.float64)
+    b = jnp.asarray(b, dtype=jnp.float64)
+    gk = jnp.asarray(gk, dtype=jnp.float64)
+    hvector_cond = jnp.asarray(hvector_cond, dtype=jnp.float64)
+    nu = jnp.exp(jnp.asarray(epsilon, dtype=jnp.float64))
+
+    pi_g = _recover_gas_dual_from_state(nk, formula_matrix, gk)
+    log_activity_proxy = compute_hybrid_candidate_log_activity_proxy(
+        formula_matrix_cond,
+        pi_g,
+        hvector_cond,
+    )
+    masks = build_hybrid_candidate_masks(
+        log_activity_proxy,
+        near_margin=near_margin,
+        weighted=candidate_mode == "candidate_selected_weighted_mask",
+    )
+    if candidate_mode == "candidate_selected_active_only":
+        jacobian_mask = masks["active"]
+    else:
+        jacobian_mask = masks["near_active"]
+    rhs_mask = masks["active_for_rhs"]
+
+    # Hybrid reduced system:
+    #   Q_hybrid = A_g diag(n) A_g.T + A_cond diag(s_near) A_cond.T
+    #   delta_b_hat_hybrid = b - (A_g n + A_cond m_active)
+    #   condvec_hybrid = A_cond (s_near * h_cond - m_active)
+    # ``s_near`` is Jacobian-gated, while ``m_active`` is active-gated for the
+    # hard-mask branches.  The weighted branch is diagnostic-only and replaces
+    # both gates with a smooth ramp around the FastChem activity boundary.
+    bk = formula_matrix @ nk
+    m_active = rhs_mask * mk
+    s_near = jacobian_mask * (mk * mk / nu)
+    q_gas = _A_diagn_At(nk, formula_matrix)
+    q_cond = _A_diagn_At(s_near, formula_matrix_cond)
+    q_block = q_gas + q_cond
+    resn = jnp.sum(nk) - ntot
+    Angk = formula_matrix @ (gk * nk)
+    ngk = jnp.dot(nk, gk)
+    delta_b_hat_hybrid = b - (bk + formula_matrix_cond @ m_active)
+    condvec_hybrid = formula_matrix_cond @ (s_near * hvector_cond - m_active)
+    rhs = Angk + condvec_hybrid + delta_b_hat_hybrid
+    scalar_rhs = ngk - resn
+    assemble_mat = jnp.block([[q_block, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
+    assemble_vec = jnp.concatenate([rhs, jnp.array([scalar_rhs])])
+    row_scale = jnp.maximum(jnp.max(jnp.abs(assemble_mat), axis=1, keepdims=True), 1.0)
+    solve_mat = assemble_mat / row_scale
+    solve_vec = assemble_vec / row_scale[:, 0]
+    lu, piv = lu_factor(solve_mat)
+    assemble_variable = lu_solve((lu, piv), solve_vec)
+    pi_vector = assemble_variable[:-1]
+    delta_ln_ntot = assemble_variable[-1]
+    delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
+    raw_delta_ln_mk = jnp.exp(jnp.asarray(ln_mk, dtype=jnp.float64) - epsilon) * (
+        formula_matrix_cond.T @ pi_vector - hvector_cond
+    ) + 1.0
+    return {
+        "candidate_mode": candidate_mode,
+        "activity_proxy_source": "pi_g_dual_proxy",
+        "atomic_density_proxy_available": jnp.asarray(False),
+        "near_margin": jnp.asarray(near_margin, dtype=jnp.float64),
+        "pi_g": pi_g,
+        "log_activity_proxy": log_activity_proxy,
+        "active_mask": masks["active"],
+        "near_active_mask": masks["near_active"],
+        "active_bool": masks["active_bool"],
+        "near_active_bool": masks["near_active_bool"],
+        "jacobian_mask": jacobian_mask,
+        "m_active": m_active,
+        "s_near": s_near,
+        "q_gas": q_gas,
+        "q_cond": q_cond,
+        "q_block": q_block,
+        "delta_b_hat_hybrid": delta_b_hat_hybrid,
+        "condvec_hybrid": condvec_hybrid,
+        "rhs": rhs,
+        "resn": resn,
+        "bk": bk,
+        "scalar_rhs": scalar_rhs,
+        "assemble_mat": assemble_mat,
+        "assemble_vec": assemble_vec,
+        "pi_vector": pi_vector,
+        "delta_ln_ntot": delta_ln_ntot,
+        "delta_ln_nk": delta_ln_nk,
+        "raw_delta_ln_mk": raw_delta_ln_mk,
+        "delta_ln_mk": jnp.clip(raw_delta_ln_mk, -0.1, 0.1),
+        "factorization_succeeded": jnp.all(jnp.isfinite(assemble_variable)),
+        "candidate_set_size": jnp.sum(masks["active_bool"]).astype(jnp.int32),
+        "near_active_set_size": jnp.sum(masks["near_active_bool"]).astype(jnp.int32),
+        "weighted_mask": jnp.asarray(candidate_mode == "candidate_selected_weighted_mask"),
+    }
+
+
+def solve_inventory_capped_reduced_coupling_direction(
+    ln_nk: jnp.ndarray,
+    ln_mk: jnp.ndarray,
+    ln_ntot: float,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    b: jnp.ndarray,
+    gk: jnp.ndarray,
+    hvector_cond: jnp.ndarray,
+    epsilon: float,
+    *,
+    variant_name: str = "current_reduced_coupling",
+    alpha_coupling: float = 1.0,
+) -> Dict[str, jnp.ndarray]:
+    """Solve one diagnostic reduced-coupling variant direction."""
+
+    nk = jnp.exp(jnp.asarray(ln_nk, dtype=jnp.float64))
+    mk = jnp.exp(jnp.asarray(ln_mk, dtype=jnp.float64))
+    ntot = jnp.exp(jnp.asarray(ln_ntot, dtype=jnp.float64))
+    terms = assemble_inventory_capped_reduced_coupling_variant(
+        nk,
+        mk,
+        ntot,
+        formula_matrix,
+        formula_matrix_cond,
+        b,
+        gk,
+        hvector_cond,
+        epsilon,
+        variant_name=variant_name,
+        alpha_coupling=alpha_coupling,
+    )
+    row_scale = jnp.maximum(jnp.max(jnp.abs(terms["assemble_mat"]), axis=1, keepdims=True), 1.0)
+    solve_mat = terms["assemble_mat"] / row_scale
+    solve_vec = terms["assemble_vec"] / row_scale[:, 0]
+    lu, piv = lu_factor(solve_mat)
+    assemble_variable = lu_solve((lu, piv), solve_vec)
+    pi_vector = assemble_variable[:-1]
+    delta_ln_ntot = assemble_variable[-1]
+    delta_ln_nk = jnp.asarray(formula_matrix).T @ pi_vector + delta_ln_ntot - gk
+    raw_delta_ln_mk = jnp.exp(jnp.asarray(ln_mk) - epsilon) * (
+        jnp.asarray(formula_matrix_cond).T @ pi_vector - hvector_cond
+    ) + 1.0
+    return {
+        **terms,
+        "pi_vector": pi_vector,
+        "delta_ln_ntot": delta_ln_ntot,
+        "delta_ln_nk": delta_ln_nk,
+        "raw_delta_ln_mk": raw_delta_ln_mk,
+        "delta_ln_mk": jnp.clip(raw_delta_ln_mk, -0.1, 0.1),
+        "factorization_succeeded": jnp.all(jnp.isfinite(assemble_variable)),
+        "max_abs_delta_ln_nk": jnp.max(jnp.abs(delta_ln_nk)),
+        "max_abs_raw_delta_ln_mk": jnp.max(jnp.abs(raw_delta_ln_mk)),
+    }
+
+
+def select_conditional_capped_s_reduced_coupling_mode(
+    ln_nk: jnp.ndarray,
+    ln_mk: jnp.ndarray,
+    ln_ntot: float,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    b: jnp.ndarray,
+    temperature: float,
+    ln_normalized_pressure: float,
+    hvector: jnp.ndarray,
+    hvector_cond: jnp.ndarray,
+    epsilon: float,
+    *,
+    alpha_candidates: Sequence[float] = (1.0e-2, 1.0e-1, 1.0),
+    mode_selection_margin: float = 0.05,
+    shadow_lambda: float = 0.1,
+) -> Dict[str, Any]:
+    """Choose an opt-in capped-s reduced coupling mode from one shadow step.
+
+    This is deliberately a per-layer/per-run selector. The returned mode and
+    alpha are meant to be frozen for the subsequent first-pass run.
+    """
+
+    gk = _compute_gk(
+        temperature,
+        ln_nk,
+        ln_ntot,
+        hvector,
+        ln_normalized_pressure,
+    )
+    current = solve_inventory_capped_reduced_coupling_direction(
+        ln_nk,
+        ln_mk,
+        ln_ntot,
+        formula_matrix,
+        formula_matrix_cond,
+        b,
+        gk,
+        hvector_cond,
+        epsilon,
+        variant_name="current_reduced_coupling",
+        alpha_coupling=1.0,
+    )
+
+    def score(direction: Dict[str, jnp.ndarray]) -> float:
+        trial = _evaluate_trial_step(
+            ln_nk,
+            ln_mk,
+            ln_ntot,
+            shadow_lambda,
+            direction["delta_ln_nk"],
+            jnp.clip(direction["raw_delta_ln_mk"], -0.1, 0.1),
+            direction["delta_ln_ntot"],
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            temperature,
+            ln_normalized_pressure,
+            hvector,
+            hvector_cond,
+            epsilon,
+        )
+        return float(trial["fresh_residual"])
+
+    current_score = score(current)
+    candidates = []
+    for alpha in alpha_candidates:
+        direction = solve_inventory_capped_reduced_coupling_direction(
+            ln_nk,
+            ln_mk,
+            ln_ntot,
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            gk,
+            hvector_cond,
+            epsilon,
+            variant_name="capped_s_only",
+            alpha_coupling=float(alpha),
+        )
+        candidates.append(
+            {
+                "mode": "capped_s_only",
+                "alpha_s": float(alpha),
+                "fresh_residual": score(direction),
+            }
+        )
+    best = min(candidates, key=lambda row: row["fresh_residual"]) if candidates else None
+    required = current_score * (1.0 - float(mode_selection_margin))
+    escalation = bool(best is not None and best["fresh_residual"] < required)
+    selected_mode = "capped_s_only" if escalation else "current"
+    selected_alpha = float(best["alpha_s"]) if escalation and best is not None else 1.0
+    return {
+        "selected_mode": selected_mode,
+        "selected_alpha_s": selected_alpha,
+        "shadow_best_fresh_residual": float(best["fresh_residual"]) if best is not None else float("inf"),
+        "shadow_current_fresh_residual": float(current_score),
+        "mode_selection_margin": float(mode_selection_margin),
+        "escalation_triggered": escalation,
+        "shadow_lambda": float(shadow_lambda),
+        "shadow_scores": [{"mode": "current", "alpha_s": 1.0, "fresh_residual": float(current_score)}]
+        + candidates,
+    }
 
 
 def diagnose_rgie_raw_condensate_update_block(
@@ -2897,6 +3801,8 @@ def _compute_iteration_step_metrics(
     reduced_solver: str = DEFAULT_REDUCED_SOLVER,
     regularization_mode: str = DEFAULT_REGULARIZATION_MODE,
     regularization_strength: float = DEFAULT_REGULARIZATION_STRENGTH,
+    reduced_coupling_mode: str = "current",
+    reduced_coupling_alpha_s: float = 1.0,
 ) -> Dict[str, jnp.ndarray]:
     """Compute the current PIPM step components without changing the update rule."""
 
@@ -2906,25 +3812,144 @@ def _compute_iteration_step_metrics(
     ln_sk = 2.0 * ln_mk - epsilon
     bk = formula_matrix @ nk
 
-    pi_vector, delta_ln_ntot, reduced_metrics = _solve_reduced_gibbs_iteration_equations_cond_with_metrics(
-        nk,
-        mk,
-        ntot,
-        formula_matrix,
-        formula_matrix_cond,
-        b,
-        gk,
-        bk,
-        hvector_cond,
-        jnp.exp(ln_sk),
-        reduced_solver=reduced_solver,
-        regularization_mode=regularization_mode,
-        regularization_strength=regularization_strength,
-    )
+    if reduced_coupling_mode == "current":
+        pi_vector, delta_ln_ntot, reduced_metrics = _solve_reduced_gibbs_iteration_equations_cond_with_metrics(
+            nk,
+            mk,
+            ntot,
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            gk,
+            bk,
+            hvector_cond,
+            jnp.exp(ln_sk),
+            reduced_solver=reduced_solver,
+            regularization_mode=regularization_mode,
+            regularization_strength=regularization_strength,
+        )
+        raw_delta_ln_mk = jnp.exp(ln_mk - epsilon) * (
+            formula_matrix_cond.T @ pi_vector - hvector_cond
+        ) + 1.0
+        reduced_metrics = dict(reduced_metrics)
+        reduced_metrics["reduced_coupling_mode"] = "current"
+        reduced_metrics["reduced_coupling_alpha_s"] = jnp.asarray(
+            reduced_coupling_alpha_s, dtype=jnp.float64
+        )
+        reduced_metrics["reduced_coupling_uses_capped_s"] = jnp.asarray(False)
+    elif reduced_coupling_mode == "capped_s_only":
+        direction = solve_inventory_capped_reduced_coupling_direction(
+            ln_nk,
+            ln_mk,
+            ln_ntot,
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            gk,
+            hvector_cond,
+            epsilon,
+            variant_name="capped_s_only",
+            alpha_coupling=reduced_coupling_alpha_s,
+        )
+        pi_vector = direction["pi_vector"]
+        delta_ln_ntot = direction["delta_ln_ntot"]
+        raw_delta_ln_mk = direction["raw_delta_ln_mk"]
+        reduced_metrics = {
+            "reduced_solver_backend": "inventory_capped_capped_s_only",
+            "reduced_factorization_succeeded": direction["factorization_succeeded"],
+            "reduced_regularization_mode": regularization_mode,
+            "reduced_regularization_strength": jnp.asarray(
+                regularization_strength, dtype=jnp.float64
+            ),
+            "reduced_regularization_used": jnp.asarray(0.0, dtype=jnp.float64),
+            "reduced_resn": direction["resn"],
+            "reduced_row_scale_min": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_row_scale_max": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_row_scale_ratio": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_col_scale_min": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_col_scale_max": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_col_scale_ratio": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_mat_maxabs": jnp.max(jnp.abs(direction["assemble_mat"])),
+            "reduced_vec_maxabs": jnp.max(jnp.abs(direction["assemble_vec"])),
+            "reduced_qk_maxabs": jnp.max(jnp.abs(direction["q_block"])),
+            "reduced_qk_diag_min": jnp.min(jnp.diag(direction["q_block"])),
+            "reduced_qk_diag_max": jnp.max(jnp.diag(direction["q_block"])),
+            "reduced_coupling_mode": "capped_s_only",
+            "reduced_coupling_alpha_s": jnp.asarray(
+                reduced_coupling_alpha_s, dtype=jnp.float64
+            ),
+            "reduced_coupling_uses_capped_s": jnp.asarray(True),
+            "reduced_coupling_capped_count": direction["capped_count"],
+        }
+    elif reduced_coupling_mode in (
+        "candidate_selected_active_only",
+        "candidate_selected_active_plus_near_jacobian",
+        "candidate_selected_weighted_mask",
+    ):
+        direction = solve_hybrid_candidate_selected_reduced_coupling_direction(
+            ln_nk,
+            ln_mk,
+            ln_ntot,
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            gk,
+            hvector_cond,
+            epsilon,
+            candidate_mode=reduced_coupling_mode,
+        )
+        pi_vector = direction["pi_vector"]
+        delta_ln_ntot = direction["delta_ln_ntot"]
+        raw_delta_ln_mk = direction["raw_delta_ln_mk"]
+        reduced_metrics = {
+            "reduced_solver_backend": "hybrid_candidate_selected",
+            "reduced_factorization_succeeded": direction["factorization_succeeded"],
+            "reduced_regularization_mode": regularization_mode,
+            "reduced_regularization_strength": jnp.asarray(
+                regularization_strength, dtype=jnp.float64
+            ),
+            "reduced_regularization_used": jnp.asarray(0.0, dtype=jnp.float64),
+            "reduced_resn": direction["resn"],
+            "reduced_row_scale_min": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_row_scale_max": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_row_scale_ratio": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_col_scale_min": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_col_scale_max": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_col_scale_ratio": jnp.asarray(jnp.nan, dtype=jnp.float64),
+            "reduced_mat_maxabs": jnp.max(jnp.abs(direction["assemble_mat"])),
+            "reduced_vec_maxabs": jnp.max(jnp.abs(direction["assemble_vec"])),
+            "reduced_qk_maxabs": jnp.max(jnp.abs(direction["q_block"])),
+            "reduced_qk_diag_min": jnp.min(jnp.diag(direction["q_block"])),
+            "reduced_qk_diag_max": jnp.max(jnp.diag(direction["q_block"])),
+            "reduced_coupling_mode": reduced_coupling_mode,
+            "reduced_coupling_alpha_s": jnp.asarray(
+                reduced_coupling_alpha_s, dtype=jnp.float64
+            ),
+            "reduced_coupling_uses_capped_s": jnp.asarray(False),
+            "hybrid_candidate_activity_proxy_source": direction[
+                "activity_proxy_source"
+            ],
+            "hybrid_candidate_atomic_density_proxy_available": direction[
+                "atomic_density_proxy_available"
+            ],
+            "hybrid_candidate_set_size": direction["candidate_set_size"],
+            "hybrid_candidate_near_active_set_size": direction["near_active_set_size"],
+            "hybrid_candidate_weighted_mask": direction["weighted_mask"],
+            "hybrid_candidate_max_log_activity_proxy": jnp.max(
+                direction["log_activity_proxy"]
+            ),
+            "hybrid_candidate_min_log_activity_proxy": jnp.min(
+                direction["log_activity_proxy"]
+            ),
+        }
+    else:
+        raise ValueError(
+            "Unknown reduced_coupling_mode "
+            f"'{reduced_coupling_mode}'. Expected 'current', 'capped_s_only', "
+            "or a candidate-selected hybrid mode."
+        )
 
     delta_ln_nk = formula_matrix.T @ pi_vector + delta_ln_ntot - gk
-    factor = jnp.exp(ln_mk - epsilon)
-    raw_delta_ln_mk = factor * (formula_matrix_cond.T @ pi_vector - hvector_cond) + 1.0
 
     max_step_m = 0.1
     delta_ln_mk = jnp.clip(raw_delta_ln_mk, -max_step_m, max_step_m)
@@ -2978,6 +4003,8 @@ def _evaluate_trial_step(
     reduced_solver: str = DEFAULT_REDUCED_SOLVER,
     regularization_mode: str = DEFAULT_REGULARIZATION_MODE,
     regularization_strength: float = DEFAULT_REGULARIZATION_STRENGTH,
+    budget_guard_enabled: bool = False,
+    budget_margin: float = 0.0,
 ) -> Dict[str, jnp.ndarray]:
     """Evaluate one damped trial step on a fresh self-consistent residual."""
 
@@ -2998,6 +4025,14 @@ def _evaluate_trial_step(
     )
     trial_An = formula_matrix @ trial_nk
     trial_Am = formula_matrix_cond @ trial_mk
+    budget_guard_passed = jnp.asarray(True)
+    if budget_guard_enabled:
+        budget_guard_passed = budget_guard_accepts_condensate_burden(
+            formula_matrix_cond,
+            trial_mk,
+            b,
+            budget_margin=budget_margin,
+        )
 
     invalid_state = _contains_invalid_numbers(
         trial_ln_nk,
@@ -3009,7 +4044,7 @@ def _evaluate_trial_step(
         trial_gk,
         trial_An,
         trial_Am,
-    )
+    ) | (~budget_guard_passed)
 
     pi_placeholder = jnp.full_like(b, jnp.nan)
     residual_placeholder = jnp.asarray(jnp.inf, dtype=trial_ntot.dtype)
@@ -3068,6 +4103,8 @@ def _evaluate_trial_step(
         "pi_vector_resid": pi_vector_resid,
         "fresh_residual": fresh_residual,
         "all_finite": all_finite,
+        "budget_guard_passed": budget_guard_passed,
+        "budget_guard_rejected": ~budget_guard_passed,
     }
 
 
@@ -3097,6 +4134,8 @@ def _choose_lambda_by_residual_backtracking(
     reduced_solver: str = DEFAULT_REDUCED_SOLVER,
     regularization_mode: str = DEFAULT_REGULARIZATION_MODE,
     regularization_strength: float = DEFAULT_REGULARIZATION_STRENGTH,
+    budget_guard_enabled: bool = False,
+    budget_margin: float = 0.0,
 ) -> Dict[str, jnp.ndarray]:
     """Choose the damped step from fresh residuals on backtracked trial states."""
 
@@ -3129,6 +4168,7 @@ def _choose_lambda_by_residual_backtracking(
         "best_gk": jnp.asarray(current_gk),
         "best_An": jnp.asarray(current_An),
         "best_Am": jnp.asarray(current_Am),
+        "budget_guard_rejection_count": jnp.asarray(0, dtype=int_dtype),
     }
 
     def _loop_body(i, carry):
@@ -3152,7 +4192,14 @@ def _choose_lambda_by_residual_backtracking(
             reduced_solver=reduced_solver,
             regularization_mode=regularization_mode,
             regularization_strength=regularization_strength,
+            budget_guard_enabled=budget_guard_enabled,
+            budget_margin=budget_margin,
         )
+        carry = {
+            **carry,
+            "budget_guard_rejection_count": carry["budget_guard_rejection_count"]
+            + trial["budget_guard_rejected"].astype(int_dtype),
+        }
 
         finite_trial = jnp.isfinite(trial["fresh_residual"]) & trial["all_finite"]
         monotone_accept = finite_trial & (
@@ -3236,6 +4283,7 @@ def _choose_lambda_by_residual_backtracking(
         ),
         "n_backtracks": n_backtracks,
         "accept_code": accept_code,
+        "budget_guard_rejection_count": carry["budget_guard_rejection_count"],
     }
 
 
@@ -3303,6 +4351,11 @@ def _update_all_core(
     reduced_solver: str = DEFAULT_REDUCED_SOLVER,
     regularization_mode: str = DEFAULT_REGULARIZATION_MODE,
     regularization_strength: float = DEFAULT_REGULARIZATION_STRENGTH,
+    budget_guard_enabled: bool = False,
+    budget_margin: float = 0.0,
+    emergency_budget_projection_enabled: bool = False,
+    reduced_coupling_mode: str = "current",
+    reduced_coupling_alpha_s: float = 1.0,
 ):
     exp_overflow_limit = 700.0
     if debug_nan:
@@ -3339,6 +4392,8 @@ def _update_all_core(
         reduced_solver=reduced_solver,
         regularization_mode=regularization_mode,
         regularization_strength=regularization_strength,
+        reduced_coupling_mode=reduced_coupling_mode,
+        reduced_coupling_alpha_s=reduced_coupling_alpha_s,
     )
     pi_vector = step_metrics["pi_vector"]
     delta_ln_ntot = step_metrics["delta_ln_ntot"]
@@ -3387,6 +4442,8 @@ def _update_all_core(
         reduced_solver=reduced_solver,
         regularization_mode=regularization_mode,
         regularization_strength=regularization_strength,
+        budget_guard_enabled=budget_guard_enabled,
+        budget_margin=budget_margin,
     )
 
     lam = line_search_result["lam"]
@@ -3397,6 +4454,55 @@ def _update_all_core(
     An = line_search_result["An"]
     Am = line_search_result["Am"]
     residual = line_search_result["fresh_residual"]
+
+    projection = apply_emergency_budget_projection(
+        formula_matrix_cond,
+        jnp.exp(ln_mk),
+        b,
+        budget_margin=budget_margin,
+    )
+    projection_used = emergency_budget_projection_enabled & projection["projection_used"]
+
+    def _apply_projection(_):
+        projected_mk = projection["m"]
+        projected_ln_mk = jnp.log(jnp.maximum(projected_mk, jnp.asarray(1.0e-300, dtype=projected_mk.dtype)))
+        projected_Am = formula_matrix_cond @ projected_mk
+        pi_vector_resid = _recompute_pi_for_residual(
+            jnp.exp(ln_nk),
+            projected_mk,
+            jnp.exp(ln_ntot),
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            gk,
+            hvector_cond,
+            epsilon,
+            reduced_solver=reduced_solver,
+            regularization_mode=regularization_mode,
+            regularization_strength=regularization_strength,
+        )
+        projected_residual = _compute_residuals(
+            jnp.exp(ln_nk),
+            projected_mk,
+            jnp.exp(ln_ntot),
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            gk,
+            hvector_cond,
+            jnp.exp(epsilon),
+            An,
+            projected_Am,
+            pi_vector_resid,
+        )
+        return projected_ln_mk, projected_Am, projected_residual
+
+    ln_mk, Am, residual = cond(
+        projection_used,
+        _apply_projection,
+        lambda _: (ln_mk, Am, residual),
+        operand=0,
+    )
     if debug_nan:
         _debug_array("residual", jnp.array([residual]), iter_count)
     numeric_metrics = dict(step_metrics)
@@ -3404,6 +4510,14 @@ def _update_all_core(
     numeric_metrics["lam_selected"] = lam
     numeric_metrics["lam"] = lam
     numeric_metrics["n_backtracks"] = line_search_result["n_backtracks"]
+    numeric_metrics["budget_guard_rejection_count"] = line_search_result[
+        "budget_guard_rejection_count"
+    ]
+    numeric_metrics["budget_guard_rejected_any"] = (
+        line_search_result["budget_guard_rejection_count"] > 0
+    )
+    numeric_metrics["emergency_budget_projection_used"] = projection_used
+    numeric_metrics["emergency_budget_projection_alpha"] = projection["alpha"]
     numeric_metrics["residual_before"] = jnp.asarray(current_residual, dtype=residual.dtype)
     numeric_metrics["residual_after"] = residual
     numeric_metrics["line_search_accept_code"] = line_search_result["accept_code"]
@@ -3432,6 +4546,11 @@ def _update_all(
     reduced_solver: str = DEFAULT_REDUCED_SOLVER,
     regularization_mode: str = DEFAULT_REGULARIZATION_MODE,
     regularization_strength: float = DEFAULT_REGULARIZATION_STRENGTH,
+    budget_guard_enabled: bool = False,
+    budget_margin: float = 0.0,
+    emergency_budget_projection_enabled: bool = False,
+    reduced_coupling_mode: str = "current",
+    reduced_coupling_alpha_s: float = 1.0,
 ):
     (
         ln_nk,
@@ -3464,6 +4583,11 @@ def _update_all(
         reduced_solver=reduced_solver,
         regularization_mode=regularization_mode,
         regularization_strength=regularization_strength,
+        budget_guard_enabled=budget_guard_enabled,
+        budget_margin=budget_margin,
+        emergency_budget_projection_enabled=emergency_budget_projection_enabled,
+        reduced_coupling_mode=reduced_coupling_mode,
+        reduced_coupling_alpha_s=reduced_coupling_alpha_s,
     )
     return ln_nk, ln_mk, ln_ntot, gk, An, Am, residual, lam
 
@@ -3489,6 +4613,11 @@ def _update_all_with_metrics(
     reduced_solver: str = DEFAULT_REDUCED_SOLVER,
     regularization_mode: str = DEFAULT_REGULARIZATION_MODE,
     regularization_strength: float = DEFAULT_REGULARIZATION_STRENGTH,
+    budget_guard_enabled: bool = False,
+    budget_margin: float = 0.0,
+    emergency_budget_projection_enabled: bool = False,
+    reduced_coupling_mode: str = "current",
+    reduced_coupling_alpha_s: float = 1.0,
 ):
     (
         ln_nk,
@@ -3521,6 +4650,11 @@ def _update_all_with_metrics(
         reduced_solver=reduced_solver,
         regularization_mode=regularization_mode,
         regularization_strength=regularization_strength,
+        budget_guard_enabled=budget_guard_enabled,
+        budget_margin=budget_margin,
+        emergency_budget_projection_enabled=emergency_budget_projection_enabled,
+        reduced_coupling_mode=reduced_coupling_mode,
+        reduced_coupling_alpha_s=reduced_coupling_alpha_s,
     )
     trace_metrics = dict(trace_metrics)
     trace_metrics["line_search_used"] = True
@@ -3560,6 +4694,11 @@ def _minimize_gibbs_cond_core_impl(
     reduced_solver: str = DEFAULT_REDUCED_SOLVER,
     regularization_mode: str = DEFAULT_REGULARIZATION_MODE,
     regularization_strength: float = DEFAULT_REGULARIZATION_STRENGTH,
+    budget_guard_enabled: bool = False,
+    budget_margin: float = 0.0,
+    emergency_budget_projection_enabled: bool = False,
+    reduced_coupling_mode: str = "current",
+    reduced_coupling_alpha_s: float = 1.0,
 ) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     """Shared implementation for condensate solves and diagnostics wrappers."""
 
@@ -3585,11 +4724,23 @@ def _minimize_gibbs_cond_core_impl(
     hvector_cond = hvector_cond_func(state.temperature)
 
     def cond_fun(carry):
-        *_, residual, counter, _last_step_size = carry
+        *_, residual, counter, _last_step_size, _budget_rejections, _projection_count = carry
         return (residual > residual_crit) & (counter < max_iter)
 
     def body_fun(carry):
-        ln_nk, ln_mk, ln_ntot, gk, An, Am, residual, counter, _last_step_size = carry
+        (
+            ln_nk,
+            ln_mk,
+            ln_ntot,
+            gk,
+            An,
+            Am,
+            residual,
+            counter,
+            _last_step_size,
+            budget_rejections,
+            projection_count,
+        ) = carry
         (
             ln_nk_new,
             ln_mk_new,
@@ -3599,7 +4750,8 @@ def _minimize_gibbs_cond_core_impl(
             Am,
             residual,
             last_step_size,
-        ) = _update_all(
+            numeric_metrics,
+        ) = _update_all_core(
             ln_nk,
             ln_mk,
             ln_ntot,
@@ -3620,6 +4772,11 @@ def _minimize_gibbs_cond_core_impl(
             reduced_solver,
             regularization_mode,
             regularization_strength,
+            budget_guard_enabled,
+            budget_margin,
+            emergency_budget_projection_enabled,
+            reduced_coupling_mode,
+            reduced_coupling_alpha_s,
         )
         return (
             ln_nk_new,
@@ -3631,6 +4788,9 @@ def _minimize_gibbs_cond_core_impl(
             residual,
             counter + 1,
             last_step_size,
+            budget_rejections + numeric_metrics["budget_guard_rejection_count"],
+            projection_count
+            + numeric_metrics["emergency_budget_projection_used"].astype(jnp.int32),
         )
 
     gk = _compute_gk(
@@ -3643,8 +4803,22 @@ def _minimize_gibbs_cond_core_impl(
     An_in = formula_matrix @ jnp.exp(ln_nk_init)
     Am_in = formula_matrix_cond @ jnp.exp(ln_mk_init)
     init_last_step_size = jnp.asarray(0.0, dtype=ln_nk_init.dtype)
+    init_budget_rejections = jnp.asarray(0, dtype=jnp.int32)
+    init_projection_count = jnp.asarray(0, dtype=jnp.int32)
 
-    ln_nk, ln_mk, ln_ntot, _gk, _An, _Am, residual, counter, last_step_size = while_loop(
+    (
+        ln_nk,
+        ln_mk,
+        ln_ntot,
+        _gk,
+        _An,
+        _Am,
+        residual,
+        counter,
+        last_step_size,
+        budget_rejections,
+        projection_count,
+    ) = while_loop(
         cond_fun,
         body_fun,
         (
@@ -3657,9 +4831,20 @@ def _minimize_gibbs_cond_core_impl(
             jnp.inf,
             0,
             init_last_step_size,
+            init_budget_rejections,
+            init_projection_count,
         ),
     )
-    return ln_nk, ln_mk, ln_ntot, counter, residual, last_step_size
+    return (
+        ln_nk,
+        ln_mk,
+        ln_ntot,
+        counter,
+        residual,
+        last_step_size,
+        budget_rejections,
+        projection_count,
+    )
 
 
 def minimize_gibbs_cond_core(
@@ -3703,7 +4888,16 @@ def minimize_gibbs_cond_core(
             - Number of iterations performed.
     """
 
-    ln_nk, ln_mk, ln_ntot, counter, _residual, _last_step_size = _minimize_gibbs_cond_core_impl(
+    (
+        ln_nk,
+        ln_mk,
+        ln_ntot,
+        counter,
+        _residual,
+        _last_step_size,
+        _budget_rejections,
+        _projection_count,
+    ) = _minimize_gibbs_cond_core_impl(
         state,
         ln_nk_init,
         ln_mk_init,
@@ -3741,10 +4935,25 @@ def minimize_gibbs_cond_with_diagnostics(
     reduced_solver: str = DEFAULT_REDUCED_SOLVER,
     regularization_mode: str = DEFAULT_REGULARIZATION_MODE,
     regularization_strength: float = DEFAULT_REGULARIZATION_STRENGTH,
+    budget_guard_enabled: bool = False,
+    budget_margin: float = 0.0,
+    emergency_budget_projection_enabled: bool = False,
+    reduced_coupling_mode: str = "current",
+    reduced_coupling_alpha_s: float = 1.0,
+    reduced_coupling_selection: Optional[Dict[str, Any]] = None,
 ) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, Dict[str, jnp.ndarray]]:
     """Run the active condensate solver and return lightweight convergence diagnostics."""
 
-    ln_nk, ln_mk, ln_ntot, n_iter, final_residual, last_step_size = _minimize_gibbs_cond_core_impl(
+    (
+        ln_nk,
+        ln_mk,
+        ln_ntot,
+        n_iter,
+        final_residual,
+        last_step_size,
+        budget_guard_rejection_count,
+        emergency_budget_projection_count,
+    ) = _minimize_gibbs_cond_core_impl(
         state,
         ln_nk_init,
         ln_mk_init,
@@ -3761,6 +4970,11 @@ def minimize_gibbs_cond_with_diagnostics(
         reduced_solver=reduced_solver,
         regularization_mode=regularization_mode,
         regularization_strength=regularization_strength,
+        budget_guard_enabled=budget_guard_enabled,
+        budget_margin=budget_margin,
+        emergency_budget_projection_enabled=emergency_budget_projection_enabled,
+        reduced_coupling_mode=reduced_coupling_mode,
+        reduced_coupling_alpha_s=reduced_coupling_alpha_s,
     )
 
     residual_crit_used = jnp.asarray(residual_crit, dtype=final_residual.dtype)
@@ -3789,7 +5003,20 @@ def minimize_gibbs_cond_with_diagnostics(
         "reduced_solver": reduced_solver,
         "regularization_mode": regularization_mode,
         "regularization_strength": jnp.asarray(regularization_strength, dtype=final_residual.dtype),
+        "inventory_budget_guard_enabled": jnp.asarray(budget_guard_enabled),
+        "inventory_budget_margin": jnp.asarray(budget_margin, dtype=final_residual.dtype),
+        "budget_guard_rejection_count": budget_guard_rejection_count,
+        "budget_guard_rejected_any": budget_guard_rejection_count > 0,
+        "emergency_budget_projection_enabled": jnp.asarray(
+            emergency_budget_projection_enabled
+        ),
+        "emergency_budget_projection_count": emergency_budget_projection_count,
+        "emergency_budget_projection_used": emergency_budget_projection_count > 0,
+        "reduced_coupling_mode": reduced_coupling_mode,
+        "reduced_coupling_alpha_s": jnp.asarray(reduced_coupling_alpha_s, dtype=final_residual.dtype),
     }
+    if reduced_coupling_selection is not None:
+        diagnostics.update(reduced_coupling_selection)
     return ln_nk, ln_mk, ln_ntot, diagnostics
 
 

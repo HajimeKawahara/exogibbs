@@ -228,5 +228,14 @@
     "Whether chi should remain log(lambda) in every actual reduced/full branch.",
     "Whether cap timing differences appear only after unclipped exact correctValues reconstruction."
   ],
-  "next_exact_transplant_target": "post-update maxDensity cap timing inside reduced/full reconstruction"
+  "next_exact_transplant_target": "the next dominant mismatch likely moves downstream to fixed_by_condensation / phi semantics",
+  "tested_postupdate_ordering_hypotheses": [
+    "exact_postupdate_cap_after_n_then_lambda_then_u",
+    "exact_postupdate_cap_after_n_then_u_then_lambda",
+    "exact_postupdate_cap_after_lambda_then_n_then_u",
+    "exact_postupdate_cap_after_n_only_before_lambda",
+    "exact_postupdate_cap_after_full_stage_order_match",
+    "full-reference-ordering_debug"
+  ],
+  "best_postupdate_ordering_hypothesis": "full-reference-ordering_debug"
 }

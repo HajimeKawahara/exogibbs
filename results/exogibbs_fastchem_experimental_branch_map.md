@@ -88,10 +88,13 @@ Generated: 2026-04-12T23:11:31Z
 - FastChem: fastchem/fastchem_src/elements/element_struct.cpp, fastchem/fastchem_src/calc_densities.cpp, fastchem/fastchem_src/gas_phase/solver_coeff.cpp
 - ExoGibbs diagnostics: examples/comparisons/audit_fastchem_downstream_semantics_parity.py, examples/comparisons/audit_fastchem_downstream_staged_transplant.py
 
-## Current Variable-Mapping Assumptions
+## Post-Update Ordering Hypotheses
 
-- Confirmed activity_correction mapping: `activity_correction~lambda`
-- Confirmed maxDensity semantics: `C: formulas are effectively equivalent after normalization for these traces`
-- Unconfirmed: whether chi should remain log(lambda) in every actual reduced/full branch.
-- Unconfirmed: whether cap timing differences appear only after unclipped exact correctValues reconstruction.
-- Next exact transplant target: `post-update maxDensity cap timing inside reduced/full reconstruction`
+- `exact_postupdate_cap_after_n_then_lambda_then_u`
+- `exact_postupdate_cap_after_n_then_u_then_lambda`
+- `exact_postupdate_cap_after_lambda_then_n_then_u`
+- `exact_postupdate_cap_after_n_only_before_lambda`
+- `exact_postupdate_cap_after_full_stage_order_match`
+- `full-reference-ordering_debug`
+- Best first-update ordering: `full-reference-ordering_debug`
+- Decision: `the next dominant mismatch likely moves downstream to fixed_by_condensation / phi semantics`

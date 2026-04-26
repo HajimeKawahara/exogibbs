@@ -12,6 +12,7 @@
 import pyfastchem
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 from astropy import constants as const
 from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 
@@ -58,16 +59,19 @@ if fastchem_flag != pyfastchem.FASTCHEM_SUCCESS:
 # Thermodynamic conditions
 # from exogibbs.presets.ykb4 import chemsetup
 from exogibbs.presets.fastchem import chemsetup
+from exogibbs.utils.fastchem_parity import build_aligned_abundance_vector
 
-from exojax.utils.zsol import nsol
 import jax.numpy as jnp
 
 chem = chemsetup()
-solar_abundance = nsol()
-nsol_vector = jnp.array(
-    [solar_abundance[el] for el in chem.elements[:-1]]
-)  # no solar abundance for e-
-element_vector = jnp.append(nsol_vector, 0.0)
+aligned_abundance = build_aligned_abundance_vector(
+    chem.elements,
+    source="fastchem_asplund_2020",
+    element_file=Path(__file__).resolve().parents[2] / "fastchem/input/element_abundances/asplund_2020.dat",
+    normalize=True,
+)
+element_vector = jnp.asarray(aligned_abundance.vector)
+print("ExoGibbs abundance source:", aligned_abundance.metadata)
 from time import time
 
 start_time = time()
@@ -89,7 +93,14 @@ print(f"ExoGibbs calculation took {end_time - start_time:.2f} seconds")
 # plot_species = ["H2O1", "C1O2", "C1O1", "C1H4", "H3N1"]
 # plot_species_labels = ["H2O", "CO2", "CO", "CH4", "NH3"]
 
-plot_species = chem.species[len(element_vector):]
+n_elem = len(chem.elements)
+if len(element_vector) != n_elem:
+    raise AssertionError("comparison_with_fastchem: len(element_vector) must equal len(chem.elements)")
+if list(chem.elements)[-1] != "e-":
+    raise AssertionError("comparison_with_fastchem: ExoGibbs chem.elements must keep e- last")
+if list(chem.species[:n_elem]) != list(chem.elements):
+    raise AssertionError("comparison_with_fastchem: molecule species slice must start at len(chem.elements)")
+plot_species = chem.species[n_elem:]
 plot_species_labels = plot_species
 
 # check the species we want to plot and get their indices from FastChem
