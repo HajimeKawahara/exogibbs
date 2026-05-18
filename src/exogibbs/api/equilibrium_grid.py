@@ -10,13 +10,12 @@ import jax
 import jax.numpy as jnp
 from jax import core
 import numpy as np
-from interpax import Interpolator3D
-
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.api.chemistry import update_element_vector
 from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
 from exogibbs.api.equilibrium import EquilibriumInit
 from exogibbs.io.load_data import get_data_filepath
+from exogibbs.utils.interpolation import Interpolator3D
 from exogibbs.utils.elements import element_mass
 from exogibbs.utils.nameparser import strip_trailing_one
 
@@ -381,7 +380,7 @@ def _interpolate_grid_field(
     interpolator_kwargs = dict(options.interpolator_kwargs or {})
     if "period" in interpolator_kwargs:
         raise NotImplementedError(
-            "EquilibriumGrid interpolation does not expose interpax periodic interpolation yet."
+            "EquilibriumGrid interpolation does not expose periodic interpolation yet."
         )
     interpolator = Interpolator3D(
         grid.temperature_axis,

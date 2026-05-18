@@ -5,7 +5,7 @@ from typing import Dict
 import jax
 import jax.numpy as jnp
 from jax import custom_jvp
-from interpax import interp1d
+from exogibbs.utils.interpolation import interp1d
 
 from exogibbs.utils.constants import R_gas_constant_si
 
@@ -93,19 +93,10 @@ def interpolate_hvector_one(T_target, T_vec, mu_vec, method="linear"):
         T_target (scalar or array): target temperature(s) (K)
         T_vec (1D array): temeprature grid（Lmax)
         mu_vec (1D array): chemical potential grid（Lmax)
-        method (str):  method of interpolation used in interpax.interp1d
-            'nearest': nearest neighbor interpolation
-            'linear': linear interpolation
-            'cubic': C1 cubic splines (aka local splines)
-            'cubic2': C2 cubic splines (aka natural splines)
-            'catmull-rom': C1 cubic centripetal “tension” splines
-            'cardinal': C1 cubic general tension splines. If used, can also pass keyword parameter c in float[0,1] to specify tension
-            'monotonic': C1 cubic splines that attempt to preserve monotonicity in the data, and will not introduce new extrema in the interpolated points
-            'monotonic-0': same as 'monotonic' but with 0 first derivatives at both endpoints
-            'akima': C1 cubic splines that appear smooth and natural
+        method (str): interpolation method; currently supports "linear" and "nearest"
 
     """
-    RT = R_gas_constant_si * T_vec
+    RT = jnp.where(T_vec != 0.0, R_gas_constant_si * T_vec, jnp.nan)
     return interp1d(T_target, T_vec, mu_vec / RT, method=method)
 
 
