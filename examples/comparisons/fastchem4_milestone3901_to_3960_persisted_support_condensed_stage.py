@@ -182,6 +182,7 @@ def _run_stage(
         hvector_cond_func=_cond_hvector(contract),
         condensate_species_order=contract.condensate_species_order,
         element_order=contract.element_order,
+        gas_species_order=contract.gas_species_order,
         support_indices=support_indices,
         support_amounts_init=safe_amounts,
         initial_log_state_override=init,
@@ -218,7 +219,42 @@ def _run_stage(
         "solver_final_residual": seeded["solver_final_residual"],
         "post_solver_budget_residual": seeded["post_solver_budget_residual"],
         "post_solver_kkt_residual_diagnostic": seeded["post_solver_kkt_residual_diagnostic"],
+        "post_solver_kkt_residual_log_variable_diagnostic": seeded[
+            "post_solver_kkt_residual_log_variable_diagnostic"
+        ],
         "inactive_positive_count": seeded["inactive_positive_count"],
+        "row_resolved_stationarity_available": seeded[
+            "row_resolved_stationarity_available"
+        ],
+        "active_stationarity_row_names": seeded["active_stationarity_row_names"],
+        "active_stationarity_driving": seeded["active_stationarity_driving"],
+        "active_stationarity_abs_top_names": seeded[
+            "active_stationarity_abs_top_names"
+        ],
+        "active_stationarity_abs_top_values": seeded[
+            "active_stationarity_abs_top_values"
+        ],
+        "complementarity_row_names": seeded["complementarity_row_names"],
+        "complementarity_values": seeded["complementarity_values"],
+        "complementarity_abs_top_names": seeded["complementarity_abs_top_names"],
+        "complementarity_abs_top_values": seeded["complementarity_abs_top_values"],
+        "gas_stationarity_values": seeded["gas_stationarity_values"],
+        "gas_stationarity_abs_top_indices": seeded["gas_stationarity_abs_top_indices"],
+        "gas_stationarity_abs_top_values": seeded["gas_stationarity_abs_top_values"],
+        "gas_stationarity_abs_top_names": seeded["gas_stationarity_abs_top_names"],
+        "gas_stationarity_log_scaled_values": seeded[
+            "gas_stationarity_log_scaled_values"
+        ],
+        "gas_stationarity_log_scaled_abs_top_indices": seeded[
+            "gas_stationarity_log_scaled_abs_top_indices"
+        ],
+        "gas_stationarity_log_scaled_abs_top_values": seeded[
+            "gas_stationarity_log_scaled_abs_top_values"
+        ],
+        "gas_stationarity_log_scaled_abs_top_names": seeded[
+            "gas_stationarity_log_scaled_abs_top_names"
+        ],
+        "gas_species_order": seeded["gas_species_order"],
         "finite_solver_inputs": data["finite_solver_inputs"],
         "normal_default_path_unchanged": data["normal_default_path_unchanged"],
         "production_behavior_change": data["production_behavior_change"],
