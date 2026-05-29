@@ -105,6 +105,60 @@ class PdipmRgieRestrictedTrialReport:
 
 
 @dataclass(frozen=True)
+class PdipmRgieReducedStepReport:
+    """Report for the algorithm-v1.1 reduced coupled PD-IPM R-GIE step."""
+
+    report_schema: str
+    diagnostic_only: bool
+    default_off: bool
+    explicit_opt_in: bool
+    production_behavior_change: bool
+    production_return_signature_change: bool
+    preset_default_wiring_change: bool
+    equation_family: str
+    qhat_condition_estimate: float
+    qhat_regularization: float
+    linear_system_residual_l2: float
+    initial_budget_l2: float
+    candidate_budget_l2: float
+    initial_gas_stationarity_l2: float
+    candidate_gas_stationarity_l2: float
+    initial_condensate_stationarity_l2: float
+    candidate_condensate_stationarity_l2: float
+    initial_barrier_complementarity_l2: float
+    candidate_barrier_complementarity_l2: float
+    initial_total_density_l2: float
+    candidate_total_density_l2: float
+    initial_combined_residual_l2: float
+    candidate_combined_residual_l2: float
+    trial_step_accepted: bool
+    alpha: float
+    require_budget_nonworsening: bool
+    delta_q: tuple[float, ...]
+    delta_r: tuple[float, ...]
+    delta_lambda: tuple[float, ...]
+    delta_rho: tuple[float, ...]
+    delta_qtot: float
+    pi_vector: tuple[float, ...]
+    j_vector: tuple[float, ...]
+    t_vector: tuple[float, ...]
+    delta_q_l2: float
+    delta_r_l2: float
+    delta_lambda_l2: float
+    delta_rho_l2: float
+    finite_trial_step: bool
+    initial_state: PdipmRgieCondensateState
+    candidate_state: PdipmRgieCondensateState
+    fastchem4_trace_public_runtime_constructor_inputs_used: bool
+
+    def as_dict(self) -> dict[str, Any]:
+        payload = asdict(self)
+        payload["initial_state"] = self.initial_state.as_dict()
+        payload["candidate_state"] = self.candidate_state.as_dict()
+        return payload
+
+
+@dataclass(frozen=True)
 class PdipmRgieDualCarrierCallsiteInit:
     """Explicit experimental callsite carrier for PD-IPM R-GIE dual state."""
 
@@ -246,6 +300,291 @@ def _residuals(
         else complementarity,
         "combined": np.concatenate(residual_parts),
     }
+
+
+def _algorithm_v11_residuals(
+    *,
+    formula_matrix: np.ndarray,
+    formula_matrix_cond_active: np.ndarray,
+    element_inventory_target: np.ndarray,
+    gas_stationarity_source: np.ndarray,
+    condensate_standard_source: np.ndarray,
+    q: np.ndarray,
+    r: np.ndarray,
+    lam: np.ndarray,
+    rho: np.ndarray,
+    qtot: float,
+    epsilon: float,
+) -> dict[str, np.ndarray]:
+    n = np.exp(q)
+    m = np.exp(r)
+    eta = np.exp(rho)
+    gas = q + gas_stationarity_source - formula_matrix.T @ lam
+    condensate = condensate_standard_source - formula_matrix_cond_active.T @ lam - eta
+    budget = formula_matrix @ n + formula_matrix_cond_active @ m - element_inventory_target
+    complementarity = r + rho - float(epsilon)
+    total_density = np.asarray([np.sum(n) - np.exp(float(qtot))], dtype=np.float64)
+    return {
+        "gas": gas,
+        "condensate": condensate,
+        "budget": budget,
+        "complementarity": complementarity,
+        "total_density": total_density,
+        "combined": np.concatenate(
+            [gas, condensate, budget, complementarity, total_density]
+        ),
+    }
+
+
+def solve_pdipm_rgie_algorithm_v11_reduced_step(
+    *,
+    explicit_opt_in: bool,
+    state: PdipmRgieCondensateState,
+    formula_matrix: Sequence[Sequence[float]],
+    formula_matrix_cond_active: Sequence[Sequence[float]],
+    element_inventory_target: Sequence[float],
+    gas_stationarity_source: Sequence[float],
+    condensate_standard_source: Sequence[float],
+    epsilon: float,
+    alpha_candidates: Sequence[float] = (1.0, 0.5, 0.25, 0.125, 0.0625),
+    qhat_regularization: float = 0.0,
+    max_abs_delta_q: float = 2.0,
+    max_abs_delta_r: float = 2.0,
+    max_abs_delta_rho: float = 2.0,
+    max_abs_delta_lambda: float = 100.0,
+    require_budget_nonworsening: bool = False,
+) -> PdipmRgieReducedStepReport:
+    """Solve one explicit algorithm-v1.1 reduced coupled PD-IPM R-GIE step.
+
+    This implements the reduced equations documented in
+    ``exogibbs_algorithm_v1.1.pdf`` for a fixed active condensate support:
+
+    ``Qhat pi + delta_qtot * b_k =
+    A_g(n_k * g_k) + A_c(j_k * c_k + m_k * t_k - m_k) + delta_bhat_k``
+
+    ``b_k dot pi + delta_ntot,k * delta_qtot =
+    n_k dot g_k - delta_ntot,k``
+
+    with ``j_k = m_k / eta_k`` and ``t_k = r_k + rho_k - epsilon``. The
+    recovered updates are ``delta_q = A_g.T @ pi + delta_qtot - g_k``,
+    ``delta_rho = eta_k^-1 * (c_k - A_c.T @ pi) - 1``, and
+    ``delta_r = -delta_rho - t_k``.
+    """
+
+    if not explicit_opt_in:
+        raise ValueError("explicit_opt_in must be true for PD-IPM reduced steps.")
+    if not isinstance(state, PdipmRgieCondensateState):
+        raise TypeError("state must be a PdipmRgieCondensateState.")
+    _validate_provenance(state.field_provenance)
+    if state.rho is None:
+        raise ValueError("state.rho is required for algorithm-v1.1 PD-IPM steps.")
+    if not alpha_candidates:
+        raise ValueError("alpha_candidates must not be empty.")
+    alphas = tuple(float(value) for value in alpha_candidates)
+    if any(value <= 0.0 or value > 1.0 or not np.isfinite(value) for value in alphas):
+        raise ValueError("alpha_candidates must be finite values in the interval (0, 1].")
+    eps = float(epsilon)
+    if not np.isfinite(eps):
+        raise ValueError("epsilon must be finite.")
+    reg = float(qhat_regularization)
+    if not np.isfinite(reg) or reg < 0.0:
+        raise ValueError("qhat_regularization must be finite and non-negative.")
+
+    ag = _as_matrix(formula_matrix, "formula_matrix")
+    ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
+    target = _as_vector(element_inventory_target, "element_inventory_target")
+    g = _as_vector(gas_stationarity_source, "gas_stationarity_source")
+    c = _as_vector(condensate_standard_source, "condensate_standard_source")
+    q = _as_vector(state.ln_nk, "state.ln_nk")
+    r = _as_vector(state.ln_mk, "state.ln_mk")
+    lam = _as_vector(state.element_potential, "state.element_potential")
+    rho = _as_vector(state.rho, "state.rho")
+    qtot = float(state.ln_ntot)
+    if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
+        raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if lam.shape[0] != target.shape[0]:
+        raise ValueError("element_potential length must match element rows.")
+    if ag.shape[1] != q.shape[0] or g.shape[0] != q.shape[0]:
+        raise ValueError("gas vectors must match formula_matrix columns.")
+    if ac.shape[1] != r.shape[0] or c.shape[0] != r.shape[0] or rho.shape[0] != r.shape[0]:
+        raise ValueError("condensate vectors must match formula_matrix_cond_active columns.")
+
+    n = np.exp(q)
+    m = np.exp(r)
+    eta = np.exp(rho)
+    j_vec = m / np.maximum(eta, 1.0e-300)
+    t_vec = r + rho - eps
+    gas_inventory = ag @ n
+    delta_bhat = target - gas_inventory - ac @ m
+    delta_ntot = float(np.sum(n) - np.exp(qtot))
+    qhat = ag @ (n[:, np.newaxis] * ag.T) + ac @ (j_vec[:, np.newaxis] * ac.T)
+    if reg:
+        qhat = qhat + reg * np.eye(qhat.shape[0], dtype=np.float64)
+    rhs_top = ag @ (n * g) + ac @ (j_vec * c + m * t_vec - m) + delta_bhat
+    rhs_bottom = float(np.dot(n, g) - delta_ntot)
+    reduced_matrix = np.block(
+        [
+            [qhat, gas_inventory[:, np.newaxis]],
+            [gas_inventory[np.newaxis, :], np.asarray([[delta_ntot]], dtype=np.float64)],
+        ]
+    )
+    reduced_rhs = np.concatenate([rhs_top, np.asarray([rhs_bottom], dtype=np.float64)])
+    try:
+        reduced_solution = np.linalg.lstsq(reduced_matrix, reduced_rhs, rcond=None)[0]
+    except np.linalg.LinAlgError:
+        reduced_solution = np.zeros((target.shape[0] + 1,), dtype=np.float64)
+    reduced_solution = np.nan_to_num(
+        reduced_solution,
+        nan=0.0,
+        posinf=0.0,
+        neginf=0.0,
+    )
+    pi = reduced_solution[:-1]
+    delta_qtot = float(reduced_solution[-1])
+    raw_delta_q = ag.T @ pi + delta_qtot - g
+    raw_delta_rho = (c - ac.T @ pi) / np.maximum(eta, 1.0e-300) - 1.0
+    raw_delta_r = -raw_delta_rho - t_vec
+    delta_q = np.clip(raw_delta_q, -float(max_abs_delta_q), float(max_abs_delta_q))
+    delta_r = np.clip(raw_delta_r, -float(max_abs_delta_r), float(max_abs_delta_r))
+    delta_rho = np.clip(
+        raw_delta_rho,
+        -float(max_abs_delta_rho),
+        float(max_abs_delta_rho),
+    )
+    delta_lambda = np.clip(pi - lam, -float(max_abs_delta_lambda), float(max_abs_delta_lambda))
+
+    initial = _algorithm_v11_residuals(
+        formula_matrix=ag,
+        formula_matrix_cond_active=ac,
+        element_inventory_target=target,
+        gas_stationarity_source=g,
+        condensate_standard_source=c,
+        q=q,
+        r=r,
+        lam=lam,
+        rho=rho,
+        qtot=qtot,
+        epsilon=eps,
+    )
+    initial_combined = float(np.linalg.norm(initial["combined"]))
+    initial_budget = float(np.linalg.norm(initial["budget"]))
+    best_alpha = 0.0
+    best_q = q
+    best_r = r
+    best_lam = lam
+    best_rho = rho
+    best_qtot = qtot
+    best_residuals = initial
+    best_combined = initial_combined
+    accepted = False
+    finite_step = bool(
+        np.all(np.isfinite(delta_q))
+        and np.all(np.isfinite(delta_r))
+        and np.all(np.isfinite(delta_lambda))
+        and np.all(np.isfinite(delta_rho))
+        and np.isfinite(delta_qtot)
+    )
+    for alpha in alphas:
+        candidate_q = q + float(alpha) * delta_q
+        candidate_r = r + float(alpha) * delta_r
+        candidate_lam = lam + float(alpha) * delta_lambda
+        candidate_rho = rho + float(alpha) * delta_rho
+        candidate_qtot = qtot + float(alpha) * delta_qtot
+        candidate_residuals = _algorithm_v11_residuals(
+            formula_matrix=ag,
+            formula_matrix_cond_active=ac,
+            element_inventory_target=target,
+            gas_stationarity_source=g,
+            condensate_standard_source=c,
+            q=candidate_q,
+            r=candidate_r,
+            lam=candidate_lam,
+            rho=candidate_rho,
+            qtot=candidate_qtot,
+            epsilon=eps,
+        )
+        candidate_combined = float(np.linalg.norm(candidate_residuals["combined"]))
+        candidate_budget = float(np.linalg.norm(candidate_residuals["budget"]))
+        if (
+            finite_step
+            and np.isfinite(candidate_combined)
+            and (not require_budget_nonworsening or candidate_budget <= initial_budget + 1.0e-15)
+            and candidate_combined < best_combined
+        ):
+            best_alpha = float(alpha)
+            best_q = candidate_q
+            best_r = candidate_r
+            best_lam = candidate_lam
+            best_rho = candidate_rho
+            best_qtot = candidate_qtot
+            best_residuals = candidate_residuals
+            best_combined = candidate_combined
+            accepted = True
+            break
+
+    candidate_state = build_pdipm_rgie_condensate_state(
+        ln_nk=best_q,
+        ln_mk=best_r,
+        element_potential=best_lam,
+        ln_ntot=best_qtot,
+        rho=best_rho,
+        eta=np.exp(best_rho),
+        field_provenance=state.field_provenance,
+    )
+    residual_vector = reduced_matrix @ reduced_solution - reduced_rhs
+    qhat_cond = (
+        float(np.linalg.cond(qhat))
+        if qhat.size and np.all(np.isfinite(qhat))
+        else float("inf")
+    )
+    return PdipmRgieReducedStepReport(
+        report_schema="exogibbs_pdipm_rgie_algorithm_v11_reduced_step_report_v1",
+        diagnostic_only=True,
+        default_off=True,
+        explicit_opt_in=True,
+        production_behavior_change=False,
+        production_return_signature_change=False,
+        preset_default_wiring_change=False,
+        equation_family="exogibbs_algorithm_v1_1_pdipm_reduced_rgie",
+        qhat_condition_estimate=qhat_cond,
+        qhat_regularization=reg,
+        linear_system_residual_l2=float(np.linalg.norm(residual_vector)),
+        initial_budget_l2=float(np.linalg.norm(initial["budget"])),
+        candidate_budget_l2=float(np.linalg.norm(best_residuals["budget"])),
+        initial_gas_stationarity_l2=float(np.linalg.norm(initial["gas"])),
+        candidate_gas_stationarity_l2=float(np.linalg.norm(best_residuals["gas"])),
+        initial_condensate_stationarity_l2=float(np.linalg.norm(initial["condensate"])),
+        candidate_condensate_stationarity_l2=float(
+            np.linalg.norm(best_residuals["condensate"])
+        ),
+        initial_barrier_complementarity_l2=float(np.linalg.norm(initial["complementarity"])),
+        candidate_barrier_complementarity_l2=float(
+            np.linalg.norm(best_residuals["complementarity"])
+        ),
+        initial_total_density_l2=float(np.linalg.norm(initial["total_density"])),
+        candidate_total_density_l2=float(np.linalg.norm(best_residuals["total_density"])),
+        initial_combined_residual_l2=initial_combined,
+        candidate_combined_residual_l2=float(best_combined),
+        trial_step_accepted=accepted,
+        alpha=float(best_alpha),
+        require_budget_nonworsening=bool(require_budget_nonworsening),
+        delta_q=tuple(float(value) for value in delta_q),
+        delta_r=tuple(float(value) for value in delta_r),
+        delta_lambda=tuple(float(value) for value in delta_lambda),
+        delta_rho=tuple(float(value) for value in delta_rho),
+        delta_qtot=float(delta_qtot),
+        pi_vector=tuple(float(value) for value in pi),
+        j_vector=tuple(float(value) for value in j_vec),
+        t_vector=tuple(float(value) for value in t_vec),
+        delta_q_l2=float(np.linalg.norm(delta_q)),
+        delta_r_l2=float(np.linalg.norm(delta_r)),
+        delta_lambda_l2=float(np.linalg.norm(delta_lambda)),
+        delta_rho_l2=float(np.linalg.norm(delta_rho)),
+        finite_trial_step=finite_step,
+        initial_state=state,
+        candidate_state=candidate_state,
+        fastchem4_trace_public_runtime_constructor_inputs_used=False,
+    )
 
 
 def _validate_merit_weights(
@@ -766,9 +1105,11 @@ def run_pdipm_rgie_dual_carrier_solver_step(
 __all__ = (
     "PdipmRgieDualCarrierCallsiteInit",
     "PdipmRgieCondensateState",
+    "PdipmRgieReducedStepReport",
     "PdipmRgieRestrictedTrialReport",
     "build_pdipm_rgie_dual_carrier_callsite_init",
     "build_pdipm_rgie_condensate_state",
     "propose_pdipm_rgie_restricted_trial_step",
     "run_pdipm_rgie_dual_carrier_solver_step",
+    "solve_pdipm_rgie_algorithm_v11_reduced_step",
 )
