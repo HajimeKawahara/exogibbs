@@ -21,6 +21,13 @@ __all__ = [
     "EquilibriumOptions",
     "EquilibriumInit",
     "EquilibriumResult",
+    "CondensateChemicalSetup",
+    "CondensateEquilibriumOptions",
+    "CondensateEquilibriumResult",
+    "build_condensate_chemical_setup",
+    "condensate_equilibrium",
+    "condensate_equilibrium_profile",
+    "validate_condensate_chemical_setup",
 ]
 
 
@@ -88,5 +95,33 @@ def __getattr__(name):
             "EquilibriumOptions": EquilibriumOptions,
             "EquilibriumInit": EquilibriumInit,
             "EquilibriumResult": EquilibriumResult,
+        }[name]
+    if name in {
+        "CondensateChemicalSetup",
+        "CondensateEquilibriumOptions",
+        "CondensateEquilibriumResult",
+        "build_condensate_chemical_setup",
+        "condensate_equilibrium",
+        "condensate_equilibrium_profile",
+        "validate_condensate_chemical_setup",
+    }:
+        from .condensate_equilibrium import (
+            CondensateChemicalSetup,
+            CondensateEquilibriumOptions,
+            CondensateEquilibriumResult,
+            build_condensate_chemical_setup,
+            condensate_equilibrium,
+            condensate_equilibrium_profile,
+            validate_condensate_chemical_setup,
+        )
+
+        return {
+            "CondensateChemicalSetup": CondensateChemicalSetup,
+            "CondensateEquilibriumOptions": CondensateEquilibriumOptions,
+            "CondensateEquilibriumResult": CondensateEquilibriumResult,
+            "build_condensate_chemical_setup": build_condensate_chemical_setup,
+            "condensate_equilibrium": condensate_equilibrium,
+            "condensate_equilibrium_profile": condensate_equilibrium_profile,
+            "validate_condensate_chemical_setup": validate_condensate_chemical_setup,
         }[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

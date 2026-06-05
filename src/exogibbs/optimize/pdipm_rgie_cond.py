@@ -314,16 +314,22 @@ def _algorithm_v11_residuals(
     lam: np.ndarray,
     rho: np.ndarray,
     qtot: float,
-    epsilon: float,
+    epsilon: float | Sequence[float],
+    qtot_reference: float | None = None,
 ) -> dict[str, np.ndarray]:
     n = np.exp(q)
     m = np.exp(r)
     eta = np.exp(rho)
-    gas = q + gas_stationarity_source - formula_matrix.T @ lam
+    qtot_value = float(qtot)
+    qtot_ref = qtot_value if qtot_reference is None else float(qtot_reference)
+    gas = q + gas_stationarity_source + qtot_ref - qtot_value - formula_matrix.T @ lam
     condensate = condensate_standard_source - formula_matrix_cond_active.T @ lam - eta
     budget = formula_matrix @ n + formula_matrix_cond_active @ m - element_inventory_target
-    complementarity = r + rho - float(epsilon)
-    total_density = np.asarray([np.sum(n) - np.exp(float(qtot))], dtype=np.float64)
+    epsilon_array = np.asarray(epsilon, dtype=np.float64)
+    if epsilon_array.ndim == 0:
+        epsilon_array = np.full_like(r, float(epsilon_array))
+    complementarity = r + rho - epsilon_array
+    total_density = np.asarray([np.sum(n) - np.exp(qtot_value)], dtype=np.float64)
     return {
         "gas": gas,
         "condensate": condensate,
@@ -345,7 +351,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     element_inventory_target: Sequence[float],
     gas_stationarity_source: Sequence[float],
     condensate_standard_source: Sequence[float],
-    epsilon: float,
+    epsilon: float | Sequence[float],
     alpha_candidates: Sequence[float] = (1.0, 0.5, 0.25, 0.125, 0.0625),
     qhat_regularization: float = 0.0,
     max_abs_delta_q: float = 2.0,
@@ -360,13 +366,15 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     ``exogibbs_algorithm_v1.1.pdf`` for a fixed active condensate support:
 
     ``Qhat pi + delta_qtot * b_k =
-    A_g(n_k * g_k) + A_c(j_k * c_k + m_k * t_k - m_k) + delta_bhat_k``
+    A_g(n_k * geff_k) + A_c(j_k * c_k + m_k * t_k - m_k) + delta_bhat_k``
 
     ``b_k dot pi + delta_ntot,k * delta_qtot =
-    n_k dot g_k - delta_ntot,k``
+    n_k dot geff_k - delta_ntot,k``
 
     with ``j_k = m_k / eta_k`` and ``t_k = r_k + rho_k - epsilon``. The
-    recovered updates are ``delta_q = A_g.T @ pi + delta_qtot - g_k``,
+    implementation uses ``geff_k = q_k + gas_stationarity_source_k`` because
+    the public source input excludes the current log-density term. The
+    recovered updates are ``delta_q = A_g.T @ pi + delta_qtot - geff_k``,
     ``delta_rho = eta_k^-1 * (c_k - A_c.T @ pi) - 1``, and
     ``delta_r = -delta_rho - t_k``.
     """
@@ -383,9 +391,6 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     alphas = tuple(float(value) for value in alpha_candidates)
     if any(value <= 0.0 or value > 1.0 or not np.isfinite(value) for value in alphas):
         raise ValueError("alpha_candidates must be finite values in the interval (0, 1].")
-    eps = float(epsilon)
-    if not np.isfinite(eps):
-        raise ValueError("epsilon must be finite.")
     reg = float(qhat_regularization)
     if not np.isfinite(reg) or reg < 0.0:
         raise ValueError("qhat_regularization must be finite and non-negative.")
@@ -408,20 +413,28 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         raise ValueError("gas vectors must match formula_matrix columns.")
     if ac.shape[1] != r.shape[0] or c.shape[0] != r.shape[0] or rho.shape[0] != r.shape[0]:
         raise ValueError("condensate vectors must match formula_matrix_cond_active columns.")
+    eps = np.asarray(epsilon, dtype=np.float64)
+    if eps.ndim == 0:
+        eps = np.full_like(r, float(eps))
+    if eps.ndim != 1 or eps.shape[0] != r.shape[0]:
+        raise ValueError("epsilon must be scalar or match condensate vector length.")
+    if not np.all(np.isfinite(eps)):
+        raise ValueError("epsilon must be finite.")
 
     n = np.exp(q)
     m = np.exp(r)
     eta = np.exp(rho)
     j_vec = m / np.maximum(eta, 1.0e-300)
     t_vec = r + rho - eps
+    geff = q + g
     gas_inventory = ag @ n
     delta_bhat = target - gas_inventory - ac @ m
     delta_ntot = float(np.sum(n) - np.exp(qtot))
     qhat = ag @ (n[:, np.newaxis] * ag.T) + ac @ (j_vec[:, np.newaxis] * ac.T)
     if reg:
         qhat = qhat + reg * np.eye(qhat.shape[0], dtype=np.float64)
-    rhs_top = ag @ (n * g) + ac @ (j_vec * c + m * t_vec - m) + delta_bhat
-    rhs_bottom = float(np.dot(n, g) - delta_ntot)
+    rhs_top = ag @ (n * geff) + ac @ (j_vec * c + m * t_vec - m) + delta_bhat
+    rhs_bottom = float(np.dot(n, geff) - delta_ntot)
     reduced_matrix = np.block(
         [
             [qhat, gas_inventory[:, np.newaxis]],
@@ -441,7 +454,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     )
     pi = reduced_solution[:-1]
     delta_qtot = float(reduced_solution[-1])
-    raw_delta_q = ag.T @ pi + delta_qtot - g
+    raw_delta_q = ag.T @ pi + delta_qtot - geff
     raw_delta_rho = (c - ac.T @ pi) / np.maximum(eta, 1.0e-300) - 1.0
     raw_delta_r = -raw_delta_rho - t_vec
     delta_q = np.clip(raw_delta_q, -float(max_abs_delta_q), float(max_abs_delta_q))
@@ -465,6 +478,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         rho=rho,
         qtot=qtot,
         epsilon=eps,
+        qtot_reference=qtot,
     )
     initial_combined = float(np.linalg.norm(initial["combined"]))
     initial_budget = float(np.linalg.norm(initial["budget"]))
@@ -502,6 +516,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
             rho=candidate_rho,
             qtot=candidate_qtot,
             epsilon=eps,
+            qtot_reference=qtot,
         )
         candidate_combined = float(np.linalg.norm(candidate_residuals["combined"]))
         candidate_budget = float(np.linalg.norm(candidate_residuals["budget"]))

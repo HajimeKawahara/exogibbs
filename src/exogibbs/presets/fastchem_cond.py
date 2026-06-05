@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 import jax.numpy as jnp
@@ -60,6 +60,39 @@ def chemsetup(path: str = "fastchem/logK/logK_condensates.dat", silent=False) ->
     )
 
     return setup
+
+
+def condensate_chemical_setup(
+    *,
+    gas_path: str = "fastchem/logK/logK.dat",
+    condensate_path: str = "fastchem/logK/logK_condensates.dat",
+    species_defalt_elements: bool = True,
+    element_file: Optional[str] = None,
+    silent: bool = False,
+):
+    """Build the production-facing FastChem gas-condensate setup bundle."""
+
+    from exogibbs.api.condensate_equilibrium import build_condensate_chemical_setup
+
+    gas_setup = _base_chemsetup(
+        path=gas_path,
+        species_defalt_elements=species_defalt_elements,
+        element_file=element_file,
+        silent=True,
+    )
+    condensate_setup = chemsetup(path=condensate_path, silent=True)
+    bundle = build_condensate_chemical_setup(
+        gas_setup=gas_setup,
+        condensate_setup=condensate_setup,
+    )
+    if not silent:
+        _print_status(
+            list(bundle.condensate_species),
+            list(bundle.elements),
+            list(bundle.gas_species) + list(bundle.condensate_species),
+            preset_name="fastchem_condensate_equilibrium",
+        )
+    return bundle
 
 
 def _build_chemical_setup(
