@@ -7,7 +7,7 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
-from exogibbs.diagnostics.condensate_native_bundle import (
+from exogibbs.condensates.native_bundle import (
     validate_native_bundle_provenance,
 )
 

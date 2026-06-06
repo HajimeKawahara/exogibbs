@@ -16,7 +16,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from exogibbs.api.chemistry import ThermoState
-from exogibbs.diagnostics.condensate_native_bundle import (
+from exogibbs.condensates.native_bundle import (
     validate_native_bundle_provenance,
 )
 from exogibbs.optimize.minimize_cond import (

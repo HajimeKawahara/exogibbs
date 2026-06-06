@@ -40,13 +40,34 @@ from exogibbs.presets.fastchem_cond import chemsetup as cond_chemsetup
 from exogibbs.thermo.stoichiometry import contract_formula_matrix
 from exogibbs.utils.fastchem_parity import build_aligned_abundance_vector
 
-import audit_fastchem_downstream_staged_transplant as branch_map_audit
-import audit_fastchem_exact_update_map_transplant as transplant
-import audit_fastchem_reduced_reconstruction_parity as reduced_recon
-import audit_fastchem_update_map_alignment_phase2 as phase2
-import audit_fastchem_update_semantics_parity as update_parity
-import audit_kl_exact_maxdensity_lifecycle as exact_lifecycle
-import audit_parity_fixed_rgie_baseline_rebaseline as rebase
+try:
+    import audit_fastchem_downstream_staged_transplant as branch_map_audit
+except ModuleNotFoundError:
+    branch_map_audit = None
+try:
+    import audit_fastchem_exact_update_map_transplant as transplant
+except ModuleNotFoundError:
+    transplant = None
+try:
+    import audit_fastchem_reduced_reconstruction_parity as reduced_recon
+except ModuleNotFoundError:
+    reduced_recon = None
+try:
+    import audit_fastchem_update_map_alignment_phase2 as phase2
+except ModuleNotFoundError:
+    phase2 = None
+try:
+    import audit_fastchem_update_semantics_parity as update_parity
+except ModuleNotFoundError:
+    update_parity = None
+try:
+    import audit_kl_exact_maxdensity_lifecycle as exact_lifecycle
+except ModuleNotFoundError:
+    exact_lifecycle = None
+try:
+    import audit_parity_fixed_rgie_baseline_rebaseline as rebase
+except ModuleNotFoundError:
+    rebase = None
 
 
 DEFAULT_CASES = ((0, 0.0), (45, -10.0), (90, -5.0))
@@ -82,10 +103,26 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def parse_cases(values: Sequence[str]) -> list[tuple[int, float]]:
+    if transplant is None:
+        out = []
+        for value in values:
+            layer, epsilon = str(value).split(":", 1)
+            out.append((int(layer), float(epsilon)))
+        return out
     return transplant.parse_cases(values)
 
 
 def first_records_for_stage(records: Sequence[dict[str, Any]], stage: str) -> list[dict[str, Any]]:
+    if update_parity is None:
+        selected = [
+            row for row in records
+            if row.get("stage") == stage and row.get("record_type") == "condensate"
+        ]
+        first_by_condensate: dict[int, dict[str, Any]] = {}
+        for row in selected:
+            index = int(row["condensate_index"])
+            first_by_condensate.setdefault(index, row)
+        return list(first_by_condensate.values())
     if stage == "after_first_correctValues_update":
         out = update_parity.records_by_stage(records, "after_first_correctValues_update", record_type="condensate")
         if not out:
