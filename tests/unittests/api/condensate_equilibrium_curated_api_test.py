@@ -7,6 +7,8 @@ import os
 import re
 from pathlib import Path
 
+import pytest
+
 os.environ.setdefault("JAX_PLATFORMS", "cpu")
 os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
 os.environ.setdefault("JAX_ENABLE_X64", "1")
@@ -32,6 +34,22 @@ PAYLOAD_READINESS = ROOT / "results" / "fastchem4_milestone4385_tier1_callsite_p
 M1492_TRACE = ROOT / "results" / "fastchem4_milestone1492_iterative_driver_frontier_expansion_trace.json"
 T500_REFRESH = ROOT / "results" / "fastchem4_milestone4379_t500_refresh_policy_live_payload_validation.json"
 STATIC_FORMULA_AUDIT = ROOT / "results" / "fastchem4_milestone002_formula_matrix_audit.json"
+REQUIRED_HEAD_ROUTE_ARTIFACTS = (
+    HEAD_ROUTE_TABLE,
+    PAYLOAD_READINESS,
+    M1492_TRACE,
+    T500_REFRESH,
+    STATIC_FORMULA_AUDIT,
+)
+
+
+def _require_head_route_artifacts() -> None:
+    missing = [str(path.relative_to(ROOT)) for path in REQUIRED_HEAD_ROUTE_ARTIFACTS if not path.exists()]
+    if missing:
+        pytest.skip(
+            "HEAD route replay evidence artifacts are not committed in this repository checkout: "
+            + ", ".join(missing)
+        )
 
 
 def _load_head_route_rows() -> list[dict]:
@@ -180,6 +198,7 @@ def _element_budget_for_row(setup, row: dict) -> jnp.ndarray:
 
 
 def test_condensate_equilibrium_api_replays_defined_head_route_evidence_for_14_curated_rows() -> None:
+    _require_head_route_artifacts()
     setup = condensate_chemical_setup(silent=True)
     rows = _load_head_route_rows()
     payloads = _payload_by_case_id(setup)
