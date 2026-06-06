@@ -961,7 +961,7 @@ $\nv$, $\mv$, $\etav$は大ダイナミックレンジを持つので、対数�
 ガス種のみの場合のときと同様に, $\lnntot$をあらたに変数としたので、追加の条件が加わり、一次の最適化条件は
 \begin{align}
 \label{eq:akkt1}
-\Fv_n (\zv) &\equiv \frac{\mugv (T, p, \nv)}{RT} + (\log{p} - \lnntot) \uv + \lnnv +  \frac{A_\gas^\top}{R T} \lambdav = \boldsymbol{0}   \\
+\Fv_n (\zv) &\equiv \frac{\mugv^\circ(T)}{RT} + (\log{p} - \lnntot) \uv + \lnnv +  \frac{A_\gas^\top}{R T} \lambdav = \boldsymbol{0}   \\
 \label{eq:akkt2}
 \Fv_m (\zv) &\equiv \frac{\mucv^\circ (T)}{RT} + \frac{A_\cond^\top}{R T} \lambdav - \nu e^{-\lnmv} = \boldsymbol{0}   \\
 \Fv_\lambda (\zv) &\equiv A_\gas e^{\lnnv} + A_\cond e^{\lnmv} - \bv = \boldsymbol{0} \\
@@ -1040,7 +1040,7 @@ $\lnnv = \log{\nv}$、$\lnmv = \log{\mv}$、$\rhov = \log{\etav}$、$\lnntot = \
 変数系を$(\nv, \mv, \lambdav, \etav)$から$\zv \equiv (\lnnv, \lnmv, \lambdav, \rhov, \lnntot)$と置きなおす。$\lnntot$をあらたに変数としたので、追加の条件が加わり、バリアKKT条件は
 \begin{align}
 \label{eq:akkt1_d}
-\Fv_n (\zv) &\equiv \frac{\mugv (T, p, \nv)}{RT} + (\log{p} - \lnntot) \uv + \lnnv +  \frac{A_\gas^\top}{R T} \lambdav = \boldsymbol{0}   \\
+\Fv_n (\zv) &\equiv \frac{\mugv^\circ(T)}{RT} + (\log{p} - \lnntot) \uv + \lnnv +  \frac{A_\gas^\top}{R T} \lambdav = \boldsymbol{0}   \\
 \label{eq:akkt2_d}
 \Fv_m (\zv) &\equiv \frac{\mucv^\circ (T)}{RT} + \frac{A_\cond^\top}{R T} \lambdav - e^{\rhov} = \boldsymbol{0}   \\
 \Fv_\lambda (\zv) &\equiv A_\gas e^{\lnnv} + A_\cond e^{\lnmv} - \bv = \boldsymbol{0} \\
@@ -1130,7 +1130,7 @@ Q_k \piv + \Delta \lnntot \bv_k - A_\cond ( \mv_k \odot \Delta \rhov) &= A_\cond
  \end{align}
  ここに
 \begin{align}
-\hat{\bv}_k &\equiv \bv - ( A_\gas \nv_k + A_\cond \mv_k) \\ 
+\delta \hat{\bv}_k &\equiv \bv - ( A_\gas \nv_k + A_\cond \mv_k) \\ 
 \tv_k &\equiv \rv_k + \rhov_k - \boldsymbol{\epsilon} 
 \end{align}
 
@@ -1139,7 +1139,7 @@ Q_k \piv + \Delta \lnntot \bv_k - A_\cond ( \mv_k \odot \Delta \rhov) &= A_\cond
     \label{eq:kkt_y_2_sd}
       \Delta \rhov &=  ( \cv_k (T) - A_\cond^\top \piv) \odot \etav_k^{-1} - \uv
 \end{align}
-となる。ただし$\etav_k^{-1} = \{ 1/(\eta_k)_i : \text{for } i=1,2, \cdots, \ncond \}$のことである。 これを式(\ref{eq:kkt_z_3d})に入れると、
+となる。ただし$\etav_k^{-1} = \{ 1/(\eta_k)_i : \text{for } i=1,2, \cdots, \ncond \}$のことである。 これを式(\ref{eq:kkt_z_3_d})に入れると、
 \begin{align}
     Q_k \piv + \Delta \lnntot \bv_k - A_\cond ( \mv_k \odot \etav_k^{-1} \odot  (\cv_k (T) - A_\cond^\top \piv )  - \uv) &= A_\cond ( \mv_k \odot \tv_k ) + A_\gas ( \nv_k \odot \gv_k (T) ) + \delta \hat{\bv}_k
 \end{align}

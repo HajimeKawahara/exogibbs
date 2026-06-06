@@ -108,6 +108,18 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
         return jnp.moveaxis(hvector, 0, -1)
 
     hvector_func_jit = jit(hvector_func)
+    hvector_logk_source_trace = _build_fastchem_hvector_logk_source_trace_builder(
+        species=species,
+        source_records=source_records_molecule,
+        coefficients=acoeff,
+        coefficient_array=ccoeff_array,
+        float_dtype=float_dtype,
+        provider_path=path,
+    )
+    try:
+        hvector_func_jit.fastchem_hvector_logk_source_trace = hvector_logk_source_trace
+    except AttributeError:
+        pass
 
     return ChemicalSetup(
         formula_matrix=formula_matrix,
@@ -124,6 +136,10 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
             ),
             "fastchem_species_default_elements": str(species_defalt_elements),
             "fastchem_logk_source_records": source_records_molecule,
+            "fastchem_hvector_logk_source_trace": hvector_logk_source_trace,
+            "fastchem_hvector_logk_source_trace_function": (
+                "src/exogibbs/presets/fastchem.py::_build_fastchem_hvector_logk_source_trace_builder"
+            ),
         },
     )
 
@@ -143,6 +159,113 @@ def _print_status(species_molecule, elements, species, preset_name="fastchem"):
 def logk(T, ccoeff):
     a1, a2, a3, a4, a5 = ccoeff
     return a1 / T + a2 * jnp.log(T) + a3 + a4 * T + a5 * T**2
+
+
+def _build_fastchem_hvector_logk_source_trace_builder(
+    *,
+    species: List[str],
+    source_records: Dict[str, Dict[str, object]],
+    coefficients: Dict[str, List[float]],
+    coefficient_array: jnp.ndarray,
+    float_dtype: jnp.dtype,
+    provider_path: str,
+):
+    """Build a default-off FastChem preset hvector/logK source-term trace."""
+
+    provider_function_identity = "src/exogibbs/presets/fastchem.py::chemsetup hvector_func"
+    provider_closure_identity = (
+        "src/exogibbs/presets/fastchem.py::chemsetup.<locals>.hvector_func"
+    )
+
+    def trace(T: Union[float, jnp.ndarray], limit: Optional[int] = None) -> Dict[str, object]:
+        temperature_input = jnp.asarray(T)
+        temperature_np = np.asarray(temperature_input)
+        temperature_float = float(np.ravel(temperature_np.astype(float))[0])
+        coeff_np = np.asarray(coefficient_array)
+        rows = []
+        row_species = species if limit is None else species[:limit]
+        for source_index, label in enumerate(row_species):
+            coeff = [float(value) for value in coefficients[label]]
+            raw_logk = (
+                coeff[0] / temperature_float
+                + coeff[1] * float(np.log(temperature_float))
+                + coeff[2]
+                + coeff[3] * temperature_float
+                + coeff[4] * temperature_float**2
+            )
+            record = source_records.get(label, {})
+            rows.append(
+                {
+                    "species_label": label,
+                    "molecule_label": label,
+                    "source_file": record.get("source_file", provider_path),
+                    "source_record": record.get("record_line"),
+                    "source_index": int(source_index),
+                    "source_record_name": record.get("record_name"),
+                    "record_line_number": record.get("record_line_number"),
+                    "coefficient_line_number": record.get("coefficient_line_number"),
+                    "polynomial_coefficients": coeff,
+                    "temperature_segment": {
+                        "index": record.get("selected_temperature_segment_index"),
+                        "upper_bound": record.get(
+                            "selected_temperature_segment_upper_bound"
+                        ),
+                        "semantics": record.get(
+                            "selected_temperature_segment_semantics",
+                            "element species or no FastChem molecule source record",
+                        ),
+                    },
+                    "raw_logK_source_term": float(raw_logk),
+                    "KL_hvector_value": float(-raw_logk),
+                    "sign_convention": "hvector = -logK(T)",
+                    "density_gauge_pressure_temperature_correction": (
+                        "none in FastChem gas logK provider; pressure term is applied later in _compute_gk"
+                    ),
+                    "final_mass_action_equivalent_term": float(raw_logk),
+                    "native_dtype": "Python float parsed from FastChem logK text",
+                    "python_dtype": type(raw_logk).__name__,
+                    "jax_dtype": str(coefficient_array.dtype),
+                    "cast_to_float64_occurred": str(coefficient_array.dtype) == "float64",
+                    "source_stage_label": "FastChem-preset logK coefficient source",
+                    "producer_stage_label": "chemsetup hvector_func closure",
+                    "provider_function_identity": provider_function_identity,
+                    "provider_closure_identity": provider_closure_identity,
+                    "coefficient_array_origin": (
+                        "ccoeff_array = jnp.asarray([acoeff[spec] for spec in species], dtype=setup_float_dtype())"
+                    ),
+                    "temperature_input_dtype": str(temperature_np.dtype),
+                    "temperature_materialization_site": (
+                        "src/exogibbs/presets/fastchem.py::chemsetup hvector_func T = jnp.asarray(T)"
+                    ),
+                    "output_dtype": str(coefficient_array.dtype),
+                    "output_materialization_site": (
+                        "src/exogibbs/presets/fastchem.py::chemsetup hvector_func returns -vmap_logk(T, ccoeff_array)"
+                    ),
+                }
+            )
+        return {
+            "diagnostic_only": True,
+            "default_off": True,
+            "constructor_input": False,
+            "FastChem_trace_values_used_as_KL_constructor_inputs": False,
+            "provider_function_identity": provider_function_identity,
+            "provider_closure_identity": provider_closure_identity,
+            "provider_path": provider_path,
+            "species_count": len(species),
+            "emitted_row_count": len(rows),
+            "coefficient_array_dtype": str(coeff_np.dtype),
+            "coefficient_array_origin": (
+                "ccoeff_array = jnp.asarray([acoeff[spec] for spec in species], dtype=setup_float_dtype())"
+            ),
+            "temperature_input_dtype": str(temperature_np.dtype),
+            "temperature_input_value": temperature_float,
+            "output_dtype": str(coefficient_array.dtype),
+            "source_stage_label": "FastChem-preset hvector/logK source-term trace",
+            "producer_stage_label": "chemsetup hvector_func",
+            "rows": rows,
+        }
+
+    return trace
 
 
 def _set_element_species(elements):

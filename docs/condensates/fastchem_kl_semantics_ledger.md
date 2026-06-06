@@ -2,6 +2,424 @@
 
 This ledger freezes the semantic levers already proven by audit-only FastChem/KL comparisons. It is not a production change plan by itself.
 
+## Milestone 20 KL-Native Reconstruction Attempt
+
+The latest KL-native reconstruction compact is:
+
+- `results/fastchem_cond_kl_milestone20_kl_native_reconstruction_attempt_compact.json`
+- `results/fastchem_cond_kl_milestone20_kl_native_reconstruction_attempt_compact.md`
+
+Current status from that audit:
+
+- The ladder uses explicit semantic-interface fields only: physical donor,
+  molecule-cache vector, fixed/condensed overwrite boundary, inventory/atom
+  state, removed correction, post-PMI tau/complementarity replay, and projection
+  coefficient response. Full FastChem coherent RHS appears only as reference.
+- KL-native reconstruction does not close any covered case. The best native
+  max residuals remain nonzero for current-five and for the existing `45:-5`
+  pilot.
+- Full FastChem coherent RHS reference closes all covered cases, so the current
+  blocker is not a missing projection coefficient, tau replay, overwrite,
+  inventory, or removed-correction field. It is a hidden full coherent source
+  that is not represented by the KL-native semantic interface.
+- The layer-45 coefficient map remains identical between `45:-5` and `45:-10`;
+  variant-I residuals are also effectively identical. The known layer-45
+  difference therefore remains a source residual/projection-content issue, not
+  coefficient geometry.
+- Production remains not promotable.
+- Decision: KL-native reconstruction blocked by hidden full coherent source.
+
+## Milestone 19 Direct-Broad Regeneration Projection/Tau Closure
+
+The latest direct-broad regeneration compact is:
+
+- `results/fastchem_cond_kl_milestone19_direct_broad_regeneration_projection_tau_compact.json`
+- `results/fastchem_cond_kl_milestone19_direct_broad_regeneration_projection_tau_compact.md`
+
+Current status from that audit:
+
+- The exact missing current-five direct-broad source and trace artifacts were
+  regenerated. The existing `45:-5` pilot source/traces were reused; no new
+  broad case was introduced.
+- The patched direct-broad evaluator now emits explicit
+  `solve(J, unit_outside_row)` projection coefficients for current-five cases
+  and the `45:-5` pilot.
+- The post-PMI tau/complementarity diagnostic ladder is emitted for all covered
+  cases. Tau/complementarity is separable as a diagnostic RHS vector in this
+  replay, but remains non-promotable as a standalone production rule.
+- Layer `45:-5` and `45:-10` have identical outside-selected unit-response
+  coefficients for common layer-45 row pairs. Therefore coefficient geometry
+  does not explain the known projection mismatch; the mismatch remains in the
+  source residual/projection content already resolved by Milestone 13.
+- Production remains not promotable.
+- Decision: projection coefficients closed; post-PMI tau replay closed.
+
+## Milestone 18 Projection/Tau Python Patch
+
+The latest projection/tau patch compact is:
+
+- `results/fastchem_cond_kl_milestone18_projection_tau_patch_compact.json`
+- `results/fastchem_cond_kl_milestone18_projection_tau_patch_compact.md`
+
+Current status from that audit:
+
+- The direct-broad Python diagnostic script now has an explicit
+  `solve(J, unit_outside_row)` projection-coefficient emitter and a diagnostic
+  post-PMI tau/complementarity ladder emitter.
+- Regeneration cannot emit coefficient rows in this workspace because the raw
+  direct-broad snapshot and trace objects are absent:
+  `results/actual_fastchem_gas_phase_transplant_phase2_repaired_alpha_beta_broad_snapshot_entrance_smoke.json`
+  and
+  `results/actual_fastchem_gas_phase_transplant_phase2_repaired_alpha_beta_broad_snapshot_entrance_smoke_traces.json`.
+- The existing stored direct-broad compact predates the new coefficient/tau
+  fields. It is useful for lineage but cannot be used to infer coefficients
+  from aggregate outside-selected residuals.
+- The Round 8/9 tau/complementarity baseline-consumption proof is accepted as
+  sufficient for design review. A standalone tau ladder will emit when the
+  patched direct-broad numeric cases are constructible, but it is not a
+  production rule.
+- Decision: projection coefficients remain blocked by exact missing
+  direct-broad objects.
+
+## Milestone 17 Python Gap Closure
+
+The latest Python gap-closure compact is:
+
+- `results/fastchem_cond_kl_milestone17_python_gap_closure_compact.json`
+- `results/fastchem_cond_kl_milestone17_python_gap_closure_compact.md`
+
+Current status from that audit:
+
+- No new broad case was run, and no production solver behavior, preset,
+  default, or production rule changed.
+- Projection coefficient reconstruction was attempted as
+  `solve(J, unit_outside_row)` projected into selected rows. Existing artifacts
+  contain outside-selected row summaries, but the source snapshot is absent and
+  the compact does not contain `fc_j`, `row_to_result`, or unit-response
+  coefficients. The coefficient solve is therefore blocked exactly at the
+  Python compact boundary.
+- The post-PMI tau/complementarity replay remains unavailable as a separate
+  ladder. Milestone 17 formalizes the baseline-consumption proof from Round
+  8/9: tau fields are null/statused as already consumed in the coherent
+  baseline, while the standalone tau RHS vector and post-PMI ladder are not
+  emitted.
+- Both blockers remain Python diagnostic patch-site gaps; no C++ trace patch is
+  required by the current evidence.
+- Decision: both remain Python diagnostic gaps with exact blockers.
+
+## Milestone 16 Design Review And Field Closure
+
+The latest design-review compact is:
+
+- `results/fastchem_cond_kl_milestone16_design_review_and_field_closure_compact.json`
+- `results/fastchem_cond_kl_milestone16_design_review_and_field_closure_compact.md`
+
+Current status from that audit:
+
+- The guarded semantic-interface package is design-review ready and remains
+  diagnostic-only. Production remains not promotable.
+- Interface field definitions are now packaged with source artifacts for donor
+  basis, molecule-cache vector, fixed/condensed overwrite, `correctValues`,
+  reduced Newton labels, inventory/atom state, removed correction,
+  tau/complementarity, row-wise projection/sign audit, and metric lineage.
+- Existing compacts do not emit explicit outside-selected to selected-row
+  projection coefficients. They emit outside-selected RHS differences and
+  selected-row residual summaries, but not the response matrix
+  `solve(J, unit_outside_row)` projected into each selected row.
+- Round 8/9 provide an explicit baseline-consumption proof for
+  tau/complementarity: Round 8 has `tau_contribution=null` on all 40 projected
+  rows with status that tau is already in the coherent baseline, and Round 9
+  repeats this status for the 8 Al4C3 removed-tail rows.
+- The separate post-PMI tau replay vector is still not emitted. Both remaining
+  fields are Python diagnostic patch-site gaps, not C++ trace requirements.
+- Decision: design review package complete; projection/tau fields remain Python
+  diagnostic gaps.
+
+## Milestone 15 Guarded Semantic-Interface Prototype
+
+The latest semantic-interface compact is:
+
+- `results/fastchem_cond_kl_milestone15_guarded_semantic_interface_prototype_compact.json`
+- `results/fastchem_cond_kl_milestone15_guarded_semantic_interface_prototype_compact.md`
+
+Current status from that audit:
+
+- The prototype is a default-off diagnostic compact, not a runtime solver mode.
+  No production behavior, presets, defaults, or production rules changed.
+- The unified interface records name normalized donor, physical donor,
+  molecule-cache full-element vector, fixed/condensed overwrite boundary,
+  `correctValues` overwrite records, reduced Newton RHS/Jacobian/result-slot
+  labels, inventory/atom state, removed-condensate correction,
+  tau/complementarity sensitivity, row-wise projection/sign audit, and metric
+  lineage.
+- Existing artifacts support current-five manifest records for `30:-10`,
+  `45:-10`, `60:-5`, `75:-5`, and `90:-5`, plus the focused layer-45
+  `45:-5`/`45:-10` comparison.
+- The `45:-10` Al4C3 projection remains local evidence only: it opposes PMI on
+  all eight rows. At `45:-5`, the same row set remains mixed-sign, four
+  opposing and four reinforcing PMI. No Al4C3 or tau/complementarity production
+  rule is created.
+- Low-cost projection/tau closure was attempted from existing artifacts.
+  Exact outside-selected projection coefficients and a standalone post-PMI
+  tau/complementarity replay are still unavailable; both are declared
+  diagnostic Python patch-site fields and do not require a C++ trace patch for
+  this prototype.
+- Decision: guarded diagnostic semantic-interface prototype complete; design
+  review is next.
+
+## Milestone 14 Production-Promotability Gap Package
+
+The latest production gap compact is:
+
+- `results/fastchem_cond_kl_milestone14_production_promotability_gap_compact.json`
+- `results/fastchem_cond_kl_milestone14_production_promotability_gap_compact.md`
+
+Current status from that audit:
+
+- No new broad case was generated. The package reads the Milestone 6-13
+  compacts, Round 8/9 broad diagnostics, and the existing production-readiness
+  scorecard.
+- Design-note-ready levers are physical donor comparability, coherent
+  molecule+inventory state interface, removed-condensate provenance boundary,
+  and fixed/condensed overwrite plus molecule-cache boundary naming.
+- Guarded diagnostic mode is the only prototype class currently justified:
+  explicit semantic-state-interface trace, row-wise projection/sign audit, and
+  source-stage labels for `correctValues` overwrite and reduced Newton slots.
+- Not-promotable levers remain Al4C3 removed-tail rules, tau/complementarity
+  standalone rules, full coherent FastChem RHS transplant, isolated
+  molecule/inventory/donor/removed transplants, and fixed-overwrite/cache
+  transplants.
+- Low-cost missing fields were checked. Explicit outside-selected projection
+  coefficients are not emitted, and a separate post-PMI tau/complementarity
+  tail replay is not emitted; both are Python diagnostic patch-site gaps, not
+  C++ trace requirements for the current package.
+- Required production evidence now includes a default-off semantic-interface
+  contract, broad-compatible projection coefficients, tau baseline/tail
+  semantics, regenerated broad scorecards, and KL-native reconstruction without
+  hidden full coherent RHS transplant.
+- Decision: production gap package complete; guarded diagnostic interface is
+  next.
+
+## Milestone 13 Layer-45 Projection/Sensitivity Comparison Addendum
+
+The latest comparison compact is:
+
+- `results/fastchem_cond_kl_milestone13_45_comparison_projection_sensitivity_compact.json`
+- `results/fastchem_cond_kl_milestone13_45_comparison_projection_sensitivity_compact.md`
+
+Current status from that audit:
+
+- No new broad case was generated. The audit reruns only the focused `45:-5`
+  and `45:-10` traces needed to attach Milestone 12 row-wise sensitivities.
+- The projected row set is the same eight condensate rows: `SiC(s)`,
+  `Cr23C6(s)`, `Cr7C3(s)`, `Al6Si2O13(s)`, `MgCO3(s)`, `K3AlF6(s)`,
+  `Na3AlF6(s,l)`, and `Na5Al3F14(s,l)`.
+- At `45:-10`, the Al4C3 removed projection is opposite-sign to the PMI
+  residual on all eight rows and closes the maximum residual to
+  `2.91e-11`.
+- At `45:-5`, the Al4C3 removed projection has mixed sign: four rows oppose
+  PMI and four rows reinforce it. The maximum residual after the Al4C3
+  projection remains `1.515`, while full FastChem coherent RHS closes the rows.
+- The remaining `45:-5` closure path is consistent with Milestone 8: a
+  material outside-selected neutral molecule full-vector coupling over 22
+  free-element rows remains before the full coherent RHS replay.
+- Decision: `45` comparison resolved by Al4C3 projection mismatch against
+  tau/complementarity sensitivity.
+- Guardrail: diagnostic-only. No production behavior, preset, projection,
+  source-state, burden-ratio, infinity-norm, row-scaling, or row/species/case
+  dropping rule is promotable.
+
+## Milestone 12 Pilot 45:-5 Reduced Newton Result-Slot Budget Addendum
+
+The latest result-slot compact is:
+
+- `results/fastchem_cond_kl_milestone12_reduced_newton_result_slot_budget_compact.json`
+- `results/fastchem_cond_kl_milestone12_reduced_newton_result_slot_budget_compact.md`
+
+Current status from that audit:
+
+- No new broad case was generated. The audit reruns the existing `45:-5`
+  focused FastChem trace path and the cheap focused `45:-10` mirror only.
+- The diagnostic C++ trace now emits the `newton_iter=0` full reduced system
+  that feeds `correctValues`, plus retained/Jac and removed-active
+  condensate burden RHS families. Production solver arithmetic and presets are
+  unchanged.
+- The traced result slot, after FastChem's global result scaling, reconstructs
+  the Milestone 11 raw solver delta. The scaled slot plus clipping
+  reconstructs the overwrite, the overwrite reconstructs the molecule-cache
+  vector, and the cache vector recovers the Milestone 10 top-species molecule
+  density replay.
+- Fixed-J RHS-family sensitivity attributes the top-element slots primarily to
+  tau/complementarity rows propagated through the coupled reduced linear solve;
+  retained condensate, molecule RHS, and total inventory are smaller in the
+  focused aggregate, and removed-condensate terms are zero for the traced
+  `45:-5` slot.
+- Decision: `45:-5` result slot is coupled-linear-solve dominated.
+- Guardrail: diagnostic-only. No production behavior, preset, overwrite,
+  source-state, selected-row projection, burden-ratio, infinity-norm, or
+  row/species/element/case dropping rule is promotable.
+
+## Milestone 11 Pilot 45:-5 Fixed/Condensed Overwrite Budget Addendum
+
+The latest overwrite-budget compact is:
+
+- `results/fastchem_cond_kl_milestone11_fixed_condensed_overwrite_budget_compact.json`
+- `results/fastchem_cond_kl_milestone11_fixed_condensed_overwrite_budget_compact.md`
+
+Current status from that audit:
+
+- No new broad case was generated. The audit reruns only the existing `45:-5`
+  focused FastChem trace path after verifying the local pyfastchem trace emits
+  `correctvalues_element_update` records.
+- The emitted local `correctValues` identity closes for the top affected
+  elements: old element density plus solver delta plus clipping/cap residual
+  reconstructs the overwrite/cache value to relative roundoff.
+- The reconstructed overwrite vector matches the molecule-refresh cache vector
+  and recovers the top-species molecule-density replay through the Milestone 10
+  identity gate.
+- The physical additive terms remain unavailable: retained-condensate,
+  removed-condensate, condensate-coupled, and inventory/removal contributions
+  are folded into `result(i + nb_cond_jac)` and are not emitted as separate
+  per-element budget fields.
+- Decision: `45:-5` overwrite budget remains unresolved due missing additive
+  trace fields.
+- Guardrail: diagnostic-only. No production behavior, preset, overwrite,
+  source-state, selected-row projection, burden-ratio, infinity-norm, or
+  row/species/element/case dropping rule is promotable.
+
+## Milestone 10 Pilot 45:-5 Cache-Vector Provenance Addendum
+
+The latest cache-vector provenance compact is:
+
+- `results/fastchem_cond_kl_milestone10_pilot_45_m5_cache_vector_provenance_compact.json`
+- `results/fastchem_cond_kl_milestone10_pilot_45_m5_cache_vector_provenance_compact.md`
+
+Current status from that audit:
+
+- No new broad case was generated. The audit consumes existing `45:-5` pilot
+  artifacts and the existing Round 9 `45:-10` comparison compact.
+- The first emitted stage matching the molecule-cache vector is
+  `molecule_refresh_record_0`, the cache-side
+  `iter0_post_correctValues_full_element_vector_before_molecule_refresh`
+  record.
+- The iter1 RHS molecule-density provenance and cache-side iter1 full reduced
+  system are identical to that cache vector for the top elements.
+- The top elements are classified as `fixed/condensed overwrite` via
+  `value_source_mode=reduced_overwrite_from_correctValues` and emitted fixed
+  overwrite components.
+- Candidate-vector replay verifies the source: physical donor vectors fail to
+  recover cache density and carry the M9 RHS contribution; post-refresh cache,
+  iter1 RHS, and full coherent vectors recover cache density with zero
+  contribution versus cache.
+- The `45:-10` listed artifact does not emit the same cache-vector provenance
+  ladder, so the comparison remains unresolved beyond the known Al4C3 projected
+  closure.
+- The exact deeper missing field is the additive budget inside
+  `reduced_overwrite_from_correctValues`: old element density, solver delta,
+  clipping/cap, condensate-coupled, and inventory/removal components. A C++
+  trace patch is required for that deeper split.
+- Decision: `45:-5` cache-vector source is fixed/condensed overwrite component.
+- Guardrail: diagnostic-only. No production behavior, preset, molecule-cache,
+  fixed-overwrite, source-state, selected-row projection, burden-ratio,
+  infinity-norm, or row/species/element/case dropping rule is promotable.
+
+## Milestone 9 Pilot 45:-5 Neutral Source-State Decomposition Addendum
+
+The latest neutral source-state decomposition compact is:
+
+- `results/fastchem_cond_kl_milestone9_pilot_45_m5_neutral_source_state_decomposition_compact.json`
+- `results/fastchem_cond_kl_milestone9_pilot_45_m5_neutral_source_state_decomposition_compact.md`
+
+Current status from that audit:
+
+- No new broad case was generated. The audit consumes existing `45:-5` pilot
+  artifacts and current-five comparison artifacts.
+- The neutral source-state blocker decomposes to the molecule-cache
+  full-element vector consumed at `iter1_full_reduced_system`.
+- The top-species factorization is element-vector dominated for `H1Mn1`,
+  `Cl2Na2`, `Fe1H2O2`, `H2Mg1O2`, `Cl2K2`, `H2S1`, `Al1F2O1`, and `O2V1`.
+  hvector/logK and density-gauge deltas are zero for these species.
+- The physical donor vector differs from the cache vector, while the iter1 RHS
+  entry vector and full FastChem coherent RHS vector match the cache vector for
+  the reported elements.
+- `45:-10` has existing neutral species projection evidence and Al4C3 removed
+  projection closure, but no emitted M8-style outside-selected full-vector
+  decomposition. It remains a local projection closure case, not a source rule.
+- The exact missing field is a per-neutral-species additive split into
+  physical-donor, hidden-source-state, hvector/logK, and density-gauge budgets.
+  The emitted full element vector is sufficient for the local verdict but not
+  for promotion.
+- Decision: `45:-5` neutral source blocker is molecule-cache full-element
+  vector.
+- Guardrail: diagnostic-only. No production behavior, preset, molecule-cache,
+  source-state, hvector/logK, density-gauge, selected-row projection,
+  burden-ratio, infinity-norm, or row/species/element/case dropping rule is
+  promotable.
+
+## Milestone 8 Pilot 45:-5 Full-Bundle Decomposition Addendum
+
+The latest pilot full-bundle decomposition compact is:
+
+- `results/fastchem_cond_kl_milestone8_pilot_45_m5_full_bundle_decomposition_compact.json`
+- `results/fastchem_cond_kl_milestone8_pilot_45_m5_full_bundle_decomposition_compact.md`
+
+Current status from that audit:
+
+- No new broad case was generated. The audit consumes the existing `45:-5`
+  pilot source and trace artifacts.
+- The gap from the best partial replay (`PMI + Al4C3 removed`) to the full
+  FastChem coherent RHS is neutral-molecule dominated: neutral molecule
+  full-vector L2 `1.6367459746586315`, charged molecule L2
+  `5.139755216542042e-14`, and unexplained residual after the molecule gap L2
+  `4.8166936300605893e-14`.
+- Selected-row RHS metrics and full-vector metrics remain separate. The
+  selected-row max RHS gap after the partial replay is roundoff-scale
+  (`7.105427357601002e-15`), while the full-vector neutral molecule gap is
+  material.
+- All `22` affected outside-selected rows are free-element rows. The largest
+  rows are `Mn`, `S`, `K`, `Na`, `Mg`, `Fe`, `Cl`, and `Cu`.
+- Species attribution is available from the pilot molecule-cache records. The
+  largest neutral species are `H1Mn1`, `Cl2Na2`, `Fe1H2O2`, `H2Mg1O2`,
+  `Cl2K2`, `H2S1`, `Al1F2O1`, and `O2V1`. `C1H4` and `H2O1` do not dominate
+  the `45:-5` neutral gap after physical donor conversion.
+- The top species have matching mass-action / hvector and density-gauge fields.
+  The residual is traced to the full element source-state snapshot consumed by
+  the neutral molecule cache.
+- Decision: `45:-5` full bundle blocker is neutral molecule full-vector
+  source-state coupling.
+- Guardrail: diagnostic-only. No production behavior, preset, selected-row
+  projection, donor, molecule, inventory, removed-tail, tau/complementarity,
+  row-scaling, Jacobian, guarded-mode, burden-ratio, infinity-norm, or
+  row/species/element/case dropping rule is promotable.
+
+## Milestone 7 Pilot 45:-5 Blocker Attribution Addendum
+
+The latest pilot attribution compact is:
+
+- `results/fastchem_cond_kl_milestone7_pilot_45_m5_new_blocker_attribution_compact.json`
+- `results/fastchem_cond_kl_milestone7_pilot_45_m5_new_blocker_attribution_compact.md`
+
+Current status from that audit:
+
+- No new broad case was generated. The audit uses the existing `45:-5` pilot
+  source and trace artifacts.
+- The row-wise ladder keeps the `embedded_broad_10row_projection` separate from
+  focused regression. It reports `8` projected rows, `4` PMI rows better than
+  baseline, `4` PMI rows worse than baseline, and `8` rows closed by the full
+  FastChem coherent RHS.
+- The remaining partial-replay gap is not explained by promoting the `Al4C3(s)`
+  removed correction. The `Al4C3(s)` tail recurs, but projected closure is
+  epsilon-dependent.
+- The available delta-to-full decomposition attributes the blocker to a full
+  coherent RHS source-state bundle requirement, dominated by neutral molecule
+  full-vector provenance outside the selected rows that couples through the
+  coherent solve.
+- Decision: `45:-5` blocker requires full coherent RHS source-state bundle.
+- Guardrail: diagnostic-only. No production behavior, preset, selected-row
+  projection, donor, molecule, inventory, removed-tail, tau/complementarity,
+  row-scaling, Jacobian, guarded-mode, burden-ratio, infinity-norm, or
+  row/species/case dropping rule is promotable.
+
 ## Broad Projection Residual Decomposition Addendum
 
 The latest compact broad residual decomposition is:
@@ -2869,3 +3287,551 @@ Lever classes:
   repaired alpha/beta production behavior.
 
 Decision: semantic levers ready for production design note but not promotable.
+
+## Milestone 2 Generalization Readiness
+
+The Milestone 2 compact is:
+
+- `results/fastchem_cond_kl_milestone2_generalization_readiness_compact.json`
+- `results/fastchem_cond_kl_milestone2_generalization_readiness_compact.md`
+
+No extra broad cases were run. The reason is not missing source CLI support:
+`audit_actual_fastchem_gas_phase_transplant_phase2.py` accepts `--cases`. The
+blocker is interpretability. The downstream compact stack still hard-codes the
+current five broad cases or focused `45/60` layers, and the current five-case
+source/trace artifacts are already `4.0G` combined.
+
+Available-case scorecard:
+
+- Physical donor conversion closes the dominant donor gap.
+- Physical + molecule + inventory reduces broad residual in all five available
+  cases.
+- Removed tail is material only at `45:-10`.
+- `Al4C3(s)` removed tail remains localized in the available broad set.
+- Metric lineage is preserved; `embedded_broad_10row_projection` is not used as
+  focused regression.
+
+Regeneration dependency map:
+
+- Expand the phase2 broad source and trace snapshots.
+- Generalize selected-row delta/raw-result provenance to extra case keys.
+- Generalize reduced-Newton, molecule-input, electron, and coherent-bundle
+  support compacts away from focused `45/60` assumptions.
+- Regenerate broad smoke, direct broad eval, Round 8 ladder, and Round 9-style
+  removed-tail locality compacts.
+
+Decision: broad generalization requires regeneration campaign before next
+decision.
+
+## Milestone 3 Manifest-Driven Infrastructure
+
+The Milestone 3 artifacts are:
+
+- `results/fastchem_cond_kl_broad_case_manifest.json`
+- `results/fastchem_cond_kl_milestone3_broad_generalization_infrastructure_compact.json`
+- `results/fastchem_cond_kl_milestone3_broad_generalization_infrastructure_compact.md`
+
+The manifest records the current broad cases, source/trace artifacts,
+downstream compact availability, physical donor availability,
+molecule/inventory ladder availability, and removed-tail locality availability.
+
+The current-five replay is now manifest-driven through
+`examples/comparisons/fastchem_cond_kl_milestone3_broad_generalization_infrastructure.py`.
+It reproduces the Milestone 2 scorecard:
+
+- physical donor conversion closes dominant donor gaps,
+- physical + molecule + inventory improves all five available cases,
+- removed tail is material only at `45:-10`,
+- `Al4C3(s)` closes the localized `45:-10` PMI tail,
+- `embedded_broad_10row_projection` is not used as focused regression.
+
+A one-case pilot was not run. The manifest-driven reader is ready, but the
+legacy full replay scripts still need case-key generalization before a pilot
+source shard can support a semantic decision.
+
+Decision: manifest-driven broad generalization infrastructure ready; pilot case
+not yet run.
+
+## Milestone 4 Pilot-Ready Manifest Gate
+
+The Milestone 4 artifacts are:
+
+- `results/fastchem_cond_kl_milestone4_pilot_ready_generalization_compact.json`
+- `results/fastchem_cond_kl_milestone4_pilot_ready_generalization_compact.md`
+
+Milestone 4 removes the hidden current-five fallback from the downstream
+diagnostic broad stack. The repaired alpha/beta broad smoke, direct broad eval,
+Round 8 ladder, Round 9 locality, and Milestone 3 infrastructure scripts now
+require manifest case input for current-five replay. Historical current-five
+lists remain only as provenance fields, and the Round 9 `45:-10` tail target is
+retained only as the localized material PMI-tail decomposition target.
+
+The manifest-only gate passes on the current five cases and reproduces the
+scorecard:
+
+- physical donor conversion closes dominant donor gaps,
+- physical + molecule + inventory improves all five available cases,
+- removed tail is material only at `45:-10`,
+- `Al4C3(s)` closes the localized `45:-10` PMI tail,
+- `embedded_broad_10row_projection` is not used as focused regression.
+
+A one-case pilot was not run. The compact records the exact command and
+expected artifacts, but source+trace cost remains about `0.8G` before
+downstream compacts, so this milestone avoids generating orphan source shards.
+
+Decision: pilot-ready manifest-only downstream stack passes; pilot case not yet
+run.
+
+## Milestone 5 One-Case Pilot
+
+The Milestone 5 artifacts are:
+
+- `results/fastchem_cond_kl_milestone5_pilot_45_m5_phase2_source.json`
+- `results/fastchem_cond_kl_milestone5_pilot_45_m5_phase2_traces.json`
+- `results/fastchem_cond_kl_milestone5_pilot_45_m5_phase2.md`
+- `results/fastchem_cond_kl_milestone5_pilot_45_m5_direct_broad_eval_compact.json`
+- `results/fastchem_cond_kl_milestone5_one_case_pilot_generalization_compact.json`
+- `results/fastchem_cond_kl_milestone5_one_case_pilot_generalization_compact.md`
+
+The single pilot case is `45:-5`. It was selected because it shares the layer
+of the localized `45:-10` `Al4C3(s)` removed-tail case while changing epsilon,
+making it the highest-value one-case disconfirmation test for case-local versus
+layer-wide removed-tail behavior.
+
+The phase2 source generation completed. The pilot was added to
+`results/fastchem_cond_kl_broad_case_manifest.json` with source and trace
+artifact paths. Direct broad eval can read the pilot source, but full downstream
+interpretation remains incomplete because the pilot lacks the selected-row
+mapping, same-boundary KL non-fixed vector, and gauge-normalized
+inventory/atom fields needed for Round 8/9 projection.
+
+Pilot scorecard:
+
+- physical donor closure: not downstream-evaluable,
+- physical + molecule + inventory improvement: not downstream-evaluable,
+- removed-tail source correction is material,
+- `Al4C3(s)` removed-correction provenance appears at `45:-5`,
+- no other removed-tail species were observed in the source removed trace,
+- `embedded_broad_10row_projection` was not used as focused regression,
+- no rows, species, or cases were dropped.
+
+This changes the locality statement: `Al4C3(s)` removed-correction provenance is
+not unique to `45:-10` at the source-trace level. Projected PMI materiality for
+`45:-5` is still incomplete until the missing downstream fields are emitted.
+
+Decision: one pilot broad case regenerated but downstream interpretation
+remains incomplete.
+
+## Milestone 6 Pilot 45:-5 Interpretation Closure
+
+The Milestone 6 artifacts are:
+
+- `results/fastchem_cond_kl_milestone6_pilot_45_m5_interpretation_closure_compact.json`
+- `results/fastchem_cond_kl_milestone6_pilot_45_m5_interpretation_closure_compact.md`
+
+No additional broad case was run. Milestone 6 consumed only the existing
+`45:-5` pilot source and trace artifacts.
+
+Missing-field closure:
+
+- same-boundary KL non-fixed vector: present in the pilot source embedded
+  `repaired_alpha_beta_source_state_snapshot`; absent from the trace-only file;
+  closed from source with e-last to e-first identity gate,
+- selected-row mapping: present in the pilot source embedded snapshot; absent
+  from the trace-only file; closed from source with explicit projected and
+  one-sided row membership,
+- gauge-normalized inventory/atom inputs: present in source and trace; closed
+  with the current inventory convention
+  `rhs_element_total_inventory = total_element_density * element.epsilon` and
+  `row_scaling_factor`.
+
+Pilot replay scorecard:
+
+- physical donor conversion closes the dominant raw donor gap,
+- physical + molecule does not improve residual,
+- physical + molecule + inventory improves relative to molecule-only but not
+  relative to baseline,
+- `Al4C3(s)` removed tail is material in the source trace,
+- `Al4C3(s)` removed correction does not close the projected PMI residual,
+- no other removed-tail species were observed,
+- `embedded_broad_10row_projection` remains separate from focused regression,
+- no rows, species, or cases were dropped.
+
+Comparison with `45:-10`: `Al4C3(s)` removed correction is layer-recurring at
+the source-provenance level, but the projected effect is epsilon-dependent.
+The `45:-10` tail closure does not generalize to `45:-5`.
+
+Decision: pilot 45:-5 downstream interpretation reveals a new blocker.
+
+## Milestone 21 Hidden Coherent Source Decomposition
+
+Milestone 21 supersedes the Milestone 20 hidden-source label with a vector-level
+budget. The direct-broad compact now emits
+`milestone21_hidden_coherent_source_decomposition` while `fc_j`, `fc_rhs`, the
+KL-native RHS components, and selected-row mapping are live.
+
+For current-five plus the existing `45:-5` pilot, variant I plus the hidden RHS
+delta reconstructs the full FastChem RHS to roundoff, and
+`solve(fc_j, hidden_rhs_delta)` reconstructs the J-minus-I solution gap. The
+same Jacobian and row scaling are used for I and J, so the remaining coherent
+source is RHS-side, not Jacobian-side. Top carriers are outside-selected
+free-element rows, but no production transplant is implied.
+
+Milestone 21 decision: hidden coherent source is RHS-side.
+## Milestone 22 Hidden RHS Term-Family Budget
+
+Milestone 22 decomposes the Milestone 21 hidden RHS vector by RHS term family. Decision: hidden RHS delta is molecule-RHS dominated.
+
+- The additive budget closes for all requested cases: current-five plus the existing `45:-5` pilot.
+- The closing source is `full FastChem molecule RHS - reconstructed candidate molecule RHS`; no separate remaining charged/electron additive hidden family is needed for closure.
+- Inventory/atom, removed-condensate, tau/complementarity, activity burden, and fixed/condensed overwrite families have zero remaining additive hidden RHS after the Milestone 21 KL-native RHS assembly.
+- Outside-selected free-element rows remain the dominant carriers, but they are a row-location carrier view of the molecule RHS residual rather than a separate additive source.
+- Production remains not promotable; KL-native reconstruction is blocked on a coherent molecule RHS parity contract, not on a new production rule.
+## Milestone 23 Coherent Molecule RHS Parity
+
+Milestone 23 tests the coherent molecule RHS parity contract directly. Decision: coherent molecule RHS parity holds at matched source state.
+
+- Full FastChem molecule RHS is reproduced to roundoff by all-molecule RHS at matched source state.
+- The M22 molecule delta is therefore not a request to transplant FastChem RHS; it identifies the missing semantic contract for source-state plus row-scaling/RHS convention parity.
+- Source-vector, hvector/lnK, density-gauge, cache timing, and neutral/charged branches are emitted as diagnostic variants.
+- KL-native reconstruction remains blocked until the semantic interface exposes a matched molecule source state and RHS convention contract.
+- Production remains not promotable; no C++ trace or production rule was added.
+## Milestone 24 Matched Source-State Construction
+
+Milestone 24 attempts to construct the matched coherent molecule source state from KL-native semantic-interface fields. Decision: matched coherent molecule source state blocked by hidden coherent source.
+
+- The matched source-state contract is explicit: e-first physical density vector, FastChem row-scaling convention, molecule species order, hvector/lnK, and density gauge.
+- No KL-native candidate among physical donor, molecule-cache, fixed/overwrite, correctValues, or best repaired same-boundary vector constructs the matched source state in all requested cases.
+- Tau/complementarity, inventory/atom, removed-condensate, and reduced-slot adjusted all-element molecule-source vectors are not emitted as source-state fields.
+- Row scaling is explicit and can be tested separately; it is not sufficient to construct the missing source state.
+- Production remains not promotable; no C++ trace or production rule was added.
+## Milestone 25 Source-Vector Materialization
+
+Milestone 25 attempts to materialize the missing all-element molecule source vectors from existing artifacts. Decision: source-vector materialization blocked by exact missing artifacts.
+
+- Physical donor, molecule-cache/correctValues, fixed overwrite, and e-first same-boundary KL candidates were materialized and rerun.
+- Tau/complementarity, inventory/atom, removed-condensate, and broad reduced-slot all-element molecule source vectors are not present in existing artifacts; only RHS terms or focused/layer-limited reduced-slot records are available.
+- Combination search cannot close because every requested adjusted-vector combination depends on an unmaterialized all-element source vector.
+- FastChem row scaling remains explicit and is not used silently; materialized source-state residuals remain nonzero under that explicit convention.
+- Production remains not promotable; no C++ trace or production rule was added.
+## Milestone 26 All-Element Source-Vector Emitters
+
+Milestone 26 implements diagnostic emitter attempts for the missing all-element source vectors. Decision: all-element source-vector emission blocked by exact trace architecture gap.
+
+- Python emitter attempts were added at the latest diagnostic sites where RHS terms, source traces, row scaling, and molecule labels are live.
+- Current artifacts expose RHS term contributions for tau/complementarity, inventory/atom, and removed-condensate paths, but not the adjusted all-element molecule-source vectors.
+- The reduced-slot compact remains focused/layer-limited and does not expose a broad case-keyed canonical e-first all-element molecule-source vector.
+- Matched-source construction was rerun with all emitted/materialized vectors; no non-hidden candidate closes.
+- Production remains not promotable; a future diagnostic trace must emit these all-element source vectors before another construction attempt can close.
+## Milestone 27 Trace Architecture Source Vectors
+
+Milestone 27 patched diagnostic C++ trace schema and emitted the reduced-slot all-element source vector. Decision: matched coherent molecule source state still blocked by hidden coherent source.
+
+- The emitted vector is FastChem reference-only and uses the hidden coherent FastChem source state.
+- It reproduces the matched coherent molecule source state to roundoff, proving the trace architecture can carry the needed vector shape.
+- It does not make the matched source KL-native constructible; KL adjusted all-element tau/inventory/removed vectors remain missing.
+- Production remains not promotable; the patch is trace-only and inactive unless diagnostic tracing is enabled.
+## Milestone 28 KL-Native Source-Vector Reconstruction
+
+Milestone 28 compares KL-native source-vector candidates against the M27 emitted reduced-slot FastChem reference target. Decision: KL-native source-vector reconstruction blocked by exact KL-side trace fields.
+
+- Physical donor, molecule-cache/correctValues, fixed overwrite, and prior same-boundary KL-native vectors were compared directly against the M27 28-element target.
+- No non-hidden candidate or requested staged combination closes the source vector or molecule RHS in all cases.
+- Tau/complementarity, inventory/atom, removed-condensate, and KL reduced-slot mapped all-element source vectors remain exact missing fields.
+- Production remains not promotable; this milestone is diagnostic-only and does not change presets, defaults, or solver behavior.
+## Milestone 29 Exact KL-Side Trace Field Closure
+
+Milestone 29 closes the M28 Python-owned KL-side source-vector fields and reruns reconstruction. Decision: M27 target vector still requires hidden FastChem coherent source.
+
+- All eight M28 fields were ownership-audited and emitted in the M29 diagnostic compact.
+- The two fields previously labelled C++-required are KL-side source-state fields after ownership audit, so no C++ trace patch or rebuild was required.
+- Emitted non-hidden KL-side vectors still do not reconstruct the M27 FastChem reference target or matched coherent molecule RHS.
+- Production remains not promotable.
+## Milestone 30 Target-vs-KL Value Delta
+
+Milestone 30 decomposes the value delta between the M27 target and emitted KL reduced-slot source vector. Decision: M27 target blocked by missing semantic transform.
+
+- Element-order, log/linear, density-gauge, and row-scaling verifier branches do not close the residual.
+- Fixed/non-fixed and inert/electron splits show the largest differences are not explained by a single bookkeeping subset.
+- Least-squares fits can reduce residual diagnostically but require non-production coefficients, indicating a missing semantic transform rather than a direct emitted-vector selection.
+- Production remains not promotable.
+## Milestone 31 Semantic Transform Synthesis
+
+Milestone 31 synthesizes diagnostic semantic transforms from emitted KL-side vectors to the M27 target. Decision: inert/carrier transform partially closes but not all cases.
+
+- Inert pass-through from the KL physical donor stage removes the dominant He/Ne/Ar carrier residuals diagnostically.
+- Source-vector and molecule-RHS closure still fail after all A-H transforms, so the transform is only partial and remains non-production.
+- LS-guided class coefficients do not collapse to a global, ntot, or density-gauge scalar across cases.
+- No production solver, preset, default, or guarded mode changed.
+## Milestone 32 Broader Source-State Prototype
+
+Milestone 32 prototypes broader diagnostic source-state transforms after M31 inert pass-through. Decision: broader transform partially closes but fixed-element source-state remains.
+
+- Gen1 attempted A2-H2; Gen2 attempted targeted top-class, metal/minor, fixed/condensed, and constrained-scalar overlays.
+- No non-hidden transform reconstructs the M27 target or matched molecule RHS across current-five plus `45:-5`.
+- The balanced best transform remains conservative and the remaining dominant residual class is fixed/condensed source-state material.
+- Production remains not promotable; no C++ trace, preset, default, or production rule changed.
+## Milestone 33 Fixed-Element Decomposition
+
+Milestone 33 decomposes the fixed-element source-state blocker. Decision: fixed-element transform rejected due molecule-RHS sign amplification.
+
+- A2, F2, and K2 were decomposed by condensation class and residual class for current-five plus `45:-5`.
+- A3-G3 RHS-aware fixed-element transforms were attempted; no transform reconstructs the M27 target and molecule RHS across all cases.
+- Source-vector improvements can worsen molecule RHS because fixed-row changes are amplified by molecule stoichiometry and FastChem row scaling.
+- Production remains not promotable; no C++ trace, preset, default, or production rule changed.
+## Milestone 34 Molecule-RHS Operator Sensitivity
+
+Milestone 34 audits the source-to-molecule-RHS operator. Decision: sign amplification due row scaling.
+
+- R(x) was evaluated directly from diagnostic source vectors through molecule reconstruction and FastChem row scaling.
+- Finite-difference sensitivity on top fixed elements attributes the worsening RHS behavior to row-scaled fixed-element molecule-burden sensitivity.
+- RHS-space stage/scalar/finite-difference candidates do not close all cases without hidden coherent source state.
+- Production remains not promotable; no C++ trace, preset, default, or production rule changed.
+## Milestone 35 Row-Scaling Amplification Budget
+
+Milestone 35 decomposes row-scaling amplification into numerator and scaling terms. Decision: row-scaling high-gain fixed rows require M27 source parity.
+
+- The compact emits `N(x)`, `R(x)`, `Delta N`, `Delta R`, row-scaling signs/magnitudes, and amplification factors for each covered case.
+- Row-scaling-aware candidates A-F do not close all cases, current-five, or `45:-5` without hidden coherent source state.
+- High-gain fixed rows remain the practical inverse-problem blocker; production remains not promotable.
+## Milestone 36 High-Gain Fixed-Row Provenance
+
+Milestone 36 traces high-gain fixed-row source provenance. Decision: high-gain fixed-row parity insufficient; full M27 source vector remains required.
+
+- High-gain fixed rows were selected from M35 row-scaling amplification and RHS contribution budgets.
+- FastChem and KL ladders show the M27 reduced-system assembly source value is not reproduced by emitted KL-native stages.
+- High-gain-row-only replays are diagnostic-only and do not close all cases; full M27 source-vector parity remains required.
+- No production solver, preset, default, or C++ trace changed.
+## Milestone 37 Source-Vector Support Decomposition
+
+Milestone 37 decomposes source-vector support. Decision: sparse support partially closes but not all cases.
+
+- Row classes and overlaps were emitted for high-gain fixed, inert, electron, volatile, reactive, metal/minor, top-species, outside-selected, and row-scaling high-gain rows.
+- Replays A-K and greedy support search found a stable outside-selected support branch that partially closes, including `45:-5`, but not all current-five cases.
+- Top-species support rows improve attribution but do not replace full M27 source-vector parity for non-closing cases.
+- Production remains not promotable; no C++ trace, preset, default, or production rule changed.
+## Milestone 38 Sparse-Support Residual Decomposition
+
+Milestone 38 decomposes residuals after the M37 sparse support. Decision: 45:-5 closes by cancellation; current-five requires broader support.
+
+- The best sparse support residual was decomposed for H/K, and `45:-5` was compared against non-closing current-five cases.
+- Outside-selected internal ablations A-G and a second-stage greedy search were attempted.
+- The 45:-5 closure is not a general support sufficiency result; current-five still requires broader support.
+- Production remains not promotable; no C++ trace, preset, default, or production rule changed.
+## Milestone 39 30:-10 Sparse-Support Residual
+
+Milestone 39 decomposes the remaining `30:-10` sparse-support residual. Decision: 30:-10 residual is numerical/tolerance-scale but not production-promotable.
+
+- H/B/G/K support residuals were decomposed for `30:-10` and compared with closing cases.
+- Internal add/remove ablations A-H and tolerance/scale audit classify the remaining residual as strict-tolerance scale.
+- Closure under looser diagnostic tolerance is not production-promotable; production remains not promotable.
+## Milestone 40 Production-Path Decision Campaign
+
+Milestone 40 campaign decision: strict tolerance residual is diagnostic-only; production requires source-state contract.
+
+- Track 1: strict 30:-10 residual closes only at diagnostic 1e-5 and is not production-promotable.
+- Track 2: emitted non-hidden KL full-vector candidates do not close source, numerator, or row-scaled RHS parity.
+- Track 3: production readiness now depends on a formal source-state semantic contract, not another support subset.
+- Track 4: no additional broad pilot is justified until the contract gap is addressed.
+## Milestone 41 Default-Off Source-State Contract Prototype
+
+Milestone 41 created the default-off source-state contract prototype. Decision: default-off source-state contract prototype complete; KL-native implementation remains blocked.
+
+- The schema separates FastChem/M27 reference records, best non-hidden KL candidates, sparse support overlays, tolerance-only closures, and the unavailable production-ready KL-native source state.
+- The acceptance gate requires source parity, numerator parity, row-scaled RHS parity, no hidden FastChem source, strict tolerance, complete coverage, explicit row scaling, and preserved lineage.
+- Current-five plus `45:-5` are instantiated from existing artifacts; no new broad pilot was requested.
+- All best non-hidden KL candidates fail the default-off production gate because the source-state constructor and numerator contract are still missing.
+## Milestone 43 Gate-Driven Constructor Synthesis
+
+Milestone 43 synthesized gate-driven constructors from non-hidden KL-side basis vectors. Decision: free fit also fails; hidden source-state information structurally absent.
+
+- Generations G1-G3 attempted source-, numerator-, RHS-, joint-, class-wise, constrained, and free diagnostic fits.
+- M41 gate evaluation remained default-off and diagnostic-only; production behavior and presets were unchanged.
+- The free diagnostic fit also failed source, numerator, and RHS gate closure, classifying the residual as structurally absent from the non-hidden KL basis.
+## Milestone 44 Structural Basis Expansion
+
+Milestone 44 expanded the non-hidden KL primitive basis and emitted structural span diagnostics. Decision: diagnostic C++ trace required for missing primitive source-state fields.
+
+- Current and expanded basis rank/projection residuals were emitted for source vector, unscaled numerator, and row-scaled RHS spaces.
+- Primitive branches A-G were attempted; exact number_density_min/maj and epsilon/phi/degree transforms remain unavailable without diagnostic trace fields.
+- Expanded basis gate rerun did not close M41; next work requires diagnostic C++ trace for missing primitive source-state fields.
+## Milestone 45 Trace Primitive Source-State Fields
+
+Milestone 45 added env-gated C++ primitive source-state trace fields. Decision: traced primitives improve but remain FastChem reference-only.
+
+- The M45 marker emits fixed-row pre/post overwrite values, number_density_min/maj, gas solver path, epsilon, phi, and degree_of_condensation.
+- The traced primitive basis reruns the M41 gate but remains diagnostic FastChem reference-only, not KL-native production logic.
+- Production remains not promotable; the next implementation step is coding the semantic source-state algorithm on the KL side.
+## Milestone 46 KL-Native Semantic Algorithm
+
+Milestone 46 implemented a default-off KL-native semantic source-state algorithm prototype. Decision: KL lacks required lifecycle input fields for semantic source-state algorithm.
+
+- Variants A-D compute primitive fields from KL/public vectors only; M45 trace values are diagnostic reference targets only.
+- The M41 gate rerun preserves no-hidden-source, not-reference-only, and KL-native-constructible checks, but source/N/R parity remains open.
+- Missing KL lifecycle inputs are now narrowed to molecule contribution order, backup branch lifecycle, condensation-degree transform inputs, and reduced correctValues assembly semantics.
+## Milestone 47 Function-Port Closure
+
+Milestone 47 localized semantic source-state gaps by FastChem function. Decision: FastChem semantic source-state functions must be ported before production.
+
+- Four default-off Python function-port prototypes were implemented and compared against M45 trace references without using traced values as constructor inputs.
+- Three M47 source-state candidates were gated through M41 over current-five plus 45:-5.
+- Remaining blockers are exact lifecycle fields: molecule order/accumulators, backup/intertSol branch state, condensation-stage inputs, and correctValues reduced result/clipping state.
+## Milestone 48 Lifecycle Emitters
+
+Milestone 48 emitted default-off KL lifecycle state records and reran five M48 candidates through M41. Decision: M48 improves but molecule order state remains missing.
+
+- Implemented lifecycle emitters: condensation_stage_state, correctValues_reduced_result_state, gas_solver_branch_state, minor_major_accumulator_state.
+- Unavailable lifecycle emitters: molecule_order_state.
+- No production solver behavior, presets, defaults, tolerance, row/species/element/case coverage, or FastChem reference-source transplant was changed.
+## Milestone 49 Molecule Order Closure
+
+Milestone 49 emitted KL molecule-order state proxies and reran minor/major accumulator replay. Decision: exact molecule_order_state requires FastChem-specific ordering not present in KL.
+
+- KL-native molecule-order emitters: A_KL_gas_species_order, B_FastChem_label_aligned_KL_density, D_best_non_hidden_molecule_order.
+- Exact element-specific FastChem minor/major molecule order remains unavailable from KL artifacts and would need a diagnostic trace for validation.
+- No production solver behavior, presets, defaults, tolerance, row/species/element/case coverage, or FastChem source-vector transplant was changed.
+## Milestone 50 Molecule Order Trace
+
+Milestone 50 added the v6 molecule-order trace and assessed KL port readiness. Decision: FastChem createMoleculeLists algorithm must be ported before production.
+
+- v6 trace marker verified: `True`.
+- Trace closes exact FastChem molecule order as reference evidence, but KL-native production needs createMoleculeLists and staged molecule-density lifecycle ports.
+- No production solver behavior, presets, defaults, tolerance, coverage, or coherent source-vector transplant was changed.
+## Milestone 51 CreateMoleculeLists Port
+
+Milestone 51 implemented default-off KL-native createMoleculeLists port variants. Decision: M51 improves but molecule abundance lifecycle remains missing.
+
+- Implemented four molecule abundance candidates and five createMoleculeLists port variants.
+- Reran six M51 M41 candidates with best-selection tie-break by gate/pass policy and residuals.
+- No production solver behavior, presets, defaults, tolerance, row/species/element/case coverage, or trace-as-constructor path was changed.
+## Milestone 52 Molecule Abundance Lifecycle Emitters
+
+Milestone 52 implemented default-off KL lifecycle state carriers for molecule abundance, ordered molecule density, and n_major accumulator replay. Decision: M52 improves but abundance state stage mismatch remains.
+
+- Implemented five KL-native molecule abundance lifecycle emitters and ordered-density stage replay.
+- Implemented four n_major accumulator lifecycle replay variants.
+- Reran seven M52 M41 candidates over current-five plus 45:-5.
+- No production solver behavior, presets, defaults, tolerance, row/species/element/case coverage, or trace-as-constructor path was changed.
+## Milestone 53 Abundance Stage Alignment
+
+Milestone 53 implemented default-off abundance stage alignment and accumulator path search. Decision: M53 improves but abundance values mismatch after stage search.
+
+- Implemented ten KL-native abundance-stage candidates A-J and ordered-density alignment replay.
+- Implemented six n_major accumulator path variants A-F.
+- Reran eleven M53 M41 candidates over current-five plus 45:-5, including continuation verifier branches.
+- No production solver behavior, presets, defaults, tolerance, row/species/element/case coverage, or trace-as-constructor path was changed.
+## Milestone 54 Dominance Split Source/N/R Conflict
+
+Milestone 54 implemented default-off dominance split and source/N/R conflict diagnostics. Decision: case-family-specific abundance-stage contract required.
+
+- Ran 30:-10, layer-45, and source/N/R Pareto conflict branches.
+- Implemented six 30:-10 branch candidates, six layer-45 branch candidates, and seven source/N/R conflict candidates plus a stage-contract verifier.
+- Reran twenty M54 M41 candidates over current-five plus 45:-5.
+- No production solver behavior, presets, defaults, tolerance, row/species/element/case coverage, or trace-as-constructor path was changed.
+## Milestone 55 Case-Family Abundance-Stage Contract
+
+Milestone 55 emitted the default-off case-family abundance-stage contract and reran M41 for 48 contract records.
+
+- Implemented eight contract prototypes across thirty_m10, layer45, standard current-five, and global fallback families.
+- Contract-only records did not pass strict source/N/R checks, so five broader semantic source-state port verifier candidates were run.
+- The diagnostic package identifies the fixed/high-gain source-state port as the next implementation target and keeps production behavior unchanged.
+## Milestone 56 Fixed/High-Gain Source-State Port
+
+Milestone 56 implemented the default-off fixed/high-gain source-state lifecycle carrier and gated 42 primary records.
+
+- Added an opt-in carrier emitter in `src/exogibbs/optimize/pipm_rgie_cond.py`.
+- Added an opt-in correctValues/condensation diagnostic record emitter in `src/exogibbs/optimize/minimize_cond.py`.
+- Ran three continuation verifier branches after the primary M56 candidates failed strict source/N/R checks.
+- Production defaults and solver behavior remain unchanged.
+## Milestone 57 CorrectValues Condensation Source-State Carrier
+
+Milestone 57 implemented a default-off case-keyed correctValues/condensation source-state carrier and gated 42 primary records.
+
+- M56 depth audit classified the previous metric path as decorator-only for M41 source/N/R metrics.
+- M57 source vectors are materialized from carrier overwrite/result-slot/clip fields, then passed through the M41 source-to-N/R operator.
+- Six continuation branches were run after the primary carrier candidates failed strict source/N/R checks.
+- Production defaults and solver behavior were not changed.
+## Milestone 58 Source N R Conflict Resolution
+
+Milestone 58 gated 108 default-off diagnostic records through the M41 source/N/R checks.
+
+- Static decision audit found no fixed M58 final-decision constant.
+- Pairwise objective candidates, carrier-parameter variants, operator-contract probes, and case-family branches were run.
+- Computed decision: 30:-10 drives objective incompatibility under carrier space.
+- Production defaults and solver behavior were not changed.
+## Milestone 59 30 m10 Source N R Driver Resolution
+
+Milestone 59 gated 25 30:-10 driver-specific diagnostic records.
+
+- Static audit prevents a driver label from being a terminal decision.
+- 30:-10 bridge, carrier-space expansion, broader correctValues/condensation, global replacement, and continuation branches were run.
+- Computed decision: 30:-10 conflict is dominated by source-vector contract.
+- Production defaults and solver behavior were not changed.
+## Milestone 60 Source Vector Contract Carrier
+
+Milestone 60 gated 11 source-contract carrier records after patching the default-off carrier helper.
+
+- Source-contract bridge fields were added as no-op-by-default diagnostic carrier fields.
+- Source/N/R were recomputed from carrier-owned M60 values and M41 was rerun for 30:-10 and global replacement branches.
+- Computed decision: M60 source contract is hidden source-state not expressible by current KL carriers.
+- Production defaults and solver behavior were not changed.
+## Milestone 61 Hidden Source State Ownership
+
+Milestone 61 gated 12 hidden-source ownership bridge records.
+
+- M27 reduced-slot mapped all-element source vector closes the 30:-10 source/N/R diagnostic reference checks.
+- M27-aligned exact records are hidden/reference-only and are not production candidates.
+- Computed decision: M61 identifies reduced-slot solve-state owner with exact port target.
+- Production defaults and solver behavior were not changed.
+## Milestone 62 Reduced Slot Solve State Port
+
+Milestone 62 gated 11 reduced-slot solve-state carrier records.
+
+- A default-off reduced-slot solve-state source carrier helper was added.
+- Source/N/R were recomputed from carrier-owned M62 values and global replacement gates were run.
+- Computed decision: M62 reduced-slot port improves source/N/R but result-slot primitive field blocks closure.
+- Production defaults and solver behavior were not changed.
+## Milestone 64 Raw Reduced Solver Result Reconstruction
+
+Milestone 64 gated 15 raw result-slot reconstruction records.
+
+- The reduced-slot carrier now records raw slot vectors, slot basis, nb_cond_jac, element slot indices, solve convention, backend, global scaling, scaled slots, and correctValues bridges.
+- v7 values were used only as reference targets and mapping evidence.
+- Decision: M64 blocked by exact ownership gap.
+- Production defaults and solver behavior were not changed.
+
+<!-- fastchem-cond-kl-m65-exact-same-iteration-kl-trace-alignment -->
+## Milestone 65 Exact Same-Iteration KL Trace Alignment
+
+- Artifact: `results/fastchem_cond_kl_milestone65_exact_same_iteration_kl_trace_alignment_compact.json`
+- Decision: M65 exact same-iteration KL state reconstruction is blocked with exact field target.
+- FastChem v8 is sufficient for J/RHS/raw-result/backend reference targets; no new C++ trace is currently indicated.
+- KL `include_system_trace=True` emits the required field schema, but the exact `30:-10` / `newton_iter=0` input bundle is not present in KL-owned artifacts.
+- Exact next target: src/exogibbs/optimize/pipm_rgie_cond.py::diagnose_reduced_solver_backend_experiments must emit the exact case-scoped newton_iter=0 input bundle: ln_nk, ln_mk, ln_ntot, formula_matrix, formula_matrix_cond, b, gk, bk, hvector_cond, sk, condensate row labels, and element row labels before _update_all_with_metrics.
+
+<!-- fastchem-cond-kl-m66-exact-kl-input-bundle-emission -->
+## Milestone 66 Exact KL Input Bundle Emission
+
+- Artifact: `results/fastchem_cond_kl_milestone66_exact_kl_input_bundle_emission_compact.json`
+- Decision: M66 blocked by exact code ownership gap.
+- `diagnose_reduced_solver_backend_experiments` now has a default-off exact input bundle emitter before `_update_all_with_metrics`.
+- The live 30:-10 `newton_iter=0` call-site still lacks ownership of case labels, condensate indices, and reduced element labels needed to activate the emitter on the target state.
+- Next target: src/exogibbs/optimize/pipm_rgie_cond.py::minimize_gibbs_cond_core or its caller must pass case_key, condensates_jac_indices, condensate_labels_jac_order, and element_labels_reduced_order into diagnose_reduced_solver_backend_experiments for 30:-10 iter 0.
+
+<!-- fastchem-cond-kl-m67-live-callsite-exact-bundle-wiring -->
+## Milestone 67 Live Call-Site Exact Bundle Wiring
+
+- Artifact: `results/fastchem_cond_kl_milestone67_live_callsite_exact_bundle_wiring_compact.json`
+- Decision: M67 live call-site wiring blocked at caller context ownership with exact target.
+- Caller-level context plumbing is now default-off and wired through `trace_condensate_reduced_solver_backends` plus `_update_all_with_metrics` diagnostics.
+- The remaining missing owner is a KL-owned 30:-10 init/context carrier with the 106-row label state.
+- NRKG readiness: READY.
+
+<!-- fastchem-cond-kl-m67-plus-kl-owned-30-m10-carrier -->
+## Milestone 67+ KL-Owned 30:-10 Carrier
+
+- Artifact: `results/fastchem_cond_kl_milestone67_plus_kl_owned_30_m10_carrier_compact.json`
+- Decision: M67+ live KL-owned 30:-10 bundle emitted; row/slot mapping mismatch blocks direct v8/KL comparison.
+- The default-off diagnostic caller now receives KL-owned layer/profile state and row-label context.
+- The emitted KL bundle solves in the element-plus-ntot basis; the v8 target remains a condensate-slot plus selected-element-slot basis.
+- NRKG readiness: READY.
