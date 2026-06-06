@@ -1,8 +1,12 @@
+from importlib import import_module
+
 from .chemistry import ChemicalSetup, ThermoState
 
 __all__ = [
     "ChemicalSetup",
     "ThermoState",
+    "equilibrium",
+    "equilibrium_grid",
     "get_default_equilibrium_grid_path",
     "build_equilibrium_grid",
     "build_h_he_element_vector_from_log10_z_over_z_sun",
@@ -21,10 +25,21 @@ __all__ = [
     "EquilibriumOptions",
     "EquilibriumInit",
     "EquilibriumResult",
+    "CondensateChemicalSetup",
+    "CondensateEquilibriumOptions",
+    "CondensateEquilibriumResult",
+    "build_condensate_chemical_setup",
+    "condensate_equilibrium",
+    "condensate_equilibrium_profile",
+    "validate_condensate_chemical_setup",
 ]
 
 
 def __getattr__(name):
+    if name == "equilibrium":
+        return import_module(".equilibrium", __name__)
+    if name == "equilibrium_grid":
+        return import_module(".equilibrium_grid", __name__)
     if name == "get_default_equilibrium_grid_path":
         from exogibbs.io.load_data import get_default_equilibrium_grid_path
 
@@ -88,5 +103,33 @@ def __getattr__(name):
             "EquilibriumOptions": EquilibriumOptions,
             "EquilibriumInit": EquilibriumInit,
             "EquilibriumResult": EquilibriumResult,
+        }[name]
+    if name in {
+        "CondensateChemicalSetup",
+        "CondensateEquilibriumOptions",
+        "CondensateEquilibriumResult",
+        "build_condensate_chemical_setup",
+        "condensate_equilibrium",
+        "condensate_equilibrium_profile",
+        "validate_condensate_chemical_setup",
+    }:
+        from .condensate_equilibrium import (
+            CondensateChemicalSetup,
+            CondensateEquilibriumOptions,
+            CondensateEquilibriumResult,
+            build_condensate_chemical_setup,
+            condensate_equilibrium,
+            condensate_equilibrium_profile,
+            validate_condensate_chemical_setup,
+        )
+
+        return {
+            "CondensateChemicalSetup": CondensateChemicalSetup,
+            "CondensateEquilibriumOptions": CondensateEquilibriumOptions,
+            "CondensateEquilibriumResult": CondensateEquilibriumResult,
+            "build_condensate_chemical_setup": build_condensate_chemical_setup,
+            "condensate_equilibrium": condensate_equilibrium,
+            "condensate_equilibrium_profile": condensate_equilibrium_profile,
+            "validate_condensate_chemical_setup": validate_condensate_chemical_setup,
         }[name]
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

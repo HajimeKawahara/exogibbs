@@ -6,6 +6,7 @@ from jax import jit
 from typing import Union
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Tuple
 
 from exogibbs.api.chemistry import ChemicalSetup
@@ -40,8 +41,9 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
     float_dtype = setup_float_dtype()
     path_fastchem_data = get_data_filepath(path)
     # molecules species
-    acoeff_molecule, components_molecule = _parse_fastchem_coeffs(
-        open(path_fastchem_data, "r", encoding="utf-8").read()
+    acoeff_molecule, components_molecule, source_records_molecule = _parse_fastchem_coeffs_with_metadata(
+        open(path_fastchem_data, "r", encoding="utf-8").read(),
+        source_file=path,
     )
     
     # elements and element species
@@ -77,6 +79,11 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
             components_molecule,
             elements,
         )
+    source_records_molecule = {
+        species: source_records_molecule[species]
+        for species in components_molecule
+        if species in source_records_molecule
+    }
     species_molecule = list(acoeff_molecule.keys())
     
 
@@ -116,6 +123,7 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
                 element_file if element_file is not None else "fastchem/element_abundances/asplund_2020.dat"
             ),
             "fastchem_species_default_elements": str(species_defalt_elements),
+            "fastchem_logk_source_records": source_records_molecule,
         },
     )
 
@@ -280,8 +288,18 @@ def _parse_fastchem_coeffs(
             coeffs: mapping ``species -> [a1, a2, a3, a4, a5]``
             components: mapping ``species -> {element_symbol: count}``
     """
+    coeffs, components, _metadata = _parse_fastchem_coeffs_with_metadata(text)
+    return coeffs, components
+
+
+def _parse_fastchem_coeffs_with_metadata(
+    text: str,
+    source_file: Optional[str] = None,
+) -> Tuple[Dict[str, List[float]], Dict[str, Dict[str, int]], Dict[str, Dict[str, object]]]:
+    """Parse FastChem gas logK coefficients with source-record metadata."""
     coeffs: Dict[str, List[float]] = {}
     components: Dict[str, Dict[str, int]] = {}
+    metadata: Dict[str, Dict[str, object]] = {}
     lines = text.splitlines()
     for i, line in enumerate(lines):
         stripped = line.strip()
@@ -315,6 +333,10 @@ def _parse_fastchem_coeffs(
             comp[el] = cnt
         if comp:
             components[species] = comp
+        record_name = ""
+        name_part = line.split(":", 1)[0].strip().split()
+        if len(name_part) > 1:
+            record_name = " ".join(name_part[1:])
         j = i + 1
         while j < len(lines):
             candidate = lines[j].strip()
@@ -326,8 +348,26 @@ def _parse_fastchem_coeffs(
             if arr.size != 5:
                 raise ValueError(f"{species}: not 5 coefficients (found {arr.size})")
             coeffs[species] = arr.tolist()
+            metadata[species] = {
+                "species": species,
+                "record_name": record_name,
+                "source_file": source_file,
+                "record_line_number": i + 1,
+                "coefficient_line_number": j + 1,
+                "record_line": line,
+                "coefficient_line": lines[j],
+                "coefficients": arr.tolist(),
+                "selected_temperature_segment_index": None,
+                "selected_temperature_segment_upper_bound": None,
+                "selected_temperature_segment_semantics": (
+                    "gas logK.dat has one five-coefficient fit per species record; "
+                    "src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection"
+                ),
+                "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+                "logk_file_function": "src/exogibbs/presets/fastchem.py::logk",
+            }
             break
         else:
             raise ValueError(f"{species}: missing coefficient line")
 
-    return coeffs, components
+    return coeffs, components, metadata

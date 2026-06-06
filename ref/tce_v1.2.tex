@@ -1,0 +1,1411 @@
+\section{熱化学平衡計算}
+
+ガス中には\ce{H2}や\ce{H},\ce{H2O}をいった分子種や原子種,イオン,自由電子が適当な割合で混合している. これらをまとめて{\bf 種}(species)と呼ぶ. これら大気種中に含まれる原子の総数を考えたい. ガス中に含まれる種の中の原子(例えば\ce{H, O, C})ではなく,ガス中のすべての分子や原子に含まれる原子を{\bf 元素}(elements)と呼び区別する. 本文書では元素をサンセリフ体を用いて,$\Hel$, $\Oel$, $\Cel$のようにあらわす. 
+
+
+\subsection{二成分系の熱化学平衡計算}
+
+まず最も単純な以下の水素原子と水素分子のガス２成分系
+\begin{align*}
+\ce{2 H <--> H2}
+\end{align*}
+の場合,熱化学平衡でどのような組成比になるかを考えてみよう\footnote{実際は少量の触媒Mを介して\ce{2 H + M <--> H2 + M}としたほうが現実的だが,ここでは数学的側面を重視しMを無視する. }. この場合,種は\ce{H}と\ce{H2}の二種類($N_s = 2$)であり,元素は$\Hel$の一種類($N_e = 1$)である. 
+
+いま元素量として$\nel_{\Hel}$(例えば1 mol)の水素を考える. すなわち元素保存則は
+\begin{align}
+\label{eq:conservation_tce}
+    n_\mathrm{H} + 2 n_\mathrm{H2}  = \nel_{\Hel} 
+\end{align}
+となる. 圧力$P$と温度$T$を与えたときに,熱化学平衡条件を満たす場合に,この元素$\Hel$がどのように\ce{H}と\ce{H2}に分配されるかを与えるのが,ギブス自由エネルギーの最小化である. すなわち熱化学平衡においては種の存在量は以下の最小化で与えられる
+\begin{align}
+\label{eq:opt1tce}
+    (n_\mathrm{H}^\ast, n_\mathrm{H2}^\ast) &= \mathrm{minimize}_{(n_\mathrm{H}, n_\mathrm{H2})} \,\, G(T, P, n_\mathrm{H}, n_\mathrm{H2}) \,\, \mbox{subject to} \,\, n_\mathrm{H} + 2 n_\mathrm{H2} =  \nel_{\Hel}  \\
+    G(T, P, n_\mathrm{H}, n_\mathrm{H2}) &= n_\mathrm{H} \mu_\mathrm{H} + n_\mathrm{H2} \mu_\mathrm{H2} \\
+     &\, n_\mathrm{H} \ge 0, n_\mathrm{H2} \ge 0
+\end{align}
+ここに$\mu_\mathrm{H}$,$ \mu_\mathrm{H2}$は\ce{H}, \ce{H2}の化学ポテンシャルであり,標準状態の化学ポテンシャルを用いると
+\begin{align}
+    \mu_\mathrm{H} &= \mu_\mathrm{H}^\circ(T) + RT \log{\frac{P_\mathrm{H}}{P_\mathrm{ref}}} =  \mu_\mathrm{H}^\circ(T) + RT \log{\frac{n_\mathrm{H} P}{(n_\mathrm{H} + n_\mathrm{H2}) P_\mathrm{ref}}} \\
+    \mu_\mathrm{H2} &= \mu_\mathrm{H2}^\circ(T) + RT \log{\frac{P_\mathrm{H2}}{P_\mathrm{ref}}} =  \mu_\mathrm{H2}^\circ(T) + RT\log{\frac{n_\mathrm{H2} P}{(n_\mathrm{H} + n_\mathrm{H2}) P_\mathrm{ref}}}
+\end{align}
+で与えられる. $\partial G/\partial n_\mathrm{H} = \mu_\mathrm{H}$, $\partial G/\partial n_\mathrm{H2} = \mu_\mathrm{H2}$が満たされることを確認せよ. 
+
+ここでは後の一般化を考え,上の等式条件付き最適化をラグランジュ未定乗数法で解く. ラグランジュ未定乗数法では,自由パラメタを$\xv = ( n_\mathrm{H},  n_\mathrm{H2}, \lambda )^\top$の３パラメタとして
+\begin{align}
+\label{eq:opt2tce}
+    \xv_\ast &= \mathrm{minimize}_{\xv} \,\, \mathcal{L} (T, P, \xv) \\ 
+    \mathcal{L} (T, P, \xv) &\equiv G(T, P, \xv) + \lambda (n_\mathrm{H} + 2 n_\mathrm{H2} -  \nel_{\Hel} ) \\
+    \label{eq:nonnegative_tce}
+    &n_\mathrm{H} \ge 0, n_\mathrm{H2} \ge 0
+\end{align}
+を解けばよい. 最後の非負条件は後でチェックする. $\mathcal{L} (T, P, \xv)$を$\xv$で偏微分したものが$\boldsymbol{0}$であるとして,$\xv=\xv_\ast$を求める. すなわち
+\begin{align}
+\frac{\partial \mathcal{L} (T, P, \xv)}{\partial \xv} = 
+\begin{pmatrix}
+    \mu_\mathrm{H} + \lambda \\
+    \mu_\mathrm{H2} + 2 \lambda \\
+    n_\mathrm{H} + 2 n_\mathrm{H2} -  \nel_{\Hel} 
+\end{pmatrix}
+=
+\displaystyle{
+\begin{pmatrix}
+    \mu_\mathrm{H}^\circ(T) + RT \log{\frac{n_\mathrm{H} P}{(n_\mathrm{H} + n_\mathrm{H2}) P_\mathrm{ref}}}  + \lambda \\
+    \mu_\mathrm{H2}^\circ(T) + RT\log{\frac{n_\mathrm{H2} P}{(n_\mathrm{H} + n_\mathrm{H2}) P_\mathrm{ref}}} + 2 \lambda \\
+    n_\mathrm{H} + 2 n_\mathrm{H2} -  \nel_{\Hel} 
+\end{pmatrix}
+}
+=
+\begin{pmatrix}
+    0 \\
+    0 \\
+    0
+\end{pmatrix}
+\end{align}
+である. 第1，2成分から$\lambda$について消去すると
+\begin{align}
+    \log{\left( \frac{n_\mathrm{H}^2 }{n_\mathrm{H2} (n_\mathrm{H} + n_\mathrm{H2})} \frac{P}{P_\mathrm{ref}} \right)} =- \frac{2 \mu_\mathrm{H}^\circ - \mu_\mathrm{H2}^\circ}{RT} \equiv \Delta (T)
+\end{align}
+がえられる. 第３成分(保存則)$n_\mathrm{H} + 2 n_\mathrm{H2} - \nel_{\Hel}=0$をもちいて,$n_\mathrm{H2}$を消去すると,$p \equiv P/P_\mathrm{ref}$とすると
+\begin{align}
+\label{eq:kdef}
+\frac{ \nel_{\Hel}^2 - n_\mathrm{H}^2}{4 n_\mathrm{H}^2} = p \, e^{-\Delta (T)} \equiv k
+\end{align}
+となる. なお,上で定義した$k$は(圧)平衡定数である. $n_\mathrm{tot} = n_\mathrm{H} + n_\mathrm{H2}$で総数密度を定義すると
+\begin{align}
+\label{eq:eqconstant}
+k = \frac{n_\mathrm{H2} n_\mathrm{tot}}{n_\mathrm{H}^2}
+\end{align}
+となっている. $n_\mathrm{H} \ge 0$より
+\begin{align}
+\label{eq:nH_ana}
+ \frac{n_\mathrm{H}}{ \nel_{\Hel} } = \frac{1}{\sqrt{4 k + 1}}
+\end{align}
+また保存則より
+\begin{align}
+ \frac{n_\mathrm{H2}}{ \nel_{\Hel} } = \frac{1}{2} \left( 1 - \frac{1}{\sqrt{4 k + 1}} \right)
+\end{align}
+となる. これらは水素元素$\nel_{\Hel}$あたりの分子量となっていることに注意する. つまり実務上は$\nel_{\Hel}=1$ (mol)ととって計算を進めてもよい. ここで$k=0$もしくは$k = \infty$でなければ、$\ce{H2}$と$\ce{H}$は共存し、片方が厳密に0になることはないことがわかる。$k$の定義(\ref{eq:kdef})から、$p>0$である限り$k \ne 0, k \ne \infty$であるため両方のガス種は0でない。これは最適化の観点からは内点のみを探索すれば良いことに対応する。ガス種のみの場合は内点のみを探索すればよい。一方、凝縮種は厳密に0になりうるため、不等式制約条件付きの最適化を考えねばならない（第\ref{sec:condopt}章）。
+
+また体積分率(Volume Mixing Ratio)は
+\begin{align}
+ \mathrm{VMR} (\ce{H}) &= \frac{n_\mathrm{H}}{n_\mathrm{tot}} = \frac{1}{2} \left( \sqrt{k^2 + 4 k} - k \right) \\
+  \mathrm{VMR} (\ce{H2}) &= \frac{n_\mathrm{H2}}{n_\mathrm{tot}} = \frac{1}{2} \left( 2 + k - \sqrt{k^2 + 4 k}\right)
+\end{align}
+となる. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\linewidth]{fig/tce/tce_two_species.png}
+    \caption{\ce{2 H <--> H2}の熱化学平衡の体積混合率}
+    \label{fig:temperature_exogibbs}
+\end{figure}
+
+\subsection*{パラメタ微分}
+
+式(\ref{eq:nH_ana})を用いて,$q_H = \log{n_H}$を温度で微分してみよう. 
+\begin{align}
+\label{eq:qH_analytic}
+    q_\mathrm{H} = \log{n_\mathrm{H}} = - \frac{1}{2} \log{(4 k + 1)} + \log{\nel_\Hel}
+\end{align}
+より
+\begin{align}
+    \frac{\partial q_\mathrm{H}}{\partial T} =  - \frac{2}{4 k + 1} \frac{\partial k}{\partial T} = - 2 k \left( \frac{n_\mathrm{H}}{\nel_\Hel}\right)^2 \frac{\partial \log{k}}{\partial T}
+\end{align}
+である. 式(\ref{eq:kdef})の定義を用いると$\log{k} = \log{p} - \Delta (T) $である. 従って以下の温度微分式の符号は、この$\Delta(T)$の符号規約に依存する。以後の式では$\partial_T \log k$を直接用いる形が最も安全であり、$\Delta^\prime(T)$へ書き換える場合にはこの符号規約を確認する必要がある。式(\ref{eq:eqconstant})を用いると,
+\begin{align}
+\label{eq:diff_T}
+    \frac{\partial q_\mathrm{H}}{\partial T} = - 2 k \left( \frac{n_\mathrm{H}}{\nel_\Hel}\right)^2 \Delta^\prime (T) 
+    %= - \frac{1}{2} \left( 1 - \frac{n_\mathrm{H}^2}{\nel_\Hel^2}\right) \Delta^\prime (T)
+     =  - \frac{2 n_\mathrm{H2}}{\nel_\Hel} \frac{n_\mathrm{tot} }{\nel_\Hel} \Delta^\prime (T) 
+    %= - 2 p \left( \frac{n_\mathrm{H}}{\nel_\Hel}\right)^2 e^{\Delta (T)} \Delta^\prime (T)
+\end{align}
+ともかける. 
+
+同様に対数圧力微分は
+\begin{align}
+\label{eq:diff_lnp}
+    \frac{\partial q_\mathrm{H}}{\partial \log{P}} = - 2 k \left( \frac{n_\mathrm{H}}{\nel_\Hel}\right)^2 
+    %= - \frac{1}{2} \left( 1 - \frac{n_\mathrm{H}^2}{\nel_\Hel^2}\right) \Delta^\prime (T)
+     =  - \frac{2 n_\mathrm{H2}}{\nel_\Hel} \frac{n_\mathrm{tot} }{\nel_\Hel} 
+    %= - 2 p \left( \frac{n_\mathrm{H}}{\nel_\Hel}\right)^2 e^{\Delta (T)} \Delta^\prime (T)
+\end{align}
+となる. 
+
+また元素存在量$b_\mathrm{H}$による微分は式(\ref{eq:qH_analytic})を微分すれば
+\begin{align}
+\frac{\partial q_\mathrm{H}}{\partial b_\mathrm{H}} = \frac{1}{b_H} 
+\end{align}
+または
+\begin{align}
+\frac{\partial q_\mathrm{H}}{\partial \log{b_\mathrm{H}}} = 1 
+\end{align}
+となる. 
+
+\subsection{多元素系・ガス種のみの熱化学平衡計算}
+
+\subsection*{多元素系の保存則}
+
+%\begin{figure}[htb]
+%\begin{center}
+%\includegraphics[width=\linewidth]{fig/bipartite_graph_chem.PNG}
+%caption{化学反応を二部グラフで表す. \label{fig:bgc}}
+%end{center}
+%\end{figure}
+
+次に多元素系を考える. 
+今,例として元素として$\Hel, \Cel, \Oel$,また種としては\ce{CO, H2, CH4, H2O}からなる系を考えよう. これらは水素大気の分子成分としては主要なものである. 化学反応としては以下の一つの反応式となる. 
+\begin{align*}
+\ce{CO + 3 H2 <--> CH4 + H2O}
+\end{align*}
+となる. 
+
+
+要素との化学反応式を考えると,
+\begin{align*}
+\ce{H2 <--> 2 $\Hel$ \, \, \, \, \, \, \, \, \\
+H2O <--> 2 $\Hel$ + 1 $\Oel$ \\
+CH4 <--> 4 $\Hel$ + 1 $\Cel$ \\
+CO <-->  1 $\Cel$ + 1 $\Oel$
+}
+\end{align*}
+のようになる. ここで,0成分も含んで表現すると
+\begin{align*}
+\ce{H2 <--> 2 $\Hel$ + 0 $\Cel$ + 0 $\Oel$ \\
+H2O <--> 2 $\Hel$ + 0 $\Cel$ + 1 $\Oel$ \\
+CH4 <--> 4 $\Hel$ + 1 $\Cel$ + 0 $\Oel$ \\
+CO <--> 0 $\Hel$ + 1 $\Cel$ + 1 $\Oel$ \\ 
+}
+\end{align*}
+のようになる. 右辺についてformula matrixを以下のように定義する. 
+\begin{align*}
+  A_\gas \equiv
+\begin{pmatrix} 
+2 & 2 & 4 & 0 \\
+0 & 0 & 1 & 1 \\
+0 & 1 & 0 & 1 
+\end{pmatrix}  
+\end{align*}
+
+種の存在量ベクトルを$\nv = (n_\mathrm{H_2}, n_\mathrm{H_2 O},n_\mathrm{C H_4},n_\mathrm{CO})^\top$,元素の存在量ベクトルを$\bv = (\nel_\Hel, \nel_\Cel, \nel_\Oel)^\top$と置くと(元素の存在量を種とは区別している点に注意),元素保存則は
+\begin{align}
+    A_\gas \, \nv = \bv 
+\end{align}
+と表されることが分かる. \\
+
+\subsection*{電荷中性制約の扱い}
+  イオンおよび自由電子を含む場合、元素保存則に加えて電荷中性条件を満たす必要がある。
+  各気相種 $k$ の電荷数を $z_k$ とし、電荷ベクトルを
+  \[
+    z_g = (z_1, z_2, \ldots, z_N)^\top
+  \]
+  と書く。このとき電荷中性条件は
+  \[
+    z_g^\top n = 0
+  \]
+  である。例えば $z_{\mathrm{H}^+}=+1$、$z_{e^-}=-1$、中性種では $z_k=0$ であるため、
+  単純な $\mathrm{H}^+$ と $e^-$ の系では
+  \[
+    n_{\mathrm{H}^+} - n_{e^-} = 0
+  \]
+  となる。
+
+  この制約は、形式的には formula matrix に電荷行を追加することで、元素保存則と同じ形に書ける。
+  すなわち
+  \[
+    A_{\rm aug}
+    =
+    \begin{pmatrix}
+      A_g \\
+      z_g^\top
+    \end{pmatrix},
+    \qquad
+    b_{\rm aug}
+    =
+    \begin{pmatrix}
+      b \\
+      0
+    \end{pmatrix}
+  \]
+  と定義すれば、
+  \[
+    A_{\rm aug} n = b_{\rm aug}
+  \]
+  である。
+
+  ただし、電荷行の右辺は通常の元素存在量のような正の保存量ではなく、常にゼロである。
+  したがって、数値実装において電荷行を通常の元素 budget row と同じ相対誤差
+  $(A_g n - b)/b$ で評価してはならない。
+  電荷行は zero-target equality constraint として扱い、残差評価、行スケーリング、merit function において
+  通常の元素保存行とは区別する必要がある。
+
+\subsection*{Gibbsエネルギー最小化}
+
+多元素・ガス種のみの熱化学平衡系のときのGibbsエネルギー最小化は以下のようになる。
+\noindent\rule{\textwidth}{0.4pt}
+\textbf{\large 多元素・ガス種のみの熱化学平衡系}  \\
+\begin{align}
+\label{eq:gibss_multi}
+    \nv^\ast &= \mathrm{minimize}_{\nv} G(T, p, \nv) \,\, \mbox{subject to} \,\, A_\gas \, \nv = \bv \\
+    n_i &> 0\\
+    G(T, p, \nv) &\equiv  \mugv (T, p, \nv)^\top \nv\\ 
+    \label{eq:chemical_potential_mu}
+    \mugv (T, p, \nv) &=  \mugv^\circ(T) + RT \log{\left(\frac{p}{\ntot} \nv\right)} 
+\end{align}
+ただし総数密度と規格化圧力を
+\begin{align}
+\label{eq:ntot_tce}
+    \ntot &= \sum_i n_i \\
+    p &\equiv P/P_\mathrm{ref}
+\end{align}
+と定義した. \\
+\noindent\rule{\textwidth}{0.4pt}
+例えば\ce{CO, H2, CH4, H2O}系において, 式(\ref{eq:gibss_multi})は,
+\begin{align}
+    \mathcal{L}(T, p, \nv,\lambdav) &= \sum_{i = \ce{CO, H2, CH4, H2O}} \mu_i (T) \, n_i \nonumber \\ &+ \lambda_{\Hel} (2 n_{\ce{H2}} + 4 n_{\ce{CH4}} + 2 n_{\ce{H2O}} - b_\Hel) 
+    + \lambda_{\Cel} (n_{\ce{CO}} + n_{\ce{CH4}} - b_\Cel) +  \lambda_{\Oel} ( n_{\ce{CO}} + n_{\ce{H2O}} - b_\Oel)
+\end{align}
+となる。
+
+$n_i \ge 0$ではなく$n_i > 0$とし、考えているすべてのガス種が存在するとしているのは次の事情による。まず式(\ref{eq:chemical_potential_mu})の第二項より、あるガス種$k$が存在しないとき($n_k = 0$)、$n_k \log{n_k} = 0$のため、その種のGibbsエネルギーへの寄与は$G_k = n_k \mu_{g,k} = 0$と有限である。しかし化学ポテンシャルは$- \infty$となる。ガス種$k$を厳密に0から微小量$\epsilon$増加させたときのGibbsエネルギーの変化は$\Delta G = \mu_{g,k} \epsilon - \sum_{i \in I} \mu_{g,i} \epsilon $となる。ここに$I$はガス種$k$と元素を共有している非ゼロの他の分子種である。このとき非ゼロの分子種の$\mu_{g,i}$は有限であるので、$\epsilon$を小さくしていけば、$\Delta G$はいくらでも小さくできる。すなわち$\epsilon$を小さくしていけば$\Delta G < 0$となる$\epsilon$が存在する。これは$n_k = 0$がGibbsエネルギー最小ではないことを意味する。探索空間を内点に制限することができるため、ガス種のみの場合は、変数を対数化することで不等式制約条件をなくして最適化が可能となる。
+
+\subsection{最適化でギブスエネルギー最小化を解く：CEAのアルゴリズム}
+\begin{figure}[]
+ \begin{center}
+ \includegraphics[width=0.5\linewidth]{fig/tce/newton_raphthon.png}
+\end{center}
+	\caption{Newton-Raphson法の概念図. }
+	\label{fig:newton_raphson}
+\end{figure}
+
+\subsection*{二次最適化としてのNewton法}
+ 
+非線形方程式$f(x)=0$の解を数値的に求める方法の一つとしてNewton-Raphson法を紹介する. Newton-Raphson法は図\ref{fig:newton_raphson}にしめすように,まず初期値$x_1$から初めて,$f(x_1)$に接する直線を求め,その直線と原点との交点を解析的に求め$x_2$とする. この手続きを$n$回繰り返すという手順である. $k$番目の手続きでは接線(つまり$f(x)$を$x_k$でテイラー展開した一次の項までの近似式)は
+\begin{align}
+\label{eq:nrm}
+   y = f(x_k) + f^\prime(x_k) (x - x_k) 
+\end{align}
+となることから
+\begin{align}
+\label{eq:update_newton}
+    x_{k+1} &= x_k + \Delta x_k \\
+    \Delta x_k &\equiv - \frac{f(x_k)}{f^\prime(x_k)}
+\end{align}
+となる. $\Delta x_k$を$k$番目の更新項(update term)とよぶ. これは単に$f(x)$をテイラー展開して１次まで残した近似を用いて解を更新していくとみることもできる. すなわち
+\begin{align}
+\label{eq:nrm_f}
+   f(x) \approx f(x_k) + f^\prime(x_k) (x - x_k) = 0
+\end{align}
+の解を$x_{k+1}$として繰りかえすことに対応している. この手続きを収束条件の判定値を$\epsilon$として$ |x_{k+1} - x_{i}| < \epsilon$となるまで繰り返し,条件を満たした$x_k$を近似解とすればよい. 
+
+さらに,コスト関数$Q(x)$を最小にする$x=x^\ast$を求める最適化問題
+\begin{equation}
+   x^\ast = \mathrm{minimize}_{x} \,\, Q(x)  
+\end{equation}
+の解法として,停留点条件
+$d Q(x)/d x = 0$
+をNewton-Raphson法で求めることができる. この場合,
+$f (x) = Q^\prime (x)$
+として,式(\ref{eq:update_newton})を用いると,更新式は
+\begin{align}
+x_{k+1} &= x_k + \Delta x_k \\ 
+\Delta x_k &\equiv - \frac{Q^\prime (x_k)}{Q^{\prime\prime}(x_k)}  
+\end{align}
+となり,$Q(x)$の二回微分が必要であることから,二次の最適化と呼ばれる. ちなみに最適化の文脈ではRaphsonが省略され,単にNewton法と呼ばれることが多い. 
+
+また,一般に多次元のNewton法も同様に構成できる. 多次元のテイラー展開より
+\begin{align}
+\fv(\xv) \approx \fv(\xv_k) + \Jv (\xv_k) (\xv - \xv_k) = \boldsymbol{0}
+\end{align}
+をみたす$\xv$が次の更新点となるので,
+\begin{align}
+    \xv_{k+1} &= \xv_{i} + \Delta \xv_k \\
+    \label{eq:newton_mdupdate}
+    \Delta \xv_k &\equiv - \Jv^{-1} (\xv_k) \fv(\xv_k)
+\end{align}
+となる. ただし$\Jv (\xv_0)$はヤコビアンである. 
+
+\subsection*{多化学種・多元素の場合のギブスエネルギー最小化}
+
+
+
+
+ここではGordon and McBrideによるNASA/CEA (Chemical Equilibrium with Applications)の実装法を元に解説する\cite{gordon1994computer,2024arXiv241207166G}. CEAではLagrange multiplierを用いてGibbsエネルギー最小化を行う二次の手法の一つである. すなわち
+\begin{align}
+    (\nv^\ast, \lambdav^\ast)  &= \mathrm{minimize}_{(\nv,\lambdav)} \,\, \mathcal{L}(T, p, \nv, \lambdav) \\
+    \mathcal{L}(T, p, \nv,\lambdav) &= G(T, p, \nv) + \lambdav^\top \left(A_\gas \nv - \bv\right)  
+\end{align}
+を最小化する. ただしこの時点では非負条件$n_i > 0$は外れていない. 
+
+$\mathcal{L}(T, p, \nv, \lambdav)$の停留点を求めるために,最適化変数のセット$\yv = (\nv, \lambdav)$で一次偏微分した関数を
+\begin{align}
+\label{eq:fv_tea0}
+    \fv(\yv) &\equiv \frac{\partial  }{\partial \yv} \mathcal{L}(T, p, \yv) 
+\end{align}
+を定義する\footnote{ここでは簡単のため列ベクトルか行ベクトルか区別していない。しかし後に区別する必要のある場合、スカラーをベクトルで微分したものは行列ベクトルであり、$\fv(\yv) \equiv \left(\frac{\partial  }{\partial \yv} \mathcal{L} \right)^\top$のように区別して表記する。}. そして
+\begin{align}
+    \label{eq:fv_tea}
+    \fv(\yv^\ast) = \boldsymbol{0}
+\end{align}
+の解をNewton法でもとめることで,$\yv^\ast = (\nv^\ast, \lambdav^\ast)$を求める. 次に式(\ref{eq:fv_tea0})の$\nv$成分を計算する:
+\begin{align}
+\label{eq:Lpartialn}
+    \frac{\partial}{\partial \nv}   \mathcal{L}(T, p, \nv, \lambdav) =  \mugv (T, p, \nv) + A_\gas^\top \lambdav  =   \mugv^\circ(T) + RT \log{\left(\frac{p}{\ntot} \nv\right)} + A_\gas^\top \lambdav  
+\end{align}
+ここに熱力学より$\partial_{\nv} G(T, p, \nv) =  \mugv (T, p, \nv)$\footnote{式(\ref{eq:chemical_potential_mu})を用いて直接確かめることができる. }および$\lambdav^\top (A_\gas \nv) = (A_\gas^\top \lambdav)^\top \nv$と$\partial_{\xv} (S^\top \xv) = S$を利用した. 最適化において、$\nv$の微分をゼロとする停留条件を用いるためには、$\nv$の要素すべてが0でない(inactive)である必要がある。これは$n_i = 0$が許される場合(active)は最適値においてその微分値がゼロとは限らないためである。しかし、先に述べたように、式(\ref{eq:Lpartialn})より、$n_i \to +0$で勾配が$\to -\infty$となるため、$n_i = 0$となることはなく、$n_i > 0$の空間で内点のみを考えることができる。これは後に$\nv$の対数を変数ととることで実現できる。
+
+式(\ref{eq:Lpartialn})は$\lambdav$について一次である点に注意する. $\lambdav$成分は単に保存関係
+\begin{align}
+\label{eq:Lpartiall}
+\frac{\partial}{\partial \lambdav}  \mathcal{L}(T, p, \nv, \lambdav) = A_\gas \nv - \bv  
+\end{align}
+である. 
+
+式(\ref{eq:chemical_potential_mu})を用いるとNewton法で解くべき方程式系(\ref{eq:fv_tea})は
+\begin{align}
+\label{eq:Lpartialnx}
+    \frac{\mugv^\circ(T)}{RT}+ \log{\left(\frac{p}{\ntot^\ast} \nv^\ast \right)} + \frac{A_\gas^\top \lambdav^\ast}{RT}   &= \boldsymbol{0} \\
+    A_\gas \nv^\ast - \bv &= \boldsymbol{0}
+\end{align}
+となる. ただし$\ntot^\ast$は$\nv^\ast$の関数,すなわち
+\begin{align}
+\ntot^\ast &= \sum_i n_i^\ast
+\end{align}
+となる. 
+
+
+ここでCEAのアルゴリズムではいくつかのトリックを用いる. まず,式(\ref{eq:fv_tea})を求めるために,独立変数に$\ntot$を追加する. もともと$\ntot$は式(\ref{eq:ntot_tce})により$\nv$に依存していたため,この条件,つまり式(\ref{eq:ntot_tce})を,(前提条件ではなく)制約条件として追加する. さらに$\nv$, $\ntot$は対数を取ったものを独立変数に取り直す. つまり$\lnnv = \ln{\nv}$, $\lnntot = \ln{\ntot}$を独立変数とする.  この操作により変数を$n_i > 0$に自然に制限できる. また対数を取ることで広いダイナミックレンジで安定し
+た数値計算となる. これにより新たな変数系として$\zv = (\lnnv, \lambdav, \lnntot)$が導入され,解くべき方程式は
+\begin{align}
+\label{eq:Lpartialncea}
+    \Fv_n (\zv) &\equiv \frac{\mugv^\circ(T)}{RT} + \lnnv - \lnntot \, \uv + \log{p} \, \uv  + \frac{A_\gas^\top \lambdav}{RT} = \boldsymbol{0}_\ngas \\
+    \Fv_\lambda (\zv) &\equiv A_\gas e^{\lnnv} - \bv = \boldsymbol{0}_\nelements \\
+    F_\mathrm{tot} (\zv) &\equiv \sum_i {e^{q_i}} - e^{\lnntot} = 0
+\end{align}
+の解である. $\boldsymbol{0}_\nelements$は$\nelements$次元ゼロベクトルである. この解が$\zv^\ast = (\lnnv^\ast, \lambdav^\ast, \lnntot^\ast)$となる. これを簡潔に$\Fv (\zv) = (\Fv_n (\zv), \Fv_\lambda (\zv), F_\mathrm{tot} (\zv))$とまとめて扱うこともある.  
+
+Newton法では$\Fv (\zv)$を$\zv$で微分したヤコビアンが必要となる. 
+\begin{equation}
+\label{eq:jacobian_tce}
+\Jv (\zv) =
+\left(
+\begin{array}{ccc}
+    \dfrac{\partial \Fv_n}{\partial \lnnv}  & \dfrac{\partial \Fv_n}{\partial \lambdav}& \dfrac{\partial \Fv_n}{\partial \lnntot}\\ 
+    \dfrac{\partial \Fv_\lambda}{\partial \lnnv} & \dfrac{\partial \Fv_\lambda}{\partial \lambdav} & \dfrac{\partial \Fv_\lambda}{\partial \lnntot} \\
+    \dfrac{\partial F_\mathrm{tot}}{\partial \lnnv} & \dfrac{\partial F_\mathrm{tot}}{\partial \lambdav} & \dfrac{\partial F_\mathrm{tot}}{\partial \lnntot} \\  
+\end{array}
+\right) =
+\left(
+\begin{array}{ccc}
+ E_\ngas &  \dfrac{A_\gas^\top}{RT} & - \uv\\ 
+ Y_\gas(\lnnv) & Z_\nelements & \boldsymbol{0}_\nelements \\ 
+ (e^{\lnnv})^\top & \boldsymbol{0}_\nelements^\top & - e^\lnntot\\  
+\end{array}
+\right)
+\end{equation}
+となる\footnote{ここでは行ベクトルと列ベクトルの区別をしているため、例えば$\dfrac{\partial F_\mathrm{tot}}{\partial \lnnv} = (e^{\lnnv})^\top$のようになっていることに注意。}. ここに
+$E_\ngas$は$\ngas \times \ngas$単位行列,$Z_\nelements$は$\nelements \times \nelements$ゼロ行列, $\nelements$は元素ベクトル$\bv$の要素数である. また行列$Y_\gas(\lnnv)$は
+$Y_\gas({\lnnv})= A_\gas \, \mathrm{diag}(e^{\lnnv}) $のことであり,すなわち要素が
+\begin{align}
+(Y_\gas)_{ij} = (A_\gas)_{ij} e^{q_j}
+\end{align}
+であるような行列である. Newton法のupdateは式(\ref{eq:newton_mdupdate})より,$\Jv (\zv_k) \Delta \zv = - \Fv (\zv_k)$をみたすので
+\begin{align}
+    \left(
+\begin{array}{ccc}
+ E_\ngas &  \dfrac{A_\gas^\top}{RT} & - \uv\\ 
+ Y_\gas({\lnnv}_k) & Z_\nelements & \boldsymbol{0}_\nelements \\ 
+ (e^{{\lnnv}_k})^\top & \boldsymbol{0}_\nelements^\top & - e^{(\lnntot)_k}\\  
+\end{array}
+\right)
+    \left(
+\begin{array}{c}
+\Delta \lnnv \\
+\Delta \lambdav \\
+\Delta \lnntot
+\end{array}
+\right)
+= -
+    \left(
+\begin{array}{c}
+\Fv_n (\zv_k) \\
+\Fv_\lambda(\zv_k) \\
+F_\mathrm{tot} (\zv_k)
+\end{array}
+\right)
+\end{align}
+である. これよりupdate $\Delta \zv = (\Delta \lnnv, \Delta \lambdav, \Delta \lnntot)$は
+\begin{align}
+\label{eq:update_tce_1_}
+    \Delta \lnnv + \frac{A_\gas^\top \Delta \lambdav}{RT} - \Delta \lnntot \uv &= -\frac{\mugv^\circ(T)}{RT} - {\lnnv}_k + (\lnntot)_k \, \uv - \log{p} \, \uv  - \frac{A_\gas^\top \lambdav_k}{RT} \\
+\label{eq:update_tce_2_}
+    Y_\gas(\lnnv_k) \Delta \lnnv &= A_\gas (e^{\lnnv_k} \odot \Delta \lnnv) = \bv - A_\gas e^{\lnnv_k} \\
+\label{eq:update_tce_3_}
+    (e^{\lnnv_k})^\top \Delta \lnnv  - e^{(\lnntot)_k} \Delta \lnntot &= e^{(\lnntot)_k} - \sum_i {e^{(q_i)_k}} 
+\end{align}
+を満たす. NASA/CEA \cite{gordon1994computer}に従い、これらをGibbs Iteration Equations (GIEs)と呼ぶ。
+
+$\Delta \lambdav$と$\lambdav_k$が出てくるのは式(\ref{eq:update_tce_1_})のみである. 我々は$\lambdav$自体には興味がないので,$\Delta \lambdav$に代わる,あらたなupdateとして
+\begin{align}
+    \piv \equiv - \frac{(\lambdav_k + \Delta \lambdav)}{RT} 
+\end{align}
+を定義し,$\lnnv, \piv, \lnntot$についてupdateする. $\piv$については使いきりであり保存しないことから$\Delta$をつけなかった. 式(\ref{eq:update_tce_1_})式は
+\begin{align}
+\label{eq:update_tce_1x}
+    \Delta \lnnv &=  A_\gas^\top \piv + \Delta \lnntot \uv - \gv_k(T) \\
+    \gv_k (T) &\equiv \frac{\mugv^\circ(T)}{RT} + {\lnnv}_k - (\lnntot)_k \, \uv + \log{p} \, \uv 
+\end{align}
+と書けるため,$\piv$と$\Delta \lnntot$が決まれば,我々の求めたい$\Delta \lnnv$を算出することができる. つまり,式(\ref{eq:update_tce_1x})を式(\ref{eq:update_tce_2_},\ref{eq:update_tce_3_})に代入した$\nelements+1$この連立方程式
+\begin{align}
+    A_\gas \, \mathrm{diag} (e^{\lnnv_k}) \, A_\gas^\top \, \piv + \Delta \lnntot A_\gas e^{\lnnv_k} &= A_\gas (e^{\lnnv_k} \odot \gv_k (T) ) + \bv - A_\gas  e^{\lnnv_k} \\
+    (A_\gas  e^{\lnnv_k})^\top \piv + \Delta \lnntot \, \left( \sum_i e^{(\lnnv_k)_i} - e^{(\lnntot)_k)} \right) &= (e^{\lnnv_k})^\top \gv_k(T) + e^{(\lnntot)_k} - \sum_i {e^{(q_i)_k}} 
+\end{align}
+が解くべき方程式系となる. 上の式では変数を$\lnnv_k, (\lnntot)_k$に保持したままの式にしたが,コーディング上は例えば$e^{\lnnv}$は$\nv$に直しておいた方が見通しが良い. また,
+\begin{align}
+    Q &\equiv  A_\gas \, \mathrm{diag} (\nv_k) \, A_\gas^\top \\
+    \bv_k &\equiv A_\gas \nv_k \\
+    \delta \bv_k &\equiv \bv - \bv_k \\
+     \delta n_{\mathrm{tot}, k} &\equiv  \sum_i n_{k,i} - (n_\mathrm{tot})_{k}
+\end{align}
+を定義する. ただし$\nv_k$の$i$成分を$n_{k,i}$と表記した. これらを行うと
+\begin{align}
+\label{eq:rgie1}
+   Q \, \piv + \Delta \lnntot \bv_k &= A_\gas ( \nv_k \odot \gv_k (T) ) + \delta \bv_k \\
+\label{eq:rgie2}
+%    \bv_k \cdot \piv +  \left( \sum_i n_{k,i} - (n_\mathrm{tot})_k \right) \Delta \lnntot &= \nv_k \cdot \gv_k(T) - \left(\sum_i n_{k,i} - (n_\mathrm{tot})_{k} \right) 
+\bv_k \cdot \piv + \delta n_{\mathrm{tot}, k} \Delta \lnntot &= \nv_k \cdot \gv_k(T) - \delta n_{\mathrm{tot}, k}
+\end{align}
+となる. この$\piv$と$\Delta \lnntot$についての線形連立方程式をReduced Gibbs Iteration Equations (R-GIEs)と呼ぶ\citep{gordon1994computer}. 
+
+\section{CEAアルゴリズムの微分可能拡張 (differentiable extension)}
+
+\subsection*{陰関数定理とパラメタ微分}
+
+さてこれまで考えてきた$\Fv(\zv)$には温度$T$や圧力$p$,元素存在量ベクトル$\bv$といったパラメタが存在する. これらをまとめて$\thetav = (T, \log{p}, \bv)$のようにおく. これらのパラメタを考えるときは$\Fv(\zv; \thetav)$の中にパラメタとして陽に表記する. 微分可能プログラミングにおける使用では,最適化により$\nv^\ast$が求まるだけでは不十分であり,$\nv^\ast$の$\thetav$微分を求める必要がある. 微分をもとめるために次の陰関数定理を利用する. 
+
+$\nelements$次元のベクトル$\zv$に対する$\nelements$コの関数$\Fv(\zv; \thetav)$に対し,連立方程式
+\begin{align}
+    \Fv(\zv; \thetav) = \boldsymbol{0}
+\end{align}
+の解$\zv^\ast$は,$\Fv(\zv, \thetav)$中の$P$次元ベクトル$\thetav$の関数として$\zv^\ast(\thetav)$とみることができる. この時,
+\begin{align}
+\label{eq:implicit_derivative}
+    \Jv(\zv^\ast; \thetav) \, \frac{\partial \zv^\ast(\thetav)}{\partial \thetav} &= - \frac{\partial \Fv(\zv^\ast; \thetav)}{\partial \thetav} \\ 
+    \Jv(\zv^\ast; \thetav) &\equiv \left. \frac{\partial \Fv(\zv; \thetav)}{\partial \zv} \right|_{\zv=\zv^\ast}
+\end{align}
+の関係がある(陰関数定理). 式(\ref{eq:implicit_derivative})の右辺は,
+右辺のパラメタ$\thetav$による$\Fv$の微分は
+\begin{align}
+\label{eq:fdpar}
+\dfrac{\partial \Fv (\zv^\ast; \thetav)}{\partial \thetav}
+=
+\left(
+\begin{array}{ccc}
+\dfrac{\partial \Fv_n(\zv^\ast; \thetav)}{\partial T} & \dfrac{\partial \Fv_n(\zv^\ast; \thetav)}{\partial \log{p}} & \dfrac{\partial \Fv_n(\zv^\ast; \thetav)}{\partial \bv} \\
+\dfrac{\partial \Fv_\lambda(\zv^\ast; \thetav)}{\partial T} & \dfrac{\partial \Fv_\lambda(\zv^\ast; \thetav)}{\partial \log{p}} & \dfrac{\partial \Fv_\lambda(\zv^\ast; \thetav)}{\partial \bv} \\
+\dfrac{\partial F_\mathrm{tot}(\zv^\ast; \thetav)}{\partial T} & \dfrac{\partial F_\mathrm{tot}(\zv^\ast; \thetav)}{\partial \log{p}} & \dfrac{\partial F_\mathrm{tot}(\zv^\ast; \thetav)}{\partial \bv} \\
+\end{array}
+\right)
+=
+\left(
+\begin{array}{ccc}
+\dfrac{d}{d T} \left( \dfrac{\mugv^\circ (T)}{R T} \right) - \dfrac{A_\gas^\top }{R T} \dfrac{\lambdav^\ast}{T} & \uv & \boldsymbol{0}_\nelements\\
+\boldsymbol{0}_\nelements & \boldsymbol{0}_\nelements & - \uv\\
+0 & 0 & 0 \\
+\end{array}
+\right)
+\end{align}
+となる. 
+
+
+もとめたい偏微分は左辺の$\dfrac{\partial \zv{^\ast} (\thetav)}{\partial \thetav}$であるが,$\partial_{\thetav} \lnnv^\ast = \dfrac{\partial \lnnv^\ast(\thetav)}{\partial \thetav}$, $\partial_{\thetav} \lambdav^\ast = \dfrac{\partial \lambdav^\ast(\thetav)}{\partial \thetav}$, $\partial_{\thetav} \lnntot^\ast = \dfrac{\partial \lnntot^\ast(\thetav)}{\partial \thetav}$とすることで,$\dfrac{\partial \zv{^\ast} (\thetav)}{\partial \thetav} = (\partial_{\thetav} \lnnv^\ast, \partial_{\thetav} \lambdav^\ast,\partial_{\thetav} \lnntot^\ast )^\top$と略記する. 
+
+陰関数定理(\ref{eq:implicit_derivative})と式(\ref{eq:jacobian_tce})より
+\begin{align}
+        \left(
+\begin{array}{ccc}
+ E_\ngas &  \dfrac{A_\gas^\top}{RT} & - \uv\\ 
+ Y_\gas(\lnnv^\ast) & Z_\nelements & \boldsymbol{0}_\nelements \\ 
+ (e^{\lnnv^\ast})^\top & \boldsymbol{0}_\nelements^\top & - e^{\lnntot^\ast}\\  
+\end{array}
+\right)
+    \left(
+\begin{array}{c}
+\partial_{\thetav} {\lnnv}^\ast \\
+\partial_{\thetav} {\lambdav}^\ast \\
+\partial_{\thetav} \lnntot^\ast
+\end{array}
+\right)
+%= -
+%    \left(
+%\begin{array}{c}
+%\dfrac{\partial \Fv_n(\zv^\ast; \thetav)}{\partial %\thetav} \\
+%\dfrac{\partial \Fv_\lambda(\zv^\ast; \thetav)}{\partial \thetav} \\
+%\dfrac{\partial F_\mathrm{tot}(\zv^\ast; \thetav)}{\partial \thetav} \\
+%\end{array}
+%\right)
+=
+- \left(
+\begin{array}{ccc}
+\dfrac{d}{d T} \left( \dfrac{\mugv^\circ (T)}{R T} \right) - \dfrac{A_\gas^\top }{R T} \dfrac{\lambdav^\ast}{T} & \uv & \boldsymbol{0}_\nelements\\
+\boldsymbol{0}_\nelements & \boldsymbol{0}_\nelements & - \uv\\
+0 & 0 & 0 \\
+\end{array}
+\right)
+\end{align}
+となる. 
+
+解くべき方程式は
+\begin{align}
+\label{eq:update_tce_1}
+    \partial_{\thetav} {\lnnv}^\ast + \frac{A_\gas^\top }{RT} \partial_{\thetav} {\lambdav}^\ast - \partial_{\thetav} \lnntot^\ast \uv 
+    &= - \dfrac{\partial \Fv_n(\zv^\ast; \thetav)}{\partial \thetav} 
+    = \left(
+\begin{array}{ccc}
+- \dfrac{d}{d T} \left( \dfrac{\mugv^\circ (T)}{R T} \right) + \dfrac{A_\gas^\top }{R T} \dfrac{\lambdav^\ast}{T} & - {\uv} & \boldsymbol{0}_\nelements\\
+\end{array}
+\right)
+    \\
+\label{eq:update_tce_2}
+    A_\gas (\nv^\ast \odot \partial_{\thetav} {\lnnv}^\ast) 
+    &= - \dfrac{\partial \Fv_\lambda(\zv^\ast; \thetav)}{\partial \thetav} 
+    = \left(
+\begin{array}{ccc}
+\boldsymbol{0}_\nelements & \boldsymbol{0}_\nelements & \uv\\
+\end{array}
+\right)
+    \\
+\label{eq:update_tce_3}
+    \nv^\ast \cdot \partial_{\thetav} {\lnnv}^\ast  - n_\mathrm{tot}^\ast \partial_{\thetav} \lnntot^\ast 
+    &= - \dfrac{\partial F_\mathrm{tot}(\zv^\ast; \thetav)}{\partial \thetav}
+    =  \left(
+\begin{array}{ccc}
+0 & 0 & 0 \\
+\end{array}
+\right)
+\end{align}
+を満たす. 
+
+%\left( \frac{}{} \right)^{-1}
+
+
+
+\subsection{Jacobian}
+
+\subsection*{温度微分}
+
+記号の簡略化のため$\lnnv^\prime = \partial_{T} {\lnnv}^\ast$, $\lambdav^\prime=\partial_{T} {\lambdav}^\ast$, $\lnntot^\prime=\partial_{T} \lnntot^\ast$とおく. また$\hv = \mugv^\circ (T)/RT$とおき,$\hv$の$T$微分を$\hv^\prime$であらわす. 
+\begin{align}
+\label{eq:update_tce_1t}
+    \lnnv^\prime + \frac{A_\gas^\top }{RT} \lambdav^\prime - \lnntot^\prime \uv &= - \hv^\prime + \dfrac{A_\gas^\top }{R T} \dfrac{\lambdav^\ast}{T}\\
+\label{eq:update_tce_2t}
+    A_\gas (\nv^\ast \odot \lnnv^\prime) &= \boldsymbol{0}_\nelements \\
+\label{eq:update_tce_3t}
+    \nv^\ast \cdot \lnnv^\prime  - n_\mathrm{tot}^\ast \lnntot^\prime &= 0
+\end{align}
+が$\lnnv^\prime, \lambdav^\prime, \lnntot^\prime$について解くべき三式となる. CEAのアルゴリズムと同様に式(\ref{eq:update_tce_1t})を$\lnnv^\prime$について解き,また$\lambdav^\prime$と$\lambdav^\ast$を以下のようにまとめた変数を定義し,$\lambdav^\prime$の代わりの解くべき変数とする. 
+\begin{align}
+    \Piv \equiv \dfrac{1}{R T} \left(\dfrac{\lambdav^\ast}{T} - \lambdav^\prime \right).
+\end{align}
+
+つまり
+\begin{align}
+\label{eq:update_tce_1tx}
+    \lnnv^\prime &= \lnntot^\prime \uv + A_\gas^\top \Piv - \hv^\prime 
+\end{align}
+を,式(\ref{eq:update_tce_2t}, \ref{eq:update_tce_3t})に代入し,最適化が成功しているとすると$\nv^\ast \cdot \uv = \sum_i n_i^\ast = n_\mathrm{tot}^\ast$および$A_\gas \nv^\ast = \bv$であることを利用し,
+\begin{align}
+    Q_\ast &\equiv A_\gas \, \mathrm{diag}(\nv^\ast) A_\gas^\top \\
+\end{align}
+と定義すると
+\begin{align}
+\label{eq:update_tce_2tx}
+    Q_\ast \Piv +  \lnntot^\prime \, \bv &= A_\gas (\nv^\ast \odot \hv^\prime) \\
+\label{eq:update_tce_3tx}
+    \bv \cdot \Piv &= \nv^\ast \cdot \hv^\prime
+\end{align}
+の$\Piv, \lnntot^\prime$についての線形連立方程式が得られる. この連立方程式を解いて,式(\ref{eq:update_tce_1tx})に代入することにより$\lnnv^\prime$が求まる(Gibbs Linear Equations for temperature derivative). 
+
+確認として,\ce{2 H <--> H2}の系で,式(\ref{eq:diff_T})を再導出してみよう. $A_\gas = (1, 2), \nv^\ast = (n_\mathrm{H}, n_\mathrm{H2})$より,式(\ref{eq:update_tce_2tx},\ref{eq:update_tce_3tx})はそれぞれ,
+\begin{align}
+\lnntot^\prime &= \frac{- (n_\mathrm{H} + 4 n_\mathrm{H2}) \Pi + n_\mathrm{H} \dot{h}_1 + 2 n_\mathrm{H2} \dot{h}_2 }{n_\mathrm{H} + 2 n_\mathrm{H2}} \\
+\Pi &= \frac{n_\mathrm{H} \dot{h}_1 + n_\mathrm{H2} \dot{h}_2}{n_\mathrm{H} + 2 n_\mathrm{H2}} 
+\end{align}
+である. $\Pi$について消去すると
+\begin{align}
+ \lnntot^\prime = - \frac{n_\mathrm{H} n_\mathrm{H2}}{(n_\mathrm{H} + 2 n_\mathrm{H2})^2} (2 \dot{h}_1 - \dot{h}_2)  =  - \frac{n_\mathrm{H} n_\mathrm{H2}}{(n_\mathrm{H} + 2 n_\mathrm{H2})^2} \Delta^\prime (T)
+\end{align}
+
+
+
+式(\ref{eq:update_tce_1tx})より
+%\begin{align}
+%    q_\mathrm{H}^\prime = - \frac{2 n_\mathrm{H2} (n_\mathrm{H} + n_\mathrm{H2}) }{(n_\mathrm{H} + 2 n_\mathrm{H2})^2}  \Delta^\prime (T) =  - \frac{1}{2} \left( 1 - \frac{n_\mathrm{H}^2}{\nel_\Hel^2}\right) \Delta^\prime (T)
+%\end{align}
+%となる. 
+\begin{align}
+\label{eq:update_tce_1txc}
+    q^\prime_\mathrm{H} &= - \frac{n_\mathrm{H} n_\mathrm{H2}}{(n_\mathrm{H} + 2 n_\mathrm{H2})^2} \Delta^\prime (T) + \frac{n_\mathrm{H} \dot{h}_1 + n_\mathrm{H2} \dot{h}_2}{n_\mathrm{H} + 2 n_\mathrm{H2}} - \dot{h}_1 
+    %= - \frac{n_\mathrm{H} n_\mathrm{H2}}{(n_\mathrm{H} + 2 n_\mathrm{H2})^2} \Delta^\prime (T) - \frac{n_\mathrm{H2} }{n_\mathrm{H} + 2 n_\mathrm{H2}} \Delta^\prime (T)
+    % = \frac{- 2 n_\mathrm{H2} (n_\mathrm{H} + n_\mathrm{H2})}{(n_\mathrm{H} + 2 n_\mathrm{H2})^2} \Delta^\prime (T) 
+    = - \frac{2 n_\mathrm{H2}}{\nel_\Hel} \frac{n_\mathrm{tot} }{\nel_\Hel} \Delta^\prime (T) 
+    \\
+    q^\prime_\mathrm{H2} &= - \frac{n_\mathrm{H} n_\mathrm{H2}}{(n_\mathrm{H} + 2 n_\mathrm{H2})^2} \Delta^\prime (T) + \frac{2 n_\mathrm{H} \dot{h}_1 + 2 n_\mathrm{H2} \dot{h}_2}{n_\mathrm{H} + 2 n_\mathrm{H2}} - \dot{h}_2 
+    %= - \frac{n_\mathrm{H} n_\mathrm{H2}}{(n_\mathrm{H} + 2 n_\mathrm{H2})^2} \Delta^\prime (T) + \frac{n_\mathrm{H} }{n_\mathrm{H} + 2 n_\mathrm{H2}} \Delta^\prime (T)
+     % = \frac{n_\mathrm{H} (n_\mathrm{H} + n_\mathrm{H2})}{(n_\mathrm{H} + 2 n_\mathrm{H2})^2} \Delta^\prime (T)
+     = \frac{n_\mathrm{H}}{\nel_\Hel} \frac{n_\mathrm{tot} }{\nel_\Hel} \Delta^\prime (T) 
+\end{align}
+と求まる. 
+
+\subsection*{圧力微分}
+(自然)対数圧力微分を$\prime$で表現する. $\Lv = - \lambdav^\prime / RT$とおくと,
+温度微分の場合と同様に
+\begin{align}
+\label{eq:update_tce_1px}
+    \lnnv^\prime &= (\lnntot^\prime - 1) \uv + A_\gas^\top \Lv 
+\end{align}
+および
+\begin{align}
+\label{eq:update_tce_2px}
+    Q_\ast \Lv +  \lnntot^\prime \, \bv   &= \bv \\
+\label{eq:update_tce_3px}
+    \bv \cdot \Lv &= n_\mathrm{tot}^\ast
+\end{align}
+の$\Lv, \lnntot^\prime$についての線形連立方程式が得られる. この連立方程式を解いて,式(\ref{eq:update_tce_1px})に代入することにより$\lnnv^\prime$が求まる(Gibbs Linear Equations for pressure derivative). 
+
+\subsection*{元素微分(単一種)}
+ある元素存在量$b_i$での微分も同様に計算できる. 
+\begin{align}
+\label{eq:update_tce_bi}
+    \lnnv^\prime &= \lnntot^\prime \uv + A_\gas^\top \Lv 
+\end{align}
+および
+\begin{align}
+\label{eq:update_tce_2bi}
+    Q_\ast \Lv +  \lnntot^\prime \, \bv   &= \evv_i \\
+\label{eq:update_tce_3bi}
+    \bv \cdot \Lv &= 0
+\end{align}
+である. 
+
+\subsection{Vector-Jacobian Product}
+
+自動微分の実装上必要なのはJacobianそのものではなくVector-Jacobian Productである。温度微分の場合、
+
+式(\ref{eq:update_tce_2tx})より
+\begin{align}
+\label{eq:update_tce_2txi}
+    \Piv &=  Q_\ast^{-1} A_\gas (\nv^\ast \odot \hv^\prime) - \lnntot^\prime \, Q_\ast^{-1} \bv \\
+\end{align}
+であるが、式(\ref{eq:update_tce_3tx}))にいれて$\lnntot^\prime $について解くと
+\begin{align}
+\lnntot^\prime &= \frac{\bv^\top Q_\ast^{-1} A_\gas (\nv^\ast \odot \hv^\prime) - \nv^\ast \cdot \hv^\prime}{\bv^\top Q_\ast^{-1} \bv } = \frac{\betav \cdot \etav - \nv^\ast \cdot \hv^\prime}{\betav \cdot \bv } 
+\end{align}
+であり、VJPは式(\ref{eq:update_tce_1tx})より
+\begin{align}
+\gv^\top \lnnv^\prime &=  \lnntot^\prime  \gv^\top \uv + \gv^\top A_\gas^\top \Piv - \gv^\top \hv^\prime \\
+&= \gtot \lnntot^\prime  +  \gv^\top A_\gas^\top Q_\ast^{-1} A_\gas (\nv^\ast \odot \hv^\prime) - \lnntot^\prime \, \gv^\top A_\gas^\top Q_\ast^{-1} \bv  - \gv^\top \hv^\prime \\
+&= \gtot \lnntot^\prime  +  \alphav \cdot \left( \etav - \lnntot^\prime \betav \right)  - \gv \cdot \hv^\prime 
+\end{align}
+となる。
+ここに
+\begin{align}
+\gtot &= \sum_i^\nelements g_i  \\
+\etav &\equiv A_\gas (\nv^\ast \odot \hv^\prime) 
+\end{align}
+また、
+\begin{align}
+    Q_\ast \alphav &= A_\gas \, \gv \\
+    Q_\ast \betav &= \bv
+\end{align}
+の解をそれぞれ$\alphav$, $\betav$とおく。$Q_\ast$は対称正定値行列であるので、これらの式はCholesky分解等で安定に解ける。
+
+同様の計算からpressureのVJPは
+\begin{align}
+\gv^\top \lnnv^\prime =  \frac{\alphav \cdot \bv - \gtot}{\betav \cdot \bv} n_\mathrm{tot}^\ast
+\end{align}
+
+elements のVJPは多元素のVJPを同時に扱うと便利である。それぞれの元素の$\Lv$を縦に並べたものを行列$L$とし、$\partialv \lnntot = \dfrac{\partial \lnntot}{\partial \bv}$、および$\partialv \lnnv = \dfrac{\partial \lnnv}{\partial \bv}$と略記すると, 式(\ref{eq:update_tce_bi},\ref{eq:update_tce_2bi},\ref{eq:update_tce_3bi})を書き直すと
+
+\begin{align}
+\label{eq:update_tce_bic}
+    \partialv \lnnv &=  \uv \, \partialv \lnntot + A_\gas^\top L
+\end{align}
+および
+\begin{align}
+\label{eq:update_tce_2bic}
+    Q_\ast L +  \bv \, \partialv \lnntot  &= E_\nelements \\
+\label{eq:update_tce_3bic}
+    \bv^\top L &= \boldsymbol{0}
+\end{align}
+であることより
+\begin{align}
+    \partialv \lnntot = \frac{\betav^\top}{\betav \cdot \bv}
+\end{align}
+および
+\begin{align}
+\label{eq:update_tce_bicz}
+    \gv^\top \, \partialv \lnnv &=   \gtot \partialv \lnntot + \alphav^\top ( E_\nelements - \bv \, \partialv \lnntot )
+\end{align}
+となる。
+
+\section{凝縮相 (condensates) が入っている場合}\label{sec:condopt}
+
+
+
+Condenseatesが入っている場合、ガス種のmolarityは引き続き$\nv$、Condensatesのmolarityを$\mv$、ガスとcondensatesのformula matrixをそれぞれ$A_\gas$と$A_\cond$と表記する。元素保存則は
+\begin{align}
+   A_\gas \, \nv + A_\cond \, \mv  &= (A_\gas, A_\cond) \left(
+\begin{array}{c}
+\nv \\
+\mv
+\end{array}
+\right) = \bv 
+\end{align}
+と表される。化学ポテンシャルもガス種とcondensatesをそれぞれ、$\mugv$, $\mucv$と分けて表記する。ガス種の場合と異なり、condensatesは温度$T$だけに依存するため$\mucv (T) = \mucv^\circ (T)$である。
+
+\subsection*{凝縮相を含む場合の電荷中性制約}
+  凝縮相を含む場合も、電荷中性条件は同じ拡張で表すことができる。
+  凝縮相 $j$ の電荷数を $z_{c,j}$ とし、
+  \[
+    z_c = (z_{c,1}, z_{c,2}, \ldots, z_{c,M})^\top
+  \]
+  と書くと、電荷中性条件は
+  \[
+    z_g^\top n + z_c^\top m = 0
+  \]
+  である。したがって、拡張された保存則は
+  \[
+    A_{g,{\rm aug}} n + A_{c,{\rm aug}} m = b_{\rm aug},
+  \]
+  ただし
+  \[
+    A_{g,{\rm aug}}
+    =
+    \begin{pmatrix}
+      A_g \\
+      z_g^\top
+    \end{pmatrix},
+    \qquad
+    A_{c,{\rm aug}}
+    =
+    \begin{pmatrix}
+      A_c \\
+      z_c^\top
+    \end{pmatrix},
+    \qquad
+    b_{\rm aug}
+    =
+    \begin{pmatrix}
+      b \\
+      0
+    \end{pmatrix}.
+  \]
+
+  多くの凝縮相データベースでは凝縮相は中性種として扱われるため、この場合は $z_c=0$ であり、
+  電荷中性条件は
+  \[
+    z_g^\top n = 0
+  \]
+  に戻る。従って、凝縮相を含む R-GIE, p-IPM, pd-IPM の式に電荷行を含めることは可能であるが、
+  その行は通常の元素 budget row ではなく zero-target charge row として扱う必要がある。
+
+
+
+\noindent\rule{\textwidth}{0.4pt}
+\subsection*{ガス種と凝縮相を含む熱化学平衡系}  
+Gibbsエネルギー最小化は
+\begin{align}
+\label{eq:gibss_multi_c}
+    (\nv^\ast, \mv^\ast) &= \mathrm{minimize}_{\nv, \mv} G(T, p, \nv, \mv) \\
+    \mbox{subject to} \,\, &A_\gas \nv + A_\cond \mv = \bv, \\
+    &\mv \ge \boldsymbol{0}\\
+\end{align}
+ここに
+\begin{align} 
+    \label{eq:gibbs_energy_cond}
+    G(T, p, \nv, \mv) &\equiv  \mugv (T, p, \nv)^\top \nv + \mucv^\circ (T)^\top \mv \\
+    \label{eq:chemical_potential_mu_c}
+    \mugv (T, p, \nv) &=  \mugv^\circ(T) + RT \log{\left(\frac{p}{\ntot} \nv\right)} 
+\end{align}
+である。\\
+\noindent\rule{\textwidth}{0.4pt}
+
+
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.75\linewidth]{fig/tce/gascon.png}
+    \caption{ガス種の場合 (左)、$n_i$ = 0の付近でGibbsエネルギーの勾配がマイナス無限大になるため(化学ポテンシャルの分圧依存性のため)、解はすべての要素についてinactive (第1象限内部にある) となり、すべての要素について微分が0となる。つまり対数をとって微分=0が第一最適化条件となる。一方、凝縮種の場合（右）、化学ポテンシャルに分圧依存性がないために、一部の$m_i$でactive (不安定種；$m_i$=0)となるため、その要素については解の場所で微分値が0にならない。図では$m_1$が相当する。このため、対数を取って微分=0とするわけにはいかなく、KKT条件を用いる必要がある。}
+    \label{fig:gascon}
+\end{figure}
+ガス種はinactiveとして非負条件は含んでいない。ガス種のみの場合と異なり、一般に凝縮種は全部の種を正(安定種)に取ることはできず、一部はactive ($m_i = 0$; つまり不安定種)、残りはinactive ($m_i > 0$; つまり安定種)である。そのため、安定種を同定し安定種のみで定式化しない限りは、ラグランジアンを$\mv$で微分してゼロとおく停留条件を用いることはできない(図\ref{fig:gascon})。そこで一般的な解法を構成するときは、不等式制約条件付きの一次の最適性条件(the first order optimality condition, First derivative test)であるKarush–Kuhn–Tucker (KKT) 条件を用いることが考えられる。
+
+
+
+\subsection{\ce{H2O}と背景大気の場合}
+一般的な解法に行く前に、まず簡単な例として気体と純物質の凝縮(氷、液体の水)の両形態をとる\ce{H2O}と背景大気として\ce{N2}を考える。つまり化学反応は相転移
+\begin{align*}
+\ce{H2O (gas) <--> H2O (cond)}
+\end{align*}
+のみである。
+
+
+要素との化学反応式を考えると,
+\begin{align*}
+\ce{N2 <-->  0 $\Hel$ + 2 $\Nel$ + 0 $\Oel$ \\
+H2O (gas) <--> 2 $\Hel$ + 0 $\Nel$ + 1 $\Oel$ \\
+H2O (cond) <--> 2 $\Hel$ + 0 $\Nel$ + 1 $\Oel$ 
+}
+\end{align*}
+であるので、
+元素ベクトルを$\bv = (b_{\Hel}, b_{\Nel}, b_{\Oel})^\top$とすると、
+\begin{align}
+    A_\gas &=  \left(
+\begin{array}{cc}
+2 & 0 \\
+0 & 2 \\
+1 & 0
+\end{array}
+\right) \\
+ A_\cond &=  \left(
+\begin{array}{cc}
+2 \\
+0  \\
+1 
+\end{array}
+\right) 
+\end{align}
+である。$A_\gas$の1列目と$A_\cond$の1列目が線形従属であるため、$\mathrm{rank} (A_\gas, A_cond) =2$であり、これは$|\bv|=3$より小さくランク落ちしている。具体的には$b_\Hel = 2 b_\Oel$でないとならないという制約条件が抜けている。そこで、この系を縮約し$\bv = (b_{\Hel}, b_{\Nel})^\top$とし、
+\begin{align}
+    A_\gas &=  \left(
+\begin{array}{cc}
+2 & 0 \\
+0 & 2 \\
+\end{array}
+\right) \\
+ A_\cond &=  \left(
+\begin{array}{cc}
+2 \\
+0  \\
+\end{array}
+\right) 
+\end{align}
+とする。全Gibbsエネルギーは
+\begin{align}
+    G (T, p, \nv, \mv) &= n_{\ce{N2}} \mu_{\ce{N2}} (T, p, \nv) + n_{\ce{H2O}} \mu_{g,\ce{H2O}} (T, p, \nv) + m_{\ce{H2O}} \mu^\circ_{c, \ce{H2O}} (T)
+\end{align}
+である。
+ここで$m_{\ce{H2O}} = b_\Hel/2 - n_{\ce{H2O}}$であるから、
+\begin{align}
+    G (T, p, \nv, \mv) &= n_{\ce{N2}} \mu_{\ce{N2}} (T, p, \nv) + n_{\ce{H2O}} \mu_{g,\ce{H2O}} (T, p, \nv) + (b_\Hel/2 - n_{\ce{H2O}}) \mu^\circ_{c, \ce{H2O}} (T)
+\end{align}
+より
+\begin{align}
+     \frac{\partial G (T, p, \nv)}{\partial n_{\ce{H2O}}}  = \mu_{g,\ce{H2O}} (T, p, \nv) - \mu^\circ_{c, \ce{H2O}} (T)
+\end{align}
+となる。$\nv$の要素のうち$n_{\ce{N2}} = b_{\Nel}/2$は固定値であるので、$0 < n_{\ce{H2O}} < b_{\Hel}/2$の間に
+\begin{align}
+ \mu^\circ_{c, \ce{H2O}} (T) = \mu_{g,\ce{H2O}} (T, p, \nv) = \mu_{g,\ce{H2O}}^\circ(T) + RT \log{\left(\frac{n_{\ce{H2O}}}{n_{\ce{N2}} + n_{\ce{H2O}}}  p \right)} 
+\end{align}
+を満たす$n_{\ce{H2O}}$があれば、一次微分が0の点、すなわち気体--凝固種共存解となる。${\ce{H2O}} \to 0$で$ \mu_{g,\ce{H2O}} (T, p, \nv) \to - \infty$となることから、共存解がないのは$0 < n_{\ce{H2O}} < b_{\Hel}/2$で常に$\mu_{g,\ce{H2O}} (T, p, \nv) < \mu_{c, \ce{H2O}} (T)$の時であり、この時は$m_{\ce{H2O}}=0, n_{\ce{H2O}}=b_{\Hel}/2$がGibbsエネルギー最小である。これは凝縮体が存在しない(最適化の意味ではactive)ことに対応する。
+
+これより、
+\begin{align}
+    n_{\ce{H2O}} &= \mathrm{min} \left( \frac{ k_\mathrm{gc}(T)}{p -  k_\mathrm{gc}(T)} \frac{b_{\Nel}}{2} , \,  \frac{b_{\Hel}}{2} \right) \\
+     k_\mathrm{gc}(T) &\equiv \exp{\left( - \frac{\mu^\circ_{g, \ce{H2O}} (T) - \mu^\circ_{c, \ce{H2O}} (T) }{R T} \right)}
+\end{align}
+が解となる。
+
+\subsection{Gibbsエネルギー最小化アルゴリズム}
+
+
+
+
+
+KKT条件は、未定乗数を$\lambdav, R T \etav$として、
+Gibbsエネルギー最小化は等式・不等式混合制約条件の標準形で書くとラグランジアンが
+\begin{align}
+    (\nv^\ast, \mv^\ast) &= \mathrm{minimize}_{\nv, \mv} \mathcal{L}(T, p, \nv, \mv) \\
+    \mathcal{L}(T, p, \nv, \mv) &= G(T, p, \nv, \mv) + \lambdav^\top (A_\gas \nv + A_\cond \mv - \bv) - R T \etav^\top \mv  
+\end{align}
+となるので
+\begin{align}
+\label{eq:cond_dl_dn}
+\dfrac{\partial }{\partial \nv} \mathcal{L}(T, p, \nv, \mv) &=  \mugv (T, p, \nv) + A_\gas^\top \lambdav = \boldsymbol{0}   \\
+\label{eq:cond_dl_dm}
+\dfrac{\partial }{\partial \mv} \mathcal{L}(T, p, \nv, \mv) &=  \mucv^\circ (T) + A_\cond^\top \lambdav - R T \etav = \boldsymbol{0}   \\
+A_\gas \nv + A_\cond \mv &= \bv \\
+\label{eq:complementary}
+\etav \odot \mv &= \boldsymbol{0} \,\,\, (\text{相補性条件})\\
+\mv \ge \boldsymbol{0},  \etav \ge \boldsymbol{0} 
+\end{align}
+となる。
+
+$\nv$, $\mv$, $\etav$は大ダイナミックレンジを持つので、対数化したパラメタを用いたい。この場合、相補性条件(\ref{eq:complementary})は満たすことができなくなる。そこで主内点法(Primal Interior Point Method; p-IPM)・主双対内点法(Primal-dual Interior Point Method; pd-IPM)にしたがい(Appendix \ref{ap:pdipm}参照)、ラグランジアンに対数障壁関数を付加した場合に得られる相補性条件の補正、
+\begin{align}
+  \label{eq:kkt3small}
+\etav \odot \mv &= \nu \uv = e^{\epsilon \uv} \approx \boldsymbol{0}
+\end{align}
+及び探索空間として$m_i=0$を排除した$\mv > \boldsymbol{0}, \etav > \boldsymbol{0}$を用いる。$\nu \to 0$とすると相補性条件が満たされる。主双対内点法についてはAppendix \ref{ap:pdipm}を参照のこと。
+
+
+\subsection*{主内点法}
+主内点法では、双対変数$\etav$は独立に扱わず、主変数$\mv$を直接最適化する。すなわち
+\begin{align}
+    \etav &= \nu \uv \oslash \mv = \nu e^{-\lnmv}
+\end{align}
+、及び$\lnnv = \log{\nv}$、$\lnmv = \log{\mv}$、$\lnntot = \log{\ntot}$と定義し、
+変数系を$(\nv, \mv, \lambdav, \etav)$から$\zv \equiv (\lnnv, \lnmv, \lambdav, \lnntot)$と置きなおす。
+
+ガス種のみの場合のときと同様に, $\lnntot$をあらたに変数としたので、追加の条件が加わり、一次の最適化条件は
+\begin{align}
+\label{eq:akkt1}
+\Fv_n (\zv) &\equiv \frac{\mugv (T, p, \nv)}{RT} + (\log{p} - \lnntot) \uv + \lnnv +  \frac{A_\gas^\top}{R T} \lambdav = \boldsymbol{0}   \\
+\label{eq:akkt2}
+\Fv_m (\zv) &\equiv \frac{\mucv^\circ (T)}{RT} + \frac{A_\cond^\top}{R T} \lambdav - \nu e^{-\lnmv} = \boldsymbol{0}   \\
+\Fv_\lambda (\zv) &\equiv A_\gas e^{\lnnv} + A_\cond e^{\lnmv} - \bv = \boldsymbol{0} \\
+\label{eq:akkt4}
+F_\mathrm{tot} (\zv) &\equiv \sum_i {e^{q_i}} - e^{\lnntot} = 0
+\end{align}
+となる。式のベクトル要素数は上から($\ngas, \ncond, \nelements, 1$)であり、独立な式の数は$\ngas + \ncond + \nelements + 1$となる。これは変数$\zv$の要素数と一致している。これらの方程式系をNewton法で解く。
+
+ヤコビアンは
+\begin{equation}
+\label{eq:jacobian_tce_cond}
+\Jv (\zv) =
+\left(
+\begin{array}{cccc}
+    \dfrac{\partial \Fv_n}{\partial \lnnv}  &  \dfrac{\partial \Fv_n}{\partial \lnmv} & \dfrac{\partial \Fv_n}{\partial \lambdav}& \dfrac{\partial \Fv_n}{\partial \lnntot}\\ 
+    \dfrac{\partial \Fv_m}{\partial \lnnv}  &  \dfrac{\partial \Fv_m}{\partial \lnmv} & \dfrac{\partial \Fv_m}{\partial \lambdav}&  \dfrac{\partial \Fv_m}{\partial \lnntot}\\
+    \dfrac{\partial \Fv_\lambda}{\partial \lnnv}  &  \dfrac{\partial \Fv_\lambda}{\partial \lnmv} & \dfrac{\partial \Fv_\lambda}{\partial \lambdav}& \dfrac{\partial \Fv_\lambda}{\partial \lnntot}\\
+    \dfrac{\partial F_\mathrm{tot}}{\partial \lnnv}  &  \dfrac{\partial F_\mathrm{tot}}{\partial \lnmv} & \dfrac{\partial F_\mathrm{tot}}{\partial \lambdav}&  \dfrac{\partial F_\mathrm{tot}}{\partial \lnntot}\\
+\end{array}
+\right) =
+\left(
+\begin{array}{cccc}
+ E_\ngas & Z & \dfrac{A_\gas^\top}{RT} &  - \uv \\ 
+ Z & \nu \, \mathrm{diag} (e^{-\lnmv}) & \dfrac{A_\cond^\top}{RT} &  \boldsymbol{0}_\ncond \\
+ Y_\gas(\lnnv) & Y_\cond (\lnmv) & Z_\nelements &  \boldsymbol{0}_\nelements \\ 
+ (e^{\lnnv})^\top & \boldsymbol{0}_\ncond^\top & \boldsymbol{0}_\nelements^\top & - e^{\lnntot}\\  
+\end{array}
+\right)
+\end{equation}
+となる. これよりNewton法の更新式, $\Jv (\zv_k) \Delta \zv = - \Fv(\zv_k)$は、$\piv = - (\lambdav_k + \Delta \lambdav)/RT$として、
+\begin{align}
+\label{eq:kkt_y_1}
+    \Delta \lnnv &= A_\gas^\top \piv + \Delta \lnntot \uv - \gv_k (T) \\
+\label{eq:kkt_y_2}
+      \nu_k e^{- \lnmv_k} \odot \Delta \lnmv &= A_\cond^\top \piv - \cv_k (T) + \nu_k e^{-\lnmv_k} \\
+\label{eq:kkt_y_3}
+    Y_\gas (\lnnv_k) \Delta \lnnv + Y_\cond (\lnmv_k) \Delta \lnmv &= \bv - A_\gas e^{\lnnv_k} - A_\cond e^{\lnmv_k} \\
+\label{eq:kkt_y_5}
+    e^{\lnnv_k} \cdot \Delta \lnnv &= e^{(\lnntot)_k} \Delta \lnntot + e^{(\lnntot)_k} - \sum_i e^{(q_i)_k} 
+\end{align}
+となり、凝縮相入りのGIEsが求まる。ここに
+\begin{align}
+    \cv_k (T) &\equiv \frac{\muv^\circ(T)}{RT} 
+\end{align}
+とした。また$\nu$については、IPMではNewton反復の外側で減少させる手法の他に、内側で$k$ごとに小さくしていく場合もあるため$\nu_k$としている。式(\ref{eq:kkt_y_2})は$\mv_k \odot$を両辺に作用させることにより、
+\begin{align}
+\label{eq:kkt_y_2_a}
+      \nu_k \Delta \lnmv &=  \mv_k \odot (A_\cond^\top \piv) - \mv_k \odot \cv_k (T) + \nu_k \uv_\ncond
+\end{align}
+と書ける。
+
+
+式(\ref{eq:kkt_y_1})と式(\ref{eq:kkt_y_2_a})を式(\ref{eq:kkt_y_3})に、式(\ref{eq:kkt_y_1})を式(\ref{eq:kkt_y_5})に代入すると、凝縮種入りのR-GIEsが求まる。
+\begin{align}
+\label{eq:kkt_z_3}
+\hat{Q}_k \piv + \Delta \lnntot \bv_k  &= A_\gas ( \nv_k \odot \gv_k (T) ) + A_\cond ( \sv_k \odot \cv_k (T) - \mv_k) + \delta \hat{\bv}_k \\
+\label{eq:kkt_z_5}
+(A_\gas \nv_k) \cdot \piv + \delta n_{\mathrm{tot}, k} \Delta \lnntot &= \nv_k \cdot \gv_k(T) - \delta n_{\mathrm{tot}, k}
+ \end{align}
+ ここに
+\begin{align}
+\delta \hat{\bv}_k &\equiv \bv - ( A_\gas \nv_k + A_\cond \mv_k) \\ 
+\hat{Q}_k &\equiv A_\gas \mathrm{diag}(\nv_k) A_\gas^\top + A_\cond  \mathrm{diag}(\sv_k) A_\cond^\top \\
+\sv_k &\equiv \{ m_k^2/\nu_k \} = e^{2 \lnmv - \epsilon \uv} 
+\end{align}
+
+
+%ただしR-GIEを主内点法で解くと数値的には不安定になる場合が多かった。
+
+
+
+\subsection*{主双対内点法}
+
+主双対内点法では、双対変数$\etav$も最適化変数とみなし$\mv$と同時に最適化を行う。ある$\nu$での主変数の最適値を$\xv^\ast (\nu)$, 双対変数の最適値を$\etav^\ast (\nu)$とし、$\nu$を小さくしていくことで、最適値をKKT条件に近づけていく。
+$\lnnv = \log{\nv}$、$\lnmv = \log{\mv}$、$\rhov = \log{\etav}$、$\lnntot = \log{\ntot}$と定義し、
+変数系を$(\nv, \mv, \lambdav, \etav)$から$\zv \equiv (\lnnv, \lnmv, \lambdav, \rhov, \lnntot)$と置きなおす。$\lnntot$をあらたに変数としたので、追加の条件が加わり、バリアKKT条件は
+\begin{align}
+\label{eq:akkt1_d}
+\Fv_n (\zv) &\equiv \frac{\mugv (T, p, \nv)}{RT} + (\log{p} - \lnntot) \uv + \lnnv +  \frac{A_\gas^\top}{R T} \lambdav = \boldsymbol{0}   \\
+\label{eq:akkt2_d}
+\Fv_m (\zv) &\equiv \frac{\mucv^\circ (T)}{RT} + \frac{A_\cond^\top}{R T} \lambdav - e^{\rhov} = \boldsymbol{0}   \\
+\Fv_\lambda (\zv) &\equiv A_\gas e^{\lnnv} + A_\cond e^{\lnmv} - \bv = \boldsymbol{0} \\
+\label{eq:akkt3_d}
+\Fv_c (\zv) &\equiv \lnmv + \rhov - \boldsymbol{\epsilon} = \boldsymbol{0}\\
+\label{eq:akkt4_d}
+F_\mathrm{tot} (\zv) &\equiv \sum_i {e^{q_i}} - e^{\lnntot} = 0
+\end{align}
+となる。式のベクトル要素数は上から($\ngas, \ncond, \nelements, \ncond, 1$)であり、独立な式の数は$\ngas + 2 \ncond + \nelements + 1$となる。これは変数$\zv$の要素数と一致している。
+
+
+ヤコビアンは
+\begin{equation}
+\label{eq:jacobian_tce_cond}
+\Jv (\zv) =
+\left(
+\begin{array}{ccccc}
+    \dfrac{\partial \Fv_n}{\partial \lnnv}  &  \dfrac{\partial \Fv_n}{\partial \lnmv} & \dfrac{\partial \Fv_n}{\partial \lambdav}&  \dfrac{\partial \Fv_n}{\partial \rhov} & \dfrac{\partial \Fv_n}{\partial \lnntot}\\ 
+    \dfrac{\partial \Fv_m}{\partial \lnnv}  &  \dfrac{\partial \Fv_m}{\partial \lnmv} & \dfrac{\partial \Fv_m}{\partial \lambdav}&  \dfrac{\partial \Fv_m}{\partial \rhov} & \dfrac{\partial \Fv_m}{\partial \lnntot}\\
+    \dfrac{\partial \Fv_\lambda}{\partial \lnnv}  &  \dfrac{\partial \Fv_\lambda}{\partial \lnmv} & \dfrac{\partial \Fv_\lambda}{\partial \lambdav}&  \dfrac{\partial \Fv_\lambda}{\partial \rhov} & \dfrac{\partial \Fv_\lambda}{\partial \lnntot}\\
+    \dfrac{\partial \Fv_c}{\partial \lnnv}  &  \dfrac{\partial \Fv_c}{\partial \lnmv} & \dfrac{\partial \Fv_c}{\partial \lambdav}&  \dfrac{\partial \Fv_c}{\partial \rhov} & \dfrac{\partial \Fv_c}{\partial \lnntot}\\
+    \dfrac{\partial F_\mathrm{tot}}{\partial \lnnv}  &  \dfrac{\partial F_\mathrm{tot}}{\partial \lnmv} & \dfrac{\partial F_\mathrm{tot}}{\partial \lambdav}&  \dfrac{\partial F_\mathrm{tot}}{\partial \rhov} & \dfrac{\partial F_\mathrm{tot}}{\partial \lnntot}\\
+\end{array}
+\right) =
+\left(
+\begin{array}{ccccc}
+ E_\ngas & Z & \dfrac{A_\gas^\top}{RT} & Z & - \uv \\ 
+ Z & Z & \dfrac{A_\cond^\top}{RT} & - \mathrm{diag} (e^{\rhov}) & \boldsymbol{0}_\ncond \\
+ Y_\gas(\lnnv) & Y_\cond (\lnmv) & Z_\nelements & Z & \boldsymbol{0}_\nelements \\ 
+ Z & E_\ncond & Z & E_\ncond & Z \\
+ (e^{\lnnv})^\top & \boldsymbol{0}_\ncond^\top & \boldsymbol{0}_\nelements^\top & \boldsymbol{0}_\ncond^\top & - e^\lnntot\\  
+\end{array}
+\right)
+\end{equation}
+となる. これよりNewton法の更新式, $\Jv (\zv_k) \Delta \zv = - \Fv(\zv_k)$は、$\piv = - (\lambdav_k + \Delta \lambdav)/RT$として、
+\begin{align}
+\label{eq:kkt_y_1_d}
+    \Delta \lnnv &= A_\gas^\top \piv + \Delta \lnntot \uv - \gv_k (T) \\
+\label{eq:kkt_y_2_d}
+      e^{\rhov_k} \odot \Delta \rhov &= - e^{\rhov_k} - A_\cond^\top \piv + \cv_k (T) \\
+\label{eq:kkt_y_3_d}
+    Y_\gas (\lnnv_k) \Delta \lnnv + Y_\cond (\lnmv_k) \Delta \lnmv &= \bv - A_\gas e^{\lnnv_k} - A_\cond e^{\lnmv_k} \\
+\label{eq:kkt_y_4_d}
+    \Delta \lnmv &= - \Delta \rhov - \lnmv_k - \rhov_k + \boldsymbol{\epsilon} \\
+\label{eq:kkt_y_5_d}
+    e^{\lnnv_k} \cdot \Delta \lnnv &= e^{(\lnntot)_k} \Delta \lnntot + e^{(\lnntot)_k} - \sum_i e^{(q_i)_k} 
+\end{align}
+ここに
+\begin{align}
+    \gv_k(T,p,\zv_k)
+    &\equiv
+    \frac{\mugv^\circ(T)}{RT}
+    + \log p\,\uv
+    + \lnnv_k
+    - (\lnntot)_k \uv,\\
+    \cv_k (T) &\equiv \frac{\muv^\circ(T)}{RT}.
+\end{align}
+以後は表記を簡単にするため$\gv_k(T,p,\zv_k)$を$\gv_k(T)$と略記する。
+重要なのは、$\gv_k(T)$が現在の気相量$\lnnv_k$を含む有効な気相停留条件sourceであり、
+標準化学ポテンシャルと圧力項だけからなる熱化学sourceではない、という点である。\footnote{
+実装で
+%\begin{align}
+$
+    \widetilde{\gv}_k(T,p, (\lnntot)_k)
+    \equiv
+    \frac{\mugv^\circ(T)}{RT}
+    + \log p\,\uv
+    - (\lnntot)_k \uv
+$
+%\end{align}
+のような$\lnnv_k$を含まないsourceを保持する場合、R-GIEへ代入する量は
+$
+%\begin{align}
+    \gv_k(T,p,\zv_k) = \lnnv_k + \widetilde{\gv}_k(T,p,(\lnntot)_k)
+%\end{align}
+$
+でなければならない。この区別を落とすと、full GIEからの消去で得られるNewton方向と
+reduced R-GIEで得られるNewton方向が一致しない。
+}
+
+式(\ref{eq:kkt_y_1_d})と式(\ref{eq:kkt_y_4_d})を式(\ref{eq:kkt_y_3_d})に、式(\ref{eq:kkt_y_1_d})を式(\ref{eq:kkt_y_5_d})に代入すると
+\begin{align}
+\label{eq:kkt_z_3_d}
+Q_k \piv + \Delta \lnntot \bv_k - A_\cond ( \mv_k \odot \Delta \rhov) &= A_\cond ( \mv_k \odot \tv_k ) + A_\gas ( \nv_k \odot \gv_k (T) ) + \delta \hat{\bv}_k\\
+\label{eq:kkt_z_5_d}
+(A_\gas \nv_k) \cdot \piv + \delta n_{\mathrm{tot}, k} \Delta \lnntot &= \nv_k \cdot \gv_k(T) - \delta n_{\mathrm{tot}, k}
+ \end{align}
+ ここに
+\begin{align}
+\hat{\bv}_k &\equiv \bv - ( A_\gas \nv_k + A_\cond \mv_k) \\ 
+\tv_k &\equiv \rv_k + \rhov_k - \boldsymbol{\epsilon} 
+\end{align}
+
+式(\ref{eq:kkt_y_2_d})より, 
+\begin{align}
+    \label{eq:kkt_y_2_sd}
+      \Delta \rhov &=  ( \cv_k (T) - A_\cond^\top \piv) \odot \etav_k^{-1} - \uv
+\end{align}
+となる。ただし$\etav_k^{-1} = \{ 1/(\eta_k)_i : \text{for } i=1,2, \cdots, \ncond \}$のことである。 これを式(\ref{eq:kkt_z_3d})に入れると、
+\begin{align}
+    Q_k \piv + \Delta \lnntot \bv_k - A_\cond ( \mv_k \odot \etav_k^{-1} \odot  (\cv_k (T) - A_\cond^\top \piv )  - \uv) &= A_\cond ( \mv_k \odot \tv_k ) + A_\gas ( \nv_k \odot \gv_k (T) ) + \delta \hat{\bv}_k
+\end{align}
+整理すると以下のガス・condensates共存系のReduced Gibbs Iteration Equationsが得られる。
+\begin{align}
+\hat{Q}_k \piv + \Delta \lnntot \bv_k  &=  A_\gas ( \nv_k \odot \gv_k (T) ) + A_\cond \left(  \jv_k \odot \cv_k (T) + \mv_k \odot \tv_k - \mv_k \right) + \delta \hat{\bv}_k \\
+\bv_k \cdot \piv + \delta n_{\mathrm{tot}, k} \Delta \lnntot &= \nv_k \cdot \gv_k(T) - \delta n_{\mathrm{tot}, k}
+\end{align}
+ ここに
+\begin{align}
+\hat{Q}_k &\equiv A_\gas \mathrm{diag} (\nv_k) A_\gas^\top + A_\cond \mathrm{diag} (\jv_k) A_\cond^\top \\
+\jv_k &\equiv \mv_k \odot \etav_k^{-1}
+\end{align}
+である。
+
+\subsection*{主双対内点法の外部反復・内部反復}
+
+上の式は、固定されたバリアパラメタ$\nu=e^\epsilon$に対する内部反復のNewton方向を与える。
+主双対内点法としては、これだけでは完結していない。一般には外部反復で$\nu$を段階的に小さくし、
+各$\nu$に対して内部反復で中心経路の近傍まで戻す必要がある。すなわち、
+\begin{align}
+    \| \Fv(\zv;\nu) \| \le M_c \nu
+\end{align}
+を満たすまで内部反復を行い、その後
+\begin{align}
+    \nu \leftarrow \tau \nu,\qquad 0 < \tau < 1
+\end{align}
+として次の外部反復に進む。ここで$M_c$は中心経路近傍を定義する定数である。
+
+したがって、実装上は
+\begin{enumerate}
+    \item 固定$\nu$で$\Delta \zv$を計算する内部Newton反復、
+    \item 正値性とmerit functionを用いたステップ幅制御、
+    \item $\nu$を下げる外部反復、
+\end{enumerate}
+を区別する必要がある。単一の$\nu$で一回だけR-GIE updateを行う実装は、主双対内点法そのものではなく、
+その内部反復の一診断ステップである。
+
+\subsection*{ステップ幅制御と正値性}
+
+対数変数を用いれば、任意の有限な$\Delta \lnnv$, $\Delta \lnmv$, $\Delta \rhov$に対して
+$\nv$, $\mv$, $\etav$の正値性は形式的には保たれる。しかし、有限精度計算では過大な更新により
+オーバーフロー、アンダーフロー、または熱力学的に意味を失う状態に入ることがある。
+そのため、主双対内点法の標準的な考え方に対応して、物理変数でのfraction-to-boundary型の制限を
+診断的に併用するのが望ましい。
+
+物理変数で
+\begin{align}
+    \Delta \nv &\simeq \nv_k \odot \Delta \lnnv,\\
+    \Delta \mv &\simeq \mv_k \odot \Delta \lnmv,\\
+    \Delta \etav &\simeq \etav_k \odot \Delta \rhov
+\end{align}
+と一次近似すると、正値性を保つ最大ステップ幅は
+\begin{align}
+    \alpha_{\max}^{(m)}
+    &= \min_{i:\Delta m_i < 0} \left(- \frac{m_{k,i}}{\Delta m_i}\right),\\
+    \alpha_{\max}^{(\eta)}
+    &= \min_{i:\Delta \eta_i < 0} \left(- \frac{\eta_{k,i}}{\Delta \eta_i}\right)
+\end{align}
+で評価できる。実際には安全係数$0<\gamma<1$を用いて
+\begin{align}
+    \bar{\alpha}
+    =
+    \min\left(1,\gamma\alpha_{\max}^{(m)},\gamma\alpha_{\max}^{(\eta)}\right)
+\end{align}
+をline searchの初期ステップ幅とする。対数変数では正値性が自動的に見えるため、この制限を省略しがちであるが、
+大きな$\Delta \lnmv$や$\Delta \rhov$を許すと中心経路から大きく外れるため、実装上は重要である。
+
+\subsection*{P-based Armijo merit function}
+
+Newton方向が得られたあと、その方向をどの程度採用するかはmerit functionで判定する。
+ラグランジアン$\mathcal{L}$は未定乗数に関して鞍点構造を持つため、line searchの単調減少判定には
+そのまま使いにくい。代わりに、主変数に対するbarrier-penalty型のmerit function
+\begin{align}
+    P(\nv,\mv,\ntot;\nu,\rho_P)
+    =
+    \frac{G(T,p,\nv,\mv)}{RT}
+    - \nu \sum_j \log m_j
+    + \rho_P \left\| A_\gas \nv + A_\cond \mv - \bv \right\|_1
+    + \rho_{\rm tot}\left|\uv^\top \nv - \ntot\right|
+\end{align}
+を用いる。ここで$\rho_P$は等式制約のpenalty weightであり、双対変数の
+$\rhov=\log\etav$とは別の記号であることに注意する。
+
+対数変数で書けば、$\nv=e^{\lnnv}$, $\mv=e^{\lnmv}$, $\ntot=e^{\lnntot}$より
+\begin{align}
+    \frac{G(T,p,\nv,\mv)}{RT}
+    =
+    \sum_i n_i
+    \left[
+        \frac{\mu^\circ_{g,i}(T)}{RT}
+        + \log p
+        + \ln n_i
+        - \ln n_{\rm tot}
+    \right]
+    +
+    \sum_j m_j \frac{\mu^\circ_{c,j}(T)}{RT}
+\end{align}
+である。したがって、候補ステップ
+\begin{align}
+    \zv(\alpha) = \zv_k + \alpha \Delta \zv_k
+\end{align}
+に対し、$P(\zv(\alpha))$を直接評価できる。
+
+Armijo条件は
+\begin{align}
+    P(\zv_k + \alpha \Delta \zv_k)
+    \le
+    P(\zv_k) + c_1 \alpha D P_k[\Delta \zv_k],
+    \qquad 0<c_1<1
+\end{align}
+である。ここで$D P_k[\Delta \zv_k]$は方向微分であり、厳密には線形化したmerit functionから計算する。
+診断実装では、まず候補点列から有限差分で方向微分を推定してもよいが、十分小さい$\alpha$では丸め誤差により
+$P(\zv_k+\alpha\Delta\zv_k)-P(\zv_k)$がゼロに見える場合がある。そのため、有限差分を用いる場合は
+情報量のある最小$\alpha$を選ぶ、または線形化した$P_l$を明示的に構成する必要がある。
+
+\subsection*{v1.2での代数的修正点}
+
+主双対内点法の凝縮相側Newton式では、式(\ref{eq:kkt_y_2_d})から
+\begin{align}
+      e^{\rhov_k} \odot \Delta \rhov
+      &= - e^{\rhov_k} - A_\cond^\top \piv + \cv_k(T)
+\end{align}
+なので、
+\begin{align}
+      \Delta \rhov
+      =
+      \left(\cv_k(T)-A_\cond^\top \piv\right)\odot\etav_k^{-1}
+      - \uv
+\end{align}
+である。この末尾の$-\uv$は必須である。これを落とすと、$\Delta \lnmv=-\Delta\rhov-\tv_k$
+の復元が中心化条件
+\begin{align}
+    \lnmv+\rhov-\boldsymbol{\epsilon}=0
+\end{align}
+と整合しなくなり、相補性の残差が系統的にずれる。
+
+また、主内点法の式では$\sv_k=m_k^2/\nu_k$、主双対内点法の式では
+\begin{align}
+    \jv_k=\mv_k\odot\etav_k^{-1}
+\end{align}
+が対応する。$\etav_k=\nu_k\uv\oslash\mv_k$が厳密に成り立つ中心経路上では
+$\jv_k=\sv_k$となるが、主双対内点法の内部反復中は一般に$\jv_k$と$\sv_k$は一致しない。
+従って、pd-IPMのR-GIEでは$\jv_k$を用い、p-IPMのR-GIEでは$\sv_k$を用いる、と区別する。
+
+\subsection*{低温気相境界とFastChem4型row scalingからの示唆}
+
+低温の強凝縮ケースでは、凝縮相の内点法を進める以前に、気相のみの境界条件がすでに
+元素保存則を大きく破ることがある。この場合、凝縮相supportを増やしても、入力となる
+気相状態とelement potentialが壊れているため、pd-IPMのline searchが受理可能なtrialを
+見つけられない。したがって低温側では、まず気相境界を次のように分解する必要がある。
+
+気相のみの状態を
+\begin{align}
+    \nv = \exp(\lnnv),\qquad
+    \bv_g(\lnnv) = A_\gas \nv
+\end{align}
+とし、気相budget residualを
+\begin{align}
+    \rv_b^{\gas} = A_\gas \exp(\lnnv) - \bv
+\end{align}
+と定義する。低温では元素量のdynamic rangeが非常に大きくなるため、未スケールの
+$\rv_b^{\gas}$を直接比較すると、主要元素と微量元素が同じ尺度で混ざってしまう。
+FastChem4の多次元Newton acceleratorは、未収束元素を選び、行ごとにscaleした線形系を
+解く。ExoGibbsでも、branch replayではなくnative diagnosticとして、例えば
+\begin{align}
+    s_a =
+    \max\left(
+        \sum_i |A_{\gas,a i}| n_i,\,
+        |b_a|,\,
+        s_{\min}
+    \right)
+\end{align}
+を用い、
+\begin{align}
+    \widehat r_{b,a}^{\gas} = \frac{r_{b,a}^{\gas}}{s_a}
+\end{align}
+を評価する。この$\widehat \rv_b^{\gas}$が大きい元素行を
+\begin{align}
+    \mathcal{U} = \{a\,:\,|\widehat r_{b,a}^{\gas}| > \tau_{\rm row}\}
+\end{align}
+として選び、気相側の局所Newton補正を
+\begin{align}
+    \widehat J_{\mathcal{U}} \Delta \piv_{\mathcal{U}}
+    =
+    -\widehat \rv_{b,\mathcal{U}}^{\gas}
+\end{align}
+で診断する。ただし、ここでの$\Delta\piv_{\mathcal{U}}$は気相境界を安定化するための
+diagnostic carrierであり、FastChem4の内部trace値ではない。対応するlog-density方向は
+\begin{align}
+    \Delta \lnnv
+    =
+    A_{\gas,\mathcal{U}}^\top \Delta \piv_{\mathcal{U}}
+\end{align}
+として評価できるが、production solverに組み込む前に、気相総量制約
+\begin{align}
+    \uv^\top \nv - \ntot = 0
+\end{align}
+および気相stationarity frameとの整合を確認する必要がある。
+
+また、イオンおよび自由電子を含む場合は、電荷行
+\begin{align}
+    z_g^\top \nv = 0
+\end{align}
+が通常の正の元素budget rowとは異なるzero-target equality constraintであることに注意する。
+低温でイオンが物理的に不要な場合は、診断として中性種のみに制限した
+\begin{align}
+    \nv_{\rm neutral} = \nv|_{z_g=0},\qquad
+    \rv_{b}^{\rm neutral}
+    =
+    A_\gas \nv_{\rm neutral} - \bv
+\end{align}
+を評価する。もし
+\begin{align}
+    \|\rv_{b}^{\rm neutral}\|
+    \simeq
+    \|\rv_{b}^{\gas}\|
+\end{align}
+であれば、低温失敗の主因は電荷行や電子だけではなく、気相log-density gauge、row scaling、
+またはtotal-density gaugeの扱いにあると分類する。
+
+この整理により、低温ケースでは凝縮相pd-IPMの前に
+\begin{enumerate}
+    \item 気相log-density boundary refresh,
+    \item selected-element row scaling,
+    \item zero-target charge rowの分離,
+    \item no-ion proxyによる電荷/イオン影響の切り分け,
+    \item refresh後のinactive condensate driving再評価,
+\end{enumerate}
+を行う。凝縮相support expansionは、この気相境界修復の後に行うべきである。
+
+\subsection*{実装上の注意}
+
+実装では、以下を明示的に区別する必要がある。
+\begin{itemize}
+    \item 固定$\nu$での単一Newton方向の計算。
+    \item 内部反復で中心経路近傍へ戻る処理。
+    \item 外部反復で$\nu$を下げる処理。
+    \item $\gv_k$は$\lnnv_k$を含む有効sourceとしてR-GIEへ入れること。実装上の
+    \texttt{gas\_stationarity\_source}が$\lnnv_k$を含まない場合は、
+    $\lnnv_k+\widetilde{\gv}_k$を用いる。
+    \item $\Delta\lnntot$の項は、気相停留条件が$-\lnntot$に依存することから生じる。
+    従ってcandidate residualを評価するときも、$(\lnntot)_k-\lnntot$の変化、またはそれと同等の
+    reference conventionを明示的に入れる必要がある。
+    \item $\piv$は実装上のelement-potential carrierであり、物理的な$\lambdav$そのものではなく、
+    $\piv = -(\lambdav_k+\Delta\lambdav)/RT$という規約で定義される。
+    \item residual normを下げるための経験的selectorと、$P$に基づくArmijo line search。
+    \item component clippingと、fraction-to-boundaryに基づく正値性制御。
+    \item 低温ケースでは、凝縮相support refreshより前に、気相log-density boundary、
+    selected-element row scaling、zero-target charge row、no-ion proxyを分解すること。
+\end{itemize}
+component clippingは数値的安全装置として有用だが、主双対内点法の理論的なステップ幅制御そのものではない。
+従って、収束判定やアルゴリズム説明では、clippingをPD-IPM本体ではなく実装上のglobalization補助として扱う。
+
+\section{式変数まとめ}
+
+\begin{table}[]
+    \centering
+    \begin{tabular}{c|cc}
+        方式 & 独立変数 & 復元変数 \\
+        \hline
+        主内点法 GIEs &  $\Delta \lnnv, \Delta \lnmv, \piv, \Delta \lnntot$ & - \\
+        主内点法 R-GIEs &  $\piv, \Delta \lnntot$ & $\Delta\lnnv,\Delta\lnmv$\\
+        主双対内点法 GIEs &  $\Delta \lnnv, \Delta \lnmv, \Delta \rhov, \piv, \Delta \lnntot$ & - \\
+        主双対内点法 R-GIEs & $\piv, \Delta \lnntot$ & $\Delta\lnnv,\Delta\lnmv,\Delta\rhov$ \\
+    \end{tabular}
+    \caption{凝縮相を含むGIE/R-GIEで用いる独立な更新変数}
+    \label{tab:placeholder}
+\end{table}

@@ -1,14 +1,16 @@
+import math
 import time
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 from jax import custom_vjp
 from jax import jacrev
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
 from functools import partial
-from typing import Tuple, Callable, Dict
+from typing import Any, Tuple, Callable, Dict
 
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _A_diagn_At
@@ -18,6 +20,699 @@ from exogibbs.optimize.vjpgibbs import vjp_pressure
 from exogibbs.optimize.vjpgibbs import vjp_elements
 
 _CHO_EPS = 1.0e-18
+
+
+def build_minimize_gibbs_core_lnnk_output_source_trace(
+    ln_nk_output: Any,
+    ln_ntot_output: Any,
+    n_iter: Any,
+    final_residual: Any,
+    *,
+    case_key: str = "diagnostic",
+    newton_iter: int = 0,
+) -> dict[str, Any]:
+    """Describe the gas-only Gibbs core ln_nk output without changing solver inputs."""
+
+    raw = np.asarray(jax.device_get(ln_nk_output))
+    finite = np.isfinite(raw.astype(np.float64, copy=False))
+    double_min_log = math.log(float.fromhex("0x1p-1022"))
+    return {
+        "diagnostic_only": True,
+        "default_off": True,
+        "constructor_input": False,
+        "reference_trace_input": False,
+        "FastChem_trace_values_used_as_inputs": False,
+        "FastChem_trace_values_used_as_KL_constructor_inputs": False,
+        "used_as_KL_constructor_input": False,
+        "available": True,
+        "case_key": str(case_key),
+        "newton_iter": int(newton_iter),
+        "source_stage": "minimize_gibbs_core ln_nk output source",
+        "producer_function": "src/exogibbs/optimize/minimize.py::minimize_gibbs_core",
+        "raw_input_type": type(ln_nk_output).__name__,
+        "raw_input_dtype": str(raw.dtype),
+        "shape": [int(dim) for dim in raw.shape],
+        "finite_count": int(finite.sum()),
+        "below_double_normal_log_count": int(np.sum(raw < double_min_log)),
+        "native_longdouble_provenance_available": False,
+        "preserves_native_longdouble_bits": False,
+        "reconstructed_from_float64": True,
+        "ln_ntot_output": float(np.asarray(jax.device_get(ln_ntot_output))),
+        "n_iter": int(np.asarray(jax.device_get(n_iter))),
+        "final_residual": float(np.asarray(jax.device_get(final_residual))),
+        "floor_policy": "gas-only PIPM minimizer core output; no native long-double floor policy",
+        "next_required_field": (
+            "minimize_gibbs_core while_loop final carry before JAX float64 "
+            "ln_nk output materialization"
+        ),
+    }
+
+
+def build_minimize_gibbs_core_final_carry_source_trace(
+    ln_nk_output: Any,
+    ln_ntot_output: Any,
+    n_iter: Any,
+    final_residual: Any,
+    *,
+    case_key: str = "diagnostic",
+    newton_iter: int = 0,
+) -> dict[str, Any]:
+    """Describe the final carry boundary for diagnostic ln_nk provenance."""
+
+    trace = build_minimize_gibbs_core_lnnk_output_source_trace(
+        ln_nk_output,
+        ln_ntot_output,
+        n_iter,
+        final_residual,
+        case_key=case_key,
+        newton_iter=newton_iter,
+    )
+    trace.update(
+        {
+            "source_stage": "minimize_gibbs_core while_loop final carry ln_nk source",
+            "producer_function": (
+                "src/exogibbs/optimize/minimize.py::"
+                "minimize_gibbs_core_with_source_trace"
+            ),
+            "trace_boundary": "lax.while_loop final carry",
+            "final_carry_tuple_index": 0,
+            "final_carry_tuple_field": "ln_nk",
+            "final_carry_tuple_size": 13,
+            "observed_after_while_loop_return": True,
+            "next_required_field": (
+                "minimize_gibbs_core body/update_all ln_nk_new source before "
+                "JAX float64 carry materialization"
+            ),
+        }
+    )
+    return trace
+
+
+def _sample_array(value: Any, limit: int = 5) -> list[float]:
+    raw = np.ravel(np.asarray(jax.device_get(value), dtype=np.float64))
+    return [float(item) for item in raw[:limit]]
+
+
+def compare_solve_iteration_system_longdouble(
+    bmatrix: Any,
+    rhs: Any,
+    An: Any,
+    resn: Any,
+    *,
+    reference_binv_rhs: Any,
+    reference_binv_an: Any,
+    reference_schur_safe: Any,
+) -> dict[str, Any]:
+    """Attempt a host long-double replay of the iteration linear solve."""
+
+    result: dict[str, Any] = {
+        "diagnostic_only": True,
+        "default_off": True,
+        "constructor_input": False,
+        "reference_trace_input": False,
+        "FastChem_trace_values_used_as_KL_constructor_inputs": False,
+        "source_stage": "long-double linear solve comparator",
+        "producer_function": (
+            "src/exogibbs/optimize/minimize.py::"
+            "compare_solve_iteration_system_longdouble"
+        ),
+        "attempted": True,
+        "available": False,
+        "solver": "numpy.linalg.solve on np.longdouble host arrays",
+        "input_dtype": "np.longdouble",
+    }
+    def _compare_solution(
+        binv_rhs_cmp: Any,
+        binv_an_cmp: Any,
+        schur_safe_cmp: Any,
+        solver: str,
+    ) -> None:
+        ref_rhs = np.asarray(jax.device_get(reference_binv_rhs), dtype=np.float64)
+        ref_an = np.asarray(jax.device_get(reference_binv_an), dtype=np.float64)
+        ref_schur = float(np.asarray(jax.device_get(reference_schur_safe)))
+        binv_rhs_arr = np.asarray(binv_rhs_cmp, dtype=np.float64)
+        binv_an_arr = np.asarray(binv_an_cmp, dtype=np.float64)
+        schur_safe_float = float(schur_safe_cmp)
+        result.update(
+            {
+                "available": True,
+                "solver": solver,
+                "binv_rhs_max_abs_delta_vs_jax": float(
+                    np.max(np.abs(binv_rhs_arr - ref_rhs))
+                ),
+                "binv_an_max_abs_delta_vs_jax": float(
+                    np.max(np.abs(binv_an_arr - ref_an))
+                ),
+                "schur_safe_abs_delta_vs_jax": float(
+                    abs(schur_safe_float - ref_schur)
+                ),
+                "binv_rhs_sample": [float(v) for v in binv_rhs_arr[:5]],
+                "binv_an_sample": [float(v) for v in binv_an_arr[:5]],
+                "schur_safe": schur_safe_float,
+            }
+        )
+
+    def _solve_with_numpy_longdouble() -> None:
+        bmatrix_ld = np.asarray(jax.device_get(bmatrix), dtype=np.longdouble)
+        rhs_ld = np.asarray(jax.device_get(rhs), dtype=np.longdouble)
+        an_ld = np.asarray(jax.device_get(An), dtype=np.longdouble)
+        resn_ld = np.asarray(jax.device_get(resn), dtype=np.longdouble)
+        jitter = np.asarray(_CHO_EPS, dtype=np.longdouble)
+        eye = np.eye(bmatrix_ld.shape[0], dtype=np.longdouble)
+        rhs_pair = np.stack((rhs_ld, an_ld), axis=1)
+        solved_pair = np.linalg.solve(bmatrix_ld + jitter * eye, rhs_pair)
+        binv_rhs_ld = solved_pair[:, 0]
+        binv_an_ld = solved_pair[:, 1]
+        schur_ld = resn_ld - np.vdot(an_ld, binv_an_ld)
+        schur_safe_ld = np.where(
+            np.abs(schur_ld) < jitter,
+            np.where(schur_ld < 0.0, -jitter, jitter),
+            schur_ld,
+        )
+        _compare_solution(
+            binv_rhs_ld,
+            binv_an_ld,
+            schur_safe_ld,
+            "numpy.linalg.solve on np.longdouble host arrays",
+        )
+
+    def _solve_with_scipy_longdouble() -> None:
+        import scipy.linalg
+
+        bmatrix_ld = np.asarray(jax.device_get(bmatrix), dtype=np.longdouble)
+        rhs_ld = np.asarray(jax.device_get(rhs), dtype=np.longdouble)
+        an_ld = np.asarray(jax.device_get(An), dtype=np.longdouble)
+        resn_ld = np.asarray(jax.device_get(resn), dtype=np.longdouble)
+        jitter = np.asarray(_CHO_EPS, dtype=np.longdouble)
+        eye = np.eye(bmatrix_ld.shape[0], dtype=np.longdouble)
+        rhs_pair = np.stack((rhs_ld, an_ld), axis=1)
+        solved_pair = scipy.linalg.solve(
+            bmatrix_ld + jitter * eye,
+            rhs_pair,
+            assume_a="gen",
+            check_finite=False,
+        )
+        binv_rhs_ld = solved_pair[:, 0]
+        binv_an_ld = solved_pair[:, 1]
+        schur_ld = resn_ld - np.vdot(an_ld, binv_an_ld)
+        schur_safe_ld = np.where(
+            np.abs(schur_ld) < jitter,
+            np.where(schur_ld < 0.0, -jitter, jitter),
+            schur_ld,
+        )
+        _compare_solution(
+            binv_rhs_ld,
+            binv_an_ld,
+            schur_safe_ld,
+            "scipy.linalg.solve on np.longdouble host arrays",
+        )
+
+    def _solve_with_mpmath() -> None:
+        import mpmath as mp
+
+        mp.mp.dps = 80
+        bmatrix_f64 = np.asarray(jax.device_get(bmatrix), dtype=np.float64)
+        rhs_f64 = np.asarray(jax.device_get(rhs), dtype=np.float64)
+        an_f64 = np.asarray(jax.device_get(An), dtype=np.float64)
+        resn_mp = mp.mpf(str(float(np.asarray(jax.device_get(resn)))))
+        jitter_mp = mp.mpf(str(_CHO_EPS))
+        matrix = mp.matrix(
+            [
+                [
+                    mp.mpf(str(float(value + (_CHO_EPS if i == j else 0.0))))
+                    for j, value in enumerate(row)
+                ]
+                for i, row in enumerate(bmatrix_f64)
+            ]
+        )
+        rhs_pair = mp.matrix(
+            [
+                [mp.mpf(str(float(rhs_f64[i]))), mp.mpf(str(float(an_f64[i])))]
+                for i in range(bmatrix_f64.shape[0])
+            ]
+        )
+        solved_pair = mp.lu_solve(matrix, rhs_pair)
+        binv_rhs_mp = [solved_pair[i, 0] for i in range(bmatrix_f64.shape[0])]
+        binv_an_mp = [solved_pair[i, 1] for i in range(bmatrix_f64.shape[0])]
+        schur_mp = resn_mp - mp.fsum(
+            mp.mpf(str(float(an_f64[i]))) * binv_an_mp[i]
+            for i in range(bmatrix_f64.shape[0])
+        )
+        if abs(schur_mp) < jitter_mp:
+            schur_safe_mp = -jitter_mp if schur_mp < 0 else jitter_mp
+        else:
+            schur_safe_mp = schur_mp
+        _compare_solution(
+            [float(value) for value in binv_rhs_mp],
+            [float(value) for value in binv_an_mp],
+            float(schur_safe_mp),
+            "mpmath.lu_solve high-precision comparator from float64 materialized inputs",
+        )
+        result["mpmath_decimal_precision"] = int(mp.mp.dps)
+        result["input_dtype"] = "float64 materialized values promoted to mpmath"
+
+    failures: list[dict[str, str]] = []
+    for solver in (
+        _solve_with_numpy_longdouble,
+        _solve_with_scipy_longdouble,
+        _solve_with_mpmath,
+    ):
+        try:
+            solver()
+            break
+        except Exception as exc:  # pragma: no cover - backend availability varies
+            failures.append(
+                {
+                    "solver": solver.__name__,
+                    "failure_type": type(exc).__name__,
+                    "failure_message": str(exc),
+                }
+            )
+    if not result["available"]:
+        result.update(
+            {
+                "available": False,
+                "failures": failures,
+                "next_required_field": (
+                    "platform-supported long-double linear algebra backend or "
+                    "external comparator"
+                ),
+            }
+        )
+    return result
+
+
+def build_hvector_provider_source_trace(
+    hvector_func: Any,
+    hvector: Any,
+    temperature: Any,
+    *,
+    case_key: str = "diagnostic",
+    newton_iter: int = 0,
+) -> dict[str, Any]:
+    """Describe the concrete hvector provider boundary observed by diagnostics."""
+
+    raw = np.asarray(jax.device_get(hvector))
+    return {
+        "diagnostic_only": True,
+        "default_off": True,
+        "constructor_input": False,
+        "reference_trace_input": False,
+        "FastChem_trace_values_used_as_KL_constructor_inputs": False,
+        "case_key": str(case_key),
+        "newton_iter": int(newton_iter),
+        "source_stage": "concrete hvector_func thermochemical provider boundary",
+        "producer_function": "hvector_func",
+        "hvector_func_type": type(hvector_func).__name__,
+        "hvector_func_name": getattr(hvector_func, "__name__", None),
+        "hvector_func_module": getattr(hvector_func, "__module__", None),
+        "temperature": float(np.asarray(jax.device_get(temperature))),
+        "hvector_output_dtype": str(raw.dtype),
+        "hvector_shape": [int(dim) for dim in raw.shape],
+        "hvector_sample": [float(v) for v in np.ravel(raw.astype(np.float64))[:5]],
+        "provider_metadata_available": False,
+        "native_longdouble_provenance_available": False,
+        "preserves_native_longdouble_bits": False,
+        "next_required_field": (
+            "preset/provider-specific hvector construction trace before JAX jit "
+            "and float64 materialization"
+        ),
+    }
+
+
+def build_keyed_final_iteration_provider_linear_trace(
+    hvector_func: Any,
+    components: dict[str, Any],
+    *,
+    case_key: str = "diagnostic",
+    newton_iter: int = 0,
+) -> dict[str, Any]:
+    """Persist provider source and final linear-system inputs under one join key."""
+
+    temperature = components["temperature"]
+    provider_trace_func = getattr(hvector_func, "fastchem_hvector_logk_source_trace", None)
+    provider_trace: dict[str, Any] | None = None
+    provider_trace_error: str | None = None
+    if callable(provider_trace_func):
+        try:
+            provider_trace = provider_trace_func(temperature, limit=16)
+        except Exception as exc:  # pragma: no cover - provider-specific diagnostics
+            provider_trace_error = f"{type(exc).__name__}: {exc}"
+
+    bmatrix = np.asarray(jax.device_get(components["bmatrix"]), dtype=np.float64)
+    rhs = np.asarray(jax.device_get(components["rhs"]), dtype=np.float64)
+    an = np.asarray(jax.device_get(components["An"]), dtype=np.float64)
+    hvector = np.asarray(jax.device_get(components["hvector"]), dtype=np.float64)
+    gk = np.asarray(jax.device_get(components["gk_before_update"]), dtype=np.float64)
+    trace = {
+        "diagnostic_only": True,
+        "default_off": True,
+        "constructor_input": False,
+        "reference_trace_input": False,
+        "FastChem_trace_values_used_as_KL_constructor_inputs": False,
+        "case_key": str(case_key),
+        "newton_iter": int(newton_iter),
+        "iteration": int(components["iteration"]),
+        "join_key": {
+            "case_key": str(case_key),
+            "newton_iter": int(newton_iter),
+            "iteration": int(components["iteration"]),
+            "source_stage": "final gas-only minimizer iteration",
+        },
+        "source_stage": "keyed final iteration provider source plus linear inputs",
+        "producer_function": (
+            "src/exogibbs/optimize/minimize.py::"
+            "build_keyed_final_iteration_provider_linear_trace"
+        ),
+        "provider_function_identity": getattr(hvector_func, "__name__", None),
+        "provider_function_type": type(hvector_func).__name__,
+        "provider_trace_available": provider_trace is not None,
+        "provider_trace_error": provider_trace_error,
+        "provider_source_trace": provider_trace,
+        "temperature": float(np.asarray(jax.device_get(temperature))),
+        "temperature_dtype": str(np.asarray(jax.device_get(temperature)).dtype),
+        "linear_system_inputs": {
+            "bmatrix_shape": [int(dim) for dim in bmatrix.shape],
+            "bmatrix_dtype": str(bmatrix.dtype),
+            "bmatrix": bmatrix.tolist(),
+            "rhs_shape": [int(dim) for dim in rhs.shape],
+            "rhs_dtype": str(rhs.dtype),
+            "rhs": rhs.tolist(),
+            "An_shape": [int(dim) for dim in an.shape],
+            "An_dtype": str(an.dtype),
+            "An": an.tolist(),
+            "resn": float(np.asarray(jax.device_get(components["resn"]))),
+            "scalar_rhs": float(np.asarray(jax.device_get(components["scalar_rhs"]))),
+            "schur_safe": float(np.asarray(jax.device_get(components["schur_safe"]))),
+            "ln_ntot": float(np.asarray(jax.device_get(components["ln_ntot_before"]))),
+            "ln_normalized_pressure": float(
+                np.asarray(jax.device_get(components["ln_normalized_pressure"]))
+            ),
+        },
+        "thermochemical_inputs": {
+            "hvector_shape": [int(dim) for dim in hvector.shape],
+            "hvector_dtype": str(hvector.dtype),
+            "hvector": hvector.tolist(),
+            "gk_shape": [int(dim) for dim in gk.shape],
+            "gk_dtype": str(gk.dtype),
+            "gk": gk.tolist(),
+            "ln_nk_sample": _sample_array(components["ln_nk_before"], limit=12),
+        },
+        "join_readiness": {
+            "provider_source_keyed_with_linear_inputs": provider_trace is not None,
+            "final_bmatrix_rhs_An_resn_persisted": True,
+            "A1_donor_rows_still_require_species_donor_mapping": True,
+        },
+        "next_required_field": (
+            "species/donor mapping from v54 A1 donor rows to final iteration "
+            "provider source and linear-system rows"
+        ),
+    }
+    return trace
+
+
+def trace_minimize_gibbs_core_update_all_lnnk_new_source_components(
+    state: ThermoState,
+    ln_nk_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    hvector_func,
+    epsilon_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+    *,
+    case_key: str = "diagnostic",
+    newton_iter: int = 0,
+) -> dict[str, Any]:
+    """Replay the core loop in Python and trace final ln_nk_new source terms."""
+
+    hvector = hvector_func(state.temperature)
+    gk = _compute_gk(
+        state.temperature,
+        ln_nk_init,
+        ln_ntot_init,
+        hvector,
+        state.ln_normalized_pressure,
+    )
+    An = formula_matrix @ jnp.exp(ln_nk_init)
+    ln_nk = ln_nk_init
+    ln_ntot = ln_ntot_init
+    epsilon = jnp.asarray(jnp.inf, dtype=jnp.asarray(ln_nk).dtype)
+    counter = 0
+    last_components: dict[str, Any] | None = None
+    while (float(jax.device_get(epsilon)) > float(epsilon_crit)) and counter < max_iter:
+        _, _, resn, bmatrix, rhs, scalar_rhs = _prepare_iteration_system(
+            ln_nk, ln_ntot, formula_matrix, state.element_vector, gk, An
+        )
+        binv_rhs, binv_an, schur_safe = _solve_iteration_system(bmatrix, rhs, An, resn)
+        pi_vector, delta_ln_ntot = _finish_iteration_solve(
+            binv_rhs, binv_an, An, scalar_rhs, schur_safe
+        )
+        at_pi = formula_matrix.T @ pi_vector
+        delta_ln_nk = at_pi + delta_ln_ntot - gk
+        lam = _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot)
+        ln_nk_new = ln_nk + lam * delta_ln_nk
+        ln_ntot_new = ln_ntot + lam * delta_ln_ntot
+        gk_before_update = gk
+        gk, An, epsilon = _evaluate_iteration_state(
+            ln_nk_new,
+            ln_ntot_new,
+            formula_matrix,
+            state.element_vector,
+            state.temperature,
+            state.ln_normalized_pressure,
+            hvector,
+            gk,
+            lam,
+            at_pi,
+            pi_vector,
+        )
+        last_components = {
+            "iteration": counter,
+            "ln_nk_before": ln_nk,
+            "delta_ln_nk": delta_ln_nk,
+            "lambda": lam,
+            "lambda_times_delta_ln_nk": lam * delta_ln_nk,
+            "ln_nk_new": ln_nk_new,
+            "delta_ln_ntot": delta_ln_ntot,
+            "pi_vector": pi_vector,
+            "at_pi": at_pi,
+            "gk_before_update": gk_before_update,
+            "binv_rhs": binv_rhs,
+            "binv_an": binv_an,
+            "schur_safe": schur_safe,
+            "scalar_rhs": scalar_rhs,
+            "rhs": rhs,
+            "bmatrix": bmatrix,
+            "An": An,
+            "resn": resn,
+            "hvector": hvector,
+            "ln_ntot_before": ln_ntot,
+            "ln_normalized_pressure": state.ln_normalized_pressure,
+            "temperature": state.temperature,
+        }
+        ln_nk = ln_nk_new
+        ln_ntot = ln_ntot_new
+        counter += 1
+
+    trace = build_minimize_gibbs_core_final_carry_source_trace(
+        ln_nk,
+        ln_ntot,
+        counter,
+        epsilon,
+        case_key=case_key,
+        newton_iter=newton_iter,
+    )
+    trace.update(
+        {
+            "source_stage": "update_all/_apply_iteration_step ln_nk_new source",
+            "producer_function": (
+                "src/exogibbs/optimize/minimize.py::"
+                "trace_minimize_gibbs_core_update_all_lnnk_new_source_components"
+            ),
+            "trace_boundary": "diagnostic Python replay of final update_all step",
+            "update_all_source_components_available": last_components is not None,
+            "observed_after_while_loop_return": False,
+            "next_required_field": (
+                "_finish_iteration_solve pi_vector/delta_ln_ntot source and "
+                "_compute_gk gk source before JAX float64 step materialization"
+            ),
+        }
+    )
+    if last_components is not None:
+        trace["update_all_source_components"] = {
+            "iteration": int(last_components["iteration"]),
+            "formula": "ln_nk_new = ln_nk + lambda * delta_ln_nk",
+            "ln_nk_before_sample": _sample_array(last_components["ln_nk_before"]),
+            "delta_ln_nk_sample": _sample_array(last_components["delta_ln_nk"]),
+            "lambda": float(np.asarray(jax.device_get(last_components["lambda"]))),
+            "lambda_times_delta_ln_nk_sample": _sample_array(
+                last_components["lambda_times_delta_ln_nk"]
+            ),
+            "ln_nk_new_sample": _sample_array(last_components["ln_nk_new"]),
+            "delta_ln_ntot": float(
+                np.asarray(jax.device_get(last_components["delta_ln_ntot"]))
+            ),
+            "at_pi_sample": _sample_array(last_components["at_pi"]),
+            "gk_before_update_sample": _sample_array(
+                last_components["gk_before_update"]
+            ),
+            "pi_vector_sample": _sample_array(last_components["pi_vector"]),
+            "binv_rhs_sample": _sample_array(last_components["binv_rhs"]),
+            "binv_an_sample": _sample_array(last_components["binv_an"]),
+            "rhs_sample": _sample_array(last_components["rhs"]),
+            "schur_safe": float(np.asarray(jax.device_get(last_components["schur_safe"]))),
+            "scalar_rhs": float(np.asarray(jax.device_get(last_components["scalar_rhs"]))),
+            "source_component_dtype": str(
+                np.asarray(jax.device_get(last_components["ln_nk_new"])).dtype
+            ),
+            "delta_ln_nk_formula": "delta_ln_nk = at_pi + delta_ln_ntot - gk",
+            "finish_iteration_solve_formula": (
+                "pi_vector = binv_rhs - binv_an * delta_ln_ntot"
+            ),
+        }
+        trace["delta_ln_nk_source_components_trace"] = {
+            "diagnostic_only": True,
+            "default_off": True,
+            "constructor_input": False,
+            "reference_trace_input": False,
+            "FastChem_trace_values_used_as_KL_constructor_inputs": False,
+            "source_stage": "_finish_iteration_solve/_compute_gk delta_ln_nk source",
+            "producer_function": (
+                "src/exogibbs/optimize/minimize.py::"
+                "trace_minimize_gibbs_core_update_all_lnnk_new_source_components"
+            ),
+            "source_formula": "delta_ln_nk = at_pi + delta_ln_ntot - gk",
+            "at_pi_source_formula": "at_pi = formula_matrix.T @ pi_vector",
+            "pi_vector_source_formula": (
+                "pi_vector = binv_rhs - binv_an * delta_ln_ntot"
+            ),
+            "delta_ln_ntot_source_formula": (
+                "delta_ln_ntot = (scalar_rhs - vdot(An, binv_rhs)) / schur_safe"
+            ),
+            "gk_source_formula": "_compute_gk(T, ln_nk, ln_ntot, hvector, ln_normalized_pressure)",
+            "component_fields": [
+                "pi_vector_sample",
+                "delta_ln_ntot",
+                "at_pi_sample",
+                "gk_before_update_sample",
+                "binv_rhs_sample",
+                "binv_an_sample",
+                "schur_safe",
+                "scalar_rhs",
+            ],
+            "native_longdouble_provenance_available": False,
+            "preserves_native_longdouble_bits": False,
+            "next_required_field": (
+                "_solve_iteration_system binv_rhs/binv_an/schur_safe and "
+                "_compute_gk thermochemical source before JAX float64 materialization"
+            ),
+        }
+        trace["linear_solve_and_gk_source_trace"] = {
+            "diagnostic_only": True,
+            "default_off": True,
+            "constructor_input": False,
+            "reference_trace_input": False,
+            "FastChem_trace_values_used_as_KL_constructor_inputs": False,
+            "source_stage": "_solve_iteration_system/_compute_gk source inputs",
+            "producer_function": (
+                "src/exogibbs/optimize/minimize.py::"
+                "trace_minimize_gibbs_core_update_all_lnnk_new_source_components"
+            ),
+            "solve_iteration_system_formula": (
+                "binv_rhs, binv_an = cho_solve(cho_factor(bmatrix + jitter * eye), "
+                "stack(rhs, An)); schur_safe = safe(resn - vdot(An, binv_an))"
+            ),
+            "bmatrix_source_formula": "bmatrix = _A_diagn_At(exp(ln_nk), formula_matrix)",
+            "rhs_source_formula": "rhs = formula_matrix @ (gk * exp(ln_nk)) + b - An",
+            "An_source_formula": "An = formula_matrix @ exp(ln_nk)",
+            "gk_source_formula": (
+                "gk = hvector + ln_nk - ln_ntot + ln_normalized_pressure"
+            ),
+            "bmatrix_sample": _sample_array(last_components["bmatrix"]),
+            "rhs_sample": _sample_array(last_components["rhs"]),
+            "An_sample": _sample_array(last_components["An"]),
+            "resn": float(np.asarray(jax.device_get(last_components["resn"]))),
+            "hvector_sample": _sample_array(last_components["hvector"]),
+            "ln_nk_sample": _sample_array(last_components["ln_nk_before"]),
+            "ln_ntot": float(
+                np.asarray(jax.device_get(last_components["ln_ntot_before"]))
+            ),
+            "ln_normalized_pressure": float(
+                np.asarray(jax.device_get(last_components["ln_normalized_pressure"]))
+            ),
+            "temperature": float(
+                np.asarray(jax.device_get(last_components["temperature"]))
+            ),
+            "source_component_dtype": str(
+                np.asarray(jax.device_get(last_components["bmatrix"])).dtype
+            ),
+            "native_longdouble_provenance_available": False,
+            "preserves_native_longdouble_bits": False,
+            "next_required_field": (
+                "_A_diagn_At/cho_solve numerical precision and hvector_func thermochemical source before JAX float64 materialization"
+            ),
+        }
+        trace["hvector_and_linear_precision_source_trace"] = {
+            "diagnostic_only": True,
+            "default_off": True,
+            "constructor_input": False,
+            "reference_trace_input": False,
+            "FastChem_trace_values_used_as_KL_constructor_inputs": False,
+            "source_stage": "hvector_func thermochemical source and cho_solve precision",
+            "producer_function": (
+                "src/exogibbs/optimize/minimize.py::"
+                "trace_minimize_gibbs_core_update_all_lnnk_new_source_components"
+            ),
+            "hvector_func_type": type(hvector_func).__name__,
+            "hvector_func_name": getattr(hvector_func, "__name__", None),
+            "hvector_output_dtype": str(np.asarray(jax.device_get(hvector)).dtype),
+            "hvector_sample": _sample_array(hvector),
+            "hvector_native_longdouble_provenance_available": False,
+            "linear_solver_factorization": "jax.scipy.linalg.cho_factor",
+            "linear_solver_solve": "jax.scipy.linalg.cho_solve",
+            "linear_solver_jitter": float(_CHO_EPS),
+            "linear_solver_matrix_dtype": str(
+                np.asarray(jax.device_get(last_components["bmatrix"])).dtype
+            ),
+            "linear_solver_rhs_dtype": str(
+                np.asarray(jax.device_get(last_components["rhs"])).dtype
+            ),
+            "linear_solver_native_longdouble_provenance_available": False,
+            "native_longdouble_provenance_available": False,
+            "preserves_native_longdouble_bits": False,
+            "next_required_field": (
+                "thermochemical provider hvector construction and optional "
+                "long-double linear algebra comparator before JAX float64 "
+                "materialization"
+            ),
+        }
+        trace["hvector_provider_source_trace"] = build_hvector_provider_source_trace(
+            hvector_func,
+            hvector,
+            last_components["temperature"],
+            case_key=case_key,
+            newton_iter=newton_iter,
+        )
+        trace["longdouble_linear_solve_comparator_trace"] = (
+            compare_solve_iteration_system_longdouble(
+                last_components["bmatrix"],
+                last_components["rhs"],
+                last_components["An"],
+                last_components["resn"],
+                reference_binv_rhs=last_components["binv_rhs"],
+                reference_binv_an=last_components["binv_an"],
+                reference_schur_safe=last_components["schur_safe"],
+            )
+        )
+        trace["keyed_final_iteration_provider_linear_trace"] = (
+            build_keyed_final_iteration_provider_linear_trace(
+                hvector_func,
+                last_components,
+                case_key=case_key,
+                newton_iter=newton_iter,
+            )
+        )
+    return trace
 
 
 def _minimize_gibbs_cond_fun(carry):
@@ -515,6 +1210,53 @@ def minimize_gibbs_core(
         init_carry,
     )
     return ln_nk, ln_tot, counter, epsilon
+
+
+def minimize_gibbs_core_with_source_trace(
+    state: ThermoState,
+    ln_nk_init: jnp.ndarray,
+    ln_ntot_init: float,
+    formula_matrix: jnp.ndarray,
+    hvector_func,
+    epsilon_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+    *,
+    source_trace_case_key: str = "diagnostic",
+    source_trace_newton_iter: int = 0,
+) -> Tuple[jnp.ndarray, float, int, jnp.ndarray, dict[str, Any]]:
+    """Run the core solver and attach a default-off final-carry source trace."""
+
+    ln_nk, ln_tot, counter, epsilon = minimize_gibbs_core(
+        state,
+        ln_nk_init,
+        ln_ntot_init,
+        formula_matrix,
+        hvector_func,
+        epsilon_crit,
+        max_iter,
+    )
+    source_trace = build_minimize_gibbs_core_final_carry_source_trace(
+        ln_nk,
+        ln_tot,
+        counter,
+        epsilon,
+        case_key=source_trace_case_key,
+        newton_iter=source_trace_newton_iter,
+    )
+    source_trace["update_all_lnnk_new_source_trace"] = (
+        trace_minimize_gibbs_core_update_all_lnnk_new_source_components(
+            state,
+            ln_nk_init,
+            ln_ntot_init,
+            formula_matrix,
+            hvector_func,
+            epsilon_crit,
+            max_iter,
+            case_key=source_trace_case_key,
+            newton_iter=source_trace_newton_iter,
+        )
+    )
+    return ln_nk, ln_tot, counter, epsilon, source_trace
 
 
 def _minimize_gibbs_solve_impl(

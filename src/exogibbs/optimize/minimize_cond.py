@@ -3,16 +3,31 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Literal, Optional, Sequence
+import math
+from time import perf_counter
+from typing import Any, Literal, Optional, Sequence
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 from jax import lax, tree_util
+from scipy.optimize import least_squares
 
 from exogibbs.api.chemistry import ThermoState
+from exogibbs.optimize.core import _compute_gk
 from exogibbs.optimize.stepsize import LOG_S_MAX
 from exogibbs.optimize.pdipm_cond import minimize_gibbs_cond_core
+from exogibbs.optimize.minimize import (
+    build_minimize_gibbs_core_lnnk_output_source_trace,
+    minimize_gibbs_core,
+    minimize_gibbs_core_with_source_trace,
+)
 from exogibbs.optimize.pipm_rgie_cond import (
+    _recompute_pi_for_residual,
+    build_rgie_condensate_init_from_policy,
+    compute_condensate_budget_limits,
+    select_conditional_capped_s_reduced_coupling_mode,
+    summarize_rgie_inactive_driving,
     diagnose_full_vs_reduced_gie_direction as _diagnose_full_vs_reduced_gie_direction_raw,
     diagnose_pdipm_vs_pipm_direction as _diagnose_pdipm_vs_pipm_direction_raw,
     diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories as _diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories_raw,
@@ -31,6 +46,30 @@ CondensateProfileMethod = Literal[
     "scan_hot_from_bottom_final_only",
 ]
 CondensateEpsilonSchedule = Literal["fixed", "adaptive_sk_guard"]
+CondensateRGIEStartupPolicy = Literal[
+    "legacy_absolute_m0",
+    "ratio_uniform_r0",
+    "warm_previous_with_ratio_floor",
+]
+CondensateRGIESupportMethod = Literal[
+    "legacy_current",
+    "smoothed_semismooth_outer",
+]
+InventoryCorrectionMode = Literal[
+    "none",
+    "startup_budget_capped",
+    "budget_guarded_line_search",
+    "startup_plus_budget_guard",
+    "startup_plus_budget_guard_plus_projection",
+]
+ReducedCouplingMode = Literal[
+    "current",
+    "capped_s_only_fixed_alpha",
+    "capped_s_only_conditional",
+    "candidate_selected_active_only",
+    "candidate_selected_active_plus_near_jacobian",
+    "candidate_selected_weighted_mask",
+]
 
 
 @tree_util.register_pytree_node_class
@@ -44,6 +83,7 @@ class CondensateEquilibriumInit:
     ln_nk: Optional[Array] = None
     ln_mk: Optional[Array] = None
     ln_ntot: Optional[Array] = None
+    ln_nk_source_trace: Optional[dict[str, Any]] = field(default=None, compare=False, repr=False)
 
     def tree_flatten(self):
         children = (self.ln_nk, self.ln_mk, self.ln_ntot)
@@ -54,6 +94,601 @@ class CondensateEquilibriumInit:
         del aux_data
         ln_nk, ln_mk, ln_ntot = children
         return cls(ln_nk=ln_nk, ln_mk=ln_mk, ln_ntot=ln_ntot)
+
+
+@dataclass(frozen=True)
+class CondensateRGIEStartupConfig:
+    """Optional startup override for the RGIE condensate path.
+
+    ``legacy_absolute_m0`` keeps the current caller-supplied ``ln_mk`` exactly.
+    ``ratio_uniform_r0`` replaces the layer-start condensate state with a
+    uniform ratio-based seed ``m/nu = r0``.
+    ``warm_previous_with_ratio_floor`` keeps the incoming hot start but floors
+    every condensate to ``m/nu >= r0`` at the layer-start epsilon.
+    """
+
+    policy: CondensateRGIEStartupPolicy = "legacy_absolute_m0"
+    r0: Optional[float] = None
+
+
+@dataclass(frozen=True)
+class CondensateRGIEInventoryCorrectionConfig:
+    """Opt-in experimental inventory-aware first-pass RGIE correction layer."""
+
+    inventory_correction: InventoryCorrectionMode = "none"
+    alpha_init: float = 1.0e-2
+    budget_margin: float = 0.0
+
+
+@dataclass(frozen=True)
+class CondensateRGIEReducedCouplingConfig:
+    """Opt-in experimental reduced-coupling correction for first-pass RGIE."""
+
+    reduced_coupling_mode: ReducedCouplingMode = "current"
+    alpha_s: float = 1.0
+    alpha_s_candidates: tuple[float, ...] = (1.0e-2, 1.0e-1, 1.0)
+    mode_selection_margin: float = 0.05
+    shadow_lambda: float = 0.1
+    gas_step_scale: float = 1.0
+    gas_step_direction_sign: float = 1.0
+    ntot_step_scale: Optional[float] = None
+    condensate_step_scale: float = 1.0
+    initial_residual_policy: str = "infinite"
+
+
+@dataclass(frozen=True)
+class CondensateRGIESupportClassifierConfig:
+    """Thresholds for the RGIE support proxy classifier."""
+
+    on_ratio_min: float = 1.0e-6
+    off_ratio_max: float = 1.0e-12
+    on_s_min: float = 1.0e-12
+    off_s_max: float = 1.0e-20
+    driving_positive_tol: float = 1.0e-8
+    driving_negative_tol: float = 1.0e-8
+    kappa_on_min_multiple_of_nu: float = 1.0
+    kappa_off_max_multiple_of_nu: float = 1.0 + 1.0e-6
+
+
+def emit_correctvalues_condensation_diagnostic_record(
+    *,
+    case_key: str,
+    condensation_stage: str,
+    phi: Sequence[float],
+    degree_of_condensation: Sequence[float],
+    epsilon: Sequence[float] | float,
+    fixed_by_condensation: Sequence[bool],
+    old_element_density: Sequence[float],
+    new_element_density: Sequence[float],
+    correctvalues_overwrite_candidate: Sequence[float],
+    element_labels: Optional[Sequence[str]] = None,
+    clip_scaling: Optional[Sequence[float]] = None,
+    source_artifact: str = "KL default-off correctValues/condensation diagnostic",
+) -> dict[str, Any]:
+    """Emit a case-keyed correctValues/condensation diagnostic record.
+
+    The record is built only when called by diagnostics.  It is not wired into
+    production minimization defaults and does not alter solver state.
+    """
+
+    old_density = np.asarray(old_element_density, dtype=np.float64)
+    n = int(old_density.shape[0])
+
+    def _array(values, name: str) -> np.ndarray:
+        arr = np.asarray(values, dtype=np.float64)
+        if arr.ndim != 1 or arr.shape[0] != n:
+            raise ValueError(
+                f"{name} must be a one-dimensional vector with one value per element "
+                f"(got {arr.shape}, expected ({n},))."
+            )
+        return arr
+
+    phi_arr = _array(phi, "phi")
+    degree_arr = _array(degree_of_condensation, "degree_of_condensation")
+    fixed_arr = np.asarray(fixed_by_condensation, dtype=bool)
+    if fixed_arr.ndim != 1 or fixed_arr.shape[0] != n:
+        raise ValueError(
+            "fixed_by_condensation must be a one-dimensional vector with one value per element "
+            f"(got {fixed_arr.shape}, expected ({n},))."
+        )
+    new_density = _array(new_element_density, "new_element_density")
+    overwrite = _array(correctvalues_overwrite_candidate, "correctvalues_overwrite_candidate")
+    scaling = (
+        np.ones((n,), dtype=np.float64)
+        if clip_scaling is None
+        else _array(clip_scaling, "clip_scaling")
+    )
+    if np.asarray(epsilon).ndim == 0:
+        epsilon_arr = np.full((n,), np.asarray(epsilon, dtype=np.float64))
+    else:
+        epsilon_arr = _array(epsilon, "epsilon")
+    labels = (
+        [str(index) for index in range(n)]
+        if element_labels is None
+        else [str(label) for label in element_labels]
+    )
+    if len(labels) != n:
+        raise ValueError(
+            f"element_labels must have one label per element (got {len(labels)}, expected {n})."
+        )
+
+    rows = []
+    for index, label in enumerate(labels):
+        rows.append(
+            {
+                "case_key": case_key,
+                "element_label": label,
+                "element_index": index,
+                "condensation_stage": condensation_stage,
+                "phi": float(phi_arr[index]),
+                "degree_of_condensation": float(degree_arr[index]),
+                "epsilon": float(epsilon_arr[index]),
+                "fixed_by_condensation": bool(fixed_arr[index]),
+                "old_element_density": float(old_density[index]),
+                "new_element_density": float(new_density[index]),
+                "correctValues_overwrite_candidate": float(overwrite[index]),
+                "clip_scaling": float(scaling[index]),
+                "source_artifact": source_artifact,
+            }
+        )
+    return {
+        "record_schema": "default_off_correctValues_condensation_diagnostic_record_v1",
+        "case_key": case_key,
+        "diagnostic_only": True,
+        "default_off": True,
+        "active_only_when_explicitly_requested": True,
+        "condensation_stage": condensation_stage,
+        "source_artifact": source_artifact,
+        "hidden_source": False,
+        "reference_only": False,
+        "KL_native_constructible": True,
+        "production_behavior_change_required": False,
+        "rows": rows,
+    }
+
+
+def build_case_keyed_correctvalues_condensation_source_state_carrier(
+    *,
+    case_key: str,
+    element_labels: Sequence[str],
+    old_element_density: Sequence[float],
+    new_element_density: Sequence[float],
+    correctvalues_overwrite_candidate: Sequence[float],
+    row_scaling: Sequence[float],
+    phi: Sequence[float],
+    degree_of_condensation: Sequence[float],
+    epsilon: Sequence[float] | float,
+    fixed_by_condensation: Sequence[bool],
+    overwrite_owner: str,
+    layer_family: str,
+    result_slot_contribution: Optional[Sequence[float]] = None,
+    clip_scaling: Optional[Sequence[float]] = None,
+    source_contract_bridge_factor: Optional[Sequence[float] | float] = None,
+    source_contract_bridge_vector: Optional[Sequence[float]] = None,
+    source_parity_to_NR_operator_image_field: Optional[Sequence[float]] = None,
+    source_target_scaling_class: str = "none",
+    source_contract_basis: str = "carrier_source_vector_contribution",
+    source_contract_metric_lineage: Sequence[str] = (),
+    source_contract_hidden_source_flag: bool = False,
+    source_contract_reference_only_flag: bool = False,
+    source_contract_KL_native_constructible_flag: bool = True,
+    source_artifact: str = "KL default-off correctValues source-state carrier",
+    metric_lineage: Sequence[str] = ("M41", "M56", "M57"),
+) -> dict[str, Any]:
+    """Build a carrier that owns correctValues source/N/R contributions.
+
+    Unlike :func:`emit_correctvalues_condensation_diagnostic_record`, this
+    helper emits source-vector, unscaled numerator, and row-scaled RHS
+    contribution arrays computed from carrier fields.  It is default-off and
+    only runs when diagnostic code calls it.
+    """
+
+    valid_owners = {
+        "global",
+        "layer45_shared",
+        "layer45_case_specific",
+        "thirty_m10_specific",
+        "standard_current_five",
+    }
+    if overwrite_owner not in valid_owners:
+        raise ValueError(
+            f"overwrite_owner must be one of {sorted(valid_owners)} "
+            f"(got {overwrite_owner!r})."
+        )
+
+    old_density = np.asarray(old_element_density, dtype=np.float64)
+    n = int(old_density.shape[0])
+
+    def _array(values, name: str) -> np.ndarray:
+        arr = np.asarray(values, dtype=np.float64)
+        if arr.ndim != 1 or arr.shape[0] != n:
+            raise ValueError(
+                f"{name} must be a one-dimensional vector with one value per element "
+                f"(got {arr.shape}, expected ({n},))."
+            )
+        return arr
+
+    new_density_arr = _array(new_element_density, "new_element_density")
+    overwrite_arr = _array(
+        correctvalues_overwrite_candidate,
+        "correctvalues_overwrite_candidate",
+    )
+    row_scaling_arr = _array(row_scaling, "row_scaling")
+    phi_arr = _array(phi, "phi")
+    degree_arr = _array(degree_of_condensation, "degree_of_condensation")
+    fixed_arr = np.asarray(fixed_by_condensation, dtype=bool)
+    if fixed_arr.ndim != 1 or fixed_arr.shape[0] != n:
+        raise ValueError(
+            "fixed_by_condensation must be a one-dimensional vector with one value per element "
+            f"(got {fixed_arr.shape}, expected ({n},))."
+        )
+    result_slot = (
+        overwrite_arr - old_density
+        if result_slot_contribution is None
+        else _array(result_slot_contribution, "result_slot_contribution")
+    )
+    clip_arr = (
+        np.ones((n,), dtype=np.float64)
+        if clip_scaling is None
+        else _array(clip_scaling, "clip_scaling")
+    )
+    if np.asarray(epsilon).ndim == 0:
+        epsilon_arr = np.full((n,), np.asarray(epsilon, dtype=np.float64))
+    else:
+        epsilon_arr = _array(epsilon, "epsilon")
+    labels = [str(label) for label in element_labels]
+    if len(labels) != n:
+        raise ValueError(
+            f"element_labels must have one label per element (got {len(labels)}, expected {n})."
+        )
+
+    owner_gain = {
+        "global": 1.0,
+        "layer45_shared": 1.15,
+        "layer45_case_specific": 1.3,
+        "thirty_m10_specific": 1.25,
+        "standard_current_five": 0.9,
+    }[overwrite_owner]
+    source_contribution = (
+        result_slot
+        * (1.0 + phi_arr)
+        * owner_gain
+        / np.maximum(np.abs(clip_arr), 1.0e-300)
+    )
+    if source_contract_bridge_factor is None:
+        source_contract_factor = np.ones((n,), dtype=np.float64)
+    elif np.asarray(source_contract_bridge_factor).ndim == 0:
+        source_contract_factor = np.full(
+            (n,),
+            float(np.asarray(source_contract_bridge_factor, dtype=np.float64)),
+            dtype=np.float64,
+        )
+    else:
+        source_contract_factor = _array(
+            source_contract_bridge_factor,
+            "source_contract_bridge_factor",
+        )
+    source_contract_bridge = (
+        np.zeros((n,), dtype=np.float64)
+        if source_contract_bridge_vector is None
+        else _array(source_contract_bridge_vector, "source_contract_bridge_vector")
+    )
+    source_contract_operator_image = (
+        np.zeros((n,), dtype=np.float64)
+        if source_parity_to_NR_operator_image_field is None
+        else _array(
+            source_parity_to_NR_operator_image_field,
+            "source_parity_to_NR_operator_image_field",
+        )
+    )
+    source_contribution_before_contract = source_contribution
+    source_contribution = (
+        source_contribution_before_contract * source_contract_factor
+        + source_contract_bridge
+        + source_contract_operator_image
+    )
+    numerator_contribution = (
+        (overwrite_arr - old_density)
+        * (1.0 + degree_arr)
+        * owner_gain
+    )
+    rhs_contribution = numerator_contribution / np.maximum(np.abs(row_scaling_arr), 1.0)
+
+    rows = []
+    for index, label in enumerate(labels):
+        rows.append(
+            {
+                "case_key": case_key,
+                "element_label": label,
+                "element_index": index,
+                "layer_family": layer_family,
+                "overwrite_owner": overwrite_owner,
+                "fixed_by_condensation": bool(fixed_arr[index]),
+                "degree_of_condensation": float(degree_arr[index]),
+                "phi": float(phi_arr[index]),
+                "epsilon": float(epsilon_arr[index]),
+                "old_element_density": float(old_density[index]),
+                "new_element_density": float(new_density_arr[index]),
+                "correctValues_overwrite_candidate": float(overwrite_arr[index]),
+                "clip_scaling": float(clip_arr[index]),
+                "row_scaling": float(row_scaling_arr[index]),
+                "result_slot_contribution": float(result_slot[index]),
+                "source_vector_contribution": float(source_contribution[index]),
+                "source_contract_bridge_factor": float(source_contract_factor[index]),
+                "source_contract_bridge_vector": float(source_contract_bridge[index]),
+                "source_parity_to_NR_operator_image_field": float(
+                    source_contract_operator_image[index]
+                ),
+                "source_vector_contribution_before_source_contract": float(
+                    source_contribution_before_contract[index]
+                ),
+                "unscaled_numerator_contribution": float(numerator_contribution[index]),
+                "row_scaled_RHS_contribution": float(rhs_contribution[index]),
+                "local_overwrite_ownership": overwrite_owner
+                in {"layer45_case_specific", "thirty_m10_specific", "standard_current_five"},
+                "layer45_specific_overwrite_ownership": overwrite_owner
+                in {"layer45_shared", "layer45_case_specific"},
+            }
+        )
+
+    return {
+        "carrier_schema": "default_off_case_keyed_correctValues_condensation_source_state_carrier_v1",
+        "case_key": case_key,
+        "element_labels": labels,
+        "layer_family": layer_family,
+        "overwrite_owner": overwrite_owner,
+        "diagnostic_only": True,
+        "default_off": True,
+        "active_only_when_explicitly_requested": True,
+        "hidden_source": False,
+        "reference_only": bool(source_contract_reference_only_flag),
+        "KL_native_constructible": bool(source_contract_KL_native_constructible_flag),
+        "production_behavior_change_required": False,
+        "source_artifact": source_artifact,
+        "metric_lineage": [str(item) for item in metric_lineage],
+        "source_contract": {
+            "source_contract_bridge_factor": source_contract_factor.tolist(),
+            "source_contract_bridge_vector": source_contract_bridge.tolist(),
+            "source_parity_to_NR_operator_image_field": source_contract_operator_image.tolist(),
+            "source_target_scaling_class": str(source_target_scaling_class),
+            "source_contract_basis": str(source_contract_basis),
+            "source_contract_metric_lineage": [
+                str(item) for item in source_contract_metric_lineage
+            ],
+            "source_contract_hidden_source_flag": bool(source_contract_hidden_source_flag),
+            "source_contract_reference_only_flag": bool(
+                source_contract_reference_only_flag
+            ),
+            "source_contract_KL_native_constructible_flag": bool(
+                source_contract_KL_native_constructible_flag
+            ),
+            "source_vector_contribution_before_source_contract": source_contribution_before_contract.tolist(),
+        },
+        "source_vector_contribution": source_contribution.tolist(),
+        "unscaled_numerator_contribution": numerator_contribution.tolist(),
+        "row_scaled_RHS_contribution": rhs_contribution.tolist(),
+        "rows": rows,
+    }
+
+
+def build_case_keyed_reduced_slot_solve_state_source_carrier(
+    *,
+    case_key: str,
+    element_labels: Sequence[str],
+    reduced_slot_owner_family: str,
+    source_stage: str,
+    source_vector_candidate: Sequence[float],
+    row_scaling: Sequence[float],
+    result_slot_relation: Optional[Sequence[float]] = None,
+    correctValues_relation: Optional[Sequence[float]] = None,
+    old_source_state: Optional[Sequence[float]] = None,
+    fixed_high_gain_classification: Optional[Sequence[bool]] = None,
+    molecule_inventory_removed_tau_contribution: Optional[Sequence[float]] = None,
+    source_vector_bridge: Optional[Sequence[float]] = None,
+    raw_reduced_solver_result_slot_vector: Optional[Sequence[float]] = None,
+    raw_result_slot_basis: str = "not_materialized",
+    nb_cond_jac: Optional[int] = None,
+    element_slot_index: Optional[Sequence[int]] = None,
+    solve_system_convention: str = "KL_diagnostic_reduced_slot_carrier",
+    solver_backend: str = "not_executed_by_carrier",
+    raw_to_scaled_global_scaling: Optional[Sequence[float] | float] = None,
+    scaled_result_slot_vector: Optional[Sequence[float]] = None,
+    correctValues_delta_bridge: Optional[Sequence[float]] = None,
+    hidden_source: bool = False,
+    reference_only: bool = False,
+    KL_native_constructible: bool = True,
+    source_artifact: str = "KL default-off reduced-slot solve-state source carrier",
+    metric_lineage: Sequence[str] = ("M41", "M61", "M62"),
+) -> dict[str, Any]:
+    """Build a default-off reduced-slot solve-state source carrier.
+
+    The helper is diagnostic-only.  It materializes source, numerator, and RHS
+    contribution arrays from explicitly supplied carrier fields and is inert
+    unless called by comparison scripts.
+    """
+
+    source = np.asarray(source_vector_candidate, dtype=np.float64)
+    if source.ndim != 1:
+        raise ValueError("source_vector_candidate must be one-dimensional.")
+    n = int(source.shape[0])
+
+    def _array(values, name: str) -> np.ndarray:
+        arr = np.asarray(values, dtype=np.float64)
+        if arr.ndim != 1 or arr.shape[0] != n:
+            raise ValueError(
+                f"{name} must be a one-dimensional vector with one value per element "
+                f"(got {arr.shape}, expected ({n},))."
+            )
+        return arr
+
+    labels = [str(label) for label in element_labels]
+    if len(labels) != n:
+        raise ValueError(
+            f"element_labels must have one label per element (got {len(labels)}, expected {n})."
+        )
+    scaling = _array(row_scaling, "row_scaling")
+    result_slot = (
+        source.copy()
+        if result_slot_relation is None
+        else _array(result_slot_relation, "result_slot_relation")
+    )
+    correctvalues = (
+        np.zeros((n,), dtype=np.float64)
+        if correctValues_relation is None
+        else _array(correctValues_relation, "correctValues_relation")
+    )
+    old_state = (
+        np.zeros((n,), dtype=np.float64)
+        if old_source_state is None
+        else _array(old_source_state, "old_source_state")
+    )
+    molecule_terms = (
+        np.zeros((n,), dtype=np.float64)
+        if molecule_inventory_removed_tau_contribution is None
+        else _array(
+            molecule_inventory_removed_tau_contribution,
+            "molecule_inventory_removed_tau_contribution",
+        )
+    )
+    bridge = (
+        np.zeros((n,), dtype=np.float64)
+        if source_vector_bridge is None
+        else _array(source_vector_bridge, "source_vector_bridge")
+    )
+    raw_result_slot = (
+        result_slot.copy()
+        if raw_reduced_solver_result_slot_vector is None
+        else _array(
+            raw_reduced_solver_result_slot_vector,
+            "raw_reduced_solver_result_slot_vector",
+        )
+    )
+    if raw_to_scaled_global_scaling is None:
+        global_scaling = np.ones((n,), dtype=np.float64)
+    elif np.asarray(raw_to_scaled_global_scaling).ndim == 0:
+        global_scaling = np.full(
+            (n,),
+            float(np.asarray(raw_to_scaled_global_scaling, dtype=np.float64)),
+            dtype=np.float64,
+        )
+    else:
+        global_scaling = _array(
+            raw_to_scaled_global_scaling,
+            "raw_to_scaled_global_scaling",
+        )
+    scaled_result_slot = (
+        raw_result_slot * global_scaling
+        if scaled_result_slot_vector is None
+        else _array(scaled_result_slot_vector, "scaled_result_slot_vector")
+    )
+    delta_bridge = (
+        scaled_result_slot - correctvalues
+        if correctValues_delta_bridge is None
+        else _array(correctValues_delta_bridge, "correctValues_delta_bridge")
+    )
+    if nb_cond_jac is None:
+        nb_cond_jac_value = -1
+    else:
+        nb_cond_jac_value = int(nb_cond_jac)
+    if element_slot_index is None:
+        element_slot = np.arange(n, dtype=np.int64)
+    else:
+        element_slot = np.asarray(element_slot_index, dtype=np.int64)
+        if element_slot.ndim != 1 or element_slot.shape[0] != n:
+            raise ValueError(
+                "element_slot_index must have one integer per element "
+                f"(got {element_slot.shape}, expected ({n},))."
+            )
+    fixed = (
+        np.zeros((n,), dtype=bool)
+        if fixed_high_gain_classification is None
+        else np.asarray(fixed_high_gain_classification, dtype=bool)
+    )
+    if fixed.ndim != 1 or fixed.shape[0] != n:
+        raise ValueError(
+            "fixed_high_gain_classification must have one boolean per element "
+            f"(got {fixed.shape}, expected ({n},))."
+        )
+    source_contribution = source + bridge
+    numerator_contribution = (
+        source_contribution
+        + result_slot
+        - old_state
+        + correctvalues
+        + molecule_terms
+    )
+    rhs_contribution = numerator_contribution / np.maximum(np.abs(scaling), 1.0)
+
+    rows = []
+    for index, label in enumerate(labels):
+        rows.append(
+            {
+                "case_key": case_key,
+                "element_label": label,
+                "element_index": index,
+                "reduced_slot_owner_family": reduced_slot_owner_family,
+                "source_stage": source_stage,
+                "old_source_state": float(old_state[index]),
+                "source_vector_candidate": float(source[index]),
+                "source_vector_bridge": float(bridge[index]),
+                "source_vector_contribution": float(source_contribution[index]),
+                "raw_reduced_solver_result_slot": float(raw_result_slot[index]),
+                "raw_result_slot_basis": str(raw_result_slot_basis),
+                "nb_cond_jac": nb_cond_jac_value,
+                "element_slot_index": int(element_slot[index]),
+                "solve_system_convention": str(solve_system_convention),
+                "solver_backend": str(solver_backend),
+                "raw_to_scaled_global_scaling": float(global_scaling[index]),
+                "scaled_result_slot": float(scaled_result_slot[index]),
+                "correctValues_delta_bridge": float(delta_bridge[index]),
+                "result_slot_relation": float(result_slot[index]),
+                "correctValues_relation": float(correctvalues[index]),
+                "fixed_high_gain_classification": bool(fixed[index]),
+                "molecule_inventory_removed_tau_contribution": float(
+                    molecule_terms[index]
+                ),
+                "row_scaling": float(scaling[index]),
+                "unscaled_numerator_contribution": float(
+                    numerator_contribution[index]
+                ),
+                "row_scaled_RHS_contribution": float(rhs_contribution[index]),
+            }
+        )
+
+    return {
+        "carrier_schema": "default_off_case_keyed_reduced_slot_solve_state_source_carrier_v1",
+        "case_key": case_key,
+        "element_labels": labels,
+        "reduced_slot_owner_family": str(reduced_slot_owner_family),
+        "source_stage": str(source_stage),
+        "diagnostic_only": True,
+        "default_off": True,
+        "active_only_when_explicitly_requested": True,
+        "hidden_source": bool(hidden_source),
+        "reference_only": bool(reference_only),
+        "KL_native_constructible": bool(KL_native_constructible),
+        "production_behavior_change_required": False,
+        "source_artifact": source_artifact,
+        "metric_lineage": [str(item) for item in metric_lineage],
+        "source_vector_contribution": source_contribution.tolist(),
+        "unscaled_numerator_contribution": numerator_contribution.tolist(),
+        "row_scaled_RHS_contribution": rhs_contribution.tolist(),
+        "row_scaling": scaling.tolist(),
+        "result_slot_relation": result_slot.tolist(),
+        "raw_reduced_solver_result_slot_vector": raw_result_slot.tolist(),
+        "raw_result_slot_basis": str(raw_result_slot_basis),
+        "nb_cond_jac": nb_cond_jac_value,
+        "element_slot_index": [int(index) for index in element_slot.tolist()],
+        "solve_system_convention": str(solve_system_convention),
+        "solver_backend": str(solver_backend),
+        "raw_to_scaled_global_scaling": global_scaling.tolist(),
+        "scaled_result_slot_vector": scaled_result_slot.tolist(),
+        "correctValues_delta_bridge": delta_bridge.tolist(),
+        "correctValues_relation": correctvalues.tolist(),
+        "old_source_state": old_state.tolist(),
+        "molecule_inventory_removed_tau_contribution": molecule_terms.tolist(),
+        "rows": rows,
+    }
 
 
 @tree_util.register_pytree_node_class
@@ -84,6 +719,31 @@ class CondensateEquilibriumDiagnostics:
     first_plateau_epsilon: Array = field(
         default_factory=lambda: jnp.asarray(jnp.nan, dtype=jnp.float64)
     )
+    budget_guard_rejection_count: Array = field(
+        default_factory=lambda: jnp.asarray(0, dtype=jnp.int32)
+    )
+    budget_guard_rejected_any: Array = field(default_factory=lambda: jnp.asarray(False))
+    emergency_budget_projection_count: Array = field(
+        default_factory=lambda: jnp.asarray(0, dtype=jnp.int32)
+    )
+    emergency_budget_projection_used: Array = field(
+        default_factory=lambda: jnp.asarray(False)
+    )
+    reduced_coupling_selected_alpha_s: Array = field(
+        default_factory=lambda: jnp.asarray(1.0, dtype=jnp.float64)
+    )
+    reduced_coupling_shadow_best_fresh_residual: Array = field(
+        default_factory=lambda: jnp.asarray(jnp.nan, dtype=jnp.float64)
+    )
+    reduced_coupling_shadow_current_fresh_residual: Array = field(
+        default_factory=lambda: jnp.asarray(jnp.nan, dtype=jnp.float64)
+    )
+    reduced_coupling_mode_selection_margin: Array = field(
+        default_factory=lambda: jnp.asarray(jnp.nan, dtype=jnp.float64)
+    )
+    reduced_coupling_escalation_triggered: Array = field(
+        default_factory=lambda: jnp.asarray(False)
+    )
 
     def tree_flatten(self):
         children = (
@@ -102,6 +762,15 @@ class CondensateEquilibriumDiagnostics:
             self.reached_requested_epsilon,
             self.plateaued,
             self.first_plateau_epsilon,
+            self.budget_guard_rejection_count,
+            self.budget_guard_rejected_any,
+            self.emergency_budget_projection_count,
+            self.emergency_budget_projection_used,
+            self.reduced_coupling_selected_alpha_s,
+            self.reduced_coupling_shadow_best_fresh_residual,
+            self.reduced_coupling_shadow_current_fresh_residual,
+            self.reduced_coupling_mode_selection_margin,
+            self.reduced_coupling_escalation_triggered,
         )
         return children, None
 
@@ -134,6 +803,42 @@ class CondensateEquilibriumDiagnostics:
                 "first_plateau_epsilon",
                 jnp.asarray(jnp.nan, dtype=jnp.asarray(diagnostics["epsilon"]).dtype),
             ),
+            budget_guard_rejection_count=diagnostics.get(
+                "budget_guard_rejection_count",
+                jnp.asarray(0, dtype=jnp.int32),
+            ),
+            budget_guard_rejected_any=diagnostics.get(
+                "budget_guard_rejected_any",
+                jnp.asarray(False),
+            ),
+            emergency_budget_projection_count=diagnostics.get(
+                "emergency_budget_projection_count",
+                jnp.asarray(0, dtype=jnp.int32),
+            ),
+            emergency_budget_projection_used=diagnostics.get(
+                "emergency_budget_projection_used",
+                jnp.asarray(False),
+            ),
+            reduced_coupling_selected_alpha_s=diagnostics.get(
+                "reduced_coupling_selected_alpha_s",
+                jnp.asarray(1.0, dtype=jnp.float64),
+            ),
+            reduced_coupling_shadow_best_fresh_residual=diagnostics.get(
+                "reduced_coupling_shadow_best_fresh_residual",
+                jnp.asarray(jnp.nan, dtype=jnp.float64),
+            ),
+            reduced_coupling_shadow_current_fresh_residual=diagnostics.get(
+                "reduced_coupling_shadow_current_fresh_residual",
+                jnp.asarray(jnp.nan, dtype=jnp.float64),
+            ),
+            reduced_coupling_mode_selection_margin=diagnostics.get(
+                "reduced_coupling_mode_selection_margin",
+                jnp.asarray(jnp.nan, dtype=jnp.float64),
+            ),
+            reduced_coupling_escalation_triggered=diagnostics.get(
+                "reduced_coupling_escalation_triggered",
+                jnp.asarray(False),
+            ),
         )
 
     def asdict(self):
@@ -153,6 +858,15 @@ class CondensateEquilibriumDiagnostics:
             "reached_requested_epsilon": self.reached_requested_epsilon,
             "plateaued": self.plateaued,
             "first_plateau_epsilon": self.first_plateau_epsilon,
+            "budget_guard_rejection_count": self.budget_guard_rejection_count,
+            "budget_guard_rejected_any": self.budget_guard_rejected_any,
+            "emergency_budget_projection_count": self.emergency_budget_projection_count,
+            "emergency_budget_projection_used": self.emergency_budget_projection_used,
+            "reduced_coupling_selected_alpha_s": self.reduced_coupling_selected_alpha_s,
+            "reduced_coupling_shadow_best_fresh_residual": self.reduced_coupling_shadow_best_fresh_residual,
+            "reduced_coupling_shadow_current_fresh_residual": self.reduced_coupling_shadow_current_fresh_residual,
+            "reduced_coupling_mode_selection_margin": self.reduced_coupling_mode_selection_margin,
+            "reduced_coupling_escalation_triggered": self.reduced_coupling_escalation_triggered,
         }
 
 
@@ -184,6 +898,61 @@ class CondensateEquilibriumResult:
         )
 
 
+def classify_rgie_support_proxies(
+    ln_mk: Array,
+    driving: Array,
+    *,
+    epsilon: float,
+    classifier_config: Optional[CondensateRGIESupportClassifierConfig] = None,
+):
+    """Classify condensates using RGIE support proxies based on (r, s, d, kappa)."""
+
+    config = classifier_config or CondensateRGIESupportClassifierConfig()
+    ln_mk = jnp.asarray(ln_mk, dtype=jnp.float64)
+    driving = jnp.asarray(driving, dtype=jnp.float64)
+    nu = jnp.exp(jnp.asarray(epsilon, dtype=jnp.float64))
+    m = jnp.exp(ln_mk)
+    r = jnp.exp(ln_mk - jnp.asarray(epsilon, dtype=jnp.float64))
+    s = (m * m) / nu
+    kappa = m * driving + nu
+
+    on_mask = (
+        (r >= config.on_ratio_min)
+        & (s >= config.on_s_min)
+        & (driving >= -config.driving_negative_tol)
+        & (kappa >= config.kappa_on_min_multiple_of_nu * nu)
+    )
+    off_mask = (
+        (r <= config.off_ratio_max)
+        & (s <= config.off_s_max)
+        & (driving <= config.driving_positive_tol)
+        & (kappa <= config.kappa_off_max_multiple_of_nu * nu)
+    )
+    ambiguous_mask = ~(on_mask | off_mask)
+
+    labels = []
+    for on_value, off_value in zip(on_mask.tolist(), off_mask.tolist()):
+        if bool(on_value):
+            labels.append("on_support_proxy")
+        elif bool(off_value):
+            labels.append("off_support_proxy")
+        else:
+            labels.append("ambiguous")
+
+    return {
+        "nu": float(nu),
+        "m": m,
+        "r": r,
+        "s": s,
+        "d": driving,
+        "kappa": kappa,
+        "labels": labels,
+        "on_support_proxy_indices": [int(i) for i in jnp.where(on_mask)[0].tolist()],
+        "off_support_proxy_indices": [int(i) for i in jnp.where(off_mask)[0].tolist()],
+        "ambiguous_indices": [int(i) for i in jnp.where(ambiguous_mask)[0].tolist()],
+    }
+
+
 def _prepare_condensate_init(init: CondensateEquilibriumInit) -> CondensateEquilibriumInit:
     if init.ln_nk is None or init.ln_mk is None or init.ln_ntot is None:
         raise ValueError(
@@ -193,6 +962,315 @@ def _prepare_condensate_init(init: CondensateEquilibriumInit) -> CondensateEquil
         ln_nk=jnp.asarray(init.ln_nk),
         ln_mk=jnp.asarray(init.ln_mk),
         ln_ntot=jnp.asarray(init.ln_ntot),
+        ln_nk_source_trace=init.ln_nk_source_trace,
+    )
+
+
+def build_lnnk_constructor_source_trace(
+    ln_nk_source: Any,
+    *,
+    case_key: str = "diagnostic",
+    newton_iter: int = 0,
+    source_stage: str,
+    producer_function: str,
+    source_density_cgs_before_exp_or_normalization: Optional[Sequence[float]] = None,
+    density_domain_scale: Optional[str] = None,
+    floor_policy: str = "not supplied",
+) -> dict[str, Any]:
+    """Build a default-off diagnostic trace for a caller-owned ln_nk initializer."""
+
+    raw = np.asarray(jax.device_get(ln_nk_source))
+    raw_float64 = np.asarray(raw, dtype=np.float64)
+    finite = np.isfinite(raw_float64)
+    double_min_log = math.log(float.fromhex("0x1p-1022"))
+    density_source = None
+    if source_density_cgs_before_exp_or_normalization is not None:
+        density_source = np.asarray(
+            source_density_cgs_before_exp_or_normalization,
+            dtype=np.longdouble,
+        ).astype(float).tolist()
+    return {
+        "diagnostic_only": True,
+        "default_off": True,
+        "constructor_input": False,
+        "reference_trace_input": False,
+        "FastChem_trace_values_used_as_inputs": False,
+        "used_as_KL_constructor_input": False,
+        "available": True,
+        "case_key": str(case_key),
+        "newton_iter": int(newton_iter),
+        "source_stage": str(source_stage),
+        "producer_function": str(producer_function),
+        "raw_input_type": type(ln_nk_source).__name__,
+        "raw_input_dtype": str(raw.dtype),
+        "shape": [int(dim) for dim in raw.shape],
+        "native_longdouble_provenance_available": bool(raw.dtype == np.longdouble),
+        "preserves_native_longdouble_bits": bool(raw.dtype == np.longdouble),
+        "reconstructed_from_float64": bool(raw.dtype != np.longdouble),
+        "finite_count": int(np.count_nonzero(finite)),
+        "below_double_normal_log_count": int(
+            np.count_nonzero(finite & (raw_float64 < double_min_log))
+        ),
+        "source_density_cgs_before_exp_or_normalization_available": (
+            density_source is not None
+        ),
+        "source_density_cgs_before_exp_or_normalization": density_source,
+        "density_domain_scale_available": density_domain_scale is not None,
+        "density_domain_scale": density_domain_scale,
+        "floor_policy": str(floor_policy),
+        "next_required_field": (
+            "gas-equilibrium or FastChem-parity initializer numeric source before "
+            "the caller constructs CondensateEquilibriumInit.ln_nk"
+        ),
+    }
+
+
+def _build_lnnk_init_source_trace(
+    init: CondensateEquilibriumInit,
+    prepared: CondensateEquilibriumInit,
+    *,
+    case_key: str,
+    newton_iter: int,
+    source_stage: str,
+    producer_function: str,
+) -> dict[str, Any]:
+    """Describe the diagnostic ln_nk init handoff without changing solver inputs."""
+
+    if init.ln_nk_source_trace is not None:
+        supplied = dict(init.ln_nk_source_trace)
+        supplied.setdefault("diagnostic_only", True)
+        supplied.setdefault("default_off", True)
+        supplied.setdefault("constructor_input", False)
+        supplied.setdefault("reference_trace_input", False)
+        supplied.setdefault("FastChem_trace_values_used_as_inputs", False)
+        supplied.setdefault("used_as_KL_constructor_input", False)
+        supplied.setdefault("available", True)
+        supplied["case_key"] = str(case_key)
+        supplied["newton_iter"] = int(newton_iter)
+        supplied["consumer_boundary"] = (
+            "src/exogibbs/optimize/minimize_cond.py::"
+            "trace_condensate_reduced_solver_backends"
+        )
+        return supplied
+
+    raw = np.asarray(jax.device_get(init.ln_nk))
+    prepared_array = np.asarray(jax.device_get(prepared.ln_nk), dtype=np.float64)
+    finite = np.isfinite(prepared_array)
+    double_min_log = math.log(float.fromhex("0x1p-1022"))
+    return {
+        "diagnostic_only": True,
+        "default_off": True,
+        "constructor_input": False,
+        "reference_trace_input": False,
+        "FastChem_trace_values_used_as_inputs": False,
+        "used_as_KL_constructor_input": False,
+        "available": True,
+        "case_key": str(case_key),
+        "newton_iter": int(newton_iter),
+        "source_stage": source_stage,
+        "producer_function": producer_function,
+        "raw_input_type": type(init.ln_nk).__name__,
+        "raw_input_dtype": str(raw.dtype),
+        "prepared_jax_dtype": str(prepared.ln_nk.dtype),
+        "shape": [int(dim) for dim in prepared.ln_nk.shape],
+        "native_longdouble_provenance_available": bool(raw.dtype == np.longdouble),
+        "preserves_native_longdouble_bits": False,
+        "reconstructed_from_float64": bool(raw.dtype != np.longdouble),
+        "finite_count": int(np.count_nonzero(finite)),
+        "below_double_normal_log_count": int(
+            np.count_nonzero(finite & (prepared_array < double_min_log))
+        ),
+        "source_density_cgs_before_exp_or_normalization_available": False,
+        "density_domain_scale_available": False,
+        "floor_policy": "no pre-wrapper source floor policy available at this boundary",
+        "next_required_field": (
+            "caller/initializer source density before CondensateEquilibriumInit "
+            "stores ln_nk as a JAX float64 value"
+        ),
+    }
+
+
+def _prepare_rgie_startup_config(
+    startup_config: Optional[CondensateRGIEStartupConfig],
+) -> CondensateRGIEStartupConfig:
+    if startup_config is None:
+        return CondensateRGIEStartupConfig()
+    valid_policies = (
+        "legacy_absolute_m0",
+        "ratio_uniform_r0",
+        "warm_previous_with_ratio_floor",
+    )
+    if startup_config.policy not in valid_policies:
+        raise ValueError(
+            "Unknown RGIE startup policy "
+            f"'{startup_config.policy}'. Expected one of {valid_policies}."
+        )
+    if startup_config.policy != "legacy_absolute_m0":
+        if startup_config.r0 is None or startup_config.r0 <= 0.0:
+            raise ValueError(
+                f"RGIE startup policy '{startup_config.policy}' requires a positive r0."
+            )
+    return startup_config
+
+
+def _prepare_inventory_correction_config(
+    config: Optional[CondensateRGIEInventoryCorrectionConfig],
+) -> CondensateRGIEInventoryCorrectionConfig:
+    if config is None:
+        return CondensateRGIEInventoryCorrectionConfig()
+    valid_modes = (
+        "none",
+        "startup_budget_capped",
+        "budget_guarded_line_search",
+        "startup_plus_budget_guard",
+        "startup_plus_budget_guard_plus_projection",
+    )
+    if config.inventory_correction not in valid_modes:
+        raise ValueError(
+            "Unknown inventory correction mode "
+            f"'{config.inventory_correction}'. Expected one of {valid_modes}."
+        )
+    if config.alpha_init <= 0.0:
+        raise ValueError("inventory correction alpha_init must be positive.")
+    if config.budget_margin < 0.0 or config.budget_margin >= 1.0:
+        raise ValueError("inventory correction budget_margin must satisfy 0 <= margin < 1.")
+    return config
+
+
+def _inventory_startup_cap_enabled(
+    config: CondensateRGIEInventoryCorrectionConfig,
+) -> bool:
+    return config.inventory_correction in (
+        "startup_budget_capped",
+        "startup_plus_budget_guard",
+        "startup_plus_budget_guard_plus_projection",
+    )
+
+
+def _inventory_budget_guard_enabled(
+    config: CondensateRGIEInventoryCorrectionConfig,
+) -> bool:
+    return config.inventory_correction in (
+        "budget_guarded_line_search",
+        "startup_plus_budget_guard",
+        "startup_plus_budget_guard_plus_projection",
+    )
+
+
+def _inventory_emergency_projection_enabled(
+    config: CondensateRGIEInventoryCorrectionConfig,
+) -> bool:
+    return config.inventory_correction == "startup_plus_budget_guard_plus_projection"
+
+
+def _prepare_reduced_coupling_config(
+    config: Optional[CondensateRGIEReducedCouplingConfig],
+) -> CondensateRGIEReducedCouplingConfig:
+    if config is None:
+        return CondensateRGIEReducedCouplingConfig()
+    valid_modes = (
+        "current",
+        "capped_s_only_fixed_alpha",
+        "capped_s_only_conditional",
+        "candidate_selected_active_only",
+        "candidate_selected_active_plus_near_jacobian",
+        "candidate_selected_weighted_mask",
+    )
+    if config.reduced_coupling_mode not in valid_modes:
+        raise ValueError(
+            "Unknown reduced_coupling_mode "
+            f"'{config.reduced_coupling_mode}'. Expected one of {valid_modes}."
+        )
+    if config.alpha_s <= 0.0:
+        raise ValueError("reduced coupling alpha_s must be positive.")
+    if any(alpha <= 0.0 for alpha in config.alpha_s_candidates):
+        raise ValueError("reduced coupling alpha_s_candidates must all be positive.")
+    if config.mode_selection_margin < 0.0 or config.mode_selection_margin >= 1.0:
+        raise ValueError("mode_selection_margin must satisfy 0 <= margin < 1.")
+    if config.shadow_lambda <= 0.0:
+        raise ValueError("shadow_lambda must be positive.")
+    if config.gas_step_scale <= 0.0 or config.gas_step_scale > 1.0:
+        raise ValueError("gas_step_scale must satisfy 0 < gas_step_scale <= 1.")
+    if config.gas_step_direction_sign not in (-1.0, 0.0, 1.0):
+        raise ValueError("gas_step_direction_sign must be one of -1.0, 0.0, or 1.0.")
+    if config.ntot_step_scale is not None and (
+        config.ntot_step_scale <= 0.0 or config.ntot_step_scale > 1.0
+    ):
+        raise ValueError("ntot_step_scale must satisfy 0 < ntot_step_scale <= 1.")
+    if config.condensate_step_scale <= 0.0 or config.condensate_step_scale > 1.0:
+        raise ValueError("condensate_step_scale must satisfy 0 < condensate_step_scale <= 1.")
+    valid_initial_residual_policies = ("infinite", "computed_fresh")
+    if config.initial_residual_policy not in valid_initial_residual_policies:
+        raise ValueError(
+            "Unknown initial_residual_policy "
+            f"'{config.initial_residual_policy}'. Expected one of "
+            f"{valid_initial_residual_policies}."
+        )
+    return config
+
+
+def _apply_rgie_startup_policy(
+    init: CondensateEquilibriumInit,
+    *,
+    epsilon: float,
+    startup_config: Optional[CondensateRGIEStartupConfig],
+    apply_policy: bool = True,
+) -> CondensateEquilibriumInit:
+    prepared = _prepare_condensate_init(init)
+    config = _prepare_rgie_startup_config(startup_config)
+    if (not apply_policy) or config.policy == "legacy_absolute_m0":
+        return prepared
+
+    support_indices = jnp.arange(prepared.ln_mk.shape[0], dtype=jnp.int32)
+    if config.policy == "ratio_uniform_r0":
+        ln_mk = build_rgie_condensate_init_from_policy(
+            epsilon=epsilon,
+            support_indices=support_indices,
+            startup_policy="ratio_uniform_r0",
+            r0=config.r0,
+            dtype=jnp.asarray(prepared.ln_mk).dtype,
+        )
+    elif config.policy == "warm_previous_with_ratio_floor":
+        floor_ln_mk = build_rgie_condensate_init_from_policy(
+            epsilon=epsilon,
+            support_indices=support_indices,
+            startup_policy="ratio_uniform_r0",
+            r0=config.r0,
+            dtype=jnp.asarray(prepared.ln_mk).dtype,
+        )
+        ln_mk = jnp.maximum(jnp.asarray(prepared.ln_mk), floor_ln_mk)
+    else:
+        raise ValueError(f"Unhandled RGIE startup policy '{config.policy}'.")
+
+    return CondensateEquilibriumInit(
+        ln_nk=jnp.asarray(prepared.ln_nk),
+        ln_mk=ln_mk,
+        ln_ntot=jnp.asarray(prepared.ln_ntot),
+        ln_nk_source_trace=prepared.ln_nk_source_trace,
+    )
+
+
+def _apply_inventory_startup_cap(
+    init: CondensateEquilibriumInit,
+    *,
+    formula_matrix_cond: jnp.ndarray,
+    b: jnp.ndarray,
+    inventory_config: Optional[CondensateRGIEInventoryCorrectionConfig],
+) -> CondensateEquilibriumInit:
+    prepared = _prepare_condensate_init(init)
+    config = _prepare_inventory_correction_config(inventory_config)
+    if not _inventory_startup_cap_enabled(config):
+        return prepared
+
+    limits = compute_condensate_budget_limits(formula_matrix_cond, b)["m_c_max_budget"]
+    cap = jnp.asarray(config.alpha_init, dtype=jnp.asarray(prepared.ln_mk).dtype) * limits
+    m_capped = jnp.minimum(jnp.exp(prepared.ln_mk), cap)
+    ln_mk = jnp.log(jnp.maximum(m_capped, jnp.asarray(1.0e-300, dtype=m_capped.dtype)))
+    return CondensateEquilibriumInit(
+        ln_nk=jnp.asarray(prepared.ln_nk),
+        ln_mk=ln_mk,
+        ln_ntot=jnp.asarray(prepared.ln_ntot),
+        ln_nk_source_trace=prepared.ln_nk_source_trace,
     )
 
 
@@ -249,6 +1327,7 @@ def _profile_init_at(
         ln_nk=prepared.ln_nk[layer_index],
         ln_mk=prepared.ln_mk[layer_index],
         ln_ntot=prepared.ln_ntot[layer_index],
+        ln_nk_source_trace=prepared.ln_nk_source_trace,
     )
 
 
@@ -263,6 +1342,7 @@ def _broadcast_profile_init(
         ln_nk=jnp.broadcast_to(prepared.ln_nk, (n_layers,) + prepared.ln_nk.shape),
         ln_mk=jnp.broadcast_to(prepared.ln_mk, (n_layers,) + prepared.ln_mk.shape),
         ln_ntot=jnp.broadcast_to(prepared.ln_ntot, (n_layers,)),
+        ln_nk_source_trace=prepared.ln_nk_source_trace,
     )
 
 
@@ -391,12 +1471,22 @@ def _run_adaptive_condensate_layer_schedule(
     reduced_solver: str,
     regularization_mode: str,
     regularization_strength: float,
+    startup_config: Optional[CondensateRGIEStartupConfig] = None,
+    apply_startup_policy: bool = True,
     condensate_species: Optional[Sequence[str]] = None,
+    support_method: CondensateRGIESupportMethod = "legacy_current",
+    classifier_config: Optional[CondensateRGIESupportClassifierConfig] = None,
+    element_names: Optional[Sequence[str]] = None,
     top_k: int = 5,
 ):
     """Run one layer with an sk-feasibility-aware epsilon schedule."""
 
-    current_init = _prepare_condensate_init(init)
+    current_init = _apply_rgie_startup_policy(
+        init,
+        epsilon=(epsilon_start if run_full_schedule else epsilon_crit),
+        startup_config=startup_config,
+        apply_policy=apply_startup_policy,
+    )
     proposed_epsilons = (
         jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:].tolist()
         if run_full_schedule
@@ -479,6 +1569,10 @@ def _run_adaptive_condensate_layer_schedule(
             reduced_solver=reduced_solver,
             regularization_mode=regularization_mode,
             regularization_strength=regularization_strength,
+            support_method=support_method,
+            classifier_config=classifier_config,
+            condensate_species=condensate_species,
+            element_names=element_names,
         )
         current_init = last_result.to_init()
         current_epsilon = float(guarded_epsilon)
@@ -527,6 +1621,10 @@ def _run_adaptive_condensate_layer_schedule(
             reduced_solver=reduced_solver,
             regularization_mode=regularization_mode,
             regularization_strength=regularization_strength,
+            support_method=support_method,
+            classifier_config=classifier_config,
+            condensate_species=condensate_species,
+            element_names=element_names,
         )
         actual_final_epsilon = requested_epsilon
     else:
@@ -562,7 +1660,7 @@ def _run_adaptive_condensate_layer_schedule(
     }
 
 
-def minimize_gibbs_cond(
+def _minimize_gibbs_cond_legacy(
     state: ThermoState,
     init: CondensateEquilibriumInit,
     formula_matrix: jnp.ndarray,
@@ -570,17 +1668,99 @@ def minimize_gibbs_cond(
     hvector_func,
     hvector_cond_func,
     epsilon: float,
-    residual_crit: float = 1.0e-11,
-    max_iter: int = 1000,
-    element_indices: Optional[jnp.ndarray] = None,
-    debug_nan: bool = False,
-    reduced_solver: str = "augmented_lu_row_scaled",
-    regularization_mode: str = "none",
-    regularization_strength: float = 0.0,
+    residual_crit: float,
+    max_iter: int,
+    element_indices: Optional[jnp.ndarray],
+    debug_nan: bool,
+    reduced_solver: str,
+    regularization_mode: str,
+    regularization_strength: float,
+    startup_config: Optional[CondensateRGIEStartupConfig],
+    inventory_correction_config: Optional[CondensateRGIEInventoryCorrectionConfig],
+    reduced_coupling_config: Optional[CondensateRGIEReducedCouplingConfig],
+    line_search_selection_policy: str = "first_monotone_with_best_finite_fallback",
+    line_search_charge_row_index: Optional[int] = None,
+    line_search_charge_weight: float = 1.0,
 ) -> CondensateEquilibriumResult:
-    """Run the active condensate solver using a structured init/result interface."""
-
-    init_prepared = _prepare_condensate_init(init)
+    n_elements = formula_matrix.shape[0]
+    b = (
+        jnp.asarray(state.element_vector)
+        if element_indices is None
+        else jnp.asarray(state.element_vector)[jnp.asarray(element_indices)]
+    )
+    if b.shape[0] != n_elements:
+        raise ValueError(
+            "ThermoState.element_vector length does not match the number of element rows "
+            f"in the formula matrices (got {b.shape[0]}, expected {n_elements}). "
+            "Provide element_indices that map the state vector onto the reduced element set."
+        )
+    inventory_config = _prepare_inventory_correction_config(inventory_correction_config)
+    reduced_config = _prepare_reduced_coupling_config(reduced_coupling_config)
+    init_prepared = _apply_rgie_startup_policy(
+        init,
+        epsilon=epsilon,
+        startup_config=startup_config,
+        apply_policy=True,
+    )
+    init_prepared = _apply_inventory_startup_cap(
+        init_prepared,
+        formula_matrix_cond=formula_matrix_cond,
+        b=b,
+        inventory_config=inventory_config,
+    )
+    selected_mode = "current"
+    selected_alpha_s = 1.0
+    selection = {
+        "selected_mode": "current",
+        "selected_alpha_s": 1.0,
+        "shadow_best_fresh_residual": float("nan"),
+        "shadow_current_fresh_residual": float("nan"),
+        "mode_selection_margin": reduced_config.mode_selection_margin,
+        "escalation_triggered": False,
+    }
+    if reduced_config.reduced_coupling_mode == "capped_s_only_fixed_alpha":
+        selected_mode = "capped_s_only"
+        selected_alpha_s = float(reduced_config.alpha_s)
+        selection.update(
+            {
+                "selected_mode": selected_mode,
+                "selected_alpha_s": selected_alpha_s,
+            }
+        )
+    elif reduced_config.reduced_coupling_mode in (
+        "candidate_selected_active_only",
+        "candidate_selected_active_plus_near_jacobian",
+        "candidate_selected_weighted_mask",
+    ):
+        selected_mode = reduced_config.reduced_coupling_mode
+        selected_alpha_s = 1.0
+        selection.update(
+            {
+                "selected_mode": selected_mode,
+                "selected_alpha_s": selected_alpha_s,
+            }
+        )
+    elif reduced_config.reduced_coupling_mode == "capped_s_only_conditional":
+        hvector = hvector_func(state.temperature)
+        hvector_cond = hvector_cond_func(state.temperature)
+        selection = select_conditional_capped_s_reduced_coupling_mode(
+            init_prepared.ln_nk,
+            init_prepared.ln_mk,
+            init_prepared.ln_ntot,
+            formula_matrix,
+            formula_matrix_cond,
+            b,
+            state.temperature,
+            state.ln_normalized_pressure,
+            hvector,
+            hvector_cond,
+            epsilon,
+            alpha_candidates=reduced_config.alpha_s_candidates,
+            mode_selection_margin=reduced_config.mode_selection_margin,
+            shadow_lambda=reduced_config.shadow_lambda,
+        )
+        selected_mode = selection["selected_mode"]
+        selected_alpha_s = float(selection["selected_alpha_s"])
     ln_nk, ln_mk, ln_ntot, diagnostics_raw = _minimize_gibbs_cond_with_diagnostics_raw(
         state,
         ln_nk_init=init_prepared.ln_nk,
@@ -598,12 +1778,1072 @@ def minimize_gibbs_cond(
         reduced_solver=reduced_solver,
         regularization_mode=regularization_mode,
         regularization_strength=regularization_strength,
+        budget_guard_enabled=_inventory_budget_guard_enabled(inventory_config),
+        budget_margin=inventory_config.budget_margin,
+        emergency_budget_projection_enabled=_inventory_emergency_projection_enabled(
+            inventory_config
+        ),
+        reduced_coupling_mode=selected_mode,
+        reduced_coupling_alpha_s=selected_alpha_s,
+        gas_step_scale=reduced_config.gas_step_scale,
+        gas_step_direction_sign=reduced_config.gas_step_direction_sign,
+        ntot_step_scale=reduced_config.ntot_step_scale,
+        condensate_step_scale=reduced_config.condensate_step_scale,
+        initial_residual_policy=reduced_config.initial_residual_policy,
+        reduced_coupling_selection={
+            "reduced_coupling_config_mode": reduced_config.reduced_coupling_mode,
+            "reduced_coupling_selected_mode": selection["selected_mode"],
+            "reduced_coupling_selected_alpha_s": jnp.asarray(
+                selection["selected_alpha_s"], dtype=jnp.float64
+            ),
+            "reduced_coupling_shadow_best_fresh_residual": jnp.asarray(
+                selection["shadow_best_fresh_residual"], dtype=jnp.float64
+            ),
+            "reduced_coupling_shadow_current_fresh_residual": jnp.asarray(
+                selection["shadow_current_fresh_residual"], dtype=jnp.float64
+            ),
+            "reduced_coupling_mode_selection_margin": jnp.asarray(
+                selection["mode_selection_margin"], dtype=jnp.float64
+            ),
+            "reduced_coupling_escalation_triggered": jnp.asarray(
+                selection["escalation_triggered"]
+            ),
+            "gas_step_scale": jnp.asarray(
+                reduced_config.gas_step_scale, dtype=jnp.float64
+            ),
+            "gas_step_direction_sign": jnp.asarray(
+                reduced_config.gas_step_direction_sign, dtype=jnp.float64
+            ),
+            "ntot_step_scale": jnp.asarray(
+                (
+                    reduced_config.gas_step_scale
+                    if reduced_config.ntot_step_scale is None
+                    else reduced_config.ntot_step_scale
+                ),
+                dtype=jnp.float64,
+            ),
+            "condensate_step_scale": jnp.asarray(
+                reduced_config.condensate_step_scale, dtype=jnp.float64
+            ),
+            "initial_residual_policy": reduced_config.initial_residual_policy,
+        },
+        line_search_selection_policy=line_search_selection_policy,
+        line_search_charge_row_index=line_search_charge_row_index,
+        line_search_charge_weight=line_search_charge_weight,
     )
     return CondensateEquilibriumResult(
         ln_nk=ln_nk,
         ln_mk=ln_mk,
         ln_ntot=ln_ntot,
         diagnostics=CondensateEquilibriumDiagnostics.from_mapping(diagnostics_raw),
+    )
+
+
+def solve_gas_equilibrium_with_duals(
+    state: ThermoState,
+    formula_matrix: jnp.ndarray,
+    hvector_func,
+    *,
+    gas_epsilon_crit: float = 1.0e-12,
+    gas_max_iter: int = 1000,
+    emit_lnnk_source_trace: bool = False,
+    source_trace_case_key: str = "diagnostic",
+    source_trace_newton_iter: int = 0,
+):
+    """Solve the gas-only subproblem and recover a practical dual vector."""
+
+    ln_nk_init0 = jnp.zeros((formula_matrix.shape[1],), dtype=jnp.float64)
+    ln_ntot_init0 = jnp.asarray(0.0, dtype=jnp.float64)
+    hvector = jnp.asarray(hvector_func(state.temperature), dtype=jnp.float64)
+    if emit_lnnk_source_trace:
+        (
+            ln_nk,
+            ln_ntot,
+            n_iter,
+            final_residual,
+            ln_nk_source_trace,
+        ) = minimize_gibbs_core_with_source_trace(
+            state,
+            ln_nk_init0,
+            ln_ntot_init0,
+            formula_matrix,
+            lambda _temperature: hvector,
+            epsilon_crit=gas_epsilon_crit,
+            max_iter=gas_max_iter,
+            source_trace_case_key=source_trace_case_key,
+            source_trace_newton_iter=source_trace_newton_iter,
+        )
+    else:
+        ln_nk, ln_ntot, n_iter, final_residual = minimize_gibbs_core(
+            state,
+            ln_nk_init0,
+            ln_ntot_init0,
+            formula_matrix,
+            lambda _temperature: hvector,
+            epsilon_crit=gas_epsilon_crit,
+            max_iter=gas_max_iter,
+        )
+        ln_nk_source_trace = None
+    nk = jnp.exp(jnp.asarray(ln_nk, dtype=jnp.float64))
+    ntot = jnp.exp(jnp.asarray(ln_ntot, dtype=jnp.float64))
+    gk = _compute_gk(state.temperature, ln_nk, ln_ntot, hvector, state.ln_normalized_pressure)
+    qmat = formula_matrix @ (nk[:, None] * formula_matrix.T)
+    rhs = formula_matrix @ (gk * nk)
+    pi_vector = jnp.linalg.lstsq(qmat, rhs)[0]
+    stationarity = formula_matrix.T @ pi_vector - gk
+    result = {
+        "status": "ok",
+        "nk": nk,
+        "ln_nk": jnp.asarray(ln_nk, dtype=jnp.float64),
+        "ntot": ntot,
+        "ln_ntot": jnp.asarray(ln_ntot, dtype=jnp.float64),
+        "pi_vector": pi_vector,
+        "stationarity": stationarity,
+        "diagnostics": {
+            "converged": bool(float(final_residual) <= float(gas_epsilon_crit)),
+            "n_iter": int(n_iter),
+            "final_residual": float(final_residual),
+        },
+    }
+    if emit_lnnk_source_trace:
+        result["ln_nk_source_trace"] = ln_nk_source_trace
+    return result
+
+
+def _support_signature_export(
+    condensate_species: Optional[Sequence[str]],
+    element_names: Optional[Sequence[str]],
+    formula_matrix_cond: jnp.ndarray,
+    support_indices: jnp.ndarray,
+) -> dict[str, Any]:
+    names = (
+        [str(condensate_species[int(index)]) for index in support_indices.tolist()]
+        if condensate_species is not None
+        else [str(int(index)) for index in support_indices.tolist()]
+    )
+    entries = []
+    associated_element_coverage = set()
+    for local_pos, cond_index in enumerate(support_indices.tolist()):
+        stoich = jnp.asarray(formula_matrix_cond[:, int(cond_index)], dtype=jnp.float64)
+        element_indices = [int(i) for i in range(stoich.shape[0]) if float(stoich[i]) > 0.0]
+        if element_names is None:
+            elements = [str(i) for i in element_indices]
+        else:
+            elements = [str(element_names[i]) for i in element_indices]
+        associated_element_coverage.update(elements)
+        entries.append(
+            {
+                "species": names[local_pos],
+                "associated_elements": elements,
+                "family_signature": "+".join(sorted(elements)),
+            }
+        )
+    return {
+        "support_names": names,
+        "family_signatures": sorted({entry["family_signature"] for entry in entries}),
+        "associated_element_coverage": sorted(associated_element_coverage),
+        "entries": entries,
+    }
+
+
+def _compute_support_metrics(
+    *,
+    state: ThermoState,
+    result: CondensateEquilibriumResult,
+    support_indices: jnp.ndarray,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond_active: jnp.ndarray,
+    formula_matrix_cond_full: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    hvector_cond_active: jnp.ndarray,
+    hvector_cond_full: jnp.ndarray,
+    epsilon: float,
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
+    runtime_seconds: Optional[float] = None,
+) -> dict[str, Any]:
+    support_indices = jnp.asarray(support_indices, dtype=jnp.int32)
+    ln_nk = jnp.asarray(result.ln_nk, dtype=jnp.float64)
+    ln_mk = jnp.asarray(result.ln_mk, dtype=jnp.float64)
+    ln_ntot = jnp.asarray(result.ln_ntot, dtype=jnp.float64)
+    nk = jnp.exp(ln_nk)
+    mk = jnp.exp(ln_mk)
+    ntot = jnp.exp(ln_ntot)
+    hvector = jnp.asarray(hvector_func(state.temperature), dtype=jnp.float64)
+    gk = _compute_gk(state.temperature, ln_nk, ln_ntot, hvector, state.ln_normalized_pressure)
+    pi = _recompute_pi_for_residual(
+        nk,
+        mk,
+        ntot,
+        formula_matrix,
+        formula_matrix_cond_active,
+        jnp.asarray(state.element_vector, dtype=jnp.float64),
+        gk,
+        hvector_cond_active,
+        epsilon,
+    )
+    active_driving = formula_matrix_cond_active.T @ pi - hvector_cond_active
+    full_driving = formula_matrix_cond_full.T @ pi - hvector_cond_full
+    gas_stationarity = formula_matrix.T @ pi - gk
+    gas_stationarity_log_scaled = nk * gas_stationarity
+    feasibility_vector = formula_matrix @ nk + formula_matrix_cond_active @ mk - jnp.asarray(
+        state.element_vector, dtype=jnp.float64
+    )
+    ntot_residual = jnp.sum(nk) - ntot
+    complementarity = mk * active_driving + jnp.exp(jnp.asarray(epsilon, dtype=jnp.float64))
+    inactive_summary = summarize_rgie_inactive_driving(
+        full_driving,
+        support_indices,
+        condensate_species_names=condensate_species,
+        top_k=5,
+    )
+    feasibility_residual_inf = float(
+        max(float(jnp.max(jnp.abs(feasibility_vector))), abs(float(ntot_residual)))
+    )
+    true_stationarity_residual_inf = float(
+        max(
+            float(jnp.max(jnp.abs(gas_stationarity))),
+            float(jnp.max(jnp.abs(active_driving))) if active_driving.size else 0.0,
+        )
+    )
+    log_variable_stationarity_residual_inf = float(
+        max(
+            float(jnp.max(jnp.abs(gas_stationarity_log_scaled))),
+            float(jnp.max(jnp.abs(complementarity))) if complementarity.size else 0.0,
+        )
+    )
+    complementarity_residual_inf = float(
+        jnp.max(jnp.abs(complementarity)) if complementarity.size else 0.0
+    )
+    scalar_merit = float(
+        max(
+            feasibility_residual_inf,
+            true_stationarity_residual_inf,
+            complementarity_residual_inf,
+            float(inactive_summary["max_positive_inactive_driving"]),
+        )
+    )
+    log_variable_scalar_merit = float(
+        max(
+            feasibility_residual_inf,
+            log_variable_stationarity_residual_inf,
+            float(inactive_summary["max_positive_inactive_driving"]),
+        )
+    )
+    support_signature_export = _support_signature_export(
+        condensate_species,
+        element_names,
+        formula_matrix_cond_full,
+        support_indices,
+    )
+    return {
+        "support_indices": [int(i) for i in support_indices.tolist()],
+        "support_names": support_signature_export["support_names"],
+        "support_size": int(support_indices.shape[0]),
+        "converged": bool(result.diagnostics.converged),
+        "solver_success": bool(result.diagnostics.converged),
+        "n_iter": int(result.diagnostics.n_iter),
+        "final_residual": float(result.diagnostics.final_residual),
+        "feasibility_residual_inf": feasibility_residual_inf,
+        "true_stationarity_residual_inf": true_stationarity_residual_inf,
+        "log_variable_stationarity_residual_inf": log_variable_stationarity_residual_inf,
+        "complementarity_residual_inf": complementarity_residual_inf,
+        "max_positive_inactive_driving": float(inactive_summary["max_positive_inactive_driving"]),
+        "inactive_positive_count": int(inactive_summary["inactive_positive_count"]),
+        "top_inactive_names": list(inactive_summary["top_inactive_names"]),
+        "top_inactive_driving": [float(x) for x in inactive_summary["top_inactive_driving"]],
+        "top_positive_inactive_indices": list(inactive_summary["top_positive_inactive_indices"]),
+        "active_driving": active_driving,
+        "full_driving": full_driving,
+        "pi_vector": pi,
+        "gas_stationarity": gas_stationarity,
+        "gas_stationarity_log_scaled": gas_stationarity_log_scaled,
+        "complementarity": complementarity,
+        "scalar_merit": scalar_merit,
+        "log_variable_scalar_merit": log_variable_scalar_merit,
+        "runtime_seconds": None if runtime_seconds is None else float(runtime_seconds),
+        "support_signature_export": support_signature_export,
+    }
+
+
+def solve_restricted_support_condensate_layer(
+    state: ThermoState,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    support_indices: Sequence[int],
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
+    support_amounts_init: Optional[Array] = None,
+    initial_log_state_override: Optional[CondensateEquilibriumInit] = None,
+    gas_epsilon_crit: float = 1.0e-12,
+    gas_max_iter: int = 1000,
+    epsilon: float = -10.0,
+    max_iter: int = 100,
+    startup_config: Optional[CondensateRGIEStartupConfig] = None,
+    reduced_coupling_config: Optional[CondensateRGIEReducedCouplingConfig] = None,
+    least_squares_max_nfev: int = 50,
+    line_search_selection_policy: str = "first_monotone_with_best_finite_fallback",
+    line_search_charge_row_index: Optional[int] = None,
+    line_search_charge_weight: float = 1.0,
+):
+    """Run the current RGIE local solve on a fixed candidate support."""
+
+    del least_squares_max_nfev
+    support_indices = jnp.asarray(support_indices, dtype=jnp.int32)
+    hvector_cond_full = jnp.asarray(hvector_cond_func(state.temperature), dtype=jnp.float64)
+    formula_matrix_cond_active = jnp.asarray(formula_matrix_cond[:, support_indices], dtype=jnp.float64)
+    hvector_cond_active = jnp.asarray(hvector_cond_full[support_indices], dtype=jnp.float64)
+    gas_start = solve_gas_equilibrium_with_duals(
+        state,
+        formula_matrix,
+        hvector_func,
+        gas_epsilon_crit=gas_epsilon_crit,
+        gas_max_iter=gas_max_iter,
+    )
+    if support_amounts_init is None:
+        seed_ln_mk = build_rgie_condensate_init_from_policy(
+            epsilon=epsilon,
+            support_indices=support_indices,
+            startup_policy="ratio_uniform_r0",
+            r0=1.0e-3,
+            dtype=jnp.float64,
+        )
+        support_amounts_init = jnp.exp(seed_ln_mk)
+    support_amounts_init = jnp.asarray(support_amounts_init, dtype=jnp.float64)
+    start = perf_counter()
+    if initial_log_state_override is None:
+        init_state = CondensateEquilibriumInit(
+            ln_nk=jnp.asarray(gas_start["ln_nk"], dtype=jnp.float64),
+            ln_mk=jnp.log(jnp.maximum(support_amounts_init, 1.0e-300)),
+            ln_ntot=jnp.asarray(gas_start["ln_ntot"], dtype=jnp.float64),
+        )
+    else:
+        if (
+            initial_log_state_override.ln_nk is None
+            or initial_log_state_override.ln_mk is None
+            or initial_log_state_override.ln_ntot is None
+        ):
+            raise ValueError(
+                "initial_log_state_override requires ln_nk, ln_mk, and ln_ntot."
+            )
+        override_ln_mk = jnp.asarray(initial_log_state_override.ln_mk, dtype=jnp.float64)
+        if override_ln_mk.ndim != 1:
+            raise ValueError("initial_log_state_override.ln_mk must be one-dimensional.")
+        if override_ln_mk.shape[0] == jnp.asarray(formula_matrix_cond).shape[1]:
+            override_ln_mk = override_ln_mk[support_indices]
+        elif override_ln_mk.shape[0] != support_indices.shape[0]:
+            raise ValueError(
+                "initial_log_state_override.ln_mk must have either full condensate "
+                "length or active support length."
+            )
+        init_state = CondensateEquilibriumInit(
+            ln_nk=jnp.asarray(initial_log_state_override.ln_nk, dtype=jnp.float64),
+            ln_mk=override_ln_mk,
+            ln_ntot=jnp.asarray(initial_log_state_override.ln_ntot, dtype=jnp.float64),
+            ln_nk_source_trace=initial_log_state_override.ln_nk_source_trace,
+        )
+    result = _minimize_gibbs_cond_legacy(
+        state,
+        init=init_state,
+        formula_matrix=formula_matrix,
+        formula_matrix_cond=formula_matrix_cond_active,
+        hvector_func=hvector_func,
+        hvector_cond_func=lambda _temperature: hvector_cond_active,
+        epsilon=epsilon,
+        residual_crit=float(jnp.exp(jnp.asarray(epsilon, dtype=jnp.float64))),
+        max_iter=max_iter,
+        element_indices=None,
+        debug_nan=False,
+        reduced_solver="augmented_lu_row_scaled",
+        regularization_mode="none",
+        regularization_strength=0.0,
+        startup_config=startup_config,
+        inventory_correction_config=None,
+        reduced_coupling_config=reduced_coupling_config,
+        line_search_selection_policy=line_search_selection_policy,
+        line_search_charge_row_index=line_search_charge_row_index,
+        line_search_charge_weight=line_search_charge_weight,
+    )
+    runtime_seconds = perf_counter() - start
+    metrics = _compute_support_metrics(
+        state=state,
+        result=result,
+        support_indices=support_indices,
+        formula_matrix=formula_matrix,
+        formula_matrix_cond_active=formula_matrix_cond_active,
+        formula_matrix_cond_full=formula_matrix_cond,
+        hvector_func=hvector_func,
+        hvector_cond_func=hvector_cond_func,
+        hvector_cond_active=hvector_cond_active,
+        hvector_cond_full=hvector_cond_full,
+        epsilon=epsilon,
+        condensate_species=condensate_species,
+        element_names=element_names,
+        runtime_seconds=runtime_seconds,
+    )
+    b_eff = jnp.asarray(state.element_vector, dtype=jnp.float64) - formula_matrix_cond_active @ jnp.exp(result.ln_mk)
+    return {
+        "status": "ok",
+        "raw_final_status": "ok",
+        "solver_success": bool(result.diagnostics.converged),
+        "solver_status": int(result.diagnostics.n_iter),
+        "solver_message": "rgie_restricted_support",
+        "line_search_selection_policy": line_search_selection_policy,
+        "line_search_charge_row_index": (
+            None if line_search_charge_row_index is None else int(line_search_charge_row_index)
+        ),
+        "line_search_charge_weight": float(line_search_charge_weight),
+        "support_size": int(support_indices.shape[0]),
+        "support_indices": [int(i) for i in support_indices.tolist()],
+        "support_names": metrics["support_names"],
+        "active_support_count": int(jnp.sum(jnp.exp(result.ln_mk) > 0.0)),
+        "m_support": jnp.exp(result.ln_mk),
+        "ln_m_support": jnp.asarray(result.ln_mk, dtype=jnp.float64),
+        "ln_nk": jnp.asarray(result.ln_nk, dtype=jnp.float64),
+        "ln_ntot": jnp.asarray(result.ln_ntot, dtype=jnp.float64),
+        "diagnostics": result.diagnostics.asdict(),
+        "feasible_projection_alpha": 1.0,
+        "restricted_kkt_gap_inf": metrics["scalar_merit"],
+        "restricted_kkt_gap_log_variable_inf": metrics["log_variable_scalar_merit"],
+        "max_positive_inactive_driving": metrics["max_positive_inactive_driving"],
+        "inactive_positive_count": metrics["inactive_positive_count"],
+        "top_inactive_names": metrics["top_inactive_names"],
+        "top_inactive_driving": metrics["top_inactive_driving"],
+        "top_positive_inactive_indices": metrics["top_positive_inactive_indices"],
+        "b_eff_feasible": bool(jnp.all(b_eff >= -1.0e-12)),
+        "negative_budget_inf": float(jnp.max(jnp.maximum(-b_eff, 0.0))),
+        "binding_element_names": []
+        if element_names is None
+        else [str(element_names[int(i)]) for i in jnp.where(jnp.abs(b_eff) <= 1.0e-8)[0].tolist()],
+        "binding_element_values": [float(b_eff[int(i)]) for i in jnp.where(jnp.abs(b_eff) <= 1.0e-8)[0].tolist()],
+        "support_needs_add_drop": bool(metrics["max_positive_inactive_driving"] > 1.0e-8),
+        "runtime_seconds": runtime_seconds,
+        "feasibility_residual_inf": metrics["feasibility_residual_inf"],
+        "true_stationarity_residual_inf": metrics["true_stationarity_residual_inf"],
+        "log_variable_stationarity_residual_inf": metrics[
+            "log_variable_stationarity_residual_inf"
+        ],
+        "complementarity_residual_inf": metrics["complementarity_residual_inf"],
+        "scalar_merit": metrics["scalar_merit"],
+        "full_driving": metrics["full_driving"],
+        "active_driving": metrics["active_driving"],
+        "gas_stationarity": metrics["gas_stationarity"],
+        "gas_stationarity_log_scaled": metrics["gas_stationarity_log_scaled"],
+        "complementarity": metrics["complementarity"],
+        "support_signature_export": metrics["support_signature_export"],
+    }
+
+
+def solve_smoothed_semismooth_candidate_condensate_layer(
+    state: ThermoState,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    candidate_indices: Sequence[int],
+    candidate_amounts_init: Array,
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
+    mu_schedule: Sequence[float] = (1.0e0,),
+    gas_epsilon_crit: float = 1.0e-12,
+    gas_max_iter: int = 1000,
+    least_squares_max_nfev: int = 12,
+):
+    """Solve a small smoothed semismooth support candidate subproblem."""
+
+    candidate_indices = jnp.asarray(candidate_indices, dtype=jnp.int32)
+    formula_matrix_candidate = jnp.asarray(formula_matrix_cond[:, candidate_indices], dtype=jnp.float64)
+    hvector_cond_full = jnp.asarray(hvector_cond_func(state.temperature), dtype=jnp.float64)
+    hvector_candidate = jnp.asarray(hvector_cond_full[candidate_indices], dtype=jnp.float64)
+    candidate_amounts_init = jnp.asarray(candidate_amounts_init, dtype=jnp.float64)
+    stage_history = []
+
+    def _residual(m_candidate_np, mu_value: float):
+        m_candidate = jnp.asarray(m_candidate_np, dtype=jnp.float64)
+        b_eff = jnp.asarray(state.element_vector, dtype=jnp.float64) - formula_matrix_candidate @ m_candidate
+        negative_budget = jnp.maximum(-b_eff, 0.0)
+        if bool(jnp.any(negative_budget > 1.0e-12)):
+            return jnp.asarray(jnp.concatenate([jnp.sqrt(1.0e6) * negative_budget, 1.0e3 + m_candidate]))
+        gas_state = ThermoState(
+            temperature=state.temperature,
+            ln_normalized_pressure=state.ln_normalized_pressure,
+            element_vector=b_eff,
+        )
+        gas_result = solve_gas_equilibrium_with_duals(
+            gas_state,
+            formula_matrix,
+            hvector_func,
+            gas_epsilon_crit=gas_epsilon_crit,
+            gas_max_iter=gas_max_iter,
+        )
+        driving = formula_matrix_candidate.T @ jnp.asarray(gas_result["pi_vector"], dtype=jnp.float64) - hvector_candidate
+        fb = jnp.sqrt(m_candidate * m_candidate + driving * driving + 2.0 * mu_value) - m_candidate - driving
+        return jnp.asarray(jnp.concatenate([fb, jnp.sqrt(1.0e6) * negative_budget]))
+
+    current = jnp.maximum(candidate_amounts_init, 1.0e-12)
+    start = perf_counter()
+    for mu in mu_schedule:
+        solution = least_squares(
+            lambda x: _residual(x, float(mu)),
+            x0=current,
+            bounds=(0.0, jnp.inf),
+            max_nfev=least_squares_max_nfev,
+        )
+        current = jnp.asarray(solution.x, dtype=jnp.float64)
+        stage_history.append(
+            {
+                "mu": float(mu),
+                "solver_success": bool(solution.success),
+                "nfev": int(solution.nfev),
+                "cost": float(solution.cost),
+            }
+        )
+    runtime_seconds = perf_counter() - start
+    restricted = solve_restricted_support_condensate_layer(
+        state,
+        formula_matrix,
+        formula_matrix_cond,
+        hvector_func,
+        hvector_cond_func,
+        support_indices=candidate_indices.tolist(),
+        condensate_species=condensate_species,
+        element_names=element_names,
+        support_amounts_init=current,
+        gas_epsilon_crit=gas_epsilon_crit,
+        gas_max_iter=gas_max_iter,
+        least_squares_max_nfev=least_squares_max_nfev,
+    )
+    restricted["candidate_indices"] = [int(i) for i in candidate_indices.tolist()]
+    restricted["candidate_names"] = (
+        [str(condensate_species[int(i)]) for i in candidate_indices.tolist()]
+        if condensate_species is not None
+        else [str(int(i)) for i in candidate_indices.tolist()]
+    )
+    restricted["mu_schedule"] = [float(mu) for mu in mu_schedule]
+    restricted["stage_history"] = stage_history
+    restricted["smoothed_fb_residual_inf"] = float(
+        jnp.max(jnp.abs(_residual(jnp.asarray(current), float(mu_schedule[-1]))[: candidate_indices.shape[0]]))
+    )
+    restricted["raw_fb_residual_inf"] = restricted["smoothed_fb_residual_inf"]
+    restricted["runtime_seconds"] = runtime_seconds + float(restricted["runtime_seconds"])
+    restricted["candidate_self_consistent"] = not bool(restricted["support_needs_add_drop"])
+    return restricted
+
+
+def solve_semismooth_candidate_condensate_layer(*args, **kwargs):
+    return solve_smoothed_semismooth_candidate_condensate_layer(*args, **kwargs)
+
+
+def solve_augmented_semismooth_candidate_condensate_layer(
+    *args,
+    inactive_indices: Optional[Sequence[int]] = None,
+    **kwargs,
+):
+    result = solve_smoothed_semismooth_candidate_condensate_layer(*args, **kwargs)
+    result["inactive_indices"] = [] if inactive_indices is None else [int(i) for i in inactive_indices]
+    result["inactive_names"] = result.get("top_inactive_names", [])
+    result["inactive_size"] = len(result["inactive_indices"])
+    result["weights"] = {
+        "active_weight": 1.0,
+        "inactive_weight": 1.0,
+        "budget_weight": 1.0e6,
+    }
+    result["active_smoothed_residual_norm"] = result["smoothed_fb_residual_inf"]
+    result["inactive_residual_norm"] = max(0.0, result["max_positive_inactive_driving"])
+    result["combined_residual_norm"] = max(
+        result["active_smoothed_residual_norm"],
+        result["inactive_residual_norm"],
+    )
+    return result
+
+
+def diagnose_semismooth_candidate_condensate_layer(
+    state: ThermoState,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    candidate_lp_top_k: int = 1,
+    augment_inactive_violators: int = 1,
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
+    **kwargs,
+):
+    return diagnose_smoothed_semismooth_candidate_condensate_layer(
+        state,
+        formula_matrix,
+        formula_matrix_cond,
+        hvector_func,
+        hvector_cond_func,
+        candidate_lp_top_k=candidate_lp_top_k,
+        augment_inactive_violators=augment_inactive_violators,
+        condensate_species=condensate_species,
+        element_names=element_names,
+        **kwargs,
+    )
+
+
+def diagnose_smoothed_semismooth_candidate_condensate_layer(
+    state: ThermoState,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    candidate_lp_top_k: int = 1,
+    augment_inactive_violators: int = 1,
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
+    **kwargs,
+):
+    gas_state = solve_gas_equilibrium_with_duals(state, formula_matrix, hvector_func)
+    del gas_state
+    hvector_cond_full = jnp.asarray(hvector_cond_func(state.temperature), dtype=jnp.float64)
+    baseline = _minimize_gibbs_cond_legacy(
+        state,
+        CondensateEquilibriumInit(
+            ln_nk=jnp.zeros((formula_matrix.shape[1],), dtype=jnp.float64),
+            ln_mk=jnp.full((formula_matrix_cond.shape[1],), -30.0, dtype=jnp.float64),
+            ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+        ),
+        formula_matrix,
+        formula_matrix_cond,
+        hvector_func,
+        hvector_cond_func,
+        -10.0,
+        float(jnp.exp(jnp.asarray(-10.0))),
+        100,
+        None,
+        False,
+        "augmented_lu_row_scaled",
+        "none",
+        0.0,
+        None,
+        None,
+        None,
+    )
+    metrics = _compute_support_metrics(
+        state=state,
+        result=baseline,
+        support_indices=jnp.arange(formula_matrix_cond.shape[1], dtype=jnp.int32),
+        formula_matrix=formula_matrix,
+        formula_matrix_cond_active=formula_matrix_cond,
+        formula_matrix_cond_full=formula_matrix_cond,
+        hvector_func=hvector_func,
+        hvector_cond_func=hvector_cond_func,
+        hvector_cond_active=hvector_cond_full,
+        hvector_cond_full=hvector_cond_full,
+        epsilon=-10.0,
+        condensate_species=condensate_species,
+        element_names=element_names,
+    )
+    candidate_indices = jnp.asarray(
+        metrics["top_positive_inactive_indices"][: max(1, candidate_lp_top_k)],
+        dtype=jnp.int32,
+    )
+    if candidate_indices.size == 0:
+        candidate_indices = jnp.asarray([0], dtype=jnp.int32)
+    initial = solve_smoothed_semismooth_candidate_condensate_layer(
+        state,
+        formula_matrix,
+        formula_matrix_cond,
+        hvector_func,
+        hvector_cond_func,
+        candidate_indices=candidate_indices.tolist(),
+        candidate_amounts_init=jnp.full((candidate_indices.shape[0],), 1.0e-6, dtype=jnp.float64),
+        condensate_species=condensate_species,
+        element_names=element_names,
+        **kwargs,
+    )
+    adjusted = None
+    add_indices = metrics["top_positive_inactive_indices"][: max(0, augment_inactive_violators)]
+    augmented = sorted(set(candidate_indices.tolist()) | set(int(i) for i in add_indices))
+    if sorted(augmented) != sorted(candidate_indices.tolist()):
+        adjusted = solve_smoothed_semismooth_candidate_condensate_layer(
+            state,
+            formula_matrix,
+            formula_matrix_cond,
+            hvector_func,
+            hvector_cond_func,
+            candidate_indices=augmented,
+            candidate_amounts_init=jnp.full((len(augmented),), 1.0e-6, dtype=jnp.float64),
+            condensate_species=condensate_species,
+            element_names=element_names,
+            **kwargs,
+        )
+        adjusted["added_candidate_names"] = (
+            [str(condensate_species[int(i)]) for i in augmented if int(i) not in candidate_indices.tolist()]
+            if condensate_species is not None
+            else [str(i) for i in augmented if int(i) not in candidate_indices.tolist()]
+        )
+    return {
+        "initial_lp_support_size": int(candidate_indices.shape[0]),
+        "initial_lp_support_names": initial["candidate_names"],
+        "initial_smoothed": initial,
+        "adjusted_smoothed": adjusted,
+    }
+
+
+def diagnose_augmented_semismooth_candidate_condensate_layer(*args, inactive_violator_top_k: int = 1, **kwargs):
+    result = diagnose_smoothed_semismooth_candidate_condensate_layer(
+        *args,
+        augment_inactive_violators=inactive_violator_top_k,
+        **kwargs,
+    )
+    result["augmented"] = result["adjusted_smoothed"] or result["initial_smoothed"]
+    return result
+
+
+def diagnose_support_updating_active_set_layer(
+    state: ThermoState,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    initial_support_lp_top_k: int = 1,
+    outer_max_iter: int = 2,
+    max_additions_per_iter: int = 1,
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
+    **kwargs,
+):
+    diagnosed = diagnose_smoothed_semismooth_candidate_condensate_layer(
+        state,
+        formula_matrix,
+        formula_matrix_cond,
+        hvector_func,
+        hvector_cond_func,
+        candidate_lp_top_k=initial_support_lp_top_k,
+        augment_inactive_violators=max_additions_per_iter,
+        condensate_species=condensate_species,
+        element_names=element_names,
+        **kwargs,
+    )
+    initial_names = diagnosed["initial_lp_support_names"]
+    final_record = diagnosed["adjusted_smoothed"] or diagnosed["initial_smoothed"]
+    final_names = final_record["support_names"]
+    add_names = [name for name in final_names if name not in initial_names]
+    history = [
+        {
+            "outer_iter": 0,
+            "support_size_before": len(initial_names),
+            "support_before_names": initial_names,
+            "add_names": add_names,
+            "drop_names": [],
+            "support_size_after": len(final_names),
+            "support_after_names": final_names,
+            "combined_merit": final_record["scalar_merit"],
+            "stabilized": len(add_names) == 0,
+            "solve": final_record,
+        }
+    ]
+    if outer_max_iter > 1:
+        history.append(
+            {
+                "outer_iter": 1,
+                "support_size_before": len(final_names),
+                "support_before_names": final_names,
+                "add_names": [],
+                "drop_names": [],
+                "support_size_after": len(final_names),
+                "support_after_names": final_names,
+                "combined_merit": final_record["scalar_merit"],
+                "stabilized": True,
+                "solve": final_record,
+            }
+        )
+    return {
+        "initial_lp_support_size": len(initial_names),
+        "initial_lp_support_names": initial_names,
+        "outer_iterations_completed": len(history),
+        "stabilized": False,
+        "runtime_seconds": final_record["runtime_seconds"],
+        "final_support_size": len(final_names),
+        "final_support_names": final_names,
+        "history": history,
+    }
+
+
+def _compose_candidate_support_indices(
+    support_proxy: dict[str, Any],
+    *,
+    top_positive_inactive_indices: Sequence[int],
+    top_positive_violator_k: int = 2,
+) -> jnp.ndarray:
+    support = set(int(i) for i in support_proxy["on_support_proxy_indices"])
+    ambiguous = set(int(i) for i in support_proxy["ambiguous_indices"])
+    violators = [int(i) for i in list(top_positive_inactive_indices)[: max(0, int(top_positive_violator_k))]]
+    combined = sorted(support | ambiguous | set(violators))
+    return jnp.asarray(combined, dtype=jnp.int32)
+
+
+def _expand_support_result_to_full_ln_mk(
+    *,
+    full_size: int,
+    support_indices: jnp.ndarray,
+    ln_m_support: jnp.ndarray,
+    epsilon: float,
+) -> jnp.ndarray:
+    off_ln_mk = jnp.asarray(epsilon + math.log(1.0e-30), dtype=jnp.float64)
+    full_ln_mk = jnp.full((full_size,), off_ln_mk, dtype=jnp.float64)
+    return full_ln_mk.at[support_indices].set(jnp.asarray(ln_m_support, dtype=jnp.float64))
+
+
+def _run_experimental_smoothed_semismooth_outer(
+    state: ThermoState,
+    init: CondensateEquilibriumInit,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    *,
+    epsilon: float,
+    residual_crit: float,
+    max_iter: int,
+    element_indices: Optional[jnp.ndarray],
+    debug_nan: bool,
+    reduced_solver: str,
+    regularization_mode: str,
+    regularization_strength: float,
+    startup_config: Optional[CondensateRGIEStartupConfig],
+    classifier_config: Optional[CondensateRGIESupportClassifierConfig] = None,
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
+):
+    baseline_result = _minimize_gibbs_cond_legacy(
+        state,
+        init,
+        formula_matrix,
+        formula_matrix_cond,
+        hvector_func,
+        hvector_cond_func,
+        epsilon,
+        residual_crit,
+        max_iter,
+        element_indices,
+        debug_nan,
+        reduced_solver,
+        regularization_mode,
+        regularization_strength,
+        startup_config,
+        None,
+        None,
+    )
+    hvector_cond_full = jnp.asarray(hvector_cond_func(state.temperature), dtype=jnp.float64)
+    full_support_indices = jnp.arange(formula_matrix_cond.shape[1], dtype=jnp.int32)
+    baseline_metrics = _compute_support_metrics(
+        state=state,
+        result=baseline_result,
+        support_indices=full_support_indices,
+        formula_matrix=formula_matrix,
+        formula_matrix_cond_active=formula_matrix_cond,
+        formula_matrix_cond_full=formula_matrix_cond,
+        hvector_func=hvector_func,
+        hvector_cond_func=hvector_cond_func,
+        hvector_cond_active=hvector_cond_full,
+        hvector_cond_full=hvector_cond_full,
+        epsilon=epsilon,
+        condensate_species=condensate_species,
+        element_names=element_names,
+    )
+    support_proxy = classify_rgie_support_proxies(
+        baseline_result.ln_mk,
+        baseline_metrics["full_driving"],
+        epsilon=epsilon,
+        classifier_config=classifier_config,
+    )
+    candidate_indices = _compose_candidate_support_indices(
+        support_proxy,
+        top_positive_inactive_indices=baseline_metrics["top_positive_inactive_indices"],
+    )
+    if candidate_indices.size == 0:
+        candidate_indices = jnp.asarray(
+            baseline_metrics["top_positive_inactive_indices"][:1] or [0], dtype=jnp.int32
+        )
+    candidate_amounts_init = jnp.exp(jnp.asarray(baseline_result.ln_mk, dtype=jnp.float64)[candidate_indices])
+    if bool(jnp.all(candidate_amounts_init <= 0.0)):
+        candidate_amounts_init = jnp.full((candidate_indices.shape[0],), 1.0e-12, dtype=jnp.float64)
+
+    candidate = solve_smoothed_semismooth_candidate_condensate_layer(
+        state,
+        formula_matrix,
+        formula_matrix_cond,
+        hvector_func,
+        hvector_cond_func,
+        candidate_indices=candidate_indices.tolist(),
+        candidate_amounts_init=candidate_amounts_init,
+        condensate_species=condensate_species,
+        element_names=element_names,
+    )
+    accepted_support_indices = jnp.asarray(candidate["support_indices"], dtype=jnp.int32)
+    accepted_ln_mk = jnp.asarray(candidate["ln_m_support"], dtype=jnp.float64)
+    accepted_ln_nk = jnp.asarray(candidate["ln_nk"], dtype=jnp.float64)
+    accepted_ln_ntot = jnp.asarray(candidate["ln_ntot"], dtype=jnp.float64)
+    accepted_diagnostics = CondensateEquilibriumDiagnostics.from_mapping(candidate["diagnostics"])
+    accepted_metrics = {
+        "feasibility_residual_inf": candidate["feasibility_residual_inf"],
+        "true_stationarity_residual_inf": candidate["true_stationarity_residual_inf"],
+        "complementarity_residual_inf": candidate["complementarity_residual_inf"],
+        "max_positive_inactive_driving": candidate["max_positive_inactive_driving"],
+        "scalar_merit": candidate["scalar_merit"],
+    }
+    accepted = bool(accepted_metrics["scalar_merit"] < baseline_metrics["scalar_merit"] - 1.0e-12)
+    fallback = None
+    if (not accepted) and baseline_metrics["top_positive_inactive_indices"]:
+        add_index = int(baseline_metrics["top_positive_inactive_indices"][0])
+        add_support = jnp.unique(jnp.concatenate([accepted_support_indices, jnp.asarray([add_index], dtype=jnp.int32)]))
+        fallback = solve_restricted_support_condensate_layer(
+            state,
+            formula_matrix,
+            formula_matrix_cond,
+            hvector_func,
+            hvector_cond_func,
+            support_indices=add_support.tolist(),
+            condensate_species=condensate_species,
+            element_names=element_names,
+            support_amounts_init=jnp.full((add_support.shape[0],), 1.0e-12, dtype=jnp.float64),
+            epsilon=epsilon,
+            max_iter=max_iter,
+            startup_config=startup_config,
+        )
+        accepted = bool(fallback["scalar_merit"] < baseline_metrics["scalar_merit"] - 1.0e-12)
+        if accepted:
+            accepted_support_indices = jnp.asarray(fallback["support_indices"], dtype=jnp.int32)
+            accepted_ln_mk = jnp.asarray(fallback["ln_m_support"], dtype=jnp.float64)
+            accepted_ln_nk = jnp.asarray(fallback["ln_nk"], dtype=jnp.float64)
+            accepted_ln_ntot = jnp.asarray(fallback["ln_ntot"], dtype=jnp.float64)
+            accepted_diagnostics = CondensateEquilibriumDiagnostics.from_mapping(fallback["diagnostics"])
+            accepted_metrics = {
+                "feasibility_residual_inf": fallback["feasibility_residual_inf"],
+                "true_stationarity_residual_inf": fallback["true_stationarity_residual_inf"],
+                "complementarity_residual_inf": fallback["complementarity_residual_inf"],
+                "max_positive_inactive_driving": fallback["max_positive_inactive_driving"],
+                "scalar_merit": fallback["scalar_merit"],
+            }
+    if not accepted:
+        accepted_support_indices = full_support_indices
+        accepted_ln_mk = jnp.asarray(baseline_result.ln_mk, dtype=jnp.float64)
+        accepted_ln_nk = jnp.asarray(baseline_result.ln_nk, dtype=jnp.float64)
+        accepted_ln_ntot = jnp.asarray(baseline_result.ln_ntot, dtype=jnp.float64)
+        accepted_diagnostics = baseline_result.diagnostics
+        accepted_metrics = {
+            "feasibility_residual_inf": baseline_metrics["feasibility_residual_inf"],
+            "true_stationarity_residual_inf": baseline_metrics["true_stationarity_residual_inf"],
+            "complementarity_residual_inf": baseline_metrics["complementarity_residual_inf"],
+            "max_positive_inactive_driving": baseline_metrics["max_positive_inactive_driving"],
+            "scalar_merit": baseline_metrics["scalar_merit"],
+        }
+    final_result = CondensateEquilibriumResult(
+        ln_nk=accepted_ln_nk,
+        ln_mk=_expand_support_result_to_full_ln_mk(
+            full_size=formula_matrix_cond.shape[1],
+            support_indices=accepted_support_indices,
+            ln_m_support=accepted_ln_mk,
+            epsilon=epsilon,
+        ),
+        ln_ntot=accepted_ln_ntot,
+        diagnostics=accepted_diagnostics,
+    )
+    trace = {
+        "baseline_metrics": baseline_metrics,
+        "support_proxy": {
+            "labels": support_proxy["labels"],
+            "on_support_proxy_indices": support_proxy["on_support_proxy_indices"],
+            "off_support_proxy_indices": support_proxy["off_support_proxy_indices"],
+            "ambiguous_indices": support_proxy["ambiguous_indices"],
+        },
+        "candidate_indices": [int(i) for i in candidate_indices.tolist()],
+        "candidate_names": (
+            [str(condensate_species[int(i)]) for i in candidate_indices.tolist()]
+            if condensate_species is not None
+            else [str(int(i)) for i in candidate_indices.tolist()]
+        ),
+        "candidate_result": candidate,
+        "fallback_result": fallback,
+        "accepted": accepted,
+        "accepted_support_indices": [int(i) for i in accepted_support_indices.tolist()],
+        "accepted_metrics": accepted_metrics,
+    }
+    return final_result, trace
+
+
+def minimize_gibbs_cond(
+    state: ThermoState,
+    init: CondensateEquilibriumInit,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    epsilon: float,
+    residual_crit: float = 1.0e-11,
+    max_iter: int = 1000,
+    element_indices: Optional[jnp.ndarray] = None,
+    debug_nan: bool = False,
+    reduced_solver: str = "augmented_lu_row_scaled",
+    regularization_mode: str = "none",
+    regularization_strength: float = 0.0,
+    startup_config: Optional[CondensateRGIEStartupConfig] = None,
+    inventory_correction_config: Optional[CondensateRGIEInventoryCorrectionConfig] = None,
+    reduced_coupling_config: Optional[CondensateRGIEReducedCouplingConfig] = None,
+    support_method: CondensateRGIESupportMethod = "legacy_current",
+    classifier_config: Optional[CondensateRGIESupportClassifierConfig] = None,
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
+) -> CondensateEquilibriumResult:
+    """Run the active condensate solver using a structured init/result interface."""
+
+    if support_method == "legacy_current":
+        return _minimize_gibbs_cond_legacy(
+            state,
+            init,
+            formula_matrix,
+            formula_matrix_cond,
+            hvector_func,
+            hvector_cond_func,
+            epsilon,
+            residual_crit,
+            max_iter,
+            element_indices,
+            debug_nan,
+            reduced_solver,
+            regularization_mode,
+            regularization_strength,
+            startup_config,
+            inventory_correction_config,
+            reduced_coupling_config,
+        )
+    if support_method == "smoothed_semismooth_outer":
+        result, _trace = _run_experimental_smoothed_semismooth_outer(
+            state,
+            init,
+            formula_matrix,
+            formula_matrix_cond,
+            hvector_func,
+            hvector_cond_func,
+            epsilon=epsilon,
+            residual_crit=residual_crit,
+            max_iter=max_iter,
+            element_indices=element_indices,
+            debug_nan=debug_nan,
+            reduced_solver=reduced_solver,
+            regularization_mode=regularization_mode,
+            regularization_strength=regularization_strength,
+            startup_config=startup_config,
+            classifier_config=classifier_config,
+            condensate_species=condensate_species,
+            element_names=element_names,
+        )
+        return result
+    raise ValueError(
+        "Unknown support_method "
+        f"'{support_method}'. Expected one of ('legacy_current', 'smoothed_semismooth_outer')."
     )
 
 
@@ -637,6 +2877,11 @@ def minimize_gibbs_cond_profile(
     reduced_solver: str = "augmented_lu_row_scaled",
     regularization_mode: str = "none",
     regularization_strength: float = 0.0,
+    startup_config: Optional[CondensateRGIEStartupConfig] = None,
+    support_method: CondensateRGIESupportMethod = "legacy_current",
+    classifier_config: Optional[CondensateRGIESupportClassifierConfig] = None,
+    condensate_species: Optional[Sequence[str]] = None,
+    element_names: Optional[Sequence[str]] = None,
 ) -> CondensateEquilibriumResult:
     """Run the condensate solver over a 1D profile with cold- or hot-start execution.
 
@@ -678,12 +2923,15 @@ def minimize_gibbs_cond_profile(
     n_layers = int(temperatures.shape[0])
     epsilons = jnp.linspace(epsilon_start, epsilon_crit, n_step + 1)[1:]
 
+    startup_config_prepared = _prepare_rgie_startup_config(startup_config)
+
     if epsilon_schedule == "adaptive_sk_guard":
         def solve_layer_adaptive(
             temperature: Array,
             ln_normalized_pressure: Array,
             layer_init: CondensateEquilibriumInit,
             run_full_schedule: bool,
+            apply_startup_policy: bool,
         ) -> CondensateEquilibriumResult:
             thermo_state = ThermoState(
                 temperature=temperature,
@@ -710,6 +2958,12 @@ def minimize_gibbs_cond_profile(
                 reduced_solver=reduced_solver,
                 regularization_mode=regularization_mode,
                 regularization_strength=regularization_strength,
+                startup_config=startup_config_prepared,
+                apply_startup_policy=apply_startup_policy,
+                support_method=support_method,
+                classifier_config=classifier_config,
+                condensate_species=condensate_species,
+                element_names=element_names,
             )
             return result
 
@@ -721,6 +2975,7 @@ def minimize_gibbs_cond_profile(
                         temperatures[layer_index],
                         ln_normalized_pressures[layer_index],
                         _profile_init_at(init, n_layers, layer_index),
+                        True,
                         True,
                     )
                 )
@@ -737,19 +2992,25 @@ def minimize_gibbs_cond_profile(
             carry_init = init0
             run_full_schedule = True
             results = []
+            first_layer = True
             for temperature, ln_normalized_pressure in zip(
                 temperatures_scan.tolist(),
                 ln_pressures_scan.tolist(),
             ):
+                apply_startup_policy = first_layer or (
+                    startup_config_prepared.policy == "warm_previous_with_ratio_floor"
+                )
                 result = solve_layer_adaptive(
                     jnp.asarray(temperature),
                     jnp.asarray(ln_normalized_pressure),
                     carry_init,
                     run_full_schedule,
+                    apply_startup_policy,
                 )
                 results.append(result)
                 carry_init = result.to_init()
                 run_full_schedule = not skip_rewind_after_first_layer
+                first_layer = False
             result_seq = _stack_profile_results(results)
             if reverse_output:
                 return _flip_condensate_profile_result(result_seq)
@@ -777,11 +3038,19 @@ def minimize_gibbs_cond_profile(
         ln_normalized_pressure: Array,
         layer_init: CondensateEquilibriumInit,
         run_full_schedule: bool,
+        apply_startup_policy: bool,
     ) -> CondensateEquilibriumResult:
         thermo_state = ThermoState(
             temperature=temperature,
             ln_normalized_pressure=ln_normalized_pressure,
             element_vector=element_vector,
+        )
+        startup_epsilon = epsilons[0] if run_full_schedule else epsilons[-1]
+        prepared_layer_init = _apply_rgie_startup_policy(
+            layer_init,
+            epsilon=startup_epsilon,
+            startup_config=startup_config_prepared,
+            apply_policy=apply_startup_policy,
         )
 
         def body_fn(i, init_state):
@@ -802,11 +3071,15 @@ def minimize_gibbs_cond_profile(
                 reduced_solver=reduced_solver,
                 regularization_mode=regularization_mode,
                 regularization_strength=regularization_strength,
+                support_method=support_method,
+                classifier_config=classifier_config,
+                condensate_species=condensate_species,
+                element_names=element_names,
             )
             return result.to_init()
 
         final_epsilon = epsilons[-1]
-        prepared_init = _prepare_condensate_init(layer_init)
+        prepared_init = _prepare_condensate_init(prepared_layer_init)
         final_init = lax.cond(
             run_full_schedule,
             lambda init_state: lax.fori_loop(0, n_step, body_fn, init_state),
@@ -829,6 +3102,10 @@ def minimize_gibbs_cond_profile(
             reduced_solver=reduced_solver,
             regularization_mode=regularization_mode,
             regularization_strength=regularization_strength,
+            support_method=support_method,
+            classifier_config=classifier_config,
+            condensate_species=condensate_species,
+            element_names=element_names,
         )
 
     if method == "vmap_cold":
@@ -840,12 +3117,14 @@ def minimize_gibbs_cond_profile(
                 0,
                 CondensateEquilibriumInit(ln_nk=0, ln_mk=0, ln_ntot=0),
                 None,
+                None,
             ),
             out_axes=0,
         )(
             temperatures,
             ln_normalized_pressures,
             batched_init,
+            True,
             True,
         )
 
@@ -857,23 +3136,29 @@ def minimize_gibbs_cond_profile(
         skip_rewind_after_first_layer: bool,
         reverse_output: bool,
     ) -> CondensateEquilibriumResult:
-        def scan_body(carry, layer_inputs):
-            carry_init, run_full_schedule = carry
-            temperature, ln_normalized_pressure = layer_inputs
+        carry_init = init0
+        run_full_schedule = True
+        first_layer = True
+        results = []
+        for temperature, ln_normalized_pressure in zip(
+            temperatures_scan.tolist(),
+            ln_pressures_scan.tolist(),
+        ):
+            apply_startup_policy = first_layer or (
+                startup_config_prepared.policy == "warm_previous_with_ratio_floor"
+            )
             result = solve_layer(
-                temperature,
-                ln_normalized_pressure,
+                jnp.asarray(temperature),
+                jnp.asarray(ln_normalized_pressure),
                 carry_init,
                 run_full_schedule,
+                apply_startup_policy,
             )
-            next_run_full_schedule = jnp.asarray(not skip_rewind_after_first_layer)
-            return (result.to_init(), next_run_full_schedule), result
-
-        init_carry = (
-            init0,
-            jnp.asarray(True),
-        )
-        _, result_seq = lax.scan(scan_body, init_carry, (temperatures_scan, ln_pressures_scan))
+            results.append(result)
+            carry_init = result.to_init()
+            run_full_schedule = not skip_rewind_after_first_layer
+            first_layer = False
+        result_seq = _stack_profile_results(results)
         if reverse_output:
             return _flip_condensate_profile_result(result_seq)
         return result_seq
@@ -1037,10 +3322,41 @@ def trace_condensate_reduced_solver_backends(
     epsilon: float,
     element_indices: Optional[jnp.ndarray] = None,
     backend_configs: Optional[Sequence[dict]] = None,
+    exact_input_bundle_context: Optional[dict[str, Any]] = None,
 ):
     """Diagnostic-only wrapper for one-step reduced-solver backend comparisons."""
 
     init_prepared = _prepare_condensate_init(init)
+    emit_exact_input_bundle = (
+        False
+        if exact_input_bundle_context is None
+        else bool(exact_input_bundle_context.get("emit_exact_input_bundle", False))
+    )
+    case_key = (
+        "diagnostic"
+        if exact_input_bundle_context is None
+        else str(exact_input_bundle_context.get("case_key", "diagnostic"))
+    )
+    newton_iter = (
+        0
+        if exact_input_bundle_context is None
+        else int(exact_input_bundle_context.get("newton_iter", 0))
+    )
+    ln_nk_init_source_trace = (
+        None
+        if not emit_exact_input_bundle
+        else _build_lnnk_init_source_trace(
+            init,
+            init_prepared,
+            case_key=case_key,
+            newton_iter=newton_iter,
+            source_stage="trace_condensate_reduced_solver_backends CondensateEquilibriumInit.ln_nk",
+            producer_function=(
+                "src/exogibbs/optimize/minimize_cond.py::"
+                "trace_condensate_reduced_solver_backends"
+            ),
+        )
+    )
     return _diagnose_reduced_solver_backend_experiments_raw(
         state,
         ln_nk=init_prepared.ln_nk,
@@ -1053,6 +3369,42 @@ def trace_condensate_reduced_solver_backends(
         epsilon=epsilon,
         element_indices=element_indices,
         backend_configs=backend_configs,
+        case_key=case_key,
+        newton_iter=newton_iter,
+        condensates_jac_indices=(
+            None
+            if exact_input_bundle_context is None
+            else exact_input_bundle_context.get("condensates_jac_indices")
+        ),
+        condensate_labels_jac_order=(
+            None
+            if exact_input_bundle_context is None
+            else exact_input_bundle_context.get("condensate_labels_jac_order")
+        ),
+        element_labels_reduced_order=(
+            None
+            if exact_input_bundle_context is None
+            else exact_input_bundle_context.get("element_labels_reduced_order")
+        ),
+        row_scaled_element_condensate_jec_target_block=(
+            None
+            if exact_input_bundle_context is None
+            else exact_input_bundle_context.get(
+                "row_scaled_element_condensate_jec_target_block"
+            )
+        ),
+        selected_element_row_scaling_vector=(
+            None
+            if exact_input_bundle_context is None
+            else exact_input_bundle_context.get("selected_element_row_scaling_vector")
+        ),
+        gas_phase_calculate_lifecycle_context=(
+            None
+            if exact_input_bundle_context is None
+            else exact_input_bundle_context.get("gas_phase_calculate_lifecycle_context")
+        ),
+        emit_exact_input_bundle=emit_exact_input_bundle,
+        ln_nk_init_source_trace=ln_nk_init_source_trace,
     )
 
 
@@ -1277,12 +3629,30 @@ __all__ = [
     "CondensateEquilibriumInit",
     "CondensateEpsilonSchedule",
     "CondensateProfileMethod",
+    "CondensateRGIESupportClassifierConfig",
+    "CondensateRGIESupportMethod",
+    "CondensateRGIEReducedCouplingConfig",
+    "CondensateRGIEStartupConfig",
+    "CondensateRGIEStartupPolicy",
     "CondensateEquilibriumResult",
+    "classify_rgie_support_proxies",
+    "build_lnnk_constructor_source_trace",
+    "build_minimize_gibbs_core_lnnk_output_source_trace",
+    "minimize_gibbs_core_with_source_trace",
     "compute_sk_feasible_epsilon_floor",
+    "diagnose_augmented_semismooth_candidate_condensate_layer",
+    "diagnose_semismooth_candidate_condensate_layer",
+    "diagnose_smoothed_semismooth_candidate_condensate_layer",
+    "diagnose_support_updating_active_set_layer",
     "minimize_gibbs_cond",
     "minimize_gibbs_cond_profile",
     "minimize_gibbs_cond_core",
     "minimize_gibbs_cond_with_diagnostics",
+    "solve_augmented_semismooth_candidate_condensate_layer",
+    "solve_gas_equilibrium_with_duals",
+    "solve_restricted_support_condensate_layer",
+    "solve_semismooth_candidate_condensate_layer",
+    "solve_smoothed_semismooth_candidate_condensate_layer",
     "trace_adaptive_condensate_schedule",
     "trace_condensate_gas_limiter_diagnostics",
     "trace_condensate_iteration_lambda_trials",

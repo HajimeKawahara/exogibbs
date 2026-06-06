@@ -99,7 +99,16 @@ def main() -> None:
     print("ExoGibbs solve completed with grid-backed initializer.")
     print("Result shape:", nk_result.shape)
 
-    plot_species = chem.species[len(element_vector):]
+    n_elem = len(chem.elements)
+    if len(element_vector) != n_elem:
+        raise AssertionError("comparison_with_fastchem_initializer: len(element_vector) must equal len(chem.elements)")
+    if list(chem.elements)[-1] != "e-":
+        raise AssertionError("comparison_with_fastchem_initializer: ExoGibbs chem.elements must keep e- last")
+    if list(chem.species[:n_elem]) != list(chem.elements):
+        raise AssertionError(
+            "comparison_with_fastchem_initializer: molecule species slice must start at len(chem.elements)"
+        )
+    plot_species = chem.species[n_elem:]
     plot_species_labels = plot_species
 
     plot_species_indices = []

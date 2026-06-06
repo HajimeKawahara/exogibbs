@@ -9,6 +9,23 @@
 
 # In[1]:
 
+import importlib.util
+import os
+from pathlib import Path
+
+if os.environ.get("EXOGIBBS_FASTCHEM_COND_PROF_LEGACY", "0") != "1":
+    repo_root = Path(__file__).resolve().parents[4]
+    audit_path = repo_root / "examples" / "comparisons" / "audit_firstpass_rgie_fastchem_gas_baseline.py"
+    spec = importlib.util.spec_from_file_location(
+        "audit_firstpass_rgie_fastchem_gas_baseline",
+        audit_path,
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load audit script from {audit_path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    raise SystemExit(module.main([]))
+
 
 from jax import config
 

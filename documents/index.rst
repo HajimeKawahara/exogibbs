@@ -40,6 +40,12 @@ Contents
 
    exogibbs/exogibbs.rst
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Diagnostics:
+
+   diagnostics/positive_support_experimental.rst
+
 
 
 
