@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from exogibbs.diagnostics.condensate_thermo_valid_support import (
+from exogibbs.condensates.thermo_valid_support import (
     filter_thermo_valid_condensate_support,
 )
 

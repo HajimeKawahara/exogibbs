@@ -1,2 +1,0 @@
-|:art:| More Practical Samples
-================================

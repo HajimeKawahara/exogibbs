@@ -172,3 +172,38 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Local examples and generated comparison artifacts are not repository sources.
+/examples/
+/results/
+
+# Local external checkouts and scratch workspaces.
+/FastChem4/
+/Ipopt/
+/Sonora/
+/fastchem/
+/ref/FastChem/
+/pdipm_refs/
+/tmp/
+/tmp_grid_check/
+/send/
+/save.codex
+/save_context
+
+# Local diagnostics experiments that have been promoted or archived elsewhere.
+/src/exogibbs/diagnostics/
+
+# Local editor, generated docs, and scratch artifacts.
+/.codex
+/.vscode/
+/documents/_build/
+/documents/backreferences/
+/documents/exogibbs/Makefile
+/documents/exogibbs/make.bat
+/documents/exogibbs/index.rst
+/documents/exogibbs/exogibbs.*.rst
+*~
+codex_log.txt
+audit_findings.txt
+cp.sh
+tmp.sh
