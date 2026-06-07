@@ -1,10 +1,18 @@
-"""Shared plotting helpers for ExoGibbs curated condensate demos."""
+"""Shared plotting helpers for ExoGibbs curated condensate demos.
+
+The default demo path is intentionally self-contained: it builds a small
+profile-like pressure/temperature grid from native curated-family definitions
+and calls the public HEAD route API directly.  Older result-artifact replay
+helpers are kept for development diagnostics, but the public demos do not
+depend on ``results/``.
+"""
 
 from __future__ import annotations
 
 import json
 import os
 import re
+from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -25,7 +33,10 @@ from exogibbs.api.condensate_equilibrium import (
     condensate_equilibrium,
 )
 from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
-from exogibbs.presets.fastchem_cond import condensate_chemical_setup
+from exogibbs.condensates.initialization_policy import (
+    recommend_budget_preserving_seed_amounts,
+)
+from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 
 config.update("jax_enable_x64", True)
 
@@ -38,6 +49,104 @@ T500_REFRESH = RESULTS / "fastchem4_milestone4379_t500_refresh_policy_live_paylo
 STATIC_FORMULA_AUDIT = RESULTS / "fastchem4_milestone002_formula_matrix_audit.json"
 
 ACCEPTED_STATUSES = {"converged", "converged_with_caveat"}
+
+
+@dataclass(frozen=True)
+class CuratedProfileDefinition:
+    """Small native profile definition for one curated demo family."""
+
+    family: str
+    temperatures: tuple[float, ...]
+    pressures: tuple[float, ...]
+    support_species: tuple[str, ...] = ()
+    carbon_to_oxygen_ratio: float | None = None
+    empty_condensate_support: bool = False
+    seed_fraction: float = 1.0e-3
+    max_seed_amount: float = 1.0e-3
+    max_inner_iterations: int = 40
+
+
+def _logspace(start: float, stop: float, count: int) -> tuple[float, ...]:
+    return tuple(float(value) for value in np.logspace(start, stop, count))
+
+
+def _linspace(start: float, stop: float, count: int) -> tuple[float, ...]:
+    return tuple(float(value) for value in np.linspace(start, stop, count))
+
+
+FRESH_CURATED_PROFILES: Mapping[str, CuratedProfileDefinition] = {
+    "solar_highT_no_condensate_gas_regression": CuratedProfileDefinition(
+        family="solar_highT_no_condensate_gas_regression",
+        temperatures=tuple(2200.0 for _ in range(18)),
+        pressures=_logspace(-6.0, 2.0, 18),
+        empty_condensate_support=True,
+    ),
+    "solar_silicate_first_condensation": CuratedProfileDefinition(
+        family="solar_silicate_first_condensation",
+        temperatures=_linspace(1600.0, 1300.0, 9),
+        pressures=_logspace(-2.0, 1.0, 9),
+        support_species=("MgSiO3(s,l)", "Mg2SiO4(s,l)", "SiO2(s,l)"),
+    ),
+    "solar_water_condensation": CuratedProfileDefinition(
+        family="solar_water_condensation",
+        temperatures=_linspace(360.0, 240.0, 9),
+        pressures=_logspace(-3.0, 1.0, 9),
+        support_species=("H2O(s,l)",),
+    ),
+    "solar_metal_sulfide_or_Fe_Ni_S_region": CuratedProfileDefinition(
+        family="solar_metal_sulfide_or_Fe_Ni_S_region",
+        temperatures=_linspace(850.0, 600.0, 9),
+        pressures=_logspace(-3.0, 1.0, 9),
+        support_species=("Fe(s,l)", "FeS(s,l)", "Ni(s,l)", "NiS(s,l)"),
+    ),
+    "carbon_rich_graphite_window": CuratedProfileDefinition(
+        family="carbon_rich_graphite_window",
+        temperatures=_linspace(1500.0, 1100.0, 9),
+        pressures=_logspace(-3.0, 1.0, 9),
+        support_species=("C(s)",),
+        carbon_to_oxygen_ratio=2.0,
+    ),
+    "carbon_rich_CaS_MgS_AlN_window": CuratedProfileDefinition(
+        family="carbon_rich_CaS_MgS_AlN_window",
+        temperatures=_linspace(850.0, 600.0, 9),
+        pressures=_logspace(-3.0, 1.0, 9),
+        support_species=("CaS(s)", "MgS(s)", "AlN(s)"),
+        carbon_to_oxygen_ratio=2.0,
+    ),
+    "SiO_s_condensate_window": CuratedProfileDefinition(
+        family="SiO_s_condensate_window",
+        temperatures=_linspace(1050.0, 750.0, 9),
+        pressures=_logspace(-2.0, 1.0, 9),
+        support_species=("SiO(s)",),
+    ),
+    "lowT_strong_condensation_budget_stress": CuratedProfileDefinition(
+        family="lowT_strong_condensation_budget_stress",
+        temperatures=_linspace(600.0, 350.0, 9),
+        pressures=_logspace(-3.0, 1.0, 9),
+        support_species=("H2O(s,l)", "MgSiO3(s,l)", "Mg2SiO4(s,l)", "Fe(s,l)", "FeS(s,l)"),
+    ),
+    "near_phase_boundary_support_sensitivity": CuratedProfileDefinition(
+        family="near_phase_boundary_support_sensitivity",
+        temperatures=_linspace(1550.0, 1450.0, 9),
+        pressures=_logspace(-1.0, 1.0, 9),
+        support_species=("MgSiO3(s,l)", "Mg2SiO4(s,l)", "Fe(s,l)", "CaTiO3(s)", "TiO2(s,l)"),
+    ),
+    "complex_heavy_element_or_boron_titanium_zirconium_case": CuratedProfileDefinition(
+        family="complex_heavy_element_or_boron_titanium_zirconium_case",
+        temperatures=_linspace(1250.0, 950.0, 9),
+        pressures=_logspace(-2.0, 1.0, 9),
+        support_species=("TiO2(s,l)", "TiC(s,l)", "TiN(s,l)", "CaTiO3(s)"),
+    ),
+}
+
+
+def fresh_profile_definition(family: str) -> CuratedProfileDefinition:
+    """Return the native fresh-profile definition for a curated family."""
+
+    try:
+        return FRESH_CURATED_PROFILES[family]
+    except KeyError as exc:
+        raise ValueError(f"No fresh curated profile definition for family={family!r}.") from exc
 
 
 def _read_json(path: Path) -> Mapping[str, Any]:
@@ -222,6 +331,117 @@ def element_budget_for_row(setup: Any, row: Mapping[str, Any]) -> jnp.ndarray:
     return budget
 
 
+def element_budget_for_profile(setup: Any, definition: CuratedProfileDefinition) -> jnp.ndarray:
+    """Build the native element budget used by one fresh curated profile."""
+
+    budget = jnp.asarray(setup.gas_setup.element_vector_reference, dtype=jnp.float64)
+    if definition.carbon_to_oxygen_ratio is not None:
+        element_index = {name: index for index, name in enumerate(setup.elements)}
+        budget = budget.at[element_index["C"]].set(
+            float(definition.carbon_to_oxygen_ratio) * budget[element_index["O"]]
+        )
+    return budget
+
+
+def _pressure_label(pressure: float) -> str:
+    return f"{pressure:g}".replace(".", "p").replace("-", "m")
+
+
+def _case_id_for_profile(definition: CuratedProfileDefinition, temperature: float, pressure: float) -> str:
+    return f"{definition.family}__T{int(round(float(temperature)))}_P{_pressure_label(float(pressure))}"
+
+
+def _support_payload_for_profile(
+    setup: Any,
+    definition: CuratedProfileDefinition,
+    budget: jnp.ndarray,
+) -> tuple[tuple[int, ...], tuple[float, ...]]:
+    if definition.empty_condensate_support:
+        return (), ()
+    species_index = {name: index for index, name in enumerate(setup.condensate_species)}
+    missing = [name for name in definition.support_species if name not in species_index]
+    if missing:
+        raise ValueError(
+            f"Fresh curated profile {definition.family!r} references unknown condensates: {missing}"
+        )
+    support_indices = tuple(species_index[name] for name in definition.support_species)
+    seed = recommend_budget_preserving_seed_amounts(
+        formula_matrix_cond=setup.formula_matrix_cond,
+        element_inventory_target=budget,
+        condensate_species_order=setup.condensate_species,
+        support_indices=support_indices,
+        seed_fraction=definition.seed_fraction,
+        max_seed_amount=definition.max_seed_amount,
+        min_seed_amount=1.0e-300,
+        field_provenance={
+            "formula_matrix_cond": "exogibbs_condensate_chemical_setup",
+            "element_inventory_target": "exogibbs_fresh_curated_profile_budget",
+        },
+    )
+    return support_indices, tuple(float(value) for value in seed.recommended_amounts)
+
+
+def run_fresh_curated_profile(
+    setup: Any,
+    definition: CuratedProfileDefinition,
+) -> tuple[list[CondensateEquilibriumResult | None], list[np.ndarray | None], list[str]]:
+    """Run one fresh profile through the public HEAD route API."""
+
+    budget = element_budget_for_profile(setup, definition)
+    support_indices, support_amounts_init = _support_payload_for_profile(
+        setup,
+        definition,
+        budget,
+    )
+    results: list[CondensateEquilibriumResult | None] = []
+    gas_plot_x: list[np.ndarray | None] = []
+    errors: list[str] = []
+    for temperature, pressure in zip(definition.temperatures, definition.pressures):
+        options = CondensateEquilibriumOptions(
+            case_id=_case_id_for_profile(definition, temperature, pressure),
+            return_diagnostics=True,
+            allow_caveat_tiers=True,
+            max_inner_iterations=definition.max_inner_iterations,
+            enable_head_route_warm_start=True,
+            enable_depleted_gas_refresh=True,
+        )
+        try:
+            result = condensate_equilibrium(
+                setup,
+                float(temperature),
+                float(pressure),
+                budget,
+                support_indices=support_indices,
+                support_amounts_init=support_amounts_init,
+                options=options,
+            )
+        except Exception as exc:  # noqa: BLE001 - demos annotate layer failures.
+            result = None
+            errors.append(
+                f"{_case_id_for_profile(definition, temperature, pressure)}: "
+                f"{type(exc).__name__}: {exc}"
+            )
+        results.append(result)
+        if result is not None:
+            result_gas_x = np.asarray(result.gas_x, dtype=float)
+            if np.any(np.isfinite(result_gas_x) & (result_gas_x > 0.0)):
+                gas_plot_x.append(result_gas_x)
+                continue
+        try:
+            gas_result = equilibrium(
+                setup.gas_setup,
+                float(temperature),
+                float(pressure),
+                budget,
+                Pref=1.0,
+                options=EquilibriumOptions(),
+            )
+            gas_plot_x.append(np.asarray(gas_result.x, dtype=float))
+        except Exception:  # noqa: BLE001 - gas panel can remain sparse if fallback fails.
+            gas_plot_x.append(None)
+    return results, gas_plot_x, errors
+
+
 def replay_row(
     setup: Any,
     row: Mapping[str, Any],
@@ -341,48 +561,15 @@ def plot_curated_family(
     max_gas_species: int = 10,
     max_condensates: int = 8,
 ) -> Path:
-    """Replay and plot one curated condensate family."""
+    """Run and plot one curated family through the public HEAD route API."""
 
     setup = condensate_chemical_setup(silent=True)
-    rows = rows_for_family(family)
-    payloads = payload_by_case_id(setup)
-    t500_evidence = route_evidence_by_case_id()
-    results: list[CondensateEquilibriumResult | None] = []
-    gas_plot_x: list[np.ndarray | None] = []
-    errors: list[str] = []
-    temperatures: list[float] = []
-    pressures: list[float] = []
-    case_labels: list[str] = []
-    for row in rows:
-        temperature, pressure = temperature_pressure(str(row["case_id"]))
-        temperatures.append(temperature)
-        pressures.append(pressure)
-        case_labels.append(f"T={temperature:g} K")
-        try:
-            result = replay_row(setup, row, payloads, t500_evidence)
-        except Exception as exc:  # noqa: BLE001 - demos annotate replay failures.
-            result = None
-            errors.append(f"{row['case_id']}: {type(exc).__name__}: {exc}")
-        results.append(result)
-        if result is not None:
-            result_gas_x = np.asarray(result.gas_x, dtype=float)
-            if np.any(np.isfinite(result_gas_x) & (result_gas_x > 0.0)):
-                gas_plot_x.append(result_gas_x)
-                continue
-        try:
-            gas_result = equilibrium(
-                setup.gas_setup,
-                temperature,
-                pressure,
-                element_budget_for_row(setup, row),
-                Pref=1.0,
-                options=EquilibriumOptions(),
-            )
-            gas_plot_x.append(np.asarray(gas_result.x, dtype=float))
-        except Exception:  # noqa: BLE001 - gas panel can remain sparse if fallback fails.
-            gas_plot_x.append(None)
+    definition = fresh_profile_definition(family)
+    results, gas_plot_x, errors = run_fresh_curated_profile(setup, definition)
+    temperatures = list(definition.temperatures)
+    case_labels = [f"T={temperature:g} K" for temperature in temperatures]
 
-    pressure_array = np.asarray(pressures, dtype=float)
+    pressure_array = np.asarray(definition.pressures, dtype=float)
     order = np.argsort(pressure_array)
     pressure_array = pressure_array[order]
     temperatures = [temperatures[index] for index in order]
@@ -451,7 +638,10 @@ def plot_curated_family(
     ax_gas.set_ylabel("Pressure (bar)")
     suffix = f"\n{title_suffix}" if title_suffix else ""
     ax_gas.set_title(f"{family}{suffix}")
-    ax_cond.set_title(f"Curated rows: {len(rows)}, replay errors: {len(errors)}")
+    converged_count = sum(1 for result in results if result is not None and result.converged)
+    ax_cond.set_title(
+        f"Fresh HEAD route layers: {len(results)}, converged: {converged_count}, errors: {len(errors)}"
+    )
     if ax_gas.get_legend_handles_labels()[0]:
         ax_gas.legend(fontsize=7)
     if plotted_condensate:

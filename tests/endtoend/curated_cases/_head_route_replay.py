@@ -25,7 +25,7 @@ from exogibbs.condensates.head_route_standard_gate import (
     CONVERGED,
     CONVERGED_WITH_CAVEAT,
 )
-from exogibbs.presets.fastchem_cond import condensate_chemical_setup
+from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 
 config.update("jax_enable_x64", True)
 

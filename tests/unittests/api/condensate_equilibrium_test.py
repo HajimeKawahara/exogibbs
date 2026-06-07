@@ -336,6 +336,45 @@ def test_condensate_equilibrium_accepts_successful_head_lifecycle_after_solver_f
     assert result.diagnostics["solver_success"] is True
 
 
+def test_condensate_equilibrium_can_disable_native_seed_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_condensate_hvalue(-1.0)
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        return {
+            "solver_success": False,
+            "ln_nk": jnp.asarray([0.0, -1.0]),
+            "support_indices": tuple(kwargs["support_indices"]),
+            "m_support": jnp.asarray(kwargs["support_amounts_init"]),
+        }
+
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            max_positive_support_count=1,
+            enable_native_seed_fallback=False,
+        ),
+    )
+
+    assert result.status == NOT_CONVERGED
+    assert result.converged is False
+    assert result.diagnostics is not None
+    assert "native_seed_fallback" not in result.diagnostics
+
+
 def test_condensate_equilibrium_empty_positive_support_uses_gas_only_path(monkeypatch: pytest.MonkeyPatch) -> None:
     setup = _setup_pair_with_condensate_hvalue(1.0)
 

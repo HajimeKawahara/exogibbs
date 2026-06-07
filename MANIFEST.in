@@ -18,6 +18,27 @@ include src/exogibbs/data/fastchem/element_abundances/asplund_2020_extended.dat
 include src/exogibbs/data/fastchem/element_abundances/lodders_2003.dat
 include src/exogibbs/data/fastchem/element_abundances/lodders_2003_extended.dat
 
+#FastChem4 presets
+include src/exogibbs/data/FastChem4/logK/logK.dat
+include src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat
+include src/exogibbs/data/FastChem4/logK/logK_extended.dat
+include src/exogibbs/data/FastChem4/logK/logK_extended_wo_ions.dat
+include src/exogibbs/data/FastChem4/logK/logK_condensates.dat
+include src/exogibbs/data/FastChem4/logK/logK_condensates_extended.dat
+include src/exogibbs/data/FastChem4/logK/logK_hoeijmakers2019.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2009.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2009_extended.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2009_full.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2021_extended.dat
+include src/exogibbs/data/FastChem4/element_abundances/asplund_2021_full.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2003.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2003_extended.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2003_full.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2025.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2025_extended.dat
+include src/exogibbs/data/FastChem4/element_abundances/lodders_2025_full.dat
+
 #grids for GridEquilibriumInitializer 
 include src/exogibbs/data/grids/fastchem/grid_exogibbs.nc
 include src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc
