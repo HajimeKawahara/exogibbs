@@ -22,6 +22,10 @@ from exogibbs.api import (
 )
 
 
+def _skip_without_pyfastchem() -> None:
+    pytest.importorskip("pyfastchem")
+
+
 def test_equilibrium_grid_metadata_from_setup_captures_preset_and_settings():
     setup = ChemicalSetup(
         formula_matrix=jnp.ones((2, 3)),
@@ -431,6 +435,8 @@ def test_build_equilibrium_grid_verification_failure_reports_worst_point(monkeyp
 
 
 def test_build_equilibrium_grid_fastchem_path_returns_grid():
+    _skip_without_pyfastchem()
+
     grid = build_equilibrium_grid(
         "fastchem",
         temperature_axis=jnp.asarray([1000.0]),
@@ -453,6 +459,8 @@ def test_build_equilibrium_grid_fastchem_path_returns_grid():
 
 
 def test_build_equilibrium_grid_fastchem_source_rejects_non_fastchem_preset():
+    _skip_without_pyfastchem()
+
     try:
         build_equilibrium_grid(
             "ykb4",
@@ -567,6 +575,8 @@ def test_equilibrium_grid_from_dataset_requires_metadata_attrs():
 
 
 def test_validate_equilibrium_grid_compatibility_accepts_matching_setup():
+    _skip_without_pyfastchem()
+
     grid = build_equilibrium_grid(
         "fastchem",
         temperature_axis=jnp.asarray([1000.0]),
@@ -588,6 +598,8 @@ def test_validate_equilibrium_grid_compatibility_accepts_matching_setup():
 
 
 def test_validate_equilibrium_grid_compatibility_rejects_species_mismatch():
+    _skip_without_pyfastchem()
+
     grid = build_equilibrium_grid(
         "fastchem",
         temperature_axis=jnp.asarray([1000.0]),
