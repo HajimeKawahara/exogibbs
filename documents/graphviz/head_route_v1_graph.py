@@ -1,0 +1,285 @@
+"""Generate a Japanese Graphviz diagram for ExoGibbs HEAD route v1."""
+
+from __future__ import annotations
+
+import subprocess
+from pathlib import Path
+
+
+HERE = Path(__file__).resolve().parent
+DOT_PATH = HERE / "head_route_v1.dot"
+PNG_PATH = HERE / "head_route_v1.png"
+
+FONT = "Noto Sans CJK JP"
+
+DOT_SOURCE = f"""digraph head_route_v1 {{
+  graph [
+    rankdir=TB,
+    bgcolor="white",
+    pad=0.35,
+    nodesep=0.45,
+    ranksep=0.62,
+    splines=ortho,
+    fontname="{FONT}",
+    label="ExoGibbs 凝縮あり HEAD route v1",
+    labelloc=t,
+    fontsize=26
+  ];
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="{FONT}",
+    fontsize=13,
+    margin="0.12,0.08",
+    color="#3f4a5a",
+    penwidth=1.4,
+    fillcolor="#f8fafc"
+  ];
+  edge [
+    fontname="{FONT}",
+    fontsize=11,
+    color="#475569",
+    arrowsize=0.8,
+    penwidth=1.2
+  ];
+
+  subgraph cluster_api {{
+    label="公開 API 境界";
+    fontname="{FONT}";
+    fontsize=18;
+    color="#2563eb";
+    penwidth=1.8;
+    style="rounded";
+
+    user_call [
+      label="ユーザー呼び出し\\ncondensate_equilibrium(setup, T, P, b, options)",
+      fillcolor="#dbeafe"
+    ];
+    setup_validation [
+      label="setup / options 検証\\nCondensateChemicalSetup\\nCondensateEquilibriumOptions",
+      fillcolor="#e0f2fe"
+    ];
+    support_input_decision [
+      shape=diamond,
+      label="support_indices が\\n明示されたか？",
+      fillcolor="#fef3c7"
+    ];
+  }}
+
+  subgraph cluster_support {{
+    label="positive support と初期 seed";
+    fontname="{FONT}";
+    fontsize=18;
+    color="#16a34a";
+    penwidth=1.8;
+    style="rounded";
+
+    positive_support [
+      label="native positive support 選択\\npositive_support_initializer.py\\nAc, budget, hvector_cond だけを使用",
+      fillcolor="#dcfce7"
+    ];
+    explicit_support [
+      label="明示 support payload\\nユーザー指定 support / seed",
+      fillcolor="#f0fdf4"
+    ];
+    empty_support [
+      shape=diamond,
+      label="positive support が\\n空か？",
+      fillcolor="#fef3c7"
+    ];
+    gas_only_exit [
+      label="gas-only equilibrium に戻す\\n凝縮候補なし boundary\\nstatus = converged",
+      fillcolor="#e0f2fe"
+    ];
+  }}
+
+  subgraph cluster_warmstart {{
+    label="warm-start 候補生成";
+    fontname="{FONT}";
+    fontsize=18;
+    color="#0f766e";
+    penwidth=1.8;
+    style="rounded";
+
+    warm_start [
+      label="HEAD route warm-start\\nhead_route_warm_start.py",
+      fillcolor="#ccfbf1"
+    ];
+    baseline_seed [
+      label="baseline_positive_support_seed\\n小さい凝縮量 seed",
+      fillcolor="#f0fdfa"
+    ];
+    depleted_refresh [
+      label="depleted_gas_refresh_native_gas_solver\\nAc @ m を budget から差し引き\\n気相 log-density を再計算",
+      fillcolor="#f0fdfa"
+    ];
+  }}
+
+  subgraph cluster_solver {{
+    label="restricted support solver";
+    fontname="{FONT}";
+    fontsize=18;
+    color="#7c3aed";
+    penwidth=1.8;
+    style="rounded";
+
+    restricted_solver [
+      label="restricted support solver\\nsolve_restricted_support_condensate_layer()\\n選んだ凝縮種だけを動かす",
+      fillcolor="#ede9fe"
+    ];
+    solver_success [
+      shape=diamond,
+      label="solver_success ?",
+      fillcolor="#fef3c7"
+    ];
+    finite_warm_state [
+      shape=diamond,
+      label="finite warm-start state が\\n残っているか？",
+      fillcolor="#fef3c7"
+    ];
+    no_state_fail [
+      label="not_converged\\nrefresh warm-start なし",
+      fillcolor="#fee2e2"
+    ];
+  }}
+
+  subgraph cluster_lifecycle {{
+    label="HEAD route lifecycle";
+    fontname="{FONT}";
+    fontsize=18;
+    color="#ea580c";
+    penwidth=1.8;
+    style="rounded";
+
+    support_boundary [
+      label="support boundary 整理\\nsupport_boundary.py\\nln_nk, ln_mk, Ac(active), budget",
+      fillcolor="#ffedd5"
+    ];
+    continuation_input [
+      label="continuation input 構築\\ncontinuation_input.py\\nq/r/lambda/source/budget frame",
+      fillcolor="#ffedd5"
+    ];
+    primary_continuation [
+      label="primary continuation 入口\\nalgorithm-v1.1 high-start policy\\noptimize/condensate_algorithm_v11_callsite.py",
+      fillcolor="#fed7aa"
+    ];
+    pdipm_rgie_core [
+      label="RGIE / PD-IPM 本体\\nrun_algorithm_v11_pdipm_continuation()\\noptimize/condensate_algorithm_v11_continuation.py\\n↓ inner step\\nsolve_pdipm_rgie_algorithm_v11_reduced_step()\\noptimize/pdipm_rgie_cond.py",
+      fillcolor="#fdba74",
+      penwidth=2.2,
+      color="#c2410c"
+    ];
+    primary_centered [
+      shape=diamond,
+      label="final barrier centered ?",
+      fillcolor="#fef3c7"
+    ];
+    center_fallback [
+      label="center-primary fallback\\ncenter_primary_fallback.py\\ncenter ratio + budget guard",
+      fillcolor="#fed7aa"
+    ];
+    electron_refresh [
+      label="source-convention-safe electron refresh\\nelectron_refresh.py\\nq + source ≃ Ag.T @ lambda",
+      fillcolor="#fed7aa"
+    ];
+    frontier_refresh [
+      label="frontier refresh\\nfrontier_refresh.py\\nadaptive floor 候補を評価",
+      fillcolor="#fed7aa"
+    ];
+    route_selector [
+      label="route selector\\nhead_route_selector.py\\nprimary / fallback / refresh を選択",
+      fillcolor="#fb923c"
+    ];
+    route_result [
+      label="HEAD route result\\nroute_result.py\\nselected_route / integrated_status",
+      fillcolor="#fdba74"
+    ];
+  }}
+
+  subgraph cluster_public_result {{
+    label="public result / standard gate";
+    fontname="{FONT}";
+    fontsize=18;
+    color="#334155";
+    penwidth=1.8;
+    style="rounded";
+
+    standard_gate [
+      label="standard gate\\nhead_route_standard_gate.py\\nmetric_status → tier/status",
+      fillcolor="#e2e8f0"
+    ];
+    result [
+      label="CondensateEquilibriumResult\\ngas_ln_n, gas_x, condensate_amounts\\nacceptance_tier, converged, diagnostics",
+      fillcolor="#f1f5f9"
+    ];
+    tier1 [
+      label="tier 1\\ntight residual\\nconverged",
+      fillcolor="#dcfce7"
+    ];
+    tier23 [
+      label="tier 2/3\\ncaveat 付き accepted\\nconverged_with_caveat",
+      fillcolor="#fef9c3"
+    ];
+    not_converged [
+      label="not_converged\\nsolver failed / lifecycle not accepted",
+      fillcolor="#fee2e2"
+    ];
+  }}
+
+  user_call -> setup_validation;
+  setup_validation -> support_input_decision;
+  support_input_decision -> positive_support [label="いいえ"];
+  support_input_decision -> explicit_support [label="はい"];
+  positive_support -> empty_support;
+  explicit_support -> empty_support;
+  empty_support -> gas_only_exit [label="はい"];
+  empty_support -> warm_start [label="いいえ"];
+
+  warm_start -> baseline_seed;
+  warm_start -> depleted_refresh;
+  baseline_seed -> restricted_solver;
+  depleted_refresh -> restricted_solver;
+
+  restricted_solver -> solver_success;
+  solver_success -> standard_gate [label="はい"];
+  solver_success -> finite_warm_state [label="いいえ"];
+  finite_warm_state -> no_state_fail [label="いいえ"];
+  finite_warm_state -> support_boundary [label="はい"];
+
+  support_boundary -> continuation_input;
+  continuation_input -> primary_continuation;
+  primary_continuation -> pdipm_rgie_core;
+  pdipm_rgie_core -> primary_centered;
+  primary_centered -> route_selector [label="はい"];
+  primary_centered -> center_fallback [label="いいえ"];
+  center_fallback -> electron_refresh;
+  electron_refresh -> frontier_refresh;
+  frontier_refresh -> route_selector;
+  route_selector -> route_result;
+  route_result -> standard_gate;
+
+  standard_gate -> tier1 [label="tight_residual_components"];
+  standard_gate -> tier23 [label="accepted with caveat"];
+  standard_gate -> not_converged [label="not accepted"];
+  tier1 -> result;
+  tier23 -> result;
+  not_converged -> result;
+  no_state_fail -> result;
+  gas_only_exit -> result;
+
+}}
+"""
+
+
+def main() -> None:
+    DOT_PATH.write_text(DOT_SOURCE, encoding="utf-8")
+    subprocess.run(
+        ["dot", "-Tpng", str(DOT_PATH), "-o", str(PNG_PATH)],
+        check=True,
+    )
+    print(f"wrote {DOT_PATH}")
+    print(f"wrote {PNG_PATH}")
+
+
+if __name__ == "__main__":
+    main()

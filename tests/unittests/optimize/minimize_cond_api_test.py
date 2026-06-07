@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import pytest
 from jax import config
 
 config.update("jax_enable_x64", True)
@@ -430,6 +431,11 @@ def test_minimize_gibbs_cond_candidate_selected_branch_dispatches(monkeypatch):
     def stub_raw(state, ln_nk_init, ln_mk_init, ln_ntot_init, **kwargs):
         del state
         captured["reduced_coupling_mode"] = kwargs["reduced_coupling_mode"]
+        captured["gas_step_scale"] = kwargs["gas_step_scale"]
+        captured["gas_step_direction_sign"] = kwargs["gas_step_direction_sign"]
+        captured["ntot_step_scale"] = kwargs["ntot_step_scale"]
+        captured["condensate_step_scale"] = kwargs["condensate_step_scale"]
+        captured["initial_residual_policy"] = kwargs["initial_residual_policy"]
         captured["ln_mk_init"] = ln_mk_init
         return (
             ln_nk_init,
@@ -470,10 +476,20 @@ def test_minimize_gibbs_cond_candidate_selected_branch_dispatches(monkeypatch):
         epsilon=-5.0,
         reduced_coupling_config=condmod.CondensateRGIEReducedCouplingConfig(
             reduced_coupling_mode="candidate_selected_active_plus_near_jacobian",
+            gas_step_scale=0.01,
+            gas_step_direction_sign=-1.0,
+            ntot_step_scale=0.02,
+            condensate_step_scale=0.5,
+            initial_residual_policy="computed_fresh",
         ),
     )
 
     assert captured["reduced_coupling_mode"] == "candidate_selected_active_plus_near_jacobian"
+    assert captured["gas_step_scale"] == pytest.approx(0.01)
+    assert captured["gas_step_direction_sign"] == pytest.approx(-1.0)
+    assert captured["ntot_step_scale"] == pytest.approx(0.02)
+    assert captured["condensate_step_scale"] == pytest.approx(0.5)
+    assert captured["initial_residual_policy"] == "computed_fresh"
 
 
 def test_minimize_gibbs_cond_profile_passes_support_method(monkeypatch):

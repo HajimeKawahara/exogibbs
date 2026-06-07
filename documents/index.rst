@@ -45,6 +45,8 @@ Contents
    :caption: Diagnostics:
 
    diagnostics/positive_support_experimental.rst
+   diagnostics/component_safe_curated_policy.rst
+   diagnostics/selector_scope_and_empty_support_boundary.rst
 
 
 
