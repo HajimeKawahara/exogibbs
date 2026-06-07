@@ -1,4 +1,4 @@
-"""Generate an English Graphviz diagram for ExoGibbs HEAD route v1."""
+"""Generate an English Graphviz diagram for ExoGibbs HEAD route v1.1."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
     ranksep=0.62,
     splines=ortho,
     fontname="{FONT}",
-    label="ExoGibbs Condensate HEAD Route v1",
+    label="ExoGibbs Condensate HEAD Route v1.1",
     labelloc=t,
     fontsize=26
   ];
@@ -194,6 +194,11 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
       label="HEAD route result\\nroute_result.py\\nselected_route / integrated_status",
       fillcolor="#fdba74"
     ];
+    lifecycle_accepted [
+      shape=diamond,
+      label="Lifecycle\\naccepted?",
+      fillcolor="#fef3c7"
+    ];
   }}
 
   subgraph cluster_public_result {{
@@ -224,6 +229,17 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
       label="not_converged\\nsolver failed / lifecycle not accepted",
       fillcolor="#fee2e2"
     ];
+    v11_fallback_gate [
+      shape=diamond,
+      label="v1.1 fallback gate\\nfresh runtime and\\nfinite candidate?",
+      fillcolor="#fef3c7"
+    ];
+    native_seed_fallback [
+      label="Native seed fallback\\nnative gas equilibrium +\\nbudget-preserving seed\\nroute = native_budget_seed_fallback_budget_tradeoff",
+      fillcolor="#fef9c3",
+      color="#ca8a04",
+      penwidth=1.8
+    ];
   }}
 
   user_call -> setup_validation;
@@ -241,7 +257,7 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
   depleted_refresh -> restricted_solver;
 
   restricted_solver -> solver_success;
-  solver_success -> standard_gate [label="yes"];
+  solver_success -> support_boundary [label="yes"];
   solver_success -> finite_warm_state [label="no"];
   finite_warm_state -> no_state_fail [label="no"];
   finite_warm_state -> support_boundary [label="yes"];
@@ -256,7 +272,12 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
   electron_refresh -> frontier_refresh;
   frontier_refresh -> route_selector;
   route_selector -> route_result;
-  route_result -> standard_gate;
+  route_result -> lifecycle_accepted;
+  lifecycle_accepted -> standard_gate [label="yes"];
+  lifecycle_accepted -> v11_fallback_gate [label="no"];
+  v11_fallback_gate -> native_seed_fallback [label="yes"];
+  v11_fallback_gate -> standard_gate [label="no"];
+  native_seed_fallback -> standard_gate;
 
   standard_gate -> tier1 [label="tight_residual_components"];
   standard_gate -> tier23 [label="accepted with caveat"];

@@ -1,1 +1,1 @@
-"""Curated condensate HEAD route replay tests."""
+"""Curated condensate HEAD route fresh API regression tests."""
