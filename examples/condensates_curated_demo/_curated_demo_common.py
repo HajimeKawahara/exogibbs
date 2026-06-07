@@ -2,20 +2,15 @@
 
 The default demo path is intentionally self-contained: it builds a small
 profile-like pressure/temperature grid from native curated-family definitions
-and calls the public HEAD route API directly.  Older result-artifact replay
-helpers are kept for development diagnostics, but the public demos do not
-depend on ``results/``.
+and calls the public HEAD route API directly.
 """
 
 from __future__ import annotations
 
-import json
 import os
-import re
 from dataclasses import dataclass
-from functools import lru_cache
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 os.environ["JAX_PLATFORMS"] = "cpu"
 os.environ["JAX_PLATFORM_NAME"] = "cpu"
@@ -39,14 +34,6 @@ from exogibbs.condensates.initialization_policy import (
 from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 
 config.update("jax_enable_x64", True)
-
-ROOT = Path(__file__).resolve().parents[2]
-RESULTS = ROOT / "results"
-HEAD_ROUTE_TABLE = RESULTS / "fastchem4_milestone4381_uniform_post_solver_residual_table.json"
-PAYLOAD_READINESS = RESULTS / "fastchem4_milestone4385_tier1_callsite_payload_readiness.json"
-M1492_TRACE = RESULTS / "fastchem4_milestone1492_iterative_driver_frontier_expansion_trace.json"
-T500_REFRESH = RESULTS / "fastchem4_milestone4379_t500_refresh_policy_live_payload_validation.json"
-STATIC_FORMULA_AUDIT = RESULTS / "fastchem4_milestone002_formula_matrix_audit.json"
 
 ACCEPTED_STATUSES = {"converged", "converged_with_caveat"}
 
@@ -147,188 +134,6 @@ def fresh_profile_definition(family: str) -> CuratedProfileDefinition:
         return FRESH_CURATED_PROFILES[family]
     except KeyError as exc:
         raise ValueError(f"No fresh curated profile definition for family={family!r}.") from exc
-
-
-def _read_json(path: Path) -> Mapping[str, Any]:
-    if not path.exists():
-        raise FileNotFoundError(
-            f"Required curated demo evidence file is missing: {path}. "
-            "Run the demo from a workspace that contains the HEAD route evidence artifacts."
-        )
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _unique_rows(rows: Iterable[Mapping[str, Any]]) -> list[Mapping[str, Any]]:
-    unique: dict[str, Mapping[str, Any]] = {}
-    for row in rows:
-        unique.setdefault(str(row["case_id"]), row)
-    return list(unique.values())
-
-
-def rows_for_family(family: str) -> list[Mapping[str, Any]]:
-    """Return unique saved HEAD route rows for one curated family."""
-
-    payload = _read_json(HEAD_ROUTE_TABLE)
-    rows = [row for row in payload["rows"] if row["family"] == family]
-    if not rows:
-        raise ValueError(f"No curated HEAD route rows found for family={family!r}.")
-    return _unique_rows(rows)
-
-
-def _rows_by_case_id(path: Path) -> dict[str, list[Mapping[str, Any]]]:
-    payload = _read_json(path)
-    rows: dict[str, list[Mapping[str, Any]]] = {}
-
-    def visit(node: Any) -> None:
-        if isinstance(node, dict):
-            case_id = node.get("case_id")
-            if isinstance(case_id, str):
-                rows.setdefault(case_id, []).append(node)
-            for value in node.values():
-                if isinstance(value, (dict, list)):
-                    visit(value)
-        elif isinstance(node, list):
-            for value in node:
-                if isinstance(value, (dict, list)):
-                    visit(value)
-
-    visit(payload)
-    return rows
-
-
-@lru_cache(maxsize=1)
-def _static_condensate_species_order() -> tuple[str, ...]:
-    payload = _read_json(STATIC_FORMULA_AUDIT)
-    return tuple(str(name) for name in payload["Ac_static"]["species_order"])
-
-
-def _remap_static_payload_to_setup(payload: Mapping[str, Any], setup: Any) -> dict[str, Any] | None:
-    setup_index = {name: index for index, name in enumerate(setup.condensate_species)}
-    remapped_indices: list[int] = []
-    for static_index in payload["support_indices"]:
-        species = _static_condensate_species_order()[int(static_index)]
-        if species not in setup_index:
-            return None
-        remapped_indices.append(setup_index[species])
-    return {
-        **payload,
-        "support_indices": remapped_indices,
-        "payload_policy": f"{payload.get('payload_policy', 'unknown')}_species_remapped",
-    }
-
-
-def payload_by_case_id(setup: Any) -> dict[str, dict[str, Any]]:
-    """Build setup-indexed explicit support payloads when saved payloads exist."""
-
-    payloads: dict[str, dict[str, Any]] = {}
-    if PAYLOAD_READINESS.exists():
-        for row in _read_json(PAYLOAD_READINESS)["rows"]:
-            if row.get("payload_reconstructable"):
-                payload = _remap_static_payload_to_setup(row["payload"], setup)
-                if payload is not None:
-                    payloads.setdefault(str(row["case_id"]), payload)
-    if M1492_TRACE.exists():
-        for case_id, rows in _rows_by_case_id(M1492_TRACE).items():
-            for row in rows:
-                if "support_indices" in row and "support_amounts_init" in row:
-                    payload = _remap_static_payload_to_setup(
-                        {
-                            "payload_policy": "recorded_seed_payload",
-                            "support_indices": row["support_indices"],
-                            "support_amounts_init": row["support_amounts_init"],
-                        },
-                        setup,
-                    )
-                    if payload is not None:
-                        payloads.setdefault(case_id, payload)
-                    break
-    return payloads
-
-
-def route_evidence_by_case_id() -> dict[str, list[Mapping[str, Any]]]:
-    """Load saved route-selection evidence for rows without full API payloads."""
-
-    evidence: dict[str, list[Mapping[str, Any]]] = {}
-    if not T500_REFRESH.exists():
-        return evidence
-    for row in _read_json(T500_REFRESH)["rows"]:
-        evidence.setdefault(str(row["case_id"]), []).append(
-            {
-                "primary_summary": row["route_selection_report"]["primary_summary"],
-                "refresh_policy_summary": row["refresh_policy_report"],
-            }
-        )
-    return evidence
-
-
-def options_for_row(
-    row: Mapping[str, Any],
-    t500_evidence: dict[str, list[Mapping[str, Any]]],
-) -> CondensateEquilibriumOptions:
-    """Build API options that replay one saved HEAD route row."""
-
-    route = str(row["selected_route"])
-    kwargs: dict[str, Any] = {
-        "case_id": str(row["case_id"]),
-        "return_diagnostics": True,
-        "metric_status": row["metric_status"],
-        "selected_route": route,
-        "max_inner_iterations": 40,
-        "max_positive_support_count": 1,
-    }
-    if route in {"m4309_promoted_high_start_callsite_policy", "m4310_full_promoted_policy_route"}:
-        kwargs["head_route_primary_summary"] = {
-            "row_status": "centered",
-            "converged_at_final_barrier": True,
-            "source": "prevalidated_head_route_evidence",
-        }
-    elif route == "adaptive_refresh_selector_default_depleted_refresh_budget_tradeoff":
-        evidence_rows = t500_evidence[str(row["case_id"])]
-        evidence = evidence_rows.pop(0) if len(evidence_rows) > 1 else evidence_rows[0]
-        kwargs["head_route_primary_summary"] = evidence["primary_summary"]
-        kwargs["head_route_refresh_policy_summary"] = evidence["refresh_policy_summary"]
-    elif route == "fastchem4_style_electron_refresh_route":
-        kwargs["head_route_primary_summary"] = {
-            "row_status": "not_centered",
-            "converged_at_final_barrier": False,
-            "source": "prevalidated_head_route_evidence",
-        }
-        kwargs["head_route_refresh_policy_summary"] = {
-            "accepted": True,
-            "selected_policy": "fastchem4_style_electron_refresh_route",
-            "source": "prevalidated_head_route_evidence",
-        }
-    elif route == "adaptive_floor_frontier_repair":
-        kwargs["head_route_primary_summary"] = {
-            "row_status": "not_centered",
-            "converged_at_final_barrier": False,
-            "source": "prevalidated_head_route_evidence",
-        }
-        kwargs["head_route_refresh_policy_summary"] = {
-            "accepted": True,
-            "selected_policy": "adaptive_floor_frontier_repair",
-            "source": "prevalidated_head_route_evidence",
-        }
-    return CondensateEquilibriumOptions(**kwargs)
-
-
-def temperature_pressure(case_id: str) -> tuple[float, float]:
-    """Parse temperature and pressure from a curated case identifier."""
-
-    match = re.search(r"__T([0-9]+)_P([0-9p]+)", case_id)
-    if match is None:
-        raise ValueError(f"Cannot parse temperature and pressure from case_id={case_id!r}.")
-    return float(match.group(1)), float(match.group(2).replace("p", "."))
-
-
-def element_budget_for_row(setup: Any, row: Mapping[str, Any]) -> jnp.ndarray:
-    """Build the native element budget used by one curated row."""
-
-    budget = jnp.asarray(setup.gas_setup.element_vector_reference, dtype=jnp.float64)
-    element_index = {name: index for index, name in enumerate(setup.elements)}
-    if row["family"] in {"carbon_rich_graphite_window", "carbon_rich_CaS_MgS_AlN_window"}:
-        budget = budget.at[element_index["C"]].set(2.0 * budget[element_index["O"]])
-    return budget
 
 
 def element_budget_for_profile(setup: Any, definition: CuratedProfileDefinition) -> jnp.ndarray:
@@ -440,27 +245,6 @@ def run_fresh_curated_profile(
         except Exception:  # noqa: BLE001 - gas panel can remain sparse if fallback fails.
             gas_plot_x.append(None)
     return results, gas_plot_x, errors
-
-
-def replay_row(
-    setup: Any,
-    row: Mapping[str, Any],
-    payloads: Mapping[str, Mapping[str, Any]],
-    t500_evidence: dict[str, list[Mapping[str, Any]]],
-) -> CondensateEquilibriumResult:
-    """Replay one saved HEAD route row through the public API."""
-
-    temperature, pressure = temperature_pressure(str(row["case_id"]))
-    payload = payloads.get(str(row["case_id"]))
-    return condensate_equilibrium(
-        setup,
-        temperature,
-        pressure,
-        element_budget_for_row(setup, row),
-        support_indices=None if payload is None else payload["support_indices"],
-        support_amounts_init=None if payload is None else payload["support_amounts_init"],
-        options=options_for_row(row, t500_evidence),
-    )
 
 
 def _finite_positive(values: Sequence[float]) -> np.ndarray:

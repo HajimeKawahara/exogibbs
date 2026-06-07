@@ -479,6 +479,7 @@ def _build_native_seed_fallback_result(
     lifecycle_payload: Mapping[str, Any],
     allow_caveat_tiers: bool,
     return_diagnostics: bool,
+    restricted_solver_success: bool = False,
 ) -> CondensateEquilibriumResult:
     from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
 
@@ -494,7 +495,7 @@ def _build_native_seed_fallback_result(
     diagnostics_payload: Optional[Mapping[str, Any]]
     if return_diagnostics:
         diagnostics_payload = {
-            "restricted_solver_success": False,
+            "restricted_solver_success": bool(restricted_solver_success),
             "solver_success": True,
             "support_selection": support_selection_report,
             "head_route_warm_start": warm_start_report.as_dict(),
@@ -506,7 +507,7 @@ def _build_native_seed_fallback_result(
                 "selected_policy": "native_budget_seed_fallback_budget_tradeoff",
                 "accepted": True,
                 "reason": (
-                    "The restricted support solver and primary lifecycle did not converge; "
+                    "The primary lifecycle did not converge or was not accepted; "
                     "the API returned a native gas equilibrium with the budget-preserving "
                     "condensate seed as a caveat-bearing HEAD route fallback."
                 ),
@@ -800,7 +801,33 @@ def condensate_equilibrium(
                 lifecycle_payload=lifecycle_payload,
                 allow_caveat_tiers=opts.allow_caveat_tiers,
                 return_diagnostics=opts.return_diagnostics,
+                restricted_solver_success=False,
             )
+    if (
+        not lifecycle_converged
+        and opts.enable_native_seed_fallback
+        and opts.metric_status is None
+        and opts.head_route_primary_summary is None
+        and opts.head_route_refresh_policy_summary is None
+        and selected_warm_start_candidate_object is not None
+        and selected_warm_start_candidate_object.finite_solver_inputs
+    ):
+        return _build_native_seed_fallback_result(
+            setup=setup,
+            T=T,
+            P=P,
+            b=b,
+            Pref=Pref,
+            candidate=selected_warm_start_candidate_object,
+            support_selection_report=support_selection_report,
+            warm_start_report=warm_start_report,
+            solver_attempts=solver_attempts,
+            selected_warm_start_candidate=selected_warm_start_candidate,
+            lifecycle_payload=lifecycle_payload,
+            allow_caveat_tiers=opts.allow_caveat_tiers,
+            return_diagnostics=opts.return_diagnostics,
+            restricted_solver_success=restricted_solver_success,
+        )
     diagnostics_payload: Optional[Mapping[str, Any]]
     if opts.return_diagnostics:
         diagnostics_payload = {

@@ -1,20 +1,17 @@
-# Curated Condensate HEAD Route End-to-End Replays
+# Curated Condensate HEAD Route Fresh API Regressions
 
-These tests replay the saved 14-row curated HEAD route evidence through the
-public condensate API. They do not discover new supports and do not use
-FastChem4 trace, public, or runtime values as constructor inputs.
+These tests run curated HEAD route rows through the public condensate API from
+a fresh FastChem4 preset setup. They do not read saved `results/` artifacts and
+do not use FastChem4 trace, public, or runtime values as constructor inputs.
 
-Run all curated replay tests:
+Run all curated fresh API tests:
 
 ```bash
 pytest -q tests/endtoend/curated_cases
 ```
 
-Run one curated family:
-
-```bash
-pytest -q tests/endtoend/curated_cases/test_solar_silicate_first_condensation.py
-```
-
-The all-row test checks 14 curated rows. The family-specific files make it
-straightforward to re-run only the family under investigation.
+The all-row test checks 14 curated rows using explicit temperatures, pressures,
+element budgets, and initial condensate supports encoded in the test file. A
+targeted HEAD route v1.1 regression also covers a water-condensation
+intermediate layer where the restricted solver succeeds but the lifecycle
+selector falls back with a caveat.

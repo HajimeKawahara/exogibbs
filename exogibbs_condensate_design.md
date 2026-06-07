@@ -751,3 +751,20 @@ T700 max final epsilon gap: 0.000993164980670258
 3. budget が大きく残る場合は center-primary budget guard を先に強める
 4. budget が小さい場合は barrier continuation を進める
 ```
+
+## HEAD route v1.1 runtime fallback boundary
+
+fresh API profile 実行では、水凝縮の中間層で restricted support solver が成功しても、HEAD route lifecycle の primary continuation が `no_p_armijo_trial` で止まり、route selector が accepted に進まない場合がある。この状態は「凝縮量や boundary が作れない」のではなく、「standard route selector が centered evidence を得られない」失敗である。
+
+HEAD route v1.1 では、この場合の runtime boundary を次のように定義する。
+
+```text
+if restricted support candidate is finite
+and no saved metric/primary/refresh evidence is injected
+and lifecycle route_result is not accepted:
+  return native_budget_seed_fallback_budget_tradeoff
+```
+
+この fallback は fresh API の継続性を守るための caveat tier であり、FastChem4 trace/public/runtime values を constructor input に使わない。結果は `converged_with_caveat` として返し、diagnostics に lifecycle が accepted しなかったことと、restricted solver が成功していたかどうかを残す。
+
+v1.1 は 10 curated demo profiles / 99 layers で例外なしに完走した。水凝縮 profile の中間4層は `not_converged` から `native_budget_seed_fallback_budget_tradeoff` の caveat accepted に移った。ただし、primary continuation の `no_p_armijo_trial` 自体は未解決であり、次の solver 改善対象として残す。

@@ -1,4 +1,4 @@
-"""Generate a Japanese Graphviz diagram for ExoGibbs HEAD route v1."""
+"""Generate a Japanese Graphviz diagram for ExoGibbs HEAD route v1.1."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
     ranksep=0.62,
     splines=ortho,
     fontname="{FONT}",
-    label="ExoGibbs 凝縮あり HEAD route v1",
+    label="ExoGibbs 凝縮あり HEAD route v1.1",
     labelloc=t,
     fontsize=26
   ];
@@ -194,6 +194,11 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
       label="HEAD route result\\nroute_result.py\\nselected_route / integrated_status",
       fillcolor="#fdba74"
     ];
+    lifecycle_accepted [
+      shape=diamond,
+      label="lifecycle accepted ?",
+      fillcolor="#fef3c7"
+    ];
   }}
 
   subgraph cluster_public_result {{
@@ -224,6 +229,17 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
       label="not_converged\\nsolver failed / lifecycle not accepted",
       fillcolor="#fee2e2"
     ];
+    v11_fallback_gate [
+      shape=diamond,
+      label="v1.1 fallback gate\\nfresh runtime かつ\\nfinite candidate ?",
+      fillcolor="#fef3c7"
+    ];
+    native_seed_fallback [
+      label="native seed fallback\\nnative gas equilibrium +\\nbudget-preserving seed\\nroute = native_budget_seed_fallback_budget_tradeoff",
+      fillcolor="#fef9c3",
+      color="#ca8a04",
+      penwidth=1.8
+    ];
   }}
 
   user_call -> setup_validation;
@@ -241,7 +257,7 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
   depleted_refresh -> restricted_solver;
 
   restricted_solver -> solver_success;
-  solver_success -> standard_gate [label="はい"];
+  solver_success -> support_boundary [label="はい"];
   solver_success -> finite_warm_state [label="いいえ"];
   finite_warm_state -> no_state_fail [label="いいえ"];
   finite_warm_state -> support_boundary [label="はい"];
@@ -256,7 +272,12 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
   electron_refresh -> frontier_refresh;
   frontier_refresh -> route_selector;
   route_selector -> route_result;
-  route_result -> standard_gate;
+  route_result -> lifecycle_accepted;
+  lifecycle_accepted -> standard_gate [label="はい"];
+  lifecycle_accepted -> v11_fallback_gate [label="いいえ"];
+  v11_fallback_gate -> native_seed_fallback [label="はい"];
+  v11_fallback_gate -> standard_gate [label="いいえ"];
+  native_seed_fallback -> standard_gate;
 
   standard_gate -> tier1 [label="tight_residual_components"];
   standard_gate -> tier23 [label="accepted with caveat"];
