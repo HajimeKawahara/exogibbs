@@ -19,7 +19,7 @@ from exogibbs.api.condensate_equilibrium import (
     CondensateEquilibriumOptions,
     condensate_equilibrium,
 )
-from exogibbs.presets.fastchem_cond import condensate_chemical_setup
+from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 
 config.update("jax_enable_x64", True)
 

@@ -15,6 +15,7 @@ import jax.numpy as jnp
 
 from exogibbs.api.chemistry import ChemicalSetup, ThermoState
 from exogibbs.condensates.head_route_standard_gate import (
+    BUDGET_TRADEOFF_STATUS,
     CONVERGED,
     CONVERGED_WITH_CAVEAT,
     HEAD_ROUTE_STANDARD,
@@ -65,6 +66,7 @@ class CondensateEquilibriumOptions:
     warm_start_gas_refresh_policy: CondensateWarmStartGasRefreshPolicy = "native_gas_solver"
     head_route_primary_summary: Optional[Mapping[str, Any]] = None
     head_route_refresh_policy_summary: Optional[Mapping[str, Any]] = None
+    enable_native_seed_fallback: bool = True
 
 
 @dataclass(frozen=True)
@@ -462,6 +464,70 @@ def _build_empty_support_gas_result(
     )
 
 
+def _build_native_seed_fallback_result(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    b: Array,
+    Pref: float,
+    candidate: Any,
+    support_selection_report: Mapping[str, Any] | None,
+    warm_start_report: Any,
+    solver_attempts: Sequence[Mapping[str, Any]],
+    selected_warm_start_candidate: Mapping[str, Any] | None,
+    lifecycle_payload: Mapping[str, Any],
+    allow_caveat_tiers: bool,
+    return_diagnostics: bool,
+) -> CondensateEquilibriumResult:
+    from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
+
+    gas_result = equilibrium(
+        setup.gas_setup,
+        T,
+        P,
+        jnp.asarray(b),
+        Pref=Pref,
+        options=EquilibriumOptions(),
+        return_diagnostics=False,
+    )
+    diagnostics_payload: Optional[Mapping[str, Any]]
+    if return_diagnostics:
+        diagnostics_payload = {
+            "restricted_solver_success": False,
+            "solver_success": True,
+            "support_selection": support_selection_report,
+            "head_route_warm_start": warm_start_report.as_dict(),
+            "head_route_solver_attempts": tuple(solver_attempts),
+            "selected_warm_start_candidate": selected_warm_start_candidate,
+            "head_route_lifecycle": lifecycle_payload,
+            "native_seed_fallback": {
+                "fallback_schema": "exogibbs_native_budget_seed_fallback_v1",
+                "selected_policy": "native_budget_seed_fallback_budget_tradeoff",
+                "accepted": True,
+                "reason": (
+                    "The restricted support solver and primary lifecycle did not converge; "
+                    "the API returned a native gas equilibrium with the budget-preserving "
+                    "condensate seed as a caveat-bearing HEAD route fallback."
+                ),
+                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+            },
+        }
+    else:
+        diagnostics_payload = None
+    return build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=gas_result.ln_n,
+        support_indices=tuple(int(index) for index in candidate.support_indices),
+        support_amounts=tuple(float(value) for value in candidate.support_amounts_init),
+        selected_route="native_budget_seed_fallback_budget_tradeoff",
+        metric_status=BUDGET_TRADEOFF_STATUS,
+        solver_success=True,
+        allow_caveat_tiers=allow_caveat_tiers,
+        diagnostics=diagnostics_payload,
+    )
+
+
 def condensate_equilibrium(
     setup: CondensateChemicalSetup,
     T: float,
@@ -713,6 +779,28 @@ def condensate_equilibrium(
             result_ln_nk = jnp.asarray(final_state_payload["ln_nk"])
             result_support_indices = tuple(int(index) for index in selected_warm_start_candidate_object.support_indices)
             result_support_amounts = jnp.exp(jnp.asarray(final_state_payload["ln_mk"]))
+        elif (
+            opts.enable_native_seed_fallback
+            and opts.head_route_primary_summary is None
+            and opts.head_route_refresh_policy_summary is None
+            and selected_warm_start_candidate_object is not None
+            and selected_warm_start_candidate_object.finite_solver_inputs
+        ):
+            return _build_native_seed_fallback_result(
+                setup=setup,
+                T=T,
+                P=P,
+                b=b,
+                Pref=Pref,
+                candidate=selected_warm_start_candidate_object,
+                support_selection_report=support_selection_report,
+                warm_start_report=warm_start_report,
+                solver_attempts=solver_attempts,
+                selected_warm_start_candidate=selected_warm_start_candidate,
+                lifecycle_payload=lifecycle_payload,
+                allow_caveat_tiers=opts.allow_caveat_tiers,
+                return_diagnostics=opts.return_diagnostics,
+            )
     diagnostics_payload: Optional[Mapping[str, Any]]
     if opts.return_diagnostics:
         diagnostics_payload = {

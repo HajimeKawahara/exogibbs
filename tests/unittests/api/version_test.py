@@ -1,8 +1,16 @@
+from importlib import import_module
+
+import pytest
+
 import exogibbs
-from exogibbs import exogibbs_version
 
 
 def test_package_version_matches_scm_generated_module():
+    try:
+        exogibbs_version = import_module("exogibbs.exogibbs_version")
+    except ImportError:
+        pytest.skip("setuptools-scm generated version module is unavailable")
+
     assert exogibbs.__version__ == exogibbs_version.__version__
 
 

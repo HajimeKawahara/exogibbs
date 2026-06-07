@@ -24,6 +24,7 @@ Contents
 
    presets/ykb4.rst
    presets/fastchem.rst
+   presets/fastchem4.rst
 
 .. toctree::
    :maxdepth: 1
