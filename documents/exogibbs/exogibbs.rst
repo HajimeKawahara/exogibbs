@@ -8,7 +8,6 @@ Subpackages
    :maxdepth: 4
 
    exogibbs.api
-   exogibbs.diagnostics
    exogibbs.io
    exogibbs.optimize
    exogibbs.presets

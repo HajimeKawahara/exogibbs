@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from dataclasses import fields
 import json
 from pathlib import Path
-from typing import Callable, Literal, Mapping, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Literal, Mapping, Optional, Sequence, Tuple, Union
 
 import jax
 import jax.numpy as jnp
@@ -50,12 +50,34 @@ _GRID_SCALAR_DIMS = (
 )
 
 
+def _metadata_json_safe(value: Any) -> Any:
+    """Return a deterministic JSON-safe metadata value."""
+
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, np.bool_):
+        return bool(value)
+    if isinstance(value, np.integer):
+        return int(value)
+    if isinstance(value, np.floating):
+        return float(value)
+    if callable(value):
+        module = getattr(value, "__module__", value.__class__.__module__)
+        qualname = getattr(value, "__qualname__", value.__class__.__qualname__)
+        return f"{module}.{qualname}"
+    if isinstance(value, Mapping):
+        return {str(key): _metadata_json_safe(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_metadata_json_safe(item) for item in value]
+    return repr(value)
+
+
 def _freeze_setup_metadata(
-    metadata: Optional[Mapping[str, str]],
-) -> Optional[Mapping[str, str]]:
+    metadata: Optional[Mapping[str, Any]],
+) -> Optional[Mapping[str, Any]]:
     if metadata is None:
         return None
-    return dict(metadata)
+    return {str(key): _metadata_json_safe(value) for key, value in metadata.items()}
 
 
 def _verification_dtype_warning() -> str:

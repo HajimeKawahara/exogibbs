@@ -298,7 +298,27 @@ def test_build_equilibrium_grid_exogibbs_path_returns_grid():
     assert grid.metadata.verification_passed is None
 
 
-def test_build_equilibrium_grid_exogibbs_fastchem_preset_verifies_by_default():
+def test_build_equilibrium_grid_exogibbs_fastchem_preset_verifies_by_default(monkeypatch):
+    calls = []
+
+    def fake_verify(*args, **kwargs):
+        calls.append((args, kwargs))
+        return {
+            "verification_abundance_floor": kwargs["abundance_floor"],
+            "verification_tolerance_percent": kwargs["tolerance_percent"],
+            "verification_points_checked": 1,
+            "verification_species_compared": 1,
+            "verification_max_abs_percent_deviation": 0.0,
+            "verification_worst_temperature": 1000.0,
+            "verification_worst_pressure": 1.0,
+            "verification_worst_log10_z_over_z_sun": 0.0,
+            "verification_worst_species_index": 0,
+            "verification_worst_species_name": "H2",
+            "verification_passed": True,
+        }
+
+    monkeypatch.setattr(eqgridmod, "_verify_exogibbs_grid_against_fastchem", fake_verify)
+
     grid = build_equilibrium_grid(
         "fastchem",
         temperature_axis=jnp.asarray([1000.0]),
@@ -308,6 +328,7 @@ def test_build_equilibrium_grid_exogibbs_fastchem_preset_verifies_by_default():
     )
 
     assert grid.metadata.source == "exogibbs"
+    assert len(calls) == 1
     assert grid.metadata.verify_exogibbs_against_fastchem is True
     assert grid.metadata.verification_abundance_floor == 1.0e-10
     assert grid.metadata.verification_tolerance_percent == 0.5
@@ -468,6 +489,7 @@ def test_equilibrium_grid_xarray_roundtrip_preserves_axes_species_and_metadata(t
         pressure_axis=jnp.asarray([1.0]),
         log10_z_over_z_sun_axis=jnp.asarray([0.0]),
         source="exogibbs",
+        verify_exogibbs_against_fastchem=False,
     )
 
     dataset = equilibrium_grid_to_dataset(grid)
