@@ -29,9 +29,12 @@ class CondensateSeedPolicyReport:
     recommended_amounts: tuple[float, ...]
     recommended_ln_amounts: tuple[float, ...]
     capacity_limited_amounts: tuple[float, ...]
+    amount_gauge: str
+    fastchem4_first_step_equivalent_gauge: str
     seed_fraction: float
     max_seed_amount: float
     min_seed_amount: float
+    preserve_budget_fraction: bool
     field_provenance: Mapping[str, str]
     fastchem4_trace_values_used: bool
     fastchem4_public_values_used_as_constructor_inputs: bool
@@ -88,9 +91,16 @@ def recommend_budget_preserving_seed_amounts(
     seed_fraction: float = 1.0e-6,
     max_seed_amount: float = 1.0e-6,
     min_seed_amount: float = 1.0e-300,
+    preserve_budget_fraction: bool = True,
     field_provenance: Mapping[str, str] | None = None,
 ) -> CondensateSeedPolicyReport:
-    """Recommend conservative seed amounts from native budget capacity."""
+    """Recommend seed amounts from native budget capacity.
+
+    By default, the seeds are globally rescaled so their combined elemental
+    burden consumes no more than ``seed_fraction`` of any available budget.
+    Setting ``preserve_budget_fraction=False`` keeps the per-species
+    ``seed_fraction * capacity`` amounts without this shared-budget rescale.
+    """
 
     provenance = validate_native_bundle_provenance(field_provenance)
     ac = _as_matrix(formula_matrix_cond, "formula_matrix_cond")
@@ -118,6 +128,18 @@ def recommend_budget_preserving_seed_amounts(
         bounded = min(float(max_seed_amount), max(float(min_seed_amount), raw))
         capacity_limited.append(float(capacity))
         recommended.append(float(bounded))
+    recommended_array = np.asarray(recommended, dtype=np.float64)
+    full = np.zeros(ac.shape[1], dtype=np.float64)
+    full[np.asarray(support, dtype=np.int64)] = recommended_array
+    if bool(preserve_budget_fraction):
+        burden = ac @ full
+        positive_budget = target > 0.0
+        if np.any(positive_budget):
+            fraction = float(np.max(burden[positive_budget] / target[positive_budget]))
+            if fraction > float(seed_fraction):
+                scale = float(seed_fraction) / fraction
+                recommended_array = np.maximum(float(min_seed_amount), recommended_array * scale)
+                recommended = tuple(float(value) for value in recommended_array.tolist())
 
     return CondensateSeedPolicyReport(
         diagnostic_only=True,
@@ -129,9 +151,14 @@ def recommend_budget_preserving_seed_amounts(
         recommended_amounts=tuple(recommended),
         recommended_ln_amounts=tuple(float(np.log(value)) for value in recommended),
         capacity_limited_amounts=tuple(capacity_limited),
+        amount_gauge="element_inventory_target_fraction",
+        fastchem4_first_step_equivalent_gauge=(
+            "number_density_divided_by_initial_gas_phase_total_element_density"
+        ),
         seed_fraction=float(seed_fraction),
         max_seed_amount=float(max_seed_amount),
         min_seed_amount=float(min_seed_amount),
+        preserve_budget_fraction=bool(preserve_budget_fraction),
         field_provenance={
             "formula_matrix_cond": provenance.get("formula_matrix_cond", "exogibbs_native"),
             "element_inventory_target": provenance.get("element_inventory_target", "exogibbs_native"),

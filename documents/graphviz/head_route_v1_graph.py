@@ -1,4 +1,4 @@
-"""Generate a Japanese Graphviz diagram for ExoGibbs HEAD route v1.1."""
+"""Generate a Japanese Graphviz diagram for ExoGibbs HEAD route v1.2."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
     ranksep=0.62,
     splines=ortho,
     fontname="{FONT}",
-    label="ExoGibbs 凝縮あり HEAD route v1.1",
+    label="ExoGibbs 凝縮あり HEAD route v1.2",
     labelloc=t,
     fontsize=26
   ];
@@ -75,7 +75,7 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
     style="rounded";
 
     positive_support [
-      label="native positive support 選択\\npositive_support_initializer.py\\nAc, budget, hvector_cond だけを使用",
+      label="activity-driven support outer loop\\ndefault: positive候補を個数制限なしで追跡\\n温度validity + native activity",
       fillcolor="#dcfce7"
     ];
     explicit_support [
@@ -106,7 +106,7 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
       fillcolor="#ccfbf1"
     ];
     baseline_seed [
-      label="baseline_positive_support_seed\\n小さい凝縮量 seed",
+      label="baseline_positive_support_seed\\ndefault: max-density seed\\n元素budget capacity gauge",
       fillcolor="#f0fdfa"
     ];
     depleted_refresh [
@@ -124,7 +124,7 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
     style="rounded";
 
     restricted_solver [
-      label="restricted support solver\\nsolve_restricted_support_condensate_layer()\\n選んだ凝縮種だけを動かす",
+      label="restricted support solver\\nsolve_restricted_support_condensate_layer()\\ndefault: pdipm_rgie_v11_activity_correction",
       fillcolor="#ede9fe"
     ];
     solver_success [
@@ -231,11 +231,11 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
     ];
     v11_fallback_gate [
       shape=diamond,
-      label="v1.1 fallback gate\\nfresh runtime かつ\\nfinite candidate ?",
+      label="v1.2 fallback gate\\nfresh runtime かつ\\nfinite candidate ?",
       fillcolor="#fef3c7"
     ];
     native_seed_fallback [
-      label="native seed fallback\\nnative gas equilibrium +\\nbudget-preserving seed\\nroute = native_budget_seed_fallback_budget_tradeoff",
+      label="native seed fallback\\nfinite warm-start boundary +\\nmax-density seed\\nroute = native_budget_seed_fallback_budget_tradeoff",
       fillcolor="#fef9c3",
       color="#ca8a04",
       penwidth=1.8

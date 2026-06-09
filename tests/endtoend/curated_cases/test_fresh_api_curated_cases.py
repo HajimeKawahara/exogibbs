@@ -16,7 +16,6 @@ from exogibbs.api.condensate_equilibrium import (
     condensate_equilibrium,
 )
 from exogibbs.condensates.head_route_standard_gate import CONVERGED, CONVERGED_WITH_CAVEAT
-from exogibbs.condensates.initialization_policy import recommend_budget_preserving_seed_amounts
 from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 
 config.update("jax_enable_x64", True)
@@ -182,48 +181,30 @@ def test_all_14_curated_rows_succeed_through_fresh_api() -> None:
         )
 
 
-def test_water_mid_layer_lifecycle_failure_uses_head_route_v1_1_fallback() -> None:
+def test_water_mid_layer_default_api_uses_head_route_v1_2_support_growth() -> None:
     setup = condensate_chemical_setup(silent=True)
     element_budget = _solar_budget(setup)
-    species_index = {name: index for index, name in enumerate(setup.condensate_species)}
-    support_indices = (species_index["H2O(s,l)"],)
-    seed = recommend_budget_preserving_seed_amounts(
-        formula_matrix_cond=setup.formula_matrix_cond,
-        element_inventory_target=element_budget,
-        condensate_species_order=setup.condensate_species,
-        support_indices=support_indices,
-        seed_fraction=1.0e-3,
-        max_seed_amount=1.0e-3,
-        min_seed_amount=1.0e-300,
-        field_provenance={
-            "formula_matrix_cond": "exogibbs_condensate_chemical_setup",
-            "element_inventory_target": "exogibbs_fresh_curated_profile_budget",
-        },
-    )
 
     result = condensate_equilibrium(
         setup,
         300.0,
         0.1,
         element_budget,
-        support_indices=support_indices,
-        support_amounts_init=tuple(float(value) for value in seed.recommended_amounts),
         options=CondensateEquilibriumOptions(
             case_id="solar_water_condensation__T300_P0p1",
             return_diagnostics=True,
             max_inner_iterations=40,
-            allow_empty_positive_support=False,
         ),
     )
 
-    assert result.status == CONVERGED_WITH_CAVEAT
+    assert result.status == CONVERGED
     assert result.converged is True
-    assert result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert len(result.condensate_support_names) > 1
     assert result.diagnostics is not None
     assert result.diagnostics["solver_success"] is True
     assert result.diagnostics["restricted_solver_success"] is True
-    assert result.diagnostics["native_seed_fallback"]["accepted"] is True
     assert (
-        result.diagnostics["head_route_lifecycle"]["route_result"]["selected_route"]
-        == "support_boundary_construction_required_before_selector"
+        result.diagnostics["support_selection"]["solver_inputs"]["seed_initialization_policy"]
+        == "max_density"
     )

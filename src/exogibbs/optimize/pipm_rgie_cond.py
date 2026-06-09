@@ -802,6 +802,7 @@ def solve_hybrid_candidate_selected_reduced_coupling_direction(
     valid = (
         "candidate_selected_active_only",
         "candidate_selected_active_plus_near_jacobian",
+        "candidate_selected_active_plus_near_jacobian_with_rem_inventory",
         "candidate_selected_weighted_mask",
     )
     if candidate_mode not in valid:
@@ -833,6 +834,10 @@ def solve_hybrid_candidate_selected_reduced_coupling_direction(
     else:
         jacobian_mask = masks["near_active"]
     rhs_mask = masks["active_for_rhs"]
+    rem_inventory_mode = (
+        candidate_mode
+        == "candidate_selected_active_plus_near_jacobian_with_rem_inventory"
+    )
 
     # Hybrid reduced system:
     #   Q_hybrid = A_g diag(n) A_g.T + A_cond diag(s_near) A_cond.T
@@ -842,16 +847,31 @@ def solve_hybrid_candidate_selected_reduced_coupling_direction(
     # hard-mask branches.  The weighted branch is diagnostic-only and replaces
     # both gates with a smooth ramp around the FastChem activity boundary.
     bk = formula_matrix @ nk
-    m_active = rhs_mask * mk
+    rem_mask = jnp.where(
+        rem_inventory_mode,
+        1.0 - jacobian_mask,
+        jnp.zeros_like(mk),
+    )
+    m_rem = rem_mask * mk
+    m_active = jnp.where(
+        rem_inventory_mode,
+        jacobian_mask * mk,
+        rhs_mask * mk,
+    )
     s_near = jacobian_mask * (mk * mk / nu)
+    s_rem = rem_mask * (mk * mk / nu)
+    s_solve = s_near + s_rem
+    b_solver = b - formula_matrix_cond @ m_rem
     q_gas = _A_diagn_At(nk, formula_matrix)
-    q_cond = _A_diagn_At(s_near, formula_matrix_cond)
+    q_cond = _A_diagn_At(s_solve, formula_matrix_cond)
     q_block = q_gas + q_cond
     resn = jnp.sum(nk) - ntot
     Angk = formula_matrix @ (gk * nk)
     ngk = jnp.dot(nk, gk)
-    delta_b_hat_hybrid = b - (bk + formula_matrix_cond @ m_active)
-    condvec_hybrid = formula_matrix_cond @ (s_near * hvector_cond - m_active)
+    delta_b_hat_hybrid = b_solver - (bk + formula_matrix_cond @ m_active)
+    condvec_hybrid = formula_matrix_cond @ (
+        s_solve * hvector_cond - (m_active + m_rem)
+    )
     rhs = Angk + condvec_hybrid + delta_b_hat_hybrid
     scalar_rhs = ngk - resn
     assemble_mat = jnp.block([[q_block, bk[:, None]], [bk[None, :], jnp.array([[resn]])]])
@@ -879,8 +899,13 @@ def solve_hybrid_candidate_selected_reduced_coupling_direction(
         "active_bool": masks["active_bool"],
         "near_active_bool": masks["near_active_bool"],
         "jacobian_mask": jacobian_mask,
+        "rem_mask": rem_mask,
         "m_active": m_active,
+        "m_rem": m_rem,
+        "b_solver": b_solver,
         "s_near": s_near,
+        "s_rem": s_rem,
+        "s_solve": s_solve,
         "q_gas": q_gas,
         "q_cond": q_cond,
         "q_block": q_block,
@@ -900,6 +925,15 @@ def solve_hybrid_candidate_selected_reduced_coupling_direction(
         "factorization_succeeded": jnp.all(jnp.isfinite(assemble_variable)),
         "candidate_set_size": jnp.sum(masks["active_bool"]).astype(jnp.int32),
         "near_active_set_size": jnp.sum(masks["near_active_bool"]).astype(jnp.int32),
+        "rem_inventory_mode": jnp.asarray(rem_inventory_mode),
+        "rem_inventory_set_size": jnp.sum(m_rem > 0.0).astype(jnp.int32),
+        "rem_inventory_amount_sum": jnp.sum(m_rem),
+        "rem_inventory_burden_max": jnp.max(jnp.abs(formula_matrix_cond @ m_rem)),
+        "rem_inventory_b_solver_min": jnp.min(b_solver),
+        "rem_correctvalues_update_enabled": jnp.asarray(rem_inventory_mode),
+        "rem_correctvalues_max_abs_delta_ln_mk": jnp.max(
+            jnp.abs(rem_mask * raw_delta_ln_mk)
+        ),
         "weighted_mask": jnp.asarray(candidate_mode == "candidate_selected_weighted_mask"),
     }
 
@@ -14932,6 +14966,7 @@ def _compute_iteration_step_metrics(
     elif reduced_coupling_mode in (
         "candidate_selected_active_only",
         "candidate_selected_active_plus_near_jacobian",
+        "candidate_selected_active_plus_near_jacobian_with_rem_inventory",
         "candidate_selected_weighted_mask",
     ):
         direction = solve_hybrid_candidate_selected_reduced_coupling_direction(
@@ -14982,6 +15017,25 @@ def _compute_iteration_step_metrics(
             ],
             "hybrid_candidate_set_size": direction["candidate_set_size"],
             "hybrid_candidate_near_active_set_size": direction["near_active_set_size"],
+            "hybrid_candidate_rem_inventory_mode": direction["rem_inventory_mode"],
+            "hybrid_candidate_rem_inventory_set_size": direction[
+                "rem_inventory_set_size"
+            ],
+            "hybrid_candidate_rem_inventory_amount_sum": direction[
+                "rem_inventory_amount_sum"
+            ],
+            "hybrid_candidate_rem_inventory_burden_max": direction[
+                "rem_inventory_burden_max"
+            ],
+            "hybrid_candidate_rem_inventory_b_solver_min": direction[
+                "rem_inventory_b_solver_min"
+            ],
+            "hybrid_candidate_rem_correctvalues_update_enabled": direction[
+                "rem_correctvalues_update_enabled"
+            ],
+            "hybrid_candidate_rem_correctvalues_max_abs_delta_ln_mk": direction[
+                "rem_correctvalues_max_abs_delta_ln_mk"
+            ],
             "hybrid_candidate_weighted_mask": direction["weighted_mask"],
             "hybrid_candidate_max_log_activity_proxy": jnp.max(
                 direction["log_activity_proxy"]

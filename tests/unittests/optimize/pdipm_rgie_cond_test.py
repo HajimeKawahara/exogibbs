@@ -205,6 +205,45 @@ def test_algorithm_v11_reduced_step_recovers_pdf_delta_rho_formula() -> None:
     assert report.delta_rho == pytest.approx((expected_delta_rho,))
 
 
+def test_algorithm_v11_paired_update_honors_max_density_cap() -> None:
+    state = build_pdipm_rgie_condensate_state(
+        ln_nk=[np.log(0.8)],
+        ln_mk=[np.log(0.5)],
+        element_potential=[0.0],
+        rho=[0.0],
+        eta=[1.0],
+        field_provenance={
+            "ln_nk": "synthetic_control",
+            "ln_mk": "synthetic_control",
+            "element_potential": "synthetic_control",
+            "rho": "synthetic_control",
+            "eta": "synthetic_control",
+        },
+    )
+
+    report = solve_pdipm_rgie_algorithm_v11_reduced_step(
+        explicit_opt_in=True,
+        state=state,
+        formula_matrix=[[1.0]],
+        formula_matrix_cond_active=[[1.0]],
+        element_inventory_target=[1.0],
+        gas_stationarity_source=[0.0],
+        condensate_standard_source=[0.0],
+        epsilon=float(np.log(1.0e-15)),
+        alpha_candidates=[1.0],
+        max_abs_delta_r=5.0,
+        max_abs_delta_rho=5.0,
+        qhat_regularization=1.0e-12,
+        paired_density_activity_update=True,
+        max_log_condensate_density=[np.log(0.5)],
+    )
+
+    assert report.finite_trial_step is True
+    assert report.delta_r[0] <= 0.0
+    assert report.delta_rho == pytest.approx((-5.0,))
+    assert report.fastchem4_trace_public_runtime_constructor_inputs_used is False
+
+
 def test_pdipm_rgie_trial_step_improves_combined_residual() -> None:
     state = build_pdipm_rgie_condensate_state(**_state_kwargs())
     report = propose_pdipm_rgie_restricted_trial_step(

@@ -7,7 +7,7 @@ through the HEAD route v1 contract.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any, Literal, Mapping, Optional, Sequence
 
 import jax
@@ -28,6 +28,11 @@ Array = jax.Array
 CondensateRoute = Literal["head_v1"]
 CondensateResidualPolicy = Literal["head_route_tiers_v1"]
 CondensateWarmStartGasRefreshPolicy = Literal["native_gas_solver"]
+CondensateSeedInitializationPolicy = Literal[
+    "budget_preserving_fraction",
+    "capacity_fraction",
+    "max_density",
+]
 
 
 @dataclass(frozen=True)
@@ -56,14 +61,22 @@ class CondensateEquilibriumOptions:
     residual_policy: CondensateResidualPolicy = "head_route_tiers_v1"
     metric_status: Optional[str] = None
     selected_route: str = "head_v1_restricted_support"
-    max_positive_support_count: int = 1
+    max_positive_support_count: Optional[int] = None
+    max_activity_support_count: Optional[int] = None
+    seed_initialization_policy: CondensateSeedInitializationPolicy = "max_density"
     seed_fraction: float = 1.0e-3
     max_seed_amount: float = 1.0e-3
     min_seed_amount: float = 1.0e-300
     allow_empty_positive_support: bool = True
+    enable_support_outer_loop: bool = True
+    max_support_outer_iterations: int = 4
+    max_support_add_per_round: Optional[int] = None
+    support_activity_threshold: float = 0.0
     enable_head_route_warm_start: bool = True
     enable_depleted_gas_refresh: bool = True
     warm_start_gas_refresh_policy: CondensateWarmStartGasRefreshPolicy = "native_gas_solver"
+    restricted_reduced_coupling_mode: str = "pdipm_rgie_v11_activity_correction"
+    restricted_reduced_coupling_alpha_s: float = 1.0
     head_route_primary_summary: Optional[Mapping[str, Any]] = None
     head_route_refresh_policy_summary: Optional[Mapping[str, Any]] = None
     enable_native_seed_fallback: bool = True
@@ -172,16 +185,49 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
         raise ValueError(f"Unsupported condensate route '{options.route}'. Expected '{HEAD_ROUTE_STANDARD}'.")
     if options.residual_policy != "head_route_tiers_v1":
         raise ValueError("Only residual_policy='head_route_tiers_v1' is supported.")
-    if options.max_positive_support_count <= 0:
+    if options.max_positive_support_count is not None and options.max_positive_support_count <= 0:
         raise ValueError("max_positive_support_count must be positive.")
+    if options.max_activity_support_count is not None and options.max_activity_support_count <= 0:
+        raise ValueError("max_activity_support_count must be positive.")
+    valid_seed_initialization_policies = {
+        "budget_preserving_fraction",
+        "capacity_fraction",
+        "max_density",
+    }
+    if options.seed_initialization_policy not in valid_seed_initialization_policies:
+        raise ValueError(
+            "seed_initialization_policy must be one of "
+            f"{sorted(valid_seed_initialization_policies)}."
+        )
     if options.seed_fraction <= 0.0:
         raise ValueError("seed_fraction must be positive.")
     if options.max_seed_amount <= 0.0:
         raise ValueError("max_seed_amount must be positive.")
     if options.min_seed_amount <= 0.0:
         raise ValueError("min_seed_amount must be positive.")
+    if options.max_support_outer_iterations <= 0:
+        raise ValueError("max_support_outer_iterations must be positive.")
+    if options.max_support_add_per_round is not None and options.max_support_add_per_round <= 0:
+        raise ValueError("max_support_add_per_round must be positive.")
     if options.warm_start_gas_refresh_policy != "native_gas_solver":
         raise ValueError("Only warm_start_gas_refresh_policy='native_gas_solver' is supported.")
+    valid_reduced_coupling_modes = {
+        "current",
+        "capped_s_only_fixed_alpha",
+        "capped_s_only_conditional",
+        "candidate_selected_active_only",
+        "candidate_selected_active_plus_near_jacobian",
+        "candidate_selected_active_plus_near_jacobian_with_rem_inventory",
+        "candidate_selected_weighted_mask",
+        "pdipm_rgie_v11_activity_correction",
+    }
+    if options.restricted_reduced_coupling_mode not in valid_reduced_coupling_modes:
+        raise ValueError(
+            "restricted_reduced_coupling_mode must be one of "
+            f"{sorted(valid_reduced_coupling_modes)}."
+        )
+    if options.restricted_reduced_coupling_alpha_s <= 0.0:
+        raise ValueError("restricted_reduced_coupling_alpha_s must be positive.")
 
 
 def _least_squares_element_potential(
@@ -480,18 +526,25 @@ def _build_native_seed_fallback_result(
     allow_caveat_tiers: bool,
     return_diagnostics: bool,
     restricted_solver_success: bool = False,
+    restricted_solver_payload: Mapping[str, Any] | None = None,
 ) -> CondensateEquilibriumResult:
     from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
 
-    gas_result = equilibrium(
-        setup.gas_setup,
-        T,
-        P,
-        jnp.asarray(b),
-        Pref=Pref,
-        options=EquilibriumOptions(),
-        return_diagnostics=False,
-    )
+    if candidate.initial_log_state_override is not None:
+        fallback_gas_ln_n = jnp.asarray(candidate.initial_log_state_override.ln_nk)
+        fallback_gas_source = "selected_warm_start_candidate_gas_state"
+    else:
+        gas_result = equilibrium(
+            setup.gas_setup,
+            T,
+            P,
+            jnp.asarray(b),
+            Pref=Pref,
+            options=EquilibriumOptions(),
+            return_diagnostics=False,
+        )
+        fallback_gas_ln_n = gas_result.ln_n
+        fallback_gas_source = "native_gas_equilibrium"
     diagnostics_payload: Optional[Mapping[str, Any]]
     if return_diagnostics:
         diagnostics_payload = {
@@ -502,14 +555,32 @@ def _build_native_seed_fallback_result(
             "head_route_solver_attempts": tuple(solver_attempts),
             "selected_warm_start_candidate": selected_warm_start_candidate,
             "head_route_lifecycle": lifecycle_payload,
+            "restricted_solver_payload_for_support_growth": None
+            if restricted_solver_payload is None
+            else {
+                "ln_nk": restricted_solver_payload.get("ln_nk"),
+                "support_indices": restricted_solver_payload.get("support_indices"),
+                "m_support": restricted_solver_payload.get("m_support"),
+                "pi_vector": restricted_solver_payload.get("pi_vector"),
+                "max_positive_inactive_driving": restricted_solver_payload.get(
+                    "max_positive_inactive_driving"
+                ),
+                "top_positive_inactive_indices": restricted_solver_payload.get(
+                    "top_positive_inactive_indices"
+                ),
+                "restricted_kkt_gap_log_variable_inf": restricted_solver_payload.get(
+                    "restricted_kkt_gap_log_variable_inf"
+                ),
+            },
             "native_seed_fallback": {
                 "fallback_schema": "exogibbs_native_budget_seed_fallback_v1",
                 "selected_policy": "native_budget_seed_fallback_budget_tradeoff",
                 "accepted": True,
+                "fallback_gas_source": fallback_gas_source,
                 "reason": (
                     "The primary lifecycle did not converge or was not accepted; "
-                    "the API returned a native gas equilibrium with the budget-preserving "
-                    "condensate seed as a caveat-bearing HEAD route fallback."
+                    "the API returned the best available native gas boundary with the "
+                    "budget-preserving condensate seed as a caveat-bearing HEAD route fallback."
                 ),
                 "fastchem4_trace_public_runtime_constructor_inputs_used": False,
             },
@@ -518,7 +589,7 @@ def _build_native_seed_fallback_result(
         diagnostics_payload = None
     return build_condensate_equilibrium_result_from_solver_payload(
         setup=setup,
-        gas_ln_n=gas_result.ln_n,
+        gas_ln_n=fallback_gas_ln_n,
         support_indices=tuple(int(index) for index in candidate.support_indices),
         support_amounts=tuple(float(value) for value in candidate.support_amounts_init),
         selected_route="native_budget_seed_fallback_budget_tradeoff",
@@ -526,6 +597,431 @@ def _build_native_seed_fallback_result(
         solver_success=True,
         allow_caveat_tiers=allow_caveat_tiers,
         diagnostics=diagnostics_payload,
+    )
+
+
+def _activity_driven_support_report(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    b: Array,
+    Pref: float,
+    gas_ln_n: Array,
+    options: CondensateEquilibriumOptions,
+    existing_support_indices: Sequence[int] = (),
+    max_positive_support_count: int | None = None,
+    element_potential_override: Array | None = None,
+) -> Mapping[str, Any]:
+    from exogibbs.condensates.support_selection_policy import (
+        select_activity_driven_support_candidates,
+    )
+
+    gas_stationarity_source = (
+        jnp.asarray(setup.gas_setup.hvector_func(float(T)))
+        + _ln_normalized_pressure(P, Pref)
+    )
+    element_potential = (
+        jnp.asarray(element_potential_override, dtype=jnp.float64)
+        if element_potential_override is not None
+        else _least_squares_element_potential(
+            formula_matrix=setup.formula_matrix,
+            gas_ln_n=jnp.asarray(gas_ln_n),
+            gas_stationarity_source=gas_stationarity_source,
+        )
+    )
+    report = select_activity_driven_support_candidates(
+        formula_matrix_cond=setup.formula_matrix_cond,
+        element_inventory_target=jnp.asarray(b),
+        condensate_species_order=setup.condensate_species,
+        hvector_cond=setup.condensate_setup.hvector_func(float(T)),
+        element_potential=element_potential,
+        max_positive_support_count=(
+            options.max_activity_support_count
+            if max_positive_support_count is None
+            else int(max_positive_support_count)
+        ),
+        activity_threshold=options.support_activity_threshold,
+        existing_support_indices=existing_support_indices,
+        temperature=float(T),
+        condensate_temperature_validity_upper=setup.condensate_setup.metadata.get(
+            "temperature_validity_upper"
+        )
+        if setup.condensate_setup.metadata is not None
+        else None,
+        field_provenance={
+            "formula_matrix_cond": "exogibbs_condensate_chemical_setup",
+            "element_inventory_target": "exogibbs_runtime_input",
+            "hvector_cond": "exogibbs_condensate_thermochemistry",
+            "element_potential": "exogibbs_restricted_solver_dual"
+            if element_potential_override is not None
+            else "exogibbs_native_least_squares_gas_gauge",
+            "condensate_temperature_validity_upper": "exogibbs_condensate_chemical_setup_metadata",
+        },
+    )
+    return report.as_dict()
+
+
+def _support_count_cap(options: CondensateEquilibriumOptions) -> int | None:
+    return None if options.max_positive_support_count is None else int(options.max_positive_support_count)
+
+
+def _remaining_support_slots(
+    support_count: int,
+    options: CondensateEquilibriumOptions,
+) -> int | None:
+    cap = _support_count_cap(options)
+    if cap is None:
+        return None
+    return max(0, cap - int(support_count))
+
+
+def _support_add_count(
+    *,
+    inactive_count: int,
+    support_count: int,
+    options: CondensateEquilibriumOptions,
+    allow_additions: bool = True,
+) -> int:
+    if not allow_additions:
+        return 0
+    remaining = _remaining_support_slots(support_count, options)
+    if remaining == 0:
+        return 0
+    add_limit = (
+        int(inactive_count)
+        if options.max_support_add_per_round is None
+        else int(options.max_support_add_per_round)
+    )
+    if remaining is not None:
+        add_limit = min(add_limit, remaining)
+    return min(add_limit, int(inactive_count))
+
+
+def _budget_seed_for_support(
+    *,
+    setup: CondensateChemicalSetup,
+    b: Array,
+    support_indices: Sequence[int],
+    options: CondensateEquilibriumOptions,
+) -> tuple[float, ...]:
+    from exogibbs.condensates.initialization_policy import (
+        recommend_budget_preserving_seed_amounts,
+    )
+
+    seed = recommend_budget_preserving_seed_amounts(
+        formula_matrix_cond=setup.formula_matrix_cond,
+        element_inventory_target=jnp.asarray(b),
+        condensate_species_order=setup.condensate_species,
+        support_indices=support_indices,
+        seed_fraction=1.0
+        if options.seed_initialization_policy == "max_density"
+        else options.seed_fraction,
+        max_seed_amount=1.0e300
+        if options.seed_initialization_policy == "max_density"
+        else options.max_seed_amount,
+        min_seed_amount=options.min_seed_amount,
+        preserve_budget_fraction=(
+            options.seed_initialization_policy == "budget_preserving_fraction"
+        ),
+        field_provenance={
+            "formula_matrix_cond": "exogibbs_condensate_chemical_setup",
+            "element_inventory_target": "exogibbs_runtime_input",
+            "recommended_amounts": (
+                "derived_from_native_budget_capacity_with_shared_budget_fraction"
+                if options.seed_initialization_policy == "budget_preserving_fraction"
+                else "derived_from_native_budget_capacity_without_shared_budget_rescale"
+            ),
+        },
+    )
+    return tuple(float(value) for value in seed.recommended_amounts)
+
+
+def _seed_gauge_payload(options: CondensateEquilibriumOptions) -> Mapping[str, Any]:
+    """Describe the native amount gauge used by API-generated condensate seeds."""
+
+    return {
+        "seed_initialization_policy": options.seed_initialization_policy,
+        "amount_gauge": "element_inventory_target_fraction",
+        "fastchem4_first_step_equivalent_gauge": (
+            "number_density_divided_by_initial_gas_phase_total_element_density"
+        ),
+        "fastchem4_constructor_values_used": False,
+        "uses_b_not_b_normalized_by_sum_b": True,
+        "max_density_formula": (
+            "min_positive_element(element_inventory_target[element] / "
+            "stoichiometric_coefficient[element, condensate])"
+        ),
+    }
+
+
+def _support_selection_payload_from_activity_report(
+    *,
+    report: Mapping[str, Any],
+    support_indices: Sequence[int],
+    support_names: Sequence[str],
+    support_amounts_init: Sequence[float],
+    seed_initialization_policy: str,
+    terminated_reason: str,
+    outer_iterations: Sequence[Mapping[str, Any]],
+) -> Mapping[str, Any]:
+    support = tuple(int(index) for index in support_indices)
+    names = tuple(str(name) for name in support_names)
+    amounts = tuple(float(value) for value in support_amounts_init)
+    if len(names) != len(support):
+        raise ValueError("support_names length must match support_indices length.")
+    return {
+        "selection_schema": "exogibbs_condensate_activity_driven_support_outer_loop_v1",
+        "selection_mode": "activity_driven_support_outer_loop",
+        "solver_inputs": {
+            "support_indices": support,
+            "support_amounts_init": amounts,
+            "support_names": names,
+            "seed_initialization_policy": str(seed_initialization_policy),
+            "amount_gauge": "element_inventory_target_fraction",
+            "fastchem4_first_step_equivalent_gauge": (
+                "number_density_divided_by_initial_gas_phase_total_element_density"
+            ),
+            "uses_b_not_b_normalized_by_sum_b": True,
+            "empty_positive_support": len(support) == 0,
+        },
+        "activity_selection": dict(report),
+        "outer_loop": {
+            "loop_schema": "exogibbs_condensate_support_outer_loop_v1",
+            "terminated_reason": terminated_reason,
+            "iterations": tuple(outer_iterations),
+            "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+        },
+        "fastchem4_trace_values_used": False,
+        "fastchem4_public_values_used_as_constructor_inputs": False,
+        "fastchem4_runtime_values_used_as_constructor_inputs": False,
+    }
+
+
+def _with_support_outer_loop_diagnostics(
+    *,
+    result: CondensateEquilibriumResult,
+    support_selection_report: Mapping[str, Any],
+    return_diagnostics: bool,
+) -> CondensateEquilibriumResult:
+    if not return_diagnostics:
+        return result
+    diagnostics = dict(result.diagnostics or {})
+    diagnostics["support_selection"] = support_selection_report
+    diagnostics["support_outer_loop"] = support_selection_report.get("outer_loop")
+    return replace(result, diagnostics=diagnostics)
+
+
+def _run_activity_driven_support_outer_loop(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    b: Array,
+    Pref: float,
+    options: CondensateEquilibriumOptions,
+) -> CondensateEquilibriumResult:
+    from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
+
+    explicit_options = replace(options, enable_support_outer_loop=False)
+    gas_result = equilibrium(
+        setup.gas_setup,
+        T,
+        P,
+        jnp.asarray(b),
+        Pref=Pref,
+        options=EquilibriumOptions(),
+        return_diagnostics=False,
+    )
+    current_report = _activity_driven_support_report(
+        setup=setup,
+        T=T,
+        P=P,
+        b=b,
+        Pref=Pref,
+        gas_ln_n=gas_result.ln_n,
+        options=options,
+    )
+    initial_positive = tuple(int(index) for index in current_report["positive_support_indices"])
+    initial_add_count = _support_add_count(
+        inactive_count=len(initial_positive),
+        support_count=0,
+        options=options,
+    )
+    current_support = initial_positive[:initial_add_count]
+    outer_iterations: list[Mapping[str, Any]] = [
+        {
+            "iteration": 0,
+            "state_source": "native_gas_equilibrium",
+            "positive_support_indices": initial_positive,
+            "positive_support_names": tuple(current_report["positive_support_names"]),
+            "added_support_indices": current_support,
+            "added_support_names": tuple(
+                setup.condensate_species[int(index)] for index in current_support
+            ),
+        }
+    ]
+    if not current_support:
+        support_selection_report = _support_selection_payload_from_activity_report(
+            report=current_report,
+            support_indices=(),
+            support_names=(),
+            support_amounts_init=(),
+            seed_initialization_policy=options.seed_initialization_policy,
+            terminated_reason="empty_positive_support",
+            outer_iterations=outer_iterations,
+        )
+        if not options.allow_empty_positive_support:
+            raise ValueError("No positive condensate support candidates were selected.")
+        diagnostics = {"support_selection": support_selection_report} if options.return_diagnostics else None
+        return _build_empty_support_gas_result(
+            setup=setup,
+            gas_ln_n=gas_result.ln_n,
+            diagnostics=diagnostics,
+        )
+
+    support_amounts = _budget_seed_for_support(
+        setup=setup,
+        b=b,
+        support_indices=current_support,
+        options=options,
+    )
+    last_result: CondensateEquilibriumResult | None = None
+    terminated_reason = "max_support_outer_iterations_reached"
+    for outer_index in range(1, options.max_support_outer_iterations + 1):
+        last_result = condensate_equilibrium(
+            setup,
+            T,
+            P,
+            b,
+            Pref=Pref,
+            support_indices=current_support,
+            support_amounts_init=support_amounts,
+            options=explicit_options,
+        )
+        fallback_solver_payload = None
+        if last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff":
+            fallback_solver_payload = (last_result.diagnostics or {}).get(
+                "restricted_solver_payload_for_support_growth"
+            )
+        if (
+            last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
+            and not fallback_solver_payload
+        ):
+            terminated_reason = "support_growth_stopped_after_unaccepted_head_route_result"
+            outer_iterations.append(
+                {
+                    "iteration": outer_index,
+                    "state_source": "head_route_result",
+                    "result_status": last_result.status,
+                    "selected_route": last_result.selected_route,
+                    "added_support_indices": (),
+                    "added_support_names": (),
+                    "reason": (
+                        "Do not grow activity support from a caveat fallback gas "
+                        "state; support additions require an accepted HEAD route "
+                        "condensate state."
+                    ),
+                }
+            )
+            break
+        support_growth_ln_nk = (
+            fallback_solver_payload["ln_nk"]
+            if fallback_solver_payload
+            else last_result.gas_ln_n
+        )
+        support_growth_existing = (
+            tuple(int(index) for index in fallback_solver_payload["support_indices"])
+            if fallback_solver_payload
+            else current_support
+        )
+        support_growth_pi = (
+            fallback_solver_payload.get("pi_vector")
+            if fallback_solver_payload
+            else None
+        )
+        current_report = _activity_driven_support_report(
+            setup=setup,
+            T=T,
+            P=P,
+            b=b,
+            Pref=Pref,
+            gas_ln_n=support_growth_ln_nk,
+            options=options,
+            existing_support_indices=support_growth_existing,
+            element_potential_override=support_growth_pi,
+        )
+        existing = set(support_growth_existing)
+        inactive_positive = tuple(
+            int(index)
+            for index in current_report["inactive_positive_indices"]
+            if int(index) not in existing
+        )
+        add_count = _support_add_count(
+            inactive_count=len(inactive_positive),
+            support_count=len(current_support),
+            options=options,
+            allow_additions=outer_index < int(options.max_support_outer_iterations),
+        )
+        added = inactive_positive[:add_count]
+        outer_iterations.append(
+            {
+                "iteration": outer_index,
+                "state_source": "restricted_solver_output"
+                if fallback_solver_payload
+                else "head_route_result",
+                "selected_route": last_result.selected_route,
+                "positive_support_indices": tuple(int(index) for index in current_report["positive_support_indices"]),
+                "positive_support_names": tuple(str(name) for name in current_report["positive_support_names"]),
+                "inactive_positive_indices": inactive_positive,
+                "inactive_positive_names": tuple(str(name) for name in current_report["inactive_positive_names"]),
+                "added_support_indices": added,
+                "added_support_names": tuple(
+                    setup.condensate_species[int(index)] for index in added
+                ),
+            }
+        )
+        if not added:
+            support_cap = _support_count_cap(options)
+            if inactive_positive and support_cap is not None and len(current_support) >= support_cap:
+                terminated_reason = "max_positive_support_count_reached"
+            elif inactive_positive:
+                terminated_reason = "max_support_outer_iterations_reached"
+            else:
+                terminated_reason = "no_inactive_positive_support"
+            break
+        previous_support_amounts = (
+            tuple(float(value) for value in fallback_solver_payload["m_support"])
+            if fallback_solver_payload
+            else tuple(
+                float(last_result.condensate_amounts[int(index)])
+                for index in current_support
+            )
+        )
+        added_support_amounts = _budget_seed_for_support(
+            setup=setup,
+            b=b,
+            support_indices=added,
+            options=options,
+        )
+        current_support = support_growth_existing + added
+        support_amounts = previous_support_amounts + added_support_amounts
+
+    if last_result is None:
+        raise RuntimeError("Support outer loop did not produce a condensate result.")
+    support_selection_report = _support_selection_payload_from_activity_report(
+        report=current_report,
+        support_indices=current_support,
+        support_names=tuple(setup.condensate_species[int(index)] for index in current_support),
+        support_amounts_init=support_amounts,
+        seed_initialization_policy=options.seed_initialization_policy,
+        terminated_reason=terminated_reason,
+        outer_iterations=outer_iterations,
+    )
+    return _with_support_outer_loop_diagnostics(
+        result=last_result,
+        support_selection_report=support_selection_report,
+        return_diagnostics=options.return_diagnostics,
     )
 
 
@@ -542,14 +1038,23 @@ def condensate_equilibrium(
 ) -> CondensateEquilibriumResult:
     """Compute one condensate-enabled equilibrium layer through HEAD route v1.
 
-    When no support is supplied, the HEAD route builds a native positive-support
-    initializer from ExoGibbs thermochemistry and the caller's element budget.
+    When no support is supplied, the HEAD route builds native activity-driven
+    support from ExoGibbs thermochemistry and the caller's element budget.
     Explicit support payloads are still accepted for controlled experiments.
     """
 
     opts = options or CondensateEquilibriumOptions()
     validate_condensate_chemical_setup(setup)
     _validate_options(opts)
+    if support_indices is None and opts.enable_support_outer_loop:
+        return _run_activity_driven_support_outer_loop(
+            setup=setup,
+            T=T,
+            P=P,
+            b=b,
+            Pref=Pref,
+            options=opts,
+        )
     support_selection_report: Optional[Mapping[str, Any]] = None
     if support_indices is None:
         from exogibbs.condensates.positive_support_initializer import (
@@ -561,7 +1066,11 @@ def condensate_equilibrium(
             element_inventory_target=jnp.asarray(b),
             condensate_species_order=setup.condensate_species,
             hvector_cond=setup.condensate_setup.hvector_func(float(T)),
-            max_positive_support_count=opts.max_positive_support_count,
+            max_positive_support_count=(
+                int(setup.formula_matrix_cond.shape[1])
+                if opts.max_positive_support_count is None
+                else int(opts.max_positive_support_count)
+            ),
             seed_fraction=opts.seed_fraction,
             max_seed_amount=opts.max_seed_amount,
             min_seed_amount=opts.min_seed_amount,
@@ -575,6 +1084,22 @@ def condensate_equilibrium(
         support_selection_report = support_plan.as_dict()
         support_indices = support_plan.solver_inputs.support_indices
         support_amounts_init = support_plan.solver_inputs.support_amounts_init
+        support_selection_report = dict(support_selection_report)
+        solver_inputs = dict(support_selection_report.get("solver_inputs", {}))
+        solver_inputs.update(_seed_gauge_payload(opts))
+        support_selection_report["solver_inputs"] = solver_inputs
+        if opts.seed_initialization_policy != "budget_preserving_fraction":
+            support_amounts_init = _budget_seed_for_support(
+                setup=setup,
+                b=b,
+                support_indices=support_indices,
+                options=opts,
+            )
+            solver_inputs["support_amounts_init"] = tuple(
+                float(value) for value in support_amounts_init
+            )
+            solver_inputs.update(_seed_gauge_payload(opts))
+            support_selection_report["solver_inputs"] = solver_inputs
     else:
         explicit_indices = tuple(int(index) for index in support_indices)
         explicit_amounts = (
@@ -588,13 +1113,19 @@ def condensate_equilibrium(
             "solver_inputs": {
                 "support_indices": explicit_indices,
                 "support_amounts_init": explicit_amounts,
+                "seed_initialization_policy": "explicit_support_payload",
+                "amount_gauge": "caller_supplied_explicit_payload",
                 "empty_positive_support": len(explicit_indices) == 0,
             },
             "fastchem4_trace_values_used": False,
             "fastchem4_public_values_used_as_constructor_inputs": False,
             "fastchem4_runtime_values_used_as_constructor_inputs": False,
         }
-    from exogibbs.optimize.minimize_cond import solve_restricted_support_condensate_layer
+    from exogibbs.optimize.minimize_cond import (
+        CondensateEquilibriumInit,
+        CondensateRGIEReducedCouplingConfig,
+        solve_restricted_support_condensate_layer,
+    )
     from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
 
     state = ThermoState(
@@ -621,12 +1152,37 @@ def condensate_equilibrium(
     solve_kwargs: dict[str, Any] = {}
     if opts.max_inner_iterations is not None:
         solve_kwargs["max_iter"] = int(opts.max_inner_iterations)
+    solve_kwargs["reduced_coupling_config"] = CondensateRGIEReducedCouplingConfig(
+        reduced_coupling_mode=opts.restricted_reduced_coupling_mode,
+        alpha_s=float(opts.restricted_reduced_coupling_alpha_s),
+    )
     from exogibbs.condensates.head_route_warm_start import (
         build_condensate_head_route_warm_start_report,
     )
 
     if support_amounts_init is None:
         raise ValueError("support_amounts_init is required for non-empty condensate support.")
+    baseline_gas_result = equilibrium(
+        setup.gas_setup,
+        T,
+        P,
+        jnp.asarray(b),
+        Pref=Pref,
+        options=EquilibriumOptions(),
+        return_diagnostics=False,
+    )
+    baseline_initial_log_state = CondensateEquilibriumInit(
+        ln_nk=jnp.asarray(baseline_gas_result.ln_n, dtype=jnp.float64),
+        ln_mk=jnp.log(jnp.maximum(jnp.asarray(support_amounts_init), 1.0e-300)),
+        ln_ntot=jnp.log(jnp.asarray(baseline_gas_result.ntot, dtype=jnp.float64)),
+        ln_nk_source_trace={
+            "source": "exogibbs_api_fresh_gas_equilibrium",
+            "reason": (
+                "Keep support selection and restricted solver baseline "
+                "initialization on the same native gas state."
+            ),
+        },
+    )
     warm_start_report = build_condensate_head_route_warm_start_report(
         explicit_opt_in=True,
         state=state,
@@ -635,6 +1191,7 @@ def condensate_equilibrium(
         hvector_func=setup.gas_setup.hvector_func,
         support_indices=support_indices,
         support_amounts_init=jnp.asarray(support_amounts_init),
+        baseline_initial_log_state_override=baseline_initial_log_state,
         enable_depleted_gas_refresh=(
             opts.enable_head_route_warm_start and opts.enable_depleted_gas_refresh
         ),
@@ -678,6 +1235,7 @@ def condensate_equilibrium(
             **solve_kwargs,
         )
         attempt_success = bool(attempt["solver_success"])
+        attempt_diagnostics = attempt.get("diagnostics", {})
         solver_attempts.append(
             {
                 "candidate_index": candidate_index,
@@ -685,6 +1243,18 @@ def condensate_equilibrium(
                 "candidate_kind": candidate.candidate_kind,
                 "attempt_status": "solver_success" if attempt_success else "solver_failed",
                 "solver_success": attempt_success,
+                "restricted_reduced_coupling_config_mode": attempt.get(
+                    "restricted_reduced_coupling_config_mode"
+                ),
+                "final_residual": attempt_diagnostics.get("final_residual")
+                if isinstance(attempt_diagnostics, Mapping)
+                else None,
+                "n_iter": attempt_diagnostics.get("n_iter")
+                if isinstance(attempt_diagnostics, Mapping)
+                else None,
+                "hit_max_iter": attempt_diagnostics.get("hit_max_iter")
+                if isinstance(attempt_diagnostics, Mapping)
+                else None,
             }
         )
         if solver is None or attempt_success or not selected_solver_success:
@@ -716,11 +1286,16 @@ def condensate_equilibrium(
             jnp.asarray(setup.gas_setup.hvector_func(float(T)))
             + _ln_normalized_pressure(P, Pref)
         )
-        element_potential = _least_squares_element_potential(
-            formula_matrix=setup.formula_matrix,
-            gas_ln_n=solver_ln_nk,
-            gas_stationarity_source=gas_stationarity_source,
-        )
+        if "pi_vector" in solver:
+            element_potential = jnp.asarray(solver["pi_vector"], dtype=jnp.float64)
+            element_potential_source = "exogibbs_restricted_solver_dual"
+        else:
+            element_potential = _least_squares_element_potential(
+                formula_matrix=setup.formula_matrix,
+                gas_ln_n=solver_ln_nk,
+                gas_stationarity_source=gas_stationarity_source,
+            )
+            element_potential_source = "exogibbs_native_least_squares_gas_gauge"
         condensate_hvector = jnp.asarray(setup.condensate_setup.hvector_func(float(T)))
         lifecycle_report = run_condensate_head_route_lifecycle(
             explicit_opt_in=True,
@@ -745,7 +1320,7 @@ def condensate_equilibrium(
                 "ln_nk": "exogibbs_restricted_support_solver_output",
                 "support_indices": "exogibbs_restricted_support_solver_output",
                 "support_amounts": "exogibbs_restricted_support_solver_output",
-                "element_potential": "exogibbs_native_least_squares_gas_gauge",
+                "element_potential": element_potential_source,
             },
         )
         lifecycle_payload = lifecycle_report.as_dict()
@@ -827,6 +1402,7 @@ def condensate_equilibrium(
             allow_caveat_tiers=opts.allow_caveat_tiers,
             return_diagnostics=opts.return_diagnostics,
             restricted_solver_success=restricted_solver_success,
+            restricted_solver_payload=solver if restricted_solver_success else None,
         )
     diagnostics_payload: Optional[Mapping[str, Any]]
     if opts.return_diagnostics:

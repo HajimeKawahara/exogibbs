@@ -173,8 +173,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-# Local examples and generated comparison artifacts are not repository sources.
-/examples/
+# Generated comparison artifacts are not repository sources.
 /results/
 
 # Local external checkouts and scratch workspaces.

@@ -39,6 +39,7 @@ def chemsetup(
     text = open(data_path, "r", encoding="utf-8").read()
     entries = _parse_condensate_logk(text)
     species = [entry.name for entry in entries]
+    validity_upper = [float(entry.segments[-1][0]) for entry in entries]
     coeffs, uppers, segment_counts = _prepare_segment_arrays(entries)
 
     gas = gas_setup if gas_setup is not None else _base_chemsetup(silent=True)
@@ -59,6 +60,7 @@ def chemsetup(
         species,
         gas.element_vector_reference,
         path,
+        validity_upper,
     )
 
 
@@ -108,6 +110,7 @@ def _build_chemical_setup(
     species: List[str],
     element_vector_ref: jnp.ndarray,
     source_path: str,
+    validity_upper: Sequence[float],
 ) -> ChemicalSetup:
     float_dtype = setup_float_dtype()
     coeff_array = jnp.asarray(coeffs, dtype=float_dtype)
@@ -146,6 +149,7 @@ def _build_chemical_setup(
             "source": "FastChem4",
             "dataset": "condensates",
             "fastchem_logk_file": source_path,
+            "temperature_validity_upper": tuple(float(value) for value in validity_upper),
         },
     )
 
