@@ -7,7 +7,7 @@ digraph head_route_v1_en {
     ranksep=0.62,
     splines=ortho,
     fontname="DejaVu Sans",
-    label="ExoGibbs Condensate HEAD Route v1.1",
+    label="ExoGibbs Condensate HEAD Route v1.2",
     labelloc=t,
     fontsize=26
   ];
@@ -61,7 +61,7 @@ digraph head_route_v1_en {
     style="rounded";
 
     positive_support [
-      label="Native positive support selection\npositive_support_initializer.py\nuses Ac, budget, hvector_cond",
+      label="Activity-driven support outer loop\ndefault: track all positive candidates\ntemperature validity + native activity",
       fillcolor="#dcfce7"
     ];
     explicit_support [
@@ -92,7 +92,7 @@ digraph head_route_v1_en {
       fillcolor="#ccfbf1"
     ];
     baseline_seed [
-      label="baseline_positive_support_seed\nsmall condensate amount seed",
+      label="baseline_positive_support_seed\ndefault: max-density seed\nelement-budget capacity gauge",
       fillcolor="#f0fdfa"
     ];
     depleted_refresh [
@@ -110,7 +110,7 @@ digraph head_route_v1_en {
     style="rounded";
 
     restricted_solver [
-      label="restricted support solver\nsolve_restricted_support_condensate_layer()\nupdates only selected condensates",
+      label="restricted support solver\nsolve_restricted_support_condensate_layer()\ndefault: pdipm_rgie_v11_activity_correction",
       fillcolor="#ede9fe"
     ];
     solver_success [
@@ -217,11 +217,11 @@ digraph head_route_v1_en {
     ];
     v11_fallback_gate [
       shape=diamond,
-      label="v1.1 fallback gate\nfresh runtime and\nfinite candidate?",
+      label="v1.2 fallback gate\nfresh runtime and\nfinite candidate?",
       fillcolor="#fef3c7"
     ];
     native_seed_fallback [
-      label="Native seed fallback\nnative gas equilibrium +\nbudget-preserving seed\nroute = native_budget_seed_fallback_budget_tradeoff",
+      label="Native seed fallback\nfinite warm-start boundary +\nmax-density seed\nroute = native_budget_seed_fallback_budget_tradeoff",
       fillcolor="#fef9c3",
       color="#ca8a04",
       penwidth=1.8

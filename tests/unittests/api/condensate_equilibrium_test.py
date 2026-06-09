@@ -63,6 +63,24 @@ def _setup_pair_with_condensate_hvalue(hvalue: float) -> CondensateChemicalSetup
     return build_condensate_chemical_setup(gas_setup=gas, condensate_setup=cond)
 
 
+def _setup_pair_with_two_condensates() -> CondensateChemicalSetup:
+    gas = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]]),
+        hvector_func=lambda T: jnp.asarray([0.0, 0.0]),
+        elements=("H", "O"),
+        species=("H", "O"),
+        metadata={"source": "unit-test-gas"},
+    )
+    cond = ChemicalSetup(
+        formula_matrix=jnp.asarray([[2.0, 1.0], [1.0, 1.0]]),
+        hvector_func=lambda T: jnp.asarray([-1.0, -1.0]),
+        elements=("H", "O"),
+        species=("H2O_s", "HO_s"),
+        metadata={"source": "unit-test-condensate"},
+    )
+    return build_condensate_chemical_setup(gas_setup=gas, condensate_setup=cond)
+
+
 def test_build_condensate_chemical_setup_validates_element_order() -> None:
     gas, cond, setup = _setup_pair()
 
@@ -191,13 +209,314 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
     assert captured["kwargs"] is not None
     kwargs = captured["kwargs"]
     assert tuple(kwargs["support_indices"]) == (0,)
-    assert tuple(float(value) for value in kwargs["support_amounts_init"]) == pytest.approx((5.0e-4,))
+    assert tuple(float(value) for value in kwargs["support_amounts_init"]) == pytest.approx((0.5,))
     assert result.diagnostics is not None
     assert result.diagnostics["support_selection"]["solver_inputs"]["support_indices"] == (0,)
+    assert (
+        result.diagnostics["support_selection"]["solver_inputs"]["amount_gauge"]
+        == "element_inventory_target_fraction"
+    )
+    assert (
+        result.diagnostics["support_selection"]["solver_inputs"][
+            "fastchem4_first_step_equivalent_gauge"
+        ]
+        == "number_density_divided_by_initial_gas_phase_total_element_density"
+    )
+
+
+def test_condensate_equilibrium_options_default_to_head_route_v1_2() -> None:
+    options = CondensateEquilibriumOptions()
+
+    assert options.max_positive_support_count is None
+    assert options.max_support_add_per_round is None
+    assert options.seed_initialization_policy == "max_density"
+    assert options.restricted_reduced_coupling_mode == "pdipm_rgie_v11_activity_correction"
+
+
+def test_support_outer_loop_does_not_grow_from_native_seed_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_two_condensates()
+    activity_calls: list[tuple[int, ...]] = []
+
+    def fake_activity_report(**kwargs):
+        existing = tuple(int(index) for index in kwargs.get("existing_support_indices", ()))
+        activity_calls.append(existing)
+        if not existing:
+            return {
+                "positive_support_indices": (0,),
+                "positive_support_names": ("H2O_s",),
+                "inactive_positive_indices": (),
+                "inactive_positive_names": (),
+            }
+        return {
+            "positive_support_indices": (0, 1),
+            "positive_support_names": ("H2O_s", "HO_s"),
+            "inactive_positive_indices": (1,),
+            "inactive_positive_names": ("HO_s",),
+        }
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        return {
+            "solver_success": False,
+            "ln_nk": jnp.asarray([0.0, -1.0]),
+            "support_indices": tuple(kwargs["support_indices"]),
+            "m_support": jnp.asarray(kwargs["support_amounts_init"]),
+            "diagnostics": {"final_residual": 1.0, "n_iter": 1, "hit_max_iter": True},
+        }
+
+    import exogibbs.api.condensate_equilibrium as condensate_api
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(
+        condensate_api,
+        "_activity_driven_support_report",
+        fake_activity_report,
+    )
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            allow_caveat_tiers=True,
+            max_positive_support_count=None,
+            max_support_add_per_round=None,
+        ),
+    )
+
+    assert activity_calls == [()]
+    assert result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
+    assert result.condensate_support_names == ("H2O_s",)
+    assert result.diagnostics is not None
+    support_selection = result.diagnostics["support_selection"]
+    assert support_selection["solver_inputs"]["support_indices"] == (0,)
+    assert (
+        support_selection["outer_loop"]["terminated_reason"]
+        == "support_growth_stopped_after_unaccepted_head_route_result"
+    )
+
+
+def test_support_outer_loop_preserves_solver_amounts_when_growing_from_payload(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_two_condensates()
+    solve_calls: list[tuple[tuple[int, ...], tuple[float, ...]]] = []
+
+    def fake_activity_report(**kwargs):
+        existing = tuple(int(index) for index in kwargs.get("existing_support_indices", ()))
+        if not existing:
+            return {
+                "positive_support_indices": (0,),
+                "positive_support_names": ("H2O_s",),
+                "inactive_positive_indices": (),
+                "inactive_positive_names": (),
+            }
+        if existing == (0,):
+            assert kwargs.get("element_potential_override") is not None
+            return {
+                "positive_support_indices": (0, 1),
+                "positive_support_names": ("H2O_s", "HO_s"),
+                "inactive_positive_indices": (1,),
+                "inactive_positive_names": ("HO_s",),
+            }
+        assert existing == (0, 1)
+        return {
+            "positive_support_indices": (0, 1),
+            "positive_support_names": ("H2O_s", "HO_s"),
+            "inactive_positive_indices": (),
+            "inactive_positive_names": (),
+        }
+
+    def fake_condensate_equilibrium(*args, **kwargs):
+        support = tuple(int(index) for index in kwargs["support_indices"])
+        amounts = tuple(float(value) for value in kwargs["support_amounts_init"])
+        solve_calls.append((support, amounts))
+        full_amounts = jnp.zeros((2,), dtype=jnp.float64)
+        for index, amount in zip(support, amounts):
+            full_amounts = full_amounts.at[index].set(amount)
+        if len(solve_calls) == 1:
+            diagnostics = {
+                "restricted_solver_payload_for_support_growth": {
+                    "ln_nk": jnp.asarray([0.0, -1.0], dtype=jnp.float64),
+                    "support_indices": (0,),
+                    "m_support": jnp.asarray([0.25], dtype=jnp.float64),
+                    "pi_vector": jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+                }
+            }
+            route = "native_budget_seed_fallback_budget_tradeoff"
+            status = CONVERGED_WITH_CAVEAT
+            converged = True
+        else:
+            diagnostics = {}
+            route = "m4310_full_promoted_policy_route"
+            status = CONVERGED
+            converged = True
+        return condensate_api.CondensateEquilibriumResult(
+            gas_ln_n=jnp.asarray([0.0, -1.0], dtype=jnp.float64),
+            gas_n=jnp.asarray([1.0, 0.1], dtype=jnp.float64),
+            gas_x=jnp.asarray([0.9, 0.1], dtype=jnp.float64),
+            gas_ntot=jnp.asarray(1.1, dtype=jnp.float64),
+            condensate_amounts=full_amounts,
+            condensate_support_indices=jnp.asarray(support, dtype=jnp.int32),
+            condensate_support_names=tuple(setup.condensate_species[index] for index in support),
+            acceptance_tier="tier_1_tight_residual_production_adjacent_candidate",
+            selected_route=route,
+            status=status,
+            converged=converged,
+            diagnostics=diagnostics,
+        )
+
+    import exogibbs.api.condensate_equilibrium as condensate_api
+
+    monkeypatch.setattr(
+        condensate_api,
+        "_activity_driven_support_report",
+        fake_activity_report,
+    )
+    monkeypatch.setattr(
+        condensate_api,
+        "condensate_equilibrium",
+        fake_condensate_equilibrium,
+    )
+
+    result = condensate_api._run_activity_driven_support_outer_loop(
+        setup=setup,
+        T=300.0,
+        P=1.0,
+        b=jnp.asarray([1.0, 1.0]),
+        Pref=1.0,
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            max_positive_support_count=None,
+            max_support_add_per_round=None,
+            seed_initialization_policy="max_density",
+        ),
+    )
+
+    assert solve_calls[0][0] == (0,)
+    assert solve_calls[0][1] == pytest.approx((0.5,))
+    assert solve_calls[1][0] == (0, 1)
+    assert solve_calls[1][1] == pytest.approx((0.25, 1.0))
+    assert tuple(int(index) for index in result.condensate_support_indices) == (0, 1)
+    assert result.diagnostics is not None
+    assert (
+        result.diagnostics["support_selection"]["outer_loop"]["terminated_reason"]
+        == "no_inactive_positive_support"
+    )
     assert result.diagnostics["support_selection"]["fastchem4_trace_values_used"] is False
     assert result.diagnostics["support_selection"]["fastchem4_public_values_used_as_constructor_inputs"] is False
-    assert result.diagnostics["head_route_lifecycle"]["primary_execution_report"] is not None
-    assert result.diagnostics["head_route_lifecycle"]["route_result"]["standard_path_status"] == NOT_CONVERGED
+
+
+def test_condensate_equilibrium_capacity_fraction_seed_is_api_selectable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_two_condensates()
+    captured: dict[str, object] = {}
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        captured["kwargs"] = kwargs
+        return {
+            "solver_success": False,
+            "ln_nk": jnp.asarray([0.0, -1.0]),
+            "support_indices": tuple(kwargs["support_indices"]),
+            "m_support": jnp.asarray(kwargs["support_amounts_init"]),
+            "diagnostics": {"final_residual": 1.0, "n_iter": 1, "hit_max_iter": True},
+        }
+
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            metric_status=TIGHT_RESIDUAL_STATUS,
+            enable_support_outer_loop=False,
+            max_positive_support_count=2,
+            seed_initialization_policy="capacity_fraction",
+            seed_fraction=1.0e-3,
+            max_seed_amount=1.0,
+        ),
+    )
+
+    kwargs = captured["kwargs"]
+    assert tuple(kwargs["support_indices"]) == (0, 1)
+    assert tuple(float(value) for value in kwargs["support_amounts_init"]) == pytest.approx(
+        (5.0e-4, 1.0e-3)
+    )
+    assert result.diagnostics is not None
+    assert (
+        result.diagnostics["support_selection"]["solver_inputs"]["seed_initialization_policy"]
+        == "capacity_fraction"
+    )
+    assert (
+        result.diagnostics["support_selection"]["solver_inputs"]["uses_b_not_b_normalized_by_sum_b"]
+        is True
+    )
+
+
+def test_condensate_equilibrium_max_density_seed_is_api_selectable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_two_condensates()
+    captured: dict[str, object] = {}
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        captured["kwargs"] = kwargs
+        return {
+            "solver_success": False,
+            "ln_nk": jnp.asarray([0.0, -1.0]),
+            "support_indices": tuple(kwargs["support_indices"]),
+            "m_support": jnp.asarray(kwargs["support_amounts_init"]),
+            "diagnostics": {"final_residual": 1.0, "n_iter": 1, "hit_max_iter": True},
+        }
+
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+
+    condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            metric_status=TIGHT_RESIDUAL_STATUS,
+            enable_support_outer_loop=False,
+            max_positive_support_count=2,
+            seed_initialization_policy="max_density",
+            seed_fraction=1.0e-3,
+            max_seed_amount=1.0e-3,
+            enable_head_route_warm_start=False,
+        ),
+    )
+
+    kwargs = captured["kwargs"]
+    assert tuple(kwargs["support_indices"]) == (0, 1)
+    assert tuple(float(value) for value in kwargs["support_amounts_init"]) == pytest.approx(
+        (5.0e-1, 1.0)
+    )
 
 
 def test_condensate_equilibrium_retries_restricted_solver_with_refresh_warm_start(
@@ -214,8 +533,9 @@ def test_condensate_equilibrium_retries_restricted_solver_with_refresh_warm_star
                 "has_initial_override": initial_override is not None,
             }
         )
+        attempt_success = len(attempts) > 1
         return {
-            "solver_success": initial_override is not None,
+            "solver_success": attempt_success,
             "ln_nk": jnp.asarray([0.0, -1.0]),
             "support_indices": tuple(kwargs["support_indices"]),
             "m_support": jnp.asarray(kwargs["support_amounts_init"]),
@@ -242,7 +562,7 @@ def test_condensate_equilibrium_retries_restricted_solver_with_refresh_warm_star
     )
 
     assert len(attempts) == 2
-    assert attempts[0]["has_initial_override"] is False
+    assert attempts[0]["has_initial_override"] is True
     assert attempts[1]["has_initial_override"] is True
     assert result.diagnostics is not None
     assert result.diagnostics["head_route_solver_attempts"][0]["candidate_kind"] == "baseline"
@@ -250,6 +570,168 @@ def test_condensate_equilibrium_retries_restricted_solver_with_refresh_warm_star
     selected = result.diagnostics["selected_warm_start_candidate"]
     assert selected["candidate_kind"] == "depleted_gas_refresh"
     assert selected["fastchem4_trace_public_runtime_constructor_inputs_used"] is False
+
+
+def test_condensate_equilibrium_passes_api_gas_state_to_baseline_solver(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_condensate_hvalue(-1.0)
+    gas_ln_n = jnp.asarray([2.0, -3.0])
+    gas_ntot = jnp.asarray(4.0)
+    captured: dict[str, object] = {}
+
+    class FakeGasResult:
+        ln_n = gas_ln_n
+        ntot = gas_ntot
+
+    def fake_equilibrium(*_args, **_kwargs):
+        return FakeGasResult()
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        captured["initial_log_state_override"] = kwargs["initial_log_state_override"]
+        return {
+            "solver_success": False,
+            "ln_nk": jnp.asarray(kwargs["initial_log_state_override"].ln_nk),
+            "support_indices": tuple(kwargs["support_indices"]),
+            "m_support": jnp.asarray(kwargs["support_amounts_init"]),
+            "diagnostics": {"final_residual": 1.0, "n_iter": 1, "hit_max_iter": True},
+            "restricted_reduced_coupling_config_mode": kwargs[
+                "reduced_coupling_config"
+            ].reduced_coupling_mode,
+        }
+
+    import exogibbs.api.equilibrium as api_equilibrium
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(api_equilibrium, "equilibrium", fake_equilibrium)
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+
+    condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            max_positive_support_count=1,
+            enable_head_route_warm_start=False,
+        ),
+    )
+
+    init = captured["initial_log_state_override"]
+    assert init is not None
+    assert tuple(float(value) for value in init.ln_nk) == pytest.approx(
+        tuple(float(value) for value in gas_ln_n)
+    )
+    assert float(init.ln_ntot) == pytest.approx(float(jnp.log(gas_ntot)))
+    assert init.ln_nk_source_trace["source"] == "exogibbs_api_fresh_gas_equilibrium"
+
+
+def test_condensate_equilibrium_passes_reduced_coupling_mode_to_restricted_solver(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_condensate_hvalue(-1.0)
+    captured: dict[str, object] = {}
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        captured["config"] = kwargs["reduced_coupling_config"]
+        return {
+            "solver_success": False,
+            "ln_nk": jnp.asarray([0.0, -1.0]),
+            "support_indices": tuple(kwargs["support_indices"]),
+            "m_support": jnp.asarray(kwargs["support_amounts_init"]),
+            "diagnostics": {"final_residual": 1.0, "n_iter": 1, "hit_max_iter": True},
+            "restricted_reduced_coupling_config_mode": kwargs[
+                "reduced_coupling_config"
+            ].reduced_coupling_mode,
+        }
+
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            max_positive_support_count=1,
+            restricted_reduced_coupling_mode=(
+                "candidate_selected_active_plus_near_jacobian_with_rem_inventory"
+            ),
+        ),
+    )
+
+    config = captured["config"]
+    assert (
+        config.reduced_coupling_mode
+        == "candidate_selected_active_plus_near_jacobian_with_rem_inventory"
+    )
+    assert result.diagnostics is not None
+    attempt = result.diagnostics["head_route_solver_attempts"][0]
+    assert (
+        attempt["restricted_reduced_coupling_config_mode"]
+        == "candidate_selected_active_plus_near_jacobian_with_rem_inventory"
+    )
+
+
+def test_condensate_equilibrium_passes_pdipm_activity_correction_mode_to_restricted_solver(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_condensate_hvalue(-1.0)
+    captured: dict[str, object] = {}
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        captured["config"] = kwargs["reduced_coupling_config"]
+        return {
+            "solver_success": False,
+            "ln_nk": jnp.asarray([0.0, -1.0]),
+            "support_indices": tuple(kwargs["support_indices"]),
+            "m_support": jnp.asarray(kwargs["support_amounts_init"]),
+            "diagnostics": {"final_residual": 1.0, "n_iter": 1, "hit_max_iter": True},
+            "restricted_reduced_coupling_config_mode": kwargs[
+                "reduced_coupling_config"
+            ].reduced_coupling_mode,
+        }
+
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            max_positive_support_count=1,
+            restricted_reduced_coupling_mode="pdipm_rgie_v11_activity_correction",
+        ),
+    )
+
+    config = captured["config"]
+    assert config.reduced_coupling_mode == "pdipm_rgie_v11_activity_correction"
+    assert result.diagnostics is not None
+    attempt = result.diagnostics["head_route_solver_attempts"][0]
+    assert (
+        attempt["restricted_reduced_coupling_config_mode"]
+        == "pdipm_rgie_v11_activity_correction"
+    )
 
 
 def test_condensate_equilibrium_accepts_successful_head_lifecycle_after_solver_failure(
@@ -423,6 +905,32 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             1.0,
             jnp.asarray([1.0, 1.0]),
             options=CondensateEquilibriumOptions(max_positive_support_count=0),
+        )
+    with pytest.raises(ValueError, match="max_activity_support_count"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(max_activity_support_count=0),
+        )
+    with pytest.raises(ValueError, match="max_support_add_per_round"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(max_support_add_per_round=0),
+        )
+    with pytest.raises(ValueError, match="restricted_reduced_coupling_mode"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                restricted_reduced_coupling_mode="not_a_mode",
+            ),
         )
 
 

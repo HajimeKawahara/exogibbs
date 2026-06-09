@@ -101,6 +101,7 @@ def build_condensate_head_route_warm_start_report(
     support_amounts_init: Sequence[float],
     enable_depleted_gas_refresh: bool = True,
     gas_refresh_policy: str = "native_gas_solver",
+    baseline_initial_log_state_override: CondensateEquilibriumInit | None = None,
     field_provenance: Mapping[str, str] | None = None,
 ) -> CondensateHeadRouteWarmStartReport:
     """Build baseline and refresh warm-start candidates from native inputs."""
@@ -118,11 +119,11 @@ def build_condensate_head_route_warm_start_report(
         candidate_kind="baseline",
         support_indices=indices,
         support_amounts_init=amounts,
-        initial_log_state_override=None,
+        initial_log_state_override=baseline_initial_log_state_override,
         refresh_report=None,
         finite_solver_inputs=_finite_candidate_inputs(
             support_amounts_init=amounts,
-            initial_log_state_override=None,
+            initial_log_state_override=baseline_initial_log_state_override,
         ),
         production_behavior_change=False,
         production_return_signature_change=False,

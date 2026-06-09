@@ -2,7 +2,7 @@
 
 この文書は、ExoGibbs の凝縮あり計算で現在の基準経路として扱う **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
 
-現在の実装版は **HEAD route v1.1** である。v1.1 は v1 の public API surface を保ったまま、fresh API runtime で lifecycle が accepted にならない場合の native seed fallback gate を拡張する。
+現在の実装版は **HEAD route v1.2** である。v1.2 は v1 の public API surface を保ったまま、fresh API runtime で activity-driven support selection と solver-output-driven support growth を行う。
 
 ## 一言でいうと
 
@@ -13,7 +13,7 @@
 3. 凝縮で使う元素を気相 budget から差し引き、depleted gas refresh（凝縮後の元素予算で気相を作り直す処理）を行う。
 4. restricted support solver（選んだ凝縮種だけを動かす制限付き solver）に入れる。
 5. 失敗または不十分な場合は、HEAD route lifecycle（外側制御）で primary continuation、fallback、electron refresh、frontier refresh を試す。
-   v1.1 では、restricted support solver が成功しても lifecycle selector が accepted しない fresh API runtime layer について、finite warm-start candidate が残っていれば native seed fallback を許可する。
+   v1.2 では、restricted support solver が成功しても lifecycle selector が accepted しない fresh API runtime layer について、finite warm-start candidate が残っていれば native seed fallback を許可する。
 6. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
 
 これは FastChem4 exact replay（FastChem4 の分岐を完全再現すること）ではない。FastChem4 public/runtime/trace values（公開出力・実行時出力・内部 trace 値）は、ExoGibbs の constructor input（初期値や構成入力）として使わない。
@@ -70,18 +70,67 @@
 - gas formula matrix と condensate formula matrix の element row 数が一致すること。
 - species order と formula matrix column 数が一致すること。
 
-### 2. positive support selection
+### 2. activity-driven support selection
 
-ユーザーが `support_indices` を渡さない場合、`build_positive_support_initializer_report()` が呼ばれる。
+ユーザーが `support_indices` を渡さない場合、HEAD route v1.2 は native gas equilibrium から
+activity-driven support outer loop を開始する。
 
-ここでは、FastChem4 output から support を取らない。使うのは以下だけである。
+ここでは、FastChem4 runtime output から support を取らない。使うのは以下だけである。
 
 - `formula_matrix_cond`
 - `element_inventory_target`
 - `condensate_species_order`
 - `hvector_cond`
+- native gas state から作る element potential
+- condensate preset metadata の temperature validity upper bound
 
-初期 policy は少数 support、主に top candidate を使う。seed amount は `seed_fraction <= 1e-3`、`max_seed_amount <= 1e-3` の安全 envelope で作る。
+activity driving が正で、元素 budget capacity を持ち、temperature validity 内にある凝縮種だけを
+activity-positive 候補として追跡する。`max_activity_support_count=None` の場合、この候補追跡は
+個数で切らない。これは FastChem4 の active condensate list に近い診断境界であり、FastChem4
+runtime output を constructor input として使うものではない。
+
+restricted solver に実際に渡す support は `max_positive_support_count` で別に制御する。
+`max_positive_support_count=None` の場合は positive 候補を個数で制限せず solver に渡せるが、
+現時点では large support set が restricted solver で収束する保証はない。bounded support の
+優先順位は capacity を主に使い、明らかな trace-species dominance を避ける。
+
+restricted solver step では `restricted_reduced_coupling_mode` で reduced-coupling 方向を選べる。
+HEAD route v1.2 の default は `pdipm_rgie_v11_activity_correction` である。
+`candidate_selected_active_plus_near_jacobian` は FastChem4 の
+active condensate list / near-active Jacobian 縮約に近い実験 mode である。この mode は
+ExoGibbs native state から activity proxy を作り、active と near-active を solver 内部で分ける。
+`candidate_selected_active_plus_near_jacobian_with_rem_inventory` は、near-active でない support
+凝縮相を Newton/Jacobian 変数から外し、その現在量を `b_eff = b - A_cond m_rem` として元素収支から
+差し引く opt-in 実験 mode である。これは FastChem4 の condensates_rem の inventory subtraction
+に対応する入口であり、rem 量には correctValues 型の解析更新も適用する。ExoGibbs の RGIE reduced
+elimination では condensed variables がもともと `pi` 方向から解析更新されるため、この mode は
+`current` reduced direction と数値的に近くなる。水凝縮・低温強凝縮・silicate の sampled curated
+run では例外なく実行できたが、route 改善はまだ確認されていない。
+
+`pdipm_rgie_v11_activity_correction` は、FastChem4 の condensed solver が持つ
+`activity_correction` 変数に対応する明示 `rho/eta` state を持つ opt-in 実験 mode である。
+初期値は `rho0 = 0, eta0 = 1`、すなわち FastChem4 の新規 active condensate に対する
+`activity_correction = 1` に対応する。barrier/tau は FastChem4 の
+`condTau * reference_element_budget` gauge に直し、reference element は
+`element_inventory_target / stoichiometric_coefficient` が最小の元素として ExoGibbs native
+budget から決める。入力は ExoGibbs native gas/condensate thermochemistry と runtime budget
+から構成し、FastChem4 public/runtime/trace values は constructor input に使わない。
+初期 element-potential carrier は tce の有効気相 source
+`h_gas + log(P/Pref) - ln_ntot` を使い、`A_g.T pi ~= ln_n + source` の least-squares で作る。
+旧 p-IPM/RGIE residual helper から recovered `pi` を流用しない。
+midlayer 10 curated family では fresh API 経由で例外なく走り、FastChem4 first condensed
+Newton step の amount 比較は `max_density + current` と同等かやや良い。v1.2 ではこの mode を
+既定 mode として採用する。
+
+support が非空の場合、restricted solver/lifecycle/fallback を既存の明示 support path で実行し、
+結果 gas state から inactive condensate driving を再評価する。正の inactive support が残れば
+`max_support_add_per_round` の範囲で solver support を追加し、`max_support_outer_iterations`
+まで繰り返す。`max_support_add_per_round=None` の場合、残りの positive 候補を round 内で
+まとめて追加できる。
+seed amount は `seed_fraction <= 1e-3`、`max_seed_amount <= 1e-3` の安全 envelope で作る。
+
+ユーザーが `support_indices` を明示した場合、このouter loopは使わず、指定supportを固定してHEAD route
+v1.2のrestricted support pathを実行する。
 
 ### 3. empty support boundary
 
@@ -118,11 +167,11 @@ non-empty support の場合、`build_condensate_head_route_warm_start_report()` 
 - 必要なら frontier refresh policy を評価する。
 - route selector に渡して accepted / not accepted を決める。
 
-### 7. v1.1 native seed fallback gate
+### 7. v1.2 native seed fallback gate
 
 HEAD route v1 では、restricted support solver が失敗した場合だけ native seed fallback に進んでいた。水凝縮 profile の中間層では、restricted solver は成功する一方で、primary continuation が `no_p_armijo_trial` で止まり、route selector が `support_boundary_construction_required_before_selector` を返すことがあった。この場合、良い runtime boundary はあるが standard gate へ進めず `not_converged` になっていた。
 
-HEAD route v1.1 では、次の条件をすべて満たす場合にも `native_budget_seed_fallback_budget_tradeoff` を返す。
+HEAD route v1.2 では、次の条件をすべて満たす場合にも `native_budget_seed_fallback_budget_tradeoff` を返す。
 
 - lifecycle result が accepted / converged ではない。
 - `enable_native_seed_fallback=True`。
@@ -223,7 +272,7 @@ HEAD route の accepted は単一品質ではない。現在は 3 tier に分け
 
 ## 14 representative rows と fresh profile の現状
 
-HEAD route は、14 representative rows で fresh API regression を通る。v1.1 では results artifact に依存せず、public `condensate_equilibrium()` から 14 rows を実行する。
+HEAD route は、14 representative rows で fresh API regression を通る。v1.2 では results artifact に依存せず、public `condensate_equilibrium()` から 14 rows を実行する。
 
 | group | rows | status |
 |---|---:|---|
@@ -237,7 +286,7 @@ HEAD route は、14 representative rows で fresh API regression を通る。v1.
 |---|---|---|
 | `solar_highT_no_condensate_gas_regression` | high T gas-only | 凝縮 route 対象外。gas-only regression。 |
 | `solar_silicate_first_condensation` | T1400/T1500 | promoted high-start route で accepted。 |
-| `solar_water_condensation` | T300 | v1.1 native seed fallback gate で fresh API profile の中間層も caveat accepted。 |
+| `solar_water_condensation` | T300 | solver-output-driven support growth で fresh API 中間層が通常 route に到達する層を含む。 |
 | `solar_metal_sulfide_or_Fe_Ni_S_region` | T700 | source-convention-safe electron refresh で accepted。ただし raw-gas caveat tier。 |
 | `carbon_rich_graphite_window` | T1300 corrected | adaptive floor frontier repair で accepted。 |
 | `carbon_rich_CaS_MgS_AlN_window` | T700 corrected | adaptive floor frontier repair で accepted。selected floor は `1e-200`。 |
@@ -252,7 +301,7 @@ HEAD route は、14 representative rows で fresh API regression を通る。v1.
 
 `converged_with_caveat` は、HEAD route が runtime result を返せるが、次のような注意が残るという意味である。
 
-- v1.1 native seed fallback: lifecycle selector が accepted しないため、native gas equilibrium と budget-preserving condensate seed を caveat 付きで返す。
+- v1.2 native seed fallback: lifecycle selector が accepted しないため、native gas equilibrium または有限な warm-start boundary と condensate seed を caveat 付きで返す。
 - T500: strict budget closure ではなく budget tradeoff を許している。
 - T700 metal/sulfide: amount-weighted gas では良いが raw gas residual frame に注意がある。
 
@@ -264,7 +313,7 @@ HEAD route は凝縮あり初版標準経路として進めてよいが、以下
 
 - gas-only `equilibrium()` の挙動を変えない。
 - production return signature を変えない。
-- presets/defaults wiring を追加しない。
+- gas-only API の defaults を変更しない。凝縮あり API の default は HEAD route v1.2 として扱う。
 - FastChem4 public/runtime/trace values を constructor input にしない。
 - FastChem4 exact branch replay を acceptance target にしない。
 - case、species、element を落として成功扱いにしない。
@@ -276,7 +325,7 @@ HEAD route は凝縮あり初版標準経路として進めてよいが、以下
 
 1. T500 の budget tradeoff を strict budget closure または coupled-gas closure に近づける。
 2. T700 raw-gas caveat を、raw gas residual と amount-weighted gas residual の frame 分解で解消できるか確認する。
-3. 水凝縮中間層の `no_p_armijo_trial` を primary continuation 側で解消し、v1.1 fallback 依存を減らす。
+3. 水凝縮中間層の `no_p_armijo_trial` を primary continuation 側で解消し、v1.2 fallback 依存を減らす。
 4. target-guided support を、broad grid で破綻しない support policy に一般化する。
 5. `condensate_equilibrium_profile()` を profile/layer 計算へ接続する。
 6. docs と examples で、HEAD route の public API 使用例を整備する。

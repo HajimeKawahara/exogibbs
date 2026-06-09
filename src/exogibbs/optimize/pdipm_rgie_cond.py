@@ -316,6 +316,7 @@ def _algorithm_v11_residuals(
     qtot: float,
     epsilon: float | Sequence[float],
     qtot_reference: float | None = None,
+    condensate_residual_mask: Sequence[bool] | None = None,
 ) -> dict[str, np.ndarray]:
     n = np.exp(q)
     m = np.exp(r)
@@ -324,6 +325,13 @@ def _algorithm_v11_residuals(
     qtot_ref = qtot_value if qtot_reference is None else float(qtot_reference)
     gas = q + gas_stationarity_source + qtot_ref - qtot_value - formula_matrix.T @ lam
     condensate = condensate_standard_source - formula_matrix_cond_active.T @ lam - eta
+    if condensate_residual_mask is not None:
+        mask = np.asarray(condensate_residual_mask, dtype=bool)
+        if mask.ndim != 1 or mask.shape[0] != condensate.shape[0]:
+            raise ValueError("condensate_residual_mask must match condensate length.")
+        condensate_for_combined = condensate[mask]
+    else:
+        condensate_for_combined = condensate
     budget = formula_matrix @ n + formula_matrix_cond_active @ m - element_inventory_target
     epsilon_array = np.asarray(epsilon, dtype=np.float64)
     if epsilon_array.ndim == 0:
@@ -337,7 +345,7 @@ def _algorithm_v11_residuals(
         "complementarity": complementarity,
         "total_density": total_density,
         "combined": np.concatenate(
-            [gas, condensate, budget, complementarity, total_density]
+            [gas, condensate_for_combined, budget, complementarity, total_density]
         ),
     }
 
@@ -359,6 +367,9 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     max_abs_delta_rho: float = 2.0,
     max_abs_delta_lambda: float = 100.0,
     require_budget_nonworsening: bool = False,
+    jacobian_mask: Sequence[bool] | None = None,
+    paired_density_activity_update: bool = False,
+    max_log_condensate_density: Sequence[float] | None = None,
 ) -> PdipmRgieReducedStepReport:
     """Solve one explicit algorithm-v1.1 reduced coupled PD-IPM R-GIE step.
 
@@ -420,6 +431,20 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         raise ValueError("epsilon must be scalar or match condensate vector length.")
     if not np.all(np.isfinite(eps)):
         raise ValueError("epsilon must be finite.")
+    if jacobian_mask is None:
+        jac_mask = np.ones_like(r, dtype=bool)
+    else:
+        jac_mask = np.asarray(jacobian_mask, dtype=bool)
+        if jac_mask.ndim != 1 or jac_mask.shape[0] != r.shape[0]:
+            raise ValueError("jacobian_mask must match condensate vector length.")
+        if not np.any(jac_mask) and jac_mask.shape[0]:
+            jac_mask[int(np.argmax(c - ac.T @ lam))] = True
+    if max_log_condensate_density is None:
+        log_m_cap = None
+    else:
+        log_m_cap = np.asarray(max_log_condensate_density, dtype=np.float64)
+        if log_m_cap.ndim != 1 or log_m_cap.shape[0] != r.shape[0]:
+            raise ValueError("max_log_condensate_density must match condensate vector length.")
 
     n = np.exp(q)
     m = np.exp(r)
@@ -458,12 +483,23 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     raw_delta_rho = (c - ac.T @ pi) / np.maximum(eta, 1.0e-300) - 1.0
     raw_delta_r = -raw_delta_rho - t_vec
     delta_q = np.clip(raw_delta_q, -float(max_abs_delta_q), float(max_abs_delta_q))
-    delta_r = np.clip(raw_delta_r, -float(max_abs_delta_r), float(max_abs_delta_r))
-    delta_rho = np.clip(
-        raw_delta_rho,
-        -float(max_abs_delta_rho),
-        float(max_abs_delta_rho),
-    )
+    if paired_density_activity_update:
+        delta_r = np.clip(raw_delta_r, -float(max_abs_delta_r), float(max_abs_delta_r))
+        if log_m_cap is not None:
+            delta_r = np.minimum(delta_r, log_m_cap - r)
+        target_delta_rho = eps - rho - r - delta_r
+        delta_rho = np.clip(
+            target_delta_rho,
+            -float(max_abs_delta_rho),
+            float(max_abs_delta_rho),
+        )
+    else:
+        delta_r = np.clip(raw_delta_r, -float(max_abs_delta_r), float(max_abs_delta_r))
+        delta_rho = np.clip(
+            raw_delta_rho,
+            -float(max_abs_delta_rho),
+            float(max_abs_delta_rho),
+        )
     delta_lambda = np.clip(pi - lam, -float(max_abs_delta_lambda), float(max_abs_delta_lambda))
 
     initial = _algorithm_v11_residuals(
@@ -479,6 +515,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         qtot=qtot,
         epsilon=eps,
         qtot_reference=qtot,
+        condensate_residual_mask=jac_mask,
     )
     initial_combined = float(np.linalg.norm(initial["combined"]))
     initial_budget = float(np.linalg.norm(initial["budget"]))
@@ -490,7 +527,18 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     best_qtot = qtot
     best_residuals = initial
     best_combined = initial_combined
+    best_fallback_alpha = 0.0
+    best_fallback_q = q
+    best_fallback_r = r
+    best_fallback_lam = lam
+    best_fallback_rho = rho
+    best_fallback_qtot = qtot
+    best_fallback_residuals = initial
+    best_fallback_merit = float("inf")
+    fallback_accepted = False
     accepted = False
+    initial_condensate_accept = float(np.linalg.norm(initial["condensate"][jac_mask]))
+    initial_complementarity_accept = float(np.linalg.norm(initial["complementarity"]))
     finite_step = bool(
         np.all(np.isfinite(delta_q))
         and np.all(np.isfinite(delta_r))
@@ -501,6 +549,8 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     for alpha in alphas:
         candidate_q = q + float(alpha) * delta_q
         candidate_r = r + float(alpha) * delta_r
+        if log_m_cap is not None:
+            candidate_r = np.minimum(candidate_r, log_m_cap)
         candidate_lam = lam + float(alpha) * delta_lambda
         candidate_rho = rho + float(alpha) * delta_rho
         candidate_qtot = qtot + float(alpha) * delta_qtot
@@ -517,9 +567,35 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
             qtot=candidate_qtot,
             epsilon=eps,
             qtot_reference=qtot,
+            condensate_residual_mask=jac_mask,
         )
         candidate_combined = float(np.linalg.norm(candidate_residuals["combined"]))
         candidate_budget = float(np.linalg.norm(candidate_residuals["budget"]))
+        candidate_condensate_accept = float(
+            np.linalg.norm(candidate_residuals["condensate"][jac_mask])
+        )
+        candidate_complementarity_accept = float(
+            np.linalg.norm(candidate_residuals["complementarity"])
+        )
+        fallback_merit = candidate_complementarity_accept
+        if (
+            paired_density_activity_update
+            and finite_step
+            and np.isfinite(fallback_merit)
+            and candidate_complementarity_accept < initial_complementarity_accept
+            and np.isfinite(candidate_combined)
+            and candidate_combined <= 1.25 * max(initial_combined, 1.0)
+            and fallback_merit < best_fallback_merit
+        ):
+            best_fallback_alpha = float(alpha)
+            best_fallback_q = candidate_q
+            best_fallback_r = candidate_r
+            best_fallback_lam = candidate_lam
+            best_fallback_rho = candidate_rho
+            best_fallback_qtot = candidate_qtot
+            best_fallback_residuals = candidate_residuals
+            best_fallback_merit = fallback_merit
+            fallback_accepted = True
         if (
             finite_step
             and np.isfinite(candidate_combined)
@@ -536,6 +612,16 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
             best_combined = candidate_combined
             accepted = True
             break
+    if not accepted and fallback_accepted:
+        best_alpha = best_fallback_alpha
+        best_q = best_fallback_q
+        best_r = best_fallback_r
+        best_lam = best_fallback_lam
+        best_rho = best_fallback_rho
+        best_qtot = best_fallback_qtot
+        best_residuals = best_fallback_residuals
+        best_combined = float(np.linalg.norm(best_residuals["combined"]))
+        accepted = True
 
     candidate_state = build_pdipm_rgie_condensate_state(
         ln_nk=best_q,

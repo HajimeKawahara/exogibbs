@@ -68,7 +68,9 @@ ReducedCouplingMode = Literal[
     "capped_s_only_conditional",
     "candidate_selected_active_only",
     "candidate_selected_active_plus_near_jacobian",
+    "candidate_selected_active_plus_near_jacobian_with_rem_inventory",
     "candidate_selected_weighted_mask",
+    "pdipm_rgie_v11_activity_correction",
 ]
 
 
@@ -1174,7 +1176,9 @@ def _prepare_reduced_coupling_config(
         "capped_s_only_conditional",
         "candidate_selected_active_only",
         "candidate_selected_active_plus_near_jacobian",
+        "candidate_selected_active_plus_near_jacobian_with_rem_inventory",
         "candidate_selected_weighted_mask",
+        "pdipm_rgie_v11_activity_correction",
     )
     if config.reduced_coupling_mode not in valid_modes:
         raise ValueError(
@@ -1730,6 +1734,7 @@ def _minimize_gibbs_cond_legacy(
     elif reduced_config.reduced_coupling_mode in (
         "candidate_selected_active_only",
         "candidate_selected_active_plus_near_jacobian",
+        "candidate_selected_active_plus_near_jacobian_with_rem_inventory",
         "candidate_selected_weighted_mask",
     ):
         selected_mode = reduced_config.reduced_coupling_mode
@@ -1908,6 +1913,238 @@ def solve_gas_equilibrium_with_duals(
     if emit_lnnk_source_trace:
         result["ln_nk_source_trace"] = ln_nk_source_trace
     return result
+
+
+def _solve_pdipm_rgie_v11_activity_correction_layer(
+    *,
+    state: ThermoState,
+    init_state: CondensateEquilibriumInit,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond_active: jnp.ndarray,
+    hvector_func,
+    hvector_cond_active: jnp.ndarray,
+    epsilon: float,
+    max_iter: int,
+) -> tuple[CondensateEquilibriumResult, dict[str, Any]]:
+    """Run the opt-in v1.1 PD-IPM/RGIE layer with explicit activity correction."""
+
+    from exogibbs.optimize.pdipm_rgie_cond import (
+        build_pdipm_rgie_condensate_state,
+        solve_pdipm_rgie_algorithm_v11_reduced_step,
+    )
+
+    hvector = jnp.asarray(hvector_func(state.temperature), dtype=jnp.float64)
+    q = np.asarray(jnp.asarray(init_state.ln_nk, dtype=jnp.float64), dtype=np.float64)
+    r = np.asarray(jnp.asarray(init_state.ln_mk, dtype=jnp.float64), dtype=np.float64)
+    qtot = float(jnp.asarray(init_state.ln_ntot, dtype=jnp.float64))
+    b = np.asarray(jnp.asarray(state.element_vector, dtype=jnp.float64), dtype=np.float64)
+    ag = np.asarray(jnp.asarray(formula_matrix, dtype=jnp.float64), dtype=np.float64)
+    ac = np.asarray(
+        jnp.asarray(formula_matrix_cond_active, dtype=jnp.float64), dtype=np.float64
+    )
+    hcond = np.asarray(jnp.asarray(hvector_cond_active, dtype=jnp.float64), dtype=np.float64)
+    positive_stoich = ac > 0.0
+    capacity = np.full_like(ac, np.inf, dtype=np.float64)
+    np.divide(b[:, np.newaxis], ac, out=capacity, where=positive_stoich)
+    reference_element_indices = np.argmin(capacity, axis=0)
+    reference_element_budget = b[reference_element_indices]
+    fastchem4_cond_tau = 1.0e-15
+    log_tau = np.log(
+        np.maximum(fastchem4_cond_tau * reference_element_budget, 1.0e-300)
+    )
+    gas_stationarity_source_init = np.asarray(
+        hvector + state.ln_normalized_pressure - qtot,
+        dtype=np.float64,
+    )
+    pi = np.linalg.lstsq(ag.T, q + gas_stationarity_source_init, rcond=None)[0]
+    pdipm_state = build_pdipm_rgie_condensate_state(
+        ln_nk=q,
+        ln_mk=r,
+        element_potential=pi,
+        ln_ntot=qtot,
+        rho=np.zeros_like(r),
+        eta=np.ones_like(r),
+        field_provenance={
+            "ln_nk": "exogibbs_restricted_support_solver_init",
+            "ln_mk": "exogibbs_restricted_support_solver_init",
+            "element_potential": "exogibbs_native_recovered_dual",
+            "rho": "exogibbs_fastchem4_style_unit_activity_correction",
+            "eta": "exogibbs_fastchem4_style_unit_activity_correction",
+        },
+    )
+    history: list[dict[str, Any]] = []
+    residual_crit = float(jnp.exp(jnp.asarray(epsilon, dtype=jnp.float64)))
+    converged = False
+    last_report = None
+    for iter_count in range(int(max_iter)):
+        q_current = np.asarray(pdipm_state.ln_nk, dtype=np.float64)
+        qtot_current = float(pdipm_state.ln_ntot)
+        element_potential_current = np.asarray(
+            pdipm_state.element_potential, dtype=np.float64
+        )
+        log_activity_proxy = ac.T @ element_potential_current - hcond
+        jacobian_mask = log_activity_proxy > -0.1
+        if jacobian_mask.size and not np.any(jacobian_mask):
+            jacobian_mask[int(np.argmax(log_activity_proxy))] = True
+        gk = np.asarray(
+            _compute_gk(
+                state.temperature,
+                jnp.asarray(q_current, dtype=jnp.float64),
+                jnp.asarray(qtot_current, dtype=jnp.float64),
+                hvector,
+                state.ln_normalized_pressure,
+            ),
+            dtype=np.float64,
+        )
+        report = solve_pdipm_rgie_algorithm_v11_reduced_step(
+            explicit_opt_in=True,
+            state=pdipm_state,
+            formula_matrix=ag,
+            formula_matrix_cond_active=ac,
+            element_inventory_target=b,
+            gas_stationarity_source=gk - q_current,
+            condensate_standard_source=hcond,
+            epsilon=log_tau,
+            qhat_regularization=1.0e-14,
+            max_abs_delta_q=2.0,
+            max_abs_delta_r=5.0,
+            max_abs_delta_rho=5.0,
+            max_abs_delta_lambda=100.0,
+            require_budget_nonworsening=False,
+            alpha_candidates=(
+                1.0,
+                0.5,
+                0.25,
+                0.125,
+                0.0625,
+                0.03125,
+                0.015625,
+                0.01,
+                0.003,
+                0.001,
+                0.0003,
+                0.0001,
+                1.0e-5,
+            ),
+            jacobian_mask=jacobian_mask,
+            paired_density_activity_update=False,
+            max_log_condensate_density=r,
+        )
+        last_report = report
+        history.append(
+            {
+                "iter": iter_count,
+                "accepted": bool(report.trial_step_accepted),
+                "alpha": float(report.alpha),
+                "initial_combined_residual_l2": float(
+                    report.initial_combined_residual_l2
+                ),
+                "candidate_combined_residual_l2": float(
+                    report.candidate_combined_residual_l2
+                ),
+                "candidate_budget_l2": float(report.candidate_budget_l2),
+                "candidate_condensate_stationarity_l2": float(
+                    report.candidate_condensate_stationarity_l2
+                ),
+                "candidate_barrier_complementarity_l2": float(
+                    report.candidate_barrier_complementarity_l2
+                ),
+                "log_tau_min": float(np.min(log_tau)) if log_tau.size else float("nan"),
+                "log_tau_max": float(np.max(log_tau)) if log_tau.size else float("nan"),
+                "jacobian_count": int(np.sum(jacobian_mask)),
+                "rem_count": int(jacobian_mask.size - np.sum(jacobian_mask)),
+                "jacobian_activity_threshold": -0.1,
+                "jacobian_selection_policy": (
+                    "fastchem4_log_activity_jacobian_with_rem_schur_rhs"
+                ),
+                "rem_rhs_update_policy": (
+                    "rem condensates are removed from the stationarity residual "
+                    "mask and retained in the reduced Qhat/RHS Schur contribution"
+                ),
+                "paired_density_activity_update": False,
+                "activity_correction_update_policy": (
+                    "tce_v1_2_pdipm_newton_reconstruction"
+                ),
+                "max_abs_delta_r": float(np.max(np.abs(report.delta_r)))
+                if report.delta_r
+                else 0.0,
+                "max_abs_delta_rho": float(np.max(np.abs(report.delta_rho)))
+                if report.delta_rho
+                else 0.0,
+            }
+        )
+        pdipm_state = report.candidate_state
+        converged = bool(report.candidate_combined_residual_l2 <= residual_crit)
+        if converged or not report.trial_step_accepted:
+            break
+
+    final_residual = (
+        float("inf")
+        if last_report is None
+        else float(last_report.candidate_combined_residual_l2)
+    )
+    diagnostics = CondensateEquilibriumDiagnostics.from_mapping(
+        {
+            "n_iter": jnp.asarray(len(history), dtype=jnp.int32),
+            "converged": jnp.asarray(converged),
+            "hit_max_iter": jnp.asarray(len(history) >= int(max_iter) and not converged),
+            "final_residual": jnp.asarray(final_residual, dtype=jnp.float64),
+            "residual_crit": jnp.asarray(residual_crit, dtype=jnp.float64),
+            "max_iter": jnp.asarray(int(max_iter), dtype=jnp.int32),
+            "epsilon": jnp.asarray(epsilon, dtype=jnp.float64),
+            "final_step_size": jnp.asarray(
+                0.0 if last_report is None else float(last_report.alpha),
+                dtype=jnp.float64,
+            ),
+            "invalid_numbers_detected": jnp.asarray(not np.isfinite(final_residual)),
+            "debug_nan": jnp.asarray(False),
+            "reduced_coupling_selected_alpha_s": jnp.asarray(1.0, dtype=jnp.float64),
+        }
+    )
+    extra_diagnostics = {
+        "pdipm_rgie_v11_activity_correction": {
+            "history": tuple(history),
+            "activity_correction_state": {
+                "rho": tuple(float(value) for value in pdipm_state.rho or ()),
+                "eta": tuple(float(value) for value in pdipm_state.eta or ()),
+                "rho_initialization": "rho0 = 0, eta0 = 1",
+                "activity_correction_equivalent": "eta",
+                "fastchem4_constructor_values_used": False,
+                "fastchem4_style_initial_activity_correction": 1.0,
+                "jacrem_policy": (
+                    "condensates with log_activity_proxy > -0.1 are included "
+                    "in the stationarity residual mask; rem condensates are "
+                    "kept in the reduced Qhat/RHS Schur contribution"
+                ),
+                "jacobian_selection_policy": (
+                    "fastchem4_log_activity_jacobian_with_rem_schur_rhs"
+                ),
+                "rem_rhs_update_policy": (
+                    "rem condensates are removed from the stationarity residual "
+                    "mask and retained in the reduced Qhat/RHS Schur contribution"
+                ),
+                "paired_density_activity_update": False,
+                "activity_correction_update_policy": (
+                    "tce_v1_2_pdipm_newton_reconstruction"
+                ),
+                "log_tau": tuple(float(value) for value in log_tau),
+                "tau_formula": (
+                    "condTau * reference_element_budget; reference element is "
+                    "argmin(element_inventory_target / stoichiometric_coefficient)"
+                ),
+                "cond_tau": fastchem4_cond_tau,
+            },
+        }
+    }
+    return (
+        CondensateEquilibriumResult(
+            ln_nk=jnp.asarray(pdipm_state.ln_nk, dtype=jnp.float64),
+            ln_mk=jnp.asarray(pdipm_state.ln_mk, dtype=jnp.float64),
+            ln_ntot=jnp.asarray(pdipm_state.ln_ntot, dtype=jnp.float64),
+            diagnostics=diagnostics,
+        ),
+        extra_diagnostics,
+    )
 
 
 def _support_signature_export(
@@ -2146,28 +2383,42 @@ def solve_restricted_support_condensate_layer(
             ln_ntot=jnp.asarray(initial_log_state_override.ln_ntot, dtype=jnp.float64),
             ln_nk_source_trace=initial_log_state_override.ln_nk_source_trace,
         )
-    result = _minimize_gibbs_cond_legacy(
-        state,
-        init=init_state,
-        formula_matrix=formula_matrix,
-        formula_matrix_cond=formula_matrix_cond_active,
-        hvector_func=hvector_func,
-        hvector_cond_func=lambda _temperature: hvector_cond_active,
-        epsilon=epsilon,
-        residual_crit=float(jnp.exp(jnp.asarray(epsilon, dtype=jnp.float64))),
-        max_iter=max_iter,
-        element_indices=None,
-        debug_nan=False,
-        reduced_solver="augmented_lu_row_scaled",
-        regularization_mode="none",
-        regularization_strength=0.0,
-        startup_config=startup_config,
-        inventory_correction_config=None,
-        reduced_coupling_config=reduced_coupling_config,
-        line_search_selection_policy=line_search_selection_policy,
-        line_search_charge_row_index=line_search_charge_row_index,
-        line_search_charge_weight=line_search_charge_weight,
-    )
+    reduced_config = _prepare_reduced_coupling_config(reduced_coupling_config)
+    extra_diagnostics: dict[str, Any] = {}
+    if reduced_config.reduced_coupling_mode == "pdipm_rgie_v11_activity_correction":
+        result, extra_diagnostics = _solve_pdipm_rgie_v11_activity_correction_layer(
+            state=state,
+            init_state=init_state,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            hvector_func=hvector_func,
+            hvector_cond_active=hvector_cond_active,
+            epsilon=epsilon,
+            max_iter=max_iter,
+        )
+    else:
+        result = _minimize_gibbs_cond_legacy(
+            state,
+            init=init_state,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond=formula_matrix_cond_active,
+            hvector_func=hvector_func,
+            hvector_cond_func=lambda _temperature: hvector_cond_active,
+            epsilon=epsilon,
+            residual_crit=float(jnp.exp(jnp.asarray(epsilon, dtype=jnp.float64))),
+            max_iter=max_iter,
+            element_indices=None,
+            debug_nan=False,
+            reduced_solver="augmented_lu_row_scaled",
+            regularization_mode="none",
+            regularization_strength=0.0,
+            startup_config=startup_config,
+            inventory_correction_config=None,
+            reduced_coupling_config=reduced_config,
+            line_search_selection_policy=line_search_selection_policy,
+            line_search_charge_row_index=line_search_charge_row_index,
+            line_search_charge_weight=line_search_charge_weight,
+        )
     runtime_seconds = perf_counter() - start
     metrics = _compute_support_metrics(
         state=state,
@@ -2185,11 +2436,193 @@ def solve_restricted_support_condensate_layer(
         element_names=element_names,
         runtime_seconds=runtime_seconds,
     )
+    post_solver_gas_refresh_report: dict[str, Any] | None = None
+    if (
+        reduced_config.reduced_coupling_mode == "pdipm_rgie_v11_activity_correction"
+        and support_indices.shape[0] > 0
+        and int(max_iter) > 1
+    ):
+        from exogibbs.condensates.depleted_gas_refresh import (
+            build_depleted_gas_refresh_init,
+        )
+
+        refresh_init, refresh_report = build_depleted_gas_refresh_init(
+            explicit_opt_in=True,
+            state=state,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond=formula_matrix_cond,
+            hvector_func=hvector_func,
+            support_indices=support_indices,
+            ln_mk=jnp.asarray(result.ln_mk, dtype=jnp.float64),
+            gas_epsilon_crit=gas_epsilon_crit,
+            gas_max_iter=gas_max_iter,
+            gas_refresh_policy="native_gas_solver",
+            field_provenance={
+                "formula_matrix": "exogibbs_condensate_chemical_setup",
+                "formula_matrix_cond": "exogibbs_condensate_chemical_setup",
+                "element_budget": "exogibbs_runtime_input",
+                "ln_mk": "exogibbs_post_solver_condensate_state",
+                "hvector_func": "exogibbs_gas_thermochemistry",
+            },
+        )
+        refresh_result, refresh_extra = _solve_pdipm_rgie_v11_activity_correction_layer(
+            state=state,
+            init_state=refresh_init,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            hvector_func=hvector_func,
+            hvector_cond_active=hvector_cond_active,
+            epsilon=epsilon,
+            max_iter=max_iter,
+        )
+        refresh_metrics = _compute_support_metrics(
+            state=state,
+            result=refresh_result,
+            support_indices=support_indices,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            formula_matrix_cond_full=formula_matrix_cond,
+            hvector_func=hvector_func,
+            hvector_cond_func=hvector_cond_func,
+            hvector_cond_active=hvector_cond_active,
+            hvector_cond_full=hvector_cond_full,
+            epsilon=epsilon,
+            condensate_species=condensate_species,
+            element_names=element_names,
+            runtime_seconds=perf_counter() - start,
+        )
+        accepted_refresh = bool(
+            np.isfinite(refresh_metrics["scalar_merit"])
+            and refresh_metrics["scalar_merit"] < metrics["scalar_merit"]
+        )
+        post_solver_gas_refresh_report = {
+            "policy": "post_solver_depleted_gas_refresh_trial",
+            "initial_scalar_merit": float(metrics["scalar_merit"]),
+            "candidate_scalar_merit": float(refresh_metrics["scalar_merit"]),
+            "accepted": accepted_refresh,
+            "refresh_report": refresh_report.as_dict(),
+            "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+        }
+        if accepted_refresh:
+            result = refresh_result
+            metrics = refresh_metrics
+            extra_diagnostics = refresh_extra
+    post_solver_activity_removal_report: dict[str, Any] | None = None
+    if (
+        reduced_config.reduced_coupling_mode == "pdipm_rgie_v11_activity_correction"
+        and support_indices.shape[0] > 1
+        and int(max_iter) > 1
+    ):
+        removal_threshold = -0.01
+        active_driving_host = np.asarray(metrics["active_driving"], dtype=np.float64)
+        remove_mask = np.isfinite(active_driving_host) & (
+            active_driving_host < removal_threshold
+        )
+        if np.any(remove_mask):
+            keep_mask = ~remove_mask
+            if not np.any(keep_mask):
+                keep_mask[int(np.argmax(active_driving_host))] = True
+            retained_local = np.asarray(np.nonzero(keep_mask)[0], dtype=int)
+            removed_local = np.asarray(np.nonzero(~keep_mask)[0], dtype=int)
+            retained_support_indices = support_indices[jnp.asarray(retained_local, dtype=jnp.int32)]
+            retained_formula_matrix_cond_active = jnp.asarray(
+                formula_matrix_cond[:, retained_support_indices], dtype=jnp.float64
+            )
+            retained_hvector_cond_active = jnp.asarray(
+                hvector_cond_full[retained_support_indices], dtype=jnp.float64
+            )
+            retained_init = CondensateEquilibriumInit(
+                ln_nk=jnp.asarray(result.ln_nk, dtype=jnp.float64),
+                ln_mk=jnp.asarray(result.ln_mk, dtype=jnp.float64)[
+                    jnp.asarray(retained_local, dtype=jnp.int32)
+                ],
+                ln_ntot=jnp.asarray(result.ln_ntot, dtype=jnp.float64),
+                ln_nk_source_trace={
+                    "source": "post_solver_activity_removal_trial",
+                    "removed_count": int(removed_local.shape[0]),
+                    "activity_threshold": float(removal_threshold),
+                },
+            )
+            removal_result, removal_extra = _solve_pdipm_rgie_v11_activity_correction_layer(
+                state=state,
+                init_state=retained_init,
+                formula_matrix=formula_matrix,
+                formula_matrix_cond_active=retained_formula_matrix_cond_active,
+                hvector_func=hvector_func,
+                hvector_cond_active=retained_hvector_cond_active,
+                epsilon=epsilon,
+                max_iter=max_iter,
+            )
+            removal_metrics = _compute_support_metrics(
+                state=state,
+                result=removal_result,
+                support_indices=retained_support_indices,
+                formula_matrix=formula_matrix,
+                formula_matrix_cond_active=retained_formula_matrix_cond_active,
+                formula_matrix_cond_full=formula_matrix_cond,
+                hvector_func=hvector_func,
+                hvector_cond_func=hvector_cond_func,
+                hvector_cond_active=retained_hvector_cond_active,
+                hvector_cond_full=hvector_cond_full,
+                epsilon=epsilon,
+                condensate_species=condensate_species,
+                element_names=element_names,
+                runtime_seconds=perf_counter() - start,
+            )
+            accepted_removal = bool(
+                np.isfinite(removal_metrics["scalar_merit"])
+                and removal_metrics["scalar_merit"] < metrics["scalar_merit"]
+            )
+            removed_names = [
+                str(condensate_species[int(support_indices[int(local)])])
+                if condensate_species is not None
+                else str(int(support_indices[int(local)]))
+                for local in removed_local.tolist()
+            ]
+            post_solver_activity_removal_report = {
+                "policy": "fastchem4_style_post_solver_activity_removal_trial",
+                "activity_threshold": float(removal_threshold),
+                "removed_count": int(removed_local.shape[0]),
+                "removed_support_indices": [
+                    int(support_indices[int(local)]) for local in removed_local.tolist()
+                ],
+                "removed_support_names": tuple(removed_names),
+                "initial_scalar_merit": float(metrics["scalar_merit"]),
+                "candidate_scalar_merit": float(removal_metrics["scalar_merit"]),
+                "accepted": accepted_removal,
+                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+            }
+            if accepted_removal:
+                result = removal_result
+                support_indices = retained_support_indices
+                formula_matrix_cond_active = retained_formula_matrix_cond_active
+                hvector_cond_active = retained_hvector_cond_active
+                metrics = removal_metrics
+                extra_diagnostics = removal_extra
+    runtime_seconds = perf_counter() - start
+    diagnostics_payload = result.diagnostics.asdict()
+    diagnostics_payload.update(extra_diagnostics)
+    if post_solver_gas_refresh_report is not None:
+        diagnostics_payload["post_solver_gas_refresh"] = post_solver_gas_refresh_report
+    if post_solver_activity_removal_report is not None:
+        diagnostics_payload["post_solver_activity_removal"] = (
+            post_solver_activity_removal_report
+        )
     b_eff = jnp.asarray(state.element_vector, dtype=jnp.float64) - formula_matrix_cond_active @ jnp.exp(result.ln_mk)
+    pdipm_log_variable_accepted = bool(
+        reduced_config.reduced_coupling_mode == "pdipm_rgie_v11_activity_correction"
+        and np.isfinite(metrics["feasibility_residual_inf"])
+        and np.isfinite(metrics["log_variable_stationarity_residual_inf"])
+        and np.isfinite(metrics["complementarity_residual_inf"])
+        and metrics["feasibility_residual_inf"] < 2.0e-2
+        and metrics["log_variable_stationarity_residual_inf"] < 2.0e-2
+        and metrics["complementarity_residual_inf"] < 2.0e-2
+    )
+    solver_success = bool(result.diagnostics.converged) or pdipm_log_variable_accepted
     return {
         "status": "ok",
         "raw_final_status": "ok",
-        "solver_success": bool(result.diagnostics.converged),
+        "solver_success": solver_success,
         "solver_status": int(result.diagnostics.n_iter),
         "solver_message": "rgie_restricted_support",
         "line_search_selection_policy": line_search_selection_policy,
@@ -2200,12 +2633,23 @@ def solve_restricted_support_condensate_layer(
         "support_size": int(support_indices.shape[0]),
         "support_indices": [int(i) for i in support_indices.tolist()],
         "support_names": metrics["support_names"],
+        "condensate_amount_gauge": "element_inventory_target_fraction",
+        "fastchem4_first_step_equivalent_gauge": (
+            "number_density_divided_by_initial_gas_phase_total_element_density"
+        ),
+        "ln_ntot_gauge": "gas_species_total_in_element_inventory_target_fraction",
         "active_support_count": int(jnp.sum(jnp.exp(result.ln_mk) > 0.0)),
         "m_support": jnp.exp(result.ln_mk),
         "ln_m_support": jnp.asarray(result.ln_mk, dtype=jnp.float64),
         "ln_nk": jnp.asarray(result.ln_nk, dtype=jnp.float64),
         "ln_ntot": jnp.asarray(result.ln_ntot, dtype=jnp.float64),
-        "diagnostics": result.diagnostics.asdict(),
+        "diagnostics": diagnostics_payload,
+        "restricted_reduced_coupling_config_mode": (
+            reduced_config.reduced_coupling_mode
+        ),
+        "restricted_reduced_coupling_selected_alpha_s": float(
+            diagnostics_payload.get("reduced_coupling_selected_alpha_s", 1.0)
+        ),
         "feasible_projection_alpha": 1.0,
         "restricted_kkt_gap_inf": metrics["scalar_merit"],
         "restricted_kkt_gap_log_variable_inf": metrics["log_variable_scalar_merit"],
@@ -2229,6 +2673,7 @@ def solve_restricted_support_condensate_layer(
         ],
         "complementarity_residual_inf": metrics["complementarity_residual_inf"],
         "scalar_merit": metrics["scalar_merit"],
+        "pi_vector": metrics["pi_vector"],
         "full_driving": metrics["full_driving"],
         "active_driving": metrics["active_driving"],
         "gas_stationarity": metrics["gas_stationarity"],

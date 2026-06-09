@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import jax.numpy as jnp
 import pytest
 from jax import config
@@ -16,6 +18,9 @@ from exogibbs.optimize.pipm_rgie_cond import compute_internal_complementarity_re
 from exogibbs.optimize.pipm_rgie_cond import compute_kl_atomic_complementarity_residual
 from exogibbs.optimize.pipm_rgie_cond import compute_kl_condensate_log_activity
 from exogibbs.optimize.pipm_rgie_cond import reconstruct_kl_atomic_gas_from_u
+from exogibbs.optimize.pipm_rgie_cond import (
+    solve_hybrid_candidate_selected_reduced_coupling_direction,
+)
 
 
 def test_minimize_gibbs_cond_structured_wrapper(monkeypatch):
@@ -269,6 +274,195 @@ def test_minimize_gibbs_cond_default_support_method_stays_legacy(monkeypatch):
     assert captured["called"] is True
 
 
+def test_restricted_support_payload_reports_condensate_amount_gauge(monkeypatch):
+    def stub_legacy(*args, **kwargs):
+        del args, kwargs
+        return condmod.CondensateEquilibriumResult(
+            ln_nk=jnp.asarray([0.0], dtype=jnp.float64),
+            ln_mk=jnp.log(jnp.asarray([0.2], dtype=jnp.float64)),
+            ln_ntot=jnp.asarray(0.0, dtype=jnp.float64),
+            diagnostics=condmod.CondensateEquilibriumDiagnostics(
+                n_iter=jnp.asarray(1, dtype=jnp.int32),
+                converged=jnp.asarray(True),
+                hit_max_iter=jnp.asarray(False),
+                final_residual=jnp.asarray(1.0e-12, dtype=jnp.float64),
+                residual_crit=jnp.asarray(1.0e-9, dtype=jnp.float64),
+                max_iter=jnp.asarray(10, dtype=jnp.int32),
+                epsilon=jnp.asarray(-5.0, dtype=jnp.float64),
+                final_step_size=jnp.asarray(1.0, dtype=jnp.float64),
+                invalid_numbers_detected=jnp.asarray(False),
+                debug_nan=jnp.asarray(False),
+            ),
+        )
+
+    monkeypatch.setattr(condmod, "_minimize_gibbs_cond_legacy", stub_legacy)
+    state = ThermoState(
+        temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+        element_vector=jnp.asarray([1.0], dtype=jnp.float64),
+    )
+
+    result = condmod.solve_restricted_support_condensate_layer(
+        state,
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0]], dtype=jnp.float64),
+        hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        support_indices=(0,),
+        condensate_species=("X(s)",),
+        support_amounts_init=jnp.asarray([0.2], dtype=jnp.float64),
+    )
+
+    assert result["condensate_amount_gauge"] == "element_inventory_target_fraction"
+    assert (
+        result["fastchem4_first_step_equivalent_gauge"]
+        == "number_density_divided_by_initial_gas_phase_total_element_density"
+    )
+    assert result["ln_ntot_gauge"] == "gas_species_total_in_element_inventory_target_fraction"
+
+
+def test_restricted_support_accepts_pdipm_rgie_v11_activity_correction_mode():
+    state = ThermoState(
+        temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+        element_vector=jnp.asarray([1.0], dtype=jnp.float64),
+    )
+
+    result = condmod.solve_restricted_support_condensate_layer(
+        state,
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0]], dtype=jnp.float64),
+        hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        support_indices=(0,),
+        condensate_species=("X(s)",),
+        support_amounts_init=jnp.asarray([0.5], dtype=jnp.float64),
+        max_iter=2,
+        reduced_coupling_config=condmod.CondensateRGIEReducedCouplingConfig(
+            reduced_coupling_mode="pdipm_rgie_v11_activity_correction",
+        ),
+    )
+
+    assert (
+        result["restricted_reduced_coupling_config_mode"]
+        == "pdipm_rgie_v11_activity_correction"
+    )
+    pdipm_payload = result["diagnostics"]["pdipm_rgie_v11_activity_correction"]
+    assert pdipm_payload["activity_correction_state"]["rho_initialization"] == (
+        "rho0 = 0, eta0 = 1"
+    )
+    assert pdipm_payload["activity_correction_state"]["fastchem4_constructor_values_used"] is False
+    assert pdipm_payload["activity_correction_state"]["tau_formula"].startswith(
+        "condTau * reference_element_budget"
+    )
+    assert pdipm_payload["activity_correction_state"]["cond_tau"] == pytest.approx(1.0e-15)
+    assert (
+        pdipm_payload["activity_correction_state"]["paired_density_activity_update"]
+        is False
+    )
+    assert (
+        pdipm_payload["activity_correction_state"][
+            "activity_correction_update_policy"
+        ]
+        == "tce_v1_2_pdipm_newton_reconstruction"
+    )
+    assert (
+        pdipm_payload["activity_correction_state"]["jacobian_selection_policy"]
+        == "fastchem4_log_activity_jacobian_with_rem_schur_rhs"
+    )
+    assert (
+        "reduced Qhat/RHS Schur contribution"
+        in pdipm_payload["activity_correction_state"]["rem_rhs_update_policy"]
+    )
+    assert result["diagnostics"]["post_solver_gas_refresh"]["policy"] == (
+        "post_solver_depleted_gas_refresh_trial"
+    )
+    assert (
+        result["diagnostics"]["post_solver_gas_refresh"][
+            "fastchem4_trace_public_runtime_constructor_inputs_used"
+        ]
+        is False
+    )
+    assert len(pdipm_payload["history"]) >= 1
+
+
+def test_pdipm_rgie_v11_activity_correction_uses_tce_gas_source_for_initial_pi(
+    monkeypatch,
+):
+    captured = {}
+    q = jnp.log(jnp.asarray([0.25, 0.75], dtype=jnp.float64))
+    qtot = jnp.log(jnp.asarray(1.25, dtype=jnp.float64))
+    hvector = jnp.asarray([0.2, -0.1], dtype=jnp.float64)
+    ln_pressure = jnp.log(jnp.asarray(2.0, dtype=jnp.float64))
+
+    def fake_solve_gas_equilibrium_with_duals(*args, **kwargs):
+        del args, kwargs
+        return {
+            "ln_nk": q,
+            "ln_ntot": qtot,
+            "pi_vector": jnp.asarray([0.0, 0.0], dtype=jnp.float64),
+        }
+
+    def fake_reduced_step(**kwargs):
+        captured["state"] = kwargs["state"]
+        captured["gas_stationarity_source"] = kwargs["gas_stationarity_source"]
+        return SimpleNamespace(
+            trial_step_accepted=False,
+            alpha=0.0,
+            initial_combined_residual_l2=1.0,
+            candidate_combined_residual_l2=1.0,
+            candidate_budget_l2=1.0,
+            candidate_condensate_stationarity_l2=1.0,
+            candidate_barrier_complementarity_l2=1.0,
+            delta_r=(0.0,),
+            delta_rho=(0.0,),
+            candidate_state=kwargs["state"],
+        )
+
+    import exogibbs.optimize.pdipm_rgie_cond as pdipm_rgie_cond
+
+    monkeypatch.setattr(
+        condmod,
+        "solve_gas_equilibrium_with_duals",
+        fake_solve_gas_equilibrium_with_duals,
+    )
+    monkeypatch.setattr(
+        pdipm_rgie_cond,
+        "solve_pdipm_rgie_algorithm_v11_reduced_step",
+        fake_reduced_step,
+    )
+    state = ThermoState(
+        temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+        ln_normalized_pressure=ln_pressure,
+        element_vector=jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+    )
+
+    condmod.solve_restricted_support_condensate_layer(
+        state,
+        formula_matrix=jnp.eye(2, dtype=jnp.float64),
+        formula_matrix_cond=jnp.asarray([[1.0], [0.0]], dtype=jnp.float64),
+        hvector_func=lambda temperature: hvector,
+        hvector_cond_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        support_indices=(0,),
+        support_amounts_init=jnp.asarray([0.5], dtype=jnp.float64),
+        initial_log_state_override=condmod.CondensateEquilibriumInit(
+            ln_nk=q,
+            ln_mk=jnp.log(jnp.asarray([0.5], dtype=jnp.float64)),
+            ln_ntot=qtot,
+        ),
+        max_iter=1,
+        reduced_coupling_config=condmod.CondensateRGIEReducedCouplingConfig(
+            reduced_coupling_mode="pdipm_rgie_v11_activity_correction",
+        ),
+    )
+
+    expected_source = hvector + ln_pressure - qtot
+    assert captured["gas_stationarity_source"] == pytest.approx(expected_source.tolist())
+    assert captured["state"].element_potential == pytest.approx(
+        (q + expected_source).tolist()
+    )
+
+
 def test_hybrid_candidate_log_activity_proxy_bookkeeping():
     formula_matrix_cond = jnp.asarray(
         [[1.0, 0.0], [2.0, 1.0]],
@@ -295,6 +489,33 @@ def test_hybrid_candidate_active_and_near_active_masks():
     assert masks["near_active_bool"].tolist() == [True, True, True, False]
     assert jnp.allclose(masks["active"], jnp.asarray([1.0, 1.0, 0.0, 0.0]))
     assert jnp.allclose(masks["near_active"], jnp.asarray([1.0, 1.0, 1.0, 0.0]))
+
+
+def test_hybrid_candidate_rem_inventory_applies_correctvalues_update():
+    epsilon = -5.0
+    direction = solve_hybrid_candidate_selected_reduced_coupling_direction(
+        ln_nk=jnp.asarray([0.0, 0.0], dtype=jnp.float64),
+        ln_mk=jnp.log(jnp.asarray([0.1, 0.2], dtype=jnp.float64)),
+        ln_ntot=jnp.log(jnp.asarray(2.0, dtype=jnp.float64)),
+        formula_matrix=jnp.eye(2, dtype=jnp.float64),
+        formula_matrix_cond=jnp.eye(2, dtype=jnp.float64),
+        b=jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        gk=jnp.asarray([0.0, 0.0], dtype=jnp.float64),
+        hvector_cond=jnp.asarray([0.0, 0.2], dtype=jnp.float64),
+        epsilon=epsilon,
+        candidate_mode="candidate_selected_active_plus_near_jacobian_with_rem_inventory",
+    )
+
+    assert direction["near_active_bool"].tolist() == [True, False]
+    assert jnp.allclose(direction["m_rem"], jnp.asarray([0.0, 0.2], dtype=jnp.float64))
+    assert jnp.allclose(direction["b_solver"], jnp.asarray([1.0, 0.8], dtype=jnp.float64))
+    expected_s_rem = jnp.asarray([0.0, 0.2 * 0.2 / jnp.exp(epsilon)], dtype=jnp.float64)
+    assert jnp.allclose(direction["s_rem"], expected_s_rem)
+    assert jnp.allclose(direction["s_solve"], direction["s_near"] + direction["s_rem"])
+    assert float(direction["raw_delta_ln_mk"][1]) != pytest.approx(0.0)
+    assert int(direction["rem_inventory_set_size"]) == 1
+    assert bool(direction["rem_correctvalues_update_enabled"]) is True
+    assert float(direction["rem_correctvalues_max_abs_delta_ln_mk"]) > 0.0
 
 
 def test_gas_recoupling_replay_bookkeeping_terms():
