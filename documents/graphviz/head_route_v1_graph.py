@@ -1,4 +1,4 @@
-"""Generate a Japanese Graphviz diagram for ExoGibbs HEAD route v1.2."""
+"""Generate a Japanese Graphviz diagram for ExoGibbs HEAD route v1.3."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
     ranksep=0.62,
     splines=ortho,
     fontname="{FONT}",
-    label="ExoGibbs 凝縮あり HEAD route v1.2",
+    label="ExoGibbs 凝縮あり HEAD route v1.3",
     labelloc=t,
     fontsize=26
   ];
@@ -231,7 +231,7 @@ DOT_SOURCE = f"""digraph head_route_v1 {{
     ];
     v11_fallback_gate [
       shape=diamond,
-      label="v1.2 fallback gate\\nfresh runtime かつ\\nfinite candidate ?",
+      label="v1.3 support-free retry gates\\ncenter / residual / soft-restoration / Ipopt h-type / support-cap\\nthen v1.2 fallback gate",
       fillcolor="#fef3c7"
     ];
     native_seed_fallback [

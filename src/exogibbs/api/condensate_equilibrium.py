@@ -8,6 +8,7 @@ through the HEAD route v1 contract.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+import math
 from typing import Any, Literal, Mapping, Optional, Sequence
 
 import jax
@@ -28,11 +29,26 @@ Array = jax.Array
 CondensateRoute = Literal["head_v1"]
 CondensateResidualPolicy = Literal["head_route_tiers_v1"]
 CondensateWarmStartGasRefreshPolicy = Literal["native_gas_solver"]
+CondensatePrimaryAcceptanceGuard = Literal["tight_weighted_components"]
 CondensateSeedInitializationPolicy = Literal[
     "budget_preserving_fraction",
     "capacity_fraction",
     "max_density",
 ]
+HEAD_ROUTE_SOFT_RESTORATION_COMPONENT_WEIGHTS = {
+    "budget": 1.0,
+    "total_density": 1.0,
+    "amount_weighted_gas": 1.0,
+    "amount_weighted_condensate": 1.0,
+}
+HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS = {
+    "budget": 1.0,
+    "total_density": 1.0,
+    "amount_weighted_gas": 1.0,
+    "amount_weighted_condensate": 1.0,
+    "complementarity": 1.0,
+}
+HEAD_ROUTE_IPOPT_H_TYPE_PROTECTED_COMPONENTS = ("budget", "total_density")
 
 
 @dataclass(frozen=True)
@@ -77,8 +93,31 @@ class CondensateEquilibriumOptions:
     warm_start_gas_refresh_policy: CondensateWarmStartGasRefreshPolicy = "native_gas_solver"
     restricted_reduced_coupling_mode: str = "pdipm_rgie_v11_activity_correction"
     restricted_reduced_coupling_alpha_s: float = 1.0
+    head_route_primary_center_tolerance_multiplier: Optional[float] = None
+    head_route_primary_residual_worsening_tolerance: Optional[float] = None
+    head_route_primary_require_residual_nonworsening: Optional[bool] = None
+    head_route_primary_acceptance_guard: Optional[CondensatePrimaryAcceptanceGuard] = None
+    head_route_primary_guard_max_budget: float = 1.0e-8
+    head_route_primary_guard_max_amount_weighted_gas: float = 1.0e-8
+    head_route_primary_guard_max_gas_stationarity: float = 1.0
+    head_route_primary_guard_max_condensate_stationarity: float = 10.0
     head_route_primary_summary: Optional[Mapping[str, Any]] = None
     head_route_refresh_policy_summary: Optional[Mapping[str, Any]] = None
+    enable_head_route_center_gate_retry: bool = False
+    head_route_center_gate_retry_multiplier: float = 1.0e11
+    enable_head_route_residual_worsening_retry: bool = False
+    head_route_residual_worsening_retry_tolerance: float = 2.0e-2
+    enable_head_route_soft_restoration_retry: bool = False
+    head_route_soft_restoration_proximity_weight: float = 1.0e-2
+    head_route_soft_restoration_max_proximity: Optional[float] = 10.0
+    enable_head_route_ipopt_h_type_retry: bool = False
+    head_route_ipopt_h_type_theta_reduction_fraction: float = 1.0e-4
+    head_route_ipopt_h_type_protected_component_max_normalized_increase: float = 1.0
+    enable_support_cap_retry: bool = True
+    support_cap_retry_count: int = 34
+    support_cap_retry_counts: Optional[Sequence[int]] = (34, 48, 80, 128)
+    enable_support_growth_staging_retry: bool = True
+    support_growth_staging_retry_add_per_rounds: Optional[Sequence[int]] = (64, 32, 16, 8)
     enable_native_seed_fallback: bool = True
 
 
@@ -228,6 +267,134 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
         )
     if options.restricted_reduced_coupling_alpha_s <= 0.0:
         raise ValueError("restricted_reduced_coupling_alpha_s must be positive.")
+    if (
+        options.head_route_primary_center_tolerance_multiplier is not None
+        and (
+            not math.isfinite(float(options.head_route_primary_center_tolerance_multiplier))
+            or options.head_route_primary_center_tolerance_multiplier <= 0.0
+        )
+    ):
+        raise ValueError(
+            "head_route_primary_center_tolerance_multiplier must be finite and positive."
+        )
+    if (
+        options.head_route_primary_residual_worsening_tolerance is not None
+        and (
+            not math.isfinite(float(options.head_route_primary_residual_worsening_tolerance))
+            or options.head_route_primary_residual_worsening_tolerance < 0.0
+        )
+    ):
+        raise ValueError(
+            "head_route_primary_residual_worsening_tolerance must be finite and non-negative."
+        )
+    if (
+        options.head_route_primary_require_residual_nonworsening is not None
+        and not isinstance(options.head_route_primary_require_residual_nonworsening, bool)
+    ):
+        raise TypeError("head_route_primary_require_residual_nonworsening must be a bool.")
+    if (
+        options.head_route_primary_acceptance_guard is not None
+        and options.head_route_primary_acceptance_guard != "tight_weighted_components"
+    ):
+        raise ValueError(
+            "head_route_primary_acceptance_guard must be None or 'tight_weighted_components'."
+        )
+    for name, value in (
+        ("head_route_primary_guard_max_budget", options.head_route_primary_guard_max_budget),
+        (
+            "head_route_primary_guard_max_amount_weighted_gas",
+            options.head_route_primary_guard_max_amount_weighted_gas,
+        ),
+        (
+            "head_route_primary_guard_max_gas_stationarity",
+            options.head_route_primary_guard_max_gas_stationarity,
+        ),
+        (
+            "head_route_primary_guard_max_condensate_stationarity",
+            options.head_route_primary_guard_max_condensate_stationarity,
+        ),
+    ):
+        if not math.isfinite(float(value)) or value < 0.0:
+            raise ValueError(f"{name} must be finite and non-negative.")
+    if not isinstance(options.enable_head_route_center_gate_retry, bool):
+        raise TypeError("enable_head_route_center_gate_retry must be a bool.")
+    if (
+        not math.isfinite(float(options.head_route_center_gate_retry_multiplier))
+        or options.head_route_center_gate_retry_multiplier <= 0.0
+    ):
+        raise ValueError(
+            "head_route_center_gate_retry_multiplier must be finite and positive."
+        )
+    if not isinstance(options.enable_head_route_residual_worsening_retry, bool):
+        raise TypeError("enable_head_route_residual_worsening_retry must be a bool.")
+    if (
+        not math.isfinite(float(options.head_route_residual_worsening_retry_tolerance))
+        or options.head_route_residual_worsening_retry_tolerance < 0.0
+    ):
+        raise ValueError(
+            "head_route_residual_worsening_retry_tolerance must be finite and non-negative."
+        )
+    if not isinstance(options.enable_head_route_soft_restoration_retry, bool):
+        raise TypeError("enable_head_route_soft_restoration_retry must be a bool.")
+    if (
+        not math.isfinite(float(options.head_route_soft_restoration_proximity_weight))
+        or options.head_route_soft_restoration_proximity_weight < 0.0
+    ):
+        raise ValueError(
+            "head_route_soft_restoration_proximity_weight must be finite and non-negative."
+        )
+    if (
+        options.head_route_soft_restoration_max_proximity is not None
+        and (
+            not math.isfinite(float(options.head_route_soft_restoration_max_proximity))
+            or options.head_route_soft_restoration_max_proximity < 0.0
+        )
+    ):
+        raise ValueError(
+            "head_route_soft_restoration_max_proximity must be finite and non-negative."
+        )
+    if not isinstance(options.enable_head_route_ipopt_h_type_retry, bool):
+        raise TypeError("enable_head_route_ipopt_h_type_retry must be a bool.")
+    if (
+        not math.isfinite(float(options.head_route_ipopt_h_type_theta_reduction_fraction))
+        or options.head_route_ipopt_h_type_theta_reduction_fraction < 0.0
+        or options.head_route_ipopt_h_type_theta_reduction_fraction >= 1.0
+    ):
+        raise ValueError(
+            "head_route_ipopt_h_type_theta_reduction_fraction must be finite and in [0, 1)."
+        )
+    if (
+        not math.isfinite(
+            float(
+                options.head_route_ipopt_h_type_protected_component_max_normalized_increase
+            )
+        )
+        or options.head_route_ipopt_h_type_protected_component_max_normalized_increase < 0.0
+    ):
+        raise ValueError(
+            "head_route_ipopt_h_type_protected_component_max_normalized_increase "
+            "must be finite and non-negative."
+        )
+    if not isinstance(options.enable_support_cap_retry, bool):
+        raise TypeError("enable_support_cap_retry must be a bool.")
+    if options.support_cap_retry_count <= 0:
+        raise ValueError("support_cap_retry_count must be positive.")
+    if options.support_cap_retry_counts is not None:
+        if len(tuple(options.support_cap_retry_counts)) == 0:
+            raise ValueError("support_cap_retry_counts must not be empty.")
+        for count in options.support_cap_retry_counts:
+            if int(count) <= 0:
+                raise ValueError("support_cap_retry_counts entries must be positive.")
+    if not isinstance(options.enable_support_growth_staging_retry, bool):
+        raise TypeError("enable_support_growth_staging_retry must be a bool.")
+    if options.support_growth_staging_retry_add_per_rounds is not None:
+        if len(tuple(options.support_growth_staging_retry_add_per_rounds)) == 0:
+            raise ValueError("support_growth_staging_retry_add_per_rounds must not be empty.")
+        for count in options.support_growth_staging_retry_add_per_rounds:
+            if int(count) <= 0:
+                raise ValueError(
+                    "support_growth_staging_retry_add_per_rounds entries must be positive."
+                )
 
 
 def _least_squares_element_potential(
@@ -268,6 +435,18 @@ def _head_lifecycle_primary_policy(options: CondensateEquilibriumOptions) -> Map
         policy["max_outer_iterations"] = int(options.max_outer_iterations)
     if options.max_inner_iterations is not None:
         policy["max_inner_iterations"] = int(options.max_inner_iterations)
+    if options.head_route_primary_center_tolerance_multiplier is not None:
+        policy["center_tolerance_multiplier"] = float(
+            options.head_route_primary_center_tolerance_multiplier
+        )
+    if options.head_route_primary_residual_worsening_tolerance is not None:
+        policy["residual_worsening_tolerance"] = float(
+            options.head_route_primary_residual_worsening_tolerance
+        )
+    if options.head_route_primary_require_residual_nonworsening is not None:
+        policy["require_residual_nonworsening"] = bool(
+            options.head_route_primary_require_residual_nonworsening
+        )
     return policy
 
 
@@ -356,6 +535,17 @@ def _run_lifecycle_from_warm_start_candidate(
             primary_summary=options.head_route_primary_summary,
             primary_continuation_policy=_head_lifecycle_primary_policy(options),
             refresh_policy_summary=options.head_route_refresh_policy_summary,
+            primary_acceptance_guard=options.head_route_primary_acceptance_guard,
+            primary_guard_max_budget=options.head_route_primary_guard_max_budget,
+            primary_guard_max_amount_weighted_gas=(
+                options.head_route_primary_guard_max_amount_weighted_gas
+            ),
+            primary_guard_max_gas_stationarity=(
+                options.head_route_primary_guard_max_gas_stationarity
+            ),
+            primary_guard_max_condensate_stationarity=(
+                options.head_route_primary_guard_max_condensate_stationarity
+            ),
             metric_status=options.metric_status,
             selected_route_override=_head_route_selected_route_override(options),
             field_provenance={
@@ -393,6 +583,123 @@ def _run_lifecycle_from_warm_start_candidate(
                 "diagnostics": {"exception_type": type(exc).__name__},
             },
         }
+
+
+def _run_lifecycle_from_restricted_solver_state(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    Pref: float,
+    b: Array,
+    options: CondensateEquilibriumOptions,
+    solver: Mapping[str, Any],
+    solver_ln_nk: Array,
+    solver_support_indices: Sequence[int],
+    solver_support_amounts: Array,
+    primary_continuation_policy: Mapping[str, Any],
+):
+    from exogibbs.condensates.head_route_lifecycle import (
+        run_condensate_head_route_lifecycle,
+    )
+
+    gas_stationarity_source = (
+        jnp.asarray(setup.gas_setup.hvector_func(float(T)))
+        + _ln_normalized_pressure(P, Pref)
+    )
+    if "pi_vector" in solver:
+        element_potential = jnp.asarray(solver["pi_vector"], dtype=jnp.float64)
+        element_potential_source = "exogibbs_restricted_solver_dual"
+    else:
+        element_potential = _least_squares_element_potential(
+            formula_matrix=setup.formula_matrix,
+            gas_ln_n=solver_ln_nk,
+            gas_stationarity_source=gas_stationarity_source,
+        )
+        element_potential_source = "exogibbs_native_least_squares_gas_gauge"
+    condensate_hvector = jnp.asarray(setup.condensate_setup.hvector_func(float(T)))
+    return run_condensate_head_route_lifecycle(
+        explicit_opt_in=True,
+        case_id=options.case_id or "runtime_layer",
+        ln_nk=solver_ln_nk,
+        support_indices=solver_support_indices,
+        support_amounts=solver_support_amounts,
+        formula_matrix=setup.formula_matrix,
+        formula_matrix_cond=setup.formula_matrix_cond,
+        element_inventory_target=jnp.asarray(b),
+        element_potential=element_potential,
+        gas_stationarity_source=gas_stationarity_source,
+        condensate_standard_source=jnp.asarray(
+            [condensate_hvector[index] for index in solver_support_indices]
+        ),
+        primary_summary=options.head_route_primary_summary,
+        primary_continuation_policy=primary_continuation_policy,
+        refresh_policy_summary=options.head_route_refresh_policy_summary,
+        primary_acceptance_guard=options.head_route_primary_acceptance_guard,
+        primary_guard_max_budget=options.head_route_primary_guard_max_budget,
+        primary_guard_max_amount_weighted_gas=(
+            options.head_route_primary_guard_max_amount_weighted_gas
+        ),
+        primary_guard_max_gas_stationarity=(
+            options.head_route_primary_guard_max_gas_stationarity
+        ),
+        primary_guard_max_condensate_stationarity=(
+            options.head_route_primary_guard_max_condensate_stationarity
+        ),
+        metric_status=options.metric_status,
+        selected_route_override=_head_route_selected_route_override(options),
+        field_provenance={
+            "ln_nk": "exogibbs_restricted_support_solver_output",
+            "support_indices": "exogibbs_restricted_support_solver_output",
+            "support_amounts": "exogibbs_restricted_support_solver_output",
+            "element_potential": element_potential_source,
+        },
+    )
+
+
+def _is_current_barrier_center_gate_block(lifecycle_payload: Mapping[str, Any]) -> bool:
+    primary_execution = lifecycle_payload.get("primary_execution_report")
+    if not isinstance(primary_execution, Mapping):
+        return False
+    continuation = primary_execution.get("continuation_report")
+    if not isinstance(continuation, Mapping):
+        return False
+    return str(continuation.get("stopped_reason")) == "current_barrier_not_centered"
+
+
+def _is_residual_nonworsening_candidate_block(lifecycle_payload: Mapping[str, Any]) -> bool:
+    primary_execution = lifecycle_payload.get("primary_execution_report")
+    if not isinstance(primary_execution, Mapping):
+        return False
+    continuation = primary_execution.get("continuation_report")
+    if not isinstance(continuation, Mapping):
+        return False
+    if str(continuation.get("stopped_reason")) != "no_p_armijo_trial":
+        return False
+    outer_records = continuation.get("outer_records", ())
+    if not outer_records:
+        return False
+    final_outer = outer_records[-1]
+    if not isinstance(final_outer, Mapping):
+        return False
+    inner_records = final_outer.get("inner_records", ())
+    if not inner_records:
+        return False
+    final_inner = inner_records[-1]
+    if not isinstance(final_inner, Mapping):
+        return False
+    if final_inner.get("selected_trial") is not None:
+        return False
+    for direction in final_inner.get("direction_records", ()):
+        if not isinstance(direction, Mapping):
+            continue
+        p_selection = direction.get("p_armijo_selection")
+        filter_selection = direction.get("filter_selection")
+        if isinstance(p_selection, Mapping) and bool(p_selection.get("selected", False)):
+            return True
+        if isinstance(filter_selection, Mapping) and bool(filter_selection.get("selected", False)):
+            return True
+    return False
 
 
 def _status_from_metric_status(
@@ -585,6 +892,24 @@ def _build_native_seed_fallback_result(
                 "fastchem4_trace_public_runtime_constructor_inputs_used": False,
             },
         }
+        for lifecycle_key, diagnostic_key in (
+            ("center_gate_retry_report", "head_route_center_gate_retry"),
+            (
+                "residual_worsening_retry_report",
+                "head_route_residual_worsening_retry",
+            ),
+            (
+                "soft_restoration_retry_report",
+                "head_route_soft_restoration_retry",
+            ),
+            (
+                "ipopt_h_type_retry_report",
+                "head_route_ipopt_h_type_retry",
+            ),
+        ):
+            retry_report = lifecycle_payload.get(lifecycle_key)
+            if isinstance(retry_report, Mapping):
+                diagnostics_payload[diagnostic_key] = retry_report
     else:
         diagnostics_payload = None
     return build_condensate_equilibrium_result_from_solver_payload(
@@ -666,6 +991,26 @@ def _support_count_cap(options: CondensateEquilibriumOptions) -> int | None:
     return None if options.max_positive_support_count is None else int(options.max_positive_support_count)
 
 
+def _support_cap_retry_sequence(options: CondensateEquilibriumOptions) -> tuple[int, ...]:
+    counts = (
+        (int(options.support_cap_retry_count),)
+        if options.support_cap_retry_counts is None
+        else tuple(int(count) for count in options.support_cap_retry_counts)
+    )
+    return tuple(dict.fromkeys(sorted(counts)))
+
+
+def _support_growth_staging_retry_sequence(
+    options: CondensateEquilibriumOptions,
+) -> tuple[int, ...]:
+    counts = (
+        ()
+        if options.support_growth_staging_retry_add_per_rounds is None
+        else tuple(int(count) for count in options.support_growth_staging_retry_add_per_rounds)
+    )
+    return tuple(dict.fromkeys(counts))
+
+
 def _remaining_support_slots(
     support_count: int,
     options: CondensateEquilibriumOptions,
@@ -735,6 +1080,18 @@ def _budget_seed_for_support(
         },
     )
     return tuple(float(value) for value in seed.recommended_amounts)
+
+
+def _positive_support_amounts_for_warm_start(
+    amounts: Sequence[float],
+    *,
+    min_seed_amount: float,
+) -> tuple[float, ...]:
+    floor = float(min_seed_amount)
+    return tuple(
+        float(value) if math.isfinite(float(value)) and float(value) > 0.0 else floor
+        for value in amounts
+    )
 
 
 def _seed_gauge_payload(options: CondensateEquilibriumOptions) -> Mapping[str, Any]:
@@ -812,6 +1169,32 @@ def _with_support_outer_loop_diagnostics(
     return replace(result, diagnostics=diagnostics)
 
 
+def _with_support_cap_retry_diagnostics(
+    *,
+    result: CondensateEquilibriumResult,
+    retry_report: Mapping[str, Any],
+    return_diagnostics: bool,
+) -> CondensateEquilibriumResult:
+    if not return_diagnostics:
+        return result
+    diagnostics = dict(result.diagnostics or {})
+    diagnostics["support_cap_retry"] = retry_report
+    return replace(result, diagnostics=diagnostics)
+
+
+def _with_support_growth_staging_retry_diagnostics(
+    *,
+    result: CondensateEquilibriumResult,
+    retry_report: Mapping[str, Any],
+    return_diagnostics: bool,
+) -> CondensateEquilibriumResult:
+    if not return_diagnostics:
+        return result
+    diagnostics = dict(result.diagnostics or {})
+    diagnostics["support_growth_staging_retry"] = retry_report
+    return replace(result, diagnostics=diagnostics)
+
+
 def _run_activity_driven_support_outer_loop(
     *,
     setup: CondensateChemicalSetup,
@@ -823,7 +1206,14 @@ def _run_activity_driven_support_outer_loop(
 ) -> CondensateEquilibriumResult:
     from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
 
-    explicit_options = replace(options, enable_support_outer_loop=False)
+    explicit_options = replace(
+        options,
+        enable_support_outer_loop=False,
+        enable_head_route_center_gate_retry=True,
+        enable_head_route_residual_worsening_retry=True,
+        enable_head_route_soft_restoration_retry=True,
+        enable_head_route_ipopt_h_type_retry=True,
+    )
     gas_result = equilibrium(
         setup.gas_setup,
         T,
@@ -991,11 +1381,17 @@ def _run_activity_driven_support_outer_loop(
                 terminated_reason = "no_inactive_positive_support"
             break
         previous_support_amounts = (
-            tuple(float(value) for value in fallback_solver_payload["m_support"])
+            _positive_support_amounts_for_warm_start(
+                fallback_solver_payload["m_support"],
+                min_seed_amount=options.min_seed_amount,
+            )
             if fallback_solver_payload
-            else tuple(
-                float(last_result.condensate_amounts[int(index)])
-                for index in current_support
+            else _positive_support_amounts_for_warm_start(
+                (
+                    float(last_result.condensate_amounts[int(index)])
+                    for index in current_support
+                ),
+                min_seed_amount=options.min_seed_amount,
             )
         )
         added_support_amounts = _budget_seed_for_support(
@@ -1018,6 +1414,137 @@ def _run_activity_driven_support_outer_loop(
         terminated_reason=terminated_reason,
         outer_iterations=outer_iterations,
     )
+    retry_caps = tuple(
+        cap
+        for cap in _support_cap_retry_sequence(options)
+        if cap < len(tuple(current_support))
+    )
+    if (
+        options.enable_support_cap_retry
+        and options.max_positive_support_count is None
+        and last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
+        and retry_caps
+    ):
+        retry_attempts = []
+        for retry_cap in retry_caps:
+            retry_options = replace(
+                options,
+                case_id=None
+                if options.case_id is None
+                else f"{options.case_id}__support_cap_retry_{retry_cap}",
+                enable_support_cap_retry=False,
+                max_positive_support_count=int(retry_cap),
+            )
+            retry_result = condensate_equilibrium(
+                setup,
+                T,
+                P,
+                b,
+                Pref=Pref,
+                options=retry_options,
+            )
+            retry_accepted = (
+                retry_result.selected_route != "native_budget_seed_fallback_budget_tradeoff"
+            )
+            retry_attempt = {
+                "support_cap": int(retry_cap),
+                "selected_route": retry_result.selected_route,
+                "status": retry_result.status,
+                "support_count": len(tuple(retry_result.condensate_support_names)),
+                "accepted": bool(retry_accepted),
+            }
+            retry_attempts.append(retry_attempt)
+            if retry_accepted:
+                retry_report = {
+                    "retry_schema": "exogibbs_support_free_support_cap_retry_v1",
+                    "triggered": True,
+                    "accepted": True,
+                    "support_cap": int(retry_cap),
+                    "support_cap_sequence": tuple(int(cap) for cap in retry_caps),
+                    "attempts": tuple(retry_attempts),
+                    "initial_selected_route": last_result.selected_route,
+                    "initial_status": last_result.status,
+                    "initial_support_count": len(tuple(current_support)),
+                    "retry_selected_route": retry_result.selected_route,
+                    "retry_status": retry_result.status,
+                    "retry_support_count": len(
+                        tuple(retry_result.condensate_support_names)
+                    ),
+                    "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+                }
+                return _with_support_cap_retry_diagnostics(
+                    result=retry_result,
+                    retry_report=retry_report,
+                    return_diagnostics=options.return_diagnostics,
+                )
+    staged_retry_counts = _support_growth_staging_retry_sequence(options)
+    if (
+        options.enable_support_growth_staging_retry
+        and options.max_positive_support_count is None
+        and options.max_support_add_per_round is None
+        and last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
+        and staged_retry_counts
+    ):
+        retry_attempts = []
+        for add_per_round in staged_retry_counts:
+            retry_options = replace(
+                options,
+                case_id=None
+                if options.case_id is None
+                else f"{options.case_id}__support_growth_staging_retry_{add_per_round}",
+                enable_support_cap_retry=False,
+                enable_support_growth_staging_retry=False,
+                max_support_add_per_round=int(add_per_round),
+            )
+            retry_result = condensate_equilibrium(
+                setup,
+                T,
+                P,
+                b,
+                Pref=Pref,
+                options=retry_options,
+            )
+            retry_accepted = (
+                retry_result.selected_route != "native_budget_seed_fallback_budget_tradeoff"
+            )
+            retry_outer = (retry_result.diagnostics or {}).get("support_outer_loop", {})
+            retry_attempt = {
+                "max_support_add_per_round": int(add_per_round),
+                "selected_route": retry_result.selected_route,
+                "status": retry_result.status,
+                "support_count": len(tuple(retry_result.condensate_support_names)),
+                "support_outer_terminated_reason": retry_outer.get("terminated_reason")
+                if isinstance(retry_outer, Mapping)
+                else None,
+                "accepted": bool(retry_accepted),
+            }
+            retry_attempts.append(retry_attempt)
+            if retry_accepted:
+                retry_report = {
+                    "retry_schema": "exogibbs_support_free_support_growth_staging_retry_v1",
+                    "triggered": True,
+                    "accepted": True,
+                    "max_support_add_per_round": int(add_per_round),
+                    "max_support_add_per_round_sequence": tuple(
+                        int(count) for count in staged_retry_counts
+                    ),
+                    "attempts": tuple(retry_attempts),
+                    "initial_selected_route": last_result.selected_route,
+                    "initial_status": last_result.status,
+                    "initial_support_count": len(tuple(current_support)),
+                    "initial_support_outer_terminated_reason": terminated_reason,
+                    "retry_selected_route": retry_result.selected_route,
+                    "retry_status": retry_result.status,
+                    "retry_support_count": len(
+                        tuple(retry_result.condensate_support_names)
+                    ),
+                    "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+                }
+                return _with_support_growth_staging_retry_diagnostics(
+                    result=retry_result,
+                    retry_report=retry_report,
+                    return_diagnostics=options.return_diagnostics,
+                )
     return _with_support_outer_loop_diagnostics(
         result=last_result,
         support_selection_report=support_selection_report,
@@ -1266,10 +1793,6 @@ def condensate_equilibrium(
             break
     if solver is None:
         raise RuntimeError("No finite condensate HEAD route warm-start candidate was available.")
-    from exogibbs.condensates.head_route_lifecycle import (
-        run_condensate_head_route_lifecycle,
-    )
-
     restricted_solver_success = bool(solver["solver_success"])
     solver_ln_nk = jnp.asarray(solver["ln_nk"])
     solver_support_indices = tuple(int(index) for index in solver["support_indices"])
@@ -1278,55 +1801,370 @@ def condensate_equilibrium(
     lifecycle_selected_route = opts.selected_route
     lifecycle_metric_status = opts.metric_status
     lifecycle_converged = False
+    center_gate_retry_report: Mapping[str, Any] | None = None
+    residual_worsening_retry_report: Mapping[str, Any] | None = None
+    soft_restoration_retry_report: Mapping[str, Any] | None = None
+    ipopt_h_type_retry_report: Mapping[str, Any] | None = None
     result_ln_nk = solver_ln_nk
     result_support_indices = solver_support_indices
     result_support_amounts = solver_support_amounts
     if restricted_solver_success:
-        gas_stationarity_source = (
-            jnp.asarray(setup.gas_setup.hvector_func(float(T)))
-            + _ln_normalized_pressure(P, Pref)
-        )
-        if "pi_vector" in solver:
-            element_potential = jnp.asarray(solver["pi_vector"], dtype=jnp.float64)
-            element_potential_source = "exogibbs_restricted_solver_dual"
-        else:
-            element_potential = _least_squares_element_potential(
-                formula_matrix=setup.formula_matrix,
-                gas_ln_n=solver_ln_nk,
-                gas_stationarity_source=gas_stationarity_source,
-            )
-            element_potential_source = "exogibbs_native_least_squares_gas_gauge"
-        condensate_hvector = jnp.asarray(setup.condensate_setup.hvector_func(float(T)))
-        lifecycle_report = run_condensate_head_route_lifecycle(
-            explicit_opt_in=True,
-            case_id=opts.case_id or "runtime_layer",
-            ln_nk=solver_ln_nk,
-            support_indices=solver_support_indices,
-            support_amounts=solver_support_amounts,
-            formula_matrix=setup.formula_matrix,
-            formula_matrix_cond=setup.formula_matrix_cond,
-            element_inventory_target=jnp.asarray(b),
-            element_potential=element_potential,
-            gas_stationarity_source=gas_stationarity_source,
-            condensate_standard_source=jnp.asarray(
-                [condensate_hvector[index] for index in solver_support_indices]
-            ),
-            primary_summary=opts.head_route_primary_summary,
-            primary_continuation_policy=_head_lifecycle_primary_policy(opts),
-            refresh_policy_summary=opts.head_route_refresh_policy_summary,
-            metric_status=opts.metric_status,
-            selected_route_override=_head_route_selected_route_override(opts),
-            field_provenance={
-                "ln_nk": "exogibbs_restricted_support_solver_output",
-                "support_indices": "exogibbs_restricted_support_solver_output",
-                "support_amounts": "exogibbs_restricted_support_solver_output",
-                "element_potential": element_potential_source,
-            },
+        primary_policy = _head_lifecycle_primary_policy(opts)
+        lifecycle_report = _run_lifecycle_from_restricted_solver_state(
+            setup=setup,
+            T=T,
+            P=P,
+            Pref=Pref,
+            b=b,
+            options=opts,
+            solver=solver,
+            solver_ln_nk=solver_ln_nk,
+            solver_support_indices=solver_support_indices,
+            solver_support_amounts=solver_support_amounts,
+            primary_continuation_policy=primary_policy,
         )
         lifecycle_payload = lifecycle_report.as_dict()
         lifecycle_selected_route = lifecycle_report.route_result.selected_route
         lifecycle_metric_status = lifecycle_report.route_result.metric_status
         lifecycle_converged = bool(lifecycle_report.route_result.converged)
+        if (
+            not lifecycle_converged
+            and opts.enable_head_route_center_gate_retry
+            and opts.metric_status is None
+            and opts.head_route_primary_summary is None
+            and opts.head_route_refresh_policy_summary is None
+            and _is_current_barrier_center_gate_block(lifecycle_payload)
+        ):
+            retry_policy = {
+                **primary_policy,
+                "center_tolerance_multiplier": float(
+                    opts.head_route_center_gate_retry_multiplier
+                ),
+            }
+            retry_lifecycle_report = _run_lifecycle_from_restricted_solver_state(
+                setup=setup,
+                T=T,
+                P=P,
+                Pref=Pref,
+                b=b,
+                options=opts,
+                solver=solver,
+                solver_ln_nk=solver_ln_nk,
+                solver_support_indices=solver_support_indices,
+                solver_support_amounts=solver_support_amounts,
+                primary_continuation_policy=retry_policy,
+            )
+            retry_payload = retry_lifecycle_report.as_dict()
+            retry_accepted = bool(retry_lifecycle_report.route_result.converged)
+            center_gate_retry_report = {
+                "retry_schema": "exogibbs_head_route_center_gate_retry_v1",
+                "triggered": True,
+                "accepted": retry_accepted,
+                "center_tolerance_multiplier": float(
+                    opts.head_route_center_gate_retry_multiplier
+                ),
+                "initial_stopped_reason": "current_barrier_not_centered",
+                "retry_selected_route": retry_lifecycle_report.route_result.selected_route,
+                "retry_metric_status": retry_lifecycle_report.route_result.metric_status,
+            }
+            if retry_accepted:
+                lifecycle_report = retry_lifecycle_report
+                lifecycle_payload = retry_payload
+                lifecycle_selected_route = retry_lifecycle_report.route_result.selected_route
+                lifecycle_metric_status = retry_lifecycle_report.route_result.metric_status
+                lifecycle_converged = True
+            else:
+                lifecycle_payload = {
+                    **dict(lifecycle_payload),
+                    "center_gate_retry_report": center_gate_retry_report,
+                }
+        if (
+            not lifecycle_converged
+            and opts.enable_head_route_residual_worsening_retry
+            and opts.metric_status is None
+            and opts.head_route_primary_summary is None
+            and opts.head_route_refresh_policy_summary is None
+            and _is_residual_nonworsening_candidate_block(lifecycle_payload)
+        ):
+            residual_retry_policy = {
+                **primary_policy,
+                "residual_worsening_tolerance": float(
+                    opts.head_route_residual_worsening_retry_tolerance
+                ),
+            }
+            residual_retry_lifecycle_report = _run_lifecycle_from_restricted_solver_state(
+                setup=setup,
+                T=T,
+                P=P,
+                Pref=Pref,
+                b=b,
+                options=opts,
+                solver=solver,
+                solver_ln_nk=solver_ln_nk,
+                solver_support_indices=solver_support_indices,
+                solver_support_amounts=solver_support_amounts,
+                primary_continuation_policy=residual_retry_policy,
+            )
+            residual_retry_payload = residual_retry_lifecycle_report.as_dict()
+            residual_retry_accepted = bool(
+                residual_retry_lifecycle_report.route_result.converged
+            )
+            residual_center_retry_report: Mapping[str, Any] | None = None
+            if (
+                not residual_retry_accepted
+                and opts.enable_head_route_center_gate_retry
+                and _is_current_barrier_center_gate_block(residual_retry_payload)
+            ):
+                residual_center_policy = {
+                    **residual_retry_policy,
+                    "center_tolerance_multiplier": float(
+                        opts.head_route_center_gate_retry_multiplier
+                    ),
+                }
+                residual_center_lifecycle_report = (
+                    _run_lifecycle_from_restricted_solver_state(
+                        setup=setup,
+                        T=T,
+                        P=P,
+                        Pref=Pref,
+                        b=b,
+                        options=opts,
+                        solver=solver,
+                        solver_ln_nk=solver_ln_nk,
+                        solver_support_indices=solver_support_indices,
+                        solver_support_amounts=solver_support_amounts,
+                        primary_continuation_policy=residual_center_policy,
+                    )
+                )
+                residual_center_payload = residual_center_lifecycle_report.as_dict()
+                residual_center_accepted = bool(
+                    residual_center_lifecycle_report.route_result.converged
+                )
+                residual_center_retry_report = {
+                    "retry_schema": "exogibbs_head_route_center_gate_retry_v1",
+                    "triggered": True,
+                    "accepted": residual_center_accepted,
+                    "center_tolerance_multiplier": float(
+                        opts.head_route_center_gate_retry_multiplier
+                    ),
+                    "initial_stopped_reason": "current_barrier_not_centered",
+                    "retry_selected_route": (
+                        residual_center_lifecycle_report.route_result.selected_route
+                    ),
+                    "retry_metric_status": (
+                        residual_center_lifecycle_report.route_result.metric_status
+                    ),
+                }
+                if residual_center_accepted:
+                    residual_retry_lifecycle_report = residual_center_lifecycle_report
+                    residual_retry_payload = residual_center_payload
+                    residual_retry_accepted = True
+            residual_worsening_retry_report = {
+                "retry_schema": "exogibbs_head_route_residual_worsening_retry_v1",
+                "triggered": True,
+                "accepted": residual_retry_accepted,
+                "residual_worsening_tolerance": float(
+                    opts.head_route_residual_worsening_retry_tolerance
+                ),
+                "initial_stopped_reason": "no_p_armijo_trial",
+                "retry_selected_route": (
+                    residual_retry_lifecycle_report.route_result.selected_route
+                ),
+                "retry_metric_status": (
+                    residual_retry_lifecycle_report.route_result.metric_status
+                ),
+                "center_gate_retry_report": residual_center_retry_report,
+            }
+            if residual_retry_accepted:
+                lifecycle_report = residual_retry_lifecycle_report
+                lifecycle_payload = residual_retry_payload
+                lifecycle_selected_route = (
+                    residual_retry_lifecycle_report.route_result.selected_route
+                )
+                lifecycle_metric_status = (
+                    residual_retry_lifecycle_report.route_result.metric_status
+                )
+                lifecycle_converged = True
+                if residual_center_retry_report is not None:
+                    center_gate_retry_report = residual_center_retry_report
+            else:
+                lifecycle_payload = {
+                    **dict(lifecycle_payload),
+                    "residual_worsening_retry_report": residual_worsening_retry_report,
+                }
+        if (
+            not lifecycle_converged
+            and opts.enable_head_route_soft_restoration_retry
+            and opts.metric_status is None
+            and opts.head_route_primary_summary is None
+            and opts.head_route_refresh_policy_summary is None
+        ):
+            soft_restoration_policy = {
+                **primary_policy,
+                "center_tolerance_multiplier": float(
+                    opts.head_route_center_gate_retry_multiplier
+                ),
+                "enable_native_soft_restoration_fallback": True,
+                "soft_restoration_component_weights": dict(
+                    HEAD_ROUTE_SOFT_RESTORATION_COMPONENT_WEIGHTS
+                ),
+                "soft_restoration_proximity_weight": float(
+                    opts.head_route_soft_restoration_proximity_weight
+                ),
+                "soft_restoration_max_proximity": (
+                    None
+                    if opts.head_route_soft_restoration_max_proximity is None
+                    else float(opts.head_route_soft_restoration_max_proximity)
+                ),
+            }
+            soft_restoration_lifecycle_report = _run_lifecycle_from_restricted_solver_state(
+                setup=setup,
+                T=T,
+                P=P,
+                Pref=Pref,
+                b=b,
+                options=opts,
+                solver=solver,
+                solver_ln_nk=solver_ln_nk,
+                solver_support_indices=solver_support_indices,
+                solver_support_amounts=solver_support_amounts,
+                primary_continuation_policy=soft_restoration_policy,
+            )
+            soft_restoration_payload = soft_restoration_lifecycle_report.as_dict()
+            soft_restoration_accepted = bool(
+                soft_restoration_lifecycle_report.route_result.converged
+            )
+            soft_restoration_retry_report = {
+                "retry_schema": "exogibbs_head_route_soft_restoration_retry_v1",
+                "triggered": True,
+                "accepted": soft_restoration_accepted,
+                "component_weights": dict(HEAD_ROUTE_SOFT_RESTORATION_COMPONENT_WEIGHTS),
+                "center_tolerance_multiplier": float(
+                    opts.head_route_center_gate_retry_multiplier
+                ),
+                "soft_restoration_proximity_weight": float(
+                    opts.head_route_soft_restoration_proximity_weight
+                ),
+                "soft_restoration_max_proximity": (
+                    None
+                    if opts.head_route_soft_restoration_max_proximity is None
+                    else float(opts.head_route_soft_restoration_max_proximity)
+                ),
+                "initial_selected_route": lifecycle_selected_route,
+                "retry_selected_route": (
+                    soft_restoration_lifecycle_report.route_result.selected_route
+                ),
+                "retry_metric_status": (
+                    soft_restoration_lifecycle_report.route_result.metric_status
+                ),
+            }
+            if soft_restoration_accepted:
+                lifecycle_report = soft_restoration_lifecycle_report
+                lifecycle_payload = soft_restoration_payload
+                lifecycle_selected_route = (
+                    soft_restoration_lifecycle_report.route_result.selected_route
+                )
+                lifecycle_metric_status = (
+                    soft_restoration_lifecycle_report.route_result.metric_status
+                )
+                lifecycle_converged = True
+            else:
+                lifecycle_payload = {
+                    **dict(lifecycle_payload),
+                    "soft_restoration_retry_report": soft_restoration_retry_report,
+                }
+        if (
+            not lifecycle_converged
+            and opts.enable_head_route_ipopt_h_type_retry
+            and opts.metric_status is None
+            and opts.head_route_primary_summary is None
+            and opts.head_route_refresh_policy_summary is None
+        ):
+            ipopt_h_type_policy = {
+                **primary_policy,
+                "center_tolerance_multiplier": float(
+                    opts.head_route_center_gate_retry_multiplier
+                ),
+                "trial_acceptance_policy": "ipopt_persistent_h_type",
+                "filter_component_weights": dict(
+                    HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS
+                ),
+                "ipopt_h_type_component_weights": dict(
+                    HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS
+                ),
+                "ipopt_h_type_theta_reduction_fraction": float(
+                    opts.head_route_ipopt_h_type_theta_reduction_fraction
+                ),
+                "ipopt_h_type_protected_components": tuple(
+                    HEAD_ROUTE_IPOPT_H_TYPE_PROTECTED_COMPONENTS
+                ),
+                "ipopt_h_type_protected_component_max_normalized_increase": float(
+                    opts.head_route_ipopt_h_type_protected_component_max_normalized_increase
+                ),
+                "persistent_filter_gamma_p": 1.0e-8,
+                "persistent_filter_gamma_theta": 1.0e-5,
+                "persistent_filter_theta_max_factor": 1.0e4,
+                "require_residual_nonworsening": False,
+            }
+            ipopt_h_type_lifecycle_report = _run_lifecycle_from_restricted_solver_state(
+                setup=setup,
+                T=T,
+                P=P,
+                Pref=Pref,
+                b=b,
+                options=opts,
+                solver=solver,
+                solver_ln_nk=solver_ln_nk,
+                solver_support_indices=solver_support_indices,
+                solver_support_amounts=solver_support_amounts,
+                primary_continuation_policy=ipopt_h_type_policy,
+            )
+            ipopt_h_type_payload = ipopt_h_type_lifecycle_report.as_dict()
+            ipopt_h_type_accepted = bool(
+                ipopt_h_type_lifecycle_report.route_result.converged
+            )
+            ipopt_h_type_retry_report = {
+                "retry_schema": "exogibbs_head_route_ipopt_h_type_retry_v1",
+                "triggered": True,
+                "accepted": ipopt_h_type_accepted,
+                "trial_acceptance_policy": "ipopt_persistent_h_type",
+                "component_weights": dict(HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS),
+                "protected_components": tuple(
+                    HEAD_ROUTE_IPOPT_H_TYPE_PROTECTED_COMPONENTS
+                ),
+                "protected_component_max_normalized_increase": float(
+                    opts.head_route_ipopt_h_type_protected_component_max_normalized_increase
+                ),
+                "theta_reduction_fraction": float(
+                    opts.head_route_ipopt_h_type_theta_reduction_fraction
+                ),
+                "center_tolerance_multiplier": float(
+                    opts.head_route_center_gate_retry_multiplier
+                ),
+                "require_residual_nonworsening": False,
+                "initial_selected_route": lifecycle_selected_route,
+                "retry_selected_route": (
+                    ipopt_h_type_lifecycle_report.route_result.selected_route
+                ),
+                "retry_metric_status": (
+                    ipopt_h_type_lifecycle_report.route_result.metric_status
+                ),
+            }
+            if ipopt_h_type_accepted:
+                lifecycle_report = ipopt_h_type_lifecycle_report
+                lifecycle_payload = ipopt_h_type_payload
+                lifecycle_selected_route = (
+                    ipopt_h_type_lifecycle_report.route_result.selected_route
+                )
+                lifecycle_metric_status = (
+                    ipopt_h_type_lifecycle_report.route_result.metric_status
+                )
+                lifecycle_converged = True
+            else:
+                lifecycle_payload = {
+                    **dict(lifecycle_payload),
+                    "ipopt_h_type_retry_report": ipopt_h_type_retry_report,
+                }
     else:
         lifecycle_payload = _run_lifecycle_from_warm_start_candidate(
             setup=setup,
@@ -1416,6 +2254,20 @@ def condensate_equilibrium(
             "selected_warm_start_candidate": selected_warm_start_candidate,
             "head_route_lifecycle": lifecycle_payload,
         }
+        if center_gate_retry_report is not None:
+            diagnostics_payload["head_route_center_gate_retry"] = center_gate_retry_report
+        if residual_worsening_retry_report is not None:
+            diagnostics_payload["head_route_residual_worsening_retry"] = (
+                residual_worsening_retry_report
+            )
+        if soft_restoration_retry_report is not None:
+            diagnostics_payload["head_route_soft_restoration_retry"] = (
+                soft_restoration_retry_report
+            )
+        if ipopt_h_type_retry_report is not None:
+            diagnostics_payload["head_route_ipopt_h_type_retry"] = (
+                ipopt_h_type_retry_report
+            )
     else:
         diagnostics_payload = None
     return build_condensate_equilibrium_result_from_solver_payload(

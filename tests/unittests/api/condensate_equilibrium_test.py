@@ -224,13 +224,17 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
     )
 
 
-def test_condensate_equilibrium_options_default_to_head_route_v1_2() -> None:
+def test_condensate_equilibrium_options_default_to_head_route_v1_3() -> None:
     options = CondensateEquilibriumOptions()
 
     assert options.max_positive_support_count is None
     assert options.max_support_add_per_round is None
     assert options.seed_initialization_policy == "max_density"
     assert options.restricted_reduced_coupling_mode == "pdipm_rgie_v11_activity_correction"
+    assert options.support_cap_retry_counts == (34, 48, 80, 128)
+    assert options.support_growth_staging_retry_add_per_rounds == (64, 32, 16, 8)
+    assert options.enable_head_route_soft_restoration_retry is False
+    assert options.enable_head_route_ipopt_h_type_retry is False
 
 
 def test_support_outer_loop_does_not_grow_from_native_seed_fallback(
@@ -289,6 +293,7 @@ def test_support_outer_loop_does_not_grow_from_native_seed_fallback(
             allow_caveat_tiers=True,
             max_positive_support_count=None,
             max_support_add_per_round=None,
+            enable_support_growth_staging_retry=False,
         ),
     )
 
@@ -415,6 +420,295 @@ def test_support_outer_loop_preserves_solver_amounts_when_growing_from_payload(
     assert result.diagnostics["support_selection"]["fastchem4_public_values_used_as_constructor_inputs"] is False
 
 
+def test_support_outer_loop_floors_zero_solver_amounts_before_growth(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_two_condensates()
+    solve_calls: list[tuple[tuple[int, ...], tuple[float, ...]]] = []
+
+    def fake_activity_report(**kwargs):
+        existing = tuple(int(index) for index in kwargs.get("existing_support_indices", ()))
+        if not existing:
+            return {
+                "positive_support_indices": (0,),
+                "positive_support_names": ("H2O_s",),
+                "inactive_positive_indices": (),
+                "inactive_positive_names": (),
+            }
+        return {
+            "positive_support_indices": (0, 1),
+            "positive_support_names": ("H2O_s", "HO_s"),
+            "inactive_positive_indices": (1,),
+            "inactive_positive_names": ("HO_s",),
+        }
+
+    def fake_condensate_equilibrium(*args, **kwargs):
+        support = tuple(int(index) for index in kwargs["support_indices"])
+        amounts = tuple(float(value) for value in kwargs["support_amounts_init"])
+        solve_calls.append((support, amounts))
+        full_amounts = jnp.zeros((2,), dtype=jnp.float64)
+        for index, amount in zip(support, amounts):
+            full_amounts = full_amounts.at[index].set(amount)
+        if len(solve_calls) == 1:
+            diagnostics = {
+                "restricted_solver_payload_for_support_growth": {
+                    "ln_nk": jnp.asarray([0.0, -1.0], dtype=jnp.float64),
+                    "support_indices": (0,),
+                    "m_support": jnp.asarray([0.0], dtype=jnp.float64),
+                    "pi_vector": jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+                }
+            }
+            route = "native_budget_seed_fallback_budget_tradeoff"
+            status = CONVERGED_WITH_CAVEAT
+        else:
+            diagnostics = {}
+            route = "m4310_full_promoted_policy_route"
+            status = CONVERGED
+        return condensate_api.CondensateEquilibriumResult(
+            gas_ln_n=jnp.asarray([0.0, -1.0], dtype=jnp.float64),
+            gas_n=jnp.asarray([1.0, 0.1], dtype=jnp.float64),
+            gas_x=jnp.asarray([0.9, 0.1], dtype=jnp.float64),
+            gas_ntot=jnp.asarray(1.1, dtype=jnp.float64),
+            condensate_amounts=full_amounts,
+            condensate_support_indices=jnp.asarray(support, dtype=jnp.int32),
+            condensate_support_names=tuple(setup.condensate_species[index] for index in support),
+            acceptance_tier="tier_1_tight_residual_production_adjacent_candidate",
+            selected_route=route,
+            status=status,
+            converged=True,
+            diagnostics=diagnostics,
+        )
+
+    import exogibbs.api.condensate_equilibrium as condensate_api
+
+    monkeypatch.setattr(
+        condensate_api,
+        "_activity_driven_support_report",
+        fake_activity_report,
+    )
+    monkeypatch.setattr(
+        condensate_api,
+        "condensate_equilibrium",
+        fake_condensate_equilibrium,
+    )
+
+    result = condensate_api._run_activity_driven_support_outer_loop(
+        setup=setup,
+        T=300.0,
+        P=1.0,
+        b=jnp.asarray([1.0, 1.0]),
+        Pref=1.0,
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            max_positive_support_count=None,
+            max_support_add_per_round=None,
+            seed_initialization_policy="max_density",
+            min_seed_amount=1.0e-200,
+        ),
+    )
+
+    assert solve_calls[0][0] == (0,)
+    assert solve_calls[1][0] == (0, 1)
+    assert solve_calls[1][1] == pytest.approx((1.0e-200, 1.0))
+    assert tuple(int(index) for index in result.condensate_support_indices) == (0, 1)
+
+
+def test_support_outer_loop_tries_support_cap_retry_sequence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gas = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]]),
+        hvector_func=lambda T: jnp.asarray([0.0, 0.0]),
+        elements=("H", "O"),
+        species=("H", "O"),
+        metadata={"source": "unit-test-gas"},
+    )
+    cond = ChemicalSetup(
+        formula_matrix=jnp.asarray(
+            [[1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0]]
+        ),
+        hvector_func=lambda T: jnp.asarray([-1.0, -1.0, -1.0, -1.0]),
+        elements=("H", "O"),
+        species=("C0_s", "C1_s", "C2_s", "C3_s"),
+        metadata={"source": "unit-test-condensate"},
+    )
+    setup = build_condensate_chemical_setup(gas_setup=gas, condensate_setup=cond)
+    calls: list[int | None] = []
+
+    def fake_activity_report(**kwargs):
+        return {
+            "positive_support_indices": (0, 1, 2, 3),
+            "positive_support_names": ("C0_s", "C1_s", "C2_s", "C3_s"),
+            "inactive_positive_indices": (),
+            "inactive_positive_names": (),
+        }
+
+    def fake_condensate_equilibrium(*args, **kwargs):
+        options = kwargs["options"]
+        cap = options.max_positive_support_count
+        calls.append(cap)
+        if cap == 3:
+            support = (0, 1, 2)
+            route = "m4310_full_promoted_policy_route"
+            status = CONVERGED
+            converged = True
+        elif cap == 1:
+            support = (0,)
+            route = "native_budget_seed_fallback_budget_tradeoff"
+            status = CONVERGED_WITH_CAVEAT
+            converged = True
+        else:
+            support = tuple(int(index) for index in kwargs["support_indices"])
+            route = "native_budget_seed_fallback_budget_tradeoff"
+            status = CONVERGED_WITH_CAVEAT
+            converged = True
+        full_amounts = jnp.zeros((4,), dtype=jnp.float64)
+        for index in support:
+            full_amounts = full_amounts.at[index].set(0.1)
+        return condensate_api.CondensateEquilibriumResult(
+            gas_ln_n=jnp.asarray([0.0, -1.0], dtype=jnp.float64),
+            gas_n=jnp.asarray([1.0, 0.1], dtype=jnp.float64),
+            gas_x=jnp.asarray([0.9, 0.1], dtype=jnp.float64),
+            gas_ntot=jnp.asarray(1.1, dtype=jnp.float64),
+            condensate_amounts=full_amounts,
+            condensate_support_indices=jnp.asarray(support, dtype=jnp.int32),
+            condensate_support_names=tuple(setup.condensate_species[index] for index in support),
+            acceptance_tier="tier_1_tight_residual_production_adjacent_candidate",
+            selected_route=route,
+            status=status,
+            converged=converged,
+            diagnostics={},
+        )
+
+    import exogibbs.api.condensate_equilibrium as condensate_api
+
+    monkeypatch.setattr(
+        condensate_api,
+        "_activity_driven_support_report",
+        fake_activity_report,
+    )
+    monkeypatch.setattr(
+        condensate_api,
+        "condensate_equilibrium",
+        fake_condensate_equilibrium,
+    )
+
+    result = condensate_api._run_activity_driven_support_outer_loop(
+        setup=setup,
+        T=300.0,
+        P=1.0,
+        b=jnp.asarray([1.0, 1.0]),
+        Pref=1.0,
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            max_positive_support_count=None,
+            support_cap_retry_counts=(1, 3),
+        ),
+    )
+
+    assert calls == [None, 1, 3]
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert result.diagnostics is not None
+    retry = result.diagnostics["support_cap_retry"]
+    assert retry["support_cap"] == 3
+    assert retry["support_cap_sequence"] == (1, 3)
+    assert [attempt["support_cap"] for attempt in retry["attempts"]] == [1, 3]
+
+
+def test_support_outer_loop_tries_staged_support_growth_retry(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_two_condensates()
+    calls: list[tuple[int | None, bool]] = []
+
+    def fake_activity_report(**kwargs):
+        return {
+            "positive_support_indices": (0, 1),
+            "positive_support_names": ("H2O_s", "HO_s"),
+            "inactive_positive_indices": (),
+            "inactive_positive_names": (),
+        }
+
+    def fake_condensate_equilibrium(*args, **kwargs):
+        options = kwargs["options"]
+        add_per_round = options.max_support_add_per_round
+        calls.append((add_per_round, options.enable_support_growth_staging_retry))
+        support = tuple(int(index) for index in kwargs.get("support_indices", (0, 1)))
+        route = (
+            "m4310_full_promoted_policy_route"
+            if add_per_round == 2
+            else "native_budget_seed_fallback_budget_tradeoff"
+        )
+        status = (
+            CONVERGED
+            if route == "m4310_full_promoted_policy_route"
+            else CONVERGED_WITH_CAVEAT
+        )
+        full_amounts = jnp.zeros((2,), dtype=jnp.float64)
+        for index in support:
+            full_amounts = full_amounts.at[index].set(0.1)
+        return condensate_api.CondensateEquilibriumResult(
+            gas_ln_n=jnp.asarray([0.0, -1.0], dtype=jnp.float64),
+            gas_n=jnp.asarray([1.0, 0.1], dtype=jnp.float64),
+            gas_x=jnp.asarray([0.9, 0.1], dtype=jnp.float64),
+            gas_ntot=jnp.asarray(1.1, dtype=jnp.float64),
+            condensate_amounts=full_amounts,
+            condensate_support_indices=jnp.asarray(support, dtype=jnp.int32),
+            condensate_support_names=tuple(
+                setup.condensate_species[index] for index in support
+            ),
+            acceptance_tier="tier_1_tight_residual_production_adjacent_candidate",
+            selected_route=route,
+            status=status,
+            converged=True,
+            diagnostics={
+                "support_outer_loop": {
+                    "terminated_reason": "max_support_outer_iterations_reached"
+                }
+            },
+        )
+
+    import exogibbs.api.condensate_equilibrium as condensate_api
+
+    monkeypatch.setattr(
+        condensate_api,
+        "_activity_driven_support_report",
+        fake_activity_report,
+    )
+    monkeypatch.setattr(
+        condensate_api,
+        "condensate_equilibrium",
+        fake_condensate_equilibrium,
+    )
+
+    result = condensate_api._run_activity_driven_support_outer_loop(
+        setup=setup,
+        T=300.0,
+        P=1.0,
+        b=jnp.asarray([1.0, 1.0]),
+        Pref=1.0,
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            enable_support_cap_retry=False,
+            support_growth_staging_retry_add_per_rounds=(2, 1),
+        ),
+    )
+
+    assert calls == [(None, True), (2, False)]
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert result.diagnostics is not None
+    retry = result.diagnostics["support_growth_staging_retry"]
+    assert retry["triggered"] is True
+    assert retry["accepted"] is True
+    assert retry["max_support_add_per_round"] == 2
+    assert retry["max_support_add_per_round_sequence"] == (2, 1)
+    assert retry["initial_selected_route"] == "native_budget_seed_fallback_budget_tradeoff"
+    assert retry["retry_selected_route"] == "m4310_full_promoted_policy_route"
+    assert retry["attempts"][0]["support_outer_terminated_reason"] == (
+        "max_support_outer_iterations_reached"
+    )
+
+
 def test_condensate_equilibrium_capacity_fraction_seed_is_api_selectable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -517,6 +811,213 @@ def test_condensate_equilibrium_max_density_seed_is_api_selectable(
     assert tuple(float(value) for value in kwargs["support_amounts_init"]) == pytest.approx(
         (5.0e-1, 1.0)
     )
+
+
+def test_condensate_equilibrium_soft_restoration_retry_can_accept_lifecycle(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_condensate_hvalue(-1.0)
+    policies: list[dict[str, object]] = []
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        return {
+            "solver_success": True,
+            "ln_nk": jnp.asarray([0.0, -1.0]),
+            "support_indices": tuple(kwargs["support_indices"]),
+            "m_support": jnp.asarray(kwargs["support_amounts_init"]),
+            "pi_vector": jnp.asarray([0.0, 0.0]),
+            "diagnostics": {"final_residual": 1.0, "n_iter": 1, "hit_max_iter": False},
+        }
+
+    class FakeRouteResult:
+        def __init__(self, converged: bool):
+            self.converged = converged
+            self.selected_route = (
+                "m4310_full_promoted_policy_route"
+                if converged
+                else "head_v1_restricted_support"
+            )
+            self.metric_status = (
+                TIGHT_RESIDUAL_STATUS if converged else "runtime_not_accepted"
+            )
+
+    class FakeLifecycleReport:
+        def __init__(self, converged: bool):
+            self.route_result = FakeRouteResult(converged)
+
+        def as_dict(self):
+            return {
+                "primary_execution_report": {
+                    "continuation_report": {
+                        "stopped_reason": "no_p_armijo_trial",
+                        "outer_records": (),
+                    }
+                },
+                "route_result": {
+                    "selected_route": self.route_result.selected_route,
+                    "metric_status": self.route_result.metric_status,
+                    "converged": self.route_result.converged,
+                },
+            }
+
+    def fake_lifecycle(**kwargs):
+        policy = dict(kwargs["primary_continuation_policy"])
+        policies.append(policy)
+        return FakeLifecycleReport(
+            bool(policy.get("enable_native_soft_restoration_fallback", False))
+        )
+
+    import exogibbs.api.condensate_equilibrium as condensate_api
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+    monkeypatch.setattr(
+        condensate_api,
+        "_run_lifecycle_from_restricted_solver_state",
+        fake_lifecycle,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        support_indices=(0,),
+        support_amounts_init=(0.5,),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            enable_support_outer_loop=False,
+            enable_head_route_soft_restoration_retry=True,
+        ),
+    )
+
+    assert result.status == CONVERGED
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert len(policies) == 2
+    assert policies[-1]["center_tolerance_multiplier"] == 1.0e11
+    assert policies[-1]["enable_native_soft_restoration_fallback"] is True
+    assert policies[-1]["soft_restoration_component_weights"] == {
+        "budget": 1.0,
+        "total_density": 1.0,
+        "amount_weighted_gas": 1.0,
+        "amount_weighted_condensate": 1.0,
+    }
+    assert result.diagnostics is not None
+    retry = result.diagnostics["head_route_soft_restoration_retry"]
+    assert retry["triggered"] is True
+    assert retry["accepted"] is True
+    assert retry["center_tolerance_multiplier"] == 1.0e11
+    assert retry["retry_selected_route"] == "m4310_full_promoted_policy_route"
+
+
+def test_condensate_equilibrium_ipopt_h_type_retry_can_accept_lifecycle(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_condensate_hvalue(-1.0)
+    policies: list[dict[str, object]] = []
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        return {
+            "solver_success": True,
+            "ln_nk": jnp.asarray([0.0, 0.0]),
+            "m_support": jnp.asarray([0.5]),
+            "support_indices": (0,),
+            "pi_vector": jnp.asarray([0.0, 0.0]),
+        }
+
+    class FakeRouteResult:
+        def __init__(self, converged: bool):
+            self.converged = converged
+            self.selected_route = (
+                "m4310_full_promoted_policy_route"
+                if converged
+                else "head_v1_restricted_support"
+            )
+            self.metric_status = (
+                TIGHT_RESIDUAL_STATUS if converged else "runtime_not_accepted"
+            )
+
+    class FakeLifecycleReport:
+        def __init__(self, converged: bool):
+            self.route_result = FakeRouteResult(converged)
+
+        def as_dict(self):
+            return {
+                "primary_execution_report": {
+                    "continuation_report": {
+                        "stopped_reason": "no_p_armijo_trial",
+                        "outer_records": (),
+                    }
+                },
+                "route_result": {
+                    "selected_route": self.route_result.selected_route,
+                    "metric_status": self.route_result.metric_status,
+                    "converged": self.route_result.converged,
+                },
+            }
+
+    def fake_lifecycle(**kwargs):
+        policy = dict(kwargs["primary_continuation_policy"])
+        policies.append(policy)
+        return FakeLifecycleReport(
+            policy.get("trial_acceptance_policy") == "ipopt_persistent_h_type"
+        )
+
+    import exogibbs.api.condensate_equilibrium as condensate_api
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+    monkeypatch.setattr(
+        condensate_api,
+        "_run_lifecycle_from_restricted_solver_state",
+        fake_lifecycle,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        support_indices=(0,),
+        support_amounts_init=(0.5,),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            enable_support_outer_loop=False,
+            enable_head_route_ipopt_h_type_retry=True,
+        ),
+    )
+
+    assert result.status == CONVERGED
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert len(policies) == 2
+    assert policies[-1]["trial_acceptance_policy"] == "ipopt_persistent_h_type"
+    assert policies[-1]["center_tolerance_multiplier"] == 1.0e11
+    assert policies[-1]["require_residual_nonworsening"] is False
+    assert policies[-1]["filter_component_weights"] == {
+        "budget": 1.0,
+        "total_density": 1.0,
+        "amount_weighted_gas": 1.0,
+        "amount_weighted_condensate": 1.0,
+        "complementarity": 1.0,
+    }
+    assert policies[-1]["ipopt_h_type_protected_components"] == (
+        "budget",
+        "total_density",
+    )
+    assert result.diagnostics is not None
+    retry = result.diagnostics["head_route_ipopt_h_type_retry"]
+    assert retry["triggered"] is True
+    assert retry["accepted"] is True
+    assert retry["trial_acceptance_policy"] == "ipopt_persistent_h_type"
+    assert retry["retry_selected_route"] == "m4310_full_promoted_policy_route"
 
 
 def test_condensate_equilibrium_retries_restricted_solver_with_refresh_warm_start(
@@ -930,6 +1431,189 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             jnp.asarray([1.0, 1.0]),
             options=CondensateEquilibriumOptions(
                 restricted_reduced_coupling_mode="not_a_mode",
+            ),
+        )
+    with pytest.raises(ValueError, match="head_route_primary_center_tolerance_multiplier"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                head_route_primary_center_tolerance_multiplier=float("nan"),
+            ),
+        )
+    with pytest.raises(ValueError, match="head_route_primary_residual_worsening_tolerance"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                head_route_primary_residual_worsening_tolerance=float("inf"),
+            ),
+        )
+    with pytest.raises(TypeError, match="head_route_primary_require_residual_nonworsening"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                head_route_primary_require_residual_nonworsening="False",
+            ),
+        )
+    with pytest.raises(ValueError, match="head_route_primary_acceptance_guard"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                head_route_primary_acceptance_guard="not_a_guard",
+            ),
+        )
+    with pytest.raises(ValueError, match="head_route_primary_guard_max_budget"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                head_route_primary_guard_max_budget=float("nan"),
+            ),
+        )
+    with pytest.raises(TypeError, match="enable_support_cap_retry"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                enable_support_cap_retry="False",
+            ),
+        )
+    with pytest.raises(TypeError, match="enable_head_route_soft_restoration_retry"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                enable_head_route_soft_restoration_retry="False",
+            ),
+        )
+    with pytest.raises(ValueError, match="head_route_soft_restoration_proximity_weight"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                head_route_soft_restoration_proximity_weight=float("nan"),
+            ),
+        )
+    with pytest.raises(ValueError, match="head_route_soft_restoration_max_proximity"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                head_route_soft_restoration_max_proximity=-1.0,
+            ),
+        )
+    with pytest.raises(TypeError, match="enable_head_route_ipopt_h_type_retry"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                enable_head_route_ipopt_h_type_retry="False",
+            ),
+        )
+    with pytest.raises(ValueError, match="head_route_ipopt_h_type_theta_reduction_fraction"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                head_route_ipopt_h_type_theta_reduction_fraction=1.0,
+            ),
+        )
+    with pytest.raises(
+        ValueError,
+        match="head_route_ipopt_h_type_protected_component_max_normalized_increase",
+    ):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                head_route_ipopt_h_type_protected_component_max_normalized_increase=-1.0,
+            ),
+        )
+    with pytest.raises(ValueError, match="support_cap_retry_count"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                support_cap_retry_count=0,
+            ),
+        )
+    with pytest.raises(ValueError, match="support_cap_retry_counts"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                support_cap_retry_counts=(),
+            ),
+        )
+    with pytest.raises(ValueError, match="support_cap_retry_counts"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                support_cap_retry_counts=(34, 0),
+            ),
+        )
+    with pytest.raises(TypeError, match="enable_support_growth_staging_retry"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                enable_support_growth_staging_retry="False",
+            ),
+        )
+    with pytest.raises(ValueError, match="support_growth_staging_retry_add_per_rounds"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                support_growth_staging_retry_add_per_rounds=(),
+            ),
+        )
+    with pytest.raises(ValueError, match="support_growth_staging_retry_add_per_rounds"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                support_growth_staging_retry_add_per_rounds=(64, 0),
             ),
         )
 
