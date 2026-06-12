@@ -15,12 +15,36 @@ from exogibbs.api.condensate_equilibrium import (
     CondensateEquilibriumOptions,
     condensate_equilibrium,
 )
+from exogibbs.condensates.curated_profiles import (
+    FRESH_CURATED_PROFILES,
+    case_id_for_profile,
+    element_budget_for_profile,
+)
 from exogibbs.condensates.head_route_standard_gate import CONVERGED, CONVERGED_WITH_CAVEAT
 from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 
 config.update("jax_enable_x64", True)
 
 ACCEPTED_STATUSES = {CONVERGED, CONVERGED_WITH_CAVEAT}
+
+SUPPORT_FREE_MIDLAYER_EXPECTED_ROUTES = {
+    "solar_highT_no_condensate_gas_regression": "head_v1_empty_positive_support_gas_only",
+    "solar_silicate_first_condensation": "m4310_full_promoted_policy_route",
+    "solar_water_condensation": "m4310_full_promoted_policy_route",
+    "solar_metal_sulfide_or_Fe_Ni_S_region": "m4310_full_promoted_policy_route",
+    "carbon_rich_graphite_window": "m4310_full_promoted_policy_route",
+    "carbon_rich_CaS_MgS_AlN_window": "m4310_full_promoted_policy_route",
+    "SiO_s_condensate_window": "m4310_full_promoted_policy_route",
+    "lowT_strong_condensation_budget_stress": "m4310_full_promoted_policy_route",
+    "near_phase_boundary_support_sensitivity": "m4310_full_promoted_policy_route",
+    "complex_heavy_element_or_boron_titanium_zirconium_case": (
+        "m4310_full_promoted_policy_route"
+    ),
+}
+
+SUPPORT_FREE_STAGED_RETRY_REGRESSION_ROWS = (
+    ("solar_water_condensation", 7),
+)
 
 
 def _solar_budget(setup):
@@ -181,7 +205,7 @@ def test_all_14_curated_rows_succeed_through_fresh_api() -> None:
         )
 
 
-def test_water_mid_layer_default_api_uses_head_route_v1_2_support_growth() -> None:
+def test_water_mid_layer_default_api_uses_head_route_v1_3_support_growth() -> None:
     setup = condensate_chemical_setup(silent=True)
     element_budget = _solar_budget(setup)
 
@@ -208,3 +232,202 @@ def test_water_mid_layer_default_api_uses_head_route_v1_2_support_growth() -> No
         result.diagnostics["support_selection"]["solver_inputs"]["seed_initialization_policy"]
         == "max_density"
     )
+
+
+def test_support_free_curated_midlayers_use_retry_defaults() -> None:
+    setup = condensate_chemical_setup(silent=True)
+    route_counts = {
+        "head_v1_empty_positive_support_gas_only": 0,
+        "m4310_full_promoted_policy_route": 0,
+        "native_budget_seed_fallback_budget_tradeoff": 0,
+    }
+    status_counts = {CONVERGED: 0, CONVERGED_WITH_CAVEAT: 0}
+
+    for family, definition in FRESH_CURATED_PROFILES.items():
+        layer_index = len(definition.temperatures) // 2
+        temperature = definition.temperatures[layer_index]
+        pressure = definition.pressures[layer_index]
+        result = condensate_equilibrium(
+            setup,
+            float(temperature),
+            float(pressure),
+            element_budget_for_profile(setup, definition),
+            options=CondensateEquilibriumOptions(
+                case_id=f"{case_id_for_profile(definition, temperature, pressure)}__support_free",
+                return_diagnostics=True,
+                max_inner_iterations=definition.max_inner_iterations,
+            ),
+        )
+
+        assert result.status in ACCEPTED_STATUSES, family
+        assert result.converged is True
+        assert result.selected_route == SUPPORT_FREE_MIDLAYER_EXPECTED_ROUTES[family]
+        assert result.diagnostics is not None
+        support_selection = result.diagnostics["support_selection"]
+        assert support_selection["selection_mode"] == "activity_driven_support_outer_loop"
+        assert (
+            support_selection["solver_inputs"]["seed_initialization_policy"]
+            == "max_density"
+        )
+        assert support_selection["fastchem4_trace_values_used"] is False
+        retry_report = result.diagnostics.get("head_route_center_gate_retry")
+        if retry_report is not None:
+            assert retry_report["triggered"] is True
+            assert retry_report["accepted"] is True
+            assert retry_report["initial_stopped_reason"] == "current_barrier_not_centered"
+            assert retry_report["center_tolerance_multiplier"] == 1.0e11
+        residual_retry_report = result.diagnostics.get(
+            "head_route_residual_worsening_retry"
+        )
+        if residual_retry_report is not None:
+            assert residual_retry_report["triggered"] is True
+            assert residual_retry_report["initial_stopped_reason"] == "no_p_armijo_trial"
+            assert residual_retry_report["residual_worsening_tolerance"] == 2.0e-2
+        soft_restoration_retry = result.diagnostics.get(
+            "head_route_soft_restoration_retry"
+        )
+        if soft_restoration_retry is not None:
+            assert soft_restoration_retry["triggered"] is True
+            assert soft_restoration_retry["center_tolerance_multiplier"] == 1.0e11
+            ipopt_h_type_retry = result.diagnostics.get("head_route_ipopt_h_type_retry")
+            if (
+                result.selected_route != "native_budget_seed_fallback_budget_tradeoff"
+                and ipopt_h_type_retry is None
+            ):
+                assert soft_restoration_retry["accepted"] is True
+        ipopt_h_type_retry = result.diagnostics.get("head_route_ipopt_h_type_retry")
+        if ipopt_h_type_retry is not None:
+            assert ipopt_h_type_retry["triggered"] is True
+            assert ipopt_h_type_retry["trial_acceptance_policy"] == "ipopt_persistent_h_type"
+            assert ipopt_h_type_retry["center_tolerance_multiplier"] == 1.0e11
+            if result.selected_route != "native_budget_seed_fallback_budget_tradeoff":
+                assert ipopt_h_type_retry["accepted"] is True
+        support_cap_retry = result.diagnostics.get("support_cap_retry")
+        if support_cap_retry is not None:
+            assert support_cap_retry["triggered"] is True
+            assert support_cap_retry["accepted"] is True
+        route_counts[result.selected_route] += 1
+        status_counts[result.status] += 1
+
+    assert route_counts == {
+        "head_v1_empty_positive_support_gas_only": 1,
+        "m4310_full_promoted_policy_route": 9,
+        "native_budget_seed_fallback_budget_tradeoff": 0,
+    }
+    assert status_counts == {CONVERGED: 10, CONVERGED_WITH_CAVEAT: 0}
+
+
+def test_support_free_staged_retry_regression_layers_promote_to_primary() -> None:
+    setup = condensate_chemical_setup(silent=True)
+
+    for family, layer_index in SUPPORT_FREE_STAGED_RETRY_REGRESSION_ROWS:
+        definition = FRESH_CURATED_PROFILES[family]
+        temperature = float(definition.temperatures[layer_index])
+        pressure = float(definition.pressures[layer_index])
+        result = condensate_equilibrium(
+            setup,
+            temperature,
+            pressure,
+            element_budget_for_profile(setup, definition),
+            options=CondensateEquilibriumOptions(
+                case_id=f"{case_id_for_profile(definition, temperature, pressure)}__support_free_exception_regression",
+                return_diagnostics=True,
+                max_inner_iterations=definition.max_inner_iterations,
+            ),
+        )
+
+        assert result.status == CONVERGED, family
+        assert result.converged is True
+        assert result.selected_route == "m4310_full_promoted_policy_route"
+        assert len(result.condensate_support_names) > 0
+        assert result.diagnostics is not None
+        retry_report = result.diagnostics["support_growth_staging_retry"]
+        assert retry_report["triggered"] is True
+        assert retry_report["accepted"] is True
+        assert retry_report["max_support_add_per_round"] == 64
+        assert (
+            retry_report["initial_selected_route"]
+            == "native_budget_seed_fallback_budget_tradeoff"
+        )
+        support_selection = result.diagnostics["support_selection"]
+        assert support_selection["selection_mode"] == "activity_driven_support_outer_loop"
+        assert support_selection["fastchem4_trace_values_used"] is False
+
+
+def test_water_explicit_support_primary_center_tolerance_opt_in_reaches_tier1() -> None:
+    setup = condensate_chemical_setup(silent=True)
+    element_budget = _solar_budget(setup)
+    species_index = {name: index for index, name in enumerate(setup.condensate_species)}
+    support_indices = (species_index["H2O(s,l)"],)
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        element_budget,
+        support_indices=support_indices,
+        support_amounts_init=(1.0e-12,),
+        options=CondensateEquilibriumOptions(
+            case_id="solar_water_condensation__T300_P1",
+            return_diagnostics=True,
+            max_inner_iterations=80,
+            max_outer_iterations=20,
+            max_positive_support_count=1,
+            allow_empty_positive_support=False,
+            head_route_primary_center_tolerance_multiplier=4.0e8,
+            head_route_primary_acceptance_guard="tight_weighted_components",
+        ),
+    )
+
+    assert result.status == CONVERGED
+    assert result.converged is True
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert (
+        result.acceptance_tier
+        == "tier_1_tight_residual_production_adjacent_candidate"
+    )
+    assert result.diagnostics is not None
+    lifecycle = result.diagnostics["head_route_lifecycle"]
+    continuation = lifecycle["primary_execution_report"]["continuation_report"]
+    assert continuation["converged_at_final_barrier"] is True
+    assert continuation["center_tolerance_multiplier"] == 4.0e8
+    guard = lifecycle["route_result"]["diagnostics"]["primary_acceptance_guard"]
+    assert guard["accepted"] is True
+
+
+def test_primary_acceptance_guard_blocks_tier1_when_components_are_loose() -> None:
+    setup = condensate_chemical_setup(silent=True)
+    element_budget = _solar_budget(setup)
+    species_index = {name: index for index, name in enumerate(setup.condensate_species)}
+    support_indices = (species_index["H2O(s,l)"],)
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        element_budget,
+        support_indices=support_indices,
+        support_amounts_init=(1.0e-12,),
+        options=CondensateEquilibriumOptions(
+            case_id="solar_water_condensation__T300_P1",
+            return_diagnostics=True,
+            max_inner_iterations=80,
+            max_outer_iterations=20,
+            max_positive_support_count=1,
+            allow_empty_positive_support=False,
+            head_route_primary_center_tolerance_multiplier=4.0e8,
+            head_route_primary_acceptance_guard="tight_weighted_components",
+            head_route_primary_guard_max_condensate_stationarity=1.0,
+        ),
+    )
+
+    assert result.status == CONVERGED_WITH_CAVEAT
+    assert result.converged is True
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert result.acceptance_tier == "tier_3_raw_gas_caveat_diagnostic_only"
+    assert result.diagnostics is not None
+    guard = result.diagnostics["head_route_lifecycle"]["route_result"]["diagnostics"][
+        "primary_acceptance_guard"
+    ]
+    assert guard["accepted"] is False
+    assert guard["component_checks"]["condensate"] is False

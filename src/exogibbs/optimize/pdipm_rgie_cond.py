@@ -211,6 +211,18 @@ def _as_matrix(values: Sequence[Sequence[float]], name: str) -> np.ndarray:
     return array
 
 
+def _stable_l2_norm(values: Sequence[float]) -> float:
+    array = np.asarray(values, dtype=np.float64)
+    if array.size == 0:
+        return 0.0
+    if not np.all(np.isfinite(array)):
+        return float("inf")
+    scale = float(np.max(np.abs(array)))
+    if scale == 0.0:
+        return 0.0
+    return float(scale * np.linalg.norm(array / scale))
+
+
 def build_pdipm_rgie_condensate_state(
     *,
     ln_nk: Sequence[float],
@@ -517,8 +529,8 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         qtot_reference=qtot,
         condensate_residual_mask=jac_mask,
     )
-    initial_combined = float(np.linalg.norm(initial["combined"]))
-    initial_budget = float(np.linalg.norm(initial["budget"]))
+    initial_combined = _stable_l2_norm(initial["combined"])
+    initial_budget = _stable_l2_norm(initial["budget"])
     best_alpha = 0.0
     best_q = q
     best_r = r
@@ -537,8 +549,8 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     best_fallback_merit = float("inf")
     fallback_accepted = False
     accepted = False
-    initial_condensate_accept = float(np.linalg.norm(initial["condensate"][jac_mask]))
-    initial_complementarity_accept = float(np.linalg.norm(initial["complementarity"]))
+    initial_condensate_accept = _stable_l2_norm(initial["condensate"][jac_mask])
+    initial_complementarity_accept = _stable_l2_norm(initial["complementarity"])
     finite_step = bool(
         np.all(np.isfinite(delta_q))
         and np.all(np.isfinite(delta_r))
@@ -569,13 +581,13 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
             qtot_reference=qtot,
             condensate_residual_mask=jac_mask,
         )
-        candidate_combined = float(np.linalg.norm(candidate_residuals["combined"]))
-        candidate_budget = float(np.linalg.norm(candidate_residuals["budget"]))
-        candidate_condensate_accept = float(
-            np.linalg.norm(candidate_residuals["condensate"][jac_mask])
+        candidate_combined = _stable_l2_norm(candidate_residuals["combined"])
+        candidate_budget = _stable_l2_norm(candidate_residuals["budget"])
+        candidate_condensate_accept = _stable_l2_norm(
+            candidate_residuals["condensate"][jac_mask]
         )
-        candidate_complementarity_accept = float(
-            np.linalg.norm(candidate_residuals["complementarity"])
+        candidate_complementarity_accept = _stable_l2_norm(
+            candidate_residuals["complementarity"]
         )
         fallback_merit = candidate_complementarity_accept
         if (
@@ -620,7 +632,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         best_rho = best_fallback_rho
         best_qtot = best_fallback_qtot
         best_residuals = best_fallback_residuals
-        best_combined = float(np.linalg.norm(best_residuals["combined"]))
+        best_combined = _stable_l2_norm(best_residuals["combined"])
         accepted = True
 
     candidate_state = build_pdipm_rgie_condensate_state(
@@ -649,21 +661,19 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         equation_family="exogibbs_algorithm_v1_1_pdipm_reduced_rgie",
         qhat_condition_estimate=qhat_cond,
         qhat_regularization=reg,
-        linear_system_residual_l2=float(np.linalg.norm(residual_vector)),
-        initial_budget_l2=float(np.linalg.norm(initial["budget"])),
-        candidate_budget_l2=float(np.linalg.norm(best_residuals["budget"])),
-        initial_gas_stationarity_l2=float(np.linalg.norm(initial["gas"])),
-        candidate_gas_stationarity_l2=float(np.linalg.norm(best_residuals["gas"])),
-        initial_condensate_stationarity_l2=float(np.linalg.norm(initial["condensate"])),
-        candidate_condensate_stationarity_l2=float(
-            np.linalg.norm(best_residuals["condensate"])
+        linear_system_residual_l2=_stable_l2_norm(residual_vector),
+        initial_budget_l2=_stable_l2_norm(initial["budget"]),
+        candidate_budget_l2=_stable_l2_norm(best_residuals["budget"]),
+        initial_gas_stationarity_l2=_stable_l2_norm(initial["gas"]),
+        candidate_gas_stationarity_l2=_stable_l2_norm(best_residuals["gas"]),
+        initial_condensate_stationarity_l2=_stable_l2_norm(initial["condensate"]),
+        candidate_condensate_stationarity_l2=_stable_l2_norm(best_residuals["condensate"]),
+        initial_barrier_complementarity_l2=_stable_l2_norm(initial["complementarity"]),
+        candidate_barrier_complementarity_l2=_stable_l2_norm(
+            best_residuals["complementarity"]
         ),
-        initial_barrier_complementarity_l2=float(np.linalg.norm(initial["complementarity"])),
-        candidate_barrier_complementarity_l2=float(
-            np.linalg.norm(best_residuals["complementarity"])
-        ),
-        initial_total_density_l2=float(np.linalg.norm(initial["total_density"])),
-        candidate_total_density_l2=float(np.linalg.norm(best_residuals["total_density"])),
+        initial_total_density_l2=_stable_l2_norm(initial["total_density"]),
+        candidate_total_density_l2=_stable_l2_norm(best_residuals["total_density"]),
         initial_combined_residual_l2=initial_combined,
         candidate_combined_residual_l2=float(best_combined),
         trial_step_accepted=accepted,
@@ -677,10 +687,10 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         pi_vector=tuple(float(value) for value in pi),
         j_vector=tuple(float(value) for value in j_vec),
         t_vector=tuple(float(value) for value in t_vec),
-        delta_q_l2=float(np.linalg.norm(delta_q)),
-        delta_r_l2=float(np.linalg.norm(delta_r)),
-        delta_lambda_l2=float(np.linalg.norm(delta_lambda)),
-        delta_rho_l2=float(np.linalg.norm(delta_rho)),
+        delta_q_l2=_stable_l2_norm(delta_q),
+        delta_r_l2=_stable_l2_norm(delta_r),
+        delta_lambda_l2=_stable_l2_norm(delta_lambda),
+        delta_rho_l2=_stable_l2_norm(delta_rho),
         finite_trial_step=finite_step,
         initial_state=state,
         candidate_state=candidate_state,
@@ -714,15 +724,13 @@ def _weighted_component_merit(
     weights: Mapping[str, float],
 ) -> float:
     parts = [
-        weights["gas"] * float(np.linalg.norm(residuals["gas"])),
-        weights["condensate"] * float(np.linalg.norm(residuals["condensate"])),
-        weights["budget"] * float(np.linalg.norm(residuals["budget"])),
+        weights["gas"] * _stable_l2_norm(residuals["gas"]),
+        weights["condensate"] * _stable_l2_norm(residuals["condensate"]),
+        weights["budget"] * _stable_l2_norm(residuals["budget"]),
     ]
     if residuals["complementarity"].size:
-        parts.append(
-            weights["complementarity"] * float(np.linalg.norm(residuals["complementarity"]))
-        )
-    return float(np.linalg.norm(np.asarray(parts, dtype=np.float64)))
+        parts.append(weights["complementarity"] * _stable_l2_norm(residuals["complementarity"]))
+    return _stable_l2_norm(np.asarray(parts, dtype=np.float64))
 
 
 def _apply_linear_system_row_scaling(
@@ -748,7 +756,7 @@ def _apply_linear_system_row_scaling(
 def _row_scaled_block_norm(block: np.ndarray, policy: str) -> float:
     rhs = np.zeros((block.shape[0],), dtype=np.float64)
     scaled, _, _ = _apply_linear_system_row_scaling(block, rhs, policy)
-    return float(np.linalg.norm(scaled))
+    return _stable_l2_norm(scaled.ravel())
 
 
 def _budget_priority_multiplier(
@@ -782,7 +790,7 @@ def _budget_priority_multiplier(
         norms = [gas_norm, cond_norm]
         if comp_block is not None:
             norms.append(_row_scaled_block_norm(comp_block, row_scaling_policy))
-        reference_norm = float(np.linalg.norm(np.asarray(norms, dtype=np.float64)))
+        reference_norm = _stable_l2_norm(np.asarray(norms, dtype=np.float64))
     else:
         reference_norm = max(gas_norm, cond_norm)
     multiplier = float(budget_priority) * reference_norm / max(budget_norm, 1.0e-300)
@@ -950,12 +958,12 @@ def propose_pdipm_rgie_restricted_trial_step(
     best_lam = lam
     best_rho = rho
     best_residuals = initial
-    best_combined = float(np.linalg.norm(initial["combined"]))
+    best_combined = _stable_l2_norm(initial["combined"])
     initial_merit = _weighted_component_merit(initial, weights)
     best_merit = initial_merit
-    initial_budget_l2 = float(np.linalg.norm(initial["budget"]))
-    initial_gas_l2 = float(np.linalg.norm(initial["gas"]))
-    initial_cond_l2 = float(np.linalg.norm(initial["condensate"]))
+    initial_budget_l2 = _stable_l2_norm(initial["budget"])
+    initial_gas_l2 = _stable_l2_norm(initial["gas"])
+    initial_cond_l2 = _stable_l2_norm(initial["condensate"])
     accepted = False
     finite_step = bool(
         np.all(np.isfinite(delta_q))
@@ -980,21 +988,21 @@ def propose_pdipm_rgie_restricted_trial_step(
             rho=candidate_rho,
             barrier_parameter=barrier_parameter,
         )
-        candidate_combined = float(np.linalg.norm(candidate_residuals["combined"]))
+        candidate_combined = _stable_l2_norm(candidate_residuals["combined"])
         candidate_merit = _weighted_component_merit(candidate_residuals, weights)
-        candidate_budget_l2 = float(np.linalg.norm(candidate_residuals["budget"]))
+        candidate_budget_l2 = _stable_l2_norm(candidate_residuals["budget"])
         budget_allowed = (
             (not require_budget_nonworsening)
             or candidate_budget_l2 <= initial_budget_l2 + 1.0e-15
         )
         gas_allowed = (
             max_gas_stationarity_worsening_ratio is None
-            or float(np.linalg.norm(candidate_residuals["gas"]))
+            or _stable_l2_norm(candidate_residuals["gas"])
             <= float(max_gas_stationarity_worsening_ratio) * max(initial_gas_l2, 1.0e-300)
         )
         cond_allowed = (
             max_condensate_stationarity_worsening_ratio is None
-            or float(np.linalg.norm(candidate_residuals["condensate"]))
+            or _stable_l2_norm(candidate_residuals["condensate"])
             <= float(max_condensate_stationarity_worsening_ratio)
             * max(initial_cond_l2, 1.0e-300)
         )
@@ -1041,23 +1049,23 @@ def propose_pdipm_rgie_restricted_trial_step(
         preset_default_wiring_change=False,
         trial_step_accepted=accepted,
         alpha=float(best_alpha),
-        initial_combined_residual_l2=float(np.linalg.norm(initial["combined"])),
+        initial_combined_residual_l2=_stable_l2_norm(initial["combined"]),
         candidate_combined_residual_l2=float(best_combined),
-        initial_budget_l2=float(np.linalg.norm(initial["budget"])),
-        candidate_budget_l2=float(np.linalg.norm(best_residuals["budget"])),
-        initial_gas_stationarity_l2=float(np.linalg.norm(initial["gas"])),
-        candidate_gas_stationarity_l2=float(np.linalg.norm(best_residuals["gas"])),
-        initial_condensate_stationarity_l2=float(np.linalg.norm(initial["condensate"])),
-        candidate_condensate_stationarity_l2=float(np.linalg.norm(best_residuals["condensate"])),
+        initial_budget_l2=_stable_l2_norm(initial["budget"]),
+        candidate_budget_l2=_stable_l2_norm(best_residuals["budget"]),
+        initial_gas_stationarity_l2=_stable_l2_norm(initial["gas"]),
+        candidate_gas_stationarity_l2=_stable_l2_norm(best_residuals["gas"]),
+        initial_condensate_stationarity_l2=_stable_l2_norm(initial["condensate"]),
+        candidate_condensate_stationarity_l2=_stable_l2_norm(best_residuals["condensate"]),
         initial_complementarity_l2=(
             None
             if initial["complementarity"].size == 0
-            else float(np.linalg.norm(initial["complementarity"]))
+            else _stable_l2_norm(initial["complementarity"])
         ),
         candidate_complementarity_l2=(
             None
             if best_residuals["complementarity"].size == 0
-            else float(np.linalg.norm(best_residuals["complementarity"]))
+            else _stable_l2_norm(best_residuals["complementarity"])
         ),
         merit_component_weights={key: float(value) for key, value in weights.items()},
         linear_system_component_weights={
@@ -1089,10 +1097,10 @@ def propose_pdipm_rgie_restricted_trial_step(
         delta_r=tuple(float(value) for value in delta_r),
         delta_lambda=tuple(float(value) for value in delta_lambda),
         delta_rho=None if delta_rho is None else tuple(float(value) for value in delta_rho),
-        delta_q_l2=float(np.linalg.norm(delta_q)),
-        delta_r_l2=float(np.linalg.norm(delta_r)),
-        delta_lambda_l2=float(np.linalg.norm(delta_lambda)),
-        delta_rho_l2=None if delta_rho is None else float(np.linalg.norm(delta_rho)),
+        delta_q_l2=_stable_l2_norm(delta_q),
+        delta_r_l2=_stable_l2_norm(delta_r),
+        delta_lambda_l2=_stable_l2_norm(delta_lambda),
+        delta_rho_l2=None if delta_rho is None else _stable_l2_norm(delta_rho),
         finite_trial_step=finite_step,
         initial_state=state,
         candidate_state=candidate_state,

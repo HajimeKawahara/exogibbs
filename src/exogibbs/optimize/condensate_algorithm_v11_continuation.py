@@ -37,6 +37,7 @@ from exogibbs.optimize.condensate_algorithm_v11_merit import (
 from exogibbs.optimize.pdipm_rgie_cond import (
     PdipmRgieCondensateState,
     _algorithm_v11_residuals,
+    _stable_l2_norm,
     build_pdipm_rgie_condensate_state,
     solve_pdipm_rgie_algorithm_v11_reduced_step,
 )
@@ -125,20 +126,20 @@ def _residual_norm(
         epsilon=epsilon,
     )
     components = {
-        key: float(np.linalg.norm(residuals[key]))
+        key: _stable_l2_norm(residuals[key])
         for key in ("gas", "condensate", "budget", "complementarity", "total_density")
     }
     n = np.exp(q)
     m = np.exp(r)
-    components["amount_weighted_gas"] = float(np.linalg.norm(n * residuals["gas"]))
-    components["sqrt_amount_weighted_gas"] = float(np.linalg.norm(np.sqrt(n) * residuals["gas"]))
+    components["amount_weighted_gas"] = _stable_l2_norm(n * residuals["gas"])
+    components["sqrt_amount_weighted_gas"] = _stable_l2_norm(np.sqrt(n) * residuals["gas"])
     components["amount_weighted_condensate"] = float(
-        np.linalg.norm(m * residuals["condensate"])
+        _stable_l2_norm(m * residuals["condensate"])
     )
     components["sqrt_amount_weighted_condensate"] = float(
-        np.linalg.norm(np.sqrt(m) * residuals["condensate"])
+        _stable_l2_norm(np.sqrt(m) * residuals["condensate"])
     )
-    return float(np.linalg.norm(residuals["combined"])), components
+    return _stable_l2_norm(residuals["combined"]), components
 
 
 def _p_merit(

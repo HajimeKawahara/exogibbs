@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+import math
 from typing import Any, Mapping, Sequence
 
+from exogibbs.condensates.head_route_acceptance import TIGHT_RESIDUAL_STATUS
 from exogibbs.optimize.condensate_algorithm_v11_callsite import (
     algorithm_v11_experimental_high_start_callsite_policy,
     run_algorithm_v11_thermo_valid_continuation_callsite,
@@ -137,6 +139,80 @@ def _component_from_report(
     return float(components.get(component_name, default))
 
 
+def _final_components_from_summary(primary_summary: Mapping[str, Any]) -> Mapping[str, float]:
+    continuation = primary_summary.get("continuation_report")
+    if not isinstance(continuation, Mapping):
+        return {}
+    outer_records = continuation.get("outer_records", ())
+    if not outer_records:
+        return {}
+    final_outer = outer_records[-1]
+    if not isinstance(final_outer, Mapping):
+        return {}
+    components = final_outer.get("residual_components_after_outer", {})
+    if not isinstance(components, Mapping):
+        return {}
+    out: dict[str, float] = {}
+    for key, value in components.items():
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            continue
+        if math.isfinite(number):
+            out[str(key)] = number
+    return out
+
+
+def _guarded_primary_metric_status(
+    *,
+    primary_summary: Mapping[str, Any],
+    route_selected: str,
+    integrated_status: str,
+    primary_acceptance_guard: str | None,
+    max_budget: float,
+    max_amount_weighted_gas: float,
+    max_gas_stationarity: float,
+    max_condensate_stationarity: float,
+) -> tuple[str | None, dict[str, Any] | None]:
+    if primary_acceptance_guard is None:
+        return None, None
+    if primary_acceptance_guard != "tight_weighted_components":
+        raise ValueError(
+            "primary_acceptance_guard must be None or 'tight_weighted_components'."
+        )
+    is_primary_route = str(route_selected) == "m4310_full_promoted_policy_route"
+    if str(integrated_status) != "accepted" or not is_primary_route:
+        return None, None
+    components = _final_components_from_summary(primary_summary)
+    limits = {
+        "budget": float(max_budget),
+        "amount_weighted_gas": float(max_amount_weighted_gas),
+        "gas": float(max_gas_stationarity),
+        "condensate": float(max_condensate_stationarity),
+    }
+    checks = {
+        name: (
+            name in components
+            and math.isfinite(components[name])
+            and components[name] <= limit
+        )
+        for name, limit in limits.items()
+    }
+    accepted = all(checks.values())
+    report = {
+        "guard_schema": "exogibbs_head_route_primary_acceptance_guard_v1",
+        "guard_name": "tight_weighted_components",
+        "accepted": bool(accepted),
+        "component_limits": limits,
+        "component_values": {name: components.get(name) for name in limits},
+        "component_checks": checks,
+        "metric_status": TIGHT_RESIDUAL_STATUS
+        if accepted
+        else "guarded_primary_tight_weighted_components_failed",
+    }
+    return str(report["metric_status"]), report
+
+
 def _run_primary_continuation(
     *,
     continuation_input: CondensateContinuationInput,
@@ -247,6 +323,11 @@ def run_condensate_head_route_lifecycle(
     frontier_refresh_continuation_policies: Sequence[Mapping[str, Any]] = (),
     max_frontier_refresh_budget: float = 1.0e-8,
     max_frontier_refresh_amount_weighted_gas: float = 1.0,
+    primary_acceptance_guard: str | None = None,
+    primary_guard_max_budget: float = 1.0e-8,
+    primary_guard_max_amount_weighted_gas: float = 1.0e-8,
+    primary_guard_max_gas_stationarity: float = 1.0,
+    primary_guard_max_condensate_stationarity: float = 10.0,
     metric_status: str | None = None,
     selected_route_override: str | None = None,
     initial_epsilon: float = -27.631021115928547,
@@ -356,18 +437,29 @@ def run_condensate_head_route_lifecycle(
         fallback_summary=center_report.as_dict() if center_report is not None else None,
         refresh_policy_summary=refresh_summary,
     )
+    guarded_metric_status, primary_guard_report = _guarded_primary_metric_status(
+        primary_summary=primary,
+        route_selected=selected_route_override or route_selection.selected_route,
+        integrated_status=route_selection.integrated_status,
+        primary_acceptance_guard=primary_acceptance_guard,
+        max_budget=primary_guard_max_budget,
+        max_amount_weighted_gas=primary_guard_max_amount_weighted_gas,
+        max_gas_stationarity=primary_guard_max_gas_stationarity,
+        max_condensate_stationarity=primary_guard_max_condensate_stationarity,
+    )
     route_result = build_head_route_lifecycle_result(
         explicit_opt_in=True,
         case_id=case_id,
         family=family,
         selected_route=selected_route_override or route_selection.selected_route,
         integrated_status=route_selection.integrated_status,
-        metric_status=metric_status,
+        metric_status=metric_status or guarded_metric_status,
         diagnostics={
             "support_boundary_budget_l2": support_boundary.budget_residual_l2,
             "gas_lambda_gauge_residual_l2": (
                 continuation_input.gas_lambda_gauge_residual_l2
             ),
+            "primary_acceptance_guard": primary_guard_report,
         },
     )
     return CondensateHeadRouteLifecycleReport(

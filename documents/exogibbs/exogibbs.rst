@@ -8,31 +8,14 @@ Subpackages
    :maxdepth: 4
 
    exogibbs.api
+   exogibbs.condensates
    exogibbs.io
+   exogibbs.math
    exogibbs.optimize
    exogibbs.presets
    exogibbs.test
    exogibbs.thermo
    exogibbs.utils
-
-Submodules
-----------
-
-exogibbs.ExoGibbs\_version module
----------------------------------
-
-.. automodule:: exogibbs.ExoGibbs_version
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-exogibbs.exogibbs\_version module
----------------------------------
-
-.. automodule:: exogibbs.exogibbs_version
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 Module contents
 ---------------
