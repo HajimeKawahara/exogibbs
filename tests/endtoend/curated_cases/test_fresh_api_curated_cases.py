@@ -20,12 +20,36 @@ from exogibbs.condensates.curated_profiles import (
     case_id_for_profile,
     element_budget_for_profile,
 )
-from exogibbs.condensates.head_route_standard_gate import CONVERGED, CONVERGED_WITH_CAVEAT
+from exogibbs.condensates.head_route_standard_gate import (
+    CONVERGED,
+    CONVERGED_WITH_CAVEAT,
+    NOT_CONVERGED,
+)
 from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 
 config.update("jax_enable_x64", True)
 
 ACCEPTED_STATUSES = {CONVERGED, CONVERGED_WITH_CAVEAT}
+FULL_BUDGET_GATE_REJECTED_TIER = "full_condensate_element_budget_residual_failed"
+
+EXPLICIT_SUPPORT_V1_4_EXPECTED_STATUSES = {
+    "solar_silicate_first_condensation__T1400_P0p1": CONVERGED_WITH_CAVEAT,
+    "solar_silicate_first_condensation__T1500_P1": CONVERGED_WITH_CAVEAT,
+    "solar_water_condensation__T300_P1": CONVERGED_WITH_CAVEAT,
+    "solar_water_condensation__T300_P0p1": CONVERGED_WITH_CAVEAT,
+    "solar_metal_sulfide_or_Fe_Ni_S_region__T700_P1": CONVERGED_WITH_CAVEAT,
+    "solar_metal_sulfide_or_Fe_Ni_S_region__T700_P0p1": NOT_CONVERGED,
+    "carbon_rich_graphite_window__T1300_P1_corrected": NOT_CONVERGED,
+    "carbon_rich_CaS_MgS_AlN_window__T700_P1_corrected": NOT_CONVERGED,
+    "SiO_s_condensate_window__T900_P0p1_corrected": NOT_CONVERGED,
+    "lowT_strong_condensation_budget_stress__T500_P1": NOT_CONVERGED,
+    "lowT_strong_condensation_budget_stress__T500_P0p1": CONVERGED_WITH_CAVEAT,
+    "near_phase_boundary_support_sensitivity__T1490_P1": CONVERGED_WITH_CAVEAT,
+    "near_phase_boundary_support_sensitivity__T1510_P1": CONVERGED_WITH_CAVEAT,
+    "complex_heavy_element_or_boron_titanium_zirconium_case__T1100_P1_corrected": (
+        CONVERGED_WITH_CAVEAT
+    ),
+}
 
 SUPPORT_FREE_MIDLAYER_EXPECTED_ROUTES = {
     "solar_highT_no_condensate_gas_regression": "head_v1_empty_positive_support_gas_only",
@@ -40,6 +64,19 @@ SUPPORT_FREE_MIDLAYER_EXPECTED_ROUTES = {
     "complex_heavy_element_or_boron_titanium_zirconium_case": (
         "m4310_full_promoted_policy_route"
     ),
+}
+
+SUPPORT_FREE_MIDLAYER_EXPECTED_STATUSES = {
+    "solar_highT_no_condensate_gas_regression": CONVERGED,
+    "solar_silicate_first_condensation": CONVERGED,
+    "solar_water_condensation": CONVERGED,
+    "solar_metal_sulfide_or_Fe_Ni_S_region": CONVERGED,
+    "carbon_rich_graphite_window": CONVERGED,
+    "carbon_rich_CaS_MgS_AlN_window": CONVERGED,
+    "SiO_s_condensate_window": NOT_CONVERGED,
+    "lowT_strong_condensation_budget_stress": CONVERGED,
+    "near_phase_boundary_support_sensitivity": CONVERGED,
+    "complex_heavy_element_or_boron_titanium_zirconium_case": CONVERGED,
 }
 
 SUPPORT_FREE_STAGED_RETRY_REGRESSION_ROWS = (
@@ -183,12 +220,22 @@ def test_all_14_curated_rows_succeed_through_fresh_api() -> None:
             ),
         )
 
-        assert result.status in ACCEPTED_STATUSES, case_id
-        assert result.converged is True
+        expected_status = EXPLICIT_SUPPORT_V1_4_EXPECTED_STATUSES[case_id]
+        assert result.status == expected_status, case_id
+        assert result.converged is (expected_status in ACCEPTED_STATUSES)
         assert bool(jnp.all(jnp.isfinite(result.gas_ln_n)))
         assert bool(jnp.all(jnp.isfinite(result.condensate_amounts)))
         assert result.diagnostics is not None
-        assert result.diagnostics["solver_success"] is True
+        gate = result.diagnostics["full_condensate_budget_residual_gate"]
+        assert gate["accepted"] is (expected_status in ACCEPTED_STATUSES)
+        if expected_status == NOT_CONVERGED:
+            assert result.acceptance_tier == FULL_BUDGET_GATE_REJECTED_TIER
+            pre_gate_status = result.diagnostics[
+                "pre_full_condensate_budget_gate_status"
+            ]
+            assert pre_gate_status in ACCEPTED_STATUSES
+        else:
+            assert result.diagnostics["solver_success"] is True
         assert result.diagnostics["acceptance_tier"] != "runtime_solver_failed"
         assert result.diagnostics["support_selection"]["fastchem4_trace_values_used"] is False
         assert (
@@ -205,7 +252,7 @@ def test_all_14_curated_rows_succeed_through_fresh_api() -> None:
         )
 
 
-def test_water_mid_layer_default_api_uses_head_route_v1_3_support_growth() -> None:
+def test_water_mid_layer_default_api_preserves_v1_3_route_with_v1_4_gate() -> None:
     setup = condensate_chemical_setup(silent=True)
     element_budget = _solar_budget(setup)
 
@@ -223,9 +270,12 @@ def test_water_mid_layer_default_api_uses_head_route_v1_3_support_growth() -> No
 
     assert result.status == CONVERGED
     assert result.converged is True
+    assert result.acceptance_tier == "tier_1_tight_residual_production_adjacent_candidate"
     assert result.selected_route == "m4310_full_promoted_policy_route"
     assert len(result.condensate_support_names) > 1
     assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
     assert result.diagnostics["solver_success"] is True
     assert result.diagnostics["restricted_solver_success"] is True
     assert (
@@ -241,7 +291,7 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
         "m4310_full_promoted_policy_route": 0,
         "native_budget_seed_fallback_budget_tradeoff": 0,
     }
-    status_counts = {CONVERGED: 0, CONVERGED_WITH_CAVEAT: 0}
+    status_counts = {CONVERGED: 0, CONVERGED_WITH_CAVEAT: 0, NOT_CONVERGED: 0}
 
     for family, definition in FRESH_CURATED_PROFILES.items():
         layer_index = len(definition.temperatures) // 2
@@ -253,16 +303,24 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
             float(pressure),
             element_budget_for_profile(setup, definition),
             options=CondensateEquilibriumOptions(
-                case_id=f"{case_id_for_profile(definition, temperature, pressure)}__support_free",
+                case_id=(
+                    f"{case_id_for_profile(definition, temperature, pressure)}"
+                    "__support_free"
+                ),
                 return_diagnostics=True,
                 max_inner_iterations=definition.max_inner_iterations,
             ),
         )
 
-        assert result.status in ACCEPTED_STATUSES, family
-        assert result.converged is True
+        expected_status = SUPPORT_FREE_MIDLAYER_EXPECTED_STATUSES[family]
+        assert result.status == expected_status, family
+        assert result.converged is (expected_status in ACCEPTED_STATUSES)
         assert result.selected_route == SUPPORT_FREE_MIDLAYER_EXPECTED_ROUTES[family]
         assert result.diagnostics is not None
+        gate = result.diagnostics["full_condensate_budget_residual_gate"]
+        assert gate["accepted"] is (expected_status in ACCEPTED_STATUSES)
+        if expected_status == NOT_CONVERGED:
+            assert result.acceptance_tier == FULL_BUDGET_GATE_REJECTED_TIER
         support_selection = result.diagnostics["support_selection"]
         assert support_selection["selection_mode"] == "activity_driven_support_outer_loop"
         assert (
@@ -305,7 +363,8 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
         support_cap_retry = result.diagnostics.get("support_cap_retry")
         if support_cap_retry is not None:
             assert support_cap_retry["triggered"] is True
-            assert support_cap_retry["accepted"] is True
+            assert support_cap_retry["route_promoted"] is True
+            assert support_cap_retry["accepted"] is result.converged
         route_counts[result.selected_route] += 1
         status_counts[result.status] += 1
 
@@ -314,7 +373,7 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
         "m4310_full_promoted_policy_route": 9,
         "native_budget_seed_fallback_budget_tradeoff": 0,
     }
-    assert status_counts == {CONVERGED: 10, CONVERGED_WITH_CAVEAT: 0}
+    assert status_counts == {CONVERGED: 9, CONVERGED_WITH_CAVEAT: 0, NOT_CONVERGED: 1}
 
 
 def test_support_free_staged_retry_regression_layers_promote_to_primary() -> None:
@@ -330,7 +389,10 @@ def test_support_free_staged_retry_regression_layers_promote_to_primary() -> Non
             pressure,
             element_budget_for_profile(setup, definition),
             options=CondensateEquilibriumOptions(
-                case_id=f"{case_id_for_profile(definition, temperature, pressure)}__support_free_exception_regression",
+                case_id=(
+                    f"{case_id_for_profile(definition, temperature, pressure)}"
+                    "__support_free_exception_regression"
+                ),
                 return_diagnostics=True,
                 max_inner_iterations=definition.max_inner_iterations,
             ),
@@ -338,12 +400,16 @@ def test_support_free_staged_retry_regression_layers_promote_to_primary() -> Non
 
         assert result.status == CONVERGED, family
         assert result.converged is True
+        assert result.acceptance_tier == "tier_1_tight_residual_production_adjacent_candidate"
         assert result.selected_route == "m4310_full_promoted_policy_route"
         assert len(result.condensate_support_names) > 0
         assert result.diagnostics is not None
+        gate = result.diagnostics["full_condensate_budget_residual_gate"]
+        assert gate["accepted"] is True
         retry_report = result.diagnostics["support_growth_staging_retry"]
         assert retry_report["triggered"] is True
         assert retry_report["accepted"] is True
+        assert retry_report["route_promoted"] is True
         assert retry_report["max_support_add_per_round"] == 64
         assert (
             retry_report["initial_selected_route"]
@@ -382,11 +448,10 @@ def test_water_explicit_support_primary_center_tolerance_opt_in_reaches_tier1() 
     assert result.status == CONVERGED
     assert result.converged is True
     assert result.selected_route == "m4310_full_promoted_policy_route"
-    assert (
-        result.acceptance_tier
-        == "tier_1_tight_residual_production_adjacent_candidate"
-    )
+    assert result.acceptance_tier == "tier_1_tight_residual_production_adjacent_candidate"
     assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
     lifecycle = result.diagnostics["head_route_lifecycle"]
     continuation = lifecycle["primary_execution_report"]["continuation_report"]
     assert continuation["converged_at_final_barrier"] is True
@@ -426,6 +491,8 @@ def test_primary_acceptance_guard_blocks_tier1_when_components_are_loose() -> No
     assert result.selected_route == "m4310_full_promoted_policy_route"
     assert result.acceptance_tier == "tier_3_raw_gas_caveat_diagnostic_only"
     assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
     guard = result.diagnostics["head_route_lifecycle"]["route_result"]["diagnostics"][
         "primary_acceptance_guard"
     ]

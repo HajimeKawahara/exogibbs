@@ -2,7 +2,7 @@
 
 この文書は、ExoGibbs の凝縮あり計算で現在の基準経路として扱う **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
 
-現在の実装版は **HEAD route v1.3** である。v1.3 は v1.2 の fresh API runtime path を基準に、support-free runtime layer だけで使う guarded retry を追加する。
+現在の実装版は **HEAD route v1.4** である。v1.4 は v1.3 の fresh API runtime path を基準に、public `accepted` / `converged` 判定へ full condensate vector の element-wise relative budget residual gate を追加する。
 
 ## 一言でいうと
 
@@ -15,9 +15,36 @@
 5. 失敗または不十分な場合は、HEAD route lifecycle（外側制御）で primary continuation、fallback、electron refresh、frontier refresh を試す。
    v1.2 では、restricted support solver が成功しても lifecycle selector が accepted しない fresh API runtime layer について、finite warm-start candidate が残っていれば native seed fallback を許可する。
    v1.3 では、support-free outer loop 内に center-gate retry、residual-worsening retry、soft-restoration retry、Ipopt-style persistent h-type retry、support-cap retry を追加し、native seed fallback へ落ちる runtime layer を減らす。
-6. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
+6. v1.4 では、返却直前に gas と full condensate vector から元素 budget を再構成し、element-wise relative residual が許容値を超える accepted row を `not_converged` に降格する。
+7. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
 
 これは FastChem4 exact replay（FastChem4 の分岐を完全再現すること）ではない。FastChem4 public/runtime/trace values（公開出力・実行時出力・内部 trace 値）は、ExoGibbs の constructor input（初期値や構成入力）として使わない。
+
+## HEAD route v1.4 固定内容
+
+HEAD route v1.4 は、v1.3 の route selection と retry sequence を維持したまま、public result の受理判定を強化する固定版である。
+
+| promoted item | 目的 | 適用範囲 |
+|---|---|---|
+| full condensate element budget gate | final gas amount と full condensate vector から `A_gas n + A_cond m - b` を再計算し、元素ごとの相対 residual 最大値が `full_condensate_budget_relative_tolerance` を超える accepted/caveat row を `not_converged` に降格する。 | public `condensate_equilibrium()` result |
+| electron row exclusion | `e-` は化学元素 budget gate の対象から外し、diagnostics の ignored element として残す。 | full condensate element budget gate |
+| external condensate budget in RGIE/PD-IPM residuals | thermo-invalid filtering などで Newton/Jacobian 変数から外れた凝縮種の現在量を `A_cond,E m_E` として元素保存 residual、merit、direction builder に加え、active subproblem が full condensate budget と同じ収支を解くようにする。 | algorithm-v1.1 RGIE/PD-IPM callsites |
+| lifecycle final-state public result wiring | restricted solver 成功後の public result に solver 初期状態ではなく lifecycle continuation の final state を反映し、support-growth / support filtering 後の lifecycle support indices と合わせて full condensate budget gate が実際の accepted state を評価するようにする。 | public `condensate_equilibrium()` result |
+| relative active condensate budget-correction direction | active support 内の凝縮量だけを動かす least-squares budget correction direction を追加し、trace element を絶対量で埋もれさせない相対 budget weighting と condensate capacity cap を使って、full budget gate が落ちる accepted row で retry できるようにする。 | algorithm-v1.1 continuation retry |
+| budget-correction retry final-state start | full budget gate で落ちた accepted lifecycle row の retry は、restricted solver output へ戻らず、lifecycle continuation の final `ln_nk` / `ln_mk` / support indices から開始する。diagnostics には `retry_start_state="lifecycle_final_state"` を残す。 | algorithm-v1.1 continuation retry |
+| condensate capacity cap in continuation trials | 各 active condensate amount を、その凝縮種が単独で使える元素 budget 上限 `min_i b_i / A_cond,i,k` 以下に抑え、小さい budget の元素を含む extra support が過剰量を持つことを防ぐ。 | algorithm-v1.1 continuation trial / accepted state update |
+| final support amount polish | lifecycle final state が accepted した後、gas state を固定し、support amount だけを相対 budget LS と capacity cap で微修正する。full budget gate が accepted した場合だけ public support amounts に反映する。 | public `condensate_equilibrium()` result |
+
+既定値は `enable_full_condensate_budget_residual_gate=True`、`full_condensate_budget_relative_tolerance=1.0e-3` である。gate が reject した場合、`acceptance_tier` は `full_condensate_element_budget_residual_failed` になり、diagnostics に `full_condensate_budget_residual_gate`、`pre_full_condensate_budget_gate_status`、`pre_full_condensate_budget_gate_acceptance_tier` を残す。
+
+v1.4 の fresh API support-free route selection は v1.3 の primary route を基本にする。ただし public status は full budget gate 後の値になり、現在の full-profile audit では一部の rows が native seed fallback route として残る。
+
+| surface | gas-only route | primary route | native seed fallback route | exception | public converged | public not_converged |
+|---|---:|---:|---:|---:|---:|---:|
+| 10 curated midlayers | 1 | 9 | 0 | 0 | 9 | 1 |
+| 10 curated full-profile families | 17 | 78 | 4 | 0 | 79 | 20 |
+
+v1.4 固定後の次課題は、残る `not_converged` row の residual source を分解し、extra support pruning / gas stationarity / lifecycle feasibility のどこで直すべきかを切り分けること、`condensate_equilibrium_profile()` を support-free API path に接続すること、public API examples/docs を整備することである。2026-06-13 の maintenance update では、`ref/tce_v1.3.tex` に外部凝縮種 budget の式を追加し、RGIE/PD-IPM の residual/merit/direction/callsite に `external_condensate_budget` を通した。さらに lifecycle continuation final state を public result に反映し、support-growth / support filtering 後の lifecycle support indices で final-state amounts を展開するように直した。その後、小さい budget の元素を含む active condensate が過剰量を持たないように、relative budget-correction direction、continuation capacity cap、final support amount polish を追加した。budget-correction retry は lifecycle final state から再開するように固定したが、現在の 99-layer audit では retry continuation が full-budget residual をまだ改善できず、public status count は `79 converged / 20 not_converged` のままである。
 
 ## HEAD route v1.3 固定内容
 
@@ -34,7 +61,7 @@ HEAD route v1.3 は、v1.2 の fresh API runtime path に次の guarded retry �
 | support-growth warm-start amount floor | support growth 時に 0/非有限 amount を finite seed へ戻し、warm-start candidate 全滅を避ける。 | support-free outer loop |
 | staged support-growth retry | final support set 自体は解けるが、一括投入の初期化が悪い row を段階投入で再実行する。 | support-free fallback-only retry |
 
-現在の v1.3 default fresh API support-free evidence は次の通りである。
+v1.3 default fresh API support-free route selection evidence は次の通りである。
 
 | surface | gas-only | primary | native seed fallback | exception |
 |---|---:|---:|---:|---:|
@@ -43,7 +70,7 @@ HEAD route v1.3 は、v1.2 の fresh API runtime path に次の guarded retry �
 
 最後に残っていた `solar_water_condensation` layer `7` は、`H2O(s,l)` がちょうど activity-positive へ入る support transition row だった。default one-shot support growth では 154 support species を初回 round で一括投入して fallback になったが、同じ 154 species support でも staged support-growth retry では primary route に到達する。したがって v1.3 は default one-shot path を先に試し、fallback の場合だけ `support_growth_staging_retry_add_per_rounds=(64, 32, 16, 8)` を試す。
 
-v1.3 固定後の次課題は、support-cap retry sequence と staged support-growth retry sequence を curated full-profile 以外の broad grid で監査すること、`condensate_equilibrium_profile()` を support-free API path に接続すること、public API examples/docs を整備することである。
+この v1.3 evidence は route selection の記録であり、v1.4 以降の public `converged` count とは一致しない。
 
 ## 現在の実装入口
 
@@ -99,7 +126,7 @@ v1.3 固定後の次課題は、support-cap retry sequence と staged support-gr
 
 ### 2. activity-driven support selection
 
-ユーザーが `support_indices` を渡さない場合、HEAD route v1.3 は native gas equilibrium から
+ユーザーが `support_indices` を渡さない場合、HEAD route v1.4 は native gas equilibrium から
 activity-driven support outer loop を開始する。
 
 ここでは、FastChem4 runtime output から support を取らない。使うのは以下だけである。
@@ -122,7 +149,7 @@ restricted solver に実際に渡す support は `max_positive_support_count` �
 優先順位は capacity を主に使い、明らかな trace-species dominance を避ける。
 
 restricted solver step では `restricted_reduced_coupling_mode` で reduced-coupling 方向を選べる。
-HEAD route v1.3 の default は `pdipm_rgie_v11_activity_correction` である。
+HEAD route v1.4 の default は v1.3 から引き続き `pdipm_rgie_v11_activity_correction` である。
 `candidate_selected_active_plus_near_jacobian` は FastChem4 の
 active condensate list / near-active Jacobian 縮約に近い実験 mode である。この mode は
 ExoGibbs native state から activity proxy を作り、active と near-active を solver 内部で分ける。
@@ -146,7 +173,7 @@ budget から決める。入力は ExoGibbs native gas/condensate thermochemistr
 `h_gas + log(P/Pref) - ln_ntot` を使い、`A_g.T pi ~= ln_n + source` の least-squares で作る。
 旧 p-IPM/RGIE residual helper から recovered `pi` を流用しない。
 midlayer 10 curated family では fresh API 経由で例外なく走り、FastChem4 first condensed
-Newton step の amount 比較は `max_density + current` と同等かやや良い。v1.3 ではこの mode を
+Newton step の amount 比較は `max_density + current` と同等かやや良い。v1.3 以降ではこの mode を
 既定 mode として採用する。
 
 support が非空の場合、restricted solver/lifecycle/fallback を既存の明示 support path で実行し、
@@ -157,7 +184,7 @@ support が非空の場合、restricted solver/lifecycle/fallback を既存の�
 seed amount は `seed_fraction <= 1e-3`、`max_seed_amount <= 1e-3` の安全 envelope で作る。
 
 ユーザーが `support_indices` を明示した場合、このouter loopは使わず、指定supportを固定してHEAD route
-v1.3のrestricted support pathを実行する。
+v1.4のrestricted support pathを実行する。
 
 ### 3. empty support boundary
 
@@ -313,48 +340,50 @@ HEAD route の accepted は単一品質ではない。現在は 3 tier に分け
 
 ## support-free profile と fixed-support rows の現状
 
-HEAD route v1.3 の本来の default API regression は、`support_indices` を渡さずに
+HEAD route v1.4 の本来の default API regression は、`support_indices` を渡さずに
 public `condensate_equilibrium()` を呼ぶ support-free 経路である。この経路では
 activity-driven support selection、`max_density` seed、solver-output-driven support growth が
-有効になり、必要な場合だけ v1.3 support-free retry gates が発火する。
+有効になり、必要な場合だけ v1.3 support-free retry gates と v1.4 full-budget gate / budget-correction
+retry が発火する。
 
 10 curated case families の中間層では、results artifact に依存せず fresh API から次の挙動を確認する。
 
 | group | rows | status |
 |---|---:|---|
 | empty gas-only boundary | 1 | `converged` |
-| primary promoted route | 9 | `converged` / tier 1 |
+| primary promoted route accepted by full-budget gate | 8 | `converged` / tier 1 |
+| primary promoted route rejected by full-budget gate | 1 | `not_converged` |
 | native seed fallback | 0 | なし |
 
-10 curated support-select demo families の全 profile layer では、v1.3 default fresh API から次の挙動を確認する。
+10 curated support-select demo families の全 profile layer では、v1.4 default fresh API から次の挙動を確認する。
 
 | group | rows | status |
 |---|---:|---|
 | empty gas-only boundary | 17 | `converged` |
-| primary promoted route | 82 | `converged` |
-| native seed fallback | 0 | なし |
+| primary promoted route | 78 | `converged` / `not_converged` |
+| native seed fallback route | 4 | `converged` / `not_converged` |
 | exception | 0 | なし |
 
 一方、14 representative rows は v1.1 由来の fixed-support regression である。これらは
 `support_indices` と `support_amounts_init` を明示して restricted-support path を固定するため、
-v1.3 の support-free default support selection を検証するものではない。現在の 14 rows は
-fresh API で accepted になるが、全行が `native_budget_seed_fallback_budget_tradeoff` の
-tier 2 caveat として扱われる。
+v1.4 の support-free default support selection を検証するものではない。現在の 14 rows は
+explicit support path と full-budget gate の回帰であり、accepted rows と full-budget gate reject rows
+の両方を含む。
 
 10 curated case families の support-free 中間層との関係は以下である。
 
 | family | midlayer behavior |
 |---|---|
 | `solar_highT_no_condensate_gas_regression` | 凝縮候補なし。empty gas-only boundary。 |
-| `solar_silicate_first_condensation` | center-gate retry で primary promoted route に到達。 |
-| `solar_water_condensation` | solver-output-driven support growth で primary promoted route に到達。 |
-| `solar_metal_sulfide_or_Fe_Ni_S_region` | primary promoted route に到達。 |
-| `carbon_rich_graphite_window` | stable L2 residual norm により primary promoted route に到達。 |
-| `carbon_rich_CaS_MgS_AlN_window` | primary promoted route に到達。 |
-| `SiO_s_condensate_window` | support-cap retry で primary promoted route に到達。 |
-| `lowT_strong_condensation_budget_stress` | residual-worsening retry と center-gate retry で primary promoted route に到達。 |
-| `near_phase_boundary_support_sensitivity` | primary promoted route に到達。 |
-| `complex_heavy_element_or_boron_titanium_zirconium_case` | center-gate retry で primary promoted route に到達。 |
+| `solar_silicate_first_condensation` | center-gate retry で primary promoted route に到達し、v1.4 full-budget gate を通過。 |
+| `solar_water_condensation` | solver-output-driven support growth で primary promoted route に到達し、v1.4 full-budget gate を通過。 |
+| `solar_metal_sulfide_or_Fe_Ni_S_region` | primary promoted route に到達し、v1.4 full-budget gate を通過。 |
+| `carbon_rich_graphite_window` | stable L2 residual norm と capacity cap により primary promoted route に到達し、v1.4 full-budget gate を通過。 |
+| `carbon_rich_CaS_MgS_AlN_window` | primary promoted route に到達し、v1.4 full-budget gate を通過。 |
+| `SiO_s_condensate_window` | support-cap retry で primary promoted route に到達するが、v1.4 full-budget gate で reject。 |
+| `lowT_strong_condensation_budget_stress` | residual-worsening retry と center-gate retry で primary promoted route に到達し、v1.4 full-budget gate を通過。 |
+| `near_phase_boundary_support_sensitivity` | primary promoted route に到達し、v1.4 full-budget gate を通過。 |
+| `complex_heavy_element_or_boron_titanium_zirconium_case` | center-gate retry で primary promoted route に到達し、v1.4 full-budget gate を通過。 |
 
 ## 成功と caveat の意味
 
@@ -367,8 +396,9 @@ tier 2 caveat として扱われる。
 - T700 metal/sulfide: amount-weighted gas では良いが raw gas residual frame に注意がある。
 
 したがって、14 fixed-support rows は「同じ品質で完全成功」ではない。正確には、現在の
-fresh API では 14 rows すべてが caveat 付きである。support-free 10-family 中間層では、
-9 rows が tight、0 row が caveat、1 row が empty gas-only boundary である。
+fresh API では accepted rows と full-budget gate reject rows を分けて見る。support-free 10-family 中間層では、
+8 rows が tight、0 row が caveat、1 row が empty gas-only boundary、1 row が full-budget
+gate reject である。
 
 ## 守るべき境界
 
@@ -376,7 +406,7 @@ HEAD route は凝縮あり初版標準経路として進めてよいが、以下
 
 - gas-only `equilibrium()` の挙動を変えない。
 - production return signature を変えない。
-- gas-only API の defaults を変更しない。凝縮あり API の default は HEAD route v1.3 として扱う。
+- gas-only API の defaults を変更しない。凝縮あり API の default は HEAD route v1.4 として扱う。
 - FastChem4 public/runtime/trace values を constructor input にしない。
 - FastChem4 exact branch replay を acceptance target にしない。
 - case、species、element を落として成功扱いにしない。

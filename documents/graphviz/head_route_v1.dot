@@ -7,7 +7,7 @@ digraph head_route_v1 {
     ranksep=0.62,
     splines=ortho,
     fontname="Noto Sans CJK JP",
-    label="ExoGibbs 凝縮あり HEAD route v1.3",
+    label="ExoGibbs 凝縮あり HEAD route v1.4",
     labelloc=t,
     fontsize=26
   ];
@@ -212,12 +212,12 @@ digraph head_route_v1 {
       fillcolor="#fef9c3"
     ];
     not_converged [
-      label="not_converged\nsolver failed / lifecycle not accepted",
+      label="not_converged\nsolver failed / lifecycle not accepted / full-budget gate rejected",
       fillcolor="#fee2e2"
     ];
     v11_fallback_gate [
       shape=diamond,
-      label="v1.3 support-free retry gates\ncenter / residual / soft-restoration / Ipopt h-type / support-cap\nthen v1.2 fallback gate",
+      label="v1.3 retry gates + v1.4 budget gate / final-state retry / amount polish\ncenter / residual / soft-restoration / Ipopt h-type / support-cap\nthen v1.2 fallback gate",
       fillcolor="#fef3c7"
     ];
     native_seed_fallback [

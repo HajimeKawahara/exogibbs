@@ -285,6 +285,7 @@ def _residuals(
     formula_matrix: np.ndarray,
     formula_matrix_cond_active: np.ndarray,
     element_inventory_target: np.ndarray,
+    external_condensate_budget: np.ndarray | None = None,
     mass_action_constants: np.ndarray,
     hvector_cond_active: np.ndarray,
     q: np.ndarray,
@@ -297,7 +298,21 @@ def _residuals(
     m = np.exp(r)
     gas = q - mass_action_constants - formula_matrix.T @ lam
     cond = formula_matrix_cond_active.T @ lam - hvector_cond_active
-    budget = element_inventory_target - formula_matrix @ n - formula_matrix_cond_active @ m
+    external_budget = (
+        np.zeros_like(element_inventory_target, dtype=np.float64)
+        if external_condensate_budget is None
+        else np.asarray(external_condensate_budget, dtype=np.float64)
+    )
+    if external_budget.ndim != 1 or external_budget.shape[0] != element_inventory_target.shape[0]:
+        raise ValueError("external_condensate_budget must match element_inventory_target length.")
+    if not np.all(np.isfinite(external_budget)):
+        raise ValueError("external_condensate_budget must contain finite values.")
+    budget = (
+        element_inventory_target
+        - external_budget
+        - formula_matrix @ n
+        - formula_matrix_cond_active @ m
+    )
     residual_parts = [gas, cond, budget]
     complementarity = None
     if rho is not None and barrier_parameter is not None:
@@ -319,6 +334,7 @@ def _algorithm_v11_residuals(
     formula_matrix: np.ndarray,
     formula_matrix_cond_active: np.ndarray,
     element_inventory_target: np.ndarray,
+    external_condensate_budget: np.ndarray | None = None,
     gas_stationarity_source: np.ndarray,
     condensate_standard_source: np.ndarray,
     q: np.ndarray,
@@ -344,7 +360,21 @@ def _algorithm_v11_residuals(
         condensate_for_combined = condensate[mask]
     else:
         condensate_for_combined = condensate
-    budget = formula_matrix @ n + formula_matrix_cond_active @ m - element_inventory_target
+    external_budget = (
+        np.zeros_like(element_inventory_target, dtype=np.float64)
+        if external_condensate_budget is None
+        else np.asarray(external_condensate_budget, dtype=np.float64)
+    )
+    if external_budget.ndim != 1 or external_budget.shape[0] != element_inventory_target.shape[0]:
+        raise ValueError("external_condensate_budget must match element_inventory_target length.")
+    if not np.all(np.isfinite(external_budget)):
+        raise ValueError("external_condensate_budget must contain finite values.")
+    budget = (
+        formula_matrix @ n
+        + formula_matrix_cond_active @ m
+        + external_budget
+        - element_inventory_target
+    )
     epsilon_array = np.asarray(epsilon, dtype=np.float64)
     if epsilon_array.ndim == 0:
         epsilon_array = np.full_like(r, float(epsilon_array))
@@ -369,6 +399,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     formula_matrix: Sequence[Sequence[float]],
     formula_matrix_cond_active: Sequence[Sequence[float]],
     element_inventory_target: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
     gas_stationarity_source: Sequence[float],
     condensate_standard_source: Sequence[float],
     epsilon: float | Sequence[float],
@@ -421,6 +452,11 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     ag = _as_matrix(formula_matrix, "formula_matrix")
     ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
     target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     g = _as_vector(gas_stationarity_source, "gas_stationarity_source")
     c = _as_vector(condensate_standard_source, "condensate_standard_source")
     q = _as_vector(state.ln_nk, "state.ln_nk")
@@ -430,6 +466,8 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     qtot = float(state.ln_ntot)
     if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
         raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
     if lam.shape[0] != target.shape[0]:
         raise ValueError("element_potential length must match element rows.")
     if ag.shape[1] != q.shape[0] or g.shape[0] != q.shape[0]:
@@ -465,7 +503,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     t_vec = r + rho - eps
     geff = q + g
     gas_inventory = ag @ n
-    delta_bhat = target - gas_inventory - ac @ m
+    delta_bhat = target - external_budget - gas_inventory - ac @ m
     delta_ntot = float(np.sum(n) - np.exp(qtot))
     qhat = ag @ (n[:, np.newaxis] * ag.T) + ac @ (j_vec[:, np.newaxis] * ac.T)
     if reg:
@@ -518,6 +556,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         formula_matrix=ag,
         formula_matrix_cond_active=ac,
         element_inventory_target=target,
+        external_condensate_budget=external_budget,
         gas_stationarity_source=g,
         condensate_standard_source=c,
         q=q,
@@ -570,6 +609,7 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
             formula_matrix=ag,
             formula_matrix_cond_active=ac,
             element_inventory_target=target,
+            external_condensate_budget=external_budget,
             gas_stationarity_source=g,
             condensate_standard_source=c,
             q=candidate_q,
@@ -806,6 +846,7 @@ def propose_pdipm_rgie_restricted_trial_step(
     element_inventory_target: Sequence[float],
     mass_action_constants: Sequence[float],
     hvector_cond_active: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
     barrier_parameter: float | None = None,
     alpha_candidates: Sequence[float] = (1.0, 0.5, 0.25, 0.125, 0.0625),
     max_abs_delta_q: float = 2.0,
@@ -850,12 +891,19 @@ def propose_pdipm_rgie_restricted_trial_step(
     r = _as_vector(state.ln_mk, "state.ln_mk")
     lam = _as_vector(state.element_potential, "state.element_potential")
     target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     mac = _as_vector(mass_action_constants, "mass_action_constants")
     hcond = _as_vector(hvector_cond_active, "hvector_cond_active")
     if ag.shape[0] != ac.shape[0] or ag.shape[0] != lam.shape[0]:
         raise ValueError("formula matrix element rows must match element_potential length.")
     if target.shape[0] != lam.shape[0]:
         raise ValueError("element_inventory_target length must match element rows.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
     if ag.shape[1] != q.shape[0] or mac.shape[0] != q.shape[0]:
         raise ValueError("gas vector lengths must match formula_matrix columns.")
     if ac.shape[1] != r.shape[0] or hcond.shape[0] != r.shape[0]:
@@ -868,6 +916,7 @@ def propose_pdipm_rgie_restricted_trial_step(
         formula_matrix=ag,
         formula_matrix_cond_active=ac,
         element_inventory_target=target,
+        external_condensate_budget=external_budget,
         mass_action_constants=mac,
         hvector_cond_active=hcond,
         q=q,
@@ -980,6 +1029,7 @@ def propose_pdipm_rgie_restricted_trial_step(
             formula_matrix=ag,
             formula_matrix_cond_active=ac,
             element_inventory_target=target,
+            external_condensate_budget=external_budget,
             mass_action_constants=mac,
             hvector_cond_active=hcond,
             q=candidate_q,

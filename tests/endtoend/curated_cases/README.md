@@ -15,7 +15,7 @@ There are two curated surfaces:
 - Fixed-support rows: the 14-row regression keeps the v1.1-era explicit
   `support_indices` and `support_amounts_init` path. It verifies accepted
   fixed-support fallback behavior, not support-free selection.
-- Support-free rows: the v1.3 default regression calls `condensate_equilibrium`
+- Support-free rows: the v1.4 default regression calls `condensate_equilibrium`
   without explicit support on curated profile midlayers. This is the API path
   mirrored by `examples/condensates_curated_support_select_demo/` and exercises
   native support selection, max-density seeds, support growth, and the
@@ -28,4 +28,7 @@ There are two curated surfaces:
   32, 16, 8)`, and support-growth warm-start amount flooring. The v1.3 solver
   residual reports use stable L2 norm
   evaluation so large finite condensate activity residuals do not become
-  non-finite solely through norm overflow.
+  non-finite solely through norm overflow. v1.4 adds the full-condensate
+  element-budget gate, external condensate budget terms in RGIE/PD-IPM residuals,
+  lifecycle final-state public result wiring with post-growth support indices,
+  and a fallback-only active condensate budget-correction direction.

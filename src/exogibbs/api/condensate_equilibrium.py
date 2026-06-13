@@ -13,6 +13,7 @@ from typing import Any, Literal, Mapping, Optional, Sequence
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 
 from exogibbs.api.chemistry import ChemicalSetup, ThermoState
 from exogibbs.condensates.head_route_standard_gate import (
@@ -113,12 +114,15 @@ class CondensateEquilibriumOptions:
     enable_head_route_ipopt_h_type_retry: bool = False
     head_route_ipopt_h_type_theta_reduction_fraction: float = 1.0e-4
     head_route_ipopt_h_type_protected_component_max_normalized_increase: float = 1.0
+    enable_head_route_condensate_budget_correction_retry: bool = True
     enable_support_cap_retry: bool = True
     support_cap_retry_count: int = 34
     support_cap_retry_counts: Optional[Sequence[int]] = (34, 48, 80, 128)
     enable_support_growth_staging_retry: bool = True
     support_growth_staging_retry_add_per_rounds: Optional[Sequence[int]] = (64, 32, 16, 8)
     enable_native_seed_fallback: bool = True
+    enable_full_condensate_budget_residual_gate: bool = True
+    full_condensate_budget_relative_tolerance: float = 1.0e-3
 
 
 @dataclass(frozen=True)
@@ -375,6 +379,8 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
             "head_route_ipopt_h_type_protected_component_max_normalized_increase "
             "must be finite and non-negative."
         )
+    if not isinstance(options.enable_head_route_condensate_budget_correction_retry, bool):
+        raise TypeError("enable_head_route_condensate_budget_correction_retry must be a bool.")
     if not isinstance(options.enable_support_cap_retry, bool):
         raise TypeError("enable_support_cap_retry must be a bool.")
     if options.support_cap_retry_count <= 0:
@@ -395,6 +401,337 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
                 raise ValueError(
                     "support_growth_staging_retry_add_per_rounds entries must be positive."
                 )
+    if not isinstance(options.enable_full_condensate_budget_residual_gate, bool):
+        raise TypeError("enable_full_condensate_budget_residual_gate must be a bool.")
+    if (
+        not math.isfinite(float(options.full_condensate_budget_relative_tolerance))
+        or options.full_condensate_budget_relative_tolerance < 0.0
+    ):
+        raise ValueError(
+            "full_condensate_budget_relative_tolerance must be finite and non-negative."
+        )
+
+
+def _full_condensate_element_budget_residual_report(
+    *,
+    setup: CondensateChemicalSetup,
+    gas_n: Array,
+    condensate_amounts: Array,
+    element_inventory_target: Array,
+    relative_tolerance: float,
+) -> dict[str, Any]:
+    target = jnp.asarray(element_inventory_target, dtype=jnp.float64)
+    if target.ndim != 1 or target.shape[0] != len(setup.elements):
+        raise ValueError("element_inventory_target must have one value per element.")
+    gas_amounts = jnp.asarray(gas_n, dtype=jnp.float64)
+    cond_amounts = jnp.asarray(condensate_amounts, dtype=jnp.float64)
+    if gas_amounts.ndim != 1 or gas_amounts.shape[0] != len(setup.gas_species):
+        raise ValueError("gas_n must have one value per gas species.")
+    if cond_amounts.ndim != 1 or cond_amounts.shape[0] != len(setup.condensate_species):
+        raise ValueError("condensate_amounts must have one value per condensate species.")
+    gas_budget = jnp.asarray(setup.formula_matrix, dtype=jnp.float64) @ gas_amounts
+    condensate_budget = (
+        jnp.asarray(setup.formula_matrix_cond, dtype=jnp.float64) @ cond_amounts
+    )
+    reconstructed = gas_budget + condensate_budget
+    residual = reconstructed - target
+    denominator = jnp.maximum(jnp.abs(target), 1.0e-300)
+    signed_relative = residual / denominator
+    absolute_relative = jnp.abs(signed_relative)
+    gate_mask = jnp.asarray(
+        tuple(str(element) not in {"e-", "electron"} for element in setup.elements),
+        dtype=bool,
+    )
+    gated_absolute_relative = jnp.where(gate_mask, absolute_relative, 0.0)
+    finite = bool(jnp.all(jnp.isfinite(jnp.where(gate_mask, absolute_relative, 0.0))))
+    sanitized = jnp.where(
+        jnp.isfinite(gated_absolute_relative),
+        gated_absolute_relative,
+        jnp.inf,
+    )
+    max_index = int(jnp.argmax(sanitized))
+    max_abs_relative = float(gated_absolute_relative[max_index])
+    tolerance = float(relative_tolerance)
+    accepted = finite and max_abs_relative <= tolerance
+    return {
+        "gate_schema": "exogibbs_full_condensate_element_budget_residual_gate_v1",
+        "gate_name": "full_condensate_element_budget_residual",
+        "accepted": bool(accepted),
+        "relative_tolerance": tolerance,
+        "max_abs_relative_residual": max_abs_relative,
+        "max_abs_relative_residual_element": setup.elements[max_index],
+        "max_abs_relative_residual_element_index": max_index,
+        "element_names": tuple(str(element) for element in setup.elements),
+        "ignored_element_names": tuple(
+            str(element)
+            for element in setup.elements
+            if str(element) in {"e-", "electron"}
+        ),
+        "element_budget_target": tuple(float(value) for value in target.tolist()),
+        "element_budget_reconstructed": tuple(float(value) for value in reconstructed.tolist()),
+        "element_budget_residual": tuple(float(value) for value in residual.tolist()),
+        "element_signed_relative_residual": tuple(
+            float(value) for value in signed_relative.tolist()
+        ),
+        "element_abs_relative_residual": tuple(
+            float(value) for value in absolute_relative.tolist()
+        ),
+        "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+    }
+
+
+def _apply_full_condensate_budget_residual_gate(
+    *,
+    setup: CondensateChemicalSetup,
+    gas_n: Array,
+    condensate_amounts: Array,
+    element_inventory_target: Array | None,
+    status: str,
+    acceptance_tier: str,
+    warning_messages: tuple[str, ...],
+    metadata: dict[str, Any],
+    enabled: bool,
+    relative_tolerance: float,
+) -> tuple[str, str, tuple[str, ...], dict[str, Any]]:
+    if element_inventory_target is None:
+        return status, acceptance_tier, warning_messages, metadata
+    report = _full_condensate_element_budget_residual_report(
+        setup=setup,
+        gas_n=gas_n,
+        condensate_amounts=condensate_amounts,
+        element_inventory_target=element_inventory_target,
+        relative_tolerance=relative_tolerance,
+    )
+    metadata["full_condensate_budget_residual_gate"] = report
+    if (
+        not enabled
+        or report["accepted"]
+        or status not in {CONVERGED, CONVERGED_WITH_CAVEAT}
+    ):
+        return status, acceptance_tier, warning_messages, metadata
+    metadata.setdefault("pre_full_condensate_budget_gate_status", status)
+    metadata.setdefault(
+        "pre_full_condensate_budget_gate_acceptance_tier",
+        acceptance_tier,
+    )
+    warnings = tuple(warning_messages) + (
+        "The full condensate vector element-wise relative budget residual exceeded the accepted threshold.",
+    )
+    return (
+        NOT_CONVERGED,
+        "full_condensate_element_budget_residual_failed",
+        warnings,
+        metadata,
+    )
+
+
+def _full_condensate_budget_gate_report_for_support_state(
+    *,
+    setup: CondensateChemicalSetup,
+    gas_ln_n: Array,
+    support_indices: Sequence[int],
+    support_amounts: Array,
+    element_inventory_target: Array,
+    relative_tolerance: float,
+) -> dict[str, Any]:
+    condensate_amounts = _full_condensate_amounts(
+        support_indices=support_indices,
+        support_amounts=support_amounts,
+        condensate_count=len(setup.condensate_species),
+    )
+    return _full_condensate_element_budget_residual_report(
+        setup=setup,
+        gas_n=jnp.exp(jnp.asarray(gas_ln_n)),
+        condensate_amounts=condensate_amounts,
+        element_inventory_target=element_inventory_target,
+        relative_tolerance=relative_tolerance,
+    )
+
+
+def _final_state_support_indices_from_lifecycle_payload(
+    lifecycle_payload: Mapping[str, Any],
+    *,
+    fallback_support_indices: Sequence[int],
+) -> tuple[int, ...]:
+    """Return support indices matching a lifecycle continuation final_state."""
+
+    continuation_input = lifecycle_payload.get("continuation_input", {})
+    if isinstance(continuation_input, Mapping):
+        support_indices = continuation_input.get("support_indices")
+        if support_indices is not None:
+            try:
+                return tuple(int(index) for index in support_indices)
+            except (TypeError, ValueError):
+                pass
+    return tuple(int(index) for index in fallback_support_indices)
+
+
+def _lifecycle_final_state_payload(
+    lifecycle_payload: Mapping[str, Any],
+) -> Mapping[str, Any] | None:
+    primary_execution_payload = lifecycle_payload.get("primary_execution_report")
+    continuation_payload = (
+        primary_execution_payload.get("continuation_report", {})
+        if isinstance(primary_execution_payload, Mapping)
+        else {}
+    )
+    final_state_payload = (
+        continuation_payload.get("final_state")
+        if isinstance(continuation_payload, Mapping)
+        else None
+    )
+    return final_state_payload if isinstance(final_state_payload, Mapping) else None
+
+
+def _polish_support_amounts_for_full_condensate_budget_gate(
+    *,
+    setup: CondensateChemicalSetup,
+    gas_ln_n: Array,
+    support_indices: Sequence[int],
+    support_amounts: Array,
+    element_inventory_target: Array,
+    relative_tolerance: float,
+    max_iterations: int = 8,
+    max_abs_delta_r: float = 2.0,
+) -> tuple[jnp.ndarray, Mapping[str, Any] | None]:
+    support = tuple(int(index) for index in support_indices)
+    if len(support) == 0:
+        return jnp.asarray(support_amounts, dtype=jnp.float64), None
+    amounts = np.asarray(support_amounts, dtype=np.float64).copy()
+    if amounts.ndim != 1 or amounts.shape[0] != len(support):
+        return jnp.asarray(support_amounts, dtype=jnp.float64), None
+    if not np.all(np.isfinite(amounts)) or np.any(amounts < 0.0):
+        return jnp.asarray(support_amounts, dtype=jnp.float64), None
+
+    gas_n = np.exp(np.asarray(gas_ln_n, dtype=np.float64))
+    target = np.asarray(element_inventory_target, dtype=np.float64)
+    ag = np.asarray(setup.formula_matrix, dtype=np.float64)
+    ac_full = np.asarray(setup.formula_matrix_cond, dtype=np.float64)
+    ac = ac_full[:, support]
+    gas_budget = ag @ gas_n
+    positive_target = target[target > 0.0]
+    target_scale = float(np.max(positive_target)) if positive_target.size else 1.0
+    floor = max(float(np.finfo(np.float64).tiny), 1.0e-300 * target_scale)
+    row_weights = 1.0 / np.maximum(np.abs(target), floor)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        per_element_limits = np.where(ac > 0.0, target[:, None] / ac, np.inf)
+    capacity = np.min(per_element_limits, axis=0)
+    finite_capacity = np.isfinite(capacity) & (capacity > 0.0)
+
+    initial_report = _full_condensate_budget_gate_report_for_support_state(
+        setup=setup,
+        gas_ln_n=gas_ln_n,
+        support_indices=support,
+        support_amounts=jnp.asarray(amounts),
+        element_inventory_target=element_inventory_target,
+        relative_tolerance=relative_tolerance,
+    )
+    accepted = bool(initial_report["accepted"])
+    iteration_count = 0
+    cap_count_total = 0
+    top_up_count = 0
+    for iteration in range(int(max_iterations)):
+        if accepted:
+            break
+        budget = gas_budget + ac @ amounts - target
+        jac = ac * amounts[None, :]
+        if jac.size == 0 or jac.shape[1] == 0:
+            break
+        matrix = jac * row_weights[:, None]
+        rhs = -budget * row_weights
+        delta_r, *_ = np.linalg.lstsq(matrix, rhs, rcond=None)
+        if not np.all(np.isfinite(delta_r)):
+            break
+        norm_inf = float(np.max(np.abs(delta_r))) if delta_r.size else 0.0
+        if norm_inf > max_abs_delta_r and norm_inf > 0.0:
+            delta_r = delta_r * (max_abs_delta_r / norm_inf)
+        trial = amounts * np.exp(delta_r)
+        if np.any(finite_capacity):
+            before = trial.copy()
+            trial[finite_capacity] = np.minimum(
+                trial[finite_capacity],
+                capacity[finite_capacity],
+            )
+            cap_count_total += int(np.count_nonzero(trial < before))
+        if not np.all(np.isfinite(trial)) or np.any(trial < 0.0):
+            break
+        amounts = trial
+        iteration_count = iteration + 1
+        report = _full_condensate_budget_gate_report_for_support_state(
+            setup=setup,
+            gas_ln_n=gas_ln_n,
+            support_indices=support,
+            support_amounts=jnp.asarray(amounts),
+            element_inventory_target=element_inventory_target,
+            relative_tolerance=relative_tolerance,
+        )
+        accepted = bool(report["accepted"])
+
+    for _ in range(8):
+        report = _full_condensate_budget_gate_report_for_support_state(
+            setup=setup,
+            gas_ln_n=gas_ln_n,
+            support_indices=support,
+            support_amounts=jnp.asarray(amounts),
+            element_inventory_target=element_inventory_target,
+            relative_tolerance=relative_tolerance,
+        )
+        if bool(report["accepted"]):
+            break
+        signed_relative = np.asarray(
+            report["element_signed_relative_residual"],
+            dtype=np.float64,
+        )
+        for index, element in enumerate(setup.elements):
+            if str(element) in {"e-", "electron"}:
+                signed_relative[index] = 0.0
+        element_index = int(np.argmax(np.abs(signed_relative)))
+        if signed_relative[element_index] >= 0.0:
+            break
+        deficit = -float(signed_relative[element_index]) * max(
+            abs(float(target[element_index])),
+            1.0e-300,
+        )
+        stoich = ac[element_index, :]
+        room = np.where(
+            finite_capacity & (stoich > 0.0),
+            np.maximum(capacity - amounts, 0.0),
+            0.0,
+        )
+        if not np.any(room > 0.0):
+            break
+        candidate_scores = room * stoich
+        condensate_index = int(np.argmax(candidate_scores))
+        if candidate_scores[condensate_index] <= 0.0:
+            break
+        increase = min(room[condensate_index], deficit / stoich[condensate_index])
+        if increase <= 0.0 or not np.isfinite(increase):
+            break
+        amounts[condensate_index] += increase
+        top_up_count += 1
+
+    final_report = _full_condensate_budget_gate_report_for_support_state(
+        setup=setup,
+        gas_ln_n=gas_ln_n,
+        support_indices=support,
+        support_amounts=jnp.asarray(amounts),
+        element_inventory_target=element_inventory_target,
+        relative_tolerance=relative_tolerance,
+    )
+    polish_report = {
+        "polish_schema": "exogibbs_full_condensate_budget_amount_polish_v1",
+        "triggered": not bool(initial_report["accepted"]),
+        "accepted": bool(final_report["accepted"]),
+        "iteration_count": iteration_count,
+        "capacity_cap_count": cap_count_total,
+        "capacity_top_up_count": top_up_count,
+        "initial_full_condensate_budget_gate": initial_report,
+        "final_full_condensate_budget_gate": final_report,
+        "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+    }
+    if final_report["accepted"]:
+        return jnp.asarray(amounts, dtype=jnp.float64), polish_report
+    return jnp.asarray(support_amounts, dtype=jnp.float64), polish_report
 
 
 def _least_squares_element_potential(
@@ -585,7 +922,7 @@ def _run_lifecycle_from_warm_start_candidate(
         }
 
 
-def _run_lifecycle_from_restricted_solver_state(
+def _run_lifecycle_from_native_state(
     *,
     setup: CondensateChemicalSetup,
     T: float,
@@ -593,10 +930,12 @@ def _run_lifecycle_from_restricted_solver_state(
     Pref: float,
     b: Array,
     options: CondensateEquilibriumOptions,
-    solver: Mapping[str, Any],
-    solver_ln_nk: Array,
-    solver_support_indices: Sequence[int],
-    solver_support_amounts: Array,
+    ln_nk: Array,
+    support_indices: Sequence[int],
+    support_amounts: Array,
+    element_potential: Array | None,
+    element_potential_source: str,
+    field_source: str,
     primary_continuation_policy: Mapping[str, Any],
 ):
     from exogibbs.condensates.head_route_lifecycle import (
@@ -607,30 +946,33 @@ def _run_lifecycle_from_restricted_solver_state(
         jnp.asarray(setup.gas_setup.hvector_func(float(T)))
         + _ln_normalized_pressure(P, Pref)
     )
-    if "pi_vector" in solver:
-        element_potential = jnp.asarray(solver["pi_vector"], dtype=jnp.float64)
-        element_potential_source = "exogibbs_restricted_solver_dual"
-    else:
+    ln_nk_array = jnp.asarray(ln_nk, dtype=jnp.float64)
+    if element_potential is None:
         element_potential = _least_squares_element_potential(
             formula_matrix=setup.formula_matrix,
-            gas_ln_n=solver_ln_nk,
+            gas_ln_n=ln_nk_array,
             gas_stationarity_source=gas_stationarity_source,
         )
-        element_potential_source = "exogibbs_native_least_squares_gas_gauge"
+    element_potential_array = jnp.asarray(element_potential, dtype=jnp.float64)
+    support = tuple(int(index) for index in support_indices)
+    support_amount_array = jnp.maximum(
+        jnp.asarray(support_amounts, dtype=jnp.float64),
+        jnp.asarray(1.0e-300, dtype=jnp.float64),
+    )
     condensate_hvector = jnp.asarray(setup.condensate_setup.hvector_func(float(T)))
     return run_condensate_head_route_lifecycle(
         explicit_opt_in=True,
         case_id=options.case_id or "runtime_layer",
-        ln_nk=solver_ln_nk,
-        support_indices=solver_support_indices,
-        support_amounts=solver_support_amounts,
+        ln_nk=ln_nk_array,
+        support_indices=support,
+        support_amounts=support_amount_array,
         formula_matrix=setup.formula_matrix,
         formula_matrix_cond=setup.formula_matrix_cond,
         element_inventory_target=jnp.asarray(b),
-        element_potential=element_potential,
+        element_potential=element_potential_array,
         gas_stationarity_source=gas_stationarity_source,
         condensate_standard_source=jnp.asarray(
-            [condensate_hvector[index] for index in solver_support_indices]
+            [condensate_hvector[index] for index in support]
         ),
         primary_summary=options.head_route_primary_summary,
         primary_continuation_policy=primary_continuation_policy,
@@ -649,11 +991,48 @@ def _run_lifecycle_from_restricted_solver_state(
         metric_status=options.metric_status,
         selected_route_override=_head_route_selected_route_override(options),
         field_provenance={
-            "ln_nk": "exogibbs_restricted_support_solver_output",
-            "support_indices": "exogibbs_restricted_support_solver_output",
-            "support_amounts": "exogibbs_restricted_support_solver_output",
+            "ln_nk": field_source,
+            "support_indices": field_source,
+            "support_amounts": field_source,
             "element_potential": element_potential_source,
         },
+    )
+
+
+def _run_lifecycle_from_restricted_solver_state(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    Pref: float,
+    b: Array,
+    options: CondensateEquilibriumOptions,
+    solver: Mapping[str, Any],
+    solver_ln_nk: Array,
+    solver_support_indices: Sequence[int],
+    solver_support_amounts: Array,
+    primary_continuation_policy: Mapping[str, Any],
+):
+    if "pi_vector" in solver:
+        element_potential = jnp.asarray(solver["pi_vector"], dtype=jnp.float64)
+        element_potential_source = "exogibbs_restricted_solver_dual"
+    else:
+        element_potential = None
+        element_potential_source = "exogibbs_native_least_squares_gas_gauge"
+    return _run_lifecycle_from_native_state(
+        setup=setup,
+        T=T,
+        P=P,
+        Pref=Pref,
+        b=b,
+        options=options,
+        ln_nk=solver_ln_nk,
+        support_indices=solver_support_indices,
+        support_amounts=solver_support_amounts,
+        element_potential=element_potential,
+        element_potential_source=element_potential_source,
+        field_source="exogibbs_restricted_support_solver_output",
+        primary_continuation_policy=primary_continuation_policy,
     )
 
 
@@ -740,6 +1119,9 @@ def build_condensate_equilibrium_result_from_solver_payload(
     solver_success: bool,
     allow_caveat_tiers: bool = True,
     diagnostics: Optional[Mapping[str, Any]] = None,
+    element_inventory_target: Array | None = None,
+    enable_full_condensate_budget_residual_gate: bool = True,
+    full_condensate_budget_relative_tolerance: float = 1.0e-3,
 ) -> CondensateEquilibriumResult:
     """Build a production-facing condensate result from explicit solver arrays."""
 
@@ -769,6 +1151,20 @@ def build_condensate_equilibrium_result_from_solver_payload(
     metadata.setdefault("acceptance_tier", acceptance_tier)
     metadata.setdefault("warning_messages", warnings)
     metadata.setdefault("fastchem4_trace_public_runtime_constructor_inputs_used", False)
+    status, acceptance_tier, warnings, metadata = _apply_full_condensate_budget_residual_gate(
+        setup=setup,
+        gas_n=gas_n,
+        condensate_amounts=condensate_amounts,
+        element_inventory_target=element_inventory_target,
+        status=status,
+        acceptance_tier=acceptance_tier,
+        warning_messages=warnings,
+        metadata=metadata,
+        enabled=enable_full_condensate_budget_residual_gate,
+        relative_tolerance=full_condensate_budget_relative_tolerance,
+    )
+    metadata["acceptance_tier"] = acceptance_tier
+    metadata["warning_messages"] = warnings
     return CondensateEquilibriumResult(
         gas_ln_n=gas_ln_n_array,
         gas_n=gas_n,
@@ -790,6 +1186,9 @@ def _build_empty_support_gas_result(
     setup: CondensateChemicalSetup,
     gas_ln_n: Sequence[float],
     diagnostics: Optional[Mapping[str, Any]],
+    element_inventory_target: Array | None = None,
+    enable_full_condensate_budget_residual_gate: bool = True,
+    full_condensate_budget_relative_tolerance: float = 1.0e-3,
 ) -> CondensateEquilibriumResult:
     gas_ln_n_array = jnp.asarray(gas_ln_n)
     gas_n = jnp.exp(gas_ln_n_array)
@@ -801,18 +1200,33 @@ def _build_empty_support_gas_result(
     metadata.setdefault("acceptance_tier", "runtime_empty_positive_support")
     metadata.setdefault("warning_messages", ())
     metadata.setdefault("fastchem4_trace_public_runtime_constructor_inputs_used", False)
+    condensate_amounts = jnp.zeros((len(setup.condensate_species),), dtype=gas_n.dtype)
+    status, acceptance_tier, warnings, metadata = _apply_full_condensate_budget_residual_gate(
+        setup=setup,
+        gas_n=gas_n,
+        condensate_amounts=condensate_amounts,
+        element_inventory_target=element_inventory_target,
+        status=CONVERGED,
+        acceptance_tier="runtime_empty_positive_support",
+        warning_messages=(),
+        metadata=metadata,
+        enabled=enable_full_condensate_budget_residual_gate,
+        relative_tolerance=full_condensate_budget_relative_tolerance,
+    )
+    metadata["acceptance_tier"] = acceptance_tier
+    metadata["warning_messages"] = warnings
     return CondensateEquilibriumResult(
         gas_ln_n=gas_ln_n_array,
         gas_n=gas_n,
         gas_x=gas_x,
         gas_ntot=gas_ntot,
-        condensate_amounts=jnp.zeros((len(setup.condensate_species),), dtype=gas_n.dtype),
+        condensate_amounts=condensate_amounts,
         condensate_support_indices=jnp.asarray((), dtype=jnp.int32),
         condensate_support_names=(),
-        acceptance_tier="runtime_empty_positive_support",
+        acceptance_tier=acceptance_tier,
         selected_route="head_v1_empty_positive_support_gas_only",
-        status=CONVERGED,
-        converged=True,
+        status=status,
+        converged=status in {CONVERGED, CONVERGED_WITH_CAVEAT},
         diagnostics=metadata,
     )
 
@@ -832,6 +1246,8 @@ def _build_native_seed_fallback_result(
     lifecycle_payload: Mapping[str, Any],
     allow_caveat_tiers: bool,
     return_diagnostics: bool,
+    enable_full_condensate_budget_residual_gate: bool = True,
+    full_condensate_budget_relative_tolerance: float = 1.0e-3,
     restricted_solver_success: bool = False,
     restricted_solver_payload: Mapping[str, Any] | None = None,
 ) -> CondensateEquilibriumResult:
@@ -922,6 +1338,13 @@ def _build_native_seed_fallback_result(
         solver_success=True,
         allow_caveat_tiers=allow_caveat_tiers,
         diagnostics=diagnostics_payload,
+        element_inventory_target=b,
+        enable_full_condensate_budget_residual_gate=(
+            enable_full_condensate_budget_residual_gate
+        ),
+        full_condensate_budget_relative_tolerance=(
+            full_condensate_budget_relative_tolerance
+        ),
     )
 
 
@@ -1268,6 +1691,13 @@ def _run_activity_driven_support_outer_loop(
             setup=setup,
             gas_ln_n=gas_result.ln_n,
             diagnostics=diagnostics,
+            element_inventory_target=b,
+            enable_full_condensate_budget_residual_gate=(
+                options.enable_full_condensate_budget_residual_gate
+            ),
+            full_condensate_budget_relative_tolerance=(
+                options.full_condensate_budget_relative_tolerance
+            ),
         )
 
     support_amounts = _budget_seed_for_support(
@@ -1443,22 +1873,25 @@ def _run_activity_driven_support_outer_loop(
                 Pref=Pref,
                 options=retry_options,
             )
-            retry_accepted = (
+            retry_route_promoted = (
                 retry_result.selected_route != "native_budget_seed_fallback_budget_tradeoff"
             )
+            retry_accepted = bool(retry_result.converged)
             retry_attempt = {
                 "support_cap": int(retry_cap),
                 "selected_route": retry_result.selected_route,
                 "status": retry_result.status,
                 "support_count": len(tuple(retry_result.condensate_support_names)),
                 "accepted": bool(retry_accepted),
+                "route_promoted": bool(retry_route_promoted),
             }
             retry_attempts.append(retry_attempt)
-            if retry_accepted:
+            if retry_route_promoted:
                 retry_report = {
                     "retry_schema": "exogibbs_support_free_support_cap_retry_v1",
                     "triggered": True,
-                    "accepted": True,
+                    "accepted": bool(retry_accepted),
+                    "route_promoted": True,
                     "support_cap": int(retry_cap),
                     "support_cap_sequence": tuple(int(cap) for cap in retry_caps),
                     "attempts": tuple(retry_attempts),
@@ -1504,9 +1937,10 @@ def _run_activity_driven_support_outer_loop(
                 Pref=Pref,
                 options=retry_options,
             )
-            retry_accepted = (
+            retry_route_promoted = (
                 retry_result.selected_route != "native_budget_seed_fallback_budget_tradeoff"
             )
+            retry_accepted = bool(retry_result.converged)
             retry_outer = (retry_result.diagnostics or {}).get("support_outer_loop", {})
             retry_attempt = {
                 "max_support_add_per_round": int(add_per_round),
@@ -1517,13 +1951,15 @@ def _run_activity_driven_support_outer_loop(
                 if isinstance(retry_outer, Mapping)
                 else None,
                 "accepted": bool(retry_accepted),
+                "route_promoted": bool(retry_route_promoted),
             }
             retry_attempts.append(retry_attempt)
-            if retry_accepted:
+            if retry_route_promoted:
                 retry_report = {
                     "retry_schema": "exogibbs_support_free_support_growth_staging_retry_v1",
                     "triggered": True,
-                    "accepted": True,
+                    "accepted": bool(retry_accepted),
+                    "route_promoted": True,
                     "max_support_add_per_round": int(add_per_round),
                     "max_support_add_per_round_sequence": tuple(
                         int(count) for count in staged_retry_counts
@@ -1675,6 +2111,13 @@ def condensate_equilibrium(
             setup=setup,
             gas_ln_n=gas_result.ln_n,
             diagnostics=diagnostics,
+            element_inventory_target=b,
+            enable_full_condensate_budget_residual_gate=(
+                opts.enable_full_condensate_budget_residual_gate
+            ),
+            full_condensate_budget_relative_tolerance=(
+                opts.full_condensate_budget_relative_tolerance
+            ),
         )
     solve_kwargs: dict[str, Any] = {}
     if opts.max_inner_iterations is not None:
@@ -1805,6 +2248,8 @@ def condensate_equilibrium(
     residual_worsening_retry_report: Mapping[str, Any] | None = None
     soft_restoration_retry_report: Mapping[str, Any] | None = None
     ipopt_h_type_retry_report: Mapping[str, Any] | None = None
+    condensate_budget_correction_retry_report: Mapping[str, Any] | None = None
+    full_budget_amount_polish_report: Mapping[str, Any] | None = None
     result_ln_nk = solver_ln_nk
     result_support_indices = solver_support_indices
     result_support_amounts = solver_support_amounts
@@ -2165,6 +2610,164 @@ def condensate_equilibrium(
                     **dict(lifecycle_payload),
                     "ipopt_h_type_retry_report": ipopt_h_type_retry_report,
                 }
+        if (
+            lifecycle_converged
+            and opts.enable_head_route_condensate_budget_correction_retry
+            and opts.enable_full_condensate_budget_residual_gate
+            and opts.metric_status is None
+            and opts.head_route_primary_summary is None
+            and opts.head_route_refresh_policy_summary is None
+            and selected_warm_start_candidate_object is not None
+        ):
+            final_state_payload = _lifecycle_final_state_payload(lifecycle_payload)
+            final_state_support_indices = _final_state_support_indices_from_lifecycle_payload(
+                lifecycle_payload,
+                fallback_support_indices=solver_support_indices,
+            )
+            initial_gate_report = None
+            if isinstance(final_state_payload, Mapping):
+                try:
+                    initial_gate_report = (
+                        _full_condensate_budget_gate_report_for_support_state(
+                            setup=setup,
+                            gas_ln_n=jnp.asarray(final_state_payload["ln_nk"]),
+                            support_indices=final_state_support_indices,
+                            support_amounts=jnp.exp(
+                                jnp.asarray(final_state_payload["ln_mk"])
+                            ),
+                            element_inventory_target=b,
+                            relative_tolerance=(
+                                opts.full_condensate_budget_relative_tolerance
+                            ),
+                        )
+                    )
+                except (KeyError, TypeError, ValueError):
+                    initial_gate_report = None
+            if initial_gate_report is not None and not bool(initial_gate_report["accepted"]):
+                budget_correction_policy = {
+                    **primary_policy,
+                    "direction_policy": "relative_condensate_budget_correction",
+                    "trial_acceptance_policy": "ipopt_persistent_h_type",
+                    "filter_component_weights": dict(
+                        HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS
+                    ),
+                    "ipopt_h_type_component_weights": dict(
+                        HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS
+                    ),
+                    "ipopt_h_type_theta_reduction_fraction": float(
+                        opts.head_route_ipopt_h_type_theta_reduction_fraction
+                    ),
+                    "ipopt_h_type_protected_components": tuple(
+                        HEAD_ROUTE_IPOPT_H_TYPE_PROTECTED_COMPONENTS
+                    ),
+                    "ipopt_h_type_protected_component_max_normalized_increase": float(
+                        opts.head_route_ipopt_h_type_protected_component_max_normalized_increase
+                    ),
+                    "center_tolerance_multiplier": float(
+                        opts.head_route_center_gate_retry_multiplier
+                    ),
+                    "persistent_filter_gamma_p": 1.0e-8,
+                    "persistent_filter_gamma_theta": 1.0e-5,
+                    "persistent_filter_theta_max_factor": 1.0e4,
+                    "require_residual_nonworsening": False,
+                }
+                budget_correction_lifecycle_report = _run_lifecycle_from_native_state(
+                    setup=setup,
+                    T=T,
+                    P=P,
+                    Pref=Pref,
+                    b=b,
+                    options=opts,
+                    ln_nk=jnp.asarray(final_state_payload["ln_nk"]),
+                    support_indices=final_state_support_indices,
+                    support_amounts=jnp.exp(jnp.asarray(final_state_payload["ln_mk"])),
+                    element_potential=None,
+                    element_potential_source=(
+                        "exogibbs_lifecycle_final_state_least_squares_gas_gauge"
+                    ),
+                    field_source="exogibbs_lifecycle_final_state",
+                    primary_continuation_policy=budget_correction_policy,
+                )
+                budget_correction_payload = budget_correction_lifecycle_report.as_dict()
+                retry_gate_report = None
+                retry_primary_payload = budget_correction_payload.get(
+                    "primary_execution_report"
+                )
+                retry_continuation_payload = (
+                    retry_primary_payload.get("continuation_report", {})
+                    if isinstance(retry_primary_payload, Mapping)
+                    else {}
+                )
+                retry_final_state_payload = (
+                    retry_continuation_payload.get("final_state")
+                    if isinstance(retry_continuation_payload, Mapping)
+                    else None
+                )
+                retry_final_state_support_indices = (
+                    _final_state_support_indices_from_lifecycle_payload(
+                        budget_correction_payload,
+                        fallback_support_indices=solver_support_indices,
+                    )
+                )
+                if isinstance(retry_final_state_payload, Mapping):
+                    try:
+                        retry_gate_report = (
+                            _full_condensate_budget_gate_report_for_support_state(
+                                setup=setup,
+                                gas_ln_n=jnp.asarray(retry_final_state_payload["ln_nk"]),
+                                support_indices=retry_final_state_support_indices,
+                                support_amounts=jnp.exp(
+                                    jnp.asarray(retry_final_state_payload["ln_mk"])
+                                ),
+                                element_inventory_target=b,
+                                relative_tolerance=(
+                                    opts.full_condensate_budget_relative_tolerance
+                                ),
+                            )
+                        )
+                    except (KeyError, TypeError, ValueError):
+                        retry_gate_report = None
+                budget_correction_accepted = bool(
+                    budget_correction_lifecycle_report.route_result.converged
+                    and retry_gate_report is not None
+                    and retry_gate_report["accepted"]
+                )
+                condensate_budget_correction_retry_report = {
+                    "retry_schema": (
+                        "exogibbs_head_route_condensate_budget_correction_retry_v1"
+                    ),
+                    "triggered": True,
+                    "accepted": budget_correction_accepted,
+                    "direction_policy": "relative_condensate_budget_correction",
+                    "trial_acceptance_policy": "ipopt_persistent_h_type",
+                    "initial_full_condensate_budget_gate": initial_gate_report,
+                    "retry_full_condensate_budget_gate": retry_gate_report,
+                    "initial_selected_route": lifecycle_selected_route,
+                    "retry_start_state": "lifecycle_final_state",
+                    "retry_selected_route": (
+                        budget_correction_lifecycle_report.route_result.selected_route
+                    ),
+                    "retry_metric_status": (
+                        budget_correction_lifecycle_report.route_result.metric_status
+                    ),
+                }
+                if budget_correction_accepted:
+                    lifecycle_report = budget_correction_lifecycle_report
+                    lifecycle_payload = budget_correction_payload
+                    lifecycle_selected_route = (
+                        budget_correction_lifecycle_report.route_result.selected_route
+                    )
+                    lifecycle_metric_status = (
+                        budget_correction_lifecycle_report.route_result.metric_status
+                    )
+                    lifecycle_converged = True
+                else:
+                    lifecycle_payload = {
+                        **dict(lifecycle_payload),
+                        "condensate_budget_correction_retry_report": (
+                            condensate_budget_correction_retry_report
+                        ),
+                    }
     else:
         lifecycle_payload = _run_lifecycle_from_warm_start_candidate(
             setup=setup,
@@ -2179,20 +2782,18 @@ def condensate_equilibrium(
         lifecycle_selected_route = str(route_result_payload["selected_route"])
         lifecycle_metric_status = str(route_result_payload["metric_status"])
         lifecycle_converged = bool(route_result_payload["converged"])
-        primary_execution_payload = lifecycle_payload.get("primary_execution_report")
-        if isinstance(primary_execution_payload, Mapping):
-            continuation_payload = primary_execution_payload.get("continuation_report", {})
-        else:
-            continuation_payload = {}
-        final_state_payload = (
-            continuation_payload.get("final_state")
-            if isinstance(continuation_payload, Mapping)
-            else None
-        )
+        final_state_payload = _lifecycle_final_state_payload(lifecycle_payload)
         if lifecycle_converged and isinstance(final_state_payload, Mapping):
-            result_ln_nk = jnp.asarray(final_state_payload["ln_nk"])
-            result_support_indices = tuple(int(index) for index in selected_warm_start_candidate_object.support_indices)
-            result_support_amounts = jnp.exp(jnp.asarray(final_state_payload["ln_mk"]))
+            result_support_indices = _final_state_support_indices_from_lifecycle_payload(
+                lifecycle_payload,
+                fallback_support_indices=(
+                    selected_warm_start_candidate_object.support_indices
+                ),
+            )
+            final_ln_mk = jnp.asarray(final_state_payload["ln_mk"])
+            if final_ln_mk.ndim == 1 and final_ln_mk.shape[0] == len(result_support_indices):
+                result_ln_nk = jnp.asarray(final_state_payload["ln_nk"])
+                result_support_amounts = jnp.exp(final_ln_mk)
         elif (
             opts.enable_native_seed_fallback
             and opts.head_route_primary_summary is None
@@ -2214,8 +2815,49 @@ def condensate_equilibrium(
                 lifecycle_payload=lifecycle_payload,
                 allow_caveat_tiers=opts.allow_caveat_tiers,
                 return_diagnostics=opts.return_diagnostics,
+                enable_full_condensate_budget_residual_gate=(
+                    opts.enable_full_condensate_budget_residual_gate
+                ),
+                full_condensate_budget_relative_tolerance=(
+                    opts.full_condensate_budget_relative_tolerance
+                ),
                 restricted_solver_success=False,
             )
+    if (
+        lifecycle_converged
+        and selected_warm_start_candidate_object is not None
+    ):
+        final_state_payload = _lifecycle_final_state_payload(lifecycle_payload)
+        final_support_indices = _final_state_support_indices_from_lifecycle_payload(
+            lifecycle_payload,
+            fallback_support_indices=solver_support_indices,
+        )
+        if isinstance(final_state_payload, Mapping):
+            final_ln_mk = jnp.asarray(final_state_payload["ln_mk"])
+            if final_ln_mk.ndim == 1 and final_ln_mk.shape[0] == len(final_support_indices):
+                result_ln_nk = jnp.asarray(final_state_payload["ln_nk"])
+                result_support_indices = final_support_indices
+                result_support_amounts = jnp.exp(final_ln_mk)
+    if (
+        lifecycle_converged
+        and opts.enable_full_condensate_budget_residual_gate
+        and b is not None
+        and len(result_support_indices) > 0
+    ):
+        polished_amounts, polish_report = (
+            _polish_support_amounts_for_full_condensate_budget_gate(
+                setup=setup,
+                gas_ln_n=result_ln_nk,
+                support_indices=result_support_indices,
+                support_amounts=result_support_amounts,
+                element_inventory_target=b,
+                relative_tolerance=opts.full_condensate_budget_relative_tolerance,
+            )
+        )
+        if polish_report is not None:
+            full_budget_amount_polish_report = polish_report
+            if bool(polish_report["accepted"]):
+                result_support_amounts = polished_amounts
     if (
         not lifecycle_converged
         and opts.enable_native_seed_fallback
@@ -2239,6 +2881,12 @@ def condensate_equilibrium(
             lifecycle_payload=lifecycle_payload,
             allow_caveat_tiers=opts.allow_caveat_tiers,
             return_diagnostics=opts.return_diagnostics,
+            enable_full_condensate_budget_residual_gate=(
+                opts.enable_full_condensate_budget_residual_gate
+            ),
+            full_condensate_budget_relative_tolerance=(
+                opts.full_condensate_budget_relative_tolerance
+            ),
             restricted_solver_success=restricted_solver_success,
             restricted_solver_payload=solver if restricted_solver_success else None,
         )
@@ -2268,6 +2916,14 @@ def condensate_equilibrium(
             diagnostics_payload["head_route_ipopt_h_type_retry"] = (
                 ipopt_h_type_retry_report
             )
+        if condensate_budget_correction_retry_report is not None:
+            diagnostics_payload["head_route_condensate_budget_correction_retry"] = (
+                condensate_budget_correction_retry_report
+            )
+        if full_budget_amount_polish_report is not None:
+            diagnostics_payload["full_condensate_budget_amount_polish"] = (
+                full_budget_amount_polish_report
+            )
     else:
         diagnostics_payload = None
     return build_condensate_equilibrium_result_from_solver_payload(
@@ -2280,6 +2936,13 @@ def condensate_equilibrium(
         solver_success=bool(lifecycle_converged),
         allow_caveat_tiers=opts.allow_caveat_tiers,
         diagnostics=diagnostics_payload,
+        element_inventory_target=b,
+        enable_full_condensate_budget_residual_gate=(
+            opts.enable_full_condensate_budget_residual_gate
+        ),
+        full_condensate_budget_relative_tolerance=(
+            opts.full_condensate_budget_relative_tolerance
+        ),
     )
 
 

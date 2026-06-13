@@ -57,6 +57,7 @@ def build_linear_budget_total_density_restoration_direction(
     formula_matrix: Sequence[Sequence[float]],
     formula_matrix_cond_active: Sequence[Sequence[float]],
     element_inventory_target: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
     q: Sequence[float],
     r: Sequence[float],
     lambda_size: int,
@@ -68,6 +69,11 @@ def build_linear_budget_total_density_restoration_direction(
     ag = _as_matrix(formula_matrix, "formula_matrix")
     ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
     target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     q_array = _as_vector(q, "q")
     r_array = _as_vector(r, "r")
     qtot_value = float(qtot)
@@ -75,6 +81,8 @@ def build_linear_budget_total_density_restoration_direction(
         raise ValueError("qtot must be finite.")
     if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
         raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
     if ag.shape[1] != q_array.shape[0]:
         raise ValueError("formula_matrix columns must match q.")
     if ac.shape[1] != r_array.shape[0]:
@@ -85,7 +93,7 @@ def build_linear_budget_total_density_restoration_direction(
     n = np.exp(q_array)
     m = np.exp(r_array)
     ntot = float(np.exp(qtot_value))
-    budget = ag @ n + ac @ m - target
+    budget = ag @ n + ac @ m + external_budget - target
     total_density = float(np.sum(n) - ntot)
     jac_budget = np.concatenate(
         [ag * n[None, :], ac * m[None, :], np.zeros((ag.shape[0], 1))],
@@ -113,6 +121,7 @@ def build_linear_budget_total_density_amount_gas_direction(
     formula_matrix: Sequence[Sequence[float]],
     formula_matrix_cond_active: Sequence[Sequence[float]],
     element_inventory_target: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
     gas_stationarity_source: Sequence[float],
     q: Sequence[float],
     r: Sequence[float],
@@ -134,6 +143,11 @@ def build_linear_budget_total_density_amount_gas_direction(
     ag = _as_matrix(formula_matrix, "formula_matrix")
     ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
     target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     gas_source = _as_vector(gas_stationarity_source, "gas_stationarity_source")
     q_array = _as_vector(q, "q")
     r_array = _as_vector(r, "r")
@@ -144,6 +158,8 @@ def build_linear_budget_total_density_amount_gas_direction(
         raise ValueError("qtot must be finite.")
     if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
         raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
     if ag.shape[1] != q_array.shape[0] or gas_source.shape[0] != q_array.shape[0]:
         raise ValueError("gas arrays must match q.")
     if ac.shape[1] != r_array.shape[0]:
@@ -192,7 +208,7 @@ def build_linear_budget_total_density_amount_gas_direction(
     rhs: list[float] = []
     budget_scale = np.sqrt(float(budget_weight))
     if budget_scale > 0.0:
-        budget = ag @ n + ac @ m - target
+        budget = ag @ n + ac @ m + external_budget - target
         for row_index in range(ag.shape[0]):
             rows.append(
                 budget_scale
@@ -280,6 +296,108 @@ def build_linear_budget_total_density_amount_gas_direction(
         delta_rho=delta_rho,
         delta_qtot=delta_qtot,
         direction_kind="linear_budget_total_density_amount_gas_direction",
+    )
+
+
+def build_active_condensate_budget_correction_direction(
+    *,
+    formula_matrix: Sequence[Sequence[float]],
+    formula_matrix_cond_active: Sequence[Sequence[float]],
+    element_inventory_target: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
+    q: Sequence[float],
+    r: Sequence[float],
+    lambda_size: int,
+    rho_size: int,
+    max_abs_delta_r: float = 2.0,
+    damping: float = 1.0e-20,
+    relative_budget_weighting: bool = False,
+    relative_budget_floor_factor: float = 1.0e-300,
+    enforce_condensate_capacity: bool = False,
+) -> AlgorithmV11Direction:
+    """Build a least-squares active-condensate amount correction direction."""
+
+    ag = _as_matrix(formula_matrix, "formula_matrix")
+    ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
+    target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
+    q_array = _as_vector(q, "q")
+    r_array = _as_vector(r, "r")
+    if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
+        raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
+    if ag.shape[1] != q_array.shape[0]:
+        raise ValueError("formula_matrix columns must match q.")
+    if ac.shape[1] != r_array.shape[0]:
+        raise ValueError("formula_matrix_cond_active columns must match r.")
+    if lambda_size < 0 or rho_size < 0:
+        raise ValueError("lambda_size and rho_size must be non-negative.")
+    limit = float(max_abs_delta_r)
+    if not np.isfinite(limit) or limit <= 0.0:
+        raise ValueError("max_abs_delta_r must be finite and positive.")
+    damping_value = float(damping)
+    if not np.isfinite(damping_value) or damping_value < 0.0:
+        raise ValueError("damping must be finite and non-negative.")
+    floor_factor = float(relative_budget_floor_factor)
+    if not np.isfinite(floor_factor) or floor_factor <= 0.0:
+        raise ValueError("relative_budget_floor_factor must be finite and positive.")
+
+    n = np.exp(q_array)
+    m = np.exp(r_array)
+    budget = ag @ n + ac @ m + external_budget - target
+    jac_cond = ac * m[None, :]
+    if jac_cond.size == 0 or jac_cond.shape[1] == 0:
+        delta_r = np.zeros_like(r_array)
+    else:
+        if damping_value > 0.0:
+            matrix = np.vstack(
+                [
+                    jac_cond,
+                    np.sqrt(damping_value) * np.eye(jac_cond.shape[1], dtype=np.float64),
+                ]
+            )
+            rhs = np.concatenate([-budget, np.zeros(jac_cond.shape[1], dtype=np.float64)])
+        else:
+            matrix = jac_cond
+            rhs = -budget
+        if relative_budget_weighting:
+            positive_target = target[target > 0.0]
+            target_scale = (
+                float(np.max(positive_target)) if positive_target.size else 1.0
+            )
+            floor = max(float(np.finfo(np.float64).tiny), floor_factor * target_scale)
+            row_weights = 1.0 / np.maximum(np.abs(target), floor)
+            row_weights = np.where(np.isfinite(row_weights), row_weights, 0.0)
+            matrix[: jac_cond.shape[0], :] *= row_weights[:, None]
+            rhs[: jac_cond.shape[0]] *= row_weights
+        delta_r, *_ = np.linalg.lstsq(matrix, rhs, rcond=None)
+        norm_inf = float(np.max(np.abs(delta_r))) if delta_r.size else 0.0
+        if norm_inf > limit and norm_inf > 0.0:
+            delta_r = delta_r * (limit / norm_inf)
+        if enforce_condensate_capacity:
+            with np.errstate(divide="ignore", invalid="ignore"):
+                per_element_limits = np.where(ac > 0.0, target[:, None] / ac, np.inf)
+            cond_capacity = np.min(per_element_limits, axis=0)
+            finite_positive_capacity = np.isfinite(cond_capacity) & (cond_capacity > 0.0)
+            if np.any(finite_positive_capacity):
+                log_capacity = np.full_like(r_array, np.inf)
+                log_capacity[finite_positive_capacity] = np.log(
+                    cond_capacity[finite_positive_capacity]
+                )
+                delta_r = np.minimum(delta_r, log_capacity - r_array)
+
+    return AlgorithmV11Direction(
+        delta_q=np.zeros_like(q_array),
+        delta_r=np.asarray(delta_r, dtype=np.float64),
+        delta_lambda=np.zeros(int(lambda_size), dtype=np.float64),
+        delta_rho=np.zeros(int(rho_size), dtype=np.float64),
+        delta_qtot=0.0,
+        direction_kind="active_condensate_budget_correction_direction",
     )
 
 

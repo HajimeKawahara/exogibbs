@@ -117,6 +117,7 @@ def compute_algorithm_v11_barrier_penalty_merit(
     formula_matrix: Sequence[Sequence[float]],
     formula_matrix_cond_active: Sequence[Sequence[float]],
     element_inventory_target: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
     gas_stationarity_source: Sequence[float],
     condensate_standard_source: Sequence[float],
     q: Sequence[float],
@@ -140,6 +141,11 @@ def compute_algorithm_v11_barrier_penalty_merit(
     ag = _as_matrix(formula_matrix, "formula_matrix")
     ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
     target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     gas_source = _as_vector(gas_stationarity_source, "gas_stationarity_source")
     cond_source = _as_vector(condensate_standard_source, "condensate_standard_source")
     q_array = _as_vector(q, "q")
@@ -164,6 +170,8 @@ def compute_algorithm_v11_barrier_penalty_merit(
 
     if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
         raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
     if ag.shape[1] != q_array.shape[0] or gas_source.shape[0] != q_array.shape[0]:
         raise ValueError("gas vectors must match formula_matrix columns.")
     if ac.shape[1] != r_array.shape[0] or cond_source.shape[0] != r_array.shape[0]:
@@ -178,7 +186,7 @@ def compute_algorithm_v11_barrier_penalty_merit(
     gas_mu_over_rt = gas_standard_source + q_array - qtot_value
     gibbs = float(np.dot(n, gas_mu_over_rt) + np.dot(m, cond_source))
     barrier = float(-barrier_parameter * np.sum(r_array))
-    budget = ag @ n + ac @ m - target
+    budget = ag @ n + ac @ m + external_budget - target
     budget_l1 = float(np.sum(np.abs(budget)))
     total_density_abs = float(abs(np.sum(n) - np.exp(qtot_value)))
     budget_penalty = float(penalty * budget_l1)
@@ -235,6 +243,7 @@ def compute_algorithm_v11_linearized_merit_decrease(
     formula_matrix: Sequence[Sequence[float]],
     formula_matrix_cond_active: Sequence[Sequence[float]],
     element_inventory_target: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
     gas_stationarity_source: Sequence[float],
     condensate_standard_source: Sequence[float],
     q: Sequence[float],
@@ -259,6 +268,11 @@ def compute_algorithm_v11_linearized_merit_decrease(
     ag = _as_matrix(formula_matrix, "formula_matrix")
     ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
     target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     gas_source = _as_vector(gas_stationarity_source, "gas_stationarity_source")
     cond_source = _as_vector(condensate_standard_source, "condensate_standard_source")
     q_array = _as_vector(q, "q")
@@ -286,6 +300,8 @@ def compute_algorithm_v11_linearized_merit_decrease(
 
     if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
         raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
     if ag.shape[1] != q_array.shape[0] or gas_source.shape[0] != q_array.shape[0]:
         raise ValueError("gas vectors must match formula_matrix columns.")
     if ac.shape[1] != r_array.shape[0] or cond_source.shape[0] != r_array.shape[0]:
@@ -310,7 +326,7 @@ def compute_algorithm_v11_linearized_merit_decrease(
         + np.dot(cond_source, dm)
     )
     barrier_delta = float(-barrier_parameter * np.sum(dr))
-    budget = ag @ n + ac @ m - target
+    budget = ag @ n + ac @ m + external_budget - target
     linearized_budget = budget + ag @ dn + ac @ dm
     current_budget_l1 = float(np.sum(np.abs(budget)))
     linearized_budget_l1 = float(np.sum(np.abs(linearized_budget)))

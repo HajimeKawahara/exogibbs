@@ -103,6 +103,38 @@ def test_algorithm_v11_reduced_step_is_default_off_and_moves_full_state() -> Non
     assert report.candidate_state.rho != state.rho
 
 
+def test_algorithm_v11_reduced_step_includes_external_condensate_budget() -> None:
+    state = build_pdipm_rgie_condensate_state(
+        ln_nk=[np.log(0.8)],
+        ln_mk=[np.log(1.0e-6)],
+        element_potential=[0.0],
+        rho=[np.log(1.0e-6)],
+        eta=[1.0e-6],
+        field_provenance={
+            "ln_nk": "synthetic_control",
+            "ln_mk": "synthetic_control",
+            "element_potential": "synthetic_control",
+            "rho": "synthetic_control",
+            "eta": "synthetic_control",
+        },
+    )
+
+    report = solve_pdipm_rgie_algorithm_v11_reduced_step(
+        explicit_opt_in=True,
+        state=state,
+        formula_matrix=[[1.0]],
+        formula_matrix_cond_active=[[1.0]],
+        element_inventory_target=[1.0],
+        external_condensate_budget=[0.199999],
+        gas_stationarity_source=[0.0],
+        condensate_standard_source=[0.0],
+        epsilon=float(np.log(1.0e-12)),
+        qhat_regularization=1.0e-12,
+    )
+
+    assert report.initial_budget_l2 == pytest.approx(0.0, abs=1.0e-14)
+
+
 def test_algorithm_v11_reduced_step_reports_large_condensate_norm_stably() -> None:
     state = build_pdipm_rgie_condensate_state(
         ln_nk=[np.log(0.8)],

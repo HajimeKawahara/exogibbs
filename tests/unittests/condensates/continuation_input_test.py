@@ -34,6 +34,7 @@ def _fixture_kwargs():
 
 def test_builds_continuation_input_and_infers_rho_from_epsilon() -> None:
     inputs = _fixture_kwargs()
+    inputs["external_condensate_budget"] = [1.0e-8, 2.0e-8]
     report = build_condensate_continuation_input(**inputs)
 
     assert report.input_schema == "exogibbs_condensate_continuation_input_v1"
@@ -45,6 +46,7 @@ def test_builds_continuation_input_and_infers_rho_from_epsilon() -> None:
     assert report.inferred_rho_from_epsilon is True
     assert report.gas_lambda_gauge_residual_l2 == pytest.approx(0.0, abs=1.0e-14)
     assert report.gas_lambda_gauge_residual_max_abs == pytest.approx(0.0, abs=1.0e-14)
+    assert report.external_condensate_budget == pytest.approx((1.0e-8, 2.0e-8))
     assert report.state.rho == pytest.approx((math.log(1.0e-12) - math.log(1.0e-8),))
     assert report.as_dict()["state"]["state_schema"] == "exogibbs_pdipm_rgie_condensate_state_v1"
 
