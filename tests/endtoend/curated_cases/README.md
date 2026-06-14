@@ -33,4 +33,6 @@ There are two curated surfaces:
   lifecycle final-state public result wiring with post-growth support indices,
   and a relative joint gas/condensate budget-correction retry that starts from
   the lifecycle final state when the public full-budget gate rejects an accepted
-  row.
+  row. Remaining support-free fallback rejects are guarded by a
+  budget-preserving seed retry, and empty-support gas-only gate rejects are
+  guarded by a strict gas-only retry.

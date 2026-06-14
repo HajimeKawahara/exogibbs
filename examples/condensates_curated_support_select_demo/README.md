@@ -10,16 +10,16 @@ Current HEAD route v1.4 fresh API counts over the 10 full profile families are:
 | route group | layers |
 |---|---:|
 | empty gas-only boundary | 17 |
-| primary promoted route | 78 |
-| native seed fallback route | 4 |
+| primary promoted route | 82 |
+| native seed fallback route | 0 |
 | exception | 0 |
 
 Current public status after the v1.4 full-condensate element-budget gate is:
 
 | status group | layers |
 |---|---:|
-| converged | 93 |
-| not_converged | 6 |
+| converged | 99 |
+| not_converged | 0 |
 | exception | 0 |
 
 The v1.3 support-free gates include center-gate retry with
@@ -37,6 +37,8 @@ indices in the public result. The current v1.4 HEAD route also applies
 per-condensate element capacity caps, final support amount polish, and a
 relative joint gas/condensate budget-correction retry that starts from the
 lifecycle final state when the public full-budget gate rejects an accepted row.
+Remaining full-profile rejects are guarded by a budget-preserving seed retry
+for native fallback rows and a strict gas-only retry for empty-support rows.
 
 The demos are scratch-facing examples for auditing native support selection.
 They intentionally keep the original pressure/temperature families from

@@ -2,7 +2,7 @@
 
 この文書は、ExoGibbs の凝縮あり計算で現在の基準経路として扱う **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
 
-現在の実装版は **HEAD route v1.4** である。v1.4 は v1.3 の fresh API runtime path を基準に、public `accepted` / `converged` 判定へ full condensate vector の element-wise relative budget residual gate と、gate fail row を lifecycle final state から直す relative joint budget-correction retry を追加する。
+現在の実装版は **HEAD route v1.4** である。v1.4 は v1.3 の fresh API runtime path を基準に、public `accepted` / `converged` 判定へ full condensate vector の element-wise relative budget residual gate と、gate fail row を直す relative joint budget-correction retry、budget-preserving seed retry、empty-support strict gas retry を追加する。
 
 ## 一言でいうと
 
@@ -15,7 +15,7 @@
 5. 失敗または不十分な場合は、HEAD route lifecycle（外側制御）で primary continuation、fallback、electron refresh、frontier refresh を試す。
    v1.2 では、restricted support solver が成功しても lifecycle selector が accepted しない fresh API runtime layer について、finite warm-start candidate が残っていれば native seed fallback を許可する。
    v1.3 では、support-free outer loop 内に center-gate retry、residual-worsening retry、soft-restoration retry、Ipopt-style persistent h-type retry、support-cap retry を追加し、native seed fallback へ落ちる runtime layer を減らす。
-6. v1.4 では、返却直前に gas と full condensate vector から元素 budget を再構成し、element-wise relative residual が許容値を超える accepted row を lifecycle final state から relative joint budget-correction retry で直す。retry 後も許容値を超える row だけを `not_converged` に降格する。
+6. v1.4 では、返却直前に gas と full condensate vector から元素 budget を再構成し、element-wise relative residual が許容値を超える accepted row を relative joint budget-correction retry、budget-preserving seed retry、empty-support strict gas retry で直す。retry 後も許容値を超える row だけを `not_converged` に降格する。
 7. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
 
 これは FastChem4 exact replay（FastChem4 の分岐を完全再現すること）ではない。FastChem4 public/runtime/trace values（公開出力・実行時出力・内部 trace 値）は、ExoGibbs の constructor input（初期値や構成入力）として使わない。
@@ -31,20 +31,22 @@ HEAD route v1.4 は、v1.3 の route selection と retry sequence を維持し�
 | external condensate budget in RGIE/PD-IPM residuals | thermo-invalid filtering などで Newton/Jacobian 変数から外れた凝縮種の現在量を `A_cond,E m_E` として元素保存 residual、merit、direction builder に加え、active subproblem が full condensate budget と同じ収支を解くようにする。 | algorithm-v1.1 RGIE/PD-IPM callsites |
 | lifecycle final-state public result wiring | restricted solver 成功後の public result に solver 初期状態ではなく lifecycle continuation の final state を反映し、support-growth / support filtering 後の lifecycle support indices と合わせて full condensate budget gate が実際の accepted state を評価するようにする。 | public `condensate_equilibrium()` result |
 | relative joint budget-correction retry | full budget gate が落ちた accepted row では、active condensate 量だけで帳尻を合わせず、gas amount と active condensate amount を同じ linearized budget system で動かす。`budget_row_scaling_policy="relative_target"` と `relative_budget_max` filter component により、trace element の budget residual が絶対量の大きい元素に埋もれないようにする。 | algorithm-v1.1 continuation retry |
+| budget-preserving seed retry | support-free outer loop が `max_density` seed で native seed fallback に落ち、public full-budget gate も通らない場合、shared budget fraction を守る `budget_preserving_fraction` seed で同じ fresh API path を一度だけ再実行する。 | support-free fallback-only retry |
+| empty-support strict gas retry | positive condensate support が空の gas-only row で v1.4 full-budget gate が落ちた場合、`epsilon_crit=1.0e-12` の gas-only solve を一度だけ試す。 | support-free empty support route |
 | budget-correction retry final-state start | full budget gate で落ちた accepted lifecycle row の retry は、restricted solver output へ戻らず、lifecycle continuation の final `ln_nk` / `ln_mk` / support indices から開始する。diagnostics には `retry_start_state="lifecycle_final_state"` を残す。 | algorithm-v1.1 continuation retry |
 | condensate capacity cap in continuation trials | 各 active condensate amount を、その凝縮種が単独で使える元素 budget 上限 `min_i b_i / A_cond,i,k` 以下に抑え、小さい budget の元素を含む extra support が過剰量を持つことを防ぐ。 | algorithm-v1.1 continuation trial / accepted state update |
 | final support amount polish | lifecycle final state が accepted した後、gas state を固定し、support amount だけを相対 budget LS と capacity cap で微修正する補助 polish。full budget gate が accepted した場合だけ public support amounts に反映する。 | public `condensate_equilibrium()` result |
 
 既定値は `enable_full_condensate_budget_residual_gate=True`、`full_condensate_budget_relative_tolerance=1.0e-3` である。gate が reject した場合、`acceptance_tier` は `full_condensate_element_budget_residual_failed` になり、diagnostics に `full_condensate_budget_residual_gate`、`pre_full_condensate_budget_gate_status`、`pre_full_condensate_budget_gate_acceptance_tier` を残す。
 
-v1.4 の fresh API support-free route selection は v1.3 の primary route を基本にする。ただし public status は full budget gate 後の値になり、現在の full-profile audit では一部の rows が native seed fallback route として残る。
+v1.4 の fresh API support-free route selection は v1.3 の primary route を基本にする。ただし public status は full budget gate 後の値になる。fallback seed 過剰と empty-support gas 精度の guarded retry 後、現在の full-profile audit では public `not_converged` は残らない。
 
 | surface | gas-only route | primary route | native seed fallback route | exception | public converged | public not_converged |
 |---|---:|---:|---:|---:|---:|---:|
 | 10 curated midlayers | 1 | 9 | 0 | 0 | 10 | 0 |
-| 10 curated full-profile families | 17 | 78 | 4 | 0 | 93 | 6 |
+| 10 curated full-profile families | 17 | 82 | 0 | 0 | 99 | 0 |
 
-v1.4 固定後の次課題は、残る 6 件の `not_converged` row の residual source を分解し、fallback lifecycle solution / gas-only boundary のどこで直すべきかを切り分けること、`condensate_equilibrium_profile()` を support-free API path に接続すること、public API examples/docs を整備することである。2026-06-13 の maintenance update では、`ref/tce_v1.3.tex` に外部凝縮種 budget の式を追加し、RGIE/PD-IPM の residual/merit/direction/callsite に `external_condensate_budget` を通した。さらに lifecycle continuation final state を public result に反映し、support-growth / support filtering 後の lifecycle support indices で final-state amounts を展開するように直した。その後、小さい budget の元素を含む active condensate が過剰量を持たないように、continuation capacity cap と final support amount polish を追加し、full-budget gate fail accepted row には lifecycle final state から relative joint budget-correction retry を適用するように固定した。現在の 99-layer audit では primary m4310 route の full-budget reject は 0 件になり、public status count は `93 converged / 6 not_converged` である。
+v1.4 固定後の次課題は、`condensate_equilibrium_profile()` を support-free API path に接続すること、public API examples/docs を整備することである。2026-06-13 の maintenance update では、`ref/tce_v1.3.tex` に外部凝縮種 budget の式を追加し、RGIE/PD-IPM の residual/merit/direction/callsite に `external_condensate_budget` を通した。さらに lifecycle continuation final state を public result に反映し、support-growth / support filtering 後の lifecycle support indices で final-state amounts を展開するように直した。その後、小さい budget の元素を含む active condensate が過剰量を持たないように、continuation capacity cap と final support amount polish を追加し、full-budget gate fail accepted row には lifecycle final state から relative joint budget-correction retry を適用するように固定した。さらに remaining rejects の分解結果に基づき、native seed fallback の過剰 seed には budget-preserving seed retry、empty-support gas-only row には strict gas retry を追加した。現在の 99-layer audit では public status count は `99 converged / 0 not_converged` である。
 
 ## HEAD route v1.3 固定内容
 
@@ -360,8 +362,8 @@ retry が発火する。
 | group | rows | status |
 |---|---:|---|
 | empty gas-only boundary | 17 | `converged` |
-| primary promoted route | 78 | `converged` / `not_converged` |
-| native seed fallback route | 4 | `converged` / `not_converged` |
+| primary promoted route | 82 | `converged` |
+| native seed fallback route | 0 | なし |
 | exception | 0 | なし |
 
 一方、14 representative rows は v1.1 由来の fixed-support regression である。これらは

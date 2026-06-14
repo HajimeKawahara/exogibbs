@@ -79,8 +79,17 @@ SUPPORT_FREE_MIDLAYER_EXPECTED_STATUSES = {
     "complex_heavy_element_or_boron_titanium_zirconium_case": CONVERGED,
 }
 
-SUPPORT_FREE_STAGED_RETRY_REGRESSION_ROWS = (
+SUPPORT_FREE_FALLBACK_RETRY_REGRESSION_ROWS = (
     ("solar_water_condensation", 7),
+)
+
+SUPPORT_FREE_V1_4_REMAINING_REJECT_REGRESSION_ROWS = (
+    ("carbon_rich_graphite_window", 0, "support_budget_preserving_seed_retry"),
+    ("carbon_rich_graphite_window", 1, "support_budget_preserving_seed_retry"),
+    ("carbon_rich_graphite_window", 3, "support_budget_preserving_seed_retry"),
+    ("solar_highT_no_condensate_gas_regression", 14, "empty_support_strict_gas_retry"),
+    ("solar_highT_no_condensate_gas_regression", 16, "empty_support_strict_gas_retry"),
+    ("solar_water_condensation", 0, "support_budget_preserving_seed_retry"),
 )
 
 
@@ -376,10 +385,10 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
     assert status_counts == {CONVERGED: 10, CONVERGED_WITH_CAVEAT: 0, NOT_CONVERGED: 0}
 
 
-def test_support_free_staged_retry_regression_layers_promote_to_primary() -> None:
+def test_support_free_fallback_retry_regression_layers_promote_to_primary() -> None:
     setup = condensate_chemical_setup(silent=True)
 
-    for family, layer_index in SUPPORT_FREE_STAGED_RETRY_REGRESSION_ROWS:
+    for family, layer_index in SUPPORT_FREE_FALLBACK_RETRY_REGRESSION_ROWS:
         definition = FRESH_CURATED_PROFILES[family]
         temperature = float(definition.temperatures[layer_index])
         pressure = float(definition.pressures[layer_index])
@@ -406,18 +415,58 @@ def test_support_free_staged_retry_regression_layers_promote_to_primary() -> Non
         assert result.diagnostics is not None
         gate = result.diagnostics["full_condensate_budget_residual_gate"]
         assert gate["accepted"] is True
-        retry_report = result.diagnostics["support_growth_staging_retry"]
+        retry_report = result.diagnostics["support_budget_preserving_seed_retry"]
         assert retry_report["triggered"] is True
         assert retry_report["accepted"] is True
         assert retry_report["route_promoted"] is True
-        assert retry_report["max_support_add_per_round"] == 64
         assert (
             retry_report["initial_selected_route"]
             == "native_budget_seed_fallback_budget_tradeoff"
         )
+        assert retry_report["retry_seed_initialization_policy"] == "budget_preserving_fraction"
         support_selection = result.diagnostics["support_selection"]
         assert support_selection["selection_mode"] == "activity_driven_support_outer_loop"
         assert support_selection["fastchem4_trace_values_used"] is False
+
+
+def test_support_free_v1_4_remaining_reject_rows_are_repaired() -> None:
+    setup = condensate_chemical_setup(silent=True)
+
+    for (
+        family,
+        layer_index,
+        retry_key,
+    ) in SUPPORT_FREE_V1_4_REMAINING_REJECT_REGRESSION_ROWS:
+        definition = FRESH_CURATED_PROFILES[family]
+        temperature = float(definition.temperatures[layer_index])
+        pressure = float(definition.pressures[layer_index])
+        result = condensate_equilibrium(
+            setup,
+            temperature,
+            pressure,
+            element_budget_for_profile(setup, definition),
+            options=CondensateEquilibriumOptions(
+                case_id=(
+                    f"{case_id_for_profile(definition, temperature, pressure)}"
+                    "__remaining_reject_regression"
+                ),
+                return_diagnostics=True,
+                max_inner_iterations=definition.max_inner_iterations,
+            ),
+        )
+
+        assert result.status == CONVERGED, family
+        assert result.converged is True
+        assert result.diagnostics is not None
+        gate = result.diagnostics["full_condensate_budget_residual_gate"]
+        assert gate["accepted"] is True
+        retry_report = result.diagnostics[retry_key]
+        assert retry_report["triggered"] is True
+        assert retry_report["accepted"] is True
+        assert (
+            retry_report["fastchem4_trace_public_runtime_constructor_inputs_used"]
+            is False
+        )
 
 
 def test_water_explicit_support_primary_center_tolerance_opt_in_reaches_tier1() -> None:

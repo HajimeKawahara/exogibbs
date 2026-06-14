@@ -217,7 +217,7 @@ digraph head_route_v1_en {
     ];
     v11_fallback_gate [
       shape=diamond,
-      label="v1.3 retry gates + v1.4 full-budget gate / relative joint budget-correction retry\ncenter / residual / soft-restoration / Ipopt h-type / support-cap\nthen v1.2 fallback gate",
+      label="v1.3 retry gates + v1.4 full-budget gate / budget repair retries\ncenter / residual / soft-restoration / Ipopt h-type / support-cap\nrelative joint budget / budget-preserving seed / strict gas",
       fillcolor="#fef3c7"
     ];
     native_seed_fallback [

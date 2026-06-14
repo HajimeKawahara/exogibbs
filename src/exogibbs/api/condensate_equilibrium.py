@@ -1740,6 +1740,19 @@ def _with_support_growth_staging_retry_diagnostics(
     return replace(result, diagnostics=diagnostics)
 
 
+def _with_support_budget_preserving_seed_retry_diagnostics(
+    *,
+    result: CondensateEquilibriumResult,
+    retry_report: Mapping[str, Any],
+    return_diagnostics: bool,
+) -> CondensateEquilibriumResult:
+    if not return_diagnostics:
+        return result
+    diagnostics = dict(result.diagnostics or {})
+    diagnostics["support_budget_preserving_seed_retry"] = retry_report
+    return replace(result, diagnostics=diagnostics)
+
+
 def _run_activity_driven_support_outer_loop(
     *,
     setup: CondensateChemicalSetup,
@@ -1808,8 +1821,12 @@ def _run_activity_driven_support_outer_loop(
         )
         if not options.allow_empty_positive_support:
             raise ValueError("No positive condensate support candidates were selected.")
-        diagnostics = {"support_selection": support_selection_report} if options.return_diagnostics else None
-        return _build_empty_support_gas_result(
+        diagnostics = (
+            {"support_selection": support_selection_report}
+            if options.return_diagnostics
+            else None
+        )
+        empty_result = _build_empty_support_gas_result(
             setup=setup,
             gas_ln_n=gas_result.ln_n,
             diagnostics=diagnostics,
@@ -1821,6 +1838,68 @@ def _run_activity_driven_support_outer_loop(
                 options.full_condensate_budget_relative_tolerance
             ),
         )
+        gate = (empty_result.diagnostics or {}).get(
+            "full_condensate_budget_residual_gate",
+            {},
+        )
+        if (
+            options.enable_full_condensate_budget_residual_gate
+            and not empty_result.converged
+            and isinstance(gate, Mapping)
+            and not bool(gate.get("accepted", True))
+        ):
+            strict_gas_result = equilibrium(
+                setup.gas_setup,
+                T,
+                P,
+                jnp.asarray(b),
+                Pref=Pref,
+                options=EquilibriumOptions(epsilon_crit=1.0e-12),
+                return_diagnostics=False,
+            )
+            strict_diagnostics = dict(diagnostics or {})
+            strict_diagnostics["empty_support_strict_gas_retry"] = {
+                "retry_schema": "exogibbs_empty_support_strict_gas_retry_v1",
+                "triggered": True,
+                "epsilon_crit": 1.0e-12,
+                "initial_full_condensate_budget_gate": gate,
+                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+            }
+            strict_result = _build_empty_support_gas_result(
+                setup=setup,
+                gas_ln_n=strict_gas_result.ln_n,
+                diagnostics=strict_diagnostics,
+                element_inventory_target=b,
+                enable_full_condensate_budget_residual_gate=(
+                    options.enable_full_condensate_budget_residual_gate
+                ),
+                full_condensate_budget_relative_tolerance=(
+                    options.full_condensate_budget_relative_tolerance
+                ),
+            )
+            if options.return_diagnostics:
+                strict_gate = (strict_result.diagnostics or {}).get(
+                    "full_condensate_budget_residual_gate",
+                    {},
+                )
+                retry_report = dict(
+                    (strict_result.diagnostics or {}).get(
+                        "empty_support_strict_gas_retry",
+                        {},
+                    )
+                )
+                retry_report["accepted"] = bool(strict_result.converged)
+                retry_report["retry_full_condensate_budget_gate"] = strict_gate
+                strict_result = replace(
+                    strict_result,
+                    diagnostics={
+                        **dict(strict_result.diagnostics or {}),
+                        "empty_support_strict_gas_retry": retry_report,
+                    },
+                )
+            if strict_result.converged:
+                return strict_result
+        return empty_result
 
     support_amounts = _budget_seed_for_support(
         setup=setup,
@@ -2103,6 +2182,57 @@ def _run_activity_driven_support_outer_loop(
                     retry_report=retry_report,
                     return_diagnostics=options.return_diagnostics,
                 )
+    if (
+        options.seed_initialization_policy != "budget_preserving_fraction"
+        and last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
+        and not last_result.converged
+    ):
+        retry_options = replace(
+            options,
+            case_id=None
+            if options.case_id is None
+            else f"{options.case_id}__budget_preserving_seed_retry",
+            seed_initialization_policy="budget_preserving_fraction",
+            enable_support_cap_retry=False,
+            enable_support_growth_staging_retry=False,
+        )
+        retry_result = condensate_equilibrium(
+            setup,
+            T,
+            P,
+            b,
+            Pref=Pref,
+            options=retry_options,
+        )
+        retry_report = {
+            "retry_schema": "exogibbs_support_free_budget_preserving_seed_retry_v1",
+            "triggered": True,
+            "accepted": bool(retry_result.converged),
+            "route_promoted": bool(
+                retry_result.selected_route
+                != "native_budget_seed_fallback_budget_tradeoff"
+            ),
+            "initial_seed_initialization_policy": options.seed_initialization_policy,
+            "retry_seed_initialization_policy": "budget_preserving_fraction",
+            "initial_selected_route": last_result.selected_route,
+            "initial_status": last_result.status,
+            "initial_support_count": len(tuple(current_support)),
+            "retry_selected_route": retry_result.selected_route,
+            "retry_status": retry_result.status,
+            "retry_support_count": len(tuple(retry_result.condensate_support_names)),
+            "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+        }
+        if retry_result.converged:
+            return _with_support_budget_preserving_seed_retry_diagnostics(
+                result=retry_result,
+                retry_report=retry_report,
+                return_diagnostics=options.return_diagnostics,
+            )
+        last_result = _with_support_budget_preserving_seed_retry_diagnostics(
+            result=last_result,
+            retry_report=retry_report,
+            return_diagnostics=options.return_diagnostics,
+        )
     return _with_support_outer_loop_diagnostics(
         result=last_result,
         support_selection_report=support_selection_report,
