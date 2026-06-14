@@ -134,6 +134,8 @@ def build_linear_budget_total_density_amount_gas_direction(
     amount_gas_weight: float = 1.0,
     target_direction_weight: float = 1.0e-2,
     target_direction_component_mode: str = "all",
+    budget_row_scaling_policy: str = "absolute",
+    relative_budget_floor_factor: float = 1.0e-300,
     max_abs_delta_q: float = 2.0,
     max_abs_delta_r: float = 2.0,
     max_abs_delta_lambda: float = 100.0,
@@ -175,6 +177,11 @@ def build_linear_budget_total_density_amount_gas_direction(
     )
     if any((not np.isfinite(weight) or weight < 0.0) for weight in weights):
         raise ValueError("direction weights must be finite and non-negative.")
+    if budget_row_scaling_policy not in {"absolute", "relative_target"}:
+        raise ValueError("budget_row_scaling_policy must be absolute or relative_target.")
+    floor_factor = float(relative_budget_floor_factor)
+    if not np.isfinite(floor_factor) or floor_factor <= 0.0:
+        raise ValueError("relative_budget_floor_factor must be finite and positive.")
 
     n = np.exp(q_array)
     m = np.exp(r_array)
@@ -209,15 +216,27 @@ def build_linear_budget_total_density_amount_gas_direction(
     budget_scale = np.sqrt(float(budget_weight))
     if budget_scale > 0.0:
         budget = ag @ n + ac @ m + external_budget - target
+        if budget_row_scaling_policy == "relative_target":
+            positive_target = target[target > 0.0]
+            target_scale = (
+                float(np.max(positive_target)) if positive_target.size else 1.0
+            )
+            floor = max(float(np.finfo(np.float64).tiny), floor_factor * target_scale)
+            row_weights = 1.0 / np.maximum(np.abs(target), floor)
+            row_weights = np.where(target > 0.0, row_weights, 0.0)
+            row_weights = np.where(np.isfinite(row_weights), row_weights, 0.0)
+        else:
+            row_weights = np.ones(ag.shape[0], dtype=np.float64)
         for row_index in range(ag.shape[0]):
             rows.append(
                 budget_scale
+                * row_weights[row_index]
                 * block(
                     q_block=ag[row_index, :] * n,
                     r_block=ac[row_index, :] * m,
                 )
             )
-            rhs.append(float(-budget_scale * budget[row_index]))
+            rhs.append(float(-budget_scale * row_weights[row_index] * budget[row_index]))
 
     total_scale = np.sqrt(float(total_density_weight))
     if total_scale > 0.0:
@@ -372,6 +391,7 @@ def build_active_condensate_budget_correction_direction(
             )
             floor = max(float(np.finfo(np.float64).tiny), floor_factor * target_scale)
             row_weights = 1.0 / np.maximum(np.abs(target), floor)
+            row_weights = np.where(target > 0.0, row_weights, 0.0)
             row_weights = np.where(np.isfinite(row_weights), row_weights, 0.0)
             matrix[: jac_cond.shape[0], :] *= row_weights[:, None]
             rhs[: jac_cond.shape[0]] *= row_weights

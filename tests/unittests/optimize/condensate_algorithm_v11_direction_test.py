@@ -7,6 +7,7 @@ import pytest
 
 from exogibbs.optimize.condensate_algorithm_v11_direction import (
     build_active_condensate_budget_correction_direction,
+    build_linear_budget_total_density_amount_gas_direction,
 )
 
 
@@ -93,3 +94,42 @@ def test_active_condensate_budget_correction_enforces_elemental_capacity() -> No
     )
 
     assert direction.delta_r[0] == pytest.approx(np.log(1.0e-8) - np.log(1.0e-6))
+
+
+def test_joint_budget_direction_can_weight_trace_element_relatively() -> None:
+    absolute_direction = build_linear_budget_total_density_amount_gas_direction(
+        formula_matrix=[[1.0], [1.0]],
+        formula_matrix_cond_active=[[0.0], [0.0]],
+        element_inventory_target=[1.0, 1.0e-8],
+        gas_stationarity_source=[0.0],
+        q=[np.log(1.0)],
+        r=[np.log(1.0e-300)],
+        lam=[0.0, 0.0],
+        rho=[0.0],
+        qtot=np.log(1.0),
+        budget_weight=1.0,
+        total_density_weight=0.0,
+        amount_gas_weight=0.0,
+        target_direction_weight=0.0,
+        max_abs_delta_q=10.0,
+    )
+    relative_direction = build_linear_budget_total_density_amount_gas_direction(
+        formula_matrix=[[1.0], [1.0]],
+        formula_matrix_cond_active=[[0.0], [0.0]],
+        element_inventory_target=[1.0, 1.0e-8],
+        gas_stationarity_source=[0.0],
+        q=[np.log(1.0)],
+        r=[np.log(1.0e-300)],
+        lam=[0.0, 0.0],
+        rho=[0.0],
+        qtot=np.log(1.0),
+        budget_weight=1.0,
+        total_density_weight=0.0,
+        amount_gas_weight=0.0,
+        target_direction_weight=0.0,
+        budget_row_scaling_policy="relative_target",
+        max_abs_delta_q=10.0,
+    )
+
+    assert abs(relative_direction.delta_q[0]) > abs(absolute_direction.delta_q[0])
+    assert relative_direction.delta_q[0] == pytest.approx(-1.0)

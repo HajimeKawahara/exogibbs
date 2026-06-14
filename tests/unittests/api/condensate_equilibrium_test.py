@@ -153,6 +153,31 @@ def test_build_result_accepts_full_condensate_budget_residual_gate() -> None:
     assert gate["max_abs_relative_residual"] == pytest.approx(0.0)
 
 
+def test_build_result_restores_external_condensates_before_budget_gate() -> None:
+    setup = _setup_pair_with_two_condensates()
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=[0.0, 0.0],
+        support_indices=[1],
+        support_amounts=[1.0],
+        external_condensate_amounts=jnp.asarray([0.5, 0.0]),
+        selected_route="m4310_full_promoted_policy_route",
+        metric_status=TIGHT_RESIDUAL_STATUS,
+        solver_success=True,
+        element_inventory_target=jnp.asarray([3.0, 2.5]),
+    )
+
+    assert result.status == CONVERGED
+    assert result.converged is True
+    assert result.condensate_support_names == ("HO_s",)
+    assert result.condensate_amounts.tolist() == pytest.approx([0.5, 1.0])
+    assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
+    assert gate["max_abs_relative_residual"] == pytest.approx(0.0)
+
+
 def test_build_result_rejects_full_condensate_budget_residual_gate() -> None:
     _gas, _cond, setup = _setup_pair()
 
@@ -1627,6 +1652,10 @@ def test_condensate_budget_correction_retry_starts_from_lifecycle_final_state(
     assert calls[1]["ln_nk"] == pytest.approx([jnp.log(0.1), jnp.log(0.1)])
     assert calls[1]["support_amounts"] == pytest.approx([0.1])
     assert calls[1]["support_indices"] == (1,)
+    retry_policy = calls[1]["primary_continuation_policy"]
+    assert retry_policy["direction_policy"] == "joint_budget_amount_gas_linearized_no_prior"
+    assert retry_policy["budget_row_scaling_policy"] == "relative_target"
+    assert retry_policy["filter_component_weights"]["relative_budget_max"] == pytest.approx(1.0)
     assert result.status == CONVERGED
     assert result.diagnostics is not None
     retry = result.diagnostics["head_route_condensate_budget_correction_retry"]

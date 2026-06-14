@@ -18,8 +18,8 @@ Current public status after the v1.4 full-condensate element-budget gate is:
 
 | status group | layers |
 |---|---:|
-| converged | 79 |
-| not_converged | 20 |
+| converged | 93 |
+| not_converged | 6 |
 | exception | 0 |
 
 The v1.3 support-free gates include center-gate retry with
@@ -34,9 +34,9 @@ evaluation for large finite condensate activity residuals. v1.4 additionally
 checks the full condensate element budget before reporting a row as converged
 and reflects lifecycle continuation final states with their post-growth support
 indices in the public result. The current v1.4 HEAD route also applies
-relative active-condensate budget correction, per-condensate element capacity
-caps, final-state-start budget-correction retry, and final support amount polish
-before the public full-budget gate.
+per-condensate element capacity caps, final support amount polish, and a
+relative joint gas/condensate budget-correction retry that starts from the
+lifecycle final state when the public full-budget gate rejects an accepted row.
 
 The demos are scratch-facing examples for auditing native support selection.
 They intentionally keep the original pressure/temperature families from

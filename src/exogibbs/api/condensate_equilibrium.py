@@ -50,6 +50,14 @@ HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS = {
     "complementarity": 1.0,
 }
 HEAD_ROUTE_IPOPT_H_TYPE_PROTECTED_COMPONENTS = ("budget", "total_density")
+HEAD_ROUTE_RELATIVE_BUDGET_CORRECTION_COMPONENT_WEIGHTS = {
+    "relative_budget_max": 1.0,
+    **HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS,
+}
+HEAD_ROUTE_RELATIVE_BUDGET_CORRECTION_PROTECTED_COMPONENTS = (
+    "relative_budget_max",
+    *HEAD_ROUTE_IPOPT_H_TYPE_PROTECTED_COMPONENTS,
+)
 
 
 @dataclass(frozen=True)
@@ -221,6 +229,42 @@ def _full_condensate_amounts(
     if bool(jnp.any(indices < 0)) or bool(jnp.any(indices >= condensate_count)):
         raise ValueError("support_indices contain an out-of-range condensate index.")
     return jnp.zeros((condensate_count,), dtype=amounts.dtype).at[indices].set(amounts)
+
+
+def _external_condensate_amounts_vector(
+    *,
+    support_indices: Sequence[int],
+    support_amounts: Sequence[float],
+    condensate_count: int,
+) -> Array:
+    """Return a full-length vector for condensates externalized from the solver."""
+
+    indices = tuple(int(index) for index in support_indices)
+    amounts = jnp.asarray(support_amounts, dtype=jnp.float64)
+    if amounts.ndim != 1:
+        raise ValueError("external support_amounts must be one-dimensional.")
+    if len(indices) != amounts.shape[0]:
+        raise ValueError("external support_indices and support_amounts must have the same length.")
+    full = jnp.zeros((condensate_count,), dtype=amounts.dtype)
+    if indices:
+        full = full.at[jnp.asarray(indices, dtype=jnp.int32)].add(amounts)
+    return full
+
+
+def _merge_external_condensate_amounts(
+    *,
+    condensate_amounts: Array,
+    external_condensate_amounts: Sequence[float] | Array | None,
+) -> Array:
+    """Add externally budgeted condensates back to the public full vector."""
+
+    amounts = jnp.asarray(condensate_amounts, dtype=jnp.float64)
+    if external_condensate_amounts is None:
+        return amounts
+    external = jnp.asarray(external_condensate_amounts, dtype=jnp.float64)
+    if external.ndim != 1 or external.shape[0] != amounts.shape[0]:
+        raise ValueError("external_condensate_amounts must match condensate_count.")
+    return amounts + external
 
 
 def _validate_options(options: CondensateEquilibriumOptions) -> None:
@@ -531,6 +575,7 @@ def _full_condensate_budget_gate_report_for_support_state(
     gas_ln_n: Array,
     support_indices: Sequence[int],
     support_amounts: Array,
+    external_condensate_amounts: Sequence[float] | Array | None = None,
     element_inventory_target: Array,
     relative_tolerance: float,
 ) -> dict[str, Any]:
@@ -538,6 +583,10 @@ def _full_condensate_budget_gate_report_for_support_state(
         support_indices=support_indices,
         support_amounts=support_amounts,
         condensate_count=len(setup.condensate_species),
+    )
+    condensate_amounts = _merge_external_condensate_amounts(
+        condensate_amounts=condensate_amounts,
+        external_condensate_amounts=external_condensate_amounts,
     )
     return _full_condensate_element_budget_residual_report(
         setup=setup,
@@ -555,6 +604,16 @@ def _final_state_support_indices_from_lifecycle_payload(
 ) -> tuple[int, ...]:
     """Return support indices matching a lifecycle continuation final_state."""
 
+    primary_execution = lifecycle_payload.get("primary_execution_report")
+    if isinstance(primary_execution, Mapping):
+        filter_report = primary_execution.get("filter_report")
+        if isinstance(filter_report, Mapping):
+            valid_support_indices = filter_report.get("valid_support_indices")
+            if valid_support_indices is not None:
+                try:
+                    return tuple(int(index) for index in valid_support_indices)
+                except (TypeError, ValueError):
+                    pass
     continuation_input = lifecycle_payload.get("continuation_input", {})
     if isinstance(continuation_input, Mapping):
         support_indices = continuation_input.get("support_indices")
@@ -583,12 +642,49 @@ def _lifecycle_final_state_payload(
     return final_state_payload if isinstance(final_state_payload, Mapping) else None
 
 
+def _external_condensate_amounts_from_lifecycle_payload(
+    lifecycle_payload: Mapping[str, Any],
+    *,
+    condensate_count: int,
+) -> Array | None:
+    """Return full-length amounts for condensates externalized by lifecycle filters."""
+
+    carried = lifecycle_payload.get("input_external_condensate_amounts")
+    carried_array = None
+    if carried is not None:
+        try:
+            carried_array = jnp.asarray(carried, dtype=jnp.float64)
+            if carried_array.ndim != 1 or carried_array.shape[0] != condensate_count:
+                carried_array = None
+        except (TypeError, ValueError):
+            carried_array = None
+    primary_execution = lifecycle_payload.get("primary_execution_report")
+    if not isinstance(primary_execution, Mapping):
+        return carried_array
+    support_indices = primary_execution.get("external_condensate_support_indices", ())
+    support_amounts = primary_execution.get("external_condensate_amounts", ())
+    if not support_indices and not support_amounts:
+        return carried_array
+    try:
+        externalized = _external_condensate_amounts_vector(
+            support_indices=support_indices,
+            support_amounts=support_amounts,
+            condensate_count=condensate_count,
+        )
+        if carried_array is not None:
+            externalized = externalized + carried_array
+        return externalized
+    except (TypeError, ValueError):
+        return carried_array
+
+
 def _polish_support_amounts_for_full_condensate_budget_gate(
     *,
     setup: CondensateChemicalSetup,
     gas_ln_n: Array,
     support_indices: Sequence[int],
     support_amounts: Array,
+    external_condensate_amounts: Sequence[float] | Array | None = None,
     element_inventory_target: Array,
     relative_tolerance: float,
     max_iterations: int = 8,
@@ -608,6 +704,14 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
     ag = np.asarray(setup.formula_matrix, dtype=np.float64)
     ac_full = np.asarray(setup.formula_matrix_cond, dtype=np.float64)
     ac = ac_full[:, support]
+    external = (
+        np.zeros((ac_full.shape[1],), dtype=np.float64)
+        if external_condensate_amounts is None
+        else np.asarray(external_condensate_amounts, dtype=np.float64)
+    )
+    if external.ndim != 1 or external.shape[0] != ac_full.shape[1]:
+        return jnp.asarray(support_amounts, dtype=jnp.float64), None
+    external_budget = ac_full @ external
     gas_budget = ag @ gas_n
     positive_target = target[target > 0.0]
     target_scale = float(np.max(positive_target)) if positive_target.size else 1.0
@@ -623,6 +727,7 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
         gas_ln_n=gas_ln_n,
         support_indices=support,
         support_amounts=jnp.asarray(amounts),
+        external_condensate_amounts=external,
         element_inventory_target=element_inventory_target,
         relative_tolerance=relative_tolerance,
     )
@@ -633,7 +738,7 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
     for iteration in range(int(max_iterations)):
         if accepted:
             break
-        budget = gas_budget + ac @ amounts - target
+        budget = gas_budget + ac @ amounts + external_budget - target
         jac = ac * amounts[None, :]
         if jac.size == 0 or jac.shape[1] == 0:
             break
@@ -662,6 +767,7 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
             gas_ln_n=gas_ln_n,
             support_indices=support,
             support_amounts=jnp.asarray(amounts),
+            external_condensate_amounts=external,
             element_inventory_target=element_inventory_target,
             relative_tolerance=relative_tolerance,
         )
@@ -673,6 +779,7 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
             gas_ln_n=gas_ln_n,
             support_indices=support,
             support_amounts=jnp.asarray(amounts),
+            external_condensate_amounts=external,
             element_inventory_target=element_inventory_target,
             relative_tolerance=relative_tolerance,
         )
@@ -715,6 +822,7 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
         gas_ln_n=gas_ln_n,
         support_indices=support,
         support_amounts=jnp.asarray(amounts),
+        external_condensate_amounts=external,
         element_inventory_target=element_inventory_target,
         relative_tolerance=relative_tolerance,
     )
@@ -933,6 +1041,7 @@ def _run_lifecycle_from_native_state(
     ln_nk: Array,
     support_indices: Sequence[int],
     support_amounts: Array,
+    external_condensate_amounts: Sequence[float] | Array | None = None,
     element_potential: Array | None,
     element_potential_source: str,
     field_source: str,
@@ -959,6 +1068,12 @@ def _run_lifecycle_from_native_state(
         jnp.asarray(support_amounts, dtype=jnp.float64),
         jnp.asarray(1.0e-300, dtype=jnp.float64),
     )
+    external_budget = None
+    if external_condensate_amounts is not None:
+        external_amounts = jnp.asarray(external_condensate_amounts, dtype=jnp.float64)
+        if external_amounts.ndim != 1 or external_amounts.shape[0] != len(setup.condensate_species):
+            raise ValueError("external_condensate_amounts must have one value per condensate species.")
+        external_budget = jnp.asarray(setup.formula_matrix_cond, dtype=jnp.float64) @ external_amounts
     condensate_hvector = jnp.asarray(setup.condensate_setup.hvector_func(float(T)))
     return run_condensate_head_route_lifecycle(
         explicit_opt_in=True,
@@ -974,6 +1089,7 @@ def _run_lifecycle_from_native_state(
         condensate_standard_source=jnp.asarray(
             [condensate_hvector[index] for index in support]
         ),
+        external_condensate_budget=external_budget,
         primary_summary=options.head_route_primary_summary,
         primary_continuation_policy=primary_continuation_policy,
         refresh_policy_summary=options.head_route_refresh_policy_summary,
@@ -1029,6 +1145,7 @@ def _run_lifecycle_from_restricted_solver_state(
         ln_nk=solver_ln_nk,
         support_indices=solver_support_indices,
         support_amounts=solver_support_amounts,
+        external_condensate_amounts=None,
         element_potential=element_potential,
         element_potential_source=element_potential_source,
         field_source="exogibbs_restricted_support_solver_output",
@@ -1114,6 +1231,7 @@ def build_condensate_equilibrium_result_from_solver_payload(
     gas_ln_n: Sequence[float],
     support_indices: Sequence[int],
     support_amounts: Sequence[float],
+    external_condensate_amounts: Sequence[float] | Array | None = None,
     selected_route: str,
     metric_status: Optional[str],
     solver_success: bool,
@@ -1136,6 +1254,10 @@ def build_condensate_equilibrium_result_from_solver_payload(
         support_indices=support_indices,
         support_amounts=jnp.asarray(support_amounts),
         condensate_count=len(setup.condensate_species),
+    )
+    condensate_amounts = _merge_external_condensate_amounts(
+        condensate_amounts=condensate_amounts,
+        external_condensate_amounts=external_condensate_amounts,
     )
     acceptance_tier, status, warnings = _status_from_metric_status(
         metric_status=metric_status,
@@ -2253,6 +2375,7 @@ def condensate_equilibrium(
     result_ln_nk = solver_ln_nk
     result_support_indices = solver_support_indices
     result_support_amounts = solver_support_amounts
+    result_external_condensate_amounts: Array | None = None
     if restricted_solver_success:
         primary_policy = _head_lifecycle_primary_policy(opts)
         lifecycle_report = _run_lifecycle_from_restricted_solver_state(
@@ -2620,6 +2743,10 @@ def condensate_equilibrium(
             and selected_warm_start_candidate_object is not None
         ):
             final_state_payload = _lifecycle_final_state_payload(lifecycle_payload)
+            external_final_amounts = _external_condensate_amounts_from_lifecycle_payload(
+                lifecycle_payload,
+                condensate_count=len(setup.condensate_species),
+            )
             final_state_support_indices = _final_state_support_indices_from_lifecycle_payload(
                 lifecycle_payload,
                 fallback_support_indices=solver_support_indices,
@@ -2635,6 +2762,7 @@ def condensate_equilibrium(
                             support_amounts=jnp.exp(
                                 jnp.asarray(final_state_payload["ln_mk"])
                             ),
+                            external_condensate_amounts=external_final_amounts,
                             element_inventory_target=b,
                             relative_tolerance=(
                                 opts.full_condensate_budget_relative_tolerance
@@ -2646,19 +2774,20 @@ def condensate_equilibrium(
             if initial_gate_report is not None and not bool(initial_gate_report["accepted"]):
                 budget_correction_policy = {
                     **primary_policy,
-                    "direction_policy": "relative_condensate_budget_correction",
+                    "direction_policy": "joint_budget_amount_gas_linearized_no_prior",
+                    "budget_row_scaling_policy": "relative_target",
                     "trial_acceptance_policy": "ipopt_persistent_h_type",
                     "filter_component_weights": dict(
-                        HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS
+                        HEAD_ROUTE_RELATIVE_BUDGET_CORRECTION_COMPONENT_WEIGHTS
                     ),
                     "ipopt_h_type_component_weights": dict(
-                        HEAD_ROUTE_IPOPT_H_TYPE_COMPONENT_WEIGHTS
+                        HEAD_ROUTE_RELATIVE_BUDGET_CORRECTION_COMPONENT_WEIGHTS
                     ),
                     "ipopt_h_type_theta_reduction_fraction": float(
                         opts.head_route_ipopt_h_type_theta_reduction_fraction
                     ),
                     "ipopt_h_type_protected_components": tuple(
-                        HEAD_ROUTE_IPOPT_H_TYPE_PROTECTED_COMPONENTS
+                        HEAD_ROUTE_RELATIVE_BUDGET_CORRECTION_PROTECTED_COMPONENTS
                     ),
                     "ipopt_h_type_protected_component_max_normalized_increase": float(
                         opts.head_route_ipopt_h_type_protected_component_max_normalized_increase
@@ -2681,6 +2810,7 @@ def condensate_equilibrium(
                     ln_nk=jnp.asarray(final_state_payload["ln_nk"]),
                     support_indices=final_state_support_indices,
                     support_amounts=jnp.exp(jnp.asarray(final_state_payload["ln_mk"])),
+                    external_condensate_amounts=external_final_amounts,
                     element_potential=None,
                     element_potential_source=(
                         "exogibbs_lifecycle_final_state_least_squares_gas_gauge"
@@ -2689,6 +2819,17 @@ def condensate_equilibrium(
                     primary_continuation_policy=budget_correction_policy,
                 )
                 budget_correction_payload = budget_correction_lifecycle_report.as_dict()
+                if external_final_amounts is not None:
+                    budget_correction_payload = {
+                        **dict(budget_correction_payload),
+                        "input_external_condensate_amounts": tuple(
+                            float(value)
+                            for value in jnp.asarray(
+                                external_final_amounts,
+                                dtype=jnp.float64,
+                            ).tolist()
+                        ),
+                    }
                 retry_gate_report = None
                 retry_primary_payload = budget_correction_payload.get(
                     "primary_execution_report"
@@ -2709,6 +2850,10 @@ def condensate_equilibrium(
                         fallback_support_indices=solver_support_indices,
                     )
                 )
+                retry_external_amounts = _external_condensate_amounts_from_lifecycle_payload(
+                    budget_correction_payload,
+                    condensate_count=len(setup.condensate_species),
+                )
                 if isinstance(retry_final_state_payload, Mapping):
                     try:
                         retry_gate_report = (
@@ -2719,6 +2864,7 @@ def condensate_equilibrium(
                                 support_amounts=jnp.exp(
                                     jnp.asarray(retry_final_state_payload["ln_mk"])
                                 ),
+                                external_condensate_amounts=retry_external_amounts,
                                 element_inventory_target=b,
                                 relative_tolerance=(
                                     opts.full_condensate_budget_relative_tolerance
@@ -2728,9 +2874,7 @@ def condensate_equilibrium(
                     except (KeyError, TypeError, ValueError):
                         retry_gate_report = None
                 budget_correction_accepted = bool(
-                    budget_correction_lifecycle_report.route_result.converged
-                    and retry_gate_report is not None
-                    and retry_gate_report["accepted"]
+                    retry_gate_report is not None and retry_gate_report["accepted"]
                 )
                 condensate_budget_correction_retry_report = {
                     "retry_schema": (
@@ -2738,7 +2882,8 @@ def condensate_equilibrium(
                     ),
                     "triggered": True,
                     "accepted": budget_correction_accepted,
-                    "direction_policy": "relative_condensate_budget_correction",
+                    "direction_policy": "joint_budget_amount_gas_linearized_no_prior",
+                    "budget_row_scaling_policy": "relative_target",
                     "trial_acceptance_policy": "ipopt_persistent_h_type",
                     "initial_full_condensate_budget_gate": initial_gate_report,
                     "retry_full_condensate_budget_gate": retry_gate_report,
@@ -2754,12 +2899,8 @@ def condensate_equilibrium(
                 if budget_correction_accepted:
                     lifecycle_report = budget_correction_lifecycle_report
                     lifecycle_payload = budget_correction_payload
-                    lifecycle_selected_route = (
-                        budget_correction_lifecycle_report.route_result.selected_route
-                    )
-                    lifecycle_metric_status = (
-                        budget_correction_lifecycle_report.route_result.metric_status
-                    )
+                    lifecycle_selected_route = str(lifecycle_selected_route)
+                    lifecycle_metric_status = str(lifecycle_metric_status)
                     lifecycle_converged = True
                 else:
                     lifecycle_payload = {
@@ -2828,6 +2969,12 @@ def condensate_equilibrium(
         and selected_warm_start_candidate_object is not None
     ):
         final_state_payload = _lifecycle_final_state_payload(lifecycle_payload)
+        result_external_condensate_amounts = (
+            _external_condensate_amounts_from_lifecycle_payload(
+                lifecycle_payload,
+                condensate_count=len(setup.condensate_species),
+            )
+        )
         final_support_indices = _final_state_support_indices_from_lifecycle_payload(
             lifecycle_payload,
             fallback_support_indices=solver_support_indices,
@@ -2850,6 +2997,7 @@ def condensate_equilibrium(
                 gas_ln_n=result_ln_nk,
                 support_indices=result_support_indices,
                 support_amounts=result_support_amounts,
+                external_condensate_amounts=result_external_condensate_amounts,
                 element_inventory_target=b,
                 relative_tolerance=opts.full_condensate_budget_relative_tolerance,
             )
@@ -2931,6 +3079,7 @@ def condensate_equilibrium(
         gas_ln_n=result_ln_nk,
         support_indices=result_support_indices,
         support_amounts=result_support_amounts,
+        external_condensate_amounts=result_external_condensate_amounts,
         selected_route=lifecycle_selected_route,
         metric_status=lifecycle_metric_status,
         solver_success=bool(lifecycle_converged),

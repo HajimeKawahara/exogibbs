@@ -31,4 +31,6 @@ There are two curated surfaces:
   non-finite solely through norm overflow. v1.4 adds the full-condensate
   element-budget gate, external condensate budget terms in RGIE/PD-IPM residuals,
   lifecycle final-state public result wiring with post-growth support indices,
-  and a fallback-only active condensate budget-correction direction.
+  and a relative joint gas/condensate budget-correction retry that starts from
+  the lifecycle final state when the public full-budget gate rejects an accepted
+  row.

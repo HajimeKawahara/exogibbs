@@ -73,7 +73,7 @@ SUPPORT_FREE_MIDLAYER_EXPECTED_STATUSES = {
     "solar_metal_sulfide_or_Fe_Ni_S_region": CONVERGED,
     "carbon_rich_graphite_window": CONVERGED,
     "carbon_rich_CaS_MgS_AlN_window": CONVERGED,
-    "SiO_s_condensate_window": NOT_CONVERGED,
+    "SiO_s_condensate_window": CONVERGED,
     "lowT_strong_condensation_budget_stress": CONVERGED,
     "near_phase_boundary_support_sensitivity": CONVERGED,
     "complex_heavy_element_or_boron_titanium_zirconium_case": CONVERGED,
@@ -373,7 +373,7 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
         "m4310_full_promoted_policy_route": 9,
         "native_budget_seed_fallback_budget_tradeoff": 0,
     }
-    assert status_counts == {CONVERGED: 9, CONVERGED_WITH_CAVEAT: 0, NOT_CONVERGED: 1}
+    assert status_counts == {CONVERGED: 10, CONVERGED_WITH_CAVEAT: 0, NOT_CONVERGED: 0}
 
 
 def test_support_free_staged_retry_regression_layers_promote_to_primary() -> None:
