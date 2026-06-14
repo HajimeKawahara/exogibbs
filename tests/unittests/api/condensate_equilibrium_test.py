@@ -12,6 +12,7 @@ from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.api.condensate_equilibrium import (
     CondensateChemicalSetup,
     CondensateEquilibriumOptions,
+    _polish_support_amounts_for_full_condensate_budget_gate,
     build_condensate_chemical_setup,
     build_condensate_equilibrium_result_from_solver_payload,
     condensate_equilibrium,
@@ -130,6 +131,133 @@ def test_build_result_from_solver_payload_uses_full_condensate_vector() -> None:
     assert result.diagnostics["fastchem4_trace_public_runtime_constructor_inputs_used"] is False
 
 
+def test_build_result_accepts_full_condensate_budget_residual_gate() -> None:
+    _gas, _cond, setup = _setup_pair()
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=[0.0, 0.0],
+        support_indices=[0],
+        support_amounts=[1.0],
+        selected_route="m4310_full_promoted_policy_route",
+        metric_status=TIGHT_RESIDUAL_STATUS,
+        solver_success=True,
+        element_inventory_target=jnp.asarray([3.0, 2.0]),
+    )
+
+    assert result.status == CONVERGED
+    assert result.converged is True
+    assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
+    assert gate["max_abs_relative_residual"] == pytest.approx(0.0)
+
+
+def test_build_result_restores_external_condensates_before_budget_gate() -> None:
+    setup = _setup_pair_with_two_condensates()
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=[0.0, 0.0],
+        support_indices=[1],
+        support_amounts=[1.0],
+        external_condensate_amounts=jnp.asarray([0.5, 0.0]),
+        selected_route="m4310_full_promoted_policy_route",
+        metric_status=TIGHT_RESIDUAL_STATUS,
+        solver_success=True,
+        element_inventory_target=jnp.asarray([3.0, 2.5]),
+    )
+
+    assert result.status == CONVERGED
+    assert result.converged is True
+    assert result.condensate_support_names == ("HO_s",)
+    assert result.condensate_amounts.tolist() == pytest.approx([0.5, 1.0])
+    assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
+    assert gate["max_abs_relative_residual"] == pytest.approx(0.0)
+
+
+def test_build_result_rejects_full_condensate_budget_residual_gate() -> None:
+    _gas, _cond, setup = _setup_pair()
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=[0.0, 0.0],
+        support_indices=[0],
+        support_amounts=[1.0],
+        selected_route="m4310_full_promoted_policy_route",
+        metric_status=TIGHT_RESIDUAL_STATUS,
+        solver_success=True,
+        element_inventory_target=jnp.asarray([1.0, 1.0]),
+    )
+
+    assert result.status == NOT_CONVERGED
+    assert result.converged is False
+    assert result.acceptance_tier == "full_condensate_element_budget_residual_failed"
+    assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is False
+    assert gate["max_abs_relative_residual_element"] == "H"
+    assert result.diagnostics["pre_full_condensate_budget_gate_status"] == CONVERGED
+
+
+def test_full_condensate_budget_residual_gate_ignores_electron_row() -> None:
+    gas = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]]),
+        hvector_func=lambda T: jnp.asarray([0.0, 0.0]),
+        elements=("H", "e-"),
+        species=("H", "e-"),
+        metadata={"source": "unit-test-gas"},
+    )
+    cond = ChemicalSetup(
+        formula_matrix=jnp.asarray([[0.0], [0.0]]),
+        hvector_func=lambda T: jnp.asarray([0.0]),
+        elements=("H", "e-"),
+        species=("dummy_s",),
+        metadata={"source": "unit-test-condensate"},
+    )
+    setup = build_condensate_chemical_setup(gas_setup=gas, condensate_setup=cond)
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=[0.0, 0.0],
+        support_indices=[],
+        support_amounts=[],
+        selected_route="m4310_full_promoted_policy_route",
+        metric_status=TIGHT_RESIDUAL_STATUS,
+        solver_success=True,
+        element_inventory_target=jnp.asarray([1.0, 0.0]),
+    )
+
+    assert result.status == CONVERGED
+    assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
+    assert gate["ignored_element_names"] == ("e-",)
+    assert gate["max_abs_relative_residual_element"] == "H"
+
+
+def test_full_condensate_budget_amount_polish_accepts_capacity_top_up() -> None:
+    _, _, setup = _setup_pair()
+
+    polished, report = _polish_support_amounts_for_full_condensate_budget_gate(
+        setup=setup,
+        gas_ln_n=jnp.asarray([-1000.0, -1000.0]),
+        support_indices=(0,),
+        support_amounts=jnp.asarray([0.499]),
+        element_inventory_target=jnp.asarray([1.0, 0.5]),
+        relative_tolerance=1.0e-3,
+    )
+
+    assert polished == pytest.approx([0.5])
+    assert report is not None
+    assert report["triggered"] is True
+    assert report["accepted"] is True
+    assert report["initial_full_condensate_budget_gate"]["accepted"] is False
+    assert report["final_full_condensate_budget_gate"]["accepted"] is True
+
+
 def test_build_result_preserves_caveat_status_when_allowed() -> None:
     _gas, _cond, setup = _setup_pair()
 
@@ -199,6 +327,7 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
             return_diagnostics=True,
             metric_status=TIGHT_RESIDUAL_STATUS,
             max_positive_support_count=1,
+            enable_full_condensate_budget_residual_gate=False,
         ),
     )
 
@@ -224,7 +353,7 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
     )
 
 
-def test_condensate_equilibrium_options_default_to_head_route_v1_3() -> None:
+def test_condensate_equilibrium_options_default_to_head_route_v1_4() -> None:
     options = CondensateEquilibriumOptions()
 
     assert options.max_positive_support_count is None
@@ -235,6 +364,9 @@ def test_condensate_equilibrium_options_default_to_head_route_v1_3() -> None:
     assert options.support_growth_staging_retry_add_per_rounds == (64, 32, 16, 8)
     assert options.enable_head_route_soft_restoration_retry is False
     assert options.enable_head_route_ipopt_h_type_retry is False
+    assert options.enable_head_route_condensate_budget_correction_retry is True
+    assert options.enable_full_condensate_budget_residual_gate is True
+    assert options.full_condensate_budget_relative_tolerance == pytest.approx(1.0e-3)
 
 
 def test_support_outer_loop_does_not_grow_from_native_seed_fallback(
@@ -611,8 +743,11 @@ def test_support_outer_loop_tries_support_cap_retry_sequence(
     assert result.diagnostics is not None
     retry = result.diagnostics["support_cap_retry"]
     assert retry["support_cap"] == 3
+    assert retry["accepted"] is True
+    assert retry["route_promoted"] is True
     assert retry["support_cap_sequence"] == (1, 3)
     assert [attempt["support_cap"] for attempt in retry["attempts"]] == [1, 3]
+    assert [attempt["route_promoted"] for attempt in retry["attempts"]] == [False, True]
 
 
 def test_support_outer_loop_tries_staged_support_growth_retry(
@@ -700,6 +835,7 @@ def test_support_outer_loop_tries_staged_support_growth_retry(
     retry = result.diagnostics["support_growth_staging_retry"]
     assert retry["triggered"] is True
     assert retry["accepted"] is True
+    assert retry["route_promoted"] is True
     assert retry["max_support_add_per_round"] == 2
     assert retry["max_support_add_per_round_sequence"] == (2, 1)
     assert retry["initial_selected_route"] == "native_budget_seed_fallback_budget_tradeoff"
@@ -892,6 +1028,7 @@ def test_condensate_equilibrium_soft_restoration_retry_can_accept_lifecycle(
             return_diagnostics=True,
             enable_support_outer_loop=False,
             enable_head_route_soft_restoration_retry=True,
+            enable_full_condensate_budget_residual_gate=False,
         ),
     )
 
@@ -992,6 +1129,7 @@ def test_condensate_equilibrium_ipopt_h_type_retry_can_accept_lifecycle(
             return_diagnostics=True,
             enable_support_outer_loop=False,
             enable_head_route_ipopt_h_type_retry=True,
+            enable_full_condensate_budget_residual_gate=False,
         ),
     )
 
@@ -1059,6 +1197,7 @@ def test_condensate_equilibrium_retries_restricted_solver_with_refresh_warm_star
             return_diagnostics=True,
             metric_status=TIGHT_RESIDUAL_STATUS,
             max_positive_support_count=1,
+            enable_full_condensate_budget_residual_gate=False,
         ),
     )
 
@@ -1307,6 +1446,7 @@ def test_condensate_equilibrium_accepts_successful_head_lifecycle_after_solver_f
             return_diagnostics=True,
             metric_status=TIGHT_RESIDUAL_STATUS,
             max_positive_support_count=1,
+            enable_full_condensate_budget_residual_gate=False,
         ),
     )
 
@@ -1317,6 +1457,210 @@ def test_condensate_equilibrium_accepts_successful_head_lifecycle_after_solver_f
     assert result.diagnostics is not None
     assert result.diagnostics["restricted_solver_success"] is False
     assert result.diagnostics["solver_success"] is True
+
+
+def test_condensate_equilibrium_reflects_lifecycle_final_state_with_solver_support(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_two_condensates()
+    captured = {}
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        captured["candidate_support_indices"] = tuple(kwargs["support_indices"])
+        return {
+            "solver_success": True,
+            "ln_nk": jnp.asarray([0.0, -1.0]),
+            "support_indices": (1,),
+            "m_support": jnp.asarray([1.0e-6]),
+        }
+
+    class FakeLifecycleReport:
+        route_result = type(
+            "RouteResult",
+            (),
+            {
+                "selected_route": "m4310_full_promoted_policy_route",
+                "metric_status": TIGHT_RESIDUAL_STATUS,
+                "converged": True,
+            },
+        )()
+
+        def __init__(self, support_indices):
+            self._support_indices = tuple(support_indices)
+
+        def as_dict(self):
+            return {
+                "report_schema": "exogibbs_condensate_head_route_lifecycle_report_v1",
+                "explicit_opt_in": True,
+                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+                "continuation_input": {
+                    "support_indices": self._support_indices,
+                },
+                "primary_execution_report": {
+                    "continuation_report": {
+                        "final_state": {
+                            "ln_nk": [jnp.log(0.75), jnp.log(0.5)],
+                            "ln_mk": [jnp.log(2.0e-4)],
+                        },
+                        "converged_at_final_barrier": True,
+                    }
+                },
+                "route_result": {
+                    "selected_route": "m4310_full_promoted_policy_route",
+                    "metric_status": TIGHT_RESIDUAL_STATUS,
+                    "converged": True,
+                    "standard_path_status": CONVERGED,
+                },
+            }
+
+    def fake_run_condensate_head_route_lifecycle(*args, **kwargs):
+        captured["lifecycle_support_indices"] = tuple(kwargs["support_indices"])
+        return FakeLifecycleReport(kwargs["support_indices"])
+
+    import exogibbs.optimize.minimize_cond as minimize_cond
+    import exogibbs.condensates.head_route_lifecycle as lifecycle_module
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+    monkeypatch.setattr(
+        lifecycle_module,
+        "run_condensate_head_route_lifecycle",
+        fake_run_condensate_head_route_lifecycle,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            metric_status=TIGHT_RESIDUAL_STATUS,
+            max_positive_support_count=2,
+            enable_full_condensate_budget_residual_gate=False,
+        ),
+    )
+
+    assert captured["candidate_support_indices"] == (1, 0)
+    assert captured["lifecycle_support_indices"] == (1,)
+    assert tuple(int(index) for index in result.condensate_support_indices) == (1,)
+    assert float(result.gas_n[0]) == pytest.approx(0.75)
+    assert float(result.gas_n[1]) == pytest.approx(0.5)
+    assert float(result.condensate_amounts[0]) == pytest.approx(0.0)
+    assert float(result.condensate_amounts[1]) == pytest.approx(2.0e-4)
+    assert result.diagnostics is not None
+    assert result.diagnostics["restricted_solver_success"] is True
+    assert result.diagnostics["solver_success"] is True
+
+
+def test_condensate_budget_correction_retry_starts_from_lifecycle_final_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_two_condensates()
+    calls = []
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        return {
+            "solver_success": True,
+            "ln_nk": jnp.asarray([0.0, 0.0]),
+            "support_indices": (1,),
+            "m_support": jnp.asarray([1.0e-6]),
+        }
+
+    class FakeLifecycleReport:
+        def __init__(self, *, ln_nk, ln_mk):
+            self._ln_nk = list(ln_nk)
+            self._ln_mk = list(ln_mk)
+            self.route_result = type(
+                "RouteResult",
+                (),
+                {
+                    "selected_route": "m4310_full_promoted_policy_route",
+                    "metric_status": TIGHT_RESIDUAL_STATUS,
+                    "converged": True,
+                },
+            )()
+
+        def as_dict(self):
+            return {
+                "report_schema": "exogibbs_condensate_head_route_lifecycle_report_v1",
+                "explicit_opt_in": True,
+                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+                "continuation_input": {
+                    "support_indices": (1,),
+                },
+                "primary_execution_report": {
+                    "continuation_report": {
+                        "final_state": {
+                            "ln_nk": self._ln_nk,
+                            "ln_mk": self._ln_mk,
+                        },
+                        "converged_at_final_barrier": True,
+                    }
+                },
+                "route_result": {
+                    "selected_route": "m4310_full_promoted_policy_route",
+                    "metric_status": TIGHT_RESIDUAL_STATUS,
+                    "converged": True,
+                    "standard_path_status": CONVERGED,
+                },
+            }
+
+    def fake_run_condensate_head_route_lifecycle(*args, **kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            return FakeLifecycleReport(
+                ln_nk=[jnp.log(0.1), jnp.log(0.1)],
+                ln_mk=[jnp.log(0.1)],
+            )
+        return FakeLifecycleReport(
+            ln_nk=[jnp.log(0.1), jnp.log(0.1)],
+            ln_mk=[jnp.log(0.9)],
+        )
+
+    import exogibbs.optimize.minimize_cond as minimize_cond
+    import exogibbs.condensates.head_route_lifecycle as lifecycle_module
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+    monkeypatch.setattr(
+        lifecycle_module,
+        "run_condensate_head_route_lifecycle",
+        fake_run_condensate_head_route_lifecycle,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            max_positive_support_count=2,
+        ),
+    )
+
+    assert len(calls) == 2
+    assert calls[0]["field_provenance"]["ln_nk"] == "exogibbs_restricted_support_solver_output"
+    assert calls[1]["field_provenance"]["ln_nk"] == "exogibbs_lifecycle_final_state"
+    assert calls[1]["ln_nk"] == pytest.approx([jnp.log(0.1), jnp.log(0.1)])
+    assert calls[1]["support_amounts"] == pytest.approx([0.1])
+    assert calls[1]["support_indices"] == (1,)
+    retry_policy = calls[1]["primary_continuation_policy"]
+    assert retry_policy["direction_policy"] == "joint_budget_amount_gas_linearized_no_prior"
+    assert retry_policy["budget_row_scaling_policy"] == "relative_target"
+    assert retry_policy["filter_component_weights"]["relative_budget_max"] == pytest.approx(1.0)
+    assert result.status == CONVERGED
+    assert result.diagnostics is not None
+    retry = result.diagnostics["head_route_condensate_budget_correction_retry"]
+    assert retry["accepted"] is True
+    assert retry["retry_start_state"] == "lifecycle_final_state"
 
 
 def test_condensate_equilibrium_can_disable_native_seed_fallback(
@@ -1382,7 +1726,10 @@ def test_condensate_equilibrium_empty_positive_support_uses_gas_only_path(monkey
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(return_diagnostics=True),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            enable_full_condensate_budget_residual_gate=False,
+        ),
     )
 
     assert result.status == CONVERGED
@@ -1501,6 +1848,39 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             jnp.asarray([1.0, 1.0]),
             options=CondensateEquilibriumOptions(
                 enable_head_route_soft_restoration_retry="False",
+            ),
+        )
+    with pytest.raises(TypeError, match="enable_full_condensate_budget_residual_gate"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                enable_full_condensate_budget_residual_gate="False",
+            ),
+        )
+    with pytest.raises(
+        TypeError,
+        match="enable_head_route_condensate_budget_correction_retry",
+    ):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                enable_head_route_condensate_budget_correction_retry="False",
+            ),
+        )
+    with pytest.raises(ValueError, match="full_condensate_budget_relative_tolerance"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                full_condensate_budget_relative_tolerance=float("nan"),
             ),
         )
     with pytest.raises(ValueError, match="head_route_soft_restoration_proximity_weight"):

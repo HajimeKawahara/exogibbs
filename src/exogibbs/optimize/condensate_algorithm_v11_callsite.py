@@ -60,6 +60,9 @@ class AlgorithmV11ThermoValidCallsiteReport:
     original_support_count: int
     filtered_support_count: int
     removed_support_count: int
+    external_condensate_support_indices: tuple[int, ...]
+    external_condensate_amounts: tuple[float, ...]
+    external_condensate_budget: tuple[float, ...]
     filter_report: ThermoValidSupportFilterReport
     reduced_step_report: PdipmRgieReducedStepReport
     fastchem4_trace_public_runtime_constructor_inputs_used: bool
@@ -85,6 +88,9 @@ class AlgorithmV11ThermoValidContinuationCallsiteReport:
     original_support_count: int
     filtered_support_count: int
     removed_support_count: int
+    external_condensate_support_indices: tuple[int, ...]
+    external_condensate_amounts: tuple[float, ...]
+    external_condensate_budget: tuple[float, ...]
     filter_report: ThermoValidSupportFilterReport
     continuation_report: AlgorithmV11ContinuationReport
     fastchem4_trace_public_runtime_constructor_inputs_used: bool
@@ -116,6 +122,7 @@ def run_algorithm_v11_thermo_valid_reduced_callsite(
     gas_stationarity_source: Sequence[float],
     condensate_standard_source: Sequence[float],
     epsilon: float,
+    external_condensate_budget: Sequence[float] | None = None,
     species_names: Sequence[str] | None = None,
     sentinel_abs_threshold: float = 1.0e10,
     alpha_candidates: Sequence[float] = (1.0, 0.5, 0.25, 0.125, 0.0625),
@@ -138,6 +145,12 @@ def run_algorithm_v11_thermo_valid_reduced_callsite(
     ln_mk = _as_vector(state.ln_mk, "state.ln_mk")
     rho = _as_vector(state.rho, "state.rho")
     eta = np.exp(rho)
+    target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     filtered = filter_thermo_valid_condensate_support(
         explicit_opt_in=True,
         support_indices=support_indices,
@@ -150,6 +163,22 @@ def run_algorithm_v11_thermo_valid_reduced_callsite(
         sentinel_abs_threshold=sentinel_abs_threshold,
         field_provenance=field_provenance or state.field_provenance,
     )
+    active_matrix = np.asarray(formula_matrix_cond_active, dtype=np.float64)
+    if active_matrix.ndim != 2 or active_matrix.shape[0] != target.shape[0]:
+        raise ValueError("formula_matrix_cond_active row count must match element_inventory_target.")
+    if active_matrix.shape[1] != ln_mk.shape[0]:
+        raise ValueError("formula_matrix_cond_active column count must match state.ln_mk.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
+    removed_support_indices: tuple[int, ...] = ()
+    removed_amounts = np.zeros((0,), dtype=np.float64)
+    removed_budget = np.zeros_like(target, dtype=np.float64)
+    if filtered.report.removed_local_indices:
+        removed = np.asarray(filtered.report.removed_local_indices, dtype=np.int64)
+        removed_support_indices = tuple(int(index) for index in filtered.report.removed_support_indices)
+        removed_amounts = np.exp(ln_mk[removed])
+        removed_budget = active_matrix[:, removed] @ removed_amounts
+        external_budget = external_budget + removed_budget
     filtered_state = build_pdipm_rgie_condensate_state(
         ln_nk=state.ln_nk,
         ln_mk=filtered.ln_mk or (),
@@ -165,6 +194,7 @@ def run_algorithm_v11_thermo_valid_reduced_callsite(
         formula_matrix=formula_matrix,
         formula_matrix_cond_active=filtered.formula_matrix_cond_active or (),
         element_inventory_target=element_inventory_target,
+        external_condensate_budget=external_budget,
         gas_stationarity_source=gas_stationarity_source,
         condensate_standard_source=filtered.condensate_standard_source,
         epsilon=epsilon,
@@ -187,6 +217,9 @@ def run_algorithm_v11_thermo_valid_reduced_callsite(
         original_support_count=filtered.report.original_support_count,
         filtered_support_count=filtered.report.filtered_support_count,
         removed_support_count=filtered.report.removed_support_count,
+        external_condensate_support_indices=removed_support_indices,
+        external_condensate_amounts=tuple(float(value) for value in removed_amounts),
+        external_condensate_budget=tuple(float(value) for value in removed_budget),
         filter_report=filtered.report,
         reduced_step_report=reduced_step,
         fastchem4_trace_public_runtime_constructor_inputs_used=False,
@@ -205,6 +238,7 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
     condensate_standard_source: Sequence[float],
     initial_epsilon: float,
     final_epsilon: float,
+    external_condensate_budget: Sequence[float] | None = None,
     species_names: Sequence[str] | None = None,
     sentinel_abs_threshold: float = 1.0e10,
     barrier_schedule_policy: str = "fixed_tau",
@@ -256,6 +290,7 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
     dedicated_restoration_max_proximity: float | None = 10.0,
     require_residual_nonworsening: bool = False,
     residual_worsening_tolerance: float = 0.0,
+    budget_row_scaling_policy: str = "absolute",
     field_provenance: Mapping[str, str] | None = None,
 ) -> AlgorithmV11ThermoValidContinuationCallsiteReport:
     """Filter thermo-invalid support and run algorithm-v1.1 continuation."""
@@ -269,6 +304,12 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
     ln_mk = _as_vector(state.ln_mk, "state.ln_mk")
     rho = _as_vector(state.rho, "state.rho")
     eta = np.exp(rho)
+    target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     filtered = filter_thermo_valid_condensate_support(
         explicit_opt_in=True,
         support_indices=support_indices,
@@ -281,6 +322,22 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
         sentinel_abs_threshold=sentinel_abs_threshold,
         field_provenance=field_provenance or state.field_provenance,
     )
+    active_matrix = np.asarray(formula_matrix_cond_active, dtype=np.float64)
+    if active_matrix.ndim != 2 or active_matrix.shape[0] != target.shape[0]:
+        raise ValueError("formula_matrix_cond_active row count must match element_inventory_target.")
+    if active_matrix.shape[1] != ln_mk.shape[0]:
+        raise ValueError("formula_matrix_cond_active column count must match state.ln_mk.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
+    removed_support_indices: tuple[int, ...] = ()
+    removed_amounts = np.zeros((0,), dtype=np.float64)
+    removed_budget = np.zeros_like(target, dtype=np.float64)
+    if filtered.report.removed_local_indices:
+        removed = np.asarray(filtered.report.removed_local_indices, dtype=np.int64)
+        removed_support_indices = tuple(int(index) for index in filtered.report.removed_support_indices)
+        removed_amounts = np.exp(ln_mk[removed])
+        removed_budget = active_matrix[:, removed] @ removed_amounts
+        external_budget = external_budget + removed_budget
     filtered_state = build_pdipm_rgie_condensate_state(
         ln_nk=state.ln_nk,
         ln_mk=filtered.ln_mk or (),
@@ -296,6 +353,7 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
         formula_matrix=formula_matrix,
         formula_matrix_cond_active=filtered.formula_matrix_cond_active or (),
         element_inventory_target=element_inventory_target,
+        external_condensate_budget=external_budget,
         gas_stationarity_source=gas_stationarity_source,
         condensate_standard_source=filtered.condensate_standard_source,
         initial_epsilon=initial_epsilon,
@@ -342,6 +400,7 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
         dedicated_restoration_max_proximity=dedicated_restoration_max_proximity,
         require_residual_nonworsening=require_residual_nonworsening,
         residual_worsening_tolerance=residual_worsening_tolerance,
+        budget_row_scaling_policy=budget_row_scaling_policy,
     )
     return AlgorithmV11ThermoValidContinuationCallsiteReport(
         report_schema="exogibbs_algorithm_v11_thermo_valid_continuation_callsite_report_v1",
@@ -354,6 +413,9 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
         original_support_count=filtered.report.original_support_count,
         filtered_support_count=filtered.report.filtered_support_count,
         removed_support_count=filtered.report.removed_support_count,
+        external_condensate_support_indices=removed_support_indices,
+        external_condensate_amounts=tuple(float(value) for value in removed_amounts),
+        external_condensate_budget=tuple(float(value) for value in removed_budget),
         filter_report=filtered.report,
         continuation_report=continuation,
         fastchem4_trace_public_runtime_constructor_inputs_used=False,

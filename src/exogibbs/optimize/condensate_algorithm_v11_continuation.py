@@ -17,6 +17,7 @@ import numpy as np
 from exogibbs.optimize.condensate_algorithm_v11_direction import (
     AlgorithmV11Direction,
     blend_algorithm_v11_directions,
+    build_active_condensate_budget_correction_direction,
     build_linear_budget_total_density_amount_gas_direction,
     build_linear_budget_total_density_restoration_direction,
 )
@@ -103,6 +104,7 @@ def _residual_norm(
     formula_matrix: np.ndarray,
     formula_matrix_cond_active: np.ndarray,
     element_inventory_target: np.ndarray,
+    external_condensate_budget: np.ndarray | None,
     gas_stationarity_source: np.ndarray,
     condensate_standard_source: np.ndarray,
     q: np.ndarray,
@@ -116,6 +118,7 @@ def _residual_norm(
         formula_matrix=formula_matrix,
         formula_matrix_cond_active=formula_matrix_cond_active,
         element_inventory_target=element_inventory_target,
+        external_condensate_budget=external_condensate_budget,
         gas_stationarity_source=gas_stationarity_source,
         condensate_standard_source=condensate_standard_source,
         q=q,
@@ -129,6 +132,20 @@ def _residual_norm(
         key: _stable_l2_norm(residuals[key])
         for key in ("gas", "condensate", "budget", "complementarity", "total_density")
     }
+    target = np.asarray(element_inventory_target, dtype=np.float64)
+    budget = np.asarray(residuals["budget"], dtype=np.float64)
+    positive_target = target[target > 0.0]
+    target_scale = float(np.max(positive_target)) if positive_target.size else 1.0
+    floor = max(float(np.finfo(np.float64).tiny), 1.0e-300 * target_scale)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        relative_budget = budget / np.maximum(np.abs(target), floor)
+    relative_budget = np.where(target > 0.0, relative_budget, 0.0)
+    finite_relative_budget = relative_budget[np.isfinite(relative_budget)]
+    components["relative_budget_max"] = (
+        float(np.max(np.abs(finite_relative_budget)))
+        if finite_relative_budget.size
+        else math.inf
+    )
     n = np.exp(q)
     m = np.exp(r)
     components["amount_weighted_gas"] = _stable_l2_norm(n * residuals["gas"])
@@ -147,6 +164,7 @@ def _p_merit(
     formula_matrix: np.ndarray,
     formula_matrix_cond_active: np.ndarray,
     element_inventory_target: np.ndarray,
+    external_condensate_budget: np.ndarray | None,
     gas_stationarity_source: np.ndarray,
     condensate_standard_source: np.ndarray,
     q: np.ndarray,
@@ -161,6 +179,7 @@ def _p_merit(
         formula_matrix=formula_matrix,
         formula_matrix_cond_active=formula_matrix_cond_active,
         element_inventory_target=element_inventory_target,
+        external_condensate_budget=external_condensate_budget,
         gas_stationarity_source=gas_stationarity_source,
         condensate_standard_source=condensate_standard_source,
         q=q,
@@ -383,6 +402,30 @@ def fraction_to_boundary_alpha(
     return float(max(0.0, min(1.0, gamma_value * min(candidates))))
 
 
+def _apply_condensate_capacity_cap(
+    *,
+    r: np.ndarray,
+    formula_matrix_cond_active: np.ndarray,
+    element_inventory_target: np.ndarray,
+) -> tuple[np.ndarray, int]:
+    with np.errstate(divide="ignore", invalid="ignore"):
+        per_element_limits = np.where(
+            formula_matrix_cond_active > 0.0,
+            element_inventory_target[:, None] / formula_matrix_cond_active,
+            np.inf,
+        )
+    cond_capacity = np.min(per_element_limits, axis=0)
+    finite_positive_capacity = np.isfinite(cond_capacity) & (cond_capacity > 0.0)
+    if not np.any(finite_positive_capacity):
+        return r, 0
+    log_capacity = np.full_like(r, np.inf)
+    log_capacity[finite_positive_capacity] = np.log(
+        cond_capacity[finite_positive_capacity]
+    )
+    capped = np.minimum(r, log_capacity)
+    return capped, int(np.count_nonzero(capped < r))
+
+
 def _trial_rows(
     *,
     alpha_grid: Sequence[float],
@@ -390,6 +433,7 @@ def _trial_rows(
     formula_matrix: np.ndarray,
     formula_matrix_cond_active: np.ndarray,
     element_inventory_target: np.ndarray,
+    external_condensate_budget: np.ndarray | None,
     gas_stationarity_source: np.ndarray,
     condensate_standard_source: np.ndarray,
     q: np.ndarray,
@@ -405,6 +449,7 @@ def _trial_rows(
     delta_qtot: float,
     equality_penalty_weight: float,
     total_density_penalty_weight: float,
+    enforce_condensate_capacity: bool = False,
 ) -> list[dict[str, Any]]:
     alphas = sorted(
         {
@@ -421,6 +466,13 @@ def _trial_rows(
     for alpha in alphas:
         q_trial = q + alpha * delta_q
         r_trial = r + alpha * delta_r
+        capacity_cap_count = 0
+        if enforce_condensate_capacity:
+            r_trial, capacity_cap_count = _apply_condensate_capacity_cap(
+                r=r_trial,
+                formula_matrix_cond_active=formula_matrix_cond_active,
+                element_inventory_target=element_inventory_target,
+            )
         lam_trial = lam + alpha * delta_lambda
         rho_trial = rho + alpha * delta_rho
         qtot_trial = float(qtot + alpha * delta_qtot)
@@ -428,6 +480,7 @@ def _trial_rows(
             formula_matrix=formula_matrix,
             formula_matrix_cond_active=formula_matrix_cond_active,
             element_inventory_target=element_inventory_target,
+            external_condensate_budget=external_condensate_budget,
             gas_stationarity_source=gas_stationarity_source,
             condensate_standard_source=condensate_standard_source,
             q=q_trial,
@@ -441,6 +494,7 @@ def _trial_rows(
             formula_matrix=formula_matrix,
             formula_matrix_cond_active=formula_matrix_cond_active,
             element_inventory_target=element_inventory_target,
+            external_condensate_budget=external_condensate_budget,
             gas_stationarity_source=gas_stationarity_source,
             condensate_standard_source=condensate_standard_source,
             q=q_trial,
@@ -459,6 +513,7 @@ def _trial_rows(
                 "residual_l2": residual_l2,
                 "residual_components": residual_components,
                 "all_finite": bool(merit["finite"] and math.isfinite(residual_l2)),
+                "condensate_capacity_cap_count": capacity_cap_count,
             }
         )
     return rows
@@ -526,6 +581,7 @@ def _direction_candidates(
     formula_matrix: np.ndarray,
     formula_matrix_cond_active: np.ndarray,
     element_inventory_target: np.ndarray,
+    external_condensate_budget: np.ndarray | None,
     gas_stationarity_source: np.ndarray,
     q: np.ndarray,
     r: np.ndarray,
@@ -538,6 +594,8 @@ def _direction_candidates(
     delta_rho: np.ndarray,
     delta_qtot: float,
     max_abs_delta_q: float,
+    max_abs_delta_r: float,
+    budget_row_scaling_policy: str,
 ) -> list[AlgorithmV11Direction]:
     algorithm_direction = _make_direction_from_step(
         delta_q=delta_q,
@@ -562,6 +620,40 @@ def _direction_candidates(
         return [gas_direction]
     if direction_policy == "algorithm_v11_with_budget_safe_gas_stationarity":
         return [algorithm_direction, gas_direction]
+    condensate_budget_direction = build_active_condensate_budget_correction_direction(
+        formula_matrix=formula_matrix,
+        formula_matrix_cond_active=formula_matrix_cond_active,
+        element_inventory_target=element_inventory_target,
+        external_condensate_budget=external_condensate_budget,
+        q=q,
+        r=r,
+        lambda_size=lam.shape[0],
+        rho_size=rho.shape[0],
+        max_abs_delta_r=max_abs_delta_r,
+    )
+    relative_condensate_budget_direction = (
+        build_active_condensate_budget_correction_direction(
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            element_inventory_target=element_inventory_target,
+            external_condensate_budget=external_condensate_budget,
+            q=q,
+            r=r,
+            lambda_size=lam.shape[0],
+            rho_size=rho.shape[0],
+            max_abs_delta_r=max_abs_delta_r,
+            relative_budget_weighting=True,
+            enforce_condensate_capacity=True,
+        )
+    )
+    if direction_policy == "condensate_budget_correction":
+        return [condensate_budget_direction]
+    if direction_policy == "algorithm_v11_with_condensate_budget_correction":
+        return [algorithm_direction, condensate_budget_direction]
+    if direction_policy == "relative_condensate_budget_correction":
+        return [relative_condensate_budget_direction]
+    if direction_policy == "algorithm_v11_with_relative_condensate_budget_correction":
+        return [algorithm_direction, relative_condensate_budget_direction]
     if direction_policy == "algorithm_v11_gas_stationarity_blend":
         candidates: list[AlgorithmV11Direction] = []
         for beta in algorithm_fraction_grid:
@@ -591,6 +683,7 @@ def _direction_candidates(
                 formula_matrix=formula_matrix,
                 formula_matrix_cond_active=formula_matrix_cond_active,
                 element_inventory_target=element_inventory_target,
+                external_condensate_budget=external_condensate_budget,
                 gas_stationarity_source=gas_stationarity_source,
                 q=q,
                 r=r,
@@ -599,6 +692,7 @@ def _direction_candidates(
                 qtot=qtot,
                 target_direction=algorithm_direction,
                 max_abs_delta_q=max_abs_delta_q,
+                budget_row_scaling_policy=budget_row_scaling_policy,
             )
         ]
     if direction_policy == "joint_budget_amount_gas_linearized_no_prior":
@@ -607,6 +701,7 @@ def _direction_candidates(
                 formula_matrix=formula_matrix,
                 formula_matrix_cond_active=formula_matrix_cond_active,
                 element_inventory_target=element_inventory_target,
+                external_condensate_budget=external_condensate_budget,
                 gas_stationarity_source=gas_stationarity_source,
                 q=q,
                 r=r,
@@ -616,6 +711,7 @@ def _direction_candidates(
                 target_direction=None,
                 target_direction_weight=0.0,
                 max_abs_delta_q=max_abs_delta_q,
+                budget_row_scaling_policy=budget_row_scaling_policy,
             )
         ]
     if direction_policy == "joint_budget_amount_gas_condensate_prior":
@@ -624,6 +720,7 @@ def _direction_candidates(
                 formula_matrix=formula_matrix,
                 formula_matrix_cond_active=formula_matrix_cond_active,
                 element_inventory_target=element_inventory_target,
+                external_condensate_budget=external_condensate_budget,
                 gas_stationarity_source=gas_stationarity_source,
                 q=q,
                 r=r,
@@ -634,6 +731,7 @@ def _direction_candidates(
                 target_direction_weight=1.0e-2,
                 target_direction_component_mode="condensate_dual_only",
                 max_abs_delta_q=max_abs_delta_q,
+                budget_row_scaling_policy=budget_row_scaling_policy,
             )
         ]
     if direction_policy == "joint_budget_amount_gas_condensate_prior_budget_strong":
@@ -642,6 +740,7 @@ def _direction_candidates(
                 formula_matrix=formula_matrix,
                 formula_matrix_cond_active=formula_matrix_cond_active,
                 element_inventory_target=element_inventory_target,
+                external_condensate_budget=external_condensate_budget,
                 gas_stationarity_source=gas_stationarity_source,
                 q=q,
                 r=r,
@@ -655,6 +754,7 @@ def _direction_candidates(
                 target_direction_weight=1.0e-2,
                 target_direction_component_mode="condensate_dual_only",
                 max_abs_delta_q=max_abs_delta_q,
+                budget_row_scaling_policy=budget_row_scaling_policy,
             )
         ]
     if direction_policy == "joint_budget_amount_gas_condensate_prior_balanced":
@@ -663,6 +763,7 @@ def _direction_candidates(
                 formula_matrix=formula_matrix,
                 formula_matrix_cond_active=formula_matrix_cond_active,
                 element_inventory_target=element_inventory_target,
+                external_condensate_budget=external_condensate_budget,
                 gas_stationarity_source=gas_stationarity_source,
                 q=q,
                 r=r,
@@ -676,6 +777,7 @@ def _direction_candidates(
                 target_direction_weight=1.0e-2,
                 target_direction_component_mode="condensate_dual_only",
                 max_abs_delta_q=max_abs_delta_q,
+                budget_row_scaling_policy=budget_row_scaling_policy,
             )
         ]
     if direction_policy != "residual_norm_blend":
@@ -683,6 +785,10 @@ def _direction_candidates(
             "direction_policy must be algorithm_v11_reduced, residual_norm_blend, "
             "budget_safe_gas_stationarity, or "
             "algorithm_v11_with_budget_safe_gas_stationarity, or "
+            "condensate_budget_correction, or "
+            "algorithm_v11_with_condensate_budget_correction, or "
+            "relative_condensate_budget_correction, or "
+            "algorithm_v11_with_relative_condensate_budget_correction, or "
             "algorithm_v11_gas_stationarity_blend, or "
             "joint_budget_amount_gas_linearized, or "
             "joint_budget_amount_gas_linearized_no_prior, or "
@@ -695,6 +801,7 @@ def _direction_candidates(
         formula_matrix=formula_matrix,
         formula_matrix_cond_active=formula_matrix_cond_active,
         element_inventory_target=element_inventory_target,
+        external_condensate_budget=external_condensate_budget,
         q=q,
         r=r,
         lambda_size=lam.shape[0],
@@ -730,6 +837,7 @@ def run_algorithm_v11_pdipm_continuation(
     element_inventory_target: Sequence[float],
     gas_stationarity_source: Sequence[float],
     condensate_standard_source: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
     initial_epsilon: float,
     final_epsilon: float,
     tau: float = 0.5,
@@ -775,6 +883,7 @@ def run_algorithm_v11_pdipm_continuation(
     dedicated_restoration_max_proximity: float | None = 10.0,
     require_residual_nonworsening: bool = False,
     residual_worsening_tolerance: float = 0.0,
+    budget_row_scaling_policy: str = "absolute",
 ) -> AlgorithmV11ContinuationReport:
     """Run diagnostic outer/inner PD-IPM continuation for algorithm-v1.1."""
 
@@ -891,13 +1000,21 @@ def run_algorithm_v11_pdipm_continuation(
             "center_metric_policy must be raw_l2, component_max, or "
             "amount_weighted_kkt_max."
         )
+    if budget_row_scaling_policy not in {"absolute", "relative_target"}:
+        raise ValueError("budget_row_scaling_policy must be absolute or relative_target.")
     residual_tol = float(residual_worsening_tolerance)
     if not math.isfinite(residual_tol) or residual_tol < 0.0:
         raise ValueError("residual_worsening_tolerance must be finite and non-negative.")
+    enforce_trial_condensate_capacity = True
 
     ag = _as_matrix(formula_matrix, "formula_matrix")
     ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
     target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     gas_source = _as_vector(gas_stationarity_source, "gas_stationarity_source")
     cond_source = _as_vector(condensate_standard_source, "condensate_standard_source")
     q = _as_vector(state.ln_nk, "state.ln_nk")
@@ -905,6 +1022,8 @@ def run_algorithm_v11_pdipm_continuation(
     lam = _as_vector(state.element_potential, "state.element_potential")
     rho = _as_vector(state.rho, "state.rho")
     qtot = float(state.ln_ntot)
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
     outer_records: list[Mapping[str, Any]] = []
     inner_count = 0
     stopped_reason = "max_outer_iterations_reached"
@@ -922,6 +1041,7 @@ def run_algorithm_v11_pdipm_continuation(
                 formula_matrix=ag,
                 formula_matrix_cond_active=ac,
                 element_inventory_target=target,
+                external_condensate_budget=external_budget,
                 gas_stationarity_source=gas_source,
                 condensate_standard_source=cond_source,
                 q=q,
@@ -935,6 +1055,7 @@ def run_algorithm_v11_pdipm_continuation(
                 formula_matrix=ag,
                 formula_matrix_cond_active=ac,
                 element_inventory_target=target,
+                external_condensate_budget=external_budget,
                 gas_stationarity_source=gas_source,
                 condensate_standard_source=cond_source,
                 q=q,
@@ -1006,6 +1127,7 @@ def run_algorithm_v11_pdipm_continuation(
                 formula_matrix=ag,
                 formula_matrix_cond_active=ac,
                 element_inventory_target=target,
+                external_condensate_budget=external_budget,
                 gas_stationarity_source=gas_source,
                 condensate_standard_source=cond_source,
                 epsilon=eps,
@@ -1027,6 +1149,7 @@ def run_algorithm_v11_pdipm_continuation(
                 formula_matrix=ag,
                 formula_matrix_cond_active=ac,
                 element_inventory_target=target,
+                external_condensate_budget=external_budget,
                 gas_stationarity_source=gas_source,
                 q=q,
                 r=r,
@@ -1039,6 +1162,8 @@ def run_algorithm_v11_pdipm_continuation(
                 delta_rho=delta_rho,
                 delta_qtot=delta_qtot,
                 max_abs_delta_q=max_abs_delta_q,
+                max_abs_delta_r=max_abs_delta_r,
+                budget_row_scaling_policy=budget_row_scaling_policy,
             )
             direction_records: list[dict[str, Any]] = []
             selected_direction: AlgorithmV11Direction | None = None
@@ -1057,6 +1182,7 @@ def run_algorithm_v11_pdipm_continuation(
                     formula_matrix=ag,
                     formula_matrix_cond_active=ac,
                     element_inventory_target=target,
+                    external_condensate_budget=external_budget,
                     gas_stationarity_source=gas_source,
                     condensate_standard_source=cond_source,
                     q=q,
@@ -1072,6 +1198,7 @@ def run_algorithm_v11_pdipm_continuation(
                     delta_qtot=direction.delta_qtot,
                     equality_penalty_weight=equality_penalty_weight,
                     total_density_penalty_weight=total_density_penalty_weight,
+                    enforce_condensate_capacity=enforce_trial_condensate_capacity,
                 )
                 selection = select_p_based_armijo_trial(
                     trials,
@@ -1288,6 +1415,7 @@ def run_algorithm_v11_pdipm_continuation(
                     formula_matrix=ag,
                     formula_matrix_cond_active=ac,
                     element_inventory_target=target,
+                    external_condensate_budget=external_budget,
                     q=q,
                     r=r,
                     lambda_size=lam.shape[0],
@@ -1305,6 +1433,7 @@ def run_algorithm_v11_pdipm_continuation(
                     formula_matrix=ag,
                     formula_matrix_cond_active=ac,
                     element_inventory_target=target,
+                    external_condensate_budget=external_budget,
                     gas_stationarity_source=gas_source,
                     condensate_standard_source=cond_source,
                     q=q,
@@ -1320,6 +1449,7 @@ def run_algorithm_v11_pdipm_continuation(
                     delta_qtot=restoration_direction.delta_qtot,
                     equality_penalty_weight=equality_penalty_weight,
                     total_density_penalty_weight=total_density_penalty_weight,
+                    enforce_condensate_capacity=enforce_trial_condensate_capacity,
                 )
                 proximity_norm = math.sqrt(
                     float(np.linalg.norm(restoration_direction.delta_q)) ** 2
@@ -1474,6 +1604,13 @@ def run_algorithm_v11_pdipm_continuation(
             assert selected_direction is not None
             q = q + alpha * selected_direction.delta_q
             r = r + alpha * selected_direction.delta_r
+            if enforce_trial_condensate_capacity:
+                r, capacity_cap_count = _apply_condensate_capacity_cap(
+                    r=r,
+                    formula_matrix_cond_active=ac,
+                    element_inventory_target=target,
+                )
+                record["accepted_condensate_capacity_cap_count"] = capacity_cap_count
             lam = lam + alpha * selected_direction.delta_lambda
             rho = rho + alpha * selected_direction.delta_rho
             qtot = float(qtot + alpha * selected_direction.delta_qtot)
@@ -1482,6 +1619,7 @@ def run_algorithm_v11_pdipm_continuation(
             formula_matrix=ag,
             formula_matrix_cond_active=ac,
             element_inventory_target=target,
+            external_condensate_budget=external_budget,
             gas_stationarity_source=gas_source,
             condensate_standard_source=cond_source,
             q=q,
@@ -1597,6 +1735,7 @@ def run_algorithm_v11_pdipm_continuation(
         formula_matrix=ag,
         formula_matrix_cond_active=ac,
         element_inventory_target=target,
+        external_condensate_budget=external_budget,
         gas_stationarity_source=gas_source,
         condensate_standard_source=cond_source,
         q=q,
@@ -1610,6 +1749,7 @@ def run_algorithm_v11_pdipm_continuation(
         formula_matrix=ag,
         formula_matrix_cond_active=ac,
         element_inventory_target=target,
+        external_condensate_budget=external_budget,
         gas_stationarity_source=gas_source,
         condensate_standard_source=cond_source,
         q=q,

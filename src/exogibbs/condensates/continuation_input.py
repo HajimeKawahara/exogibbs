@@ -32,6 +32,7 @@ class CondensateContinuationInput:
     formula_matrix: tuple[tuple[float, ...], ...]
     formula_matrix_cond_active: tuple[tuple[float, ...], ...]
     element_inventory_target: tuple[float, ...]
+    external_condensate_budget: tuple[float, ...]
     gas_stationarity_source: tuple[float, ...]
     condensate_standard_source: tuple[float, ...]
     gas_lambda_gauge_residual_l2: float
@@ -143,6 +144,7 @@ def build_condensate_continuation_input(
     element_inventory_target: Sequence[float],
     gas_stationarity_source: Sequence[float],
     condensate_standard_source: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
     ln_ntot: float | None = None,
     rho: Sequence[float] | None = None,
     eta: Sequence[float] | None = None,
@@ -161,6 +163,11 @@ def build_condensate_continuation_input(
     ag = _as_matrix(formula_matrix, "formula_matrix")
     ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
     target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
     gas_source = _as_vector(gas_stationarity_source, "gas_stationarity_source")
     cond_source = _as_vector(condensate_standard_source, "condensate_standard_source")
 
@@ -170,6 +177,8 @@ def build_condensate_continuation_input(
         raise ValueError("formula_matrix row count must match element_potential length.")
     if ag.shape[0] != target.shape[0]:
         raise ValueError("formula_matrix row count must match element_inventory_target length.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element_inventory_target.")
     if ac.shape[0] != ag.shape[0]:
         raise ValueError("formula_matrix_cond_active row count must match formula_matrix.")
     if ac.shape[1] != r.shape[0]:
@@ -208,6 +217,7 @@ def build_condensate_continuation_input(
         formula_matrix=_tuple_matrix(ag),
         formula_matrix_cond_active=_tuple_matrix(ac),
         element_inventory_target=_tuple_vector(target),
+        external_condensate_budget=_tuple_vector(external_budget),
         gas_stationarity_source=_tuple_vector(gas_source),
         condensate_standard_source=_tuple_vector(cond_source),
         gas_lambda_gauge_residual_l2=float(np.linalg.norm(gauge_residual)),

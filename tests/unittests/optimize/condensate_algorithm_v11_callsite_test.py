@@ -65,6 +65,7 @@ def test_algorithm_v11_thermo_valid_callsite_filters_and_runs() -> None:
     assert report.removed_support_count == 1
     assert report.filter_report.removed_species_names == ("bad",)
     assert report.reduced_step_report.finite_trial_step is True
+    assert report.reduced_step_report.initial_budget_l2 == pytest.approx(0.0, abs=1.0e-14)
     assert len(report.reduced_step_report.delta_r) == 1
 
 
