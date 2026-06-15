@@ -80,7 +80,7 @@ SUPPORT_FREE_MIDLAYER_EXPECTED_STATUSES = {
 }
 
 SUPPORT_FREE_FALLBACK_RETRY_REGRESSION_ROWS = (
-    ("solar_water_condensation", 7),
+    ("solar_water_condensation", 7, "support_growth_staging_retry"),
 )
 
 SUPPORT_FREE_V1_4_REMAINING_REJECT_REGRESSION_ROWS = (
@@ -388,7 +388,7 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
 def test_support_free_fallback_retry_regression_layers_promote_to_primary() -> None:
     setup = condensate_chemical_setup(silent=True)
 
-    for family, layer_index in SUPPORT_FREE_FALLBACK_RETRY_REGRESSION_ROWS:
+    for family, layer_index, retry_key in SUPPORT_FREE_FALLBACK_RETRY_REGRESSION_ROWS:
         definition = FRESH_CURATED_PROFILES[family]
         temperature = float(definition.temperatures[layer_index])
         pressure = float(definition.pressures[layer_index])
@@ -415,7 +415,7 @@ def test_support_free_fallback_retry_regression_layers_promote_to_primary() -> N
         assert result.diagnostics is not None
         gate = result.diagnostics["full_condensate_budget_residual_gate"]
         assert gate["accepted"] is True
-        retry_report = result.diagnostics["support_budget_preserving_seed_retry"]
+        retry_report = result.diagnostics[retry_key]
         assert retry_report["triggered"] is True
         assert retry_report["accepted"] is True
         assert retry_report["route_promoted"] is True
@@ -423,7 +423,14 @@ def test_support_free_fallback_retry_regression_layers_promote_to_primary() -> N
             retry_report["initial_selected_route"]
             == "native_budget_seed_fallback_budget_tradeoff"
         )
-        assert retry_report["retry_seed_initialization_policy"] == "budget_preserving_fraction"
+        if retry_key == "support_budget_preserving_seed_retry":
+            assert (
+                retry_report["retry_seed_initialization_policy"]
+                == "budget_preserving_fraction"
+            )
+        if retry_key == "support_growth_staging_retry":
+            assert retry_report["support_closure_accepted"] is True
+            assert retry_report["retry_support_closure_gate"]["accepted"] is True
         support_selection = result.diagnostics["support_selection"]
         assert support_selection["selection_mode"] == "activity_driven_support_outer_loop"
         assert support_selection["fastchem4_trace_values_used"] is False

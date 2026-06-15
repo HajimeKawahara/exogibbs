@@ -1,0 +1,445 @@
+{
+  "schema": "exogibbs_condensate_head_route_scorecard_v1",
+  "policy": {
+    "fastchem4_is_comparison_target_only": true,
+    "fastchem4_constructor_inputs_used": false,
+    "fastchem4_exact_replay_target": false,
+    "markdown_companion": "score.md"
+  },
+  "metric_priorities": [
+    {
+      "metric": "public_convergence_budget_gate",
+      "purpose": "Confirm whether the public API result remains acceptable.",
+      "improvement_direction": "Keep converged rows and avoid new budget-gate rejects."
+    },
+    {
+      "metric": "exogibbs_native_gibbs_over_rt",
+      "purpose": "Check whether implementation changes worsen the ExoGibbs-native objective.",
+      "improvement_direction": "Decrease or do not increase before/after G/RT."
+    },
+    {
+      "metric": "inactive_positive_condensate_driving",
+      "purpose": "Detect condensates outside support that still strongly want to condense.",
+      "improvement_direction": "Decrease maximum driving and count."
+    },
+    {
+      "metric": "fastchem4_gas_abundance_difference",
+      "purpose": "Detect large public gas abundance outliers against FastChem4.",
+      "improvement_direction": "Decrease max absolute log10 gas ratio."
+    },
+    {
+      "metric": "active_condensate_jaccard",
+      "purpose": "Track active condensate list similarity to FastChem4 without exact replay.",
+      "improvement_direction": "Increase mean and minimum Jaccard."
+    },
+    {
+      "metric": "fastchem4_scaled_gibbs_comparison",
+      "purpose": "Evaluate ExoGibbs and budget-scaled FastChem4 states under the same ExoGibbs-native objective.",
+      "improvement_direction": "Increase ExoGibbs-lower count and decrease max absolute dG/RT."
+    },
+    {
+      "metric": "route_support_churn",
+      "purpose": "Confirm whether a trial changes only intended rows.",
+      "improvement_direction": "Keep route/support changes localized and justified by G/RT or residual improvements."
+    }
+  ],
+  "baselines": {
+    "head_route_v1_4": {
+      "description": "Public full-condensate budget consistency baseline.",
+      "public_convergence": {
+        "curated_full_profile_rows": 99,
+        "public_converged": 99,
+        "public_budget_gate_rejects": 0,
+        "route_counts": {
+          "primary": 82,
+          "gas_only": 17,
+          "native_fallback": 0
+        },
+        "bookkeeping_gate_mismatch_rows": 0
+      },
+      "inactive_driving_hotspots": [
+        {
+          "family": "solar_water_condensation",
+          "layer_index": 7,
+          "max_inactive_driving": 3505.0
+        },
+        {
+          "family": "lowT_strong_condensation_budget_stress",
+          "layer_index": 7,
+          "max_inactive_driving": 2130.0
+        },
+        {
+          "family": "carbon_rich_CaS_MgS_AlN_window",
+          "layer_index": 7,
+          "max_inactive_driving": 1022.0
+        },
+        {
+          "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+          "layer_index": 5,
+          "max_inactive_driving": 821.0
+        },
+        {
+          "family": "SiO_s_condensate_window",
+          "layer_index": 8,
+          "max_inactive_driving": 787.0
+        }
+      ],
+      "fastchem4_comparison_highlights": [
+        {
+          "family": "solar_water_condensation",
+          "jaccard_mean": 0.13,
+          "jaccard_min": 0.102,
+          "max_abs_log10_gas_ratio": 163.0
+        },
+        {
+          "family": "lowT_strong_condensation_budget_stress",
+          "jaccard_mean": 0.131,
+          "jaccard_min": 0.102,
+          "max_abs_log10_gas_ratio": 105.0
+        },
+        {
+          "family": "carbon_rich_CaS_MgS_AlN_window",
+          "jaccard_mean": 0.156,
+          "jaccard_min": 0.124,
+          "max_abs_log10_gas_ratio": 35.7
+        },
+        {
+          "family": "SiO_s_condensate_window",
+          "jaccard_mean": 0.16,
+          "jaccard_min": 0.121,
+          "max_abs_log10_gas_ratio": 32.5
+        },
+        {
+          "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+          "jaccard_mean": 0.154,
+          "jaccard_min": 0.118,
+          "max_abs_log10_gas_ratio": 39.4
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "jaccard_mean": 0.972,
+          "jaccard_min": 0.5,
+          "max_abs_log10_gas_ratio": 0.565
+        }
+      ]
+    }
+  },
+  "trials": [
+    {
+      "trial": "v1.5.1",
+      "title": "support-closure retry gate",
+      "description": "Evaluate inactive positive condensate driving before accepting support-cap or staged support-growth retry candidates.",
+      "provenance": {
+        "source_tree": "working tree after HEAD route v1.5.1 implementation",
+        "exact_v1_4_rerun": false,
+        "v1_4_like_comparison": "current code with enable_support_closure_retry_gate=False",
+        "artifacts": [
+          "volatiles_artifacts/fastchem4_head_route_v13_support_free_comparison_summary.md",
+          "volatiles_artifacts/head_route_v13_fastchem4_deep_comparison_summary.md"
+        ],
+        "artifact_commit_policy": "volatiles_artifacts/ and volatiles_code/ remain scratch-only and are not commit targets"
+      },
+      "implementation": {
+        "enable_support_closure_retry_gate": true,
+        "support_closure_max_positive_inactive_driving": 500.0,
+        "retry_exception_isolation": true,
+        "fastchem4_active_list_used": false,
+        "fastchem4_runtime_trace_used": false,
+        "fastchem4_public_values_used": false
+      },
+      "public_convergence": {
+        "baseline": "head_route_v1_4",
+        "curated_full_profile_rows": {
+          "before": 99,
+          "after": 99,
+          "delta": 0
+        },
+        "public_converged": {
+          "before": 99,
+          "after": 99,
+          "delta": 0
+        },
+        "public_not_converged": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "public_budget_gate_rejects": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "primary_route": {
+          "before": 82,
+          "after": 82,
+          "delta": 0
+        },
+        "gas_only_route": {
+          "before": 17,
+          "after": 17,
+          "delta": 0
+        },
+        "native_fallback_route": {
+          "before": 0,
+          "after": 0,
+          "delta": 0
+        },
+        "support_changed_rows": {
+          "before": 0,
+          "after": 13,
+          "delta": 13
+        },
+        "support_increased_rows": {
+          "before": 0,
+          "after": 13,
+          "delta": 13
+        }
+      },
+      "exogibbs_native_gibbs_before_after": {
+        "comparison_note": "This is a v1.4-like comparison, not an exact v1.4 checkout rerun.",
+        "compared_layers": 99,
+        "finite_comparisons": 99,
+        "v151_lower_g_over_rt": 13,
+        "v151_higher_g_over_rt": 0,
+        "unchanged": 86,
+        "sum_delta_g_over_rt_v151_minus_v14_like": -0.0021467,
+        "min_delta_g_over_rt_v151_minus_v14_like": -0.00071287,
+        "max_delta_g_over_rt_v151_minus_v14_like": 0.0,
+        "largest_decreases": [
+          {
+            "family": "carbon_rich_CaS_MgS_AlN_window",
+            "layer_index": 2,
+            "support_before": 14,
+            "support_after": 48,
+            "delta_g_over_rt": -0.00071287
+          },
+          {
+            "family": "solar_water_condensation",
+            "layer_index": 7,
+            "support_before": 34,
+            "support_after": 142,
+            "delta_g_over_rt": -0.00052964
+          },
+          {
+            "family": "solar_water_condensation",
+            "layer_index": 5,
+            "support_before": 34,
+            "support_after": 147,
+            "delta_g_over_rt": -0.00025305
+          },
+          {
+            "family": "solar_water_condensation",
+            "layer_index": 0,
+            "support_before": 34,
+            "support_after": 128,
+            "delta_g_over_rt": -0.00017918
+          },
+          {
+            "family": "lowT_strong_condensation_budget_stress",
+            "layer_index": 7,
+            "support_before": 34,
+            "support_after": 134,
+            "delta_g_over_rt": -0.00017311
+          },
+          {
+            "family": "lowT_strong_condensation_budget_stress",
+            "layer_index": 2,
+            "support_before": 34,
+            "support_after": 80,
+            "delta_g_over_rt": -0.000078807
+          }
+        ]
+      },
+      "targeted_inactive_driving_hotspots": [
+        {
+          "family": "solar_water_condensation",
+          "layer_index": 7,
+          "before": 3505.0,
+          "after": 0.0,
+          "delta": -3505.0,
+          "improvement": "full_closure"
+        },
+        {
+          "family": "lowT_strong_condensation_budget_stress",
+          "layer_index": 7,
+          "before": 2130.0,
+          "after": 19.7,
+          "delta": -2110.3,
+          "improvement_factor": 108.0
+        },
+        {
+          "family": "carbon_rich_CaS_MgS_AlN_window",
+          "layer_index": 7,
+          "before": 1022.0,
+          "after": 487.0,
+          "delta": -535.0,
+          "improvement_factor": 2.1
+        },
+        {
+          "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+          "layer_index": 5,
+          "before": 821.0,
+          "after": 191.0,
+          "delta": -630.0,
+          "improvement_factor": 4.3
+        },
+        {
+          "family": "SiO_s_condensate_window",
+          "layer_index": 8,
+          "before": 787.0,
+          "after": 111.0,
+          "delta": -676.0,
+          "improvement_factor": 7.1
+        }
+      ],
+      "remaining_deep_comparison_inactive_driving": [
+        {
+          "family": "solar_water_condensation",
+          "layer_index": 8,
+          "max_inactive_driving": 2579.0
+        },
+        {
+          "family": "solar_water_condensation",
+          "layer_index": 2,
+          "max_inactive_driving": 1662.0
+        }
+      ],
+      "fastchem4_gas_comparison": [
+        {
+          "family": "solar_water_condensation",
+          "before_max_abs_log10_gas_ratio": 163.0,
+          "after_max_abs_log10_gas_ratio": 121.0,
+          "delta": -42.0
+        },
+        {
+          "family": "lowT_strong_condensation_budget_stress",
+          "before_max_abs_log10_gas_ratio": 105.0,
+          "after_max_abs_log10_gas_ratio": 30.4,
+          "delta": -74.6
+        },
+        {
+          "family": "carbon_rich_CaS_MgS_AlN_window",
+          "before_max_abs_log10_gas_ratio": 35.7,
+          "after_max_abs_log10_gas_ratio": 25.8,
+          "delta": -9.9
+        },
+        {
+          "family": "SiO_s_condensate_window",
+          "before_max_abs_log10_gas_ratio": 32.5,
+          "after_max_abs_log10_gas_ratio": 32.5,
+          "delta": 0.0
+        },
+        {
+          "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+          "before_max_abs_log10_gas_ratio": 39.4,
+          "after_max_abs_log10_gas_ratio": 39.4,
+          "delta": 0.0
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "before_max_abs_log10_gas_ratio": 0.565,
+          "after_max_abs_log10_gas_ratio": 0.565,
+          "delta": 0.0
+        }
+      ],
+      "active_condensate_jaccard": [
+        {
+          "family": "solar_water_condensation",
+          "before_mean": 0.13,
+          "before_min": 0.102,
+          "after_mean": 0.142,
+          "after_min": 0.126,
+          "delta_mean": 0.012
+        },
+        {
+          "family": "lowT_strong_condensation_budget_stress",
+          "before_mean": 0.131,
+          "before_min": 0.102,
+          "after_mean": 0.142,
+          "after_min": 0.103,
+          "delta_mean": 0.011
+        },
+        {
+          "family": "carbon_rich_CaS_MgS_AlN_window",
+          "before_mean": 0.156,
+          "before_min": 0.124,
+          "after_mean": 0.147,
+          "after_min": 0.124,
+          "delta_mean": -0.009
+        },
+        {
+          "family": "SiO_s_condensate_window",
+          "before_mean": 0.16,
+          "before_min": 0.121,
+          "after_mean": 0.164,
+          "after_min": 0.121,
+          "delta_mean": 0.004
+        },
+        {
+          "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+          "before_mean": 0.154,
+          "before_min": 0.118,
+          "after_mean": 0.157,
+          "after_min": 0.118,
+          "delta_mean": 0.003
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "before_mean": 0.972,
+          "before_min": 0.5,
+          "after_mean": 0.972,
+          "after_min": 0.5,
+          "delta_mean": 0.0
+        }
+      ],
+      "fastchem4_scaled_gibbs_comparison_after": {
+        "compared_layers": 99,
+        "exogibbs_state_lower_g_over_rt": 17,
+        "fastchem4_scaled_state_lower_g_over_rt": 82,
+        "max_abs_delta_g_over_rt": 0.00098443
+      },
+      "verdict": {
+        "local_improvement": true,
+        "public_convergence_preserved": true,
+        "gibbs_never_increases_in_gate_on_off_comparison": true,
+        "fastchem4_agreement_complete": false
+      }
+    }
+  ],
+  "next_trial_candidates": [
+    {
+      "candidate": "A",
+      "title": "residual support closure after accepted result",
+      "goal": "Reduce remaining large inactive driving rows, especially solar_water_condensation layer 8 and layer 2.",
+      "required_score_checks": [
+        "public convergence remains 99/99",
+        "no G/RT increases relative to v1.5.1",
+        "max inactive driving decreases on remaining hotspots",
+        "water max |log10 gas ratio| decreases below 121",
+        "support size does not explode without corresponding G/RT decrease"
+      ]
+    },
+    {
+      "candidate": "B",
+      "title": "amount-floor complementarity repair",
+      "goal": "Prevent near-zero support amounts from behaving like missing active condensates.",
+      "required_score_checks": [
+        "top inactive driving rows before/after",
+        "active count under floors 0, 1e-100, 1e-50, 1e-20",
+        "G/RT before/after",
+        "budget residual and full-budget gate acceptance"
+      ]
+    },
+    {
+      "candidate": "C",
+      "title": "FastChem4 gas trace outlier audit",
+      "goal": "Identify whether remaining gas outliers come from support closure, amount floors, gas thermochemistry differences, or objective gauge/scaling.",
+      "required_score_checks": [
+        "top gas |log10 ratio| rows by species/family/layer",
+        "whether outlier species uses elements in remaining inactive condensates",
+        "ExoGibbs-native driving of condensates containing those elements",
+        "G/RT and relative budget residual for the same rows"
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 この文書は、ExoGibbs の凝縮あり計算で現在の基準経路として扱う **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
 
-現在の実装版は **HEAD route v1.4** である。v1.4 は v1.3 の fresh API runtime path を基準に、public `accepted` / `converged` 判定へ full condensate vector の element-wise relative budget residual gate と、gate fail row を直す relative joint budget-correction retry、budget-preserving seed retry、empty-support strict gas retry を追加する。
+現在の実装版は **HEAD route v1.5** である。v1.5 は trial **v1.5.1** の support-closure retry gate を昇格した固定版であり、v1.4 の public budget consistency を維持したまま、support-free fallback retry の採用前に ExoGibbs-native inactive condensate driving closure gate をかける。これにより、support-cap retry や staged support-growth retry が non-fallback route を返しても、採用後の gas state で大きな positive inactive condensate driving が残る候補は次の retry 候補へ送る。
 
 ## 一言でいうと
 
@@ -16,9 +16,30 @@
    v1.2 では、restricted support solver が成功しても lifecycle selector が accepted しない fresh API runtime layer について、finite warm-start candidate が残っていれば native seed fallback を許可する。
    v1.3 では、support-free outer loop 内に center-gate retry、residual-worsening retry、soft-restoration retry、Ipopt-style persistent h-type retry、support-cap retry を追加し、native seed fallback へ落ちる runtime layer を減らす。
 6. v1.4 では、返却直前に gas と full condensate vector から元素 budget を再構成し、element-wise relative residual が許容値を超える accepted row を relative joint budget-correction retry、budget-preserving seed retry、empty-support strict gas retry で直す。retry 後も許容値を超える row だけを `not_converged` に降格する。
-7. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
+7. v1.5 では、support-cap retry と support-growth staging retry の候補を採用する前に、候補の gas state から inactive condensate driving を再評価し、positive inactive driving が許容値を超える候補を採用しない。
+8. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
 
 これは FastChem4 exact replay（FastChem4 の分岐を完全再現すること）ではない。FastChem4 public/runtime/trace values（公開出力・実行時出力・内部 trace 値）は、ExoGibbs の constructor input（初期値や構成入力）として使わない。
+
+## HEAD route v1.5 固定内容
+
+HEAD route v1.5 は、trial v1.5.1 の結果を昇格し、v1.4 の full-budget gate と public convergence 修復を維持したまま、support-free retry の採用条件を強化する固定版である。v1.4 の FastChem4 比較では、public budget residual は閉じていた一方、support-cap retry が小さい support で早く promoted route を返す row に、大きな inactive positive condensate driving が残ることが分かった。v1.5 はこの大ぽかを ExoGibbs-native state だけで検出する。
+
+| promoted item | 目的 | 適用範囲 |
+|---|---|---|
+| support-closure retry gate | `support_cap_retry` と `support_growth_staging_retry` の候補 result に対し、候補の `gas_ln_n` と採用済み support indices から activity-driven support report を再評価する。support 外に残る positive inactive driving の最大値が `support_closure_max_positive_inactive_driving` を超える候補は、non-fallback route でも採用しない。 | support-free fallback-only retry |
+| retry exception isolation | retry 候補が非有限 amount などで例外になっても、outer loop 全体を落とさず、その候補を diagnostics の failed attempt として記録して次の cap/staging 候補へ進む。 | support-cap retry / support-growth staging retry |
+
+既定値は `enable_support_closure_retry_gate=True`、`support_closure_max_positive_inactive_driving=5.0e2` である。この gate は FastChem4 active list や FastChem4 runtime trace を使わない。採用された retry diagnostics には `support_closure_accepted` と `retry_support_closure_gate` を残し、各 attempt にも `support_closure_gate` を残す。
+
+v1.5 の fresh API support-free route selection は v1.4 と同じ public status 面を維持する。ただし、早い小cap retryが大きな inactive driving を残す場合は、より大きい cap または staged support-growth retry へ進む。
+
+| surface | gas-only route | primary route | native seed fallback route | exception | public converged | public not_converged |
+|---|---:|---:|---:|---:|---:|---:|
+| 10 curated midlayers | 1 | 9 | 0 | 0 | 10 | 0 |
+| 10 curated full-profile families | 17 | 82 | 0 | 0 | 99 | 0 |
+
+v1.5 audit では、v1.4 で最も大きかった inactive driving rows が次のように変わる。`solar_water_condensation` layer 7 は small-cap retry ではなく staged support-growth retry を採用し、positive inactive driving は 0 になる。`lowT_strong_condensation_budget_stress` layer 7 は staged retry で最大 driving 約 19.7 まで下がる。`carbon_rich_CaS_MgS_AlN_window` layer 7、`solar_metal_sulfide_or_Fe_Ni_S_region` layer 5、`SiO_s_condensate_window` layer 8 は cap 80 retry が closure gate を通り、最大 driving は許容値内に収まる。
 
 ## HEAD route v1.4 固定内容
 
@@ -342,10 +363,10 @@ HEAD route の accepted は単一品質ではない。現在は 3 tier に分け
 
 ## support-free profile と fixed-support rows の現状
 
-HEAD route v1.4 の本来の default API regression は、`support_indices` を渡さずに
+HEAD route v1.5 の本来の default API regression は、`support_indices` を渡さずに
 public `condensate_equilibrium()` を呼ぶ support-free 経路である。この経路では
 activity-driven support selection、`max_density` seed、solver-output-driven support growth が
-有効になり、必要な場合だけ v1.3 support-free retry gates と v1.4 full-budget gate / budget-correction
+有効になり、必要な場合だけ v1.3 support-free retry gates、v1.5 support-closure retry gate、v1.4 full-budget gate / budget-correction
 retry が発火する。
 
 10 curated case families の中間層では、results artifact に依存せず fresh API から次の挙動を確認する。
@@ -357,7 +378,7 @@ retry が発火する。
 | primary promoted route rejected by full-budget gate | 0 | なし |
 | native seed fallback | 0 | なし |
 
-10 curated support-select demo families の全 profile layer では、v1.4 default fresh API から次の挙動を確認する。
+10 curated support-select demo families の全 profile layer では、v1.5 default fresh API から次の挙動を確認する。
 
 | group | rows | status |
 |---|---:|---|
@@ -368,7 +389,7 @@ retry が発火する。
 
 一方、14 representative rows は v1.1 由来の fixed-support regression である。これらは
 `support_indices` と `support_amounts_init` を明示して restricted-support path を固定するため、
-v1.4 の support-free default support selection を検証するものではない。現在の 14 rows は
+v1.5 の support-free default support selection を検証するものではない。現在の 14 rows は
 explicit support path と full-budget gate の回帰であり、accepted rows と full-budget gate reject rows
 の両方を含む。
 
@@ -408,7 +429,7 @@ HEAD route は凝縮あり初版標準経路として進めてよいが、以下
 
 - gas-only `equilibrium()` の挙動を変えない。
 - production return signature を変えない。
-- gas-only API の defaults を変更しない。凝縮あり API の default は HEAD route v1.4 として扱う。
+- gas-only API の defaults を変更しない。凝縮あり API の default は HEAD route v1.5 として扱う。
 - FastChem4 public/runtime/trace values を constructor input にしない。
 - FastChem4 exact branch replay を acceptance target にしない。
 - case、species、element を落として成功扱いにしない。
@@ -418,7 +439,7 @@ HEAD route は凝縮あり初版標準経路として進めてよいが、以下
 
 次に整理すべき課題は以下である。
 
-1. support-cap retry sequence `(34, 48, 80, 128)` と support-growth staging retry sequence `(64, 32, 16, 8)` が curated full-profile 以外の broad grid でも妥当か、fallback-only retry として監査する。
+1. support-closure retry gate の tolerance `5.0e2` と、support-cap retry sequence `(34, 48, 80, 128)` / support-growth staging retry sequence `(64, 32, 16, 8)` が curated full-profile 以外の broad grid でも妥当か監査する。
 2. `condensate_equilibrium_profile()` を profile/layer 計算へ接続する。
 3. docs と examples で、HEAD route の public API 使用例を整備する。
 

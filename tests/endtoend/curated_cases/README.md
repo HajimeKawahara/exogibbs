@@ -15,7 +15,8 @@ There are two curated surfaces:
 - Fixed-support rows: the 14-row regression keeps the v1.1-era explicit
   `support_indices` and `support_amounts_init` path. It verifies accepted
   fixed-support fallback behavior, not support-free selection.
-- Support-free rows: the v1.4 default regression calls `condensate_equilibrium`
+- Support-free rows: the v1.5 default regression, promoted from trial v1.5.1,
+  calls `condensate_equilibrium`
   without explicit support on curated profile midlayers. This is the API path
   mirrored by `examples/condensates_curated_support_select_demo/` and exercises
   native support selection, max-density seeds, support growth, and the
@@ -35,4 +36,8 @@ There are two curated surfaces:
   the lifecycle final state when the public full-budget gate rejects an accepted
   row. Remaining support-free fallback rejects are guarded by a
   budget-preserving seed retry, and empty-support gas-only gate rejects are
-  guarded by a strict gas-only retry.
+  guarded by a strict gas-only retry. v1.5 adds an ExoGibbs-native
+  support-closure retry gate before accepting support-cap or staged
+  support-growth retry candidates, so promoted retry results with large
+  positive inactive condensate driving are skipped in favor of later retry
+  candidates.

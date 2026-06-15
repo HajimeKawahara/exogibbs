@@ -128,6 +128,8 @@ class CondensateEquilibriumOptions:
     support_cap_retry_counts: Optional[Sequence[int]] = (34, 48, 80, 128)
     enable_support_growth_staging_retry: bool = True
     support_growth_staging_retry_add_per_rounds: Optional[Sequence[int]] = (64, 32, 16, 8)
+    enable_support_closure_retry_gate: bool = True
+    support_closure_max_positive_inactive_driving: float = 5.0e2
     enable_native_seed_fallback: bool = True
     enable_full_condensate_budget_residual_gate: bool = True
     full_condensate_budget_relative_tolerance: float = 1.0e-3
@@ -445,6 +447,15 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
                 raise ValueError(
                     "support_growth_staging_retry_add_per_rounds entries must be positive."
                 )
+    if not isinstance(options.enable_support_closure_retry_gate, bool):
+        raise TypeError("enable_support_closure_retry_gate must be a bool.")
+    if (
+        not math.isfinite(float(options.support_closure_max_positive_inactive_driving))
+        or options.support_closure_max_positive_inactive_driving < 0.0
+    ):
+        raise ValueError(
+            "support_closure_max_positive_inactive_driving must be finite and non-negative."
+        )
     if not isinstance(options.enable_full_condensate_budget_residual_gate, bool):
         raise TypeError("enable_full_condensate_budget_residual_gate must be a bool.")
     if (
@@ -1588,6 +1599,78 @@ def _support_add_count(
     return min(add_limit, int(inactive_count))
 
 
+def _support_closure_retry_gate_report(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    b: Array,
+    Pref: float,
+    result: CondensateEquilibriumResult,
+    options: CondensateEquilibriumOptions,
+) -> Mapping[str, Any]:
+    """Report whether a retry result has acceptable inactive support closure."""
+
+    if not options.enable_support_closure_retry_gate:
+        return {
+            "gate_schema": "exogibbs_support_closure_retry_gate_v1",
+            "enabled": False,
+            "accepted": True,
+            "max_positive_inactive_driving": 0.0,
+            "positive_inactive_count": 0,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+        }
+    try:
+        report = _activity_driven_support_report(
+            setup=setup,
+            T=T,
+            P=P,
+            b=b,
+            Pref=Pref,
+            gas_ln_n=result.gas_ln_n,
+            options=options,
+            existing_support_indices=tuple(
+                int(index) for index in result.condensate_support_indices.tolist()
+            ),
+        )
+    except (TypeError, ValueError, RuntimeError, KeyError) as exc:
+        return {
+            "gate_schema": "exogibbs_support_closure_retry_gate_v1",
+            "enabled": True,
+            "accepted": False,
+            "error": f"{type(exc).__name__}: {exc}",
+            "max_positive_inactive_driving": float("inf"),
+            "positive_inactive_count": -1,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+        }
+    inactive = tuple(int(index) for index in report.get("inactive_positive_indices", ()))
+    driving = report.get("candidate_driving", {})
+    top_rows = sorted(
+        (
+            {
+                "index": index,
+                "species": str(setup.condensate_species[index]),
+                "driving": float(driving.get(str(setup.condensate_species[index]), 0.0)),
+            }
+            for index in inactive
+        ),
+        key=lambda row: row["driving"],
+        reverse=True,
+    )
+    max_driving = float(top_rows[0]["driving"]) if top_rows else 0.0
+    tolerance = float(options.support_closure_max_positive_inactive_driving)
+    return {
+        "gate_schema": "exogibbs_support_closure_retry_gate_v1",
+        "enabled": True,
+        "accepted": bool(max_driving <= tolerance),
+        "max_positive_inactive_driving": max_driving,
+        "max_positive_inactive_driving_tolerance": tolerance,
+        "positive_inactive_count": len(inactive),
+        "top_positive_inactive": tuple(top_rows[:20]),
+        "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+    }
+
+
 def _budget_seed_for_support(
     *,
     setup: CondensateChemicalSetup,
@@ -2066,18 +2149,46 @@ def _run_activity_driven_support_outer_loop(
                 enable_support_cap_retry=False,
                 max_positive_support_count=int(retry_cap),
             )
-            retry_result = condensate_equilibrium(
-                setup,
-                T,
-                P,
-                b,
-                Pref=Pref,
-                options=retry_options,
-            )
+            try:
+                retry_result = condensate_equilibrium(
+                    setup,
+                    T,
+                    P,
+                    b,
+                    Pref=Pref,
+                    options=retry_options,
+                )
+            except Exception as exc:  # noqa: BLE001 - retry candidates are optional.
+                retry_attempts.append(
+                    {
+                        "support_cap": int(retry_cap),
+                        "selected_route": "exception",
+                        "status": "exception",
+                        "support_count": 0,
+                        "accepted": False,
+                        "route_promoted": False,
+                        "support_closure_accepted": False,
+                        "exception_type": type(exc).__name__,
+                        "exception_message": str(exc),
+                    }
+                )
+                continue
             retry_route_promoted = (
                 retry_result.selected_route != "native_budget_seed_fallback_budget_tradeoff"
             )
             retry_accepted = bool(retry_result.converged)
+            support_closure_gate = _support_closure_retry_gate_report(
+                setup=setup,
+                T=T,
+                P=P,
+                b=b,
+                Pref=Pref,
+                result=retry_result,
+                options=options,
+            )
+            retry_support_closure_accepted = bool(
+                support_closure_gate.get("accepted", False)
+            )
             retry_attempt = {
                 "support_cap": int(retry_cap),
                 "selected_route": retry_result.selected_route,
@@ -2085,14 +2196,17 @@ def _run_activity_driven_support_outer_loop(
                 "support_count": len(tuple(retry_result.condensate_support_names)),
                 "accepted": bool(retry_accepted),
                 "route_promoted": bool(retry_route_promoted),
+                "support_closure_gate": support_closure_gate,
+                "support_closure_accepted": retry_support_closure_accepted,
             }
             retry_attempts.append(retry_attempt)
-            if retry_route_promoted:
+            if retry_route_promoted and retry_support_closure_accepted:
                 retry_report = {
                     "retry_schema": "exogibbs_support_free_support_cap_retry_v1",
                     "triggered": True,
-                    "accepted": bool(retry_accepted),
+                    "accepted": bool(retry_accepted and retry_support_closure_accepted),
                     "route_promoted": True,
+                    "support_closure_accepted": True,
                     "support_cap": int(retry_cap),
                     "support_cap_sequence": tuple(int(cap) for cap in retry_caps),
                     "attempts": tuple(retry_attempts),
@@ -2104,6 +2218,7 @@ def _run_activity_driven_support_outer_loop(
                     "retry_support_count": len(
                         tuple(retry_result.condensate_support_names)
                     ),
+                    "retry_support_closure_gate": support_closure_gate,
                     "fastchem4_trace_public_runtime_constructor_inputs_used": False,
                 }
                 return _with_support_cap_retry_diagnostics(
@@ -2130,18 +2245,47 @@ def _run_activity_driven_support_outer_loop(
                 enable_support_growth_staging_retry=False,
                 max_support_add_per_round=int(add_per_round),
             )
-            retry_result = condensate_equilibrium(
-                setup,
-                T,
-                P,
-                b,
-                Pref=Pref,
-                options=retry_options,
-            )
+            try:
+                retry_result = condensate_equilibrium(
+                    setup,
+                    T,
+                    P,
+                    b,
+                    Pref=Pref,
+                    options=retry_options,
+                )
+            except Exception as exc:  # noqa: BLE001 - retry candidates are optional.
+                retry_attempts.append(
+                    {
+                        "max_support_add_per_round": int(add_per_round),
+                        "selected_route": "exception",
+                        "status": "exception",
+                        "support_count": 0,
+                        "support_outer_terminated_reason": None,
+                        "accepted": False,
+                        "route_promoted": False,
+                        "support_closure_accepted": False,
+                        "exception_type": type(exc).__name__,
+                        "exception_message": str(exc),
+                    }
+                )
+                continue
             retry_route_promoted = (
                 retry_result.selected_route != "native_budget_seed_fallback_budget_tradeoff"
             )
             retry_accepted = bool(retry_result.converged)
+            support_closure_gate = _support_closure_retry_gate_report(
+                setup=setup,
+                T=T,
+                P=P,
+                b=b,
+                Pref=Pref,
+                result=retry_result,
+                options=options,
+            )
+            retry_support_closure_accepted = bool(
+                support_closure_gate.get("accepted", False)
+            )
             retry_outer = (retry_result.diagnostics or {}).get("support_outer_loop", {})
             retry_attempt = {
                 "max_support_add_per_round": int(add_per_round),
@@ -2153,14 +2297,17 @@ def _run_activity_driven_support_outer_loop(
                 else None,
                 "accepted": bool(retry_accepted),
                 "route_promoted": bool(retry_route_promoted),
+                "support_closure_gate": support_closure_gate,
+                "support_closure_accepted": retry_support_closure_accepted,
             }
             retry_attempts.append(retry_attempt)
-            if retry_route_promoted:
+            if retry_route_promoted and retry_support_closure_accepted:
                 retry_report = {
                     "retry_schema": "exogibbs_support_free_support_growth_staging_retry_v1",
                     "triggered": True,
-                    "accepted": bool(retry_accepted),
+                    "accepted": bool(retry_accepted and retry_support_closure_accepted),
                     "route_promoted": True,
+                    "support_closure_accepted": True,
                     "max_support_add_per_round": int(add_per_round),
                     "max_support_add_per_round_sequence": tuple(
                         int(count) for count in staged_retry_counts
@@ -2175,6 +2322,7 @@ def _run_activity_driven_support_outer_loop(
                     "retry_support_count": len(
                         tuple(retry_result.condensate_support_names)
                     ),
+                    "retry_support_closure_gate": support_closure_gate,
                     "fastchem4_trace_public_runtime_constructor_inputs_used": False,
                 }
                 return _with_support_growth_staging_retry_diagnostics(
