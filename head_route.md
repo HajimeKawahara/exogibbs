@@ -2,7 +2,7 @@
 
 この文書は、ExoGibbs の凝縮あり計算で現在の基準経路として扱う **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
 
-現在の実装版は **HEAD route v1.5** である。v1.5 は trial **v1.5.1** の support-closure retry gate を昇格した固定版であり、v1.4 の public budget consistency を維持したまま、support-free fallback retry の採用前に ExoGibbs-native inactive condensate driving closure gate をかける。これにより、support-cap retry や staged support-growth retry が non-fallback route を返しても、採用後の gas state で大きな positive inactive condensate driving が残る候補は次の retry 候補へ送る。
+現在の実装版は **HEAD route v1.6** である。v1.6 は v1.5 の support-closure retry gate を維持したまま、support outer loop の support 更新規則を修正した固定版である。non-fallback accepted result から次 round の support を grow するとき、solver に渡した広い support ではなく、solver が実際に保持した support を existing support として扱う。これにより、solver が落とした species が final gas state で再び activity-positive なら、既存の activity-driven support outer loop の通常規則で再追加される。
 
 ## 一言でいうと
 
@@ -17,9 +17,30 @@
    v1.3 では、support-free outer loop 内に center-gate retry、residual-worsening retry、soft-restoration retry、Ipopt-style persistent h-type retry、support-cap retry を追加し、native seed fallback へ落ちる runtime layer を減らす。
 6. v1.4 では、返却直前に gas と full condensate vector から元素 budget を再構成し、element-wise relative residual が許容値を超える accepted row を relative joint budget-correction retry、budget-preserving seed retry、empty-support strict gas retry で直す。retry 後も許容値を超える row だけを `not_converged` に降格する。
 7. v1.5 では、support-cap retry と support-growth staging retry の候補を採用する前に、候補の gas state から inactive condensate driving を再評価し、positive inactive driving が許容値を超える候補を採用しない。
-8. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
+8. v1.6 では、support outer loop の次 round を作るとき、前 round で試した support ではなく、accepted result の実 support indices を既存 support として使う。実 support から落ちた species がまだ positive inactive なら、通常の support-growth で再追加する。
+9. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
 
 これは FastChem4 exact replay（FastChem4 の分岐を完全再現すること）ではない。FastChem4 public/runtime/trace values（公開出力・実行時出力・内部 trace 値）は、ExoGibbs の constructor input（初期値や構成入力）として使わない。
+
+## HEAD route v1.6 固定内容
+
+HEAD route v1.6 は、v1.5.1 の score surface に残った水凝縮の support-closure hotspot を、後処理 retry ではなく support outer loop の更新規則で直す固定版である。FastChem4 output は比較対象として使い、constructor input には使わない。
+
+| promoted item | 目的 | 適用範囲 |
+|---|---|---|
+| actual accepted support growth | support outer loop の次 round で、non-fallback result の `condensate_support_indices` を existing support として使う。前 round で solver に渡したが実際には落ちた species は、既存扱いにしない。 | support-free activity-driven outer loop |
+| dropped-support reactivation | solver が落とした species が final gas state / restricted dual state から再び positive inactive と判定される場合、既存の support-growth 規則で再追加する。 | support-free activity-driven outer loop |
+| existing retry policy reuse | 固定の residual retry、固定の追加数、専用 seed floor は導入せず、既存の `max_support_outer_iterations`、`max_support_add_per_round`、budget seed、support ordering をそのまま使う。 | support-free activity-driven outer loop |
+
+v1.6 では新しい public option は追加しない。fallback payload から grow する場合は、従来どおり payload の support indices を使う。non-fallback accepted result から grow する場合だけ、accepted result の実 support indices と full condensate amount vector を warm-start の基準にする。
+
+v1.6 の fresh API support-free route selection は v1.5 と同じ public status 面を維持する。
+
+| surface | gas-only route | primary route | native seed fallback route | exception | public converged | public not_converged |
+|---|---:|---:|---:|---:|---:|---:|
+| 10 curated full-profile families | 17 | 82 | 0 | 0 | 99 | 0 |
+
+v1.6 audit では、v1.5.1 で最大だった `solar_water_condensation` layer 8 の positive inactive driving が約 2579 から約 22.4 に下がり、active condensate count は 69 から 162 に増える。`solar_water_condensation` layer 2 も約 1662 から約 4.62 に下がる。global max positive inactive driving は約 2579 から約 771.7 に下がり、`>1000` rows は 2 から 0 になる。FastChem4-scaled Gibbs comparison は ExoGibbs lower 17 / FastChem4-scaled lower 82 から ExoGibbs lower 19 / FastChem4-scaled lower 80 に小さく改善する。したがって v1.6 は support-closure と water gas outlier を改善するが、FastChem4 exact replay ではない。
 
 ## HEAD route v1.5 固定内容
 
@@ -105,6 +126,12 @@ v1.3 default fresh API support-free route selection evidence は次の通りで�
   - `CondensateEquilibriumResult`
   - `build_condensate_chemical_setup`
   - `condensate_equilibrium`
+
+`condensate_equilibrium()` が返す `CondensateEquilibriumResult` から、現在の固定版は
+`result.head_route_version == "v1.6"` および
+`result.head_route_name == "head_route_v1_6_actual_support_outer_loop_growth"` として読み出せる。
+`return_diagnostics=True` の場合は diagnostics にも同じ `head_route_version` と
+`head_route_name` を残す。
 
 通常の gas-only API（凝縮なし API）は変更しない。HEAD route は凝縮あり専用入口から使う。
 
@@ -428,8 +455,9 @@ gate reject である。
 HEAD route は凝縮あり初版標準経路として進めてよいが、以下は守る。
 
 - gas-only `equilibrium()` の挙動を変えない。
-- production return signature を変えない。
-- gas-only API の defaults を変更しない。凝縮あり API の default は HEAD route v1.5 として扱う。
+- 既存の production result fields の意味を変えない。
+- gas-only API の defaults を変更しない。凝縮あり API の fixed default は HEAD route v1.6 として扱う。
+- 現在の凝縮あり API の fixed default は `result.head_route_version == "v1.6"` として公開する。
 - FastChem4 public/runtime/trace values を constructor input にしない。
 - FastChem4 exact branch replay を acceptance target にしない。
 - case、species、element を落として成功扱いにしない。

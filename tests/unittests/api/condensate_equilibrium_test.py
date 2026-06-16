@@ -10,6 +10,8 @@ import pytest
 
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.api.condensate_equilibrium import (
+    CONDENSATE_HEAD_ROUTE_NAME,
+    CONDENSATE_HEAD_ROUTE_VERSION,
     CondensateChemicalSetup,
     CondensateEquilibriumOptions,
     _polish_support_amounts_for_full_condensate_budget_gate,
@@ -333,6 +335,8 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
 
     assert result.status == NOT_CONVERGED
     assert result.converged is False
+    assert result.head_route_version == CONDENSATE_HEAD_ROUTE_VERSION
+    assert result.head_route_name == CONDENSATE_HEAD_ROUTE_NAME
     assert result.condensate_support_names == ("H2O_s",)
     assert float(result.condensate_amounts[0]) > 0.0
     assert captured["kwargs"] is not None
@@ -340,6 +344,8 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
     assert tuple(kwargs["support_indices"]) == (0,)
     assert tuple(float(value) for value in kwargs["support_amounts_init"]) == pytest.approx((0.5,))
     assert result.diagnostics is not None
+    assert result.diagnostics["head_route_version"] == CONDENSATE_HEAD_ROUTE_VERSION
+    assert result.diagnostics["head_route_name"] == CONDENSATE_HEAD_ROUTE_NAME
     assert result.diagnostics["support_selection"]["solver_inputs"]["support_indices"] == (0,)
     assert (
         result.diagnostics["support_selection"]["solver_inputs"]["amount_gauge"]
@@ -353,7 +359,7 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
     )
 
 
-def test_condensate_equilibrium_options_default_to_head_route_v1_4() -> None:
+def test_condensate_equilibrium_options_default_to_head_route_v1_6() -> None:
     options = CondensateEquilibriumOptions()
 
     assert options.max_positive_support_count is None
@@ -365,6 +371,7 @@ def test_condensate_equilibrium_options_default_to_head_route_v1_4() -> None:
     assert options.enable_head_route_soft_restoration_retry is False
     assert options.enable_head_route_ipopt_h_type_retry is False
     assert options.enable_head_route_condensate_budget_correction_retry is True
+    assert options.enable_support_closure_retry_gate is True
     assert options.enable_full_condensate_budget_residual_gate is True
     assert options.full_condensate_budget_relative_tolerance == pytest.approx(1.0e-3)
 
@@ -1852,12 +1859,16 @@ def test_condensate_equilibrium_empty_positive_support_uses_gas_only_path(monkey
 
     assert result.status == CONVERGED
     assert result.converged is True
+    assert result.head_route_version == CONDENSATE_HEAD_ROUTE_VERSION
+    assert result.head_route_name == CONDENSATE_HEAD_ROUTE_NAME
     assert result.condensate_support_names == ()
     assert result.condensate_support_indices.shape == (0,)
     assert result.condensate_amounts.shape == (1,)
     assert float(result.condensate_amounts[0]) == 0.0
     assert result.selected_route == "head_v1_empty_positive_support_gas_only"
     assert result.diagnostics is not None
+    assert result.diagnostics["head_route_version"] == CONDENSATE_HEAD_ROUTE_VERSION
+    assert result.diagnostics["head_route_name"] == CONDENSATE_HEAD_ROUTE_NAME
     assert result.diagnostics["support_selection"]["solver_inputs"]["empty_positive_support"] is True
 
 

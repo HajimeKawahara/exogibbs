@@ -184,34 +184,225 @@ FastChem4 state is scaled to the ExoGibbs element-budget gauge and both states a
 
 Interpretation: v1.5.1 lowers `G/RT` relative to the v1.4-like support path where it changes rows, but FastChem4-scaled states still have lower ExoGibbs-native `G/RT` on most layers. The remaining difference is small in absolute `G/RT` but systematic.
 
+### v1.5.1 extended tracking metrics
+
+The following metrics are added before the next implementation trial so that
+future changes can be judged against a fixed v1.5.1 score surface. These values
+come from existing scratch artifacts and are not a new implementation run.
+
+Provenance:
+
+| artifact | used for |
+|---|---|
+| `volatiles_artifacts/head_route_v13_fastchem4_deep_comparison.json` | global inactive-driving, residual component, support-size, and FastChem4-scaled Gibbs distributions |
+| `volatiles_artifacts/fastchem4_head_route_v13_support_free_comparison.json` | amount-floor active-count / Jaccard sensitivity and gas outlier rows |
+| `volatiles_artifacts/inactive_driving_support_closure_audit.json` | support-closure retry hotspot variant behavior |
+
+Global ExoGibbs inactive-driving distribution over 99 layers:
+
+| metric | value |
+|---|---:|
+| max positive inactive driving min / p50 / p90 / p95 / max | 0 / 203 / 762 / 769 / 2579 |
+| mean max positive inactive driving | 306 |
+| positive inactive count min / p50 / p90 / p95 / max | 0 / 5 / 42.8 / 68.2 / 80 |
+| rows with max driving > 0 / >10 / >100 / >500 / >1000 | 86 / 81 / 68 / 21 / 2 |
+
+Top remaining inactive-driving rows:
+
+| family / layer | max inactive driving | inactive count | active count | `dG/RT` Exo-FC | Exo rel budget L2 |
+|---|---:|---:|---:|---:|---:|
+| `solar_water_condensation` layer 8 | 2579 | 68 | 69 | 2.8823e-4 | 1.4855e-5 |
+| `solar_water_condensation` layer 2 | 1662 | 78 | 58 | 1.4896e-4 | 7.5537e-5 |
+| `solar_highT_no_condensate_gas_regression` layer 17 | 771.7 | 5 | 1 | 3.6738e-5 | 1.1797e-5 |
+| `solar_highT_no_condensate_gas_regression` layer 16 | 770.9 | 5 | 0 | -9.6847e-11 | 1.9355e-8 |
+| `solar_highT_no_condensate_gas_regression` layer 15 | 769.8 | 5 | 0 | 2.2983e-10 | 1.3503e-4 |
+
+Residual and support-size distribution over the same 99 layers:
+
+| metric | p50 | p90 | p95 | max |
+|---|---:|---:|---:|---:|
+| Exo relative budget L2 | 7.694e-5 | 5.682e-4 | 8.211e-4 | 1.055e-3 |
+| Exo relative budget max | 5.909e-5 | 4.820e-4 | 7.651e-4 | 9.676e-4 |
+| Exo gas stationarity L2 | 33.0 | 323 | 419 | 864 |
+| Exo gas stationarity max | 17.9 | 112 | 274 | 501 |
+| Exo active condensate count | 48 | 147 | 156 | 184 |
+| `|dG/RT Exo-FC|` | 2.671e-6 | 7.384e-5 | 4.745e-4 | 9.844e-4 |
+
+Amount-floor sensitivity from the support-free comparison artifact:
+
+| active floor | Exo active p50 / p95 / max | FastChem4 active p50 / max | intersection p50 / max | Jaccard mean / min / max |
+|---|---:|---:|---:|---:|
+| 0 | 48 / 155 / 184 | 15 / 21 | 10 / 21 | 0.3357 / 0.1033 / 1.0 |
+| 1e-100 | 48 / 155 / 184 | 15 / 21 | 9 / 21 | 0.3360 / 0.1033 / 1.0 |
+| 1e-50 | 48 / 155 / 184 | 15 / 21 | 9 / 21 | 0.3360 / 0.1033 / 1.0 |
+| 1e-20 | 48 / 155 / 184 | 15 / 21 | 9 / 21 | 0.3375 / 0.1033 / 1.0 |
+
+Largest gas-ratio attribution rows above gas abundance floor `1e-12`:
+
+| family / layer | species | ExoGibbs gas x | FastChem4 gas x | log10 ratio |
+|---|---|---:|---:|---:|
+| `solar_water_condensation` layer 8 | `O2Ti1` | 2.447e-8 | 8.128e-130 | 121 |
+| `solar_water_condensation` layer 8 | `Cl2O1Ti1` | 2.661e-8 | 2.985e-117 | 109 |
+| `solar_water_condensation` layer 8 | `Cl3Ti1` | 9.500e-8 | 3.539e-110 | 102 |
+| `solar_metal_sulfide_or_Fe_Ni_S_region` layer 2 | `Al2O1` | 1.443e-6 | 5.496e-46 | 39.4 |
+| `solar_metal_sulfide_or_Fe_Ni_S_region` layer 2 | `Al2O2` | 1.089e-10 | 5.773e-50 | 39.3 |
+| `SiO_s_condensate_window` layer 4 | `Al2O1` | 1.373e-6 | 4.406e-39 | 32.5 |
+| `SiO_s_condensate_window` layer 4 | `Al2O2` | 1.345e-10 | 5.059e-43 | 32.4 |
+
+Support-closure hotspot variants show that removing the early cap retry is not
+uniformly better. For `carbon_rich_CaS_MgS_AlN_window` layer 7, no-cap/staged
+variants reduce max inactive driving from 487 to 5.09 with support 121, but for
+`solar_metal_sulfide_or_Fe_Ni_S_region` layer 5 the same no-cap/staged family
+worsens max inactive driving from 191 to 822 with support 110. This makes
+support-size increase alone an unsafe objective.
+
+## Trial v1.6: actual-support outer-loop growth
+
+### 内容
+
+v1.6 は、support outer loop の support 更新規則を修正する trial である。v1.5.1 では、
+outer loop が「solver に渡した support」を次 round の existing support として扱っていた。
+そのため、solver が実際には support から落とした species も existing 扱いになり、final gas state
+で再び activity-positive になっても再追加されなかった。
+
+v1.6 では、non-fallback accepted result から support を grow するとき、次 round の existing support
+を `last_result.condensate_support_indices`、つまり solver が実際に保持した support に変更する。
+これにより、落とされた species がまだ ExoGibbs-native activity-positive なら、既存の
+activity-driven support outer loop の通常規則で再追加される。
+
+Provenance:
+
+| item | value |
+|---|---|
+| source tree | working tree after actual-support outer-loop growth implementation |
+| baseline | v1.5.1 score surface recorded above |
+| comparison artifacts | `volatiles_artifacts/head_route_budget_consistency_audit.json`, `volatiles_artifacts/fastchem4_head_route_v13_support_free_comparison.json`, `volatiles_artifacts/head_route_v13_fastchem4_deep_comparison.json` |
+| artifact commit policy | `volatiles_artifacts/` and `volatiles_code/` remain scratch-only and are not commit targets |
+
+この変更は新しい retry policy や固定の追加個数を導入しない。既存の
+`max_support_outer_iterations`、`max_support_add_per_round`、activity-driven support ordering、
+budget seed をそのまま使う。FastChem4 active list、runtime trace、public values は constructor input
+に使わない。
+
+API exposure:
+
+```text
+result.head_route_version = "v1.6"
+result.head_route_name = "head_route_v1_6_actual_support_outer_loop_growth"
+```
+
+`return_diagnostics=True` の場合は、diagnostics にも同じ `head_route_version` と
+`head_route_name` を残す。
+
+### Public convergence score
+
+| metric | v1.5.1 | v1.6 | delta |
+|---|---:|---:|---:|
+| curated full-profile rows | 99 | 99 | 0 |
+| public converged | 99 | 99 | 0 |
+| public not_converged | 0 | 0 | 0 |
+| public budget gate rejects | 0 | 0 | 0 |
+| bookkeeping/gate mismatch rows | 0 | 0 | 0 |
+| primary route | 82 | 82 | 0 |
+| gas-only route | 17 | 17 | 0 |
+| native fallback route | 0 | 0 | 0 |
+
+### Inactive-driving before/after
+
+| metric | v1.5.1 | v1.6 | delta |
+|---|---:|---:|---:|
+| global max positive inactive driving | 2579 | 771.7 | -1807 |
+| global mean max positive inactive driving | 306 | 247 | -59 |
+| rows with max driving > 500 | 21 | 18 | -3 |
+| rows with max driving > 1000 | 2 | 0 | -2 |
+| `solar_water_condensation` layer 8 max driving | 2579 | 22.4 | -2557 |
+| `solar_water_condensation` layer 8 active count | 69 | 162 | +93 |
+| `solar_water_condensation` layer 8 positive inactive count | 68 | 1 | -67 |
+| `solar_water_condensation` layer 2 max driving | 1662 | 4.62 | -1657 |
+| `solar_water_condensation` layer 2 active count | 58 | 129 | +71 |
+
+Targeted water layer 8 diagnostics show that the ordinary support outer loop now
+re-grows from actual solver support: the default run adds 64, then 64, then 34
+support species and terminates with `no_inactive_positive_support`. No residual
+support closure retry is used.
+
+Global ExoGibbs inactive-driving distribution over 99 layers after v1.6:
+
+| metric | value |
+|---|---:|
+| max positive inactive driving min / p50 / p90 / p95 / max | 0 / 185 / 758 / 766 / 771.7 |
+| mean max positive inactive driving | 247 |
+| positive inactive count min / p50 / p90 / p95 / max | 0 / 5 / 32.2 / 39.3 / 80 |
+| rows with max driving > 0 / >10 / >100 / >500 / >1000 | 86 / 80 / 62 / 18 / 0 |
+
+Top remaining inactive-driving rows:
+
+| family / layer | max inactive driving | inactive count | active count | `dG/RT` Exo-FC | Exo rel budget L2 |
+|---|---:|---:|---:|---:|---:|
+| `solar_highT_no_condensate_gas_regression` layer 17 | 771.7 | 5 | 1 | 3.6738e-5 | 1.1797e-5 |
+| `solar_highT_no_condensate_gas_regression` layer 16 | 770.9 | 5 | 0 | -9.6847e-11 | 1.9355e-8 |
+| `solar_highT_no_condensate_gas_regression` layer 15 | 769.8 | 5 | 0 | 2.2983e-10 | 1.3503e-4 |
+| `solar_highT_no_condensate_gas_regression` layer 14 | 768.6 | 5 | 0 | 2.8640e-10 | 2.1460e-8 |
+| `solar_highT_no_condensate_gas_regression` layer 13 | 767.5 | 5 | 0 | 1.5592e-10 | 2.8595e-5 |
+
+### FastChem4 comparison after v1.6
+
+The support-free FastChem4 comparison improves several large gas outliers,
+especially the water family.
+
+| family | max `|log10 gas ratio|` | Jaccard mean/min at floor 0 | Jaccard mean/min at floor 1e-50 |
+|---|---:|---:|---:|
+| `solar_water_condensation` | 23.3 | 0.139 / 0.126 | 0.139 / 0.126 |
+| `lowT_strong_condensation_budget_stress` | 30.4 | 0.142 / 0.103 | 0.142 / 0.103 |
+| `carbon_rich_CaS_MgS_AlN_window` | 25.8 | 0.147 / 0.124 | 0.147 / 0.124 |
+| `SiO_s_condensate_window` | 32.5 | 0.163 / 0.121 | 0.163 / 0.121 |
+| `solar_metal_sulfide_or_Fe_Ni_S_region` | 25.0 | 0.154 / 0.118 | 0.154 / 0.118 |
+| `solar_highT_no_condensate_gas_regression` | 0.565 | 0.972 / 0.500 | 0.972 / 0.500 |
+
+FastChem4-scaled Gibbs comparison:
+
+| metric | v1.5.1 | v1.6 | delta |
+|---|---:|---:|---:|
+| compared layers | 99 | 99 | 0 |
+| ExoGibbs state lower `G/RT` | 17 | 19 | +2 |
+| FastChem4-scaled state lower `G/RT` | 82 | 80 | -2 |
+| max `|dG/RT|` | 9.844e-4 | 7.952e-4 | -1.892e-4 |
+
+Interpretation: v1.6 is a more principled support-closure improvement than the
+rejected residual retry approach. It fixes both water inactive-driving hotspots
+through the existing support outer loop, reduces the water gas-ratio outlier,
+and slightly improves the FastChem4-scaled Gibbs comparison while preserving
+public convergence and route counts.
+
 ## Current verdict
 
-v1.5.1 is a good local improvement:
+v1.6 is a good algorithmic improvement over v1.5.1:
 
 - It preserves public convergence and budget-gate behavior.
-- It never raises ExoGibbs-native `G/RT` in the 99-layer gate on/off comparison.
-- It strongly reduces the intended inactive-driving hotspots.
-- It reduces several large FastChem4 gas abundance outliers.
+- It removes the remaining `>1000` inactive-driving rows without adding a new ad hoc retry.
+- It fixes the water layer 8 and layer 2 support-closure hotspots using the normal outer loop.
+- It reduces the water FastChem4 gas-ratio outlier from 121 to 23.3.
+- It improves the FastChem4-scaled Gibbs score from 17/82 to 19/80 and lowers max `|dG/RT|`.
 
-It is not yet a complete FastChem4 agreement improvement:
+It is not yet a complete support-closure or FastChem4 agreement improvement:
 
 - Active condensate Jaccard remains low for most condensation families.
-- Some water layers still have large inactive driving in deep comparison.
-- FastChem4-scaled states still have lower ExoGibbs-native `G/RT` in 82/99 layers.
+- highT gas-only boundary rows still show large inactive-driving diagnostics.
+- FastChem4-scaled states still have lower ExoGibbs-native `G/RT` in 80/99 layers.
 
 ## Next trial candidates
 
-### Candidate A: residual support closure after accepted result
+### Candidate A: highT gas-only boundary closure
 
-Goal: reduce the remaining large inactive driving rows, especially `solar_water_condensation` layer 8 and layer 2.
+Goal: decide whether the remaining highT gas-only inactive-driving rows are a real
+condensation-support miss or a diagnostic artifact near the no-condensate boundary.
 
 Required score checks:
 
 - public convergence remains 99/99;
-- no `G/RT` increases relative to v1.5.1;
-- max inactive driving decreases on remaining hotspots;
-- water max `|log10 gas ratio|` decreases below 121;
-- support size does not explode without corresponding `G/RT` decrease.
+- gas-only route count does not turn into unstable condensate routes;
+- highT max inactive driving and gas abundance changes are reported separately;
+- ExoGibbs-native `G/RT` does not worsen.
 
 ### Candidate B: amount-floor complementarity repair
 

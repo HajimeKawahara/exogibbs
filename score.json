@@ -41,6 +41,26 @@
       "metric": "route_support_churn",
       "purpose": "Confirm whether a trial changes only intended rows.",
       "improvement_direction": "Keep route/support changes localized and justified by G/RT or residual improvements."
+    },
+    {
+      "metric": "global_inactive_driving_distribution",
+      "purpose": "Track the full-layer distribution rather than only selected hotspots.",
+      "improvement_direction": "Decrease p90, p95, max, and threshold exceedance counts."
+    },
+    {
+      "metric": "amount_floor_active_set_sensitivity",
+      "purpose": "Separate real active support changes from near-zero amount floor artifacts.",
+      "improvement_direction": "Avoid large floor-dependent active-count churn unless G/RT and residuals improve."
+    },
+    {
+      "metric": "gas_outlier_attribution",
+      "purpose": "Tie large gas log10-ratio rows to species, layer, and potentially related inactive condensates.",
+      "improvement_direction": "Decrease top attributed outliers and explain remaining species families."
+    },
+    {
+      "metric": "residual_component_distribution",
+      "purpose": "Track budget, stationarity, support size, and objective distributions across all curated layers.",
+      "improvement_direction": "Improve high quantiles without introducing public gate regressions."
     }
   ],
   "baselines": {
@@ -246,7 +266,7 @@
             "layer_index": 2,
             "support_before": 34,
             "support_after": 80,
-            "delta_g_over_rt": -0.000078807
+            "delta_g_over_rt": -7.8807e-05
           }
         ]
       },
@@ -398,25 +418,719 @@
         "fastchem4_scaled_state_lower_g_over_rt": 82,
         "max_abs_delta_g_over_rt": 0.00098443
       },
+      "measurement_extensions_v151": {
+        "provenance": {
+          "new_implementation_run": false,
+          "artifacts": {
+            "global_inactive_and_residual_distributions": "volatiles_artifacts/head_route_v13_fastchem4_deep_comparison.json",
+            "amount_floor_and_gas_outliers": "volatiles_artifacts/fastchem4_head_route_v13_support_free_comparison.json",
+            "support_closure_hotspot_variants": "volatiles_artifacts/inactive_driving_support_closure_audit.json"
+          }
+        },
+        "global_inactive_driving_distribution": {
+          "layers": 99,
+          "max_positive_inactive_driving": {
+            "min": 0.0,
+            "p50": 202.98692863726384,
+            "p90": 762.1587362371565,
+            "p95": 768.7463367397119,
+            "max": 2579.492511016823,
+            "mean": 306.00929340565483
+          },
+          "positive_inactive_count": {
+            "min": 0,
+            "p50": 5,
+            "p90": 42.80000000000001,
+            "p95": 68.19999999999999,
+            "max": 80,
+            "mean": 14.232323232323232
+          },
+          "threshold_exceedance_rows": {
+            "gt_0": 86,
+            "gt_10": 81,
+            "gt_100": 68,
+            "gt_500": 21,
+            "gt_1000": 2
+          },
+          "top_remaining_rows": [
+            {
+              "family": "solar_water_condensation",
+              "layer_index": 8,
+              "max_positive_inactive_driving": 2579.492511016823,
+              "positive_inactive_count": 68,
+              "active_condensate_count": 69,
+              "delta_g_over_rt_exogibbs_minus_fastchem4": 0.00028822772874548264,
+              "exogibbs_relative_budget_l2": 1.4855086613782616e-05
+            },
+            {
+              "family": "solar_water_condensation",
+              "layer_index": 2,
+              "max_positive_inactive_driving": 1662.144893461159,
+              "positive_inactive_count": 78,
+              "active_condensate_count": 58,
+              "delta_g_over_rt_exogibbs_minus_fastchem4": 0.0001489553038993563,
+              "exogibbs_relative_budget_l2": 7.553706158403555e-05
+            },
+            {
+              "family": "solar_highT_no_condensate_gas_regression",
+              "layer_index": 17,
+              "max_positive_inactive_driving": 771.6906072420092,
+              "positive_inactive_count": 5,
+              "active_condensate_count": 1,
+              "delta_g_over_rt_exogibbs_minus_fastchem4": 3.6738072503705865e-05,
+              "exogibbs_relative_budget_l2": 1.1797054924036984e-05
+            },
+            {
+              "family": "solar_highT_no_condensate_gas_regression",
+              "layer_index": 16,
+              "max_positive_inactive_driving": 770.8841566942616,
+              "positive_inactive_count": 5,
+              "active_condensate_count": 0,
+              "delta_g_over_rt_exogibbs_minus_fastchem4": -9.68474189733115e-11,
+              "exogibbs_relative_budget_l2": 1.9354785116225296e-08
+            },
+            {
+              "family": "solar_highT_no_condensate_gas_regression",
+              "layer_index": 15,
+              "max_positive_inactive_driving": 769.7654822255545,
+              "positive_inactive_count": 5,
+              "active_condensate_count": 0,
+              "delta_g_over_rt_exogibbs_minus_fastchem4": 2.298286005952832e-10,
+              "exogibbs_relative_budget_l2": 0.00013503187724085087
+            }
+          ]
+        },
+        "residual_component_distribution": {
+          "layers": 99,
+          "exogibbs_relative_budget_l2": {
+            "p50": 7.694189069669894e-05,
+            "p90": 0.0005681778742133744,
+            "p95": 0.0008210778788631484,
+            "max": 0.0010552274395619467,
+            "mean": 0.00020106215322832758
+          },
+          "exogibbs_relative_budget_max_abs": {
+            "p50": 5.909020303959164e-05,
+            "p90": 0.00048199298800716793,
+            "p95": 0.0007650706418836641,
+            "max": 0.0009676257754972414,
+            "mean": 0.00017761298087726638
+          },
+          "exogibbs_gas_stationarity_l2": {
+            "p50": 32.99232367269581,
+            "p90": 323.2184097098798,
+            "p95": 419.43680837660065,
+            "max": 863.7363676055096,
+            "mean": 111.42393962341293
+          },
+          "exogibbs_gas_stationarity_max_abs": {
+            "p50": 17.94173354506748,
+            "p90": 112.32313185314217,
+            "p95": 274.01870018059606,
+            "max": 501.43670629175267,
+            "mean": 48.21377518264053
+          },
+          "exogibbs_active_condensate_count": {
+            "p50": 48,
+            "p90": 147.0,
+            "p95": 156.0,
+            "max": 184,
+            "mean": 61.95959595959596
+          },
+          "abs_delta_g_over_rt_exogibbs_minus_fastchem4": {
+            "p50": 2.6708675093800593e-06,
+            "p90": 7.384196762174618e-05,
+            "p95": 0.00047445804941012993,
+            "max": 0.0009844319621237219,
+            "mean": 6.167016067416329e-05
+          }
+        },
+        "amount_floor_active_set_sensitivity": {
+          "layers": 99,
+          "floors": {
+            "0.0": {
+              "exogibbs_active_count_p50": 48,
+              "exogibbs_active_count_p95": 155.0,
+              "exogibbs_active_count_max": 184,
+              "fastchem4_active_count_p50": 15,
+              "fastchem4_active_count_max": 21,
+              "intersection_count_p50": 10,
+              "intersection_count_max": 21,
+              "jaccard_mean": 0.3357203538833151,
+              "jaccard_min": 0.10326086956521739,
+              "jaccard_max": 1.0
+            },
+            "1e-100": {
+              "exogibbs_active_count_p50": 48,
+              "exogibbs_active_count_p95": 155.0,
+              "exogibbs_active_count_max": 184,
+              "fastchem4_active_count_p50": 15,
+              "fastchem4_active_count_max": 21,
+              "intersection_count_p50": 9,
+              "intersection_count_max": 21,
+              "jaccard_mean": 0.3359821952828475,
+              "jaccard_min": 0.10326086956521739,
+              "jaccard_max": 1.0
+            },
+            "1e-50": {
+              "exogibbs_active_count_p50": 48,
+              "exogibbs_active_count_p95": 155.0,
+              "exogibbs_active_count_max": 184,
+              "fastchem4_active_count_p50": 15,
+              "fastchem4_active_count_max": 21,
+              "intersection_count_p50": 9,
+              "intersection_count_max": 21,
+              "jaccard_mean": 0.3359821952828475,
+              "jaccard_min": 0.10326086956521739,
+              "jaccard_max": 1.0
+            },
+            "1e-20": {
+              "exogibbs_active_count_p50": 48,
+              "exogibbs_active_count_p95": 155.0,
+              "exogibbs_active_count_max": 184,
+              "fastchem4_active_count_p50": 15,
+              "fastchem4_active_count_max": 21,
+              "intersection_count_p50": 9,
+              "intersection_count_max": 21,
+              "jaccard_mean": 0.33749113216554727,
+              "jaccard_min": 0.10326086956521739,
+              "jaccard_max": 1.0
+            }
+          }
+        },
+        "gas_outlier_attribution": {
+          "gas_ratio_floor": 1e-12,
+          "top_rows": [
+            {
+              "family": "solar_water_condensation",
+              "layer_index": 8,
+              "species": "O2Ti1",
+              "exogibbs_gas_x": 2.447e-08,
+              "fastchem4_gas_x": 8.128e-130,
+              "log10_ratio_exogibbs_over_fastchem4": 121.0
+            },
+            {
+              "family": "solar_water_condensation",
+              "layer_index": 8,
+              "species": "Cl2O1Ti1",
+              "exogibbs_gas_x": 2.661e-08,
+              "fastchem4_gas_x": 2.985e-117,
+              "log10_ratio_exogibbs_over_fastchem4": 109.0
+            },
+            {
+              "family": "solar_water_condensation",
+              "layer_index": 8,
+              "species": "Cl3Ti1",
+              "exogibbs_gas_x": 9.5e-08,
+              "fastchem4_gas_x": 3.539e-110,
+              "log10_ratio_exogibbs_over_fastchem4": 102.0
+            },
+            {
+              "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+              "layer_index": 2,
+              "species": "Al2O1",
+              "exogibbs_gas_x": 1.443e-06,
+              "fastchem4_gas_x": 5.496e-46,
+              "log10_ratio_exogibbs_over_fastchem4": 39.4
+            },
+            {
+              "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+              "layer_index": 2,
+              "species": "Al2O2",
+              "exogibbs_gas_x": 1.089e-10,
+              "fastchem4_gas_x": 5.773e-50,
+              "log10_ratio_exogibbs_over_fastchem4": 39.3
+            },
+            {
+              "family": "SiO_s_condensate_window",
+              "layer_index": 4,
+              "species": "Al2O1",
+              "exogibbs_gas_x": 1.373e-06,
+              "fastchem4_gas_x": 4.406e-39,
+              "log10_ratio_exogibbs_over_fastchem4": 32.5
+            },
+            {
+              "family": "SiO_s_condensate_window",
+              "layer_index": 4,
+              "species": "Al2O2",
+              "exogibbs_gas_x": 1.345e-10,
+              "fastchem4_gas_x": 5.059e-43,
+              "log10_ratio_exogibbs_over_fastchem4": 32.4
+            }
+          ]
+        },
+        "support_closure_hotspot_variant_note": {
+          "carbon_rich_CaS_MgS_AlN_window_layer_7": {
+            "default_support": 80,
+            "default_max_inactive_driving": 487.0,
+            "no_cap_or_staged_support": 121,
+            "no_cap_or_staged_max_inactive_driving": 5.09
+          },
+          "solar_metal_sulfide_or_Fe_Ni_S_region_layer_5": {
+            "default_support": 80,
+            "default_max_inactive_driving": 191.0,
+            "no_cap_or_staged_support": 110,
+            "no_cap_or_staged_max_inactive_driving": 822.0
+          },
+          "interpretation": "Increasing support size alone is not a safe objective; it must be scored with G/RT, inactive driving, and budget residuals."
+        }
+      },
       "verdict": {
         "local_improvement": true,
         "public_convergence_preserved": true,
         "gibbs_never_increases_in_gate_on_off_comparison": true,
         "fastchem4_agreement_complete": false
       }
+    },
+    {
+      "trial": "v1.6",
+      "title": "actual-support outer-loop growth",
+      "description": "Grow support from the support actually retained by the accepted solver result, not from the broader support attempted by the previous outer-loop round.",
+      "provenance": {
+        "source_tree": "working tree after actual-support outer-loop growth implementation",
+        "baseline": "v1.5.1 score surface recorded in this file",
+        "artifacts": [
+          "volatiles_artifacts/head_route_budget_consistency_audit.json",
+          "volatiles_artifacts/fastchem4_head_route_v13_support_free_comparison.json",
+          "volatiles_artifacts/head_route_v13_fastchem4_deep_comparison.json"
+        ],
+        "artifact_commit_policy": "volatiles_artifacts/ and volatiles_code/ remain scratch-only and are not commit targets"
+      },
+      "implementation": {
+        "support_growth_existing_support_source": "accepted_result_condensate_support_indices",
+        "fallback_growth_existing_support_source": "restricted_solver_payload_support_indices",
+        "uses_existing_support_outer_loop_policy": true,
+        "new_fixed_retry_add_counts": false,
+        "new_retry_seed_floor": false,
+        "fastchem4_active_list_used": false,
+        "fastchem4_runtime_trace_used": false,
+        "fastchem4_public_values_used": false,
+        "api_result_head_route_version": "v1.6",
+        "api_result_head_route_name": "head_route_v1_6_actual_support_outer_loop_growth",
+        "diagnostics_head_route_metadata_when_return_diagnostics": true
+      },
+      "public_convergence": {
+        "curated_full_profile_rows": 99,
+        "status_counts": {
+          "converged": 99
+        },
+        "route_counts": {
+          "m4310_full_promoted_policy_route": 82,
+          "head_v1_empty_positive_support_gas_only": 17
+        },
+        "public_budget_gate_rejects": 0,
+        "bookkeeping_gate_mismatch_rows": 0
+      },
+      "targeted_before_after": {
+        "solar_water_condensation_layer_8": {
+          "v151_max_positive_inactive_driving": 2579.0,
+          "v16_max_positive_inactive_driving": 22.377783266502547,
+          "delta": -2556.622216733497,
+          "v151_active_condensate_count": 69,
+          "v16_active_condensate_count": 162,
+          "v151_positive_inactive_count": 68,
+          "v16_positive_inactive_count": 1,
+          "v16_relative_budget_max_abs": 1.9945082101030242e-06,
+          "v16_delta_gibbs_exogibbs_minus_fastchem4": -5.802700826507134e-07
+        },
+        "solar_water_condensation_layer_2": {
+          "v151_max_positive_inactive_driving": 1662.0,
+          "v16_max_positive_inactive_driving": 4.624755517991673,
+          "delta": -1657.3752444820084,
+          "v151_active_condensate_count": 58,
+          "v16_active_condensate_count": 129,
+          "v16_positive_inactive_count": 1
+        }
+      },
+      "global_inactive_driving_distribution": {
+        "max_positive_inactive_driving": {
+          "min": 0.0,
+          "p50": 185.28788063226318,
+          "p90": 758.4181972427845,
+          "p95": 766.3653591419203,
+          "max": 771.6906072420092,
+          "mean": 246.84211271258275
+        },
+        "positive_inactive_count": {
+          "min": 0,
+          "p50": 5,
+          "p90": 32.2,
+          "p95": 39.29999999999998,
+          "max": 80,
+          "mean": 9.141414141414142
+        },
+        "rows_above_threshold": {
+          "0": 86,
+          "10": 80,
+          "100": 62,
+          "500": 18,
+          "1000": 0
+        },
+        "v151_reference": {
+          "max_positive_inactive_driving": {
+            "p50": 203.0,
+            "p90": 762.0,
+            "p95": 769.0,
+            "max": 2579.0,
+            "mean": 306.0
+          },
+          "rows_above_threshold": {
+            "0": 86,
+            "10": 81,
+            "100": 68,
+            "500": 21,
+            "1000": 2
+          }
+        }
+      },
+      "residual_and_support_distribution": {
+        "relative_budget_l2": {
+          "min": 1.9354785116225296e-08,
+          "p50": 8.236140125197801e-05,
+          "p90": 0.0005623311684987043,
+          "p95": 0.000825256029035755,
+          "max": 0.0010552274395619467,
+          "mean": 0.00020843219551546817
+        },
+        "gas_stationarity_l2": {
+          "min": 0.47855042457912184,
+          "p50": 36.48212192138172,
+          "p90": 323.2184097098798,
+          "p95": 446.7513658262974,
+          "max": 799.0563465029876,
+          "mean": 111.84679173862732
+        },
+        "active_condensate_count": {
+          "min": 0,
+          "p50": 58,
+          "p90": 147.8,
+          "p95": 156.2,
+          "max": 184,
+          "mean": 67.5959595959596
+        },
+        "abs_delta_gibbs_exogibbs_minus_fastchem4": {
+          "min": 5.793587831703917e-12,
+          "p50": 2.3552722154818184e-06,
+          "p90": 3.404501598680554e-05,
+          "p95": 3.780224241154427e-05,
+          "max": 0.0007951733639472991,
+          "mean": 1.7317465616864228e-05
+        }
+      },
+      "fastchem4_scaled_gibbs_comparison": {
+        "compared_layers": 99,
+        "exogibbs_state_lower_g_over_rt": 19,
+        "fastchem4_scaled_state_lower_g_over_rt": 80,
+        "max_abs_delta_g_over_rt": 0.0007951733639472991
+      },
+      "fastchem4_support_free_family_metrics": [
+        {
+          "family": "SiO_s_condensate_window",
+          "max_abs_log10_gas_ratio_above_floor": 32.49351442054803,
+          "jaccard_floor_0": {
+            "max": 0.2077922077922078,
+            "mean": 0.16294633416614596,
+            "min": 0.1206896551724138
+          },
+          "jaccard_floor_1e_50": {
+            "max": 0.2077922077922078,
+            "mean": 0.16294633416614596,
+            "min": 0.1206896551724138
+          },
+          "route_counts": {
+            "m4310_full_promoted_policy_route": 9
+          },
+          "status_counts": {
+            "converged": 9
+          }
+        },
+        {
+          "family": "carbon_rich_CaS_MgS_AlN_window",
+          "max_abs_log10_gas_ratio_above_floor": 25.76157581237338,
+          "jaccard_floor_0": {
+            "max": 0.17857142857142858,
+            "mean": 0.14713218562873978,
+            "min": 0.12413793103448276
+          },
+          "jaccard_floor_1e_50": {
+            "max": 0.17857142857142858,
+            "mean": 0.14713218562873978,
+            "min": 0.12413793103448276
+          },
+          "route_counts": {
+            "m4310_full_promoted_policy_route": 9
+          },
+          "status_counts": {
+            "converged": 9
+          }
+        },
+        {
+          "family": "carbon_rich_graphite_window",
+          "max_abs_log10_gas_ratio_above_floor": 13.973568532377373,
+          "jaccard_floor_0": {
+            "max": 0.8,
+            "mean": 0.3535988539355344,
+            "min": 0.16279069767441862
+          },
+          "jaccard_floor_1e_50": {
+            "max": 0.8,
+            "mean": 0.3535988539355344,
+            "min": 0.16279069767441862
+          },
+          "route_counts": {
+            "m4310_full_promoted_policy_route": 9
+          },
+          "status_counts": {
+            "converged": 9
+          }
+        },
+        {
+          "family": "complex_heavy_element_or_boron_titanium_zirconium_case",
+          "max_abs_log10_gas_ratio_above_floor": 6.796930324344902,
+          "jaccard_floor_0": {
+            "max": 0.21621621621621623,
+            "mean": 0.18676576571012385,
+            "min": 0.15463917525773196
+          },
+          "jaccard_floor_1e_50": {
+            "max": 0.21621621621621623,
+            "mean": 0.18676576571012385,
+            "min": 0.15463917525773196
+          },
+          "route_counts": {
+            "m4310_full_promoted_policy_route": 9
+          },
+          "status_counts": {
+            "converged": 9
+          }
+        },
+        {
+          "family": "lowT_strong_condensation_budget_stress",
+          "max_abs_log10_gas_ratio_above_floor": 30.39379826758422,
+          "jaccard_floor_0": {
+            "max": 0.17857142857142858,
+            "mean": 0.1415597533742745,
+            "min": 0.10326086956521739
+          },
+          "jaccard_floor_1e_50": {
+            "max": 0.17857142857142858,
+            "mean": 0.1415597533742745,
+            "min": 0.10326086956521739
+          },
+          "route_counts": {
+            "m4310_full_promoted_policy_route": 9
+          },
+          "status_counts": {
+            "converged": 9
+          }
+        },
+        {
+          "family": "near_phase_boundary_support_sensitivity",
+          "max_abs_log10_gas_ratio_above_floor": 3.859682215814424,
+          "jaccard_floor_0": {
+            "max": 0.3076923076923077,
+            "mean": 0.21683788722727532,
+            "min": 0.15789473684210525
+          },
+          "jaccard_floor_1e_50": {
+            "max": 0.3076923076923077,
+            "mean": 0.21683788722727532,
+            "min": 0.15789473684210525
+          },
+          "route_counts": {
+            "m4310_full_promoted_policy_route": 9
+          },
+          "status_counts": {
+            "converged": 9
+          }
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "max_abs_log10_gas_ratio_above_floor": 0.5647777075776449,
+          "jaccard_floor_0": {
+            "max": 1.0,
+            "mean": 0.9722222222222222,
+            "min": 0.5
+          },
+          "jaccard_floor_1e_50": {
+            "max": 1.0,
+            "mean": 0.9722222222222222,
+            "min": 0.5
+          },
+          "route_counts": {
+            "head_v1_empty_positive_support_gas_only": 17,
+            "m4310_full_promoted_policy_route": 1
+          },
+          "status_counts": {
+            "converged": 18
+          }
+        },
+        {
+          "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+          "max_abs_log10_gas_ratio_above_floor": 24.990254671061898,
+          "jaccard_floor_0": {
+            "max": 0.18823529411764706,
+            "mean": 0.15350903593457785,
+            "min": 0.11801242236024845
+          },
+          "jaccard_floor_1e_50": {
+            "max": 0.18823529411764706,
+            "mean": 0.15350903593457785,
+            "min": 0.11801242236024845
+          },
+          "route_counts": {
+            "m4310_full_promoted_policy_route": 9
+          },
+          "status_counts": {
+            "converged": 9
+          }
+        },
+        {
+          "family": "solar_silicate_first_condensation",
+          "max_abs_log10_gas_ratio_above_floor": 9.561288201944684,
+          "jaccard_floor_0": {
+            "max": 0.3076923076923077,
+            "mean": 0.20756064469556082,
+            "min": 0.1724137931034483
+          },
+          "jaccard_floor_1e_50": {
+            "max": 0.3076923076923077,
+            "mean": 0.20756064469556082,
+            "min": 0.1724137931034483
+          },
+          "route_counts": {
+            "m4310_full_promoted_policy_route": 9
+          },
+          "status_counts": {
+            "converged": 9
+          }
+        },
+        {
+          "family": "solar_water_condensation",
+          "max_abs_log10_gas_ratio_above_floor": 23.26170490365083,
+          "jaccard_floor_0": {
+            "max": 0.15625,
+            "mean": 0.1385697270659939,
+            "min": 0.12578616352201258
+          },
+          "jaccard_floor_1e_50": {
+            "max": 0.15625,
+            "mean": 0.1385697270659939,
+            "min": 0.12578616352201258
+          },
+          "route_counts": {
+            "m4310_full_promoted_policy_route": 9
+          },
+          "status_counts": {
+            "converged": 9
+          }
+        }
+      ],
+      "top_remaining_inactive_driving_rows": [
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 17,
+          "max_positive_inactive_driving": 771.6906072420092,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 1,
+          "delta_gibbs_exogibbs_minus_fastchem4": 3.6738072503705865e-05,
+          "relative_budget_l2": 1.1797054924036984e-05
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 16,
+          "max_positive_inactive_driving": 770.8841566942616,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 0,
+          "delta_gibbs_exogibbs_minus_fastchem4": -9.68474189733115e-11,
+          "relative_budget_l2": 1.9354785116225296e-08
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 15,
+          "max_positive_inactive_driving": 769.7654822255545,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 0,
+          "delta_gibbs_exogibbs_minus_fastchem4": 2.298286005952832e-10,
+          "relative_budget_l2": 0.00013503187724085087
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 14,
+          "max_positive_inactive_driving": 768.633098352396,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 0,
+          "delta_gibbs_exogibbs_minus_fastchem4": 2.863966841459842e-10,
+          "relative_budget_l2": 2.1459777987081596e-08
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 13,
+          "max_positive_inactive_driving": 767.467101850607,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 0,
+          "delta_gibbs_exogibbs_minus_fastchem4": 1.5591883339993728e-10,
+          "relative_budget_l2": 2.8595092211397074e-05
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 12,
+          "max_positive_inactive_driving": 766.2429432853995,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 0,
+          "delta_gibbs_exogibbs_minus_fastchem4": -1.3287593247923724e-10,
+          "relative_budget_l2": 0.0002494605770605826
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 11,
+          "max_positive_inactive_driving": 764.9245370286337,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 0,
+          "delta_gibbs_exogibbs_minus_fastchem4": 5.793587831703917e-12,
+          "relative_budget_l2": 1.6674131347132098e-05
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 10,
+          "max_positive_inactive_driving": 763.4667986020787,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 0,
+          "delta_gibbs_exogibbs_minus_fastchem4": -4.04811295595664e-10,
+          "relative_budget_l2": 8.236140125197801e-05
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 9,
+          "max_positive_inactive_driving": 761.831720645926,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 0,
+          "delta_gibbs_exogibbs_minus_fastchem4": -1.7214141223576007e-10,
+          "relative_budget_l2": 4.4488567477075284e-05
+        },
+        {
+          "family": "solar_highT_no_condensate_gas_regression",
+          "layer_index": 8,
+          "max_positive_inactive_driving": 760.0097004243173,
+          "positive_inactive_count": 5,
+          "active_condensate_count": 0,
+          "delta_gibbs_exogibbs_minus_fastchem4": -3.0187674582293766e-10,
+          "relative_budget_l2": 0.0002309780569185453
+        }
+      ],
+      "verdict": "Algorithmic improvement: preserves public convergence and route counts, removes all >1000 inactive-driving rows by growing from actual accepted support, improves water gas-ratio outliers, and slightly improves FastChem4-scaled Gibbs counts."
     }
   ],
   "next_trial_candidates": [
     {
       "candidate": "A",
-      "title": "residual support closure after accepted result",
-      "goal": "Reduce remaining large inactive driving rows, especially solar_water_condensation layer 8 and layer 2.",
+      "title": "highT gas-only boundary closure",
+      "goal": "Decide whether remaining highT gas-only inactive-driving rows are real condensation-support misses or diagnostics near the no-condensate boundary.",
       "required_score_checks": [
         "public convergence remains 99/99",
-        "no G/RT increases relative to v1.5.1",
-        "max inactive driving decreases on remaining hotspots",
-        "water max |log10 gas ratio| decreases below 121",
-        "support size does not explode without corresponding G/RT decrease"
+        "gas-only route count does not turn into unstable condensate routes",
+        "highT max inactive driving and gas abundance changes are reported separately",
+        "ExoGibbs-native G/RT does not worsen"
       ]
     },
     {

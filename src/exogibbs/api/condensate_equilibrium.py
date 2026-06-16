@@ -2,7 +2,7 @@
 
 This module defines the first condensate-specific public API surface. It keeps
 gas-only equilibrium behavior separate and routes condensate-enabled calls
-through the HEAD route v1 contract.
+through the current condensate HEAD route contract.
 """
 
 from __future__ import annotations
@@ -36,6 +36,8 @@ CondensateSeedInitializationPolicy = Literal[
     "capacity_fraction",
     "max_density",
 ]
+CONDENSATE_HEAD_ROUTE_VERSION = "v1.6"
+CONDENSATE_HEAD_ROUTE_NAME = "head_route_v1_6_actual_support_outer_loop_growth"
 HEAD_ROUTE_SOFT_RESTORATION_COMPONENT_WEIGHTS = {
     "budget": 1.0,
     "total_density": 1.0,
@@ -151,6 +153,8 @@ class CondensateEquilibriumResult:
     status: str
     converged: bool
     diagnostics: Optional[Mapping[str, Any]] = None
+    head_route_version: str = CONDENSATE_HEAD_ROUTE_VERSION
+    head_route_name: str = CONDENSATE_HEAD_ROUTE_NAME
 
 
 def validate_condensate_chemical_setup(setup: CondensateChemicalSetup) -> None:
@@ -1280,6 +1284,8 @@ def build_condensate_equilibrium_result_from_solver_payload(
     support_names = tuple(setup.condensate_species[int(index)] for index in support_index_array.tolist())
     metadata: dict[str, Any] = dict(diagnostics or {})
     metadata.setdefault("route", HEAD_ROUTE_STANDARD)
+    metadata.setdefault("head_route_version", CONDENSATE_HEAD_ROUTE_VERSION)
+    metadata.setdefault("head_route_name", CONDENSATE_HEAD_ROUTE_NAME)
     metadata.setdefault("selected_route", selected_route)
     metadata.setdefault("acceptance_tier", acceptance_tier)
     metadata.setdefault("warning_messages", warnings)
@@ -1329,6 +1335,8 @@ def _build_empty_support_gas_result(
     gas_x = gas_n / jnp.clip(gas_ntot, 1.0e-300)
     metadata = dict(diagnostics or {})
     metadata.setdefault("route", HEAD_ROUTE_STANDARD)
+    metadata.setdefault("head_route_version", CONDENSATE_HEAD_ROUTE_VERSION)
+    metadata.setdefault("head_route_name", CONDENSATE_HEAD_ROUTE_NAME)
     metadata.setdefault("selected_route", "head_v1_empty_positive_support_gas_only")
     metadata.setdefault("acceptance_tier", "runtime_empty_positive_support")
     metadata.setdefault("warning_messages", ())
@@ -2037,7 +2045,9 @@ def _run_activity_driven_support_outer_loop(
         support_growth_existing = (
             tuple(int(index) for index in fallback_solver_payload["support_indices"])
             if fallback_solver_payload
-            else current_support
+            else tuple(
+                int(index) for index in last_result.condensate_support_indices.tolist()
+            )
         )
         support_growth_pi = (
             fallback_solver_payload.get("pi_vector")
@@ -2103,7 +2113,7 @@ def _run_activity_driven_support_outer_loop(
             else _positive_support_amounts_for_warm_start(
                 (
                     float(last_result.condensate_amounts[int(index)])
-                    for index in current_support
+                    for index in support_growth_existing
                 ),
                 min_seed_amount=options.min_seed_amount,
             )
