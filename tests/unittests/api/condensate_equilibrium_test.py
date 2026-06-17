@@ -10,6 +10,8 @@ import pytest
 
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.api.condensate_equilibrium import (
+    CONDENSATE_HEAD_ROUTE_NAME,
+    CONDENSATE_HEAD_ROUTE_VERSION,
     CondensateChemicalSetup,
     CondensateEquilibriumOptions,
     _polish_support_amounts_for_full_condensate_budget_gate,
@@ -333,6 +335,8 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
 
     assert result.status == NOT_CONVERGED
     assert result.converged is False
+    assert result.head_route_version == CONDENSATE_HEAD_ROUTE_VERSION
+    assert result.head_route_name == CONDENSATE_HEAD_ROUTE_NAME
     assert result.condensate_support_names == ("H2O_s",)
     assert float(result.condensate_amounts[0]) > 0.0
     assert captured["kwargs"] is not None
@@ -340,6 +344,8 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
     assert tuple(kwargs["support_indices"]) == (0,)
     assert tuple(float(value) for value in kwargs["support_amounts_init"]) == pytest.approx((0.5,))
     assert result.diagnostics is not None
+    assert result.diagnostics["head_route_version"] == CONDENSATE_HEAD_ROUTE_VERSION
+    assert result.diagnostics["head_route_name"] == CONDENSATE_HEAD_ROUTE_NAME
     assert result.diagnostics["support_selection"]["solver_inputs"]["support_indices"] == (0,)
     assert (
         result.diagnostics["support_selection"]["solver_inputs"]["amount_gauge"]
@@ -353,7 +359,7 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
     )
 
 
-def test_condensate_equilibrium_options_default_to_head_route_v1_4() -> None:
+def test_condensate_equilibrium_options_default_to_head_route_v1_6() -> None:
     options = CondensateEquilibriumOptions()
 
     assert options.max_positive_support_count is None
@@ -365,6 +371,7 @@ def test_condensate_equilibrium_options_default_to_head_route_v1_4() -> None:
     assert options.enable_head_route_soft_restoration_retry is False
     assert options.enable_head_route_ipopt_h_type_retry is False
     assert options.enable_head_route_condensate_budget_correction_retry is True
+    assert options.enable_support_closure_retry_gate is True
     assert options.enable_full_condensate_budget_residual_gate is True
     assert options.full_condensate_budget_relative_tolerance == pytest.approx(1.0e-3)
 
@@ -503,7 +510,9 @@ def test_support_outer_loop_preserves_solver_amounts_when_growing_from_payload(
             gas_ntot=jnp.asarray(1.1, dtype=jnp.float64),
             condensate_amounts=full_amounts,
             condensate_support_indices=jnp.asarray(support, dtype=jnp.int32),
-            condensate_support_names=tuple(setup.condensate_species[index] for index in support),
+            condensate_support_names=tuple(
+                setup.condensate_species[index] for index in support
+            ),
             acceptance_tier="tier_1_tight_residual_production_adjacent_candidate",
             selected_route=route,
             status=status,
@@ -748,6 +757,122 @@ def test_support_outer_loop_tries_support_cap_retry_sequence(
     assert retry["support_cap_sequence"] == (1, 3)
     assert [attempt["support_cap"] for attempt in retry["attempts"]] == [1, 3]
     assert [attempt["route_promoted"] for attempt in retry["attempts"]] == [False, True]
+
+
+def test_support_cap_retry_skips_promoted_candidate_when_closure_gate_fails(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    gas = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]]),
+        hvector_func=lambda T: jnp.asarray([0.0, 0.0]),
+        elements=("H", "O"),
+        species=("H", "O"),
+        metadata={"source": "unit-test-gas"},
+    )
+    cond = ChemicalSetup(
+        formula_matrix=jnp.asarray(
+            [[1.0, 1.0, 1.0, 1.0], [1.0, 1.0, 1.0, 1.0]]
+        ),
+        hvector_func=lambda T: jnp.asarray([-1.0, -1.0, -1.0, -1.0]),
+        elements=("H", "O"),
+        species=("C0_s", "C1_s", "C2_s", "C3_s"),
+        metadata={"source": "unit-test-condensate"},
+    )
+    setup = build_condensate_chemical_setup(gas_setup=gas, condensate_setup=cond)
+    calls: list[int | None] = []
+
+    def fake_activity_report(**kwargs):
+        return {
+            "positive_support_indices": (0, 1, 2, 3),
+            "positive_support_names": ("C0_s", "C1_s", "C2_s", "C3_s"),
+            "inactive_positive_indices": (),
+            "inactive_positive_names": (),
+        }
+
+    def fake_condensate_equilibrium(*args, **kwargs):
+        options = kwargs["options"]
+        cap = options.max_positive_support_count
+        calls.append(cap)
+        support = tuple(range(4)) if cap is None else tuple(range(int(cap)))
+        route = (
+            "native_budget_seed_fallback_budget_tradeoff"
+            if cap is None
+            else "m4310_full_promoted_policy_route"
+        )
+        status = CONVERGED if cap is not None else NOT_CONVERGED
+        full_amounts = jnp.zeros((4,), dtype=jnp.float64)
+        for index in support:
+            full_amounts = full_amounts.at[index].set(0.1)
+        return condensate_api.CondensateEquilibriumResult(
+            gas_ln_n=jnp.asarray([0.0, -1.0], dtype=jnp.float64),
+            gas_n=jnp.asarray([1.0, 0.1], dtype=jnp.float64),
+            gas_x=jnp.asarray([0.9, 0.1], dtype=jnp.float64),
+            gas_ntot=jnp.asarray(1.1, dtype=jnp.float64),
+            condensate_amounts=full_amounts,
+            condensate_support_indices=jnp.asarray(support, dtype=jnp.int32),
+            condensate_support_names=tuple(setup.condensate_species[index] for index in support),
+            acceptance_tier="tier_1_tight_residual_production_adjacent_candidate",
+            selected_route=route,
+            status=status,
+            converged=cap is not None,
+            diagnostics={},
+        )
+
+    def fake_support_closure_gate(**kwargs):
+        result = kwargs["result"]
+        support_count = len(tuple(result.condensate_support_names))
+        accepted = support_count >= 3
+        return {
+            "gate_schema": "unit_test_support_closure_gate",
+            "accepted": accepted,
+            "max_positive_inactive_driving": 10.0 if accepted else 1000.0,
+            "positive_inactive_count": 0 if accepted else 2,
+        }
+
+    import exogibbs.api.condensate_equilibrium as condensate_api
+
+    monkeypatch.setattr(
+        condensate_api,
+        "_activity_driven_support_report",
+        fake_activity_report,
+    )
+    monkeypatch.setattr(
+        condensate_api,
+        "condensate_equilibrium",
+        fake_condensate_equilibrium,
+    )
+    monkeypatch.setattr(
+        condensate_api,
+        "_support_closure_retry_gate_report",
+        fake_support_closure_gate,
+    )
+
+    result = condensate_api._run_activity_driven_support_outer_loop(
+        setup=setup,
+        T=300.0,
+        P=1.0,
+        b=jnp.asarray([1.0, 1.0]),
+        Pref=1.0,
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            max_positive_support_count=None,
+            support_cap_retry_counts=(1, 3),
+            enable_support_growth_staging_retry=False,
+        ),
+    )
+
+    assert calls == [None, 1, 3]
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert result.diagnostics is not None
+    retry = result.diagnostics["support_cap_retry"]
+    assert retry["support_cap"] == 3
+    assert retry["support_closure_accepted"] is True
+    assert [attempt["support_cap"] for attempt in retry["attempts"]] == [1, 3]
+    assert [attempt["route_promoted"] for attempt in retry["attempts"]] == [True, True]
+    assert [attempt["support_closure_accepted"] for attempt in retry["attempts"]] == [
+        False,
+        True,
+    ]
 
 
 def test_support_outer_loop_tries_staged_support_growth_retry(
@@ -1734,12 +1859,16 @@ def test_condensate_equilibrium_empty_positive_support_uses_gas_only_path(monkey
 
     assert result.status == CONVERGED
     assert result.converged is True
+    assert result.head_route_version == CONDENSATE_HEAD_ROUTE_VERSION
+    assert result.head_route_name == CONDENSATE_HEAD_ROUTE_NAME
     assert result.condensate_support_names == ()
     assert result.condensate_support_indices.shape == (0,)
     assert result.condensate_amounts.shape == (1,)
     assert float(result.condensate_amounts[0]) == 0.0
     assert result.selected_route == "head_v1_empty_positive_support_gas_only"
     assert result.diagnostics is not None
+    assert result.diagnostics["head_route_version"] == CONDENSATE_HEAD_ROUTE_VERSION
+    assert result.diagnostics["head_route_name"] == CONDENSATE_HEAD_ROUTE_NAME
     assert result.diagnostics["support_selection"]["solver_inputs"]["empty_positive_support"] is True
 
 

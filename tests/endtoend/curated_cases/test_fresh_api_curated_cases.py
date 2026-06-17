@@ -80,7 +80,7 @@ SUPPORT_FREE_MIDLAYER_EXPECTED_STATUSES = {
 }
 
 SUPPORT_FREE_FALLBACK_RETRY_REGRESSION_ROWS = (
-    ("solar_water_condensation", 7),
+    ("solar_water_condensation", 7, "support_growth_staging_retry"),
 )
 
 SUPPORT_FREE_V1_4_REMAINING_REJECT_REGRESSION_ROWS = (
@@ -332,10 +332,11 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
             assert result.acceptance_tier == FULL_BUDGET_GATE_REJECTED_TIER
         support_selection = result.diagnostics["support_selection"]
         assert support_selection["selection_mode"] == "activity_driven_support_outer_loop"
-        assert (
-            support_selection["solver_inputs"]["seed_initialization_policy"]
-            == "max_density"
-        )
+        seed_policy = support_selection["solver_inputs"]["seed_initialization_policy"]
+        if seed_policy == "budget_preserving_fraction":
+            assert "support_budget_preserving_seed_retry" in result.diagnostics
+        else:
+            assert seed_policy == "max_density"
         assert support_selection["fastchem4_trace_values_used"] is False
         retry_report = result.diagnostics.get("head_route_center_gate_retry")
         if retry_report is not None:
@@ -388,7 +389,7 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
 def test_support_free_fallback_retry_regression_layers_promote_to_primary() -> None:
     setup = condensate_chemical_setup(silent=True)
 
-    for family, layer_index in SUPPORT_FREE_FALLBACK_RETRY_REGRESSION_ROWS:
+    for family, layer_index, retry_key in SUPPORT_FREE_FALLBACK_RETRY_REGRESSION_ROWS:
         definition = FRESH_CURATED_PROFILES[family]
         temperature = float(definition.temperatures[layer_index])
         pressure = float(definition.pressures[layer_index])
@@ -415,7 +416,7 @@ def test_support_free_fallback_retry_regression_layers_promote_to_primary() -> N
         assert result.diagnostics is not None
         gate = result.diagnostics["full_condensate_budget_residual_gate"]
         assert gate["accepted"] is True
-        retry_report = result.diagnostics["support_budget_preserving_seed_retry"]
+        retry_report = result.diagnostics[retry_key]
         assert retry_report["triggered"] is True
         assert retry_report["accepted"] is True
         assert retry_report["route_promoted"] is True
@@ -423,10 +424,55 @@ def test_support_free_fallback_retry_regression_layers_promote_to_primary() -> N
             retry_report["initial_selected_route"]
             == "native_budget_seed_fallback_budget_tradeoff"
         )
-        assert retry_report["retry_seed_initialization_policy"] == "budget_preserving_fraction"
+        if retry_key == "support_budget_preserving_seed_retry":
+            assert (
+                retry_report["retry_seed_initialization_policy"]
+                == "budget_preserving_fraction"
+            )
+        if retry_key == "support_growth_staging_retry":
+            assert retry_report["support_closure_accepted"] is True
+            assert retry_report["retry_support_closure_gate"]["accepted"] is True
         support_selection = result.diagnostics["support_selection"]
         assert support_selection["selection_mode"] == "activity_driven_support_outer_loop"
         assert support_selection["fastchem4_trace_values_used"] is False
+
+
+def test_water_low_temperature_regrows_solver_dropped_support() -> None:
+    setup = condensate_chemical_setup(silent=True)
+    definition = FRESH_CURATED_PROFILES["solar_water_condensation"]
+    layer_index = 8
+    temperature = float(definition.temperatures[layer_index])
+    pressure = float(definition.pressures[layer_index])
+
+    result = condensate_equilibrium(
+        setup,
+        temperature,
+        pressure,
+        element_budget_for_profile(setup, definition),
+        options=CondensateEquilibriumOptions(
+            case_id=(
+                f"{case_id_for_profile(definition, temperature, pressure)}"
+                "__actual_support_growth_regression"
+            ),
+            return_diagnostics=True,
+            max_inner_iterations=definition.max_inner_iterations,
+        ),
+    )
+
+    assert result.status == CONVERGED
+    assert result.converged is True
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert len(result.condensate_support_names) == 162
+    assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
+    support_outer_loop = result.diagnostics["support_outer_loop"]
+    assert support_outer_loop["terminated_reason"] == "no_inactive_positive_support"
+    iterations = support_outer_loop["iterations"]
+    assert len(iterations[0]["added_support_indices"]) == 64
+    assert len(iterations[1]["added_support_indices"]) == 64
+    assert len(iterations[2]["added_support_indices"]) == 34
+    assert len(iterations[3]["added_support_indices"]) == 0
 
 
 def test_support_free_v1_4_remaining_reject_rows_are_repaired() -> None:
