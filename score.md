@@ -376,26 +376,110 @@ public convergence and route counts.
 
 ## Current verdict
 
-v1.6 is a good algorithmic improvement over v1.5.1:
+v1.7 keeps the v1.6 algorithmic surface and adds a validity-aware diagnostic
+readout for inactive condensate driving. The solver route score remains the
+v1.6 score:
 
 - It preserves public convergence and budget-gate behavior.
 - It removes the remaining `>1000` inactive-driving rows without adding a new ad hoc retry.
 - It fixes the water layer 8 and layer 2 support-closure hotspots using the normal outer loop.
 - It reduces the water FastChem4 gas-ratio outlier from 121 to 23.3.
 - It improves the FastChem4-scaled Gibbs score from 17/82 to 19/80 and lowers max `|dG/RT|`.
+- It separates temperature-invalid highT gas-only diagnostic artifacts from
+  temperature-valid inactive-driving support misses.
 
 It is not yet a complete support-closure or FastChem4 agreement improvement:
 
 - Active condensate Jaccard remains low for most condensation families.
-- highT gas-only boundary rows still show large inactive-driving diagnostics.
+- all-condensate inactive-driving diagnostics still show highT gas-only rows,
+  but the v1.7 validity-aware audit below shows these are temperature-invalid
+  condensates rather than temperature-valid support misses.
 - FastChem4-scaled states still have lower ExoGibbs-native `G/RT` in 80/99 layers.
+
+## Trial v1.7: validity-aware inactive-driving diagnostics
+
+v1.7 checks whether the remaining highT gas-only inactive-driving rows are real
+missing condensates or diagnostic artifacts near the no-condensate boundary.
+The implementation adds a diagnostic-only
+`evaluate_inactive_condensate_driving()` helper that reports both the legacy
+all-condensate inactive-driving metric and a temperature-valid subset using the
+same `temperature_validity_upper` metadata as HEAD support selection.
+
+API exposure:
+
+```text
+result.head_route_version = "v1.7"
+result.head_route_name = "head_route_v1_7_validity_aware_inactive_driving_diagnostics"
+diagnostics["inactive_condensate_driving"] = {
+    "all_condensates": ...,
+    "temperature_valid_condensates": ...,
+}
+```
+
+This is a diagnostics-only HEAD route update. It does not change route
+selection, support growth, solver acceptance, gas-only API defaults, or
+FastChem4 constructor inputs.
+
+Artifacts:
+
+| artifact | purpose |
+|---|---|
+| `volatiles_artifacts/highT_gas_only_head_route_audit.json` | direct gas-only solver vs HEAD empty-support route comparison |
+| `volatiles_artifacts/head_route_v13_fastchem4_deep_comparison.json` | full-profile FastChem4 output comparison with validity-aware inactive-driving fields |
+
+highT gas-only route comparison over `solar_highT_no_condensate_gas_regression`:
+
+| metric | value |
+|---|---:|
+| rows | 18 |
+| HEAD route counts | 17 gas-only, 1 primary |
+| HEAD status counts | 18 converged |
+| strict gas-only budget retry rows | 2 |
+| max all-condensate inactive driving, HEAD | 771.7 |
+| max all-condensate inactive driving, direct gas-only default | 772.0 |
+| max temperature-valid inactive driving, HEAD | 0 |
+| rows with final temperature-valid inactive support | 0 |
+
+Interpretation: the highT hotspot is not evidence that the HEAD route is
+missing temperature-valid condensates. The largest all-condensate inactive
+driving species are `H2S(s,l)`, `CH4(s,l)`, `CO2(s,l)`, and `N2(s,l)`, all of
+which are above their condensate temperature-validity range at 2200 K. The
+direct gas-only solver and the HEAD empty-support route show the same
+all-condensate driving surface; HEAD support selection correctly excludes those
+species through the standard temperature-validity gate.
+
+Full-profile FastChem4 comparison after adding v1.7 validity-aware diagnostics:
+
+| metric | value |
+|---|---:|
+| rows | 99 |
+| public status | 99 converged |
+| route counts | 82 primary, 17 gas-only |
+| Exo all-condensate max inactive driving | 771.7 |
+| Exo temperature-valid max inactive driving | 487.1 |
+| Exo rows with temperature-valid inactive driving >500 | 0 |
+| Exo rows with temperature-valid inactive driving >1000 | 0 |
+| FastChem4-scaled temperature-valid max inactive driving | 21.6 |
+| ExoGibbs lower `G/RT` vs FastChem4-scaled | 19/99 |
+| FastChem4-scaled lower `G/RT` | 80/99 |
+| max `|dG/RT|` | 7.952e-4 |
+
+The next real support-closure targets are no longer the highT gas-only rows.
+By temperature-valid inactive-driving, the largest remaining ExoGibbs rows are
+in `carbon_rich_CaS_MgS_AlN_window`, `lowT_strong_condensation_budget_stress`,
+and `SiO_s_condensate_window`, with top species such as `Cr23C6(s)` and
+`Ti4O7(s,l)`. Those should be investigated as support/amount/complementarity
+issues, not as gas-only boundary problems.
 
 ## Next trial candidates
 
 ### Candidate A: highT gas-only boundary closure
 
-Goal: decide whether the remaining highT gas-only inactive-driving rows are a real
-condensation-support miss or a diagnostic artifact near the no-condensate boundary.
+Status: investigated. The highT gas-only rows are diagnostic artifacts under
+the legacy all-condensate metric; temperature-valid inactive-driving is zero.
+
+Goal: keep the validity-aware metric in future score runs so highT
+temperature-invalid condensates do not dominate the support-closure queue.
 
 Required score checks:
 

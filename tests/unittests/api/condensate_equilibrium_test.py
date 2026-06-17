@@ -357,9 +357,15 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
         ]
         == "number_density_divided_by_initial_gas_phase_total_element_density"
     )
+    inactive_driving = result.diagnostics["inactive_condensate_driving"]
+    assert inactive_driving["report_schema"] == (
+        "exogibbs_inactive_condensate_driving_report_v1"
+    )
+    assert inactive_driving["diagnostic_only"] is True
+    assert inactive_driving["production_behavior_change"] is False
 
 
-def test_condensate_equilibrium_options_default_to_head_route_v1_6() -> None:
+def test_condensate_equilibrium_options_default_to_head_route_v1_7() -> None:
     options = CondensateEquilibriumOptions()
 
     assert options.max_positive_support_count is None
@@ -1870,6 +1876,13 @@ def test_condensate_equilibrium_empty_positive_support_uses_gas_only_path(monkey
     assert result.diagnostics["head_route_version"] == CONDENSATE_HEAD_ROUTE_VERSION
     assert result.diagnostics["head_route_name"] == CONDENSATE_HEAD_ROUTE_NAME
     assert result.diagnostics["support_selection"]["solver_inputs"]["empty_positive_support"] is True
+    inactive_driving = result.diagnostics["inactive_condensate_driving"]
+    assert inactive_driving["all_condensates"]["positive_inactive_count"] == 0
+    assert inactive_driving["temperature_valid_condensates"]["positive_inactive_count"] == 0
+    assert (
+        inactive_driving["fastchem4_trace_public_runtime_constructor_inputs_used"]
+        is False
+    )
 
 
 def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> None:
