@@ -2,7 +2,7 @@
 
 この文書は、ExoGibbs の凝縮あり計算で現在の基準経路として扱う **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
 
-現在の実装版は **HEAD route v1.6** である。v1.6 は v1.5 の support-closure retry gate を維持したまま、support outer loop の support 更新規則を修正した固定版である。non-fallback accepted result から次 round の support を grow するとき、solver に渡した広い support ではなく、solver が実際に保持した support を existing support として扱う。これにより、solver が落とした species が final gas state で再び activity-positive なら、既存の activity-driven support outer loop の通常規則で再追加される。
+現在の実装版は **HEAD route v1.7** である。v1.7 は v1.6 の solver route と support 更新規則を維持したまま、公開 diagnostics の inactive condensate driving を温度有効性つきで読めるようにするマイナー更新である。legacy の all-condensate metric は残しつつ、HEAD support selection と同じ `temperature_validity_upper` metadata に基づく temperature-valid subset を併記する。
 
 ## 一言でいうと
 
@@ -18,9 +18,24 @@
 6. v1.4 では、返却直前に gas と full condensate vector から元素 budget を再構成し、element-wise relative residual が許容値を超える accepted row を relative joint budget-correction retry、budget-preserving seed retry、empty-support strict gas retry で直す。retry 後も許容値を超える row だけを `not_converged` に降格する。
 7. v1.5 では、support-cap retry と support-growth staging retry の候補を採用する前に、候補の gas state から inactive condensate driving を再評価し、positive inactive driving が許容値を超える候補を採用しない。
 8. v1.6 では、support outer loop の次 round を作るとき、前 round で試した support ではなく、accepted result の実 support indices を既存 support として使う。実 support から落ちた species がまだ positive inactive なら、通常の support-growth で再追加する。
-9. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
+9. v1.7 では、`return_diagnostics=True` の result に `inactive_condensate_driving` report を追加し、all-condensate と temperature-valid の inactive-driving summary を分ける。
+10. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
 
 これは FastChem4 exact replay（FastChem4 の分岐を完全再現すること）ではない。FastChem4 public/runtime/trace values（公開出力・実行時出力・内部 trace 値）は、ExoGibbs の constructor input（初期値や構成入力）として使わない。
+
+## HEAD route v1.7 固定内容
+
+HEAD route v1.7 は、v1.6 の route selection、support outer loop、solver acceptance を変えない diagnostics 更新である。主目的は、highT gas-only boundary で温度範囲外の condensate が legacy all-condensate inactive-driving metric を支配し、実際の support miss のように見える問題を切り分けることである。
+
+| promoted item | 目的 | 適用範囲 |
+|---|---|---|
+| validity-aware inactive-driving diagnostics | `return_diagnostics=True` の result に `inactive_condensate_driving` report を追加し、all-condensate summary と temperature-valid summary を併記する。 | public condensate API diagnostics |
+| support-selection validity alignment | temperature-valid subset は HEAD support selection と同じ `temperature_validity_upper` metadata を使う。 | diagnostics only |
+| gas-only route comparability | empty positive support route と通常の gas-only equilibrium solver を、同じ validity-aware inactive-driving 指標で比較できるようにする。 | diagnostics only |
+
+この更新は solver route、support update、public convergence、budget gate を変更しない。FastChem4 output は比較対象としてのみ使い、constructor input には使わない。
+
+v1.7 audit では、`solar_highT_no_condensate_gas_regression` の legacy all-condensate inactive driving は HEAD empty-support route と direct gas-only solver の両方で約 772 と一致する一方、temperature-valid inactive driving は HEAD 側で 0 である。したがって highT gas-only hotspot は温度範囲外 condensate を legacy metric が数えた diagnostic artifact であり、温度有効な condensate support miss ではない。
 
 ## HEAD route v1.6 固定内容
 
@@ -128,10 +143,10 @@ v1.3 default fresh API support-free route selection evidence は次の通りで�
   - `condensate_equilibrium`
 
 `condensate_equilibrium()` が返す `CondensateEquilibriumResult` から、現在の固定版は
-`result.head_route_version == "v1.6"` および
-`result.head_route_name == "head_route_v1_6_actual_support_outer_loop_growth"` として読み出せる。
+`result.head_route_version == "v1.7"` および
+`result.head_route_name == "head_route_v1_7_validity_aware_inactive_driving_diagnostics"` として読み出せる。
 `return_diagnostics=True` の場合は diagnostics にも同じ `head_route_version` と
-`head_route_name` を残す。
+`head_route_name` を残し、さらに `inactive_condensate_driving` report を残す。
 
 通常の gas-only API（凝縮なし API）は変更しない。HEAD route は凝縮あり専用入口から使う。
 
@@ -456,8 +471,8 @@ HEAD route は凝縮あり初版標準経路として進めてよいが、以下
 
 - gas-only `equilibrium()` の挙動を変えない。
 - 既存の production result fields の意味を変えない。
-- gas-only API の defaults を変更しない。凝縮あり API の fixed default は HEAD route v1.6 として扱う。
-- 現在の凝縮あり API の fixed default は `result.head_route_version == "v1.6"` として公開する。
+- gas-only API の defaults を変更しない。凝縮あり API の fixed default は HEAD route v1.7 として扱う。
+- 現在の凝縮あり API の fixed default は `result.head_route_version == "v1.7"` として公開する。
 - FastChem4 public/runtime/trace values を constructor input にしない。
 - FastChem4 exact branch replay を acceptance target にしない。
 - case、species、element を落として成功扱いにしない。

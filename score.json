@@ -1121,6 +1121,67 @@
       "verdict": "Algorithmic improvement: preserves public convergence and route counts, removes all >1000 inactive-driving rows by growing from actual accepted support, improves water gas-ratio outliers, and slightly improves FastChem4-scaled Gibbs counts."
     }
   ],
+  "diagnostic_trials": [
+    {
+      "trial": "v1.7",
+      "title": "validity-aware inactive-driving diagnostics",
+      "description": "Expose diagnostics that separate all-condensate inactive driving from temperature-valid inactive driving and compare HEAD empty-support rows against the direct gas-only equilibrium solver.",
+      "implementation": {
+        "new_helper": "exogibbs.condensates.inactive_driving.evaluate_inactive_condensate_driving",
+        "api_result_head_route_version": "v1.7",
+        "api_result_head_route_name": "head_route_v1_7_validity_aware_inactive_driving_diagnostics",
+        "diagnostics_key": "inactive_condensate_driving",
+        "diagnostic_only": true,
+        "production_behavior_change": false,
+        "fastchem4_constructor_inputs_used": false,
+        "fastchem4_exact_replay_target": false
+      },
+      "artifacts": [
+        "volatiles_artifacts/highT_gas_only_head_route_audit.json",
+        "volatiles_artifacts/head_route_v13_fastchem4_deep_comparison.json"
+      ],
+      "highT_gas_only_route_comparison": {
+        "family": "solar_highT_no_condensate_gas_regression",
+        "rows": 18,
+        "head_route_counts": {
+          "head_v1_empty_positive_support_gas_only": 17,
+          "m4310_full_promoted_policy_route": 1
+        },
+        "head_status_counts": {
+          "converged": 18
+        },
+        "strict_gas_only_budget_retry_rows": 2,
+        "head_max_all_condensate_inactive_driving": 771.6906072420092,
+        "direct_gas_default_max_all_condensate_inactive_driving": 772.0161366679351,
+        "head_max_temperature_valid_inactive_driving": 0.0,
+        "rows_with_final_temperature_valid_inactive_support": 0,
+        "interpretation": "The highT hotspot is caused by temperature-invalid condensates counted by the legacy all-condensate diagnostic, not by missing temperature-valid support."
+      },
+      "full_profile_validity_aware_fastchem4_comparison": {
+        "rows": 99,
+        "public_status_counts": {
+          "converged": 99
+        },
+        "route_counts": {
+          "m4310_full_promoted_policy_route": 82,
+          "head_v1_empty_positive_support_gas_only": 17
+        },
+        "exogibbs_all_condensate_max_inactive_driving": 771.6906072420092,
+        "exogibbs_temperature_valid_max_inactive_driving": 487.0636431073906,
+        "exogibbs_temperature_valid_rows_gt_500": 0,
+        "exogibbs_temperature_valid_rows_gt_1000": 0,
+        "fastchem4_scaled_temperature_valid_max_inactive_driving": 21.578063671135624,
+        "exogibbs_state_lower_g_over_rt": 19,
+        "fastchem4_scaled_state_lower_g_over_rt": 80,
+        "max_abs_delta_g_over_rt": 0.0007951733639472991
+      },
+      "next_support_closure_targets": [
+        "carbon_rich_CaS_MgS_AlN_window",
+        "lowT_strong_condensation_budget_stress",
+        "SiO_s_condensate_window"
+      ]
+    }
+  ],
   "next_trial_candidates": [
     {
       "candidate": "A",

@@ -36,8 +36,8 @@ CondensateSeedInitializationPolicy = Literal[
     "capacity_fraction",
     "max_density",
 ]
-CONDENSATE_HEAD_ROUTE_VERSION = "v1.6"
-CONDENSATE_HEAD_ROUTE_NAME = "head_route_v1_6_actual_support_outer_loop_growth"
+CONDENSATE_HEAD_ROUTE_VERSION = "v1.7"
+CONDENSATE_HEAD_ROUTE_NAME = "head_route_v1_7_validity_aware_inactive_driving_diagnostics"
 HEAD_ROUTE_SOFT_RESTORATION_COMPONENT_WEIGHTS = {
     "budget": 1.0,
     "total_density": 1.0,
@@ -1844,6 +1844,47 @@ def _with_support_budget_preserving_seed_retry_diagnostics(
     return replace(result, diagnostics=diagnostics)
 
 
+def _with_inactive_condensate_driving_diagnostics(
+    *,
+    result: CondensateEquilibriumResult,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    Pref: float,
+    options: CondensateEquilibriumOptions,
+) -> CondensateEquilibriumResult:
+    if not options.return_diagnostics:
+        return result
+    from exogibbs.condensates.inactive_driving import (
+        evaluate_inactive_condensate_driving,
+    )
+
+    gas_stationarity_source = setup.gas_setup.hvector_func(float(T)) + (
+        _ln_normalized_pressure(P, Pref)
+    )
+    element_potential = _least_squares_element_potential(
+        formula_matrix=setup.formula_matrix,
+        gas_ln_n=result.gas_ln_n,
+        gas_stationarity_source=gas_stationarity_source,
+    )
+    report = evaluate_inactive_condensate_driving(
+        formula_matrix_cond=setup.formula_matrix_cond,
+        condensate_species_order=setup.condensate_species,
+        condensate_amounts=result.condensate_amounts,
+        hvector_cond=setup.condensate_setup.hvector_func(float(T)),
+        element_potential=element_potential,
+        temperature=float(T),
+        condensate_temperature_validity_upper=setup.condensate_setup.metadata.get(
+            "temperature_validity_upper"
+        ),
+        active_floor=1.0e-50,
+        activity_threshold=options.support_activity_threshold,
+    )
+    diagnostics = dict(result.diagnostics or {})
+    diagnostics["inactive_condensate_driving"] = report.as_dict()
+    return replace(result, diagnostics=diagnostics)
+
+
 def _run_activity_driven_support_outer_loop(
     *,
     setup: CondensateChemicalSetup,
@@ -2420,11 +2461,18 @@ def condensate_equilibrium(
     validate_condensate_chemical_setup(setup)
     _validate_options(opts)
     if support_indices is None and opts.enable_support_outer_loop:
-        return _run_activity_driven_support_outer_loop(
+        return _with_inactive_condensate_driving_diagnostics(
+            result=_run_activity_driven_support_outer_loop(
+                setup=setup,
+                T=T,
+                P=P,
+                b=b,
+                Pref=Pref,
+                options=opts,
+            ),
             setup=setup,
             T=T,
             P=P,
-            b=b,
             Pref=Pref,
             options=opts,
         )
@@ -2517,17 +2565,24 @@ def condensate_equilibrium(
             return_diagnostics=False,
         )
         diagnostics = {"support_selection": support_selection_report} if opts.return_diagnostics else None
-        return _build_empty_support_gas_result(
+        return _with_inactive_condensate_driving_diagnostics(
+            result=_build_empty_support_gas_result(
+                setup=setup,
+                gas_ln_n=gas_result.ln_n,
+                diagnostics=diagnostics,
+                element_inventory_target=b,
+                enable_full_condensate_budget_residual_gate=(
+                    opts.enable_full_condensate_budget_residual_gate
+                ),
+                full_condensate_budget_relative_tolerance=(
+                    opts.full_condensate_budget_relative_tolerance
+                ),
+            ),
             setup=setup,
-            gas_ln_n=gas_result.ln_n,
-            diagnostics=diagnostics,
-            element_inventory_target=b,
-            enable_full_condensate_budget_residual_gate=(
-                opts.enable_full_condensate_budget_residual_gate
-            ),
-            full_condensate_budget_relative_tolerance=(
-                opts.full_condensate_budget_relative_tolerance
-            ),
+            T=T,
+            P=P,
+            Pref=Pref,
+            options=opts,
         )
     solve_kwargs: dict[str, Any] = {}
     if opts.max_inner_iterations is not None:
@@ -3230,27 +3285,34 @@ def condensate_equilibrium(
             and selected_warm_start_candidate_object is not None
             and selected_warm_start_candidate_object.finite_solver_inputs
         ):
-            return _build_native_seed_fallback_result(
+            return _with_inactive_condensate_driving_diagnostics(
+                result=_build_native_seed_fallback_result(
+                    setup=setup,
+                    T=T,
+                    P=P,
+                    b=b,
+                    Pref=Pref,
+                    candidate=selected_warm_start_candidate_object,
+                    support_selection_report=support_selection_report,
+                    warm_start_report=warm_start_report,
+                    solver_attempts=solver_attempts,
+                    selected_warm_start_candidate=selected_warm_start_candidate,
+                    lifecycle_payload=lifecycle_payload,
+                    allow_caveat_tiers=opts.allow_caveat_tiers,
+                    return_diagnostics=opts.return_diagnostics,
+                    enable_full_condensate_budget_residual_gate=(
+                        opts.enable_full_condensate_budget_residual_gate
+                    ),
+                    full_condensate_budget_relative_tolerance=(
+                        opts.full_condensate_budget_relative_tolerance
+                    ),
+                    restricted_solver_success=False,
+                ),
                 setup=setup,
                 T=T,
                 P=P,
-                b=b,
                 Pref=Pref,
-                candidate=selected_warm_start_candidate_object,
-                support_selection_report=support_selection_report,
-                warm_start_report=warm_start_report,
-                solver_attempts=solver_attempts,
-                selected_warm_start_candidate=selected_warm_start_candidate,
-                lifecycle_payload=lifecycle_payload,
-                allow_caveat_tiers=opts.allow_caveat_tiers,
-                return_diagnostics=opts.return_diagnostics,
-                enable_full_condensate_budget_residual_gate=(
-                    opts.enable_full_condensate_budget_residual_gate
-                ),
-                full_condensate_budget_relative_tolerance=(
-                    opts.full_condensate_budget_relative_tolerance
-                ),
-                restricted_solver_success=False,
+                options=opts,
             )
     if (
         lifecycle_converged
@@ -3303,28 +3365,35 @@ def condensate_equilibrium(
         and selected_warm_start_candidate_object is not None
         and selected_warm_start_candidate_object.finite_solver_inputs
     ):
-        return _build_native_seed_fallback_result(
+        return _with_inactive_condensate_driving_diagnostics(
+            result=_build_native_seed_fallback_result(
+                setup=setup,
+                T=T,
+                P=P,
+                b=b,
+                Pref=Pref,
+                candidate=selected_warm_start_candidate_object,
+                support_selection_report=support_selection_report,
+                warm_start_report=warm_start_report,
+                solver_attempts=solver_attempts,
+                selected_warm_start_candidate=selected_warm_start_candidate,
+                lifecycle_payload=lifecycle_payload,
+                allow_caveat_tiers=opts.allow_caveat_tiers,
+                return_diagnostics=opts.return_diagnostics,
+                enable_full_condensate_budget_residual_gate=(
+                    opts.enable_full_condensate_budget_residual_gate
+                ),
+                full_condensate_budget_relative_tolerance=(
+                    opts.full_condensate_budget_relative_tolerance
+                ),
+                restricted_solver_success=restricted_solver_success,
+                restricted_solver_payload=solver if restricted_solver_success else None,
+            ),
             setup=setup,
             T=T,
             P=P,
-            b=b,
             Pref=Pref,
-            candidate=selected_warm_start_candidate_object,
-            support_selection_report=support_selection_report,
-            warm_start_report=warm_start_report,
-            solver_attempts=solver_attempts,
-            selected_warm_start_candidate=selected_warm_start_candidate,
-            lifecycle_payload=lifecycle_payload,
-            allow_caveat_tiers=opts.allow_caveat_tiers,
-            return_diagnostics=opts.return_diagnostics,
-            enable_full_condensate_budget_residual_gate=(
-                opts.enable_full_condensate_budget_residual_gate
-            ),
-            full_condensate_budget_relative_tolerance=(
-                opts.full_condensate_budget_relative_tolerance
-            ),
-            restricted_solver_success=restricted_solver_success,
-            restricted_solver_payload=solver if restricted_solver_success else None,
+            options=opts,
         )
     diagnostics_payload: Optional[Mapping[str, Any]]
     if opts.return_diagnostics:
@@ -3362,24 +3431,31 @@ def condensate_equilibrium(
             )
     else:
         diagnostics_payload = None
-    return build_condensate_equilibrium_result_from_solver_payload(
+    return _with_inactive_condensate_driving_diagnostics(
+        result=build_condensate_equilibrium_result_from_solver_payload(
+            setup=setup,
+            gas_ln_n=result_ln_nk,
+            support_indices=result_support_indices,
+            support_amounts=result_support_amounts,
+            external_condensate_amounts=result_external_condensate_amounts,
+            selected_route=lifecycle_selected_route,
+            metric_status=lifecycle_metric_status,
+            solver_success=bool(lifecycle_converged),
+            allow_caveat_tiers=opts.allow_caveat_tiers,
+            diagnostics=diagnostics_payload,
+            element_inventory_target=b,
+            enable_full_condensate_budget_residual_gate=(
+                opts.enable_full_condensate_budget_residual_gate
+            ),
+            full_condensate_budget_relative_tolerance=(
+                opts.full_condensate_budget_relative_tolerance
+            ),
+        ),
         setup=setup,
-        gas_ln_n=result_ln_nk,
-        support_indices=result_support_indices,
-        support_amounts=result_support_amounts,
-        external_condensate_amounts=result_external_condensate_amounts,
-        selected_route=lifecycle_selected_route,
-        metric_status=lifecycle_metric_status,
-        solver_success=bool(lifecycle_converged),
-        allow_caveat_tiers=opts.allow_caveat_tiers,
-        diagnostics=diagnostics_payload,
-        element_inventory_target=b,
-        enable_full_condensate_budget_residual_gate=(
-            opts.enable_full_condensate_budget_residual_gate
-        ),
-        full_condensate_budget_relative_tolerance=(
-            opts.full_condensate_budget_relative_tolerance
-        ),
+        T=T,
+        P=P,
+        Pref=Pref,
+        options=opts,
     )
 
 
