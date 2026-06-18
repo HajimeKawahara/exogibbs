@@ -1,6 +1,21 @@
 {
   "schema": "exogibbs_condensate_head_route_scorecard_v1",
   "policy": {
+    "case_by_case_trial_deltas_required": true,
+    "case_by_case_trial_deltas_required_fields": [
+      "rows",
+      "status_counts",
+      "route_counts",
+      "max_abs_delta_g_over_rt_before",
+      "max_abs_delta_g_over_rt_after",
+      "max_abs_delta_g_over_rt_delta",
+      "temperature_valid_max_inactive_driving_before",
+      "temperature_valid_max_inactive_driving_after",
+      "temperature_valid_max_inactive_driving_delta",
+      "temperature_valid_positive_inactive_count_summary",
+      "active_support_count_summary",
+      "top_changed_layers"
+    ],
     "fastchem4_is_comparison_target_only": true,
     "fastchem4_constructor_inputs_used": false,
     "fastchem4_exact_replay_target": false,
@@ -41,6 +56,11 @@
       "metric": "route_support_churn",
       "purpose": "Confirm whether a trial changes only intended rows.",
       "improvement_direction": "Keep route/support changes localized and justified by G/RT or residual improvements."
+    },
+    {
+      "metric": "case_by_case_delta_tracking",
+      "purpose": "Preserve family-level before/after scores so later runs can identify which curated cases changed.",
+      "improvement_direction": "Every new trial records case-by-case deltas in both score.md and score.json."
     },
     {
       "metric": "global_inactive_driving_distribution",
@@ -1119,6 +1139,70 @@
         }
       ],
       "verdict": "Algorithmic improvement: preserves public convergence and route counts, removes all >1000 inactive-driving rows by growing from actual accepted support, improves water gas-ratio outliers, and slightly improves FastChem4-scaled Gibbs counts."
+    },
+    {
+      "description": "Evaluate all configured support-cap and staged support-growth retry candidates, then select the converged candidate with the best ExoGibbs-native support-closure score instead of the first acceptable retry.",
+      "case_by_case_delta": {
+        "available": false,
+        "reason": "The v1.8 scorecard preserves full-profile summary and targeted SiO_s_condensate_window layer 4 before/after values, but the v1.7 family-level artifact was not preserved before the v1.8 artifact was generated. Future trials must store family-level before/after deltas directly in this scorecard.",
+        "targeted_delta_available": true
+      },
+      "full_profile_fastchem4_comparison": {
+        "exogibbs_state_lower_g_over_rt": 19,
+        "exogibbs_temperature_valid_max_inactive_driving": 224.3156799185349,
+        "exogibbs_temperature_valid_rows_gt_0": 16,
+        "exogibbs_temperature_valid_rows_gt_500": 0,
+        "fastchem4_scaled_state_lower_g_over_rt": 80,
+        "max_abs_delta_g_over_rt": 9.972649253597865e-05,
+        "max_abs_delta_g_over_rt_row": {
+          "delta_gibbs_exogibbs_minus_fastchem4": 9.972649253597865e-05,
+          "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+          "layer_index": 5,
+          "pressure": 0.31622776601683794,
+          "temperature": 693.75
+        },
+        "public_converged": 99,
+        "route_counts": {
+          "gas_only": 17,
+          "primary": 82
+        },
+        "rows": 99
+      },
+      "implementation": {
+        "fastchem4_constructor_inputs_used": false,
+        "support_cap_retry_selection_policy": "best_support_closure_score",
+        "support_closure_max_positive_inactive_count_default": null,
+        "support_closure_max_positive_inactive_driving": 500.0,
+        "support_closure_score_fields": [
+          "positive_inactive_count",
+          "max_positive_inactive_driving",
+          "support_count"
+        ],
+        "support_growth_staging_retry_selection_policy": "best_support_closure_score"
+      },
+      "targeted_before_after": {
+        "after": {
+          "delta_gibbs_exogibbs_minus_fastchem4": 5.905147119733556e-06,
+          "selected_retry": "support_cap_128",
+          "support_count": 72,
+          "temperature_valid_max_positive_inactive_driving": 0.0,
+          "temperature_valid_positive_inactive_count": 0
+        },
+        "before": {
+          "delta_gibbs_exogibbs_minus_fastchem4": 0.0007951733639472991,
+          "selected_retry": "support_cap_34",
+          "support_count": 5,
+          "temperature_valid_max_positive_inactive_driving": 470.8494885802095,
+          "temperature_valid_positive_inactive_count": 77
+        },
+        "family": "SiO_s_condensate_window",
+        "layer_index": 4,
+        "pressure": 0.31622776601683794,
+        "temperature": 900.0
+      },
+      "title": "best support-closure retry candidate",
+      "trial": "v1.8",
+      "verdict": "Improves the largest v1.7 Gibbs gap and support-closure hotspot while preserving 99/99 public convergence and route counts. Runtime increases on fallback-heavy curated tests because all configured retry candidates are evaluated."
     }
   ],
   "diagnostic_trials": [

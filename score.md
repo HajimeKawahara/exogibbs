@@ -20,6 +20,28 @@
 
 優先順位は、まず public convergence と budget consistency を壊さないこと、次に ExoGibbs-native `G/RT` と inactive driving を改善すること、その後 FastChem4 gas/Jaccard 差を詰めることとする。
 
+## Score 記録ルール
+
+今後の trial では、全体 summary だけでなく case-by-case delta を
+`score.md` と `score.json` の両方に保存する。`volatiles_artifacts/` は
+scratch artifact なので、後から上書きされても scorecard だけで「どの
+curated case がどう変わったか」を追跡できる状態にする。
+
+各 trial の case-by-case delta には、少なくとも次を family ごとに残す。
+
+| field | 内容 |
+|---|---|
+| rows / status counts / route counts | public route surface が case 単位で変わったか。 |
+| max `|dG/RT|` before/after/delta | FastChem4-scaled comparison の Gibbs gap がどの case で改善・悪化したか。 |
+| Exo temperature-valid max inactive driving before/after/delta | support closure が case 単位で閉じたか。 |
+| temperature-valid inactive count / rows above thresholds | max だけでなく残存数と threshold exceedance を追う。 |
+| active support count summary | support が過剰に膨らんでいないか。 |
+| top changed layers | case 内の代表 layer と、その layer の before/after metrics。 |
+
+`score.json` では各 trial に `case_by_case_delta` block を置く。過去 trial で
+before 側の case-by-case artifact が保存されていない場合は、推測で埋めず、
+`case_by_case_delta_available: false` と理由を明記する。
+
 ## Baseline: HEAD route v1.4
 
 v1.4 は public full condensate budget consistency を主目的にした固定版である。
@@ -470,6 +492,53 @@ in `carbon_rich_CaS_MgS_AlN_window`, `lowT_strong_condensation_budget_stress`,
 and `SiO_s_condensate_window`, with top species such as `Cr23C6(s)` and
 `Ti4O7(s,l)`. Those should be investigated as support/amount/complementarity
 issues, not as gas-only boundary problems.
+
+## Trial v1.8: best support-closure retry candidate
+
+v1.8 changes fallback-only retry adoption from "first acceptable retry" to
+"best inactive-closure retry". Support-cap retry and staged support-growth
+retry now evaluate all configured candidates and select the converged candidate
+with the lowest `(positive_inactive_count, max_positive_inactive_driving,
+support_count)` score. The existing max-driving threshold remains a feasibility
+filter. The positive-inactive count is recorded in the gate and may be used as
+an explicit hard tolerance, but the default uses it as the primary ranking
+metric rather than as a convergence-breaking hard reject.
+
+Motivation: in v1.7, `SiO_s_condensate_window` layer 4 accepted the cap-34 retry
+because its max inactive driving was 470.8, below the 500 gate. That candidate
+still left 77 temperature-valid inactive condensates and produced the largest
+FastChem4-scaled Gibbs gap. The cap-128 candidate converges, closes
+temperature-valid inactive driving, and is selected by v1.8.
+
+Target row score:
+
+| metric | v1.7 cap-34 candidate | v1.8 selected cap-128 candidate |
+|---|---:|---:|
+| row | `SiO_s_condensate_window` layer 4 | same |
+| support count | 5 | 72 |
+| temperature-valid max inactive driving | 470.8 | 0 |
+| temperature-valid inactive count | 77 | 0 |
+| `dG/RT` Exo-FC | 7.952e-4 | 5.905e-6 |
+
+Full-profile FastChem4 comparison after v1.8:
+
+| metric | v1.7 | v1.8 |
+|---|---:|---:|
+| rows | 99 | 99 |
+| public status | 99 converged | 99 converged |
+| route counts | 82 primary, 17 gas-only | 82 primary, 17 gas-only |
+| Exo temperature-valid max inactive driving | 487.1 | 224.3 |
+| Exo rows with temperature-valid inactive driving >500 | 0 | 0 |
+| ExoGibbs lower `G/RT` vs FastChem4-scaled | 19/99 | 19/99 |
+| FastChem4-scaled lower `G/RT` | 80/99 | 80/99 |
+| max `|dG/RT|` | 7.952e-4 | 9.973e-5 |
+
+The largest remaining Gibbs gap after v1.8 is
+`solar_metal_sulfide_or_Fe_Ni_S_region` layer 5 with
+`dG/RT Exo-FC = 9.972649e-5`. The largest remaining temperature-valid inactive
+driving is in `carbon_rich_CaS_MgS_AlN_window` with max 224.3. This keeps the
+next investigation focused on real condensation-family support/amount closure,
+not on highT gas-only artifacts.
 
 ## Next trial candidates
 

@@ -2,7 +2,7 @@
 
 この文書は、ExoGibbs の凝縮あり計算で現在の基準経路として扱う **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
 
-現在の実装版は **HEAD route v1.7** である。v1.7 は v1.6 の solver route と support 更新規則を維持したまま、公開 diagnostics の inactive condensate driving を温度有効性つきで読めるようにするマイナー更新である。legacy の all-condensate metric は残しつつ、HEAD support selection と同じ `temperature_validity_upper` metadata に基づく temperature-valid subset を併記する。
+現在の実装版は **HEAD route v1.8** である。v1.8 は v1.7 の validity-aware diagnostics を維持しつつ、support-cap retry / staged support-growth retry の採用を「最初に gate を通った候補」ではなく、ExoGibbs-native inactive support closure score が最も良い converged 候補で選ぶ更新である。FastChem4 output は比較対象としてのみ使い、constructor input には使わない。
 
 ## 一言でいうと
 
@@ -19,9 +19,22 @@
 7. v1.5 では、support-cap retry と support-growth staging retry の候補を採用する前に、候補の gas state から inactive condensate driving を再評価し、positive inactive driving が許容値を超える候補を採用しない。
 8. v1.6 では、support outer loop の次 round を作るとき、前 round で試した support ではなく、accepted result の実 support indices を既存 support として使う。実 support から落ちた species がまだ positive inactive なら、通常の support-growth で再追加する。
 9. v1.7 では、`return_diagnostics=True` の result に `inactive_condensate_driving` report を追加し、all-condensate と temperature-valid の inactive-driving summary を分ける。
-10. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
+10. v1.8 では、support-cap retry と staged support-growth retry の候補を全て評価し、converged かつ support-closure gate を通る候補の中から `(positive_inactive_count, max_positive_inactive_driving, support_count)` が最小の候補を採用する。
+11. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
 
 これは FastChem4 exact replay（FastChem4 の分岐を完全再現すること）ではない。FastChem4 public/runtime/trace values（公開出力・実行時出力・内部 trace 値）は、ExoGibbs の constructor input（初期値や構成入力）として使わない。
+
+## HEAD route v1.8 固定内容
+
+HEAD route v1.8 は、v1.7 の public diagnostics と highT gas-only 解釈を維持したまま、fallback-only retry の採用規則を強化する固定版である。v1.7 では support-cap retry が最初に `max_positive_inactive_driving <= 500` を満たした候補を採用したため、`SiO_s_condensate_window` layer 4 で max driving は 470 と閾値内でも temperature-valid inactive condensates が 77 種残る candidate を採用していた。v1.8 では retry candidate を最初の合格で止めず、全 configured cap / staging candidate を比較して closure score が最も良い converged candidate を採用する。
+
+| promoted item | 目的 | 適用範囲 |
+|---|---|---|
+| best support-closure retry candidate selection | support-cap retry / staged support-growth retry で、最初の合格候補ではなく inactive count、max driving、support count の lexicographic score が最良の converged candidate を採用する。 | support-free fallback-only retry |
+| inactive-count-aware gate diagnostics | gate report に `positive_inactive_count_tolerance` と count/max それぞれの accepted flag を残す。default では count を hard reject には使わず、candidate ranking に使う。 | retry diagnostics |
+| configured cap retry coverage | current broad support より大きい configured cap も retry candidate として評価し、large cap で solver が実 support を落として closure する path を見逃さない。 | support-cap retry |
+
+v1.8 audit では、v1.7 の最大 Gibbs 差だった `SiO_s_condensate_window` layer 4 が cap 34 ではなく cap 128 retry を採用し、temperature-valid inactive driving は 470.8 / 77 種から 0 / 0 種へ下がる。同 row の FastChem4-scaled comparison は `dG/RT Exo-FC = 7.952e-4` から `5.905e-6` へ改善する。99-layer full-profile comparison では public status は `99 converged`、route counts は `82 primary, 17 gas-only` を維持し、max `|dG/RT|` は `9.973e-5` になる。
 
 ## HEAD route v1.7 固定内容
 
@@ -143,8 +156,8 @@ v1.3 default fresh API support-free route selection evidence は次の通りで�
   - `condensate_equilibrium`
 
 `condensate_equilibrium()` が返す `CondensateEquilibriumResult` から、現在の固定版は
-`result.head_route_version == "v1.7"` および
-`result.head_route_name == "head_route_v1_7_validity_aware_inactive_driving_diagnostics"` として読み出せる。
+`result.head_route_version == "v1.8"` および
+`result.head_route_name == "head_route_v1_8_best_support_closure_retry_candidate"` として読み出せる。
 `return_diagnostics=True` の場合は diagnostics にも同じ `head_route_version` と
 `head_route_name` を残し、さらに `inactive_condensate_driving` report を残す。
 
@@ -471,8 +484,8 @@ HEAD route は凝縮あり初版標準経路として進めてよいが、以下
 
 - gas-only `equilibrium()` の挙動を変えない。
 - 既存の production result fields の意味を変えない。
-- gas-only API の defaults を変更しない。凝縮あり API の fixed default は HEAD route v1.7 として扱う。
-- 現在の凝縮あり API の fixed default は `result.head_route_version == "v1.7"` として公開する。
+- gas-only API の defaults を変更しない。凝縮あり API の fixed default は HEAD route v1.8 として扱う。
+- 現在の凝縮あり API の fixed default は `result.head_route_version == "v1.8"` として公開する。
 - FastChem4 public/runtime/trace values を constructor input にしない。
 - FastChem4 exact branch replay を acceptance target にしない。
 - case、species、element を落として成功扱いにしない。
