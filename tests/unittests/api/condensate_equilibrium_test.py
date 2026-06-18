@@ -365,7 +365,7 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
     assert inactive_driving["production_behavior_change"] is False
 
 
-def test_condensate_equilibrium_options_default_to_head_route_v1_7() -> None:
+def test_condensate_equilibrium_options_default_to_head_route_v1_8() -> None:
     options = CondensateEquilibriumOptions()
 
     assert options.max_positive_support_count is None
@@ -378,6 +378,7 @@ def test_condensate_equilibrium_options_default_to_head_route_v1_7() -> None:
     assert options.enable_head_route_ipopt_h_type_retry is False
     assert options.enable_head_route_condensate_budget_correction_retry is True
     assert options.enable_support_closure_retry_gate is True
+    assert options.support_closure_max_positive_inactive_count is None
     assert options.enable_full_condensate_budget_residual_gate is True
     assert options.full_condensate_budget_relative_tolerance == pytest.approx(1.0e-3)
 
@@ -438,6 +439,7 @@ def test_support_outer_loop_does_not_grow_from_native_seed_fallback(
             allow_caveat_tiers=True,
             max_positive_support_count=None,
             max_support_add_per_round=None,
+            enable_support_cap_retry=False,
             enable_support_growth_staging_retry=False,
         ),
     )
@@ -881,6 +883,62 @@ def test_support_cap_retry_skips_promoted_candidate_when_closure_gate_fails(
     ]
 
 
+def test_support_closure_gate_rejects_residual_inactive_count(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_two_condensates()
+
+    def fake_activity_report(**kwargs):
+        return {
+            "inactive_positive_indices": (1,),
+            "candidate_driving": {
+                "H2O_s": -1.0,
+                "HO_s": 10.0,
+            },
+        }
+
+    import exogibbs.api.condensate_equilibrium as condensate_api
+
+    monkeypatch.setattr(
+        condensate_api,
+        "_activity_driven_support_report",
+        fake_activity_report,
+    )
+    result = condensate_api.CondensateEquilibriumResult(
+        gas_ln_n=jnp.asarray([0.0, -1.0], dtype=jnp.float64),
+        gas_n=jnp.asarray([1.0, 0.1], dtype=jnp.float64),
+        gas_x=jnp.asarray([0.9, 0.1], dtype=jnp.float64),
+        gas_ntot=jnp.asarray(1.1, dtype=jnp.float64),
+        condensate_amounts=jnp.asarray([0.1, 0.0], dtype=jnp.float64),
+        condensate_support_indices=jnp.asarray([0], dtype=jnp.int32),
+        condensate_support_names=("H2O_s",),
+        acceptance_tier="tier_1_tight_residual_production_adjacent_candidate",
+        selected_route="m4310_full_promoted_policy_route",
+        status=CONVERGED,
+        converged=True,
+        diagnostics={},
+    )
+
+    gate = condensate_api._support_closure_retry_gate_report(
+        setup=setup,
+        T=300.0,
+        P=1.0,
+        b=jnp.asarray([1.0, 1.0]),
+        Pref=1.0,
+        result=result,
+        options=CondensateEquilibriumOptions(
+            support_closure_max_positive_inactive_driving=500.0,
+            support_closure_max_positive_inactive_count=0,
+        ),
+    )
+
+    assert gate["accepted"] is False
+    assert gate["max_positive_inactive_driving_accepted"] is True
+    assert gate["positive_inactive_count"] == 1
+    assert gate["positive_inactive_count_tolerance"] == 0
+    assert gate["positive_inactive_count_accepted"] is False
+
+
 def test_support_outer_loop_tries_staged_support_growth_retry(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -960,7 +1018,7 @@ def test_support_outer_loop_tries_staged_support_growth_retry(
         ),
     )
 
-    assert calls == [(None, True), (2, False)]
+    assert calls == [(None, True), (2, False), (1, False)]
     assert result.selected_route == "m4310_full_promoted_policy_route"
     assert result.diagnostics is not None
     retry = result.diagnostics["support_growth_staging_retry"]
@@ -969,6 +1027,7 @@ def test_support_outer_loop_tries_staged_support_growth_retry(
     assert retry["route_promoted"] is True
     assert retry["max_support_add_per_round"] == 2
     assert retry["max_support_add_per_round_sequence"] == (2, 1)
+    assert retry["selection_policy"] == "best_support_closure_score"
     assert retry["initial_selected_route"] == "native_budget_seed_fallback_budget_tradeoff"
     assert retry["retry_selected_route"] == "m4310_full_promoted_policy_route"
     assert retry["attempts"][0]["support_outer_terminated_reason"] == (
@@ -2136,6 +2195,16 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             jnp.asarray([1.0, 1.0]),
             options=CondensateEquilibriumOptions(
                 support_growth_staging_retry_add_per_rounds=(64, 0),
+            ),
+        )
+    with pytest.raises(ValueError, match="support_closure_max_positive_inactive_count"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                support_closure_max_positive_inactive_count=-1,
             ),
         )
 
