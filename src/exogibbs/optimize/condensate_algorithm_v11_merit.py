@@ -7,7 +7,7 @@ import only and do not call solvers, FastChem4, or pyfastchem.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import math
 from typing import Any, Mapping, Sequence
 
@@ -37,7 +37,7 @@ class AlgorithmV11MeritBreakdown:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -61,7 +61,7 @@ class AlgorithmV11PArmijoSelection:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -84,7 +84,7 @@ class AlgorithmV11LinearizedMeritDecrease:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 def _as_vector(values: Sequence[float], name: str) -> np.ndarray:

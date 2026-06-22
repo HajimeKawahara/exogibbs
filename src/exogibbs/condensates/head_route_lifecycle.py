@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import math
 from typing import Any, Mapping, Sequence
 
@@ -64,26 +64,35 @@ class CondensateHeadRouteLifecycleReport:
     route_result: CondensateHeadRouteResult
 
     def as_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
-        payload["support_boundary"] = self.support_boundary.as_dict()
-        payload["continuation_input"] = self.continuation_input.as_dict()
-        payload["primary_execution_report"] = (
-            dict(self.primary_execution_report)
-            if self.primary_execution_report is not None
-            else None
-        )
-        payload["center_fallback_report"] = (
-            self.center_fallback_report.as_dict()
-            if self.center_fallback_report is not None
-            else None
-        )
-        payload["electron_refresh_report"] = (
-            self.electron_refresh_report.as_dict()
-            if self.electron_refresh_report is not None
-            else None
-        )
-        payload["route_result"] = self.route_result.as_dict()
-        return payload
+        return {
+            "report_schema": self.report_schema,
+            "explicit_opt_in": self.explicit_opt_in,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+            "case_id": self.case_id,
+            "family": self.family,
+            "support_boundary": self.support_boundary.as_dict(),
+            "continuation_input": self.continuation_input.as_dict(),
+            "primary_summary": self.primary_summary,
+            "primary_execution_report": self.primary_execution_report,
+            "center_fallback_report": (
+                self.center_fallback_report.as_dict()
+                if self.center_fallback_report is not None
+                else None
+            ),
+            "electron_refresh_report": (
+                self.electron_refresh_report.as_dict()
+                if self.electron_refresh_report is not None
+                else None
+            ),
+            "frontier_refresh_report": self.frontier_refresh_report,
+            "route_selection_report": self.route_selection_report,
+            "route_result": self.route_result.as_dict(),
+        }
 
 
 def _continuation_report_summary(report_payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -235,6 +244,7 @@ def _run_primary_continuation(
         external_condensate_budget=continuation_input.external_condensate_budget,
         gas_stationarity_source=continuation_input.gas_stationarity_source,
         condensate_standard_source=continuation_input.condensate_standard_source,
+        species_names=continuation_input.support_species_names,
         field_provenance=continuation_input.field_provenance,
         **policy,
     )
@@ -314,6 +324,7 @@ def run_condensate_head_route_lifecycle(
     element_potential: Sequence[float],
     gas_stationarity_source: Sequence[float],
     condensate_standard_source: Sequence[float],
+    condensate_species_names: Sequence[str] | None = None,
     external_condensate_budget: Sequence[float] | None = None,
     primary_summary: Mapping[str, Any] | None = None,
     primary_continuation_policy: Mapping[str, Any] | None = None,
@@ -333,6 +344,8 @@ def run_condensate_head_route_lifecycle(
     metric_status: str | None = None,
     selected_route_override: str | None = None,
     initial_epsilon: float = -27.631021115928547,
+    dual_initialization_policy: str = "centered_from_epsilon",
+    dual_push_floor: float | None = None,
     field_provenance: Mapping[str, str] | None = None,
 ) -> CondensateHeadRouteLifecycleReport:
     """Run the lightweight HEAD route lifecycle facade from explicit arrays."""
@@ -362,8 +375,11 @@ def run_condensate_head_route_lifecycle(
         external_condensate_budget=external_condensate_budget,
         gas_stationarity_source=gas_stationarity_source,
         condensate_standard_source=condensate_standard_source,
+        condensate_species_names=condensate_species_names,
         ln_ntot=support_boundary.ln_ntot,
         epsilon=initial_epsilon,
+        dual_initialization_policy=dual_initialization_policy,
+        dual_push_floor=dual_push_floor,
         field_provenance=field_provenance,
     )
     primary_execution_report: Mapping[str, Any] | None = None

@@ -318,6 +318,53 @@ def build_linear_budget_total_density_amount_gas_direction(
     )
 
 
+def build_log_complementarity_centering_direction(
+    *,
+    q_size: int,
+    r: Sequence[float],
+    lam_size: int,
+    rho: Sequence[float],
+    epsilon: float,
+    max_abs_delta_rho: float = 2.0,
+) -> AlgorithmV11Direction:
+    """Build a dual-only corrector for log-complementarity centering.
+
+    The algorithm-v1.1 complementarity block is ``r + rho - epsilon``.  Moving
+    only ``rho`` leaves the primal inventory equations unchanged, so this
+    corrector can be tested by the existing filter without directly damaging
+    budget or total-density feasibility.
+    """
+
+    r_array = _as_vector(r, "r")
+    rho_array = _as_vector(rho, "rho")
+    if r_array.shape != rho_array.shape:
+        raise ValueError("r and rho must have matching shapes.")
+    q_count = int(q_size)
+    lam_count = int(lam_size)
+    if q_count < 0 or lam_count < 0:
+        raise ValueError("q_size and lam_size must be non-negative.")
+    epsilon_value = float(epsilon)
+    if not np.isfinite(epsilon_value):
+        raise ValueError("epsilon must be finite.")
+    limit = float(max_abs_delta_rho)
+    if not np.isfinite(limit) or limit <= 0.0:
+        raise ValueError("max_abs_delta_rho must be finite and positive.")
+
+    complementarity = r_array + rho_array - epsilon_value
+    delta_rho = -complementarity
+    norm_inf = float(np.max(np.abs(delta_rho))) if delta_rho.size else 0.0
+    if norm_inf > limit and norm_inf > 0.0:
+        delta_rho = delta_rho * (limit / norm_inf)
+    return AlgorithmV11Direction(
+        delta_q=np.zeros(q_count, dtype=np.float64),
+        delta_r=np.zeros_like(r_array),
+        delta_lambda=np.zeros(lam_count, dtype=np.float64),
+        delta_rho=delta_rho,
+        delta_qtot=0.0,
+        direction_kind="log_complementarity_centering_direction",
+    )
+
+
 def build_active_condensate_budget_correction_direction(
     *,
     formula_matrix: Sequence[Sequence[float]],

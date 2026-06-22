@@ -14,6 +14,7 @@ from typing import Any, Literal, Mapping, Optional, Sequence
 import jax
 import jax.numpy as jnp
 import numpy as np
+from scipy.optimize import lsq_linear
 
 from exogibbs.api.chemistry import ChemicalSetup, ThermoState
 from exogibbs.condensates.head_route_standard_gate import (
@@ -31,13 +32,27 @@ CondensateRoute = Literal["head_v1"]
 CondensateResidualPolicy = Literal["head_route_tiers_v1"]
 CondensateWarmStartGasRefreshPolicy = Literal["native_gas_solver"]
 CondensatePrimaryAcceptanceGuard = Literal["tight_weighted_components"]
+CondensatePrimaryStepControlPolicy = Literal[
+    "component_clip",
+    "scalar_fraction_to_boundary",
+]
+CondensatePrimaryContinuationMode = Literal[
+    "legacy_policy",
+    "pdipm_core",
+]
+CondensatePrimaryDualInitializationPolicy = Literal[
+    "centered_from_epsilon",
+    "ipopt_push_floor",
+]
 CondensateSeedInitializationPolicy = Literal[
     "budget_preserving_fraction",
     "capacity_fraction",
     "max_density",
 ]
-CONDENSATE_HEAD_ROUTE_VERSION = "v1.8"
-CONDENSATE_HEAD_ROUTE_NAME = "head_route_v1_8_best_support_closure_retry_candidate"
+CONDENSATE_HEAD_ROUTE_VERSION = "v1.18"
+CONDENSATE_HEAD_ROUTE_NAME = (
+    "head_route_v1_18_pdipm_lifecycle_support_growth"
+)
 HEAD_ROUTE_SOFT_RESTORATION_COMPONENT_WEIGHTS = {
     "budget": 1.0,
     "total_density": 1.0,
@@ -112,8 +127,21 @@ class CondensateEquilibriumOptions:
     head_route_primary_guard_max_amount_weighted_gas: float = 1.0e-8
     head_route_primary_guard_max_gas_stationarity: float = 1.0
     head_route_primary_guard_max_condensate_stationarity: float = 10.0
+    head_route_primary_continuation_mode: CondensatePrimaryContinuationMode = "pdipm_core"
+    head_route_primary_step_control_policy: CondensatePrimaryStepControlPolicy = (
+        "scalar_fraction_to_boundary"
+    )
+    head_route_primary_fraction_to_boundary_safety: float = 0.995
+    head_route_primary_tiny_step_alpha_threshold: float = 1.0e-8
+    head_route_primary_tiny_step_consecutive_limit: int = 1
+    head_route_primary_tiny_step_switch_to_restoration: bool = True
+    head_route_primary_dual_initialization_policy: (
+        CondensatePrimaryDualInitializationPolicy
+    ) = "ipopt_push_floor"
+    head_route_primary_dual_push_floor: Optional[float] = 1.0e-1
     head_route_primary_summary: Optional[Mapping[str, Any]] = None
     head_route_refresh_policy_summary: Optional[Mapping[str, Any]] = None
+    enable_head_route_scalar_step_control_retry: bool = True
     enable_head_route_center_gate_retry: bool = False
     head_route_center_gate_retry_multiplier: float = 1.0e11
     enable_head_route_residual_worsening_retry: bool = False
@@ -133,6 +161,7 @@ class CondensateEquilibriumOptions:
     enable_support_closure_retry_gate: bool = True
     support_closure_max_positive_inactive_driving: float = 5.0e2
     support_closure_max_positive_inactive_count: Optional[int] = None
+    enable_lifecycle_final_state_support_growth: bool = True
     enable_native_seed_fallback: bool = True
     enable_full_condensate_budget_residual_gate: bool = True
     full_condensate_budget_relative_tolerance: float = 1.0e-3
@@ -371,6 +400,67 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
     ):
         if not math.isfinite(float(value)) or value < 0.0:
             raise ValueError(f"{name} must be finite and non-negative.")
+    if options.head_route_primary_step_control_policy not in (
+        "component_clip",
+        "scalar_fraction_to_boundary",
+    ):
+        raise ValueError(
+            "head_route_primary_step_control_policy must be 'component_clip' "
+            "or 'scalar_fraction_to_boundary'."
+        )
+    if options.head_route_primary_continuation_mode not in (
+        "legacy_policy",
+        "pdipm_core",
+    ):
+        raise ValueError(
+            "head_route_primary_continuation_mode must be 'legacy_policy' or "
+            "'pdipm_core'."
+        )
+    if (
+        not math.isfinite(float(options.head_route_primary_fraction_to_boundary_safety))
+        or options.head_route_primary_fraction_to_boundary_safety <= 0.0
+        or options.head_route_primary_fraction_to_boundary_safety >= 1.0
+    ):
+        raise ValueError(
+            "head_route_primary_fraction_to_boundary_safety must be finite and in (0, 1)."
+        )
+    if (
+        not math.isfinite(float(options.head_route_primary_tiny_step_alpha_threshold))
+        or options.head_route_primary_tiny_step_alpha_threshold < 0.0
+    ):
+        raise ValueError(
+            "head_route_primary_tiny_step_alpha_threshold must be finite and non-negative."
+        )
+    if options.head_route_primary_tiny_step_consecutive_limit < 1:
+        raise ValueError("head_route_primary_tiny_step_consecutive_limit must be positive.")
+    if not isinstance(
+        options.head_route_primary_tiny_step_switch_to_restoration, bool
+    ):
+        raise TypeError(
+            "head_route_primary_tiny_step_switch_to_restoration must be a bool."
+        )
+    if options.head_route_primary_dual_initialization_policy not in (
+        "centered_from_epsilon",
+        "ipopt_push_floor",
+    ):
+        raise ValueError(
+            "head_route_primary_dual_initialization_policy must be "
+            "'centered_from_epsilon' or 'ipopt_push_floor'."
+        )
+    if options.head_route_primary_dual_initialization_policy == "ipopt_push_floor":
+        if options.head_route_primary_dual_push_floor is None:
+            raise ValueError(
+                "head_route_primary_dual_push_floor is required for ipopt_push_floor."
+            )
+        if (
+            not math.isfinite(float(options.head_route_primary_dual_push_floor))
+            or options.head_route_primary_dual_push_floor <= 0.0
+        ):
+            raise ValueError(
+                "head_route_primary_dual_push_floor must be finite and positive."
+            )
+    if not isinstance(options.enable_head_route_scalar_step_control_retry, bool):
+        raise TypeError("enable_head_route_scalar_step_control_retry must be a bool.")
     if not isinstance(options.enable_head_route_center_gate_retry, bool):
         raise TypeError("enable_head_route_center_gate_retry must be a bool.")
     if (
@@ -468,6 +558,8 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
         raise ValueError(
             "support_closure_max_positive_inactive_count must be non-negative or None."
         )
+    if not isinstance(options.enable_lifecycle_final_state_support_growth, bool):
+        raise TypeError("enable_lifecycle_final_state_support_growth must be a bool.")
     if not isinstance(options.enable_full_condensate_budget_residual_gate, bool):
         raise TypeError("enable_full_condensate_budget_residual_gate must be a bool.")
     if (
@@ -758,6 +850,7 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
     iteration_count = 0
     cap_count_total = 0
     top_up_count = 0
+    bounded_lsq_report: dict[str, Any] | None = None
     for iteration in range(int(max_iterations)):
         if accepted:
             break
@@ -796,6 +889,91 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
         )
         accepted = bool(report["accepted"])
 
+    report = _full_condensate_budget_gate_report_for_support_state(
+        setup=setup,
+        gas_ln_n=gas_ln_n,
+        support_indices=support,
+        support_amounts=jnp.asarray(amounts),
+        external_condensate_amounts=external,
+        element_inventory_target=element_inventory_target,
+        relative_tolerance=relative_tolerance,
+    )
+    if not bool(report["accepted"]):
+        active_rows = np.asarray(
+            [str(element) not in {"e-", "electron"} for element in setup.elements],
+            dtype=bool,
+        )
+        rhs = target - gas_budget - external_budget
+        lower = np.zeros((len(support),), dtype=np.float64)
+        upper = np.full((len(support),), np.inf, dtype=np.float64)
+        upper[finite_capacity] = capacity[finite_capacity]
+        bounded_lsq_attempts: list[dict[str, Any]] = []
+        for regularization in (0.0, 1.0e-8, 1.0e-6, 1.0e-4, 1.0e-2):
+            matrix = ac[active_rows, :] * row_weights[active_rows, None]
+            vector = rhs[active_rows] * row_weights[active_rows]
+            if regularization > 0.0:
+                sqrt_reg = math.sqrt(float(regularization))
+                matrix = np.vstack(
+                    [matrix, sqrt_reg * np.eye(len(support), dtype=np.float64)]
+                )
+                vector = np.concatenate([vector, sqrt_reg * amounts])
+            try:
+                solution = lsq_linear(
+                    matrix,
+                    vector,
+                    bounds=(lower, upper),
+                    max_iter=500,
+                    tol=1.0e-12,
+                    lsmr_tol="auto",
+                )
+            except (ValueError, RuntimeError, FloatingPointError):
+                continue
+            trial = np.asarray(solution.x, dtype=np.float64)
+            if (
+                trial.ndim != 1
+                or trial.shape[0] != len(support)
+                or not np.all(np.isfinite(trial))
+                or np.any(trial < 0.0)
+            ):
+                continue
+            trial_report = _full_condensate_budget_gate_report_for_support_state(
+                setup=setup,
+                gas_ln_n=gas_ln_n,
+                support_indices=support,
+                support_amounts=jnp.asarray(trial),
+                external_condensate_amounts=external,
+                element_inventory_target=element_inventory_target,
+                relative_tolerance=relative_tolerance,
+            )
+            attempt = {
+                "regularization": float(regularization),
+                "accepted": bool(trial_report["accepted"]),
+                "solver_success": bool(solution.success),
+                "solver_status": int(solution.status),
+                "solver_cost": float(solution.cost),
+                "solver_optimality": float(solution.optimality),
+                "max_abs_relative_residual": float(
+                    trial_report["max_abs_relative_residual"]
+                ),
+                "max_abs_relative_residual_element": trial_report[
+                    "max_abs_relative_residual_element"
+                ],
+            }
+            bounded_lsq_attempts.append(attempt)
+            if bool(trial_report["accepted"]):
+                amounts = trial
+                report = trial_report
+                accepted = True
+                break
+        bounded_lsq_report = {
+            "restoration_schema": (
+                "exogibbs_full_condensate_budget_bounded_lsq_amount_restoration_v1"
+            ),
+            "triggered": True,
+            "accepted": bool(accepted),
+            "attempts": tuple(bounded_lsq_attempts),
+        }
+
     for _ in range(8):
         report = _full_condensate_budget_gate_report_for_support_state(
             setup=setup,
@@ -815,9 +993,12 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
         for index, element in enumerate(setup.elements):
             if str(element) in {"e-", "electron"}:
                 signed_relative[index] = 0.0
-        element_index = int(np.argmax(np.abs(signed_relative)))
-        if signed_relative[element_index] >= 0.0:
+        deficit_indices = np.flatnonzero(signed_relative < -relative_tolerance)
+        if deficit_indices.size == 0:
             break
+        element_index = int(
+            deficit_indices[np.argmax(np.abs(signed_relative[deficit_indices]))]
+        )
         deficit = -float(signed_relative[element_index]) * max(
             abs(float(target[element_index])),
             1.0e-300,
@@ -856,6 +1037,7 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
         "iteration_count": iteration_count,
         "capacity_cap_count": cap_count_total,
         "capacity_top_up_count": top_up_count,
+        "bounded_lsq_amount_restoration": bounded_lsq_report,
         "initial_full_condensate_budget_gate": initial_report,
         "final_full_condensate_budget_gate": final_report,
         "fastchem4_trace_public_runtime_constructor_inputs_used": False,
@@ -863,6 +1045,265 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
     if final_report["accepted"]:
         return jnp.asarray(amounts, dtype=jnp.float64), polish_report
     return jnp.asarray(support_amounts, dtype=jnp.float64), polish_report
+
+
+def _polish_gas_log_amounts_for_full_condensate_budget_gate(
+    *,
+    setup: CondensateChemicalSetup,
+    gas_ln_n: Array,
+    condensate_amounts: Array,
+    element_inventory_target: Array,
+    relative_tolerance: float,
+    max_iterations: int = 16,
+    max_abs_delta_q: float = 2.0,
+) -> tuple[jnp.ndarray, Mapping[str, Any] | None]:
+    """Restore full element budget by minimally adjusting gas log amounts."""
+
+    q = np.asarray(gas_ln_n, dtype=np.float64).copy()
+    condensates = np.asarray(condensate_amounts, dtype=np.float64)
+    target = np.asarray(element_inventory_target, dtype=np.float64)
+    if (
+        q.ndim != 1
+        or q.shape[0] != len(setup.gas_species)
+        or condensates.ndim != 1
+        or condensates.shape[0] != len(setup.condensate_species)
+        or target.ndim != 1
+        or target.shape[0] != len(setup.elements)
+        or not np.all(np.isfinite(q))
+        or not np.all(np.isfinite(condensates))
+        or not np.all(np.isfinite(target))
+    ):
+        return jnp.asarray(gas_ln_n, dtype=jnp.float64), None
+
+    ag = np.asarray(setup.formula_matrix, dtype=np.float64)
+    ac = np.asarray(setup.formula_matrix_cond, dtype=np.float64)
+    condensate_budget = ac @ condensates
+    positive_target = target[target > 0.0]
+    target_scale = float(np.max(positive_target)) if positive_target.size else 1.0
+    floor = max(float(np.finfo(np.float64).tiny), 1.0e-300 * target_scale)
+    row_weights = 1.0 / np.maximum(np.abs(target), floor)
+    ignored = [str(element) in {"e-", "electron"} for element in setup.elements]
+    active_rows = np.asarray([not value for value in ignored], dtype=bool)
+
+    def gate_report(q_values: np.ndarray) -> dict[str, Any]:
+        return _full_condensate_element_budget_residual_report(
+            setup=setup,
+            gas_n=jnp.asarray(np.exp(q_values), dtype=jnp.float64),
+            condensate_amounts=jnp.asarray(condensates, dtype=jnp.float64),
+            element_inventory_target=element_inventory_target,
+            relative_tolerance=relative_tolerance,
+        )
+
+    initial_report = gate_report(q)
+    if bool(initial_report["accepted"]):
+        return jnp.asarray(q, dtype=jnp.float64), None
+
+    accepted = False
+    iteration_count = 0
+    final_report = initial_report
+    for iteration in range(int(max_iterations)):
+        with np.errstate(over="ignore", invalid="ignore"):
+            gas_n = np.exp(q)
+        if not np.all(np.isfinite(gas_n)):
+            break
+        budget = ag @ gas_n + condensate_budget - target
+        jac = ag * gas_n[None, :]
+        matrix = jac[active_rows, :] * row_weights[active_rows, None]
+        rhs = -budget[active_rows] * row_weights[active_rows]
+        if matrix.size == 0:
+            break
+        delta_q, *_ = np.linalg.lstsq(matrix, rhs, rcond=None)
+        if not np.all(np.isfinite(delta_q)):
+            break
+        norm_inf = float(np.max(np.abs(delta_q))) if delta_q.size else 0.0
+        if norm_inf > max_abs_delta_q and norm_inf > 0.0:
+            delta_q = delta_q * (max_abs_delta_q / norm_inf)
+        trial_q = q + delta_q
+        if not np.all(np.isfinite(trial_q)):
+            break
+        q = trial_q
+        iteration_count = iteration + 1
+        final_report = gate_report(q)
+        accepted = bool(final_report["accepted"])
+        if accepted:
+            break
+
+    polish_report = {
+        "polish_schema": "exogibbs_full_condensate_budget_gas_log_amount_polish_v1",
+        "triggered": True,
+        "accepted": bool(accepted),
+        "iteration_count": iteration_count,
+        "initial_full_condensate_budget_gate": initial_report,
+        "final_full_condensate_budget_gate": final_report,
+        "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+    }
+    if accepted:
+        return jnp.asarray(q, dtype=jnp.float64), polish_report
+    return jnp.asarray(q, dtype=jnp.float64), polish_report
+
+
+def _restore_full_budget_feasibility_for_active_support(
+    *,
+    setup: CondensateChemicalSetup,
+    gas_ln_n: Array,
+    support_indices: Sequence[int],
+    support_amounts: Array,
+    external_condensate_amounts: Sequence[float] | Array | None = None,
+    element_inventory_target: Array,
+    relative_tolerance: float,
+    max_iterations: int = 64,
+    max_abs_delta: float = 4.0,
+) -> tuple[jnp.ndarray, jnp.ndarray, Mapping[str, Any] | None]:
+    """Restore full-budget feasibility by jointly moving gas and active amounts."""
+
+    support = tuple(int(index) for index in support_indices)
+    if not support:
+        return (
+            jnp.asarray(gas_ln_n, dtype=jnp.float64),
+            jnp.asarray(support_amounts, dtype=jnp.float64),
+            None,
+        )
+    q = np.asarray(gas_ln_n, dtype=np.float64).copy()
+    amounts = np.asarray(support_amounts, dtype=np.float64).copy()
+    target = np.asarray(element_inventory_target, dtype=np.float64)
+    if (
+        q.ndim != 1
+        or q.shape[0] != len(setup.gas_species)
+        or amounts.ndim != 1
+        or amounts.shape[0] != len(support)
+        or target.ndim != 1
+        or target.shape[0] != len(setup.elements)
+        or not np.all(np.isfinite(q))
+        or not np.all(np.isfinite(amounts))
+        or np.any(amounts < 0.0)
+        or not np.all(np.isfinite(target))
+    ):
+        return (
+            jnp.asarray(gas_ln_n, dtype=jnp.float64),
+            jnp.asarray(support_amounts, dtype=jnp.float64),
+            None,
+        )
+
+    ag = np.asarray(setup.formula_matrix, dtype=np.float64)
+    ac_full = np.asarray(setup.formula_matrix_cond, dtype=np.float64)
+    ac = ac_full[:, support]
+    external = (
+        np.zeros((ac_full.shape[1],), dtype=np.float64)
+        if external_condensate_amounts is None
+        else np.asarray(external_condensate_amounts, dtype=np.float64)
+    )
+    if external.ndim != 1 or external.shape[0] != ac_full.shape[1]:
+        return (
+            jnp.asarray(gas_ln_n, dtype=jnp.float64),
+            jnp.asarray(support_amounts, dtype=jnp.float64),
+            None,
+        )
+    external_budget = ac_full @ external
+    positive_target = target[target > 0.0]
+    target_scale = float(np.max(positive_target)) if positive_target.size else 1.0
+    floor = max(float(np.finfo(np.float64).tiny), 1.0e-300 * target_scale)
+    row_weights = 1.0 / np.maximum(np.abs(target), floor)
+    active_rows = np.asarray(
+        [str(element) not in {"e-", "electron"} for element in setup.elements],
+        dtype=bool,
+    )
+
+    def gate_report(q_values: np.ndarray, amount_values: np.ndarray) -> dict[str, Any]:
+        return _full_condensate_budget_gate_report_for_support_state(
+            setup=setup,
+            gas_ln_n=jnp.asarray(q_values, dtype=jnp.float64),
+            support_indices=support,
+            support_amounts=jnp.asarray(amount_values, dtype=jnp.float64),
+            external_condensate_amounts=external,
+            element_inventory_target=element_inventory_target,
+            relative_tolerance=relative_tolerance,
+        )
+
+    initial_report = gate_report(q, amounts)
+    if bool(initial_report["accepted"]):
+        return jnp.asarray(q, dtype=jnp.float64), jnp.asarray(amounts, dtype=jnp.float64), None
+
+    best_q = q.copy()
+    best_amounts = amounts.copy()
+    best_report = initial_report
+    accepted = False
+    iteration_count = 0
+    accepted_step_count = 0
+    rejected_step_count = 0
+    for iteration in range(int(max_iterations)):
+        with np.errstate(over="ignore", invalid="ignore"):
+            gas_n = np.exp(q)
+        if not np.all(np.isfinite(gas_n)):
+            break
+        safe_amounts = np.maximum(amounts, 1.0e-300)
+        budget = ag @ gas_n + ac @ amounts + external_budget - target
+        gas_jac = ag * gas_n[None, :]
+        amount_jac = ac * safe_amounts[None, :]
+        matrix = np.concatenate([gas_jac, amount_jac], axis=1)
+        matrix = matrix[active_rows, :] * row_weights[active_rows, None]
+        rhs = -budget[active_rows] * row_weights[active_rows]
+        if matrix.size == 0:
+            break
+        try:
+            delta, *_ = np.linalg.lstsq(matrix, rhs, rcond=None)
+        except np.linalg.LinAlgError:
+            break
+        if not np.all(np.isfinite(delta)):
+            break
+        norm_inf = float(np.max(np.abs(delta))) if delta.size else 0.0
+        if norm_inf > max_abs_delta and norm_inf > 0.0:
+            delta = delta * (max_abs_delta / norm_inf)
+        delta_q = delta[: q.shape[0]]
+        delta_r = delta[q.shape[0] :]
+        current_score = float(best_report["max_abs_relative_residual"])
+        accepted_trial = False
+        for step_scale in (1.0, 0.5, 0.25, 0.125, 0.0625):
+            trial_q = q + step_scale * delta_q
+            trial_amounts = amounts * np.exp(step_scale * delta_r)
+            if (
+                not np.all(np.isfinite(trial_q))
+                or not np.all(np.isfinite(trial_amounts))
+                or np.any(trial_amounts < 0.0)
+            ):
+                continue
+            trial_report = gate_report(trial_q, trial_amounts)
+            trial_score = float(trial_report["max_abs_relative_residual"])
+            if trial_score < current_score:
+                q = trial_q
+                amounts = trial_amounts
+                best_q = trial_q
+                best_amounts = trial_amounts
+                best_report = trial_report
+                accepted = bool(trial_report["accepted"])
+                accepted_trial = True
+                accepted_step_count += 1
+                break
+        iteration_count = iteration + 1
+        if accepted:
+            break
+        if not accepted_trial:
+            rejected_step_count += 1
+            break
+
+    restoration_report = {
+        "restoration_schema": (
+            "exogibbs_full_budget_joint_gas_active_amount_restoration_v1"
+        ),
+        "triggered": True,
+        "accepted": bool(accepted),
+        "iteration_count": iteration_count,
+        "accepted_step_count": accepted_step_count,
+        "rejected_step_count": rejected_step_count,
+        "max_abs_delta": float(max_abs_delta),
+        "initial_full_condensate_budget_gate": initial_report,
+        "final_full_condensate_budget_gate": best_report,
+        "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+    }
+    return (
+        jnp.asarray(best_q, dtype=jnp.float64),
+        jnp.asarray(best_amounts, dtype=jnp.float64),
+        restoration_report,
+    )
 
 
 def _least_squares_element_potential(
@@ -915,7 +1356,34 @@ def _head_lifecycle_primary_policy(options: CondensateEquilibriumOptions) -> Map
         policy["require_residual_nonworsening"] = bool(
             options.head_route_primary_require_residual_nonworsening
         )
+    policy["continuation_mode"] = str(options.head_route_primary_continuation_mode)
+    policy["step_control_policy"] = str(options.head_route_primary_step_control_policy)
+    policy["fraction_to_boundary_safety"] = float(
+        options.head_route_primary_fraction_to_boundary_safety
+    )
+    policy["ipopt_tiny_step_alpha_threshold"] = float(
+        options.head_route_primary_tiny_step_alpha_threshold
+    )
+    policy["ipopt_tiny_step_consecutive_limit"] = int(
+        options.head_route_primary_tiny_step_consecutive_limit
+    )
+    policy["ipopt_tiny_step_switch_to_restoration"] = bool(
+        options.head_route_primary_tiny_step_switch_to_restoration
+    )
     return policy
+
+
+def _continuation_stopped_reason_from_lifecycle_payload(
+    lifecycle_payload: Mapping[str, Any],
+) -> str | None:
+    primary = lifecycle_payload.get("primary_execution_report")
+    if not isinstance(primary, Mapping):
+        return None
+    continuation = primary.get("continuation_report")
+    if not isinstance(continuation, Mapping):
+        return None
+    reason = continuation.get("stopped_reason")
+    return None if reason is None else str(reason)
 
 
 def _head_route_selected_route_override(options: CondensateEquilibriumOptions) -> str | None:
@@ -1000,8 +1468,13 @@ def _run_lifecycle_from_warm_start_candidate(
             condensate_standard_source=jnp.asarray(
                 [condensate_hvector[index] for index in support_indices]
             ),
+            condensate_species_names=setup.condensate_species,
             primary_summary=options.head_route_primary_summary,
             primary_continuation_policy=_head_lifecycle_primary_policy(options),
+            dual_initialization_policy=(
+                options.head_route_primary_dual_initialization_policy
+            ),
+            dual_push_floor=options.head_route_primary_dual_push_floor,
             refresh_policy_summary=options.head_route_refresh_policy_summary,
             primary_acceptance_guard=options.head_route_primary_acceptance_guard,
             primary_guard_max_budget=options.head_route_primary_guard_max_budget,
@@ -1112,9 +1585,12 @@ def _run_lifecycle_from_native_state(
         condensate_standard_source=jnp.asarray(
             [condensate_hvector[index] for index in support]
         ),
+        condensate_species_names=setup.condensate_species,
         external_condensate_budget=external_budget,
         primary_summary=options.head_route_primary_summary,
         primary_continuation_policy=primary_continuation_policy,
+        dual_initialization_policy=options.head_route_primary_dual_initialization_policy,
+        dual_push_floor=options.head_route_primary_dual_push_floor,
         refresh_policy_summary=options.head_route_refresh_policy_summary,
         primary_acceptance_guard=options.head_route_primary_acceptance_guard,
         primary_guard_max_budget=options.head_route_primary_guard_max_budget,
@@ -1193,7 +1669,19 @@ def _is_residual_nonworsening_candidate_block(lifecycle_payload: Mapping[str, An
     continuation = primary_execution.get("continuation_report")
     if not isinstance(continuation, Mapping):
         return False
-    if str(continuation.get("stopped_reason")) != "no_p_armijo_trial":
+    line_search_stopped_reasons = {
+        "no_p_armijo_trial",
+        "no_finite_trial",
+        "no_accepted_trial",
+        "no_acceptable_ipopt_filter_trial",
+        "ipopt_h_filter_rejected",
+        "ipopt_persistent_filter_rejected",
+        "ipopt_persistent_filter_f_type_rejected",
+        "filter_restoration_rejected",
+        "tiny_step_no_restoration_trial",
+        "tiny_step_requires_restoration",
+    }
+    if str(continuation.get("stopped_reason")) not in line_search_stopped_reasons:
         return False
     outer_records = continuation.get("outer_records", ())
     if not outer_records:
@@ -1248,6 +1736,160 @@ def _status_from_metric_status(
     return (gate.acceptance_tier, gate.standard_path_status, gate.warning_messages)
 
 
+def _mapping_at(payload: Mapping[str, Any], key: str) -> Mapping[str, Any]:
+    value = payload.get(key)
+    return value if isinstance(value, Mapping) else {}
+
+
+def _build_caveat_route_breakdown(
+    *,
+    selected_route: str,
+    status: str,
+    acceptance_tier: str,
+    metadata: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Build a compact explanation of caveat-bearing HEAD route results."""
+
+    lifecycle = _mapping_at(metadata, "head_route_lifecycle")
+    route_result = _mapping_at(lifecycle, "route_result")
+    route_selection = _mapping_at(lifecycle, "route_selection_report")
+    primary = _mapping_at(lifecycle, "primary_execution_report")
+    continuation = _mapping_at(primary, "continuation_report")
+    if not continuation:
+        primary_summary = _mapping_at(lifecycle, "primary_summary")
+        continuation = _mapping_at(primary_summary, "continuation_report")
+    native_fallback = _mapping_at(metadata, "native_seed_fallback")
+    full_budget_gate = _mapping_at(metadata, "full_condensate_budget_residual_gate")
+    gas_polish = _mapping_at(metadata, "full_condensate_budget_gas_log_amount_polish")
+    joint_restoration = _mapping_at(
+        metadata,
+        "full_condensate_budget_joint_restoration",
+    )
+    soft_retry = _mapping_at(metadata, "head_route_soft_restoration_retry")
+    ipopt_h_retry = _mapping_at(metadata, "head_route_ipopt_h_type_retry")
+
+    caveat_reasons: list[str] = []
+    route = str(selected_route)
+    if status == CONVERGED_WITH_CAVEAT:
+        if "budget_tradeoff" in route:
+            caveat_reasons.append("native_budget_tradeoff_route")
+        elif "raw_gas" in route or "electron" in route:
+            caveat_reasons.append("raw_gas_or_electron_caveat_route")
+        else:
+            caveat_reasons.append("accepted_non_tier1_route")
+    elif status == NOT_CONVERGED:
+        caveat_reasons.append("not_converged")
+    else:
+        caveat_reasons.append("none")
+    if bool(native_fallback):
+        caveat_reasons.append("primary_lifecycle_not_accepted_before_fallback")
+    if bool(joint_restoration):
+        caveat_reasons.append("final_full_budget_joint_restoration_used")
+    elif bool(gas_polish):
+        caveat_reasons.append("final_full_budget_gas_polish_used")
+    if bool(soft_retry) and not bool(soft_retry.get("accepted", False)):
+        caveat_reasons.append("soft_restoration_retry_rejected")
+    if bool(ipopt_h_retry) and not bool(ipopt_h_retry.get("accepted", False)):
+        caveat_reasons.append("ipopt_h_type_retry_rejected")
+    if bool(full_budget_gate) and not bool(full_budget_gate.get("accepted", False)):
+        caveat_reasons.append("final_full_budget_gate_rejected")
+
+    return {
+        "report_schema": "exogibbs_condensate_caveat_route_breakdown_v1",
+        "selected_route": route,
+        "status": str(status),
+        "acceptance_tier": str(acceptance_tier),
+        "is_caveat": bool(status == CONVERGED_WITH_CAVEAT),
+        "caveat_reasons": tuple(caveat_reasons),
+        "primary": {
+            "status": primary.get("status"),
+            "stopped_reason": continuation.get("stopped_reason"),
+            "reached_final_barrier": continuation.get("reached_final_barrier"),
+            "converged_at_final_barrier": continuation.get(
+                "converged_at_final_barrier"
+            ),
+            "final_barrier": continuation.get("final_barrier"),
+            "outer_iteration_count": continuation.get("outer_iteration_count"),
+            "inner_iteration_count": continuation.get("inner_iteration_count"),
+            "filter_accept_count": continuation.get("filter_accept_count"),
+            "restoration_count": continuation.get("restoration_count"),
+            "tiny_step_count": continuation.get("tiny_step_count"),
+        },
+        "selector": {
+            "selected_route": route_selection.get("selected_route"),
+            "integrated_status": route_selection.get("integrated_status"),
+            "route_reason": route_selection.get("route_reason"),
+            "primary_centered": route_selection.get("primary_centered"),
+            "fallback_available": route_selection.get("fallback_available"),
+            "fallback_accepted": route_selection.get("fallback_accepted"),
+            "refresh_policy_available": route_selection.get(
+                "refresh_policy_available"
+            ),
+            "refresh_policy_accepted": route_selection.get("refresh_policy_accepted"),
+        },
+        "route_result": {
+            "selected_route": route_result.get("selected_route"),
+            "metric_status": route_result.get("metric_status"),
+            "standard_path_status": route_result.get("standard_path_status"),
+            "acceptance_tier": route_result.get("acceptance_tier"),
+            "converged": route_result.get("converged"),
+        },
+        "fallback": {
+            "available": bool(native_fallback),
+            "fallback_gas_source": native_fallback.get("fallback_gas_source"),
+            "fallback_support_amount_source": native_fallback.get(
+                "fallback_support_amount_source"
+            ),
+            "restricted_solver_success": metadata.get("restricted_solver_success"),
+            "solver_success": metadata.get("solver_success"),
+        },
+        "final_budget_gate": {
+            "available": bool(full_budget_gate),
+            "accepted": full_budget_gate.get("accepted"),
+            "relative_l2": full_budget_gate.get("relative_l2"),
+            "relative_max_abs": full_budget_gate.get("relative_max_abs"),
+            "relative_tolerance": full_budget_gate.get("relative_tolerance"),
+        },
+        "final_restoration": {
+            "gas_log_amount_polish_used": bool(gas_polish),
+            "gas_log_amount_polish_accepted": gas_polish.get("accepted"),
+            "joint_restoration_used": bool(joint_restoration),
+            "joint_restoration_accepted": joint_restoration.get("accepted"),
+            "joint_restoration_initial_max_abs_relative_residual": _mapping_at(
+                joint_restoration,
+                "initial_full_condensate_budget_gate",
+            ).get("max_abs_relative_residual"),
+            "joint_restoration_final_max_abs_relative_residual": _mapping_at(
+                joint_restoration,
+                "final_full_condensate_budget_gate",
+            ).get("max_abs_relative_residual"),
+        },
+        "pdipm_retry_attempts": {
+            "soft_restoration_triggered": bool(soft_retry),
+            "soft_restoration_accepted": soft_retry.get("accepted"),
+            "soft_restoration_trigger_mode": soft_retry.get("trigger_mode"),
+            "soft_restoration_initial_stopped_reason": soft_retry.get(
+                "initial_stopped_reason"
+            ),
+            "soft_restoration_retry_selected_route": soft_retry.get(
+                "retry_selected_route"
+            ),
+            "soft_restoration_retry_metric_status": soft_retry.get(
+                "retry_metric_status"
+            ),
+            "ipopt_h_type_triggered": bool(ipopt_h_retry),
+            "ipopt_h_type_accepted": ipopt_h_retry.get("accepted"),
+            "ipopt_h_type_retry_selected_route": ipopt_h_retry.get(
+                "retry_selected_route"
+            ),
+            "ipopt_h_type_retry_metric_status": ipopt_h_retry.get(
+                "retry_metric_status"
+            ),
+        },
+        "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+    }
+
+
 def build_condensate_equilibrium_result_from_solver_payload(
     *,
     setup: CondensateChemicalSetup,
@@ -1270,12 +1912,10 @@ def build_condensate_equilibrium_result_from_solver_payload(
     gas_ln_n_array = jnp.asarray(gas_ln_n)
     if gas_ln_n_array.ndim != 1 or gas_ln_n_array.shape[0] != len(setup.gas_species):
         raise ValueError("gas_ln_n must have one value per gas species.")
-    gas_n = jnp.exp(gas_ln_n_array)
-    gas_ntot = jnp.sum(gas_n)
-    gas_x = gas_n / jnp.clip(gas_ntot, 1.0e-300)
+    support_amounts_array = jnp.asarray(support_amounts, dtype=jnp.float64)
     condensate_amounts = _full_condensate_amounts(
         support_indices=support_indices,
-        support_amounts=jnp.asarray(support_amounts),
+        support_amounts=support_amounts_array,
         condensate_count=len(setup.condensate_species),
     )
     condensate_amounts = _merge_external_condensate_amounts(
@@ -1288,9 +1928,78 @@ def build_condensate_equilibrium_result_from_solver_payload(
         solver_success=solver_success,
         allow_caveat_tiers=allow_caveat_tiers,
     )
+    metadata: dict[str, Any] = dict(diagnostics or {})
+    if (
+        enable_full_condensate_budget_residual_gate
+        and element_inventory_target is not None
+        and status in {CONVERGED, CONVERGED_WITH_CAVEAT}
+    ):
+        polished_gas_ln_n, gas_polish_report = (
+            _polish_gas_log_amounts_for_full_condensate_budget_gate(
+                setup=setup,
+                gas_ln_n=gas_ln_n_array,
+                condensate_amounts=condensate_amounts,
+                element_inventory_target=element_inventory_target,
+                relative_tolerance=full_condensate_budget_relative_tolerance,
+            )
+        )
+        if gas_polish_report is not None:
+            metadata["full_condensate_budget_gas_log_amount_polish"] = (
+                gas_polish_report
+            )
+            initial_gate = gas_polish_report["initial_full_condensate_budget_gate"]
+            final_gate = gas_polish_report["final_full_condensate_budget_gate"]
+            fallback_improved = (
+                selected_route == "native_budget_seed_fallback_budget_tradeoff"
+                and float(final_gate["max_abs_relative_residual"])
+                < float(initial_gate["max_abs_relative_residual"])
+            )
+            if bool(gas_polish_report["accepted"]) or fallback_improved:
+                gas_ln_n_array = polished_gas_ln_n
+        if selected_route == "native_budget_seed_fallback_budget_tradeoff":
+            restored_gas_ln_n, restored_support_amounts, restoration_report = (
+                _restore_full_budget_feasibility_for_active_support(
+                    setup=setup,
+                    gas_ln_n=gas_ln_n_array,
+                    support_indices=support_indices,
+                    support_amounts=support_amounts_array,
+                    external_condensate_amounts=external_condensate_amounts,
+                    element_inventory_target=element_inventory_target,
+                    relative_tolerance=full_condensate_budget_relative_tolerance,
+                )
+            )
+        else:
+            restored_gas_ln_n = gas_ln_n_array
+            restored_support_amounts = support_amounts_array
+            restoration_report = None
+        if restoration_report is not None:
+            metadata["full_condensate_budget_joint_restoration"] = (
+                restoration_report
+            )
+            initial_gate = restoration_report["initial_full_condensate_budget_gate"]
+            final_gate = restoration_report["final_full_condensate_budget_gate"]
+            fallback_improved = (
+                selected_route == "native_budget_seed_fallback_budget_tradeoff"
+                and float(final_gate["max_abs_relative_residual"])
+                < float(initial_gate["max_abs_relative_residual"])
+            )
+            if bool(restoration_report["accepted"]) or fallback_improved:
+                gas_ln_n_array = restored_gas_ln_n
+                support_amounts_array = restored_support_amounts
+                condensate_amounts = _full_condensate_amounts(
+                    support_indices=support_indices,
+                    support_amounts=support_amounts_array,
+                    condensate_count=len(setup.condensate_species),
+                )
+                condensate_amounts = _merge_external_condensate_amounts(
+                    condensate_amounts=condensate_amounts,
+                    external_condensate_amounts=external_condensate_amounts,
+                )
+    gas_n = jnp.exp(gas_ln_n_array)
+    gas_ntot = jnp.sum(gas_n)
+    gas_x = gas_n / jnp.clip(gas_ntot, 1.0e-300)
     support_index_array = jnp.asarray(support_indices, dtype=jnp.int32)
     support_names = tuple(setup.condensate_species[int(index)] for index in support_index_array.tolist())
-    metadata: dict[str, Any] = dict(diagnostics or {})
     metadata.setdefault("route", HEAD_ROUTE_STANDARD)
     metadata.setdefault("head_route_version", CONDENSATE_HEAD_ROUTE_VERSION)
     metadata.setdefault("head_route_name", CONDENSATE_HEAD_ROUTE_NAME)
@@ -1312,6 +2021,12 @@ def build_condensate_equilibrium_result_from_solver_payload(
     )
     metadata["acceptance_tier"] = acceptance_tier
     metadata["warning_messages"] = warnings
+    metadata["caveat_route_breakdown"] = _build_caveat_route_breakdown(
+        selected_route=selected_route,
+        status=status,
+        acceptance_tier=acceptance_tier,
+        metadata=metadata,
+    )
     return CondensateEquilibriumResult(
         gas_ln_n=gas_ln_n_array,
         gas_n=gas_n,
@@ -1402,9 +2117,13 @@ def _build_native_seed_fallback_result(
 ) -> CondensateEquilibriumResult:
     from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
 
+    seed_support_indices = tuple(int(index) for index in candidate.support_indices)
+    seed_support_amounts = tuple(
+        float(value) for value in candidate.support_amounts_init
+    )
     if candidate.initial_log_state_override is not None:
-        fallback_gas_ln_n = jnp.asarray(candidate.initial_log_state_override.ln_nk)
-        fallback_gas_source = "selected_warm_start_candidate_gas_state"
+        seed_gas_ln_n = jnp.asarray(candidate.initial_log_state_override.ln_nk)
+        seed_gas_source = "selected_warm_start_candidate_gas_state"
     else:
         gas_result = equilibrium(
             setup.gas_setup,
@@ -1415,8 +2134,138 @@ def _build_native_seed_fallback_result(
             options=EquilibriumOptions(),
             return_diagnostics=False,
         )
-        fallback_gas_ln_n = gas_result.ln_n
-        fallback_gas_source = "native_gas_equilibrium"
+        seed_gas_ln_n = gas_result.ln_n
+        seed_gas_source = "native_gas_equilibrium"
+    fallback_gas_ln_n = seed_gas_ln_n
+    fallback_gas_source = seed_gas_source
+    fallback_support_indices = seed_support_indices
+    fallback_support_amounts = seed_support_amounts
+    external_condensate_amounts = None
+    final_state_candidate_selected = False
+    final_state_payload = _lifecycle_final_state_payload(lifecycle_payload)
+    if isinstance(final_state_payload, Mapping):
+        try:
+            final_support_indices = _final_state_support_indices_from_lifecycle_payload(
+                lifecycle_payload,
+                fallback_support_indices=seed_support_indices,
+            )
+            final_ln_nk = jnp.asarray(final_state_payload["ln_nk"], dtype=jnp.float64)
+            final_ln_mk = jnp.asarray(final_state_payload["ln_mk"], dtype=jnp.float64)
+        except (KeyError, TypeError, ValueError):
+            final_support_indices = ()
+            final_ln_nk = jnp.asarray(())
+            final_ln_mk = jnp.asarray(())
+        if (
+            final_ln_nk.ndim == 1
+            and final_ln_mk.ndim == 1
+            and final_ln_mk.shape[0] == len(final_support_indices)
+            and bool(jnp.all(jnp.isfinite(final_ln_nk)))
+            and bool(jnp.all(jnp.isfinite(final_ln_mk)))
+        ):
+            final_amounts = jnp.exp(final_ln_mk)
+            if bool(jnp.all(jnp.isfinite(final_amounts))):
+                final_gas_ln_n = final_ln_nk
+                final_support_amounts = tuple(
+                    float(value) for value in final_amounts.tolist()
+                )
+                final_external_condensate_amounts = (
+                    _external_condensate_amounts_from_lifecycle_payload(
+                        lifecycle_payload,
+                        condensate_count=len(setup.condensate_species),
+                    )
+                )
+                if enable_full_condensate_budget_residual_gate:
+                    polished_amounts, amount_polish_report = (
+                        _polish_support_amounts_for_full_condensate_budget_gate(
+                            setup=setup,
+                            gas_ln_n=final_gas_ln_n,
+                            support_indices=final_support_indices,
+                            support_amounts=final_amounts,
+                            external_condensate_amounts=(
+                                final_external_condensate_amounts
+                            ),
+                            element_inventory_target=b,
+                            relative_tolerance=full_condensate_budget_relative_tolerance,
+                        )
+                    )
+                    if amount_polish_report is not None and bool(
+                        amount_polish_report["accepted"]
+                    ):
+                        final_support_amounts = tuple(
+                            float(value) for value in polished_amounts.tolist()
+                        )
+                if enable_full_condensate_budget_residual_gate:
+                    (
+                        best_effort_gas_ln_n,
+                        best_effort_gas_polish_report,
+                    ) = _polish_gas_log_amounts_for_full_condensate_budget_gate(
+                        setup=setup,
+                        gas_ln_n=final_gas_ln_n,
+                        condensate_amounts=_full_condensate_amounts(
+                            support_indices=final_support_indices,
+                            support_amounts=jnp.asarray(
+                                final_support_amounts,
+                                dtype=jnp.float64,
+                            ),
+                            condensate_count=len(setup.condensate_species),
+                        ),
+                        element_inventory_target=b,
+                        relative_tolerance=full_condensate_budget_relative_tolerance,
+                    )
+                    if best_effort_gas_polish_report is not None:
+                        initial_gate = best_effort_gas_polish_report[
+                            "initial_full_condensate_budget_gate"
+                        ]
+                        final_gate = best_effort_gas_polish_report[
+                            "final_full_condensate_budget_gate"
+                        ]
+                        if float(final_gate["max_abs_relative_residual"]) < float(
+                            initial_gate["max_abs_relative_residual"]
+                        ):
+                            final_gas_ln_n = best_effort_gas_ln_n
+                if enable_full_condensate_budget_residual_gate:
+                    seed_gate = _full_condensate_budget_gate_report_for_support_state(
+                        setup=setup,
+                        gas_ln_n=seed_gas_ln_n,
+                        support_indices=seed_support_indices,
+                        support_amounts=jnp.asarray(
+                            seed_support_amounts,
+                            dtype=jnp.float64,
+                        ),
+                        element_inventory_target=b,
+                        relative_tolerance=full_condensate_budget_relative_tolerance,
+                    )
+                    final_gate = _full_condensate_budget_gate_report_for_support_state(
+                        setup=setup,
+                        gas_ln_n=final_gas_ln_n,
+                        support_indices=final_support_indices,
+                        support_amounts=jnp.asarray(
+                            final_support_amounts,
+                            dtype=jnp.float64,
+                        ),
+                        external_condensate_amounts=(
+                            final_external_condensate_amounts
+                        ),
+                        element_inventory_target=b,
+                        relative_tolerance=full_condensate_budget_relative_tolerance,
+                    )
+                    use_final_state = (
+                        bool(final_gate["accepted"])
+                        or (
+                            not bool(seed_gate["accepted"])
+                            and float(final_gate["max_abs_relative_residual"])
+                            < float(seed_gate["max_abs_relative_residual"])
+                        )
+                    )
+                else:
+                    use_final_state = True
+                if use_final_state:
+                    fallback_gas_ln_n = final_gas_ln_n
+                    fallback_gas_source = "lifecycle_final_state"
+                    fallback_support_indices = final_support_indices
+                    fallback_support_amounts = final_support_amounts
+                    external_condensate_amounts = final_external_condensate_amounts
+                    final_state_candidate_selected = True
     diagnostics_payload: Optional[Mapping[str, Any]]
     if return_diagnostics:
         diagnostics_payload = {
@@ -1449,14 +2298,35 @@ def _build_native_seed_fallback_result(
                 "selected_policy": "native_budget_seed_fallback_budget_tradeoff",
                 "accepted": True,
                 "fallback_gas_source": fallback_gas_source,
+                "fallback_support_amount_source": (
+                    "lifecycle_final_state"
+                    if fallback_gas_source == "lifecycle_final_state"
+                    else "selected_warm_start_candidate_seed"
+                ),
                 "reason": (
                     "The primary lifecycle did not converge or was not accepted; "
-                    "the API returned the best available native gas boundary with the "
-                    "budget-preserving condensate seed as a caveat-bearing HEAD route fallback."
+                    "the API returned the best available ExoGibbs-native boundary "
+                    "with condensate amounts as a caveat-bearing HEAD route fallback."
                 ),
                 "fastchem4_trace_public_runtime_constructor_inputs_used": False,
             },
         }
+        if (
+            final_state_candidate_selected
+            and "amount_polish_report" in locals()
+            and amount_polish_report is not None
+        ):
+            diagnostics_payload["full_condensate_budget_amount_polish"] = (
+                amount_polish_report
+            )
+        if (
+            final_state_candidate_selected
+            and "best_effort_gas_polish_report" in locals()
+            and best_effort_gas_polish_report is not None
+        ):
+            diagnostics_payload[
+                "native_seed_fallback_best_effort_gas_log_amount_polish"
+            ] = best_effort_gas_polish_report
         for lifecycle_key, diagnostic_key in (
             ("center_gate_retry_report", "head_route_center_gate_retry"),
             (
@@ -1480,8 +2350,9 @@ def _build_native_seed_fallback_result(
     return build_condensate_equilibrium_result_from_solver_payload(
         setup=setup,
         gas_ln_n=fallback_gas_ln_n,
-        support_indices=tuple(int(index) for index in candidate.support_indices),
-        support_amounts=tuple(float(value) for value in candidate.support_amounts_init),
+        support_indices=fallback_support_indices,
+        support_amounts=fallback_support_amounts,
+        external_condensate_amounts=external_condensate_amounts,
         selected_route="native_budget_seed_fallback_budget_tradeoff",
         metric_status=BUDGET_TRADEOFF_STATUS,
         solver_success=True,
@@ -1639,6 +2510,38 @@ def _support_closure_retry_gate_report(
             "positive_inactive_count_accepted": True,
             "fastchem4_trace_public_runtime_constructor_inputs_used": False,
         }
+    diagnostics = result.diagnostics or {}
+    inactive_report = diagnostics.get("inactive_condensate_driving")
+    if isinstance(inactive_report, Mapping):
+        valid_report = inactive_report.get("temperature_valid_condensates")
+        if isinstance(valid_report, Mapping):
+            top_rows = tuple(valid_report.get("top_positive_inactive", ()))
+            max_driving = float(valid_report.get("max_positive_inactive_driving", 0.0))
+            positive_count = int(valid_report.get("positive_inactive_count", 0))
+            tolerance = float(options.support_closure_max_positive_inactive_driving)
+            count_tolerance = (
+                None
+                if options.support_closure_max_positive_inactive_count is None
+                else int(options.support_closure_max_positive_inactive_count)
+            )
+            driving_accepted = bool(max_driving <= tolerance)
+            count_accepted = bool(
+                count_tolerance is None or positive_count <= count_tolerance
+            )
+            return {
+                "gate_schema": "exogibbs_support_closure_retry_gate_v1",
+                "enabled": True,
+                "closure_scope": "temperature_valid_condensates",
+                "accepted": bool(driving_accepted and count_accepted),
+                "max_positive_inactive_driving": max_driving,
+                "max_positive_inactive_driving_tolerance": tolerance,
+                "max_positive_inactive_driving_accepted": driving_accepted,
+                "positive_inactive_count": positive_count,
+                "positive_inactive_count_tolerance": count_tolerance,
+                "positive_inactive_count_accepted": count_accepted,
+                "top_positive_inactive": top_rows[:20],
+                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+            }
     try:
         report = _activity_driven_support_report(
             setup=setup,
@@ -1734,6 +2637,17 @@ def _support_closure_retry_candidate_score(
     return (count_value, driving_value, int(support_count))
 
 
+@dataclass(frozen=True)
+class _SupportClosureRetryCandidate:
+    """Selectable fallback retry candidate with a common closure score."""
+
+    retry_kind: str
+    result: CondensateEquilibriumResult
+    support_closure_gate: Mapping[str, Any]
+    attempt: Mapping[str, Any]
+    score: tuple[float, float, int]
+
+
 def _budget_seed_for_support(
     *,
     setup: CondensateChemicalSetup,
@@ -1783,6 +2697,53 @@ def _positive_support_amounts_for_warm_start(
         float(value) if math.isfinite(float(value)) and float(value) > 0.0 else floor
         for value in amounts
     )
+
+
+def _lifecycle_final_state_support_growth_payload(
+    result: CondensateEquilibriumResult,
+    *,
+    enabled: bool,
+) -> Mapping[str, Any] | None:
+    """Return a finite lifecycle-final-state payload for support growth."""
+
+    if not enabled:
+        return None
+    diagnostics = result.diagnostics or {}
+    lifecycle_payload = diagnostics.get("head_route_lifecycle")
+    if not isinstance(lifecycle_payload, Mapping):
+        return None
+    final_state_payload = _lifecycle_final_state_payload(lifecycle_payload)
+    if not isinstance(final_state_payload, Mapping):
+        return None
+    try:
+        support_indices = _final_state_support_indices_from_lifecycle_payload(
+            lifecycle_payload,
+            fallback_support_indices=tuple(
+                int(index) for index in result.condensate_support_indices.tolist()
+            ),
+        )
+        ln_nk = jnp.asarray(final_state_payload["ln_nk"], dtype=jnp.float64)
+        ln_mk = jnp.asarray(final_state_payload["ln_mk"], dtype=jnp.float64)
+    except (KeyError, TypeError, ValueError):
+        return None
+    if (
+        ln_nk.ndim != 1
+        or ln_mk.ndim != 1
+        or ln_mk.shape[0] != len(support_indices)
+        or not bool(jnp.all(jnp.isfinite(ln_nk)))
+        or not bool(jnp.all(jnp.isfinite(ln_mk)))
+    ):
+        return None
+    m_support = jnp.exp(ln_mk)
+    if not bool(jnp.all(jnp.isfinite(m_support))):
+        return None
+    return {
+        "ln_nk": ln_nk,
+        "support_indices": support_indices,
+        "m_support": m_support,
+        "pi_vector": None,
+        "state_source": "lifecycle_final_state",
+    }
 
 
 def _seed_gauge_payload(options: CondensateEquilibriumOptions) -> Mapping[str, Any]:
@@ -1883,6 +2844,22 @@ def _with_support_growth_staging_retry_diagnostics(
         return result
     diagnostics = dict(result.diagnostics or {})
     diagnostics["support_growth_staging_retry"] = retry_report
+    return replace(result, diagnostics=diagnostics)
+
+
+def _with_support_closure_retry_selection_diagnostics(
+    *,
+    result: CondensateEquilibriumResult,
+    selected_retry_key: str,
+    retry_report: Mapping[str, Any],
+    selection_report: Mapping[str, Any],
+    return_diagnostics: bool,
+) -> CondensateEquilibriumResult:
+    if not return_diagnostics:
+        return result
+    diagnostics = dict(result.diagnostics or {})
+    diagnostics[selected_retry_key] = retry_report
+    diagnostics["support_closure_retry_selection"] = selection_report
     return replace(result, diagnostics=diagnostics)
 
 
@@ -2097,21 +3074,50 @@ def _run_activity_driven_support_outer_loop(
     last_result: CondensateEquilibriumResult | None = None
     terminated_reason = "max_support_outer_iterations_reached"
     for outer_index in range(1, options.max_support_outer_iterations + 1):
-        last_result = condensate_equilibrium(
-            setup,
-            T,
-            P,
-            b,
-            Pref=Pref,
-            support_indices=current_support,
-            support_amounts_init=support_amounts,
-            options=explicit_options,
-        )
+        try:
+            last_result = condensate_equilibrium(
+                setup,
+                T,
+                P,
+                b,
+                Pref=Pref,
+                support_indices=current_support,
+                support_amounts_init=support_amounts,
+                options=explicit_options,
+            )
+        except RuntimeError as exc:
+            if (
+                last_result is not None
+                and "No finite condensate HEAD route warm-start candidate" in str(exc)
+            ):
+                terminated_reason = "support_growth_stopped_after_nonfinite_warm_start"
+                outer_iterations.append(
+                    {
+                        "iteration": outer_index,
+                        "state_source": "head_route_result",
+                        "selected_route": last_result.selected_route,
+                        "result_status": last_result.status,
+                        "added_support_indices": (),
+                        "added_support_names": (),
+                        "reason": (
+                            "Stop support growth after the next candidate support "
+                            "produces no finite warm-start; keep the last accepted "
+                            "HEAD route result."
+                        ),
+                    }
+                )
+                break
+            raise
         fallback_solver_payload = None
         if last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff":
             fallback_solver_payload = (last_result.diagnostics or {}).get(
                 "restricted_solver_payload_for_support_growth"
             )
+            if not fallback_solver_payload:
+                fallback_solver_payload = _lifecycle_final_state_support_growth_payload(
+                    last_result,
+                    enabled=options.enable_lifecycle_final_state_support_growth,
+                )
         if (
             last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
             and not fallback_solver_payload
@@ -2177,7 +3183,9 @@ def _run_activity_driven_support_outer_loop(
         outer_iterations.append(
             {
                 "iteration": outer_index,
-                "state_source": "restricted_solver_output"
+                "state_source": str(
+                    fallback_solver_payload.get("state_source", "restricted_solver_output")
+                )
                 if fallback_solver_payload
                 else "head_route_result",
                 "selected_route": last_result.selected_route,
@@ -2234,18 +3242,44 @@ def _run_activity_driven_support_outer_loop(
         terminated_reason=terminated_reason,
         outer_iterations=outer_iterations,
     )
+    retry_candidates: list[_SupportClosureRetryCandidate] = []
+    support_cap_retry_attempts: list[Mapping[str, Any]] = []
+    support_growth_staging_retry_attempts: list[Mapping[str, Any]] = []
+    scalar_step_control_retry_attempts: list[Mapping[str, Any]] = []
+    lifecycle_support_closure_retry_attempts: list[Mapping[str, Any]] = []
     retry_caps = _support_cap_retry_sequence(options)
-    if (
-        options.enable_support_cap_retry
+    initial_support_closure_gate = None
+    retry_triggered = (
+        last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
         and options.max_positive_support_count is None
-        and last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
-        and retry_caps
+    )
+    if (
+        not retry_triggered
+        and last_result.converged
+        and options.max_positive_support_count is None
+        and options.max_support_add_per_round is None
     ):
-        retry_attempts = []
-        best_retry_result: CondensateEquilibriumResult | None = None
-        best_retry_gate: Mapping[str, Any] | None = None
-        best_retry_attempt: Mapping[str, Any] | None = None
-        best_retry_score: tuple[float, float, int] | None = None
+        initial_support_closure_gate = _support_closure_retry_gate_report(
+            setup=setup,
+            T=T,
+            P=P,
+            b=b,
+            Pref=Pref,
+            result=last_result,
+            options=options,
+        )
+        retry_triggered = (
+            not bool(initial_support_closure_gate.get("accepted", False))
+            and float(
+                initial_support_closure_gate.get(
+                    "max_positive_inactive_driving",
+                    0.0,
+                )
+            )
+            >= 1.0e3
+            and int(initial_support_closure_gate.get("positive_inactive_count", 0)) >= 50
+        )
+    if retry_triggered and options.enable_support_cap_retry and retry_caps:
         for retry_cap in retry_caps:
             retry_options = replace(
                 options,
@@ -2253,6 +3287,7 @@ def _run_activity_driven_support_outer_loop(
                 if options.case_id is None
                 else f"{options.case_id}__support_cap_retry_{retry_cap}",
                 enable_support_cap_retry=False,
+                enable_head_route_scalar_step_control_retry=False,
                 max_positive_support_count=int(retry_cap),
             )
             try:
@@ -2265,7 +3300,7 @@ def _run_activity_driven_support_outer_loop(
                     options=retry_options,
                 )
             except Exception as exc:  # noqa: BLE001 - retry candidates are optional.
-                retry_attempts.append(
+                support_cap_retry_attempts.append(
                     {
                         "support_cap": int(retry_cap),
                         "selected_route": "exception",
@@ -2305,59 +3340,29 @@ def _run_activity_driven_support_outer_loop(
                 "support_closure_gate": support_closure_gate,
                 "support_closure_accepted": retry_support_closure_accepted,
             }
-            retry_attempts.append(retry_attempt)
+            support_cap_retry_attempts.append(retry_attempt)
             if retry_route_promoted and retry_accepted and retry_support_closure_accepted:
-                score = _support_closure_retry_candidate_score(
-                    support_closure_gate,
-                    support_count=len(tuple(retry_result.condensate_support_names)),
+                retry_candidates.append(
+                    _SupportClosureRetryCandidate(
+                        retry_kind="support_cap_retry",
+                        result=retry_result,
+                        support_closure_gate=support_closure_gate,
+                        attempt=retry_attempt,
+                        score=_support_closure_retry_candidate_score(
+                            support_closure_gate,
+                            support_count=len(
+                                tuple(retry_result.condensate_support_names)
+                            ),
+                        ),
+                    )
                 )
-                if best_retry_score is None or score < best_retry_score:
-                    best_retry_score = score
-                    best_retry_result = retry_result
-                    best_retry_gate = support_closure_gate
-                    best_retry_attempt = retry_attempt
-        if best_retry_result is not None and best_retry_gate is not None:
-            selected_attempt = dict(best_retry_attempt or {})
-            retry_report = {
-                "retry_schema": "exogibbs_support_free_support_cap_retry_v1",
-                "triggered": True,
-                "accepted": True,
-                "route_promoted": True,
-                "support_closure_accepted": True,
-                "selection_policy": "best_support_closure_score",
-                "support_closure_score": best_retry_score,
-                "support_cap": int(selected_attempt.get("support_cap", 0)),
-                "support_cap_sequence": tuple(int(cap) for cap in retry_caps),
-                "attempts": tuple(retry_attempts),
-                "initial_selected_route": last_result.selected_route,
-                "initial_status": last_result.status,
-                "initial_support_count": len(tuple(current_support)),
-                "retry_selected_route": best_retry_result.selected_route,
-                "retry_status": best_retry_result.status,
-                "retry_support_count": len(
-                    tuple(best_retry_result.condensate_support_names)
-                ),
-                "retry_support_closure_gate": best_retry_gate,
-                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
-            }
-            return _with_support_cap_retry_diagnostics(
-                result=best_retry_result,
-                retry_report=retry_report,
-                return_diagnostics=options.return_diagnostics,
-            )
     staged_retry_counts = _support_growth_staging_retry_sequence(options)
     if (
-        options.enable_support_growth_staging_retry
-        and options.max_positive_support_count is None
+        retry_triggered
+        and options.enable_support_growth_staging_retry
         and options.max_support_add_per_round is None
-        and last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
         and staged_retry_counts
     ):
-        retry_attempts = []
-        best_retry_result = None
-        best_retry_gate = None
-        best_retry_attempt = None
-        best_retry_score = None
         for add_per_round in staged_retry_counts:
             retry_options = replace(
                 options,
@@ -2366,6 +3371,7 @@ def _run_activity_driven_support_outer_loop(
                 else f"{options.case_id}__support_growth_staging_retry_{add_per_round}",
                 enable_support_cap_retry=False,
                 enable_support_growth_staging_retry=False,
+                enable_head_route_scalar_step_control_retry=False,
                 max_support_add_per_round=int(add_per_round),
             )
             try:
@@ -2378,7 +3384,7 @@ def _run_activity_driven_support_outer_loop(
                     options=retry_options,
                 )
             except Exception as exc:  # noqa: BLE001 - retry candidates are optional.
-                retry_attempts.append(
+                support_growth_staging_retry_attempts.append(
                     {
                         "max_support_add_per_round": int(add_per_round),
                         "selected_route": "exception",
@@ -2423,51 +3429,448 @@ def _run_activity_driven_support_outer_loop(
                 "support_closure_gate": support_closure_gate,
                 "support_closure_accepted": retry_support_closure_accepted,
             }
-            retry_attempts.append(retry_attempt)
+            support_growth_staging_retry_attempts.append(retry_attempt)
             if retry_route_promoted and retry_accepted and retry_support_closure_accepted:
-                score = _support_closure_retry_candidate_score(
-                    support_closure_gate,
-                    support_count=len(tuple(retry_result.condensate_support_names)),
+                retry_candidates.append(
+                    _SupportClosureRetryCandidate(
+                        retry_kind="support_growth_staging_retry",
+                        result=retry_result,
+                        support_closure_gate=support_closure_gate,
+                        attempt=retry_attempt,
+                        score=_support_closure_retry_candidate_score(
+                            support_closure_gate,
+                            support_count=len(
+                                tuple(retry_result.condensate_support_names)
+                            ),
+                        ),
+                    )
                 )
-                if best_retry_score is None or score < best_retry_score:
-                    best_retry_score = score
-                    best_retry_result = retry_result
-                    best_retry_gate = support_closure_gate
-                    best_retry_attempt = retry_attempt
-        if best_retry_result is not None and best_retry_gate is not None:
-            selected_attempt = dict(best_retry_attempt or {})
+    if (
+        retry_triggered
+        and options.enable_head_route_scalar_step_control_retry
+        and options.head_route_primary_step_control_policy != "scalar_fraction_to_boundary"
+    ):
+        retry_options = replace(
+            options,
+            case_id=None
+            if options.case_id is None
+            else f"{options.case_id}__scalar_step_control_retry",
+            enable_support_cap_retry=False,
+            enable_support_growth_staging_retry=False,
+            enable_head_route_scalar_step_control_retry=False,
+            head_route_primary_step_control_policy="scalar_fraction_to_boundary",
+        )
+        try:
+            retry_result = condensate_equilibrium(
+                setup,
+                T,
+                P,
+                b,
+                Pref=Pref,
+                options=retry_options,
+            )
+        except Exception as exc:  # noqa: BLE001 - retry candidates are optional.
+            scalar_step_control_retry_attempts.append(
+                {
+                    "step_control_policy": "scalar_fraction_to_boundary",
+                    "selected_route": "exception",
+                    "status": "exception",
+                    "support_count": 0,
+                    "accepted": False,
+                    "route_promoted": False,
+                    "support_closure_accepted": False,
+                    "exception_type": type(exc).__name__,
+                    "exception_message": str(exc),
+                }
+            )
+        else:
+            retry_route_promoted = (
+                retry_result.selected_route != "native_budget_seed_fallback_budget_tradeoff"
+            )
+            retry_accepted = bool(retry_result.converged)
+            support_closure_gate = _support_closure_retry_gate_report(
+                setup=setup,
+                T=T,
+                P=P,
+                b=b,
+                Pref=Pref,
+                result=retry_result,
+                options=options,
+            )
+            retry_support_closure_accepted = bool(
+                support_closure_gate.get("accepted", False)
+            )
+            retry_outer = (retry_result.diagnostics or {}).get("support_outer_loop", {})
+            retry_attempt = {
+                "step_control_policy": "scalar_fraction_to_boundary",
+                "fraction_to_boundary_safety": float(
+                    options.head_route_primary_fraction_to_boundary_safety
+                ),
+                "selected_route": retry_result.selected_route,
+                "status": retry_result.status,
+                "support_count": len(tuple(retry_result.condensate_support_names)),
+                "support_outer_terminated_reason": retry_outer.get("terminated_reason")
+                if isinstance(retry_outer, Mapping)
+                else None,
+                "accepted": bool(retry_accepted),
+                "route_promoted": bool(retry_route_promoted),
+                "support_closure_gate": support_closure_gate,
+                "support_closure_accepted": retry_support_closure_accepted,
+            }
+            scalar_step_control_retry_attempts.append(retry_attempt)
+            if retry_route_promoted and retry_accepted and retry_support_closure_accepted:
+                retry_candidates.append(
+                    _SupportClosureRetryCandidate(
+                        retry_kind="scalar_step_control_retry",
+                        result=retry_result,
+                        support_closure_gate=support_closure_gate,
+                        attempt=retry_attempt,
+                        score=_support_closure_retry_candidate_score(
+                            support_closure_gate,
+                            support_count=len(
+                                tuple(retry_result.condensate_support_names)
+                            ),
+                        ),
+                    )
+                )
+    if (
+        retry_triggered
+        and options.enable_lifecycle_final_state_support_growth
+        and terminated_reason == "max_support_outer_iterations_reached"
+    ):
+        lifecycle_payload = _lifecycle_final_state_support_growth_payload(
+            last_result,
+            enabled=options.enable_lifecycle_final_state_support_growth,
+        )
+        lifecycle_attempt: dict[str, Any] = {
+            "state_source": "lifecycle_final_state",
+            "selected_route": "not_attempted",
+            "status": "not_attempted",
+            "support_count": len(tuple(current_support)),
+            "added_support_count": 0,
+            "accepted": False,
+            "route_promoted": False,
+            "support_closure_accepted": False,
+        }
+        if lifecycle_payload is None:
+            lifecycle_attempt["reason"] = "missing_lifecycle_final_state_payload"
+            lifecycle_support_closure_retry_attempts.append(lifecycle_attempt)
+        else:
+            try:
+                lifecycle_existing = tuple(
+                    int(index) for index in lifecycle_payload["support_indices"]
+                )
+                lifecycle_amounts = _positive_support_amounts_for_warm_start(
+                    tuple(float(value) for value in lifecycle_payload["m_support"]),
+                    min_seed_amount=options.min_seed_amount,
+                )
+                lifecycle_report = _activity_driven_support_report(
+                    setup=setup,
+                    T=T,
+                    P=P,
+                    b=b,
+                    Pref=Pref,
+                    gas_ln_n=lifecycle_payload["ln_nk"],
+                    options=options,
+                    existing_support_indices=lifecycle_existing,
+                    element_potential_override=lifecycle_payload.get("pi_vector"),
+                )
+                lifecycle_existing_set = set(lifecycle_existing)
+                lifecycle_inactive_positive = tuple(
+                    int(index)
+                    for index in lifecycle_report["inactive_positive_indices"]
+                    if int(index) not in lifecycle_existing_set
+                )
+                lifecycle_add_count = _support_add_count(
+                    inactive_count=len(lifecycle_inactive_positive),
+                    support_count=len(lifecycle_existing),
+                    options=options,
+                )
+                lifecycle_added = lifecycle_inactive_positive[:lifecycle_add_count]
+                lifecycle_attempt.update(
+                    {
+                        "support_count": len(lifecycle_existing),
+                        "inactive_positive_count": len(lifecycle_inactive_positive),
+                        "added_support_count": len(lifecycle_added),
+                        "added_support_indices": lifecycle_added,
+                        "added_support_names": tuple(
+                            setup.condensate_species[int(index)]
+                            for index in lifecycle_added
+                        ),
+                    }
+                )
+                if not lifecycle_added:
+                    lifecycle_attempt["reason"] = "no_lifecycle_inactive_positive_support"
+                    lifecycle_support_closure_retry_attempts.append(lifecycle_attempt)
+                else:
+                    lifecycle_added_amounts = _budget_seed_for_support(
+                        setup=setup,
+                        b=b,
+                        support_indices=lifecycle_added,
+                        options=options,
+                    )
+                    retry_options = replace(
+                        options,
+                        case_id=None
+                        if options.case_id is None
+                        else (
+                            f"{options.case_id}"
+                            "__lifecycle_final_state_support_closure_retry"
+                        ),
+                        enable_support_outer_loop=False,
+                        enable_support_cap_retry=False,
+                        enable_support_growth_staging_retry=False,
+                        enable_head_route_scalar_step_control_retry=False,
+                        enable_head_route_center_gate_retry=True,
+                        enable_head_route_residual_worsening_retry=True,
+                        enable_head_route_soft_restoration_retry=True,
+                        enable_head_route_ipopt_h_type_retry=True,
+                    )
+                    retry_result = condensate_equilibrium(
+                        setup,
+                        T,
+                        P,
+                        b,
+                        Pref=Pref,
+                        support_indices=lifecycle_existing + lifecycle_added,
+                        support_amounts_init=(
+                            lifecycle_amounts + lifecycle_added_amounts
+                        ),
+                        options=retry_options,
+                    )
+                    retry_route_promoted = (
+                        retry_result.selected_route
+                        != "native_budget_seed_fallback_budget_tradeoff"
+                    )
+                    retry_accepted = bool(retry_result.converged)
+                    support_closure_gate = _support_closure_retry_gate_report(
+                        setup=setup,
+                        T=T,
+                        P=P,
+                        b=b,
+                        Pref=Pref,
+                        result=retry_result,
+                        options=options,
+                    )
+                    retry_support_closure_accepted = bool(
+                        support_closure_gate.get("accepted", False)
+                    )
+                    lifecycle_attempt.update(
+                        {
+                            "selected_route": retry_result.selected_route,
+                            "status": retry_result.status,
+                            "support_count": len(
+                                tuple(retry_result.condensate_support_names)
+                            ),
+                            "accepted": bool(retry_accepted),
+                            "route_promoted": bool(retry_route_promoted),
+                            "support_closure_gate": support_closure_gate,
+                            "support_closure_accepted": (
+                                retry_support_closure_accepted
+                            ),
+                        }
+                    )
+                    lifecycle_support_closure_retry_attempts.append(
+                        lifecycle_attempt
+                    )
+                    if (
+                        retry_route_promoted
+                        and retry_accepted
+                        and retry_support_closure_accepted
+                    ):
+                        retry_candidates.append(
+                            _SupportClosureRetryCandidate(
+                                retry_kind=(
+                                    "lifecycle_final_state_support_closure_retry"
+                                ),
+                                result=retry_result,
+                                support_closure_gate=support_closure_gate,
+                                attempt=lifecycle_attempt,
+                                score=_support_closure_retry_candidate_score(
+                                    support_closure_gate,
+                                    support_count=len(
+                                        tuple(retry_result.condensate_support_names)
+                                    ),
+                                ),
+                            )
+                        )
+            except Exception as exc:  # noqa: BLE001 - retry candidates are optional.
+                lifecycle_attempt.update(
+                    {
+                        "selected_route": "exception",
+                        "status": "exception",
+                        "exception_type": type(exc).__name__,
+                        "exception_message": str(exc),
+                    }
+                )
+                lifecycle_support_closure_retry_attempts.append(lifecycle_attempt)
+    if retry_candidates:
+        best_retry = min(retry_candidates, key=lambda candidate: candidate.score)
+        selected_attempt = dict(best_retry.attempt)
+        selection_report = {
+            "selection_schema": "exogibbs_support_free_cross_retry_selection_v1",
+            "triggered": True,
+            "accepted": True,
+            "selection_policy": "best_support_closure_score_across_retry_kinds",
+            "selected_retry_kind": best_retry.retry_kind,
+            "support_closure_score": best_retry.score,
+            "candidate_count": len(retry_candidates),
+            "support_cap_retry_attempts": tuple(support_cap_retry_attempts),
+            "support_growth_staging_retry_attempts": tuple(
+                support_growth_staging_retry_attempts
+            ),
+            "scalar_step_control_retry_attempts": tuple(
+                scalar_step_control_retry_attempts
+            ),
+            "lifecycle_final_state_support_closure_retry_attempts": tuple(
+                lifecycle_support_closure_retry_attempts
+            ),
+            "initial_selected_route": last_result.selected_route,
+            "initial_status": last_result.status,
+            "initial_support_count": len(tuple(current_support)),
+            "initial_support_outer_terminated_reason": terminated_reason,
+            "initial_support_closure_gate": initial_support_closure_gate,
+            "retry_selected_route": best_retry.result.selected_route,
+            "retry_status": best_retry.result.status,
+            "retry_support_count": len(tuple(best_retry.result.condensate_support_names)),
+            "retry_support_closure_gate": best_retry.support_closure_gate,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+        }
+        if best_retry.retry_kind == "support_cap_retry":
+            retry_report = {
+                "retry_schema": "exogibbs_support_free_support_cap_retry_v1",
+                "triggered": True,
+                "accepted": True,
+                "route_promoted": True,
+                "support_closure_accepted": True,
+                "selection_policy": "best_support_closure_score_across_retry_kinds",
+                "support_closure_score": best_retry.score,
+                "support_cap": int(selected_attempt.get("support_cap", 0)),
+                "support_cap_sequence": tuple(int(cap) for cap in retry_caps),
+                "attempts": tuple(support_cap_retry_attempts),
+                "initial_selected_route": last_result.selected_route,
+                "initial_status": last_result.status,
+                "initial_support_count": len(tuple(current_support)),
+                "initial_support_closure_gate": initial_support_closure_gate,
+                "retry_selected_route": best_retry.result.selected_route,
+                "retry_status": best_retry.result.status,
+                "retry_support_count": len(
+                    tuple(best_retry.result.condensate_support_names)
+                ),
+                "retry_support_closure_gate": best_retry.support_closure_gate,
+                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+            }
+            return _with_support_closure_retry_selection_diagnostics(
+                result=best_retry.result,
+                selected_retry_key="support_cap_retry",
+                retry_report=retry_report,
+                selection_report=selection_report,
+                return_diagnostics=options.return_diagnostics,
+            )
+        if best_retry.retry_kind == "support_growth_staging_retry":
             retry_report = {
                 "retry_schema": "exogibbs_support_free_support_growth_staging_retry_v1",
                 "triggered": True,
                 "accepted": True,
                 "route_promoted": True,
                 "support_closure_accepted": True,
-                "selection_policy": "best_support_closure_score",
-                "support_closure_score": best_retry_score,
+                "selection_policy": "best_support_closure_score_across_retry_kinds",
+                "support_closure_score": best_retry.score,
                 "max_support_add_per_round": int(
                     selected_attempt.get("max_support_add_per_round", 0)
                 ),
                 "max_support_add_per_round_sequence": tuple(
                     int(count) for count in staged_retry_counts
                 ),
-                "attempts": tuple(retry_attempts),
+                "attempts": tuple(support_growth_staging_retry_attempts),
                 "initial_selected_route": last_result.selected_route,
                 "initial_status": last_result.status,
                 "initial_support_count": len(tuple(current_support)),
                 "initial_support_outer_terminated_reason": terminated_reason,
-                "retry_selected_route": best_retry_result.selected_route,
-                "retry_status": best_retry_result.status,
-                "retry_support_count": len(
-                    tuple(best_retry_result.condensate_support_names)
-                ),
-                "retry_support_closure_gate": best_retry_gate,
+                "initial_support_closure_gate": initial_support_closure_gate,
+                "retry_selected_route": best_retry.result.selected_route,
+                "retry_status": best_retry.result.status,
+                "retry_support_count": len(tuple(best_retry.result.condensate_support_names)),
+                "retry_support_closure_gate": best_retry.support_closure_gate,
                 "fastchem4_trace_public_runtime_constructor_inputs_used": False,
             }
-            return _with_support_growth_staging_retry_diagnostics(
-                result=best_retry_result,
+            return _with_support_closure_retry_selection_diagnostics(
+                result=best_retry.result,
+                selected_retry_key="support_growth_staging_retry",
                 retry_report=retry_report,
+                selection_report=selection_report,
                 return_diagnostics=options.return_diagnostics,
             )
+        if best_retry.retry_kind == "lifecycle_final_state_support_closure_retry":
+            retry_report = {
+                "retry_schema": (
+                    "exogibbs_lifecycle_final_state_support_closure_retry_v1"
+                ),
+                "triggered": True,
+                "accepted": True,
+                "route_promoted": True,
+                "support_closure_accepted": True,
+                "selection_policy": "best_support_closure_score_across_retry_kinds",
+                "support_closure_score": best_retry.score,
+                "attempts": tuple(lifecycle_support_closure_retry_attempts),
+                "initial_selected_route": last_result.selected_route,
+                "initial_status": last_result.status,
+                "initial_support_count": len(tuple(current_support)),
+                "initial_support_outer_terminated_reason": terminated_reason,
+                "initial_support_closure_gate": initial_support_closure_gate,
+                "retry_selected_route": best_retry.result.selected_route,
+                "retry_status": best_retry.result.status,
+                "retry_support_count": len(
+                    tuple(best_retry.result.condensate_support_names)
+                ),
+                "retry_support_closure_gate": best_retry.support_closure_gate,
+                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+            }
+            return _with_support_closure_retry_selection_diagnostics(
+                result=best_retry.result,
+                selected_retry_key="lifecycle_final_state_support_closure_retry",
+                retry_report=retry_report,
+                selection_report=selection_report,
+                return_diagnostics=options.return_diagnostics,
+            )
+        retry_report = {
+            "retry_schema": "exogibbs_support_free_scalar_step_control_retry_v1",
+            "triggered": True,
+            "accepted": True,
+            "route_promoted": True,
+            "support_closure_accepted": True,
+            "selection_policy": "best_support_closure_score_across_retry_kinds",
+            "support_closure_score": best_retry.score,
+            "step_control_policy": str(
+                selected_attempt.get(
+                    "step_control_policy", "scalar_fraction_to_boundary"
+                )
+            ),
+            "fraction_to_boundary_safety": float(
+                selected_attempt.get(
+                    "fraction_to_boundary_safety",
+                    options.head_route_primary_fraction_to_boundary_safety,
+                )
+            ),
+            "attempts": tuple(scalar_step_control_retry_attempts),
+            "initial_selected_route": last_result.selected_route,
+            "initial_status": last_result.status,
+            "initial_support_count": len(tuple(current_support)),
+            "initial_support_outer_terminated_reason": terminated_reason,
+            "initial_support_closure_gate": initial_support_closure_gate,
+            "retry_selected_route": best_retry.result.selected_route,
+            "retry_status": best_retry.result.status,
+            "retry_support_count": len(tuple(best_retry.result.condensate_support_names)),
+            "retry_support_closure_gate": best_retry.support_closure_gate,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+        }
+        return _with_support_closure_retry_selection_diagnostics(
+            result=best_retry.result,
+            selected_retry_key="scalar_step_control_retry",
+            retry_report=retry_report,
+            selection_report=selection_report,
+            return_diagnostics=options.return_diagnostics,
+        )
     if (
         options.seed_initialization_policy != "budget_preserving_fraction"
         and last_result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
@@ -2481,6 +3884,7 @@ def _run_activity_driven_support_outer_loop(
             seed_initialization_policy="budget_preserving_fraction",
             enable_support_cap_retry=False,
             enable_support_growth_staging_retry=False,
+            enable_head_route_scalar_step_control_retry=False,
         )
         retry_result = condensate_equilibrium(
             setup,
@@ -2652,11 +4056,49 @@ def condensate_equilibrium(
             return_diagnostics=False,
         )
         diagnostics = {"support_selection": support_selection_report} if opts.return_diagnostics else None
-        return _with_inactive_condensate_driving_diagnostics(
-            result=_build_empty_support_gas_result(
+        empty_result = _build_empty_support_gas_result(
+            setup=setup,
+            gas_ln_n=gas_result.ln_n,
+            diagnostics=diagnostics,
+            element_inventory_target=b,
+            enable_full_condensate_budget_residual_gate=(
+                opts.enable_full_condensate_budget_residual_gate
+            ),
+            full_condensate_budget_relative_tolerance=(
+                opts.full_condensate_budget_relative_tolerance
+            ),
+        )
+        gate = (empty_result.diagnostics or {}).get(
+            "full_condensate_budget_residual_gate",
+            {},
+        )
+        if (
+            opts.enable_full_condensate_budget_residual_gate
+            and not empty_result.converged
+            and isinstance(gate, Mapping)
+            and not bool(gate.get("accepted", True))
+        ):
+            strict_gas_result = equilibrium(
+                setup.gas_setup,
+                T,
+                P,
+                jnp.asarray(b),
+                Pref=Pref,
+                options=EquilibriumOptions(epsilon_crit=1.0e-12),
+                return_diagnostics=False,
+            )
+            strict_diagnostics = dict(diagnostics or {})
+            strict_diagnostics["empty_support_strict_gas_retry"] = {
+                "retry_schema": "exogibbs_empty_support_strict_gas_retry_v1",
+                "triggered": True,
+                "epsilon_crit": 1.0e-12,
+                "initial_full_condensate_budget_gate": gate,
+                "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+            }
+            strict_result = _build_empty_support_gas_result(
                 setup=setup,
-                gas_ln_n=gas_result.ln_n,
-                diagnostics=diagnostics,
+                gas_ln_n=strict_gas_result.ln_n,
+                diagnostics=strict_diagnostics,
                 element_inventory_target=b,
                 enable_full_condensate_budget_residual_gate=(
                     opts.enable_full_condensate_budget_residual_gate
@@ -2664,7 +4106,31 @@ def condensate_equilibrium(
                 full_condensate_budget_relative_tolerance=(
                     opts.full_condensate_budget_relative_tolerance
                 ),
-            ),
+            )
+            if opts.return_diagnostics:
+                strict_gate = (strict_result.diagnostics or {}).get(
+                    "full_condensate_budget_residual_gate",
+                    {},
+                )
+                retry_report = dict(
+                    (strict_result.diagnostics or {}).get(
+                        "empty_support_strict_gas_retry",
+                        {},
+                    )
+                )
+                retry_report["accepted"] = bool(strict_result.converged)
+                retry_report["retry_full_condensate_budget_gate"] = strict_gate
+                strict_result = replace(
+                    strict_result,
+                    diagnostics={
+                        **dict(strict_result.diagnostics or {}),
+                        "empty_support_strict_gas_retry": retry_report,
+                    },
+                )
+            if strict_result.converged:
+                empty_result = strict_result
+        return _with_inactive_condensate_driving_diagnostics(
+            result=empty_result,
             setup=setup,
             T=T,
             P=P,
@@ -2997,6 +4463,11 @@ def condensate_equilibrium(
             and opts.head_route_primary_summary is None
             and opts.head_route_refresh_policy_summary is None
         ):
+            initial_soft_restoration_stopped_reason = (
+                _continuation_stopped_reason_from_lifecycle_payload(
+                    lifecycle_payload,
+                )
+            )
             soft_restoration_policy = {
                 **primary_policy,
                 "center_tolerance_multiplier": float(
@@ -3049,6 +4520,8 @@ def condensate_equilibrium(
                     else float(opts.head_route_soft_restoration_max_proximity)
                 ),
                 "initial_selected_route": lifecycle_selected_route,
+                "trigger_mode": "manual_option",
+                "initial_stopped_reason": initial_soft_restoration_stopped_reason,
                 "retry_selected_route": (
                     soft_restoration_lifecycle_report.route_result.selected_route
                 ),
@@ -3303,6 +4776,71 @@ def condensate_equilibrium(
                         )
                     except (KeyError, TypeError, ValueError):
                         retry_gate_report = None
+                retry_gas_polish_report = None
+                if (
+                    retry_gate_report is not None
+                    and not bool(retry_gate_report["accepted"])
+                    and isinstance(retry_final_state_payload, Mapping)
+                    and isinstance(retry_primary_payload, Mapping)
+                    and isinstance(retry_continuation_payload, Mapping)
+                ):
+                    try:
+                        retry_support_amounts = jnp.exp(
+                            jnp.asarray(retry_final_state_payload["ln_mk"])
+                        )
+                        retry_full_amounts = _full_condensate_amounts(
+                            support_indices=retry_final_state_support_indices,
+                            support_amounts=retry_support_amounts,
+                            condensate_count=len(setup.condensate_species),
+                        )
+                        retry_full_amounts = _merge_external_condensate_amounts(
+                            condensate_amounts=retry_full_amounts,
+                            external_condensate_amounts=retry_external_amounts,
+                        )
+                        polished_retry_ln_n, retry_gas_polish_report = (
+                            _polish_gas_log_amounts_for_full_condensate_budget_gate(
+                                setup=setup,
+                                gas_ln_n=jnp.asarray(
+                                    retry_final_state_payload["ln_nk"]
+                                ),
+                                condensate_amounts=retry_full_amounts,
+                                element_inventory_target=b,
+                                relative_tolerance=(
+                                    opts.full_condensate_budget_relative_tolerance
+                                ),
+                            )
+                        )
+                    except (KeyError, TypeError, ValueError):
+                        retry_gas_polish_report = None
+                    if (
+                        retry_gas_polish_report is not None
+                        and retry_gas_polish_report["accepted"]
+                    ):
+                        retry_gate_report = retry_gas_polish_report[
+                            "final_full_condensate_budget_gate"
+                        ]
+                        retry_final_state_payload = {
+                            **dict(retry_final_state_payload),
+                            "ln_nk": tuple(
+                                float(value)
+                                for value in jnp.asarray(
+                                    polished_retry_ln_n,
+                                    dtype=jnp.float64,
+                                ).tolist()
+                            ),
+                        }
+                        retry_continuation_payload = {
+                            **dict(retry_continuation_payload),
+                            "final_state": retry_final_state_payload,
+                        }
+                        retry_primary_payload = {
+                            **dict(retry_primary_payload),
+                            "continuation_report": retry_continuation_payload,
+                        }
+                        budget_correction_payload = {
+                            **dict(budget_correction_payload),
+                            "primary_execution_report": retry_primary_payload,
+                        }
                 budget_correction_accepted = bool(
                     retry_gate_report is not None and retry_gate_report["accepted"]
                 )
@@ -3317,6 +4855,7 @@ def condensate_equilibrium(
                     "trial_acceptance_policy": "ipopt_persistent_h_type",
                     "initial_full_condensate_budget_gate": initial_gate_report,
                     "retry_full_condensate_budget_gate": retry_gate_report,
+                    "retry_gas_log_amount_polish": retry_gas_polish_report,
                     "initial_selected_route": lifecycle_selected_route,
                     "retry_start_state": "lifecycle_final_state",
                     "retry_selected_route": (
@@ -3329,8 +4868,12 @@ def condensate_equilibrium(
                 if budget_correction_accepted:
                     lifecycle_report = budget_correction_lifecycle_report
                     lifecycle_payload = budget_correction_payload
-                    lifecycle_selected_route = str(lifecycle_selected_route)
-                    lifecycle_metric_status = str(lifecycle_metric_status)
+                    lifecycle_selected_route = (
+                        budget_correction_lifecycle_report.route_result.selected_route
+                    )
+                    lifecycle_metric_status = (
+                        budget_correction_lifecycle_report.route_result.metric_status
+                    )
                     lifecycle_converged = True
                 else:
                     lifecycle_payload = {
@@ -3518,7 +5061,7 @@ def condensate_equilibrium(
             )
     else:
         diagnostics_payload = None
-    return _with_inactive_condensate_driving_diagnostics(
+    final_result = _with_inactive_condensate_driving_diagnostics(
         result=build_condensate_equilibrium_result_from_solver_payload(
             setup=setup,
             gas_ln_n=result_ln_nk,
@@ -3544,6 +5087,198 @@ def condensate_equilibrium(
         Pref=Pref,
         options=opts,
     )
+    if (
+        support_selection_report is not None
+        and support_selection_report.get("selection_mode") == "explicit_support_payload"
+        and opts.enable_lifecycle_final_state_support_growth
+        and opts.metric_status is None
+        and opts.head_route_primary_summary is None
+        and opts.head_route_refresh_policy_summary is None
+    ):
+        support_closure_gate = _support_closure_retry_gate_report(
+            setup=setup,
+            T=T,
+            P=P,
+            b=b,
+            Pref=Pref,
+            result=final_result,
+            options=opts,
+        )
+        full_budget_gate = (final_result.diagnostics or {}).get(
+            "full_condensate_budget_residual_gate",
+            {},
+        )
+        retry_triggered = (
+            not bool(final_result.converged)
+            or not bool(support_closure_gate.get("accepted", False))
+            or (
+                isinstance(full_budget_gate, Mapping)
+                and not bool(full_budget_gate.get("accepted", True))
+            )
+        )
+        if retry_triggered:
+            try:
+                activity_report = _activity_driven_support_report(
+                    setup=setup,
+                    T=T,
+                    P=P,
+                    b=b,
+                    Pref=Pref,
+                    gas_ln_n=result_ln_nk,
+                    options=opts,
+                    existing_support_indices=tuple(
+                        int(index) for index in result_support_indices
+                    ),
+                )
+                existing = {int(index) for index in result_support_indices}
+                inactive_positive = tuple(
+                    int(index)
+                    for index in activity_report["inactive_positive_indices"]
+                    if int(index) not in existing
+                )
+                add_count = _support_add_count(
+                    inactive_count=len(inactive_positive),
+                    support_count=len(tuple(result_support_indices)),
+                    options=opts,
+                )
+                added = inactive_positive[:add_count]
+                retry_report: Mapping[str, Any] = {
+                    "retry_schema": (
+                        "exogibbs_explicit_support_lifecycle_closure_retry_v1"
+                    ),
+                    "triggered": True,
+                    "accepted": False,
+                    "initial_selected_route": final_result.selected_route,
+                    "initial_status": final_result.status,
+                    "initial_support_count": len(tuple(result_support_indices)),
+                    "initial_support_closure_gate": support_closure_gate,
+                    "initial_full_condensate_budget_gate": full_budget_gate,
+                    "inactive_positive_count": len(inactive_positive),
+                    "added_support_indices": added,
+                    "added_support_names": tuple(
+                        setup.condensate_species[int(index)] for index in added
+                    ),
+                    "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+                }
+                if added:
+                    retry_options = replace(
+                        opts,
+                        case_id=None
+                        if opts.case_id is None
+                        else f"{opts.case_id}__explicit_support_closure_retry",
+                        enable_support_outer_loop=False,
+                        enable_lifecycle_final_state_support_growth=False,
+                        enable_support_cap_retry=False,
+                        enable_support_growth_staging_retry=False,
+                        enable_head_route_scalar_step_control_retry=False,
+                    )
+                    retry_result = condensate_equilibrium(
+                        setup,
+                        T,
+                        P,
+                        b,
+                        Pref=Pref,
+                        support_indices=tuple(int(index) for index in result_support_indices)
+                        + added,
+                        support_amounts_init=_positive_support_amounts_for_warm_start(
+                            tuple(
+                                float(value)
+                                for value in jnp.asarray(result_support_amounts).tolist()
+                            ),
+                            min_seed_amount=opts.min_seed_amount,
+                        )
+                        + _budget_seed_for_support(
+                            setup=setup,
+                            b=b,
+                            support_indices=added,
+                            options=opts,
+                        ),
+                        options=retry_options,
+                    )
+                    retry_route_promoted = (
+                        retry_result.selected_route
+                        != "native_budget_seed_fallback_budget_tradeoff"
+                    )
+                    retry_gate = _support_closure_retry_gate_report(
+                        setup=setup,
+                        T=T,
+                        P=P,
+                        b=b,
+                        Pref=Pref,
+                        result=retry_result,
+                        options=opts,
+                    )
+                    retry_full_budget_gate = (retry_result.diagnostics or {}).get(
+                        "full_condensate_budget_residual_gate",
+                        {},
+                    )
+                    retry_accepted = bool(
+                        retry_route_promoted
+                        and retry_result.converged
+                        and retry_gate.get("accepted", False)
+                        and (
+                            not isinstance(retry_full_budget_gate, Mapping)
+                            or retry_full_budget_gate.get("accepted", True)
+                        )
+                    )
+                    retry_report = {
+                        **dict(retry_report),
+                        "accepted": retry_accepted,
+                        "route_promoted": bool(retry_route_promoted),
+                        "support_closure_accepted": bool(
+                            retry_gate.get("accepted", False)
+                        ),
+                        "retry_selected_route": retry_result.selected_route,
+                        "retry_status": retry_result.status,
+                        "retry_support_count": len(
+                            tuple(retry_result.condensate_support_names)
+                        ),
+                        "retry_support_closure_gate": retry_gate,
+                        "retry_full_condensate_budget_gate": retry_full_budget_gate,
+                    }
+                    if retry_accepted:
+                        return _with_support_closure_retry_selection_diagnostics(
+                            result=retry_result,
+                            selected_retry_key="explicit_support_closure_retry",
+                            retry_report=retry_report,
+                            selection_report={
+                                "selection_schema": (
+                                    "exogibbs_explicit_support_closure_retry_selection_v1"
+                                ),
+                                "triggered": True,
+                                "accepted": True,
+                                "selection_policy": (
+                                    "single_lifecycle_final_state_support_closure_retry"
+                                ),
+                                "selected_retry_kind": (
+                                    "explicit_support_closure_retry"
+                                ),
+                                "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                                    False
+                                ),
+                            },
+                            return_diagnostics=opts.return_diagnostics,
+                        )
+                if opts.return_diagnostics:
+                    diagnostics = dict(final_result.diagnostics or {})
+                    diagnostics["explicit_support_closure_retry"] = retry_report
+                    final_result = replace(final_result, diagnostics=diagnostics)
+            except Exception as exc:  # noqa: BLE001 - optional retry diagnostics.
+                if opts.return_diagnostics:
+                    diagnostics = dict(final_result.diagnostics or {})
+                    diagnostics["explicit_support_closure_retry"] = {
+                        "retry_schema": (
+                            "exogibbs_explicit_support_lifecycle_closure_retry_v1"
+                        ),
+                        "triggered": True,
+                        "accepted": False,
+                        "status": "exception",
+                        "exception_type": type(exc).__name__,
+                        "exception_message": str(exc),
+                        "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+                    }
+                    final_result = replace(final_result, diagnostics=diagnostics)
+    return final_result
 
 
 def condensate_equilibrium_profile(*args: Any, **kwargs: Any) -> Any:

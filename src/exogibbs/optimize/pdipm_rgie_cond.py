@@ -24,7 +24,12 @@ FORBIDDEN_PROVENANCE = {
 
 @dataclass(frozen=True)
 class PdipmRgieCondensateState:
-    """Explicit state for experimental coupled PD-IPM R-GIE trials."""
+    """Explicit state for experimental coupled PD-IPM R-GIE trials.
+
+    In algorithm-v1.1 PD-IPM/R-GIE paths, ``rho`` is the log dual variable
+    ``log(eta)``. Legacy restricted trial diagnostics predate that convention
+    and are kept separate below.
+    """
 
     state_schema: str
     ln_nk: tuple[float, ...]
@@ -42,7 +47,24 @@ class PdipmRgieCondensateState:
     field_provenance: Mapping[str, str]
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {
+            "state_schema": self.state_schema,
+            "ln_nk": self.ln_nk,
+            "ln_mk": self.ln_mk,
+            "element_potential": self.element_potential,
+            "ln_ntot": self.ln_ntot,
+            "rho": self.rho,
+            "eta": self.eta,
+            "diagnostic_only": self.diagnostic_only,
+            "default_off": self.default_off,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+            "field_provenance": self.field_provenance,
+        }
 
 
 @dataclass(frozen=True)
@@ -98,10 +120,65 @@ class PdipmRgieRestrictedTrialReport:
     fastchem4_trace_public_runtime_constructor_inputs_used: bool
 
     def as_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
-        payload["initial_state"] = self.initial_state.as_dict()
-        payload["candidate_state"] = self.candidate_state.as_dict()
-        return payload
+        return {
+            "report_schema": self.report_schema,
+            "diagnostic_only": self.diagnostic_only,
+            "default_off": self.default_off,
+            "explicit_opt_in": self.explicit_opt_in,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "trial_step_accepted": self.trial_step_accepted,
+            "alpha": self.alpha,
+            "initial_combined_residual_l2": self.initial_combined_residual_l2,
+            "candidate_combined_residual_l2": self.candidate_combined_residual_l2,
+            "initial_budget_l2": self.initial_budget_l2,
+            "candidate_budget_l2": self.candidate_budget_l2,
+            "initial_gas_stationarity_l2": self.initial_gas_stationarity_l2,
+            "candidate_gas_stationarity_l2": self.candidate_gas_stationarity_l2,
+            "initial_condensate_stationarity_l2": self.initial_condensate_stationarity_l2,
+            "candidate_condensate_stationarity_l2": self.candidate_condensate_stationarity_l2,
+            "initial_complementarity_l2": self.initial_complementarity_l2,
+            "candidate_complementarity_l2": self.candidate_complementarity_l2,
+            "merit_component_weights": self.merit_component_weights,
+            "linear_system_component_weights": self.linear_system_component_weights,
+            "linear_system_row_scaling": self.linear_system_row_scaling,
+            "linear_system_row_scale_min": self.linear_system_row_scale_min,
+            "linear_system_row_scale_max": self.linear_system_row_scale_max,
+            "linear_system_budget_priority_policy": self.linear_system_budget_priority_policy,
+            "linear_system_budget_priority": self.linear_system_budget_priority,
+            "linear_system_budget_priority_effective_weight": (
+                self.linear_system_budget_priority_effective_weight
+            ),
+            "linear_system_budget_priority_reference_norm": (
+                self.linear_system_budget_priority_reference_norm
+            ),
+            "linear_system_budget_priority_budget_norm": (
+                self.linear_system_budget_priority_budget_norm
+            ),
+            "require_budget_nonworsening": self.require_budget_nonworsening,
+            "budget_rhs_sign": self.budget_rhs_sign,
+            "max_gas_stationarity_worsening_ratio": self.max_gas_stationarity_worsening_ratio,
+            "max_condensate_stationarity_worsening_ratio": (
+                self.max_condensate_stationarity_worsening_ratio
+            ),
+            "initial_merit_l2": self.initial_merit_l2,
+            "candidate_merit_l2": self.candidate_merit_l2,
+            "delta_q": self.delta_q,
+            "delta_r": self.delta_r,
+            "delta_lambda": self.delta_lambda,
+            "delta_rho": self.delta_rho,
+            "delta_q_l2": self.delta_q_l2,
+            "delta_r_l2": self.delta_r_l2,
+            "delta_lambda_l2": self.delta_lambda_l2,
+            "delta_rho_l2": self.delta_rho_l2,
+            "finite_trial_step": self.finite_trial_step,
+            "initial_state": self.initial_state.as_dict(),
+            "candidate_state": self.candidate_state.as_dict(),
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+        }
 
 
 @dataclass(frozen=True)
@@ -133,6 +210,10 @@ class PdipmRgieReducedStepReport:
     candidate_combined_residual_l2: float
     trial_step_accepted: bool
     alpha: float
+    step_control_policy: str
+    fraction_to_boundary_safety: float
+    fraction_to_boundary_alpha: float
+    fraction_to_boundary_blocker_report: Mapping[str, Any] | None
     require_budget_nonworsening: bool
     delta_q: tuple[float, ...]
     delta_r: tuple[float, ...]
@@ -152,10 +233,92 @@ class PdipmRgieReducedStepReport:
     fastchem4_trace_public_runtime_constructor_inputs_used: bool
 
     def as_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
-        payload["initial_state"] = self.initial_state.as_dict()
-        payload["candidate_state"] = self.candidate_state.as_dict()
-        return payload
+        return {
+            "report_schema": self.report_schema,
+            "diagnostic_only": self.diagnostic_only,
+            "default_off": self.default_off,
+            "explicit_opt_in": self.explicit_opt_in,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "equation_family": self.equation_family,
+            "qhat_condition_estimate": self.qhat_condition_estimate,
+            "qhat_regularization": self.qhat_regularization,
+            "linear_system_residual_l2": self.linear_system_residual_l2,
+            "initial_budget_l2": self.initial_budget_l2,
+            "candidate_budget_l2": self.candidate_budget_l2,
+            "initial_gas_stationarity_l2": self.initial_gas_stationarity_l2,
+            "candidate_gas_stationarity_l2": self.candidate_gas_stationarity_l2,
+            "initial_condensate_stationarity_l2": self.initial_condensate_stationarity_l2,
+            "candidate_condensate_stationarity_l2": self.candidate_condensate_stationarity_l2,
+            "initial_barrier_complementarity_l2": self.initial_barrier_complementarity_l2,
+            "candidate_barrier_complementarity_l2": self.candidate_barrier_complementarity_l2,
+            "initial_total_density_l2": self.initial_total_density_l2,
+            "candidate_total_density_l2": self.candidate_total_density_l2,
+            "initial_combined_residual_l2": self.initial_combined_residual_l2,
+            "candidate_combined_residual_l2": self.candidate_combined_residual_l2,
+            "trial_step_accepted": self.trial_step_accepted,
+            "alpha": self.alpha,
+            "step_control_policy": self.step_control_policy,
+            "fraction_to_boundary_safety": self.fraction_to_boundary_safety,
+            "fraction_to_boundary_alpha": self.fraction_to_boundary_alpha,
+            "fraction_to_boundary_blocker_report": self.fraction_to_boundary_blocker_report,
+            "require_budget_nonworsening": self.require_budget_nonworsening,
+            "delta_q": self.delta_q,
+            "delta_r": self.delta_r,
+            "delta_lambda": self.delta_lambda,
+            "delta_rho": self.delta_rho,
+            "delta_qtot": self.delta_qtot,
+            "pi_vector": self.pi_vector,
+            "j_vector": self.j_vector,
+            "t_vector": self.t_vector,
+            "delta_q_l2": self.delta_q_l2,
+            "delta_r_l2": self.delta_r_l2,
+            "delta_lambda_l2": self.delta_lambda_l2,
+            "delta_rho_l2": self.delta_rho_l2,
+            "finite_trial_step": self.finite_trial_step,
+            "initial_state": self.initial_state.as_dict(),
+            "candidate_state": self.candidate_state.as_dict(),
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+        }
+
+
+@dataclass(frozen=True)
+class PdipmRgieReducedDirectionAudit:
+    """Unclipped algorithm-v1.1 reduced R-GIE direction for GIE audits."""
+
+    audit_schema: str
+    equation_family: str
+    variable_order: tuple[str, ...]
+    pi_vector: tuple[float, ...]
+    delta_q: tuple[float, ...]
+    delta_r: tuple[float, ...]
+    delta_lambda: tuple[float, ...]
+    delta_rho: tuple[float, ...]
+    delta_qtot: float
+    j_vector: tuple[float, ...]
+    t_vector: tuple[float, ...]
+    reduced_linear_system_residual_l2: float
+    full_linearized_residual_l2: float
+    full_linearized_residual_max_abs: float
+    clipped_delta_q: tuple[float, ...]
+    clipped_delta_r: tuple[float, ...]
+    clipped_delta_lambda: tuple[float, ...]
+    clipped_delta_rho: tuple[float, ...]
+    clipped_full_linearized_residual_l2: float
+    clipped_full_linearized_residual_max_abs: float
+    clipping_changed_direction: bool
+    diagnostic_only: bool
+    default_off: bool
+    production_behavior_change: bool
+    production_return_signature_change: bool
+    preset_default_wiring_change: bool
+    fastchem4_trace_public_runtime_constructor_inputs_used: bool
+
+    def as_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 
 @dataclass(frozen=True)
@@ -223,6 +386,82 @@ def _stable_l2_norm(values: Sequence[float]) -> float:
     return float(scale * np.linalg.norm(array / scale))
 
 
+def _fraction_to_boundary_alpha(
+    *,
+    delta_r: np.ndarray,
+    delta_rho: np.ndarray,
+    safety: float,
+) -> float:
+    """Return a scalar physical-variable fraction-to-boundary step limit."""
+
+    safety_value = float(safety)
+    if not np.isfinite(safety_value) or safety_value <= 0.0 or safety_value > 1.0:
+        raise ValueError("fraction_to_boundary_safety must be in the interval (0, 1].")
+    candidates = [1.0]
+    negative_r = delta_r < 0.0
+    if np.any(negative_r):
+        candidates.append(float(np.min(-1.0 / delta_r[negative_r])))
+    negative_rho = delta_rho < 0.0
+    if np.any(negative_rho):
+        candidates.append(float(np.min(-1.0 / delta_rho[negative_rho])))
+    alpha = min(candidates)
+    if not np.isfinite(alpha) or alpha <= 0.0:
+        return 1.0
+    return float(min(1.0, safety_value * alpha))
+
+
+def _fraction_to_boundary_blocker_report(
+    *,
+    r: np.ndarray,
+    rho: np.ndarray,
+    delta_r: np.ndarray,
+    delta_rho: np.ndarray,
+    safety: float,
+    max_entries: int = 8,
+) -> dict[str, Any]:
+    """Return Ipopt-style diagnostics for the scalar step-length limiter."""
+
+    safety_value = float(safety)
+    if not np.isfinite(safety_value) or safety_value <= 0.0 or safety_value > 1.0:
+        raise ValueError("fraction_to_boundary_safety must be in the interval (0, 1].")
+    blockers: list[dict[str, Any]] = []
+    for group, current, direction in (
+        ("r", np.asarray(r, dtype=np.float64), np.asarray(delta_r, dtype=np.float64)),
+        ("rho", np.asarray(rho, dtype=np.float64), np.asarray(delta_rho, dtype=np.float64)),
+    ):
+        for index, value in enumerate(direction):
+            if not np.isfinite(value) or value >= 0.0:
+                continue
+            raw_alpha = float(-1.0 / value)
+            if not np.isfinite(raw_alpha) or raw_alpha <= 0.0:
+                continue
+            blockers.append(
+                {
+                    "variable_group": group,
+                    "local_index": int(index),
+                    "current_log_value": float(current[index]),
+                    "direction": float(value),
+                    "raw_alpha": raw_alpha,
+                    "safety_alpha": float(min(1.0, safety_value * raw_alpha)),
+                }
+            )
+    blockers.sort(key=lambda row: (float(row["safety_alpha"]), float(row["raw_alpha"])))
+    limiting = blockers[0] if blockers else None
+    return {
+        "report_schema": "exogibbs_fraction_to_boundary_blocker_report_v1",
+        "step_policy": "scalar_fraction_to_boundary",
+        "safety": safety_value,
+        "limiting_variable_group": None if limiting is None else limiting["variable_group"],
+        "limiting_local_index": None if limiting is None else limiting["local_index"],
+        "limiting_raw_alpha": None if limiting is None else limiting["raw_alpha"],
+        "limiting_safety_alpha": None if limiting is None else limiting["safety_alpha"],
+        "blocker_count": len(blockers),
+        "top_blockers": tuple(blockers[: int(max_entries)]),
+        "diagnostic_only": True,
+        "production_behavior_change": False,
+    }
+
+
 def build_pdipm_rgie_condensate_state(
     *,
     ln_nk: Sequence[float],
@@ -253,7 +492,18 @@ def build_pdipm_rgie_condensate_state(
         eta_array = _as_vector(eta, "eta")
         if eta_array.shape[0] != r.shape[0]:
             raise ValueError("eta length must match ln_mk length.")
+        if np.any(eta_array <= 0.0):
+            raise ValueError("eta must contain positive values.")
         eta_tuple = tuple(float(value) for value in eta_array)
+    if rho is not None and eta is None:
+        eta_array = np.exp(rho_array)
+        eta_tuple = tuple(float(value) for value in eta_array)
+    elif rho is None and eta is not None:
+        rho_array = np.log(eta_array)
+        rho_tuple = tuple(float(value) for value in rho_array)
+    elif rho is not None and eta is not None:
+        if not np.allclose(np.log(eta_array), rho_array, rtol=1.0e-12, atol=1.0e-12):
+            raise ValueError("rho must equal log(eta) for PD-IPM log-dual states.")
     return PdipmRgieCondensateState(
         state_schema="exogibbs_pdipm_rgie_condensate_state_v1",
         ln_nk=tuple(float(value) for value in q),
@@ -392,6 +642,329 @@ def _algorithm_v11_residuals(
     }
 
 
+def algorithm_v11_active_support_residual_jacobian(
+    *,
+    formula_matrix: Sequence[Sequence[float]],
+    formula_matrix_cond_active: Sequence[Sequence[float]],
+    element_inventory_target: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
+    gas_stationarity_source: Sequence[float],
+    condensate_standard_source: Sequence[float],
+    q: Sequence[float],
+    r: Sequence[float],
+    lam: Sequence[float],
+    rho: Sequence[float],
+    qtot: float,
+    epsilon: float | Sequence[float],
+    qtot_reference: float | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return the algorithm-v1.1 full active-support residual and Jacobian.
+
+    The variable order is ``(q, r, lambda, rho, qtot)``. This is an audit helper
+    for the full active-support PD-IPM equations before reduced R-GIE
+    elimination, not a production solver entry point.
+    """
+
+    ag = _as_matrix(formula_matrix, "formula_matrix")
+    ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
+    target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        None
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
+    g = _as_vector(gas_stationarity_source, "gas_stationarity_source")
+    c = _as_vector(condensate_standard_source, "condensate_standard_source")
+    q_array = _as_vector(q, "q")
+    r_array = _as_vector(r, "r")
+    lam_array = _as_vector(lam, "lam")
+    rho_array = _as_vector(rho, "rho")
+    eps = np.asarray(epsilon, dtype=np.float64)
+    if eps.ndim == 0:
+        eps = np.full_like(r_array, float(eps))
+    if eps.ndim != 1 or eps.shape[0] != r_array.shape[0]:
+        raise ValueError("epsilon must be scalar or match condensate vector length.")
+    if not np.all(np.isfinite(eps)):
+        raise ValueError("epsilon must be finite.")
+    if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
+        raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if ag.shape[1] != q_array.shape[0] or g.shape[0] != q_array.shape[0]:
+        raise ValueError("gas vectors must match formula_matrix columns.")
+    if (
+        ac.shape[1] != r_array.shape[0]
+        or c.shape[0] != r_array.shape[0]
+        or rho_array.shape[0] != r_array.shape[0]
+    ):
+        raise ValueError("condensate vectors must match formula_matrix_cond_active columns.")
+    if lam_array.shape[0] != target.shape[0]:
+        raise ValueError("lam length must match element rows.")
+    if external_budget is not None and external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
+
+    residuals = _algorithm_v11_residuals(
+        formula_matrix=ag,
+        formula_matrix_cond_active=ac,
+        element_inventory_target=target,
+        external_condensate_budget=external_budget,
+        gas_stationarity_source=g,
+        condensate_standard_source=c,
+        q=q_array,
+        r=r_array,
+        lam=lam_array,
+        rho=rho_array,
+        qtot=float(qtot),
+        epsilon=eps,
+        qtot_reference=qtot_reference,
+    )
+    nq = q_array.shape[0]
+    nr = r_array.shape[0]
+    nelement = target.shape[0]
+    nvariable = nq + nr + nelement + nr + 1
+    n = np.exp(q_array)
+    m = np.exp(r_array)
+    eta = np.exp(rho_array)
+    qtot_value = float(qtot)
+    qtot_column = -np.ones((nq,), dtype=np.float64)
+    if qtot_reference is None:
+        qtot_column = np.zeros((nq,), dtype=np.float64)
+
+    jacobian = np.zeros((nvariable, nvariable), dtype=np.float64)
+    gas_rows = slice(0, nq)
+    cond_rows = slice(nq, nq + nr)
+    budget_rows = slice(nq + nr, nq + nr + nelement)
+    comp_rows = slice(nq + nr + nelement, nq + 2 * nr + nelement)
+    total_row = nq + 2 * nr + nelement
+    q_cols = slice(0, nq)
+    r_cols = slice(nq, nq + nr)
+    lam_cols = slice(nq + nr, nq + nr + nelement)
+    rho_cols = slice(nq + nr + nelement, nq + 2 * nr + nelement)
+    qtot_col = nq + 2 * nr + nelement
+
+    jacobian[gas_rows, q_cols] = np.eye(nq, dtype=np.float64)
+    jacobian[gas_rows, lam_cols] = -ag.T
+    jacobian[gas_rows, qtot_col] = qtot_column
+    jacobian[cond_rows, lam_cols] = -ac.T
+    jacobian[cond_rows, rho_cols] = -np.diag(eta)
+    jacobian[budget_rows, q_cols] = ag * n[np.newaxis, :]
+    jacobian[budget_rows, r_cols] = ac * m[np.newaxis, :]
+    jacobian[comp_rows, r_cols] = np.eye(nr, dtype=np.float64)
+    jacobian[comp_rows, rho_cols] = np.eye(nr, dtype=np.float64)
+    jacobian[total_row, q_cols] = n
+    jacobian[total_row, qtot_col] = -np.exp(qtot_value)
+    return residuals["combined"], jacobian
+
+
+def audit_algorithm_v11_reduced_direction_against_gie(
+    *,
+    explicit_opt_in: bool,
+    state: PdipmRgieCondensateState,
+    formula_matrix: Sequence[Sequence[float]],
+    formula_matrix_cond_active: Sequence[Sequence[float]],
+    element_inventory_target: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
+    gas_stationarity_source: Sequence[float],
+    condensate_standard_source: Sequence[float],
+    epsilon: float | Sequence[float],
+    qhat_regularization: float = 0.0,
+    max_abs_delta_q: float | None = None,
+    max_abs_delta_r: float | None = None,
+    max_abs_delta_rho: float | None = None,
+    max_abs_delta_lambda: float | None = None,
+) -> PdipmRgieReducedDirectionAudit:
+    """Audit that the reduced R-GIE direction satisfies the GIE linearization.
+
+    This computes the unclipped algorithm-v1.1 reduced R-GIE direction,
+    reconstructs ``(delta_q, delta_r, delta_lambda, delta_rho, delta_qtot)``,
+    and evaluates ``J delta + F`` for the corresponding active-support GIE.
+    Optional component-wise clipping limits reproduce the diagnostic clipping
+    used by the trial step and report how much that modified direction leaves
+    the Newton linearization.
+    """
+
+    if not explicit_opt_in:
+        raise ValueError("explicit_opt_in must be true for PD-IPM direction audits.")
+    if not isinstance(state, PdipmRgieCondensateState):
+        raise TypeError("state must be a PdipmRgieCondensateState.")
+    _validate_provenance(state.field_provenance)
+    if state.rho is None:
+        raise ValueError("state.rho is required for algorithm-v1.1 direction audits.")
+    ag = _as_matrix(formula_matrix, "formula_matrix")
+    ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
+    target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
+    g = _as_vector(gas_stationarity_source, "gas_stationarity_source")
+    c = _as_vector(condensate_standard_source, "condensate_standard_source")
+    q = _as_vector(state.ln_nk, "state.ln_nk")
+    r = _as_vector(state.ln_mk, "state.ln_mk")
+    lam = _as_vector(state.element_potential, "state.element_potential")
+    rho = _as_vector(state.rho, "state.rho")
+    qtot = float(state.ln_ntot)
+    if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
+        raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
+    if lam.shape[0] != target.shape[0]:
+        raise ValueError("element_potential length must match element rows.")
+    if ag.shape[1] != q.shape[0] or g.shape[0] != q.shape[0]:
+        raise ValueError("gas vectors must match formula_matrix columns.")
+    if ac.shape[1] != r.shape[0] or c.shape[0] != r.shape[0] or rho.shape[0] != r.shape[0]:
+        raise ValueError("condensate vectors must match formula_matrix_cond_active columns.")
+    eps = np.asarray(epsilon, dtype=np.float64)
+    if eps.ndim == 0:
+        eps = np.full_like(r, float(eps))
+    if eps.ndim != 1 or eps.shape[0] != r.shape[0]:
+        raise ValueError("epsilon must be scalar or match condensate vector length.")
+    if not np.all(np.isfinite(eps)):
+        raise ValueError("epsilon must be finite.")
+    reg = float(qhat_regularization)
+    if not np.isfinite(reg) or reg < 0.0:
+        raise ValueError("qhat_regularization must be finite and non-negative.")
+    clip_limits = {
+        "max_abs_delta_q": max_abs_delta_q,
+        "max_abs_delta_r": max_abs_delta_r,
+        "max_abs_delta_rho": max_abs_delta_rho,
+        "max_abs_delta_lambda": max_abs_delta_lambda,
+    }
+    for name, value in clip_limits.items():
+        if value is not None:
+            limit = float(value)
+            if not np.isfinite(limit) or limit <= 0.0:
+                raise ValueError(f"{name} must be finite and positive when provided.")
+
+    n = np.exp(q)
+    m = np.exp(r)
+    eta = np.exp(rho)
+    j_vec = m / np.maximum(eta, 1.0e-300)
+    t_vec = r + rho - eps
+    geff = q + g
+    gas_inventory = ag @ n
+    delta_bhat = target - external_budget - gas_inventory - ac @ m
+    delta_ntot = float(np.sum(n) - np.exp(qtot))
+    qhat = ag @ (n[:, np.newaxis] * ag.T) + ac @ (j_vec[:, np.newaxis] * ac.T)
+    if reg:
+        qhat = qhat + reg * np.eye(qhat.shape[0], dtype=np.float64)
+    rhs_top = ag @ (n * geff) + ac @ (j_vec * c + m * t_vec - m) + delta_bhat
+    rhs_bottom = float(np.dot(n, geff) - delta_ntot)
+    reduced_matrix = np.block(
+        [
+            [qhat, gas_inventory[:, np.newaxis]],
+            [gas_inventory[np.newaxis, :], np.asarray([[delta_ntot]], dtype=np.float64)],
+        ]
+    )
+    reduced_rhs = np.concatenate([rhs_top, np.asarray([rhs_bottom], dtype=np.float64)])
+    try:
+        reduced_solution = np.linalg.lstsq(reduced_matrix, reduced_rhs, rcond=None)[0]
+    except np.linalg.LinAlgError:
+        reduced_solution = np.zeros((target.shape[0] + 1,), dtype=np.float64)
+    reduced_solution = np.nan_to_num(
+        reduced_solution,
+        nan=0.0,
+        posinf=0.0,
+        neginf=0.0,
+    )
+    pi = reduced_solution[:-1]
+    delta_qtot = float(reduced_solution[-1])
+    delta_q = ag.T @ pi + delta_qtot - geff
+    delta_rho = (c - ac.T @ pi) / np.maximum(eta, 1.0e-300) - 1.0
+    delta_r = -delta_rho - t_vec
+    delta_lambda = pi - lam
+    gie_residual, gie_jacobian = algorithm_v11_active_support_residual_jacobian(
+        formula_matrix=ag,
+        formula_matrix_cond_active=ac,
+        element_inventory_target=target,
+        external_condensate_budget=external_budget,
+        gas_stationarity_source=g,
+        condensate_standard_source=c,
+        q=q,
+        r=r,
+        lam=lam,
+        rho=rho,
+        qtot=qtot,
+        epsilon=eps,
+        qtot_reference=qtot,
+    )
+    direction = np.concatenate(
+        [delta_q, delta_r, delta_lambda, delta_rho, np.asarray([delta_qtot])]
+    )
+    full_linearized_residual = gie_jacobian @ direction + gie_residual
+    clipped_delta_q = (
+        delta_q
+        if max_abs_delta_q is None
+        else np.clip(delta_q, -float(max_abs_delta_q), float(max_abs_delta_q))
+    )
+    clipped_delta_r = (
+        delta_r
+        if max_abs_delta_r is None
+        else np.clip(delta_r, -float(max_abs_delta_r), float(max_abs_delta_r))
+    )
+    clipped_delta_lambda = (
+        delta_lambda
+        if max_abs_delta_lambda is None
+        else np.clip(
+            delta_lambda,
+            -float(max_abs_delta_lambda),
+            float(max_abs_delta_lambda),
+        )
+    )
+    clipped_delta_rho = (
+        delta_rho
+        if max_abs_delta_rho is None
+        else np.clip(delta_rho, -float(max_abs_delta_rho), float(max_abs_delta_rho))
+    )
+    clipped_direction = np.concatenate(
+        [
+            clipped_delta_q,
+            clipped_delta_r,
+            clipped_delta_lambda,
+            clipped_delta_rho,
+            np.asarray([delta_qtot]),
+        ]
+    )
+    clipped_full_linearized_residual = gie_jacobian @ clipped_direction + gie_residual
+    clipping_changed = bool(
+        not np.allclose(clipped_direction, direction, rtol=0.0, atol=0.0)
+    )
+    return PdipmRgieReducedDirectionAudit(
+        audit_schema="exogibbs_pdipm_rgie_algorithm_v11_reduced_direction_audit_v1",
+        equation_family="exogibbs_algorithm_v1_1_pdipm_reduced_rgie",
+        variable_order=("q", "r", "lambda", "rho", "qtot"),
+        pi_vector=tuple(float(value) for value in pi),
+        delta_q=tuple(float(value) for value in delta_q),
+        delta_r=tuple(float(value) for value in delta_r),
+        delta_lambda=tuple(float(value) for value in delta_lambda),
+        delta_rho=tuple(float(value) for value in delta_rho),
+        delta_qtot=float(delta_qtot),
+        j_vector=tuple(float(value) for value in j_vec),
+        t_vector=tuple(float(value) for value in t_vec),
+        reduced_linear_system_residual_l2=_stable_l2_norm(
+            reduced_matrix @ reduced_solution - reduced_rhs
+        ),
+        full_linearized_residual_l2=_stable_l2_norm(full_linearized_residual),
+        full_linearized_residual_max_abs=float(np.max(np.abs(full_linearized_residual))),
+        clipped_delta_q=tuple(float(value) for value in clipped_delta_q),
+        clipped_delta_r=tuple(float(value) for value in clipped_delta_r),
+        clipped_delta_lambda=tuple(float(value) for value in clipped_delta_lambda),
+        clipped_delta_rho=tuple(float(value) for value in clipped_delta_rho),
+        clipped_full_linearized_residual_l2=_stable_l2_norm(
+            clipped_full_linearized_residual
+        ),
+        clipped_full_linearized_residual_max_abs=float(
+            np.max(np.abs(clipped_full_linearized_residual))
+        ),
+        clipping_changed_direction=clipping_changed,
+        diagnostic_only=True,
+        default_off=True,
+        production_behavior_change=False,
+        production_return_signature_change=False,
+        preset_default_wiring_change=False,
+        fastchem4_trace_public_runtime_constructor_inputs_used=False,
+    )
+
+
 def solve_pdipm_rgie_algorithm_v11_reduced_step(
     *,
     explicit_opt_in: bool,
@@ -413,6 +986,8 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     jacobian_mask: Sequence[bool] | None = None,
     paired_density_activity_update: bool = False,
     max_log_condensate_density: Sequence[float] | None = None,
+    step_control_policy: str = "component_clip",
+    fraction_to_boundary_safety: float = 0.995,
 ) -> PdipmRgieReducedStepReport:
     """Solve one explicit algorithm-v1.1 reduced coupled PD-IPM R-GIE step.
 
@@ -448,6 +1023,17 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     reg = float(qhat_regularization)
     if not np.isfinite(reg) or reg < 0.0:
         raise ValueError("qhat_regularization must be finite and non-negative.")
+    if step_control_policy not in {"component_clip", "scalar_fraction_to_boundary"}:
+        raise ValueError(
+            "step_control_policy must be component_clip or scalar_fraction_to_boundary."
+        )
+    fraction_safety = float(fraction_to_boundary_safety)
+    if (
+        not np.isfinite(fraction_safety)
+        or fraction_safety <= 0.0
+        or fraction_safety > 1.0
+    ):
+        raise ValueError("fraction_to_boundary_safety must be in the interval (0, 1].")
 
     ag = _as_matrix(formula_matrix, "formula_matrix")
     ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
@@ -532,25 +1118,52 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
     raw_delta_q = ag.T @ pi + delta_qtot - geff
     raw_delta_rho = (c - ac.T @ pi) / np.maximum(eta, 1.0e-300) - 1.0
     raw_delta_r = -raw_delta_rho - t_vec
-    delta_q = np.clip(raw_delta_q, -float(max_abs_delta_q), float(max_abs_delta_q))
-    if paired_density_activity_update:
-        delta_r = np.clip(raw_delta_r, -float(max_abs_delta_r), float(max_abs_delta_r))
-        if log_m_cap is not None:
-            delta_r = np.minimum(delta_r, log_m_cap - r)
-        target_delta_rho = eps - rho - r - delta_r
-        delta_rho = np.clip(
-            target_delta_rho,
-            -float(max_abs_delta_rho),
-            float(max_abs_delta_rho),
+    alpha_boundary = 1.0
+    fraction_blocker_report = None
+    if step_control_policy == "scalar_fraction_to_boundary":
+        delta_q = raw_delta_q
+        delta_r = raw_delta_r
+        delta_rho = raw_delta_rho
+        alpha_boundary = _fraction_to_boundary_alpha(
+            delta_r=delta_r,
+            delta_rho=delta_rho,
+            safety=fraction_safety,
         )
+        fraction_blocker_report = _fraction_to_boundary_blocker_report(
+            r=r,
+            rho=rho,
+            delta_r=delta_r,
+            delta_rho=delta_rho,
+            safety=fraction_safety,
+        )
+        alphas = tuple(float(min(value, alpha_boundary)) for value in alphas)
+        alphas = tuple(value for value in alphas if value > 0.0)
+        if not alphas:
+            alphas = (alpha_boundary,)
     else:
-        delta_r = np.clip(raw_delta_r, -float(max_abs_delta_r), float(max_abs_delta_r))
-        delta_rho = np.clip(
-            raw_delta_rho,
-            -float(max_abs_delta_rho),
-            float(max_abs_delta_rho),
-        )
-    delta_lambda = np.clip(pi - lam, -float(max_abs_delta_lambda), float(max_abs_delta_lambda))
+        delta_q = np.clip(raw_delta_q, -float(max_abs_delta_q), float(max_abs_delta_q))
+        if paired_density_activity_update:
+            delta_r = np.clip(raw_delta_r, -float(max_abs_delta_r), float(max_abs_delta_r))
+            if log_m_cap is not None:
+                delta_r = np.minimum(delta_r, log_m_cap - r)
+            target_delta_rho = eps - rho - r - delta_r
+            delta_rho = np.clip(
+                target_delta_rho,
+                -float(max_abs_delta_rho),
+                float(max_abs_delta_rho),
+            )
+        else:
+            delta_r = np.clip(raw_delta_r, -float(max_abs_delta_r), float(max_abs_delta_r))
+            delta_rho = np.clip(
+                raw_delta_rho,
+                -float(max_abs_delta_rho),
+                float(max_abs_delta_rho),
+            )
+    delta_lambda = (
+        pi - lam
+        if step_control_policy == "scalar_fraction_to_boundary"
+        else np.clip(pi - lam, -float(max_abs_delta_lambda), float(max_abs_delta_lambda))
+    )
 
     initial = _algorithm_v11_residuals(
         formula_matrix=ag,
@@ -718,6 +1331,10 @@ def solve_pdipm_rgie_algorithm_v11_reduced_step(
         candidate_combined_residual_l2=float(best_combined),
         trial_step_accepted=accepted,
         alpha=float(best_alpha),
+        step_control_policy=step_control_policy,
+        fraction_to_boundary_safety=fraction_safety,
+        fraction_to_boundary_alpha=float(alpha_boundary),
+        fraction_to_boundary_blocker_report=fraction_blocker_report,
         require_budget_nonworsening=bool(require_budget_nonworsening),
         delta_q=tuple(float(value) for value in delta_q),
         delta_r=tuple(float(value) for value in delta_r),
@@ -862,7 +1479,13 @@ def propose_pdipm_rgie_restricted_trial_step(
     max_gas_stationarity_worsening_ratio: float | None = None,
     max_condensate_stationarity_worsening_ratio: float | None = None,
 ) -> PdipmRgieRestrictedTrialReport:
-    """Propose one explicit restricted PD-IPM R-GIE trial step."""
+    """Propose one explicit restricted legacy trial step.
+
+    This diagnostic predates the algorithm-v1.1 log-dual convention and treats
+    ``state.rho`` as a physical complementarity carrier when a barrier
+    parameter is supplied. It is intentionally not the algorithm-v1.1 PD-IPM
+    reduced R-GIE path.
+    """
 
     if not explicit_opt_in:
         raise ValueError("explicit_opt_in must be true for PD-IPM R-GIE trial steps.")
@@ -1086,7 +1709,6 @@ def propose_pdipm_rgie_restricted_trial_step(
         element_potential=best_lam,
         ln_ntot=float(np.log(np.sum(np.exp(best_q)))),
         rho=None if best_rho is None else best_rho,
-        eta=state.eta,
         field_provenance=state.field_provenance,
     )
     return PdipmRgieRestrictedTrialReport(

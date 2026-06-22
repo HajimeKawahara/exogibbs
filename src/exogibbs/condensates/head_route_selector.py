@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 
@@ -37,7 +37,32 @@ class AlgorithmV11RouteSelectionReport:
     refresh_policy_summary: Mapping[str, Any] | None
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {
+            "report_schema": self.report_schema,
+            "diagnostic_only": self.diagnostic_only,
+            "default_off": self.default_off,
+            "explicit_opt_in": self.explicit_opt_in,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+            "case_id": self.case_id,
+            "case_family": self.case_family,
+            "selected_route": self.selected_route,
+            "integrated_status": self.integrated_status,
+            "route_reason": self.route_reason,
+            "primary_centered": self.primary_centered,
+            "fallback_allowed": self.fallback_allowed,
+            "fallback_available": self.fallback_available,
+            "fallback_accepted": self.fallback_accepted,
+            "refresh_policy_available": self.refresh_policy_available,
+            "refresh_policy_accepted": self.refresh_policy_accepted,
+            "primary_summary": self.primary_summary,
+            "fallback_summary": self.fallback_summary,
+            "refresh_policy_summary": self.refresh_policy_summary,
+        }
 
 
 def case_family_from_case_id(case_id: str) -> str:

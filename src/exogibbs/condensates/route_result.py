@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any, Mapping
 
 from exogibbs.condensates.head_route_standard_gate import (
@@ -33,7 +33,19 @@ class CondensateHeadRouteResult:
     diagnostics: Mapping[str, Any]
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {
+            "result_schema": self.result_schema,
+            "case_id": self.case_id,
+            "family": self.family,
+            "selected_route": self.selected_route,
+            "integrated_status": self.integrated_status,
+            "metric_status": self.metric_status,
+            "acceptance_tier": self.acceptance_tier,
+            "standard_path_status": self.standard_path_status,
+            "converged": self.converged,
+            "warning_messages": self.warning_messages,
+            "diagnostics": self.diagnostics,
+        }
 
 
 def infer_metric_status_from_selected_route(selected_route: str, integrated_status: str) -> str:

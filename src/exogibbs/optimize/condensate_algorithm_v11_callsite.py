@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import math
 from typing import Any, Mapping, Sequence
 
@@ -68,10 +68,26 @@ class AlgorithmV11ThermoValidCallsiteReport:
     fastchem4_trace_public_runtime_constructor_inputs_used: bool
 
     def as_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
-        payload["filter_report"] = self.filter_report.as_dict()
-        payload["reduced_step_report"] = self.reduced_step_report.as_dict()
-        return payload
+        return {
+            "report_schema": self.report_schema,
+            "diagnostic_only": self.diagnostic_only,
+            "default_off": self.default_off,
+            "explicit_opt_in": self.explicit_opt_in,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "original_support_count": self.original_support_count,
+            "filtered_support_count": self.filtered_support_count,
+            "removed_support_count": self.removed_support_count,
+            "external_condensate_support_indices": self.external_condensate_support_indices,
+            "external_condensate_amounts": self.external_condensate_amounts,
+            "external_condensate_budget": self.external_condensate_budget,
+            "filter_report": self.filter_report.as_dict(),
+            "reduced_step_report": self.reduced_step_report.as_dict(),
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+        }
 
 
 @dataclass(frozen=True)
@@ -96,10 +112,26 @@ class AlgorithmV11ThermoValidContinuationCallsiteReport:
     fastchem4_trace_public_runtime_constructor_inputs_used: bool
 
     def as_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
-        payload["filter_report"] = self.filter_report.as_dict()
-        payload["continuation_report"] = self.continuation_report.as_dict()
-        return payload
+        return {
+            "report_schema": self.report_schema,
+            "diagnostic_only": self.diagnostic_only,
+            "default_off": self.default_off,
+            "explicit_opt_in": self.explicit_opt_in,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "original_support_count": self.original_support_count,
+            "filtered_support_count": self.filtered_support_count,
+            "removed_support_count": self.removed_support_count,
+            "external_condensate_support_indices": self.external_condensate_support_indices,
+            "external_condensate_amounts": self.external_condensate_amounts,
+            "external_condensate_budget": self.external_condensate_budget,
+            "filter_report": self.filter_report.as_dict(),
+            "continuation_report": self.continuation_report.as_dict(),
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+        }
 
 
 def _as_vector(values: Sequence[float], name: str) -> np.ndarray:
@@ -109,6 +141,23 @@ def _as_vector(values: Sequence[float], name: str) -> np.ndarray:
     if not np.all(np.isfinite(array)):
         raise ValueError(f"{name} must contain only finite values.")
     return array
+
+
+def _filtered_species_names(
+    *,
+    species_names: Sequence[str] | None,
+    support_indices: Sequence[int],
+    valid_local_indices: Sequence[int],
+    valid_support_indices: Sequence[int],
+) -> tuple[str, ...] | None:
+    if species_names is None:
+        return None
+    names = tuple(str(name) for name in species_names)
+    if len(names) == len(tuple(support_indices)):
+        return tuple(names[int(index)] for index in valid_local_indices)
+    if valid_support_indices and max(int(index) for index in valid_support_indices) >= len(names):
+        raise ValueError("species_names must be full species order or active support names.")
+    return tuple(names[int(index)] for index in valid_support_indices)
 
 
 def run_algorithm_v11_thermo_valid_reduced_callsite(
@@ -131,6 +180,8 @@ def run_algorithm_v11_thermo_valid_reduced_callsite(
     max_abs_delta_r: float = 2.0,
     max_abs_delta_rho: float = 2.0,
     max_abs_delta_lambda: float = 100.0,
+    step_control_policy: str = "component_clip",
+    fraction_to_boundary_safety: float = 0.995,
     require_budget_nonworsening: bool = False,
     field_provenance: Mapping[str, str] | None = None,
 ) -> AlgorithmV11ThermoValidCallsiteReport:
@@ -162,6 +213,12 @@ def run_algorithm_v11_thermo_valid_reduced_callsite(
         species_names=species_names,
         sentinel_abs_threshold=sentinel_abs_threshold,
         field_provenance=field_provenance or state.field_provenance,
+    )
+    filtered_species_names = _filtered_species_names(
+        species_names=species_names,
+        support_indices=support_indices,
+        valid_local_indices=filtered.report.valid_local_indices,
+        valid_support_indices=filtered.support_indices,
     )
     active_matrix = np.asarray(formula_matrix_cond_active, dtype=np.float64)
     if active_matrix.ndim != 2 or active_matrix.shape[0] != target.shape[0]:
@@ -204,6 +261,8 @@ def run_algorithm_v11_thermo_valid_reduced_callsite(
         max_abs_delta_r=max_abs_delta_r,
         max_abs_delta_rho=max_abs_delta_rho,
         max_abs_delta_lambda=max_abs_delta_lambda,
+        step_control_policy=step_control_policy,
+        fraction_to_boundary_safety=fraction_to_boundary_safety,
         require_budget_nonworsening=require_budget_nonworsening,
     )
     return AlgorithmV11ThermoValidCallsiteReport(
@@ -256,6 +315,9 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
     max_abs_delta_r: float = 2.0,
     max_abs_delta_rho: float = 2.0,
     max_abs_delta_lambda: float = 100.0,
+    continuation_mode: str = "legacy_policy",
+    step_control_policy: str = "component_clip",
+    fraction_to_boundary_safety: float = 0.995,
     direction_policy: str = "algorithm_v11_reduced",
     algorithm_fraction_grid: Sequence[float] = (
         0.0,
@@ -277,11 +339,15 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
     persistent_filter_gamma_p: float = 1.0e-8,
     persistent_filter_gamma_theta: float = 1.0e-5,
     persistent_filter_theta_max_factor: float = 1.0e4,
+    ipopt_tiny_step_alpha_threshold: float = 1.0e-8,
+    ipopt_tiny_step_consecutive_limit: int = 1,
+    ipopt_tiny_step_switch_to_restoration: bool = True,
     strict_barrier_update_components: Sequence[str] = (),
     strict_barrier_update_threshold: float = 1.0e-6,
     center_component_weights: Mapping[str, float] | None = None,
     center_component_scales: Mapping[str, float] | None = None,
     enable_native_soft_restoration_fallback: bool = False,
+    enable_log_complementarity_centering_fallback: bool = False,
     soft_restoration_component_weights: Mapping[str, float] | None = None,
     soft_restoration_proximity_weight: float = 1.0e-2,
     soft_restoration_max_proximity: float | None = 10.0,
@@ -321,6 +387,12 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
         species_names=species_names,
         sentinel_abs_threshold=sentinel_abs_threshold,
         field_provenance=field_provenance or state.field_provenance,
+    )
+    filtered_species_names = _filtered_species_names(
+        species_names=species_names,
+        support_indices=support_indices,
+        valid_local_indices=filtered.report.valid_local_indices,
+        valid_support_indices=filtered.support_indices,
     )
     active_matrix = np.asarray(formula_matrix_cond_active, dtype=np.float64)
     if active_matrix.ndim != 2 or active_matrix.shape[0] != target.shape[0]:
@@ -373,6 +445,9 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
         max_abs_delta_r=max_abs_delta_r,
         max_abs_delta_rho=max_abs_delta_rho,
         max_abs_delta_lambda=max_abs_delta_lambda,
+        continuation_mode=continuation_mode,
+        step_control_policy=step_control_policy,
+        fraction_to_boundary_safety=fraction_to_boundary_safety,
         direction_policy=direction_policy,
         algorithm_fraction_grid=algorithm_fraction_grid,
         trial_acceptance_policy=trial_acceptance_policy,
@@ -387,11 +462,17 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
         persistent_filter_gamma_p=persistent_filter_gamma_p,
         persistent_filter_gamma_theta=persistent_filter_gamma_theta,
         persistent_filter_theta_max_factor=persistent_filter_theta_max_factor,
+        ipopt_tiny_step_alpha_threshold=ipopt_tiny_step_alpha_threshold,
+        ipopt_tiny_step_consecutive_limit=ipopt_tiny_step_consecutive_limit,
+        ipopt_tiny_step_switch_to_restoration=ipopt_tiny_step_switch_to_restoration,
         strict_barrier_update_components=strict_barrier_update_components,
         strict_barrier_update_threshold=strict_barrier_update_threshold,
         center_component_weights=center_component_weights,
         center_component_scales=center_component_scales,
         enable_native_soft_restoration_fallback=enable_native_soft_restoration_fallback,
+        enable_log_complementarity_centering_fallback=(
+            enable_log_complementarity_centering_fallback
+        ),
         soft_restoration_component_weights=soft_restoration_component_weights,
         soft_restoration_proximity_weight=soft_restoration_proximity_weight,
         soft_restoration_max_proximity=soft_restoration_max_proximity,
@@ -401,6 +482,7 @@ def run_algorithm_v11_thermo_valid_continuation_callsite(
         require_residual_nonworsening=require_residual_nonworsening,
         residual_worsening_tolerance=residual_worsening_tolerance,
         budget_row_scaling_policy=budget_row_scaling_policy,
+        species_names=filtered_species_names,
     )
     return AlgorithmV11ThermoValidContinuationCallsiteReport(
         report_schema="exogibbs_algorithm_v11_thermo_valid_continuation_callsite_report_v1",

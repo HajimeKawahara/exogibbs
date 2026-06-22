@@ -8,7 +8,7 @@ outer continuation. It does not change production behavior.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import math
 from typing import Any, Mapping, Sequence
 
@@ -20,6 +20,7 @@ from exogibbs.optimize.condensate_algorithm_v11_direction import (
     build_active_condensate_budget_correction_direction,
     build_linear_budget_total_density_amount_gas_direction,
     build_linear_budget_total_density_restoration_direction,
+    build_log_complementarity_centering_direction,
 )
 from exogibbs.optimize.condensate_algorithm_v11_filter import (
     select_filter_restoration_trial,
@@ -49,6 +50,7 @@ class AlgorithmV11ContinuationReport:
     """Report for diagnostic PD-IPM outer/inner continuation."""
 
     report_schema: str
+    continuation_mode: str
     diagnostic_only: bool
     default_off: bool
     explicit_opt_in: bool
@@ -57,6 +59,10 @@ class AlgorithmV11ContinuationReport:
     preset_default_wiring_change: bool
     outer_iteration_count: int
     inner_iteration_count: int
+    filter_accept_count: int
+    restoration_count: int
+    barrier_update_count: int
+    tiny_step_count: int
     reached_final_barrier: bool
     converged_at_final_barrier: bool
     stopped_reason: str
@@ -76,9 +82,41 @@ class AlgorithmV11ContinuationReport:
     fastchem4_trace_public_runtime_constructor_inputs_used: bool
 
     def as_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
-        payload["final_state"] = self.final_state.as_dict()
-        return payload
+        return {
+            "report_schema": self.report_schema,
+            "continuation_mode": self.continuation_mode,
+            "diagnostic_only": self.diagnostic_only,
+            "default_off": self.default_off,
+            "explicit_opt_in": self.explicit_opt_in,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "outer_iteration_count": self.outer_iteration_count,
+            "inner_iteration_count": self.inner_iteration_count,
+            "filter_accept_count": self.filter_accept_count,
+            "restoration_count": self.restoration_count,
+            "barrier_update_count": self.barrier_update_count,
+            "tiny_step_count": self.tiny_step_count,
+            "reached_final_barrier": self.reached_final_barrier,
+            "converged_at_final_barrier": self.converged_at_final_barrier,
+            "stopped_reason": self.stopped_reason,
+            "initial_epsilon": self.initial_epsilon,
+            "final_epsilon_target": self.final_epsilon_target,
+            "final_epsilon": self.final_epsilon,
+            "tau": self.tau,
+            "barrier_schedule_policy": self.barrier_schedule_policy,
+            "ipopt_mu_linear_decrease_factor": self.ipopt_mu_linear_decrease_factor,
+            "ipopt_mu_superlinear_decrease_power": self.ipopt_mu_superlinear_decrease_power,
+            "ipopt_enable_superlinear_decrease": self.ipopt_enable_superlinear_decrease,
+            "center_tolerance_multiplier": self.center_tolerance_multiplier,
+            "final_residual_l2": self.final_residual_l2,
+            "final_p_merit": self.final_p_merit,
+            "final_state": self.final_state.as_dict(),
+            "outer_records": self.outer_records,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+        }
 
 
 def _as_vector(values: Sequence[float], name: str) -> np.ndarray:
@@ -379,6 +417,171 @@ def _select_dedicated_restoration_trial(
     }
 
 
+def _protected_component_acceptance_report(
+    *,
+    current_components: Mapping[str, Any],
+    trial_components: Mapping[str, Any],
+    component_scales: Mapping[str, float],
+    protected_components: Sequence[str],
+    max_normalized_increase: float | None,
+) -> dict[str, Any]:
+    if max_normalized_increase is None or not protected_components:
+        return {
+            "report_schema": "exogibbs_protected_component_acceptance_report_v1",
+            "accepted": True,
+            "protected_components": tuple(str(name) for name in protected_components),
+            "max_normalized_increase": None,
+            "blocking_components": (),
+            "diagnostic_only": True,
+            "production_behavior_change": False,
+        }
+    limit = float(max_normalized_increase)
+    if not math.isfinite(limit) or limit < 0.0:
+        raise ValueError("max_normalized_increase must be finite and non-negative.")
+    blocking: list[dict[str, Any]] = []
+    for name in protected_components:
+        key = str(name)
+        current = float(current_components.get(key, math.nan))
+        trial = float(trial_components.get(key, math.nan))
+        scale = float(component_scales.get(key, math.nan))
+        if not (math.isfinite(current) and math.isfinite(trial) and math.isfinite(scale)):
+            blocking.append(
+                {
+                    "component": key,
+                    "current": current,
+                    "trial": trial,
+                    "scale": scale,
+                    "normalized_increase": math.inf,
+                }
+            )
+            continue
+        if scale <= 0.0:
+            blocking.append(
+                {
+                    "component": key,
+                    "current": current,
+                    "trial": trial,
+                    "scale": scale,
+                    "normalized_increase": math.inf,
+                }
+            )
+            continue
+        normalized_increase = (trial - current) / scale
+        if normalized_increase > limit:
+            blocking.append(
+                {
+                    "component": key,
+                    "current": current,
+                    "trial": trial,
+                    "scale": scale,
+                    "normalized_increase": float(normalized_increase),
+                }
+            )
+    return {
+        "report_schema": "exogibbs_protected_component_acceptance_report_v1",
+        "accepted": not blocking,
+        "protected_components": tuple(str(name) for name in protected_components),
+        "max_normalized_increase": limit,
+        "blocking_components": tuple(blocking),
+        "diagnostic_only": True,
+        "production_behavior_change": False,
+    }
+
+
+def _inner_status_for_accepted_source(source: str | None) -> str:
+    if source == "ipopt_h_filter":
+        return "ipopt_h_filter_selected"
+    if source == "ipopt_persistent_filter_f_type":
+        return "ipopt_persistent_filter_f_type_selected"
+    if source == "filter_restoration":
+        return "filter_restoration_selected"
+    if source == "best_residual":
+        return "best_residual_selected"
+    return "p_armijo_selected"
+
+
+def _line_search_failure_summary(
+    *,
+    trial_acceptance_policy: str,
+    direction_records: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    p_selected = 0
+    filter_selected = 0
+    h_selected = 0
+    h_accepted = 0
+    persistent_blocked = 0
+    f_type_blocked = 0
+    finite_trials = 0
+    for direction in direction_records:
+        p_report = direction.get("p_armijo_selection")
+        filter_report = direction.get("filter_selection")
+        h_report = direction.get("ipopt_h_type_selection")
+        persistent_report = direction.get("persistent_filter_report")
+        f_type_report = direction.get("persistent_filter_f_type_report")
+        if isinstance(p_report, Mapping):
+            finite_trials += int(p_report.get("finite_trial_count", 0))
+            if bool(p_report.get("selected", False)):
+                p_selected += 1
+        if isinstance(filter_report, Mapping) and bool(filter_report.get("selected", False)):
+            filter_selected += 1
+        if isinstance(h_report, Mapping):
+            h_accepted += int(h_report.get("accepted_trial_count", 0))
+            if bool(h_report.get("selected", False)):
+                h_selected += 1
+        if isinstance(persistent_report, Mapping) and not bool(
+            persistent_report.get("acceptable", True)
+        ):
+            persistent_blocked += 1
+        if isinstance(f_type_report, Mapping) and not bool(
+            f_type_report.get("acceptable", True)
+        ):
+            f_type_blocked += 1
+
+    if trial_acceptance_policy == "ipopt_persistent_h_type":
+        if h_selected > 0 and persistent_blocked > 0:
+            status = "ipopt_persistent_filter_rejected"
+            reason = "An h-type candidate existed, but persistent filter memory rejected it."
+        elif p_selected > 0 and h_accepted == 0:
+            status = "ipopt_h_filter_rejected"
+            reason = (
+                "P-Armijo produced a merit-improving candidate, but the Ipopt-style "
+                "h-filter did not accept a constraint-violation step."
+            )
+        elif f_type_blocked > 0:
+            status = "ipopt_persistent_filter_f_type_rejected"
+            reason = "A P-Armijo f-type candidate was blocked by persistent filter memory."
+        elif finite_trials == 0:
+            status = "no_finite_trial"
+            reason = "No finite line-search trials were available."
+        else:
+            status = "no_acceptable_ipopt_filter_trial"
+            reason = "No h-type, f-type, or restoration trial passed the active filter policy."
+    elif p_selected == 0:
+        status = "no_p_armijo_trial"
+        reason = "No P-Armijo trial satisfied sufficient merit decrease."
+    elif filter_selected == 0 and trial_acceptance_policy == "filter_restoration":
+        status = "filter_restoration_rejected"
+        reason = "A P-Armijo candidate existed, but the restoration filter rejected it."
+    else:
+        status = "no_accepted_trial"
+        reason = "Finite trials existed, but none passed the active acceptance policy."
+    return {
+        "summary_schema": "exogibbs_line_search_failure_summary_v1",
+        "status": status,
+        "reason": reason,
+        "trial_acceptance_policy": trial_acceptance_policy,
+        "p_armijo_selected_direction_count": p_selected,
+        "filter_selected_direction_count": filter_selected,
+        "ipopt_h_selected_direction_count": h_selected,
+        "ipopt_h_accepted_trial_count": h_accepted,
+        "persistent_filter_blocked_direction_count": persistent_blocked,
+        "persistent_filter_f_type_blocked_direction_count": f_type_blocked,
+        "finite_trial_count": finite_trials,
+        "diagnostic_only": True,
+        "production_behavior_change": True,
+    }
+
+
 def fraction_to_boundary_alpha(
     *,
     delta_r: Sequence[float],
@@ -400,6 +603,103 @@ def fraction_to_boundary_alpha(
     if negative_drho.size:
         candidates.append(float(np.min(-1.0 / negative_drho)))
     return float(max(0.0, min(1.0, gamma_value * min(candidates))))
+
+
+def primal_dual_fraction_to_boundary_alphas(
+    *,
+    delta_r: Sequence[float],
+    delta_rho: Sequence[float],
+    gamma: float = 0.995,
+) -> dict[str, float]:
+    """Return separate Ipopt-style primal and dual step-length limits."""
+
+    dr = _as_vector(delta_r, "delta_r")
+    drho = _as_vector(delta_rho, "delta_rho")
+    gamma_value = float(gamma)
+    if not math.isfinite(gamma_value) or gamma_value <= 0.0 or gamma_value >= 1.0:
+        raise ValueError("gamma must be finite and in the interval (0, 1).")
+
+    def limited_alpha(direction: np.ndarray) -> float:
+        candidates = [1.0]
+        negative = direction[direction < 0.0]
+        if negative.size:
+            candidates.append(float(np.min(-1.0 / negative)))
+        return float(max(0.0, min(1.0, gamma_value * min(candidates))))
+
+    alpha_primal = limited_alpha(dr)
+    alpha_dual = limited_alpha(drho)
+    return {
+        "alpha_primal": alpha_primal,
+        "alpha_dual": alpha_dual,
+        "alpha_combined": min(alpha_primal, alpha_dual),
+        "gamma": gamma_value,
+    }
+
+
+def fraction_to_boundary_blocker_report(
+    *,
+    r: Sequence[float],
+    rho: Sequence[float],
+    delta_r: Sequence[float],
+    delta_rho: Sequence[float],
+    gamma: float = 0.995,
+    species_names: Sequence[str] | None = None,
+    max_entries: int = 8,
+) -> dict[str, Any]:
+    """Return diagnostics for variables that limit scalar fraction-to-boundary."""
+
+    r_array = _as_vector(r, "r")
+    rho_array = _as_vector(rho, "rho")
+    dr = _as_vector(delta_r, "delta_r")
+    drho = _as_vector(delta_rho, "delta_rho")
+    if r_array.shape != dr.shape or rho_array.shape != drho.shape:
+        raise ValueError("current values and directions must have matching shapes.")
+    gamma_value = float(gamma)
+    if not math.isfinite(gamma_value) or gamma_value <= 0.0 or gamma_value >= 1.0:
+        raise ValueError("gamma must be finite and in the interval (0, 1).")
+    names: tuple[str, ...] | None = None
+    if species_names is not None:
+        names = tuple(str(name) for name in species_names)
+        if len(names) != r_array.shape[0]:
+            raise ValueError("species_names must match the condensate vector length.")
+    blockers: list[dict[str, Any]] = []
+    for group, current, direction in (
+        ("r", r_array, dr),
+        ("rho", rho_array, drho),
+    ):
+        for index, value in enumerate(direction):
+            if not math.isfinite(float(value)) or float(value) >= 0.0:
+                continue
+            raw_alpha = float(-1.0 / float(value))
+            if not math.isfinite(raw_alpha) or raw_alpha <= 0.0:
+                continue
+            row: dict[str, Any] = {
+                "variable_group": group,
+                "local_index": int(index),
+                "current_log_value": float(current[index]),
+                "direction": float(value),
+                "raw_alpha": raw_alpha,
+                "safety_alpha": float(min(1.0, gamma_value * raw_alpha)),
+            }
+            if names is not None:
+                row["species_name"] = names[index]
+            blockers.append(row)
+    blockers.sort(key=lambda row: (float(row["safety_alpha"]), float(row["raw_alpha"])))
+    limiting = blockers[0] if blockers else None
+    return {
+        "report_schema": "exogibbs_fraction_to_boundary_blocker_report_v1",
+        "step_policy": "scalar_fraction_to_boundary",
+        "safety": gamma_value,
+        "limiting_variable_group": None if limiting is None else limiting["variable_group"],
+        "limiting_local_index": None if limiting is None else limiting["local_index"],
+        "limiting_species_name": None if limiting is None else limiting.get("species_name"),
+        "limiting_raw_alpha": None if limiting is None else limiting["raw_alpha"],
+        "limiting_safety_alpha": None if limiting is None else limiting["safety_alpha"],
+        "blocker_count": len(blockers),
+        "top_blockers": tuple(blockers[: int(max_entries)]),
+        "diagnostic_only": True,
+        "production_behavior_change": False,
+    }
 
 
 def _apply_condensate_capacity_cap(
@@ -450,7 +750,13 @@ def _trial_rows(
     equality_penalty_weight: float,
     total_density_penalty_weight: float,
     enforce_condensate_capacity: bool = False,
+    alpha_dual: float | None = None,
 ) -> list[dict[str, Any]]:
+    alpha_dual_value = None if alpha_dual is None else float(alpha_dual)
+    if alpha_dual_value is not None and (
+        not math.isfinite(alpha_dual_value) or alpha_dual_value < 0.0
+    ):
+        raise ValueError("alpha_dual must be finite and non-negative when provided.")
     alphas = sorted(
         {
             float(alpha)
@@ -464,6 +770,7 @@ def _trial_rows(
         alphas = sorted(set(alphas), reverse=True)
     rows: list[dict[str, Any]] = []
     for alpha in alphas:
+        dual_alpha = float(alpha) if alpha_dual_value is None else min(1.0, alpha_dual_value)
         q_trial = q + alpha * delta_q
         r_trial = r + alpha * delta_r
         capacity_cap_count = 0
@@ -473,8 +780,8 @@ def _trial_rows(
                 formula_matrix_cond_active=formula_matrix_cond_active,
                 element_inventory_target=element_inventory_target,
             )
-        lam_trial = lam + alpha * delta_lambda
-        rho_trial = rho + alpha * delta_rho
+        lam_trial = lam + dual_alpha * delta_lambda
+        rho_trial = rho + dual_alpha * delta_rho
         qtot_trial = float(qtot + alpha * delta_qtot)
         residual_l2, residual_components = _residual_norm(
             formula_matrix=formula_matrix,
@@ -508,6 +815,8 @@ def _trial_rows(
         rows.append(
             {
                 "alpha": float(alpha),
+                "alpha_primal": float(alpha),
+                "alpha_dual": float(dual_alpha),
                 "p_merit": float(merit["total_merit"]),
                 "p_merit_breakdown": merit,
                 "residual_l2": residual_l2,
@@ -857,6 +1166,9 @@ def run_algorithm_v11_pdipm_continuation(
     max_abs_delta_r: float = 2.0,
     max_abs_delta_rho: float = 2.0,
     max_abs_delta_lambda: float = 100.0,
+    continuation_mode: str = "legacy_policy",
+    step_control_policy: str = "component_clip",
+    fraction_to_boundary_safety: float = 0.995,
     direction_policy: str = "algorithm_v11_reduced",
     algorithm_fraction_grid: Sequence[float] = (0.0, 0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1.0),
     trial_acceptance_policy: str = "p_armijo_or_best_residual",
@@ -869,12 +1181,16 @@ def run_algorithm_v11_pdipm_continuation(
     persistent_filter_gamma_p: float = 1.0e-8,
     persistent_filter_gamma_theta: float = 1.0e-5,
     persistent_filter_theta_max_factor: float = 1.0e4,
+    ipopt_tiny_step_alpha_threshold: float = 1.0e-8,
+    ipopt_tiny_step_consecutive_limit: int = 1,
+    ipopt_tiny_step_switch_to_restoration: bool = True,
     strict_barrier_update_components: Sequence[str] = (),
     strict_barrier_update_threshold: float = 1.0e-6,
     center_metric_policy: str = "raw_l2",
     center_component_weights: Mapping[str, float] | None = None,
     center_component_scales: Mapping[str, float] | None = None,
     enable_native_soft_restoration_fallback: bool = False,
+    enable_log_complementarity_centering_fallback: bool = False,
     soft_restoration_component_weights: Mapping[str, float] | None = None,
     soft_restoration_proximity_weight: float = 1.0e-2,
     soft_restoration_max_proximity: float | None = 10.0,
@@ -884,6 +1200,7 @@ def run_algorithm_v11_pdipm_continuation(
     require_residual_nonworsening: bool = False,
     residual_worsening_tolerance: float = 0.0,
     budget_row_scaling_policy: str = "absolute",
+    species_names: Sequence[str] | None = None,
 ) -> AlgorithmV11ContinuationReport:
     """Run diagnostic outer/inner PD-IPM continuation for algorithm-v1.1."""
 
@@ -926,6 +1243,51 @@ def run_algorithm_v11_pdipm_continuation(
         )
     if max_outer_iterations < 1 or max_inner_iterations < 1:
         raise ValueError("iteration limits must be positive.")
+    mode = str(continuation_mode)
+    if mode not in {"legacy_policy", "pdipm_core"}:
+        raise ValueError("continuation_mode must be legacy_policy or pdipm_core.")
+    if mode == "pdipm_core":
+        step_control_policy = "scalar_fraction_to_boundary"
+        direction_policy = "algorithm_v11_reduced"
+        trial_acceptance_policy = "ipopt_persistent_h_type"
+        filter_component_scale_policy = "current"
+        enable_native_soft_restoration_fallback = True
+        enable_log_complementarity_centering_fallback = True
+        enable_dedicated_restoration_filter_phase = True
+        ipopt_tiny_step_switch_to_restoration = True
+        require_residual_nonworsening = False
+        if filter_component_weights is None:
+            filter_component_weights = {
+                "budget": 1.0,
+                "total_density": 1.0,
+                "amount_weighted_gas": 1.0,
+                "amount_weighted_condensate": 1.0,
+                "complementarity": 1.0,
+            }
+        if ipopt_h_type_component_weights is None:
+            ipopt_h_type_component_weights = filter_component_weights
+        if soft_restoration_component_weights is None:
+            soft_restoration_component_weights = {
+                "budget": 1.0,
+                "total_density": 1.0,
+                "amount_weighted_gas": 1.0,
+                "amount_weighted_condensate": 1.0,
+            }
+        if dedicated_restoration_component_weights is None:
+            dedicated_restoration_component_weights = soft_restoration_component_weights
+        if not ipopt_h_type_protected_components:
+            ipopt_h_type_protected_components = ("budget", "total_density")
+    if step_control_policy not in {"component_clip", "scalar_fraction_to_boundary"}:
+        raise ValueError(
+            "step_control_policy must be component_clip or scalar_fraction_to_boundary."
+        )
+    fraction_safety = float(fraction_to_boundary_safety)
+    if (
+        not math.isfinite(fraction_safety)
+        or fraction_safety <= 0.0
+        or fraction_safety > 1.0
+    ):
+        raise ValueError("fraction_to_boundary_safety must be in the interval (0, 1].")
     if trial_acceptance_policy not in {
         "p_armijo_or_best_residual",
         "filter_restoration",
@@ -987,6 +1349,13 @@ def run_algorithm_v11_pdipm_continuation(
         raise ValueError("persistent_filter_gamma_theta must be finite and non-negative.")
     if not math.isfinite(persistent_theta_max_factor) or persistent_theta_max_factor <= 0.0:
         raise ValueError("persistent_filter_theta_max_factor must be finite and positive.")
+    tiny_step_alpha_threshold = float(ipopt_tiny_step_alpha_threshold)
+    if not math.isfinite(tiny_step_alpha_threshold) or tiny_step_alpha_threshold < 0.0:
+        raise ValueError("ipopt_tiny_step_alpha_threshold must be finite and non-negative.")
+    tiny_step_consecutive_limit = int(ipopt_tiny_step_consecutive_limit)
+    if tiny_step_consecutive_limit < 1:
+        raise ValueError("ipopt_tiny_step_consecutive_limit must be positive.")
+    tiny_step_switch_to_restoration = bool(ipopt_tiny_step_switch_to_restoration)
     strict_barrier_names = tuple(str(name) for name in strict_barrier_update_components)
     strict_barrier_threshold = float(strict_barrier_update_threshold)
     if not math.isfinite(strict_barrier_threshold) or strict_barrier_threshold < 0.0:
@@ -1022,10 +1391,17 @@ def run_algorithm_v11_pdipm_continuation(
     lam = _as_vector(state.element_potential, "state.element_potential")
     rho = _as_vector(state.rho, "state.rho")
     qtot = float(state.ln_ntot)
+    active_species_names: tuple[str, ...] | None = None
+    if species_names is not None:
+        active_species_names = tuple(str(name) for name in species_names)
+        if len(active_species_names) != r.shape[0]:
+            raise ValueError("species_names must match active condensate length.")
     if external_budget.shape[0] != target.shape[0]:
         raise ValueError("external_condensate_budget length must match element rows.")
     outer_records: list[Mapping[str, Any]] = []
     inner_count = 0
+    tiny_step_count = 0
+    consecutive_tiny_step_count = 0
     stopped_reason = "max_outer_iterations_reached"
     reached_final = False
     converged_final = False
@@ -1136,6 +1512,8 @@ def run_algorithm_v11_pdipm_continuation(
                 max_abs_delta_r=max_abs_delta_r,
                 max_abs_delta_rho=max_abs_delta_rho,
                 max_abs_delta_lambda=max_abs_delta_lambda,
+                step_control_policy=step_control_policy,
+                fraction_to_boundary_safety=fraction_safety,
             )
             step_dict = step.as_dict()
             delta_q = np.asarray(step_dict["delta_q"], dtype=np.float64)
@@ -1170,11 +1548,26 @@ def run_algorithm_v11_pdipm_continuation(
             selected_trial: Mapping[str, Any] | None = None
             selected_score: tuple[float, float] | None = None
             selected_selection = None
+            selected_acceptance_source: str | None = None
             for direction in direction_candidates:
-                alpha_max = fraction_to_boundary_alpha(
+                alpha_limits = primal_dual_fraction_to_boundary_alphas(
                     delta_r=direction.delta_r,
                     delta_rho=direction.delta_rho,
                     gamma=fraction_to_boundary_gamma,
+                )
+                alpha_max = (
+                    alpha_limits["alpha_primal"]
+                    if mode == "pdipm_core"
+                    else alpha_limits["alpha_combined"]
+                )
+                alpha_dual = alpha_limits["alpha_dual"] if mode == "pdipm_core" else None
+                alpha_blocker_report = fraction_to_boundary_blocker_report(
+                    r=r,
+                    rho=rho,
+                    delta_r=direction.delta_r,
+                    delta_rho=direction.delta_rho,
+                    gamma=fraction_to_boundary_gamma,
+                    species_names=active_species_names,
                 )
                 trials = _trial_rows(
                     alpha_grid=alpha_grid,
@@ -1199,6 +1592,7 @@ def run_algorithm_v11_pdipm_continuation(
                     equality_penalty_weight=equality_penalty_weight,
                     total_density_penalty_weight=total_density_penalty_weight,
                     enforce_condensate_capacity=enforce_trial_condensate_capacity,
+                    alpha_dual=alpha_dual,
                 )
                 selection = select_p_based_armijo_trial(
                     trials,
@@ -1293,9 +1687,68 @@ def run_algorithm_v11_pdipm_continuation(
                     if finite_trials
                     else None
                 )
+                persistent_filter_f_type_report = None
+                persistent_filter_f_type_theta = None
+                persistent_filter_f_type_theta_max = None
+                persistent_filter_f_type_protected_report = None
+                persistent_filter_f_type_trial = None
+                if (
+                    trial_acceptance_policy == "ipopt_persistent_h_type"
+                    and ipopt_h_type_trial is None
+                    and candidate_trial is not None
+                ):
+                    weights = ipopt_h_type_component_weights or filter_component_weights
+                    assert weights is not None
+                    persistent_filter_f_type_theta = _weighted_filter_theta(
+                        candidate_trial["residual_components"],
+                        weights,
+                    )
+                    reference_theta = (
+                        1.0
+                        if persistent_filter_reference_theta is None
+                        else max(1.0, float(persistent_filter_reference_theta))
+                    )
+                    persistent_filter_f_type_theta_max = max(
+                        1.0,
+                        persistent_theta_max_factor * reference_theta,
+                    )
+                    persistent_filter_f_type_report = is_acceptable_to_persistent_filter(
+                        p_merit=float(candidate_trial["p_merit"]),
+                        theta=persistent_filter_f_type_theta,
+                        entries=persistent_filter_entries,
+                        gamma_p=persistent_gamma_p,
+                        gamma_theta=persistent_gamma_theta,
+                        theta_max=persistent_filter_f_type_theta_max,
+                    )
+                    component_scales = (
+                        ipopt_h_type_selection.component_scales
+                        if ipopt_h_type_selection is not None
+                        else {
+                            str(name): max(abs(float(current_components.get(name, 0.0))), 1.0)
+                            for name in weights
+                        }
+                    )
+                    persistent_filter_f_type_protected_report = (
+                        _protected_component_acceptance_report(
+                            current_components=current_components,
+                            trial_components=candidate_trial["residual_components"],
+                            component_scales=component_scales,
+                            protected_components=ipopt_h_type_protected_components,
+                            max_normalized_increase=protected_max_increase,
+                        )
+                    )
+                    if (
+                        persistent_filter_f_type_report.acceptable
+                        and persistent_filter_f_type_protected_report["accepted"]
+                    ):
+                        persistent_filter_f_type_trial = candidate_trial
                 direction_record = {
                     "direction_kind": direction.direction_kind,
+                    "fraction_to_boundary_alpha_primal": alpha_limits["alpha_primal"],
+                    "fraction_to_boundary_alpha_dual": alpha_limits["alpha_dual"],
+                    "fraction_to_boundary_alpha_combined": alpha_limits["alpha_combined"],
                     "fraction_to_boundary_alpha": alpha_max,
+                    "fraction_to_boundary_blocker_report": alpha_blocker_report,
                     "p_armijo_selection": selection.as_dict(),
                     "filter_selection": filter_selection.as_dict(),
                     "ipopt_h_type_selection": None
@@ -1311,23 +1764,47 @@ def run_algorithm_v11_pdipm_continuation(
                     "persistent_filter_report": None
                     if persistent_filter_report is None
                     else persistent_filter_report.as_dict(),
+                    "persistent_filter_f_type_theta": persistent_filter_f_type_theta,
+                    "persistent_filter_f_type_theta_max": persistent_filter_f_type_theta_max,
+                    "persistent_filter_f_type_report": None
+                    if persistent_filter_f_type_report is None
+                    else persistent_filter_f_type_report.as_dict(),
+                    "persistent_filter_f_type_protected_report": (
+                        persistent_filter_f_type_protected_report
+                    ),
+                    "persistent_filter_f_type_trial": persistent_filter_f_type_trial,
                 }
                 direction_records.append(direction_record)
+                acceptance_source: str | None = None
                 if trial_acceptance_policy == "ipopt_fastchem4_h_type":
                     trial_for_score = ipopt_h_type_trial
+                    acceptance_source = "ipopt_h_filter" if trial_for_score is not None else None
                     if trial_for_score is None and filter_trial is not None:
                         trial_for_score = filter_trial
+                        acceptance_source = "filter_restoration"
                     if trial_for_score is None and candidate_trial is not None:
                         trial_for_score = candidate_trial
+                        acceptance_source = "p_armijo"
                 elif trial_acceptance_policy == "filter_restoration":
                     trial_for_score = filter_trial
+                    acceptance_source = (
+                        "filter_restoration" if trial_for_score is not None else None
+                    )
                     if trial_for_score is None and candidate_trial is not None:
                         trial_for_score = candidate_trial
+                        acceptance_source = "p_armijo"
                 elif trial_acceptance_policy == "ipopt_persistent_h_type":
                     trial_for_score = ipopt_h_type_trial
+                    acceptance_source = "ipopt_h_filter" if trial_for_score is not None else None
+                    if trial_for_score is None and persistent_filter_f_type_trial is not None:
+                        trial_for_score = persistent_filter_f_type_trial
+                        acceptance_source = "ipopt_persistent_filter_f_type"
                 else:
                     trial_for_score = (
                         candidate_trial if candidate_trial is not None else best_residual_trial
+                    )
+                    acceptance_source = (
+                        "p_armijo" if candidate_trial is not None else "best_residual"
                     )
                 if trial_for_score is None:
                     continue
@@ -1345,9 +1822,17 @@ def run_algorithm_v11_pdipm_continuation(
                     selected_direction = direction
                     selected_trial = trial_for_score
                     selected_selection = selection
+                    selected_acceptance_source = acceptance_source
             record = {
                 "inner_index": inner_index,
-                "status": "p_armijo_selected" if selected_trial is not None else "no_p_armijo_trial",
+                "status": (
+                    _inner_status_for_accepted_source(selected_acceptance_source)
+                    if selected_trial is not None
+                    else _line_search_failure_summary(
+                        trial_acceptance_policy=trial_acceptance_policy,
+                        direction_records=direction_records,
+                    )["status"]
+                ),
                 "epsilon": eps,
                 "nu": nu,
                 "residual_l2_before": current_residual_l2,
@@ -1362,6 +1847,7 @@ def run_algorithm_v11_pdipm_continuation(
                 else dict(center_component_scales),
                 "p_merit_before": current_p["total_merit"],
                 "center_threshold": center_threshold,
+                "continuation_mode": mode,
                 "direction_policy": direction_policy,
                 "trial_acceptance_policy": trial_acceptance_policy,
                 "filter_component_weights": None
@@ -1379,11 +1865,17 @@ def run_algorithm_v11_pdipm_continuation(
                 "persistent_filter_gamma_p": persistent_gamma_p,
                 "persistent_filter_gamma_theta": persistent_gamma_theta,
                 "persistent_filter_theta_max_factor": persistent_theta_max_factor,
+                "ipopt_tiny_step_alpha_threshold": tiny_step_alpha_threshold,
+                "ipopt_tiny_step_consecutive_limit": tiny_step_consecutive_limit,
+                "ipopt_tiny_step_switch_to_restoration": tiny_step_switch_to_restoration,
                 "persistent_filter_entry_count_before": len(persistent_filter_entries),
                 "strict_barrier_update_components": strict_barrier_names,
                 "strict_barrier_update_threshold": strict_barrier_threshold,
                 "enable_native_soft_restoration_fallback": bool(
                     enable_native_soft_restoration_fallback
+                ),
+                "enable_log_complementarity_centering_fallback": bool(
+                    enable_log_complementarity_centering_fallback
                 ),
                 "soft_restoration_component_weights": None
                 if soft_restoration_component_weights is None
@@ -1399,17 +1891,197 @@ def run_algorithm_v11_pdipm_continuation(
                 "dedicated_restoration_max_proximity": dedicated_max_proximity,
                 "require_residual_nonworsening": require_residual_nonworsening,
                 "residual_worsening_tolerance": residual_tol,
+                "step_control_policy": step_dict["step_control_policy"],
+                "step_fraction_to_boundary_alpha": step_dict[
+                    "fraction_to_boundary_alpha"
+                ],
+                "step_fraction_to_boundary_safety": step_dict[
+                    "fraction_to_boundary_safety"
+                ],
+                "step_fraction_to_boundary_blocker_report": (
+                    direction_records[0].get("fraction_to_boundary_blocker_report")
+                    if direction_records
+                    else None
+                ),
                 "direction_records": direction_records,
+                "line_search_failure_summary": None
+                if selected_trial is not None
+                else _line_search_failure_summary(
+                    trial_acceptance_policy=trial_acceptance_policy,
+                    direction_records=direction_records,
+                ),
                 "selected_direction_kind": None
                 if selected_direction is None
                 else selected_direction.direction_kind,
+                "selected_acceptance_source": selected_acceptance_source,
                 "p_armijo_selection": None
                 if selected_selection is None
                 else selected_selection.as_dict(),
                 "selected_trial": selected_trial,
+                "log_complementarity_centering_selection": None,
+                "log_complementarity_centering_trial": None,
                 "soft_restoration_fallback_selection": None,
                 "soft_restoration_fallback_trial": None,
             }
+            tiny_step_detected = False
+            tiny_step_forces_restoration = False
+            tiny_step_alpha = None
+            if selected_trial is not None:
+                selected_alpha = float(selected_trial["alpha"])
+                selected_alpha_primal = float(
+                    selected_trial.get("alpha_primal", selected_alpha)
+                )
+                tiny_step_alpha = selected_alpha_primal
+                tiny_step_detected = (
+                    mode == "pdipm_core"
+                    and tiny_step_alpha_threshold > 0.0
+                    and selected_alpha_primal <= tiny_step_alpha_threshold
+                )
+                if tiny_step_detected:
+                    tiny_step_count += 1
+                    consecutive_tiny_step_count += 1
+                    tiny_step_forces_restoration = (
+                        tiny_step_switch_to_restoration
+                        and consecutive_tiny_step_count >= tiny_step_consecutive_limit
+                    )
+                    if tiny_step_forces_restoration:
+                        selected_direction = None
+                        selected_trial = None
+                        selected_selection = None
+                        selected_acceptance_source = None
+                        record["status"] = "tiny_step_requires_restoration"
+                        record["selected_direction_kind"] = None
+                        record["selected_acceptance_source"] = None
+                        record["p_armijo_selection"] = None
+                        record["selected_trial"] = None
+                else:
+                    consecutive_tiny_step_count = 0
+            record["tiny_step_detected"] = tiny_step_detected
+            record["tiny_step_alpha"] = tiny_step_alpha
+            record["tiny_step_forces_restoration"] = tiny_step_forces_restoration
+            record["consecutive_tiny_step_count"] = consecutive_tiny_step_count
+            if (
+                selected_trial is None
+                and enable_log_complementarity_centering_fallback
+                and trial_acceptance_policy == "ipopt_persistent_h_type"
+            ):
+                centering_direction = build_log_complementarity_centering_direction(
+                    q_size=q.shape[0],
+                    r=r,
+                    lam_size=lam.shape[0],
+                    rho=rho,
+                    epsilon=eps,
+                    max_abs_delta_rho=max_abs_delta_rho,
+                )
+                alpha_limits = primal_dual_fraction_to_boundary_alphas(
+                    delta_r=centering_direction.delta_r,
+                    delta_rho=centering_direction.delta_rho,
+                    gamma=fraction_to_boundary_gamma,
+                )
+                centering_trials = _trial_rows(
+                    alpha_grid=alpha_grid,
+                    alpha_max=alpha_limits["alpha_primal"]
+                    if mode == "pdipm_core"
+                    else alpha_limits["alpha_combined"],
+                    formula_matrix=ag,
+                    formula_matrix_cond_active=ac,
+                    element_inventory_target=target,
+                    external_condensate_budget=external_budget,
+                    gas_stationarity_source=gas_source,
+                    condensate_standard_source=cond_source,
+                    q=q,
+                    r=r,
+                    lam=lam,
+                    rho=rho,
+                    qtot=qtot,
+                    epsilon=eps,
+                    delta_q=centering_direction.delta_q,
+                    delta_r=centering_direction.delta_r,
+                    delta_lambda=centering_direction.delta_lambda,
+                    delta_rho=centering_direction.delta_rho,
+                    delta_qtot=centering_direction.delta_qtot,
+                    equality_penalty_weight=equality_penalty_weight,
+                    total_density_penalty_weight=total_density_penalty_weight,
+                    enforce_condensate_capacity=enforce_trial_condensate_capacity,
+                    alpha_dual=alpha_limits["alpha_dual"] if mode == "pdipm_core" else None,
+                )
+                weights = ipopt_h_type_component_weights or filter_component_weights
+                if weights is None:
+                    raise ValueError(
+                        "ipopt_h_type_component_weights or filter_component_weights "
+                        "must be provided for complementarity centering fallback."
+                    )
+                centering_selection = select_ipopt_h_type_filter_trial(
+                    centering_trials,
+                    current_components=current_components,
+                    current_p_merit=float(current_p["total_merit"]),
+                    component_weights=weights,
+                    theta_reduction_fraction=h_type_theta_fraction,
+                    protected_components=ipopt_h_type_protected_components,
+                    protected_component_max_normalized_increase=protected_max_increase,
+                    choose_largest_alpha=True,
+                )
+                centering_trial = (
+                    centering_trials[centering_selection.selected_index]
+                    if centering_selection.selected
+                    and centering_selection.selected_index is not None
+                    else None
+                )
+                centering_persistent_report = None
+                centering_persistent_theta = None
+                centering_persistent_theta_max = None
+                if centering_trial is not None:
+                    centering_persistent_theta = _weighted_filter_theta(
+                        centering_trial["residual_components"],
+                        weights,
+                    )
+                    reference_theta = (
+                        1.0
+                        if persistent_filter_reference_theta is None
+                        else max(1.0, float(persistent_filter_reference_theta))
+                    )
+                    centering_persistent_theta_max = max(
+                        1.0,
+                        persistent_theta_max_factor * reference_theta,
+                    )
+                    centering_persistent_report = is_acceptable_to_persistent_filter(
+                        p_merit=float(centering_trial["p_merit"]),
+                        theta=centering_persistent_theta,
+                        entries=persistent_filter_entries,
+                        gamma_p=persistent_gamma_p,
+                        gamma_theta=persistent_gamma_theta,
+                        theta_max=centering_persistent_theta_max,
+                    )
+                    if not centering_persistent_report.acceptable:
+                        centering_trial = None
+                record["log_complementarity_centering_selection"] = (
+                    centering_selection.as_dict()
+                )
+                record["log_complementarity_centering_trial"] = centering_trial
+                record["log_complementarity_centering_alpha_limits"] = alpha_limits
+                record["log_complementarity_centering_persistent_filter_theta"] = (
+                    centering_persistent_theta
+                )
+                record["log_complementarity_centering_persistent_filter_theta_max"] = (
+                    centering_persistent_theta_max
+                )
+                record["log_complementarity_centering_persistent_filter_report"] = (
+                    None
+                    if centering_persistent_report is None
+                    else centering_persistent_report.as_dict()
+                )
+                if centering_trial is not None:
+                    consecutive_tiny_step_count = 0
+                    selected_direction = centering_direction
+                    selected_trial = centering_trial
+                    selected_selection = None
+                    selected_acceptance_source = "log_complementarity_centering"
+                    record["status"] = "log_complementarity_centering_selected"
+                    record["selected_direction_kind"] = centering_direction.direction_kind
+                    record["selected_acceptance_source"] = selected_acceptance_source
+                    record["p_armijo_selection"] = None
+                    record["selected_trial"] = selected_trial
+                    record["consecutive_tiny_step_count"] = consecutive_tiny_step_count
             if selected_trial is None and enable_native_soft_restoration_fallback:
                 restoration_direction = build_linear_budget_total_density_restoration_direction(
                     formula_matrix=ag,
@@ -1562,21 +2234,32 @@ def run_algorithm_v11_pdipm_continuation(
                     else restoration_persistent_filter_report.as_dict()
                 )
                 if restoration_trial is not None:
+                    consecutive_tiny_step_count = 0
                     selected_direction = restoration_direction
                     selected_trial = restoration_trial
                     selected_selection = None
+                    selected_acceptance_source = (
+                        "dedicated_restoration_filter"
+                        if enable_dedicated_restoration_filter_phase
+                        else "soft_restoration"
+                    )
                     record["status"] = (
                         "dedicated_restoration_filter_selected"
                         if enable_dedicated_restoration_filter_phase
                         else "soft_restoration_selected"
                     )
                     record["selected_direction_kind"] = restoration_direction.direction_kind
+                    record["selected_acceptance_source"] = selected_acceptance_source
                     record["p_armijo_selection"] = None
                     record["selected_trial"] = selected_trial
+                    record["consecutive_tiny_step_count"] = consecutive_tiny_step_count
             inner_records.append(record)
             inner_count += 1
             if selected_trial is None:
-                stopped_reason = "no_p_armijo_trial"
+                if record.get("status") == "tiny_step_requires_restoration":
+                    stopped_reason = "tiny_step_no_restoration_trial"
+                else:
+                    stopped_reason = str(record.get("status", "no_accepted_trial"))
                 break
             if (
                 trial_acceptance_policy == "ipopt_persistent_h_type"
@@ -1601,9 +2284,11 @@ def run_algorithm_v11_pdipm_continuation(
                     persistent_filter_entries
                 )
             alpha = float(selected_trial["alpha"])
+            alpha_primal = float(selected_trial.get("alpha_primal", alpha))
+            alpha_dual = float(selected_trial.get("alpha_dual", alpha))
             assert selected_direction is not None
-            q = q + alpha * selected_direction.delta_q
-            r = r + alpha * selected_direction.delta_r
+            q = q + alpha_primal * selected_direction.delta_q
+            r = r + alpha_primal * selected_direction.delta_r
             if enforce_trial_condensate_capacity:
                 r, capacity_cap_count = _apply_condensate_capacity_cap(
                     r=r,
@@ -1611,9 +2296,11 @@ def run_algorithm_v11_pdipm_continuation(
                     element_inventory_target=target,
                 )
                 record["accepted_condensate_capacity_cap_count"] = capacity_cap_count
-            lam = lam + alpha * selected_direction.delta_lambda
-            rho = rho + alpha * selected_direction.delta_rho
-            qtot = float(qtot + alpha * selected_direction.delta_qtot)
+            lam = lam + alpha_dual * selected_direction.delta_lambda
+            rho = rho + alpha_dual * selected_direction.delta_rho
+            qtot = float(qtot + alpha_primal * selected_direction.delta_qtot)
+            record["accepted_alpha_primal"] = alpha_primal
+            record["accepted_alpha_dual"] = alpha_dual
         final_inner = inner_records[-1] if inner_records else {}
         residual_after_outer, _components_after_outer = _residual_norm(
             formula_matrix=ag,
@@ -1637,6 +2324,15 @@ def run_algorithm_v11_pdipm_continuation(
             center_component_scales=center_component_scales,
         )
         centered = center_metric_after_outer <= center_threshold
+        center_metric_ratio_after_outer = (
+            center_metric_after_outer / center_threshold
+            if center_threshold > 0.0
+            else math.inf
+        )
+        center_metric_excess_after_outer = max(
+            0.0,
+            center_metric_after_outer - center_threshold,
+        )
         strict_barrier_update_allowed = True
         if strict_barrier_names:
             strict_barrier_update_allowed = _strict_barrier_components_met(
@@ -1658,9 +2354,21 @@ def run_algorithm_v11_pdipm_continuation(
                 stopped_reason = "final_barrier_strict_components_not_met"
         elif not centered:
             barrier_update_reason = "current_barrier_not_centered"
+            inner_status = str(final_inner.get("status", ""))
             stopped_reason = (
-                "no_p_armijo_trial"
-                if final_inner.get("status") == "no_p_armijo_trial"
+                inner_status
+                if inner_status
+                in {
+                    "no_p_armijo_trial",
+                    "no_finite_trial",
+                    "no_accepted_trial",
+                    "no_acceptable_ipopt_filter_trial",
+                    "ipopt_h_filter_rejected",
+                    "ipopt_persistent_filter_rejected",
+                    "ipopt_persistent_filter_f_type_rejected",
+                    "filter_restoration_rejected",
+                    "tiny_step_requires_restoration",
+                }
                 else "current_barrier_not_centered"
             )
         elif not strict_barrier_update_allowed:
@@ -1686,6 +2394,7 @@ def run_algorithm_v11_pdipm_continuation(
         outer_records.append(
             {
                 "outer_index": outer_index,
+                "continuation_mode": mode,
                 "epsilon": eps,
                 "nu": nu,
                 "epsilon_after_outer": epsilon_after_outer,
@@ -1699,6 +2408,8 @@ def run_algorithm_v11_pdipm_continuation(
                 "residual_l2_after_outer": residual_after_outer,
                 "residual_components_after_outer": _components_after_outer,
                 "center_metric_after_outer": center_metric_after_outer,
+                "center_metric_ratio_after_outer": center_metric_ratio_after_outer,
+                "center_metric_excess_after_outer": center_metric_excess_after_outer,
                 "center_metric_policy": center_metric_policy,
                 "center_component_weights": None
                 if center_component_weights is None
@@ -1789,8 +2500,30 @@ def run_algorithm_v11_pdipm_continuation(
         eta=np.exp(rho),
         field_provenance=state.field_provenance,
     )
+    filter_accept_count = 0
+    restoration_count = 0
+    for outer_record in outer_records:
+        for inner_record in outer_record.get("inner_records", ()):
+            status = str(inner_record.get("status", ""))
+            if status in {
+                "p_armijo_selected",
+                "dedicated_restoration_filter_selected",
+                "soft_restoration_selected",
+            }:
+                selected_trial = inner_record.get("selected_trial")
+                if selected_trial is not None:
+                    filter_accept_count += 1
+            if status in {
+                "dedicated_restoration_filter_selected",
+                "soft_restoration_selected",
+            }:
+                restoration_count += 1
+    barrier_update_count = sum(
+        1 for outer_record in outer_records if bool(outer_record.get("barrier_updated"))
+    )
     return AlgorithmV11ContinuationReport(
         report_schema="exogibbs_algorithm_v11_pdipm_continuation_report_v1",
+        continuation_mode=mode,
         diagnostic_only=True,
         default_off=True,
         explicit_opt_in=True,
@@ -1799,6 +2532,10 @@ def run_algorithm_v11_pdipm_continuation(
         preset_default_wiring_change=False,
         outer_iteration_count=len(outer_records),
         inner_iteration_count=inner_count,
+        filter_accept_count=filter_accept_count,
+        restoration_count=restoration_count,
+        barrier_update_count=barrier_update_count,
+        tiny_step_count=tiny_step_count,
         reached_final_barrier=reached_final,
         converged_at_final_barrier=converged_final,
         stopped_reason=stopped_reason,
@@ -1822,5 +2559,6 @@ def run_algorithm_v11_pdipm_continuation(
 __all__ = (
     "AlgorithmV11ContinuationReport",
     "fraction_to_boundary_alpha",
+    "primal_dual_fraction_to_boundary_alphas",
     "run_algorithm_v11_pdipm_continuation",
 )

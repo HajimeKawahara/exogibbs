@@ -2,7 +2,7 @@
 
 この文書は、ExoGibbs の凝縮あり計算で現在の基準経路として扱う **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
 
-現在の実装版は **HEAD route v1.8** である。v1.8 は v1.7 の validity-aware diagnostics を維持しつつ、support-cap retry / staged support-growth retry の採用を「最初に gate を通った候補」ではなく、ExoGibbs-native inactive support closure score が最も良い converged 候補で選ぶ更新である。FastChem4 output は比較対象としてのみ使い、constructor input には使わない。
+現在の実装版は **HEAD route v1.18** である。v1.18 は v1.17 の `pdipm_core` primary continuation、Ipopt-style tiny-step handling、full-condensate budget feasibility restoration を維持しつつ、native fallback が restricted solver payload を持たない場合でも、有限な PD-IPM lifecycle final state から support growth を続行する。fallback public state も seed candidate と lifecycle final-state candidate を full-budget gate で比較し、seed が既に accepted の場合は未受理 final state で上書きしない。さらに native fallback に限り、full-budget gate 直前に gas log amount と active condensate amount を joint に動かす feasibility restoration を試し、元素 budget residual が改善または accepted する場合だけ反映する。explicit support payload が狭すぎる場合は、ExoGibbs-native inactive driving から support を広げる `explicit_support_closure_retry` を一度だけ試す。explicit empty support payload は support-free empty support と同じ `empty_support_strict_gas_retry` を使って gas-only full-budget gate を修復する。v1.18 の public diagnostics は `caveat_route_breakdown` を持ち、`converged_with_caveat` が primary stop、fallback source、final restoration、PD-IPM retry rejection のどこに由来するかを分解して記録する。soft restoration を primary stop で自動起動する default route は、water5/7/8 の status を改善せず runtime を悪化させたため採用しない。core mode は reduced PD-IPM direction、scalar fraction-to-boundary、primal/dual 別 step-length diagnostics、persistent filter、soft/dedicated restoration を本線 sequence として扱う。tiny な primary step は Newton direction を component-wise に壊さず、restoration phase に渡す。HEAD route は active-set orchestration と final gates を担当し、FastChem4 output は比較対象としてのみ使い、constructor input には使わない。現在の curated fresh API score は `99 / 99 converged` である。
 
 ## 一言でいうと
 
@@ -20,9 +20,125 @@
 8. v1.6 では、support outer loop の次 round を作るとき、前 round で試した support ではなく、accepted result の実 support indices を既存 support として使う。実 support から落ちた species がまだ positive inactive なら、通常の support-growth で再追加する。
 9. v1.7 では、`return_diagnostics=True` の result に `inactive_condensate_driving` report を追加し、all-condensate と temperature-valid の inactive-driving summary を分ける。
 10. v1.8 では、support-cap retry と staged support-growth retry の候補を全て評価し、converged かつ support-closure gate を通る候補の中から `(positive_inactive_count, max_positive_inactive_driving, support_count)` が最小の候補を採用する。
-11. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
+11. v1.9 では、support-cap retry family が候補を持つ場合でも staged support-growth retry family を評価し、両 family を横断して同じ support-closure score で最良候補を選ぶ。
+12. v1.10 では、通常の component clipping primary が fallback になった support-free row に対して、同じ support-free path を scalar fraction-to-boundary step control で再評価する retry family を追加し、support-cap / staged support-growth retry と同じ support-closure score で比較する。
+13. v1.11 では、PD-IPM-first 方針として scalar fraction-to-boundary を primary default に昇格する。v1.10 は production-safe baseline として残し、v1.11 は solver 本体の blocker を減らすための baseline として扱う。
+14. v1.12 では、active support の dual `eta = exp(rho)` に `0.1` の push floor を入れ、`rho = epsilon - r` だけでは小さすぎる dual を interior に戻す。これは Ipopt の multiplier initialization に対応する修復で、FastChem4 値は使わない。
+15. v1.13 では、収束済み primary result でも temperature-valid inactive driving が severe (`max >= 1000`, `count >= 50`) に残る場合、既存の staged support-growth retry を support-closure score で選ぶ。`solar_metal_sulfide_or_Fe_Ni_S_region` layer 7 は support 14 / inactive `96 / 1012.9` から support 67 / inactive `0 / 0` に改善する。
+16. v1.14 では、primary continuation default を `pdipm_core` mode に切り替える。core mode は alternate direction candidates を本線から外し、reduced PD-IPM direction と Ipopt-style filter/restoration sequence を標準にする。explicit-support surface は metric 悪化を blocker として記録し、support-free midlayer runtime blocker も score に残す。
+17. v1.15 では、Ipopt の line-search 周辺制御にならって `pdipm_core` に tiny-step detection を追加する。`alpha_primal <= 1.0e-8` の primary step は通常受理ではなく restoration に渡し、report に tiny-step count と理由を残す。
+18. v1.16 では、solver 数式は変えず、`dataclasses.asdict()` による deep copy と JAX 配列の診断 gather を hot path から外す。support-free midlayer regression は timeout ではなく完走する。
+19. v1.17 では、accepted primary/fallback state の full-condensate budget gate 直前に gas log-amount restoration と active-support bounded least-squares amount restoration を入れる。これは PD-IPM が作った active support 内の feasibility restoration であり、FastChem4 trace/replay は使わない。
+20. v1.18 では、fallback result に restricted solver payload がなくても lifecycle `final_state` が有限なら、その PD-IPM final state を使って次の support-growth round を作る。public fallback state は seed と lifecycle final state を full-budget gate で比較し、accepted seed を未受理 final state で壊さない。native fallback の final gate 直前には、Ipopt-style restoration 方針に沿って gas log amount と active condensate amount の joint feasibility restoration を試す。
+21. v1.18 固定前の final cleanup では、explicit support payload が狭すぎる `complex_heavy...` layer 4 を `explicit_support_closure_retry` で修復し、explicit empty support payload の highT gas-only rows にも既存の `empty_support_strict_gas_retry` を配線する。どちらも FastChem4 trace/replay を constructor input に使わない。
+22. 最後に selected route（採用経路）と acceptance tier（成功品質ランク）を返す。
 
 これは FastChem4 exact replay（FastChem4 の分岐を完全再現すること）ではない。FastChem4 public/runtime/trace values（公開出力・実行時出力・内部 trace 値）は、ExoGibbs の constructor input（初期値や構成入力）として使わない。
+
+## 次の solver 改善方針
+
+HEAD route v1.4-v1.10 の改善は、public convergence、budget consistency、support closure を守るために retry / gate / diagnostics を厚くしてきた。v1.11 では、metric 悪化を許容して PD-IPM を主役に戻す方針へ切り替えた。v1.12 では、その blocker を support retry ではなく dual initialization として修復した。v1.13 では、PD-IPM が収束した active support の KKT は良いが inactive closure が severe に悪い行を、PD-IPM 診断に基づく support expansion として扱う。v1.14 では、route-level retry をさらに足すのではなく、primary continuation 自体を `pdipm_core` mode に切り替えた。v1.15 では、Ipopt-style tiny-step handling を core mode に入れ、tiny step を component-wise clip ではなく restoration へ渡す。v1.16 では、この PD-IPM 本線を維持したまま runtime blocker になっていた診断 serialization を削った。v1.17 では、PD-IPM が作った active support の final feasibility restoration を強め、trace 元素の gas log amount と active condensate amount を ExoGibbs-native full-budget gate に合わせて修復する。v1.18 では、support-boundary growth の情報源も raw fallback seed ではなく PD-IPM lifecycle final state に寄せる。v1.18 固定時点では、狭すぎる explicit support payload と explicit empty support payload の API 経路差も、既存の ExoGibbs-native retry/gate 体系にそろえて修復済みである。
+
+v1.13 以降の score では、accuracy / convergence だけでなく runtime diagnostics も保存する。最低限、curated end-to-end wall time、代表 target solve wall time、target metric-evaluation wall time、full-profile comparison の完走または中断状態を `score.md` / `score.json` に残す。大 support row で数分級の solve が出た場合は、support selection time と active-support solve time を分けて記録する。
+
+次に凝縮 solver を改善する場合は、新しい support retry や acceptance fallback を追加する前に、`documents/ipm_audit.md` の PD-IPM 再整備方針に従う。優先順位は、active-support fixed PD-IPM の residual/Jacobian/step acceptance を検証し、`rho` / `eta` / complementarity の表現を一本化し、log-space update と step-length control を一貫させることである。FastChem4/fastchem3 replay を constructor input に使わず、ExoGibbs-native KKT residual と finite-difference Jacobian audit を先に固定する。
+
+2026-06-19 の PD-IPM/R-GIE audit では、component-wise clipping が GIE Newton 方向の結合を壊しうることを確認し、代わりに scalar fraction-to-boundary step control を候補として実装した。explicit-support curated lifecycle 比較では、既定の component clipping が 0/14 converged だったのに対し、scalar fraction-to-boundary は 12/14 converged まで改善した。v1.10 ではこの policy を retry candidate として導入したが、2026-06-20 の方針変更で v1.11 は scalar を primary default に昇格する。詳細と volatile artifact path は `documents/ipm_audit.md` に残す。
+
+## HEAD route v1.11 固定内容
+
+HEAD route v1.11 は、v1.10 の scalar retry を public primary default に昇格した PD-IPM-first baseline である。
+
+| item | fixed choice | rationale |
+|---|---|---|
+| route version | `v1.11` | production-safe v1.10 ではなく PD-IPM-first baseline として区別する |
+| route name | `head_route_v1_11_pdipm_scalar_primary` | scalar fraction-to-boundary primary を明示する |
+| primary step control | `scalar_fraction_to_boundary` | coupled R-GIE/Newton direction を成分別 clip で壊さず、scalar step length で境界を守る |
+| legacy component clip | opt-in / comparison path | production-safe v1.10 の比較対象として残す |
+| blocker policy | expected and tracked | public metric 悪化を solver 改善 queue として扱う |
+
+v1.11 curated end-to-end surface:
+
+| metric | result |
+|---|---:|
+| curated e2e tests | 8 passed |
+| expected support-free blockers | `solar_water_condensation` layers 0 and 7 |
+| explicit-support blocker | `carbon_rich_graphite_window__T1300_P1_corrected`; heavy/Ti/Zr remains caveat, not hard reject |
+| water low-T layer 8 | primary scalar route succeeds with 143 support; no scalar retry selection needed |
+
+v1.11 full-profile FastChem4 comparison:
+
+| metric | v1.10 production-safe | v1.11 PD-IPM-first |
+|---|---:|---:|
+| rows | 99 | 99 |
+| public status | 99 converged | 95 converged, 1 caveat, 3 not converged |
+| route counts | 82 primary, 17 gas-only | 78 primary, 4 fallback, 17 gas-only |
+| ExoGibbs lower `G/RT` | 19/99 | 32/99 |
+| FastChem4-scaled lower `G/RT` | 80/99 | 67/99 |
+| max `\|dG/RT\|` | 5.936e-5 | 3.297e3 |
+| max temperature-valid inactive driving | 194.8 | 343.2 |
+| temperature-valid inactive rows >500 | 0 | 0 |
+
+The largest v1.11 regression is `solar_water_condensation` layer 0: `dG/RT Exo-FC = -3297.0902626575994` with very large relative budget residual. This is now the primary PD-IPM-first blocker.
+
+2026-06-20 の Ipopt-oriented blocker audit では、この row は support retry の不足ではなく、active support 内の primal/dual interior point の悪さで scalar fraction-to-boundary step が `2.2303859960980942e-08` まで潰れる問題として分解された。limiting species は `FeS2(s)` の `r` update で、次の修復対象は component-wise clip への復帰ではなく、Ipopt 的な initial point / dual initialization / filter-restoration の整備である。詳細は `documents/ipm_audit.md` に残す。
+
+## HEAD route v1.12 固定内容
+
+HEAD route v1.12 は、v1.11 の PD-IPM-first scalar primary に Ipopt-style dual push initialization を統合した修正版である。
+
+| item | fixed choice | rationale |
+|---|---|---|
+| route version | `v1.12` | v1.11 scalar primary baseline の blocker 修復として区別する |
+| route name | `head_route_v1_12_ipopt_dual_push_primary` | dual initialization repair を明示する |
+| primary step control | `scalar_fraction_to_boundary` | coupled R-GIE/Newton direction を component-wise clip で壊さない |
+| dual initialization | `ipopt_push_floor` | active-support dual を Newton 前に interior へ押し戻す |
+| dual push floor | `0.1` | water layer 0/5/8 を tier 1 に戻し、full-profile public convergence を 99/99 に戻す |
+| FastChem4 constructor inputs | not used | fresh ExoGibbs API path のみで再現する |
+
+v1.12 full-profile FastChem4 comparison:
+
+| metric | v1.11 PD-IPM-first | v1.12 dual-push repair |
+|---|---:|---:|
+| rows | 99 | 99 |
+| public status | 95 converged, 1 caveat, 3 not converged | 99 converged |
+| route counts | 78 primary, 4 fallback, 17 gas-only | 82 primary, 17 gas-only |
+| ExoGibbs lower `G/RT` | 32/99 | 38/99 |
+| FastChem4-scaled lower `G/RT` | 67/99 | 61/99 |
+| max `\|dG/RT\|` | 3.297e3 | 9.632e-2 |
+| max temperature-valid inactive driving | 343.2 | 1012.9 |
+| temperature-valid inactive rows >0 | 16 | 3 |
+| temperature-valid inactive rows >500 | 0 | 1 |
+
+The previous largest v1.11 blocker, `solar_water_condensation` layer 0, now converges as tier 1 with inactive closure `0 / 0`. `solar_water_condensation` layer 5 also returns to tier 1 under the `0.1` dual floor. The remaining largest FastChem4-scaled Gibbs gap is `carbon_rich_graphite_window` layer 7 (`dG/RT Exo-FC = -0.09632193272911493`), and the largest temperature-valid inactive driving is now `solar_metal_sulfide_or_Fe_Ni_S_region` layer 7 (`1012.9452767757098`, 96 species). These are next solver/support-closure targets, not reasons to restore component clipping.
+
+## HEAD route v1.10 production-safe baseline
+
+HEAD route v1.10 は、v1.9 の retry family 横断 support-closure selection を、PD-IPM step-control candidate まで広げる固定版である。通常の primary continuation は `component_clip` のまま走る。通常 path が `native_budget_seed_fallback_budget_tradeoff` になり、caller が support count を明示していない support-free row だけ、同じ fresh API path を `head_route_primary_step_control_policy="scalar_fraction_to_boundary"` で一度再実行する。この scalar retry は support-cap retry / staged support-growth retry と同じ候補 pool に入り、同じ `(positive_inactive_count, max_positive_inactive_driving, support_count)` score で採否を決める。
+
+v1.10 は production-safe baseline として残す。2026-06-20 の検証で scalar primary default は curated support-free water rows を `not_converged` に戻すことが分かったが、v1.11 ではこれを blocker として受け入れ、solver 本体の改善対象にする。
+
+| promoted item | 目的 | 適用範囲 |
+|---|---|---|
+| scalar step-control retry family | component-wise clipping で primary が fallback になる row に、Newton 方向を壊さず scalar fraction-to-boundary で進む lifecycle candidate を追加する。 | support-free fallback-only retry |
+| cross-family closure selection extension | support-cap / staged support-growth / scalar step-control retry を同じ support-closure score で比較し、retry kind ではなく ExoGibbs-native closure で採用する。 | support-free fallback-only retry |
+| primary default preservation | 通常 primary の `component_clip` default は維持し、scalar policy は fallback-only candidate としてだけ自動評価する。 | public HEAD route default |
+
+v1.10 audit では、curated end-to-end tests は `8 passed` を維持する。`solar_water_condensation` layer 8 の support-growth regression row は、v1.9 の staged support-growth candidate では 162 support / inactive closure 0/0 だったが、v1.10 では scalar step-control retry が 143 support / inactive closure 0/0 で同じ support-closure score の先頭 2 要素を満たし、support count が小さいため採用される。これは FastChem4 exact replay ではなく、ExoGibbs-native support closure score による candidate selection の更新である。
+
+## HEAD route v1.9 固定内容
+
+HEAD route v1.9 は、v1.8 の support-closure score を retry family 横断の selection policy に拡張する固定版である。v1.8 では support-cap retry 内で best closure candidate を採用できたが、support-cap retry family に採用可能候補があると staged support-growth retry を比較対象にしないため、より closure が良い staged candidate を見逃す row が残った。v1.9 は support-cap retry と staged support-growth retry の候補を一つの pool として扱い、同じ `(positive_inactive_count, max_positive_inactive_driving, support_count)` score で最良 candidate を採用する。
+
+| promoted item | 目的 | 適用範囲 |
+|---|---|---|
+| cross-retry support-closure selection | support-cap retry と staged support-growth retry の両方を configured candidate pool として評価し、retry kind によらず closure score が最良の converged candidate を採用する。 | support-free fallback-only retry |
+| common retry selection diagnostics | 採用された旧互換 key に加えて `support_closure_retry_selection` を残し、candidate count、selected retry kind、cap/staging の全 attempts、selected score を記録する。 | retry diagnostics |
+| support-cap/staging ordering separation | 個々の retry family 内の順序は diagnostics と再現性のため維持し、採用判断だけを cross-family score へ集約する。 | support-free fallback-only retry |
+
+v1.9 audit では、v1.8 の最大 Gibbs 差だった `solar_metal_sulfide_or_Fe_Ni_S_region` layer 5 が cap-128 support-cap retry ではなく staged support-growth retry (`add_per_round=32`) を採用する。temperature-valid inactive driving は 60.55 / 12 種から 0 / 0 種へ下がり、同 row の FastChem4-scaled comparison は `dG/RT Exo-FC = 9.972649e-5` から `1.193677e-6` へ改善する。99-layer full-profile comparison では public status は `99 converged`、route counts は `82 primary, 17 gas-only` を維持し、max `|dG/RT|` は `5.935862e-5` へ下がる。
+
+v1.9 は FastChem4 exact replay ではない。FastChem4-scaled state の方が ExoGibbs-native `G/RT` で低い row はまだ 80/99 あり、今回の改善は ExoGibbs-native support closure の selection policy 更新である。
 
 ## HEAD route v1.8 固定内容
 
@@ -156,8 +272,8 @@ v1.3 default fresh API support-free route selection evidence は次の通りで�
   - `condensate_equilibrium`
 
 `condensate_equilibrium()` が返す `CondensateEquilibriumResult` から、現在の固定版は
-`result.head_route_version == "v1.8"` および
-`result.head_route_name == "head_route_v1_8_best_support_closure_retry_candidate"` として読み出せる。
+`result.head_route_version == "v1.18"` および
+`result.head_route_name == "head_route_v1_18_pdipm_lifecycle_support_growth"` として読み出せる。
 `return_diagnostics=True` の場合は diagnostics にも同じ `head_route_version` と
 `head_route_name` を残し、さらに `inactive_condensate_driving` report を残す。
 
@@ -321,10 +437,11 @@ HEAD route v1.3 では、support-free activity-driven outer loop 内に次の re
 - `soft-restoration retry`: residual-worsening retry などの通常 retry 後も lifecycle が accepted しない場合だけ、既存の native soft restoration fallback を有効化し、center tolerance `1.0e11` と組み合わせて lifecycle を一度再評価する。restoration は budget、total density、amount-weighted gas、amount-weighted condensate の component weights で guarded に選ぶ。
 - `Ipopt-style persistent h-type retry`: soft-restoration retry 後も lifecycle が accepted しない場合だけ、Ipopt の filter line-search に対応する persistent h-type feasibility step を一度再評価する。theta は budget、total density、amount-weighted gas、amount-weighted condensate、complementarity の component weights から作り、budget と total density を protected components として守る。これは objective descent ではなく constraint violation の改善を採用する retry である。
 - `support-cap retry`: 通常の support-free path が `native_budget_seed_fallback_budget_tradeoff` になり、caller が `max_positive_support_count` を明示しておらず、選ばれた support が retry cap を超える場合だけ、fresh API path を `support_cap_retry_counts=(34, 48, 80, 128)` の小さい cap から順に再実行する。retry が non-fallback route を返した場合だけ採用する。旧互換として `support_cap_retry_counts=None` の場合は `support_cap_retry_count` の単一 cap を使う。
-- `support-growth staging retry`: 通常 path と support-cap retry が fallback のまま残り、caller が `max_support_add_per_round` を明示していない場合だけ、support を一括投入せず `support_growth_staging_retry_add_per_rounds=(64, 32, 16, 8)` の順に段階投入して fresh API path を再実行する。retry が non-fallback route を返した場合だけ採用する。
+- `support-growth staging retry`: 通常 path が fallback になり、caller が `max_support_add_per_round` を明示していない場合だけ、support を一括投入せず `support_growth_staging_retry_add_per_rounds=(64, 32, 16, 8)` の順に段階投入して fresh API path を再実行する。v1.9 では support-cap retry に採用可能候補があっても staged retry を評価し、両 retry family の non-fallback candidates から support-closure score が最良の候補を採用する。
+- `scalar step-control retry`: 通常 path が fallback になり、caller が support count を明示していない場合だけ、primary step-control policy を `scalar_fraction_to_boundary` にして fresh API path を一度再実行する。v1.10 ではこの retry も support-cap / staged support-growth retry と同じ support-closure score で比較する。
 - `support-growth warm-start amount floor`: support-free outer loop が前 round の solver/result condensate amount を次 round の warm-start seed として引き継ぐとき、0 以下または非有限の amount は `min_seed_amount` に戻す。これにより solver 側で 0 に落ちた support species が warm-start finite check を全候補失敗にすることを防ぐ。
 
-これらの retry は FastChem4 trace/public/runtime value を constructor input に使わない。採用された retry は diagnostics に `head_route_center_gate_retry`、`head_route_residual_worsening_retry`、`head_route_soft_restoration_retry`、`head_route_ipopt_h_type_retry`、`support_cap_retry`、または `support_growth_staging_retry` として記録する。
+これらの retry は FastChem4 trace/public/runtime value を constructor input に使わない。採用された retry は diagnostics に `head_route_center_gate_retry`、`head_route_residual_worsening_retry`、`head_route_soft_restoration_retry`、`head_route_ipopt_h_type_retry`、`support_cap_retry`、`support_growth_staging_retry`、または `scalar_step_control_retry` として記録する。v1.10 の support-cap / staged support-growth / scalar step-control selection では、横断 selection summary を `support_closure_retry_selection` にも記録する。
 
 ### 9. standard gate and result
 
@@ -431,16 +548,14 @@ retry が発火する。
 | empty gas-only boundary | 1 | `converged` |
 | primary promoted route accepted by full-budget gate | 9 | `converged` / tier 1 |
 | primary promoted route rejected by full-budget gate | 0 | なし |
+| primary promoted route not accepted by current PD-IPM surface | 0 | なし |
 | native seed fallback | 0 | なし |
 
-10 curated support-select demo families の全 profile layer では、v1.5 default fresh API から次の挙動を確認する。
+10 curated support-select demo families の全 profile layer について、v1.18 固定時点の fresh API score は `99 / 99 converged` である。v1.17 までに graphite layers、near-boundary layer、water layer 7 などの support-free blocker は戻り、v1.18 では water low-temperature support-boundary surface、explicit support `complex_heavy...` layer 4、explicit empty support highT gas-only layers 14/16 も修復した。
 
-| group | rows | status |
-|---|---:|---|
-| empty gas-only boundary | 17 | `converged` |
-| primary promoted route | 82 | `converged` |
-| native seed fallback route | 0 | なし |
-| exception | 0 | なし |
+v1.18 の water 修復では、`native_budget_seed_fallback_budget_tradeoff` が restricted solver payload を持たない場合でも、PD-IPM lifecycle の `continuation_report.final_state` が有限なら、その final state から inactive-driving support growth を続行する。public fallback state は seed fallback と lifecycle final-state fallback を full-budget gate で比較し、accepted seed は保持し、seed も gate failed の場合だけ改善する final state を採用する。さらに native fallback の full-budget gate 直前に joint gas+active-condensate feasibility restoration を入れる。これにより water family は `9 / 9 converged` に戻った。
+
+v1.18 の final cleanup では、fixed explicit support rows も public API 経路として整理した。`complex_heavy_element_or_boron_titanium_zirconium_case` layer 4 は、caller-provided support が Ti 系 4 種に狭すぎたため full-budget gate を落としていた。これは FastChem4 replay ではなく、ExoGibbs-native inactive driving から support を広げる `explicit_support_closure_retry` で tier 1 に戻す。`solar_highT_no_condensate_gas_regression` layers 14/16 は凝縮候補が温度有効ではない true gas-only rows であり、問題は explicit empty support path に support-free path と同じ `empty_support_strict_gas_retry` が配線されていなかったことだった。explicit empty support payload でも strict gas retry を使うことで full-budget gate を通過する。
 
 一方、14 representative rows は v1.1 由来の fixed-support regression である。これらは
 `support_indices` と `support_amounts_init` を明示して restricted-support path を固定するため、
@@ -461,7 +576,7 @@ explicit support path と full-budget gate の回帰であり、accepted rows �
 | `SiO_s_condensate_window` | support-cap retry で primary promoted route に到達し、v1.4 relative joint budget-correction retry 後に full-budget gate を通過。 |
 | `lowT_strong_condensation_budget_stress` | residual-worsening retry と center-gate retry で primary promoted route に到達し、v1.4 full-budget gate を通過。 |
 | `near_phase_boundary_support_sensitivity` | primary promoted route に到達し、v1.4 full-budget gate を通過。 |
-| `complex_heavy_element_or_boron_titanium_zirconium_case` | center-gate retry で primary promoted route に到達し、v1.4 full-budget gate を通過。 |
+| `complex_heavy_element_or_boron_titanium_zirconium_case` | support-free では primary promoted route に到達し、fixed explicit support layer 4 は `explicit_support_closure_retry` で full-budget gate を通過。 |
 
 ## 成功と caveat の意味
 
@@ -474,9 +589,10 @@ explicit support path と full-budget gate の回帰であり、accepted rows �
 - T700 metal/sulfide: amount-weighted gas では良いが raw gas residual frame に注意がある。
 
 したがって、14 fixed-support rows は「同じ品質で完全成功」ではない。正確には、現在の
-fresh API では accepted rows と full-budget gate reject rows を分けて見る。support-free 10-family 中間層では、
-9 rows が tight、0 row が caveat、1 row が empty gas-only boundary、0 row が full-budget
-gate reject である。
+fresh API では tier 1、caveat、empty gas-only boundary を分けて見る。support-free 10-family 中間層では、
+9 rows が tight、0 row が caveat、1 row が empty gas-only boundary、0 row が current PD-IPM surface 上の
+`not_converged`、0 row が full-budget gate reject である。全 99-layer curated score では
+`89 converged / 10 converged_with_caveat / 0 not_converged` である。
 
 ## 守るべき境界
 
@@ -484,8 +600,9 @@ HEAD route は凝縮あり初版標準経路として進めてよいが、以下
 
 - gas-only `equilibrium()` の挙動を変えない。
 - 既存の production result fields の意味を変えない。
-- gas-only API の defaults を変更しない。凝縮あり API の fixed default は HEAD route v1.8 として扱う。
-- 現在の凝縮あり API の fixed default は `result.head_route_version == "v1.8"` として公開する。
+- gas-only API の defaults を変更しない。凝縮あり API の fixed default は HEAD route v1.18 として扱う。
+- 現在の凝縮あり API の fixed default は `result.head_route_version == "v1.18"` として公開する。
+- v1.10 production-safe surface は比較 baseline として残すが、現在の本線には戻さない。
 - FastChem4 public/runtime/trace values を constructor input にしない。
 - FastChem4 exact branch replay を acceptance target にしない。
 - case、species、element を落として成功扱いにしない。
@@ -496,8 +613,9 @@ HEAD route は凝縮あり初版標準経路として進めてよいが、以下
 次に整理すべき課題は以下である。
 
 1. support-closure retry gate の tolerance `5.0e2` と、support-cap retry sequence `(34, 48, 80, 128)` / support-growth staging retry sequence `(64, 32, 16, 8)` が curated full-profile 以外の broad grid でも妥当か監査する。
-2. `condensate_equilibrium_profile()` を profile/layer 計算へ接続する。
-3. docs と examples で、HEAD route の public API 使用例を整備する。
+2. `converged_with_caveat` 10 rows を、PD-IPM/filter/restoration の中で tier 1 に寄せられるか調べる。
+3. `condensate_equilibrium_profile()` を profile/layer 計算へ接続する。
+4. docs と examples で、HEAD route の public API 使用例を整備する。
 
 ## 更新ルール
 

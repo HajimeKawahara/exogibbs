@@ -7,7 +7,7 @@ call FastChem, does not read result artifacts, and does not run solver updates.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 import numpy as np
@@ -29,6 +29,7 @@ class CondensateContinuationInput:
     input_schema: str
     state: PdipmRgieCondensateState
     support_indices: tuple[int, ...]
+    support_species_names: tuple[str, ...] | None
     formula_matrix: tuple[tuple[float, ...], ...]
     formula_matrix_cond_active: tuple[tuple[float, ...], ...]
     element_inventory_target: tuple[float, ...]
@@ -38,6 +39,10 @@ class CondensateContinuationInput:
     gas_lambda_gauge_residual_l2: float
     gas_lambda_gauge_residual_max_abs: float
     inferred_rho_from_epsilon: bool
+    dual_initialization_policy: str
+    dual_push_floor: float | None
+    dual_push_applied_count: int
+    dual_push_max_log_delta: float
     diagnostic_only: bool
     default_off: bool
     production_behavior_change: bool
@@ -47,9 +52,34 @@ class CondensateContinuationInput:
     field_provenance: Mapping[str, str]
 
     def as_dict(self) -> dict[str, Any]:
-        payload = asdict(self)
-        payload["state"] = self.state.as_dict()
-        return payload
+        return {
+            "input_schema": self.input_schema,
+            "state": self.state.as_dict(),
+            "support_indices": self.support_indices,
+            "support_species_names": self.support_species_names,
+            "formula_matrix": self.formula_matrix,
+            "formula_matrix_cond_active": self.formula_matrix_cond_active,
+            "element_inventory_target": self.element_inventory_target,
+            "external_condensate_budget": self.external_condensate_budget,
+            "gas_stationarity_source": self.gas_stationarity_source,
+            "condensate_standard_source": self.condensate_standard_source,
+            "gas_lambda_gauge_residual_l2": self.gas_lambda_gauge_residual_l2,
+            "gas_lambda_gauge_residual_max_abs": self.gas_lambda_gauge_residual_max_abs,
+            "inferred_rho_from_epsilon": self.inferred_rho_from_epsilon,
+            "dual_initialization_policy": self.dual_initialization_policy,
+            "dual_push_floor": self.dual_push_floor,
+            "dual_push_applied_count": self.dual_push_applied_count,
+            "dual_push_max_log_delta": self.dual_push_max_log_delta,
+            "diagnostic_only": self.diagnostic_only,
+            "default_off": self.default_off,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+            "field_provenance": self.field_provenance,
+        }
 
 
 def _validate_provenance(field_provenance: Mapping[str, str] | None) -> dict[str, str]:
@@ -109,27 +139,42 @@ def _rho_from_inputs(
     rho: Sequence[float] | None,
     eta: Sequence[float] | None,
     epsilon: float | None,
-) -> tuple[np.ndarray, np.ndarray, bool]:
+    dual_push_floor: float | None,
+) -> tuple[np.ndarray, np.ndarray, bool, int, float]:
     if rho is not None:
         rho_array = _as_vector(rho, "rho")
         if rho_array.shape != ln_mk.shape:
             raise ValueError("rho length must match ln_mk length.")
         eta_array = np.exp(rho_array)
-        return rho_array, eta_array, False
+        return rho_array, eta_array, False, 0, 0.0
     if eta is not None:
         eta_array = _as_vector(eta, "eta")
         if eta_array.shape != ln_mk.shape:
             raise ValueError("eta length must match ln_mk length.")
         if np.any(eta_array <= 0.0):
             raise ValueError("eta must contain positive values.")
-        return np.log(eta_array), eta_array, False
+        return np.log(eta_array), eta_array, False, 0, 0.0
     if epsilon is None:
         raise ValueError("one of rho, eta, or epsilon must be provided.")
     epsilon_value = float(epsilon)
     if not np.isfinite(epsilon_value):
         raise ValueError("epsilon must be finite.")
-    rho_array = epsilon_value - ln_mk
-    return rho_array, np.exp(rho_array), True
+    eta_array = np.exp(epsilon_value - ln_mk)
+    applied_count = 0
+    max_log_delta = 0.0
+    if dual_push_floor is not None:
+        floor = float(dual_push_floor)
+        if not np.isfinite(floor) or floor <= 0.0:
+            raise ValueError("dual_push_floor must be finite and positive when provided.")
+        pushed_eta = np.maximum(eta_array, floor)
+        pushed = pushed_eta > eta_array
+        applied_count = int(np.count_nonzero(pushed))
+        if applied_count:
+            max_log_delta = float(
+                np.max(np.log(pushed_eta[pushed]) - np.log(eta_array[pushed]))
+            )
+        eta_array = pushed_eta
+    return np.log(eta_array), eta_array, True, applied_count, max_log_delta
 
 
 def build_condensate_continuation_input(
@@ -149,6 +194,9 @@ def build_condensate_continuation_input(
     rho: Sequence[float] | None = None,
     eta: Sequence[float] | None = None,
     epsilon: float | None = None,
+    dual_initialization_policy: str = "centered_from_epsilon",
+    dual_push_floor: float | None = None,
+    condensate_species_names: Sequence[str] | None = None,
     field_provenance: Mapping[str, str] | None = None,
 ) -> CondensateContinuationInput:
     """Build validated native input for PD-IPM/R-GIE condensate continuation."""
@@ -160,6 +208,12 @@ def build_condensate_continuation_input(
     r = _as_vector(ln_mk, "ln_mk")
     lam = _as_vector(element_potential, "element_potential")
     support = _as_support_indices(support_indices, r.shape[0])
+    support_names: tuple[str, ...] | None = None
+    if condensate_species_names is not None:
+        names = tuple(str(name) for name in condensate_species_names)
+        if support.size and int(np.max(support)) >= len(names):
+            raise ValueError("condensate_species_names must cover support_indices.")
+        support_names = tuple(names[int(index)] for index in support)
     ag = _as_matrix(formula_matrix, "formula_matrix")
     ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
     target = _as_vector(element_inventory_target, "element_inventory_target")
@@ -188,11 +242,22 @@ def build_condensate_continuation_input(
     if cond_source.shape[0] != r.shape[0]:
         raise ValueError("condensate_standard_source length must match ln_mk length.")
 
-    rho_array, eta_array, inferred_rho = _rho_from_inputs(
-        ln_mk=r,
-        rho=rho,
-        eta=eta,
-        epsilon=epsilon,
+    dual_policy = str(dual_initialization_policy)
+    if dual_policy not in {"centered_from_epsilon", "ipopt_push_floor"}:
+        raise ValueError(
+            "dual_initialization_policy must be centered_from_epsilon or ipopt_push_floor."
+        )
+    effective_dual_floor = (
+        None if dual_policy == "centered_from_epsilon" else dual_push_floor
+    )
+    rho_array, eta_array, inferred_rho, dual_push_count, dual_push_max_log_delta = (
+        _rho_from_inputs(
+            ln_mk=r,
+            rho=rho,
+            eta=eta,
+            epsilon=epsilon,
+            dual_push_floor=effective_dual_floor,
+        )
     )
     state = build_pdipm_rgie_condensate_state(
         ln_nk=_tuple_vector(q),
@@ -214,6 +279,7 @@ def build_condensate_continuation_input(
         input_schema="exogibbs_condensate_continuation_input_v1",
         state=state,
         support_indices=tuple(int(value) for value in support),
+        support_species_names=support_names,
         formula_matrix=_tuple_matrix(ag),
         formula_matrix_cond_active=_tuple_matrix(ac),
         element_inventory_target=_tuple_vector(target),
@@ -225,6 +291,12 @@ def build_condensate_continuation_input(
         if gauge_residual.size
         else 0.0,
         inferred_rho_from_epsilon=inferred_rho,
+        dual_initialization_policy=dual_policy,
+        dual_push_floor=None
+        if effective_dual_floor is None
+        else float(effective_dual_floor),
+        dual_push_applied_count=dual_push_count,
+        dual_push_max_log_delta=dual_push_max_log_delta,
         diagnostic_only=False,
         default_off=False,
         production_behavior_change=False,
