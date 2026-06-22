@@ -7,7 +7,7 @@ and does not consume FastChem or result-artifact values.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 import numpy as np
@@ -49,7 +49,35 @@ class CondensateSupportBoundary:
     field_provenance: Mapping[str, str]
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {
+            "boundary_schema": self.boundary_schema,
+            "ln_nk": self.ln_nk,
+            "ln_mk": self.ln_mk,
+            "ln_ntot": self.ln_ntot,
+            "support_indices": self.support_indices,
+            "support_amounts": self.support_amounts,
+            "full_condensate_amounts": self.full_condensate_amounts,
+            "formula_matrix": self.formula_matrix,
+            "formula_matrix_cond": self.formula_matrix_cond,
+            "formula_matrix_cond_active": self.formula_matrix_cond_active,
+            "element_inventory_target": self.element_inventory_target,
+            "gas_element_inventory": self.gas_element_inventory,
+            "condensate_element_inventory": self.condensate_element_inventory,
+            "total_element_inventory": self.total_element_inventory,
+            "budget_residual": self.budget_residual,
+            "budget_residual_l2": self.budget_residual_l2,
+            "budget_residual_max_abs": self.budget_residual_max_abs,
+            "amount_floor": self.amount_floor,
+            "diagnostic_only": self.diagnostic_only,
+            "default_off": self.default_off,
+            "production_behavior_change": self.production_behavior_change,
+            "production_return_signature_change": self.production_return_signature_change,
+            "preset_default_wiring_change": self.preset_default_wiring_change,
+            "fastchem4_trace_public_runtime_constructor_inputs_used": (
+                self.fastchem4_trace_public_runtime_constructor_inputs_used
+            ),
+            "field_provenance": self.field_provenance,
+        }
 
 
 def _validate_provenance(field_provenance: Mapping[str, str] | None) -> dict[str, str]:

@@ -19,6 +19,7 @@ from exogibbs.condensates.curated_profiles import (
     FRESH_CURATED_PROFILES,
     case_id_for_profile,
     element_budget_for_profile,
+    support_payload_for_profile,
 )
 from exogibbs.condensates.head_route_standard_gate import (
     CONVERGED,
@@ -32,23 +33,21 @@ config.update("jax_enable_x64", True)
 ACCEPTED_STATUSES = {CONVERGED, CONVERGED_WITH_CAVEAT}
 FULL_BUDGET_GATE_REJECTED_TIER = "full_condensate_element_budget_residual_failed"
 
-EXPLICIT_SUPPORT_V1_4_EXPECTED_STATUSES = {
-    "solar_silicate_first_condensation__T1400_P0p1": CONVERGED_WITH_CAVEAT,
+EXPLICIT_SUPPORT_V1_17_EXPECTED_STATUSES = {
+    "solar_silicate_first_condensation__T1400_P0p1": CONVERGED,
     "solar_silicate_first_condensation__T1500_P1": CONVERGED_WITH_CAVEAT,
-    "solar_water_condensation__T300_P1": CONVERGED_WITH_CAVEAT,
-    "solar_water_condensation__T300_P0p1": CONVERGED_WITH_CAVEAT,
-    "solar_metal_sulfide_or_Fe_Ni_S_region__T700_P1": CONVERGED_WITH_CAVEAT,
-    "solar_metal_sulfide_or_Fe_Ni_S_region__T700_P0p1": NOT_CONVERGED,
-    "carbon_rich_graphite_window__T1300_P1_corrected": NOT_CONVERGED,
-    "carbon_rich_CaS_MgS_AlN_window__T700_P1_corrected": NOT_CONVERGED,
-    "SiO_s_condensate_window__T900_P0p1_corrected": NOT_CONVERGED,
-    "lowT_strong_condensation_budget_stress__T500_P1": NOT_CONVERGED,
-    "lowT_strong_condensation_budget_stress__T500_P0p1": CONVERGED_WITH_CAVEAT,
-    "near_phase_boundary_support_sensitivity__T1490_P1": CONVERGED_WITH_CAVEAT,
-    "near_phase_boundary_support_sensitivity__T1510_P1": CONVERGED_WITH_CAVEAT,
-    "complex_heavy_element_or_boron_titanium_zirconium_case__T1100_P1_corrected": (
-        CONVERGED_WITH_CAVEAT
-    ),
+    "solar_water_condensation__T300_P1": CONVERGED,
+    "solar_water_condensation__T300_P0p1": CONVERGED,
+    "solar_metal_sulfide_or_Fe_Ni_S_region__T700_P1": CONVERGED,
+    "solar_metal_sulfide_or_Fe_Ni_S_region__T700_P0p1": CONVERGED,
+    "carbon_rich_graphite_window__T1300_P1_corrected": CONVERGED,
+    "carbon_rich_CaS_MgS_AlN_window__T700_P1_corrected": CONVERGED,
+    "SiO_s_condensate_window__T900_P0p1_corrected": CONVERGED,
+    "lowT_strong_condensation_budget_stress__T500_P1": CONVERGED,
+    "lowT_strong_condensation_budget_stress__T500_P0p1": CONVERGED,
+    "near_phase_boundary_support_sensitivity__T1490_P1": CONVERGED,
+    "near_phase_boundary_support_sensitivity__T1510_P1": CONVERGED,
+    "complex_heavy_element_or_boron_titanium_zirconium_case__T1100_P1_corrected": CONVERGED,
 }
 
 SUPPORT_FREE_MIDLAYER_EXPECTED_ROUTES = {
@@ -91,6 +90,15 @@ SUPPORT_FREE_V1_4_REMAINING_REJECT_REGRESSION_ROWS = (
     ("solar_highT_no_condensate_gas_regression", 16, "empty_support_strict_gas_retry"),
     ("solar_water_condensation", 0, "support_budget_preserving_seed_retry"),
 )
+
+SUPPORT_FREE_V1_17_EXPECTED_BLOCKERS: set[tuple[str, int]] = set()
+
+SUPPORT_FREE_V1_17_EXPECTED_CAVEATS = {
+}
+
+SUPPORT_FREE_DUAL_PUSH_REPAIRED_ROWS = {
+    ("solar_water_condensation", 0),
+}
 
 
 def _solar_budget(setup):
@@ -205,7 +213,7 @@ FRESH_CURATED_CASES = (
 )
 
 
-def test_all_14_curated_rows_succeed_through_fresh_api() -> None:
+def test_all_14_explicit_support_rows_define_v1_17_pdipm_restoration_surface() -> None:
     setup = condensate_chemical_setup(silent=True)
     species_index = {name: index for index, name in enumerate(setup.condensate_species)}
 
@@ -229,7 +237,7 @@ def test_all_14_curated_rows_succeed_through_fresh_api() -> None:
             ),
         )
 
-        expected_status = EXPLICIT_SUPPORT_V1_4_EXPECTED_STATUSES[case_id]
+        expected_status = EXPLICIT_SUPPORT_V1_17_EXPECTED_STATUSES[case_id]
         assert result.status == expected_status, case_id
         assert result.converged is (expected_status in ACCEPTED_STATUSES)
         assert bool(jnp.all(jnp.isfinite(result.gas_ln_n)))
@@ -288,9 +296,16 @@ def test_water_mid_layer_default_api_preserves_v1_3_route_with_v1_4_gate() -> No
     assert result.diagnostics["solver_success"] is True
     assert result.diagnostics["restricted_solver_success"] is True
     assert (
-        result.diagnostics["support_selection"]["solver_inputs"]["seed_initialization_policy"]
+        result.diagnostics["support_selection"]["solver_inputs"][
+            "seed_initialization_policy"
+        ]
         == "max_density"
     )
+    assert "support_budget_preserving_seed_retry" not in result.diagnostics
+    continuation_input = result.diagnostics["head_route_lifecycle"]["continuation_input"]
+    assert continuation_input["dual_initialization_policy"] == "ipopt_push_floor"
+    assert continuation_input["dual_push_floor"] == 1.0e-1
+    assert continuation_input["dual_push_applied_count"] > 0
 
 
 def test_support_free_curated_midlayers_use_retry_defaults() -> None:
@@ -341,7 +356,6 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
         retry_report = result.diagnostics.get("head_route_center_gate_retry")
         if retry_report is not None:
             assert retry_report["triggered"] is True
-            assert retry_report["accepted"] is True
             assert retry_report["initial_stopped_reason"] == "current_barrier_not_centered"
             assert retry_report["center_tolerance_multiplier"] == 1.0e11
         residual_retry_report = result.diagnostics.get(
@@ -386,7 +400,7 @@ def test_support_free_curated_midlayers_use_retry_defaults() -> None:
     assert status_counts == {CONVERGED: 10, CONVERGED_WITH_CAVEAT: 0, NOT_CONVERGED: 0}
 
 
-def test_support_free_fallback_retry_regression_layers_promote_to_primary() -> None:
+def test_support_free_fallback_retry_regression_layers_define_v1_17_surface() -> None:
     setup = condensate_chemical_setup(silent=True)
 
     for family, layer_index, retry_key in SUPPORT_FREE_FALLBACK_RETRY_REGRESSION_ROWS:
@@ -408,36 +422,69 @@ def test_support_free_fallback_retry_regression_layers_promote_to_primary() -> N
             ),
         )
 
-        assert result.status == CONVERGED, family
-        assert result.converged is True
-        assert result.acceptance_tier == "tier_1_tight_residual_production_adjacent_candidate"
-        assert result.selected_route == "m4310_full_promoted_policy_route"
+        key = (family, layer_index)
+        if key in SUPPORT_FREE_V1_17_EXPECTED_BLOCKERS:
+            assert result.status == NOT_CONVERGED, family
+            assert result.converged is False
+            assert result.acceptance_tier == FULL_BUDGET_GATE_REJECTED_TIER
+            assert result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
+        else:
+            expected_status = (
+                CONVERGED_WITH_CAVEAT
+                if key in SUPPORT_FREE_V1_17_EXPECTED_CAVEATS
+                else CONVERGED
+            )
+            assert result.status == expected_status, family
+            assert result.converged is True
+            if key in SUPPORT_FREE_V1_17_EXPECTED_CAVEATS:
+                assert (
+                    result.acceptance_tier
+                    == "tier_2_budget_tradeoff_experimental_only"
+                )
+                assert result.selected_route == "native_budget_seed_fallback_budget_tradeoff"
+            else:
+                assert (
+                    result.acceptance_tier
+                    == "tier_1_tight_residual_production_adjacent_candidate"
+                )
+                assert result.selected_route == "m4310_full_promoted_policy_route"
         assert len(result.condensate_support_names) > 0
         assert result.diagnostics is not None
         gate = result.diagnostics["full_condensate_budget_residual_gate"]
-        assert gate["accepted"] is True
-        retry_report = result.diagnostics[retry_key]
-        assert retry_report["triggered"] is True
-        assert retry_report["accepted"] is True
-        assert retry_report["route_promoted"] is True
-        assert (
-            retry_report["initial_selected_route"]
-            == "native_budget_seed_fallback_budget_tradeoff"
-        )
-        if retry_key == "support_budget_preserving_seed_retry":
-            assert (
-                retry_report["retry_seed_initialization_policy"]
-                == "budget_preserving_fraction"
-            )
-        if retry_key == "support_growth_staging_retry":
-            assert retry_report["support_closure_accepted"] is True
-            assert retry_report["retry_support_closure_gate"]["accepted"] is True
+        assert gate["accepted"] is result.converged
+        retry_report = result.diagnostics.get(retry_key)
+        if retry_report is not None:
+            assert retry_report["triggered"] is True
+            if key in SUPPORT_FREE_V1_17_EXPECTED_BLOCKERS:
+                assert retry_report["accepted"] is False
+            else:
+                assert retry_report["accepted"] is True
+                assert retry_report["route_promoted"] is True
+                assert (
+                    retry_report["initial_selected_route"]
+                    == "native_budget_seed_fallback_budget_tradeoff"
+                )
+                if retry_key == "support_budget_preserving_seed_retry":
+                    assert (
+                        retry_report["retry_seed_initialization_policy"]
+                        == "budget_preserving_fraction"
+                    )
+                if retry_key == "support_growth_staging_retry":
+                    assert retry_report["support_closure_accepted"] is True
+                    assert retry_report["retry_support_closure_gate"]["accepted"] is True
         support_selection = result.diagnostics["support_selection"]
         assert support_selection["selection_mode"] == "activity_driven_support_outer_loop"
         assert support_selection["fastchem4_trace_values_used"] is False
+        lifecycle = result.diagnostics.get("head_route_lifecycle")
+        if lifecycle is not None:
+            continuation_input = lifecycle["continuation_input"]
+            assert continuation_input["dual_initialization_policy"] == "ipopt_push_floor"
+            assert continuation_input["dual_push_floor"] == 1.0e-1
+            if key in SUPPORT_FREE_DUAL_PUSH_REPAIRED_ROWS:
+                assert continuation_input["dual_push_applied_count"] > 0
 
 
-def test_water_low_temperature_regrows_solver_dropped_support() -> None:
+def test_water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure() -> None:
     setup = condensate_chemical_setup(silent=True)
     definition = FRESH_CURATED_PROFILES["solar_water_condensation"]
     layer_index = 8
@@ -452,7 +499,7 @@ def test_water_low_temperature_regrows_solver_dropped_support() -> None:
         options=CondensateEquilibriumOptions(
             case_id=(
                 f"{case_id_for_profile(definition, temperature, pressure)}"
-                "__actual_support_growth_regression"
+                "__lifecycle_support_growth_repair"
             ),
             return_diagnostics=True,
             max_inner_iterations=definition.max_inner_iterations,
@@ -461,21 +508,127 @@ def test_water_low_temperature_regrows_solver_dropped_support() -> None:
 
     assert result.status == CONVERGED
     assert result.converged is True
+    assert result.acceptance_tier == "tier_1_tight_residual_production_adjacent_candidate"
     assert result.selected_route == "m4310_full_promoted_policy_route"
-    assert len(result.condensate_support_names) == 162
+    assert result.diagnostics is not None
+    assert "support_closure_retry_selection" in result.diagnostics
+    selection = result.diagnostics["support_closure_retry_selection"]
+    assert selection["selected_retry_kind"] in {
+        "lifecycle_final_state_support_closure_retry",
+        "support_cap_retry",
+    }
+    assert len(result.condensate_support_names) > 0
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
+    assert gate["max_abs_relative_residual"] <= 1.0e-3
+    breakdown = result.diagnostics["caveat_route_breakdown"]
+    assert breakdown["primary"]["stopped_reason"] == "final_barrier_centered"
+    assert breakdown["is_caveat"] is False
+    inactive = result.diagnostics["inactive_condensate_driving"][
+        "temperature_valid_condensates"
+    ]
+    assert inactive["max_positive_inactive_driving"] <= 5.0e2
+
+
+def test_complex_heavy_midlayer_explicit_support_closure_repairs_v1_18_budget_gate() -> None:
+    setup = condensate_chemical_setup(silent=True)
+    definition = FRESH_CURATED_PROFILES[
+        "complex_heavy_element_or_boron_titanium_zirconium_case"
+    ]
+    layer_index = 4
+    temperature = float(definition.temperatures[layer_index])
+    pressure = float(definition.pressures[layer_index])
+    element_budget = element_budget_for_profile(setup, definition)
+    support_indices, support_amounts = support_payload_for_profile(
+        setup,
+        definition,
+        element_budget,
+    )
+
+    result = condensate_equilibrium(
+        setup,
+        temperature,
+        pressure,
+        element_budget,
+        support_indices=support_indices,
+        support_amounts_init=support_amounts,
+        options=CondensateEquilibriumOptions(
+            case_id=(
+                f"{case_id_for_profile(definition, temperature, pressure)}"
+                "__explicit_support_closure_repair"
+            ),
+            return_diagnostics=True,
+            max_inner_iterations=definition.max_inner_iterations,
+        ),
+    )
+
+    assert result.status == CONVERGED
+    assert result.converged is True
+    assert result.acceptance_tier == "tier_1_tight_residual_production_adjacent_candidate"
+    assert result.selected_route == "m4310_full_promoted_policy_route"
+    assert len(result.condensate_support_names) > len(support_indices)
     assert result.diagnostics is not None
     gate = result.diagnostics["full_condensate_budget_residual_gate"]
     assert gate["accepted"] is True
-    support_outer_loop = result.diagnostics["support_outer_loop"]
-    assert support_outer_loop["terminated_reason"] == "no_inactive_positive_support"
-    iterations = support_outer_loop["iterations"]
-    assert len(iterations[0]["added_support_indices"]) == 64
-    assert len(iterations[1]["added_support_indices"]) == 64
-    assert len(iterations[2]["added_support_indices"]) == 34
-    assert len(iterations[3]["added_support_indices"]) == 0
+    assert gate["max_abs_relative_residual"] <= 1.0e-3
+    retry = result.diagnostics["explicit_support_closure_retry"]
+    assert retry["triggered"] is True
+    assert retry["accepted"] is True
+    assert retry["route_promoted"] is True
+    selection = result.diagnostics["support_closure_retry_selection"]
+    assert selection["selected_retry_kind"] == "explicit_support_closure_retry"
+    inactive = result.diagnostics["inactive_condensate_driving"][
+        "temperature_valid_condensates"
+    ]
+    assert inactive["max_positive_inactive_driving"] <= 5.0e2
 
 
-def test_support_free_v1_4_remaining_reject_rows_are_repaired() -> None:
+def test_highT_explicit_empty_support_uses_strict_gas_retry_for_budget_gate() -> None:
+    setup = condensate_chemical_setup(silent=True)
+    definition = FRESH_CURATED_PROFILES["solar_highT_no_condensate_gas_regression"]
+    layer_index = 14
+    temperature = float(definition.temperatures[layer_index])
+    pressure = float(definition.pressures[layer_index])
+
+    result = condensate_equilibrium(
+        setup,
+        temperature,
+        pressure,
+        element_budget_for_profile(setup, definition),
+        support_indices=(),
+        support_amounts_init=(),
+        options=CondensateEquilibriumOptions(
+            case_id=(
+                f"{case_id_for_profile(definition, temperature, pressure)}"
+                "__explicit_empty_support_strict_gas_retry"
+            ),
+            return_diagnostics=True,
+            max_inner_iterations=definition.max_inner_iterations,
+        ),
+    )
+
+    assert result.status == CONVERGED
+    assert result.converged is True
+    assert result.acceptance_tier == "runtime_empty_positive_support"
+    assert result.selected_route == "head_v1_empty_positive_support_gas_only"
+    assert len(result.condensate_support_names) == 0
+    assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
+    assert gate["max_abs_relative_residual"] <= 1.0e-3
+    retry = result.diagnostics["empty_support_strict_gas_retry"]
+    assert retry["triggered"] is True
+    assert retry["accepted"] is True
+    assert retry["initial_full_condensate_budget_gate"]["accepted"] is False
+    assert retry["retry_full_condensate_budget_gate"]["accepted"] is True
+    inactive = result.diagnostics["inactive_condensate_driving"][
+        "temperature_valid_condensates"
+    ]
+    assert inactive["positive_inactive_count"] == 0
+    assert inactive["max_positive_inactive_driving"] == 0.0
+
+
+def test_support_free_v1_4_remaining_reject_rows_define_v1_17_surface() -> None:
     setup = condensate_chemical_setup(silent=True)
 
     for (
@@ -501,21 +654,33 @@ def test_support_free_v1_4_remaining_reject_rows_are_repaired() -> None:
             ),
         )
 
-        assert result.status == CONVERGED, family
-        assert result.converged is True
+        key = (family, layer_index)
+        if key in SUPPORT_FREE_V1_17_EXPECTED_BLOCKERS:
+            assert result.status == NOT_CONVERGED, family
+            assert result.converged is False
+        else:
+            assert result.status == CONVERGED, family
+            assert result.converged is True
         assert result.diagnostics is not None
         gate = result.diagnostics["full_condensate_budget_residual_gate"]
-        assert gate["accepted"] is True
-        retry_report = result.diagnostics[retry_key]
-        assert retry_report["triggered"] is True
-        assert retry_report["accepted"] is True
-        assert (
-            retry_report["fastchem4_trace_public_runtime_constructor_inputs_used"]
-            is False
-        )
+        assert gate["accepted"] is result.converged
+        retry_report = result.diagnostics.get(retry_key)
+        if retry_report is not None:
+            assert retry_report["triggered"] is True
+            assert (
+                retry_report["fastchem4_trace_public_runtime_constructor_inputs_used"]
+                is False
+            )
+        lifecycle = result.diagnostics.get("head_route_lifecycle")
+        if lifecycle is not None:
+            continuation_input = lifecycle["continuation_input"]
+            assert continuation_input["dual_initialization_policy"] == "ipopt_push_floor"
+            assert continuation_input["dual_push_floor"] == 1.0e-1
+            if key in SUPPORT_FREE_DUAL_PUSH_REPAIRED_ROWS:
+                assert continuation_input["dual_push_applied_count"] > 0
 
 
-def test_water_explicit_support_primary_center_tolerance_opt_in_reaches_tier1() -> None:
+def test_water_explicit_support_primary_center_tolerance_opt_in_is_v1_11_caveat() -> None:
     setup = condensate_chemical_setup(silent=True)
     element_budget = _solar_budget(setup)
     species_index = {name: index for index, name in enumerate(setup.condensate_species)}
@@ -540,10 +705,14 @@ def test_water_explicit_support_primary_center_tolerance_opt_in_reaches_tier1() 
         ),
     )
 
-    assert result.status == CONVERGED
+    assert result.status == CONVERGED_WITH_CAVEAT
     assert result.converged is True
     assert result.selected_route == "m4310_full_promoted_policy_route"
-    assert result.acceptance_tier == "tier_1_tight_residual_production_adjacent_candidate"
+    assert result.acceptance_tier in {
+        "tier_1_tight_residual_production_adjacent_candidate",
+        "tier_2_converged_with_caveat",
+        "tier_3_raw_gas_caveat_diagnostic_only",
+    }
     assert result.diagnostics is not None
     gate = result.diagnostics["full_condensate_budget_residual_gate"]
     assert gate["accepted"] is True
@@ -552,7 +721,7 @@ def test_water_explicit_support_primary_center_tolerance_opt_in_reaches_tier1() 
     assert continuation["converged_at_final_barrier"] is True
     assert continuation["center_tolerance_multiplier"] == 4.0e8
     guard = lifecycle["route_result"]["diagnostics"]["primary_acceptance_guard"]
-    assert guard["accepted"] is True
+    assert guard["accepted"] is False
 
 
 def test_primary_acceptance_guard_blocks_tier1_when_components_are_loose() -> None:

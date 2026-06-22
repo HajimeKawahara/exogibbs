@@ -8,7 +8,7 @@ condensate PD-IPM diagnostics.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import math
 from typing import Any, Mapping, Sequence
 
@@ -27,7 +27,7 @@ class IpoptFilterScaleReport:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -56,7 +56,7 @@ class IpoptHTypeFilterSelection:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -68,7 +68,7 @@ class IpoptFilterEntry:
     iteration: int
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -89,7 +89,7 @@ class IpoptPersistentFilterReport:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 def _finite_nonnegative(value: Any, name: str) -> float:

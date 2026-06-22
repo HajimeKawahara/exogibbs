@@ -7,7 +7,7 @@ solvers, FastChem4, pyfastchem, or preset/default wiring.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import math
 from typing import Any, Mapping, Sequence
 
@@ -35,7 +35,7 @@ class AlgorithmV11FilterSelection:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -58,7 +58,7 @@ class AlgorithmV11FilterVariantChoice:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -86,7 +86,7 @@ class GasStationarityFrameDecomposition:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -109,7 +109,7 @@ class AlgorithmV11HTypeSelection:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -129,7 +129,7 @@ class AlgorithmV11NoArmijoRecoveryClassification:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -156,7 +156,7 @@ class AlgorithmV11SoftRestorationSelection:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -174,7 +174,7 @@ class AlgorithmV11FinalCenteringClassification:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 @dataclass(frozen=True)
@@ -204,7 +204,7 @@ class AlgorithmV11PhysicalConvergenceGate:
     production_behavior_change: bool
 
     def as_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return dict(self.__dict__)
 
 
 DEFAULT_FILTER_COMPONENT_WEIGHTS = {

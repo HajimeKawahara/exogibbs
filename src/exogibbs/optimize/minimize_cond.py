@@ -2153,16 +2153,18 @@ def _support_signature_export(
     formula_matrix_cond: jnp.ndarray,
     support_indices: jnp.ndarray,
 ) -> dict[str, Any]:
+    support_array = np.asarray(jax.device_get(support_indices), dtype=np.int64)
+    formula_cond = np.asarray(jax.device_get(formula_matrix_cond), dtype=np.float64)
     names = (
-        [str(condensate_species[int(index)]) for index in support_indices.tolist()]
+        [str(condensate_species[int(index)]) for index in support_array.tolist()]
         if condensate_species is not None
-        else [str(int(index)) for index in support_indices.tolist()]
+        else [str(int(index)) for index in support_array.tolist()]
     )
     entries = []
     associated_element_coverage = set()
-    for local_pos, cond_index in enumerate(support_indices.tolist()):
-        stoich = jnp.asarray(formula_matrix_cond[:, int(cond_index)], dtype=jnp.float64)
-        element_indices = [int(i) for i in range(stoich.shape[0]) if float(stoich[i]) > 0.0]
+    for local_pos, cond_index in enumerate(support_array.tolist()):
+        stoich = formula_cond[:, int(cond_index)]
+        element_indices = [int(i) for i in np.nonzero(stoich > 0.0)[0]]
         if element_names is None:
             elements = [str(i) for i in element_indices]
         else:

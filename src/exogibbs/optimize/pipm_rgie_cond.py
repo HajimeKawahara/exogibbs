@@ -1375,14 +1375,15 @@ def summarize_rgie_inactive_driving(
 ) -> Dict[str, Any]:
     """Summarize inactive-driving violations for a current support."""
 
-    full_driving = jnp.asarray(full_driving, dtype=jnp.float64)
-    support_indices = jnp.asarray(support_indices, dtype=jnp.int32)
-    n_cond = int(full_driving.shape[0])
-    support_mask = jnp.zeros((n_cond,), dtype=bool).at[support_indices].set(True)
-    inactive_indices = jnp.nonzero(~support_mask, size=n_cond, fill_value=-1)[0]
-    inactive_indices = inactive_indices[inactive_indices >= 0]
+    driving = np.asarray(jax.device_get(full_driving), dtype=np.float64)
+    support = np.asarray(jax.device_get(support_indices), dtype=np.int64)
+    n_cond = int(driving.shape[0])
+    support_mask = np.zeros((n_cond,), dtype=bool)
+    if support.size:
+        support_mask[support] = True
+    inactive_indices = np.nonzero(~support_mask)[0]
 
-    if inactive_indices.shape[0] == 0:
+    if inactive_indices.size == 0:
         return {
             "max_positive_inactive_driving": 0.0,
             "inactive_positive_count": 0,
@@ -1392,12 +1393,12 @@ def summarize_rgie_inactive_driving(
             "top_positive_inactive_indices": [],
         }
 
-    inactive_driving = full_driving[inactive_indices]
+    inactive_driving = driving[inactive_indices]
     positive_mask = inactive_driving > 0.0
     positive_indices = inactive_indices[positive_mask]
     positive_driving = inactive_driving[positive_mask]
 
-    if positive_indices.shape[0] == 0:
+    if positive_indices.size == 0:
         return {
             "max_positive_inactive_driving": 0.0,
             "inactive_positive_count": 0,
@@ -1407,24 +1408,24 @@ def summarize_rgie_inactive_driving(
             "top_positive_inactive_indices": [],
         }
 
-    ranked_order = jnp.argsort(-positive_driving)
+    ranked_order = np.argsort(-positive_driving)
     ranked_positive = positive_indices[ranked_order]
     top_indices = ranked_positive[: min(int(top_k), int(ranked_positive.shape[0]))]
-    top_driving = full_driving[top_indices]
+    top_driving = driving[top_indices]
     if condensate_species_names is None:
-        top_names = [str(int(index)) for index in jax.device_get(top_indices)]
+        top_names = [str(int(index)) for index in top_indices]
     else:
         top_names = [
-            str(condensate_species_names[int(index)]) for index in jax.device_get(top_indices)
+            str(condensate_species_names[int(index)]) for index in top_indices
         ]
 
     return {
-        "max_positive_inactive_driving": float(jnp.max(positive_driving)),
+        "max_positive_inactive_driving": float(np.max(positive_driving)),
         "inactive_positive_count": int(positive_indices.shape[0]),
-        "top_inactive_indices": [int(index) for index in jax.device_get(top_indices)],
+        "top_inactive_indices": [int(index) for index in top_indices],
         "top_inactive_names": top_names,
-        "top_inactive_driving": [float(value) for value in jax.device_get(top_driving)],
-        "top_positive_inactive_indices": [int(index) for index in jax.device_get(ranked_positive)],
+        "top_inactive_driving": [float(value) for value in top_driving],
+        "top_positive_inactive_indices": [int(index) for index in ranked_positive],
     }
 
 

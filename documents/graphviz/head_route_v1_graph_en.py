@@ -1,4 +1,4 @@
-"""Generate an English Graphviz diagram for ExoGibbs HEAD route v1.5."""
+"""Generate an English Graphviz diagram for ExoGibbs HEAD route v1.18."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
     ranksep=0.62,
     splines=ortho,
     fontname="{FONT}",
-    label="ExoGibbs Condensate HEAD Route v1.5",
+    label="ExoGibbs Condensate HEAD Route v1.18",
     labelloc=t,
     fontsize=26
   ];
@@ -88,8 +88,17 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
       fillcolor="#fef3c7"
     ];
     gas_only_exit [
-      label="Return gas-only equilibrium\\nno-condensate boundary\\nstatus = converged",
+      label="Gas-only result\\nno-condensate boundary\\nstatus = converged",
       fillcolor="#e0f2fe"
+    ];
+    gas_only_budget_gate [
+      shape=diamond,
+      label="Full-budget gate\\naccepted?",
+      fillcolor="#fef3c7"
+    ];
+    strict_gas_retry [
+      label="empty_support_strict_gas_retry\\nnative gas equilibrium\\nepsilon_crit = 1e-12",
+      fillcolor="#bae6fd"
     ];
   }}
 
@@ -164,7 +173,7 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
       fillcolor="#fed7aa"
     ];
     pdipm_rgie_core [
-      label="RGIE / PD-IPM core\\nrun_algorithm_v11_pdipm_continuation()\\noptimize/condensate_algorithm_v11_continuation.py\\ninner step:\\nsolve_pdipm_rgie_algorithm_v11_reduced_step()\\noptimize/pdipm_rgie_cond.py",
+      label="RGIE / PD-IPM core\\npdipm_core: reduced direction\\nscalar fraction-to-boundary\\nfilter/restoration + tiny-step handling",
       fillcolor="#fdba74",
       penwidth=2.2,
       color="#c2410c"
@@ -201,6 +210,37 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
     ];
   }}
 
+  subgraph cluster_retries {{
+    label="v1.18 Support / Budget Repair Gates";
+    fontname="{FONT}";
+    fontsize=18;
+    color="#9333ea";
+    penwidth=1.8;
+    style="rounded";
+
+    retry_selection [
+      shape=diamond,
+      label="Is retry / repair needed?\\nfull-budget gate / support closure / fallback",
+      fillcolor="#fef3c7"
+    ];
+    lifecycle_final_state_growth [
+      label="lifecycle_final_state_support_closure_retry\\ngrow support from PD-IPM final_state\\nsupport-free outer-loop exhaustion",
+      fillcolor="#f3e8ff"
+    ];
+    explicit_support_closure [
+      label="explicit_support_closure_retry\\ncaller support is too narrow\\nadd support from inactive driving",
+      fillcolor="#f3e8ff"
+    ];
+    full_budget_restoration [
+      label="Full-budget feasibility restoration\\ngas log amounts + active condensate amounts\\napply only if accepted/improved",
+      fillcolor="#ede9fe"
+    ];
+    retry_selection_summary [
+      label="support_closure_retry_selection\\nbest ExoGibbs-native closure score\\nFastChem4 constructor inputs: none",
+      fillcolor="#ede9fe"
+    ];
+  }}
+
   subgraph cluster_public_result {{
     label="Public Result / Standard Gate";
     fontname="{FONT}";
@@ -229,9 +269,9 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
       label="not_converged\\nsolver failed / lifecycle not accepted / full-budget gate rejected",
       fillcolor="#fee2e2"
     ];
-    v11_fallback_gate [
+    v18_final_gate [
       shape=diamond,
-      label="v1.3 retry gates + v1.5 support-closure + v1.4 full-budget repairs\\ncenter / residual / soft-restoration / Ipopt h-type / support-cap\\nclosure gate / relative joint budget / budget-preserving seed / strict gas",
+      label="v1.18 final gates\\nstandard status + full-budget gate\\nsupport closure gate + diagnostics",
       fillcolor="#fef3c7"
     ];
     native_seed_fallback [
@@ -248,7 +288,10 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
   support_input_decision -> explicit_support [label="yes"];
   positive_support -> empty_support;
   explicit_support -> empty_support;
-  empty_support -> gas_only_exit [label="yes"];
+  empty_support -> gas_only_budget_gate [label="yes"];
+  gas_only_budget_gate -> gas_only_exit [label="yes"];
+  gas_only_budget_gate -> strict_gas_retry [label="no"];
+  strict_gas_retry -> gas_only_exit;
   empty_support -> warm_start [label="no"];
 
   warm_start -> baseline_seed;
@@ -272,11 +315,19 @@ DOT_SOURCE = f"""digraph head_route_v1_en {{
   electron_refresh -> frontier_refresh;
   frontier_refresh -> route_selector;
   route_selector -> route_result;
+  route_result -> retry_selection;
+  retry_selection -> lifecycle_final_state_growth [label="support-free"];
+  retry_selection -> explicit_support_closure [label="explicit support"];
+  retry_selection -> full_budget_restoration [label="budget"];
+  lifecycle_final_state_growth -> retry_selection_summary;
+  explicit_support_closure -> retry_selection_summary;
+  full_budget_restoration -> retry_selection_summary;
+  retry_selection_summary -> route_result;
   route_result -> lifecycle_accepted;
   lifecycle_accepted -> standard_gate [label="yes"];
-  lifecycle_accepted -> v11_fallback_gate [label="no"];
-  v11_fallback_gate -> native_seed_fallback [label="yes"];
-  v11_fallback_gate -> standard_gate [label="no"];
+  lifecycle_accepted -> v18_final_gate [label="no"];
+  v18_final_gate -> native_seed_fallback [label="fallback"];
+  v18_final_gate -> standard_gate [label="accepted/rejected"];
   native_seed_fallback -> standard_gate;
 
   standard_gate -> tier1 [label="tight_residual_components"];

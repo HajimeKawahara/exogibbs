@@ -43,12 +43,40 @@ def test_builds_continuation_input_and_infers_rho_from_epsilon() -> None:
     assert report.preset_default_wiring_change is False
     assert report.fastchem4_trace_public_runtime_constructor_inputs_used is False
     assert report.support_indices == (3,)
+    assert report.support_species_names is None
     assert report.inferred_rho_from_epsilon is True
     assert report.gas_lambda_gauge_residual_l2 == pytest.approx(0.0, abs=1.0e-14)
     assert report.gas_lambda_gauge_residual_max_abs == pytest.approx(0.0, abs=1.0e-14)
     assert report.external_condensate_budget == pytest.approx((1.0e-8, 2.0e-8))
     assert report.state.rho == pytest.approx((math.log(1.0e-12) - math.log(1.0e-8),))
+    assert report.state.eta == pytest.approx((1.0e-4,))
     assert report.as_dict()["state"]["state_schema"] == "exogibbs_pdipm_rgie_condensate_state_v1"
+
+
+def test_records_support_species_names_when_provided() -> None:
+    inputs = _fixture_kwargs()
+    inputs["condensate_species_names"] = ["unused0", "unused1", "unused2", "MgO(s,l)"]
+
+    report = build_condensate_continuation_input(**inputs)
+
+    assert report.support_species_names == ("MgO(s,l)",)
+    assert report.as_dict()["support_species_names"] == ("MgO(s,l)",)
+
+
+def test_ipopt_push_floor_raises_inferred_dual_from_epsilon() -> None:
+    inputs = _fixture_kwargs()
+    inputs["dual_initialization_policy"] = "ipopt_push_floor"
+    inputs["dual_push_floor"] = 1.0e-2
+
+    report = build_condensate_continuation_input(**inputs)
+
+    assert report.inferred_rho_from_epsilon is True
+    assert report.dual_initialization_policy == "ipopt_push_floor"
+    assert report.dual_push_floor == pytest.approx(1.0e-2)
+    assert report.dual_push_applied_count == 1
+    assert report.dual_push_max_log_delta == pytest.approx(math.log(1.0e2))
+    assert report.state.eta == pytest.approx((1.0e-2,))
+    assert report.state.rho == pytest.approx((math.log(1.0e-2),))
 
 
 def test_uses_eta_when_provided() -> None:
