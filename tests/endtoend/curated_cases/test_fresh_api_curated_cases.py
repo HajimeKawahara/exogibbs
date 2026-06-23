@@ -516,6 +516,7 @@ def test_water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure() 
     assert selection["selected_retry_kind"] in {
         "lifecycle_final_state_support_closure_retry",
         "support_cap_retry",
+        "support_growth_staging_retry",
     }
     assert len(result.condensate_support_names) > 0
     gate = result.diagnostics["full_condensate_budget_residual_gate"]

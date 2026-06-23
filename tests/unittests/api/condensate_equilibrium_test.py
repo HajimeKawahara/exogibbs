@@ -560,6 +560,7 @@ def test_condensate_equilibrium_options_default_to_head_route_v1_17() -> None:
     assert options.head_route_primary_tiny_step_alpha_threshold == pytest.approx(1.0e-8)
     assert options.head_route_primary_tiny_step_consecutive_limit == 1
     assert options.head_route_primary_tiny_step_switch_to_restoration is True
+    assert options.head_route_primary_ipopt_allow_fast_monotone_decrease is True
     assert options.head_route_primary_dual_initialization_policy == "ipopt_push_floor"
     assert options.head_route_primary_dual_push_floor == pytest.approx(1.0e-1)
     assert options.enable_head_route_scalar_step_control_retry is True
@@ -580,8 +581,29 @@ def test_head_route_v1_17_primary_policy_keeps_pdipm_core_mainline() -> None:
     assert policy["ipopt_tiny_step_alpha_threshold"] == pytest.approx(1.0e-8)
     assert policy["ipopt_tiny_step_consecutive_limit"] == 1
     assert policy["ipopt_tiny_step_switch_to_restoration"] is True
+    assert policy["ipopt_allow_fast_monotone_decrease"] is True
     assert "trial_acceptance_policy" not in policy
     assert "strict_barrier_update_components" not in policy
+
+
+def test_head_route_primary_policy_allows_disabling_fast_monotone_decrease() -> None:
+    policy = _head_lifecycle_primary_policy(
+        CondensateEquilibriumOptions(
+            head_route_primary_ipopt_allow_fast_monotone_decrease=False,
+        )
+    )
+
+    assert policy["ipopt_allow_fast_monotone_decrease"] is False
+
+
+def test_head_route_primary_policy_accepts_single_loop_mode() -> None:
+    policy = _head_lifecycle_primary_policy(
+        CondensateEquilibriumOptions(
+            head_route_primary_continuation_mode="pdipm_core_single_loop",
+        )
+    )
+
+    assert policy["continuation_mode"] == "pdipm_core_single_loop"
 
 
 def test_support_outer_loop_does_not_grow_from_native_seed_fallback(

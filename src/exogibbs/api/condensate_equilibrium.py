@@ -9,7 +9,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 import math
-from typing import Any, Literal, Mapping, Optional, Sequence
+from typing import Any, Literal, Mapping, Optional, Protocol, Sequence, runtime_checkable
+import weakref
 
 import jax
 import jax.numpy as jnp
@@ -39,10 +40,20 @@ CondensatePrimaryStepControlPolicy = Literal[
 CondensatePrimaryContinuationMode = Literal[
     "legacy_policy",
     "pdipm_core",
+    "pdipm_core_single_loop",
 ]
 CondensatePrimaryDualInitializationPolicy = Literal[
     "centered_from_epsilon",
     "ipopt_push_floor",
+]
+CondensateProfileMethod = Literal[
+    "vmap_cold",
+    "scan_hot_from_top",
+    "scan_hot_from_bottom",
+]
+CondensateProfileWarmStartSupportPolicy = Literal[
+    "previous_solution",
+    "explicit_payload",
 ]
 CondensateSeedInitializationPolicy = Literal[
     "budget_preserving_fraction",
@@ -75,6 +86,10 @@ HEAD_ROUTE_RELATIVE_BUDGET_CORRECTION_PROTECTED_COMPONENTS = (
     "relative_budget_max",
     *HEAD_ROUTE_IPOPT_H_TYPE_PROTECTED_COMPONENTS,
 )
+_SETUP_NUMPY_FORMULA_CACHE: dict[
+    int,
+    tuple[weakref.ReferenceType[Any], np.ndarray, np.ndarray],
+] = {}
 
 
 @dataclass(frozen=True)
@@ -96,6 +111,10 @@ class CondensateEquilibriumOptions:
 
     route: CondensateRoute = HEAD_ROUTE_STANDARD
     case_id: Optional[str] = None
+    profile_method: Optional[CondensateProfileMethod] = None
+    profile_warm_start_support_policy: CondensateProfileWarmStartSupportPolicy = (
+        "previous_solution"
+    )
     allow_caveat_tiers: bool = True
     return_diagnostics: bool = False
     max_outer_iterations: Optional[int] = None
@@ -135,6 +154,7 @@ class CondensateEquilibriumOptions:
     head_route_primary_tiny_step_alpha_threshold: float = 1.0e-8
     head_route_primary_tiny_step_consecutive_limit: int = 1
     head_route_primary_tiny_step_switch_to_restoration: bool = True
+    head_route_primary_ipopt_allow_fast_monotone_decrease: bool = True
     head_route_primary_dual_initialization_policy: (
         CondensatePrimaryDualInitializationPolicy
     ) = "ipopt_push_floor"
@@ -187,6 +207,69 @@ class CondensateEquilibriumResult:
     head_route_name: str = CONDENSATE_HEAD_ROUTE_NAME
 
 
+@dataclass(frozen=True)
+class CondensateEquilibriumInit:
+    """Optional condensate profile initial guess for one layer."""
+
+    gas_ln_n: Optional[Array] = None
+    gas_ntot: Optional[Array] = None
+    condensate_amounts: Optional[Array] = None
+    support_indices: Optional[Sequence[int]] = None
+    support_amounts: Optional[Sequence[float]] = None
+
+
+@dataclass(frozen=True)
+class CondensateEquilibriumInitRequest:
+    """Inputs available to a condensate profile initializer for one layer."""
+
+    setup: CondensateChemicalSetup
+    T: float
+    P: float
+    b: Array
+    Pref: float = 1.0
+    layer_index: Optional[int] = None
+    user_init: Optional[CondensateEquilibriumInit] = None
+    previous_solution: Optional[CondensateEquilibriumInit] = None
+
+
+@runtime_checkable
+class CondensateEquilibriumInitializer(Protocol):
+    """Produce an optional condensate initial guess for one profile layer."""
+
+    def __call__(
+        self,
+        request: CondensateEquilibriumInitRequest,
+    ) -> CondensateEquilibriumInit:
+        ...
+
+
+@dataclass(frozen=True)
+class DefaultCondensateEquilibriumInitializer:
+    """Use explicit per-layer init first, then the previous profile solution."""
+
+    def __call__(
+        self,
+        request: CondensateEquilibriumInitRequest,
+    ) -> CondensateEquilibriumInit:
+        if request.user_init is not None:
+            return request.user_init
+        if request.previous_solution is not None:
+            return request.previous_solution
+        return CondensateEquilibriumInit()
+
+
+@dataclass(frozen=True)
+class CondensateEquilibriumProfileResult:
+    """Result container for a Python-level condensate profile solve."""
+
+    layers: tuple[CondensateEquilibriumResult, ...]
+    method: CondensateProfileMethod
+    diagnostics: Optional[Mapping[str, Any]] = None
+
+
+_DEFAULT_CONDENSATE_INITIALIZER = DefaultCondensateEquilibriumInitializer()
+
+
 def validate_condensate_chemical_setup(setup: CondensateChemicalSetup) -> None:
     """Validate gas-condensate setup compatibility for HEAD route calls."""
 
@@ -214,6 +297,29 @@ def validate_condensate_chemical_setup(setup: CondensateChemicalSetup) -> None:
         raise ValueError("gas_species length must match formula_matrix columns.")
     if formula_matrix_cond.shape[1] != len(setup.condensate_species):
         raise ValueError("condensate_species length must match formula_matrix_cond columns.")
+
+
+def _formula_matrices_numpy(setup: CondensateChemicalSetup) -> tuple[np.ndarray, np.ndarray]:
+    """Return cached NumPy formula matrices for Python-side reports/restoration."""
+
+    key = id(setup)
+    cached = _SETUP_NUMPY_FORMULA_CACHE.get(key)
+    if cached is not None:
+        setup_ref, formula_matrix, formula_matrix_cond = cached
+        if setup_ref() is setup:
+            return formula_matrix, formula_matrix_cond
+    formula_matrix = np.asarray(setup.formula_matrix, dtype=np.float64)
+    formula_matrix_cond = np.asarray(setup.formula_matrix_cond, dtype=np.float64)
+
+    def _drop_cache(_ref: weakref.ReferenceType[Any], *, cache_key: int = key) -> None:
+        _SETUP_NUMPY_FORMULA_CACHE.pop(cache_key, None)
+
+    _SETUP_NUMPY_FORMULA_CACHE[key] = (
+        weakref.ref(setup, _drop_cache),
+        formula_matrix,
+        formula_matrix_cond,
+    )
+    return formula_matrix, formula_matrix_cond
 
 
 def build_condensate_chemical_setup(
@@ -254,17 +360,20 @@ def _full_condensate_amounts(
     support_amounts: Array,
     condensate_count: int,
 ) -> Array:
-    indices = jnp.asarray(support_indices, dtype=jnp.int32)
-    amounts = jnp.asarray(support_amounts)
+    indices = np.asarray(tuple(int(index) for index in support_indices), dtype=np.int64)
+    amounts = np.asarray(support_amounts)
     if indices.ndim != 1:
         raise ValueError("support_indices must be one-dimensional.")
     if amounts.ndim != 1:
         raise ValueError("support_amounts must be one-dimensional.")
     if indices.shape[0] != amounts.shape[0]:
         raise ValueError("support_indices and support_amounts must have the same length.")
-    if bool(jnp.any(indices < 0)) or bool(jnp.any(indices >= condensate_count)):
+    if np.any(indices < 0) or np.any(indices >= condensate_count):
         raise ValueError("support_indices contain an out-of-range condensate index.")
-    return jnp.zeros((condensate_count,), dtype=amounts.dtype).at[indices].set(amounts)
+    full = np.zeros((condensate_count,), dtype=amounts.dtype)
+    if indices.size:
+        full[indices] = amounts
+    return jnp.asarray(full)
 
 
 def _external_condensate_amounts_vector(
@@ -276,15 +385,15 @@ def _external_condensate_amounts_vector(
     """Return a full-length vector for condensates externalized from the solver."""
 
     indices = tuple(int(index) for index in support_indices)
-    amounts = jnp.asarray(support_amounts, dtype=jnp.float64)
+    amounts = np.asarray(support_amounts, dtype=np.float64)
     if amounts.ndim != 1:
         raise ValueError("external support_amounts must be one-dimensional.")
     if len(indices) != amounts.shape[0]:
         raise ValueError("external support_indices and support_amounts must have the same length.")
-    full = jnp.zeros((condensate_count,), dtype=amounts.dtype)
+    full = np.zeros((condensate_count,), dtype=amounts.dtype)
     if indices:
-        full = full.at[jnp.asarray(indices, dtype=jnp.int32)].add(amounts)
-    return full
+        full[np.asarray(indices, dtype=np.int64)] += amounts
+    return jnp.asarray(full, dtype=jnp.float64)
 
 
 def _merge_external_condensate_amounts(
@@ -294,13 +403,13 @@ def _merge_external_condensate_amounts(
 ) -> Array:
     """Add externally budgeted condensates back to the public full vector."""
 
-    amounts = jnp.asarray(condensate_amounts, dtype=jnp.float64)
+    amounts = np.asarray(condensate_amounts, dtype=np.float64)
     if external_condensate_amounts is None:
-        return amounts
-    external = jnp.asarray(external_condensate_amounts, dtype=jnp.float64)
+        return jnp.asarray(amounts, dtype=jnp.float64)
+    external = np.asarray(external_condensate_amounts, dtype=np.float64)
     if external.ndim != 1 or external.shape[0] != amounts.shape[0]:
         raise ValueError("external_condensate_amounts must match condensate_count.")
-    return amounts + external
+    return jnp.asarray(amounts + external, dtype=jnp.float64)
 
 
 def _validate_options(options: CondensateEquilibriumOptions) -> None:
@@ -411,10 +520,11 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
     if options.head_route_primary_continuation_mode not in (
         "legacy_policy",
         "pdipm_core",
+        "pdipm_core_single_loop",
     ):
         raise ValueError(
-            "head_route_primary_continuation_mode must be 'legacy_policy' or "
-            "'pdipm_core'."
+            "head_route_primary_continuation_mode must be 'legacy_policy', "
+            "'pdipm_core', or 'pdipm_core_single_loop'."
         )
     if (
         not math.isfinite(float(options.head_route_primary_fraction_to_boundary_safety))
@@ -579,36 +689,35 @@ def _full_condensate_element_budget_residual_report(
     element_inventory_target: Array,
     relative_tolerance: float,
 ) -> dict[str, Any]:
-    target = jnp.asarray(element_inventory_target, dtype=jnp.float64)
+    target = np.asarray(element_inventory_target, dtype=np.float64)
     if target.ndim != 1 or target.shape[0] != len(setup.elements):
         raise ValueError("element_inventory_target must have one value per element.")
-    gas_amounts = jnp.asarray(gas_n, dtype=jnp.float64)
-    cond_amounts = jnp.asarray(condensate_amounts, dtype=jnp.float64)
+    gas_amounts = np.asarray(gas_n, dtype=np.float64)
+    cond_amounts = np.asarray(condensate_amounts, dtype=np.float64)
     if gas_amounts.ndim != 1 or gas_amounts.shape[0] != len(setup.gas_species):
         raise ValueError("gas_n must have one value per gas species.")
     if cond_amounts.ndim != 1 or cond_amounts.shape[0] != len(setup.condensate_species):
         raise ValueError("condensate_amounts must have one value per condensate species.")
-    gas_budget = jnp.asarray(setup.formula_matrix, dtype=jnp.float64) @ gas_amounts
-    condensate_budget = (
-        jnp.asarray(setup.formula_matrix_cond, dtype=jnp.float64) @ cond_amounts
-    )
+    formula_matrix, formula_matrix_cond = _formula_matrices_numpy(setup)
+    gas_budget = formula_matrix @ gas_amounts
+    condensate_budget = formula_matrix_cond @ cond_amounts
     reconstructed = gas_budget + condensate_budget
     residual = reconstructed - target
-    denominator = jnp.maximum(jnp.abs(target), 1.0e-300)
+    denominator = np.maximum(np.abs(target), 1.0e-300)
     signed_relative = residual / denominator
-    absolute_relative = jnp.abs(signed_relative)
-    gate_mask = jnp.asarray(
+    absolute_relative = np.abs(signed_relative)
+    gate_mask = np.asarray(
         tuple(str(element) not in {"e-", "electron"} for element in setup.elements),
         dtype=bool,
     )
-    gated_absolute_relative = jnp.where(gate_mask, absolute_relative, 0.0)
-    finite = bool(jnp.all(jnp.isfinite(jnp.where(gate_mask, absolute_relative, 0.0))))
-    sanitized = jnp.where(
-        jnp.isfinite(gated_absolute_relative),
+    gated_absolute_relative = np.where(gate_mask, absolute_relative, 0.0)
+    finite = bool(np.all(np.isfinite(np.where(gate_mask, absolute_relative, 0.0))))
+    sanitized = np.where(
+        np.isfinite(gated_absolute_relative),
         gated_absolute_relative,
-        jnp.inf,
+        np.inf,
     )
-    max_index = int(jnp.argmax(sanitized))
+    max_index = int(np.argmax(sanitized))
     max_abs_relative = float(gated_absolute_relative[max_index])
     tolerance = float(relative_tolerance)
     accepted = finite and max_abs_relative <= tolerance
@@ -694,18 +803,28 @@ def _full_condensate_budget_gate_report_for_support_state(
     element_inventory_target: Array,
     relative_tolerance: float,
 ) -> dict[str, Any]:
-    condensate_amounts = _full_condensate_amounts(
-        support_indices=support_indices,
-        support_amounts=support_amounts,
-        condensate_count=len(setup.condensate_species),
-    )
-    condensate_amounts = _merge_external_condensate_amounts(
-        condensate_amounts=condensate_amounts,
-        external_condensate_amounts=external_condensate_amounts,
-    )
+    support = np.asarray(tuple(int(index) for index in support_indices), dtype=np.int64)
+    support_values = np.asarray(support_amounts, dtype=np.float64)
+    if support.ndim != 1:
+        raise ValueError("support_indices must be one-dimensional.")
+    if support_values.ndim != 1:
+        raise ValueError("support_amounts must be one-dimensional.")
+    if support.shape[0] != support_values.shape[0]:
+        raise ValueError("support_indices and support_amounts must have the same length.")
+    condensate_count = len(setup.condensate_species)
+    if np.any(support < 0) or np.any(support >= condensate_count):
+        raise ValueError("support_indices contain an out-of-range condensate index.")
+    condensate_amounts = np.zeros((condensate_count,), dtype=np.float64)
+    if support.size:
+        condensate_amounts[support] = support_values
+    if external_condensate_amounts is not None:
+        external = np.asarray(external_condensate_amounts, dtype=np.float64)
+        if external.ndim != 1 or external.shape[0] != condensate_count:
+            raise ValueError("external_condensate_amounts must match condensate_count.")
+        condensate_amounts = condensate_amounts + external
     return _full_condensate_element_budget_residual_report(
         setup=setup,
-        gas_n=jnp.exp(jnp.asarray(gas_ln_n)),
+        gas_n=np.exp(np.asarray(gas_ln_n, dtype=np.float64)),
         condensate_amounts=condensate_amounts,
         element_inventory_target=element_inventory_target,
         relative_tolerance=relative_tolerance,
@@ -816,8 +935,7 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
 
     gas_n = np.exp(np.asarray(gas_ln_n, dtype=np.float64))
     target = np.asarray(element_inventory_target, dtype=np.float64)
-    ag = np.asarray(setup.formula_matrix, dtype=np.float64)
-    ac_full = np.asarray(setup.formula_matrix_cond, dtype=np.float64)
+    ag, ac_full = _formula_matrices_numpy(setup)
     ac = ac_full[:, support]
     external = (
         np.zeros((ac_full.shape[1],), dtype=np.float64)
@@ -922,9 +1040,9 @@ def _polish_support_amounts_for_full_condensate_budget_gate(
                     matrix,
                     vector,
                     bounds=(lower, upper),
+                    method="bvls",
                     max_iter=500,
                     tol=1.0e-12,
-                    lsmr_tol="auto",
                 )
             except (ValueError, RuntimeError, FloatingPointError):
                 continue
@@ -1075,8 +1193,7 @@ def _polish_gas_log_amounts_for_full_condensate_budget_gate(
     ):
         return jnp.asarray(gas_ln_n, dtype=jnp.float64), None
 
-    ag = np.asarray(setup.formula_matrix, dtype=np.float64)
-    ac = np.asarray(setup.formula_matrix_cond, dtype=np.float64)
+    ag, ac = _formula_matrices_numpy(setup)
     condensate_budget = ac @ condensates
     positive_target = target[target > 0.0]
     target_scale = float(np.max(positive_target)) if positive_target.size else 1.0
@@ -1088,8 +1205,8 @@ def _polish_gas_log_amounts_for_full_condensate_budget_gate(
     def gate_report(q_values: np.ndarray) -> dict[str, Any]:
         return _full_condensate_element_budget_residual_report(
             setup=setup,
-            gas_n=jnp.asarray(np.exp(q_values), dtype=jnp.float64),
-            condensate_amounts=jnp.asarray(condensates, dtype=jnp.float64),
+            gas_n=np.exp(q_values),
+            condensate_amounts=condensates,
             element_inventory_target=element_inventory_target,
             relative_tolerance=relative_tolerance,
         )
@@ -1184,8 +1301,7 @@ def _restore_full_budget_feasibility_for_active_support(
             None,
         )
 
-    ag = np.asarray(setup.formula_matrix, dtype=np.float64)
-    ac_full = np.asarray(setup.formula_matrix_cond, dtype=np.float64)
+    ag, ac_full = _formula_matrices_numpy(setup)
     ac = ac_full[:, support]
     external = (
         np.zeros((ac_full.shape[1],), dtype=np.float64)
@@ -1369,6 +1485,9 @@ def _head_lifecycle_primary_policy(options: CondensateEquilibriumOptions) -> Map
     )
     policy["ipopt_tiny_step_switch_to_restoration"] = bool(
         options.head_route_primary_tiny_step_switch_to_restoration
+    )
+    policy["ipopt_allow_fast_monotone_decrease"] = bool(
+        options.head_route_primary_ipopt_allow_fast_monotone_decrease
     )
     return policy
 
@@ -2699,6 +2818,121 @@ def _positive_support_amounts_for_warm_start(
     )
 
 
+def _condensate_init_from_result(
+    result: CondensateEquilibriumResult,
+    *,
+    min_seed_amount: float,
+) -> CondensateEquilibriumInit:
+    """Build a reusable profile initial guess from an accepted layer result."""
+
+    support_indices = tuple(
+        int(index) for index in np.asarray(result.condensate_support_indices).tolist()
+    )
+    full_amounts = np.asarray(result.condensate_amounts, dtype=np.float64)
+    support_amounts = tuple(
+        float(max(full_amounts[index], min_seed_amount)) for index in support_indices
+    )
+    return CondensateEquilibriumInit(
+        gas_ln_n=result.gas_ln_n,
+        gas_ntot=jnp.asarray(result.gas_ntot, dtype=jnp.float64),
+        condensate_amounts=result.condensate_amounts,
+        support_indices=support_indices,
+        support_amounts=support_amounts,
+    )
+
+
+def _support_payload_from_condensate_init(
+    init: CondensateEquilibriumInit | None,
+    *,
+    setup: CondensateChemicalSetup,
+    min_seed_amount: float,
+) -> tuple[tuple[int, ...], tuple[float, ...]] | None:
+    """Return finite support payload from an optional profile initializer."""
+
+    if init is None:
+        return None
+    if init.support_indices is not None:
+        support_indices = tuple(int(index) for index in init.support_indices)
+        if init.support_amounts is not None:
+            support_amounts = _positive_support_amounts_for_warm_start(
+                init.support_amounts,
+                min_seed_amount=min_seed_amount,
+            )
+        elif init.condensate_amounts is not None:
+            amounts = np.asarray(init.condensate_amounts, dtype=np.float64)
+            if amounts.ndim != 1 or amounts.shape[0] != len(setup.condensate_species):
+                return None
+            support_amounts = _positive_support_amounts_for_warm_start(
+                (amounts[index] for index in support_indices),
+                min_seed_amount=min_seed_amount,
+            )
+        else:
+            return None
+    elif init.condensate_amounts is not None:
+        amounts = np.asarray(init.condensate_amounts, dtype=np.float64)
+        if amounts.ndim != 1 or amounts.shape[0] != len(setup.condensate_species):
+            return None
+        active = np.flatnonzero(np.isfinite(amounts) & (amounts > 0.0))
+        support_indices = tuple(int(index) for index in active.tolist())
+        support_amounts = _positive_support_amounts_for_warm_start(
+            (amounts[index] for index in support_indices),
+            min_seed_amount=min_seed_amount,
+        )
+    else:
+        return None
+    if len(support_indices) != len(support_amounts):
+        return None
+    if len(set(support_indices)) != len(support_indices):
+        return None
+    if any(index < 0 or index >= len(setup.condensate_species) for index in support_indices):
+        return None
+    if not all(math.isfinite(value) and value > 0.0 for value in support_amounts):
+        return None
+    return support_indices, support_amounts
+
+
+def _solver_log_state_from_condensate_init(
+    init: CondensateEquilibriumInit | None,
+    *,
+    setup: CondensateChemicalSetup,
+    support_amounts_init: Sequence[float],
+    source: str,
+) -> Any | None:
+    """Build an internal restricted-solver init from a profile initializer."""
+
+    if init is None or init.gas_ln_n is None:
+        return None
+    gas_ln_n = jnp.asarray(init.gas_ln_n, dtype=jnp.float64)
+    if gas_ln_n.ndim != 1 or gas_ln_n.shape[0] != len(setup.gas_species):
+        return None
+    if not bool(jnp.all(jnp.isfinite(gas_ln_n))):
+        return None
+    if init.gas_ntot is None:
+        gas_ntot = jnp.sum(jnp.exp(gas_ln_n))
+    else:
+        gas_ntot = jnp.asarray(init.gas_ntot, dtype=jnp.float64)
+    if not bool(jnp.all(jnp.isfinite(gas_ntot))) or float(gas_ntot) <= 0.0:
+        return None
+    support_amounts = jnp.asarray(support_amounts_init, dtype=jnp.float64)
+    if (
+        support_amounts.ndim != 1
+        or not bool(jnp.all(jnp.isfinite(support_amounts)))
+        or not bool(jnp.all(support_amounts > 0.0))
+    ):
+        return None
+    from exogibbs.optimize.minimize_cond import CondensateEquilibriumInit as SolverInit
+
+    return SolverInit(
+        ln_nk=gas_ln_n,
+        ln_mk=jnp.log(jnp.maximum(support_amounts, 1.0e-300)),
+        ln_ntot=jnp.log(jnp.asarray(gas_ntot, dtype=jnp.float64)),
+        ln_nk_source_trace={
+            "source": source,
+            "reason": "Profile or caller-provided condensate warm-start gas state.",
+        },
+    )
+
+
 def _lifecycle_final_state_support_growth_payload(
     result: CondensateEquilibriumResult,
     *,
@@ -3939,6 +4173,7 @@ def condensate_equilibrium(
     Pref: float = 1.0,
     support_indices: Optional[Sequence[int]] = None,
     support_amounts_init: Optional[Sequence[float]] = None,
+    init: Optional[CondensateEquilibriumInit] = None,
     options: Optional[CondensateEquilibriumOptions] = None,
 ) -> CondensateEquilibriumResult:
     """Compute one condensate-enabled equilibrium layer through HEAD route v1.
@@ -4034,7 +4269,6 @@ def condensate_equilibrium(
             "fastchem4_runtime_values_used_as_constructor_inputs": False,
         }
     from exogibbs.optimize.minimize_cond import (
-        CondensateEquilibriumInit,
         CondensateRGIEReducedCouplingConfig,
         solve_restricted_support_condensate_layer,
     )
@@ -4150,27 +4384,40 @@ def condensate_equilibrium(
 
     if support_amounts_init is None:
         raise ValueError("support_amounts_init is required for non-empty condensate support.")
-    baseline_gas_result = equilibrium(
-        setup.gas_setup,
-        T,
-        P,
-        jnp.asarray(b),
-        Pref=Pref,
-        options=EquilibriumOptions(),
-        return_diagnostics=False,
+    profile_initial_log_state = _solver_log_state_from_condensate_init(
+        init,
+        setup=setup,
+        support_amounts_init=support_amounts_init,
+        source="exogibbs_profile_or_caller_condensate_init",
     )
-    baseline_initial_log_state = CondensateEquilibriumInit(
-        ln_nk=jnp.asarray(baseline_gas_result.ln_n, dtype=jnp.float64),
-        ln_mk=jnp.log(jnp.maximum(jnp.asarray(support_amounts_init), 1.0e-300)),
-        ln_ntot=jnp.log(jnp.asarray(baseline_gas_result.ntot, dtype=jnp.float64)),
-        ln_nk_source_trace={
-            "source": "exogibbs_api_fresh_gas_equilibrium",
-            "reason": (
-                "Keep support selection and restricted solver baseline "
-                "initialization on the same native gas state."
-            ),
-        },
-    )
+    if profile_initial_log_state is None:
+        baseline_gas_result = equilibrium(
+            setup.gas_setup,
+            T,
+            P,
+            jnp.asarray(b),
+            Pref=Pref,
+            options=EquilibriumOptions(),
+            return_diagnostics=False,
+        )
+        from exogibbs.optimize.minimize_cond import (
+            CondensateEquilibriumInit as SolverInit,
+        )
+
+        baseline_initial_log_state = SolverInit(
+            ln_nk=jnp.asarray(baseline_gas_result.ln_n, dtype=jnp.float64),
+            ln_mk=jnp.log(jnp.maximum(jnp.asarray(support_amounts_init), 1.0e-300)),
+            ln_ntot=jnp.log(jnp.asarray(baseline_gas_result.ntot, dtype=jnp.float64)),
+            ln_nk_source_trace={
+                "source": "exogibbs_api_fresh_gas_equilibrium",
+                "reason": (
+                    "Keep support selection and restricted solver baseline "
+                    "initialization on the same native gas state."
+                ),
+            },
+        )
+    else:
+        baseline_initial_log_state = profile_initial_log_state
     warm_start_report = build_condensate_head_route_warm_start_report(
         explicit_opt_in=True,
         state=state,
@@ -5161,6 +5408,24 @@ def condensate_equilibrium(
                     "fastchem4_trace_public_runtime_constructor_inputs_used": False,
                 }
                 if added:
+                    retry_support_indices = (
+                        tuple(int(index) for index in result_support_indices) + added
+                    )
+                    retry_support_amounts = (
+                        _positive_support_amounts_for_warm_start(
+                            tuple(
+                                float(value)
+                                for value in jnp.asarray(result_support_amounts).tolist()
+                            ),
+                            min_seed_amount=opts.min_seed_amount,
+                        )
+                        + _budget_seed_for_support(
+                            setup=setup,
+                            b=b,
+                            support_indices=added,
+                            options=opts,
+                        )
+                    )
                     retry_options = replace(
                         opts,
                         case_id=None
@@ -5178,21 +5443,8 @@ def condensate_equilibrium(
                         P,
                         b,
                         Pref=Pref,
-                        support_indices=tuple(int(index) for index in result_support_indices)
-                        + added,
-                        support_amounts_init=_positive_support_amounts_for_warm_start(
-                            tuple(
-                                float(value)
-                                for value in jnp.asarray(result_support_amounts).tolist()
-                            ),
-                            min_seed_amount=opts.min_seed_amount,
-                        )
-                        + _budget_seed_for_support(
-                            setup=setup,
-                            b=b,
-                            support_indices=added,
-                            options=opts,
-                        ),
+                        support_indices=retry_support_indices,
+                        support_amounts_init=retry_support_amounts,
                         options=retry_options,
                     )
                     retry_route_promoted = (
@@ -5281,16 +5533,308 @@ def condensate_equilibrium(
     return final_result
 
 
-def condensate_equilibrium_profile(*args: Any, **kwargs: Any) -> Any:
-    """Profile condensate equilibrium placeholder for the HEAD route API."""
+def _resolve_condensate_profile_method(
+    method: Optional[CondensateProfileMethod],
+    initializer: Optional[CondensateEquilibriumInitializer],
+) -> CondensateProfileMethod:
+    if method is not None:
+        return method
+    return "vmap_cold"
 
-    raise NotImplementedError("condensate_equilibrium_profile will be connected after one-layer HEAD route wiring.")
+
+def _resolve_condensate_initial_guess(
+    initializer: Optional[CondensateEquilibriumInitializer],
+    request: CondensateEquilibriumInitRequest,
+) -> CondensateEquilibriumInit:
+    active_initializer = initializer or _DEFAULT_CONDENSATE_INITIALIZER
+    return active_initializer(request)
+
+
+def _with_profile_layer_diagnostics(
+    result: CondensateEquilibriumResult,
+    *,
+    profile_report: Mapping[str, Any],
+    return_diagnostics: bool,
+) -> CondensateEquilibriumResult:
+    if not return_diagnostics:
+        return result
+    diagnostics = dict(result.diagnostics or {})
+    diagnostics["condensate_profile_layer"] = dict(profile_report)
+    return replace(result, diagnostics=diagnostics)
+
+
+def _run_condensate_profile_layer(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    b: Array,
+    Pref: float,
+    layer_index: int,
+    base_options: CondensateEquilibriumOptions,
+    init: CondensateEquilibriumInit,
+    support_indices: Optional[Sequence[int]],
+    support_amounts_init: Optional[Sequence[float]],
+    warm_start_support_policy: CondensateProfileWarmStartSupportPolicy,
+    return_diagnostics: bool,
+) -> tuple[CondensateEquilibriumResult, Mapping[str, Any]]:
+    use_explicit_support_for_warm_start = (
+        warm_start_support_policy == "explicit_payload"
+        and support_indices is not None
+        and support_amounts_init is not None
+        and init.gas_ln_n is not None
+    )
+    if use_explicit_support_for_warm_start:
+        support_payload = (
+            tuple(int(index) for index in support_indices),
+            _positive_support_amounts_for_warm_start(
+                support_amounts_init,
+                min_seed_amount=base_options.min_seed_amount,
+            ),
+        )
+    else:
+        support_payload = _support_payload_from_condensate_init(
+            init,
+            setup=setup,
+            min_seed_amount=base_options.min_seed_amount,
+        )
+    initialization_mode = "initializer"
+    warm_start_attempted = support_payload is not None
+    if use_explicit_support_for_warm_start:
+        initialization_mode = "initializer_gas_with_explicit_support_payload"
+    if support_payload is None and support_indices is not None:
+        if support_amounts_init is None:
+            raise ValueError(
+                "support_amounts_init is required when support_indices is provided."
+            )
+        support_payload = (
+            tuple(int(index) for index in support_indices),
+            _positive_support_amounts_for_warm_start(
+                support_amounts_init,
+                min_seed_amount=base_options.min_seed_amount,
+            ),
+        )
+        initialization_mode = "explicit_support_payload"
+        warm_start_attempted = False
+    case_id = (
+        None
+        if base_options.case_id is None
+        else f"{base_options.case_id}__layer_{layer_index}"
+    )
+    layer_options = replace(
+        base_options,
+        case_id=case_id,
+        return_diagnostics=return_diagnostics,
+    )
+    if support_payload is None:
+        result = condensate_equilibrium(
+            setup,
+            T,
+            P,
+            b,
+            Pref=Pref,
+            options=layer_options,
+        )
+        report = {
+            "profile_layer_schema": "exogibbs_condensate_profile_layer_v1",
+            "layer_index": int(layer_index),
+            "initialization_mode": "fresh",
+            "warm_start_attempted": warm_start_attempted,
+            "fresh_fallback_used": False,
+            "accepted": bool(result.converged),
+        }
+        return _with_profile_layer_diagnostics(
+            result,
+            profile_report=report,
+            return_diagnostics=return_diagnostics,
+        ), report
+
+    support_indices, support_amounts = support_payload
+    warm_result = condensate_equilibrium(
+        setup,
+        T,
+        P,
+        b,
+        Pref=Pref,
+        support_indices=support_indices,
+        support_amounts_init=support_amounts,
+        init=init,
+        options=layer_options,
+    )
+    if warm_result.converged:
+        report = {
+            "profile_layer_schema": "exogibbs_condensate_profile_layer_v1",
+            "layer_index": int(layer_index),
+            "initialization_mode": initialization_mode,
+            "warm_start_attempted": warm_start_attempted,
+            "fresh_fallback_used": False,
+            "accepted": True,
+            "support_count": len(support_indices),
+        }
+        return _with_profile_layer_diagnostics(
+            warm_result,
+            profile_report=report,
+            return_diagnostics=return_diagnostics,
+        ), report
+
+    fresh_result = condensate_equilibrium(
+        setup,
+        T,
+        P,
+        b,
+        Pref=Pref,
+        options=layer_options,
+    )
+    report = {
+        "profile_layer_schema": "exogibbs_condensate_profile_layer_v1",
+        "layer_index": int(layer_index),
+        "initialization_mode": f"{initialization_mode}_with_fresh_fallback",
+        "warm_start_attempted": warm_start_attempted,
+        "warm_start_status": warm_result.status,
+        "fresh_fallback_used": True,
+        "accepted": bool(fresh_result.converged),
+        "support_count": len(support_indices),
+    }
+    return _with_profile_layer_diagnostics(
+        fresh_result,
+        profile_report=report,
+        return_diagnostics=return_diagnostics,
+    ), report
+
+
+def condensate_equilibrium_profile(
+    setup: CondensateChemicalSetup,
+    T: Sequence[float] | Array,
+    P: Sequence[float] | Array,
+    b: Array,
+    *,
+    Pref: float = 1.0,
+    support_indices: Optional[Sequence[int]] = None,
+    support_amounts_init: Optional[Sequence[float]] = None,
+    init: Optional[Sequence[CondensateEquilibriumInit | None]] = None,
+    initializer: Optional[CondensateEquilibriumInitializer] = None,
+    options: Optional[CondensateEquilibriumOptions] = None,
+    method: Optional[CondensateProfileMethod] = None,
+    return_diagnostics: bool = False,
+) -> CondensateEquilibriumProfileResult:
+    """Compute condensate equilibrium over a 1D T/P profile.
+
+    ``method="vmap_cold"`` treats each layer independently except for any
+    initializer-provided guess. ``scan_hot_from_top`` and
+    ``scan_hot_from_bottom`` carry the previous accepted layer result as the
+    next layer's initializer. Any failed warm-start attempt falls back to the
+    standard fresh one-layer route for that layer.
+    """
+
+    validate_condensate_chemical_setup(setup)
+    temperatures = np.asarray(T, dtype=np.float64)
+    pressures = np.asarray(P, dtype=np.float64)
+    if temperatures.ndim != 1 or pressures.ndim != 1:
+        raise ValueError("T and P must be 1D arrays of equal length.")
+    if temperatures.shape[0] != pressures.shape[0]:
+        raise ValueError("T and P must have the same length.")
+    opts = options or CondensateEquilibriumOptions()
+    _validate_options(opts)
+    resolved_method = _resolve_condensate_profile_method(
+        method if method is not None else opts.profile_method,
+        initializer,
+    )
+    valid_methods = ("vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom")
+    if resolved_method not in valid_methods:
+        raise ValueError(
+            f"Unknown condensate profile solve method '{resolved_method}'. "
+            f"Expected one of {valid_methods}."
+        )
+    n_layers = int(temperatures.shape[0])
+    explicit_inits: tuple[CondensateEquilibriumInit | None, ...]
+    if init is None:
+        explicit_inits = (None,) * n_layers
+    else:
+        explicit_inits = tuple(init)
+        if len(explicit_inits) != n_layers:
+            raise ValueError("init must have one entry per profile layer.")
+
+    if resolved_method == "scan_hot_from_bottom":
+        layer_order = tuple(reversed(range(n_layers)))
+    else:
+        layer_order = tuple(range(n_layers))
+
+    previous_solution: CondensateEquilibriumInit | None = None
+    layer_results: dict[int, CondensateEquilibriumResult] = {}
+    layer_reports: dict[int, Mapping[str, Any]] = {}
+    for layer_index in layer_order:
+        initial_guess = _resolve_condensate_initial_guess(
+            initializer,
+            CondensateEquilibriumInitRequest(
+                setup=setup,
+                T=float(temperatures[layer_index]),
+                P=float(pressures[layer_index]),
+                b=b,
+                Pref=Pref,
+                layer_index=layer_index,
+                user_init=explicit_inits[layer_index],
+                previous_solution=(
+                    None if resolved_method == "vmap_cold" else previous_solution
+                ),
+            ),
+        )
+        result, report = _run_condensate_profile_layer(
+            setup=setup,
+            T=float(temperatures[layer_index]),
+            P=float(pressures[layer_index]),
+            b=b,
+            Pref=Pref,
+            layer_index=layer_index,
+            base_options=opts,
+            init=initial_guess,
+            support_indices=support_indices,
+            support_amounts_init=support_amounts_init,
+            warm_start_support_policy=opts.profile_warm_start_support_policy,
+            return_diagnostics=return_diagnostics,
+        )
+        layer_results[layer_index] = result
+        layer_reports[layer_index] = report
+        previous_solution = _condensate_init_from_result(
+            result,
+            min_seed_amount=opts.min_seed_amount,
+        )
+
+    ordered_results = tuple(layer_results[index] for index in range(n_layers))
+    ordered_reports = tuple(layer_reports[index] for index in range(n_layers))
+    diagnostics = None
+    if return_diagnostics:
+        diagnostics = {
+            "profile_schema": "exogibbs_condensate_equilibrium_profile_v1",
+            "method": resolved_method,
+            "layer_count": n_layers,
+            "warm_start_attempt_count": sum(
+                bool(report.get("warm_start_attempted", False))
+                for report in ordered_reports
+            ),
+            "fresh_fallback_count": sum(
+                bool(report.get("fresh_fallback_used", False))
+                for report in ordered_reports
+            ),
+            "layers": ordered_reports,
+        }
+    return CondensateEquilibriumProfileResult(
+        layers=ordered_results,
+        method=resolved_method,
+        diagnostics=diagnostics,
+    )
 
 
 __all__ = (
     "CondensateChemicalSetup",
+    "CondensateEquilibriumInit",
+    "CondensateEquilibriumInitRequest",
+    "CondensateEquilibriumInitializer",
     "CondensateEquilibriumOptions",
+    "CondensateEquilibriumProfileResult",
     "CondensateEquilibriumResult",
+    "CondensateProfileMethod",
+    "CondensateProfileWarmStartSupportPolicy",
+    "DefaultCondensateEquilibriumInitializer",
     "build_condensate_chemical_setup",
     "build_condensate_equilibrium_result_from_solver_payload",
     "condensate_equilibrium",

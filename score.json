@@ -4951,6 +4951,503 @@
         }
       },
       "verdict": "The curated fresh API score is now fully converged at 99/99. The highT rows remain true gas-only rows with no temperature-valid inactive condensate support; the repair is a public API routing consistency fix for explicit empty support payloads."
+    },
+    {
+      "trial": "v1.18-budget-gate-numpy-runtime",
+      "title": "NumPy full-budget gate report construction",
+      "description": "Reduces metal sulfide and full curated runtime by moving full-condensate budget gate report construction from many small JAX operations to NumPy without changing the gate formula, solver math, support retry policy, or acceptance thresholds.",
+      "implementation": {
+        "api_result_head_route_name": "head_route_v1_18_pdipm_lifecycle_support_growth",
+        "api_result_head_route_version": "v1.18",
+        "changed_functions": [
+          "_full_condensate_element_budget_residual_report",
+          "_full_condensate_budget_gate_report_for_support_state"
+        ],
+        "solver_math_change": false,
+        "acceptance_policy_change": false,
+        "fastchem4_constructor_inputs_used": false,
+        "fastchem4_exact_replay_target": false
+      },
+      "runtime_diagnostics": {
+        "all_curated_layers": {
+          "before_seconds": 108.96607920099996,
+          "after_seconds": 94.86469970300004,
+          "delta_seconds": -14.10137949799992,
+          "relative_speedup_percent": 12.940155233159906,
+          "after_artifact": "volatiles_artifacts/head_route_v18_all_curated_runtime_after_numpy_budget_gate.json"
+        },
+        "solar_metal_sulfide_or_Fe_Ni_S_region": {
+          "before_seconds": 28.707,
+          "after_seconds": 20.581,
+          "delta_seconds": -8.126,
+          "relative_speedup_percent": 28.306684432716064,
+          "after_artifact": "volatiles_artifacts/metal_sulfide_family_runtime_after.json"
+        },
+        "cprofile": {
+          "artifact": "volatiles_artifacts/cprofile_metal_sulfide_layer8.txt",
+          "finding": "The target layer profile showed many small JAX cache-miss/compile and materialization costs around public report/gate construction."
+        }
+      },
+      "public_surface_after": {
+        "rows": 99,
+        "converged_count": 99,
+        "exception_count": 0,
+        "status_counts": {
+          "converged": 89,
+          "converged_with_caveat": 10
+        },
+        "route_counts": {
+          "head_v1_empty_positive_support_gas_only": 18,
+          "m4310_full_promoted_policy_route": 71,
+          "native_budget_seed_fallback_budget_tradeoff": 10
+        },
+        "acceptance_tier_counts": {
+          "runtime_empty_positive_support": 18,
+          "tier_1_tight_residual_production_adjacent_candidate": 71,
+          "tier_2_budget_tradeoff_experimental_only": 10
+        }
+      },
+      "validation": {
+        "py_compile": {
+          "command": "python -m py_compile src/exogibbs/api/condensate_equilibrium.py volatiles_code/profile_curated_head_route_all_layers.py volatiles_code/profile_metal_sulfide_diagnostics_toggle.py volatiles_code/cprofile_metal_sulfide_layer.py",
+          "result": "passed"
+        },
+        "api_unit_tests": {
+          "command": "pytest -q tests/unittests/api/condensate_equilibrium_test.py",
+          "result": "44 passed, 19 warnings"
+        },
+        "curated_e2e": {
+          "command": "JAX_ENABLE_X64=1 pytest -q tests/endtoend/curated_cases",
+          "result": "10 passed, 32 warnings"
+        },
+        "diff_check": {
+          "command": "git diff --check",
+          "result": "passed"
+        }
+      },
+      "verdict": "The first speed improvement reduces the targeted metal sulfide runtime surface by about 28% while keeping the v1.18 curated public score, routes, and acceptance tiers unchanged."
+    },
+    {
+      "trial": "v1.18-formula-cache-runtime",
+      "title": "Cached NumPy formula matrices and dense vector assembly",
+      "description": "Reduces repeated Python-side report/restoration overhead by caching immutable setup formula matrices as NumPy arrays and avoiding small JAX scatter/update operations when assembling full condensate vectors.",
+      "implementation": {
+        "api_result_head_route_name": "head_route_v1_18_pdipm_lifecycle_support_growth",
+        "api_result_head_route_version": "v1.18",
+        "changed_functions": [
+          "_formula_matrices_numpy",
+          "_full_condensate_amounts",
+          "_external_condensate_amounts_vector",
+          "_merge_external_condensate_amounts",
+          "_full_condensate_element_budget_residual_report",
+          "_polish_support_amounts_for_full_condensate_budget_gate",
+          "_polish_gas_log_amounts_for_full_condensate_budget_gate",
+          "_restore_full_budget_feasibility_for_active_support"
+        ],
+        "cache_policy": "weakref-backed cache keyed by setup object identity",
+        "solver_math_change": false,
+        "acceptance_policy_change": false,
+        "fastchem4_constructor_inputs_used": false,
+        "fastchem4_exact_replay_target": false
+      },
+      "runtime_diagnostics": {
+        "all_curated_layers": {
+          "before_this_trial_seconds": 94.86469970300004,
+          "after_seconds": 91.37912858500022,
+          "delta_seconds": -3.485571117999821,
+          "relative_speedup_percent": 3.674253879535773,
+          "initial_v1_18_baseline_seconds": 108.96607920099996,
+          "cumulative_delta_seconds": -17.58695061599974,
+          "cumulative_relative_speedup_percent": 16.139840396713975,
+          "after_artifact": "volatiles_artifacts/head_route_v18_all_curated_runtime_after_numpy_formula_cache.json"
+        },
+        "solar_metal_sulfide_or_Fe_Ni_S_region": {
+          "before_this_trial_seconds": 20.581,
+          "after_seconds": 19.741,
+          "delta_seconds": -0.8399999999999999,
+          "relative_speedup_percent": 4.081434332636898,
+          "initial_v1_18_baseline_seconds": 28.707,
+          "cumulative_delta_seconds": -8.966,
+          "cumulative_relative_speedup_percent": 31.23592991465531
+        }
+      },
+      "public_surface_after": {
+        "rows": 99,
+        "converged_count": 99,
+        "exception_count": 0,
+        "status_counts": {
+          "converged": 89,
+          "converged_with_caveat": 10
+        },
+        "route_counts": {
+          "head_v1_empty_positive_support_gas_only": 18,
+          "m4310_full_promoted_policy_route": 71,
+          "native_budget_seed_fallback_budget_tradeoff": 10
+        },
+        "acceptance_tier_counts": {
+          "runtime_empty_positive_support": 18,
+          "tier_1_tight_residual_production_adjacent_candidate": 71,
+          "tier_2_budget_tradeoff_experimental_only": 10
+        }
+      },
+      "validation": {
+        "py_compile": {
+          "command": "python -m py_compile src/exogibbs/api/condensate_equilibrium.py",
+          "result": "passed"
+        },
+        "api_unit_tests": {
+          "command": "pytest -q tests/unittests/api/condensate_equilibrium_test.py",
+          "result": "44 passed, 19 warnings"
+        },
+        "curated_e2e": {
+          "command": "JAX_ENABLE_X64=1 pytest -q tests/endtoend/curated_cases",
+          "result": "10 passed, 32 warnings"
+        }
+      },
+      "verdict": "Caching immutable setup formula matrices and avoiding small JAX scatter/update operations gives a smaller but measurable second speedup while keeping the v1.18 public route, status, and tier surface unchanged."
+    },
+    {
+      "trial": "v1.18-condensate-profile-warm-start-api",
+      "title": "Opt-in condensate profile initializers and previous-layer warm starts",
+      "description": "Adds a condensate profile API surface that supports independent per-layer initializers, future grid-backed initializers, and sequential previous-layer warm starts. Runtime measurements show scan hot starts are family-dependent, so the default remains independent per-layer execution.",
+      "implementation": {
+        "api_result_head_route_name": "head_route_v1_18_pdipm_lifecycle_support_growth",
+        "api_result_head_route_version": "v1.18",
+        "added_public_api": [
+          "CondensateEquilibriumInit",
+          "CondensateEquilibriumInitRequest",
+          "CondensateEquilibriumInitializer",
+          "DefaultCondensateEquilibriumInitializer",
+          "CondensateEquilibriumProfileResult",
+          "condensate_equilibrium_profile"
+        ],
+        "added_options": [
+          "CondensateEquilibriumOptions.profile_method"
+        ],
+        "added_one_layer_init_argument": true,
+        "profile_methods": [
+          "vmap_cold",
+          "scan_hot_from_top",
+          "scan_hot_from_bottom"
+        ],
+        "default_profile_method": "vmap_cold",
+        "warm_start_fresh_fallback_on_nonconvergence": true,
+        "solver_math_change": false,
+        "one_layer_default_behavior_change": false,
+        "acceptance_policy_change": false,
+        "fastchem4_constructor_inputs_used": false
+      },
+      "runtime_diagnostics": {
+        "independent_baseline": {
+          "all_curated_seconds": 91.197,
+          "status_counts": {
+            "converged": 89,
+            "converged_with_caveat": 10
+          },
+          "route_counts": {
+            "head_v1_empty_positive_support_gas_only": 18,
+            "m4310_full_promoted_policy_route": 71,
+            "native_budget_seed_fallback_budget_tradeoff": 10
+          },
+          "artifact": "volatiles_artifacts/condensate_profile_methods_runtime.json"
+        },
+        "scan_hot_from_top": {
+          "all_curated_seconds": 138.619,
+          "converged_count": 99,
+          "status_counts": {
+            "converged": 97,
+            "converged_with_caveat": 2
+          },
+          "route_counts": {
+            "head_v1_empty_positive_support_gas_only": 18,
+            "m4310_full_promoted_policy_route": 79,
+            "native_budget_seed_fallback_budget_tradeoff": 2
+          },
+          "warm_start_attempt_count": 89,
+          "fresh_fallback_count": 7,
+          "family_seconds": {
+            "solar_metal_sulfide_or_Fe_Ni_S_region": 8.125,
+            "solar_water_condensation": 93.681,
+            "SiO_s_condensate_window": 5.468,
+            "lowT_strong_condensation_budget_stress": 12.096,
+            "carbon_rich_CaS_MgS_AlN_window": 3.519
+          }
+        },
+        "scan_hot_from_bottom": {
+          "all_curated_seconds": 79.722,
+          "converged_count": 99,
+          "status_counts": {
+            "converged": 96,
+            "converged_with_caveat": 3
+          },
+          "route_counts": {
+            "head_v1_empty_positive_support_gas_only": 18,
+            "m4310_full_promoted_policy_route": 78,
+            "native_budget_seed_fallback_budget_tradeoff": 3
+          },
+          "warm_start_attempt_count": 89,
+          "fresh_fallback_count": 7,
+          "family_seconds": {
+            "solar_metal_sulfide_or_Fe_Ni_S_region": 11.028,
+            "solar_water_condensation": 12.099,
+            "SiO_s_condensate_window": 9.058,
+            "lowT_strong_condensation_budget_stress": 6.893,
+            "carbon_rich_CaS_MgS_AlN_window": 26.107
+          }
+        },
+        "artifact": "volatiles_artifacts/condensate_profile_methods_runtime.json"
+      },
+      "validation": {
+        "py_compile": {
+          "command": "python -m py_compile src/exogibbs/api/condensate_equilibrium.py tests/unittests/api/condensate_equilibrium_profile_test.py",
+          "result": "passed"
+        },
+        "api_unit_tests": {
+          "command": "pytest -q tests/unittests/api/condensate_equilibrium_profile_test.py tests/unittests/api/condensate_equilibrium_test.py",
+          "result": "48 passed, 19 warnings"
+        },
+        "curated_e2e": {
+          "command": "JAX_ENABLE_X64=1 pytest -q tests/endtoend/curated_cases",
+          "result": "10 passed, 32 warnings"
+        }
+      },
+      "verdict": "Previous-layer warm starts are useful as an opt-in profile method. scan_hot_from_bottom is faster on the curated aggregate and selected families such as metal sulfide benefit strongly from scan_hot_from_top, but route/status/tier changes make scan hot starts unsuitable as the global default. The API supports both sequential previous-layer initialization and independent grid-style per-layer initialization without changing existing one-layer defaults."
+    },
+    {
+      "trial": "v1.18-bvls-budget-polish",
+      "title": "BVLS bounded least-squares full-budget polish",
+      "description": "Reduces remaining Python-side support restoration overhead by using SciPy BVLS for the bounded support-amount polish problem. Profiling showed this path dominated representative heavy layers after the earlier report and formula-cache speedups.",
+      "implementation": {
+        "api_result_head_route_name": "head_route_v1_18_pdipm_lifecycle_support_growth",
+        "api_result_head_route_version": "v1.18",
+        "changed_function": "_polish_support_amounts_for_full_condensate_budget_gate",
+        "bounded_lsq_method_before": "scipy.optimize.lsq_linear default TRF",
+        "bounded_lsq_method_after": "scipy.optimize.lsq_linear method='bvls'",
+        "removed_unused_parameter": "lsmr_tol='auto'",
+        "pdipm_linear_solve_change": false,
+        "solver_math_change": false,
+        "acceptance_policy_change": false,
+        "fastchem4_constructor_inputs_used": false,
+        "rejected_experiment": "Replacing the square PD-IPM lstsq solve with np.linalg.solve increased inner iterations on metal-sulfide layers and was reverted."
+      },
+      "runtime_diagnostics": {
+        "order_matched_fast_first_all_curated_fast_monotone": {
+          "before_seconds": 96.71362651800018,
+          "after_seconds": 83.11500786299985,
+          "delta_seconds": -13.598618655000337,
+          "relative_speedup_percent": 14.060705967291366,
+          "before_artifact": "volatiles_artifacts/pdipm_fast_monotone_all_curated_compare_fast_first.json",
+          "after_artifact": "volatiles_artifacts/pdipm_bvls_all_curated_compare.json"
+        },
+        "status_and_iteration_surface": {
+          "status_counts_before": {
+            "converged": 89,
+            "converged_with_caveat": 10
+          },
+          "status_counts_after": {
+            "converged": 89,
+            "converged_with_caveat": 10
+          },
+          "outer_iteration_count_before": 596,
+          "outer_iteration_count_after": 596,
+          "inner_iteration_count_before": 2607,
+          "inner_iteration_count_after": 2607,
+          "barrier_update_count_before": 677,
+          "barrier_update_count_after": 677,
+          "fast_monotone_decrease_count_before": 162,
+          "fast_monotone_decrease_count_after": 162,
+          "status_diffs": []
+        },
+        "representative_layer_deltas_seconds": [
+          {
+            "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+            "layer_index": 7,
+            "before_seconds": 2.725879260000056,
+            "after_seconds": 1.6263294509999469,
+            "delta_seconds": -1.0995498090001092
+          },
+          {
+            "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+            "layer_index": 8,
+            "before_seconds": 3.045309226000427,
+            "after_seconds": 1.6995144890001939,
+            "delta_seconds": -1.345794737000233
+          },
+          {
+            "family": "SiO_s_condensate_window",
+            "layer_index": 8,
+            "before_seconds": 3.0218633920003413,
+            "after_seconds": 1.7583390790000522,
+            "delta_seconds": -1.2635243130002891
+          }
+        ],
+        "after_fast_monotone_family_seconds": {
+          "lowT_strong_condensation_budget_stress": 15.447,
+          "solar_metal_sulfide_or_Fe_Ni_S_region": 14.897,
+          "solar_water_condensation": 14.773,
+          "carbon_rich_CaS_MgS_AlN_window": 12.613,
+          "SiO_s_condensate_window": 8.059,
+          "solar_silicate_first_condensation": 5.199,
+          "complex_heavy_element_or_boron_titanium_zirconium_case": 4.566,
+          "near_phase_boundary_support_sensitivity": 3.628,
+          "carbon_rich_graphite_window": 3.06,
+          "solar_highT_no_condensate_gas_regression": 0.751
+        }
+      },
+      "validation": {
+        "py_compile_solver_files": {
+          "command": "python -m py_compile src/exogibbs/api/condensate_equilibrium.py src/exogibbs/optimize/pdipm_rgie_cond.py",
+          "result": "passed"
+        },
+        "py_compile_api_and_e2e": {
+          "command": "python -m py_compile src/exogibbs/api/condensate_equilibrium.py tests/endtoend/curated_cases/test_fresh_api_curated_cases.py",
+          "result": "passed"
+        },
+        "unit_tests": {
+          "command": "pytest -q tests/unittests/api/condensate_equilibrium_test.py tests/unittests/optimize/pdipm_rgie_cond_test.py tests/unittests/optimize/condensate_algorithm_v11_callsite_test.py",
+          "result": "92 passed, 22 warnings"
+        },
+        "targeted_water_layer8_e2e": {
+          "command": "pytest -q tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure",
+          "result": "1 passed, 15 warnings"
+        },
+        "curated_e2e": {
+          "command": "pytest -q tests/endtoend/curated_cases",
+          "result": "10 passed, 30 warnings"
+        }
+      },
+      "verdict": "BVLS is a safe default for the bounded support-amount polish path. It reduces the order-matched all-curated fast-monotone runtime by about 14% while keeping the PD-IPM iteration surface and public status counts unchanged."
+    },
+    {
+      "id": "v1.18-gas-refresh-skip-runtime",
+      "type": "runtime_trial",
+      "route_version": "v1.18",
+      "title": "remove duplicate gas solve and redundant depleted gas refresh",
+      "implementation": [
+        "Skip solve_gas_equilibrium_with_duals when initial_log_state_override is provided because the gas solution is only used for the default initial state.",
+        "Skip the post-solver depleted gas refresh when the incoming override source is exogibbs_native_depleted_budget_gas_refresh."
+      ],
+      "representative_layer_profile": {
+        "family": "solar_metal_sulfide_or_Fe_Ni_S_region",
+        "layer_index": 8,
+        "api_wall_seconds_before": 0.944,
+        "api_wall_seconds_after": 0.743,
+        "api_wall_delta_seconds": -0.201,
+        "api_wall_delta_percent": -21.3,
+        "restricted_total_seconds_before": 0.356,
+        "restricted_total_seconds_after": 0.155,
+        "restricted_total_delta_seconds": -0.201,
+        "restricted_total_delta_percent": -56.5,
+        "restricted_gas_solve_seconds_before": 0.137,
+        "restricted_gas_solve_calls_before": 3,
+        "restricted_gas_solve_seconds_after": 0.0,
+        "restricted_gas_solve_calls_after": 0,
+        "depleted_refresh_seconds_before": 0.118,
+        "depleted_refresh_calls_before": 3,
+        "depleted_refresh_seconds_after": 0.068,
+        "depleted_refresh_calls_after": 2
+      },
+      "all_curated_comparison": {
+        "before_artifact": "volatiles_artifacts/pdipm_bvls_all_curated_compare.json",
+        "after_artifact": "volatiles_artifacts/pdipm_gas_refresh_skip_all_curated_compare_solo.json",
+        "fast_monotone_elapsed_seconds_before": 83.11500786299985,
+        "fast_monotone_elapsed_seconds_after": 77.12570552899979,
+        "fast_monotone_delta_seconds": -5.989302334000058,
+        "fast_monotone_delta_percent": -7.206041950777831,
+        "baseline_elapsed_seconds_before": 48.05964359800009,
+        "baseline_elapsed_seconds_after": 42.674393166999835,
+        "baseline_delta_seconds": -5.3852504310002535,
+        "baseline_delta_percent": -11.205351969038737,
+        "status_counts_before": {
+          "converged": 89,
+          "converged_with_caveat": 10
+        },
+        "status_counts_after": {
+          "converged": 89,
+          "converged_with_caveat": 10
+        },
+        "outer_iteration_count_before": 596,
+        "outer_iteration_count_after": 596,
+        "inner_iteration_count_before": 2607,
+        "inner_iteration_count_after": 2607,
+        "barrier_update_count_before": 677,
+        "barrier_update_count_after": 677,
+        "fast_monotone_decrease_count_before": 162,
+        "fast_monotone_decrease_count_after": 162,
+        "status_diffs": []
+      },
+      "validation": {
+        "py_compile": {
+          "command": "python -m py_compile src/exogibbs/optimize/minimize_cond.py",
+          "result": "passed"
+        },
+        "unit_tests": {
+          "command": "pytest -q tests/unittests/optimize/minimize_cond_api_test.py tests/unittests/optimize/minimize_cond_diagnostics_test.py tests/unittests/api/condensate_equilibrium_test.py",
+          "result": "108 passed, 19 warnings"
+        },
+        "targeted_curated_e2e": {
+          "command": "pytest -q tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_complex_heavy_midlayer_explicit_support_closure_repairs_v1_18_budget_gate",
+          "result": "2 passed, 19 warnings"
+        },
+        "curated_e2e": {
+          "command": "pytest -q tests/endtoend/curated_cases",
+          "result": "10 passed, 26 warnings"
+        }
+      },
+      "verdict": "The duplicate gas solve and redundant depleted-refresh work can be removed safely. The all-curated fast-monotone score improves by about 7.2% with identical status counts and identical continuation iteration counts."
+    },
+    {
+      "id": "v1.18-explicit-closure-warm-retry-rejected",
+      "type": "rejected_runtime_trial",
+      "route_version": "v1.18",
+      "title": "warm explicit support-closure retry from lifecycle final gas state",
+      "implementation_attempted": [
+        "Pass a CondensateEquilibriumInit built from the lifecycle final gas state into the recursive explicit_support_closure_retry call.",
+        "Then add a cold retry fallback if the warm retry is not accepted."
+      ],
+      "without_fallback": {
+        "targeted_curated_e2e": {
+          "water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure": "passed",
+          "complex_heavy_midlayer_explicit_support_closure_repairs_v1_18_budget_gate": "failed: not_converged"
+        },
+        "artifact": "volatiles_artifacts/head_route_orchestration_trace_retry_init_complex4_failed.json"
+      },
+      "with_cold_fallback_all_curated_comparison": {
+        "baseline_artifact": "volatiles_artifacts/pdipm_gas_refresh_skip_all_curated_compare_solo.json",
+        "trial_artifact": "volatiles_artifacts/pdipm_explicit_retry_init_fallback_all_curated_compare.json",
+        "fast_monotone_elapsed_seconds_before": 77.12570552899979,
+        "fast_monotone_elapsed_seconds_after": 85.5607034170007,
+        "fast_monotone_delta_seconds": 8.434997888000908,
+        "fast_monotone_delta_percent": 10.936688138080353,
+        "status_counts_before": {
+          "converged": 89,
+          "converged_with_caveat": 10
+        },
+        "status_counts_after": {
+          "converged": 89,
+          "converged_with_caveat": 10
+        },
+        "outer_iteration_count_before": 596,
+        "outer_iteration_count_after": 605,
+        "inner_iteration_count_before": 2607,
+        "inner_iteration_count_after": 2929,
+        "barrier_update_count_before": 677,
+        "barrier_update_count_after": 677,
+        "fast_monotone_decrease_count_before": 162,
+        "fast_monotone_decrease_count_after": 153,
+        "status_diffs": []
+      },
+      "validation_after_revert": {
+        "py_compile": {
+          "command": "python -m py_compile src/exogibbs/api/condensate_equilibrium.py",
+          "result": "passed"
+        },
+        "targeted_curated_e2e": {
+          "command": "pytest -q tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_complex_heavy_midlayer_explicit_support_closure_repairs_v1_18_budget_gate",
+          "result": "2 passed, 19 warnings"
+        }
+      },
+      "verdict": "Rejected. Warm-starting explicit support-closure retry from the previous lifecycle gas state is not a safe speed path: without fallback it breaks a closure-repair case, and with fallback it slows all-curated fast_monotone by about 10.9%."
     }
   ]
 }

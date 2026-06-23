@@ -169,6 +169,45 @@ def test_algorithm_v11_thermo_valid_continuation_callsite_runs_ipopt_like_policy
     assert continuation["outer_records"]
 
 
+def test_algorithm_v11_continuation_allows_fast_monotone_decrease_opt_in() -> None:
+    report = run_algorithm_v11_thermo_valid_continuation_callsite(
+        explicit_opt_in=True,
+        state=_state(),
+        support_indices=[0, 1],
+        formula_matrix=[[1.0, 0.0], [0.0, 1.0]],
+        formula_matrix_cond_active=[[1.0, 0.0], [0.0, 1.0]],
+        element_inventory_target=[0.80000001, 0.200001],
+        gas_stationarity_source=[0.1, -0.05],
+        condensate_standard_source=[1.0e20, 0.2],
+        initial_epsilon=math.log(1.0e-6),
+        final_epsilon=math.log(1.0e-12),
+        species_names=["bad", "good"],
+        sentinel_abs_threshold=1.0e10,
+        barrier_schedule_policy="ipopt_like_monotone",
+        ipopt_enable_superlinear_decrease=False,
+        ipopt_allow_fast_monotone_decrease=True,
+        max_outer_iterations=1,
+        max_inner_iterations=1,
+        center_tolerance_multiplier=1.0e20,
+        center_metric_policy="amount_weighted_kkt_max",
+        alpha_grid=[1.0],
+        field_provenance={
+            "ln_mk": "synthetic_control",
+            "rho": "synthetic_control",
+            "eta": "synthetic_control",
+        },
+    )
+
+    continuation = report.as_dict()["continuation_report"]
+    outer = continuation["outer_records"][0]
+    assert continuation["ipopt_allow_fast_monotone_decrease"] is True
+    assert outer["ipopt_allow_fast_monotone_decrease"] is True
+    assert outer["barrier_update_step_count"] > 1
+    assert outer["fast_monotone_decrease_count"] == outer["barrier_update_step_count"] - 1
+    assert outer["epsilon_after_outer"] < math.log(1.0e-6 * 0.2)
+    assert continuation["barrier_update_count"] == outer["barrier_update_step_count"]
+
+
 def test_algorithm_v11_high_start_policy_runs_through_continuation_callsite() -> None:
     policy = algorithm_v11_experimental_high_start_callsite_policy()
     report = run_algorithm_v11_thermo_valid_continuation_callsite(
@@ -398,6 +437,45 @@ def test_algorithm_v11_core_mode_forces_pdipm_mainline_policy() -> None:
     assert "fraction_to_boundary_alpha_primal" in direction
     assert "fraction_to_boundary_alpha_dual" in direction
     assert "fraction_to_boundary_alpha_combined" in direction
+
+
+def test_algorithm_v11_single_loop_mode_uses_one_inner_step_per_record() -> None:
+    report = run_algorithm_v11_thermo_valid_continuation_callsite(
+        explicit_opt_in=True,
+        state=_state(),
+        support_indices=[0, 1],
+        formula_matrix=[[1.0, 0.0], [0.0, 1.0]],
+        formula_matrix_cond_active=[[1.0, 0.0], [0.0, 1.0]],
+        element_inventory_target=[0.80000001, 0.200001],
+        gas_stationarity_source=[0.1, -0.05],
+        condensate_standard_source=[1.0e20, 0.2],
+        initial_epsilon=math.log(1.0e-8),
+        final_epsilon=math.log(1.0e-10),
+        species_names=["bad", "good"],
+        sentinel_abs_threshold=1.0e10,
+        max_outer_iterations=2,
+        max_inner_iterations=3,
+        center_tolerance_multiplier=1.0e-16,
+        alpha_grid=[1.0e-3],
+        continuation_mode="pdipm_core_single_loop",
+        field_provenance={
+            "ln_mk": "synthetic_control",
+            "rho": "synthetic_control",
+            "eta": "synthetic_control",
+        },
+    )
+
+    continuation = report.as_dict()["continuation_report"]
+    assert continuation["continuation_mode"] == "pdipm_core_single_loop"
+    assert 1 <= continuation["outer_iteration_count"] <= 6
+    assert continuation["inner_iteration_count"] <= continuation["outer_iteration_count"]
+    for outer in continuation["outer_records"]:
+        assert len(outer["inner_records"]) <= 1
+        if outer["inner_records"]:
+            inner = outer["inner_records"][0]
+            assert inner["continuation_mode"] == "pdipm_core_single_loop"
+            assert inner["step_control_policy"] == "scalar_fraction_to_boundary"
+            assert inner["trial_acceptance_policy"] == "ipopt_persistent_h_type"
 
 
 def test_algorithm_v11_thermo_valid_continuation_callsite_requires_opt_in() -> None:

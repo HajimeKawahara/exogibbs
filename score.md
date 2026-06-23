@@ -1686,3 +1686,323 @@ Verdict: the curated fresh API score is now fully converged at 99/99.  The
 highT rows remain true gas-only rows with no temperature-valid inactive
 condensate support; the repair is a public API routing consistency fix for
 explicit empty support payloads.
+
+## Runtime trial v1.18-budget-gate-numpy: metal sulfide hot path
+
+This runtime trial keeps HEAD route version `v1.18` and does not change
+PD-IPM math, support retry policy, or acceptance thresholds.  The change moves
+full-condensate budget gate report construction from many small JAX operations
+to NumPy.  The gate computes the same reconstructed element budget, residuals,
+electron-row exclusion, and max relative residual, but avoids unnecessary JAX
+compilation/materialization on the public API hot path.
+
+Implementation:
+
+- changed `_full_condensate_element_budget_residual_report()` to use NumPy for
+  report construction;
+- changed `_full_condensate_budget_gate_report_for_support_state()` to build
+  full condensate vectors with NumPy instead of JAX scatter/update operations;
+- preserved the public diagnostics keys and full-budget gate acceptance rule;
+- did not use FastChem4 public/runtime/trace values as constructor inputs.
+
+Runtime baseline and after measurements:
+
+| metric | before | after | delta |
+|---|---:|---:|---:|
+| all curated layers wall time | `108.966 s` | `94.865 s` | `-14.101 s` (`12.9%` faster) |
+| `solar_metal_sulfide_or_Fe_Ni_S_region` family wall time | `28.707 s` | `20.581 s` | `-8.126 s` (`28.3%` faster) |
+| curated converged count | 99 / 99 | 99 / 99 | unchanged |
+| status counts | `89 converged / 10 converged_with_caveat` | `89 converged / 10 converged_with_caveat` | unchanged |
+| route counts | `71 primary / 18 gas-only / 10 native fallback` | `71 primary / 18 gas-only / 10 native fallback` | unchanged |
+| tier counts | `71 tier-1 / 18 runtime empty support / 10 tier-2` | `71 tier-1 / 18 runtime empty support / 10 tier-2` | unchanged |
+
+Artifacts:
+
+| artifact | purpose |
+|---|---|
+| `volatiles_artifacts/head_route_v18_all_curated_runtime_after_numpy_budget_gate.json` | after full 99-layer runtime surface |
+| `volatiles_artifacts/metal_sulfide_family_runtime_after.json` | focused metal sulfide family runtime |
+| `volatiles_artifacts/cprofile_metal_sulfide_layer8.txt` | cProfile evidence for small JAX compilation/report overhead |
+
+Validation:
+
+| check | result |
+|---|---:|
+| `python -m py_compile src/exogibbs/api/condensate_equilibrium.py volatiles_code/profile_curated_head_route_all_layers.py volatiles_code/profile_metal_sulfide_diagnostics_toggle.py volatiles_code/cprofile_metal_sulfide_layer.py` | passed |
+| `pytest -q tests/unittests/api/condensate_equilibrium_test.py` | 44 passed, 19 warnings |
+| `JAX_ENABLE_X64=1 pytest -q tests/endtoend/curated_cases` | 10 passed, 32 warnings |
+| `git diff --check` | passed |
+
+Verdict: the first speed improvement reduces the targeted metal sulfide
+runtime surface by about 28% while keeping the v1.18 curated public score,
+routes, and acceptance tiers unchanged.
+
+## Runtime trial v1.18-formula-cache: cached NumPy formula matrices
+
+This runtime trial continues the v1.18 speed work without changing solver math,
+route acceptance, support retry policy, or FastChem4 input policy.  After the
+budget gate report moved to NumPy, the next repeated cost was converting the
+same setup formula matrices from JAX arrays to NumPy arrays in every public
+gate/polish/restoration report.  The setup is immutable for a solve session, so
+this trial caches the NumPy formula matrices by setup object identity and drops
+the cache entry when the setup is garbage-collected.
+
+Implementation:
+
+- added `_formula_matrices_numpy(setup)` with a weakref-backed cache;
+- reused the cached NumPy gas and condensate formula matrices in full-budget
+  gate report construction, support amount polish, gas log polish, and joint
+  gas/active amount restoration;
+- changed full condensate vector assembly helpers to build dense vectors with
+  NumPy before converting back to JAX arrays, avoiding small JAX scatter/update
+  operations;
+- did not change residual formulas, acceptance thresholds, PD-IPM math, or
+  route selection.
+
+Runtime measurements:
+
+| metric | before this trial | after | delta |
+|---|---:|---:|---:|
+| all curated layers wall time | `94.865 s` | `91.379 s` | `-3.486 s` (`3.7%` faster) |
+| `solar_metal_sulfide_or_Fe_Ni_S_region` family wall time | `20.581 s` | `19.741 s` | `-0.840 s` (`4.1%` faster) |
+| initial v1.18 all curated wall time | `108.966 s` | `91.379 s` | `-17.587 s` (`16.1%` faster) |
+| initial v1.18 metal sulfide wall time | `28.707 s` | `19.741 s` | `-8.966 s` (`31.2%` faster) |
+| curated converged count | 99 / 99 | 99 / 99 | unchanged |
+| status counts | `89 converged / 10 converged_with_caveat` | `89 converged / 10 converged_with_caveat` | unchanged |
+| route counts | `71 primary / 18 gas-only / 10 native fallback` | `71 primary / 18 gas-only / 10 native fallback` | unchanged |
+| tier counts | `71 tier-1 / 18 runtime empty support / 10 tier-2` | `71 tier-1 / 18 runtime empty support / 10 tier-2` | unchanged |
+
+Artifacts:
+
+| artifact | purpose |
+|---|---|
+| `volatiles_artifacts/head_route_v18_all_curated_runtime_after_numpy_formula_cache.json` | after full 99-layer runtime surface |
+
+Validation:
+
+| check | result |
+|---|---:|
+| `python -m py_compile src/exogibbs/api/condensate_equilibrium.py` | passed |
+| `pytest -q tests/unittests/api/condensate_equilibrium_test.py` | 44 passed, 19 warnings |
+| `JAX_ENABLE_X64=1 pytest -q tests/endtoend/curated_cases` | 10 passed, 32 warnings |
+
+Verdict: caching immutable setup formula matrices and avoiding small JAX
+scatter/update operations gives a smaller but measurable second speedup.  The
+cumulative v1.18 runtime baseline improves by about 16% overall and 31% on the
+metal sulfide family, with the public route/status/tier surface unchanged.
+
+## API trial v1.18-condensate-profile-warm-start: opt-in profile initializers
+
+This trial adds a condensate profile API surface analogous to the gas-only
+profile initializer model.  The new API supports both independent per-layer
+initializers, including future grid-backed initializers, and sequential
+previous-layer warm starts.  The default remains independent per-layer
+execution because the runtime trial showed that previous-layer warm starts are
+family- and direction-dependent for condensates.
+
+Implementation:
+
+- added `CondensateEquilibriumInit`, `CondensateEquilibriumInitRequest`,
+  `CondensateEquilibriumInitializer`, `DefaultCondensateEquilibriumInitializer`,
+  and `CondensateEquilibriumProfileResult`;
+- implemented `condensate_equilibrium_profile()` with `method="vmap_cold"`,
+  `method="scan_hot_from_top"`, and `method="scan_hot_from_bottom"`;
+- added `CondensateEquilibriumOptions.profile_method` so profile method can be
+  selected through options, while the direct `method=` argument still wins;
+- added one-layer `init=` support so profile or grid initializers can provide a
+  gas log state plus condensate support/amounts;
+- kept warm-start attempts guarded by the existing one-layer acceptance gates,
+  with fresh fallback if a warm-start layer does not converge;
+- did not change the default one-layer public route or acceptance policy.
+
+Runtime measurements:
+
+| method | all curated wall time | converged | status counts | route counts | warm attempts | fresh fallbacks |
+|---|---:|---:|---|---|---:|---:|
+| profile `vmap_cold` baseline | `91.197 s` | 99 / 99 | `89 converged / 10 converged_with_caveat` | `71 primary / 18 gas-only / 10 native fallback` | 0 | 0 |
+| `scan_hot_from_top` | `138.619 s` | 99 / 99 | `97 converged / 2 converged_with_caveat` | `79 primary / 18 gas-only / 2 native fallback` | 89 | 7 |
+| `scan_hot_from_bottom` | `79.722 s` | 99 / 99 | `96 converged / 3 converged_with_caveat` | `78 primary / 18 gas-only / 3 native fallback` | 89 | 7 |
+
+Family-level highlights:
+
+| family | independent baseline | `scan_hot_from_top` | `scan_hot_from_bottom` | note |
+|---|---:|---:|---:|---|
+| `solar_metal_sulfide_or_Fe_Ni_S_region` | `20.158 s` | `8.125 s` | `11.028 s` | both help; top helps most |
+| `solar_water_condensation` | `14.229 s` | `93.681 s` | `12.099 s` | top hurts badly, bottom helps |
+| `SiO_s_condensate_window` | `11.364 s` | `5.468 s` | `9.058 s` | both help; top helps most |
+| `lowT_strong_condensation_budget_stress` | `16.294 s` | `12.096 s` | `6.893 s` | bottom helps most |
+| `carbon_rich_CaS_MgS_AlN_window` | `12.114 s` | `3.519 s` | `26.107 s` | top helps, bottom hurts |
+
+Artifacts:
+
+| artifact | purpose |
+|---|---|
+| `volatiles_artifacts/condensate_profile_methods_runtime.json` | top/bottom profile warm-start runtime measurement |
+
+Validation:
+
+| check | result |
+|---|---:|
+| `python -m py_compile src/exogibbs/api/condensate_equilibrium.py tests/unittests/api/condensate_equilibrium_profile_test.py` | passed |
+| `pytest -q tests/unittests/api/condensate_equilibrium_profile_test.py tests/unittests/api/condensate_equilibrium_test.py` | 48 passed, 19 warnings |
+| `JAX_ENABLE_X64=1 pytest -q tests/endtoend/curated_cases` | 10 passed, 32 warnings |
+
+Verdict: previous-layer warm starts are useful as an opt-in profile method and
+can accelerate selected families and `scan_hot_from_bottom` is faster on this
+curated aggregate, but route/status/tier changes make it unsuitable as the
+global default for all condensate profiles.  The API now
+supports both sequential previous-layer initialization and independent
+grid-style per-layer initialization without changing existing one-layer
+defaults.
+
+## Runtime trial v1.18-bvls-budget-polish: bounded LS hot path
+
+This runtime trial keeps HEAD route version `v1.18` and changes only the
+bounded least-squares method used inside
+`_polish_support_amounts_for_full_condensate_budget_gate()`.  Profiling showed
+that representative heavy layers spent most of the remaining Python-side inner
+solve time in SciPy `lsq_linear` restoration/polish calls, not in the reduced
+29x29 PD-IPM linear solve.  The square PD-IPM `lstsq -> solve` experiment was
+rejected because it changed convergence behavior and increased inner
+iterations on metal-sulfide layers.
+
+Implementation:
+
+- changed the support-amount full-budget polish call from default TRF to
+  `lsq_linear(..., method="bvls")`;
+- removed `lsmr_tol="auto"` from that call because BVLS does not use the LSMR
+  iterative backend;
+- kept the same bounds, tolerance, max iteration count, budget gate formula,
+  PD-IPM continuation policy, and acceptance thresholds;
+- broadened the water layer-8 e2e contract to accept
+  `support_growth_staging_retry`, because BVLS can make that closure retry the
+  selected successful repair while preserving the public route/status/tier.
+
+Runtime measurements:
+
+| metric | before | after | delta |
+|---|---:|---:|---:|
+| fast-first all curated fast monotone wall time | `96.714 s` | `83.115 s` | `-13.599 s` (`14.1%` faster) |
+| fast monotone curated status counts | `89 converged / 10 converged_with_caveat` | `89 converged / 10 converged_with_caveat` | unchanged |
+| fast monotone outer / inner / barrier / fast-decrease counts | `596 / 2607 / 677 / 162` | `596 / 2607 / 677 / 162` | unchanged |
+| `solar_metal_sulfide_or_Fe_Ni_S_region` layer 7 | `2.726 s` | `1.626 s` | `-1.100 s` |
+| `solar_metal_sulfide_or_Fe_Ni_S_region` layer 8 | `3.045 s` | `1.700 s` | `-1.346 s` |
+| `SiO_s_condensate_window` layer 8 | `3.022 s` | `1.758 s` | `-1.264 s` |
+
+Artifacts:
+
+| artifact | purpose |
+|---|---|
+| `volatiles_artifacts/pdipm_bvls_all_curated_compare.json` | all curated fast-first comparison after BVLS |
+| `volatiles_artifacts/pdipm_fast_monotone_all_curated_compare_fast_first.json` | order-matched before comparison |
+
+Validation:
+
+| check | result |
+|---|---:|
+| `python -m py_compile src/exogibbs/api/condensate_equilibrium.py src/exogibbs/optimize/pdipm_rgie_cond.py` | passed |
+| `python -m py_compile src/exogibbs/api/condensate_equilibrium.py tests/endtoend/curated_cases/test_fresh_api_curated_cases.py` | passed |
+| `pytest -q tests/unittests/api/condensate_equilibrium_test.py tests/unittests/optimize/pdipm_rgie_cond_test.py tests/unittests/optimize/condensate_algorithm_v11_callsite_test.py` | 92 passed, 22 warnings |
+| `pytest -q tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure` | 1 passed, 15 warnings |
+| `pytest -q tests/endtoend/curated_cases` | 10 passed, 30 warnings |
+
+Verdict: BVLS is a safe default for the bounded support-amount polish path.  It
+reduces the order-matched all-curated fast-monotone runtime by about 14% while
+keeping the PD-IPM iteration surface and public status counts unchanged.
+
+## Runtime trial v1.18-gas-refresh-skip: remove duplicate gas refresh work
+
+This runtime trial keeps HEAD route version `v1.18` and removes two redundant
+pieces of gas work from `solve_restricted_support_condensate_layer()`.
+
+Implementation:
+
+- skip the initial `solve_gas_equilibrium_with_duals()` call when
+  `initial_log_state_override` is provided, because that gas solution was only
+  used to build the default initial state and was otherwise discarded;
+- skip the post-solver depleted-gas refresh when the incoming override already
+  has source `exogibbs_native_depleted_budget_gas_refresh`, because the
+  measured third restricted solve re-ran the same refresh and did not improve
+  merit.
+
+Representative layer-8 profile
+(`solar_metal_sulfide_or_Fe_Ni_S_region`, warmed API path):
+
+| metric | before | after | delta |
+|---|---:|---:|---:|
+| API wall time | `0.944 s` | `0.743 s` | `-0.201 s` (`21.3%` faster) |
+| restricted solver total | `0.356 s` | `0.155 s` | `-0.201 s` (`56.5%` faster) |
+| restricted `solve_gas_equilibrium_with_duals` | `0.137 s` / 3 calls | `0.000 s` / 0 calls | removed from override calls |
+| depleted refresh build | `0.118 s` / 3 calls | `0.068 s` / 2 calls | redundant third refresh skipped |
+
+All-curated fast-first comparison against the BVLS default baseline:
+
+| metric | before | after | delta |
+|---|---:|---:|---:|
+| fast monotone wall time | `83.115 s` | `77.126 s` | `-5.989 s` (`7.2%` faster) |
+| fast monotone status counts | `89 converged / 10 converged_with_caveat` | `89 converged / 10 converged_with_caveat` | unchanged |
+| fast monotone outer / inner / barrier / fast-decrease counts | `596 / 2607 / 677 / 162` | `596 / 2607 / 677 / 162` | unchanged |
+| baseline wall time | `48.060 s` | `42.674 s` | `-5.385 s` (`11.2%` faster) |
+
+Artifacts:
+
+| artifact | purpose |
+|---|---|
+| `volatiles_artifacts/pdipm_gas_refresh_skip_all_curated_compare_solo.json` | clean solo all-curated comparison after gas-refresh skip |
+| `volatiles_artifacts/pdipm_bvls_all_curated_compare.json` | order-matched before comparison |
+
+Validation:
+
+| check | result |
+|---|---:|
+| `python -m py_compile src/exogibbs/optimize/minimize_cond.py` | passed |
+| `pytest -q tests/unittests/optimize/minimize_cond_api_test.py tests/unittests/optimize/minimize_cond_diagnostics_test.py tests/unittests/api/condensate_equilibrium_test.py` | 108 passed, 19 warnings |
+| `pytest -q tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_complex_heavy_midlayer_explicit_support_closure_repairs_v1_18_budget_gate` | 2 passed, 19 warnings |
+| `pytest -q tests/endtoend/curated_cases` | 10 passed, 26 warnings |
+
+Verdict: the duplicate gas-solve and redundant depleted-refresh work can be
+removed safely.  The all-curated fast-monotone score improves by about 7.2%
+with identical status counts and identical continuation iteration counts.
+
+## Rejected runtime trial v1.18-explicit-closure-warm-retry
+
+This trial tried to accelerate the remaining explicit support-closure retry
+hotspot by passing the lifecycle final gas state into the recursive
+`explicit_support_closure_retry` call.  The goal was to avoid restarting that
+retry from a fresh gas equilibrium.
+
+Result: rejected.  The warm retry changed the nonlinear path enough to break
+one targeted closure-repair case without fallback:
+
+| check | result |
+|---|---:|
+| `test_water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure` | passed |
+| `test_complex_heavy_midlayer_explicit_support_closure_repairs_v1_18_budget_gate` | failed, `not_converged` |
+
+Adding a cold fallback restored correctness, but made the all-curated
+fast-monotone route slower:
+
+| metric | current default | warm retry + cold fallback | delta |
+|---|---:|---:|---:|
+| fast monotone wall time | `77.126 s` | `85.561 s` | `+8.435 s` (`10.9%` slower) |
+| status counts | `89 converged / 10 converged_with_caveat` | `89 converged / 10 converged_with_caveat` | unchanged |
+| outer / inner / barrier / fast-decrease counts | `596 / 2607 / 677 / 162` | `605 / 2929 / 677 / 153` | worse |
+
+Artifacts:
+
+| artifact | purpose |
+|---|---|
+| `volatiles_artifacts/head_route_orchestration_trace_retry_init_probe.json` | representative probe for final-gas warm retry |
+| `volatiles_artifacts/head_route_orchestration_trace_retry_init_complex4_failed.json` | failing complex-heavy layer trace |
+| `volatiles_artifacts/pdipm_explicit_retry_init_fallback_all_curated_compare.json` | all-curated comparison with cold fallback |
+
+Validation after reverting the rejected retry-init change:
+
+| check | result |
+|---|---:|
+| `python -m py_compile src/exogibbs/api/condensate_equilibrium.py` | passed |
+| `pytest -q tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_water_low_temperature_lifecycle_support_growth_repairs_v1_18_closure tests/endtoend/curated_cases/test_fresh_api_curated_cases.py::test_complex_heavy_midlayer_explicit_support_closure_repairs_v1_18_budget_gate` | 2 passed, 19 warnings |
+
+Conclusion: the retry bottleneck is real, but using the previous lifecycle gas
+state as the retry initial state is not a safe speed path.  The default remains
+the gas-refresh-skip route above.

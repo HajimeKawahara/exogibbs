@@ -74,6 +74,7 @@ class AlgorithmV11ContinuationReport:
     ipopt_mu_linear_decrease_factor: float
     ipopt_mu_superlinear_decrease_power: float
     ipopt_enable_superlinear_decrease: bool
+    ipopt_allow_fast_monotone_decrease: bool
     center_tolerance_multiplier: float
     final_residual_l2: float
     final_p_merit: float
@@ -108,6 +109,7 @@ class AlgorithmV11ContinuationReport:
             "ipopt_mu_linear_decrease_factor": self.ipopt_mu_linear_decrease_factor,
             "ipopt_mu_superlinear_decrease_power": self.ipopt_mu_superlinear_decrease_power,
             "ipopt_enable_superlinear_decrease": self.ipopt_enable_superlinear_decrease,
+            "ipopt_allow_fast_monotone_decrease": self.ipopt_allow_fast_monotone_decrease,
             "center_tolerance_multiplier": self.center_tolerance_multiplier,
             "final_residual_l2": self.final_residual_l2,
             "final_p_merit": self.final_p_merit,
@@ -1154,6 +1156,7 @@ def run_algorithm_v11_pdipm_continuation(
     ipopt_mu_linear_decrease_factor: float = 0.2,
     ipopt_mu_superlinear_decrease_power: float = 1.5,
     ipopt_enable_superlinear_decrease: bool = True,
+    ipopt_allow_fast_monotone_decrease: bool = False,
     max_outer_iterations: int = 4,
     max_inner_iterations: int = 6,
     center_tolerance_multiplier: float = 10.0,
@@ -1217,6 +1220,7 @@ def run_algorithm_v11_pdipm_continuation(
     ipopt_linear_factor = float(ipopt_mu_linear_decrease_factor)
     ipopt_superlinear_power = float(ipopt_mu_superlinear_decrease_power)
     ipopt_superlinear_enabled = bool(ipopt_enable_superlinear_decrease)
+    ipopt_fast_monotone_enabled = bool(ipopt_allow_fast_monotone_decrease)
     if not math.isfinite(eps) or not math.isfinite(eps_final):
         raise ValueError("epsilon values must be finite.")
     if eps_final > eps:
@@ -1244,9 +1248,19 @@ def run_algorithm_v11_pdipm_continuation(
     if max_outer_iterations < 1 or max_inner_iterations < 1:
         raise ValueError("iteration limits must be positive.")
     mode = str(continuation_mode)
-    if mode not in {"legacy_policy", "pdipm_core"}:
-        raise ValueError("continuation_mode must be legacy_policy or pdipm_core.")
-    if mode == "pdipm_core":
+    if mode not in {"legacy_policy", "pdipm_core", "pdipm_core_single_loop"}:
+        raise ValueError(
+            "continuation_mode must be legacy_policy, pdipm_core, "
+            "or pdipm_core_single_loop."
+        )
+    pdipm_core_policy_mode = mode in {"pdipm_core", "pdipm_core_single_loop"}
+    single_loop_mode = mode == "pdipm_core_single_loop"
+    outer_iteration_limit = int(max_outer_iterations)
+    inner_iteration_limit = int(max_inner_iterations)
+    if single_loop_mode:
+        outer_iteration_limit = outer_iteration_limit * inner_iteration_limit
+        inner_iteration_limit = 1
+    if pdipm_core_policy_mode:
         step_control_policy = "scalar_fraction_to_boundary"
         direction_policy = "algorithm_v11_reduced"
         trial_acceptance_policy = "ipopt_persistent_h_type"
@@ -1408,11 +1422,11 @@ def run_algorithm_v11_pdipm_continuation(
     persistent_filter_entries: tuple[IpoptFilterEntry, ...] = ()
     persistent_filter_reference_theta: float | None = None
 
-    for outer_index in range(int(max_outer_iterations)):
+    for outer_index in range(outer_iteration_limit):
         nu = float(np.exp(eps))
         center_threshold = float(center_tolerance_multiplier * nu)
         inner_records: list[Mapping[str, Any]] = []
-        for inner_index in range(int(max_inner_iterations)):
+        for inner_index in range(inner_iteration_limit):
             current_residual_l2, current_components = _residual_norm(
                 formula_matrix=ag,
                 formula_matrix_cond_active=ac,
@@ -1557,10 +1571,10 @@ def run_algorithm_v11_pdipm_continuation(
                 )
                 alpha_max = (
                     alpha_limits["alpha_primal"]
-                    if mode == "pdipm_core"
+                    if pdipm_core_policy_mode
                     else alpha_limits["alpha_combined"]
                 )
-                alpha_dual = alpha_limits["alpha_dual"] if mode == "pdipm_core" else None
+                alpha_dual = alpha_limits["alpha_dual"] if pdipm_core_policy_mode else None
                 alpha_blocker_report = fraction_to_boundary_blocker_report(
                     r=r,
                     rho=rho,
@@ -1933,7 +1947,7 @@ def run_algorithm_v11_pdipm_continuation(
                 )
                 tiny_step_alpha = selected_alpha_primal
                 tiny_step_detected = (
-                    mode == "pdipm_core"
+                    pdipm_core_policy_mode
                     and tiny_step_alpha_threshold > 0.0
                     and selected_alpha_primal <= tiny_step_alpha_threshold
                 )
@@ -1981,7 +1995,7 @@ def run_algorithm_v11_pdipm_continuation(
                 centering_trials = _trial_rows(
                     alpha_grid=alpha_grid,
                     alpha_max=alpha_limits["alpha_primal"]
-                    if mode == "pdipm_core"
+                    if pdipm_core_policy_mode
                     else alpha_limits["alpha_combined"],
                     formula_matrix=ag,
                     formula_matrix_cond_active=ac,
@@ -2003,7 +2017,7 @@ def run_algorithm_v11_pdipm_continuation(
                     equality_penalty_weight=equality_penalty_weight,
                     total_density_penalty_weight=total_density_penalty_weight,
                     enforce_condensate_capacity=enforce_trial_condensate_capacity,
-                    alpha_dual=alpha_limits["alpha_dual"] if mode == "pdipm_core" else None,
+                    alpha_dual=alpha_limits["alpha_dual"] if pdipm_core_policy_mode else None,
                 )
                 weights = ipopt_h_type_component_weights or filter_component_weights
                 if weights is None:
@@ -2344,33 +2358,43 @@ def run_algorithm_v11_pdipm_continuation(
         nu_after_outer = nu
         barrier_update_reason = "not_evaluated"
         barrier_updated = False
+        barrier_update_step_count = 0
+        fast_monotone_decrease_records: list[Mapping[str, Any]] = []
         persistent_filter_reset_on_barrier_update = False
         if eps <= eps_final:
             reached_final = True
             converged_final = centered and strict_barrier_update_allowed
             barrier_update_reason = "already_at_final_barrier"
-            stopped_reason = "final_barrier_centered" if centered else "final_barrier_not_centered"
+            if centered:
+                stopped_reason = "final_barrier_centered"
+            elif single_loop_mode and final_inner.get("selected_trial") is not None:
+                barrier_update_reason = "final_barrier_not_centered_single_loop_continue"
+            else:
+                stopped_reason = "final_barrier_not_centered"
             if centered and not strict_barrier_update_allowed:
                 stopped_reason = "final_barrier_strict_components_not_met"
         elif not centered:
             barrier_update_reason = "current_barrier_not_centered"
             inner_status = str(final_inner.get("status", ""))
-            stopped_reason = (
-                inner_status
-                if inner_status
-                in {
-                    "no_p_armijo_trial",
-                    "no_finite_trial",
-                    "no_accepted_trial",
-                    "no_acceptable_ipopt_filter_trial",
-                    "ipopt_h_filter_rejected",
-                    "ipopt_persistent_filter_rejected",
-                    "ipopt_persistent_filter_f_type_rejected",
-                    "filter_restoration_rejected",
-                    "tiny_step_requires_restoration",
-                }
-                else "current_barrier_not_centered"
-            )
+            if single_loop_mode and final_inner.get("selected_trial") is not None:
+                barrier_update_reason = "current_barrier_not_centered_single_loop_continue"
+            else:
+                stopped_reason = (
+                    inner_status
+                    if inner_status
+                    in {
+                        "no_p_armijo_trial",
+                        "no_finite_trial",
+                        "no_accepted_trial",
+                        "no_acceptable_ipopt_filter_trial",
+                        "ipopt_h_filter_rejected",
+                        "ipopt_persistent_filter_rejected",
+                        "ipopt_persistent_filter_f_type_rejected",
+                        "filter_restoration_rejected",
+                        "tiny_step_requires_restoration",
+                    }
+                    else "current_barrier_not_centered"
+                )
         elif not strict_barrier_update_allowed:
             barrier_update_reason = "strict_barrier_update_blocked"
             stopped_reason = "strict_barrier_update_blocked"
@@ -2386,7 +2410,103 @@ def run_algorithm_v11_pdipm_continuation(
             )
             nu_after_outer = float(np.exp(epsilon_after_outer))
             barrier_updated = epsilon_after_outer < eps
+            barrier_update_step_count = 1 if barrier_updated else 0
             barrier_update_reason = "barrier_decreased" if barrier_updated else "barrier_unchanged"
+            if ipopt_fast_monotone_enabled and barrier_updated:
+                fast_eps = epsilon_after_outer
+                while fast_eps > eps_final:
+                    fast_residual, fast_components = _residual_norm(
+                        formula_matrix=ag,
+                        formula_matrix_cond_active=ac,
+                        element_inventory_target=target,
+                        external_condensate_budget=external_budget,
+                        gas_stationarity_source=gas_source,
+                        condensate_standard_source=cond_source,
+                        q=q,
+                        r=r,
+                        lam=lam,
+                        rho=rho,
+                        qtot=qtot,
+                        epsilon=fast_eps,
+                    )
+                    fast_center_metric = _center_metric_from_components(
+                        fast_residual,
+                        fast_components,
+                        center_metric_policy=center_metric_policy,
+                        center_component_weights=center_component_weights,
+                        center_component_scales=center_component_scales,
+                    )
+                    fast_center_threshold = float(
+                        center_tolerance_multiplier * np.exp(fast_eps)
+                    )
+                    fast_centered = fast_center_metric <= fast_center_threshold
+                    fast_strict_allowed = True
+                    if strict_barrier_names:
+                        fast_strict_allowed = _strict_barrier_components_met(
+                            fast_components,
+                            strict_barrier_names,
+                            strict_barrier_threshold,
+                        )
+                    if not fast_centered or not fast_strict_allowed:
+                        fast_monotone_decrease_records.append(
+                            {
+                                "status": "candidate_barrier_not_ready",
+                                "epsilon": fast_eps,
+                                "nu": float(np.exp(fast_eps)),
+                                "residual_l2": fast_residual,
+                                "residual_components": fast_components,
+                                "center_metric": fast_center_metric,
+                                "center_threshold": fast_center_threshold,
+                                "centered": fast_centered,
+                                "strict_barrier_update_allowed": fast_strict_allowed,
+                            }
+                        )
+                        break
+                    next_fast_eps = _next_barrier_epsilon(
+                        epsilon=fast_eps,
+                        final_epsilon=eps_final,
+                        tau=tau_value,
+                        barrier_schedule_policy=schedule_policy,
+                        ipopt_mu_linear_decrease_factor=ipopt_linear_factor,
+                        ipopt_mu_superlinear_decrease_power=ipopt_superlinear_power,
+                        ipopt_enable_superlinear_decrease=ipopt_superlinear_enabled,
+                    )
+                    if next_fast_eps >= fast_eps:
+                        fast_monotone_decrease_records.append(
+                            {
+                                "status": "candidate_barrier_unchanged",
+                                "epsilon": fast_eps,
+                                "nu": float(np.exp(fast_eps)),
+                                "residual_l2": fast_residual,
+                                "residual_components": fast_components,
+                                "center_metric": fast_center_metric,
+                                "center_threshold": fast_center_threshold,
+                                "centered": fast_centered,
+                                "strict_barrier_update_allowed": fast_strict_allowed,
+                            }
+                        )
+                        break
+                    fast_monotone_decrease_records.append(
+                        {
+                            "status": "fast_barrier_decreased",
+                            "epsilon": fast_eps,
+                            "nu": float(np.exp(fast_eps)),
+                            "epsilon_after": next_fast_eps,
+                            "nu_after": float(np.exp(next_fast_eps)),
+                            "residual_l2": fast_residual,
+                            "residual_components": fast_components,
+                            "center_metric": fast_center_metric,
+                            "center_threshold": fast_center_threshold,
+                            "centered": fast_centered,
+                            "strict_barrier_update_allowed": fast_strict_allowed,
+                        }
+                    )
+                    fast_eps = next_fast_eps
+                    epsilon_after_outer = fast_eps
+                    nu_after_outer = float(np.exp(epsilon_after_outer))
+                    barrier_update_step_count += 1
+                if barrier_update_step_count > 1:
+                    barrier_update_reason = "fast_monotone_barrier_decreased"
             if barrier_updated and persistent_filter_entries:
                 persistent_filter_entries = ()
                 persistent_filter_reference_theta = None
@@ -2403,6 +2523,7 @@ def run_algorithm_v11_pdipm_continuation(
                 "ipopt_mu_linear_decrease_factor": ipopt_linear_factor,
                 "ipopt_mu_superlinear_decrease_power": ipopt_superlinear_power,
                 "ipopt_enable_superlinear_decrease": ipopt_superlinear_enabled,
+                "ipopt_allow_fast_monotone_decrease": ipopt_fast_monotone_enabled,
                 "center_threshold": center_threshold,
                 "inner_records": inner_records,
                 "residual_l2_after_outer": residual_after_outer,
@@ -2420,7 +2541,14 @@ def run_algorithm_v11_pdipm_continuation(
                 "centered_at_current_barrier": centered,
                 "barrier_update_allowed": centered and strict_barrier_update_allowed,
                 "barrier_updated": barrier_updated,
+                "barrier_update_step_count": barrier_update_step_count,
                 "barrier_update_reason": barrier_update_reason,
+                "fast_monotone_decrease_records": tuple(fast_monotone_decrease_records),
+                "fast_monotone_decrease_count": sum(
+                    1
+                    for record in fast_monotone_decrease_records
+                    if record.get("status") == "fast_barrier_decreased"
+                ),
                 "strict_barrier_update_allowed": strict_barrier_update_allowed,
                 "strict_barrier_update_components": strict_barrier_names,
                 "strict_barrier_update_threshold": strict_barrier_threshold,
@@ -2434,9 +2562,15 @@ def run_algorithm_v11_pdipm_continuation(
                 ),
             }
         )
-        if eps <= eps_final:
+        if eps <= eps_final and not (
+            single_loop_mode
+            and not centered
+            and final_inner.get("selected_trial") is not None
+        ):
             break
-        if not centered:
+        if not centered and not (
+            single_loop_mode and final_inner.get("selected_trial") is not None
+        ):
             break
         if not strict_barrier_update_allowed:
             break
@@ -2519,7 +2653,8 @@ def run_algorithm_v11_pdipm_continuation(
             }:
                 restoration_count += 1
     barrier_update_count = sum(
-        1 for outer_record in outer_records if bool(outer_record.get("barrier_updated"))
+        int(outer_record.get("barrier_update_step_count", 0))
+        for outer_record in outer_records
     )
     return AlgorithmV11ContinuationReport(
         report_schema="exogibbs_algorithm_v11_pdipm_continuation_report_v1",
@@ -2547,6 +2682,7 @@ def run_algorithm_v11_pdipm_continuation(
         ipopt_mu_linear_decrease_factor=ipopt_linear_factor,
         ipopt_mu_superlinear_decrease_power=ipopt_superlinear_power,
         ipopt_enable_superlinear_decrease=ipopt_superlinear_enabled,
+        ipopt_allow_fast_monotone_decrease=ipopt_fast_monotone_enabled,
         center_tolerance_multiplier=float(center_tolerance_multiplier),
         final_residual_l2=final_residual,
         final_p_merit=float(final_p["total_merit"]),

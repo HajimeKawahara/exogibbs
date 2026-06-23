@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import math
 from time import perf_counter
-from typing import Any, Literal, Optional, Sequence
+from typing import Any, Literal, Mapping, Optional, Sequence
 
 import jax
 import jax.numpy as jnp
@@ -2336,13 +2336,6 @@ def solve_restricted_support_condensate_layer(
     hvector_cond_full = jnp.asarray(hvector_cond_func(state.temperature), dtype=jnp.float64)
     formula_matrix_cond_active = jnp.asarray(formula_matrix_cond[:, support_indices], dtype=jnp.float64)
     hvector_cond_active = jnp.asarray(hvector_cond_full[support_indices], dtype=jnp.float64)
-    gas_start = solve_gas_equilibrium_with_duals(
-        state,
-        formula_matrix,
-        hvector_func,
-        gas_epsilon_crit=gas_epsilon_crit,
-        gas_max_iter=gas_max_iter,
-    )
     if support_amounts_init is None:
         seed_ln_mk = build_rgie_condensate_init_from_policy(
             epsilon=epsilon,
@@ -2355,6 +2348,13 @@ def solve_restricted_support_condensate_layer(
     support_amounts_init = jnp.asarray(support_amounts_init, dtype=jnp.float64)
     start = perf_counter()
     if initial_log_state_override is None:
+        gas_start = solve_gas_equilibrium_with_duals(
+            state,
+            formula_matrix,
+            hvector_func,
+            gas_epsilon_crit=gas_epsilon_crit,
+            gas_max_iter=gas_max_iter,
+        )
         init_state = CondensateEquilibriumInit(
             ln_nk=jnp.asarray(gas_start["ln_nk"], dtype=jnp.float64),
             ln_mk=jnp.log(jnp.maximum(support_amounts_init, 1.0e-300)),
@@ -2439,10 +2439,25 @@ def solve_restricted_support_condensate_layer(
         runtime_seconds=runtime_seconds,
     )
     post_solver_gas_refresh_report: dict[str, Any] | None = None
+    initial_source_trace = (
+        None
+        if initial_log_state_override is None
+        else initial_log_state_override.ln_nk_source_trace
+    )
+    initial_source = (
+        str(initial_source_trace.get("source"))
+        if isinstance(initial_source_trace, Mapping)
+        and initial_source_trace.get("source") is not None
+        else None
+    )
+    already_depleted_gas_refresh = (
+        initial_source == "exogibbs_native_depleted_budget_gas_refresh"
+    )
     if (
         reduced_config.reduced_coupling_mode == "pdipm_rgie_v11_activity_correction"
         and support_indices.shape[0] > 0
         and int(max_iter) > 1
+        and not already_depleted_gas_refresh
     ):
         from exogibbs.condensates.depleted_gas_refresh import (
             build_depleted_gas_refresh_init,
