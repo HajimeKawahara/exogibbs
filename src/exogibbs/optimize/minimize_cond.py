@@ -2160,6 +2160,10 @@ def _pdipm_activity_fixed_support_batch_core(
         initial_cond_norm = l2(initial_cond)
         initial_budget_norm = l2(initial_budget)
         initial_comp_norm = l2(initial_comp)
+        initial_stationarity_merit = jnp.maximum(
+            jnp.maximum(initial_gas_norm, initial_cond_norm),
+            initial_comp_norm,
+        )
 
         def trial(alpha: jnp.ndarray) -> tuple[jnp.ndarray, ...]:
             tq = q + alpha * delta_q
@@ -2205,30 +2209,32 @@ def _pdipm_activity_fixed_support_batch_core(
         any_accepted = jnp.any(accepted_mask)
         first_index = jnp.argmax(accepted_mask)
         best_index = jnp.argmin(jnp.where(finite, norms, jnp.inf))
-        component_improved = (
-            (gas_norms < initial_gas_norm)
-            | (cond_norms < initial_cond_norm)
-            | (comp_norms < initial_comp_norm)
+        fallback_merit = jnp.maximum(
+            jnp.maximum(gas_norms, cond_norms),
+            comp_norms,
         )
+        component_improved = fallback_merit < initial_stationarity_merit
         budget_not_broken = budget_norms <= jnp.maximum(
-            1.25 * initial_budget_norm,
-            initial_budget_norm + jnp.asarray(1.0e-8, dtype=initial_budget_norm.dtype),
+            1.05 * initial_budget_norm,
+            initial_budget_norm + jnp.asarray(1.0e-10, dtype=initial_budget_norm.dtype),
+        )
+        combined_not_worse = norms <= (
+            initial_norm
+            + jnp.maximum(
+                jnp.asarray(1.0e-12, dtype=initial_norm.dtype),
+                1.0e-6 * jnp.maximum(
+                    initial_norm,
+                    jnp.asarray(1.0, dtype=initial_norm.dtype),
+                ),
+            )
         )
         fallback_mask = (
             finite
             & component_improved
             & budget_not_broken
-            & (
-                norms
-                <= 1.25
-                * jnp.maximum(initial_norm, jnp.asarray(1.0, dtype=initial_norm.dtype))
-            )
+            & combined_not_worse
         )
         any_fallback = jnp.any(fallback_mask)
-        fallback_merit = jnp.maximum(
-            jnp.maximum(gas_norms, cond_norms),
-            comp_norms,
-        )
         fallback_index = jnp.argmin(jnp.where(fallback_mask, fallback_merit, jnp.inf))
         selected = jnp.where(
             any_accepted,
