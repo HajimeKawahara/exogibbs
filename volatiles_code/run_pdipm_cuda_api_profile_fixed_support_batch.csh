@@ -27,6 +27,7 @@ set block_output = "--block-output layers"
 set prepared_plan = ""
 set element_inventory_scale = ""
 set element_inventory_batch_size = ""
+set element_inventory_batch_mode = ""
 set support_source = ""
 set rho_initialization = ""
 set lambda_initialization = ""
@@ -254,6 +255,28 @@ if ( "$mode" == "activity_water16_bmany" || "$mode" == "activity_water100_bmany"
     endif
 endif
 
+if ( "$mode" == "a100_water100_brepeat" ) then
+    if ( "$custom_batch_size" == "" ) then
+        echo "usage: $0 a100_water100_brepeat N_EVAL"
+        exit 2
+    endif
+    set iterations = 100
+    set warmup = 0
+    set repeat = 2
+    set families = "--families solar_water_condensation"
+    set baseline = "--skip-baseline"
+    set budget_gate = "--disable-budget-gate"
+    set block_output = "--block-output batched"
+    set prepared_plan = "--prepared-plan"
+    set element_inventory_batch_size = "--element-inventory-batch-size $custom_batch_size"
+    set element_inventory_batch_mode = "--element-inventory-batch-mode repeat"
+    set support_source = "--support-source activity_outer"
+    set rho_initialization = "--rho-initialization complementarity"
+    set lambda_initialization = "--lambda-initialization gas_cond_lstsq"
+    set residual_tolerance_multiplier = "--residual-tolerance-multiplier 1.0e9"
+    set label = "a100_water100_brepeat${custom_batch_size}"
+endif
+
 if ( "$mode" == "activity_quick100_bmany" || "$mode" == "a100_quick100_bmany" ) then
     if ( "$custom_batch_size" == "" ) then
         echo "usage: $0 a100_quick100_bmany N_EVAL"
@@ -279,6 +302,28 @@ if ( "$mode" == "activity_quick100_bmany" || "$mode" == "a100_quick100_bmany" ) 
     endif
 endif
 
+if ( "$mode" == "a100_quick100_brepeat" ) then
+    if ( "$custom_batch_size" == "" ) then
+        echo "usage: $0 a100_quick100_brepeat N_EVAL"
+        exit 2
+    endif
+    set iterations = 100
+    set warmup = 0
+    set repeat = 2
+    set families = "--families solar_metal_sulfide_or_Fe_Ni_S_region solar_water_condensation"
+    set baseline = "--skip-baseline"
+    set budget_gate = "--disable-budget-gate"
+    set block_output = "--block-output batched"
+    set prepared_plan = "--prepared-plan"
+    set element_inventory_batch_size = "--element-inventory-batch-size $custom_batch_size"
+    set element_inventory_batch_mode = "--element-inventory-batch-mode repeat"
+    set support_source = "--support-source activity_outer"
+    set rho_initialization = "--rho-initialization complementarity"
+    set lambda_initialization = "--lambda-initialization gas_cond_lstsq"
+    set residual_tolerance_multiplier = "--residual-tolerance-multiplier 1.0e9"
+    set label = "a100_quick100_brepeat${custom_batch_size}"
+endif
+
 set output = "volatiles_artifacts/pdipm_api_profile_fixed_support_batch_cuda_${label}_${stamp}.json"
 
 python volatiles_code/benchmark_pdipm_api_profile_fixed_support_batch.py \
@@ -294,6 +339,7 @@ python volatiles_code/benchmark_pdipm_api_profile_fixed_support_batch.py \
     $prepared_plan \
     $element_inventory_scale \
     $element_inventory_batch_size \
+    $element_inventory_batch_mode \
     $support_source \
     $rho_initialization \
     $lambda_initialization \

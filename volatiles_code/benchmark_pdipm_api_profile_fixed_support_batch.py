@@ -462,7 +462,16 @@ def main() -> None:
         "--element-inventory-batch-size",
         type=int,
         default=1,
-        help="When using --prepared-plan, evaluate this many scaled b vectors together.",
+        help="When using --prepared-plan, evaluate this many b vectors together.",
+    )
+    parser.add_argument(
+        "--element-inventory-batch-mode",
+        choices=("scaled", "repeat"),
+        default="scaled",
+        help=(
+            "When using --element-inventory-batch-size > 1, either perturb b "
+            "across the batch or repeat the exact same b for saturation timing."
+        ),
     )
     parser.add_argument("--print-jax-devices", action="store_true")
     parser.add_argument(
@@ -548,22 +557,31 @@ def main() -> None:
                 block_output="layers",
             )
             if int(args.element_inventory_batch_size) > 1:
-                scale0 = (
-                    1.0
-                    if args.element_inventory_scale is None
-                    else float(args.element_inventory_scale)
-                )
-                scales = jnp.asarray(
-                    [
-                        scale0 * (1.0 + 1.0e-4 * index)
-                        for index in range(int(args.element_inventory_batch_size))
-                    ],
-                    dtype=jnp.float64,
-                )
-                batched_targets = scales[:, None] * jnp.asarray(
-                    profile_args["b"],
-                    dtype=jnp.float64,
-                )
+                base_target = jnp.asarray(profile_args["b"], dtype=jnp.float64)
+                if str(args.element_inventory_batch_mode) == "repeat":
+                    scale0 = (
+                        1.0
+                        if args.element_inventory_scale is None
+                        else float(args.element_inventory_scale)
+                    )
+                    batched_targets = jnp.broadcast_to(
+                        scale0 * base_target[None, :],
+                        (int(args.element_inventory_batch_size), base_target.shape[0]),
+                    )
+                else:
+                    scale0 = (
+                        1.0
+                        if args.element_inventory_scale is None
+                        else float(args.element_inventory_scale)
+                    )
+                    scales = jnp.asarray(
+                        [
+                            scale0 * (1.0 + 1.0e-4 * index)
+                            for index in range(int(args.element_inventory_batch_size))
+                        ],
+                        dtype=jnp.float64,
+                    )
+                    batched_targets = scales[:, None] * base_target
                 experimental_last, experimental_timing = _time(
                     lambda plan=plan, batched_targets=batched_targets: (
                         run_experimental_profile_fixed_support_batch_plan_many(
@@ -720,6 +738,7 @@ def main() -> None:
                 args.residual_tolerance_multiplier
             ),
             "element_inventory_batch_size": int(args.element_inventory_batch_size),
+            "element_inventory_batch_mode": str(args.element_inventory_batch_mode),
             "experimental_converged_count": converged_count,
             "experimental_fast_path_layer_count": fast_path_layer_count,
             "experimental_residual_summary": residual_summary,
@@ -814,6 +833,7 @@ def main() -> None:
         "prepared_plan": bool(args.prepared_plan),
         "element_inventory_scale": args.element_inventory_scale,
         "element_inventory_batch_size": int(args.element_inventory_batch_size),
+        "element_inventory_batch_mode": str(args.element_inventory_batch_mode),
         "residual_tolerance_multiplier": float(args.residual_tolerance_multiplier),
         "skipped_layers": skipped,
         "summary": {
