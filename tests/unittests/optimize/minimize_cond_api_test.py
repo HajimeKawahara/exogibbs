@@ -463,6 +463,231 @@ def test_pdipm_rgie_v11_activity_correction_uses_tce_gas_source_for_initial_pi(
     )
 
 
+def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core():
+    formula_matrix = jnp.asarray([[1.0]], dtype=jnp.float64)
+    formula_matrix_cond_active = jnp.asarray([[1.0]], dtype=jnp.float64)
+    hvector = jnp.asarray([[0.0], [0.0]], dtype=jnp.float64)
+    hvector_cond_active = jnp.asarray([[0.0], [0.0]], dtype=jnp.float64)
+    element_inventory_target = jnp.asarray([[1.0], [1.0]], dtype=jnp.float64)
+    ln_normalized_pressure = jnp.asarray([0.0, 0.0], dtype=jnp.float64)
+    ln_nk_init = jnp.log(jnp.asarray([[0.8], [0.7]], dtype=jnp.float64))
+    ln_mk_init = jnp.log(jnp.asarray([[0.2], [0.3]], dtype=jnp.float64))
+    ln_ntot_init = jnp.log(jnp.asarray([0.8, 0.7], dtype=jnp.float64))
+
+    batch_result, batch_extra = (
+        condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+            ln_nk_init=ln_nk_init,
+            ln_mk_init=ln_mk_init,
+            ln_ntot_init=ln_ntot_init,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            element_inventory_target=element_inventory_target,
+            hvector=hvector,
+            hvector_cond_active=hvector_cond_active,
+            ln_normalized_pressure=ln_normalized_pressure,
+            epsilon=-10.0,
+            max_iter=2,
+        )
+    )
+
+    for index in range(2):
+        state = ThermoState(
+            temperature=jnp.asarray(1000.0, dtype=jnp.float64),
+            ln_normalized_pressure=ln_normalized_pressure[index],
+            element_vector=element_inventory_target[index],
+        )
+        init = condmod.CondensateEquilibriumInit(
+            ln_nk=ln_nk_init[index],
+            ln_mk=ln_mk_init[index],
+            ln_ntot=ln_ntot_init[index],
+        )
+        layer_result, _ = condmod._solve_pdipm_rgie_v11_activity_correction_layer(
+            state=state,
+            init_state=init,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+            hvector_cond_active=hvector_cond_active[index],
+            epsilon=-10.0,
+            max_iter=2,
+        )
+
+        assert batch_result.ln_nk[index] == pytest.approx(layer_result.ln_nk)
+        assert batch_result.ln_mk[index] == pytest.approx(layer_result.ln_mk)
+        assert batch_result.ln_ntot[index] == pytest.approx(layer_result.ln_ntot)
+        assert batch_result.diagnostics.n_iter[index] == layer_result.diagnostics.n_iter
+        assert batch_result.diagnostics.final_residual[index] == pytest.approx(
+            layer_result.diagnostics.final_residual
+        )
+
+    payload = batch_extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"]
+    assert payload["experimental"] is True
+    assert payload["production_route_wiring"] is False
+    assert payload["accepted_iteration_count"].shape == (2,)
+
+
+def test_pdipm_rgie_v11_profile_bucket_dispatcher_matches_layer_core():
+    states = tuple(
+        ThermoState(
+            temperature=jnp.asarray(1000.0 + 10.0 * index, dtype=jnp.float64),
+            ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+            element_vector=jnp.asarray([1.0], dtype=jnp.float64),
+        )
+        for index in range(3)
+    )
+    init_states = (
+        condmod.CondensateEquilibriumInit(
+            ln_nk=jnp.log(jnp.asarray([0.8], dtype=jnp.float64)),
+            ln_mk=jnp.log(jnp.asarray([0.2], dtype=jnp.float64)),
+            ln_ntot=jnp.log(jnp.asarray(0.8, dtype=jnp.float64)),
+        ),
+        condmod.CondensateEquilibriumInit(
+            ln_nk=jnp.log(jnp.asarray([0.7], dtype=jnp.float64)),
+            ln_mk=jnp.log(jnp.asarray([0.3], dtype=jnp.float64)),
+            ln_ntot=jnp.log(jnp.asarray(0.7, dtype=jnp.float64)),
+        ),
+        condmod.CondensateEquilibriumInit(
+            ln_nk=jnp.log(jnp.asarray([0.6], dtype=jnp.float64)),
+            ln_mk=jnp.log(jnp.asarray([0.4], dtype=jnp.float64)),
+            ln_ntot=jnp.log(jnp.asarray(0.6, dtype=jnp.float64)),
+        ),
+    )
+    formula_matrix = jnp.asarray([[1.0]], dtype=jnp.float64)
+    formula_matrix_cond = jnp.asarray([[1.0, 1.0]], dtype=jnp.float64)
+    support_indices_by_layer = ((0,), (0,), (1,))
+
+    bucket_results, trace = (
+        condmod._solve_pdipm_rgie_v11_activity_correction_profile_buckets(
+            states=states,
+            init_states=init_states,
+            support_indices_by_layer=support_indices_by_layer,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond=formula_matrix_cond,
+            hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+            hvector_cond_func=lambda temperature: jnp.asarray(
+                [0.0, 0.0],
+                dtype=jnp.float64,
+            ),
+            epsilon=-10.0,
+            max_iter=2,
+            min_batch_size=2,
+        )
+    )
+
+    for index, support_indices in enumerate(support_indices_by_layer):
+        support_array = jnp.asarray(support_indices, dtype=jnp.int32)
+        layer_result, _ = condmod._solve_pdipm_rgie_v11_activity_correction_layer(
+            state=states[index],
+            init_state=init_states[index],
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond[:, support_array],
+            hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+            hvector_cond_active=jnp.asarray([0.0], dtype=jnp.float64),
+            epsilon=-10.0,
+            max_iter=2,
+        )
+        assert bucket_results[index].ln_nk == pytest.approx(layer_result.ln_nk)
+        assert bucket_results[index].ln_mk == pytest.approx(layer_result.ln_mk)
+        assert bucket_results[index].ln_ntot == pytest.approx(layer_result.ln_ntot)
+        assert bucket_results[index].diagnostics.final_residual == pytest.approx(
+            layer_result.diagnostics.final_residual
+        )
+
+    payload = trace["pdipm_rgie_v11_activity_correction_profile_buckets"]
+    assert payload["experimental"] is True
+    assert payload["production_route_wiring"] is False
+    executions = {bucket["support_indices"]: bucket["execution"] for bucket in payload["buckets"]}
+    assert executions[(0,)] == "batch"
+    assert executions[(1,)] == "single"
+
+
+def test_pdipm_rgie_v11_prepared_profile_buckets_match_layer_core():
+    states = tuple(
+        ThermoState(
+            temperature=jnp.asarray(1000.0 + 10.0 * index, dtype=jnp.float64),
+            ln_normalized_pressure=jnp.asarray(0.0, dtype=jnp.float64),
+            element_vector=jnp.asarray([1.0], dtype=jnp.float64),
+        )
+        for index in range(3)
+    )
+    init_states = (
+        condmod.CondensateEquilibriumInit(
+            ln_nk=jnp.log(jnp.asarray([0.8], dtype=jnp.float64)),
+            ln_mk=jnp.log(jnp.asarray([0.2], dtype=jnp.float64)),
+            ln_ntot=jnp.log(jnp.asarray(0.8, dtype=jnp.float64)),
+        ),
+        condmod.CondensateEquilibriumInit(
+            ln_nk=jnp.log(jnp.asarray([0.7], dtype=jnp.float64)),
+            ln_mk=jnp.log(jnp.asarray([0.3], dtype=jnp.float64)),
+            ln_ntot=jnp.log(jnp.asarray(0.7, dtype=jnp.float64)),
+        ),
+        condmod.CondensateEquilibriumInit(
+            ln_nk=jnp.log(jnp.asarray([0.6], dtype=jnp.float64)),
+            ln_mk=jnp.log(jnp.asarray([0.4], dtype=jnp.float64)),
+            ln_ntot=jnp.log(jnp.asarray(0.6, dtype=jnp.float64)),
+        ),
+    )
+    formula_matrix = jnp.asarray([[1.0]], dtype=jnp.float64)
+    formula_matrix_cond = jnp.asarray([[1.0, 1.0]], dtype=jnp.float64)
+    support_indices_by_layer = ((0,), (0,), (1,))
+    buckets = condmod._prepare_pdipm_rgie_v11_activity_correction_profile_buckets(
+        states=states,
+        init_states=init_states,
+        support_indices_by_layer=support_indices_by_layer,
+        formula_matrix_cond=formula_matrix_cond,
+        hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+        hvector_cond_func=lambda temperature: jnp.asarray(
+            [0.0, 0.0],
+            dtype=jnp.float64,
+        ),
+    )
+
+    bucket_results, trace = (
+        condmod._run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
+            buckets=buckets,
+            formula_matrix=formula_matrix,
+            epsilon=-10.0,
+            max_iter=2,
+        )
+    )
+
+    result_by_layer = {}
+    for bucket, result in zip(buckets, bucket_results):
+        for local_index, layer_index in enumerate(bucket.layer_indices):
+            result_by_layer[layer_index] = (
+                result.ln_nk[local_index],
+                result.ln_mk[local_index],
+                result.ln_ntot[local_index],
+                result.diagnostics.final_residual[local_index],
+            )
+
+    for index, support_indices in enumerate(support_indices_by_layer):
+        support_array = jnp.asarray(support_indices, dtype=jnp.int32)
+        layer_result, _ = condmod._solve_pdipm_rgie_v11_activity_correction_layer(
+            state=states[index],
+            init_state=init_states[index],
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond[:, support_array],
+            hvector_func=lambda temperature: jnp.asarray([0.0], dtype=jnp.float64),
+            hvector_cond_active=jnp.asarray([0.0], dtype=jnp.float64),
+            epsilon=-10.0,
+            max_iter=2,
+        )
+        ln_nk, ln_mk, ln_ntot, final_residual = result_by_layer[index]
+        assert ln_nk == pytest.approx(layer_result.ln_nk)
+        assert ln_mk == pytest.approx(layer_result.ln_mk)
+        assert ln_ntot == pytest.approx(layer_result.ln_ntot)
+        assert final_residual == pytest.approx(
+            layer_result.diagnostics.final_residual
+        )
+
+    payload = trace["pdipm_rgie_v11_activity_correction_prepared_profile_buckets"]
+    assert payload["experimental"] is True
+    assert payload["production_route_wiring"] is False
+    assert payload["bucket_count"] == 2
+    assert payload["layer_count"] == 3
+
+
 def test_hybrid_candidate_log_activity_proxy_bookkeeping():
     formula_matrix_cond = jnp.asarray(
         [[1.0, 0.0], [2.0, 1.0]],

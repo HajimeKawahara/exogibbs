@@ -1,4 +1,5 @@
 import jax.numpy as jnp
+import pytest
 
 import exogibbs.api.condensate_equilibrium as condmod
 from exogibbs.api.chemistry import ChemicalSetup
@@ -224,3 +225,177 @@ def test_condensate_profile_can_warm_start_gas_with_explicit_support(monkeypatch
     assert result.diagnostics["layers"][1]["initialization_mode"] == (
         "initializer_gas_with_explicit_support_payload"
     )
+
+
+def test_condensate_profile_experimental_fixed_support_batch_path():
+    def profile_hvector(T):
+        T = jnp.asarray(T)
+        if T.ndim > 0:
+            return jnp.zeros((T.shape[0], 2), dtype=jnp.float64)
+        return jnp.zeros((2,), dtype=jnp.float64)
+
+    gas_setup = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=jnp.float64),
+        hvector_func=profile_hvector,
+        elements=("H", "O"),
+        species=("H", "O"),
+        metadata={},
+    )
+    cond_setup = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=jnp.float64),
+        hvector_func=profile_hvector,
+        elements=("H", "O"),
+        species=("H[s]", "O[s]"),
+        metadata={},
+    )
+    setup = CondensateChemicalSetup(
+        gas_setup=gas_setup,
+        condensate_setup=cond_setup,
+        formula_matrix=gas_setup.formula_matrix,
+        formula_matrix_cond=cond_setup.formula_matrix,
+        gas_species=gas_setup.species,
+        condensate_species=cond_setup.species,
+        elements=gas_setup.elements,
+    )
+    init = tuple(
+        CondensateEquilibriumInit(
+            gas_ln_n=jnp.log(jnp.asarray([0.8, 0.8], dtype=jnp.float64)),
+            gas_ntot=jnp.asarray(1.6, dtype=jnp.float64),
+            support_indices=(0, 1),
+            support_amounts=(0.2, 0.2),
+        )
+        for _ in range(2)
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        jnp.asarray([1000.0, 1100.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        init=init,
+        options=CondensateEquilibriumOptions(
+            profile_method="vmap_cold",
+            profile_warm_start_support_policy="explicit_payload",
+            enable_experimental_profile_fixed_support_batch=True,
+            max_inner_iterations=8,
+        ),
+        return_diagnostics=True,
+    )
+
+    assert result.method == "vmap_cold"
+    assert len(result.layers) == 2
+    assert result.diagnostics["experimental_profile_fixed_support_batch"]["accepted"]
+    assert result.diagnostics["fresh_fallback_count"] == 0
+    assert all(layer.converged for layer in result.layers)
+    assert tuple(result.layers[0].condensate_support_indices.tolist()) == (0, 1)
+    assert "experimental_profile_fixed_support_batch" in result.layers[0].diagnostics
+
+    fast_result = condmod.condensate_equilibrium_profile(
+        setup,
+        jnp.asarray([1000.0, 1100.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        init=init,
+        options=CondensateEquilibriumOptions(
+            profile_method="vmap_cold",
+            profile_warm_start_support_policy="explicit_payload",
+            enable_experimental_profile_fixed_support_batch=True,
+            enable_full_condensate_budget_residual_gate=False,
+            max_inner_iterations=8,
+        ),
+        return_diagnostics=False,
+    )
+
+    assert fast_result.batched_arrays is not None
+    assert fast_result.batched_arrays["gas_ln_n"].shape == (2, 2)
+    assert fast_result.batched_arrays["condensate_amounts"].shape == (2, 2)
+    assert tuple(fast_result.layers[0].condensate_support_indices.tolist()) == (0, 1)
+
+    plan = condmod.prepare_experimental_profile_fixed_support_batch_plan(
+        setup,
+        jnp.asarray([1000.0, 1100.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        init=init,
+        options=CondensateEquilibriumOptions(max_inner_iterations=8),
+    )
+    planned_arrays = condmod.run_experimental_profile_fixed_support_batch_plan(plan)
+    planned_arrays_with_shared_b = (
+        condmod.run_experimental_profile_fixed_support_batch_plan(
+            plan,
+            element_inventory_target=jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        )
+    )
+    planned_arrays_with_layer_b = (
+        condmod.run_experimental_profile_fixed_support_batch_plan(
+            plan,
+            element_inventory_target=jnp.asarray(
+                [[1.0, 1.0], [1.0, 1.0]],
+                dtype=jnp.float64,
+            ),
+        )
+    )
+
+    assert isinstance(
+        plan,
+        condmod.ExperimentalCondensateProfileFixedSupportBatchPlan,
+    )
+    assert planned_arrays["gas_ln_n"].shape == (2, 2)
+    assert planned_arrays["condensate_amounts"].shape == (2, 2)
+    assert jnp.allclose(
+        planned_arrays["gas_ln_n"],
+        fast_result.batched_arrays["gas_ln_n"],
+    )
+    assert jnp.allclose(
+        planned_arrays["condensate_amounts"],
+        fast_result.batched_arrays["condensate_amounts"],
+    )
+    assert jnp.allclose(
+        planned_arrays_with_shared_b["gas_ln_n"],
+        planned_arrays["gas_ln_n"],
+    )
+    assert jnp.allclose(
+        planned_arrays_with_layer_b["condensate_amounts"],
+        planned_arrays["condensate_amounts"],
+    )
+    with pytest.raises(ValueError, match="element_inventory_target"):
+        condmod.run_experimental_profile_fixed_support_batch_plan(
+            plan,
+            element_inventory_target=jnp.asarray([1.0], dtype=jnp.float64),
+        )
+
+    many_arrays = condmod.run_experimental_profile_fixed_support_batch_plan_many(
+        plan,
+        jnp.asarray(
+            [
+                [1.0, 1.0],
+                [1.0, 1.0],
+            ],
+            dtype=jnp.float64,
+        ),
+    )
+    layer_many_arrays = condmod.run_experimental_profile_fixed_support_batch_plan_many(
+        plan,
+        jnp.asarray(
+            [
+                [[1.0, 1.0], [1.0, 1.0]],
+                [[1.0, 1.0], [1.0, 1.0]],
+            ],
+            dtype=jnp.float64,
+        ),
+    )
+
+    assert many_arrays["gas_ln_n"].shape == (2, 2, 2)
+    assert many_arrays["condensate_amounts"].shape == (2, 2, 2)
+    assert jnp.allclose(many_arrays["gas_ln_n"][0], planned_arrays["gas_ln_n"])
+    assert jnp.allclose(many_arrays["gas_ln_n"][1], planned_arrays["gas_ln_n"])
+    assert jnp.allclose(
+        layer_many_arrays["condensate_amounts"][0],
+        planned_arrays["condensate_amounts"],
+    )
+    with pytest.raises(ValueError, match="element_inventory_targets"):
+        condmod.run_experimental_profile_fixed_support_batch_plan_many(
+            plan,
+            jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        )
+
