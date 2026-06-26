@@ -2362,7 +2362,7 @@ def _pdipm_activity_fixed_support_batch_core(
                 jnp.where(apply_step, next_rho, rho),
                 jnp.where(apply_step, next_qtot, qtot),
                 jnp.where(still_running, next_residual, residual),
-                jnp.where(apply_step, qtot, residual_qtot_ref),
+                jnp.where(still_running, qtot, residual_qtot_ref),
                 apply_step,
             ), (jnp.where(still_running, next_residual, residual), apply_step)
 

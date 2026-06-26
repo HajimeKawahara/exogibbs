@@ -397,6 +397,18 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     for component in many_arrays["residual_components"].values():
         assert component.shape == (2, 2)
         assert jnp.all(jnp.isfinite(component))
+    reconstructed_residual = jnp.sqrt(
+        sum(
+            component * component
+            for component in many_arrays["residual_components"].values()
+        )
+    )
+    assert jnp.allclose(
+        reconstructed_residual,
+        many_arrays["final_residual"],
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
     assert jnp.allclose(many_arrays["gas_ln_n"][0], planned_arrays["gas_ln_n"])
     assert jnp.allclose(many_arrays["gas_ln_n"][1], planned_arrays["gas_ln_n"])
     assert jnp.allclose(
