@@ -666,6 +666,11 @@ def main() -> None:
                 jax.device_get(experimental_last["n_iter"]),
                 dtype=np.int64,
             )
+            residual_components = experimental_last.get("residual_components", {})
+            residual_component_arrays = {
+                str(name): np.asarray(jax.device_get(values), dtype=np.float64)
+                for name, values in residual_components.items()
+            }
             converged_count = int(np.count_nonzero(converged))
             fast_path_layer_count = len(inputs) * int(args.element_inventory_batch_size)
             layer_indices = list(range(len(inputs)))
@@ -680,6 +685,10 @@ def main() -> None:
                             "final_residual": float(
                                 final_residual[eval_index, layer_index]
                             ),
+                            "residual_components": {
+                                name: float(values[eval_index, layer_index])
+                                for name, values in residual_component_arrays.items()
+                            },
                             "n_iter": int(n_iter[eval_index, layer_index]),
                         }
                         for layer_index in layer_indices
@@ -691,6 +700,10 @@ def main() -> None:
                         "layer_index": int(layer_index),
                         "converged": bool(converged[layer_index]),
                         "final_residual": float(final_residual[layer_index]),
+                        "residual_components": {
+                            name: float(values[layer_index])
+                            for name, values in residual_component_arrays.items()
+                        },
                         "n_iter": int(n_iter[layer_index]),
                     }
                     for layer_index in layer_indices

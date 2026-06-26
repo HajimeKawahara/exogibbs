@@ -6421,6 +6421,16 @@ def run_experimental_profile_fixed_support_batch_plan_many(
     converged = jnp.zeros((n_eval, plan.n_layers), dtype=bool)
     final_residual = jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64)
     n_iter = jnp.zeros((n_eval, plan.n_layers), dtype=jnp.int32)
+    residual_components = {
+        "gas": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+        "condensate_stationarity": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "budget": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+        "complementarity": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+        "total_density": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+    }
 
     for bucket, layer_indices in zip(plan.buckets, plan.bucket_layer_index_arrays):
         bucket_size = len(bucket.layer_indices)
@@ -6536,6 +6546,9 @@ def run_experimental_profile_fixed_support_batch_plan_many(
                 lambda_initialization=lambda_initialization,
             )
         )
+        batch_payload = _batch_extra[
+            "pdipm_rgie_v11_activity_correction_fixed_support_batch"
+        ]
         bucket_gas_ln_n = jnp.reshape(
             batch_result.ln_nk,
             (n_eval, bucket_size, gas_species_count),
@@ -6572,6 +6585,22 @@ def run_experimental_profile_fixed_support_batch_plan_many(
                 (n_eval, bucket_size),
             )
         )
+        component_sources = {
+            "gas": "gas_residual_norm",
+            "condensate_stationarity": "condensate_stationarity_residual_norm",
+            "budget": "budget_residual_norm",
+            "complementarity": "complementarity_residual_norm",
+            "total_density": "total_density_residual_norm",
+        }
+        for component_name, payload_name in component_sources.items():
+            residual_components[component_name] = residual_components[
+                component_name
+            ].at[:, layer_indices].set(
+                jnp.reshape(
+                    jnp.asarray(batch_payload[payload_name], dtype=jnp.float64),
+                    (n_eval, bucket_size),
+                )
+            )
     gas_n = jnp.exp(gas_ln_n)
     gas_ntot = jnp.sum(gas_n, axis=2)
     return {
@@ -6582,6 +6611,7 @@ def run_experimental_profile_fixed_support_batch_plan_many(
         "condensate_amounts": condensate_amounts,
         "converged": converged,
         "final_residual": final_residual,
+        "residual_components": residual_components,
         "n_iter": n_iter,
     }
 

@@ -2291,16 +2291,45 @@ def _pdipm_activity_fixed_support_batch_core(
         n_iter = jnp.minimum(accepted_count + 1, jnp.asarray(max_iter, dtype=jnp.int32))
         final_residual = final[5]
         converged = final_residual <= residual_crit
+        qf, rf, lamf, rhof, qtotf = final[0], final[1], final[2], final[3], final[4]
+        gas_stationarity_source_final = jnp.where(
+            use_solver_epsilon_one,
+            gas_source_init,
+            hgas + ln_pressure - qtotf,
+        )
+        log_activity_proxy_final = ac.T @ lamf - hcond
+        jac_mask_final = log_activity_proxy_final > -0.1
+        jac_mask_final = jnp.where(
+            jnp.any(jac_mask_final),
+            jac_mask_final,
+            jnp.arange(rf.shape[0]) == jnp.argmax(log_activity_proxy_final),
+        )
+        nf = jnp.exp(qf)
+        mf = jnp.exp(rf)
+        etaf = jnp.exp(rhof)
+        gas_component = qf + gas_stationarity_source_final - ag.T @ lamf
+        cond_component = hcond - ac.T @ lamf - etaf
+        budget_component = ag @ nf + ac @ mf - target
+        complementarity_component = rf + rhof - epsilon_vec
+        total_density_component = jnp.asarray(
+            [jnp.sum(nf) - jnp.exp(qtotf)],
+            dtype=qf.dtype,
+        )
         return (
-            final[0],
-            final[1],
-            final[4],
+            qf,
+            rf,
+            qtotf,
             n_iter,
             converged,
             (n_iter >= max_iter) & (~converged),
             final_residual,
             residual_crit,
             accepted_count,
+            l2(gas_component),
+            l2(jnp.where(jac_mask_final, cond_component, 0.0)),
+            l2(budget_component),
+            l2(complementarity_component),
+            l2(total_density_component),
         )
 
     return jax.vmap(run_one)(
@@ -2402,6 +2431,11 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         final_residual,
         residual_crit,
         accepted_count,
+        gas_residual_norm,
+        condensate_stationarity_residual_norm,
+        budget_residual_norm,
+        complementarity_residual_norm,
+        total_density_residual_norm,
     ) = _pdipm_activity_fixed_support_batch_core_jit(
         ln_nk_init=ln_nk_init_array,
         ln_mk_init=ln_mk_init_array,
@@ -2459,6 +2493,11 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
                 "experimental": True,
                 "production_route_wiring": False,
                 "accepted_iteration_count": accepted_count,
+                "gas_residual_norm": gas_residual_norm,
+                "condensate_stationarity_residual_norm": condensate_stationarity_residual_norm,
+                "budget_residual_norm": budget_residual_norm,
+                "complementarity_residual_norm": complementarity_residual_norm,
+                "total_density_residual_norm": total_density_residual_norm,
                 "rho_initialization": str(rho_initialization),
                 "lambda_initialization": str(lambda_initialization),
             }

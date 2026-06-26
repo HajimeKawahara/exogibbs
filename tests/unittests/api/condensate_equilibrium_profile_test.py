@@ -387,6 +387,16 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
 
     assert many_arrays["gas_ln_n"].shape == (2, 2, 2)
     assert many_arrays["condensate_amounts"].shape == (2, 2, 2)
+    assert set(many_arrays["residual_components"]) == {
+        "budget",
+        "complementarity",
+        "condensate_stationarity",
+        "gas",
+        "total_density",
+    }
+    for component in many_arrays["residual_components"].values():
+        assert component.shape == (2, 2)
+        assert jnp.all(jnp.isfinite(component))
     assert jnp.allclose(many_arrays["gas_ln_n"][0], planned_arrays["gas_ln_n"])
     assert jnp.allclose(many_arrays["gas_ln_n"][1], planned_arrays["gas_ln_n"])
     assert jnp.allclose(
@@ -398,4 +408,3 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
             plan,
             jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         )
-
