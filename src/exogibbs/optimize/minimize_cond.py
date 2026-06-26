@@ -2108,13 +2108,13 @@ def _pdipm_activity_fixed_support_batch_core(
             jnp.asarray(1.0, dtype=jnp.float64),
         )
 
-        def residual_norm(
+        def residual_components(
             qi: jnp.ndarray,
             ri: jnp.ndarray,
             lami: jnp.ndarray,
             rhoi: jnp.ndarray,
             qtoti: jnp.ndarray,
-        ) -> jnp.ndarray:
+        ) -> tuple[jnp.ndarray, ...]:
             ni = jnp.exp(qi)
             mi = jnp.exp(ri)
             etai = jnp.exp(rhoi)
@@ -2123,11 +2123,28 @@ def _pdipm_activity_fixed_support_batch_core(
             budget = ag @ ni + ac @ mi - target
             comp = ri + rhoi - epsilon_vec
             total_density = jnp.asarray([jnp.sum(ni) - jnp.exp(qtoti)], dtype=qi.dtype)
+            cond_masked = jnp.where(jac_mask, cond, 0.0)
+            return gas, cond_masked, budget, comp, total_density
+
+        def residual_norm(
+            qi: jnp.ndarray,
+            ri: jnp.ndarray,
+            lami: jnp.ndarray,
+            rhoi: jnp.ndarray,
+            qtoti: jnp.ndarray,
+        ) -> jnp.ndarray:
+            gas, cond, budget, comp, total_density = residual_components(
+                qi,
+                ri,
+                lami,
+                rhoi,
+                qtoti,
+            )
             return l2(
                 jnp.concatenate(
                     [
                         gas,
-                        jnp.where(jac_mask, cond, 0.0),
+                        cond,
                         budget,
                         comp,
                         total_density,
@@ -2136,6 +2153,13 @@ def _pdipm_activity_fixed_support_batch_core(
             )
 
         initial_norm = residual_norm(q, r, lam, rho, qtot)
+        initial_gas, initial_cond, initial_budget, initial_comp, _initial_total = (
+            residual_components(q, r, lam, rho, qtot)
+        )
+        initial_gas_norm = l2(initial_gas)
+        initial_cond_norm = l2(initial_cond)
+        initial_budget_norm = l2(initial_budget)
+        initial_comp_norm = l2(initial_comp)
 
         def trial(alpha: jnp.ndarray) -> tuple[jnp.ndarray, ...]:
             tq = q + alpha * delta_q
@@ -2143,24 +2167,83 @@ def _pdipm_activity_fixed_support_batch_core(
             tlam = lam + alpha * delta_lam
             trho = rho + alpha * delta_rho
             tqtot = qtot + alpha * delta_qtot
-            return tq, tr, tlam, trho, tqtot, residual_norm(tq, tr, tlam, trho, tqtot)
+            gas, cond, budget, comp, _total = residual_components(
+                tq,
+                tr,
+                tlam,
+                trho,
+                tqtot,
+            )
+            return (
+                tq,
+                tr,
+                tlam,
+                trho,
+                tqtot,
+                residual_norm(tq, tr, tlam, trho, tqtot),
+                l2(gas),
+                l2(cond),
+                l2(budget),
+                l2(comp),
+            )
 
         bounded_alpha_grid = jnp.minimum(alpha_grid, alpha_boundary)
-        tq, tr, tlam, trho, tqtot, norms = jax.vmap(trial)(bounded_alpha_grid)
+        (
+            tq,
+            tr,
+            tlam,
+            trho,
+            tqtot,
+            norms,
+            gas_norms,
+            cond_norms,
+            budget_norms,
+            comp_norms,
+        ) = jax.vmap(trial)(bounded_alpha_grid)
         finite = jnp.isfinite(norms)
         accepted_mask = finite & (norms < initial_norm)
         any_accepted = jnp.any(accepted_mask)
         first_index = jnp.argmax(accepted_mask)
         best_index = jnp.argmin(jnp.where(finite, norms, jnp.inf))
-        selected = jnp.where(any_accepted, first_index, best_index)
-        return (
-            jnp.where(any_accepted, tq[selected], q),
-            jnp.where(any_accepted, tr[selected], r),
-            jnp.where(any_accepted, tlam[selected], lam),
-            jnp.where(any_accepted, trho[selected], rho),
-            jnp.where(any_accepted, tqtot[selected], qtot),
-            jnp.where(any_accepted, norms[selected], initial_norm),
+        component_improved = (
+            (gas_norms < initial_gas_norm)
+            | (cond_norms < initial_cond_norm)
+            | (comp_norms < initial_comp_norm)
+        )
+        budget_not_broken = budget_norms <= jnp.maximum(
+            1.25 * initial_budget_norm,
+            initial_budget_norm + jnp.asarray(1.0e-8, dtype=initial_budget_norm.dtype),
+        )
+        fallback_mask = (
+            finite
+            & component_improved
+            & budget_not_broken
+            & (
+                norms
+                <= 1.25
+                * jnp.maximum(initial_norm, jnp.asarray(1.0, dtype=initial_norm.dtype))
+            )
+        )
+        any_fallback = jnp.any(fallback_mask)
+        fallback_merit = jnp.maximum(
+            jnp.maximum(gas_norms, cond_norms),
+            comp_norms,
+        )
+        fallback_index = jnp.argmin(jnp.where(fallback_mask, fallback_merit, jnp.inf))
+        selected = jnp.where(
             any_accepted,
+            first_index,
+            jnp.where(any_fallback, fallback_index, best_index),
+        )
+        step_accepted = any_accepted | any_fallback
+        return (
+            jnp.where(step_accepted, tq[selected], q),
+            jnp.where(step_accepted, tr[selected], r),
+            jnp.where(step_accepted, tlam[selected], lam),
+            jnp.where(step_accepted, trho[selected], rho),
+            jnp.where(step_accepted, tqtot[selected], qtot),
+            jnp.where(step_accepted, norms[selected], initial_norm),
+            step_accepted,
             initial_norm,
         )
 
@@ -2241,7 +2324,7 @@ def _pdipm_activity_fixed_support_batch_core(
         initial_running = initial_residual > residual_crit
 
         def body(carry, _):
-            q, r, lam, rho, qtot, residual, still_running = carry
+            q, r, lam, rho, qtot, residual, residual_qtot_ref, still_running = carry
             (
                 next_q,
                 next_r,
@@ -2273,6 +2356,7 @@ def _pdipm_activity_fixed_support_batch_core(
                 jnp.where(apply_step, next_rho, rho),
                 jnp.where(apply_step, next_qtot, qtot),
                 jnp.where(still_running, next_residual, residual),
+                jnp.where(apply_step, qtot, residual_qtot_ref),
                 apply_step,
             ), (jnp.where(still_running, next_residual, residual), apply_step)
 
@@ -2283,6 +2367,7 @@ def _pdipm_activity_fixed_support_batch_core(
             rho0,
             qtot0,
             initial_residual,
+            qtot0,
             initial_running,
         )
         final, history = lax.scan(body, initial, xs=None, length=max_iter)
@@ -2292,10 +2377,11 @@ def _pdipm_activity_fixed_support_batch_core(
         final_residual = final[5]
         converged = final_residual <= residual_crit
         qf, rf, lamf, rhof, qtotf = final[0], final[1], final[2], final[3], final[4]
+        qtot_residual_reference = final[6]
         gas_stationarity_source_final = jnp.where(
             use_solver_epsilon_one,
             gas_source_init,
-            hgas + ln_pressure - qtotf,
+            hgas + ln_pressure - qtot_residual_reference,
         )
         log_activity_proxy_final = ac.T @ lamf - hcond
         jac_mask_final = log_activity_proxy_final > -0.1
@@ -2307,7 +2393,13 @@ def _pdipm_activity_fixed_support_batch_core(
         nf = jnp.exp(qf)
         mf = jnp.exp(rf)
         etaf = jnp.exp(rhof)
-        gas_component = qf + gas_stationarity_source_final - ag.T @ lamf
+        gas_component = (
+            qf
+            + gas_stationarity_source_final
+            + qtot_residual_reference
+            - qtotf
+            - ag.T @ lamf
+        )
         cond_component = hcond - ac.T @ lamf - etaf
         budget_component = ag @ nf + ac @ mf - target
         complementarity_component = rf + rhof - epsilon_vec
