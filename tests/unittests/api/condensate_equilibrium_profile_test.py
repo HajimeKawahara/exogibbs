@@ -409,6 +409,21 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         rtol=1.0e-10,
         atol=1.0e-12,
     )
+    assert set(many_arrays["step_diagnostics"]) == {
+        "accepted_iteration_count",
+        "fallback_accepted_iteration_count",
+        "initial_residual",
+        "normal_accepted_iteration_count",
+    }
+    for diagnostic in many_arrays["step_diagnostics"].values():
+        assert diagnostic.shape == (2, 2)
+    assert jnp.all(
+        many_arrays["step_diagnostics"]["accepted_iteration_count"]
+        == (
+            many_arrays["step_diagnostics"]["normal_accepted_iteration_count"]
+            + many_arrays["step_diagnostics"]["fallback_accepted_iteration_count"]
+        )
+    )
     assert jnp.allclose(many_arrays["gas_ln_n"][0], planned_arrays["gas_ln_n"])
     assert jnp.allclose(many_arrays["gas_ln_n"][1], planned_arrays["gas_ln_n"])
     assert jnp.allclose(

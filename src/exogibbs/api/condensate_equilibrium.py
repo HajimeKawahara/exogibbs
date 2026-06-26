@@ -6421,6 +6421,21 @@ def run_experimental_profile_fixed_support_batch_plan_many(
     converged = jnp.zeros((n_eval, plan.n_layers), dtype=bool)
     final_residual = jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64)
     n_iter = jnp.zeros((n_eval, plan.n_layers), dtype=jnp.int32)
+    step_diagnostics = {
+        "accepted_iteration_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "normal_accepted_iteration_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "fallback_accepted_iteration_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "initial_residual": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+    }
     residual_components = {
         "gas": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
         "condensate_stationarity": jnp.zeros(
@@ -6601,6 +6616,22 @@ def run_experimental_profile_fixed_support_batch_plan_many(
                     (n_eval, bucket_size),
                 )
             )
+        step_sources = {
+            "accepted_iteration_count": "accepted_iteration_count",
+            "normal_accepted_iteration_count": "normal_accepted_iteration_count",
+            "fallback_accepted_iteration_count": "fallback_accepted_iteration_count",
+            "initial_residual": "initial_residual",
+        }
+        for diagnostic_name, payload_name in step_sources.items():
+            diagnostic_dtype = step_diagnostics[diagnostic_name].dtype
+            step_diagnostics[diagnostic_name] = step_diagnostics[
+                diagnostic_name
+            ].at[:, layer_indices].set(
+                jnp.reshape(
+                    jnp.asarray(batch_payload[payload_name], dtype=diagnostic_dtype),
+                    (n_eval, bucket_size),
+                )
+            )
     gas_n = jnp.exp(gas_ln_n)
     gas_ntot = jnp.sum(gas_n, axis=2)
     return {
@@ -6612,6 +6643,7 @@ def run_experimental_profile_fixed_support_batch_plan_many(
         "converged": converged,
         "final_residual": final_residual,
         "residual_components": residual_components,
+        "step_diagnostics": step_diagnostics,
         "n_iter": n_iter,
     }
 

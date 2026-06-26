@@ -2250,6 +2250,8 @@ def _pdipm_activity_fixed_support_batch_core(
             jnp.where(step_accepted, tqtot[selected], qtot),
             jnp.where(step_accepted, norms[selected], initial_norm),
             step_accepted,
+            any_accepted,
+            any_fallback & (~any_accepted),
             initial_norm,
         )
 
@@ -2313,7 +2315,7 @@ def _pdipm_activity_fixed_support_batch_core(
         else:
             lam0 = lam0_gas
         residual_crit = residual_tolerance_multiplier * jnp.exp(solver_epsilon)
-        initial_residual = step(
+        initial_step = step(
             q0,
             r0,
             lam0,
@@ -2326,7 +2328,8 @@ def _pdipm_activity_fixed_support_batch_core(
             epsilon_vec,
             r_cap,
             use_solver_epsilon_one,
-        )[7]
+        )
+        initial_residual = initial_step[9]
         initial_running = initial_residual > residual_crit
 
         def body(carry, _):
@@ -2339,6 +2342,8 @@ def _pdipm_activity_fixed_support_batch_core(
                 next_qtot,
                 next_residual,
                 accepted,
+                normal_accepted,
+                fallback_accepted,
                 _initial_residual,
             ) = step(
                 q,
@@ -2364,7 +2369,12 @@ def _pdipm_activity_fixed_support_batch_core(
                 jnp.where(still_running, next_residual, residual),
                 jnp.where(still_running, qtot, residual_qtot_ref),
                 apply_step,
-            ), (jnp.where(still_running, next_residual, residual), apply_step)
+            ), (
+                jnp.where(still_running, next_residual, residual),
+                apply_step,
+                still_running & normal_accepted,
+                still_running & fallback_accepted,
+            )
 
         initial = (
             q0,
@@ -2378,7 +2388,11 @@ def _pdipm_activity_fixed_support_batch_core(
         )
         final, history = lax.scan(body, initial, xs=None, length=max_iter)
         accepted_history = history[1]
+        normal_accepted_history = history[2]
+        fallback_accepted_history = history[3]
         accepted_count = jnp.sum(accepted_history.astype(jnp.int32))
+        normal_accepted_count = jnp.sum(normal_accepted_history.astype(jnp.int32))
+        fallback_accepted_count = jnp.sum(fallback_accepted_history.astype(jnp.int32))
         n_iter = jnp.minimum(accepted_count + 1, jnp.asarray(max_iter, dtype=jnp.int32))
         final_residual = final[5]
         converged = final_residual <= residual_crit
@@ -2423,6 +2437,9 @@ def _pdipm_activity_fixed_support_batch_core(
             final_residual,
             residual_crit,
             accepted_count,
+            normal_accepted_count,
+            fallback_accepted_count,
+            initial_residual,
             l2(gas_component),
             l2(jnp.where(jac_mask_final, cond_component, 0.0)),
             l2(budget_component),
@@ -2529,6 +2546,9 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         final_residual,
         residual_crit,
         accepted_count,
+        normal_accepted_count,
+        fallback_accepted_count,
+        initial_residual,
         gas_residual_norm,
         condensate_stationarity_residual_norm,
         budget_residual_norm,
@@ -2591,6 +2611,9 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
                 "experimental": True,
                 "production_route_wiring": False,
                 "accepted_iteration_count": accepted_count,
+                "normal_accepted_iteration_count": normal_accepted_count,
+                "fallback_accepted_iteration_count": fallback_accepted_count,
+                "initial_residual": initial_residual,
                 "gas_residual_norm": gas_residual_norm,
                 "condensate_stationarity_residual_norm": condensate_stationarity_residual_norm,
                 "budget_residual_norm": budget_residual_norm,

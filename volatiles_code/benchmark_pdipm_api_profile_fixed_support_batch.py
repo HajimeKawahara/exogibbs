@@ -671,6 +671,11 @@ def main() -> None:
                 str(name): np.asarray(jax.device_get(values), dtype=np.float64)
                 for name, values in residual_components.items()
             }
+            step_diagnostics = experimental_last.get("step_diagnostics", {})
+            step_diagnostic_arrays = {
+                str(name): np.asarray(jax.device_get(values))
+                for name, values in step_diagnostics.items()
+            }
             converged_count = int(np.count_nonzero(converged))
             fast_path_layer_count = len(inputs) * int(args.element_inventory_batch_size)
             layer_indices = list(range(len(inputs)))
@@ -689,6 +694,14 @@ def main() -> None:
                                 name: float(values[eval_index, layer_index])
                                 for name, values in residual_component_arrays.items()
                             },
+                            "step_diagnostics": {
+                                name: (
+                                    float(values[eval_index, layer_index])
+                                    if np.issubdtype(values.dtype, np.floating)
+                                    else int(values[eval_index, layer_index])
+                                )
+                                for name, values in step_diagnostic_arrays.items()
+                            },
                             "n_iter": int(n_iter[eval_index, layer_index]),
                         }
                         for layer_index in layer_indices
@@ -703,6 +716,14 @@ def main() -> None:
                         "residual_components": {
                             name: float(values[layer_index])
                             for name, values in residual_component_arrays.items()
+                        },
+                        "step_diagnostics": {
+                            name: (
+                                float(values[layer_index])
+                                if np.issubdtype(values.dtype, np.floating)
+                                else int(values[layer_index])
+                            )
+                            for name, values in step_diagnostic_arrays.items()
                         },
                         "n_iter": int(n_iter[layer_index]),
                     }
