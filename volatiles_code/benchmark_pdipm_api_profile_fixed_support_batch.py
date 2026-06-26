@@ -156,6 +156,7 @@ def _activity_outer_profile_args(
     skipped = []
     support_sizes = []
     selected_routes = []
+    support_layers = []
     start = time.perf_counter()
     for layer_index, (temperature, pressure) in enumerate(
         zip(temperatures, pressures)
@@ -232,6 +233,62 @@ def _activity_outer_profile_args(
                 }
             )
             continue
+        gas_ln_n_array = np.asarray(jax.device_get(result.gas_ln_n), dtype=np.float64)
+        gas_ntot_value = float(np.asarray(jax.device_get(result.gas_ntot)))
+        support_amounts_array = np.asarray(support_amounts, dtype=np.float64)
+        layer_summary = {
+            "layer_index": int(layer_index),
+            "selected_route": str(result.selected_route),
+            "support_count": int(len(support_indices)),
+            "support_indices": [int(value) for value in support_indices],
+            "gas_ln_n_min": float(np.min(gas_ln_n_array)),
+            "gas_ln_n_max": float(np.max(gas_ln_n_array)),
+            "gas_ntot": gas_ntot_value,
+            "support_amount_min": float(np.min(support_amounts_array)),
+            "support_amount_max": float(np.max(support_amounts_array)),
+            "support_amount_sum": float(np.sum(support_amounts_array)),
+            "has_element_potential": element_potential is not None,
+            "has_rho": rho is not None,
+            "has_barrier_epsilon": barrier_epsilon is not None,
+            "has_gas_stationarity_source": gas_stationarity_source is not None,
+        }
+        if element_potential is not None:
+            element_potential_array = np.asarray(
+                jax.device_get(element_potential),
+                dtype=np.float64,
+            )
+            layer_summary.update(
+                {
+                    "element_potential_min": float(np.min(element_potential_array)),
+                    "element_potential_max": float(np.max(element_potential_array)),
+                }
+            )
+        if rho is not None:
+            rho_array = np.asarray(jax.device_get(rho), dtype=np.float64)
+            layer_summary.update(
+                {
+                    "rho_min": float(np.min(rho_array)),
+                    "rho_max": float(np.max(rho_array)),
+                }
+            )
+        if barrier_epsilon is not None:
+            layer_summary["barrier_epsilon"] = float(
+                np.asarray(jax.device_get(barrier_epsilon))
+            )
+        if gas_stationarity_source is not None:
+            gas_source_array = np.asarray(
+                jax.device_get(gas_stationarity_source),
+                dtype=np.float64,
+            )
+            layer_summary.update(
+                {
+                    "gas_stationarity_source_min": float(np.min(gas_source_array)),
+                    "gas_stationarity_source_max": float(np.max(gas_source_array)),
+                    "gas_stationarity_source_l2": float(
+                        np.linalg.norm(gas_source_array)
+                    ),
+                }
+            )
         layer_inits.append(
             CondensateEquilibriumInit(
                 gas_ln_n=jnp.asarray(result.gas_ln_n, dtype=jnp.float64),
@@ -248,6 +305,7 @@ def _activity_outer_profile_args(
         kept_pressures.append(float(pressure))
         support_sizes.append(len(support_indices))
         selected_routes.append(result.selected_route)
+        support_layers.append(layer_summary)
     if not layer_inits:
         raise ValueError(f"activity_outer produced no non-empty support for {family}")
     metadata = {
@@ -257,6 +315,7 @@ def _activity_outer_profile_args(
         "support_size_median": float(statistics.median(support_sizes)),
         "support_size_max": int(max(support_sizes)),
         "selected_routes": selected_routes,
+        "support_layers": support_layers,
     }
     return (
         {
