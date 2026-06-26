@@ -2037,6 +2037,7 @@ def _pdipm_activity_fixed_support_batch_core(
         epsilon_vec: jnp.ndarray,
         r_cap: jnp.ndarray,
         use_scalar_step: jnp.ndarray,
+        residual_crit: jnp.ndarray,
     ) -> tuple[jnp.ndarray, ...]:
         gas_stationarity_source = jnp.where(
             use_scalar_step,
@@ -2213,7 +2214,18 @@ def _pdipm_activity_fixed_support_batch_core(
             jnp.maximum(gas_norms, cond_norms),
             comp_norms,
         )
-        component_improved = fallback_merit < initial_stationarity_merit
+        stationarity_floor = jnp.asarray(1.0e-300, dtype=initial_norm.dtype)
+        target_ratio = jnp.minimum(
+            1.0,
+            jnp.maximum(residual_crit, stationarity_floor)
+            / jnp.maximum(initial_stationarity_merit, stationarity_floor),
+        )
+        required_stationarity_factor = jnp.exp(
+            jnp.log(target_ratio) / jnp.asarray(max_iter, dtype=initial_norm.dtype)
+        )
+        component_sufficiently_improved = (
+            fallback_merit <= required_stationarity_factor * initial_stationarity_merit
+        )
         budget_not_broken = budget_norms <= jnp.maximum(
             1.05 * initial_budget_norm,
             initial_budget_norm + jnp.asarray(1.0e-10, dtype=initial_budget_norm.dtype),
@@ -2230,7 +2242,7 @@ def _pdipm_activity_fixed_support_batch_core(
         )
         fallback_mask = (
             finite
-            & component_improved
+            & component_sufficiently_improved
             & budget_not_broken
             & combined_not_worse
         )
@@ -2328,6 +2340,7 @@ def _pdipm_activity_fixed_support_batch_core(
             epsilon_vec,
             r_cap,
             use_solver_epsilon_one,
+            residual_crit,
         )
         initial_residual = initial_step[9]
         initial_running = initial_residual > residual_crit
@@ -2358,6 +2371,7 @@ def _pdipm_activity_fixed_support_batch_core(
                     epsilon_vec,
                     r_cap,
                     use_solver_epsilon_one,
+                    residual_crit,
                 )
             apply_step = still_running & accepted
             return (
