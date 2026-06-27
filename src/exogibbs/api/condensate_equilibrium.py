@@ -6435,6 +6435,7 @@ def run_experimental_profile_fixed_support_batch_plan_many(
             dtype=jnp.int32,
         ),
         "initial_residual": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+        "lambda_selection_index": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.int32),
     }
     residual_components = {
         "gas": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
@@ -6621,6 +6622,7 @@ def run_experimental_profile_fixed_support_batch_plan_many(
             "normal_accepted_iteration_count": "normal_accepted_iteration_count",
             "fallback_accepted_iteration_count": "fallback_accepted_iteration_count",
             "initial_residual": "initial_residual",
+            "lambda_selection_index": "lambda_selection_index",
         }
         for diagnostic_name, payload_name in step_sources.items():
             diagnostic_dtype = step_diagnostics[diagnostic_name].dtype

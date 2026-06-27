@@ -524,6 +524,25 @@ def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core():
     assert payload["experimental"] is True
     assert payload["production_route_wiring"] is False
     assert payload["accepted_iteration_count"].shape == (2,)
+    best_result, best_extra = (
+        condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+            ln_nk_init=ln_nk_init,
+            ln_mk_init=ln_mk_init,
+            ln_ntot_init=ln_ntot_init,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            element_inventory_target=element_inventory_target,
+            hvector=hvector,
+            hvector_cond_active=hvector_cond_active,
+            ln_normalized_pressure=ln_normalized_pressure,
+            epsilon=-10.0,
+            max_iter=2,
+            lambda_initialization="best_residual",
+        )
+    )
+    best_payload = best_extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"]
+    assert best_result.diagnostics.final_residual.shape == (2,)
+    assert best_payload["lambda_selection_index"].shape == (2,)
 
 
 def test_pdipm_rgie_v11_profile_bucket_dispatcher_matches_layer_core():

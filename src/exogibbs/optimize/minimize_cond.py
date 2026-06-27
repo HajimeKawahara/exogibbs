@@ -2024,6 +2024,29 @@ def _pdipm_activity_fixed_support_batch_core(
         scale = jnp.max(jnp.abs(values), initial=jnp.asarray(0.0, dtype=values.dtype))
         return jnp.where(scale == 0.0, 0.0, scale * jnp.linalg.norm(values / scale))
 
+    def scaled_damped_lstsq(
+        matrix: jnp.ndarray,
+        rhs: jnp.ndarray,
+    ) -> jnp.ndarray:
+        column_scale = jnp.maximum(
+            jnp.linalg.norm(matrix, axis=0),
+            jnp.asarray(1.0e-300, dtype=matrix.dtype),
+        )
+        scaled_matrix = matrix / column_scale[None, :]
+        normal_matrix = scaled_matrix.T @ scaled_matrix
+        normal_rhs = scaled_matrix.T @ rhs
+        mean_diagonal = jnp.mean(jnp.diag(normal_matrix))
+        damping = jnp.maximum(
+            jnp.asarray(1.0e-12, dtype=matrix.dtype) * mean_diagonal,
+            jnp.asarray(1.0e-30, dtype=matrix.dtype),
+        )
+        solution_scaled = jnp.linalg.solve(
+            normal_matrix + damping * jnp.eye(normal_matrix.shape[0], dtype=matrix.dtype),
+            normal_rhs,
+        )
+        solution = solution_scaled / column_scale
+        return jnp.nan_to_num(solution, nan=0.0, posinf=0.0, neginf=0.0)
+
     def step(
         q: jnp.ndarray,
         r: jnp.ndarray,
@@ -2320,12 +2343,74 @@ def _pdipm_activity_fixed_support_batch_core(
             jnp.concatenate([q0 + gas_stationarity_source_init, hcond - eta0]),
             rcond=None,
         )[0]
+        lam0_gas_damped = scaled_damped_lstsq(
+            ag.T,
+            q0 + gas_stationarity_source_init,
+        )
+        lam0_joint_damped = scaled_damped_lstsq(
+            jnp.concatenate([ag.T, ac.T], axis=0),
+            jnp.concatenate([q0 + gas_stationarity_source_init, hcond - eta0]),
+        )
+
+        def initial_residual_for_lambda(lami: jnp.ndarray) -> jnp.ndarray:
+            ni = jnp.exp(q0)
+            mi = jnp.exp(r0)
+            etai = jnp.exp(rho0)
+            gas = q0 + gas_stationarity_source_init - ag.T @ lami
+            cond = hcond - ac.T @ lami - etai
+            budget = ag @ ni + ac @ mi - target
+            comp = r0 + rho0 - epsilon_vec
+            total_density = jnp.asarray(
+                [jnp.sum(ni) - jnp.exp(qtot0)],
+                dtype=q0.dtype,
+            )
+            log_activity_proxy = ac.T @ lami - hcond
+            jac_mask = log_activity_proxy > -0.1
+            jac_mask = jnp.where(
+                jnp.any(jac_mask),
+                jac_mask,
+                jnp.arange(r0.shape[0]) == jnp.argmax(log_activity_proxy),
+            )
+            return l2(
+                jnp.concatenate(
+                    [
+                        gas,
+                        jnp.where(jac_mask, cond, 0.0),
+                        budget,
+                        comp,
+                        total_density,
+                    ]
+                )
+            )
+
         if lambda_initialization == "provided":
             lam0 = lam_init
+            lambda_selection_index = jnp.asarray(0, dtype=jnp.int32)
+        elif lambda_initialization == "best_residual":
+            lambda_candidates = jnp.stack(
+                [
+                    lam_init,
+                    lam0_gas,
+                    lam0_joint,
+                    lam0_gas_damped,
+                    lam0_joint_damped,
+                ],
+                axis=0,
+            )
+            lambda_candidate_residuals = jax.vmap(initial_residual_for_lambda)(
+                lambda_candidates
+            )
+            lambda_selection_index = jnp.asarray(
+                jnp.argmin(lambda_candidate_residuals),
+                dtype=jnp.int32,
+            )
+            lam0 = lambda_candidates[lambda_selection_index]
         elif lambda_initialization == "gas_cond_lstsq":
             lam0 = lam0_joint
+            lambda_selection_index = jnp.asarray(2, dtype=jnp.int32)
         else:
             lam0 = lam0_gas
+            lambda_selection_index = jnp.asarray(1, dtype=jnp.int32)
         residual_crit = residual_tolerance_multiplier * jnp.exp(solver_epsilon)
         initial_step = step(
             q0,
@@ -2454,6 +2539,7 @@ def _pdipm_activity_fixed_support_batch_core(
             normal_accepted_count,
             fallback_accepted_count,
             initial_residual,
+            lambda_selection_index,
             l2(gas_component),
             l2(jnp.where(jac_mask_final, cond_component, 0.0)),
             l2(budget_component),
@@ -2563,6 +2649,7 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         normal_accepted_count,
         fallback_accepted_count,
         initial_residual,
+        lambda_selection_index,
         gas_residual_norm,
         condensate_stationarity_residual_norm,
         budget_residual_norm,
@@ -2628,6 +2715,7 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
                 "normal_accepted_iteration_count": normal_accepted_count,
                 "fallback_accepted_iteration_count": fallback_accepted_count,
                 "initial_residual": initial_residual,
+                "lambda_selection_index": lambda_selection_index,
                 "gas_residual_norm": gas_residual_norm,
                 "condensate_stationarity_residual_norm": condensate_stationarity_residual_norm,
                 "budget_residual_norm": budget_residual_norm,

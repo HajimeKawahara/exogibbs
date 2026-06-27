@@ -413,6 +413,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         "accepted_iteration_count",
         "fallback_accepted_iteration_count",
         "initial_residual",
+        "lambda_selection_index",
         "normal_accepted_iteration_count",
     }
     for diagnostic in many_arrays["step_diagnostics"].values():
