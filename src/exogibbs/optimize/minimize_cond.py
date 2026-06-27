@@ -2072,11 +2072,12 @@ def _pdipm_activity_fixed_support_batch_core(
         ln_pressure: jnp.ndarray,
         epsilon_vec: jnp.ndarray,
         r_cap: jnp.ndarray,
+        use_external_gas_source: jnp.ndarray,
         use_scalar_step: jnp.ndarray,
         residual_crit: jnp.ndarray,
     ) -> tuple[jnp.ndarray, ...]:
         gas_stationarity_source = jnp.where(
-            use_scalar_step,
+            use_external_gas_source,
             hgas_or_gas_stationarity_source,
             hgas_or_gas_stationarity_source + ln_pressure - qtot,
         )
@@ -2438,6 +2439,7 @@ def _pdipm_activity_fixed_support_batch_core(
             epsilon_vec,
             r_cap,
             use_solver_epsilon_one,
+            jnp.asarray(False),
             residual_crit,
         )
         initial_residual = initial_step[9]
@@ -2469,6 +2471,7 @@ def _pdipm_activity_fixed_support_batch_core(
                     epsilon_vec,
                     r_cap,
                     use_solver_epsilon_one,
+                    jnp.asarray(False),
                     residual_crit,
                 )
             apply_step = still_running & accepted

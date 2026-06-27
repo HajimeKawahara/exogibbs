@@ -5911,6 +5911,9 @@ def _run_experimental_profile_fixed_support_batch(
             )
     if len(layer_solver_results) != n_layers:
         return None
+    for batch_result, local_index in layer_solver_results.values():
+        if not bool(batch_result.diagnostics.converged[local_index]):
+            return None
 
     gas_ln_n_by_layer: dict[int, Array] = {}
     full_condensate_amounts_by_layer: dict[int, Array] = {}
@@ -6265,6 +6268,7 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
         "gas_ntot": gas_ntot_batch,
         "condensate_amounts": condensate_amounts_batch,
         "converged": converged_batch,
+        "fallback_required": ~converged_batch,
         "final_residual": final_residual_batch,
         "n_iter": n_iter_batch,
         "lambda_candidate_labels": (
@@ -6650,6 +6654,7 @@ def run_experimental_profile_fixed_support_batch_plan_many(
         "gas_ntot": gas_ntot,
         "condensate_amounts": condensate_amounts,
         "converged": converged,
+        "fallback_required": ~converged,
         "final_residual": final_residual,
         "residual_components": residual_components,
         "step_diagnostics": step_diagnostics,

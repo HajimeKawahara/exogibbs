@@ -717,6 +717,14 @@ def main() -> None:
         if args.prepared_plan:
             exp_diag = {}
             converged = np.asarray(jax.device_get(experimental_last["converged"]))
+            fallback_required = np.asarray(
+                jax.device_get(
+                    experimental_last.get(
+                        "fallback_required",
+                        ~experimental_last["converged"],
+                    )
+                )
+            )
             final_residual = np.asarray(
                 jax.device_get(experimental_last["final_residual"]),
                 dtype=np.float64,
@@ -736,6 +744,7 @@ def main() -> None:
                 for name, values in step_diagnostics.items()
             }
             converged_count = int(np.count_nonzero(converged))
+            fallback_required_count = int(np.count_nonzero(fallback_required))
             fast_path_layer_count = len(inputs) * int(args.element_inventory_batch_size)
             layer_indices = list(range(len(inputs)))
             if final_residual.ndim == 2:
@@ -746,6 +755,9 @@ def main() -> None:
                             "eval_index": int(eval_index),
                             "layer_index": int(layer_index),
                             "converged": bool(converged[eval_index, layer_index]),
+                            "fallback_required": bool(
+                                fallback_required[eval_index, layer_index]
+                            ),
                             "final_residual": float(
                                 final_residual[eval_index, layer_index]
                             ),
@@ -771,6 +783,7 @@ def main() -> None:
                     {
                         "layer_index": int(layer_index),
                         "converged": bool(converged[layer_index]),
+                        "fallback_required": bool(fallback_required[layer_index]),
                         "final_residual": float(final_residual[layer_index]),
                         "residual_components": {
                             name: float(values[layer_index])
@@ -810,6 +823,9 @@ def main() -> None:
         else:
             exp_diag = experimental_last.diagnostics or {}
             converged_count = sum(bool(layer.converged) for layer in experimental_last.layers)
+            fallback_required_count = sum(
+                not bool(layer.converged) for layer in experimental_last.layers
+            )
             fast_path_layer_count = sum(
                 layer.selected_route == "experimental_profile_fixed_support_batch"
                 or bool(
@@ -842,6 +858,7 @@ def main() -> None:
             "element_inventory_batch_size": int(args.element_inventory_batch_size),
             "element_inventory_batch_mode": str(args.element_inventory_batch_mode),
             "experimental_converged_count": converged_count,
+            "experimental_fallback_required_count": fallback_required_count,
             "experimental_fast_path_layer_count": fast_path_layer_count,
             "experimental_residual_summary": residual_summary,
             "experimental_per_layer": per_layer_summary,
@@ -869,6 +886,7 @@ def main() -> None:
                     "family": family,
                     "layers": len(inputs),
                     "experimental_converged_count": converged_count,
+                    "experimental_fallback_required_count": fallback_required_count,
                     "experimental_fast_path_layer_count": fast_path_layer_count,
                     "experimental_residual_summary": residual_summary,
                     "experimental_nonconverged_layers": None
@@ -898,6 +916,9 @@ def main() -> None:
     total_experimental = sum(row["experimental"]["warm_median_seconds"] for row in rows)
     total_layers = sum(row["layer_count"] for row in rows)
     total_converged = sum(row["experimental_converged_count"] for row in rows)
+    total_fallback_required = sum(
+        row["experimental_fallback_required_count"] for row in rows
+    )
     total_fast_path_layers = sum(
         row["experimental_fast_path_layer_count"] for row in rows
     )
@@ -943,9 +964,15 @@ def main() -> None:
             "layer_count": total_layers,
             "evaluation_count": total_layers * int(args.element_inventory_batch_size),
             "experimental_converged_count": total_converged,
+            "experimental_fallback_required_count": total_fallback_required,
             "experimental_converged_fraction": None
             if total_layers == 0
             else total_converged
+            / (total_layers * int(args.element_inventory_batch_size)),
+            "experimental_fallback_free_fraction": None
+            if total_layers == 0
+            else 1.0
+            - total_fallback_required
             / (total_layers * int(args.element_inventory_batch_size)),
             "experimental_fast_path_layer_count": total_fast_path_layers,
             "total_experimental_warm_median_seconds": total_experimental,

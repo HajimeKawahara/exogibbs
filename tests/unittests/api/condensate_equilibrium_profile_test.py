@@ -342,6 +342,11 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     )
     assert planned_arrays["gas_ln_n"].shape == (2, 2)
     assert planned_arrays["condensate_amounts"].shape == (2, 2)
+    assert planned_arrays["fallback_required"].shape == (2,)
+    assert jnp.array_equal(
+        planned_arrays["fallback_required"],
+        ~planned_arrays["converged"],
+    )
     assert jnp.allclose(
         planned_arrays["gas_ln_n"],
         fast_result.batched_arrays["gas_ln_n"],
@@ -387,6 +392,11 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
 
     assert many_arrays["gas_ln_n"].shape == (2, 2, 2)
     assert many_arrays["condensate_amounts"].shape == (2, 2, 2)
+    assert many_arrays["fallback_required"].shape == (2, 2)
+    assert jnp.array_equal(
+        many_arrays["fallback_required"],
+        ~many_arrays["converged"],
+    )
     assert set(many_arrays["residual_components"]) == {
         "budget",
         "complementarity",
