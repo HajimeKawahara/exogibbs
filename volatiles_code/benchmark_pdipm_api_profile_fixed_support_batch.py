@@ -827,6 +827,15 @@ def main() -> None:
             "support_metadata": support_metadata,
             "rho_initialization": str(args.rho_initialization),
             "lambda_initialization": str(args.lambda_initialization),
+            "lambda_candidate_labels": tuple(
+                str(value)
+                for value in experimental_last.get(
+                    "lambda_candidate_labels",
+                    condopt.FIXED_SUPPORT_BATCH_LAMBDA_CANDIDATE_LABELS,
+                )
+            )
+            if args.prepared_plan
+            else None,
             "residual_tolerance_multiplier": float(
                 args.residual_tolerance_multiplier
             ),

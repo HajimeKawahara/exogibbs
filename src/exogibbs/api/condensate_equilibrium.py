@@ -6267,6 +6267,13 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
         "converged": converged_batch,
         "final_residual": final_residual_batch,
         "n_iter": n_iter_batch,
+        "lambda_candidate_labels": (
+            "provided",
+            "gas_lstsq",
+            "gas_cond_lstsq",
+            "damped_gas_lstsq",
+            "damped_gas_cond_lstsq",
+        ),
     }
 
 
@@ -6647,6 +6654,13 @@ def run_experimental_profile_fixed_support_batch_plan_many(
         "residual_components": residual_components,
         "step_diagnostics": step_diagnostics,
         "n_iter": n_iter,
+        "lambda_candidate_labels": (
+            "provided",
+            "gas_lstsq",
+            "gas_cond_lstsq",
+            "damped_gas_lstsq",
+            "damped_gas_cond_lstsq",
+        ),
     }
 
 
