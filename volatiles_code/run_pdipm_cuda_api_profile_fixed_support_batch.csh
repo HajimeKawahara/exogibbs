@@ -32,6 +32,7 @@ set support_source = ""
 set rho_initialization = ""
 set lambda_initialization = ""
 set residual_tolerance_multiplier = ""
+set support_candidate_mode = ""
 set label = "default"
 
 if ( "$mode" == "quick" ) then
@@ -381,6 +382,50 @@ if ( "$mode" == "a100_broad100_bmany" ) then
     set label = "a100_broad100_bmany${custom_batch_size}"
 endif
 
+if ( "$mode" == "a100_broad100_brepeat_candidates" ) then
+    if ( "$custom_batch_size" == "" ) then
+        echo "usage: $0 a100_broad100_brepeat_candidates N_EVAL"
+        exit 2
+    endif
+    set iterations = 100
+    set warmup = 0
+    set repeat = 2
+    set baseline = "--skip-baseline"
+    set budget_gate = "--disable-budget-gate"
+    set block_output = "--block-output batched"
+    set prepared_plan = "--prepared-plan"
+    set element_inventory_batch_size = "--element-inventory-batch-size $custom_batch_size"
+    set element_inventory_batch_mode = "--element-inventory-batch-mode repeat"
+    set support_source = "--support-source activity_outer"
+    set rho_initialization = "--rho-initialization complementarity"
+    set lambda_initialization = "--lambda-initialization best_residual"
+    set residual_tolerance_multiplier = "--residual-tolerance-multiplier 1.0e9"
+    set support_candidate_mode = "--support-candidate-mode current_prune_neighbor"
+    set label = "a100_broad100_brepeat${custom_batch_size}_candidates"
+endif
+
+if ( "$mode" == "a100_broad100_bmany_candidates" ) then
+    if ( "$custom_batch_size" == "" ) then
+        echo "usage: $0 a100_broad100_bmany_candidates N_EVAL"
+        exit 2
+    endif
+    set iterations = 100
+    set warmup = 0
+    set repeat = 2
+    set baseline = "--skip-baseline"
+    set budget_gate = "--disable-budget-gate"
+    set block_output = "--block-output batched"
+    set prepared_plan = "--prepared-plan"
+    set element_inventory_scale = "--element-inventory-scale 1.001"
+    set element_inventory_batch_size = "--element-inventory-batch-size $custom_batch_size"
+    set support_source = "--support-source activity_outer"
+    set rho_initialization = "--rho-initialization complementarity"
+    set lambda_initialization = "--lambda-initialization best_residual"
+    set residual_tolerance_multiplier = "--residual-tolerance-multiplier 1.0e9"
+    set support_candidate_mode = "--support-candidate-mode current_prune_neighbor"
+    set label = "a100_broad100_bmany${custom_batch_size}_candidates"
+endif
+
 set output = "volatiles_artifacts/pdipm_api_profile_fixed_support_batch_cuda_${label}_${stamp}.json"
 
 python volatiles_code/benchmark_pdipm_api_profile_fixed_support_batch.py \
@@ -401,4 +446,5 @@ python volatiles_code/benchmark_pdipm_api_profile_fixed_support_batch.py \
     $rho_initialization \
     $lambda_initialization \
     $residual_tolerance_multiplier \
+    $support_candidate_mode \
     --output $output

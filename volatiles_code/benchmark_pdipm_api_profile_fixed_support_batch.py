@@ -347,6 +347,254 @@ def _profile_args(inputs: list[Any]) -> dict[str, Any]:
     }
 
 
+def _amount_map(init: CondensateEquilibriumInit) -> dict[int, float]:
+    if init.support_indices is None or init.support_amounts is None:
+        return {}
+    return {
+        int(index): float(amount)
+        for index, amount in zip(init.support_indices, init.support_amounts)
+    }
+
+
+def _make_candidate_init(
+    init: CondensateEquilibriumInit,
+    support_indices: tuple[int, ...],
+    support_amounts: tuple[float, ...],
+    *,
+    keep_activity_duals: bool,
+) -> CondensateEquilibriumInit:
+    return CondensateEquilibriumInit(
+        gas_ln_n=init.gas_ln_n,
+        gas_ntot=init.gas_ntot,
+        support_indices=support_indices,
+        support_amounts=support_amounts,
+        element_potential=init.element_potential,
+        rho=init.rho if keep_activity_duals else None,
+        barrier_epsilon=init.barrier_epsilon,
+        gas_stationarity_source=init.gas_stationarity_source,
+    )
+
+
+def _support_candidate_profile_args(
+    profile_args: Mapping[str, Any],
+    *,
+    mode: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if mode == "current":
+        n_layers = len(profile_args["init"])
+        return (
+            dict(profile_args),
+            {
+                "mode": "current",
+                "original_layer_count": int(n_layers),
+                "expanded_layer_count": int(n_layers),
+                "candidate_count_by_layer": [1 for _ in range(n_layers)],
+                "expanded_to_original_layer": [int(index) for index in range(n_layers)],
+                "candidate_labels": ["current" for _ in range(n_layers)],
+                "candidate_support_counts": [
+                    len(tuple(init.support_indices or ()))
+                    for init in profile_args["init"]
+                ],
+            },
+        )
+    if mode != "current_prune_neighbor":
+        raise ValueError(f"unknown support candidate mode: {mode}")
+
+    temperatures = list(np.asarray(profile_args["T"], dtype=np.float64))
+    pressures = list(np.asarray(profile_args["P"], dtype=np.float64))
+    inits = list(profile_args["init"])
+    expanded_temperatures: list[float] = []
+    expanded_pressures: list[float] = []
+    expanded_inits: list[CondensateEquilibriumInit] = []
+    expanded_to_original: list[int] = []
+    candidate_labels: list[str] = []
+    candidate_support_counts: list[int] = []
+    candidate_count_by_layer: list[int] = []
+
+    for layer_index, init in enumerate(inits):
+        base_support = tuple(int(index) for index in tuple(init.support_indices or ()))
+        base_amounts = tuple(float(amount) for amount in tuple(init.support_amounts or ()))
+        if not base_support or not base_amounts:
+            continue
+        variants: list[tuple[str, tuple[int, ...], tuple[float, ...], bool]] = [
+            ("current", base_support, base_amounts, True),
+        ]
+        amount_by_index = _amount_map(init)
+        max_amount = max(base_amounts)
+        for relative_floor in (1.0e-9, 1.0e-7, 1.0e-6, 1.0e-5, 1.0e-4, 1.0e-3):
+            prune_floor = max(1.0e-12, relative_floor * max_amount)
+            pruned = tuple(
+                index
+                for index, amount in zip(base_support, base_amounts)
+                if amount >= prune_floor
+            )
+            if pruned and pruned != base_support:
+                variants.append(
+                    (
+                        f"prune_amount_ge_{relative_floor:g}_max",
+                        pruned,
+                        tuple(amount_by_index[index] for index in pruned),
+                        False,
+                    )
+                )
+
+        neighbor_amounts: dict[int, float] = {}
+        for neighbor_index in (layer_index - 1, layer_index + 1):
+            if neighbor_index < 0 or neighbor_index >= len(inits):
+                continue
+            neighbor_amounts.update(_amount_map(inits[neighbor_index]))
+        union_support = tuple(sorted(set(base_support).union(neighbor_amounts)))
+        if union_support != base_support:
+            fallback_amount = max(min(base_amounts), 1.0e-30)
+            union_amounts = tuple(
+                amount_by_index.get(
+                    index,
+                    max(neighbor_amounts.get(index, fallback_amount), 1.0e-30),
+                )
+                for index in union_support
+            )
+            variants.append(("neighbor_union", union_support, union_amounts, False))
+
+        seen: set[tuple[int, ...]] = set()
+        kept_count = 0
+        for label, support, amounts, keep_duals in variants:
+            if support in seen:
+                continue
+            seen.add(support)
+            expanded_temperatures.append(float(temperatures[layer_index]))
+            expanded_pressures.append(float(pressures[layer_index]))
+            expanded_inits.append(
+                _make_candidate_init(
+                    init,
+                    support,
+                    amounts,
+                    keep_activity_duals=keep_duals,
+                )
+            )
+            expanded_to_original.append(int(layer_index))
+            candidate_labels.append(label)
+            candidate_support_counts.append(len(support))
+            kept_count += 1
+        candidate_count_by_layer.append(kept_count)
+
+    return (
+        {
+            "T": jnp.asarray(expanded_temperatures, dtype=jnp.float64),
+            "P": jnp.asarray(expanded_pressures, dtype=jnp.float64),
+            "b": profile_args["b"],
+            "init": tuple(expanded_inits),
+        },
+        {
+            "mode": mode,
+            "original_layer_count": len(inits),
+            "expanded_layer_count": len(expanded_inits),
+            "candidate_count_by_layer": candidate_count_by_layer,
+            "expanded_to_original_layer": expanded_to_original,
+            "candidate_labels": candidate_labels,
+            "candidate_support_counts": candidate_support_counts,
+        },
+    )
+
+
+def _select_support_candidate_outputs(
+    result: Mapping[str, Any],
+    candidate_metadata: Mapping[str, Any],
+) -> dict[str, Any]:
+    original_count = int(candidate_metadata["original_layer_count"])
+    expanded_to_original = np.asarray(
+        candidate_metadata["expanded_to_original_layer"],
+        dtype=np.int64,
+    )
+    labels = np.asarray(candidate_metadata["candidate_labels"], dtype=object)
+    support_counts = np.asarray(
+        candidate_metadata["candidate_support_counts"],
+        dtype=np.int64,
+    )
+    final_residual = np.asarray(jax.device_get(result["final_residual"]), dtype=np.float64)
+    converged = np.asarray(jax.device_get(result["converged"]), dtype=bool)
+    if final_residual.ndim == 1:
+        eval_count = 1
+        residual_view = final_residual[None, :]
+        converged_view = converged[None, :]
+    else:
+        eval_count = int(final_residual.shape[0])
+        residual_view = final_residual
+        converged_view = converged
+
+    best_expanded = np.zeros((eval_count, original_count), dtype=np.int64)
+    selected_labels = np.empty((eval_count, original_count), dtype=object)
+    selected_support_counts = np.zeros((eval_count, original_count), dtype=np.int64)
+    for eval_index in range(eval_count):
+        for original_index in range(original_count):
+            candidates = np.where(expanded_to_original == original_index)[0]
+            if candidates.size == 0:
+                raise ValueError("support candidate metadata has an empty layer")
+            candidate_converged = converged_view[eval_index, candidates]
+            candidate_residual = residual_view[eval_index, candidates]
+            score = np.where(candidate_converged, candidate_residual, np.inf)
+            if not np.isfinite(score).any():
+                score = np.where(np.isfinite(candidate_residual), candidate_residual, np.inf)
+            selected = int(candidates[int(np.argmin(score))])
+            best_expanded[eval_index, original_index] = selected
+            selected_labels[eval_index, original_index] = labels[selected]
+            selected_support_counts[eval_index, original_index] = support_counts[selected]
+
+    def gather_layer_array(value: Any) -> Any:
+        array = np.asarray(jax.device_get(value))
+        if array.ndim == 0:
+            return array
+        if final_residual.ndim == 1:
+            if array.shape[0] != expanded_to_original.shape[0]:
+                return array
+            return array[best_expanded[0]]
+        if array.shape[0] != eval_count or array.shape[1] != expanded_to_original.shape[0]:
+            return array
+        trailing = array.shape[2:]
+        gathered = np.empty((eval_count, original_count) + trailing, dtype=array.dtype)
+        for eval_index in range(eval_count):
+            gathered[eval_index] = array[eval_index, best_expanded[eval_index]]
+        return gathered
+
+    selected = {
+        key: gather_layer_array(value)
+        for key, value in result.items()
+        if key not in {"residual_components", "step_diagnostics"}
+    }
+    selected["residual_components"] = {
+        key: gather_layer_array(value)
+        for key, value in result.get("residual_components", {}).items()
+    }
+    selected["step_diagnostics"] = {
+        key: gather_layer_array(value)
+        for key, value in result.get("step_diagnostics", {}).items()
+    }
+    selected["support_candidate_selection"] = {
+        "selected_expanded_layer_index": (
+            best_expanded[0] if final_residual.ndim == 1 else best_expanded
+        ),
+        "selected_candidate_label": (
+            selected_labels[0].tolist()
+            if final_residual.ndim == 1
+            else selected_labels.tolist()
+        ),
+        "selected_support_count": (
+            selected_support_counts[0]
+            if final_residual.ndim == 1
+            else selected_support_counts
+        ),
+    }
+    return selected
+
+
+def _maybe_select_support_candidate_outputs(
+    result: Mapping[str, Any],
+    candidate_metadata: Mapping[str, Any],
+) -> Mapping[str, Any]:
+    if candidate_metadata.get("mode") == "current":
+        return result
+    return _select_support_candidate_outputs(result, candidate_metadata)
+
+
 def _run_profile(
     setup: Any,
     args: dict[str, Any],
@@ -532,6 +780,15 @@ def main() -> None:
             "across the batch or repeat the exact same b for saturation timing."
         ),
     )
+    parser.add_argument(
+        "--support-candidate-mode",
+        choices=("current", "current_prune_neighbor"),
+        default="current",
+        help=(
+            "When using --prepared-plan, optionally evaluate multiple support "
+            "candidates per original layer and select the best residual result."
+        ),
+    )
     parser.add_argument("--print-jax-devices", action="store_true")
     parser.add_argument(
         "--output",
@@ -577,6 +834,27 @@ def main() -> None:
             if not inputs:
                 continue
             profile_args = _profile_args(inputs)
+        execution_profile_args = profile_args
+        candidate_metadata = {
+            "mode": "current",
+            "original_layer_count": len(inputs),
+            "expanded_layer_count": len(inputs),
+            "candidate_count_by_layer": [1 for _ in inputs],
+            "expanded_to_original_layer": [int(index) for index in range(len(inputs))],
+            "candidate_labels": ["current" for _ in inputs],
+            "candidate_support_counts": [
+                len(tuple(init.support_indices or ()))
+                for init in profile_args["init"]
+            ],
+        }
+        if str(args.support_candidate_mode) != "current":
+            if not args.prepared_plan:
+                raise ValueError("--support-candidate-mode requires --prepared-plan")
+            execution_profile_args, candidate_metadata = _support_candidate_profile_args(
+                profile_args,
+                mode=str(args.support_candidate_mode),
+            )
+            support_metadata["support_candidate_metadata"] = candidate_metadata
         plan_prepare_seconds = None
         prepared_bucket_core_timing = None
         if args.prepared_plan:
@@ -590,11 +868,11 @@ def main() -> None:
             start = time.perf_counter()
             plan = prepare_experimental_profile_fixed_support_batch_plan(
                 setup,
-                np.asarray(profile_args["T"], dtype=np.float64),
-                np.asarray(profile_args["P"], dtype=np.float64),
-                profile_args["b"],
+                np.asarray(execution_profile_args["T"], dtype=np.float64),
+                np.asarray(execution_profile_args["P"], dtype=np.float64),
+                execution_profile_args["b"],
                 Pref=1.0,
-                init=profile_args["init"],
+                init=execution_profile_args["init"],
                 initializer=None,
                 support_indices=None,
                 support_amounts_init=None,
@@ -643,14 +921,17 @@ def main() -> None:
                     batched_targets = scales[:, None] * base_target
                 experimental_last, experimental_timing = _time(
                     lambda plan=plan, batched_targets=batched_targets: (
-                        run_experimental_profile_fixed_support_batch_plan_many(
-                            plan,
-                            batched_targets,
-                            rho_initialization=str(args.rho_initialization),
-                            lambda_initialization=str(args.lambda_initialization),
-                            residual_tolerance_multiplier=float(
-                                args.residual_tolerance_multiplier
+                        _maybe_select_support_candidate_outputs(
+                            run_experimental_profile_fixed_support_batch_plan_many(
+                                plan,
+                                batched_targets,
+                                rho_initialization=str(args.rho_initialization),
+                                lambda_initialization=str(args.lambda_initialization),
+                                residual_tolerance_multiplier=float(
+                                    args.residual_tolerance_multiplier
+                                ),
                             ),
+                            candidate_metadata,
                         )
                     ),
                     warmup=int(args.warmup),
@@ -660,19 +941,22 @@ def main() -> None:
             else:
                 experimental_last, experimental_timing = _time(
                     lambda plan=plan, profile_args=profile_args: (
-                        run_experimental_profile_fixed_support_batch_plan(
-                            plan,
-                            element_inventory_target=(
-                                None
-                                if args.element_inventory_scale is None
-                                else profile_args["b"]
-                                * float(args.element_inventory_scale)
+                        _maybe_select_support_candidate_outputs(
+                            run_experimental_profile_fixed_support_batch_plan(
+                                plan,
+                                element_inventory_target=(
+                                    None
+                                    if args.element_inventory_scale is None
+                                    else profile_args["b"]
+                                    * float(args.element_inventory_scale)
+                                ),
+                                rho_initialization=str(args.rho_initialization),
+                                lambda_initialization=str(args.lambda_initialization),
+                                residual_tolerance_multiplier=float(
+                                    args.residual_tolerance_multiplier
+                                ),
                             ),
-                            rho_initialization=str(args.rho_initialization),
-                            lambda_initialization=str(args.lambda_initialization),
-                            residual_tolerance_multiplier=float(
-                                args.residual_tolerance_multiplier
-                            ),
+                            candidate_metadata,
                         )
                     ),
                     warmup=int(args.warmup),
@@ -743,6 +1027,21 @@ def main() -> None:
                 str(name): np.asarray(jax.device_get(values))
                 for name, values in step_diagnostics.items()
             }
+            support_candidate_selection = experimental_last.get(
+                "support_candidate_selection",
+                {},
+            )
+            selected_candidate_labels = support_candidate_selection.get(
+                "selected_candidate_label"
+            )
+            selected_support_counts = support_candidate_selection.get(
+                "selected_support_count"
+            )
+            if selected_support_counts is not None:
+                selected_support_counts = np.asarray(
+                    jax.device_get(selected_support_counts),
+                    dtype=np.int64,
+                )
             converged_count = int(np.count_nonzero(converged))
             fallback_required_count = int(np.count_nonzero(fallback_required))
             fast_path_layer_count = len(inputs) * int(args.element_inventory_batch_size)
@@ -758,6 +1057,14 @@ def main() -> None:
                             "fallback_required": bool(
                                 fallback_required[eval_index, layer_index]
                             ),
+                            "selected_support_candidate": None
+                            if selected_candidate_labels is None
+                            else str(
+                                selected_candidate_labels[eval_index][layer_index]
+                            ),
+                            "selected_support_count": None
+                            if selected_support_counts is None
+                            else int(selected_support_counts[eval_index, layer_index]),
                             "final_residual": float(
                                 final_residual[eval_index, layer_index]
                             ),
@@ -784,6 +1091,12 @@ def main() -> None:
                         "layer_index": int(layer_index),
                         "converged": bool(converged[layer_index]),
                         "fallback_required": bool(fallback_required[layer_index]),
+                        "selected_support_candidate": None
+                        if selected_candidate_labels is None
+                        else str(selected_candidate_labels[layer_index]),
+                        "selected_support_count": None
+                        if selected_support_counts is None
+                        else int(selected_support_counts[layer_index]),
                         "final_residual": float(final_residual[layer_index]),
                         "residual_components": {
                             name: float(values[layer_index])
@@ -841,6 +1154,10 @@ def main() -> None:
             "family": family,
             "layer_count": len(inputs),
             "support_metadata": support_metadata,
+            "support_candidate_metadata": candidate_metadata,
+            "support_candidate_expanded_layer_count": int(
+                candidate_metadata["expanded_layer_count"]
+            ),
             "rho_initialization": str(args.rho_initialization),
             "lambda_initialization": str(args.lambda_initialization),
             "lambda_candidate_labels": tuple(
@@ -888,6 +1205,9 @@ def main() -> None:
                     "experimental_converged_count": converged_count,
                     "experimental_fallback_required_count": fallback_required_count,
                     "experimental_fast_path_layer_count": fast_path_layer_count,
+                    "support_candidate_expanded_layer_count": int(
+                        candidate_metadata["expanded_layer_count"]
+                    ),
                     "experimental_residual_summary": residual_summary,
                     "experimental_nonconverged_layers": None
                     if per_layer_summary is None
@@ -921,6 +1241,9 @@ def main() -> None:
     )
     total_fast_path_layers = sum(
         row["experimental_fast_path_layer_count"] for row in rows
+    )
+    total_candidate_expanded_layers = sum(
+        row["support_candidate_expanded_layer_count"] for row in rows
     )
     total_plan_prepare = (
         None
@@ -957,6 +1280,7 @@ def main() -> None:
         "element_inventory_scale": args.element_inventory_scale,
         "element_inventory_batch_size": int(args.element_inventory_batch_size),
         "element_inventory_batch_mode": str(args.element_inventory_batch_mode),
+        "support_candidate_mode": str(args.support_candidate_mode),
         "residual_tolerance_multiplier": float(args.residual_tolerance_multiplier),
         "skipped_layers": skipped,
         "summary": {
@@ -975,6 +1299,11 @@ def main() -> None:
             - total_fallback_required
             / (total_layers * int(args.element_inventory_batch_size)),
             "experimental_fast_path_layer_count": total_fast_path_layers,
+            "support_candidate_expanded_layer_count": total_candidate_expanded_layers,
+            "support_candidate_evaluation_count": (
+                total_candidate_expanded_layers
+                * int(args.element_inventory_batch_size)
+            ),
             "total_experimental_warm_median_seconds": total_experimental,
             "experimental_warm_median_seconds_per_layer": None
             if total_layers == 0
