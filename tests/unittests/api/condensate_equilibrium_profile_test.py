@@ -441,6 +441,100 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         layer_many_arrays["condensate_amounts"][0],
         planned_arrays["condensate_amounts"],
     )
+    direct_rescue_base_arrays = condmod.run_experimental_profile_fixed_support_batch_plan(
+        plan,
+        element_inventory_target=jnp.asarray(
+            [[1.0, 1.0], [1.0, 1.0]],
+            dtype=jnp.float64,
+        ),
+        rho_initialization="complementarity",
+        lambda_initialization="best_residual",
+        residual_tolerance_multiplier=1.0e9,
+    )
+    direct_many_rescue_base_arrays = (
+        condmod.run_experimental_profile_fixed_support_batch_plan_many(
+            plan,
+            jnp.asarray(
+                [
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                ],
+                dtype=jnp.float64,
+            ),
+            rho_initialization="complementarity",
+            lambda_initialization="best_residual",
+            residual_tolerance_multiplier=1.0e9,
+        )
+    )
+    rescue_arrays = (
+        condmod.run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
+            plan,
+            element_inventory_target=jnp.asarray(
+                [[1.0, 1.0], [1.0, 1.0]],
+                dtype=jnp.float64,
+            ),
+        )
+    )
+    many_rescue_arrays = (
+        condmod.run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue(
+            plan,
+            jnp.asarray(
+                [
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                ],
+                dtype=jnp.float64,
+            ),
+        )
+    )
+    assert rescue_arrays["fallback_required"].shape == (2,)
+    assert rescue_arrays["fallback_rescue"]["mode"] == "none"
+    assert rescue_arrays["fallback_rescue"]["expanded_layer_count"] == 0
+    assert rescue_arrays["fallback_rescue"]["replaced_count"] == 0
+    assert jnp.allclose(
+        rescue_arrays["gas_ln_n"],
+        direct_rescue_base_arrays["gas_ln_n"],
+    )
+    assert many_rescue_arrays["fallback_required"].shape == (2, 2)
+    assert many_rescue_arrays["fallback_rescue"]["mode"] == "none"
+    assert many_rescue_arrays["fallback_rescue"]["expanded_layer_count"] == 0
+    assert jnp.allclose(
+        many_rescue_arrays["gas_ln_n"],
+        direct_many_rescue_base_arrays["gas_ln_n"],
+    )
+
+    prune_init = tuple(
+        CondensateEquilibriumInit(
+            gas_ln_n=jnp.log(jnp.asarray([0.8, 0.8], dtype=jnp.float64)),
+            gas_ntot=jnp.asarray(1.6, dtype=jnp.float64),
+            support_indices=(0, 1),
+            support_amounts=(0.2, 1.0e-4),
+        )
+        for _ in range(2)
+    )
+    prune_plan = condmod.prepare_experimental_profile_fixed_support_batch_plan(
+        setup,
+        jnp.asarray([1000.0, 1100.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        init=prune_init,
+        options=CondensateEquilibriumOptions(max_inner_iterations=8),
+    )
+    rescue_plan, rescue_metadata = (
+        condmod._prepare_experimental_profile_fixed_support_prune_rescue_plan(
+            prune_plan,
+            (0,),
+            prune_relative_floors=(1.0e-5, 1.0e-3),
+        )
+    )
+    assert rescue_plan is not None
+    assert rescue_plan.n_layers == 2
+    assert rescue_metadata["expanded_to_original_layer"] == (0, 0)
+    assert rescue_metadata["candidate_labels"] == (
+        "current",
+        "prune_amount_ge_0.001_max",
+    )
+    assert rescue_metadata["candidate_support_counts"] == (2, 1)
     with pytest.raises(ValueError, match="element_inventory_targets"):
         condmod.run_experimental_profile_fixed_support_batch_plan_many(
             plan,

@@ -54,7 +54,9 @@ from exogibbs.api.condensate_equilibrium import (  # noqa: E402
     condensate_equilibrium_profile,
     prepare_experimental_profile_fixed_support_batch_plan,
     run_experimental_profile_fixed_support_batch_plan,
+    run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue,
     run_experimental_profile_fixed_support_batch_plan_many,
+    run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue,
 )
 from exogibbs.optimize import minimize_cond as condopt  # noqa: E402
 from exogibbs.condensates.curated_profiles import FRESH_CURATED_PROFILES  # noqa: E402
@@ -1010,6 +1012,7 @@ def main() -> None:
             "current",
             "current_prune_neighbor",
             "fallback_rescue_prune_neighbor",
+            "api_fallback_rescue_prune",
         ),
         default="current",
         help=(
@@ -1105,7 +1108,10 @@ def main() -> None:
                 include_neighbor_union=include_support_candidate_neighbor_union,
             )
             support_metadata["support_candidate_metadata"] = candidate_metadata
-        elif support_candidate_mode == "fallback_rescue_prune_neighbor":
+        elif support_candidate_mode in (
+            "fallback_rescue_prune_neighbor",
+            "api_fallback_rescue_prune",
+        ):
             if not args.prepared_plan:
                 raise ValueError("--support-candidate-mode requires --prepared-plan")
         plan_prepare_seconds = None
@@ -1179,7 +1185,18 @@ def main() -> None:
                     batched_targets = scales[:, None] * base_target
                 experimental_last, experimental_timing = _time(
                     lambda plan=plan, batched_targets=batched_targets: (
-                        _maybe_select_support_candidate_outputs(
+                        run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue(
+                            plan,
+                            batched_targets,
+                            rho_initialization=str(args.rho_initialization),
+                            lambda_initialization=str(args.lambda_initialization),
+                            residual_tolerance_multiplier=float(
+                                args.residual_tolerance_multiplier
+                            ),
+                            prune_relative_floors=support_candidate_prune_floors,
+                        )
+                        if support_candidate_mode == "api_fallback_rescue_prune"
+                        else _maybe_select_support_candidate_outputs(
                             run_experimental_profile_fixed_support_batch_plan_many(
                                 plan,
                                 batched_targets,
@@ -1275,7 +1292,23 @@ def main() -> None:
             else:
                 experimental_last, experimental_timing = _time(
                     lambda plan=plan, profile_args=profile_args: (
-                        _maybe_select_support_candidate_outputs(
+                        run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
+                            plan,
+                            element_inventory_target=(
+                                None
+                                if args.element_inventory_scale is None
+                                else profile_args["b"]
+                                * float(args.element_inventory_scale)
+                            ),
+                            rho_initialization=str(args.rho_initialization),
+                            lambda_initialization=str(args.lambda_initialization),
+                            residual_tolerance_multiplier=float(
+                                args.residual_tolerance_multiplier
+                            ),
+                            prune_relative_floors=support_candidate_prune_floors,
+                        )
+                        if support_candidate_mode == "api_fallback_rescue_prune"
+                        else _maybe_select_support_candidate_outputs(
                             run_experimental_profile_fixed_support_batch_plan(
                                 plan,
                                 element_inventory_target=(
@@ -1446,6 +1479,11 @@ def main() -> None:
                 "support_candidate_selection",
                 {},
             )
+            if not support_candidate_selection:
+                support_candidate_selection = experimental_last.get(
+                    "fallback_rescue",
+                    {},
+                )
             selected_candidate_labels = support_candidate_selection.get(
                 "selected_candidate_label"
             )
@@ -1575,11 +1613,22 @@ def main() -> None:
             )
             residual_summary = None
             per_layer_summary = None
-        rescue_candidate_expanded_layer_count = (
-            0
-            if rescue_candidate_metadata is None
-            else int(rescue_candidate_metadata["expanded_layer_count"])
+        api_fallback_rescue = (
+            experimental_last.get("fallback_rescue") if args.prepared_plan else None
         )
+        fallback_rescue_layer_indices_for_row = list(fallback_rescue_layer_indices)
+        rescue_candidate_expanded_layer_count = 0
+        if rescue_candidate_metadata is not None:
+            rescue_candidate_expanded_layer_count = int(
+                rescue_candidate_metadata["expanded_layer_count"]
+            )
+        elif api_fallback_rescue is not None:
+            rescue_candidate_expanded_layer_count = int(
+                api_fallback_rescue.get("expanded_layer_count", 0)
+            )
+            fallback_rescue_layer_indices_for_row = list(
+                api_fallback_rescue.get("fallback_layer_indices", ())
+            )
         total_executed_candidate_layer_count = (
             int(candidate_metadata["expanded_layer_count"])
             + rescue_candidate_expanded_layer_count
@@ -1589,10 +1638,11 @@ def main() -> None:
             "layer_count": len(inputs),
             "support_metadata": support_metadata,
             "support_candidate_metadata": candidate_metadata,
+            "api_fallback_rescue": api_fallback_rescue,
             "support_candidate_expanded_layer_count": int(
                 candidate_metadata["expanded_layer_count"]
             ),
-            "fallback_rescue_layer_indices": list(fallback_rescue_layer_indices),
+            "fallback_rescue_layer_indices": fallback_rescue_layer_indices_for_row,
             "fallback_rescue_candidate_metadata": rescue_candidate_metadata,
             "fallback_rescue_candidate_expanded_layer_count": (
                 rescue_candidate_expanded_layer_count
@@ -1650,8 +1700,8 @@ def main() -> None:
                     "support_candidate_expanded_layer_count": int(
                         candidate_metadata["expanded_layer_count"]
                     ),
-                    "fallback_rescue_layer_indices": list(
-                        fallback_rescue_layer_indices
+                    "fallback_rescue_layer_indices": (
+                        fallback_rescue_layer_indices_for_row
                     ),
                     "fallback_rescue_candidate_expanded_layer_count": (
                         rescue_candidate_expanded_layer_count

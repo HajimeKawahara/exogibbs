@@ -6281,6 +6281,347 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
     }
 
 
+def _fallback_layer_indices_from_fixed_support_arrays(
+    arrays: Mapping[str, Any],
+) -> tuple[int, ...]:
+    fallback_required = np.asarray(
+        jax.device_get(arrays.get("fallback_required", ~arrays["converged"])),
+        dtype=bool,
+    )
+    if fallback_required.ndim == 1:
+        indices = np.where(fallback_required)[0]
+    else:
+        indices = np.where(np.any(fallback_required, axis=0))[0]
+    return tuple(int(index) for index in indices.tolist())
+
+
+def _prepare_experimental_profile_fixed_support_prune_rescue_plan(
+    plan: _ExperimentalProfileFixedSupportBatchPlan,
+    fallback_layer_indices: Sequence[int],
+    *,
+    prune_relative_floors: Sequence[float],
+) -> tuple[_ExperimentalProfileFixedSupportBatchPlan | None, Mapping[str, Any]]:
+    fallback_set = {int(index) for index in fallback_layer_indices}
+    floors = tuple(sorted({float(value) for value in prune_relative_floors}))
+    if any(not math.isfinite(value) or value <= 0.0 for value in floors):
+        raise ValueError("prune_relative_floors must contain positive finite values.")
+    if not fallback_set:
+        return None, {
+            "schema": "exogibbs_experimental_profile_fixed_support_prune_rescue_v1",
+            "mode": "none",
+            "fallback_layer_indices": (),
+            "expanded_to_original_layer": (),
+            "candidate_labels": (),
+            "candidate_support_counts": (),
+            "expanded_layer_count": 0,
+            "prune_relative_floors": floors,
+        }
+
+    from exogibbs.optimize.minimize_cond import _PDIPMActivityFixedSupportBucket
+
+    candidates_by_key: dict[
+        tuple[tuple[int, ...], bool],
+        list[dict[str, Any]],
+    ] = {}
+    expanded_to_original: list[int] = []
+    candidate_labels: list[str] = []
+    candidate_support_counts: list[int] = []
+
+    for bucket in plan.buckets:
+        original_support = tuple(int(index) for index in bucket.support_indices)
+        support_position = {
+            int(index): local_index
+            for local_index, index in enumerate(original_support)
+        }
+        for local_index, original_layer_index in enumerate(bucket.layer_indices):
+            original_layer_index = int(original_layer_index)
+            if original_layer_index not in fallback_set:
+                continue
+            ln_mk = jnp.asarray(bucket.ln_mk_init[local_index], dtype=jnp.float64)
+            amounts = np.asarray(jax.device_get(jnp.exp(ln_mk)), dtype=np.float64)
+            if amounts.size == 0:
+                continue
+            variants: list[tuple[str, tuple[int, ...], bool]] = [
+                ("current", original_support, True),
+            ]
+            max_amount = float(np.max(amounts))
+            for relative_floor in floors:
+                threshold = max(1.0e-12, float(relative_floor) * max_amount)
+                pruned = tuple(
+                    support_index
+                    for support_index, amount in zip(original_support, amounts)
+                    if float(amount) >= threshold
+                )
+                if pruned and pruned != original_support:
+                    variants.append(
+                        (
+                            f"prune_amount_ge_{relative_floor:g}_max",
+                            pruned,
+                            False,
+                        )
+                    )
+
+            seen_supports: set[tuple[int, ...]] = set()
+            for label, support, keep_rho in variants:
+                if support in seen_supports:
+                    continue
+                seen_supports.add(support)
+                positions = tuple(support_position[index] for index in support)
+                candidate_index = len(expanded_to_original)
+                expanded_to_original.append(original_layer_index)
+                candidate_labels.append(label)
+                candidate_support_counts.append(len(support))
+                key = (support, keep_rho and bucket.rho_init is not None)
+                candidates_by_key.setdefault(key, []).append(
+                    {
+                        "candidate_index": candidate_index,
+                        "source_bucket": bucket,
+                        "source_local_index": int(local_index),
+                        "positions": positions,
+                    }
+                )
+
+    rescue_buckets = []
+    for (support, keep_rho), entries in candidates_by_key.items():
+        first = entries[0]
+        source_bucket = first["source_bucket"]
+        positions = first["positions"]
+        position_array = jnp.asarray(positions, dtype=jnp.int32)
+        layer_indices = tuple(int(entry["candidate_index"]) for entry in entries)
+        source_local_indices = tuple(int(entry["source_local_index"]) for entry in entries)
+        source_local_array = jnp.asarray(source_local_indices, dtype=jnp.int32)
+        rho_init = None
+        if keep_rho and source_bucket.rho_init is not None:
+            rho_init = source_bucket.rho_init[source_local_array][:, position_array]
+        rescue_buckets.append(
+            _PDIPMActivityFixedSupportBucket(
+                support_indices=support,
+                layer_indices=layer_indices,
+                formula_matrix_cond_active=source_bucket.formula_matrix_cond_active[
+                    :,
+                    position_array,
+                ],
+                ln_nk_init=source_bucket.ln_nk_init[source_local_array],
+                ln_mk_init=source_bucket.ln_mk_init[source_local_array][
+                    :,
+                    position_array,
+                ],
+                ln_ntot_init=source_bucket.ln_ntot_init[source_local_array],
+                element_potential_init=None
+                if source_bucket.element_potential_init is None
+                else source_bucket.element_potential_init[source_local_array],
+                rho_init=rho_init,
+                barrier_epsilon_init=None
+                if source_bucket.barrier_epsilon_init is None
+                else source_bucket.barrier_epsilon_init[source_local_array],
+                gas_stationarity_source_init=None
+                if source_bucket.gas_stationarity_source_init is None
+                else source_bucket.gas_stationarity_source_init[source_local_array],
+                element_inventory_target=source_bucket.element_inventory_target[
+                    source_local_array
+                ],
+                hvector=source_bucket.hvector[source_local_array],
+                hvector_cond_active=source_bucket.hvector_cond_active[
+                    source_local_array
+                ][:, position_array],
+                ln_normalized_pressure=source_bucket.ln_normalized_pressure[
+                    source_local_array
+                ],
+            )
+        )
+
+    metadata = {
+        "schema": "exogibbs_experimental_profile_fixed_support_prune_rescue_v1",
+        "mode": "prune",
+        "fallback_layer_indices": tuple(sorted(fallback_set)),
+        "expanded_to_original_layer": tuple(expanded_to_original),
+        "candidate_labels": tuple(candidate_labels),
+        "candidate_support_counts": tuple(candidate_support_counts),
+        "expanded_layer_count": len(expanded_to_original),
+        "prune_relative_floors": floors,
+    }
+    if not rescue_buckets:
+        return None, metadata
+    return (
+        _ExperimentalProfileFixedSupportBatchPlan(
+            setup=plan.setup,
+            buckets=tuple(rescue_buckets),
+            formula_matrix=plan.formula_matrix,
+            max_iter=plan.max_iter,
+            n_layers=len(expanded_to_original),
+            condensate_count=plan.condensate_count,
+            bucket_layer_index_arrays=tuple(
+                jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
+                for bucket in rescue_buckets
+            ),
+        ),
+        metadata,
+    )
+
+
+def _merge_fixed_support_prune_rescue_arrays(
+    base_arrays: Mapping[str, Any],
+    rescue_arrays: Mapping[str, Any],
+    rescue_metadata: Mapping[str, Any],
+) -> dict[str, Any]:
+    expanded_to_original = tuple(
+        int(index) for index in rescue_metadata["expanded_to_original_layer"]
+    )
+    candidate_labels = tuple(str(label) for label in rescue_metadata["candidate_labels"])
+    candidate_support_counts = tuple(
+        int(value) for value in rescue_metadata["candidate_support_counts"]
+    )
+    base_residual = np.asarray(
+        jax.device_get(base_arrays["final_residual"]),
+        dtype=np.float64,
+    )
+    base_fallback = np.asarray(
+        jax.device_get(base_arrays.get("fallback_required", ~base_arrays["converged"])),
+        dtype=bool,
+    )
+    rescue_residual = np.asarray(
+        jax.device_get(rescue_arrays["final_residual"]),
+        dtype=np.float64,
+    )
+    rescue_converged = np.asarray(
+        jax.device_get(rescue_arrays["converged"]),
+        dtype=bool,
+    )
+    if base_residual.ndim == 1:
+        eval_count = 1
+        base_residual_view = base_residual[None, :]
+        base_fallback_view = base_fallback[None, :]
+        rescue_residual_view = rescue_residual[None, :]
+        rescue_converged_view = rescue_converged[None, :]
+    else:
+        eval_count = int(base_residual.shape[0])
+        base_residual_view = base_residual
+        base_fallback_view = base_fallback
+        rescue_residual_view = rescue_residual
+        rescue_converged_view = rescue_converged
+    n_layers = int(base_residual_view.shape[1])
+    replace_mask = np.zeros((eval_count, n_layers), dtype=bool)
+    selected_expanded = np.full((eval_count, n_layers), -1, dtype=np.int32)
+    selected_label = np.full((eval_count, n_layers), None, dtype=object)
+    selected_support_count = np.zeros((eval_count, n_layers), dtype=np.int32)
+
+    for original_index in sorted(set(expanded_to_original)):
+        candidates = np.asarray(
+            [
+                candidate_index
+                for candidate_index, mapped_index in enumerate(expanded_to_original)
+                if mapped_index == original_index
+            ],
+            dtype=np.int64,
+        )
+        for eval_index in range(eval_count):
+            candidate_converged = rescue_converged_view[eval_index, candidates]
+            candidate_residual = rescue_residual_view[eval_index, candidates]
+            score = np.where(candidate_converged, candidate_residual, np.inf)
+            if not np.isfinite(score).any():
+                score = np.where(np.isfinite(candidate_residual), candidate_residual, np.inf)
+            selected = int(candidates[int(np.argmin(score))])
+            rescue_value = rescue_residual_view[eval_index, selected]
+            base_value = base_residual_view[eval_index, original_index]
+            finite_improvement = np.isfinite(rescue_value) and (
+                (not np.isfinite(base_value)) or rescue_value < base_value
+            )
+            should_replace = bool(
+                base_fallback_view[eval_index, original_index]
+                and (
+                    rescue_converged_view[eval_index, selected]
+                    or finite_improvement
+                )
+            )
+            if should_replace:
+                replace_mask[eval_index, original_index] = True
+                selected_expanded[eval_index, original_index] = selected
+                selected_label[eval_index, original_index] = candidate_labels[selected]
+                selected_support_count[eval_index, original_index] = (
+                    candidate_support_counts[selected]
+                )
+
+    def merge_layer_array(base_value: Any, rescue_value: Any) -> Any:
+        base_array = jnp.asarray(base_value)
+        rescue_array = jnp.asarray(rescue_value)
+        if base_residual.ndim == 1:
+            if base_array.ndim == 0 or base_array.shape[0] != n_layers:
+                return base_value
+            merged = base_array
+            for eval_index in range(eval_count):
+                del eval_index
+                for original_index in range(n_layers):
+                    selected = int(selected_expanded[0, original_index])
+                    if selected >= 0:
+                        merged = merged.at[original_index].set(rescue_array[selected])
+            return merged
+        if (
+            base_array.ndim < 2
+            or base_array.shape[0] != eval_count
+            or base_array.shape[1] != n_layers
+        ):
+            return base_value
+        merged = base_array
+        for eval_index in range(eval_count):
+            for original_index in range(n_layers):
+                selected = int(selected_expanded[eval_index, original_index])
+                if selected >= 0:
+                    merged = merged.at[eval_index, original_index].set(
+                        rescue_array[eval_index, selected]
+                    )
+        return merged
+
+    merged = {
+        key: merge_layer_array(value, rescue_arrays[key])
+        for key, value in base_arrays.items()
+        if key in rescue_arrays
+        and key
+        not in {
+            "residual_components",
+            "step_diagnostics",
+            "lambda_candidate_labels",
+        }
+    }
+    merged["residual_components"] = {
+        key: merge_layer_array(value, rescue_arrays["residual_components"][key])
+        for key, value in base_arrays.get("residual_components", {}).items()
+        if key in rescue_arrays.get("residual_components", {})
+    }
+    merged["step_diagnostics"] = {
+        key: merge_layer_array(value, rescue_arrays["step_diagnostics"][key])
+        for key, value in base_arrays.get("step_diagnostics", {}).items()
+        if key in rescue_arrays.get("step_diagnostics", {})
+    }
+    merged["fallback_rescue"] = {
+        **dict(rescue_metadata),
+        "replaced_count": int(np.count_nonzero(replace_mask)),
+        "selected_expanded_layer_index": (
+            selected_expanded[0] if base_residual.ndim == 1 else selected_expanded
+        ),
+        "selected_candidate_label": (
+            selected_label[0].tolist()
+            if base_residual.ndim == 1
+            else selected_label.tolist()
+        ),
+        "selected_support_count": (
+            selected_support_count[0]
+            if base_residual.ndim == 1
+            else selected_support_count
+        ),
+        "replaced": replace_mask[0] if base_residual.ndim == 1 else replace_mask,
+    }
+    if "lambda_candidate_labels" in base_arrays:
+        merged["lambda_candidate_labels"] = base_arrays["lambda_candidate_labels"]
+    return merged
+
+
+def _attach_empty_fixed_support_rescue_metadata(
+    arrays: Mapping[str, Any],
+    metadata: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {**dict(arrays), "fallback_rescue": {**dict(metadata), "replaced_count": 0}}
+
+
 def prepare_experimental_profile_fixed_support_batch_plan(
     setup: CondensateChemicalSetup,
     T: Sequence[float] | Array,
@@ -6369,6 +6710,74 @@ def run_experimental_profile_fixed_support_batch_plan(
         rho_initialization=rho_initialization,
         lambda_initialization=lambda_initialization,
         residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+
+
+def run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    *,
+    element_inventory_target: Optional[Array] = None,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> Mapping[str, Any]:
+    """Run a prepared fixed-support plan, then prune-rescue fallback layers.
+
+    The first pass is identical to
+    :func:`run_experimental_profile_fixed_support_batch_plan`. Layers whose
+    ``fallback_required`` flag is true are re-run through a smaller prepared
+    plan containing ``current`` plus pruned-support candidates. The returned
+    arrays keep the original layer shape and include a ``fallback_rescue``
+    metadata entry describing any replacements.
+    """
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    base_arrays = run_experimental_profile_fixed_support_batch_plan(
+        plan,
+        element_inventory_target=element_inventory_target,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    fallback_layer_indices = _fallback_layer_indices_from_fixed_support_arrays(
+        base_arrays
+    )
+    rescue_plan, rescue_metadata = (
+        _prepare_experimental_profile_fixed_support_prune_rescue_plan(
+            plan,
+            fallback_layer_indices,
+            prune_relative_floors=prune_relative_floors,
+        )
+    )
+    if rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(
+            base_arrays,
+            rescue_metadata,
+        )
+    rescue_target = element_inventory_target
+    if element_inventory_target is not None:
+        target = jnp.asarray(element_inventory_target, dtype=jnp.float64)
+        if target.ndim == 2:
+            expanded_to_original = jnp.asarray(
+                rescue_metadata["expanded_to_original_layer"],
+                dtype=jnp.int32,
+            )
+            rescue_target = target[expanded_to_original, :]
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan(
+        rescue_plan,
+        element_inventory_target=rescue_target,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue_metadata,
     )
 
 
@@ -6669,6 +7078,65 @@ def run_experimental_profile_fixed_support_batch_plan_many(
     }
 
 
+def run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    element_inventory_targets: Array,
+    *,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> Mapping[str, Any]:
+    """Run many fixed-support evaluations with fallback-only prune rescue."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    targets = jnp.asarray(element_inventory_targets, dtype=jnp.float64)
+    base_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        plan,
+        targets,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    fallback_layer_indices = _fallback_layer_indices_from_fixed_support_arrays(
+        base_arrays
+    )
+    rescue_plan, rescue_metadata = (
+        _prepare_experimental_profile_fixed_support_prune_rescue_plan(
+            plan,
+            fallback_layer_indices,
+            prune_relative_floors=prune_relative_floors,
+        )
+    )
+    if rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(
+            base_arrays,
+            rescue_metadata,
+        )
+    rescue_targets = targets
+    if targets.ndim == 3:
+        expanded_to_original = jnp.asarray(
+            rescue_metadata["expanded_to_original_layer"],
+            dtype=jnp.int32,
+        )
+        rescue_targets = targets[:, expanded_to_original, :]
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        rescue_plan,
+        rescue_targets,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue_metadata,
+    )
+
+
 def condensate_equilibrium_profile(
     setup: CondensateChemicalSetup,
     T: Sequence[float] | Array,
@@ -6826,6 +7294,8 @@ __all__ = (
     "condensate_equilibrium_profile",
     "prepare_experimental_profile_fixed_support_batch_plan",
     "run_experimental_profile_fixed_support_batch_plan",
+    "run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_many",
+    "run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue",
     "validate_condensate_chemical_setup",
 )
