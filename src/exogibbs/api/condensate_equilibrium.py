@@ -291,8 +291,19 @@ class ExperimentalCondensateProfileFixedSupportBatchPlan:
     bucket_layer_index_arrays: tuple[Array, ...] = ()
 
 
+@dataclass(frozen=True)
+class ExperimentalCondensateProfileFixedSupportPruneRescuePlan:
+    """Prepared prune-rescue plan for fallback layers of a fixed-support plan."""
+
+    rescue_plan: Optional[ExperimentalCondensateProfileFixedSupportBatchPlan]
+    metadata: Mapping[str, Any]
+
+
 _ExperimentalProfileFixedSupportBatchPlan = (
     ExperimentalCondensateProfileFixedSupportBatchPlan
+)
+_ExperimentalProfileFixedSupportPruneRescuePlan = (
+    ExperimentalCondensateProfileFixedSupportPruneRescuePlan
 )
 _DEFAULT_CONDENSATE_INITIALIZER = DefaultCondensateEquilibriumInitializer()
 
@@ -6713,6 +6724,115 @@ def run_experimental_profile_fixed_support_batch_plan(
     )
 
 
+def prepare_experimental_profile_fixed_support_prune_rescue_plan(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    fallback_layer_indices: Sequence[int],
+    *,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> ExperimentalCondensateProfileFixedSupportPruneRescuePlan:
+    """Prepare prune-rescue candidates for selected fallback layers.
+
+    This separates host-side rescue plan construction from repeated GPU solves.
+    The returned object may contain no executable rescue plan when
+    ``fallback_layer_indices`` is empty or no pruned candidate changes support.
+    """
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    rescue_plan, rescue_metadata = (
+        _prepare_experimental_profile_fixed_support_prune_rescue_plan(
+            plan,
+            fallback_layer_indices,
+            prune_relative_floors=prune_relative_floors,
+        )
+    )
+    return _ExperimentalProfileFixedSupportPruneRescuePlan(
+        rescue_plan=rescue_plan,
+        metadata=rescue_metadata,
+    )
+
+
+def _fixed_support_prune_rescue_single_target(
+    element_inventory_target: Optional[Array],
+    rescue_metadata: Mapping[str, Any],
+) -> Optional[Array]:
+    if element_inventory_target is None:
+        return None
+    target = jnp.asarray(element_inventory_target, dtype=jnp.float64)
+    if target.ndim == 2:
+        expanded_to_original = jnp.asarray(
+            rescue_metadata["expanded_to_original_layer"],
+            dtype=jnp.int32,
+        )
+        return target[expanded_to_original, :]
+    return target
+
+
+def _fixed_support_prune_rescue_many_targets(
+    element_inventory_targets: Array,
+    rescue_metadata: Mapping[str, Any],
+) -> Array:
+    targets = jnp.asarray(element_inventory_targets, dtype=jnp.float64)
+    if targets.ndim == 3:
+        expanded_to_original = jnp.asarray(
+            rescue_metadata["expanded_to_original_layer"],
+            dtype=jnp.int32,
+        )
+        return targets[:, expanded_to_original, :]
+    return targets
+
+
+def run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    rescue: ExperimentalCondensateProfileFixedSupportPruneRescuePlan,
+    *,
+    element_inventory_target: Optional[Array] = None,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+) -> Mapping[str, Any]:
+    """Run a fixed-support plan with a pre-built prune-rescue plan."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    if not isinstance(rescue, ExperimentalCondensateProfileFixedSupportPruneRescuePlan):
+        raise TypeError(
+            "rescue must be an "
+            "ExperimentalCondensateProfileFixedSupportPruneRescuePlan."
+        )
+    base_arrays = run_experimental_profile_fixed_support_batch_plan(
+        plan,
+        element_inventory_target=element_inventory_target,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(
+            base_arrays,
+            rescue.metadata,
+        )
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan(
+        rescue.rescue_plan,
+        element_inventory_target=_fixed_support_prune_rescue_single_target(
+            element_inventory_target,
+            rescue.metadata,
+        ),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue.metadata,
+    )
+
+
 def run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
     plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
     *,
@@ -6753,23 +6873,18 @@ def run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
             prune_relative_floors=prune_relative_floors,
         )
     )
-    if rescue_plan is None:
-        return _attach_empty_fixed_support_rescue_metadata(
-            base_arrays,
-            rescue_metadata,
-        )
-    rescue_target = element_inventory_target
-    if element_inventory_target is not None:
-        target = jnp.asarray(element_inventory_target, dtype=jnp.float64)
-        if target.ndim == 2:
-            expanded_to_original = jnp.asarray(
-                rescue_metadata["expanded_to_original_layer"],
-                dtype=jnp.int32,
-            )
-            rescue_target = target[expanded_to_original, :]
+    rescue = _ExperimentalProfileFixedSupportPruneRescuePlan(
+        rescue_plan=rescue_plan,
+        metadata=rescue_metadata,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(base_arrays, rescue.metadata)
     rescue_arrays = run_experimental_profile_fixed_support_batch_plan(
-        rescue_plan,
-        element_inventory_target=rescue_target,
+        rescue.rescue_plan,
+        element_inventory_target=_fixed_support_prune_rescue_single_target(
+            element_inventory_target,
+            rescue.metadata,
+        ),
         rho_initialization=rho_initialization,
         lambda_initialization=lambda_initialization,
         residual_tolerance_multiplier=residual_tolerance_multiplier,
@@ -6777,7 +6892,7 @@ def run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
     return _merge_fixed_support_prune_rescue_arrays(
         base_arrays,
         rescue_arrays,
-        rescue_metadata,
+        rescue.metadata,
     )
 
 
@@ -7078,6 +7193,53 @@ def run_experimental_profile_fixed_support_batch_plan_many(
     }
 
 
+def run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    rescue: ExperimentalCondensateProfileFixedSupportPruneRescuePlan,
+    element_inventory_targets: Array,
+    *,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+) -> Mapping[str, Any]:
+    """Run many fixed-support evaluations with a pre-built prune-rescue plan."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    if not isinstance(rescue, ExperimentalCondensateProfileFixedSupportPruneRescuePlan):
+        raise TypeError(
+            "rescue must be an "
+            "ExperimentalCondensateProfileFixedSupportPruneRescuePlan."
+        )
+    targets = jnp.asarray(element_inventory_targets, dtype=jnp.float64)
+    base_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        plan,
+        targets,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(
+            base_arrays,
+            rescue.metadata,
+        )
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        rescue.rescue_plan,
+        _fixed_support_prune_rescue_many_targets(targets, rescue.metadata),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue.metadata,
+    )
+
+
 def run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue(
     plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
     element_inventory_targets: Array,
@@ -7116,16 +7278,9 @@ def run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue(
             base_arrays,
             rescue_metadata,
         )
-    rescue_targets = targets
-    if targets.ndim == 3:
-        expanded_to_original = jnp.asarray(
-            rescue_metadata["expanded_to_original_layer"],
-            dtype=jnp.int32,
-        )
-        rescue_targets = targets[:, expanded_to_original, :]
     rescue_arrays = run_experimental_profile_fixed_support_batch_plan_many(
         rescue_plan,
-        rescue_targets,
+        _fixed_support_prune_rescue_many_targets(targets, rescue_metadata),
         rho_initialization=rho_initialization,
         lambda_initialization=lambda_initialization,
         residual_tolerance_multiplier=residual_tolerance_multiplier,
@@ -7288,14 +7443,18 @@ __all__ = (
     "CondensateProfileWarmStartSupportPolicy",
     "DefaultCondensateEquilibriumInitializer",
     "ExperimentalCondensateProfileFixedSupportBatchPlan",
+    "ExperimentalCondensateProfileFixedSupportPruneRescuePlan",
     "build_condensate_chemical_setup",
     "build_condensate_equilibrium_result_from_solver_payload",
     "condensate_equilibrium",
     "condensate_equilibrium_profile",
     "prepare_experimental_profile_fixed_support_batch_plan",
+    "prepare_experimental_profile_fixed_support_prune_rescue_plan",
     "run_experimental_profile_fixed_support_batch_plan",
+    "run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_many",
+    "run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue",
     "validate_condensate_chemical_setup",
 )

@@ -487,6 +487,33 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
             ),
         )
     )
+    empty_rescue = condmod.prepare_experimental_profile_fixed_support_prune_rescue_plan(
+        plan,
+        (),
+    )
+    prepared_rescue_arrays = (
+        condmod.run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue(
+            plan,
+            empty_rescue,
+            element_inventory_target=jnp.asarray(
+                [[1.0, 1.0], [1.0, 1.0]],
+                dtype=jnp.float64,
+            ),
+        )
+    )
+    prepared_many_rescue_arrays = (
+        condmod.run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue(
+            plan,
+            empty_rescue,
+            jnp.asarray(
+                [
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                ],
+                dtype=jnp.float64,
+            ),
+        )
+    )
     assert rescue_arrays["fallback_required"].shape == (2,)
     assert rescue_arrays["fallback_rescue"]["mode"] == "none"
     assert rescue_arrays["fallback_rescue"]["expanded_layer_count"] == 0
@@ -500,6 +527,16 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     assert many_rescue_arrays["fallback_rescue"]["expanded_layer_count"] == 0
     assert jnp.allclose(
         many_rescue_arrays["gas_ln_n"],
+        direct_many_rescue_base_arrays["gas_ln_n"],
+    )
+    assert prepared_rescue_arrays["fallback_rescue"]["mode"] == "none"
+    assert prepared_many_rescue_arrays["fallback_rescue"]["mode"] == "none"
+    assert jnp.allclose(
+        prepared_rescue_arrays["gas_ln_n"],
+        direct_rescue_base_arrays["gas_ln_n"],
+    )
+    assert jnp.allclose(
+        prepared_many_rescue_arrays["gas_ln_n"],
         direct_many_rescue_base_arrays["gas_ln_n"],
     )
 
@@ -520,13 +557,13 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         init=prune_init,
         options=CondensateEquilibriumOptions(max_inner_iterations=8),
     )
-    rescue_plan, rescue_metadata = (
-        condmod._prepare_experimental_profile_fixed_support_prune_rescue_plan(
-            prune_plan,
-            (0,),
-            prune_relative_floors=(1.0e-5, 1.0e-3),
-        )
+    prune_rescue = condmod.prepare_experimental_profile_fixed_support_prune_rescue_plan(
+        prune_plan,
+        (0,),
+        prune_relative_floors=(1.0e-5, 1.0e-3),
     )
+    rescue_plan = prune_rescue.rescue_plan
+    rescue_metadata = prune_rescue.metadata
     assert rescue_plan is not None
     assert rescue_plan.n_layers == 2
     assert rescue_metadata["expanded_to_original_layer"] == (0, 0)

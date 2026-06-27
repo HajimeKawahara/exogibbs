@@ -53,9 +53,12 @@ from exogibbs.api.condensate_equilibrium import (  # noqa: E402
     condensate_equilibrium,
     condensate_equilibrium_profile,
     prepare_experimental_profile_fixed_support_batch_plan,
+    prepare_experimental_profile_fixed_support_prune_rescue_plan,
     run_experimental_profile_fixed_support_batch_plan,
+    run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue,
     run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue,
     run_experimental_profile_fixed_support_batch_plan_many,
+    run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue,
     run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue,
 )
 from exogibbs.optimize import minimize_cond as condopt  # noqa: E402
@@ -1013,6 +1016,7 @@ def main() -> None:
             "current_prune_neighbor",
             "fallback_rescue_prune_neighbor",
             "api_fallback_rescue_prune",
+            "api_prepared_fallback_rescue_prune",
         ),
         default="current",
         help=(
@@ -1111,6 +1115,7 @@ def main() -> None:
         elif support_candidate_mode in (
             "fallback_rescue_prune_neighbor",
             "api_fallback_rescue_prune",
+            "api_prepared_fallback_rescue_prune",
         ):
             if not args.prepared_plan:
                 raise ValueError("--support-candidate-mode requires --prepared-plan")
@@ -1183,8 +1188,35 @@ def main() -> None:
                         dtype=jnp.float64,
                     )
                     batched_targets = scales[:, None] * base_target
+                prepared_api_rescue = None
+                if support_candidate_mode == "api_prepared_fallback_rescue_prune":
+                    probe_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+                        plan,
+                        batched_targets,
+                        rho_initialization=str(args.rho_initialization),
+                        lambda_initialization=str(args.lambda_initialization),
+                        residual_tolerance_multiplier=float(
+                            args.residual_tolerance_multiplier
+                        ),
+                    )
+                    _block_tree(probe_arrays)
+                    fallback_rescue_layer_indices = _fallback_layer_indices(
+                        probe_arrays
+                    )
+                    start = time.perf_counter()
+                    prepared_api_rescue = (
+                        prepare_experimental_profile_fixed_support_prune_rescue_plan(
+                            plan,
+                            fallback_rescue_layer_indices,
+                            prune_relative_floors=support_candidate_prune_floors,
+                        )
+                    )
+                    if prepared_api_rescue.rescue_plan is not None:
+                        _block_tree(prepared_api_rescue.rescue_plan.buckets)
+                    rescue_plan_prepare_seconds = time.perf_counter() - start
+                    rescue_candidate_metadata = prepared_api_rescue.metadata
                 experimental_last, experimental_timing = _time(
-                    lambda plan=plan, batched_targets=batched_targets: (
+                    lambda plan=plan, batched_targets=batched_targets, prepared_api_rescue=prepared_api_rescue: (
                         run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue(
                             plan,
                             batched_targets,
@@ -1196,6 +1228,18 @@ def main() -> None:
                             prune_relative_floors=support_candidate_prune_floors,
                         )
                         if support_candidate_mode == "api_fallback_rescue_prune"
+                        else run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue(
+                            plan,
+                            prepared_api_rescue,
+                            batched_targets,
+                            rho_initialization=str(args.rho_initialization),
+                            lambda_initialization=str(args.lambda_initialization),
+                            residual_tolerance_multiplier=float(
+                                args.residual_tolerance_multiplier
+                            ),
+                        )
+                        if support_candidate_mode
+                        == "api_prepared_fallback_rescue_prune"
                         else _maybe_select_support_candidate_outputs(
                             run_experimental_profile_fixed_support_batch_plan_many(
                                 plan,
@@ -1290,8 +1334,39 @@ def main() -> None:
                             None,
                         )
             else:
+                prepared_api_rescue = None
+                if support_candidate_mode == "api_prepared_fallback_rescue_prune":
+                    probe_arrays = run_experimental_profile_fixed_support_batch_plan(
+                        plan,
+                        element_inventory_target=(
+                            None
+                            if args.element_inventory_scale is None
+                            else profile_args["b"] * float(args.element_inventory_scale)
+                        ),
+                        rho_initialization=str(args.rho_initialization),
+                        lambda_initialization=str(args.lambda_initialization),
+                        residual_tolerance_multiplier=float(
+                            args.residual_tolerance_multiplier
+                        ),
+                    )
+                    _block_tree(probe_arrays)
+                    fallback_rescue_layer_indices = _fallback_layer_indices(
+                        probe_arrays
+                    )
+                    start = time.perf_counter()
+                    prepared_api_rescue = (
+                        prepare_experimental_profile_fixed_support_prune_rescue_plan(
+                            plan,
+                            fallback_rescue_layer_indices,
+                            prune_relative_floors=support_candidate_prune_floors,
+                        )
+                    )
+                    if prepared_api_rescue.rescue_plan is not None:
+                        _block_tree(prepared_api_rescue.rescue_plan.buckets)
+                    rescue_plan_prepare_seconds = time.perf_counter() - start
+                    rescue_candidate_metadata = prepared_api_rescue.metadata
                 experimental_last, experimental_timing = _time(
-                    lambda plan=plan, profile_args=profile_args: (
+                    lambda plan=plan, profile_args=profile_args, prepared_api_rescue=prepared_api_rescue: (
                         run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
                             plan,
                             element_inventory_target=(
@@ -1308,6 +1383,22 @@ def main() -> None:
                             prune_relative_floors=support_candidate_prune_floors,
                         )
                         if support_candidate_mode == "api_fallback_rescue_prune"
+                        else run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue(
+                            plan,
+                            prepared_api_rescue,
+                            element_inventory_target=(
+                                None
+                                if args.element_inventory_scale is None
+                                else profile_args["b"] * float(args.element_inventory_scale)
+                            ),
+                            rho_initialization=str(args.rho_initialization),
+                            lambda_initialization=str(args.lambda_initialization),
+                            residual_tolerance_multiplier=float(
+                                args.residual_tolerance_multiplier
+                            ),
+                        )
+                        if support_candidate_mode
+                        == "api_prepared_fallback_rescue_prune"
                         else _maybe_select_support_candidate_outputs(
                             run_experimental_profile_fixed_support_batch_plan(
                                 plan,
