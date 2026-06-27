@@ -324,6 +324,63 @@ if ( "$mode" == "a100_quick100_brepeat" ) then
     set label = "a100_quick100_brepeat${custom_batch_size}"
 endif
 
+if ( "$mode" == "a100_broad100" ) then
+    set iterations = 100
+    set warmup = 0
+    set repeat = 2
+    set baseline = "--skip-baseline"
+    set budget_gate = "--disable-budget-gate"
+    set block_output = "--block-output batched"
+    set prepared_plan = "--prepared-plan"
+    set support_source = "--support-source activity_outer"
+    set rho_initialization = "--rho-initialization complementarity"
+    set lambda_initialization = "--lambda-initialization best_residual"
+    set residual_tolerance_multiplier = "--residual-tolerance-multiplier 1.0e9"
+    set label = "a100_broad100"
+endif
+
+if ( "$mode" == "a100_broad100_brepeat" ) then
+    if ( "$custom_batch_size" == "" ) then
+        echo "usage: $0 a100_broad100_brepeat N_EVAL"
+        exit 2
+    endif
+    set iterations = 100
+    set warmup = 0
+    set repeat = 2
+    set baseline = "--skip-baseline"
+    set budget_gate = "--disable-budget-gate"
+    set block_output = "--block-output batched"
+    set prepared_plan = "--prepared-plan"
+    set element_inventory_batch_size = "--element-inventory-batch-size $custom_batch_size"
+    set element_inventory_batch_mode = "--element-inventory-batch-mode repeat"
+    set support_source = "--support-source activity_outer"
+    set rho_initialization = "--rho-initialization complementarity"
+    set lambda_initialization = "--lambda-initialization best_residual"
+    set residual_tolerance_multiplier = "--residual-tolerance-multiplier 1.0e9"
+    set label = "a100_broad100_brepeat${custom_batch_size}"
+endif
+
+if ( "$mode" == "a100_broad100_bmany" ) then
+    if ( "$custom_batch_size" == "" ) then
+        echo "usage: $0 a100_broad100_bmany N_EVAL"
+        exit 2
+    endif
+    set iterations = 100
+    set warmup = 0
+    set repeat = 2
+    set baseline = "--skip-baseline"
+    set budget_gate = "--disable-budget-gate"
+    set block_output = "--block-output batched"
+    set prepared_plan = "--prepared-plan"
+    set element_inventory_scale = "--element-inventory-scale 1.001"
+    set element_inventory_batch_size = "--element-inventory-batch-size $custom_batch_size"
+    set support_source = "--support-source activity_outer"
+    set rho_initialization = "--rho-initialization complementarity"
+    set lambda_initialization = "--lambda-initialization best_residual"
+    set residual_tolerance_multiplier = "--residual-tolerance-multiplier 1.0e9"
+    set label = "a100_broad100_bmany${custom_batch_size}"
+endif
+
 set output = "volatiles_artifacts/pdipm_api_profile_fixed_support_batch_cuda_${label}_${stamp}.json"
 
 python volatiles_code/benchmark_pdipm_api_profile_fixed_support_batch.py \
