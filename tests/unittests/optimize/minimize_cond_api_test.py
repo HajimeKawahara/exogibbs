@@ -487,6 +487,7 @@ def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core():
             ln_normalized_pressure=ln_normalized_pressure,
             epsilon=-10.0,
             max_iter=2,
+            lambda_initialization="gas_lstsq",
         )
     )
 
@@ -543,6 +544,13 @@ def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core():
     best_payload = best_extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"]
     assert best_result.diagnostics.final_residual.shape == (2,)
     assert best_payload["lambda_selection_index"].shape == (2,)
+    assert best_payload["lambda_candidate_labels"] == (
+        "provided",
+        "gas_lstsq",
+        "gas_cond_lstsq",
+        "damped_gas_lstsq",
+        "damped_gas_cond_lstsq",
+    )
 
 
 def test_pdipm_rgie_v11_profile_bucket_dispatcher_matches_layer_core():
@@ -667,6 +675,7 @@ def test_pdipm_rgie_v11_prepared_profile_buckets_match_layer_core():
             formula_matrix=formula_matrix,
             epsilon=-10.0,
             max_iter=2,
+            lambda_initialization="gas_lstsq",
         )
     )
 

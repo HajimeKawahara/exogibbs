@@ -502,7 +502,7 @@ def main() -> None:
     parser.add_argument(
         "--lambda-initialization",
         choices=("gas_lstsq", "gas_cond_lstsq", "provided", "best_residual"),
-        default="gas_lstsq",
+        default="best_residual",
     )
     parser.add_argument("--residual-tolerance-multiplier", type=float, default=1.0)
     parser.add_argument(

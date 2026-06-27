@@ -6172,7 +6172,7 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
     *,
     element_inventory_target: Optional[Array] = None,
     rho_initialization: str = "unit_activity",
-    lambda_initialization: str = "gas_lstsq",
+    lambda_initialization: str = "best_residual",
     residual_tolerance_multiplier: float = 1.0,
 ) -> Mapping[str, Array]:
     from exogibbs.optimize.minimize_cond import (
@@ -6338,7 +6338,7 @@ def run_experimental_profile_fixed_support_batch_plan(
     *,
     element_inventory_target: Optional[Array] = None,
     rho_initialization: str = "unit_activity",
-    lambda_initialization: str = "gas_lstsq",
+    lambda_initialization: str = "best_residual",
     residual_tolerance_multiplier: float = 1.0,
 ) -> Mapping[str, Array]:
     """Run a prepared experimental fixed-support batch profile plan.
@@ -6366,7 +6366,7 @@ def run_experimental_profile_fixed_support_batch_plan_many(
     element_inventory_targets: Array,
     *,
     rho_initialization: str = "unit_activity",
-    lambda_initialization: str = "gas_lstsq",
+    lambda_initialization: str = "best_residual",
     residual_tolerance_multiplier: float = 1.0,
 ) -> Mapping[str, Array]:
     """Run a prepared fixed-support profile plan for multiple compositions.

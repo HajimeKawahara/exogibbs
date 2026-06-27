@@ -38,6 +38,19 @@ from exogibbs.optimize.pipm_rgie_cond import (
 )
 
 Array = jax.Array
+FIXED_SUPPORT_BATCH_LAMBDA_CANDIDATE_LABELS = (
+    "provided",
+    "gas_lstsq",
+    "gas_cond_lstsq",
+    "damped_gas_lstsq",
+    "damped_gas_cond_lstsq",
+)
+FIXED_SUPPORT_BATCH_LAMBDA_INITIALIZATIONS = (
+    "provided",
+    "gas_lstsq",
+    "gas_cond_lstsq",
+    "best_residual",
+)
 CondensateProfileMethod = Literal[
     "vmap_cold",
     "scan_hot_from_top",
@@ -1994,7 +2007,7 @@ def _pdipm_activity_fixed_support_batch_core(
     residual_tolerance_multiplier: jnp.ndarray,
     max_iter: int,
     rho_initialization: str = "unit_activity",
-    lambda_initialization: str = "gas_lstsq",
+    lambda_initialization: str = "best_residual",
 ) -> tuple[jnp.ndarray, ...]:
     """Run the fixed-shape PD-IPM activity-correction core for one bucket."""
 
@@ -2588,7 +2601,7 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
     residual_tolerance_multiplier: float = 1.0,
     max_iter: int,
     rho_initialization: str = "unit_activity",
-    lambda_initialization: str = "gas_lstsq",
+    lambda_initialization: str = "best_residual",
 ) -> tuple[CondensateEquilibriumResult, dict[str, Any]]:
     """Run the experimental fixed-support activity-correction core for one bucket.
 
@@ -2596,6 +2609,13 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
     production route. It provides the GPU-friendly fixed-shape batch primitive
     used by the optimization experiments.
     """
+
+    lambda_initialization = str(lambda_initialization)
+    if lambda_initialization not in FIXED_SUPPORT_BATCH_LAMBDA_INITIALIZATIONS:
+        raise ValueError(
+            "lambda_initialization must be one of "
+            f"{FIXED_SUPPORT_BATCH_LAMBDA_INITIALIZATIONS}."
+        )
 
     ln_nk_init_array = jnp.asarray(ln_nk_init, dtype=jnp.float64)
     ln_mk_init_array = jnp.asarray(ln_mk_init, dtype=jnp.float64)
@@ -2716,6 +2736,7 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
                 "fallback_accepted_iteration_count": fallback_accepted_count,
                 "initial_residual": initial_residual,
                 "lambda_selection_index": lambda_selection_index,
+                "lambda_candidate_labels": FIXED_SUPPORT_BATCH_LAMBDA_CANDIDATE_LABELS,
                 "gas_residual_norm": gas_residual_norm,
                 "condensate_stationarity_residual_norm": condensate_stationarity_residual_norm,
                 "budget_residual_norm": budget_residual_norm,
@@ -2894,7 +2915,7 @@ def _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
     epsilon: float,
     max_iter: int,
     rho_initialization: str = "unit_activity",
-    lambda_initialization: str = "gas_lstsq",
+    lambda_initialization: str = "best_residual",
     residual_tolerance_multiplier: float = 1.0,
 ) -> tuple[tuple[CondensateEquilibriumResult, ...], dict[str, Any]]:
     """Run already-prepared profile buckets without per-layer materialization."""
