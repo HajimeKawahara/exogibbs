@@ -496,6 +496,24 @@ def _support_candidate_profile_args(
     )
 
 
+def _subset_profile_args(
+    profile_args: Mapping[str, Any],
+    layer_indices: tuple[int, ...],
+) -> dict[str, Any]:
+    return {
+        "T": jnp.asarray(
+            np.asarray(profile_args["T"], dtype=np.float64)[list(layer_indices)],
+            dtype=jnp.float64,
+        ),
+        "P": jnp.asarray(
+            np.asarray(profile_args["P"], dtype=np.float64)[list(layer_indices)],
+            dtype=jnp.float64,
+        ),
+        "b": profile_args["b"],
+        "init": tuple(profile_args["init"][index] for index in layer_indices),
+    }
+
+
 def _select_support_candidate_outputs(
     result: Mapping[str, Any],
     candidate_metadata: Mapping[str, Any],
@@ -593,6 +611,192 @@ def _maybe_select_support_candidate_outputs(
     if candidate_metadata.get("mode") == "current":
         return result
     return _select_support_candidate_outputs(result, candidate_metadata)
+
+
+def _fallback_layer_indices(result: Mapping[str, Any]) -> tuple[int, ...]:
+    fallback_required = np.asarray(
+        jax.device_get(result.get("fallback_required", ~result["converged"])),
+        dtype=bool,
+    )
+    if fallback_required.ndim == 1:
+        indices = np.where(fallback_required)[0]
+    else:
+        indices = np.where(np.any(fallback_required, axis=0))[0]
+    return tuple(int(index) for index in indices.tolist())
+
+
+def _merge_fallback_rescue_outputs(
+    default_result: Mapping[str, Any],
+    rescue_result: Mapping[str, Any],
+    rescue_original_indices: tuple[int, ...],
+) -> dict[str, Any]:
+    default_residual = np.asarray(
+        jax.device_get(default_result["final_residual"]),
+        dtype=np.float64,
+    )
+    default_fallback = np.asarray(
+        jax.device_get(default_result.get("fallback_required", ~default_result["converged"])),
+        dtype=bool,
+    )
+    rescue_residual = np.asarray(
+        jax.device_get(rescue_result["final_residual"]),
+        dtype=np.float64,
+    )
+    rescue_converged = np.asarray(
+        jax.device_get(rescue_result["converged"]),
+        dtype=bool,
+    )
+    if default_residual.ndim == 1:
+        eval_count = 1
+        default_residual_view = default_residual[None, :]
+        default_fallback_view = default_fallback[None, :]
+        rescue_residual_view = rescue_residual[None, :]
+        rescue_converged_view = rescue_converged[None, :]
+    else:
+        eval_count = int(default_residual.shape[0])
+        default_residual_view = default_residual
+        default_fallback_view = default_fallback
+        rescue_residual_view = rescue_residual
+        rescue_converged_view = rescue_converged
+    n_layers = int(default_residual_view.shape[1])
+    replace_mask = np.zeros((eval_count, n_layers), dtype=bool)
+    rescue_by_original = {
+        int(original_index): rescue_index
+        for rescue_index, original_index in enumerate(rescue_original_indices)
+    }
+    for original_index, rescue_index in rescue_by_original.items():
+        default_values = default_residual_view[:, original_index]
+        rescue_values = rescue_residual_view[:, rescue_index]
+        finite_improvement = np.isfinite(rescue_values) & (
+            ~np.isfinite(default_values) | (rescue_values < default_values)
+        )
+        replace_mask[:, original_index] = (
+            default_fallback_view[:, original_index]
+            & (rescue_converged_view[:, rescue_index] | finite_improvement)
+        )
+
+    def merge_layer_array(
+        default_value: Any,
+        rescue_value: Any,
+        *,
+        force_replace: np.ndarray | None = None,
+    ) -> Any:
+        default_array = np.asarray(jax.device_get(default_value))
+        rescue_array = np.asarray(jax.device_get(rescue_value))
+        mask = replace_mask if force_replace is None else force_replace
+        if default_residual.ndim == 1:
+            if default_array.ndim == 0 or default_array.shape[0] != n_layers:
+                return default_array
+            merged = default_array.copy()
+            for original_index, rescue_index in rescue_by_original.items():
+                if mask[0, original_index]:
+                    merged[original_index] = rescue_array[rescue_index]
+            return merged
+        if (
+            default_array.ndim < 2
+            or default_array.shape[0] != eval_count
+            or default_array.shape[1] != n_layers
+        ):
+            return default_array
+        merged = default_array.copy()
+        for original_index, rescue_index in rescue_by_original.items():
+            rows = mask[:, original_index]
+            if np.any(rows):
+                merged[rows, original_index] = rescue_array[rows, rescue_index]
+        return merged
+
+    merged = {
+        key: merge_layer_array(value, rescue_result[key])
+        for key, value in default_result.items()
+        if (
+            key in rescue_result
+            and key not in {"residual_components", "step_diagnostics"}
+        )
+    }
+    merged["residual_components"] = {
+        key: merge_layer_array(value, rescue_result["residual_components"][key])
+        for key, value in default_result.get("residual_components", {}).items()
+        if key in rescue_result.get("residual_components", {})
+    }
+    merged["step_diagnostics"] = {
+        key: merge_layer_array(value, rescue_result["step_diagnostics"][key])
+        for key, value in default_result.get("step_diagnostics", {}).items()
+        if key in rescue_result.get("step_diagnostics", {})
+    }
+
+    rescue_selection = rescue_result.get("support_candidate_selection", {})
+    rescue_labels = rescue_selection.get("selected_candidate_label")
+    rescue_support_counts = rescue_selection.get("selected_support_count")
+    selected_labels = np.full((eval_count, n_layers), None, dtype=object)
+    selected_support_counts = np.zeros((eval_count, n_layers), dtype=np.int64)
+    if rescue_labels is not None and rescue_support_counts is not None:
+        rescue_label_array = np.asarray(rescue_labels, dtype=object)
+        rescue_support_array = np.asarray(jax.device_get(rescue_support_counts), dtype=np.int64)
+        if default_residual.ndim == 1:
+            rescue_label_array = rescue_label_array[None, :]
+            rescue_support_array = rescue_support_array[None, :]
+        for original_index, rescue_index in rescue_by_original.items():
+            rows = replace_mask[:, original_index]
+            if np.any(rows):
+                selected_labels[rows, original_index] = rescue_label_array[rows, rescue_index]
+                selected_support_counts[rows, original_index] = rescue_support_array[
+                    rows,
+                    rescue_index,
+                ]
+    merged["support_candidate_selection"] = {
+        "fallback_rescue_original_layer_indices": list(rescue_original_indices),
+        "fallback_rescue_replaced_count": int(np.count_nonzero(replace_mask)),
+        "selected_candidate_label": (
+            selected_labels[0].tolist()
+            if default_residual.ndim == 1
+            else selected_labels.tolist()
+        ),
+        "selected_support_count": (
+            selected_support_counts[0]
+            if default_residual.ndim == 1
+            else selected_support_counts
+        ),
+        "replaced_by_fallback_rescue": (
+            replace_mask[0] if default_residual.ndim == 1 else replace_mask
+        ),
+    }
+    return merged
+
+
+def _combine_timing(
+    base: Mapping[str, Any],
+    rescue: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    combined = dict(base)
+    if rescue is None:
+        combined["fallback_rescue_warm_median_seconds"] = 0.0
+        return combined
+    base_calls = list(base.get("warm_call_seconds", ()))
+    rescue_calls = list(rescue.get("warm_call_seconds", ()))
+    if len(base_calls) == len(rescue_calls):
+        combined_calls = [
+            float(base_value) + float(rescue_value)
+            for base_value, rescue_value in zip(base_calls, rescue_calls)
+        ]
+    else:
+        combined_calls = base_calls
+    combined["first_call_seconds"] = float(base["first_call_seconds"]) + float(
+        rescue["first_call_seconds"]
+    )
+    combined["warm_call_seconds"] = combined_calls
+    combined["warm_median_seconds"] = float(base["warm_median_seconds"]) + float(
+        rescue["warm_median_seconds"]
+    )
+    combined["warm_min_seconds"] = float(base["warm_min_seconds"]) + float(
+        rescue["warm_min_seconds"]
+    )
+    combined["warm_max_seconds"] = float(base["warm_max_seconds"]) + float(
+        rescue["warm_max_seconds"]
+    )
+    combined["fallback_rescue_warm_median_seconds"] = float(
+        rescue["warm_median_seconds"]
+    )
+    return combined
 
 
 def _run_profile(
@@ -782,7 +986,11 @@ def main() -> None:
     )
     parser.add_argument(
         "--support-candidate-mode",
-        choices=("current", "current_prune_neighbor"),
+        choices=(
+            "current",
+            "current_prune_neighbor",
+            "fallback_rescue_prune_neighbor",
+        ),
         default="current",
         help=(
             "When using --prepared-plan, optionally evaluate multiple support "
@@ -847,15 +1055,23 @@ def main() -> None:
                 for init in profile_args["init"]
             ],
         }
-        if str(args.support_candidate_mode) != "current":
+        support_candidate_mode = str(args.support_candidate_mode)
+        if support_candidate_mode == "current_prune_neighbor":
             if not args.prepared_plan:
                 raise ValueError("--support-candidate-mode requires --prepared-plan")
             execution_profile_args, candidate_metadata = _support_candidate_profile_args(
                 profile_args,
-                mode=str(args.support_candidate_mode),
+                mode=support_candidate_mode,
             )
             support_metadata["support_candidate_metadata"] = candidate_metadata
+        elif support_candidate_mode == "fallback_rescue_prune_neighbor":
+            if not args.prepared_plan:
+                raise ValueError("--support-candidate-mode requires --prepared-plan")
         plan_prepare_seconds = None
+        rescue_plan_prepare_seconds = None
+        rescue_candidate_metadata = None
+        rescue_timing = None
+        fallback_rescue_layer_indices: tuple[int, ...] = ()
         prepared_bucket_core_timing = None
         if args.prepared_plan:
             plan_options = CondensateEquilibriumOptions(
@@ -893,6 +1109,7 @@ def main() -> None:
                 repeat=int(args.repeat),
                 block_output="layers",
             )
+            batched_targets = None
             if int(args.element_inventory_batch_size) > 1:
                 base_target = jnp.asarray(profile_args["b"], dtype=jnp.float64)
                 if str(args.element_inventory_batch_mode) == "repeat":
@@ -938,6 +1155,78 @@ def main() -> None:
                     repeat=int(args.repeat),
                     block_output="layers",
                 )
+                if support_candidate_mode == "fallback_rescue_prune_neighbor":
+                    fallback_rescue_layer_indices = _fallback_layer_indices(
+                        experimental_last
+                    )
+                    if fallback_rescue_layer_indices:
+                        rescue_profile_args = _subset_profile_args(
+                            profile_args,
+                            fallback_rescue_layer_indices,
+                        )
+                        (
+                            rescue_execution_profile_args,
+                            rescue_candidate_metadata,
+                        ) = _support_candidate_profile_args(
+                            rescue_profile_args,
+                            mode="current_prune_neighbor",
+                        )
+                        start = time.perf_counter()
+                        rescue_plan = prepare_experimental_profile_fixed_support_batch_plan(
+                            setup,
+                            np.asarray(
+                                rescue_execution_profile_args["T"],
+                                dtype=np.float64,
+                            ),
+                            np.asarray(
+                                rescue_execution_profile_args["P"],
+                                dtype=np.float64,
+                            ),
+                            rescue_execution_profile_args["b"],
+                            Pref=1.0,
+                            init=rescue_execution_profile_args["init"],
+                            initializer=None,
+                            support_indices=None,
+                            support_amounts_init=None,
+                            options=plan_options,
+                        )
+                        _block_tree(rescue_plan.buckets)
+                        rescue_plan_prepare_seconds = time.perf_counter() - start
+                        rescue_last, rescue_timing = _time(
+                            lambda rescue_plan=rescue_plan, batched_targets=batched_targets: (
+                                _select_support_candidate_outputs(
+                                    run_experimental_profile_fixed_support_batch_plan_many(
+                                        rescue_plan,
+                                        batched_targets,
+                                        rho_initialization=str(args.rho_initialization),
+                                        lambda_initialization=str(
+                                            args.lambda_initialization
+                                        ),
+                                        residual_tolerance_multiplier=float(
+                                            args.residual_tolerance_multiplier
+                                        ),
+                                    ),
+                                    rescue_candidate_metadata,
+                                )
+                            ),
+                            warmup=int(args.warmup),
+                            repeat=int(args.repeat),
+                            block_output="layers",
+                        )
+                        experimental_last = _merge_fallback_rescue_outputs(
+                            experimental_last,
+                            rescue_last,
+                            fallback_rescue_layer_indices,
+                        )
+                        experimental_timing = _combine_timing(
+                            experimental_timing,
+                            rescue_timing,
+                        )
+                    else:
+                        experimental_timing = _combine_timing(
+                            experimental_timing,
+                            None,
+                        )
             else:
                 experimental_last, experimental_timing = _time(
                     lambda plan=plan, profile_args=profile_args: (
@@ -963,6 +1252,83 @@ def main() -> None:
                     repeat=int(args.repeat),
                     block_output="layers",
                 )
+                if support_candidate_mode == "fallback_rescue_prune_neighbor":
+                    fallback_rescue_layer_indices = _fallback_layer_indices(
+                        experimental_last
+                    )
+                    if fallback_rescue_layer_indices:
+                        rescue_profile_args = _subset_profile_args(
+                            profile_args,
+                            fallback_rescue_layer_indices,
+                        )
+                        (
+                            rescue_execution_profile_args,
+                            rescue_candidate_metadata,
+                        ) = _support_candidate_profile_args(
+                            rescue_profile_args,
+                            mode="current_prune_neighbor",
+                        )
+                        start = time.perf_counter()
+                        rescue_plan = prepare_experimental_profile_fixed_support_batch_plan(
+                            setup,
+                            np.asarray(
+                                rescue_execution_profile_args["T"],
+                                dtype=np.float64,
+                            ),
+                            np.asarray(
+                                rescue_execution_profile_args["P"],
+                                dtype=np.float64,
+                            ),
+                            rescue_execution_profile_args["b"],
+                            Pref=1.0,
+                            init=rescue_execution_profile_args["init"],
+                            initializer=None,
+                            support_indices=None,
+                            support_amounts_init=None,
+                            options=plan_options,
+                        )
+                        _block_tree(rescue_plan.buckets)
+                        rescue_plan_prepare_seconds = time.perf_counter() - start
+                        rescue_last, rescue_timing = _time(
+                            lambda rescue_plan=rescue_plan, profile_args=profile_args: (
+                                _select_support_candidate_outputs(
+                                    run_experimental_profile_fixed_support_batch_plan(
+                                        rescue_plan,
+                                        element_inventory_target=(
+                                            None
+                                            if args.element_inventory_scale is None
+                                            else profile_args["b"]
+                                            * float(args.element_inventory_scale)
+                                        ),
+                                        rho_initialization=str(args.rho_initialization),
+                                        lambda_initialization=str(
+                                            args.lambda_initialization
+                                        ),
+                                        residual_tolerance_multiplier=float(
+                                            args.residual_tolerance_multiplier
+                                        ),
+                                    ),
+                                    rescue_candidate_metadata,
+                                )
+                            ),
+                            warmup=int(args.warmup),
+                            repeat=int(args.repeat),
+                            block_output="layers",
+                        )
+                        experimental_last = _merge_fallback_rescue_outputs(
+                            experimental_last,
+                            rescue_last,
+                            fallback_rescue_layer_indices,
+                        )
+                        experimental_timing = _combine_timing(
+                            experimental_timing,
+                            rescue_timing,
+                        )
+                    else:
+                        experimental_timing = _combine_timing(
+                            experimental_timing,
+                            None,
+                        )
         else:
             experimental_last, experimental_timing = _time(
                 lambda profile_args=profile_args: _run_profile(
@@ -1042,6 +1408,20 @@ def main() -> None:
                     jax.device_get(selected_support_counts),
                     dtype=np.int64,
                 )
+
+            def selected_label_at(*indices: int) -> str | None:
+                if selected_candidate_labels is None:
+                    return None
+                value = selected_candidate_labels
+                for index in indices:
+                    value = value[index]
+                return None if value is None else str(value)
+
+            def selected_support_count_at(*indices: int) -> int | None:
+                if selected_support_counts is None or selected_label_at(*indices) is None:
+                    return None
+                return int(selected_support_counts[indices])
+
             converged_count = int(np.count_nonzero(converged))
             fallback_required_count = int(np.count_nonzero(fallback_required))
             fast_path_layer_count = len(inputs) * int(args.element_inventory_batch_size)
@@ -1057,14 +1437,14 @@ def main() -> None:
                             "fallback_required": bool(
                                 fallback_required[eval_index, layer_index]
                             ),
-                            "selected_support_candidate": None
-                            if selected_candidate_labels is None
-                            else str(
-                                selected_candidate_labels[eval_index][layer_index]
+                            "selected_support_candidate": selected_label_at(
+                                eval_index,
+                                layer_index,
                             ),
-                            "selected_support_count": None
-                            if selected_support_counts is None
-                            else int(selected_support_counts[eval_index, layer_index]),
+                            "selected_support_count": selected_support_count_at(
+                                eval_index,
+                                layer_index,
+                            ),
                             "final_residual": float(
                                 final_residual[eval_index, layer_index]
                             ),
@@ -1091,12 +1471,8 @@ def main() -> None:
                         "layer_index": int(layer_index),
                         "converged": bool(converged[layer_index]),
                         "fallback_required": bool(fallback_required[layer_index]),
-                        "selected_support_candidate": None
-                        if selected_candidate_labels is None
-                        else str(selected_candidate_labels[layer_index]),
-                        "selected_support_count": None
-                        if selected_support_counts is None
-                        else int(selected_support_counts[layer_index]),
+                        "selected_support_candidate": selected_label_at(layer_index),
+                        "selected_support_count": selected_support_count_at(layer_index),
                         "final_residual": float(final_residual[layer_index]),
                         "residual_components": {
                             name: float(values[layer_index])
@@ -1150,6 +1526,15 @@ def main() -> None:
             )
             residual_summary = None
             per_layer_summary = None
+        rescue_candidate_expanded_layer_count = (
+            0
+            if rescue_candidate_metadata is None
+            else int(rescue_candidate_metadata["expanded_layer_count"])
+        )
+        total_executed_candidate_layer_count = (
+            int(candidate_metadata["expanded_layer_count"])
+            + rescue_candidate_expanded_layer_count
+        )
         row = {
             "family": family,
             "layer_count": len(inputs),
@@ -1158,6 +1543,12 @@ def main() -> None:
             "support_candidate_expanded_layer_count": int(
                 candidate_metadata["expanded_layer_count"]
             ),
+            "fallback_rescue_layer_indices": list(fallback_rescue_layer_indices),
+            "fallback_rescue_candidate_metadata": rescue_candidate_metadata,
+            "fallback_rescue_candidate_expanded_layer_count": (
+                rescue_candidate_expanded_layer_count
+            ),
+            "total_executed_candidate_layer_count": total_executed_candidate_layer_count,
             "rho_initialization": str(args.rho_initialization),
             "lambda_initialization": str(args.lambda_initialization),
             "lambda_candidate_labels": tuple(
@@ -1181,9 +1572,11 @@ def main() -> None:
             "experimental_per_layer": per_layer_summary,
             "prepared_plan": bool(args.prepared_plan),
             "plan_prepare_seconds": plan_prepare_seconds,
+            "fallback_rescue_plan_prepare_seconds": rescue_plan_prepare_seconds,
             "prepared_bucket_core": prepared_bucket_core_timing,
             "skipped_layers": family_skipped,
             "experimental": experimental_timing,
+            "fallback_rescue_experimental": rescue_timing,
             "baseline": baseline_timing,
             "speedup_vs_baseline": None
             if baseline_timing is None
@@ -1207,6 +1600,15 @@ def main() -> None:
                     "experimental_fast_path_layer_count": fast_path_layer_count,
                     "support_candidate_expanded_layer_count": int(
                         candidate_metadata["expanded_layer_count"]
+                    ),
+                    "fallback_rescue_layer_indices": list(
+                        fallback_rescue_layer_indices
+                    ),
+                    "fallback_rescue_candidate_expanded_layer_count": (
+                        rescue_candidate_expanded_layer_count
+                    ),
+                    "total_executed_candidate_layer_count": (
+                        total_executed_candidate_layer_count
                     ),
                     "experimental_residual_summary": residual_summary,
                     "experimental_nonconverged_layers": None
@@ -1244,6 +1646,18 @@ def main() -> None:
     )
     total_candidate_expanded_layers = sum(
         row["support_candidate_expanded_layer_count"] for row in rows
+    )
+    total_rescue_expanded_layers = sum(
+        row["fallback_rescue_candidate_expanded_layer_count"] for row in rows
+    )
+    total_executed_candidate_layers = sum(
+        row["total_executed_candidate_layer_count"] for row in rows
+    )
+    total_rescue_plan_prepare = sum(
+        0.0
+        if row["fallback_rescue_plan_prepare_seconds"] is None
+        else float(row["fallback_rescue_plan_prepare_seconds"])
+        for row in rows
     )
     total_plan_prepare = (
         None
@@ -1304,6 +1718,18 @@ def main() -> None:
                 total_candidate_expanded_layers
                 * int(args.element_inventory_batch_size)
             ),
+            "fallback_rescue_candidate_expanded_layer_count": (
+                total_rescue_expanded_layers
+            ),
+            "fallback_rescue_candidate_evaluation_count": (
+                total_rescue_expanded_layers
+                * int(args.element_inventory_batch_size)
+            ),
+            "total_executed_candidate_layer_count": total_executed_candidate_layers,
+            "total_executed_candidate_evaluation_count": (
+                total_executed_candidate_layers
+                * int(args.element_inventory_batch_size)
+            ),
             "total_experimental_warm_median_seconds": total_experimental,
             "experimental_warm_median_seconds_per_layer": None
             if total_layers == 0
@@ -1320,6 +1746,9 @@ def main() -> None:
             else (total_layers * int(args.element_inventory_batch_size))
             / total_experimental,
             "total_plan_prepare_seconds": total_plan_prepare,
+            "total_fallback_rescue_plan_prepare_seconds": (
+                total_rescue_plan_prepare
+            ),
             "plan_prepare_seconds_per_layer": None
             if total_layers == 0 or total_plan_prepare is None
             else total_plan_prepare / total_layers,

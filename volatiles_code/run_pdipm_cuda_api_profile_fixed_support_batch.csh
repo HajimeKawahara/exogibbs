@@ -404,6 +404,28 @@ if ( "$mode" == "a100_broad100_brepeat_candidates" ) then
     set label = "a100_broad100_brepeat${custom_batch_size}_candidates"
 endif
 
+if ( "$mode" == "a100_broad100_brepeat_rescue_candidates" ) then
+    if ( "$custom_batch_size" == "" ) then
+        echo "usage: $0 a100_broad100_brepeat_rescue_candidates N_EVAL"
+        exit 2
+    endif
+    set iterations = 100
+    set warmup = 0
+    set repeat = 2
+    set baseline = "--skip-baseline"
+    set budget_gate = "--disable-budget-gate"
+    set block_output = "--block-output batched"
+    set prepared_plan = "--prepared-plan"
+    set element_inventory_batch_size = "--element-inventory-batch-size $custom_batch_size"
+    set element_inventory_batch_mode = "--element-inventory-batch-mode repeat"
+    set support_source = "--support-source activity_outer"
+    set rho_initialization = "--rho-initialization complementarity"
+    set lambda_initialization = "--lambda-initialization best_residual"
+    set residual_tolerance_multiplier = "--residual-tolerance-multiplier 1.0e9"
+    set support_candidate_mode = "--support-candidate-mode fallback_rescue_prune_neighbor"
+    set label = "a100_broad100_brepeat${custom_batch_size}_rescue_candidates"
+endif
+
 if ( "$mode" == "a100_broad100_bmany_candidates" ) then
     if ( "$custom_batch_size" == "" ) then
         echo "usage: $0 a100_broad100_bmany_candidates N_EVAL"
