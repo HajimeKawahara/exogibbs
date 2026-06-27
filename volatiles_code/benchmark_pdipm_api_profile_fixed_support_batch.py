@@ -375,10 +375,25 @@ def _make_candidate_init(
     )
 
 
+def _parse_prune_relative_floors(value: str) -> tuple[float, ...]:
+    floors = tuple(
+        float(item)
+        for item in value.replace(";", ",").split(",")
+        if item.strip()
+    )
+    if not floors:
+        raise ValueError("--support-candidate-prune-floors must not be empty")
+    if any(not np.isfinite(floor) or floor <= 0.0 for floor in floors):
+        raise ValueError("--support-candidate-prune-floors must be positive finite values")
+    return tuple(sorted(set(floors)))
+
+
 def _support_candidate_profile_args(
     profile_args: Mapping[str, Any],
     *,
     mode: str,
+    prune_relative_floors: tuple[float, ...],
+    include_neighbor_union: bool,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     if mode == "current":
         n_layers = len(profile_args["init"])
@@ -395,6 +410,8 @@ def _support_candidate_profile_args(
                     len(tuple(init.support_indices or ()))
                     for init in profile_args["init"]
                 ],
+                "prune_relative_floors": [],
+                "include_neighbor_union": False,
             },
         )
     if mode != "current_prune_neighbor":
@@ -421,7 +438,7 @@ def _support_candidate_profile_args(
         ]
         amount_by_index = _amount_map(init)
         max_amount = max(base_amounts)
-        for relative_floor in (1.0e-9, 1.0e-7, 1.0e-6, 1.0e-5, 1.0e-4, 1.0e-3):
+        for relative_floor in prune_relative_floors:
             prune_floor = max(1.0e-12, relative_floor * max_amount)
             pruned = tuple(
                 index
@@ -438,22 +455,23 @@ def _support_candidate_profile_args(
                     )
                 )
 
-        neighbor_amounts: dict[int, float] = {}
-        for neighbor_index in (layer_index - 1, layer_index + 1):
-            if neighbor_index < 0 or neighbor_index >= len(inits):
-                continue
-            neighbor_amounts.update(_amount_map(inits[neighbor_index]))
-        union_support = tuple(sorted(set(base_support).union(neighbor_amounts)))
-        if union_support != base_support:
-            fallback_amount = max(min(base_amounts), 1.0e-30)
-            union_amounts = tuple(
-                amount_by_index.get(
-                    index,
-                    max(neighbor_amounts.get(index, fallback_amount), 1.0e-30),
+        if include_neighbor_union:
+            neighbor_amounts: dict[int, float] = {}
+            for neighbor_index in (layer_index - 1, layer_index + 1):
+                if neighbor_index < 0 or neighbor_index >= len(inits):
+                    continue
+                neighbor_amounts.update(_amount_map(inits[neighbor_index]))
+            union_support = tuple(sorted(set(base_support).union(neighbor_amounts)))
+            if union_support != base_support:
+                fallback_amount = max(min(base_amounts), 1.0e-30)
+                union_amounts = tuple(
+                    amount_by_index.get(
+                        index,
+                        max(neighbor_amounts.get(index, fallback_amount), 1.0e-30),
+                    )
+                    for index in union_support
                 )
-                for index in union_support
-            )
-            variants.append(("neighbor_union", union_support, union_amounts, False))
+                variants.append(("neighbor_union", union_support, union_amounts, False))
 
         seen: set[tuple[int, ...]] = set()
         kept_count = 0
@@ -492,6 +510,8 @@ def _support_candidate_profile_args(
             "expanded_to_original_layer": expanded_to_original,
             "candidate_labels": candidate_labels,
             "candidate_support_counts": candidate_support_counts,
+            "prune_relative_floors": list(prune_relative_floors),
+            "include_neighbor_union": bool(include_neighbor_union),
         },
     )
 
@@ -997,6 +1017,19 @@ def main() -> None:
             "candidates per original layer and select the best residual result."
         ),
     )
+    parser.add_argument(
+        "--support-candidate-prune-floors",
+        default="1e-9,1e-7,1e-6,1e-5,1e-4,1e-3",
+        help=(
+            "Comma-separated relative support amount floors for prune candidates. "
+            "Each value is multiplied by the current layer's max support amount."
+        ),
+    )
+    parser.add_argument(
+        "--disable-support-candidate-neighbor-union",
+        action="store_true",
+        help="Disable the neighbor-union support candidate.",
+    )
     parser.add_argument("--print-jax-devices", action="store_true")
     parser.add_argument(
         "--output",
@@ -1011,6 +1044,12 @@ def main() -> None:
     families = tuple(args.families or sorted(FRESH_CURATED_PROFILES))
     return_diagnostics = bool(args.return_diagnostics)
     budget_gate = not bool(args.disable_budget_gate)
+    support_candidate_prune_floors = _parse_prune_relative_floors(
+        str(args.support_candidate_prune_floors)
+    )
+    include_support_candidate_neighbor_union = not bool(
+        args.disable_support_candidate_neighbor_union
+    )
     rows = []
     skipped = []
     for family in families:
@@ -1062,6 +1101,8 @@ def main() -> None:
             execution_profile_args, candidate_metadata = _support_candidate_profile_args(
                 profile_args,
                 mode=support_candidate_mode,
+                prune_relative_floors=support_candidate_prune_floors,
+                include_neighbor_union=include_support_candidate_neighbor_union,
             )
             support_metadata["support_candidate_metadata"] = candidate_metadata
         elif support_candidate_mode == "fallback_rescue_prune_neighbor":
@@ -1170,6 +1211,10 @@ def main() -> None:
                         ) = _support_candidate_profile_args(
                             rescue_profile_args,
                             mode="current_prune_neighbor",
+                            prune_relative_floors=support_candidate_prune_floors,
+                            include_neighbor_union=(
+                                include_support_candidate_neighbor_union
+                            ),
                         )
                         start = time.perf_counter()
                         rescue_plan = prepare_experimental_profile_fixed_support_batch_plan(
@@ -1267,6 +1312,10 @@ def main() -> None:
                         ) = _support_candidate_profile_args(
                             rescue_profile_args,
                             mode="current_prune_neighbor",
+                            prune_relative_floors=support_candidate_prune_floors,
+                            include_neighbor_union=(
+                                include_support_candidate_neighbor_union
+                            ),
                         )
                         start = time.perf_counter()
                         rescue_plan = prepare_experimental_profile_fixed_support_batch_plan(
@@ -1695,6 +1744,10 @@ def main() -> None:
         "element_inventory_batch_size": int(args.element_inventory_batch_size),
         "element_inventory_batch_mode": str(args.element_inventory_batch_mode),
         "support_candidate_mode": str(args.support_candidate_mode),
+        "support_candidate_prune_floors": list(support_candidate_prune_floors),
+        "support_candidate_neighbor_union": bool(
+            include_support_candidate_neighbor_union
+        ),
         "residual_tolerance_multiplier": float(args.residual_tolerance_multiplier),
         "skipped_layers": skipped,
         "summary": {
