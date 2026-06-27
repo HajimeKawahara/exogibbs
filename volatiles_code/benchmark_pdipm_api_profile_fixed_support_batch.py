@@ -1130,6 +1130,7 @@ def main() -> None:
         rescue_timing = None
         fallback_rescue_layer_indices: tuple[int, ...] = ()
         prepared_bucket_core_timing = None
+        api_rescue_cache = None
         if args.prepared_plan:
             plan_options = CondensateEquilibriumOptions(
                 profile_method="vmap_cold",
@@ -1153,7 +1154,6 @@ def main() -> None:
             )
             _block_tree(plan.buckets)
             plan_prepare_seconds = time.perf_counter() - start
-            api_rescue_cache = None
             if support_candidate_mode == "api_cached_fallback_rescue_prune":
                 api_rescue_cache = (
                     ExperimentalCondensateProfileFixedSupportPruneRescueCache()
@@ -1923,7 +1923,7 @@ def main() -> None:
     baseline_rows = [row for row in rows if row["baseline"] is not None]
     total_baseline = (
         None
-        if len(baseline_rows) != len(rows)
+        if len(rows) == 0 or len(baseline_rows) != len(rows)
         else sum(row["baseline"]["warm_median_seconds"] for row in baseline_rows)
     )
     delta_rows = [
@@ -2018,7 +2018,7 @@ def main() -> None:
             else total_layers / total_prepared_bucket_core,
             "total_baseline_warm_median_seconds": total_baseline,
             "speedup_vs_baseline": None
-            if total_baseline is None
+            if total_baseline is None or total_experimental == 0.0
             else total_baseline / total_experimental,
             "max_gas_ln_n_abs_delta": None
             if not delta_rows
