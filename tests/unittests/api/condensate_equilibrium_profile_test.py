@@ -514,6 +514,32 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
             ),
         )
     )
+    rescue_cache = (
+        condmod.ExperimentalCondensateProfileFixedSupportPruneRescueCache()
+    )
+    cached_rescue_arrays = (
+        condmod.run_experimental_profile_fixed_support_batch_plan_with_cached_fallback_rescue(
+            plan,
+            rescue_cache,
+            element_inventory_target=jnp.asarray(
+                [[1.0, 1.0], [1.0, 1.0]],
+                dtype=jnp.float64,
+            ),
+        )
+    )
+    cached_many_rescue_arrays = (
+        condmod.run_experimental_profile_fixed_support_batch_plan_many_with_cached_fallback_rescue(
+            plan,
+            rescue_cache,
+            jnp.asarray(
+                [
+                    [[1.0, 1.0], [1.0, 1.0]],
+                    [[1.0, 1.0], [1.0, 1.0]],
+                ],
+                dtype=jnp.float64,
+            ),
+        )
+    )
     assert rescue_arrays["fallback_required"].shape == (2,)
     assert rescue_arrays["fallback_rescue"]["mode"] == "none"
     assert rescue_arrays["fallback_rescue"]["expanded_layer_count"] == 0
@@ -537,6 +563,18 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     )
     assert jnp.allclose(
         prepared_many_rescue_arrays["gas_ln_n"],
+        direct_many_rescue_base_arrays["gas_ln_n"],
+    )
+    assert rescue_cache.prepare_count == 1
+    assert rescue_cache.hit_count == 1
+    assert cached_rescue_arrays["fallback_rescue"]["mode"] == "none"
+    assert cached_many_rescue_arrays["fallback_rescue"]["mode"] == "none"
+    assert jnp.allclose(
+        cached_rescue_arrays["gas_ln_n"],
+        direct_rescue_base_arrays["gas_ln_n"],
+    )
+    assert jnp.allclose(
+        cached_many_rescue_arrays["gas_ln_n"],
         direct_many_rescue_base_arrays["gas_ln_n"],
     )
 

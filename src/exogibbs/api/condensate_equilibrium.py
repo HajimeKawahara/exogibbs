@@ -7,7 +7,7 @@ through the current condensate HEAD route contract.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 import math
 from typing import Any, Literal, Mapping, Optional, Protocol, Sequence, runtime_checkable
 import weakref
@@ -299,11 +299,25 @@ class ExperimentalCondensateProfileFixedSupportPruneRescuePlan:
     metadata: Mapping[str, Any]
 
 
+@dataclass
+class ExperimentalCondensateProfileFixedSupportPruneRescueCache:
+    """Cache prune-rescue plans keyed by fallback layer set and prune floors."""
+
+    plans: dict[tuple[Any, ...], ExperimentalCondensateProfileFixedSupportPruneRescuePlan] = field(
+        default_factory=dict
+    )
+    prepare_count: int = 0
+    hit_count: int = 0
+
+
 _ExperimentalProfileFixedSupportBatchPlan = (
     ExperimentalCondensateProfileFixedSupportBatchPlan
 )
 _ExperimentalProfileFixedSupportPruneRescuePlan = (
     ExperimentalCondensateProfileFixedSupportPruneRescuePlan
+)
+_ExperimentalProfileFixedSupportPruneRescueCache = (
+    ExperimentalCondensateProfileFixedSupportPruneRescueCache
 )
 _DEFAULT_CONDENSATE_INITIALIZER = DefaultCondensateEquilibriumInitializer()
 
@@ -6754,6 +6768,41 @@ def prepare_experimental_profile_fixed_support_prune_rescue_plan(
     )
 
 
+def _fixed_support_prune_rescue_cache_key(
+    fallback_layer_indices: Sequence[int],
+    prune_relative_floors: Sequence[float],
+) -> tuple[Any, ...]:
+    return (
+        tuple(int(index) for index in fallback_layer_indices),
+        tuple(float(floor) for floor in prune_relative_floors),
+    )
+
+
+def _get_cached_fixed_support_prune_rescue_plan(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    cache: ExperimentalCondensateProfileFixedSupportPruneRescueCache,
+    fallback_layer_indices: Sequence[int],
+    *,
+    prune_relative_floors: Sequence[float],
+) -> ExperimentalCondensateProfileFixedSupportPruneRescuePlan:
+    key = _fixed_support_prune_rescue_cache_key(
+        fallback_layer_indices,
+        prune_relative_floors,
+    )
+    cached = cache.plans.get(key)
+    if cached is not None:
+        cache.hit_count += 1
+        return cached
+    prepared = prepare_experimental_profile_fixed_support_prune_rescue_plan(
+        plan,
+        fallback_layer_indices,
+        prune_relative_floors=prune_relative_floors,
+    )
+    cache.plans[key] = prepared
+    cache.prepare_count += 1
+    return prepared
+
+
 def _fixed_support_prune_rescue_single_target(
     element_inventory_target: Optional[Array],
     rescue_metadata: Mapping[str, Any],
@@ -6816,6 +6865,59 @@ def run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_res
             base_arrays,
             rescue.metadata,
         )
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan(
+        rescue.rescue_plan,
+        element_inventory_target=_fixed_support_prune_rescue_single_target(
+            element_inventory_target,
+            rescue.metadata,
+        ),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue.metadata,
+    )
+
+
+def run_experimental_profile_fixed_support_batch_plan_with_cached_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    cache: ExperimentalCondensateProfileFixedSupportPruneRescueCache,
+    *,
+    element_inventory_target: Optional[Array] = None,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> Mapping[str, Any]:
+    """Run fallback rescue while caching rescue plans for repeated layer sets."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    if not isinstance(cache, ExperimentalCondensateProfileFixedSupportPruneRescueCache):
+        raise TypeError(
+            "cache must be an "
+            "ExperimentalCondensateProfileFixedSupportPruneRescueCache."
+        )
+    base_arrays = run_experimental_profile_fixed_support_batch_plan(
+        plan,
+        element_inventory_target=element_inventory_target,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    rescue = _get_cached_fixed_support_prune_rescue_plan(
+        plan,
+        cache,
+        _fallback_layer_indices_from_fixed_support_arrays(base_arrays),
+        prune_relative_floors=prune_relative_floors,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(base_arrays, rescue.metadata)
     rescue_arrays = run_experimental_profile_fixed_support_batch_plan(
         rescue.rescue_plan,
         element_inventory_target=_fixed_support_prune_rescue_single_target(
@@ -7240,6 +7342,60 @@ def run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallbac
     )
 
 
+def run_experimental_profile_fixed_support_batch_plan_many_with_cached_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    cache: ExperimentalCondensateProfileFixedSupportPruneRescueCache,
+    element_inventory_targets: Array,
+    *,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> Mapping[str, Any]:
+    """Run many fallback-rescue evaluations with cached rescue plans."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    if not isinstance(cache, ExperimentalCondensateProfileFixedSupportPruneRescueCache):
+        raise TypeError(
+            "cache must be an "
+            "ExperimentalCondensateProfileFixedSupportPruneRescueCache."
+        )
+    targets = jnp.asarray(element_inventory_targets, dtype=jnp.float64)
+    base_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        plan,
+        targets,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    rescue = _get_cached_fixed_support_prune_rescue_plan(
+        plan,
+        cache,
+        _fallback_layer_indices_from_fixed_support_arrays(base_arrays),
+        prune_relative_floors=prune_relative_floors,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(
+            base_arrays,
+            rescue.metadata,
+        )
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        rescue.rescue_plan,
+        _fixed_support_prune_rescue_many_targets(targets, rescue.metadata),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue.metadata,
+    )
+
+
 def run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue(
     plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
     element_inventory_targets: Array,
@@ -7443,6 +7599,7 @@ __all__ = (
     "CondensateProfileWarmStartSupportPolicy",
     "DefaultCondensateEquilibriumInitializer",
     "ExperimentalCondensateProfileFixedSupportBatchPlan",
+    "ExperimentalCondensateProfileFixedSupportPruneRescueCache",
     "ExperimentalCondensateProfileFixedSupportPruneRescuePlan",
     "build_condensate_chemical_setup",
     "build_condensate_equilibrium_result_from_solver_payload",
@@ -7451,9 +7608,11 @@ __all__ = (
     "prepare_experimental_profile_fixed_support_batch_plan",
     "prepare_experimental_profile_fixed_support_prune_rescue_plan",
     "run_experimental_profile_fixed_support_batch_plan",
+    "run_experimental_profile_fixed_support_batch_plan_with_cached_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_many",
+    "run_experimental_profile_fixed_support_batch_plan_many_with_cached_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue",
     "validate_condensate_chemical_setup",

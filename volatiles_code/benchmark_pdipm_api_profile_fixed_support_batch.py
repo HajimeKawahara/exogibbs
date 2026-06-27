@@ -50,14 +50,17 @@ from benchmark_pdipm_fixed_support_core import (  # noqa: E402
 from exogibbs.api.condensate_equilibrium import (  # noqa: E402
     CondensateEquilibriumInit,
     CondensateEquilibriumOptions,
+    ExperimentalCondensateProfileFixedSupportPruneRescueCache,
     condensate_equilibrium,
     condensate_equilibrium_profile,
     prepare_experimental_profile_fixed_support_batch_plan,
     prepare_experimental_profile_fixed_support_prune_rescue_plan,
     run_experimental_profile_fixed_support_batch_plan,
+    run_experimental_profile_fixed_support_batch_plan_with_cached_fallback_rescue,
     run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue,
     run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue,
     run_experimental_profile_fixed_support_batch_plan_many,
+    run_experimental_profile_fixed_support_batch_plan_many_with_cached_fallback_rescue,
     run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue,
     run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue,
 )
@@ -1017,6 +1020,7 @@ def main() -> None:
             "fallback_rescue_prune_neighbor",
             "api_fallback_rescue_prune",
             "api_prepared_fallback_rescue_prune",
+            "api_cached_fallback_rescue_prune",
         ),
         default="current",
         help=(
@@ -1116,6 +1120,7 @@ def main() -> None:
             "fallback_rescue_prune_neighbor",
             "api_fallback_rescue_prune",
             "api_prepared_fallback_rescue_prune",
+            "api_cached_fallback_rescue_prune",
         ):
             if not args.prepared_plan:
                 raise ValueError("--support-candidate-mode requires --prepared-plan")
@@ -1148,6 +1153,11 @@ def main() -> None:
             )
             _block_tree(plan.buckets)
             plan_prepare_seconds = time.perf_counter() - start
+            api_rescue_cache = None
+            if support_candidate_mode == "api_cached_fallback_rescue_prune":
+                api_rescue_cache = (
+                    ExperimentalCondensateProfileFixedSupportPruneRescueCache()
+                )
             _bucket_core_last, prepared_bucket_core_timing = _time(
                 lambda plan=plan: _run_plan_bucket_core(
                     plan,
@@ -1216,7 +1226,7 @@ def main() -> None:
                     rescue_plan_prepare_seconds = time.perf_counter() - start
                     rescue_candidate_metadata = prepared_api_rescue.metadata
                 experimental_last, experimental_timing = _time(
-                    lambda plan=plan, batched_targets=batched_targets, prepared_api_rescue=prepared_api_rescue: (
+                    lambda plan=plan, batched_targets=batched_targets, prepared_api_rescue=prepared_api_rescue, api_rescue_cache=api_rescue_cache: (
                         run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue(
                             plan,
                             batched_targets,
@@ -1228,6 +1238,18 @@ def main() -> None:
                             prune_relative_floors=support_candidate_prune_floors,
                         )
                         if support_candidate_mode == "api_fallback_rescue_prune"
+                        else run_experimental_profile_fixed_support_batch_plan_many_with_cached_fallback_rescue(
+                            plan,
+                            api_rescue_cache,
+                            batched_targets,
+                            rho_initialization=str(args.rho_initialization),
+                            lambda_initialization=str(args.lambda_initialization),
+                            residual_tolerance_multiplier=float(
+                                args.residual_tolerance_multiplier
+                            ),
+                            prune_relative_floors=support_candidate_prune_floors,
+                        )
+                        if support_candidate_mode == "api_cached_fallback_rescue_prune"
                         else run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue(
                             plan,
                             prepared_api_rescue,
@@ -1366,7 +1388,7 @@ def main() -> None:
                     rescue_plan_prepare_seconds = time.perf_counter() - start
                     rescue_candidate_metadata = prepared_api_rescue.metadata
                 experimental_last, experimental_timing = _time(
-                    lambda plan=plan, profile_args=profile_args, prepared_api_rescue=prepared_api_rescue: (
+                    lambda plan=plan, profile_args=profile_args, prepared_api_rescue=prepared_api_rescue, api_rescue_cache=api_rescue_cache: (
                         run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
                             plan,
                             element_inventory_target=(
@@ -1383,6 +1405,22 @@ def main() -> None:
                             prune_relative_floors=support_candidate_prune_floors,
                         )
                         if support_candidate_mode == "api_fallback_rescue_prune"
+                        else run_experimental_profile_fixed_support_batch_plan_with_cached_fallback_rescue(
+                            plan,
+                            api_rescue_cache,
+                            element_inventory_target=(
+                                None
+                                if args.element_inventory_scale is None
+                                else profile_args["b"] * float(args.element_inventory_scale)
+                            ),
+                            rho_initialization=str(args.rho_initialization),
+                            lambda_initialization=str(args.lambda_initialization),
+                            residual_tolerance_multiplier=float(
+                                args.residual_tolerance_multiplier
+                            ),
+                            prune_relative_floors=support_candidate_prune_floors,
+                        )
+                        if support_candidate_mode == "api_cached_fallback_rescue_prune"
                         else run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue(
                             plan,
                             prepared_api_rescue,
@@ -1724,6 +1762,13 @@ def main() -> None:
             int(candidate_metadata["expanded_layer_count"])
             + rescue_candidate_expanded_layer_count
         )
+        fallback_rescue_cache = None
+        if api_rescue_cache is not None:
+            fallback_rescue_cache = {
+                "prepare_count": int(api_rescue_cache.prepare_count),
+                "hit_count": int(api_rescue_cache.hit_count),
+                "cached_plan_count": int(len(api_rescue_cache.plans)),
+            }
         row = {
             "family": family,
             "layer_count": len(inputs),
@@ -1738,6 +1783,7 @@ def main() -> None:
             "fallback_rescue_candidate_expanded_layer_count": (
                 rescue_candidate_expanded_layer_count
             ),
+            "fallback_rescue_cache": fallback_rescue_cache,
             "total_executed_candidate_layer_count": total_executed_candidate_layer_count,
             "rho_initialization": str(args.rho_initialization),
             "lambda_initialization": str(args.lambda_initialization),
@@ -1797,6 +1843,7 @@ def main() -> None:
                     "fallback_rescue_candidate_expanded_layer_count": (
                         rescue_candidate_expanded_layer_count
                     ),
+                    "fallback_rescue_cache": fallback_rescue_cache,
                     "total_executed_candidate_layer_count": (
                         total_executed_candidate_layer_count
                     ),
@@ -1847,6 +1894,18 @@ def main() -> None:
         0.0
         if row["fallback_rescue_plan_prepare_seconds"] is None
         else float(row["fallback_rescue_plan_prepare_seconds"])
+        for row in rows
+    )
+    total_rescue_cache_prepare_count = sum(
+        0
+        if row["fallback_rescue_cache"] is None
+        else int(row["fallback_rescue_cache"]["prepare_count"])
+        for row in rows
+    )
+    total_rescue_cache_hit_count = sum(
+        0
+        if row["fallback_rescue_cache"] is None
+        else int(row["fallback_rescue_cache"]["hit_count"])
         for row in rows
     )
     total_plan_prepare = (
@@ -1943,6 +2002,10 @@ def main() -> None:
             "total_fallback_rescue_plan_prepare_seconds": (
                 total_rescue_plan_prepare
             ),
+            "fallback_rescue_cache_prepare_count": (
+                total_rescue_cache_prepare_count
+            ),
+            "fallback_rescue_cache_hit_count": total_rescue_cache_hit_count,
             "plan_prepare_seconds_per_layer": None
             if total_layers == 0 or total_plan_prepare is None
             else total_plan_prepare / total_layers,
