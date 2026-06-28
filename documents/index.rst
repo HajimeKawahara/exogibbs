@@ -25,13 +25,12 @@ Contents
    presets/ykb4.rst
    presets/fastchem.rst
    presets/fastchem4.rst
+   condensate_profile.rst
 
 .. toctree::
    :maxdepth: 1
    :caption: notebooks:
 
-   ipynb/chemical_potential.rst
-   ipynb/tce_two_species.rst
    ipynb/h2ocond.rst
    
    
@@ -39,18 +38,7 @@ Contents
    :maxdepth: 1
    :caption: API:
 
-   exogibbs/exogibbs.rst
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Diagnostics:
-
-   diagnostics/positive_support_experimental.rst
-   diagnostics/component_safe_curated_policy.rst
-   diagnostics/selector_scope_and_empty_support_boundary.rst
-
-
-
+   exogibbs/index.rst
 
 License & Attribution
 ---------------------
