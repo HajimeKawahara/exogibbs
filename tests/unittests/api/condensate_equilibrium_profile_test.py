@@ -311,6 +311,38 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     assert fast_result.batched_arrays["condensate_amounts"].shape == (2, 2)
     assert tuple(fast_result.layers[0].condensate_support_indices.tolist()) == (0, 1)
 
+    rescue_profile_result = condmod.condensate_equilibrium_profile(
+        setup,
+        jnp.asarray([1000.0, 1100.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        init=init,
+        options=CondensateEquilibriumOptions(
+            profile_method="vmap_cold",
+            profile_warm_start_support_policy="explicit_payload",
+            enable_experimental_profile_fixed_support_batch=True,
+            enable_experimental_profile_fixed_support_fallback_rescue=True,
+            enable_full_condensate_budget_residual_gate=False,
+            max_inner_iterations=8,
+        ),
+        return_diagnostics=True,
+    )
+
+    assert rescue_profile_result.method == "vmap_cold"
+    assert all(layer.converged for layer in rescue_profile_result.layers)
+    rescue_profile_diagnostics = rescue_profile_result.diagnostics[
+        "experimental_profile_fixed_support_batch"
+    ]
+    assert (
+        rescue_profile_diagnostics["route"]
+        == "experimental_profile_fixed_support_batch_fallback_rescue"
+    )
+    assert rescue_profile_diagnostics["fallback_rescue"]["mode"] == "none"
+    assert (
+        rescue_profile_result.layers[0].selected_route
+        == "experimental_profile_fixed_support_batch_fallback_rescue"
+    )
+
     plan = condmod.prepare_experimental_profile_fixed_support_batch_plan(
         setup,
         jnp.asarray([1000.0, 1100.0], dtype=jnp.float64),
