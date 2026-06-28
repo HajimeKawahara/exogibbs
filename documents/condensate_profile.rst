@@ -133,6 +133,41 @@ Useful fields include:
    Per-layer diagnostics.  Fixed-support batch results attach the batch route
    report to each layer so failed or rescued layers can be inspected.
 
+Experimental Payload Helpers
+----------------------------
+The ``exogibbs.condensates`` namespace includes experimental helpers for
+preparing fixed-support payloads before calling the profile API.  These
+helpers are intentionally separate from the PD-IPM solver: they only build
+explicit support indices, seed amounts, and objective-aware selection reports.
+
+The release-oriented default policy is:
+
+* dynamic top-k grid ``(8, 12, 16)``;
+* up to three inactive-driving expansion rounds;
+* support cap ``48``;
+* objective acceptance requiring convergence, budget residual acceptance,
+  non-increasing native ExoGibbs ``G/RT`` against the curated baseline, and
+  inactive-driving improvement;
+* a support-economy knee rule with inactive-driving factor ``1.5``.
+
+Minimal imports:
+
+.. code-block:: python
+
+   from exogibbs.condensates import (
+       FixedSupportPayloadOptions,
+       build_dynamic_expansion_payload,
+       select_objective_aware_payload,
+   )
+
+``build_dynamic_expansion_payload`` expects an already-solved profile result
+and returns an explicit support payload that can be passed to
+``condensate_equilibrium_profile`` through ``support_indices`` and
+``support_amounts_init``.  ``select_objective_aware_payload`` consumes
+ExoGibbs-native metrics from candidate payloads and applies the acceptance and
+knee rules.  FastChem4 comparison values are not constructor inputs for these
+helpers.
+
 GPU Notes
 ---------
 The profile API is backend-neutral.  It uses JAX arrays and therefore runs on
