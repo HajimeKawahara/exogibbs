@@ -188,6 +188,33 @@ def test_condensate_profile_method_can_be_selected_from_options(monkeypatch):
     assert calls[1]["support_indices"] == (1,)
 
 
+def test_condensate_profile_auto_defaults_to_scan_without_fixed_support(monkeypatch):
+    setup = _fake_setup()
+    calls = []
+
+    def fake_condensate_equilibrium(*args, **kwargs):
+        calls.append(kwargs)
+        return _fake_result(float(len(calls)))
+
+    monkeypatch.setattr(
+        condmod,
+        "condensate_equilibrium",
+        fake_condensate_equilibrium,
+        raising=True,
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        jnp.asarray([1000.0, 1100.0]),
+        jnp.asarray([1.0, 1.0]),
+        jnp.asarray([1.0, 1.0]),
+    )
+
+    assert result.method == "scan_hot_from_top"
+    assert calls[0].get("support_indices") is None
+    assert calls[1]["support_indices"] == (1,)
+
+
 def test_condensate_profile_can_warm_start_gas_with_explicit_support(monkeypatch):
     setup = _fake_setup()
     calls = []
@@ -340,6 +367,28 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     assert rescue_profile_diagnostics["fallback_rescue"]["mode"] == "none"
     assert (
         rescue_profile_result.layers[0].selected_route
+        == "experimental_profile_fixed_support_batch_fallback_rescue"
+    )
+
+    auto_rescue_profile_result = condmod.condensate_equilibrium_profile(
+        setup,
+        jnp.asarray([1000.0, 1100.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        init=init,
+        options=CondensateEquilibriumOptions(
+            enable_full_condensate_budget_residual_gate=False,
+            max_inner_iterations=8,
+        ),
+        return_diagnostics=True,
+    )
+
+    assert auto_rescue_profile_result.method == "vmap_cold"
+    auto_profile_diagnostics = auto_rescue_profile_result.diagnostics[
+        "experimental_profile_fixed_support_batch"
+    ]
+    assert (
+        auto_profile_diagnostics["route"]
         == "experimental_profile_fixed_support_batch_fallback_rescue"
     )
 

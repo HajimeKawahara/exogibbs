@@ -47,6 +47,7 @@ CondensatePrimaryDualInitializationPolicy = Literal[
     "ipopt_push_floor",
 ]
 CondensateProfileMethod = Literal[
+    "auto",
     "vmap_cold",
     "scan_hot_from_top",
     "scan_hot_from_bottom",
@@ -5676,10 +5677,41 @@ def condensate_equilibrium(
 def _resolve_condensate_profile_method(
     method: Optional[CondensateProfileMethod],
     initializer: Optional[CondensateEquilibriumInitializer],
+    *,
+    has_fixed_support_payload: bool = False,
 ) -> CondensateProfileMethod:
-    if method is not None:
+    if method is not None and method != "auto":
         return method
-    return "vmap_cold"
+    if has_fixed_support_payload or initializer is not None:
+        return "vmap_cold"
+    return "scan_hot_from_top"
+
+
+def _profile_has_complete_fixed_support_payload(
+    explicit_inits: Sequence[CondensateEquilibriumInit | None],
+    *,
+    support_indices: Optional[Sequence[int]],
+    support_amounts_init: Optional[Sequence[float]],
+) -> bool:
+    if support_indices is not None:
+        return support_amounts_init is not None
+    if not explicit_inits:
+        return False
+    return all(
+        init is not None
+        and init.gas_ln_n is not None
+        and (
+            (
+                init.support_indices is not None
+                and (
+                    init.support_amounts is not None
+                    or init.condensate_amounts is not None
+                )
+            )
+            or init.condensate_amounts is not None
+        )
+        for init in explicit_inits
+    )
 
 
 def _resolve_condensate_initial_guess(
@@ -7753,16 +7785,6 @@ def condensate_equilibrium_profile(
         raise ValueError("T and P must have the same length.")
     opts = options or CondensateEquilibriumOptions()
     _validate_options(opts)
-    resolved_method = _resolve_condensate_profile_method(
-        method if method is not None else opts.profile_method,
-        initializer,
-    )
-    valid_methods = ("vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom")
-    if resolved_method not in valid_methods:
-        raise ValueError(
-            f"Unknown condensate profile solve method '{resolved_method}'. "
-            f"Expected one of {valid_methods}."
-        )
     n_layers = int(temperatures.shape[0])
     explicit_inits: tuple[CondensateEquilibriumInit | None, ...]
     if init is None:
@@ -7771,6 +7793,32 @@ def condensate_equilibrium_profile(
         explicit_inits = tuple(init)
         if len(explicit_inits) != n_layers:
             raise ValueError("init must have one entry per profile layer.")
+    requested_method = method if method is not None else opts.profile_method
+    auto_method = requested_method is None or requested_method == "auto"
+    has_fixed_support_payload = _profile_has_complete_fixed_support_payload(
+        explicit_inits,
+        support_indices=support_indices,
+        support_amounts_init=support_amounts_init,
+    )
+    resolved_method = _resolve_condensate_profile_method(
+        requested_method,
+        initializer,
+        has_fixed_support_payload=has_fixed_support_payload,
+    )
+    valid_methods = ("vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom")
+    if resolved_method not in valid_methods:
+        raise ValueError(
+            f"Unknown condensate profile solve method '{resolved_method}'. "
+            f"Expected one of {valid_methods} or 'auto'."
+        )
+    if auto_method and resolved_method == "vmap_cold" and has_fixed_support_payload:
+        opts = replace(
+            opts,
+            profile_method="auto",
+            profile_warm_start_support_policy="explicit_payload",
+            enable_experimental_profile_fixed_support_batch=True,
+            enable_experimental_profile_fixed_support_fallback_rescue=True,
+        )
 
     if resolved_method == "vmap_cold":
         experimental_batch_result = _run_experimental_profile_fixed_support_batch(
