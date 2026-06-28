@@ -7,7 +7,7 @@ through the current condensate HEAD route contract.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 import math
 from typing import Any, Literal, Mapping, Optional, Protocol, Sequence, runtime_checkable
 import weakref
@@ -47,6 +47,7 @@ CondensatePrimaryDualInitializationPolicy = Literal[
     "ipopt_push_floor",
 ]
 CondensateProfileMethod = Literal[
+    "auto",
     "vmap_cold",
     "scan_hot_from_top",
     "scan_hot_from_bottom",
@@ -138,6 +139,20 @@ class CondensateEquilibriumOptions:
     warm_start_gas_refresh_policy: CondensateWarmStartGasRefreshPolicy = "native_gas_solver"
     restricted_reduced_coupling_mode: str = "pdipm_rgie_v11_activity_correction"
     restricted_reduced_coupling_alpha_s: float = 1.0
+    enable_experimental_profile_fixed_support_batch: bool = False
+    enable_experimental_profile_fixed_support_fallback_rescue: bool = False
+    experimental_profile_fixed_support_rescue_prune_relative_floors: Sequence[
+        float
+    ] = (1.0e-5, 1.0e-3)
+    experimental_profile_fixed_support_rescue_rho_initialization: str = (
+        "complementarity"
+    )
+    experimental_profile_fixed_support_rescue_lambda_initialization: str = (
+        "best_residual"
+    )
+    experimental_profile_fixed_support_rescue_residual_tolerance_multiplier: float = (
+        1.0e9
+    )
     head_route_primary_center_tolerance_multiplier: Optional[float] = None
     head_route_primary_residual_worsening_tolerance: Optional[float] = None
     head_route_primary_require_residual_nonworsening: Optional[bool] = None
@@ -216,6 +231,10 @@ class CondensateEquilibriumInit:
     condensate_amounts: Optional[Array] = None
     support_indices: Optional[Sequence[int]] = None
     support_amounts: Optional[Sequence[float]] = None
+    element_potential: Optional[Array] = None
+    rho: Optional[Array] = None
+    barrier_epsilon: Optional[Array] = None
+    gas_stationarity_source: Optional[Array] = None
 
 
 @dataclass(frozen=True)
@@ -265,8 +284,55 @@ class CondensateEquilibriumProfileResult:
     layers: tuple[CondensateEquilibriumResult, ...]
     method: CondensateProfileMethod
     diagnostics: Optional[Mapping[str, Any]] = None
+    batched_arrays: Optional[Mapping[str, Array]] = None
 
 
+@dataclass(frozen=True)
+class ExperimentalCondensateProfileFixedSupportBatchPlan:
+    """Reusable experimental fixed-support profile plan.
+
+    This is an opt-in GPU-oriented surface for repeated profile evaluations
+    with fixed condensate support. It intentionally does not change the default
+    ``condensate_equilibrium_profile`` route.
+    """
+
+    setup: CondensateChemicalSetup
+    buckets: Sequence[Any]
+    formula_matrix: Array
+    max_iter: int
+    n_layers: int
+    condensate_count: int
+    bucket_layer_index_arrays: tuple[Array, ...] = ()
+
+
+@dataclass(frozen=True)
+class ExperimentalCondensateProfileFixedSupportPruneRescuePlan:
+    """Prepared prune-rescue plan for fallback layers of a fixed-support plan."""
+
+    rescue_plan: Optional[ExperimentalCondensateProfileFixedSupportBatchPlan]
+    metadata: Mapping[str, Any]
+
+
+@dataclass
+class ExperimentalCondensateProfileFixedSupportPruneRescueCache:
+    """Cache prune-rescue plans keyed by fallback layer set and prune floors."""
+
+    plans: dict[tuple[Any, ...], ExperimentalCondensateProfileFixedSupportPruneRescuePlan] = field(
+        default_factory=dict
+    )
+    prepare_count: int = 0
+    hit_count: int = 0
+
+
+_ExperimentalProfileFixedSupportBatchPlan = (
+    ExperimentalCondensateProfileFixedSupportBatchPlan
+)
+_ExperimentalProfileFixedSupportPruneRescuePlan = (
+    ExperimentalCondensateProfileFixedSupportPruneRescuePlan
+)
+_ExperimentalProfileFixedSupportPruneRescueCache = (
+    ExperimentalCondensateProfileFixedSupportPruneRescueCache
+)
 _DEFAULT_CONDENSATE_INITIALIZER = DefaultCondensateEquilibriumInitializer()
 
 
@@ -457,6 +523,41 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
         raise ValueError(
             "restricted_reduced_coupling_mode must be one of "
             f"{sorted(valid_reduced_coupling_modes)}."
+        )
+    if not isinstance(options.enable_experimental_profile_fixed_support_batch, bool):
+        raise TypeError(
+            "enable_experimental_profile_fixed_support_batch must be a bool."
+        )
+    if not isinstance(
+        options.enable_experimental_profile_fixed_support_fallback_rescue,
+        bool,
+    ):
+        raise TypeError(
+            "enable_experimental_profile_fixed_support_fallback_rescue must be a bool."
+        )
+    rescue_floors = tuple(
+        float(value)
+        for value in options.experimental_profile_fixed_support_rescue_prune_relative_floors
+    )
+    if not rescue_floors or any(
+        not math.isfinite(value) or value <= 0.0 for value in rescue_floors
+    ):
+        raise ValueError(
+            "experimental_profile_fixed_support_rescue_prune_relative_floors "
+            "must contain positive finite values."
+        )
+    if (
+        not math.isfinite(
+            float(
+                options.experimental_profile_fixed_support_rescue_residual_tolerance_multiplier
+            )
+        )
+        or options.experimental_profile_fixed_support_rescue_residual_tolerance_multiplier
+        <= 0.0
+    ):
+        raise ValueError(
+            "experimental_profile_fixed_support_rescue_residual_tolerance_multiplier "
+            "must be positive and finite."
         )
     if options.restricted_reduced_coupling_alpha_s <= 0.0:
         raise ValueError("restricted_reduced_coupling_alpha_s must be positive.")
@@ -2922,10 +3023,50 @@ def _solver_log_state_from_condensate_init(
         return None
     from exogibbs.optimize.minimize_cond import CondensateEquilibriumInit as SolverInit
 
+    element_potential = None
+    if init.element_potential is not None:
+        element_potential = jnp.asarray(init.element_potential, dtype=jnp.float64)
+        if (
+            element_potential.ndim != 1
+            or element_potential.shape[0] != len(setup.elements)
+            or not bool(jnp.all(jnp.isfinite(element_potential)))
+        ):
+            element_potential = None
+    rho = None
+    if init.rho is not None:
+        rho = jnp.asarray(init.rho, dtype=jnp.float64)
+        if (
+            rho.ndim != 1
+            or rho.shape[0] not in {len(support_amounts_init), len(setup.condensate_species)}
+            or not bool(jnp.all(jnp.isfinite(rho)))
+        ):
+            rho = None
+    barrier_epsilon = None
+    if init.barrier_epsilon is not None:
+        barrier_epsilon = jnp.asarray(init.barrier_epsilon, dtype=jnp.float64)
+        if barrier_epsilon.ndim != 0 or not bool(jnp.isfinite(barrier_epsilon)):
+            barrier_epsilon = None
+    gas_stationarity_source = None
+    if init.gas_stationarity_source is not None:
+        gas_stationarity_source = jnp.asarray(
+            init.gas_stationarity_source,
+            dtype=jnp.float64,
+        )
+        if (
+            gas_stationarity_source.ndim != 1
+            or gas_stationarity_source.shape[0] != len(setup.gas_species)
+            or not bool(jnp.all(jnp.isfinite(gas_stationarity_source)))
+        ):
+            gas_stationarity_source = None
+
     return SolverInit(
         ln_nk=gas_ln_n,
         ln_mk=jnp.log(jnp.maximum(support_amounts, 1.0e-300)),
         ln_ntot=jnp.log(jnp.asarray(gas_ntot, dtype=jnp.float64)),
+        element_potential=element_potential,
+        rho=rho,
+        barrier_epsilon=barrier_epsilon,
+        gas_stationarity_source=gas_stationarity_source,
         ln_nk_source_trace={
             "source": source,
             "reason": "Profile or caller-provided condensate warm-start gas state.",
@@ -5536,10 +5677,41 @@ def condensate_equilibrium(
 def _resolve_condensate_profile_method(
     method: Optional[CondensateProfileMethod],
     initializer: Optional[CondensateEquilibriumInitializer],
+    *,
+    has_fixed_support_payload: bool = False,
 ) -> CondensateProfileMethod:
-    if method is not None:
+    if method is not None and method != "auto":
         return method
-    return "vmap_cold"
+    if has_fixed_support_payload or initializer is not None:
+        return "vmap_cold"
+    return "scan_hot_from_top"
+
+
+def _profile_has_complete_fixed_support_payload(
+    explicit_inits: Sequence[CondensateEquilibriumInit | None],
+    *,
+    support_indices: Optional[Sequence[int]],
+    support_amounts_init: Optional[Sequence[float]],
+) -> bool:
+    if support_indices is not None:
+        return support_amounts_init is not None
+    if not explicit_inits:
+        return False
+    return all(
+        init is not None
+        and init.gas_ln_n is not None
+        and (
+            (
+                init.support_indices is not None
+                and (
+                    init.support_amounts is not None
+                    or init.condensate_amounts is not None
+                )
+            )
+            or init.condensate_amounts is not None
+        )
+        for init in explicit_inits
+    )
 
 
 def _resolve_condensate_initial_guess(
@@ -5702,6 +5874,1884 @@ def _run_condensate_profile_layer(
     ), report
 
 
+def _profile_result_from_fixed_support_batch_arrays(
+    *,
+    setup: CondensateChemicalSetup,
+    arrays: Mapping[str, Any],
+    b: Array,
+    support_by_layer: Sequence[Sequence[int]],
+    reports: Sequence[Mapping[str, Any]],
+    max_iter: int,
+    return_diagnostics: bool,
+    opts: CondensateEquilibriumOptions,
+    route_name: str,
+) -> CondensateEquilibriumProfileResult | None:
+    converged = np.asarray(jax.device_get(arrays["converged"]), dtype=bool)
+    if converged.ndim != 1:
+        raise ValueError("fixed-support profile arrays must be one-dimensional.")
+    n_layers = int(converged.shape[0])
+    if len(support_by_layer) != n_layers or len(reports) != n_layers:
+        raise ValueError("fixed-support profile metadata must match layer count.")
+    if not bool(np.all(converged)):
+        return None
+
+    gas_ln_n_batch = jnp.asarray(arrays["gas_ln_n"], dtype=jnp.float64)
+    gas_n_batch = jnp.asarray(arrays["gas_n"], dtype=jnp.float64)
+    gas_x_batch = jnp.asarray(arrays["gas_x"], dtype=jnp.float64)
+    gas_ntot_batch = jnp.asarray(arrays["gas_ntot"], dtype=jnp.float64)
+    condensate_amounts_batch = jnp.asarray(
+        arrays["condensate_amounts"],
+        dtype=jnp.float64,
+    )
+    n_iter = np.asarray(jax.device_get(arrays.get("n_iter", np.zeros(n_layers))))
+    final_residual = np.asarray(
+        jax.device_get(arrays.get("final_residual", np.zeros(n_layers))),
+        dtype=np.float64,
+    )
+    fallback_rescue = arrays.get("fallback_rescue")
+    fallback_replaced = None
+    selected_candidate_label = None
+    selected_support_count = None
+    if isinstance(fallback_rescue, Mapping):
+        if "replaced" in fallback_rescue:
+            fallback_replaced = np.asarray(
+                jax.device_get(fallback_rescue["replaced"]),
+                dtype=bool,
+            )
+        selected_candidate_label = fallback_rescue.get("selected_candidate_label")
+        selected_support_count = fallback_rescue.get("selected_support_count")
+        if selected_support_count is not None:
+            selected_support_count = np.asarray(
+                jax.device_get(selected_support_count),
+                dtype=np.int64,
+            )
+
+    def layer_selected_label(layer_index: int) -> str | None:
+        if selected_candidate_label is None:
+            return None
+        value = selected_candidate_label[layer_index]
+        return None if value is None else str(value)
+
+    def layer_selected_support_count(layer_index: int) -> int | None:
+        if selected_support_count is None or layer_selected_label(layer_index) is None:
+            return None
+        return int(selected_support_count[layer_index])
+
+    batched_arrays = None
+    if not return_diagnostics and not opts.enable_full_condensate_budget_residual_gate:
+        batched_arrays = {
+            "gas_ln_n": gas_ln_n_batch,
+            "gas_n": gas_n_batch,
+            "gas_x": gas_x_batch,
+            "gas_ntot": gas_ntot_batch,
+            "condensate_amounts": condensate_amounts_batch,
+        }
+
+    layer_results = []
+    updated_reports = []
+    for layer_index in range(n_layers):
+        support_tuple = tuple(int(index) for index in support_by_layer[layer_index])
+        support_index_array = jnp.asarray(support_tuple, dtype=jnp.int32)
+        layer_report = {**dict(reports[layer_index]), "accepted": True}
+        if fallback_replaced is not None:
+            layer_report["fallback_rescue_replaced"] = bool(
+                fallback_replaced[layer_index]
+            )
+            selected_label = layer_selected_label(layer_index)
+            if selected_label is not None:
+                layer_report["fallback_rescue_candidate"] = selected_label
+                layer_report["fallback_rescue_support_count"] = (
+                    layer_selected_support_count(layer_index)
+                )
+        if not return_diagnostics and not opts.enable_full_condensate_budget_residual_gate:
+            result = CondensateEquilibriumResult(
+                gas_ln_n=gas_ln_n_batch[layer_index],
+                gas_n=gas_n_batch[layer_index],
+                gas_x=gas_x_batch[layer_index],
+                gas_ntot=gas_ntot_batch[layer_index],
+                condensate_amounts=condensate_amounts_batch[layer_index],
+                condensate_support_indices=support_index_array,
+                condensate_support_names=tuple(
+                    setup.condensate_species[int(index)] for index in support_tuple
+                ),
+                acceptance_tier="runtime_unclassified",
+                selected_route=route_name,
+                status=CONVERGED,
+                converged=True,
+                diagnostics=None,
+            )
+        else:
+            diagnostics = {
+                "experimental_profile_fixed_support_batch": {
+                    "schema": "exogibbs_experimental_profile_fixed_support_batch_v1",
+                    "enabled": True,
+                    "layer_index": int(layer_index),
+                    "solver_success": True,
+                    "max_iter": int(max_iter),
+                    "n_iter": int(n_iter[layer_index]),
+                    "final_residual": float(final_residual[layer_index]),
+                    "support_indices": support_tuple,
+                    "fallback_rescue_replaced": bool(
+                        False
+                        if fallback_replaced is None
+                        else fallback_replaced[layer_index]
+                    ),
+                    "fallback_rescue_candidate": layer_selected_label(layer_index),
+                    "fallback_rescue_support_count": (
+                        layer_selected_support_count(layer_index)
+                    ),
+                },
+            }
+            if isinstance(fallback_rescue, Mapping):
+                diagnostics["experimental_profile_fixed_support_batch"][
+                    "fallback_rescue"
+                ] = fallback_rescue
+            result = build_condensate_equilibrium_result_from_solver_payload(
+                setup=setup,
+                gas_ln_n=gas_ln_n_batch[layer_index],
+                support_indices=support_tuple,
+                support_amounts=condensate_amounts_batch[layer_index][
+                    support_index_array
+                ],
+                selected_route=route_name,
+                metric_status=None,
+                solver_success=True,
+                allow_caveat_tiers=opts.allow_caveat_tiers,
+                diagnostics=diagnostics,
+                element_inventory_target=b,
+                enable_full_condensate_budget_residual_gate=(
+                    opts.enable_full_condensate_budget_residual_gate
+                ),
+                full_condensate_budget_relative_tolerance=(
+                    opts.full_condensate_budget_relative_tolerance
+                ),
+            )
+        layer_report["accepted"] = bool(result.converged)
+        updated_reports.append(layer_report)
+        layer_results.append(
+            _with_profile_layer_diagnostics(
+                result,
+                profile_report=layer_report,
+                return_diagnostics=return_diagnostics,
+            )
+        )
+
+    profile_diagnostics = None
+    if return_diagnostics:
+        profile_diagnostics = {
+            "profile_schema": "exogibbs_condensate_equilibrium_profile_v1",
+            "method": "vmap_cold",
+            "layer_count": n_layers,
+            "warm_start_attempt_count": n_layers,
+            "fresh_fallback_count": 0,
+            "experimental_profile_fixed_support_batch": {
+                "schema": "exogibbs_experimental_profile_fixed_support_batch_profile_v1",
+                "accepted": True,
+                "bucket_count": None,
+                "layer_count": n_layers,
+                "route": route_name,
+                "fallback_rescue": fallback_rescue,
+            },
+            "layers": tuple(updated_reports),
+        }
+
+    return CondensateEquilibriumProfileResult(
+        layers=tuple(layer_results),
+        method="vmap_cold",
+        diagnostics=profile_diagnostics,
+        batched_arrays=batched_arrays,
+    )
+
+
+def _run_experimental_profile_fixed_support_batch(
+    *,
+    setup: CondensateChemicalSetup,
+    temperatures: np.ndarray,
+    pressures: np.ndarray,
+    b: Array,
+    Pref: float,
+    explicit_inits: Sequence[CondensateEquilibriumInit | None],
+    initializer: Optional[CondensateEquilibriumInitializer],
+    support_indices: Optional[Sequence[int]],
+    support_amounts_init: Optional[Sequence[float]],
+    opts: CondensateEquilibriumOptions,
+    return_diagnostics: bool,
+) -> CondensateEquilibriumProfileResult | None:
+    if not opts.enable_experimental_profile_fixed_support_batch:
+        return None
+    if opts.restricted_reduced_coupling_mode != "pdipm_rgie_v11_activity_correction":
+        return None
+    if opts.profile_warm_start_support_policy != "explicit_payload":
+        return None
+    n_layers = int(temperatures.shape[0])
+    solver_inits = []
+    support_by_layer = []
+    reports = []
+    states = []
+    for layer_index in range(n_layers):
+        initial_guess = _resolve_condensate_initial_guess(
+            initializer,
+            CondensateEquilibriumInitRequest(
+                setup=setup,
+                T=float(temperatures[layer_index]),
+                P=float(pressures[layer_index]),
+                b=b,
+                Pref=Pref,
+                layer_index=layer_index,
+                user_init=explicit_inits[layer_index],
+                previous_solution=None,
+            ),
+        )
+        if support_indices is not None:
+            if support_amounts_init is None:
+                return None
+            support_payload = (
+                tuple(int(index) for index in support_indices),
+                _positive_support_amounts_for_warm_start(
+                    support_amounts_init,
+                    min_seed_amount=opts.min_seed_amount,
+                ),
+            )
+        else:
+            support_payload = _support_payload_from_condensate_init(
+                initial_guess,
+                setup=setup,
+                min_seed_amount=opts.min_seed_amount,
+            )
+        if support_payload is None:
+            return None
+        layer_support_indices, layer_support_amounts = support_payload
+        if len(layer_support_indices) == 0:
+            return None
+        solver_init = _solver_log_state_from_condensate_init(
+            initial_guess,
+            setup=setup,
+            support_amounts_init=layer_support_amounts,
+            source="exogibbs_experimental_profile_fixed_support_batch",
+        )
+        if solver_init is None:
+            return None
+        solver_inits.append(solver_init)
+        support_by_layer.append(layer_support_indices)
+        states.append(
+            ThermoState(
+                temperature=float(temperatures[layer_index]),
+                ln_normalized_pressure=_ln_normalized_pressure(
+                    float(pressures[layer_index]),
+                    Pref,
+                ),
+                element_vector=jnp.asarray(b, dtype=jnp.float64),
+            )
+        )
+        reports.append(
+            {
+                "profile_layer_schema": "exogibbs_condensate_profile_layer_v1",
+                "layer_index": int(layer_index),
+                "initialization_mode": (
+                    "experimental_profile_fixed_support_batch"
+                ),
+                "warm_start_attempted": True,
+                "fresh_fallback_used": False,
+                "support_count": len(layer_support_indices),
+            }
+        )
+    from exogibbs.optimize.minimize_cond import (
+        _prepare_pdipm_rgie_v11_activity_correction_profile_buckets,
+        _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets,
+    )
+
+    max_iter = 100 if opts.max_inner_iterations is None else int(opts.max_inner_iterations)
+    temperature_array = jnp.asarray(temperatures, dtype=jnp.float64)
+    hvector_by_layer = jnp.asarray(
+        setup.gas_setup.hvector_func(temperature_array),
+        dtype=jnp.float64,
+    )
+    if hvector_by_layer.ndim != 2 or hvector_by_layer.shape[0] != n_layers:
+        hvector_by_layer = None
+    hvector_cond_by_layer = jnp.asarray(
+        setup.condensate_setup.hvector_func(temperature_array),
+        dtype=jnp.float64,
+    )
+    if hvector_cond_by_layer.ndim != 2 or hvector_cond_by_layer.shape[0] != n_layers:
+        hvector_cond_by_layer = None
+    buckets = _prepare_pdipm_rgie_v11_activity_correction_profile_buckets(
+        states=tuple(states),
+        init_states=tuple(solver_inits),
+        support_indices_by_layer=tuple(support_by_layer),
+        formula_matrix_cond=jnp.asarray(setup.formula_matrix_cond, dtype=jnp.float64),
+        hvector_func=setup.gas_setup.hvector_func,
+        hvector_cond_func=setup.condensate_setup.hvector_func,
+        hvector_by_layer=hvector_by_layer,
+        hvector_cond_by_layer=hvector_cond_by_layer,
+    )
+    if opts.enable_experimental_profile_fixed_support_fallback_rescue:
+        plan = _ExperimentalProfileFixedSupportBatchPlan(
+            setup=setup,
+            buckets=buckets,
+            formula_matrix=jnp.asarray(setup.formula_matrix, dtype=jnp.float64),
+            max_iter=max_iter,
+            n_layers=n_layers,
+            condensate_count=len(setup.condensate_species),
+            bucket_layer_index_arrays=tuple(
+                jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
+                for bucket in buckets
+            ),
+        )
+        arrays = run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
+            plan,
+            rho_initialization=(
+                opts.experimental_profile_fixed_support_rescue_rho_initialization
+            ),
+            lambda_initialization=(
+                opts.experimental_profile_fixed_support_rescue_lambda_initialization
+            ),
+            residual_tolerance_multiplier=(
+                opts.experimental_profile_fixed_support_rescue_residual_tolerance_multiplier
+            ),
+            prune_relative_floors=(
+                opts.experimental_profile_fixed_support_rescue_prune_relative_floors
+            ),
+        )
+        return _profile_result_from_fixed_support_batch_arrays(
+            setup=setup,
+            arrays=arrays,
+            b=b,
+            support_by_layer=support_by_layer,
+            reports=reports,
+            max_iter=max_iter,
+            return_diagnostics=return_diagnostics,
+            opts=opts,
+            route_name="experimental_profile_fixed_support_batch_fallback_rescue",
+        )
+    bucket_results, batch_trace = (
+        _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
+            buckets=buckets,
+            formula_matrix=jnp.asarray(setup.formula_matrix, dtype=jnp.float64),
+            epsilon=-10.0,
+            max_iter=max_iter,
+        )
+    )
+    layer_solver_results: dict[int, Any] = {}
+    for bucket, batch_result in zip(buckets, bucket_results):
+        for local_index, layer_index in enumerate(bucket.layer_indices):
+            layer_solver_results[int(layer_index)] = (
+                batch_result,
+                int(local_index),
+            )
+    if len(layer_solver_results) != n_layers:
+        return None
+    for batch_result, local_index in layer_solver_results.values():
+        if not bool(batch_result.diagnostics.converged[local_index]):
+            return None
+
+    gas_ln_n_by_layer: dict[int, Array] = {}
+    full_condensate_amounts_by_layer: dict[int, Array] = {}
+    if not return_diagnostics and not opts.enable_full_condensate_budget_residual_gate:
+        for bucket, batch_result in zip(buckets, bucket_results):
+            support_index_array = jnp.asarray(bucket.support_indices, dtype=jnp.int32)
+            support_amounts_batch = jnp.exp(batch_result.ln_mk)
+            full_amounts_batch = jnp.zeros(
+                (
+                    len(bucket.layer_indices),
+                    len(setup.condensate_species),
+                ),
+                dtype=support_amounts_batch.dtype,
+            ).at[:, support_index_array].set(support_amounts_batch)
+            for local_index, layer_index in enumerate(bucket.layer_indices):
+                gas_ln_n_by_layer[int(layer_index)] = batch_result.ln_nk[local_index]
+                full_condensate_amounts_by_layer[int(layer_index)] = (
+                    full_amounts_batch[local_index]
+                )
+    batched_arrays = None
+    if gas_ln_n_by_layer and len(gas_ln_n_by_layer) == n_layers:
+        gas_ln_n_batch = jnp.stack(
+            [gas_ln_n_by_layer[index] for index in range(n_layers)],
+            axis=0,
+        )
+        gas_n_batch = jnp.exp(gas_ln_n_batch)
+        gas_ntot_batch = jnp.sum(gas_n_batch, axis=1)
+        cond_amounts_batch = jnp.stack(
+            [full_condensate_amounts_by_layer[index] for index in range(n_layers)],
+            axis=0,
+        )
+        batched_arrays = {
+            "gas_ln_n": gas_ln_n_batch,
+            "gas_n": gas_n_batch,
+            "gas_x": gas_n_batch / jnp.clip(gas_ntot_batch[:, None], 1.0e-300),
+            "gas_ntot": gas_ntot_batch,
+            "condensate_amounts": cond_amounts_batch,
+        }
+
+    layer_results = []
+    for layer_index in range(n_layers):
+        batch_result, local_index = layer_solver_results[layer_index]
+        support_tuple = support_by_layer[layer_index]
+        support_amounts = jnp.exp(batch_result.ln_mk[local_index])
+        solver_success = bool(batch_result.diagnostics.converged[local_index])
+        if not return_diagnostics and not opts.enable_full_condensate_budget_residual_gate:
+            gas_ln_n = jnp.asarray(batch_result.ln_nk[local_index], dtype=jnp.float64)
+            gas_n = jnp.exp(gas_ln_n)
+            gas_ntot = jnp.sum(gas_n)
+            support_index_array = jnp.asarray(support_tuple, dtype=jnp.int32)
+            condensate_amounts = full_condensate_amounts_by_layer[layer_index]
+            result = CondensateEquilibriumResult(
+                gas_ln_n=gas_ln_n,
+                gas_n=gas_n,
+                gas_x=gas_n / jnp.clip(gas_ntot, 1.0e-300),
+                gas_ntot=gas_ntot,
+                condensate_amounts=condensate_amounts,
+                condensate_support_indices=support_index_array,
+                condensate_support_names=tuple(
+                    setup.condensate_species[int(index)] for index in support_tuple
+                ),
+                acceptance_tier="runtime_unclassified",
+                selected_route="experimental_profile_fixed_support_batch",
+                status=CONVERGED if solver_success else NOT_CONVERGED,
+                converged=solver_success,
+                diagnostics=None,
+            )
+        else:
+            diagnostics = {
+                "experimental_profile_fixed_support_batch": {
+                    "schema": "exogibbs_experimental_profile_fixed_support_batch_v1",
+                    "enabled": True,
+                    "layer_index": int(layer_index),
+                    "solver_success": solver_success,
+                    "max_iter": max_iter,
+                    "n_iter": int(batch_result.diagnostics.n_iter[local_index]),
+                    "final_residual": float(
+                        batch_result.diagnostics.final_residual[local_index]
+                    ),
+                    "support_indices": tuple(int(index) for index in support_tuple),
+                },
+                **batch_trace,
+            }
+            result = build_condensate_equilibrium_result_from_solver_payload(
+                setup=setup,
+                gas_ln_n=batch_result.ln_nk[local_index],
+                support_indices=support_tuple,
+                support_amounts=support_amounts,
+                selected_route="experimental_profile_fixed_support_batch",
+                metric_status=None,
+                solver_success=solver_success,
+                allow_caveat_tiers=opts.allow_caveat_tiers,
+                diagnostics=diagnostics,
+                element_inventory_target=b,
+                enable_full_condensate_budget_residual_gate=(
+                    opts.enable_full_condensate_budget_residual_gate
+                ),
+                full_condensate_budget_relative_tolerance=(
+                    opts.full_condensate_budget_relative_tolerance
+                ),
+            )
+        reports[layer_index] = {
+            **reports[layer_index],
+            "accepted": bool(result.converged),
+        }
+        layer_results.append(
+            _with_profile_layer_diagnostics(
+                result,
+                profile_report=reports[layer_index],
+                return_diagnostics=return_diagnostics,
+            )
+        )
+    profile_diagnostics = None
+    if return_diagnostics:
+        profile_diagnostics = {
+            "profile_schema": "exogibbs_condensate_equilibrium_profile_v1",
+            "method": "vmap_cold",
+            "layer_count": n_layers,
+            "warm_start_attempt_count": n_layers,
+            "fresh_fallback_count": 0,
+            "experimental_profile_fixed_support_batch": {
+                "schema": "exogibbs_experimental_profile_fixed_support_batch_profile_v1",
+                "accepted": all(bool(result.converged) for result in layer_results),
+                "bucket_count": len(buckets),
+                "layer_count": n_layers,
+            },
+            "layers": tuple(reports),
+        }
+    return CondensateEquilibriumProfileResult(
+        layers=tuple(layer_results),
+        method="vmap_cold",
+        diagnostics=profile_diagnostics,
+        batched_arrays=batched_arrays,
+    )
+
+
+def _prepare_experimental_profile_fixed_support_batch_plan(
+    *,
+    setup: CondensateChemicalSetup,
+    temperatures: np.ndarray,
+    pressures: np.ndarray,
+    b: Array,
+    Pref: float,
+    explicit_inits: Sequence[CondensateEquilibriumInit | None],
+    initializer: Optional[CondensateEquilibriumInitializer],
+    support_indices: Optional[Sequence[int]],
+    support_amounts_init: Optional[Sequence[float]],
+    opts: CondensateEquilibriumOptions,
+) -> _ExperimentalProfileFixedSupportBatchPlan | None:
+    if not opts.enable_experimental_profile_fixed_support_batch:
+        return None
+    if opts.restricted_reduced_coupling_mode != "pdipm_rgie_v11_activity_correction":
+        return None
+    if opts.profile_warm_start_support_policy != "explicit_payload":
+        return None
+    n_layers = int(temperatures.shape[0])
+    solver_inits = []
+    support_by_layer = []
+    states = []
+    for layer_index in range(n_layers):
+        initial_guess = _resolve_condensate_initial_guess(
+            initializer,
+            CondensateEquilibriumInitRequest(
+                setup=setup,
+                T=float(temperatures[layer_index]),
+                P=float(pressures[layer_index]),
+                b=b,
+                Pref=Pref,
+                layer_index=layer_index,
+                user_init=explicit_inits[layer_index],
+                previous_solution=None,
+            ),
+        )
+        if support_indices is not None:
+            if support_amounts_init is None:
+                return None
+            support_payload = (
+                tuple(int(index) for index in support_indices),
+                _positive_support_amounts_for_warm_start(
+                    support_amounts_init,
+                    min_seed_amount=opts.min_seed_amount,
+                ),
+            )
+        else:
+            support_payload = _support_payload_from_condensate_init(
+                initial_guess,
+                setup=setup,
+                min_seed_amount=opts.min_seed_amount,
+            )
+        if support_payload is None:
+            return None
+        layer_support_indices, layer_support_amounts = support_payload
+        if len(layer_support_indices) == 0:
+            return None
+        solver_init = _solver_log_state_from_condensate_init(
+            initial_guess,
+            setup=setup,
+            support_amounts_init=layer_support_amounts,
+            source="exogibbs_experimental_profile_fixed_support_batch_plan",
+        )
+        if solver_init is None:
+            return None
+        solver_inits.append(solver_init)
+        support_by_layer.append(layer_support_indices)
+        states.append(
+            ThermoState(
+                temperature=float(temperatures[layer_index]),
+                ln_normalized_pressure=_ln_normalized_pressure(
+                    float(pressures[layer_index]),
+                    Pref,
+                ),
+                element_vector=jnp.asarray(b, dtype=jnp.float64),
+            )
+        )
+    from exogibbs.optimize.minimize_cond import (
+        _prepare_pdipm_rgie_v11_activity_correction_profile_buckets,
+    )
+
+    temperature_array = jnp.asarray(temperatures, dtype=jnp.float64)
+    hvector_by_layer = jnp.asarray(
+        setup.gas_setup.hvector_func(temperature_array),
+        dtype=jnp.float64,
+    )
+    if hvector_by_layer.ndim != 2 or hvector_by_layer.shape[0] != n_layers:
+        hvector_by_layer = None
+    hvector_cond_by_layer = jnp.asarray(
+        setup.condensate_setup.hvector_func(temperature_array),
+        dtype=jnp.float64,
+    )
+    if hvector_cond_by_layer.ndim != 2 or hvector_cond_by_layer.shape[0] != n_layers:
+        hvector_cond_by_layer = None
+    buckets = _prepare_pdipm_rgie_v11_activity_correction_profile_buckets(
+        states=tuple(states),
+        init_states=tuple(solver_inits),
+        support_indices_by_layer=tuple(support_by_layer),
+        formula_matrix_cond=jnp.asarray(setup.formula_matrix_cond, dtype=jnp.float64),
+        hvector_func=setup.gas_setup.hvector_func,
+        hvector_cond_func=setup.condensate_setup.hvector_func,
+        hvector_by_layer=hvector_by_layer,
+        hvector_cond_by_layer=hvector_cond_by_layer,
+    )
+    max_iter = 100 if opts.max_inner_iterations is None else int(opts.max_inner_iterations)
+    return _ExperimentalProfileFixedSupportBatchPlan(
+        setup=setup,
+        buckets=buckets,
+        formula_matrix=jnp.asarray(setup.formula_matrix, dtype=jnp.float64),
+        max_iter=max_iter,
+        n_layers=n_layers,
+        condensate_count=len(setup.condensate_species),
+        bucket_layer_index_arrays=tuple(
+            jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
+            for bucket in buckets
+        ),
+    )
+
+
+def _run_experimental_profile_fixed_support_batch_plan_arrays(
+    plan: _ExperimentalProfileFixedSupportBatchPlan,
+    *,
+    element_inventory_target: Optional[Array] = None,
+    rho_initialization: str = "unit_activity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0,
+) -> Mapping[str, Array]:
+    from exogibbs.optimize.minimize_cond import (
+        _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets,
+    )
+
+    buckets = plan.buckets
+    if element_inventory_target is not None:
+        target = jnp.asarray(element_inventory_target, dtype=jnp.float64)
+        n_elements = int(plan.formula_matrix.shape[0])
+        if target.ndim == 1:
+            if target.shape[0] != n_elements:
+                raise ValueError("element_inventory_target length must match elements.")
+            target = jnp.broadcast_to(target, (plan.n_layers, n_elements))
+        elif target.ndim == 2:
+            if target.shape != (plan.n_layers, n_elements):
+                raise ValueError(
+                    "element_inventory_target must have shape "
+                    f"({plan.n_layers}, {n_elements})."
+                )
+        else:
+            raise ValueError("element_inventory_target must be one- or two-dimensional.")
+        buckets = tuple(
+            replace(
+                bucket,
+                element_inventory_target=target[layer_indices],
+            )
+            for bucket, layer_indices in zip(
+                plan.buckets,
+                plan.bucket_layer_index_arrays,
+            )
+        )
+
+    bucket_results, _batch_trace = (
+        _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
+            buckets=buckets,
+            formula_matrix=plan.formula_matrix,
+            epsilon=-10.0,
+            max_iter=plan.max_iter,
+            rho_initialization=rho_initialization,
+            lambda_initialization=lambda_initialization,
+            residual_tolerance_multiplier=residual_tolerance_multiplier,
+        )
+    )
+    gas_species_count = int(plan.formula_matrix.shape[1])
+    gas_ln_n_batch = jnp.zeros(
+        (plan.n_layers, gas_species_count),
+        dtype=jnp.float64,
+    )
+    condensate_amounts_batch = jnp.zeros(
+        (plan.n_layers, plan.condensate_count),
+        dtype=jnp.float64,
+    )
+    converged_batch = jnp.zeros((plan.n_layers,), dtype=bool)
+    final_residual_batch = jnp.zeros((plan.n_layers,), dtype=jnp.float64)
+    n_iter_batch = jnp.zeros((plan.n_layers,), dtype=jnp.int32)
+    for bucket, batch_result, layer_indices in zip(
+        plan.buckets,
+        bucket_results,
+        plan.bucket_layer_index_arrays,
+    ):
+        support_index_array = jnp.asarray(bucket.support_indices, dtype=jnp.int32)
+        support_amounts_batch = jnp.exp(batch_result.ln_mk)
+        full_amounts_batch = jnp.zeros(
+            (
+                len(bucket.layer_indices),
+                plan.condensate_count,
+            ),
+            dtype=support_amounts_batch.dtype,
+        ).at[:, support_index_array].set(support_amounts_batch)
+        gas_ln_n_batch = gas_ln_n_batch.at[layer_indices].set(batch_result.ln_nk)
+        condensate_amounts_batch = condensate_amounts_batch.at[layer_indices].set(
+            full_amounts_batch
+        )
+        converged_batch = converged_batch.at[layer_indices].set(
+            batch_result.diagnostics.converged
+        )
+        final_residual_batch = final_residual_batch.at[layer_indices].set(
+            batch_result.diagnostics.final_residual
+        )
+        n_iter_batch = n_iter_batch.at[layer_indices].set(
+            jnp.asarray(batch_result.diagnostics.n_iter, dtype=jnp.int32)
+        )
+    gas_n_batch = jnp.exp(gas_ln_n_batch)
+    gas_ntot_batch = jnp.sum(gas_n_batch, axis=1)
+    return {
+        "gas_ln_n": gas_ln_n_batch,
+        "gas_n": gas_n_batch,
+        "gas_x": gas_n_batch / jnp.clip(gas_ntot_batch[:, None], 1.0e-300),
+        "gas_ntot": gas_ntot_batch,
+        "condensate_amounts": condensate_amounts_batch,
+        "converged": converged_batch,
+        "fallback_required": ~converged_batch,
+        "final_residual": final_residual_batch,
+        "n_iter": n_iter_batch,
+        "lambda_candidate_labels": (
+            "provided",
+            "gas_lstsq",
+            "gas_cond_lstsq",
+            "damped_gas_lstsq",
+            "damped_gas_cond_lstsq",
+        ),
+    }
+
+
+def _fallback_layer_indices_from_fixed_support_arrays(
+    arrays: Mapping[str, Any],
+) -> tuple[int, ...]:
+    fallback_required = np.asarray(
+        jax.device_get(arrays.get("fallback_required", ~arrays["converged"])),
+        dtype=bool,
+    )
+    if fallback_required.ndim == 1:
+        indices = np.where(fallback_required)[0]
+    else:
+        indices = np.where(np.any(fallback_required, axis=0))[0]
+    return tuple(int(index) for index in indices.tolist())
+
+
+def _prepare_experimental_profile_fixed_support_prune_rescue_plan(
+    plan: _ExperimentalProfileFixedSupportBatchPlan,
+    fallback_layer_indices: Sequence[int],
+    *,
+    prune_relative_floors: Sequence[float],
+) -> tuple[_ExperimentalProfileFixedSupportBatchPlan | None, Mapping[str, Any]]:
+    fallback_set = {int(index) for index in fallback_layer_indices}
+    floors = tuple(sorted({float(value) for value in prune_relative_floors}))
+    if any(not math.isfinite(value) or value <= 0.0 for value in floors):
+        raise ValueError("prune_relative_floors must contain positive finite values.")
+    if not fallback_set:
+        return None, {
+            "schema": "exogibbs_experimental_profile_fixed_support_prune_rescue_v1",
+            "mode": "none",
+            "fallback_layer_indices": (),
+            "expanded_to_original_layer": (),
+            "candidate_labels": (),
+            "candidate_support_counts": (),
+            "expanded_layer_count": 0,
+            "prune_relative_floors": floors,
+        }
+
+    from exogibbs.optimize.minimize_cond import _PDIPMActivityFixedSupportBucket
+
+    candidates_by_key: dict[
+        tuple[tuple[int, ...], bool],
+        list[dict[str, Any]],
+    ] = {}
+    expanded_to_original: list[int] = []
+    candidate_labels: list[str] = []
+    candidate_support_counts: list[int] = []
+
+    for bucket in plan.buckets:
+        original_support = tuple(int(index) for index in bucket.support_indices)
+        support_position = {
+            int(index): local_index
+            for local_index, index in enumerate(original_support)
+        }
+        for local_index, original_layer_index in enumerate(bucket.layer_indices):
+            original_layer_index = int(original_layer_index)
+            if original_layer_index not in fallback_set:
+                continue
+            ln_mk = jnp.asarray(bucket.ln_mk_init[local_index], dtype=jnp.float64)
+            amounts = np.asarray(jax.device_get(jnp.exp(ln_mk)), dtype=np.float64)
+            if amounts.size == 0:
+                continue
+            variants: list[tuple[str, tuple[int, ...], bool]] = [
+                ("current", original_support, True),
+            ]
+            max_amount = float(np.max(amounts))
+            for relative_floor in floors:
+                threshold = max(1.0e-12, float(relative_floor) * max_amount)
+                pruned = tuple(
+                    support_index
+                    for support_index, amount in zip(original_support, amounts)
+                    if float(amount) >= threshold
+                )
+                if pruned and pruned != original_support:
+                    variants.append(
+                        (
+                            f"prune_amount_ge_{relative_floor:g}_max",
+                            pruned,
+                            False,
+                        )
+                    )
+
+            seen_supports: set[tuple[int, ...]] = set()
+            for label, support, keep_rho in variants:
+                if support in seen_supports:
+                    continue
+                seen_supports.add(support)
+                positions = tuple(support_position[index] for index in support)
+                candidate_index = len(expanded_to_original)
+                expanded_to_original.append(original_layer_index)
+                candidate_labels.append(label)
+                candidate_support_counts.append(len(support))
+                key = (support, keep_rho and bucket.rho_init is not None)
+                candidates_by_key.setdefault(key, []).append(
+                    {
+                        "candidate_index": candidate_index,
+                        "source_bucket": bucket,
+                        "source_local_index": int(local_index),
+                        "positions": positions,
+                    }
+                )
+
+    rescue_buckets = []
+    for (support, keep_rho), entries in candidates_by_key.items():
+        first = entries[0]
+        source_bucket = first["source_bucket"]
+        positions = first["positions"]
+        position_array = jnp.asarray(positions, dtype=jnp.int32)
+        layer_indices = tuple(int(entry["candidate_index"]) for entry in entries)
+        source_local_indices = tuple(int(entry["source_local_index"]) for entry in entries)
+        source_local_array = jnp.asarray(source_local_indices, dtype=jnp.int32)
+        rho_init = None
+        if keep_rho and source_bucket.rho_init is not None:
+            rho_init = source_bucket.rho_init[source_local_array][:, position_array]
+        rescue_buckets.append(
+            _PDIPMActivityFixedSupportBucket(
+                support_indices=support,
+                layer_indices=layer_indices,
+                formula_matrix_cond_active=source_bucket.formula_matrix_cond_active[
+                    :,
+                    position_array,
+                ],
+                ln_nk_init=source_bucket.ln_nk_init[source_local_array],
+                ln_mk_init=source_bucket.ln_mk_init[source_local_array][
+                    :,
+                    position_array,
+                ],
+                ln_ntot_init=source_bucket.ln_ntot_init[source_local_array],
+                element_potential_init=None
+                if source_bucket.element_potential_init is None
+                else source_bucket.element_potential_init[source_local_array],
+                rho_init=rho_init,
+                barrier_epsilon_init=None
+                if source_bucket.barrier_epsilon_init is None
+                else source_bucket.barrier_epsilon_init[source_local_array],
+                gas_stationarity_source_init=None
+                if source_bucket.gas_stationarity_source_init is None
+                else source_bucket.gas_stationarity_source_init[source_local_array],
+                element_inventory_target=source_bucket.element_inventory_target[
+                    source_local_array
+                ],
+                hvector=source_bucket.hvector[source_local_array],
+                hvector_cond_active=source_bucket.hvector_cond_active[
+                    source_local_array
+                ][:, position_array],
+                ln_normalized_pressure=source_bucket.ln_normalized_pressure[
+                    source_local_array
+                ],
+            )
+        )
+
+    metadata = {
+        "schema": "exogibbs_experimental_profile_fixed_support_prune_rescue_v1",
+        "mode": "prune",
+        "fallback_layer_indices": tuple(sorted(fallback_set)),
+        "expanded_to_original_layer": tuple(expanded_to_original),
+        "candidate_labels": tuple(candidate_labels),
+        "candidate_support_counts": tuple(candidate_support_counts),
+        "expanded_layer_count": len(expanded_to_original),
+        "prune_relative_floors": floors,
+    }
+    if not rescue_buckets:
+        return None, metadata
+    return (
+        _ExperimentalProfileFixedSupportBatchPlan(
+            setup=plan.setup,
+            buckets=tuple(rescue_buckets),
+            formula_matrix=plan.formula_matrix,
+            max_iter=plan.max_iter,
+            n_layers=len(expanded_to_original),
+            condensate_count=plan.condensate_count,
+            bucket_layer_index_arrays=tuple(
+                jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
+                for bucket in rescue_buckets
+            ),
+        ),
+        metadata,
+    )
+
+
+def _merge_fixed_support_prune_rescue_arrays(
+    base_arrays: Mapping[str, Any],
+    rescue_arrays: Mapping[str, Any],
+    rescue_metadata: Mapping[str, Any],
+) -> dict[str, Any]:
+    expanded_to_original = tuple(
+        int(index) for index in rescue_metadata["expanded_to_original_layer"]
+    )
+    candidate_labels = tuple(str(label) for label in rescue_metadata["candidate_labels"])
+    candidate_support_counts = tuple(
+        int(value) for value in rescue_metadata["candidate_support_counts"]
+    )
+    base_residual = np.asarray(
+        jax.device_get(base_arrays["final_residual"]),
+        dtype=np.float64,
+    )
+    base_fallback = np.asarray(
+        jax.device_get(base_arrays.get("fallback_required", ~base_arrays["converged"])),
+        dtype=bool,
+    )
+    rescue_residual = np.asarray(
+        jax.device_get(rescue_arrays["final_residual"]),
+        dtype=np.float64,
+    )
+    rescue_converged = np.asarray(
+        jax.device_get(rescue_arrays["converged"]),
+        dtype=bool,
+    )
+    if base_residual.ndim == 1:
+        eval_count = 1
+        base_residual_view = base_residual[None, :]
+        base_fallback_view = base_fallback[None, :]
+        rescue_residual_view = rescue_residual[None, :]
+        rescue_converged_view = rescue_converged[None, :]
+    else:
+        eval_count = int(base_residual.shape[0])
+        base_residual_view = base_residual
+        base_fallback_view = base_fallback
+        rescue_residual_view = rescue_residual
+        rescue_converged_view = rescue_converged
+    n_layers = int(base_residual_view.shape[1])
+    replace_mask = np.zeros((eval_count, n_layers), dtype=bool)
+    selected_expanded = np.full((eval_count, n_layers), -1, dtype=np.int32)
+    selected_label = np.full((eval_count, n_layers), None, dtype=object)
+    selected_support_count = np.zeros((eval_count, n_layers), dtype=np.int32)
+
+    for original_index in sorted(set(expanded_to_original)):
+        candidates = np.asarray(
+            [
+                candidate_index
+                for candidate_index, mapped_index in enumerate(expanded_to_original)
+                if mapped_index == original_index
+            ],
+            dtype=np.int64,
+        )
+        for eval_index in range(eval_count):
+            candidate_converged = rescue_converged_view[eval_index, candidates]
+            candidate_residual = rescue_residual_view[eval_index, candidates]
+            score = np.where(candidate_converged, candidate_residual, np.inf)
+            if not np.isfinite(score).any():
+                score = np.where(np.isfinite(candidate_residual), candidate_residual, np.inf)
+            selected = int(candidates[int(np.argmin(score))])
+            rescue_value = rescue_residual_view[eval_index, selected]
+            base_value = base_residual_view[eval_index, original_index]
+            finite_improvement = np.isfinite(rescue_value) and (
+                (not np.isfinite(base_value)) or rescue_value < base_value
+            )
+            should_replace = bool(
+                base_fallback_view[eval_index, original_index]
+                and (
+                    rescue_converged_view[eval_index, selected]
+                    or finite_improvement
+                )
+            )
+            if should_replace:
+                replace_mask[eval_index, original_index] = True
+                selected_expanded[eval_index, original_index] = selected
+                selected_label[eval_index, original_index] = candidate_labels[selected]
+                selected_support_count[eval_index, original_index] = (
+                    candidate_support_counts[selected]
+                )
+
+    def merge_layer_array(base_value: Any, rescue_value: Any) -> Any:
+        base_array = np.asarray(jax.device_get(base_value))
+        rescue_array = np.asarray(jax.device_get(rescue_value))
+        if base_residual.ndim == 1:
+            if base_array.ndim == 0 or base_array.shape[0] != n_layers:
+                return base_value
+            merged = base_array.copy()
+            for original_index in range(n_layers):
+                selected = int(selected_expanded[0, original_index])
+                if selected >= 0:
+                    merged[original_index] = rescue_array[selected]
+            return merged
+        if (
+            base_array.ndim < 2
+            or base_array.shape[0] != eval_count
+            or base_array.shape[1] != n_layers
+        ):
+            return base_value
+        merged = base_array.copy()
+        row_indices = np.arange(eval_count)
+        for original_index in range(n_layers):
+            selected = selected_expanded[:, original_index]
+            rows = selected >= 0
+            if np.any(rows):
+                merged[rows, original_index] = rescue_array[
+                    row_indices[rows],
+                    selected[rows],
+                ]
+        return merged
+
+    merged = {
+        key: merge_layer_array(value, rescue_arrays[key])
+        for key, value in base_arrays.items()
+        if key in rescue_arrays
+        and key
+        not in {
+            "residual_components",
+            "step_diagnostics",
+            "lambda_candidate_labels",
+        }
+    }
+    merged["residual_components"] = {
+        key: merge_layer_array(value, rescue_arrays["residual_components"][key])
+        for key, value in base_arrays.get("residual_components", {}).items()
+        if key in rescue_arrays.get("residual_components", {})
+    }
+    merged["step_diagnostics"] = {
+        key: merge_layer_array(value, rescue_arrays["step_diagnostics"][key])
+        for key, value in base_arrays.get("step_diagnostics", {}).items()
+        if key in rescue_arrays.get("step_diagnostics", {})
+    }
+    merged["fallback_rescue"] = {
+        **dict(rescue_metadata),
+        "replaced_count": int(np.count_nonzero(replace_mask)),
+        "selected_expanded_layer_index": (
+            selected_expanded[0] if base_residual.ndim == 1 else selected_expanded
+        ),
+        "selected_candidate_label": (
+            selected_label[0].tolist()
+            if base_residual.ndim == 1
+            else selected_label.tolist()
+        ),
+        "selected_support_count": (
+            selected_support_count[0]
+            if base_residual.ndim == 1
+            else selected_support_count
+        ),
+        "replaced": replace_mask[0] if base_residual.ndim == 1 else replace_mask,
+    }
+    if "lambda_candidate_labels" in base_arrays:
+        merged["lambda_candidate_labels"] = base_arrays["lambda_candidate_labels"]
+    return merged
+
+
+def _attach_empty_fixed_support_rescue_metadata(
+    arrays: Mapping[str, Any],
+    metadata: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {**dict(arrays), "fallback_rescue": {**dict(metadata), "replaced_count": 0}}
+
+
+def prepare_experimental_profile_fixed_support_batch_plan(
+    setup: CondensateChemicalSetup,
+    T: Sequence[float] | Array,
+    P: Sequence[float] | Array,
+    b: Array,
+    *,
+    Pref: float = 1.0,
+    support_indices: Optional[Sequence[int]] = None,
+    support_amounts_init: Optional[Sequence[float]] = None,
+    init: Optional[Sequence[CondensateEquilibriumInit | None]] = None,
+    initializer: Optional[CondensateEquilibriumInitializer] = None,
+    options: Optional[CondensateEquilibriumOptions] = None,
+) -> ExperimentalCondensateProfileFixedSupportBatchPlan:
+    """Prepare a reusable experimental fixed-support batch profile plan.
+
+    The returned plan can be run repeatedly with
+    :func:`run_experimental_profile_fixed_support_batch_plan` to avoid rebuilding
+    support buckets and thermochemical vectors for every call.
+    """
+
+    validate_condensate_chemical_setup(setup)
+    temperatures = np.asarray(T, dtype=np.float64)
+    pressures = np.asarray(P, dtype=np.float64)
+    if temperatures.ndim != 1 or pressures.ndim != 1:
+        raise ValueError("T and P must be 1D arrays of equal length.")
+    if temperatures.shape[0] != pressures.shape[0]:
+        raise ValueError("T and P must have the same length.")
+    n_layers = int(temperatures.shape[0])
+    if init is None:
+        explicit_inits: tuple[CondensateEquilibriumInit | None, ...] = (
+            None,
+        ) * n_layers
+    else:
+        explicit_inits = tuple(init)
+        if len(explicit_inits) != n_layers:
+            raise ValueError("init must have one entry per profile layer.")
+    opts = replace(
+        options or CondensateEquilibriumOptions(),
+        profile_method="vmap_cold",
+        profile_warm_start_support_policy="explicit_payload",
+        enable_experimental_profile_fixed_support_batch=True,
+    )
+    _validate_options(opts)
+    plan = _prepare_experimental_profile_fixed_support_batch_plan(
+        setup=setup,
+        temperatures=temperatures,
+        pressures=pressures,
+        b=b,
+        Pref=Pref,
+        explicit_inits=explicit_inits,
+        initializer=initializer,
+        support_indices=support_indices,
+        support_amounts_init=support_amounts_init,
+        opts=opts,
+    )
+    if plan is None:
+        raise ValueError(
+            "experimental fixed-support batch plan requires non-empty explicit "
+            "support and solver log-state initialization for every layer."
+        )
+    return plan
+
+
+def run_experimental_profile_fixed_support_batch_plan(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    *,
+    element_inventory_target: Optional[Array] = None,
+    rho_initialization: str = "unit_activity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0,
+) -> Mapping[str, Array]:
+    """Run a prepared experimental fixed-support batch profile plan.
+
+    ``element_inventory_target`` may be a single element vector shared by every
+    layer or a ``(n_layers, n_elements)`` array for repeated fixed-support
+    evaluations with updated composition.
+    """
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    return _run_experimental_profile_fixed_support_batch_plan_arrays(
+        plan,
+        element_inventory_target=element_inventory_target,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+
+
+def prepare_experimental_profile_fixed_support_prune_rescue_plan(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    fallback_layer_indices: Sequence[int],
+    *,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> ExperimentalCondensateProfileFixedSupportPruneRescuePlan:
+    """Prepare prune-rescue candidates for selected fallback layers.
+
+    This separates host-side rescue plan construction from repeated GPU solves.
+    The returned object may contain no executable rescue plan when
+    ``fallback_layer_indices`` is empty or no pruned candidate changes support.
+    """
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    rescue_plan, rescue_metadata = (
+        _prepare_experimental_profile_fixed_support_prune_rescue_plan(
+            plan,
+            fallback_layer_indices,
+            prune_relative_floors=prune_relative_floors,
+        )
+    )
+    return _ExperimentalProfileFixedSupportPruneRescuePlan(
+        rescue_plan=rescue_plan,
+        metadata=rescue_metadata,
+    )
+
+
+def _fixed_support_prune_rescue_cache_key(
+    fallback_layer_indices: Sequence[int],
+    prune_relative_floors: Sequence[float],
+) -> tuple[Any, ...]:
+    return (
+        tuple(int(index) for index in fallback_layer_indices),
+        tuple(float(floor) for floor in prune_relative_floors),
+    )
+
+
+def _get_cached_fixed_support_prune_rescue_plan(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    cache: ExperimentalCondensateProfileFixedSupportPruneRescueCache,
+    fallback_layer_indices: Sequence[int],
+    *,
+    prune_relative_floors: Sequence[float],
+) -> ExperimentalCondensateProfileFixedSupportPruneRescuePlan:
+    key = _fixed_support_prune_rescue_cache_key(
+        fallback_layer_indices,
+        prune_relative_floors,
+    )
+    cached = cache.plans.get(key)
+    if cached is not None:
+        cache.hit_count += 1
+        return cached
+    prepared = prepare_experimental_profile_fixed_support_prune_rescue_plan(
+        plan,
+        fallback_layer_indices,
+        prune_relative_floors=prune_relative_floors,
+    )
+    cache.plans[key] = prepared
+    cache.prepare_count += 1
+    return prepared
+
+
+def _fixed_support_prune_rescue_single_target(
+    element_inventory_target: Optional[Array],
+    rescue_metadata: Mapping[str, Any],
+) -> Optional[Array]:
+    if element_inventory_target is None:
+        return None
+    target = jnp.asarray(element_inventory_target, dtype=jnp.float64)
+    if target.ndim == 2:
+        expanded_to_original = jnp.asarray(
+            rescue_metadata["expanded_to_original_layer"],
+            dtype=jnp.int32,
+        )
+        return target[expanded_to_original, :]
+    return target
+
+
+def _fixed_support_prune_rescue_many_targets(
+    element_inventory_targets: Array,
+    rescue_metadata: Mapping[str, Any],
+) -> Array:
+    targets = jnp.asarray(element_inventory_targets, dtype=jnp.float64)
+    if targets.ndim == 3:
+        expanded_to_original = jnp.asarray(
+            rescue_metadata["expanded_to_original_layer"],
+            dtype=jnp.int32,
+        )
+        return targets[:, expanded_to_original, :]
+    return targets
+
+
+def run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    rescue: ExperimentalCondensateProfileFixedSupportPruneRescuePlan,
+    *,
+    element_inventory_target: Optional[Array] = None,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+) -> Mapping[str, Any]:
+    """Run a fixed-support plan with a pre-built prune-rescue plan."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    if not isinstance(rescue, ExperimentalCondensateProfileFixedSupportPruneRescuePlan):
+        raise TypeError(
+            "rescue must be an "
+            "ExperimentalCondensateProfileFixedSupportPruneRescuePlan."
+        )
+    base_arrays = run_experimental_profile_fixed_support_batch_plan(
+        plan,
+        element_inventory_target=element_inventory_target,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(
+            base_arrays,
+            rescue.metadata,
+        )
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan(
+        rescue.rescue_plan,
+        element_inventory_target=_fixed_support_prune_rescue_single_target(
+            element_inventory_target,
+            rescue.metadata,
+        ),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue.metadata,
+    )
+
+
+def run_experimental_profile_fixed_support_batch_plan_with_cached_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    cache: ExperimentalCondensateProfileFixedSupportPruneRescueCache,
+    *,
+    element_inventory_target: Optional[Array] = None,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> Mapping[str, Any]:
+    """Run fallback rescue while caching rescue plans for repeated layer sets."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    if not isinstance(cache, ExperimentalCondensateProfileFixedSupportPruneRescueCache):
+        raise TypeError(
+            "cache must be an "
+            "ExperimentalCondensateProfileFixedSupportPruneRescueCache."
+        )
+    base_arrays = run_experimental_profile_fixed_support_batch_plan(
+        plan,
+        element_inventory_target=element_inventory_target,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    rescue = _get_cached_fixed_support_prune_rescue_plan(
+        plan,
+        cache,
+        _fallback_layer_indices_from_fixed_support_arrays(base_arrays),
+        prune_relative_floors=prune_relative_floors,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(base_arrays, rescue.metadata)
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan(
+        rescue.rescue_plan,
+        element_inventory_target=_fixed_support_prune_rescue_single_target(
+            element_inventory_target,
+            rescue.metadata,
+        ),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue.metadata,
+    )
+
+
+def run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    *,
+    element_inventory_target: Optional[Array] = None,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> Mapping[str, Any]:
+    """Run a prepared fixed-support plan, then prune-rescue fallback layers.
+
+    The first pass is identical to
+    :func:`run_experimental_profile_fixed_support_batch_plan`. Layers whose
+    ``fallback_required`` flag is true are re-run through a smaller prepared
+    plan containing ``current`` plus pruned-support candidates. The returned
+    arrays keep the original layer shape and include a ``fallback_rescue``
+    metadata entry describing any replacements.
+    """
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    base_arrays = run_experimental_profile_fixed_support_batch_plan(
+        plan,
+        element_inventory_target=element_inventory_target,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    fallback_layer_indices = _fallback_layer_indices_from_fixed_support_arrays(
+        base_arrays
+    )
+    rescue_plan, rescue_metadata = (
+        _prepare_experimental_profile_fixed_support_prune_rescue_plan(
+            plan,
+            fallback_layer_indices,
+            prune_relative_floors=prune_relative_floors,
+        )
+    )
+    rescue = _ExperimentalProfileFixedSupportPruneRescuePlan(
+        rescue_plan=rescue_plan,
+        metadata=rescue_metadata,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(base_arrays, rescue.metadata)
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan(
+        rescue.rescue_plan,
+        element_inventory_target=_fixed_support_prune_rescue_single_target(
+            element_inventory_target,
+            rescue.metadata,
+        ),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue.metadata,
+    )
+
+
+def run_experimental_profile_fixed_support_batch_plan_many(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    element_inventory_targets: Array,
+    *,
+    rho_initialization: str = "unit_activity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0,
+) -> Mapping[str, Array]:
+    """Run a prepared fixed-support profile plan for multiple compositions.
+
+    ``element_inventory_targets`` must have shape ``(n_eval, n_elements)`` for
+    compositions shared by every layer, or ``(n_eval, n_layers, n_elements)`` for
+    layer-specific compositions. Returned arrays have ``n_eval`` as the leading
+    dimension.
+    """
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    targets = jnp.asarray(element_inventory_targets, dtype=jnp.float64)
+    n_elements = int(plan.formula_matrix.shape[0])
+    if targets.ndim == 2:
+        if targets.shape[1] != n_elements:
+            raise ValueError(
+                "element_inventory_targets must have shape "
+                "(n_eval, n_elements)."
+            )
+        layer_specific_targets = False
+    elif targets.ndim == 3:
+        if targets.shape[1:] != (plan.n_layers, n_elements):
+            raise ValueError(
+                "element_inventory_targets must have shape "
+                f"(n_eval, {plan.n_layers}, {n_elements})."
+            )
+        layer_specific_targets = True
+    else:
+        raise ValueError(
+            "element_inventory_targets must be two- or three-dimensional."
+        )
+    n_eval = int(targets.shape[0])
+    if n_eval <= 0:
+        raise ValueError("element_inventory_targets must contain at least one row.")
+
+    from exogibbs.optimize.minimize_cond import (
+        _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch,
+    )
+
+    gas_species_count = int(plan.formula_matrix.shape[1])
+    gas_ln_n = jnp.zeros(
+        (n_eval, plan.n_layers, gas_species_count),
+        dtype=jnp.float64,
+    )
+    condensate_amounts = jnp.zeros(
+        (n_eval, plan.n_layers, plan.condensate_count),
+        dtype=jnp.float64,
+    )
+    converged = jnp.zeros((n_eval, plan.n_layers), dtype=bool)
+    final_residual = jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64)
+    n_iter = jnp.zeros((n_eval, plan.n_layers), dtype=jnp.int32)
+    step_diagnostics = {
+        "accepted_iteration_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "normal_accepted_iteration_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "fallback_accepted_iteration_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "initial_residual": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+        "lambda_selection_index": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.int32),
+    }
+    residual_components = {
+        "gas": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+        "condensate_stationarity": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "budget": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+        "complementarity": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+        "total_density": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
+    }
+
+    for bucket, layer_indices in zip(plan.buckets, plan.bucket_layer_index_arrays):
+        bucket_size = len(bucket.layer_indices)
+        if layer_specific_targets:
+            bucket_targets = targets[:, layer_indices, :]
+        else:
+            bucket_targets = jnp.broadcast_to(
+                targets[:, None, :],
+                (n_eval, bucket_size, n_elements),
+            )
+        flat_targets = jnp.reshape(bucket_targets, (n_eval * bucket_size, n_elements))
+        flat_ln_nk_init = jnp.reshape(
+            jnp.broadcast_to(
+                bucket.ln_nk_init[None, :, :],
+                (n_eval, bucket_size, bucket.ln_nk_init.shape[1]),
+            ),
+            (n_eval * bucket_size, bucket.ln_nk_init.shape[1]),
+        )
+        flat_ln_mk_init = jnp.reshape(
+            jnp.broadcast_to(
+                bucket.ln_mk_init[None, :, :],
+                (n_eval, bucket_size, bucket.ln_mk_init.shape[1]),
+            ),
+            (n_eval * bucket_size, bucket.ln_mk_init.shape[1]),
+        )
+        flat_ln_ntot_init = jnp.reshape(
+            jnp.broadcast_to(
+                bucket.ln_ntot_init[None, :],
+                (n_eval, bucket_size),
+            ),
+            (n_eval * bucket_size,),
+        )
+        flat_element_potential_init = None
+        if bucket.element_potential_init is not None:
+            flat_element_potential_init = jnp.reshape(
+                jnp.broadcast_to(
+                    bucket.element_potential_init[None, :, :],
+                    (n_eval, bucket_size, bucket.element_potential_init.shape[1]),
+                ),
+                (n_eval * bucket_size, bucket.element_potential_init.shape[1]),
+            )
+        flat_rho_init = None
+        if bucket.rho_init is not None:
+            flat_rho_init = jnp.reshape(
+                jnp.broadcast_to(
+                    bucket.rho_init[None, :, :],
+                    (n_eval, bucket_size, bucket.rho_init.shape[1]),
+                ),
+                (n_eval * bucket_size, bucket.rho_init.shape[1]),
+            )
+        flat_barrier_epsilon_init = None
+        if bucket.barrier_epsilon_init is not None:
+            flat_barrier_epsilon_init = jnp.reshape(
+                jnp.broadcast_to(
+                    bucket.barrier_epsilon_init[None, :],
+                    (n_eval, bucket_size),
+                ),
+                (n_eval * bucket_size,),
+            )
+        flat_gas_stationarity_source_init = None
+        if bucket.gas_stationarity_source_init is not None:
+            flat_gas_stationarity_source_init = jnp.reshape(
+                jnp.broadcast_to(
+                    bucket.gas_stationarity_source_init[None, :, :],
+                    (
+                        n_eval,
+                        bucket_size,
+                        bucket.gas_stationarity_source_init.shape[1],
+                    ),
+                ),
+                (n_eval * bucket_size, bucket.gas_stationarity_source_init.shape[1]),
+            )
+        flat_hvector = jnp.reshape(
+            jnp.broadcast_to(
+                bucket.hvector[None, :, :],
+                (n_eval, bucket_size, bucket.hvector.shape[1]),
+            ),
+            (n_eval * bucket_size, bucket.hvector.shape[1]),
+        )
+        flat_hcond = jnp.reshape(
+            jnp.broadcast_to(
+                bucket.hvector_cond_active[None, :, :],
+                (n_eval, bucket_size, bucket.hvector_cond_active.shape[1]),
+            ),
+            (n_eval * bucket_size, bucket.hvector_cond_active.shape[1]),
+        )
+        flat_pressure = jnp.reshape(
+            jnp.broadcast_to(
+                bucket.ln_normalized_pressure[None, :],
+                (n_eval, bucket_size),
+            ),
+            (n_eval * bucket_size,),
+        )
+        batch_result, _batch_extra = (
+            _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+                ln_nk_init=flat_ln_nk_init,
+                ln_mk_init=flat_ln_mk_init,
+                ln_ntot_init=flat_ln_ntot_init,
+                element_potential_init=flat_element_potential_init,
+                rho_init=flat_rho_init,
+                barrier_epsilon_init=flat_barrier_epsilon_init,
+                gas_stationarity_source_init=flat_gas_stationarity_source_init,
+                formula_matrix=plan.formula_matrix,
+                formula_matrix_cond_active=bucket.formula_matrix_cond_active,
+                element_inventory_target=flat_targets,
+                hvector=flat_hvector,
+                hvector_cond_active=flat_hcond,
+                ln_normalized_pressure=flat_pressure,
+                epsilon=-10.0,
+                residual_tolerance_multiplier=residual_tolerance_multiplier,
+                max_iter=plan.max_iter,
+                rho_initialization=rho_initialization,
+                lambda_initialization=lambda_initialization,
+            )
+        )
+        batch_payload = _batch_extra[
+            "pdipm_rgie_v11_activity_correction_fixed_support_batch"
+        ]
+        bucket_gas_ln_n = jnp.reshape(
+            batch_result.ln_nk,
+            (n_eval, bucket_size, gas_species_count),
+        )
+        support_amounts = jnp.reshape(
+            jnp.exp(batch_result.ln_mk),
+            (n_eval, bucket_size, len(bucket.support_indices)),
+        )
+        bucket_condensate_amounts = jnp.zeros(
+            (n_eval, bucket_size, plan.condensate_count),
+            dtype=support_amounts.dtype,
+        ).at[:, :, jnp.asarray(bucket.support_indices, dtype=jnp.int32)].set(
+            support_amounts
+        )
+        gas_ln_n = gas_ln_n.at[:, layer_indices, :].set(bucket_gas_ln_n)
+        condensate_amounts = condensate_amounts.at[:, layer_indices, :].set(
+            bucket_condensate_amounts
+        )
+        converged = converged.at[:, layer_indices].set(
+            jnp.reshape(
+                batch_result.diagnostics.converged,
+                (n_eval, bucket_size),
+            )
+        )
+        final_residual = final_residual.at[:, layer_indices].set(
+            jnp.reshape(
+                batch_result.diagnostics.final_residual,
+                (n_eval, bucket_size),
+            )
+        )
+        n_iter = n_iter.at[:, layer_indices].set(
+            jnp.reshape(
+                jnp.asarray(batch_result.diagnostics.n_iter, dtype=jnp.int32),
+                (n_eval, bucket_size),
+            )
+        )
+        component_sources = {
+            "gas": "gas_residual_norm",
+            "condensate_stationarity": "condensate_stationarity_residual_norm",
+            "budget": "budget_residual_norm",
+            "complementarity": "complementarity_residual_norm",
+            "total_density": "total_density_residual_norm",
+        }
+        for component_name, payload_name in component_sources.items():
+            residual_components[component_name] = residual_components[
+                component_name
+            ].at[:, layer_indices].set(
+                jnp.reshape(
+                    jnp.asarray(batch_payload[payload_name], dtype=jnp.float64),
+                    (n_eval, bucket_size),
+                )
+            )
+        step_sources = {
+            "accepted_iteration_count": "accepted_iteration_count",
+            "normal_accepted_iteration_count": "normal_accepted_iteration_count",
+            "fallback_accepted_iteration_count": "fallback_accepted_iteration_count",
+            "initial_residual": "initial_residual",
+            "lambda_selection_index": "lambda_selection_index",
+        }
+        for diagnostic_name, payload_name in step_sources.items():
+            diagnostic_dtype = step_diagnostics[diagnostic_name].dtype
+            step_diagnostics[diagnostic_name] = step_diagnostics[
+                diagnostic_name
+            ].at[:, layer_indices].set(
+                jnp.reshape(
+                    jnp.asarray(batch_payload[payload_name], dtype=diagnostic_dtype),
+                    (n_eval, bucket_size),
+                )
+            )
+    gas_n = jnp.exp(gas_ln_n)
+    gas_ntot = jnp.sum(gas_n, axis=2)
+    return {
+        "gas_ln_n": gas_ln_n,
+        "gas_n": gas_n,
+        "gas_x": gas_n / jnp.clip(gas_ntot[:, :, None], 1.0e-300),
+        "gas_ntot": gas_ntot,
+        "condensate_amounts": condensate_amounts,
+        "converged": converged,
+        "fallback_required": ~converged,
+        "final_residual": final_residual,
+        "residual_components": residual_components,
+        "step_diagnostics": step_diagnostics,
+        "n_iter": n_iter,
+        "lambda_candidate_labels": (
+            "provided",
+            "gas_lstsq",
+            "gas_cond_lstsq",
+            "damped_gas_lstsq",
+            "damped_gas_cond_lstsq",
+        ),
+    }
+
+
+def run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    rescue: ExperimentalCondensateProfileFixedSupportPruneRescuePlan,
+    element_inventory_targets: Array,
+    *,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+) -> Mapping[str, Any]:
+    """Run many fixed-support evaluations with a pre-built prune-rescue plan."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    if not isinstance(rescue, ExperimentalCondensateProfileFixedSupportPruneRescuePlan):
+        raise TypeError(
+            "rescue must be an "
+            "ExperimentalCondensateProfileFixedSupportPruneRescuePlan."
+        )
+    targets = jnp.asarray(element_inventory_targets, dtype=jnp.float64)
+    base_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        plan,
+        targets,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(
+            base_arrays,
+            rescue.metadata,
+        )
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        rescue.rescue_plan,
+        _fixed_support_prune_rescue_many_targets(targets, rescue.metadata),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue.metadata,
+    )
+
+
+def run_experimental_profile_fixed_support_batch_plan_many_with_cached_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    cache: ExperimentalCondensateProfileFixedSupportPruneRescueCache,
+    element_inventory_targets: Array,
+    *,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> Mapping[str, Any]:
+    """Run many fallback-rescue evaluations with cached rescue plans."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    if not isinstance(cache, ExperimentalCondensateProfileFixedSupportPruneRescueCache):
+        raise TypeError(
+            "cache must be an "
+            "ExperimentalCondensateProfileFixedSupportPruneRescueCache."
+        )
+    targets = jnp.asarray(element_inventory_targets, dtype=jnp.float64)
+    base_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        plan,
+        targets,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    rescue = _get_cached_fixed_support_prune_rescue_plan(
+        plan,
+        cache,
+        _fallback_layer_indices_from_fixed_support_arrays(base_arrays),
+        prune_relative_floors=prune_relative_floors,
+    )
+    if rescue.rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(
+            base_arrays,
+            rescue.metadata,
+        )
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        rescue.rescue_plan,
+        _fixed_support_prune_rescue_many_targets(targets, rescue.metadata),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue.metadata,
+    )
+
+
+def run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    element_inventory_targets: Array,
+    *,
+    rho_initialization: str = "complementarity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0e9,
+    prune_relative_floors: Sequence[float] = (1.0e-5, 1.0e-3),
+) -> Mapping[str, Any]:
+    """Run many fixed-support evaluations with fallback-only prune rescue."""
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    targets = jnp.asarray(element_inventory_targets, dtype=jnp.float64)
+    base_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        plan,
+        targets,
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    fallback_layer_indices = _fallback_layer_indices_from_fixed_support_arrays(
+        base_arrays
+    )
+    rescue_plan, rescue_metadata = (
+        _prepare_experimental_profile_fixed_support_prune_rescue_plan(
+            plan,
+            fallback_layer_indices,
+            prune_relative_floors=prune_relative_floors,
+        )
+    )
+    if rescue_plan is None:
+        return _attach_empty_fixed_support_rescue_metadata(
+            base_arrays,
+            rescue_metadata,
+        )
+    rescue_arrays = run_experimental_profile_fixed_support_batch_plan_many(
+        rescue_plan,
+        _fixed_support_prune_rescue_many_targets(targets, rescue_metadata),
+        rho_initialization=rho_initialization,
+        lambda_initialization=lambda_initialization,
+        residual_tolerance_multiplier=residual_tolerance_multiplier,
+    )
+    return _merge_fixed_support_prune_rescue_arrays(
+        base_arrays,
+        rescue_arrays,
+        rescue_metadata,
+    )
+
+
 def condensate_equilibrium_profile(
     setup: CondensateChemicalSetup,
     T: Sequence[float] | Array,
@@ -5735,16 +7785,6 @@ def condensate_equilibrium_profile(
         raise ValueError("T and P must have the same length.")
     opts = options or CondensateEquilibriumOptions()
     _validate_options(opts)
-    resolved_method = _resolve_condensate_profile_method(
-        method if method is not None else opts.profile_method,
-        initializer,
-    )
-    valid_methods = ("vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom")
-    if resolved_method not in valid_methods:
-        raise ValueError(
-            f"Unknown condensate profile solve method '{resolved_method}'. "
-            f"Expected one of {valid_methods}."
-        )
     n_layers = int(temperatures.shape[0])
     explicit_inits: tuple[CondensateEquilibriumInit | None, ...]
     if init is None:
@@ -5753,6 +7793,49 @@ def condensate_equilibrium_profile(
         explicit_inits = tuple(init)
         if len(explicit_inits) != n_layers:
             raise ValueError("init must have one entry per profile layer.")
+    requested_method = method if method is not None else opts.profile_method
+    auto_method = requested_method is None or requested_method == "auto"
+    has_fixed_support_payload = _profile_has_complete_fixed_support_payload(
+        explicit_inits,
+        support_indices=support_indices,
+        support_amounts_init=support_amounts_init,
+    )
+    resolved_method = _resolve_condensate_profile_method(
+        requested_method,
+        initializer,
+        has_fixed_support_payload=has_fixed_support_payload,
+    )
+    valid_methods = ("vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom")
+    if resolved_method not in valid_methods:
+        raise ValueError(
+            f"Unknown condensate profile solve method '{resolved_method}'. "
+            f"Expected one of {valid_methods} or 'auto'."
+        )
+    if auto_method and resolved_method == "vmap_cold" and has_fixed_support_payload:
+        opts = replace(
+            opts,
+            profile_method="auto",
+            profile_warm_start_support_policy="explicit_payload",
+            enable_experimental_profile_fixed_support_batch=True,
+            enable_experimental_profile_fixed_support_fallback_rescue=True,
+        )
+
+    if resolved_method == "vmap_cold":
+        experimental_batch_result = _run_experimental_profile_fixed_support_batch(
+            setup=setup,
+            temperatures=temperatures,
+            pressures=pressures,
+            b=b,
+            Pref=Pref,
+            explicit_inits=explicit_inits,
+            initializer=initializer,
+            support_indices=support_indices,
+            support_amounts_init=support_amounts_init,
+            opts=opts,
+            return_diagnostics=return_diagnostics,
+        )
+        if experimental_batch_result is not None:
+            return experimental_batch_result
 
     if resolved_method == "scan_hot_from_bottom":
         layer_order = tuple(reversed(range(n_layers)))
@@ -5835,9 +7918,22 @@ __all__ = (
     "CondensateProfileMethod",
     "CondensateProfileWarmStartSupportPolicy",
     "DefaultCondensateEquilibriumInitializer",
+    "ExperimentalCondensateProfileFixedSupportBatchPlan",
+    "ExperimentalCondensateProfileFixedSupportPruneRescueCache",
+    "ExperimentalCondensateProfileFixedSupportPruneRescuePlan",
     "build_condensate_chemical_setup",
     "build_condensate_equilibrium_result_from_solver_payload",
     "condensate_equilibrium",
     "condensate_equilibrium_profile",
+    "prepare_experimental_profile_fixed_support_batch_plan",
+    "prepare_experimental_profile_fixed_support_prune_rescue_plan",
+    "run_experimental_profile_fixed_support_batch_plan",
+    "run_experimental_profile_fixed_support_batch_plan_with_cached_fallback_rescue",
+    "run_experimental_profile_fixed_support_batch_plan_with_prepared_fallback_rescue",
+    "run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue",
+    "run_experimental_profile_fixed_support_batch_plan_many",
+    "run_experimental_profile_fixed_support_batch_plan_many_with_cached_fallback_rescue",
+    "run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue",
+    "run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue",
     "validate_condensate_chemical_setup",
 )

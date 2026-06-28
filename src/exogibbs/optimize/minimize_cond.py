@@ -38,6 +38,19 @@ from exogibbs.optimize.pipm_rgie_cond import (
 )
 
 Array = jax.Array
+FIXED_SUPPORT_BATCH_LAMBDA_CANDIDATE_LABELS = (
+    "provided",
+    "gas_lstsq",
+    "gas_cond_lstsq",
+    "damped_gas_lstsq",
+    "damped_gas_cond_lstsq",
+)
+FIXED_SUPPORT_BATCH_LAMBDA_INITIALIZATIONS = (
+    "provided",
+    "gas_lstsq",
+    "gas_cond_lstsq",
+    "best_residual",
+)
 CondensateProfileMethod = Literal[
     "vmap_cold",
     "scan_hot_from_top",
@@ -85,17 +98,45 @@ class CondensateEquilibriumInit:
     ln_nk: Optional[Array] = None
     ln_mk: Optional[Array] = None
     ln_ntot: Optional[Array] = None
+    element_potential: Optional[Array] = None
+    rho: Optional[Array] = None
+    barrier_epsilon: Optional[Array] = None
+    gas_stationarity_source: Optional[Array] = None
     ln_nk_source_trace: Optional[dict[str, Any]] = field(default=None, compare=False, repr=False)
 
     def tree_flatten(self):
-        children = (self.ln_nk, self.ln_mk, self.ln_ntot)
+        children = (
+            self.ln_nk,
+            self.ln_mk,
+            self.ln_ntot,
+            self.element_potential,
+            self.rho,
+            self.barrier_epsilon,
+            self.gas_stationarity_source,
+        )
         return children, None
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
         del aux_data
-        ln_nk, ln_mk, ln_ntot = children
-        return cls(ln_nk=ln_nk, ln_mk=ln_mk, ln_ntot=ln_ntot)
+        (
+            ln_nk,
+            ln_mk,
+            ln_ntot,
+            element_potential,
+            rho,
+            barrier_epsilon,
+            gas_stationarity_source,
+        ) = children
+        return cls(
+            ln_nk=ln_nk,
+            ln_mk=ln_mk,
+            ln_ntot=ln_ntot,
+            element_potential=element_potential,
+            rho=rho,
+            barrier_epsilon=barrier_epsilon,
+            gas_stationarity_source=gas_stationarity_source,
+        )
 
 
 @dataclass(frozen=True)
@@ -900,6 +941,24 @@ class CondensateEquilibriumResult:
         )
 
 
+@dataclass(frozen=True)
+class _PDIPMActivityFixedSupportBucket:
+    support_indices: tuple[int, ...]
+    layer_indices: tuple[int, ...]
+    formula_matrix_cond_active: Array
+    ln_nk_init: Array
+    ln_mk_init: Array
+    ln_ntot_init: Array
+    element_potential_init: Optional[Array]
+    rho_init: Optional[Array]
+    barrier_epsilon_init: Optional[Array]
+    gas_stationarity_source_init: Optional[Array]
+    element_inventory_target: Array
+    hvector: Array
+    hvector_cond_active: Array
+    ln_normalized_pressure: Array
+
+
 def classify_rgie_support_proxies(
     ln_mk: Array,
     driving: Array,
@@ -964,6 +1023,20 @@ def _prepare_condensate_init(init: CondensateEquilibriumInit) -> CondensateEquil
         ln_nk=jnp.asarray(init.ln_nk),
         ln_mk=jnp.asarray(init.ln_mk),
         ln_ntot=jnp.asarray(init.ln_ntot),
+        element_potential=(
+            None
+            if init.element_potential is None
+            else jnp.asarray(init.element_potential)
+        ),
+        rho=None if init.rho is None else jnp.asarray(init.rho),
+        barrier_epsilon=(
+            None if init.barrier_epsilon is None else jnp.asarray(init.barrier_epsilon)
+        ),
+        gas_stationarity_source=(
+            None
+            if init.gas_stationarity_source is None
+            else jnp.asarray(init.gas_stationarity_source)
+        ),
         ln_nk_source_trace=init.ln_nk_source_trace,
     )
 
@@ -1915,6 +1988,1185 @@ def solve_gas_equilibrium_with_duals(
     return result
 
 
+def _pdipm_activity_fixed_support_batch_core(
+    *,
+    ln_nk_init: jnp.ndarray,
+    ln_mk_init: jnp.ndarray,
+    ln_ntot_init: jnp.ndarray,
+    element_potential_init: jnp.ndarray,
+    rho_init: jnp.ndarray,
+    gas_stationarity_source_init: jnp.ndarray,
+    use_solver_epsilon: jnp.ndarray,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond_active: jnp.ndarray,
+    element_inventory_target: jnp.ndarray,
+    hvector: jnp.ndarray,
+    hvector_cond_active: jnp.ndarray,
+    ln_normalized_pressure: jnp.ndarray,
+    epsilon: jnp.ndarray,
+    residual_tolerance_multiplier: jnp.ndarray,
+    max_iter: int,
+    rho_initialization: str = "unit_activity",
+    lambda_initialization: str = "best_residual",
+) -> tuple[jnp.ndarray, ...]:
+    """Run the fixed-shape PD-IPM activity-correction core for one bucket."""
+
+    alpha_grid = jnp.asarray(
+        (
+            1.0,
+            0.5,
+            0.25,
+            0.125,
+            0.0625,
+            0.03125,
+            0.015625,
+            0.01,
+            0.003,
+            0.001,
+            0.0003,
+            0.0001,
+            1.0e-5,
+        ),
+        dtype=jnp.float64,
+    )
+    ag = jnp.asarray(formula_matrix, dtype=jnp.float64)
+    ac = jnp.asarray(formula_matrix_cond_active, dtype=jnp.float64)
+    positive_stoich = ac > 0.0
+
+    def l2(values: jnp.ndarray) -> jnp.ndarray:
+        scale = jnp.max(jnp.abs(values), initial=jnp.asarray(0.0, dtype=values.dtype))
+        return jnp.where(scale == 0.0, 0.0, scale * jnp.linalg.norm(values / scale))
+
+    def scaled_damped_lstsq(
+        matrix: jnp.ndarray,
+        rhs: jnp.ndarray,
+    ) -> jnp.ndarray:
+        column_scale = jnp.maximum(
+            jnp.linalg.norm(matrix, axis=0),
+            jnp.asarray(1.0e-300, dtype=matrix.dtype),
+        )
+        scaled_matrix = matrix / column_scale[None, :]
+        normal_matrix = scaled_matrix.T @ scaled_matrix
+        normal_rhs = scaled_matrix.T @ rhs
+        mean_diagonal = jnp.mean(jnp.diag(normal_matrix))
+        damping = jnp.maximum(
+            jnp.asarray(1.0e-12, dtype=matrix.dtype) * mean_diagonal,
+            jnp.asarray(1.0e-30, dtype=matrix.dtype),
+        )
+        solution_scaled = jnp.linalg.solve(
+            normal_matrix + damping * jnp.eye(normal_matrix.shape[0], dtype=matrix.dtype),
+            normal_rhs,
+        )
+        solution = solution_scaled / column_scale
+        return jnp.nan_to_num(solution, nan=0.0, posinf=0.0, neginf=0.0)
+
+    def step(
+        q: jnp.ndarray,
+        r: jnp.ndarray,
+        lam: jnp.ndarray,
+        rho: jnp.ndarray,
+        qtot: jnp.ndarray,
+        target: jnp.ndarray,
+        hgas_or_gas_stationarity_source: jnp.ndarray,
+        hcond: jnp.ndarray,
+        ln_pressure: jnp.ndarray,
+        epsilon_vec: jnp.ndarray,
+        r_cap: jnp.ndarray,
+        use_external_gas_source: jnp.ndarray,
+        use_scalar_step: jnp.ndarray,
+        residual_crit: jnp.ndarray,
+    ) -> tuple[jnp.ndarray, ...]:
+        gas_stationarity_source = jnp.where(
+            use_external_gas_source,
+            hgas_or_gas_stationarity_source,
+            hgas_or_gas_stationarity_source + ln_pressure - qtot,
+        )
+        log_activity_proxy = ac.T @ lam - hcond
+        jac_mask = log_activity_proxy > -0.1
+        jac_mask = jnp.where(
+            jnp.any(jac_mask),
+            jac_mask,
+            jnp.arange(r.shape[0]) == jnp.argmax(log_activity_proxy),
+        )
+        n = jnp.exp(q)
+        m = jnp.exp(r)
+        eta = jnp.exp(rho)
+        j_vec = m / jnp.maximum(eta, 1.0e-300)
+        t_vec = r + rho - epsilon_vec
+        geff = q + gas_stationarity_source
+        gas_inventory = ag @ n
+        delta_bhat = target - gas_inventory - ac @ m
+        delta_ntot = jnp.sum(n) - jnp.exp(qtot)
+        qhat = ag @ (n[:, None] * ag.T) + ac @ (j_vec[:, None] * ac.T)
+        qhat = qhat + 1.0e-14 * jnp.eye(qhat.shape[0], dtype=qhat.dtype)
+        rhs_top = ag @ (n * geff) + ac @ (j_vec * hcond + m * t_vec - m) + delta_bhat
+        rhs_bottom = jnp.dot(n, geff) - delta_ntot
+        matrix = jnp.block(
+            [
+                [qhat, gas_inventory[:, None]],
+                [gas_inventory[None, :], jnp.asarray([[delta_ntot]], dtype=qhat.dtype)],
+            ]
+        )
+        rhs = jnp.concatenate([rhs_top, jnp.asarray([rhs_bottom], dtype=qhat.dtype)])
+        solution = jnp.linalg.lstsq(matrix, rhs, rcond=None)[0]
+        solution = jnp.nan_to_num(solution, nan=0.0, posinf=0.0, neginf=0.0)
+        pi = solution[:-1]
+        delta_qtot = solution[-1]
+        raw_delta_q = ag.T @ pi + delta_qtot - geff
+        raw_delta_rho = (hcond - ac.T @ pi) / jnp.maximum(eta, 1.0e-300) - 1.0
+        raw_delta_r = -raw_delta_rho - t_vec
+        raw_delta_lam = pi - lam
+        delta_q = jnp.where(use_scalar_step, raw_delta_q, jnp.clip(raw_delta_q, -2.0, 2.0))
+        delta_r = jnp.where(use_scalar_step, raw_delta_r, jnp.clip(raw_delta_r, -5.0, 5.0))
+        delta_rho = jnp.where(
+            use_scalar_step,
+            raw_delta_rho,
+            jnp.clip(raw_delta_rho, -5.0, 5.0),
+        )
+        delta_lam = jnp.where(
+            use_scalar_step,
+            raw_delta_lam,
+            jnp.clip(raw_delta_lam, -100.0, 100.0),
+        )
+        alpha_r = jnp.min(
+            jnp.where(delta_r < 0.0, -1.0 / delta_r, 1.0),
+            initial=jnp.asarray(1.0, dtype=jnp.float64),
+        )
+        alpha_rho = jnp.min(
+            jnp.where(delta_rho < 0.0, -1.0 / delta_rho, 1.0),
+            initial=jnp.asarray(1.0, dtype=jnp.float64),
+        )
+        alpha_boundary = jnp.minimum(
+            1.0,
+            0.995 * jnp.minimum(alpha_r, alpha_rho),
+        )
+        alpha_boundary = jnp.where(
+            use_scalar_step & jnp.isfinite(alpha_boundary) & (alpha_boundary > 0.0),
+            alpha_boundary,
+            jnp.asarray(1.0, dtype=jnp.float64),
+        )
+
+        def residual_components(
+            qi: jnp.ndarray,
+            ri: jnp.ndarray,
+            lami: jnp.ndarray,
+            rhoi: jnp.ndarray,
+            qtoti: jnp.ndarray,
+        ) -> tuple[jnp.ndarray, ...]:
+            ni = jnp.exp(qi)
+            mi = jnp.exp(ri)
+            etai = jnp.exp(rhoi)
+            gas = qi + gas_stationarity_source + qtot - qtoti - ag.T @ lami
+            cond = hcond - ac.T @ lami - etai
+            budget = ag @ ni + ac @ mi - target
+            comp = ri + rhoi - epsilon_vec
+            total_density = jnp.asarray([jnp.sum(ni) - jnp.exp(qtoti)], dtype=qi.dtype)
+            cond_masked = jnp.where(jac_mask, cond, 0.0)
+            return gas, cond_masked, budget, comp, total_density
+
+        def residual_norm(
+            qi: jnp.ndarray,
+            ri: jnp.ndarray,
+            lami: jnp.ndarray,
+            rhoi: jnp.ndarray,
+            qtoti: jnp.ndarray,
+        ) -> jnp.ndarray:
+            gas, cond, budget, comp, total_density = residual_components(
+                qi,
+                ri,
+                lami,
+                rhoi,
+                qtoti,
+            )
+            return l2(
+                jnp.concatenate(
+                    [
+                        gas,
+                        cond,
+                        budget,
+                        comp,
+                        total_density,
+                    ]
+                )
+            )
+
+        initial_norm = residual_norm(q, r, lam, rho, qtot)
+        initial_gas, initial_cond, initial_budget, initial_comp, _initial_total = (
+            residual_components(q, r, lam, rho, qtot)
+        )
+        initial_gas_norm = l2(initial_gas)
+        initial_cond_norm = l2(initial_cond)
+        initial_budget_norm = l2(initial_budget)
+        initial_comp_norm = l2(initial_comp)
+        initial_stationarity_merit = jnp.maximum(
+            jnp.maximum(initial_gas_norm, initial_cond_norm),
+            initial_comp_norm,
+        )
+
+        def trial(alpha: jnp.ndarray) -> tuple[jnp.ndarray, ...]:
+            tq = q + alpha * delta_q
+            tr = jnp.minimum(r + alpha * delta_r, r_cap)
+            tlam = lam + alpha * delta_lam
+            trho = rho + alpha * delta_rho
+            tqtot = qtot + alpha * delta_qtot
+            gas, cond, budget, comp, _total = residual_components(
+                tq,
+                tr,
+                tlam,
+                trho,
+                tqtot,
+            )
+            return (
+                tq,
+                tr,
+                tlam,
+                trho,
+                tqtot,
+                residual_norm(tq, tr, tlam, trho, tqtot),
+                l2(gas),
+                l2(cond),
+                l2(budget),
+                l2(comp),
+            )
+
+        bounded_alpha_grid = jnp.minimum(alpha_grid, alpha_boundary)
+        (
+            tq,
+            tr,
+            tlam,
+            trho,
+            tqtot,
+            norms,
+            gas_norms,
+            cond_norms,
+            budget_norms,
+            comp_norms,
+        ) = jax.vmap(trial)(bounded_alpha_grid)
+        finite = jnp.isfinite(norms)
+        accepted_mask = finite & (norms < initial_norm)
+        any_accepted = jnp.any(accepted_mask)
+        first_index = jnp.argmax(accepted_mask)
+        best_index = jnp.argmin(jnp.where(finite, norms, jnp.inf))
+        fallback_merit = jnp.maximum(
+            jnp.maximum(gas_norms, cond_norms),
+            comp_norms,
+        )
+        stationarity_floor = jnp.asarray(1.0e-300, dtype=initial_norm.dtype)
+        target_ratio = jnp.minimum(
+            1.0,
+            jnp.maximum(residual_crit, stationarity_floor)
+            / jnp.maximum(initial_stationarity_merit, stationarity_floor),
+        )
+        required_stationarity_factor = jnp.exp(
+            jnp.log(target_ratio) / jnp.asarray(max_iter, dtype=initial_norm.dtype)
+        )
+        component_sufficiently_improved = (
+            fallback_merit <= required_stationarity_factor * initial_stationarity_merit
+        )
+        budget_not_broken = budget_norms <= jnp.maximum(
+            1.05 * initial_budget_norm,
+            initial_budget_norm + jnp.asarray(1.0e-10, dtype=initial_budget_norm.dtype),
+        )
+        combined_not_worse = norms <= (
+            initial_norm
+            + jnp.maximum(
+                jnp.asarray(1.0e-12, dtype=initial_norm.dtype),
+                1.0e-6 * jnp.maximum(
+                    initial_norm,
+                    jnp.asarray(1.0, dtype=initial_norm.dtype),
+                ),
+            )
+        )
+        fallback_mask = (
+            finite
+            & component_sufficiently_improved
+            & budget_not_broken
+            & combined_not_worse
+        )
+        any_fallback = jnp.any(fallback_mask)
+        fallback_index = jnp.argmin(jnp.where(fallback_mask, fallback_merit, jnp.inf))
+        selected = jnp.where(
+            any_accepted,
+            first_index,
+            jnp.where(any_fallback, fallback_index, best_index),
+        )
+        step_accepted = any_accepted | any_fallback
+        return (
+            jnp.where(step_accepted, tq[selected], q),
+            jnp.where(step_accepted, tr[selected], r),
+            jnp.where(step_accepted, tlam[selected], lam),
+            jnp.where(step_accepted, trho[selected], rho),
+            jnp.where(step_accepted, tqtot[selected], qtot),
+            jnp.where(step_accepted, norms[selected], initial_norm),
+            step_accepted,
+            any_accepted,
+            any_fallback & (~any_accepted),
+            initial_norm,
+        )
+
+    def run_one(
+        q0: jnp.ndarray,
+        r0: jnp.ndarray,
+        qtot0: jnp.ndarray,
+        lam_init: jnp.ndarray,
+        rho_init_one: jnp.ndarray,
+        gas_source_init: jnp.ndarray,
+        use_solver_epsilon_one: jnp.ndarray,
+        target: jnp.ndarray,
+        hgas: jnp.ndarray,
+        hcond: jnp.ndarray,
+        ln_pressure: jnp.ndarray,
+        solver_epsilon: jnp.ndarray,
+    ) -> tuple[jnp.ndarray, ...]:
+        capacity = jnp.where(
+            positive_stoich,
+            target[:, None] / ac,
+            jnp.inf,
+        )
+        condensate_capacity = jnp.min(capacity, axis=0)
+        r_cap = jnp.log(jnp.maximum(condensate_capacity, 1.0e-300))
+        reference_element_indices = jnp.argmin(capacity, axis=0)
+        reference_budget = target[reference_element_indices]
+        legacy_epsilon_vec = jnp.log(
+            jnp.maximum(1.0e-15 * reference_budget, 1.0e-300)
+        )
+        epsilon_vec = jnp.where(
+            use_solver_epsilon_one,
+            jnp.full_like(r0, solver_epsilon),
+            legacy_epsilon_vec,
+        )
+        if rho_initialization == "provided":
+            rho0 = rho_init_one
+        elif rho_initialization == "complementarity":
+            rho0 = epsilon_vec - r0
+        else:
+            rho0 = jnp.zeros_like(r0)
+        gas_stationarity_source_init = jnp.where(
+            use_solver_epsilon_one,
+            gas_source_init,
+            hgas + ln_pressure - qtot0,
+        )
+        eta0 = jnp.exp(rho0)
+        lam0_gas = jnp.linalg.lstsq(
+            ag.T,
+            q0 + gas_stationarity_source_init,
+            rcond=None,
+        )[0]
+        lam0_joint = jnp.linalg.lstsq(
+            jnp.concatenate([ag.T, ac.T], axis=0),
+            jnp.concatenate([q0 + gas_stationarity_source_init, hcond - eta0]),
+            rcond=None,
+        )[0]
+        lam0_gas_damped = scaled_damped_lstsq(
+            ag.T,
+            q0 + gas_stationarity_source_init,
+        )
+        lam0_joint_damped = scaled_damped_lstsq(
+            jnp.concatenate([ag.T, ac.T], axis=0),
+            jnp.concatenate([q0 + gas_stationarity_source_init, hcond - eta0]),
+        )
+
+        def initial_residual_for_lambda(lami: jnp.ndarray) -> jnp.ndarray:
+            ni = jnp.exp(q0)
+            mi = jnp.exp(r0)
+            etai = jnp.exp(rho0)
+            gas = q0 + gas_stationarity_source_init - ag.T @ lami
+            cond = hcond - ac.T @ lami - etai
+            budget = ag @ ni + ac @ mi - target
+            comp = r0 + rho0 - epsilon_vec
+            total_density = jnp.asarray(
+                [jnp.sum(ni) - jnp.exp(qtot0)],
+                dtype=q0.dtype,
+            )
+            log_activity_proxy = ac.T @ lami - hcond
+            jac_mask = log_activity_proxy > -0.1
+            jac_mask = jnp.where(
+                jnp.any(jac_mask),
+                jac_mask,
+                jnp.arange(r0.shape[0]) == jnp.argmax(log_activity_proxy),
+            )
+            return l2(
+                jnp.concatenate(
+                    [
+                        gas,
+                        jnp.where(jac_mask, cond, 0.0),
+                        budget,
+                        comp,
+                        total_density,
+                    ]
+                )
+            )
+
+        if lambda_initialization == "provided":
+            lam0 = lam_init
+            lambda_selection_index = jnp.asarray(0, dtype=jnp.int32)
+        elif lambda_initialization == "best_residual":
+            lambda_candidates = jnp.stack(
+                [
+                    lam_init,
+                    lam0_gas,
+                    lam0_joint,
+                    lam0_gas_damped,
+                    lam0_joint_damped,
+                ],
+                axis=0,
+            )
+            lambda_candidate_residuals = jax.vmap(initial_residual_for_lambda)(
+                lambda_candidates
+            )
+            lambda_selection_index = jnp.asarray(
+                jnp.argmin(lambda_candidate_residuals),
+                dtype=jnp.int32,
+            )
+            lam0 = lambda_candidates[lambda_selection_index]
+        elif lambda_initialization == "gas_cond_lstsq":
+            lam0 = lam0_joint
+            lambda_selection_index = jnp.asarray(2, dtype=jnp.int32)
+        else:
+            lam0 = lam0_gas
+            lambda_selection_index = jnp.asarray(1, dtype=jnp.int32)
+        residual_crit = residual_tolerance_multiplier * jnp.exp(solver_epsilon)
+        initial_step = step(
+            q0,
+            r0,
+            lam0,
+            rho0,
+            qtot0,
+            target,
+            jnp.where(use_solver_epsilon_one, gas_source_init, hgas),
+            hcond,
+            ln_pressure,
+            epsilon_vec,
+            r_cap,
+            use_solver_epsilon_one,
+            jnp.asarray(False),
+            residual_crit,
+        )
+        initial_residual = initial_step[9]
+        initial_running = initial_residual > residual_crit
+
+        def body(carry, _):
+            q, r, lam, rho, qtot, residual, residual_qtot_ref, still_running = carry
+            (
+                next_q,
+                next_r,
+                next_lam,
+                next_rho,
+                next_qtot,
+                next_residual,
+                accepted,
+                normal_accepted,
+                fallback_accepted,
+                _initial_residual,
+            ) = step(
+                q,
+                r,
+                lam,
+                rho,
+                    qtot,
+                    target,
+                    jnp.where(use_solver_epsilon_one, gas_source_init, hgas),
+                    hcond,
+                ln_pressure,
+                    epsilon_vec,
+                    r_cap,
+                    use_solver_epsilon_one,
+                    jnp.asarray(False),
+                    residual_crit,
+                )
+            apply_step = still_running & accepted
+            return (
+                jnp.where(apply_step, next_q, q),
+                jnp.where(apply_step, next_r, r),
+                jnp.where(apply_step, next_lam, lam),
+                jnp.where(apply_step, next_rho, rho),
+                jnp.where(apply_step, next_qtot, qtot),
+                jnp.where(still_running, next_residual, residual),
+                jnp.where(still_running, qtot, residual_qtot_ref),
+                apply_step,
+            ), (
+                jnp.where(still_running, next_residual, residual),
+                apply_step,
+                still_running & normal_accepted,
+                still_running & fallback_accepted,
+            )
+
+        initial = (
+            q0,
+            r0,
+            lam0,
+            rho0,
+            qtot0,
+            initial_residual,
+            qtot0,
+            initial_running,
+        )
+        final, history = lax.scan(body, initial, xs=None, length=max_iter)
+        accepted_history = history[1]
+        normal_accepted_history = history[2]
+        fallback_accepted_history = history[3]
+        accepted_count = jnp.sum(accepted_history.astype(jnp.int32))
+        normal_accepted_count = jnp.sum(normal_accepted_history.astype(jnp.int32))
+        fallback_accepted_count = jnp.sum(fallback_accepted_history.astype(jnp.int32))
+        n_iter = jnp.minimum(accepted_count + 1, jnp.asarray(max_iter, dtype=jnp.int32))
+        final_residual = final[5]
+        converged = final_residual <= residual_crit
+        qf, rf, lamf, rhof, qtotf = final[0], final[1], final[2], final[3], final[4]
+        qtot_residual_reference = final[6]
+        gas_stationarity_source_final = jnp.where(
+            use_solver_epsilon_one,
+            gas_source_init,
+            hgas + ln_pressure - qtot_residual_reference,
+        )
+        log_activity_proxy_final = ac.T @ lamf - hcond
+        jac_mask_final = log_activity_proxy_final > -0.1
+        jac_mask_final = jnp.where(
+            jnp.any(jac_mask_final),
+            jac_mask_final,
+            jnp.arange(rf.shape[0]) == jnp.argmax(log_activity_proxy_final),
+        )
+        nf = jnp.exp(qf)
+        mf = jnp.exp(rf)
+        etaf = jnp.exp(rhof)
+        gas_component = (
+            qf
+            + gas_stationarity_source_final
+            + qtot_residual_reference
+            - qtotf
+            - ag.T @ lamf
+        )
+        cond_component = hcond - ac.T @ lamf - etaf
+        budget_component = ag @ nf + ac @ mf - target
+        complementarity_component = rf + rhof - epsilon_vec
+        total_density_component = jnp.asarray(
+            [jnp.sum(nf) - jnp.exp(qtotf)],
+            dtype=qf.dtype,
+        )
+        return (
+            qf,
+            rf,
+            qtotf,
+            n_iter,
+            converged,
+            (n_iter >= max_iter) & (~converged),
+            final_residual,
+            residual_crit,
+            accepted_count,
+            normal_accepted_count,
+            fallback_accepted_count,
+            initial_residual,
+            lambda_selection_index,
+            l2(gas_component),
+            l2(jnp.where(jac_mask_final, cond_component, 0.0)),
+            l2(budget_component),
+            l2(complementarity_component),
+            l2(total_density_component),
+        )
+
+    return jax.vmap(run_one)(
+        ln_nk_init,
+        ln_mk_init,
+        ln_ntot_init,
+        element_potential_init,
+        rho_init,
+        gas_stationarity_source_init,
+        use_solver_epsilon,
+        element_inventory_target,
+        hvector,
+        hvector_cond_active,
+        ln_normalized_pressure,
+        epsilon,
+    )
+
+
+_pdipm_activity_fixed_support_batch_core_jit = jax.jit(
+    _pdipm_activity_fixed_support_batch_core,
+    static_argnames=("max_iter", "rho_initialization", "lambda_initialization"),
+)
+
+
+def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+    *,
+    ln_nk_init: jnp.ndarray,
+    ln_mk_init: jnp.ndarray,
+    ln_ntot_init: jnp.ndarray,
+    element_potential_init: Optional[jnp.ndarray] = None,
+    rho_init: Optional[jnp.ndarray] = None,
+    barrier_epsilon_init: Optional[jnp.ndarray] = None,
+    gas_stationarity_source_init: Optional[jnp.ndarray] = None,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond_active: jnp.ndarray,
+    element_inventory_target: jnp.ndarray,
+    hvector: jnp.ndarray,
+    hvector_cond_active: jnp.ndarray,
+    ln_normalized_pressure: jnp.ndarray,
+    epsilon: float = -10.0,
+    residual_tolerance_multiplier: float = 1.0,
+    max_iter: int,
+    rho_initialization: str = "unit_activity",
+    lambda_initialization: str = "best_residual",
+) -> tuple[CondensateEquilibriumResult, dict[str, Any]]:
+    """Run the experimental fixed-support activity-correction core for one bucket.
+
+    The helper is intentionally private and currently does not alter the
+    production route. It provides the GPU-friendly fixed-shape batch primitive
+    used by the optimization experiments.
+    """
+
+    lambda_initialization = str(lambda_initialization)
+    if lambda_initialization not in FIXED_SUPPORT_BATCH_LAMBDA_INITIALIZATIONS:
+        raise ValueError(
+            "lambda_initialization must be one of "
+            f"{FIXED_SUPPORT_BATCH_LAMBDA_INITIALIZATIONS}."
+        )
+
+    ln_nk_init_array = jnp.asarray(ln_nk_init, dtype=jnp.float64)
+    ln_mk_init_array = jnp.asarray(ln_mk_init, dtype=jnp.float64)
+    ln_ntot_init_array = jnp.asarray(ln_ntot_init, dtype=jnp.float64)
+    formula_matrix_array = jnp.asarray(formula_matrix, dtype=jnp.float64)
+    element_potential_init_array = (
+        jnp.asarray(element_potential_init, dtype=jnp.float64)
+        if element_potential_init is not None
+        else jnp.zeros(
+            (ln_nk_init_array.shape[0], formula_matrix_array.shape[0]),
+            dtype=jnp.float64,
+        )
+    )
+    rho_init_array = (
+        jnp.asarray(rho_init, dtype=jnp.float64)
+        if rho_init is not None
+        else jnp.zeros_like(ln_mk_init_array)
+    )
+    epsilon_array = (
+        jnp.asarray(barrier_epsilon_init, dtype=jnp.float64)
+        if barrier_epsilon_init is not None
+        else jnp.full_like(
+            ln_ntot_init_array,
+            float(epsilon),
+            dtype=jnp.float64,
+        )
+    )
+    use_solver_epsilon_array = jnp.full_like(
+        ln_ntot_init_array,
+        barrier_epsilon_init is not None,
+        dtype=bool,
+    )
+    gas_stationarity_source_init_array = (
+        jnp.asarray(gas_stationarity_source_init, dtype=jnp.float64)
+        if gas_stationarity_source_init is not None
+        else jnp.asarray(hvector, dtype=jnp.float64)
+        + jnp.asarray(ln_normalized_pressure, dtype=jnp.float64)[:, None]
+        - ln_ntot_init_array[:, None]
+    )
+
+    (
+        ln_nk,
+        ln_mk,
+        ln_ntot,
+        n_iter,
+        converged,
+        hit_max_iter,
+        final_residual,
+        residual_crit,
+        accepted_count,
+        normal_accepted_count,
+        fallback_accepted_count,
+        initial_residual,
+        lambda_selection_index,
+        gas_residual_norm,
+        condensate_stationarity_residual_norm,
+        budget_residual_norm,
+        complementarity_residual_norm,
+        total_density_residual_norm,
+    ) = _pdipm_activity_fixed_support_batch_core_jit(
+        ln_nk_init=ln_nk_init_array,
+        ln_mk_init=ln_mk_init_array,
+        ln_ntot_init=ln_ntot_init_array,
+        element_potential_init=element_potential_init_array,
+        rho_init=rho_init_array,
+        gas_stationarity_source_init=gas_stationarity_source_init_array,
+        use_solver_epsilon=use_solver_epsilon_array,
+        formula_matrix=formula_matrix_array,
+        formula_matrix_cond_active=jnp.asarray(
+            formula_matrix_cond_active,
+            dtype=jnp.float64,
+        ),
+        element_inventory_target=jnp.asarray(
+            element_inventory_target,
+            dtype=jnp.float64,
+        ),
+        hvector=jnp.asarray(hvector, dtype=jnp.float64),
+        hvector_cond_active=jnp.asarray(hvector_cond_active, dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray(ln_normalized_pressure, dtype=jnp.float64),
+        epsilon=epsilon_array,
+        residual_tolerance_multiplier=jnp.asarray(
+            float(residual_tolerance_multiplier),
+            dtype=jnp.float64,
+        ),
+        max_iter=int(max_iter),
+        rho_initialization=str(rho_initialization),
+        lambda_initialization=str(lambda_initialization),
+    )
+    diagnostics = CondensateEquilibriumDiagnostics.from_mapping(
+        {
+            "n_iter": n_iter,
+            "converged": converged,
+            "hit_max_iter": hit_max_iter,
+            "final_residual": final_residual,
+            "residual_crit": residual_crit,
+            "max_iter": jnp.full_like(n_iter, int(max_iter), dtype=jnp.int32),
+            "epsilon": epsilon_array,
+            "final_step_size": jnp.zeros_like(final_residual),
+            "invalid_numbers_detected": ~jnp.isfinite(final_residual),
+            "debug_nan": jnp.zeros_like(converged, dtype=bool),
+            "reduced_coupling_selected_alpha_s": jnp.ones_like(final_residual),
+        }
+    )
+    return (
+        CondensateEquilibriumResult(
+            ln_nk=ln_nk,
+            ln_mk=ln_mk,
+            ln_ntot=ln_ntot,
+            diagnostics=diagnostics,
+        ),
+        {
+            "pdipm_rgie_v11_activity_correction_fixed_support_batch": {
+                "schema": "exogibbs_pdipm_rgie_v11_activity_correction_fixed_support_batch_v1",
+                "experimental": True,
+                "production_route_wiring": False,
+                "accepted_iteration_count": accepted_count,
+                "normal_accepted_iteration_count": normal_accepted_count,
+                "fallback_accepted_iteration_count": fallback_accepted_count,
+                "initial_residual": initial_residual,
+                "lambda_selection_index": lambda_selection_index,
+                "lambda_candidate_labels": FIXED_SUPPORT_BATCH_LAMBDA_CANDIDATE_LABELS,
+                "gas_residual_norm": gas_residual_norm,
+                "condensate_stationarity_residual_norm": condensate_stationarity_residual_norm,
+                "budget_residual_norm": budget_residual_norm,
+                "complementarity_residual_norm": complementarity_residual_norm,
+                "total_density_residual_norm": total_density_residual_norm,
+                "rho_initialization": str(rho_initialization),
+                "lambda_initialization": str(lambda_initialization),
+            }
+        },
+    )
+
+
+def _prepare_pdipm_rgie_v11_activity_correction_profile_buckets(
+    *,
+    states: Sequence[ThermoState],
+    init_states: Sequence[CondensateEquilibriumInit],
+    support_indices_by_layer: Sequence[Sequence[int]],
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    hvector_by_layer: Optional[jnp.ndarray] = None,
+    hvector_cond_by_layer: Optional[jnp.ndarray] = None,
+) -> tuple[_PDIPMActivityFixedSupportBucket, ...]:
+    """Prepare same-support profile buckets without running the solver."""
+
+    n_layers = len(states)
+    if len(init_states) != n_layers or len(support_indices_by_layer) != n_layers:
+        raise ValueError("states, init_states, and support_indices_by_layer must match")
+
+    buckets: dict[tuple[int, ...], list[int]] = {}
+    for layer_index, support_indices in enumerate(support_indices_by_layer):
+        support_key = tuple(int(index) for index in support_indices)
+        if not support_key:
+            raise ValueError("fixed-support profile buckets require non-empty support")
+        buckets.setdefault(support_key, []).append(layer_index)
+
+    formula_matrix_cond = jnp.asarray(formula_matrix_cond, dtype=jnp.float64)
+    if hvector_by_layer is not None:
+        hvector_by_layer = jnp.asarray(hvector_by_layer, dtype=jnp.float64)
+        if hvector_by_layer.shape[0] != n_layers:
+            raise ValueError("hvector_by_layer must have one row per layer")
+    if hvector_cond_by_layer is not None:
+        hvector_cond_by_layer = jnp.asarray(hvector_cond_by_layer, dtype=jnp.float64)
+        if hvector_cond_by_layer.shape[0] != n_layers:
+            raise ValueError("hvector_cond_by_layer must have one row per layer")
+
+    prepared_buckets = []
+    for support_key, layer_indices in buckets.items():
+        support_array = jnp.asarray(support_key, dtype=jnp.int32)
+        ln_nk_init = []
+        ln_mk_init = []
+        ln_ntot_init = []
+        element_potential_init = []
+        rho_init = []
+        barrier_epsilon_init = []
+        gas_stationarity_source_init = []
+        have_element_potential = True
+        have_rho = True
+        have_barrier_epsilon = True
+        have_gas_stationarity_source = True
+        targets = []
+        hvectors = []
+        hcond_active = []
+        ln_pressures = []
+        for layer_index in layer_indices:
+            state = states[layer_index]
+            init = _prepare_condensate_init(init_states[layer_index])
+            ln_nk_init.append(jnp.asarray(init.ln_nk, dtype=jnp.float64))
+            ln_mk = jnp.asarray(init.ln_mk, dtype=jnp.float64)
+            if ln_mk.shape[0] == formula_matrix_cond.shape[1]:
+                ln_mk = ln_mk[support_array]
+            elif ln_mk.shape[0] != support_array.shape[0]:
+                raise ValueError(
+                    "init_state ln_mk must be full condensate length or support length"
+                )
+            ln_mk_init.append(ln_mk)
+            ln_ntot_init.append(jnp.asarray(init.ln_ntot, dtype=jnp.float64))
+            if init.element_potential is None:
+                have_element_potential = False
+            else:
+                element_potential = jnp.asarray(
+                    init.element_potential,
+                    dtype=jnp.float64,
+                )
+                if element_potential.shape[0] != formula_matrix_cond.shape[0]:
+                    raise ValueError(
+                        "init_state element_potential must have one value per element"
+                    )
+                element_potential_init.append(element_potential)
+            if init.rho is None:
+                have_rho = False
+            else:
+                rho = jnp.asarray(init.rho, dtype=jnp.float64)
+                if rho.shape[0] == formula_matrix_cond.shape[1]:
+                    rho = rho[support_array]
+                elif rho.shape[0] != support_array.shape[0]:
+                    raise ValueError(
+                        "init_state rho must be full condensate length or support length"
+                    )
+                rho_init.append(rho)
+            if init.barrier_epsilon is None:
+                have_barrier_epsilon = False
+            else:
+                barrier_epsilon = jnp.asarray(init.barrier_epsilon, dtype=jnp.float64)
+                if barrier_epsilon.ndim != 0:
+                    raise ValueError("init_state barrier_epsilon must be scalar")
+                barrier_epsilon_init.append(barrier_epsilon)
+            if init.gas_stationarity_source is None:
+                have_gas_stationarity_source = False
+            else:
+                gas_source = jnp.asarray(
+                    init.gas_stationarity_source,
+                    dtype=jnp.float64,
+                )
+                if gas_source.shape[0] != jnp.asarray(init.ln_nk).shape[0]:
+                    raise ValueError(
+                        "init_state gas_stationarity_source must match gas species length"
+                    )
+                gas_stationarity_source_init.append(gas_source)
+            targets.append(jnp.asarray(state.element_vector, dtype=jnp.float64))
+            hgas = (
+                hvector_by_layer[layer_index]
+                if hvector_by_layer is not None
+                else jnp.asarray(hvector_func(state.temperature), dtype=jnp.float64)
+            )
+            hcond_full = (
+                hvector_cond_by_layer[layer_index]
+                if hvector_cond_by_layer is not None
+                else jnp.asarray(hvector_cond_func(state.temperature), dtype=jnp.float64)
+            )
+            hvectors.append(hgas)
+            hcond_active.append(hcond_full[support_array])
+            ln_pressures.append(
+                jnp.asarray(state.ln_normalized_pressure, dtype=jnp.float64)
+            )
+        prepared_buckets.append(
+            _PDIPMActivityFixedSupportBucket(
+                support_indices=support_key,
+                layer_indices=tuple(int(index) for index in layer_indices),
+                formula_matrix_cond_active=jnp.asarray(
+                    formula_matrix_cond[:, support_array],
+                    dtype=jnp.float64,
+                ),
+                ln_nk_init=jnp.stack(ln_nk_init, axis=0),
+                ln_mk_init=jnp.stack(ln_mk_init, axis=0),
+                ln_ntot_init=jnp.stack(ln_ntot_init, axis=0),
+                element_potential_init=(
+                    jnp.stack(element_potential_init, axis=0)
+                    if have_element_potential
+                    else None
+                ),
+                rho_init=jnp.stack(rho_init, axis=0) if have_rho else None,
+                barrier_epsilon_init=(
+                    jnp.stack(barrier_epsilon_init, axis=0)
+                    if have_barrier_epsilon
+                    else None
+                ),
+                gas_stationarity_source_init=(
+                    jnp.stack(gas_stationarity_source_init, axis=0)
+                    if have_gas_stationarity_source
+                    else None
+                ),
+                element_inventory_target=jnp.stack(targets, axis=0),
+                hvector=jnp.stack(hvectors, axis=0),
+                hvector_cond_active=jnp.stack(hcond_active, axis=0),
+                ln_normalized_pressure=jnp.stack(ln_pressures, axis=0),
+            )
+        )
+    return tuple(prepared_buckets)
+
+
+def _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
+    *,
+    buckets: Sequence[_PDIPMActivityFixedSupportBucket],
+    formula_matrix: jnp.ndarray,
+    epsilon: float,
+    max_iter: int,
+    rho_initialization: str = "unit_activity",
+    lambda_initialization: str = "best_residual",
+    residual_tolerance_multiplier: float = 1.0,
+) -> tuple[tuple[CondensateEquilibriumResult, ...], dict[str, Any]]:
+    """Run already-prepared profile buckets without per-layer materialization."""
+
+    formula_matrix = jnp.asarray(formula_matrix, dtype=jnp.float64)
+    results = []
+    bucket_reports = []
+    for bucket in buckets:
+        batch_result, batch_extra = (
+            _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+                ln_nk_init=bucket.ln_nk_init,
+                ln_mk_init=bucket.ln_mk_init,
+                ln_ntot_init=bucket.ln_ntot_init,
+                element_potential_init=bucket.element_potential_init,
+                rho_init=bucket.rho_init,
+                barrier_epsilon_init=bucket.barrier_epsilon_init,
+                gas_stationarity_source_init=bucket.gas_stationarity_source_init,
+                formula_matrix=formula_matrix,
+                formula_matrix_cond_active=bucket.formula_matrix_cond_active,
+                element_inventory_target=bucket.element_inventory_target,
+                hvector=bucket.hvector,
+                hvector_cond_active=bucket.hvector_cond_active,
+                ln_normalized_pressure=bucket.ln_normalized_pressure,
+                epsilon=epsilon,
+                residual_tolerance_multiplier=residual_tolerance_multiplier,
+                max_iter=max_iter,
+                rho_initialization=rho_initialization,
+                lambda_initialization=lambda_initialization,
+            )
+        )
+        results.append(batch_result)
+        batch_payload = batch_extra[
+            "pdipm_rgie_v11_activity_correction_fixed_support_batch"
+        ]
+        bucket_reports.append(
+            {
+                "support_indices": bucket.support_indices,
+                "layer_indices": bucket.layer_indices,
+                "execution": "batch",
+                "batch_size": len(bucket.layer_indices),
+                "accepted_iteration_count": batch_payload[
+                    "accepted_iteration_count"
+                ],
+            }
+        )
+    return tuple(results), {
+        "pdipm_rgie_v11_activity_correction_prepared_profile_buckets": {
+            "schema": "exogibbs_pdipm_rgie_v11_activity_correction_prepared_profile_buckets_v1",
+            "experimental": True,
+            "production_route_wiring": False,
+            "bucket_count": len(bucket_reports),
+            "layer_count": sum(len(bucket.layer_indices) for bucket in buckets),
+            "buckets": tuple(bucket_reports),
+        }
+    }
+
+
+def _solve_pdipm_rgie_v11_activity_correction_profile_buckets(
+    *,
+    states: Sequence[ThermoState],
+    init_states: Sequence[CondensateEquilibriumInit],
+    support_indices_by_layer: Sequence[Sequence[int]],
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond: jnp.ndarray,
+    hvector_func,
+    hvector_cond_func,
+    epsilon: float,
+    max_iter: int,
+    hvector_by_layer: Optional[jnp.ndarray] = None,
+    hvector_cond_by_layer: Optional[jnp.ndarray] = None,
+    min_batch_size: int = 2,
+) -> tuple[tuple[CondensateEquilibriumResult, ...], dict[str, Any]]:
+    """Dispatch fixed-support profile layers through same-support batches.
+
+    This private helper assumes support discovery has already happened. It is
+    intentionally not wired into the public profile route yet; callers can use
+    it to validate fixed-support bucket execution before enabling a production
+    path.
+    """
+
+    n_layers = len(states)
+    if len(init_states) != n_layers or len(support_indices_by_layer) != n_layers:
+        raise ValueError("states, init_states, and support_indices_by_layer must match")
+    if min_batch_size < 1:
+        raise ValueError("min_batch_size must be at least 1")
+
+    buckets: dict[tuple[int, ...], list[int]] = {}
+    for layer_index, support_indices in enumerate(support_indices_by_layer):
+        support_key = tuple(int(index) for index in support_indices)
+        if not support_key:
+            raise ValueError("fixed-support profile buckets require non-empty support")
+        buckets.setdefault(support_key, []).append(layer_index)
+
+    results: list[CondensateEquilibriumResult | None] = [None] * n_layers
+    bucket_reports: list[dict[str, Any]] = []
+    formula_matrix = jnp.asarray(formula_matrix, dtype=jnp.float64)
+    formula_matrix_cond = jnp.asarray(formula_matrix_cond, dtype=jnp.float64)
+    if hvector_by_layer is not None:
+        hvector_by_layer = jnp.asarray(hvector_by_layer, dtype=jnp.float64)
+        if hvector_by_layer.shape[0] != n_layers:
+            raise ValueError("hvector_by_layer must have one row per layer")
+    if hvector_cond_by_layer is not None:
+        hvector_cond_by_layer = jnp.asarray(hvector_cond_by_layer, dtype=jnp.float64)
+        if hvector_cond_by_layer.shape[0] != n_layers:
+            raise ValueError("hvector_cond_by_layer must have one row per layer")
+
+    for support_key, layer_indices in buckets.items():
+        support_array = jnp.asarray(support_key, dtype=jnp.int32)
+        formula_matrix_cond_active = jnp.asarray(
+            formula_matrix_cond[:, support_array],
+            dtype=jnp.float64,
+        )
+        if len(layer_indices) >= min_batch_size:
+            ln_nk_init = []
+            ln_mk_init = []
+            ln_ntot_init = []
+            targets = []
+            hvectors = []
+            hcond_active = []
+            ln_pressures = []
+            for layer_index in layer_indices:
+                state = states[layer_index]
+                init = _prepare_condensate_init(init_states[layer_index])
+                ln_nk_init.append(jnp.asarray(init.ln_nk, dtype=jnp.float64))
+                ln_mk = jnp.asarray(init.ln_mk, dtype=jnp.float64)
+                if ln_mk.shape[0] == formula_matrix_cond.shape[1]:
+                    ln_mk = ln_mk[support_array]
+                elif ln_mk.shape[0] != support_array.shape[0]:
+                    raise ValueError(
+                        "init_state ln_mk must be full condensate length or support length"
+                    )
+                ln_mk_init.append(ln_mk)
+                ln_ntot_init.append(jnp.asarray(init.ln_ntot, dtype=jnp.float64))
+                targets.append(jnp.asarray(state.element_vector, dtype=jnp.float64))
+                hgas = (
+                    hvector_by_layer[layer_index]
+                    if hvector_by_layer is not None
+                    else jnp.asarray(hvector_func(state.temperature), dtype=jnp.float64)
+                )
+                hcond_full = (
+                    hvector_cond_by_layer[layer_index]
+                    if hvector_cond_by_layer is not None
+                    else jnp.asarray(hvector_cond_func(state.temperature), dtype=jnp.float64)
+                )
+                hvectors.append(hgas)
+                hcond_active.append(hcond_full[support_array])
+                ln_pressures.append(
+                    jnp.asarray(state.ln_normalized_pressure, dtype=jnp.float64)
+                )
+            batch_result, batch_extra = (
+                _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+                    ln_nk_init=jnp.stack(ln_nk_init, axis=0),
+                    ln_mk_init=jnp.stack(ln_mk_init, axis=0),
+                    ln_ntot_init=jnp.stack(ln_ntot_init, axis=0),
+                    formula_matrix=formula_matrix,
+                    formula_matrix_cond_active=formula_matrix_cond_active,
+                    element_inventory_target=jnp.stack(targets, axis=0),
+                    hvector=jnp.stack(hvectors, axis=0),
+                    hvector_cond_active=jnp.stack(hcond_active, axis=0),
+                    ln_normalized_pressure=jnp.stack(ln_pressures, axis=0),
+                    epsilon=epsilon,
+                    max_iter=max_iter,
+                    rho_initialization="unit_activity",
+                    lambda_initialization="gas_lstsq",
+                )
+            )
+            for local_index, layer_index in enumerate(layer_indices):
+                def take_layer(value, local_index=local_index):
+                    value = jnp.asarray(value)
+                    if value.ndim > 0 and value.shape[0] == len(layer_indices):
+                        return value[local_index]
+                    return value
+
+                diagnostics = tree_util.tree_map(
+                    take_layer,
+                    batch_result.diagnostics,
+                )
+                results[layer_index] = CondensateEquilibriumResult(
+                    ln_nk=batch_result.ln_nk[local_index],
+                    ln_mk=batch_result.ln_mk[local_index],
+                    ln_ntot=batch_result.ln_ntot[local_index],
+                    diagnostics=diagnostics,
+                )
+            batch_payload = batch_extra[
+                "pdipm_rgie_v11_activity_correction_fixed_support_batch"
+            ]
+            bucket_reports.append(
+                {
+                    "support_indices": support_key,
+                    "layer_indices": tuple(int(index) for index in layer_indices),
+                    "execution": "batch",
+                    "batch_size": len(layer_indices),
+                    "accepted_iteration_count": batch_payload[
+                        "accepted_iteration_count"
+                    ],
+                }
+            )
+            continue
+
+        layer_index = layer_indices[0]
+        state = states[layer_index]
+        init = _prepare_condensate_init(init_states[layer_index])
+        hcond_full = (
+            hvector_cond_by_layer[layer_index]
+            if hvector_cond_by_layer is not None
+            else jnp.asarray(hvector_cond_func(state.temperature), dtype=jnp.float64)
+        )
+        ln_mk = jnp.asarray(init.ln_mk, dtype=jnp.float64)
+        if ln_mk.shape[0] == formula_matrix_cond.shape[1]:
+            init = CondensateEquilibriumInit(
+                ln_nk=init.ln_nk,
+                ln_mk=ln_mk[support_array],
+                ln_ntot=init.ln_ntot,
+            )
+        results[layer_index], _extra = _solve_pdipm_rgie_v11_activity_correction_layer(
+            state=state,
+            init_state=init,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            hvector_func=hvector_func,
+            hvector_cond_active=hcond_full[support_array],
+            epsilon=epsilon,
+            max_iter=max_iter,
+        )
+        bucket_reports.append(
+            {
+                "support_indices": support_key,
+                "layer_indices": (int(layer_index),),
+                "execution": "single",
+                "batch_size": 1,
+            }
+        )
+
+    completed = tuple(result for result in results if result is not None)
+    if len(completed) != n_layers:
+        raise RuntimeError("internal error: not all profile bucket layers completed")
+    return completed, {
+        "pdipm_rgie_v11_activity_correction_profile_buckets": {
+            "schema": "exogibbs_pdipm_rgie_v11_activity_correction_profile_buckets_v1",
+            "experimental": True,
+            "production_route_wiring": False,
+            "bucket_count": len(bucket_reports),
+            "layer_count": n_layers,
+            "buckets": tuple(bucket_reports),
+        }
+    }
+
+
 def _solve_pdipm_rgie_v11_activity_correction_layer(
     *,
     state: ThermoState,
@@ -1946,6 +3198,8 @@ def _solve_pdipm_rgie_v11_activity_correction_layer(
     positive_stoich = ac > 0.0
     capacity = np.full_like(ac, np.inf, dtype=np.float64)
     np.divide(b[:, np.newaxis], ac, out=capacity, where=positive_stoich)
+    condensate_capacity = np.min(capacity, axis=0)
+    log_condensate_capacity = np.log(np.maximum(condensate_capacity, 1.0e-300))
     reference_element_indices = np.argmin(capacity, axis=0)
     reference_element_budget = b[reference_element_indices]
     fastchem4_cond_tau = 1.0e-15
@@ -2028,7 +3282,7 @@ def _solve_pdipm_rgie_v11_activity_correction_layer(
             ),
             jacobian_mask=jacobian_mask,
             paired_density_activity_update=False,
-            max_log_condensate_density=r,
+            max_log_condensate_density=log_condensate_capacity,
         )
         last_report = report
         history.append(
