@@ -14,7 +14,6 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from exogibbs.api.condensate_equilibrium import _least_squares_element_potential
 from exogibbs.condensates.inactive_driving import evaluate_inactive_condensate_driving
 from exogibbs.condensates.initialization_policy import (
     recommend_budget_preserving_seed_amounts,
@@ -22,6 +21,24 @@ from exogibbs.condensates.initialization_policy import (
 
 
 AMOUNT_FLOOR = 1.0e-300
+
+
+def _least_squares_element_potential(
+    *,
+    formula_matrix: Sequence[Sequence[float]],
+    gas_ln_n: Sequence[float],
+    gas_stationarity_source: Sequence[float],
+) -> jnp.ndarray:
+    ag = jnp.asarray(formula_matrix)
+    q = jnp.asarray(gas_ln_n)
+    source = jnp.asarray(gas_stationarity_source)
+    if ag.ndim != 2:
+        raise ValueError("formula_matrix must be two-dimensional.")
+    if q.ndim != 1 or source.ndim != 1 or q.shape != source.shape:
+        raise ValueError("gas_ln_n and gas_stationarity_source must be same-length vectors.")
+    if ag.shape[1] != q.shape[0]:
+        raise ValueError("formula_matrix column count must match gas_ln_n length.")
+    return jnp.linalg.lstsq(ag.T, q + source, rcond=None)[0]
 
 
 @dataclass(frozen=True)
