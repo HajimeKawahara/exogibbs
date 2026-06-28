@@ -14,6 +14,10 @@ import sphinx_rtd_theme
 import os
 import sys
 
+os.environ["JAX_PLATFORMS"] = "cpu"
+os.environ["JAX_PLATFORM_NAME"] = "cpu"
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/exogibbs_matplotlib")
+
 sys.path.insert(0, os.path.abspath("~/exogibbs"))
 
 

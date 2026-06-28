@@ -60,6 +60,44 @@ Quick Start: Condensate Equilibrium
    )
    print(result.status, result.condensate_support_names)
 
+Quick Start: Condensate Profile
+-------------------------------
+Use ``condensate_equilibrium_profile`` for a one-dimensional pressure and
+temperature profile.  The recommended profile method is ``"auto"``.  With a
+complete fixed-support initializer, ``"auto"`` can use the fixed-support batch
+path with fallback rescue; otherwise it falls back to a conservative hot scan.
+
+.. code-block:: python
+
+   from jax import config
+   import jax.numpy as jnp
+   config.update("jax_enable_x64", True)
+
+   from exogibbs.api.condensate_equilibrium import (
+       CondensateEquilibriumOptions,
+       condensate_equilibrium_profile,
+   )
+   from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
+
+   setup = condensate_chemical_setup()
+   b = jnp.asarray(setup.gas_setup.element_vector_reference, dtype=jnp.float64)
+   T = jnp.asarray([1700.0, 1600.0, 1500.0, 1400.0], dtype=jnp.float64)
+   P = jnp.asarray([1.0e-3, 3.0e-3, 1.0e-2, 3.0e-2], dtype=jnp.float64)
+
+   profile = condensate_equilibrium_profile(
+       setup,
+       T=T,
+       P=P,
+       b=b,
+       options=CondensateEquilibriumOptions(profile_method="auto"),
+       return_diagnostics=True,
+   )
+   print(profile.method)
+   print([layer.status for layer in profile.layers])
+
+See :doc:`../condensate_profile` for the profile method contract and the
+fixed-support batch/rescue diagnostics.
+
 Packaged Data
 -------------
 The default gas setup reads:
