@@ -6567,18 +6567,16 @@ def _merge_fixed_support_prune_rescue_arrays(
                 )
 
     def merge_layer_array(base_value: Any, rescue_value: Any) -> Any:
-        base_array = jnp.asarray(base_value)
-        rescue_array = jnp.asarray(rescue_value)
+        base_array = np.asarray(jax.device_get(base_value))
+        rescue_array = np.asarray(jax.device_get(rescue_value))
         if base_residual.ndim == 1:
             if base_array.ndim == 0 or base_array.shape[0] != n_layers:
                 return base_value
-            merged = base_array
-            for eval_index in range(eval_count):
-                del eval_index
-                for original_index in range(n_layers):
-                    selected = int(selected_expanded[0, original_index])
-                    if selected >= 0:
-                        merged = merged.at[original_index].set(rescue_array[selected])
+            merged = base_array.copy()
+            for original_index in range(n_layers):
+                selected = int(selected_expanded[0, original_index])
+                if selected >= 0:
+                    merged[original_index] = rescue_array[selected]
             return merged
         if (
             base_array.ndim < 2
@@ -6586,14 +6584,16 @@ def _merge_fixed_support_prune_rescue_arrays(
             or base_array.shape[1] != n_layers
         ):
             return base_value
-        merged = base_array
-        for eval_index in range(eval_count):
-            for original_index in range(n_layers):
-                selected = int(selected_expanded[eval_index, original_index])
-                if selected >= 0:
-                    merged = merged.at[eval_index, original_index].set(
-                        rescue_array[eval_index, selected]
-                    )
+        merged = base_array.copy()
+        row_indices = np.arange(eval_count)
+        for original_index in range(n_layers):
+            selected = selected_expanded[:, original_index]
+            rows = selected >= 0
+            if np.any(rows):
+                merged[rows, original_index] = rescue_array[
+                    row_indices[rows],
+                    selected[rows],
+                ]
         return merged
 
     merged = {
