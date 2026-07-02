@@ -318,6 +318,241 @@ def build_linear_budget_total_density_amount_gas_direction(
     )
 
 
+def build_linear_budget_total_density_amount_gas_condensate_direction(
+    *,
+    formula_matrix: Sequence[Sequence[float]],
+    formula_matrix_cond_active: Sequence[Sequence[float]],
+    element_inventory_target: Sequence[float],
+    external_condensate_budget: Sequence[float] | None = None,
+    gas_stationarity_source: Sequence[float],
+    condensate_standard_source: Sequence[float],
+    q: Sequence[float],
+    r: Sequence[float],
+    lam: Sequence[float],
+    rho: Sequence[float],
+    qtot: float,
+    target_direction: AlgorithmV11Direction | None = None,
+    budget_weight: float = 30.0,
+    total_density_weight: float = 30.0,
+    amount_gas_weight: float = 1.0,
+    amount_condensate_weight: float = 1.0,
+    target_direction_weight: float = 1.0e-2,
+    target_direction_component_mode: str = "condensate_dual_only",
+    budget_row_scaling_policy: str = "relative_target",
+    relative_budget_floor_factor: float = 1.0e-300,
+    max_abs_delta_q: float = 2.0,
+    max_abs_delta_r: float = 2.0,
+    max_abs_delta_lambda: float = 100.0,
+) -> AlgorithmV11Direction:
+    """Build a joint restoration direction including condensate stationarity.
+
+    The condensate stationarity rows linearize the amount-weighted residual
+    ``m * (c - A_c.T @ lambda - eta)``.  This keeps inactive/tiny condensates
+    from dominating the least-squares system while still letting active
+    condensates pull the dual variables and amounts toward stationarity.
+    """
+
+    ag = _as_matrix(formula_matrix, "formula_matrix")
+    ac = _as_matrix(formula_matrix_cond_active, "formula_matrix_cond_active")
+    target = _as_vector(element_inventory_target, "element_inventory_target")
+    external_budget = (
+        np.zeros_like(target, dtype=np.float64)
+        if external_condensate_budget is None
+        else _as_vector(external_condensate_budget, "external_condensate_budget")
+    )
+    gas_source = _as_vector(gas_stationarity_source, "gas_stationarity_source")
+    cond_source = _as_vector(
+        condensate_standard_source,
+        "condensate_standard_source",
+    )
+    q_array = _as_vector(q, "q")
+    r_array = _as_vector(r, "r")
+    lam_array = _as_vector(lam, "lam")
+    rho_array = _as_vector(rho, "rho")
+    qtot_value = float(qtot)
+    if not np.isfinite(qtot_value):
+        raise ValueError("qtot must be finite.")
+    if ag.shape[0] != ac.shape[0] or ag.shape[0] != target.shape[0]:
+        raise ValueError("formula matrices and element_inventory_target row counts must match.")
+    if external_budget.shape[0] != target.shape[0]:
+        raise ValueError("external_condensate_budget length must match element rows.")
+    if ag.shape[1] != q_array.shape[0] or gas_source.shape[0] != q_array.shape[0]:
+        raise ValueError("gas arrays must match q.")
+    if ac.shape[1] != r_array.shape[0] or cond_source.shape[0] != r_array.shape[0]:
+        raise ValueError("condensate arrays must match r.")
+    if ag.shape[0] != lam_array.shape[0]:
+        raise ValueError("lambda length must match formula_matrix rows.")
+    if rho_array.shape[0] != r_array.shape[0]:
+        raise ValueError("rho length must match r.")
+
+    weights = (
+        float(budget_weight),
+        float(total_density_weight),
+        float(amount_gas_weight),
+        float(amount_condensate_weight),
+        float(target_direction_weight),
+    )
+    if any((not np.isfinite(weight) or weight < 0.0) for weight in weights):
+        raise ValueError("direction weights must be finite and non-negative.")
+    if budget_row_scaling_policy not in {"absolute", "relative_target"}:
+        raise ValueError("budget_row_scaling_policy must be absolute or relative_target.")
+    floor_factor = float(relative_budget_floor_factor)
+    if not np.isfinite(floor_factor) or floor_factor <= 0.0:
+        raise ValueError("relative_budget_floor_factor must be finite and positive.")
+
+    n = np.exp(q_array)
+    m = np.exp(r_array)
+    eta = np.exp(rho_array)
+    ntot = float(np.exp(qtot_value))
+    gas_residual = q_array + gas_source - ag.T @ lam_array
+    cond_residual = cond_source - ac.T @ lam_array - eta
+
+    q_size = q_array.shape[0]
+    r_size = r_array.shape[0]
+    lam_size = lam_array.shape[0]
+    rho_size = rho_array.shape[0]
+    variable_size = q_size + r_size + lam_size + rho_size + 1
+
+    def block(
+        q_block: np.ndarray | None = None,
+        r_block: np.ndarray | None = None,
+        lam_block: np.ndarray | None = None,
+        rho_block: np.ndarray | None = None,
+        qtot_block: np.ndarray | None = None,
+    ) -> np.ndarray:
+        return np.concatenate(
+            [
+                np.zeros(q_size) if q_block is None else q_block,
+                np.zeros(r_size) if r_block is None else r_block,
+                np.zeros(lam_size) if lam_block is None else lam_block,
+                np.zeros(rho_size) if rho_block is None else rho_block,
+                np.zeros(1) if qtot_block is None else qtot_block,
+            ]
+        )
+
+    rows: list[np.ndarray] = []
+    rhs: list[float] = []
+    budget_scale = np.sqrt(float(budget_weight))
+    if budget_scale > 0.0:
+        budget = ag @ n + ac @ m + external_budget - target
+        if budget_row_scaling_policy == "relative_target":
+            positive_target = target[target > 0.0]
+            target_scale = (
+                float(np.max(positive_target)) if positive_target.size else 1.0
+            )
+            floor = max(float(np.finfo(np.float64).tiny), floor_factor * target_scale)
+            row_weights = 1.0 / np.maximum(np.abs(target), floor)
+            row_weights = np.where(target > 0.0, row_weights, 0.0)
+            row_weights = np.where(np.isfinite(row_weights), row_weights, 0.0)
+        else:
+            row_weights = np.ones(ag.shape[0], dtype=np.float64)
+        for row_index in range(ag.shape[0]):
+            rows.append(
+                budget_scale
+                * row_weights[row_index]
+                * block(
+                    q_block=ag[row_index, :] * n,
+                    r_block=ac[row_index, :] * m,
+                )
+            )
+            rhs.append(float(-budget_scale * row_weights[row_index] * budget[row_index]))
+
+    total_scale = np.sqrt(float(total_density_weight))
+    if total_scale > 0.0:
+        rows.append(total_scale * block(q_block=n, qtot_block=np.array([-ntot])))
+        rhs.append(float(-total_scale * (np.sum(n) - ntot)))
+
+    gas_scale = np.sqrt(float(amount_gas_weight))
+    if gas_scale > 0.0:
+        for species_index in range(q_size):
+            q_part = np.zeros(q_size)
+            q_part[species_index] = n[species_index] * (gas_residual[species_index] + 1.0)
+            lam_part = -n[species_index] * ag[:, species_index]
+            rows.append(gas_scale * block(q_block=q_part, lam_block=lam_part))
+            rhs.append(float(-gas_scale * n[species_index] * gas_residual[species_index]))
+
+    cond_scale = np.sqrt(float(amount_condensate_weight))
+    if cond_scale > 0.0:
+        for cond_index in range(r_size):
+            r_part = np.zeros(r_size)
+            rho_part = np.zeros(rho_size)
+            r_part[cond_index] = m[cond_index] * cond_residual[cond_index]
+            rho_part[cond_index] = -m[cond_index] * eta[cond_index]
+            lam_part = -m[cond_index] * ac[:, cond_index]
+            rows.append(
+                cond_scale
+                * block(r_block=r_part, lam_block=lam_part, rho_block=rho_part)
+            )
+            rhs.append(
+                float(-cond_scale * m[cond_index] * cond_residual[cond_index])
+            )
+
+    target_scale = np.sqrt(float(target_direction_weight))
+    if target_direction is not None and target_scale > 0.0:
+        target_vector = np.concatenate(
+            [
+                np.asarray(target_direction.delta_q, dtype=np.float64),
+                np.asarray(target_direction.delta_r, dtype=np.float64),
+                np.asarray(target_direction.delta_lambda, dtype=np.float64),
+                np.asarray(target_direction.delta_rho, dtype=np.float64),
+                np.array([float(target_direction.delta_qtot)]),
+            ]
+        )
+        if target_vector.shape[0] != variable_size:
+            raise ValueError("target_direction shape does not match the joint direction.")
+        if target_direction_component_mode == "all":
+            rows.append(target_scale * np.eye(variable_size))
+            rhs.extend((target_scale * target_vector).tolist())
+        elif target_direction_component_mode == "condensate_dual_only":
+            selector = np.zeros((r_size + rho_size, variable_size), dtype=np.float64)
+            r_start = q_size
+            rho_start = q_size + r_size + lam_size
+            selector[:r_size, r_start : r_start + r_size] = np.eye(r_size)
+            selector[r_size:, rho_start : rho_start + rho_size] = np.eye(rho_size)
+            rows.append(target_scale * selector)
+            rhs.extend((target_scale * (selector @ target_vector)).tolist())
+        else:
+            raise ValueError(
+                "target_direction_component_mode must be all or condensate_dual_only."
+            )
+
+    if not rows:
+        raise ValueError("at least one positive direction weight is required.")
+    matrix = np.vstack(rows)
+    vector = np.asarray(rhs, dtype=np.float64)
+    solution, *_ = np.linalg.lstsq(matrix, vector, rcond=None)
+
+    delta_q = solution[:q_size]
+    delta_r = solution[q_size : q_size + r_size]
+    offset = q_size + r_size
+    delta_lambda = solution[offset : offset + lam_size]
+    offset += lam_size
+    delta_rho = solution[offset : offset + rho_size]
+    delta_qtot = float(solution[-1])
+
+    def clip_delta(values: np.ndarray, limit: float) -> np.ndarray:
+        limit_value = float(limit)
+        if not np.isfinite(limit_value) or limit_value <= 0.0:
+            raise ValueError("delta limits must be finite and positive.")
+        norm_inf = float(np.max(np.abs(values))) if values.size else 0.0
+        if norm_inf <= limit_value or norm_inf == 0.0:
+            return values
+        return values * (limit_value / norm_inf)
+
+    delta_q = clip_delta(delta_q, max_abs_delta_q)
+    delta_r = clip_delta(delta_r, max_abs_delta_r)
+    delta_lambda = clip_delta(delta_lambda, max_abs_delta_lambda)
+
+    return AlgorithmV11Direction(
+        delta_q=delta_q,
+        delta_r=delta_r,
+        delta_lambda=delta_lambda,
+        delta_rho=delta_rho,
+        delta_qtot=delta_qtot,
+        direction_kind="linear_budget_total_density_amount_gas_condensate_direction",
+    )
+
+
 def build_log_complementarity_centering_direction(
     *,
     q_size: int,

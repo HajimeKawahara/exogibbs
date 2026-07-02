@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import math
+import os
 from time import perf_counter
 from typing import Any, Literal, Mapping, Optional, Sequence
 
@@ -2005,6 +2006,10 @@ def _pdipm_activity_fixed_support_batch_core(
     ln_normalized_pressure: jnp.ndarray,
     epsilon: jnp.ndarray,
     residual_tolerance_multiplier: jnp.ndarray,
+    budget_relative_acceptance_floor: jnp.ndarray,
+    budget_direction_projection_strength: jnp.ndarray,
+    relaxed_stationarity_fallback_enabled: jnp.ndarray,
+    relaxed_stationarity_fallback_factor: jnp.ndarray,
     max_iter: int,
     rho_initialization: str = "unit_activity",
     lambda_initialization: str = "best_residual",
@@ -2128,6 +2133,185 @@ def _pdipm_activity_fixed_support_batch_core(
             raw_delta_lam,
             jnp.clip(raw_delta_lam, -100.0, 100.0),
         )
+
+        def budget_project_amount_direction(
+            direction_q: jnp.ndarray,
+            direction_r: jnp.ndarray,
+        ) -> tuple[jnp.ndarray, jnp.ndarray]:
+            budget_jacobian = jnp.concatenate(
+                [
+                    ag * n[None, :],
+                    ac * m[None, :],
+                ],
+                axis=1,
+            )
+            direction_amount = jnp.concatenate([direction_q, direction_r], axis=0)
+            direction_budget = budget_jacobian @ direction_amount
+            correction_rhs = delta_bhat - direction_budget
+            gram = budget_jacobian @ budget_jacobian.T
+            mean_diagonal = jnp.maximum(
+                jnp.mean(jnp.diag(gram)),
+                jnp.asarray(1.0, dtype=gram.dtype),
+            )
+            damping = jnp.asarray(1.0e-14, dtype=gram.dtype) * mean_diagonal
+            correction_dual = jnp.linalg.solve(
+                gram + damping * jnp.eye(gram.shape[0], dtype=gram.dtype),
+                correction_rhs,
+            )
+            correction = budget_jacobian.T @ correction_dual
+            q_end = direction_q.shape[0]
+            projected_q = jnp.clip(
+                direction_q
+                + budget_direction_projection_strength.astype(direction_q.dtype)
+                * correction[:q_end],
+                -2.0,
+                2.0,
+            )
+            projected_r = jnp.clip(
+                direction_r
+                + budget_direction_projection_strength.astype(direction_r.dtype)
+                * correction[q_end:],
+                -5.0,
+                5.0,
+            )
+            use_projection = budget_direction_projection_strength > 0.0
+            return (
+                jnp.where(use_projection, projected_q, direction_q),
+                jnp.where(use_projection, projected_r, direction_r),
+            )
+
+        def joint_stationarity_restoration_direction() -> tuple[jnp.ndarray, ...]:
+            q_size = q.shape[0]
+            r_size = r.shape[0]
+            lam_size = lam.shape[0]
+            sqrt_budget_weight = jnp.sqrt(jnp.asarray(30.0, dtype=q.dtype))
+            sqrt_total_weight = jnp.sqrt(jnp.asarray(30.0, dtype=q.dtype))
+            gas_residual = q + gas_stationarity_source - ag.T @ lam
+            cond_residual = hcond - ac.T @ lam - eta
+            budget_residual = ag @ n + ac @ m - target
+            ntot = jnp.exp(qtot)
+            positive_target = jnp.where(target > 0.0, target, 0.0)
+            target_scale = jnp.maximum(
+                jnp.max(positive_target, initial=jnp.asarray(0.0, dtype=q.dtype)),
+                jnp.asarray(1.0, dtype=q.dtype),
+            )
+            budget_floor = jnp.maximum(
+                jnp.asarray(jnp.finfo(q.dtype).tiny, dtype=q.dtype),
+                jnp.asarray(1.0e-300, dtype=q.dtype) * target_scale,
+            )
+            row_weights = jnp.where(
+                target > 0.0,
+                1.0 / jnp.maximum(jnp.abs(target), budget_floor),
+                0.0,
+            )
+            row_weights = jnp.where(jnp.isfinite(row_weights), row_weights, 0.0)
+
+            budget_rows = jnp.concatenate(
+                [
+                    sqrt_budget_weight * row_weights[:, None] * (ag * n[None, :]),
+                    sqrt_budget_weight * row_weights[:, None] * (ac * m[None, :]),
+                    jnp.zeros((target.shape[0], lam_size), dtype=q.dtype),
+                    jnp.zeros((target.shape[0], r_size), dtype=q.dtype),
+                    jnp.zeros((target.shape[0], 1), dtype=q.dtype),
+                ],
+                axis=1,
+            )
+            budget_rhs = -sqrt_budget_weight * row_weights * budget_residual
+            total_row = jnp.concatenate(
+                [
+                    sqrt_total_weight * n,
+                    jnp.zeros((r_size,), dtype=q.dtype),
+                    jnp.zeros((lam_size,), dtype=q.dtype),
+                    jnp.zeros((r_size,), dtype=q.dtype),
+                    jnp.asarray([-sqrt_total_weight * ntot], dtype=q.dtype),
+                ],
+                axis=0,
+            )[None, :]
+            total_rhs = jnp.asarray(
+                [-sqrt_total_weight * (jnp.sum(n) - ntot)],
+                dtype=q.dtype,
+            )
+            gas_rows = jnp.concatenate(
+                [
+                    jnp.diag(n * (gas_residual + 1.0)),
+                    jnp.zeros((q_size, r_size), dtype=q.dtype),
+                    -(n[:, None] * ag.T),
+                    jnp.zeros((q_size, r_size), dtype=q.dtype),
+                    -n[:, None],
+                ],
+                axis=1,
+            )
+            gas_rhs = -n * gas_residual
+            cond_rows = jnp.concatenate(
+                [
+                    jnp.zeros((r_size, q_size), dtype=q.dtype),
+                    jnp.diag(m * cond_residual),
+                    -(m[:, None] * ac.T),
+                    jnp.diag(-m * eta),
+                    jnp.zeros((r_size, 1), dtype=q.dtype),
+                ],
+                axis=1,
+            )
+            cond_rhs = -m * cond_residual
+            restoration_matrix = jnp.concatenate(
+                [budget_rows, total_row, gas_rows, cond_rows],
+                axis=0,
+            )
+            restoration_rhs = jnp.concatenate(
+                [budget_rhs, total_rhs, gas_rhs, cond_rhs],
+                axis=0,
+            )
+            restoration_solution = jnp.linalg.lstsq(
+                restoration_matrix,
+                restoration_rhs,
+                rcond=None,
+            )[0]
+            restoration_solution = jnp.nan_to_num(
+                restoration_solution,
+                nan=0.0,
+                posinf=0.0,
+                neginf=0.0,
+            )
+            q_end = q_size
+            r_end = q_end + r_size
+            lam_end = r_end + lam_size
+            rho_end = lam_end + r_size
+            rdq = jnp.clip(restoration_solution[:q_end], -2.0, 2.0)
+            rdr = jnp.clip(restoration_solution[q_end:r_end], -5.0, 5.0)
+            rdlam = jnp.clip(restoration_solution[r_end:lam_end], -100.0, 100.0)
+            rdrho = jnp.clip(restoration_solution[lam_end:rho_end], -5.0, 5.0)
+            rdqtot = restoration_solution[-1]
+            return rdq, rdr, rdlam, rdrho, rdqtot
+
+        (
+            restoration_delta_q,
+            restoration_delta_r,
+            restoration_delta_lam,
+            restoration_delta_rho,
+            restoration_delta_qtot,
+        ) = joint_stationarity_restoration_direction()
+        delta_q, delta_r = budget_project_amount_direction(delta_q, delta_r)
+        restoration_delta_q, restoration_delta_r = budget_project_amount_direction(
+            restoration_delta_q,
+            restoration_delta_r,
+        )
+
+        def direction_alpha_boundary(
+            direction_r: jnp.ndarray,
+            direction_rho: jnp.ndarray,
+        ) -> jnp.ndarray:
+            local_alpha_r = jnp.min(
+                jnp.where(direction_r < 0.0, -1.0 / direction_r, 1.0),
+                initial=jnp.asarray(1.0, dtype=jnp.float64),
+            )
+            local_alpha_rho = jnp.min(
+                jnp.where(direction_rho < 0.0, -1.0 / direction_rho, 1.0),
+                initial=jnp.asarray(1.0, dtype=jnp.float64),
+            )
+            return jnp.minimum(
+                1.0,
+                0.995 * jnp.minimum(local_alpha_r, local_alpha_rho),
+            )
         alpha_r = jnp.min(
             jnp.where(delta_r < 0.0, -1.0 / delta_r, 1.0),
             initial=jnp.asarray(1.0, dtype=jnp.float64),
@@ -2198,17 +2382,44 @@ def _pdipm_activity_fixed_support_batch_core(
         initial_cond_norm = l2(initial_cond)
         initial_budget_norm = l2(initial_budget)
         initial_comp_norm = l2(initial_comp)
+        positive_target = jnp.where(target > 0.0, target, 0.0)
+        target_scale = jnp.maximum(
+            jnp.max(positive_target, initial=jnp.asarray(0.0, dtype=q.dtype)),
+            jnp.asarray(1.0, dtype=q.dtype),
+        )
+        budget_floor = jnp.maximum(
+            jnp.asarray(jnp.finfo(q.dtype).tiny, dtype=q.dtype),
+            jnp.asarray(1.0e-300, dtype=q.dtype) * target_scale,
+        )
+
+        def relative_budget_max_abs(budget: jnp.ndarray) -> jnp.ndarray:
+            scale = jnp.where(
+                target > 0.0,
+                jnp.maximum(jnp.abs(target), budget_floor),
+                jnp.asarray(1.0, dtype=budget.dtype),
+            )
+            relative = jnp.abs(budget) / scale
+            return jnp.max(relative, initial=jnp.asarray(0.0, dtype=budget.dtype))
+
+        initial_budget_relative_max = relative_budget_max_abs(initial_budget)
         initial_stationarity_merit = jnp.maximum(
             jnp.maximum(initial_gas_norm, initial_cond_norm),
             initial_comp_norm,
         )
 
-        def trial(alpha: jnp.ndarray) -> tuple[jnp.ndarray, ...]:
-            tq = q + alpha * delta_q
-            tr = jnp.minimum(r + alpha * delta_r, r_cap)
-            tlam = lam + alpha * delta_lam
-            trho = rho + alpha * delta_rho
-            tqtot = qtot + alpha * delta_qtot
+        def trial_for_direction(
+            alpha: jnp.ndarray,
+            direction_q: jnp.ndarray,
+            direction_r: jnp.ndarray,
+            direction_lam: jnp.ndarray,
+            direction_rho: jnp.ndarray,
+            direction_qtot: jnp.ndarray,
+        ) -> tuple[jnp.ndarray, ...]:
+            tq = q + alpha * direction_q
+            tr = jnp.minimum(r + alpha * direction_r, r_cap)
+            tlam = lam + alpha * direction_lam
+            trho = rho + alpha * direction_rho
+            tqtot = qtot + alpha * direction_qtot
             gas, cond, budget, comp, _total = residual_components(
                 tq,
                 tr,
@@ -2226,10 +2437,19 @@ def _pdipm_activity_fixed_support_batch_core(
                 l2(gas),
                 l2(cond),
                 l2(budget),
+                relative_budget_max_abs(budget),
                 l2(comp),
             )
 
         bounded_alpha_grid = jnp.minimum(alpha_grid, alpha_boundary)
+        restoration_alpha_boundary = direction_alpha_boundary(
+            restoration_delta_r,
+            restoration_delta_rho,
+        )
+        restoration_bounded_alpha_grid = jnp.minimum(
+            alpha_grid,
+            restoration_alpha_boundary,
+        )
         (
             tq,
             tr,
@@ -2240,10 +2460,71 @@ def _pdipm_activity_fixed_support_batch_core(
             gas_norms,
             cond_norms,
             budget_norms,
+            budget_relative_maxes,
             comp_norms,
-        ) = jax.vmap(trial)(bounded_alpha_grid)
+        ) = jax.vmap(trial_for_direction, in_axes=(0, None, None, None, None, None))(
+            bounded_alpha_grid,
+            delta_q,
+            delta_r,
+            delta_lam,
+            delta_rho,
+            delta_qtot,
+        )
+        (
+            restoration_tq,
+            restoration_tr,
+            restoration_tlam,
+            restoration_trho,
+            restoration_tqtot,
+            restoration_norms,
+            restoration_gas_norms,
+            restoration_cond_norms,
+            restoration_budget_norms,
+            restoration_budget_relative_maxes,
+            restoration_comp_norms,
+        ) = jax.vmap(trial_for_direction, in_axes=(0, None, None, None, None, None))(
+            restoration_bounded_alpha_grid,
+            restoration_delta_q,
+            restoration_delta_r,
+            restoration_delta_lam,
+            restoration_delta_rho,
+            restoration_delta_qtot,
+        )
+        tq = jnp.concatenate([tq, restoration_tq], axis=0)
+        tr = jnp.concatenate([tr, restoration_tr], axis=0)
+        tlam = jnp.concatenate([tlam, restoration_tlam], axis=0)
+        trho = jnp.concatenate([trho, restoration_trho], axis=0)
+        tqtot = jnp.concatenate([tqtot, restoration_tqtot], axis=0)
+        norms = jnp.concatenate([norms, restoration_norms], axis=0)
+        gas_norms = jnp.concatenate([gas_norms, restoration_gas_norms], axis=0)
+        cond_norms = jnp.concatenate([cond_norms, restoration_cond_norms], axis=0)
+        budget_norms = jnp.concatenate([budget_norms, restoration_budget_norms], axis=0)
+        budget_relative_maxes = jnp.concatenate(
+            [budget_relative_maxes, restoration_budget_relative_maxes],
+            axis=0,
+        )
+        comp_norms = jnp.concatenate([comp_norms, restoration_comp_norms], axis=0)
+        restoration_trial_flags = jnp.concatenate(
+            [
+                jnp.zeros_like(bounded_alpha_grid, dtype=bool),
+                jnp.ones_like(restoration_bounded_alpha_grid, dtype=bool),
+            ],
+            axis=0,
+        )
         finite = jnp.isfinite(norms)
-        accepted_mask = finite & (norms < initial_norm)
+        budget_relative_acceptance_limit = jnp.maximum(
+            budget_relative_acceptance_floor.astype(initial_budget_relative_max.dtype),
+            jnp.maximum(
+                initial_budget_relative_max
+                + jnp.asarray(1.0e-8, dtype=initial_budget_relative_max.dtype),
+                jnp.asarray(1.001, dtype=initial_budget_relative_max.dtype)
+                * initial_budget_relative_max,
+            ),
+        )
+        relative_budget_not_worse = (
+            budget_relative_maxes <= budget_relative_acceptance_limit
+        )
+        accepted_mask = finite & relative_budget_not_worse & (norms < initial_norm)
         any_accepted = jnp.any(accepted_mask)
         first_index = jnp.argmax(accepted_mask)
         best_index = jnp.argmin(jnp.where(finite, norms, jnp.inf))
@@ -2263,9 +2544,22 @@ def _pdipm_activity_fixed_support_batch_core(
         component_sufficiently_improved = (
             fallback_merit <= required_stationarity_factor * initial_stationarity_merit
         )
+        relaxed_stationarity_improved = (
+            fallback_merit
+            <= relaxed_stationarity_fallback_factor.astype(fallback_merit.dtype)
+            * initial_stationarity_merit
+        )
+        effective_component_improved = jnp.where(
+            relaxed_stationarity_fallback_enabled,
+            relaxed_stationarity_improved,
+            component_sufficiently_improved,
+        )
         budget_not_broken = budget_norms <= jnp.maximum(
             1.05 * initial_budget_norm,
             initial_budget_norm + jnp.asarray(1.0e-10, dtype=initial_budget_norm.dtype),
+        )
+        budget_relative_not_broken = (
+            budget_relative_maxes <= budget_relative_acceptance_limit
         )
         combined_not_worse = norms <= (
             initial_norm
@@ -2277,11 +2571,17 @@ def _pdipm_activity_fixed_support_batch_core(
                 ),
             )
         )
+        effective_combined_not_worse = jnp.where(
+            relaxed_stationarity_fallback_enabled,
+            jnp.asarray(True, dtype=combined_not_worse.dtype),
+            combined_not_worse,
+        )
         fallback_mask = (
             finite
-            & component_sufficiently_improved
+            & effective_component_improved
             & budget_not_broken
-            & combined_not_worse
+            & budget_relative_not_broken
+            & effective_combined_not_worse
         )
         any_fallback = jnp.any(fallback_mask)
         fallback_index = jnp.argmin(jnp.where(fallback_mask, fallback_merit, jnp.inf))
@@ -2301,6 +2601,7 @@ def _pdipm_activity_fixed_support_batch_core(
             step_accepted,
             any_accepted,
             any_fallback & (~any_accepted),
+            restoration_trial_flags[selected],
             initial_norm,
         )
 
@@ -2442,7 +2743,7 @@ def _pdipm_activity_fixed_support_batch_core(
             jnp.asarray(False),
             residual_crit,
         )
-        initial_residual = initial_step[9]
+        initial_residual = initial_step[10]
         initial_running = initial_residual > residual_crit
 
         def body(carry, _):
@@ -2457,23 +2758,24 @@ def _pdipm_activity_fixed_support_batch_core(
                 accepted,
                 normal_accepted,
                 fallback_accepted,
+                restoration_accepted,
                 _initial_residual,
             ) = step(
                 q,
                 r,
                 lam,
                 rho,
-                    qtot,
-                    target,
-                    jnp.where(use_solver_epsilon_one, gas_source_init, hgas),
-                    hcond,
+                qtot,
+                target,
+                jnp.where(use_solver_epsilon_one, gas_source_init, hgas),
+                hcond,
                 ln_pressure,
-                    epsilon_vec,
-                    r_cap,
-                    use_solver_epsilon_one,
-                    jnp.asarray(False),
-                    residual_crit,
-                )
+                epsilon_vec,
+                r_cap,
+                use_solver_epsilon_one,
+                jnp.asarray(False),
+                residual_crit,
+            )
             apply_step = still_running & accepted
             return (
                 jnp.where(apply_step, next_q, q),
@@ -2489,6 +2791,7 @@ def _pdipm_activity_fixed_support_batch_core(
                 apply_step,
                 still_running & normal_accepted,
                 still_running & fallback_accepted,
+                still_running & restoration_accepted,
             )
 
         initial = (
@@ -2505,9 +2808,13 @@ def _pdipm_activity_fixed_support_batch_core(
         accepted_history = history[1]
         normal_accepted_history = history[2]
         fallback_accepted_history = history[3]
+        restoration_accepted_history = history[4]
         accepted_count = jnp.sum(accepted_history.astype(jnp.int32))
         normal_accepted_count = jnp.sum(normal_accepted_history.astype(jnp.int32))
         fallback_accepted_count = jnp.sum(fallback_accepted_history.astype(jnp.int32))
+        restoration_accepted_count = jnp.sum(
+            restoration_accepted_history.astype(jnp.int32)
+        )
         n_iter = jnp.minimum(accepted_count + 1, jnp.asarray(max_iter, dtype=jnp.int32))
         final_residual = final[5]
         converged = final_residual <= residual_crit
@@ -2554,6 +2861,7 @@ def _pdipm_activity_fixed_support_batch_core(
             accepted_count,
             normal_accepted_count,
             fallback_accepted_count,
+            restoration_accepted_count,
             initial_residual,
             lambda_selection_index,
             l2(gas_component),
@@ -2671,6 +2979,7 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         accepted_count,
         normal_accepted_count,
         fallback_accepted_count,
+        restoration_accepted_count,
         initial_residual,
         lambda_selection_index,
         gas_residual_norm,
@@ -2701,6 +3010,44 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         epsilon=epsilon_array,
         residual_tolerance_multiplier=jnp.asarray(
             float(residual_tolerance_multiplier),
+            dtype=jnp.float64,
+        ),
+        budget_relative_acceptance_floor=jnp.asarray(
+            float(
+                os.environ.get(
+                    "EXOGIBBS_FIXED_SUPPORT_BATCH_BUDGET_RELATIVE_LIMIT",
+                    "1.0e-3",
+                )
+            ),
+            dtype=jnp.float64,
+        ),
+        budget_direction_projection_strength=jnp.asarray(
+            float(
+                os.environ.get(
+                    "EXOGIBBS_FIXED_SUPPORT_BATCH_BUDGET_DIRECTION_PROJECTION",
+                    "0.0",
+                )
+            ),
+            dtype=jnp.float64,
+        ),
+        relaxed_stationarity_fallback_enabled=jnp.asarray(
+            bool(
+                int(
+                    os.environ.get(
+                        "EXOGIBBS_FIXED_SUPPORT_BATCH_RELAXED_STATIONARITY_FALLBACK",
+                        "0",
+                    )
+                )
+            ),
+            dtype=bool,
+        ),
+        relaxed_stationarity_fallback_factor=jnp.asarray(
+            float(
+                os.environ.get(
+                    "EXOGIBBS_FIXED_SUPPORT_BATCH_RELAXED_STATIONARITY_FACTOR",
+                    "0.999",
+                )
+            ),
             dtype=jnp.float64,
         ),
         max_iter=int(max_iter),
@@ -2737,6 +3084,9 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
                 "accepted_iteration_count": accepted_count,
                 "normal_accepted_iteration_count": normal_accepted_count,
                 "fallback_accepted_iteration_count": fallback_accepted_count,
+                "stationarity_restoration_accepted_iteration_count": (
+                    restoration_accepted_count
+                ),
                 "initial_residual": initial_residual,
                 "lambda_selection_index": lambda_selection_index,
                 "lambda_candidate_labels": FIXED_SUPPORT_BATCH_LAMBDA_CANDIDATE_LABELS,
@@ -2961,6 +3311,9 @@ def _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
                 "batch_size": len(bucket.layer_indices),
                 "accepted_iteration_count": batch_payload[
                     "accepted_iteration_count"
+                ],
+                "stationarity_restoration_accepted_iteration_count": batch_payload[
+                    "stationarity_restoration_accepted_iteration_count"
                 ],
             }
         )

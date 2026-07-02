@@ -7,6 +7,7 @@ import pytest
 
 from exogibbs.optimize.condensate_algorithm_v11_direction import (
     build_active_condensate_budget_correction_direction,
+    build_linear_budget_total_density_amount_gas_condensate_direction,
     build_linear_budget_total_density_amount_gas_direction,
 )
 
@@ -133,3 +134,34 @@ def test_joint_budget_direction_can_weight_trace_element_relatively() -> None:
 
     assert abs(relative_direction.delta_q[0]) > abs(absolute_direction.delta_q[0])
     assert relative_direction.delta_q[0] == pytest.approx(-1.0)
+
+
+def test_joint_budget_gas_condensate_direction_reduces_condensate_stationarity() -> None:
+    direction = build_linear_budget_total_density_amount_gas_condensate_direction(
+        formula_matrix=[[1.0]],
+        formula_matrix_cond_active=[[0.0]],
+        element_inventory_target=[1.0],
+        gas_stationarity_source=[0.0],
+        condensate_standard_source=[2.0],
+        q=[np.log(1.0)],
+        r=[np.log(1.0)],
+        lam=[0.0],
+        rho=[np.log(1.0)],
+        qtot=np.log(1.0),
+        budget_weight=0.0,
+        total_density_weight=0.0,
+        amount_gas_weight=0.0,
+        amount_condensate_weight=1.0,
+        target_direction_weight=0.0,
+        max_abs_delta_q=10.0,
+        max_abs_delta_r=10.0,
+        max_abs_delta_lambda=10.0,
+    )
+
+    assert direction.direction_kind == (
+        "linear_budget_total_density_amount_gas_condensate_direction"
+    )
+    current = 1.0 * (2.0 - 0.0 - 1.0)
+    eta_trial = np.exp(np.log(1.0) + direction.delta_rho[0])
+    trial = 1.0 * (2.0 - 0.0 - eta_trial)
+    assert abs(trial) < abs(current)
