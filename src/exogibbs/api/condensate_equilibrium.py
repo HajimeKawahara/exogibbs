@@ -130,8 +130,8 @@ class CondensateEquilibriumOptions:
     max_positive_support_count: Optional[int] = None
     max_activity_support_count: Optional[int] = None
     seed_initialization_policy: CondensateSeedInitializationPolicy = "max_density"
-    seed_fraction: float = 1.0e-3
-    max_seed_amount: float = 1.0e-3
+    seed_fraction: float = 0.8
+    max_seed_amount: float = 1.0
     min_seed_amount: float = 1.0e-300
     allow_empty_positive_support: bool = True
     enable_support_outer_loop: bool = True
@@ -148,6 +148,10 @@ class CondensateEquilibriumOptions:
     restricted_reduced_coupling_alpha_s: float = 1.0
     enable_experimental_profile_fixed_support_batch: bool = False
     enable_experimental_profile_fixed_support_fallback_rescue: bool = False
+    enable_profile_native_activity_support_expansion: bool = True
+    profile_native_activity_support_topk: int = 8
+    profile_native_activity_max_support_count: int = 16
+    profile_native_activity_threshold: float = 0.0
     experimental_profile_fixed_support_rescue_prune_relative_floors: Sequence[
         float
     ] = (1.0e-5, 1.0e-3)
@@ -550,6 +554,24 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
         raise TypeError(
             "enable_experimental_profile_fixed_support_fallback_rescue must be a bool."
         )
+    if not isinstance(options.enable_profile_native_activity_support_expansion, bool):
+        raise TypeError("enable_profile_native_activity_support_expansion must be a bool.")
+    if int(options.profile_native_activity_support_topk) <= 0:
+        raise ValueError("profile_native_activity_support_topk must be positive.")
+    if int(options.profile_native_activity_max_support_count) <= 0:
+        raise ValueError("profile_native_activity_max_support_count must be positive.")
+    if int(options.profile_native_activity_max_support_count) < int(
+        options.profile_native_activity_support_topk
+    ):
+        raise ValueError(
+            "profile_native_activity_max_support_count must be at least "
+            "profile_native_activity_support_topk."
+        )
+    if (
+        not math.isfinite(float(options.profile_native_activity_threshold))
+        or float(options.profile_native_activity_threshold) < 0.0
+    ):
+        raise ValueError("profile_native_activity_threshold must be finite and non-negative.")
     rescue_floors = tuple(
         float(value)
         for value in options.experimental_profile_fixed_support_rescue_prune_relative_floors
@@ -3196,6 +3218,101 @@ def _default_fixed_support_solver_log_state(
             ),
         },
     )
+
+
+def _native_activity_expanded_profile_support_payload(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    b: Array,
+    Pref: float,
+    support_indices: Sequence[int],
+    options: CondensateEquilibriumOptions,
+) -> tuple[tuple[int, ...], tuple[float, ...], Mapping[str, Any]]:
+    from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
+    from exogibbs.condensates.fixed_support_payload import seed_fixed_support_payload
+    from exogibbs.condensates.support_selection_policy import (
+        select_activity_driven_support_candidates,
+    )
+
+    base_support = tuple(dict.fromkeys(int(index) for index in support_indices))
+    gas_result = equilibrium(
+        setup.gas_setup,
+        float(T),
+        float(P),
+        jnp.asarray(b, dtype=jnp.float64),
+        Pref=Pref,
+        options=EquilibriumOptions(),
+        return_diagnostics=False,
+    )
+    gas_stationarity_source = setup.gas_setup.hvector_func(float(T)) + (
+        _ln_normalized_pressure(P, Pref)
+    ) - jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64))
+    element_potential = _least_squares_element_potential(
+        formula_matrix=setup.formula_matrix,
+        gas_ln_n=jnp.asarray(gas_result.ln_n, dtype=jnp.float64),
+        gas_stationarity_source=gas_stationarity_source,
+    )
+    report = select_activity_driven_support_candidates(
+        formula_matrix_cond=setup.formula_matrix_cond,
+        element_inventory_target=b,
+        condensate_species_order=setup.condensate_species,
+        hvector_cond=setup.condensate_setup.hvector_func(float(T)),
+        element_potential=element_potential,
+        max_positive_support_count=int(options.profile_native_activity_support_topk),
+        activity_threshold=float(options.profile_native_activity_threshold),
+        existing_support_indices=base_support,
+        temperature=float(T),
+        condensate_temperature_validity_upper=setup.condensate_setup.metadata.get(
+            "temperature_validity_upper"
+        ),
+        field_provenance={
+            "formula_matrix_cond": "exogibbs_condensate_chemical_setup",
+            "element_inventory_target": "exogibbs_profile_budget",
+            "hvector_cond": "exogibbs_condensate_thermochemistry",
+            "element_potential": "exogibbs_native_gas_only_equilibrium",
+            "condensate_temperature_validity_upper": (
+                "exogibbs_condensate_temperature_validity_metadata"
+            ),
+        },
+    )
+    additions = tuple(
+        int(index)
+        for index in report.positive_support_indices
+        if int(index) not in set(base_support)
+    )
+    support_limit = max(
+        int(options.profile_native_activity_max_support_count),
+        len(base_support),
+    )
+    expanded_support = tuple(dict.fromkeys((*base_support, *additions)))[:support_limit]
+    seeded_support, seeded_amounts = seed_fixed_support_payload(
+        setup=setup,
+        element_inventory_target=b,
+        support_indices=expanded_support,
+        seed_fraction=float(options.seed_fraction),
+        max_seed_amount=float(options.max_seed_amount),
+        min_seed_amount=float(options.min_seed_amount),
+    )
+    trace = {
+        "policy": "native_gas_activity_curated_support_expansion",
+        "fastchem4_public_values_used_as_constructor_inputs": False,
+        "base_support_count": len(base_support),
+        "max_support_count": support_limit,
+        "expanded_support_count": len(seeded_support),
+        "added_support_count": max(0, len(seeded_support) - len(base_support)),
+        "added_support_indices": tuple(
+            index for index in seeded_support if index not in set(base_support)
+        ),
+        "added_support_names": tuple(
+            setup.condensate_species[int(index)]
+            for index in seeded_support
+            if int(index) not in set(base_support)
+        ),
+        "selection_report": report.as_dict(),
+    }
+    return seeded_support, seeded_amounts, trace
 
 
 def _lifecycle_final_state_support_growth_payload(
@@ -6234,6 +6351,21 @@ def _run_experimental_profile_fixed_support_batch(
         if support_payload is None:
             return None
         layer_support_indices, layer_support_amounts = support_payload
+        support_expansion_trace: Mapping[str, Any] | None = None
+        if opts.enable_profile_native_activity_support_expansion:
+            (
+                layer_support_indices,
+                layer_support_amounts,
+                support_expansion_trace,
+            ) = _native_activity_expanded_profile_support_payload(
+                setup=setup,
+                T=float(temperatures[layer_index]),
+                P=float(pressures[layer_index]),
+                b=b,
+                Pref=Pref,
+                support_indices=layer_support_indices,
+                options=opts,
+            )
         if len(layer_support_indices) == 0:
             return None
         solver_init = _solver_log_state_from_condensate_init(
@@ -6276,6 +6408,7 @@ def _run_experimental_profile_fixed_support_batch(
                 "warm_start_attempted": True,
                 "fresh_fallback_used": False,
                 "support_count": len(layer_support_indices),
+                "support_expansion": support_expansion_trace,
             }
         )
     from exogibbs.optimize.minimize_cond import (
