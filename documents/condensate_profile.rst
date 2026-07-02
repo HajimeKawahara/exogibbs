@@ -63,6 +63,45 @@ diagnostics under ``"experimental_profile_fixed_support_batch"``.  The route
 name for the public auto path is usually
 ``"experimental_profile_fixed_support_batch_fallback_rescue"``.
 
+Native Activity Support Expansion
+---------------------------------
+The production fixed-support profile path does not use FastChem4 runtime
+values as constructor inputs.  When a complete fixed-support payload is
+available, ExoGibbs first treats that payload as a curated starting support,
+then expands it with a native gas-only activity screen before building the
+batched PD-IPM initial state.
+
+The current default policy is:
+
+* add up to the native activity top ``8`` condensate candidates per layer;
+* cap the expanded profile support at ``16`` species;
+* seed the selected condensates with budget-preserving amounts using
+  ``seed_fraction=0.8`` and ``max_seed_amount=1.0``;
+* initialize the gas phase on the depleted element budget
+  ``b - A_condensate @ seed``.
+
+These defaults are controlled by ``CondensateEquilibriumOptions``:
+
+.. code-block:: python
+
+   options = CondensateEquilibriumOptions(
+       profile_method="auto",
+       enable_profile_native_activity_support_expansion=True,
+       profile_native_activity_support_topk=8,
+       profile_native_activity_max_support_count=16,
+       fixed_support_gas_init_policy="depleted_budget",
+       seed_fraction=0.8,
+       max_seed_amount=1.0,
+   )
+
+The older full-budget gas initializer remains available for debugging:
+
+.. code-block:: python
+
+   debug_options = CondensateEquilibriumOptions(
+       fixed_support_gas_init_policy="full_budget",
+   )
+
 Fallback Rescue
 ---------------
 Fixed support is fast, but it is intentionally not forced.  If one or more
@@ -175,6 +214,14 @@ the active JAX backend.  GPU acceleration is most useful when many profile
 layers, or many repeated profile evaluations, can share a fixed-support batch
 plan.  Single small profiles can be dominated by dispatch and compilation
 overhead.
+
+The FastChem4 comparison sweeps used to tune the current default live under
+``benchmarks/fastchem4/``.  They compare ExoGibbs outputs with FastChem4
+outputs but keep FastChem4 values out of the ExoGibbs constructor path.  In
+the curated GPU sweep, the selected global setting was native activity
+``topk=8`` with ``seed_fraction=0.8``.  The trace-insensitive major-species
+overlap score had worst-family disagreement about ``0.186`` dex, roughly a
+factor of ``1.5``.
 
 For production workloads, keep ``method="auto"`` unless a conservative scan is
 needed for debugging:
