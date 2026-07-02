@@ -61,6 +61,10 @@ CondensateSeedInitializationPolicy = Literal[
     "capacity_fraction",
     "max_density",
 ]
+CondensateFixedSupportGasInitPolicy = Literal[
+    "depleted_budget",
+    "full_budget",
+]
 CONDENSATE_HEAD_ROUTE_VERSION = "v1.18"
 CONDENSATE_HEAD_ROUTE_NAME = (
     "head_route_v1_18_pdipm_lifecycle_support_growth"
@@ -136,6 +140,9 @@ class CondensateEquilibriumOptions:
     support_activity_threshold: float = 0.0
     enable_head_route_warm_start: bool = True
     enable_depleted_gas_refresh: bool = True
+    fixed_support_gas_init_policy: CondensateFixedSupportGasInitPolicy = (
+        "depleted_budget"
+    )
     warm_start_gas_refresh_policy: CondensateWarmStartGasRefreshPolicy = "native_gas_solver"
     restricted_reduced_coupling_mode: str = "pdipm_rgie_v11_activity_correction"
     restricted_reduced_coupling_alpha_s: float = 1.0
@@ -509,6 +516,14 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
         raise ValueError("max_support_add_per_round must be positive.")
     if options.warm_start_gas_refresh_policy != "native_gas_solver":
         raise ValueError("Only warm_start_gas_refresh_policy='native_gas_solver' is supported.")
+    if options.fixed_support_gas_init_policy not in {
+        "depleted_budget",
+        "full_budget",
+    }:
+        raise ValueError(
+            "fixed_support_gas_init_policy must be 'depleted_budget' or "
+            "'full_budget'."
+        )
     valid_reduced_coupling_modes = {
         "current",
         "capped_s_only_fixed_alpha",
@@ -3074,6 +3089,115 @@ def _solver_log_state_from_condensate_init(
     )
 
 
+def _full_condensate_amounts_for_support(
+    *,
+    setup: CondensateChemicalSetup,
+    support_indices: Sequence[int],
+    support_amounts: Sequence[float],
+) -> Array:
+    support = tuple(int(index) for index in support_indices)
+    amounts = jnp.asarray(support_amounts, dtype=jnp.float64)
+    if amounts.ndim != 1 or amounts.shape[0] != len(support):
+        raise ValueError("support_indices and support_amounts must have the same length.")
+    full = jnp.zeros((len(setup.condensate_species),), dtype=jnp.float64)
+    if support:
+        full = full.at[jnp.asarray(support, dtype=jnp.int32)].set(amounts)
+    return full
+
+
+def _fixed_support_gas_budget_for_init(
+    *,
+    setup: CondensateChemicalSetup,
+    b: Array,
+    support_indices: Sequence[int],
+    support_amounts: Sequence[float],
+    policy: str,
+) -> tuple[Array, Mapping[str, Any]]:
+    target = jnp.asarray(b, dtype=jnp.float64)
+    if policy == "full_budget":
+        return target, {
+            "policy": "full_budget",
+            "clipped_negative_l1": 0.0,
+            "max_condensed_fraction": 0.0,
+        }
+    if policy != "depleted_budget":
+        raise ValueError(
+            "fixed_support_gas_init_policy must be 'depleted_budget' or "
+            "'full_budget'."
+        )
+    full_amounts = _full_condensate_amounts_for_support(
+        setup=setup,
+        support_indices=support_indices,
+        support_amounts=support_amounts,
+    )
+    condensed_budget = (
+        jnp.asarray(setup.formula_matrix_cond, dtype=jnp.float64) @ full_amounts
+    )
+    raw_remaining = target - condensed_budget
+    remaining = jnp.maximum(raw_remaining, 0.0)
+    positive_target = target > 0.0
+    condensed_fraction = jnp.where(
+        positive_target,
+        condensed_budget / jnp.maximum(target, 1.0e-300),
+        0.0,
+    )
+    diagnostics = {
+        "policy": "depleted_budget",
+        "clipped_negative_l1": float(jnp.sum(jnp.maximum(-raw_remaining, 0.0))),
+        "max_condensed_fraction": float(
+            jnp.max(condensed_fraction, initial=jnp.asarray(0.0, dtype=jnp.float64))
+        ),
+    }
+    return remaining, diagnostics
+
+
+def _default_fixed_support_solver_log_state(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    b: Array,
+    Pref: float,
+    support_indices: Sequence[int],
+    support_amounts_init: Sequence[float],
+    options: CondensateEquilibriumOptions,
+    source: str,
+) -> Any:
+    from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
+    from exogibbs.optimize.minimize_cond import CondensateEquilibriumInit as SolverInit
+
+    gas_budget, budget_trace = _fixed_support_gas_budget_for_init(
+        setup=setup,
+        b=b,
+        support_indices=support_indices,
+        support_amounts=support_amounts_init,
+        policy=options.fixed_support_gas_init_policy,
+    )
+    gas_result = equilibrium(
+        setup.gas_setup,
+        T,
+        P,
+        gas_budget,
+        Pref=Pref,
+        options=EquilibriumOptions(),
+        return_diagnostics=False,
+    )
+    return SolverInit(
+        ln_nk=jnp.asarray(gas_result.ln_n, dtype=jnp.float64),
+        ln_mk=jnp.log(jnp.maximum(jnp.asarray(support_amounts_init), 1.0e-300)),
+        ln_ntot=jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64)),
+        ln_nk_source_trace={
+            "source": source,
+            "fixed_support_gas_init_policy": options.fixed_support_gas_init_policy,
+            "gas_budget": budget_trace,
+            "reason": (
+                "Initialize fixed-support gas on the policy-selected element "
+                "budget before the restricted condensate solve."
+            ),
+        },
+    )
+
+
 def _lifecycle_final_state_support_growth_payload(
     result: CondensateEquilibriumResult,
     *,
@@ -4532,30 +4656,16 @@ def condensate_equilibrium(
         source="exogibbs_profile_or_caller_condensate_init",
     )
     if profile_initial_log_state is None:
-        baseline_gas_result = equilibrium(
-            setup.gas_setup,
-            T,
-            P,
-            jnp.asarray(b),
+        baseline_initial_log_state = _default_fixed_support_solver_log_state(
+            setup=setup,
+            T=T,
+            P=P,
+            b=b,
             Pref=Pref,
-            options=EquilibriumOptions(),
-            return_diagnostics=False,
-        )
-        from exogibbs.optimize.minimize_cond import (
-            CondensateEquilibriumInit as SolverInit,
-        )
-
-        baseline_initial_log_state = SolverInit(
-            ln_nk=jnp.asarray(baseline_gas_result.ln_n, dtype=jnp.float64),
-            ln_mk=jnp.log(jnp.maximum(jnp.asarray(support_amounts_init), 1.0e-300)),
-            ln_ntot=jnp.log(jnp.asarray(baseline_gas_result.ntot, dtype=jnp.float64)),
-            ln_nk_source_trace={
-                "source": "exogibbs_api_fresh_gas_equilibrium",
-                "reason": (
-                    "Keep support selection and restricted solver baseline "
-                    "initialization on the same native gas state."
-                ),
-            },
+            support_indices=support_indices,
+            support_amounts_init=support_amounts_init,
+            options=opts,
+            source="exogibbs_api_fixed_support_gas_init",
         )
     else:
         baseline_initial_log_state = profile_initial_log_state
@@ -5063,9 +5173,12 @@ def condensate_equilibrium(
                 except (KeyError, TypeError, ValueError):
                     initial_gate_report = None
             if initial_gate_report is not None and not bool(initial_gate_report["accepted"]):
+                budget_correction_direction_policy = (
+                    "joint_budget_amount_gas_condensate_linearized_no_prior"
+                )
                 budget_correction_policy = {
                     **primary_policy,
-                    "direction_policy": "joint_budget_amount_gas_linearized_no_prior",
+                    "direction_policy": budget_correction_direction_policy,
                     "budget_row_scaling_policy": "relative_target",
                     "trial_acceptance_policy": "ipopt_persistent_h_type",
                     "filter_component_weights": dict(
@@ -5238,7 +5351,7 @@ def condensate_equilibrium(
                     ),
                     "triggered": True,
                     "accepted": budget_correction_accepted,
-                    "direction_policy": "joint_budget_amount_gas_linearized_no_prior",
+                    "direction_policy": budget_correction_direction_policy,
                     "budget_row_scaling_policy": "relative_target",
                     "trial_acceptance_policy": "ipopt_persistent_h_type",
                     "initial_full_condensate_budget_gate": initial_gate_report,
@@ -6130,7 +6243,17 @@ def _run_experimental_profile_fixed_support_batch(
             source="exogibbs_experimental_profile_fixed_support_batch",
         )
         if solver_init is None:
-            return None
+            solver_init = _default_fixed_support_solver_log_state(
+                setup=setup,
+                T=float(temperatures[layer_index]),
+                P=float(pressures[layer_index]),
+                b=b,
+                Pref=Pref,
+                support_indices=layer_support_indices,
+                support_amounts_init=layer_support_amounts,
+                options=opts,
+                source="exogibbs_experimental_profile_fixed_support_batch_default_gas_init",
+            )
         solver_inits.append(solver_init)
         support_by_layer.append(layer_support_indices)
         states.append(
@@ -7375,6 +7498,10 @@ def run_experimental_profile_fixed_support_batch_plan_many(
             (n_eval, plan.n_layers),
             dtype=jnp.int32,
         ),
+        "stationarity_restoration_accepted_iteration_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
         "initial_residual": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
         "lambda_selection_index": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.int32),
     }
@@ -7562,6 +7689,9 @@ def run_experimental_profile_fixed_support_batch_plan_many(
             "accepted_iteration_count": "accepted_iteration_count",
             "normal_accepted_iteration_count": "normal_accepted_iteration_count",
             "fallback_accepted_iteration_count": "fallback_accepted_iteration_count",
+            "stationarity_restoration_accepted_iteration_count": (
+                "stationarity_restoration_accepted_iteration_count"
+            ),
             "initial_residual": "initial_residual",
             "lambda_selection_index": "lambda_selection_index",
         }
