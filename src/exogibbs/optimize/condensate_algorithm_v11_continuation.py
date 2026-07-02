@@ -18,6 +18,7 @@ from exogibbs.optimize.condensate_algorithm_v11_direction import (
     AlgorithmV11Direction,
     blend_algorithm_v11_directions,
     build_active_condensate_budget_correction_direction,
+    build_linear_budget_total_density_amount_gas_condensate_direction,
     build_linear_budget_total_density_amount_gas_direction,
     build_linear_budget_total_density_restoration_direction,
     build_log_complementarity_centering_direction,
@@ -894,6 +895,7 @@ def _direction_candidates(
     element_inventory_target: np.ndarray,
     external_condensate_budget: np.ndarray | None,
     gas_stationarity_source: np.ndarray,
+    condensate_standard_source: np.ndarray,
     q: np.ndarray,
     r: np.ndarray,
     lam: np.ndarray,
@@ -1091,6 +1093,57 @@ def _direction_candidates(
                 budget_row_scaling_policy=budget_row_scaling_policy,
             )
         ]
+    if direction_policy == "joint_budget_amount_gas_condensate_linearized":
+        return [
+            build_linear_budget_total_density_amount_gas_condensate_direction(
+                formula_matrix=formula_matrix,
+                formula_matrix_cond_active=formula_matrix_cond_active,
+                element_inventory_target=element_inventory_target,
+                external_condensate_budget=external_condensate_budget,
+                gas_stationarity_source=gas_stationarity_source,
+                condensate_standard_source=condensate_standard_source,
+                q=q,
+                r=r,
+                lam=lam,
+                rho=rho,
+                qtot=qtot,
+                target_direction=algorithm_direction,
+                budget_weight=30.0,
+                total_density_weight=30.0,
+                amount_gas_weight=1.0,
+                amount_condensate_weight=1.0,
+                target_direction_weight=1.0e-2,
+                target_direction_component_mode="condensate_dual_only",
+                max_abs_delta_q=max_abs_delta_q,
+                max_abs_delta_r=max_abs_delta_r,
+                budget_row_scaling_policy=budget_row_scaling_policy,
+            )
+        ]
+    if direction_policy == "joint_budget_amount_gas_condensate_linearized_no_prior":
+        return [
+            build_linear_budget_total_density_amount_gas_condensate_direction(
+                formula_matrix=formula_matrix,
+                formula_matrix_cond_active=formula_matrix_cond_active,
+                element_inventory_target=element_inventory_target,
+                external_condensate_budget=external_condensate_budget,
+                gas_stationarity_source=gas_stationarity_source,
+                condensate_standard_source=condensate_standard_source,
+                q=q,
+                r=r,
+                lam=lam,
+                rho=rho,
+                qtot=qtot,
+                target_direction=None,
+                budget_weight=30.0,
+                total_density_weight=30.0,
+                amount_gas_weight=1.0,
+                amount_condensate_weight=1.0,
+                target_direction_weight=0.0,
+                max_abs_delta_q=max_abs_delta_q,
+                max_abs_delta_r=max_abs_delta_r,
+                budget_row_scaling_policy=budget_row_scaling_policy,
+            )
+        ]
     if direction_policy != "residual_norm_blend":
         raise ValueError(
             "direction_policy must be algorithm_v11_reduced, residual_norm_blend, "
@@ -1105,7 +1158,9 @@ def _direction_candidates(
             "joint_budget_amount_gas_linearized_no_prior, or "
             "joint_budget_amount_gas_condensate_prior, or "
             "joint_budget_amount_gas_condensate_prior_budget_strong, or "
-            "joint_budget_amount_gas_condensate_prior_balanced."
+            "joint_budget_amount_gas_condensate_prior_balanced, or "
+            "joint_budget_amount_gas_condensate_linearized, or "
+            "joint_budget_amount_gas_condensate_linearized_no_prior."
         )
 
     restoration_direction = build_linear_budget_total_density_restoration_direction(
@@ -1543,6 +1598,7 @@ def run_algorithm_v11_pdipm_continuation(
                 element_inventory_target=target,
                 external_condensate_budget=external_budget,
                 gas_stationarity_source=gas_source,
+                condensate_standard_source=cond_source,
                 q=q,
                 r=r,
                 lam=lam,

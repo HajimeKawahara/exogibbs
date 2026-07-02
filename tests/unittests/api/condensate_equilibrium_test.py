@@ -2134,13 +2134,14 @@ def test_condensate_equilibrium_passes_api_gas_state_to_baseline_solver(
     setup = _setup_pair_with_condensate_hvalue(-1.0)
     gas_ln_n = jnp.asarray([2.0, -3.0])
     gas_ntot = jnp.asarray(4.0)
-    captured: dict[str, object] = {}
+    captured: dict[str, object] = {"gas_budgets": []}
 
     class FakeGasResult:
         ln_n = gas_ln_n
         ntot = gas_ntot
 
     def fake_equilibrium(*_args, **_kwargs):
+        captured["gas_budgets"].append(jnp.asarray(_args[3], dtype=jnp.float64))
         return FakeGasResult()
 
     def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
@@ -2171,9 +2172,10 @@ def test_condensate_equilibrium_passes_api_gas_state_to_baseline_solver(
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
+        support_indices=(0,),
+        support_amounts_init=(0.25,),
         options=CondensateEquilibriumOptions(
             return_diagnostics=True,
-            max_positive_support_count=1,
             enable_head_route_warm_start=False,
         ),
     )
@@ -2184,7 +2186,66 @@ def test_condensate_equilibrium_passes_api_gas_state_to_baseline_solver(
         tuple(float(value) for value in gas_ln_n)
     )
     assert float(init.ln_ntot) == pytest.approx(float(jnp.log(gas_ntot)))
-    assert init.ln_nk_source_trace["source"] == "exogibbs_api_fresh_gas_equilibrium"
+    assert init.ln_nk_source_trace["source"] == "exogibbs_api_fixed_support_gas_init"
+    assert init.ln_nk_source_trace["fixed_support_gas_init_policy"] == "depleted_budget"
+    assert tuple(float(value) for value in captured["gas_budgets"][0]) == pytest.approx(
+        (0.5, 0.75)
+    )
+
+
+def test_condensate_equilibrium_can_request_full_budget_fixed_support_gas_init(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _setup_pair_with_condensate_hvalue(-1.0)
+    captured: dict[str, object] = {"gas_budgets": []}
+
+    class FakeGasResult:
+        ln_n = jnp.asarray([2.0, -3.0])
+        ntot = jnp.asarray(4.0)
+
+    def fake_equilibrium(*_args, **_kwargs):
+        captured["gas_budgets"].append(jnp.asarray(_args[3], dtype=jnp.float64))
+        return FakeGasResult()
+
+    def fake_solve_restricted_support_condensate_layer(*args, **kwargs):
+        captured["initial_log_state_override"] = kwargs["initial_log_state_override"]
+        return {
+            "solver_success": False,
+            "ln_nk": jnp.asarray(kwargs["initial_log_state_override"].ln_nk),
+            "support_indices": tuple(kwargs["support_indices"]),
+            "m_support": jnp.asarray(kwargs["support_amounts_init"]),
+            "diagnostics": {"final_residual": 1.0, "n_iter": 1, "hit_max_iter": True},
+        }
+
+    import exogibbs.api.equilibrium as api_equilibrium
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(api_equilibrium, "equilibrium", fake_equilibrium)
+    monkeypatch.setattr(
+        minimize_cond,
+        "solve_restricted_support_condensate_layer",
+        fake_solve_restricted_support_condensate_layer,
+    )
+
+    condensate_equilibrium(
+        setup,
+        300.0,
+        1.0,
+        jnp.asarray([1.0, 1.0]),
+        support_indices=(0,),
+        support_amounts_init=(0.25,),
+        options=CondensateEquilibriumOptions(
+            return_diagnostics=True,
+            fixed_support_gas_init_policy="full_budget",
+            enable_head_route_warm_start=False,
+        ),
+    )
+
+    init = captured["initial_log_state_override"]
+    assert init.ln_nk_source_trace["fixed_support_gas_init_policy"] == "full_budget"
+    assert tuple(float(value) for value in captured["gas_budgets"][0]) == pytest.approx(
+        (1.0, 1.0)
+    )
 
 
 def test_condensate_equilibrium_passes_reduced_coupling_mode_to_restricted_solver(
@@ -2714,13 +2775,18 @@ def test_condensate_budget_correction_retry_starts_from_lifecycle_final_state(
     assert calls[1]["support_amounts"] == pytest.approx([0.1])
     assert calls[1]["support_indices"] == (1,)
     retry_policy = calls[1]["primary_continuation_policy"]
-    assert retry_policy["direction_policy"] == "joint_budget_amount_gas_linearized_no_prior"
+    assert retry_policy["direction_policy"] == (
+        "joint_budget_amount_gas_condensate_linearized_no_prior"
+    )
     assert retry_policy["budget_row_scaling_policy"] == "relative_target"
     assert retry_policy["filter_component_weights"]["relative_budget_max"] == pytest.approx(1.0)
     assert result.status == CONVERGED
     assert result.diagnostics is not None
     retry = result.diagnostics["head_route_condensate_budget_correction_retry"]
     assert retry["accepted"] is True
+    assert retry["direction_policy"] == (
+        "joint_budget_amount_gas_condensate_linearized_no_prior"
+    )
     assert retry["retry_start_state"] == "lifecycle_final_state"
 
 

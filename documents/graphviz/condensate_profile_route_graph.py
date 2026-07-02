@@ -79,6 +79,14 @@ DOT_SOURCE = f"""digraph condensate_profile_route {{
       label="complete fixed-support\\npayload あり？",
       fillcolor="#fef3c7"
     ];
+    native_expand [
+      label="native activity で support 拡張\\ntopk=8 / support cap=16",
+      fillcolor="#dcfce7"
+    ];
+    seed_depleted [
+      label="budget-preserving seed\\nseed_fraction=0.8 + depleted gas init",
+      fillcolor="#bbf7d0"
+    ];
     conservative_scan [
       label="conservative scan\\nscan_hot_from_top",
       fillcolor="#dcfce7"
@@ -177,7 +185,9 @@ DOT_SOURCE = f"""digraph condensate_profile_route {{
   method_auto -> explicit_method;
   explicit_method -> conservative_scan;
   explicit_method -> vmap_fixed;
-  fixed_payload -> vmap_fixed;
+  fixed_payload -> native_expand;
+  native_expand -> seed_depleted;
+  seed_depleted -> vmap_fixed;
   fixed_payload -> conservative_scan;
   vmap_fixed -> build_plan;
   build_plan -> batch_solve;

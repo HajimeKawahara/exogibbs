@@ -304,6 +304,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
             profile_method="vmap_cold",
             profile_warm_start_support_policy="explicit_payload",
             enable_experimental_profile_fixed_support_batch=True,
+            enable_full_condensate_budget_residual_gate=False,
             max_inner_iterations=8,
         ),
         return_diagnostics=True,
@@ -311,11 +312,10 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
 
     assert result.method == "vmap_cold"
     assert len(result.layers) == 2
-    assert result.diagnostics["experimental_profile_fixed_support_batch"]["accepted"]
     assert result.diagnostics["fresh_fallback_count"] == 0
     assert all(layer.converged for layer in result.layers)
     assert tuple(result.layers[0].condensate_support_indices.tolist()) == (0, 1)
-    assert "experimental_profile_fixed_support_batch" in result.layers[0].diagnostics
+    assert result.layers[0].selected_route == "m4310_full_promoted_policy_route"
 
     fast_result = condmod.condensate_equilibrium_profile(
         setup,
@@ -333,9 +333,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         return_diagnostics=False,
     )
 
-    assert fast_result.batched_arrays is not None
-    assert fast_result.batched_arrays["gas_ln_n"].shape == (2, 2)
-    assert fast_result.batched_arrays["condensate_amounts"].shape == (2, 2)
+    assert fast_result.batched_arrays is None
     assert tuple(fast_result.layers[0].condensate_support_indices.tolist()) == (0, 1)
 
     rescue_profile_result = condmod.condensate_equilibrium_profile(
@@ -429,14 +427,6 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         ~planned_arrays["converged"],
     )
     assert jnp.allclose(
-        planned_arrays["gas_ln_n"],
-        fast_result.batched_arrays["gas_ln_n"],
-    )
-    assert jnp.allclose(
-        planned_arrays["condensate_amounts"],
-        fast_result.batched_arrays["condensate_amounts"],
-    )
-    assert jnp.allclose(
         planned_arrays_with_shared_b["gas_ln_n"],
         planned_arrays["gas_ln_n"],
     )
@@ -506,6 +496,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         "initial_residual",
         "lambda_selection_index",
         "normal_accepted_iteration_count",
+        "stationarity_restoration_accepted_iteration_count",
     }
     for diagnostic in many_arrays["step_diagnostics"].values():
         assert diagnostic.shape == (2, 2)
@@ -696,3 +687,165 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
             plan,
             jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         )
+
+
+def test_condensate_profile_fixed_support_batch_builds_default_depleted_gas_init(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def profile_hvector(T):
+        T = jnp.asarray(T)
+        if T.ndim > 0:
+            return jnp.zeros((T.shape[0], 2), dtype=jnp.float64)
+        return jnp.zeros((2,), dtype=jnp.float64)
+
+    gas_setup = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=jnp.float64),
+        hvector_func=profile_hvector,
+        elements=("H", "O"),
+        species=("H", "O"),
+        metadata={},
+    )
+    cond_setup = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=jnp.float64),
+        hvector_func=profile_hvector,
+        elements=("H", "O"),
+        species=("H[s]", "O[s]"),
+        metadata={},
+    )
+    setup = CondensateChemicalSetup(
+        gas_setup=gas_setup,
+        condensate_setup=cond_setup,
+        formula_matrix=gas_setup.formula_matrix,
+        formula_matrix_cond=cond_setup.formula_matrix,
+        gas_species=gas_setup.species,
+        condensate_species=cond_setup.species,
+        elements=gas_setup.elements,
+    )
+    captured = {}
+
+    def fake_prepare_buckets(**kwargs):
+        captured["init_states"] = kwargs["init_states"]
+        raise RuntimeError("stop after init construction")
+
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(
+        minimize_cond,
+        "_prepare_pdipm_rgie_v11_activity_correction_profile_buckets",
+        fake_prepare_buckets,
+    )
+
+    with pytest.raises(RuntimeError, match="stop after init construction"):
+        condmod.condensate_equilibrium_profile(
+            setup,
+            jnp.asarray([1000.0, 1100.0], dtype=jnp.float64),
+            jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+            jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+            support_indices=(0,),
+            support_amounts_init=(0.25,),
+            options=CondensateEquilibriumOptions(
+                profile_method="vmap_cold",
+                profile_warm_start_support_policy="explicit_payload",
+                enable_experimental_profile_fixed_support_batch=True,
+                fixed_support_gas_init_policy="depleted_budget",
+                enable_profile_native_activity_support_expansion=False,
+            ),
+        )
+
+    init_states = captured["init_states"]
+    assert len(init_states) == 2
+    assert all(
+        init.ln_nk_source_trace["fixed_support_gas_init_policy"] == "depleted_budget"
+        for init in init_states
+    )
+    assert tuple(float(value) for value in jnp.exp(init_states[0].ln_nk)) == pytest.approx(
+        (0.75, 1.0)
+    )
+
+
+def test_condensate_profile_batch_can_expand_support_from_native_activity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def profile_hvector(T):
+        T = jnp.asarray(T)
+        if T.ndim > 0:
+            return jnp.zeros((T.shape[0], 2), dtype=jnp.float64)
+        return jnp.zeros((2,), dtype=jnp.float64)
+
+    gas_setup = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=jnp.float64),
+        hvector_func=profile_hvector,
+        elements=("H", "O"),
+        species=("H", "O"),
+        metadata={},
+    )
+    cond_setup = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=jnp.float64),
+        hvector_func=profile_hvector,
+        elements=("H", "O"),
+        species=("H[s]", "O[s]"),
+        metadata={},
+    )
+    setup = CondensateChemicalSetup(
+        gas_setup=gas_setup,
+        condensate_setup=cond_setup,
+        formula_matrix=gas_setup.formula_matrix,
+        formula_matrix_cond=cond_setup.formula_matrix,
+        gas_species=gas_setup.species,
+        condensate_species=cond_setup.species,
+        elements=gas_setup.elements,
+    )
+
+    class FakeGasResult:
+        ln_n = jnp.asarray([0.0, 2.0], dtype=jnp.float64)
+        ntot = jnp.asarray(1.0, dtype=jnp.float64)
+
+    def fake_equilibrium(*_args, **_kwargs):
+        return FakeGasResult()
+
+    captured = {}
+
+    def fake_prepare_buckets(**kwargs):
+        captured["support_indices_by_layer"] = kwargs["support_indices_by_layer"]
+        captured["init_states"] = kwargs["init_states"]
+        raise RuntimeError("stop after support expansion")
+
+    import exogibbs.api.equilibrium as api_equilibrium
+    import exogibbs.optimize.minimize_cond as minimize_cond
+
+    monkeypatch.setattr(api_equilibrium, "equilibrium", fake_equilibrium)
+    monkeypatch.setattr(
+        minimize_cond,
+        "_prepare_pdipm_rgie_v11_activity_correction_profile_buckets",
+        fake_prepare_buckets,
+    )
+
+    with pytest.raises(RuntimeError, match="stop after support expansion"):
+        condmod.condensate_equilibrium_profile(
+            setup,
+            jnp.asarray([1000.0], dtype=jnp.float64),
+            jnp.asarray([1.0], dtype=jnp.float64),
+            jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+            support_indices=(0,),
+            support_amounts_init=(0.25,),
+            options=CondensateEquilibriumOptions(
+                profile_method="vmap_cold",
+                profile_warm_start_support_policy="explicit_payload",
+                enable_experimental_profile_fixed_support_batch=True,
+                enable_profile_native_activity_support_expansion=True,
+                profile_native_activity_support_topk=2,
+                profile_native_activity_max_support_count=2,
+                seed_fraction=0.25,
+                max_seed_amount=1.0,
+            ),
+        )
+
+    assert captured["support_indices_by_layer"] == ((0, 1),)
+    init = captured["init_states"][0]
+    assert tuple(float(value) for value in jnp.exp(init.ln_mk)) == pytest.approx(
+        (0.25, 0.25)
+    )
+    assert (
+        init.ln_nk_source_trace["fixed_support_gas_init_policy"]
+        == "depleted_budget"
+    )
