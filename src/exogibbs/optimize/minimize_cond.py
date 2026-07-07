@@ -16,6 +16,11 @@ from scipy.optimize import least_squares
 
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _compute_gk
+from exogibbs.optimize.fixed_support_batch import (
+    FIXED_SUPPORT_BATCH_DEFAULT_EPSILON_SCHEDULE,
+    FIXED_SUPPORT_BATCH_LAMBDA_INITIALIZATIONS,
+    build_fixed_support_batch_metadata,
+)
 from exogibbs.optimize.stepsize import LOG_S_MAX
 from exogibbs.optimize.pdipm_cond import minimize_gibbs_cond_core
 from exogibbs.optimize.minimize import (
@@ -39,19 +44,6 @@ from exogibbs.optimize.pipm_rgie_cond import (
 )
 
 Array = jax.Array
-FIXED_SUPPORT_BATCH_LAMBDA_CANDIDATE_LABELS = (
-    "provided",
-    "gas_lstsq",
-    "gas_cond_lstsq",
-    "damped_gas_lstsq",
-    "damped_gas_cond_lstsq",
-)
-FIXED_SUPPORT_BATCH_LAMBDA_INITIALIZATIONS = (
-    "provided",
-    "gas_lstsq",
-    "gas_cond_lstsq",
-    "best_residual",
-)
 CondensateProfileMethod = Literal[
     "vmap_cold",
     "scan_hot_from_top",
@@ -1998,6 +1990,7 @@ def _pdipm_activity_fixed_support_batch_core(
     rho_init: jnp.ndarray,
     gas_stationarity_source_init: jnp.ndarray,
     use_solver_epsilon: jnp.ndarray,
+    use_external_gas_stationarity_source: jnp.ndarray,
     formula_matrix: jnp.ndarray,
     formula_matrix_cond_active: jnp.ndarray,
     element_inventory_target: jnp.ndarray,
@@ -2010,6 +2003,12 @@ def _pdipm_activity_fixed_support_batch_core(
     budget_direction_projection_strength: jnp.ndarray,
     relaxed_stationarity_fallback_enabled: jnp.ndarray,
     relaxed_stationarity_fallback_factor: jnp.ndarray,
+    adaptive_regularization_enabled: jnp.ndarray,
+    adaptive_regularization_base: jnp.ndarray,
+    second_order_correction_enabled: jnp.ndarray,
+    second_order_correction_max_abs_step: jnp.ndarray,
+    use_legacy_capacity_epsilon: jnp.ndarray,
+    use_scalar_step_control: jnp.ndarray,
     max_iter: int,
     rho_initialization: str = "unit_activity",
     lambda_initialization: str = "best_residual",
@@ -2086,13 +2085,7 @@ def _pdipm_activity_fixed_support_batch_core(
             hgas_or_gas_stationarity_source,
             hgas_or_gas_stationarity_source + ln_pressure - qtot,
         )
-        log_activity_proxy = ac.T @ lam - hcond
-        jac_mask = log_activity_proxy > -0.1
-        jac_mask = jnp.where(
-            jnp.any(jac_mask),
-            jac_mask,
-            jnp.arange(r.shape[0]) == jnp.argmax(log_activity_proxy),
-        )
+        jac_mask = jnp.ones((r.shape[0],), dtype=bool)
         n = jnp.exp(q)
         m = jnp.exp(r)
         eta = jnp.exp(rho)
@@ -2103,18 +2096,72 @@ def _pdipm_activity_fixed_support_batch_core(
         delta_bhat = target - gas_inventory - ac @ m
         delta_ntot = jnp.sum(n) - jnp.exp(qtot)
         qhat = ag @ (n[:, None] * ag.T) + ac @ (j_vec[:, None] * ac.T)
-        qhat = qhat + 1.0e-14 * jnp.eye(qhat.shape[0], dtype=qhat.dtype)
         rhs_top = ag @ (n * geff) + ac @ (j_vec * hcond + m * t_vec - m) + delta_bhat
         rhs_bottom = jnp.dot(n, geff) - delta_ntot
-        matrix = jnp.block(
-            [
-                [qhat, gas_inventory[:, None]],
-                [gas_inventory[None, :], jnp.asarray([[delta_ntot]], dtype=qhat.dtype)],
-            ]
-        )
         rhs = jnp.concatenate([rhs_top, jnp.asarray([rhs_bottom], dtype=qhat.dtype)])
-        solution = jnp.linalg.lstsq(matrix, rhs, rcond=None)[0]
-        solution = jnp.nan_to_num(solution, nan=0.0, posinf=0.0, neginf=0.0)
+
+        mean_qhat_diagonal = jnp.maximum(
+            jnp.mean(jnp.diag(qhat)),
+            jnp.asarray(1.0, dtype=qhat.dtype),
+        )
+
+        def algorithm_solution_for_regularization(
+            absolute_regularization: jnp.ndarray,
+        ) -> tuple[jnp.ndarray, jnp.ndarray]:
+            regularization = absolute_regularization.astype(qhat.dtype)
+            qhat_reg = qhat + regularization * jnp.eye(qhat.shape[0], dtype=qhat.dtype)
+            matrix = jnp.block(
+                [
+                    [qhat_reg, gas_inventory[:, None]],
+                    [
+                        gas_inventory[None, :],
+                        jnp.asarray([[delta_ntot]], dtype=qhat.dtype),
+                    ],
+                ]
+            )
+            solution = jnp.linalg.lstsq(matrix, rhs, rcond=None)[0]
+            solution = jnp.nan_to_num(solution, nan=0.0, posinf=0.0, neginf=0.0)
+            unregularized_matrix = jnp.block(
+                [
+                    [qhat, gas_inventory[:, None]],
+                    [
+                        gas_inventory[None, :],
+                        jnp.asarray([[delta_ntot]], dtype=qhat.dtype),
+                    ],
+                ]
+            )
+            linear_residual = unregularized_matrix @ solution - rhs
+            score = l2(linear_residual) + jnp.asarray(1.0e-18, dtype=qhat.dtype) * l2(
+                solution
+            )
+            score = jnp.where(jnp.all(jnp.isfinite(solution)), score, jnp.inf)
+            return solution, score
+
+        base_reg = jnp.maximum(
+            adaptive_regularization_base.astype(qhat.dtype),
+            jnp.asarray(1.0e-14, dtype=qhat.dtype),
+        )
+        adaptive_reg_grid = jnp.asarray(
+            (1.0e-14, 1.0, 1.0e2, 1.0e4),
+            dtype=qhat.dtype,
+        ) * base_reg * mean_qhat_diagonal
+        disabled_reg_grid = jnp.full_like(
+            adaptive_reg_grid,
+            jnp.asarray(1.0e-14, dtype=qhat.dtype),
+        )
+        reg_grid = jnp.where(
+            adaptive_regularization_enabled,
+            adaptive_reg_grid,
+            disabled_reg_grid,
+        )
+        candidate_solutions, candidate_scores = jax.vmap(
+            algorithm_solution_for_regularization
+        )(reg_grid)
+        selected_regularization_index = jnp.asarray(
+            jnp.argmin(candidate_scores),
+            dtype=jnp.int32,
+        )
+        solution = candidate_solutions[selected_regularization_index]
         pi = solution[:-1]
         delta_qtot = solution[-1]
         raw_delta_q = ag.T @ pi + delta_qtot - geff
@@ -2441,6 +2488,104 @@ def _pdipm_activity_fixed_support_batch_core(
                 l2(comp),
             )
 
+        def second_order_correct_trial(
+            tq_in: jnp.ndarray,
+            tr_in: jnp.ndarray,
+            tlam_in: jnp.ndarray,
+            trho_in: jnp.ndarray,
+            tqtot_in: jnp.ndarray,
+        ) -> tuple[jnp.ndarray, ...]:
+            ni = jnp.exp(tq_in)
+            mi = jnp.exp(tr_in)
+            ntoti = jnp.exp(tqtot_in)
+            budget = ag @ ni + ac @ mi - target
+            total = jnp.asarray([jnp.sum(ni) - ntoti], dtype=tq_in.dtype)
+            positive_target = jnp.where(target > 0.0, target, 0.0)
+            target_scale = jnp.maximum(
+                jnp.max(positive_target, initial=jnp.asarray(0.0, dtype=tq_in.dtype)),
+                jnp.asarray(1.0, dtype=tq_in.dtype),
+            )
+            floor = jnp.maximum(
+                jnp.asarray(jnp.finfo(tq_in.dtype).tiny, dtype=tq_in.dtype),
+                jnp.asarray(1.0e-300, dtype=tq_in.dtype) * target_scale,
+            )
+            row_weights = jnp.where(
+                target > 0.0,
+                1.0 / jnp.maximum(jnp.abs(target), floor),
+                0.0,
+            )
+            row_weights = jnp.where(jnp.isfinite(row_weights), row_weights, 0.0)
+            budget_jac = jnp.concatenate(
+                [
+                    row_weights[:, None] * (ag * ni[None, :]),
+                    row_weights[:, None] * (ac * mi[None, :]),
+                    jnp.zeros((target.shape[0], 1), dtype=tq_in.dtype),
+                ],
+                axis=1,
+            )
+            total_jac = jnp.concatenate(
+                [ni, jnp.zeros_like(mi), jnp.asarray([-ntoti], dtype=tq_in.dtype)]
+            )[None, :]
+            correction_matrix = jnp.concatenate([budget_jac, total_jac], axis=0)
+            correction_rhs = -jnp.concatenate([row_weights * budget, total], axis=0)
+            column_scale = jnp.maximum(
+                jnp.linalg.norm(correction_matrix, axis=0),
+                jnp.asarray(1.0e-300, dtype=tq_in.dtype),
+            )
+            scaled_matrix = correction_matrix / column_scale[None, :]
+            normal_matrix = scaled_matrix.T @ scaled_matrix
+            normal_rhs = scaled_matrix.T @ correction_rhs
+            mean_diagonal = jnp.maximum(
+                jnp.mean(jnp.diag(normal_matrix)),
+                jnp.asarray(1.0, dtype=tq_in.dtype),
+            )
+            damping = jnp.asarray(1.0e-12, dtype=tq_in.dtype) * mean_diagonal
+            correction_scaled = jnp.linalg.solve(
+                normal_matrix
+                + damping * jnp.eye(normal_matrix.shape[0], dtype=tq_in.dtype),
+                normal_rhs,
+            )
+            correction = correction_scaled / column_scale
+            correction = jnp.nan_to_num(correction, nan=0.0, posinf=0.0, neginf=0.0)
+            q_end = tq_in.shape[0]
+            r_end = q_end + tr_in.shape[0]
+            max_step = jnp.maximum(
+                second_order_correction_max_abs_step.astype(tq_in.dtype),
+                jnp.asarray(0.0, dtype=tq_in.dtype),
+            )
+            dq_soc = jnp.clip(correction[:q_end], -max_step, max_step)
+            dr_soc = jnp.clip(correction[q_end:r_end], -max_step, max_step)
+            dqtot_soc = jnp.clip(correction[-1], -max_step, max_step)
+            corrected_q = tq_in + dq_soc
+            corrected_r = jnp.minimum(tr_in + dr_soc, r_cap)
+            corrected_qtot = tqtot_in + dqtot_soc
+            gas, cond, budget_corr, comp, _total = residual_components(
+                corrected_q,
+                corrected_r,
+                tlam_in,
+                trho_in,
+                corrected_qtot,
+            )
+            return (
+                corrected_q,
+                corrected_r,
+                tlam_in,
+                trho_in,
+                corrected_qtot,
+                residual_norm(
+                    corrected_q,
+                    corrected_r,
+                    tlam_in,
+                    trho_in,
+                    corrected_qtot,
+                ),
+                l2(gas),
+                l2(cond),
+                l2(budget_corr),
+                relative_budget_max_abs(budget_corr),
+                l2(comp),
+            )
+
         bounded_alpha_grid = jnp.minimum(alpha_grid, alpha_boundary)
         restoration_alpha_boundary = direction_alpha_boundary(
             restoration_delta_r,
@@ -2495,6 +2640,10 @@ def _pdipm_activity_fixed_support_batch_core(
         tlam = jnp.concatenate([tlam, restoration_tlam], axis=0)
         trho = jnp.concatenate([trho, restoration_trho], axis=0)
         tqtot = jnp.concatenate([tqtot, restoration_tqtot], axis=0)
+        trial_alphas = jnp.concatenate(
+            [bounded_alpha_grid, restoration_bounded_alpha_grid],
+            axis=0,
+        )
         norms = jnp.concatenate([norms, restoration_norms], axis=0)
         gas_norms = jnp.concatenate([gas_norms, restoration_gas_norms], axis=0)
         cond_norms = jnp.concatenate([cond_norms, restoration_cond_norms], axis=0)
@@ -2510,6 +2659,104 @@ def _pdipm_activity_fixed_support_batch_core(
                 jnp.ones_like(restoration_bounded_alpha_grid, dtype=bool),
             ],
             axis=0,
+        )
+        def append_soc_trials(_unused: None) -> tuple[jnp.ndarray, ...]:
+            (
+                soc_tq,
+                soc_tr,
+                soc_tlam,
+                soc_trho,
+                soc_tqtot,
+                soc_norms,
+                soc_gas_norms,
+                soc_cond_norms,
+                soc_budget_norms,
+                soc_budget_relative_maxes,
+                soc_comp_norms,
+            ) = jax.vmap(second_order_correct_trial)(
+                tq,
+                tr,
+                tlam,
+                trho,
+                tqtot,
+            )
+            return (
+                jnp.concatenate([tq, soc_tq], axis=0),
+                jnp.concatenate([tr, soc_tr], axis=0),
+                jnp.concatenate([tlam, soc_tlam], axis=0),
+                jnp.concatenate([trho, soc_trho], axis=0),
+                jnp.concatenate([tqtot, soc_tqtot], axis=0),
+                jnp.concatenate([trial_alphas, trial_alphas], axis=0),
+                jnp.concatenate([norms, soc_norms], axis=0),
+                jnp.concatenate([gas_norms, soc_gas_norms], axis=0),
+                jnp.concatenate([cond_norms, soc_cond_norms], axis=0),
+                jnp.concatenate([budget_norms, soc_budget_norms], axis=0),
+                jnp.concatenate(
+                    [budget_relative_maxes, soc_budget_relative_maxes],
+                    axis=0,
+                ),
+                jnp.concatenate([comp_norms, soc_comp_norms], axis=0),
+                jnp.concatenate(
+                    [restoration_trial_flags, restoration_trial_flags],
+                    axis=0,
+                ),
+                jnp.concatenate(
+                    [
+                        jnp.zeros((norms.shape[0],), dtype=bool),
+                        jnp.ones((norms.shape[0],), dtype=bool),
+                    ],
+                    axis=0,
+                ),
+            )
+
+        def append_disabled_soc_trials(_unused: None) -> tuple[jnp.ndarray, ...]:
+            disabled_norms = jnp.full_like(norms, jnp.inf)
+            return (
+                jnp.concatenate([tq, tq], axis=0),
+                jnp.concatenate([tr, tr], axis=0),
+                jnp.concatenate([tlam, tlam], axis=0),
+                jnp.concatenate([trho, trho], axis=0),
+                jnp.concatenate([tqtot, tqtot], axis=0),
+                jnp.concatenate([trial_alphas, trial_alphas], axis=0),
+                jnp.concatenate([norms, disabled_norms], axis=0),
+                jnp.concatenate([gas_norms, gas_norms], axis=0),
+                jnp.concatenate([cond_norms, cond_norms], axis=0),
+                jnp.concatenate([budget_norms, budget_norms], axis=0),
+                jnp.concatenate([budget_relative_maxes, budget_relative_maxes], axis=0),
+                jnp.concatenate([comp_norms, comp_norms], axis=0),
+                jnp.concatenate(
+                    [restoration_trial_flags, restoration_trial_flags],
+                    axis=0,
+                ),
+                jnp.concatenate(
+                    [
+                        jnp.zeros((norms.shape[0],), dtype=bool),
+                        jnp.ones((norms.shape[0],), dtype=bool),
+                    ],
+                    axis=0,
+                ),
+            )
+
+        (
+            tq,
+            tr,
+            tlam,
+            trho,
+            tqtot,
+            trial_alphas,
+            norms,
+            gas_norms,
+            cond_norms,
+            budget_norms,
+            budget_relative_maxes,
+            comp_norms,
+            restoration_trial_flags,
+            soc_trial_flags,
+        ) = lax.cond(
+            second_order_correction_enabled.astype(bool),
+            append_soc_trials,
+            append_disabled_soc_trials,
+            operand=None,
         )
         finite = jnp.isfinite(norms)
         budget_relative_acceptance_limit = jnp.maximum(
@@ -2583,6 +2830,11 @@ def _pdipm_activity_fixed_support_batch_core(
             & budget_relative_not_broken
             & effective_combined_not_worse
         )
+        accepted_or_fallback_mask = accepted_mask | fallback_mask
+        rejected_trial_count = jnp.sum(
+            (finite & (~accepted_or_fallback_mask)).astype(jnp.int32),
+            dtype=jnp.int32,
+        )
         any_fallback = jnp.any(fallback_mask)
         fallback_index = jnp.argmin(jnp.where(fallback_mask, fallback_merit, jnp.inf))
         selected = jnp.where(
@@ -2602,7 +2854,11 @@ def _pdipm_activity_fixed_support_batch_core(
             any_accepted,
             any_fallback & (~any_accepted),
             restoration_trial_flags[selected],
+            soc_trial_flags[selected],
             initial_norm,
+            selected_regularization_index,
+            jnp.where(step_accepted, trial_alphas[selected], jnp.asarray(0.0, dtype=q.dtype)),
+            rejected_trial_count,
         )
 
     def run_one(
@@ -2612,6 +2868,7 @@ def _pdipm_activity_fixed_support_batch_core(
         lam_init: jnp.ndarray,
         rho_init_one: jnp.ndarray,
         gas_source_init: jnp.ndarray,
+        use_external_gas_source_one: jnp.ndarray,
         use_solver_epsilon_one: jnp.ndarray,
         target: jnp.ndarray,
         hgas: jnp.ndarray,
@@ -2631,8 +2888,9 @@ def _pdipm_activity_fixed_support_batch_core(
         legacy_epsilon_vec = jnp.log(
             jnp.maximum(1.0e-15 * reference_budget, 1.0e-300)
         )
+        use_requested_epsilon = use_solver_epsilon_one | (~use_legacy_capacity_epsilon)
         epsilon_vec = jnp.where(
-            use_solver_epsilon_one,
+            use_requested_epsilon,
             jnp.full_like(r0, solver_epsilon),
             legacy_epsilon_vec,
         )
@@ -2643,9 +2901,14 @@ def _pdipm_activity_fixed_support_batch_core(
         else:
             rho0 = jnp.zeros_like(r0)
         gas_stationarity_source_init = jnp.where(
-            use_solver_epsilon_one,
+            use_external_gas_source_one,
             gas_source_init,
             hgas + ln_pressure - qtot0,
+        )
+        gas_step_source = jnp.where(
+            use_external_gas_source_one,
+            gas_source_init,
+            hgas,
         )
         eta0 = jnp.exp(rho0)
         lam0_gas = jnp.linalg.lstsq(
@@ -2679,13 +2942,7 @@ def _pdipm_activity_fixed_support_batch_core(
                 [jnp.sum(ni) - jnp.exp(qtot0)],
                 dtype=q0.dtype,
             )
-            log_activity_proxy = ac.T @ lami - hcond
-            jac_mask = log_activity_proxy > -0.1
-            jac_mask = jnp.where(
-                jnp.any(jac_mask),
-                jac_mask,
-                jnp.arange(r0.shape[0]) == jnp.argmax(log_activity_proxy),
-            )
+            jac_mask = jnp.ones((r0.shape[0],), dtype=bool)
             return l2(
                 jnp.concatenate(
                     [
@@ -2734,20 +2991,20 @@ def _pdipm_activity_fixed_support_batch_core(
             rho0,
             qtot0,
             target,
-            jnp.where(use_solver_epsilon_one, gas_source_init, hgas),
+            gas_step_source,
             hcond,
             ln_pressure,
             epsilon_vec,
             r_cap,
-            use_solver_epsilon_one,
-            jnp.asarray(False),
+            use_external_gas_source_one,
+            use_scalar_step_control,
             residual_crit,
         )
-        initial_residual = initial_step[10]
+        initial_residual = initial_step[11]
         initial_running = initial_residual > residual_crit
 
         def body(carry, _):
-            q, r, lam, rho, qtot, residual, residual_qtot_ref, still_running = carry
+            q, r, lam, rho, qtot, residual, last_alpha, rejected_count, still_running = carry
             (
                 next_q,
                 next_r,
@@ -2759,7 +3016,11 @@ def _pdipm_activity_fixed_support_batch_core(
                 normal_accepted,
                 fallback_accepted,
                 restoration_accepted,
+                soc_accepted,
                 _initial_residual,
+                regularization_index,
+                step_alpha,
+                step_rejected_count,
             ) = step(
                 q,
                 r,
@@ -2767,16 +3028,22 @@ def _pdipm_activity_fixed_support_batch_core(
                 rho,
                 qtot,
                 target,
-                jnp.where(use_solver_epsilon_one, gas_source_init, hgas),
+                gas_step_source,
                 hcond,
                 ln_pressure,
                 epsilon_vec,
                 r_cap,
-                use_solver_epsilon_one,
-                jnp.asarray(False),
+                use_external_gas_source_one,
+                use_scalar_step_control,
                 residual_crit,
             )
             apply_step = still_running & accepted
+            next_rejected_count = jnp.asarray(
+                rejected_count + step_rejected_count,
+                dtype=jnp.int32,
+            )
+            no_regularization_index = jnp.asarray(0, dtype=jnp.int32)
+            no_rejected_count = jnp.asarray(0, dtype=jnp.int32)
             return (
                 jnp.where(apply_step, next_q, q),
                 jnp.where(apply_step, next_r, r),
@@ -2784,7 +3051,8 @@ def _pdipm_activity_fixed_support_batch_core(
                 jnp.where(apply_step, next_rho, rho),
                 jnp.where(apply_step, next_qtot, qtot),
                 jnp.where(still_running, next_residual, residual),
-                jnp.where(still_running, qtot, residual_qtot_ref),
+                jnp.where(apply_step, step_alpha, last_alpha),
+                jnp.where(still_running, next_rejected_count, rejected_count),
                 apply_step,
             ), (
                 jnp.where(still_running, next_residual, residual),
@@ -2792,6 +3060,14 @@ def _pdipm_activity_fixed_support_batch_core(
                 still_running & normal_accepted,
                 still_running & fallback_accepted,
                 still_running & restoration_accepted,
+                still_running & soc_accepted,
+                jnp.where(
+                    still_running & accepted,
+                    regularization_index,
+                    no_regularization_index,
+                ),
+                jnp.where(apply_step, step_alpha, 0.0),
+                jnp.where(still_running, step_rejected_count, no_rejected_count),
             )
 
         initial = (
@@ -2801,7 +3077,8 @@ def _pdipm_activity_fixed_support_batch_core(
             rho0,
             qtot0,
             initial_residual,
-            qtot0,
+            jnp.asarray(0.0, dtype=q0.dtype),
+            jnp.asarray(0, dtype=jnp.int32),
             initial_running,
         )
         final, history = lax.scan(body, initial, xs=None, length=max_iter)
@@ -2809,37 +3086,36 @@ def _pdipm_activity_fixed_support_batch_core(
         normal_accepted_history = history[2]
         fallback_accepted_history = history[3]
         restoration_accepted_history = history[4]
+        soc_accepted_history = history[5]
+        regularization_index_history = history[6]
+        step_alpha_history = history[7]
+        rejected_count_history = history[8]
         accepted_count = jnp.sum(accepted_history.astype(jnp.int32))
         normal_accepted_count = jnp.sum(normal_accepted_history.astype(jnp.int32))
         fallback_accepted_count = jnp.sum(fallback_accepted_history.astype(jnp.int32))
         restoration_accepted_count = jnp.sum(
             restoration_accepted_history.astype(jnp.int32)
         )
+        soc_accepted_count = jnp.sum(soc_accepted_history.astype(jnp.int32))
+        adaptive_regularization_selected_count = jnp.sum(
+            (regularization_index_history > 0).astype(jnp.int32)
+        )
+        rejected_trial_count = jnp.sum(rejected_count_history.astype(jnp.int32))
         n_iter = jnp.minimum(accepted_count + 1, jnp.asarray(max_iter, dtype=jnp.int32))
-        final_residual = final[5]
-        converged = final_residual <= residual_crit
         qf, rf, lamf, rhof, qtotf = final[0], final[1], final[2], final[3], final[4]
-        qtot_residual_reference = final[6]
+        final_step_size = final[6]
         gas_stationarity_source_final = jnp.where(
-            use_solver_epsilon_one,
+            use_external_gas_source_one,
             gas_source_init,
-            hgas + ln_pressure - qtot_residual_reference,
+            hgas + ln_pressure - qtotf,
         )
-        log_activity_proxy_final = ac.T @ lamf - hcond
-        jac_mask_final = log_activity_proxy_final > -0.1
-        jac_mask_final = jnp.where(
-            jnp.any(jac_mask_final),
-            jac_mask_final,
-            jnp.arange(rf.shape[0]) == jnp.argmax(log_activity_proxy_final),
-        )
+        jac_mask_final = jnp.ones((rf.shape[0],), dtype=bool)
         nf = jnp.exp(qf)
         mf = jnp.exp(rf)
         etaf = jnp.exp(rhof)
         gas_component = (
             qf
             + gas_stationarity_source_final
-            + qtot_residual_reference
-            - qtotf
             - ag.T @ lamf
         )
         cond_component = hcond - ac.T @ lamf - etaf
@@ -2849,19 +3125,67 @@ def _pdipm_activity_fixed_support_batch_core(
             [jnp.sum(nf) - jnp.exp(qtotf)],
             dtype=qf.dtype,
         )
+        final_residual = l2(
+            jnp.concatenate(
+                [
+                    gas_component,
+                    jnp.where(jac_mask_final, cond_component, 0.0),
+                    budget_component,
+                    complementarity_component,
+                    total_density_component,
+                ]
+            )
+        )
+        converged = final_residual <= residual_crit
+        residual_component_norms = jnp.asarray(
+            [
+                l2(gas_component),
+                l2(jnp.where(jac_mask_final, cond_component, 0.0)),
+                l2(budget_component),
+                l2(complementarity_component),
+                l2(total_density_component),
+            ],
+            dtype=qf.dtype,
+        )
+        dominant_residual_component_index = jnp.asarray(
+            jnp.argmax(residual_component_norms),
+            dtype=jnp.int32,
+        )
+        final_accepted_trial = accepted_history[-1]
+        hit_max_iter = (n_iter >= max_iter) & (~converged)
+        tiny_step_threshold = jnp.asarray(1.0e-3, dtype=final_step_size.dtype)
+        stop_reason_code = jnp.select(
+            (
+                ~jnp.isfinite(final_residual),
+                converged,
+                (~converged) & (~final_accepted_trial),
+                hit_max_iter & (final_step_size <= tiny_step_threshold),
+                hit_max_iter,
+            ),
+            (
+                jnp.asarray(4, dtype=jnp.int32),
+                jnp.asarray(0, dtype=jnp.int32),
+                jnp.asarray(3, dtype=jnp.int32),
+                jnp.asarray(2, dtype=jnp.int32),
+                jnp.asarray(1, dtype=jnp.int32),
+            ),
+            default=jnp.asarray(5, dtype=jnp.int32),
+        )
         return (
             qf,
             rf,
             qtotf,
             n_iter,
             converged,
-            (n_iter >= max_iter) & (~converged),
+            hit_max_iter,
             final_residual,
             residual_crit,
             accepted_count,
             normal_accepted_count,
             fallback_accepted_count,
             restoration_accepted_count,
+            soc_accepted_count,
+            adaptive_regularization_selected_count,
             initial_residual,
             lambda_selection_index,
             l2(gas_component),
@@ -2869,6 +3193,12 @@ def _pdipm_activity_fixed_support_batch_core(
             l2(budget_component),
             l2(complementarity_component),
             l2(total_density_component),
+            final_step_size,
+            rejected_trial_count,
+            rhof,
+            lamf,
+            stop_reason_code,
+            dominant_residual_component_index,
         )
 
     return jax.vmap(run_one)(
@@ -2878,6 +3208,7 @@ def _pdipm_activity_fixed_support_batch_core(
         element_potential_init,
         rho_init,
         gas_stationarity_source_init,
+        use_external_gas_stationarity_source,
         use_solver_epsilon,
         element_inventory_target,
         hvector,
@@ -2945,12 +3276,18 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         if rho_init is not None
         else jnp.zeros_like(ln_mk_init_array)
     )
+    effective_epsilon = float(
+        os.environ.get(
+            "EXOGIBBS_FIXED_SUPPORT_BATCH_EPSILON",
+            str(float(epsilon)),
+        )
+    )
     epsilon_array = (
         jnp.asarray(barrier_epsilon_init, dtype=jnp.float64)
         if barrier_epsilon_init is not None
         else jnp.full_like(
             ln_ntot_init_array,
-            float(epsilon),
+            effective_epsilon,
             dtype=jnp.float64,
         )
     )
@@ -2959,13 +3296,91 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         barrier_epsilon_init is not None,
         dtype=bool,
     )
+    use_external_gas_stationarity_source_array = jnp.full_like(
+        ln_ntot_init_array,
+        gas_stationarity_source_init is not None,
+        dtype=bool,
+    )
     gas_stationarity_source_init_array = (
         jnp.asarray(gas_stationarity_source_init, dtype=jnp.float64)
         if gas_stationarity_source_init is not None
         else jnp.asarray(hvector, dtype=jnp.float64)
-        + jnp.asarray(ln_normalized_pressure, dtype=jnp.float64)[:, None]
-        - ln_ntot_init_array[:, None]
     )
+    budget_relative_acceptance_floor = float(
+        os.environ.get(
+            "EXOGIBBS_FIXED_SUPPORT_BATCH_BUDGET_RELATIVE_LIMIT",
+            "1.0e-3",
+        )
+    )
+    budget_direction_projection_strength = float(
+        os.environ.get(
+            "EXOGIBBS_FIXED_SUPPORT_BATCH_BUDGET_DIRECTION_PROJECTION",
+            "0.0",
+        )
+    )
+    relaxed_stationarity_fallback_enabled = bool(
+        int(
+            os.environ.get(
+                "EXOGIBBS_FIXED_SUPPORT_BATCH_RELAXED_STATIONARITY_FALLBACK",
+                "0",
+            )
+        )
+    )
+    relaxed_stationarity_fallback_factor = float(
+        os.environ.get(
+            "EXOGIBBS_FIXED_SUPPORT_BATCH_RELAXED_STATIONARITY_FACTOR",
+            "0.999",
+        )
+    )
+    adaptive_regularization_enabled = bool(
+        int(
+            os.environ.get(
+                "EXOGIBBS_FIXED_SUPPORT_BATCH_ADAPTIVE_REGULARIZATION",
+                "0",
+            )
+        )
+    )
+    adaptive_regularization_base = float(
+        os.environ.get(
+            "EXOGIBBS_FIXED_SUPPORT_BATCH_REGULARIZATION_BASE",
+            "1.0e-10",
+        )
+    )
+    second_order_correction_enabled = bool(
+        int(
+            os.environ.get(
+                "EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION",
+                "0",
+            )
+        )
+    )
+    second_order_correction_max_abs_step = float(
+        os.environ.get(
+            "EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_MAX_ABS_STEP",
+            "1.0",
+        )
+    )
+    use_legacy_capacity_epsilon = bool(
+        int(
+            os.environ.get(
+                "EXOGIBBS_FIXED_SUPPORT_BATCH_USE_LEGACY_CAPACITY_EPSILON",
+                "0",
+            )
+        )
+    )
+    step_control_policy = os.environ.get(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL",
+        "scalar_fraction_to_boundary",
+    )
+    if step_control_policy not in {
+        "scalar_fraction_to_boundary",
+        "component_clip",
+    }:
+        raise ValueError(
+            "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL must be "
+            "'scalar_fraction_to_boundary' or 'component_clip'."
+        )
+    use_scalar_step_control = step_control_policy == "scalar_fraction_to_boundary"
 
     (
         ln_nk,
@@ -2980,6 +3395,8 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         normal_accepted_count,
         fallback_accepted_count,
         restoration_accepted_count,
+        soc_accepted_count,
+        adaptive_regularization_selected_count,
         initial_residual,
         lambda_selection_index,
         gas_residual_norm,
@@ -2987,6 +3404,12 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         budget_residual_norm,
         complementarity_residual_norm,
         total_density_residual_norm,
+        final_step_size,
+        rejected_trial_count,
+        final_log_activity_correction,
+        final_element_potential,
+        stop_reason_code,
+        dominant_residual_component_index,
     ) = _pdipm_activity_fixed_support_batch_core_jit(
         ln_nk_init=ln_nk_init_array,
         ln_mk_init=ln_mk_init_array,
@@ -2994,6 +3417,9 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
         element_potential_init=element_potential_init_array,
         rho_init=rho_init_array,
         gas_stationarity_source_init=gas_stationarity_source_init_array,
+        use_external_gas_stationarity_source=(
+            use_external_gas_stationarity_source_array
+        ),
         use_solver_epsilon=use_solver_epsilon_array,
         formula_matrix=formula_matrix_array,
         formula_matrix_cond_active=jnp.asarray(
@@ -3013,42 +3439,44 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
             dtype=jnp.float64,
         ),
         budget_relative_acceptance_floor=jnp.asarray(
-            float(
-                os.environ.get(
-                    "EXOGIBBS_FIXED_SUPPORT_BATCH_BUDGET_RELATIVE_LIMIT",
-                    "1.0e-3",
-                )
-            ),
+            budget_relative_acceptance_floor,
             dtype=jnp.float64,
         ),
         budget_direction_projection_strength=jnp.asarray(
-            float(
-                os.environ.get(
-                    "EXOGIBBS_FIXED_SUPPORT_BATCH_BUDGET_DIRECTION_PROJECTION",
-                    "0.0",
-                )
-            ),
+            budget_direction_projection_strength,
             dtype=jnp.float64,
         ),
         relaxed_stationarity_fallback_enabled=jnp.asarray(
-            bool(
-                int(
-                    os.environ.get(
-                        "EXOGIBBS_FIXED_SUPPORT_BATCH_RELAXED_STATIONARITY_FALLBACK",
-                        "0",
-                    )
-                )
-            ),
+            relaxed_stationarity_fallback_enabled,
             dtype=bool,
         ),
         relaxed_stationarity_fallback_factor=jnp.asarray(
-            float(
-                os.environ.get(
-                    "EXOGIBBS_FIXED_SUPPORT_BATCH_RELAXED_STATIONARITY_FACTOR",
-                    "0.999",
-                )
-            ),
+            relaxed_stationarity_fallback_factor,
             dtype=jnp.float64,
+        ),
+        adaptive_regularization_enabled=jnp.asarray(
+            adaptive_regularization_enabled,
+            dtype=bool,
+        ),
+        adaptive_regularization_base=jnp.asarray(
+            adaptive_regularization_base,
+            dtype=jnp.float64,
+        ),
+        second_order_correction_enabled=jnp.asarray(
+            second_order_correction_enabled,
+            dtype=bool,
+        ),
+        second_order_correction_max_abs_step=jnp.asarray(
+            second_order_correction_max_abs_step,
+            dtype=jnp.float64,
+        ),
+        use_legacy_capacity_epsilon=jnp.asarray(
+            use_legacy_capacity_epsilon,
+            dtype=bool,
+        ),
+        use_scalar_step_control=jnp.asarray(
+            use_scalar_step_control,
+            dtype=bool,
         ),
         max_iter=int(max_iter),
         rho_initialization=str(rho_initialization),
@@ -3063,7 +3491,7 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
             "residual_crit": residual_crit,
             "max_iter": jnp.full_like(n_iter, int(max_iter), dtype=jnp.int32),
             "epsilon": epsilon_array,
-            "final_step_size": jnp.zeros_like(final_residual),
+            "final_step_size": final_step_size,
             "invalid_numbers_detected": ~jnp.isfinite(final_residual),
             "debug_nan": jnp.zeros_like(converged, dtype=bool),
             "reduced_coupling_selected_alpha_s": jnp.ones_like(final_residual),
@@ -3076,28 +3504,196 @@ def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
             ln_ntot=ln_ntot,
             diagnostics=diagnostics,
         ),
-        {
-            "pdipm_rgie_v11_activity_correction_fixed_support_batch": {
-                "schema": "exogibbs_pdipm_rgie_v11_activity_correction_fixed_support_batch_v1",
-                "experimental": True,
-                "production_route_wiring": False,
-                "accepted_iteration_count": accepted_count,
-                "normal_accepted_iteration_count": normal_accepted_count,
-                "fallback_accepted_iteration_count": fallback_accepted_count,
-                "stationarity_restoration_accepted_iteration_count": (
-                    restoration_accepted_count
-                ),
-                "initial_residual": initial_residual,
-                "lambda_selection_index": lambda_selection_index,
-                "lambda_candidate_labels": FIXED_SUPPORT_BATCH_LAMBDA_CANDIDATE_LABELS,
-                "gas_residual_norm": gas_residual_norm,
-                "condensate_stationarity_residual_norm": condensate_stationarity_residual_norm,
-                "budget_residual_norm": budget_residual_norm,
-                "complementarity_residual_norm": complementarity_residual_norm,
-                "total_density_residual_norm": total_density_residual_norm,
-                "rho_initialization": str(rho_initialization),
-                "lambda_initialization": str(lambda_initialization),
+        build_fixed_support_batch_metadata(
+            accepted_count=accepted_count,
+            normal_accepted_count=normal_accepted_count,
+            fallback_accepted_count=fallback_accepted_count,
+            restoration_accepted_count=restoration_accepted_count,
+            soc_accepted_count=soc_accepted_count,
+            adaptive_regularization_selected_count=(
+                adaptive_regularization_selected_count
+            ),
+            rejected_trial_count=rejected_trial_count,
+            final_step_size=final_step_size,
+            stop_reason_code=stop_reason_code,
+            dominant_residual_component_index=dominant_residual_component_index,
+            final_log_activity_correction=final_log_activity_correction,
+            final_element_potential=final_element_potential,
+            initial_residual=initial_residual,
+            lambda_selection_index=lambda_selection_index,
+            gas_residual_norm=gas_residual_norm,
+            condensate_stationarity_residual_norm=(
+                condensate_stationarity_residual_norm
+            ),
+            budget_residual_norm=budget_residual_norm,
+            complementarity_residual_norm=complementarity_residual_norm,
+            total_density_residual_norm=total_density_residual_norm,
+            rho_initialization=str(rho_initialization),
+            lambda_initialization=str(lambda_initialization),
+            effective_epsilon=effective_epsilon,
+            budget_relative_acceptance_floor=budget_relative_acceptance_floor,
+            budget_direction_projection_strength=(
+                budget_direction_projection_strength
+            ),
+            relaxed_stationarity_fallback_enabled=(
+                relaxed_stationarity_fallback_enabled
+            ),
+            relaxed_stationarity_fallback_factor=relaxed_stationarity_fallback_factor,
+            adaptive_regularization_enabled=adaptive_regularization_enabled,
+            adaptive_regularization_base=adaptive_regularization_base,
+            second_order_correction_enabled=second_order_correction_enabled,
+            second_order_correction_max_abs_step=(
+                second_order_correction_max_abs_step
+            ),
+            use_legacy_capacity_epsilon=use_legacy_capacity_epsilon,
+            step_control_policy=step_control_policy,
+        ),
+    )
+
+
+def _parse_fixed_support_batch_epsilon_schedule(final_epsilon: float) -> tuple[float, ...]:
+    """Return the explicit path-following schedule for fixed-support batch PD-IPM."""
+
+    raw_schedule = os.environ.get("EXOGIBBS_FIXED_SUPPORT_BATCH_EPSILON_SCHEDULE")
+    if raw_schedule is not None:
+        schedule = tuple(
+            float(value.strip())
+            for value in raw_schedule.replace(":", ",").split(",")
+            if value.strip()
+        )
+        if not schedule:
+            raise ValueError(
+                "EXOGIBBS_FIXED_SUPPORT_BATCH_EPSILON_SCHEDULE must contain at "
+                "least one numeric stage."
+            )
+    else:
+        schedule = FIXED_SUPPORT_BATCH_DEFAULT_EPSILON_SCHEDULE
+    target = float(final_epsilon)
+    if schedule[-1] != target:
+        schedule = tuple(value for value in schedule if value > target) + (target,)
+    for previous, current in zip(schedule, schedule[1:]):
+        if current > previous:
+            raise ValueError(
+                "fixed-support batch epsilon schedule must be non-increasing."
+            )
+    return tuple(float(value) for value in schedule)
+
+
+def _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch_continuation(
+    *,
+    ln_nk_init: jnp.ndarray,
+    ln_mk_init: jnp.ndarray,
+    ln_ntot_init: jnp.ndarray,
+    element_potential_init: Optional[jnp.ndarray] = None,
+    rho_init: Optional[jnp.ndarray] = None,
+    barrier_epsilon_init: Optional[jnp.ndarray] = None,
+    gas_stationarity_source_init: Optional[jnp.ndarray] = None,
+    formula_matrix: jnp.ndarray,
+    formula_matrix_cond_active: jnp.ndarray,
+    element_inventory_target: jnp.ndarray,
+    hvector: jnp.ndarray,
+    hvector_cond_active: jnp.ndarray,
+    ln_normalized_pressure: jnp.ndarray,
+    epsilon_schedule: Sequence[float],
+    residual_tolerance_multiplier: float = 1.0,
+    max_iter: int,
+    rho_initialization: str = "unit_activity",
+    lambda_initialization: str = "best_residual",
+) -> tuple[CondensateEquilibriumResult, dict[str, Any]]:
+    """Run fixed-support batch solves along an explicit log-barrier schedule."""
+
+    schedule = tuple(float(value) for value in epsilon_schedule)
+    if not schedule:
+        raise ValueError("epsilon_schedule must contain at least one value.")
+    current_ln_nk = jnp.asarray(ln_nk_init, dtype=jnp.float64)
+    current_ln_mk = jnp.asarray(ln_mk_init, dtype=jnp.float64)
+    current_ln_ntot = jnp.asarray(ln_ntot_init, dtype=jnp.float64)
+    current_lambda = (
+        None
+        if element_potential_init is None
+        else jnp.asarray(element_potential_init, dtype=jnp.float64)
+    )
+    current_rho = None if rho_init is None else jnp.asarray(rho_init, dtype=jnp.float64)
+    if current_rho is not None and barrier_epsilon_init is not None:
+        previous_epsilon = jnp.asarray(barrier_epsilon_init, dtype=jnp.float64)
+        current_rho = current_rho + (
+            jnp.asarray(schedule[0], dtype=current_rho.dtype) - previous_epsilon
+        )[:, None]
+    current_rho_initialization = str(rho_initialization)
+    stage_reports: list[dict[str, Any]] = []
+    result = None
+    extra = None
+    for stage_index, stage_epsilon in enumerate(schedule):
+        barrier_epsilon_init = jnp.full_like(
+            current_ln_ntot,
+            stage_epsilon,
+            dtype=jnp.float64,
+        )
+        result, extra = _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+            ln_nk_init=current_ln_nk,
+            ln_mk_init=current_ln_mk,
+            ln_ntot_init=current_ln_ntot,
+            element_potential_init=current_lambda,
+            rho_init=current_rho,
+            barrier_epsilon_init=barrier_epsilon_init,
+            gas_stationarity_source_init=gas_stationarity_source_init,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            element_inventory_target=element_inventory_target,
+            hvector=hvector,
+            hvector_cond_active=hvector_cond_active,
+            ln_normalized_pressure=ln_normalized_pressure,
+            epsilon=stage_epsilon,
+            residual_tolerance_multiplier=residual_tolerance_multiplier,
+            max_iter=max_iter,
+            rho_initialization=current_rho_initialization,
+            lambda_initialization=lambda_initialization,
+        )
+        payload = extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"]
+        stage_reports.append(
+            {
+                "stage_index": stage_index,
+                "epsilon": stage_epsilon,
+                "converged": result.diagnostics.converged,
+                "n_iter": result.diagnostics.n_iter,
+                "final_residual": result.diagnostics.final_residual,
+                "residual_crit": result.diagnostics.residual_crit,
+                "accepted_iteration_count": payload["accepted_iteration_count"],
+                "rejected_trial_count": payload["rejected_trial_count"],
+                "final_step_size": payload["final_step_size"],
+                "stop_reason_code": payload["stop_reason_code"],
+                "dominant_residual_component_index": payload[
+                    "dominant_residual_component_index"
+                ],
             }
+        )
+        current_ln_nk = result.ln_nk
+        current_ln_mk = result.ln_mk
+        current_ln_ntot = result.ln_ntot
+        current_lambda = payload["final_element_potential"]
+        current_rho = payload["final_log_activity_correction"]
+        if stage_index + 1 < len(schedule):
+            next_epsilon = schedule[stage_index + 1]
+            current_rho = current_rho + jnp.asarray(
+                next_epsilon - stage_epsilon,
+                dtype=jnp.asarray(current_rho).dtype,
+            )
+        current_rho_initialization = "provided"
+    if result is None or extra is None:
+        raise RuntimeError("epsilon continuation did not run any stages.")
+    return (
+        result,
+        {
+            **extra,
+            "pdipm_rgie_v11_activity_correction_fixed_support_batch_continuation": {
+                "schema": (
+                    "exogibbs_pdipm_rgie_v11_activity_correction_fixed_support_"
+                    "batch_continuation_v1"
+                ),
+                "epsilon_schedule": schedule,
+                "stage_count": len(schedule),
+                "stages": tuple(stage_reports),
+            },
         },
     )
 
@@ -3274,11 +3870,12 @@ def _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
     """Run already-prepared profile buckets without per-layer materialization."""
 
     formula_matrix = jnp.asarray(formula_matrix, dtype=jnp.float64)
+    epsilon_schedule = _parse_fixed_support_batch_epsilon_schedule(epsilon)
     results = []
     bucket_reports = []
     for bucket in buckets:
         batch_result, batch_extra = (
-            _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+            _solve_pdipm_rgie_v11_activity_correction_fixed_support_batch_continuation(
                 ln_nk_init=bucket.ln_nk_init,
                 ln_mk_init=bucket.ln_mk_init,
                 ln_ntot_init=bucket.ln_ntot_init,
@@ -3292,7 +3889,7 @@ def _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
                 hvector=bucket.hvector,
                 hvector_cond_active=bucket.hvector_cond_active,
                 ln_normalized_pressure=bucket.ln_normalized_pressure,
-                epsilon=epsilon,
+                epsilon_schedule=epsilon_schedule,
                 residual_tolerance_multiplier=residual_tolerance_multiplier,
                 max_iter=max_iter,
                 rho_initialization=rho_initialization,
@@ -3303,17 +3900,51 @@ def _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
         batch_payload = batch_extra[
             "pdipm_rgie_v11_activity_correction_fixed_support_batch"
         ]
+        continuation_payload = batch_extra[
+            "pdipm_rgie_v11_activity_correction_fixed_support_batch_continuation"
+        ]
         bucket_reports.append(
             {
                 "support_indices": bucket.support_indices,
                 "layer_indices": bucket.layer_indices,
                 "execution": "batch",
                 "batch_size": len(bucket.layer_indices),
+                "epsilon_schedule": continuation_payload["epsilon_schedule"],
+                "continuation_stage_count": continuation_payload["stage_count"],
+                "continuation_stages": continuation_payload["stages"],
                 "accepted_iteration_count": batch_payload[
                     "accepted_iteration_count"
                 ],
                 "stationarity_restoration_accepted_iteration_count": batch_payload[
                     "stationarity_restoration_accepted_iteration_count"
+                ],
+                "normal_accepted_iteration_count": batch_payload[
+                    "normal_accepted_iteration_count"
+                ],
+                "fallback_accepted_iteration_count": batch_payload[
+                    "fallback_accepted_iteration_count"
+                ],
+                "second_order_correction_accepted_iteration_count": batch_payload[
+                    "second_order_correction_accepted_iteration_count"
+                ],
+                "rejected_trial_count": batch_payload["rejected_trial_count"],
+                "final_step_size": batch_payload["final_step_size"],
+                "stop_reason_code": batch_payload["stop_reason_code"],
+                "dominant_residual_component_index": batch_payload[
+                    "dominant_residual_component_index"
+                ],
+                "initial_residual": batch_payload["initial_residual"],
+                "lambda_selection_index": batch_payload["lambda_selection_index"],
+                "gas_residual_norm": batch_payload["gas_residual_norm"],
+                "condensate_stationarity_residual_norm": batch_payload[
+                    "condensate_stationarity_residual_norm"
+                ],
+                "budget_residual_norm": batch_payload["budget_residual_norm"],
+                "complementarity_residual_norm": batch_payload[
+                    "complementarity_residual_norm"
+                ],
+                "total_density_residual_norm": batch_payload[
+                    "total_density_residual_norm"
                 ],
             }
         )

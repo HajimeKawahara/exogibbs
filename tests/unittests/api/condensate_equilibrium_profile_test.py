@@ -422,6 +422,20 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     assert planned_arrays["gas_ln_n"].shape == (2, 2)
     assert planned_arrays["condensate_amounts"].shape == (2, 2)
     assert planned_arrays["fallback_required"].shape == (2,)
+    assert planned_arrays["epsilon_schedule"] == (
+        0.0,
+        -1.0,
+        -2.0,
+        -4.0,
+        -6.0,
+        -8.0,
+        -10.0,
+    )
+    assert planned_arrays["continuation_diagnostics"]["epsilon"].shape == (2, 7)
+    assert jnp.all(
+        planned_arrays["continuation_diagnostics"]["epsilon"]
+        == jnp.asarray(planned_arrays["epsilon_schedule"], dtype=jnp.float64)[None, :]
+    )
     assert jnp.array_equal(
         planned_arrays["fallback_required"],
         ~planned_arrays["converged"],
@@ -463,6 +477,8 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
 
     assert many_arrays["gas_ln_n"].shape == (2, 2, 2)
     assert many_arrays["condensate_amounts"].shape == (2, 2, 2)
+    assert many_arrays["epsilon_schedule"] == planned_arrays["epsilon_schedule"]
+    assert many_arrays["continuation_diagnostics"]["epsilon"].shape == (2, 2, 7)
     assert many_arrays["fallback_required"].shape == (2, 2)
     assert jnp.array_equal(
         many_arrays["fallback_required"],
@@ -492,11 +508,16 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     )
     assert set(many_arrays["step_diagnostics"]) == {
         "accepted_iteration_count",
+        "dominant_residual_component_index",
         "fallback_accepted_iteration_count",
+        "final_step_size",
         "initial_residual",
         "lambda_selection_index",
         "normal_accepted_iteration_count",
+        "rejected_trial_count",
+        "second_order_correction_accepted_iteration_count",
         "stationarity_restoration_accepted_iteration_count",
+        "stop_reason_code",
     }
     for diagnostic in many_arrays["step_diagnostics"].values():
         assert diagnostic.shape == (2, 2)

@@ -1,6 +1,32 @@
 # HEAD route 定義
 
-この文書は、ExoGibbs の凝縮あり計算で現在の基準経路として扱う **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
+この文書は、ExoGibbs の凝縮あり計算で historically 基準経路として扱ってきた **HEAD route** を定義する。HEAD route の内容を変更した場合は、この文書を更新する。
+
+## 現在の方針: GPU batch default への移行
+
+2026-07 時点の開発方針では、凝縮 profile 計算の production default は **GPU fixed-support batch route** に寄せる。HEAD route は、support/state/post-solver lifecycle の比較対象および移植元として扱い、漸近的に production default から外す。
+
+用語は次の意味で使う。
+
+| term | definition |
+|---|---|
+| GPU fixed-support batch route / batch route | profile 各 layer の condensate support と初期状態を先に固定し、同じ support shape ごとに bucket 化して fixed-support PD-IPM/R-GIE を GPU batch 実行する経路。`experimental_profile_fixed_support_batch` および batch 内 prune-rescue を含む。 |
+| batch fallback rescue | batch route 内で、収束または residual が悪い layer を prune/support 候補違いの fixed-support batch plan で置き換える救済。これは HEAD route への fallback ではない。 |
+| HEAD route | layer 単位で support 選択、warm start、depleted gas refresh、restricted-support PD-IPM/R-GIE、lifecycle selection、inactive-driving support closure、budget gate/retry を行う legacy production route。 |
+| support lifecycle | PD-IPM に渡す condensate support、seed amount、gas state、element potential を選び、解後に inactive KKT/driving と budget gate で support を閉じる一連の処理。 |
+| inactive KKT check / inactive driving | support 外の凝縮種について、現在の gas state / element potential から凝縮すべき driving が正に残っていないかを見る KKT 境界条件チェック。 |
+
+現時点の evidence は、「HEAD route が常に batch route より良い」ではない。停止済み FastChem4 比較では、lowT strong condensation と near phase boundary で HEAD route が FastChem4 に近いケースがある一方、silicate / water / graphite / heavy-element 系では batch route が同等または良いケースもある。したがって採用方針は HEAD route 全体の維持ではなく、HEAD route で効いた可能性がある lifecycle 部品を GPU batch route に移植することである。
+
+優先して batch route に取り込む対象は次の通り。
+
+1. 解後の gas/condensate state に基づく inactive KKT check。
+2. positive inactive driving が残る場合の support closure / support growth。
+3. depleted gas refresh と warm-start candidate 選択。
+4. full-condensate budget gate と、accepted state を壊さない guarded restoration。
+5. layer diagnostics と route/fallback/rescue の意味を混同しない trace 出力。
+
+HEAD route は当面、比較・診断・移植元として残す。ただし新しい production 品質改善は原則として GPU batch route 側に実装し、HEAD route に新しい retry family を積み増すことは避ける。
 
 現在の実装版は **HEAD route v1.18** である。v1.18 は v1.17 の `pdipm_core` primary continuation、Ipopt-style tiny-step handling、full-condensate budget feasibility restoration を維持しつつ、native fallback が restricted solver payload を持たない場合でも、有限な PD-IPM lifecycle final state から support growth を続行する。fallback public state も seed candidate と lifecycle final-state candidate を full-budget gate で比較し、seed が既に accepted の場合は未受理 final state で上書きしない。さらに native fallback に限り、full-budget gate 直前に gas log amount と active condensate amount を joint に動かす feasibility restoration を試し、元素 budget residual が改善または accepted する場合だけ反映する。explicit support payload が狭すぎる場合は、ExoGibbs-native inactive driving から support を広げる `explicit_support_closure_retry` を一度だけ試す。explicit empty support payload は support-free empty support と同じ `empty_support_strict_gas_retry` を使って gas-only full-budget gate を修復する。v1.18 の public diagnostics は `caveat_route_breakdown` を持ち、`converged_with_caveat` が primary stop、fallback source、final restoration、PD-IPM retry rejection のどこに由来するかを分解して記録する。soft restoration を primary stop で自動起動する default route は、water5/7/8 の status を改善せず runtime を悪化させたため採用しない。core mode は reduced PD-IPM direction、scalar fraction-to-boundary、primal/dual 別 step-length diagnostics、persistent filter、soft/dedicated restoration を本線 sequence として扱う。tiny な primary step は Newton direction を component-wise に壊さず、restoration phase に渡す。HEAD route は active-set orchestration と final gates を担当し、FastChem4 output は比較対象としてのみ使い、constructor input には使わない。現在の curated fresh API score は `99 / 99 converged` である。
 

@@ -158,6 +158,26 @@ def test_lifecycle_connects_support_input_and_primary_route() -> None:
     assert payload["continuation_input"]["input_schema"] == "exogibbs_condensate_continuation_input_v1"
 
 
+def test_lifecycle_centers_initial_dual_at_primary_policy_epsilon() -> None:
+    initial_epsilon = math.log(1.0e-8)
+    report = run_condensate_head_route_lifecycle(
+        **_base_kwargs(),
+        primary_continuation_policy={
+            "initial_epsilon": initial_epsilon,
+            "final_epsilon": initial_epsilon,
+        },
+        primary_summary={
+            "row_status": "centered",
+            "converged_at_final_barrier": True,
+        },
+    )
+
+    state = report.continuation_input.state
+    assert report.continuation_input.barrier_epsilon == pytest.approx(initial_epsilon)
+    assert state.rho is not None
+    assert state.ln_mk[0] + state.rho[0] == pytest.approx(initial_epsilon)
+
+
 def test_lifecycle_runs_primary_continuation_when_summary_is_absent() -> None:
     report = run_condensate_head_route_lifecycle(
         **_base_kwargs(),

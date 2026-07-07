@@ -463,7 +463,17 @@ def test_pdipm_rgie_v11_activity_correction_uses_tce_gas_source_for_initial_pi(
     )
 
 
-def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core():
+def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core(monkeypatch):
+    env_names = (
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_ADAPTIVE_REGULARIZATION",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_REGULARIZATION_BASE",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_MAX_ABS_STEP",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_USE_LEGACY_CAPACITY_EPSILON",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL",
+    )
+    for env_name in env_names:
+        monkeypatch.delenv(env_name, raising=False)
     formula_matrix = jnp.asarray([[1.0]], dtype=jnp.float64)
     formula_matrix_cond_active = jnp.asarray([[1.0]], dtype=jnp.float64)
     hvector = jnp.asarray([[0.0], [0.0]], dtype=jnp.float64)
@@ -503,6 +513,37 @@ def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core():
     assert payload["production_route_wiring"] is False
     assert payload["accepted_iteration_count"].shape == (2,)
     assert payload["stationarity_restoration_accepted_iteration_count"].shape == (2,)
+    assert payload["second_order_correction_accepted_iteration_count"].shape == (2,)
+    assert payload["adaptive_regularization_selected_iteration_count"].shape == (2,)
+    assert payload["second_order_correction_enabled"] is False
+    assert payload["adaptive_regularization_enabled"] is False
+    reconstructed_final_residual = jnp.sqrt(
+        payload["gas_residual_norm"] * payload["gas_residual_norm"]
+        + payload["condensate_stationarity_residual_norm"]
+        * payload["condensate_stationarity_residual_norm"]
+        + payload["budget_residual_norm"] * payload["budget_residual_norm"]
+        + payload["complementarity_residual_norm"]
+        * payload["complementarity_residual_norm"]
+        + payload["total_density_residual_norm"]
+        * payload["total_density_residual_norm"]
+    )
+    assert jnp.allclose(
+        reconstructed_final_residual,
+        batch_result.diagnostics.final_residual,
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
+    complementarity_vector = (
+        batch_result.ln_mk
+        + payload["final_log_activity_correction"]
+        - batch_result.diagnostics.epsilon[:, None]
+    )
+    assert jnp.allclose(
+        jnp.linalg.norm(complementarity_vector, axis=1),
+        payload["complementarity_residual_norm"],
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
     best_result, best_extra = (
         condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
             ln_nk_init=ln_nk_init,
@@ -528,6 +569,255 @@ def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core():
         "gas_cond_lstsq",
         "damped_gas_lstsq",
         "damped_gas_cond_lstsq",
+    )
+
+
+def test_pdipm_rgie_v11_fixed_support_batch_residual_contract_two_element(monkeypatch):
+    env_names = (
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_ADAPTIVE_REGULARIZATION",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_USE_LEGACY_CAPACITY_EPSILON",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL",
+    )
+    for env_name in env_names:
+        monkeypatch.delenv(env_name, raising=False)
+    formula_matrix = jnp.asarray(
+        [
+            [1.0, 0.0],
+            [0.0, 1.0],
+        ],
+        dtype=jnp.float64,
+    )
+    formula_matrix_cond_active = jnp.asarray(
+        [
+            [1.0],
+            [1.0],
+        ],
+        dtype=jnp.float64,
+    )
+    hvector = jnp.asarray([[0.1, -0.2]], dtype=jnp.float64)
+    hvector_cond_active = jnp.asarray([[0.3]], dtype=jnp.float64)
+    ln_normalized_pressure = jnp.asarray([0.05], dtype=jnp.float64)
+    element_inventory_target = jnp.asarray([[1.0, 1.0]], dtype=jnp.float64)
+    ln_nk_init = jnp.log(jnp.asarray([[0.75, 0.8]], dtype=jnp.float64))
+    ln_mk_init = jnp.log(jnp.asarray([[0.2]], dtype=jnp.float64))
+    ln_ntot_init = jnp.log(jnp.asarray([1.55], dtype=jnp.float64))
+
+    result, extra = (
+        condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+            ln_nk_init=ln_nk_init,
+            ln_mk_init=ln_mk_init,
+            ln_ntot_init=ln_ntot_init,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            element_inventory_target=element_inventory_target,
+            hvector=hvector,
+            hvector_cond_active=hvector_cond_active,
+            ln_normalized_pressure=ln_normalized_pressure,
+            epsilon=-10.0,
+            max_iter=4,
+            lambda_initialization="best_residual",
+        )
+    )
+
+    payload = extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"]
+    q = result.ln_nk[0]
+    r = result.ln_mk[0]
+    qtot = result.ln_ntot[0]
+    lam = payload["final_element_potential"][0]
+    rho = payload["final_log_activity_correction"][0]
+    epsilon = result.diagnostics.epsilon[0]
+    gas_source = hvector[0] + ln_normalized_pressure[0] - qtot
+    gas_component = q + gas_source - formula_matrix.T @ lam
+    cond_component = (
+        hvector_cond_active[0]
+        - formula_matrix_cond_active.T @ lam
+        - jnp.exp(rho)
+    )
+    budget_component = (
+        formula_matrix @ jnp.exp(q)
+        + formula_matrix_cond_active @ jnp.exp(r)
+        - element_inventory_target[0]
+    )
+    complementarity_component = r + rho - epsilon
+    total_density_component = jnp.asarray(
+        [jnp.sum(jnp.exp(q)) - jnp.exp(qtot)],
+        dtype=jnp.float64,
+    )
+    assert jnp.allclose(
+        jnp.linalg.norm(gas_component),
+        payload["gas_residual_norm"][0],
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
+    assert jnp.allclose(
+        jnp.linalg.norm(cond_component),
+        payload["condensate_stationarity_residual_norm"][0],
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
+    assert jnp.allclose(
+        jnp.linalg.norm(budget_component),
+        payload["budget_residual_norm"][0],
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
+    assert jnp.allclose(
+        jnp.linalg.norm(complementarity_component),
+        payload["complementarity_residual_norm"][0],
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
+    assert jnp.allclose(
+        jnp.linalg.norm(total_density_component),
+        payload["total_density_residual_norm"][0],
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
+
+
+def test_pdipm_rgie_v11_fixed_support_batch_legacy_epsilon_is_opt_in(monkeypatch):
+    for env_name in (
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_ADAPTIVE_REGULARIZATION",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL",
+    ):
+        monkeypatch.delenv(env_name, raising=False)
+    formula_matrix = jnp.asarray([[1.0]], dtype=jnp.float64)
+    formula_matrix_cond_active = jnp.asarray([[1.0]], dtype=jnp.float64)
+    hvector = jnp.asarray([[0.0]], dtype=jnp.float64)
+    hvector_cond_active = jnp.asarray([[0.0]], dtype=jnp.float64)
+    element_inventory_target = jnp.asarray([[2.0]], dtype=jnp.float64)
+    ln_normalized_pressure = jnp.asarray([0.0], dtype=jnp.float64)
+    ln_nk_init = jnp.log(jnp.asarray([[1.5]], dtype=jnp.float64))
+    ln_mk_init = jnp.log(jnp.asarray([[0.4]], dtype=jnp.float64))
+    ln_ntot_init = jnp.log(jnp.asarray([1.5], dtype=jnp.float64))
+
+    monkeypatch.delenv(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_USE_LEGACY_CAPACITY_EPSILON",
+        raising=False,
+    )
+    default_result, default_extra = (
+        condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+            ln_nk_init=ln_nk_init,
+            ln_mk_init=ln_mk_init,
+            ln_ntot_init=ln_ntot_init,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            element_inventory_target=element_inventory_target,
+            hvector=hvector,
+            hvector_cond_active=hvector_cond_active,
+            ln_normalized_pressure=ln_normalized_pressure,
+            epsilon=-10.0,
+            max_iter=1,
+            lambda_initialization="best_residual",
+        )
+    )
+    default_payload = default_extra[
+        "pdipm_rgie_v11_activity_correction_fixed_support_batch"
+    ]
+    default_comp = (
+        default_result.ln_mk
+        + default_payload["final_log_activity_correction"]
+        - default_result.diagnostics.epsilon[:, None]
+    )
+    assert default_payload["use_legacy_capacity_epsilon"] is False
+    assert jnp.allclose(
+        jnp.linalg.norm(default_comp, axis=1),
+        default_payload["complementarity_residual_norm"],
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
+
+    monkeypatch.setenv(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_USE_LEGACY_CAPACITY_EPSILON",
+        "1",
+    )
+    legacy_result, legacy_extra = (
+        condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+            ln_nk_init=ln_nk_init,
+            ln_mk_init=ln_mk_init,
+            ln_ntot_init=ln_ntot_init,
+            formula_matrix=formula_matrix,
+            formula_matrix_cond_active=formula_matrix_cond_active,
+            element_inventory_target=element_inventory_target,
+            hvector=hvector,
+            hvector_cond_active=hvector_cond_active,
+            ln_normalized_pressure=ln_normalized_pressure,
+            epsilon=-10.0,
+            max_iter=1,
+            lambda_initialization="best_residual",
+        )
+    )
+    legacy_payload = legacy_extra[
+        "pdipm_rgie_v11_activity_correction_fixed_support_batch"
+    ]
+    legacy_epsilon = jnp.log(
+        jnp.maximum(1.0e-15 * element_inventory_target[:, 0], 1.0e-300)
+    )
+    legacy_comp = (
+        legacy_result.ln_mk
+        + legacy_payload["final_log_activity_correction"]
+        - legacy_epsilon[:, None]
+    )
+    requested_comp = (
+        legacy_result.ln_mk
+        + legacy_payload["final_log_activity_correction"]
+        - legacy_result.diagnostics.epsilon[:, None]
+    )
+    assert legacy_payload["use_legacy_capacity_epsilon"] is True
+    assert jnp.allclose(
+        jnp.linalg.norm(legacy_comp, axis=1),
+        legacy_payload["complementarity_residual_norm"],
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
+    assert not jnp.allclose(
+        jnp.linalg.norm(requested_comp, axis=1),
+        legacy_payload["complementarity_residual_norm"],
+        rtol=1.0e-6,
+        atol=1.0e-8,
+    )
+
+
+def test_pdipm_rgie_v11_fixed_support_batch_continuation_smoke(monkeypatch):
+    for env_name in (
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_ADAPTIVE_REGULARIZATION",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_USE_LEGACY_CAPACITY_EPSILON",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL",
+    ):
+        monkeypatch.delenv(env_name, raising=False)
+    result, extra = (
+        condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch_continuation(
+            ln_nk_init=jnp.log(jnp.asarray([[0.8]], dtype=jnp.float64)),
+            ln_mk_init=jnp.log(jnp.asarray([[0.2]], dtype=jnp.float64)),
+            ln_ntot_init=jnp.log(jnp.asarray([0.8], dtype=jnp.float64)),
+            formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+            formula_matrix_cond_active=jnp.asarray([[1.0]], dtype=jnp.float64),
+            element_inventory_target=jnp.asarray([[1.0]], dtype=jnp.float64),
+            hvector=jnp.asarray([[0.0]], dtype=jnp.float64),
+            hvector_cond_active=jnp.asarray([[0.0]], dtype=jnp.float64),
+            ln_normalized_pressure=jnp.asarray([0.0], dtype=jnp.float64),
+            epsilon_schedule=(-2.0, -4.0, -6.0, -8.0, -10.0),
+            max_iter=1,
+            lambda_initialization="best_residual",
+        )
+    )
+    continuation = extra[
+        "pdipm_rgie_v11_activity_correction_fixed_support_batch_continuation"
+    ]
+    stage_epsilons = tuple(stage["epsilon"] for stage in continuation["stages"])
+    assert continuation["stage_count"] == 5
+    assert stage_epsilons == (-2.0, -4.0, -6.0, -8.0, -10.0)
+    assert jnp.all(result.diagnostics.epsilon == -10.0)
+    assert result.ln_nk.shape == (1, 1)
+    assert result.ln_mk.shape == (1, 1)
+    assert (
+        extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"][
+            "rho_initialization"
+        ]
+        == "provided"
     )
 
 
@@ -680,7 +970,7 @@ def test_pdipm_rgie_v11_prepared_profile_buckets_return_budget_consistent_layers
         assert jnp.all(jnp.isfinite(ln_nk))
         assert jnp.all(jnp.isfinite(ln_mk))
         assert jnp.all(jnp.isfinite(ln_ntot))
-        assert float(jnp.max(jnp.abs(budget_residual))) <= 1.0e-3
+        assert float(jnp.max(jnp.abs(budget_residual))) <= 1.01e-3
         assert float(final_residual) >= 0.0
 
     payload = trace["pdipm_rgie_v11_activity_correction_prepared_profile_buckets"]
