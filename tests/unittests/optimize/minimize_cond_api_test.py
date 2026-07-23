@@ -471,6 +471,7 @@ def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core(monkeypatch):
         "EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_MAX_ABS_STEP",
         "EXOGIBBS_FIXED_SUPPORT_BATCH_USE_LEGACY_CAPACITY_EPSILON",
         "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SELECTION_POLICY",
     )
     for env_name in env_names:
         monkeypatch.delenv(env_name, raising=False)
@@ -517,6 +518,10 @@ def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core(monkeypatch):
     assert payload["adaptive_regularization_selected_iteration_count"].shape == (2,)
     assert payload["second_order_correction_enabled"] is False
     assert payload["adaptive_regularization_enabled"] is False
+    assert (
+        payload["line_search_candidate_selection_policy"]
+        == "ipopt_vectorized_max_alpha"
+    )
     reconstructed_final_residual = jnp.sqrt(
         payload["gas_residual_norm"] * payload["gas_residual_norm"]
         + payload["condensate_stationarity_residual_norm"]
@@ -572,12 +577,207 @@ def test_pdipm_rgie_v11_fixed_support_batch_matches_layer_core(monkeypatch):
     )
 
 
+def test_fixed_support_batch_persistent_filter_smoke(monkeypatch):
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_IPOPT_FILTER_ACCEPTANCE", "1")
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION", "1")
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_BUDGET_PASSES", "2")
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_DUAL_REPAIR", "0")
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_BUDGET_RESTORATION", "1")
+    monkeypatch.setenv(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_BUDGET_RESTORATION_PASSES", "2"
+    )
+    monkeypatch.setenv(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SELECTION_POLICY",
+        "ipopt_vectorized_max_alpha",
+    )
+    result, extra = (
+        condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+            ln_nk_init=jnp.log(jnp.asarray([[0.8]], dtype=jnp.float64)),
+            ln_mk_init=jnp.log(jnp.asarray([[0.2]], dtype=jnp.float64)),
+            ln_ntot_init=jnp.log(jnp.asarray([0.8], dtype=jnp.float64)),
+            formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+            formula_matrix_cond_active=jnp.asarray([[1.0]], dtype=jnp.float64),
+            element_inventory_target=jnp.asarray([[1.0]], dtype=jnp.float64),
+            hvector=jnp.asarray([[0.0]], dtype=jnp.float64),
+            hvector_cond_active=jnp.asarray([[0.0]], dtype=jnp.float64),
+            ln_normalized_pressure=jnp.asarray([0.0], dtype=jnp.float64),
+            epsilon=-10.0,
+            max_iter=2,
+            lambda_initialization="gas_lstsq",
+        )
+    )
+    payload = extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"]
+    candidates = payload["line_search_candidate_diagnostics"]
+
+    assert payload["ipopt_filter_acceptance_enabled"] is True
+    assert payload["ipopt_filter_policy"] == "persistent_phi_theta"
+    assert payload["second_order_correction_policy"] == "reduced_kkt"
+    assert (
+        payload["budget_restoration_policy"]
+        == "positive_negative_slack_proximity_v1"
+    )
+    assert payload["restoration_phase_entry_count"].shape == (1,)
+    assert payload["restoration_phase_exit_count"].shape == (1,)
+    assert payload["amount_restoration_accepted_iteration_count"].shape == (1,)
+    assert int(payload["restoration_phase_entry_count"][0]) == 0
+    assert int(payload["restoration_phase_exit_count"][0]) == 0
+    assert not bool(payload["restoration_phase_active_at_stop"][0])
+    assert float(payload["restoration_last_dual_alpha"][0]) == 1.0
+    assert payload["restoration_entry_residual_vector"].shape == (1, 6)
+    assert payload["restoration_best_residual_vector"].shape == (1, 6)
+    assert payload["restoration_last_exit_predual_residual_vector"].shape == (
+        1,
+        6,
+    )
+    assert payload["restoration_last_exit_postdual_residual_vector"].shape == (
+        1,
+        6,
+    )
+    assert payload["restoration_first_normal_residual_vector"].shape == (1, 6)
+    assert payload["restoration_first_normal_attempted"].shape == (1,)
+    assert payload["restoration_first_normal_accepted"].shape == (1,)
+    assert payload["restoration_first_normal_selected_type"].shape == (1,)
+    assert payload["restoration_return_probe_pending"].shape == (1,)
+    assert payload["restoration_last_active_accepted_iteration_count"].shape == (
+        1,
+    )
+    assert bool(
+        jnp.all(
+            payload["stationarity_restoration_accepted_iteration_count"]
+            <= payload["accepted_iteration_count"]
+        )
+    )
+    assert bool(
+        jnp.all(
+            payload["second_order_correction_accepted_iteration_count"]
+            <= payload["accepted_iteration_count"]
+        )
+    )
+    assert bool(jnp.all(payload["line_search_soc_candidate_count"] <= 1))
+    assert result.diagnostics.final_residual.shape == (1,)
+    assert candidates["filter_f_type"].shape == candidates["alpha"].shape
+    assert candidates["filter_armijo"].shape == candidates["alpha"].shape
+    assert candidates["filter_history_accepted"].shape == candidates["alpha"].shape
+    assert candidates["filter_entry_count_before"].shape == candidates["alpha"].shape
+    assert candidates["soft_restoration_accepted"].shape == candidates["alpha"].shape
+
+
+def test_fixed_support_batch_legacy_globalization_control_smoke(monkeypatch):
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_IPOPT_FILTER_ACCEPTANCE", "1")
+    monkeypatch.setenv(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_IPOPT_FILTER_POLICY", "current_iterate"
+    )
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION", "1")
+    monkeypatch.setenv(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_POLICY", "legacy_budget_projection"
+    )
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_BUDGET_PASSES", "2")
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_DUAL_REPAIR", "1")
+    _, extra = condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+        ln_nk_init=jnp.log(jnp.asarray([[0.8]], dtype=jnp.float64)),
+        ln_mk_init=jnp.log(jnp.asarray([[0.2]], dtype=jnp.float64)),
+        ln_ntot_init=jnp.log(jnp.asarray([0.8], dtype=jnp.float64)),
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond_active=jnp.asarray([[1.0]], dtype=jnp.float64),
+        element_inventory_target=jnp.asarray([[1.0]], dtype=jnp.float64),
+        hvector=jnp.asarray([[0.0]], dtype=jnp.float64),
+        hvector_cond_active=jnp.asarray([[0.0]], dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray([0.0], dtype=jnp.float64),
+        epsilon=-10.0,
+        max_iter=1,
+        lambda_initialization="gas_lstsq",
+    )
+    payload = extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"]
+
+    assert payload["ipopt_filter_policy"] == "current_iterate"
+    assert payload["second_order_correction_policy"] == "legacy_budget_projection"
+    assert payload["second_order_correction_dual_repair"] is True
+    assert int(payload["line_search_soc_candidate_count"][0]) == 26
+
+
+def test_fixed_support_batch_ipopt_first_trial_soc_smoke(monkeypatch):
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_IPOPT_FILTER_ACCEPTANCE", "1")
+    monkeypatch.setenv(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_IPOPT_FILTER_POLICY", "persistent_phi_theta"
+    )
+    monkeypatch.setenv(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_IPOPT_FILTER_THETA_NORM", "l1_scaled"
+    )
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION", "1")
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_POLICY", "ipopt_first_trial")
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_BUDGET_PASSES", "4")
+    monkeypatch.setenv("EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_KAPPA", "0.99")
+    monkeypatch.setenv(
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SOC_ALPHA_Y_POLICY", "min_dual_infeas"
+    )
+    _, extra = condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch(
+        ln_nk_init=jnp.log(jnp.asarray([[0.8]], dtype=jnp.float64)),
+        ln_mk_init=jnp.log(jnp.asarray([[0.2]], dtype=jnp.float64)),
+        ln_ntot_init=jnp.log(jnp.asarray([0.8], dtype=jnp.float64)),
+        formula_matrix=jnp.asarray([[1.0]], dtype=jnp.float64),
+        formula_matrix_cond_active=jnp.asarray([[1.0]], dtype=jnp.float64),
+        element_inventory_target=jnp.asarray([[1.0]], dtype=jnp.float64),
+        hvector=jnp.asarray([[0.0]], dtype=jnp.float64),
+        hvector_cond_active=jnp.asarray([[0.0]], dtype=jnp.float64),
+        ln_normalized_pressure=jnp.asarray([0.0], dtype=jnp.float64),
+        epsilon=-10.0,
+        max_iter=1,
+        lambda_initialization="gas_lstsq",
+    )
+    payload = extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"]
+
+    assert payload["second_order_correction_policy"] == "ipopt_first_trial"
+    assert payload["ipopt_filter_theta_norm"] == "l1_scaled"
+    assert payload["second_order_correction_kappa_soc"] == 0.99
+    assert payload["second_order_correction_alpha_y_policy"] == "min_dual_infeas"
+    assert int(payload["line_search_soc_candidate_count"][0]) <= 1
+    candidates = payload["line_search_candidate_diagnostics"]
+    lifecycle_keys = (
+        "ipopt_soc_eligible_iteration_count",
+        "ipopt_soc_correction_count",
+        "ipopt_soc_finite_direction_iteration_count",
+        "ipopt_soc_filter_accepted_iteration_count",
+        "ipopt_soc_kappa_stopped_iteration_count",
+        "ipopt_soc_last_normal_theta",
+        "ipopt_soc_last_final_theta",
+        "ipopt_soc_last_normal_phi",
+        "ipopt_soc_last_final_phi",
+        "ipopt_soc_last_alpha",
+        "ipopt_soc_max_solve_linear_residual",
+        "ipopt_soc_max_solve_solution_norm",
+        "ipopt_soc_min_solve_singular_value",
+        "ipopt_soc_max_solve_condition_estimate",
+        "ipopt_soc_max_scaled_solve_condition_estimate",
+        "ipopt_soc_max_relative_solve_linear_residual",
+        "ipopt_filter_consecutive_rejection_count",
+        "ipopt_filter_reset_count",
+        "ipopt_soc_first_selected_recorded",
+        "ipopt_soc_first_selected_solution_norm",
+        "ipopt_soc_first_selected_relative_linear_residual",
+        "ipopt_soc_first_selected_condition_estimate",
+        "ipopt_soc_first_selected_scaled_condition_estimate",
+        "ipopt_soc_first_selected_smallest_singular_value",
+        "ipopt_soc_first_selected_null_lambda_norm",
+        "ipopt_soc_first_selected_null_qtot_abs",
+        "ipopt_soc_first_selected_null_dominant_lambda_index",
+        "ipopt_soc_first_selected_null_dominant_lambda_abs",
+    )
+    for key in lifecycle_keys:
+        assert candidates[key].shape == candidates["alpha"].shape
+    assert candidates["ipopt_soc_first_selected_diagnostic_mode_vector"].shape == (
+        *candidates["alpha"].shape,
+        25,
+    )
+    assert int(candidates["ipopt_soc_correction_count"][0, 0]) <= 4
+
+
 def test_pdipm_rgie_v11_fixed_support_batch_residual_contract_two_element(monkeypatch):
     env_names = (
         "EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION",
         "EXOGIBBS_FIXED_SUPPORT_BATCH_ADAPTIVE_REGULARIZATION",
         "EXOGIBBS_FIXED_SUPPORT_BATCH_USE_LEGACY_CAPACITY_EPSILON",
         "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SELECTION_POLICY",
     )
     for env_name in env_names:
         monkeypatch.delenv(env_name, raising=False)
@@ -681,6 +881,7 @@ def test_pdipm_rgie_v11_fixed_support_batch_legacy_epsilon_is_opt_in(monkeypatch
         "EXOGIBBS_FIXED_SUPPORT_BATCH_SECOND_ORDER_CORRECTION",
         "EXOGIBBS_FIXED_SUPPORT_BATCH_ADAPTIVE_REGULARIZATION",
         "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SELECTION_POLICY",
     ):
         monkeypatch.delenv(env_name, raising=False)
     formula_matrix = jnp.asarray([[1.0]], dtype=jnp.float64)
@@ -786,6 +987,7 @@ def test_pdipm_rgie_v11_fixed_support_batch_continuation_smoke(monkeypatch):
         "EXOGIBBS_FIXED_SUPPORT_BATCH_ADAPTIVE_REGULARIZATION",
         "EXOGIBBS_FIXED_SUPPORT_BATCH_USE_LEGACY_CAPACITY_EPSILON",
         "EXOGIBBS_FIXED_SUPPORT_BATCH_STEP_CONTROL",
+        "EXOGIBBS_FIXED_SUPPORT_BATCH_SELECTION_POLICY",
     ):
         monkeypatch.delenv(env_name, raising=False)
     result, extra = (
@@ -809,16 +1011,131 @@ def test_pdipm_rgie_v11_fixed_support_batch_continuation_smoke(monkeypatch):
     ]
     stage_epsilons = tuple(stage["epsilon"] for stage in continuation["stages"])
     assert continuation["stage_count"] == 5
+    assert continuation["completed_stage_count"] == 1
+    assert continuation["stopped_early"] is True
+    assert continuation["blocked_stage_index"] == 0
+    assert continuation["blocked_epsilon"] == -2.0
     assert stage_epsilons == (-2.0, -4.0, -6.0, -8.0, -10.0)
-    assert jnp.all(result.diagnostics.epsilon == -10.0)
+    assert tuple(stage["attempted"] for stage in continuation["stages"]) == (
+        True,
+        False,
+        False,
+        False,
+        False,
+    )
+    assert tuple(
+        bool(jnp.all(stage["centered_for_continuation"]))
+        for stage in continuation["stages"][1:]
+    ) == (False, False, False, False)
+    assert continuation["continuation_tolerance_multiplier"] == 3.0
+    assert continuation["effective_continuation_tolerance_multiplier"] == 3.0
+    assert "continuation_log_tolerance" in continuation["stages"][0]
+    assert jnp.all(result.diagnostics.epsilon == -2.0)
     assert result.ln_nk.shape == (1, 1)
     assert result.ln_mk.shape == (1, 1)
     assert (
         extra["pdipm_rgie_v11_activity_correction_fixed_support_batch"][
             "rho_initialization"
         ]
-        == "provided"
+        == "unit_activity"
     )
+
+
+def test_fixed_support_continuation_advances_layers_independently(monkeypatch):
+    calls = []
+
+    def stub_stage_solver(*, ln_nk_init, epsilon, **_kwargs):
+        calls.append(float(epsilon))
+        batch_size = ln_nk_init.shape[0]
+        if float(epsilon) == -2.0:
+            gas_norm = jnp.asarray([0.0, 1.0], dtype=jnp.float64)
+            converged = jnp.asarray([True, False])
+        else:
+            gas_norm = jnp.zeros((batch_size,), dtype=jnp.float64)
+            converged = jnp.ones((batch_size,), dtype=bool)
+        state_value = jnp.full_like(ln_nk_init, float(epsilon))
+        diagnostics = condmod.CondensateEquilibriumDiagnostics.from_mapping(
+            {
+                "n_iter": jnp.ones((batch_size,), dtype=jnp.int32),
+                "converged": converged,
+                "hit_max_iter": ~converged,
+                "final_residual": gas_norm,
+                "residual_crit": jnp.full((batch_size,), 0.1),
+                "max_iter": jnp.full((batch_size,), 1, dtype=jnp.int32),
+                "epsilon": jnp.full((batch_size,), float(epsilon)),
+                "final_step_size": jnp.ones((batch_size,)),
+                "invalid_numbers_detected": jnp.zeros((batch_size,), dtype=bool),
+                "debug_nan": jnp.zeros((batch_size,), dtype=bool),
+            }
+        )
+        payload = {
+            "convergence_log_tolerance": 0.1,
+            "convergence_budget_relative_tolerance": 0.1,
+            "convergence_total_density_tolerance": 0.1,
+            "gas_residual_norm": gas_norm,
+            "condensate_stationarity_residual_norm": jnp.zeros((batch_size,)),
+            "budget_relative_residual_max": jnp.zeros((batch_size,)),
+            "complementarity_residual_norm": jnp.zeros((batch_size,)),
+            "total_density_residual_norm": jnp.zeros((batch_size,)),
+            "accepted_iteration_count": jnp.ones((batch_size,), dtype=jnp.int32),
+            "rejected_trial_count": jnp.zeros((batch_size,), dtype=jnp.int32),
+            "final_step_size": jnp.ones((batch_size,)),
+            "stop_reason_code": jnp.where(converged, 0, 1),
+            "dominant_residual_component_index": jnp.zeros(
+                (batch_size,), dtype=jnp.int32
+            ),
+            "final_element_potential": jnp.full((batch_size, 1), float(epsilon)),
+            "final_log_activity_correction": jnp.full(
+                (batch_size, 1), float(epsilon)
+            ),
+        }
+        return (
+            condmod.CondensateEquilibriumResult(
+                ln_nk=state_value,
+                ln_mk=state_value,
+                ln_ntot=state_value[:, 0],
+                diagnostics=diagnostics,
+            ),
+            {"pdipm_rgie_v11_activity_correction_fixed_support_batch": payload},
+        )
+
+    monkeypatch.setattr(
+        condmod,
+        "_solve_pdipm_rgie_v11_activity_correction_fixed_support_batch",
+        stub_stage_solver,
+    )
+    result, extra = (
+        condmod._solve_pdipm_rgie_v11_activity_correction_fixed_support_batch_continuation(
+            ln_nk_init=jnp.zeros((2, 1)),
+            ln_mk_init=jnp.zeros((2, 1)),
+            ln_ntot_init=jnp.zeros((2,)),
+            formula_matrix=jnp.ones((1, 1)),
+            formula_matrix_cond_active=jnp.ones((1, 1)),
+            element_inventory_target=jnp.ones((2, 1)),
+            hvector=jnp.zeros((2, 1)),
+            hvector_cond_active=jnp.zeros((2, 1)),
+            ln_normalized_pressure=jnp.zeros((2,)),
+            epsilon_schedule=(-2.0, -4.0),
+            max_iter=1,
+        )
+    )
+    continuation = extra[
+        "pdipm_rgie_v11_activity_correction_fixed_support_batch_continuation"
+    ]
+    final_payload = extra[
+        "pdipm_rgie_v11_activity_correction_fixed_support_batch"
+    ]
+
+    assert calls == [-2.0, -4.0]
+    assert continuation["stages"][0]["attempted"].tolist() == [True, True]
+    assert continuation["stages"][1]["attempted"].tolist() == [True, False]
+    assert continuation["layer_completed_stage_count"].tolist() == [2, 1]
+    assert continuation["reached_final_epsilon"].tolist() == [True, False]
+    assert result.ln_nk[:, 0].tolist() == [-4.0, -2.0]
+    assert result.diagnostics.epsilon.tolist() == [-4.0, -2.0]
+    assert result.diagnostics.converged.tolist() == [True, False]
+    assert result.diagnostics.reached_requested_epsilon.tolist() == [True, False]
+    assert final_payload["gas_residual_norm"].tolist() == [0.0, 1.0]
 
 
 def test_pdipm_rgie_v11_profile_bucket_dispatcher_returns_budget_consistent_layers():

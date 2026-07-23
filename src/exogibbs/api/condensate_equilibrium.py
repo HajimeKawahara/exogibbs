@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 import math
+import os
 from typing import Any, Literal, Mapping, Optional, Protocol, Sequence, runtime_checkable
 import weakref
 
@@ -29,6 +30,7 @@ from exogibbs.condensates.head_route_standard_gate import (
 
 
 Array = jax.Array
+DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR = 1.0e-6
 CondensateRoute = Literal["head_v1"]
 CondensateResidualPolicy = Literal["head_route_tiers_v1"]
 CondensateWarmStartGasRefreshPolicy = Literal["native_gas_solver"]
@@ -234,6 +236,9 @@ class CondensateEquilibriumOptions:
     enable_native_seed_fallback: bool = True
     enable_full_condensate_budget_residual_gate: bool = True
     full_condensate_budget_relative_tolerance: float = 1.0e-3
+    full_condensate_budget_relative_floor: float = (
+        DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR
+    )
 
 
 @dataclass(frozen=True)
@@ -337,6 +342,7 @@ class ExperimentalCondensateProfileFixedSupportBatchPlan:
     n_layers: int
     condensate_count: int
     bucket_layer_index_arrays: tuple[Array, ...] = ()
+    temperatures: Optional[Array] = None
 
 
 @dataclass(frozen=True)
@@ -886,6 +892,13 @@ def _validate_options(options: CondensateEquilibriumOptions) -> None:
         raise ValueError(
             "full_condensate_budget_relative_tolerance must be finite and non-negative."
         )
+    if (
+        not math.isfinite(float(options.full_condensate_budget_relative_floor))
+        or options.full_condensate_budget_relative_floor < 0.0
+    ):
+        raise ValueError(
+            "full_condensate_budget_relative_floor must be finite and non-negative."
+        )
 
 
 def _full_condensate_element_budget_residual_report(
@@ -895,6 +908,7 @@ def _full_condensate_element_budget_residual_report(
     condensate_amounts: Array,
     element_inventory_target: Array,
     relative_tolerance: float,
+    relative_floor: float = DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR,
 ) -> dict[str, Any]:
     target = np.asarray(element_inventory_target, dtype=np.float64)
     if target.ndim != 1 or target.shape[0] != len(setup.elements):
@@ -910,7 +924,8 @@ def _full_condensate_element_budget_residual_report(
     condensate_budget = formula_matrix_cond @ cond_amounts
     reconstructed = gas_budget + condensate_budget
     residual = reconstructed - target
-    denominator = np.maximum(np.abs(target), 1.0e-300)
+    floor = float(relative_floor)
+    denominator = np.maximum(np.abs(target), max(floor, 1.0e-300))
     signed_relative = residual / denominator
     absolute_relative = np.abs(signed_relative)
     gate_mask = np.asarray(
@@ -933,6 +948,7 @@ def _full_condensate_element_budget_residual_report(
         "gate_name": "full_condensate_element_budget_residual",
         "accepted": bool(accepted),
         "relative_tolerance": tolerance,
+        "relative_floor": floor,
         "max_abs_relative_residual": max_abs_relative,
         "max_abs_relative_residual_element": setup.elements[max_index],
         "max_abs_relative_residual_element_index": max_index,
@@ -951,6 +967,9 @@ def _full_condensate_element_budget_residual_report(
         "element_abs_relative_residual": tuple(
             float(value) for value in absolute_relative.tolist()
         ),
+        "element_relative_denominator": tuple(
+            float(value) for value in denominator.tolist()
+        ),
         "fastchem4_trace_public_runtime_constructor_inputs_used": False,
     }
 
@@ -967,6 +986,7 @@ def _apply_full_condensate_budget_residual_gate(
     metadata: dict[str, Any],
     enabled: bool,
     relative_tolerance: float,
+    relative_floor: float = DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR,
 ) -> tuple[str, str, tuple[str, ...], dict[str, Any]]:
     if element_inventory_target is None:
         return status, acceptance_tier, warning_messages, metadata
@@ -976,6 +996,7 @@ def _apply_full_condensate_budget_residual_gate(
         condensate_amounts=condensate_amounts,
         element_inventory_target=element_inventory_target,
         relative_tolerance=relative_tolerance,
+        relative_floor=relative_floor,
     )
     metadata["full_condensate_budget_residual_gate"] = report
     if (
@@ -1009,6 +1030,7 @@ def _full_condensate_budget_gate_report_for_support_state(
     external_condensate_amounts: Sequence[float] | Array | None = None,
     element_inventory_target: Array,
     relative_tolerance: float,
+    relative_floor: float = 0.0,
 ) -> dict[str, Any]:
     support = np.asarray(tuple(int(index) for index in support_indices), dtype=np.int64)
     support_values = np.asarray(support_amounts, dtype=np.float64)
@@ -1035,6 +1057,7 @@ def _full_condensate_budget_gate_report_for_support_state(
         condensate_amounts=condensate_amounts,
         element_inventory_target=element_inventory_target,
         relative_tolerance=relative_tolerance,
+        relative_floor=relative_floor,
     )
 
 
@@ -2231,6 +2254,9 @@ def build_condensate_equilibrium_result_from_solver_payload(
     element_inventory_target: Array | None = None,
     enable_full_condensate_budget_residual_gate: bool = True,
     full_condensate_budget_relative_tolerance: float = 1.0e-3,
+    full_condensate_budget_relative_floor: float = (
+        DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR
+    ),
 ) -> CondensateEquilibriumResult:
     """Build a production-facing condensate result from explicit solver arrays."""
 
@@ -2344,6 +2370,7 @@ def build_condensate_equilibrium_result_from_solver_payload(
         metadata=metadata,
         enabled=enable_full_condensate_budget_residual_gate,
         relative_tolerance=full_condensate_budget_relative_tolerance,
+        relative_floor=full_condensate_budget_relative_floor,
     )
     metadata["acceptance_tier"] = acceptance_tier
     metadata["warning_messages"] = warnings
@@ -2377,6 +2404,9 @@ def _build_empty_support_gas_result(
     element_inventory_target: Array | None = None,
     enable_full_condensate_budget_residual_gate: bool = True,
     full_condensate_budget_relative_tolerance: float = 1.0e-3,
+    full_condensate_budget_relative_floor: float = (
+        DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR
+    ),
 ) -> CondensateEquilibriumResult:
     gas_ln_n_array = jnp.asarray(gas_ln_n)
     gas_n = jnp.exp(gas_ln_n_array)
@@ -2402,6 +2432,7 @@ def _build_empty_support_gas_result(
         metadata=metadata,
         enabled=enable_full_condensate_budget_residual_gate,
         relative_tolerance=full_condensate_budget_relative_tolerance,
+        relative_floor=full_condensate_budget_relative_floor,
     )
     metadata["acceptance_tier"] = acceptance_tier
     metadata["warning_messages"] = warnings
@@ -2438,6 +2469,9 @@ def _build_native_seed_fallback_result(
     return_diagnostics: bool,
     enable_full_condensate_budget_residual_gate: bool = True,
     full_condensate_budget_relative_tolerance: float = 1.0e-3,
+    full_condensate_budget_relative_floor: float = (
+        DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR
+    ),
     restricted_solver_success: bool = False,
     restricted_solver_payload: Mapping[str, Any] | None = None,
 ) -> CondensateEquilibriumResult:
@@ -2560,6 +2594,7 @@ def _build_native_seed_fallback_result(
                         ),
                         element_inventory_target=b,
                         relative_tolerance=full_condensate_budget_relative_tolerance,
+                        relative_floor=full_condensate_budget_relative_floor,
                     )
                     final_gate = _full_condensate_budget_gate_report_for_support_state(
                         setup=setup,
@@ -2574,6 +2609,7 @@ def _build_native_seed_fallback_result(
                         ),
                         element_inventory_target=b,
                         relative_tolerance=full_condensate_budget_relative_tolerance,
+                        relative_floor=full_condensate_budget_relative_floor,
                     )
                     use_final_state = (
                         bool(final_gate["accepted"])
@@ -2691,6 +2727,7 @@ def _build_native_seed_fallback_result(
         full_condensate_budget_relative_tolerance=(
             full_condensate_budget_relative_tolerance
         ),
+        full_condensate_budget_relative_floor=full_condensate_budget_relative_floor,
     )
 
 
@@ -3850,6 +3887,9 @@ def _run_activity_driven_support_outer_loop(
             full_condensate_budget_relative_tolerance=(
                 options.full_condensate_budget_relative_tolerance
             ),
+            full_condensate_budget_relative_floor=(
+                options.full_condensate_budget_relative_floor
+            ),
         )
         gate = (empty_result.diagnostics or {}).get(
             "full_condensate_budget_residual_gate",
@@ -3888,6 +3928,9 @@ def _run_activity_driven_support_outer_loop(
                 ),
                 full_condensate_budget_relative_tolerance=(
                     options.full_condensate_budget_relative_tolerance
+                ),
+                full_condensate_budget_relative_floor=(
+                    options.full_condensate_budget_relative_floor
                 ),
             )
             if options.return_diagnostics:
@@ -4916,6 +4959,9 @@ def condensate_equilibrium(
             full_condensate_budget_relative_tolerance=(
                 opts.full_condensate_budget_relative_tolerance
             ),
+            full_condensate_budget_relative_floor=(
+                opts.full_condensate_budget_relative_floor
+            ),
         )
         gate = (empty_result.diagnostics or {}).get(
             "full_condensate_budget_residual_gate",
@@ -4954,6 +5000,9 @@ def condensate_equilibrium(
                 ),
                 full_condensate_budget_relative_tolerance=(
                     opts.full_condensate_budget_relative_tolerance
+                ),
+                full_condensate_budget_relative_floor=(
+                    opts.full_condensate_budget_relative_floor
                 ),
             )
             if opts.return_diagnostics:
@@ -5518,6 +5567,9 @@ def condensate_equilibrium(
                             relative_tolerance=(
                                 opts.full_condensate_budget_relative_tolerance
                             ),
+                            relative_floor=(
+                                opts.full_condensate_budget_relative_floor
+                            ),
                         )
                     )
                 except (KeyError, TypeError, ValueError):
@@ -5622,6 +5674,9 @@ def condensate_equilibrium(
                                 element_inventory_target=b,
                                 relative_tolerance=(
                                     opts.full_condensate_budget_relative_tolerance
+                                ),
+                                relative_floor=(
+                                    opts.full_condensate_budget_relative_floor
                                 ),
                             )
                         )
@@ -5787,6 +5842,9 @@ def condensate_equilibrium(
                     full_condensate_budget_relative_tolerance=(
                         opts.full_condensate_budget_relative_tolerance
                     ),
+                    full_condensate_budget_relative_floor=(
+                        opts.full_condensate_budget_relative_floor
+                    ),
                     restricted_solver_success=False,
                 ),
                 setup=setup,
@@ -5867,6 +5925,9 @@ def condensate_equilibrium(
                 full_condensate_budget_relative_tolerance=(
                     opts.full_condensate_budget_relative_tolerance
                 ),
+                full_condensate_budget_relative_floor=(
+                    opts.full_condensate_budget_relative_floor
+                ),
                 restricted_solver_success=restricted_solver_success,
                 restricted_solver_payload=solver if restricted_solver_success else None,
             ),
@@ -5930,6 +5991,9 @@ def condensate_equilibrium(
             ),
             full_condensate_budget_relative_tolerance=(
                 opts.full_condensate_budget_relative_tolerance
+            ),
+            full_condensate_budget_relative_floor=(
+                opts.full_condensate_budget_relative_floor
             ),
         ),
         setup=setup,
@@ -6513,6 +6577,9 @@ def _profile_result_from_fixed_support_batch_arrays(
                 full_condensate_budget_relative_tolerance=(
                     opts.full_condensate_budget_relative_tolerance
                 ),
+                full_condensate_budget_relative_floor=(
+                    opts.full_condensate_budget_relative_floor
+                ),
             )
         layer_report["accepted"] = bool(result.converged)
         updated_reports.append(layer_report)
@@ -6721,6 +6788,7 @@ def _run_experimental_profile_fixed_support_batch(
                 jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
                 for bucket in buckets
             ),
+            temperatures=temperature_array,
         )
         arrays = run_experimental_profile_fixed_support_batch_plan_with_fallback_rescue(
             plan,
@@ -6751,11 +6819,14 @@ def _run_experimental_profile_fixed_support_batch(
             opts=opts,
             route_name="experimental_profile_fixed_support_batch_fallback_rescue",
         )
+    final_epsilon = float(
+        os.environ.get("EXOGIBBS_FIXED_SUPPORT_BATCH_EPSILON", "-10.0")
+    )
     bucket_results, batch_trace = (
         _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
             buckets=buckets,
             formula_matrix=jnp.asarray(setup.formula_matrix, dtype=jnp.float64),
-            epsilon=-10.0,
+            epsilon=final_epsilon,
             max_iter=max_iter,
         )
     )
@@ -6886,6 +6957,9 @@ def _run_experimental_profile_fixed_support_batch(
                 ),
                 full_condensate_budget_relative_tolerance=(
                     opts.full_condensate_budget_relative_tolerance
+                ),
+                full_condensate_budget_relative_floor=(
+                    opts.full_condensate_budget_relative_floor
                 ),
             )
         reports[layer_index] = {
@@ -7042,6 +7116,7 @@ def _prepare_experimental_profile_fixed_support_batch_plan(
             jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
             for bucket in buckets
         ),
+        temperatures=temperature_array,
     )
 
 
@@ -7084,11 +7159,14 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
             )
         )
 
+    final_epsilon = float(
+        os.environ.get("EXOGIBBS_FIXED_SUPPORT_BATCH_EPSILON", "-10.0")
+    )
     bucket_results, batch_trace = (
         _run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets(
             buckets=buckets,
             formula_matrix=plan.formula_matrix,
-            epsilon=-10.0,
+            epsilon=final_epsilon,
             max_iter=plan.max_iter,
             rho_initialization=rho_initialization,
             lambda_initialization=lambda_initialization,
@@ -7134,7 +7212,287 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
         ),
         "initial_residual": jnp.zeros((plan.n_layers,), dtype=jnp.float64),
         "lambda_selection_index": jnp.zeros((plan.n_layers,), dtype=jnp.int32),
+        "use_log_amount_boundary": jnp.zeros((plan.n_layers,), dtype=bool),
+        "use_log_activity_boundary": jnp.zeros((plan.n_layers,), dtype=bool),
+        "line_search_alpha_boundary": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_alpha_r": jnp.zeros((plan.n_layers,), dtype=jnp.float64),
+        "line_search_alpha_rho": jnp.zeros((plan.n_layers,), dtype=jnp.float64),
+        "line_search_selected_trial_index": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_selected_trial_alpha": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_accepted_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_fallback_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_best_trial_index": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_best_trial_alpha": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_gas_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_condensate_stationarity_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_budget_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_budget_relative_residual_max": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_complementarity_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_total_density_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_finite_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_combined_improved_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_budget_relative_not_worse_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_filter_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_budget_not_broken_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_budget_relative_not_broken_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_combined_not_worse_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_best_trial_finite": jnp.zeros((plan.n_layers,), dtype=bool),
+        "line_search_best_trial_combined_improved": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_best_trial_budget_relative_not_worse": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_best_trial_filter_accepted": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_best_trial_budget_not_broken": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_best_trial_budget_relative_not_broken": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_best_trial_combined_not_worse": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_best_trial_accepted": jnp.zeros((plan.n_layers,), dtype=bool),
+        "line_search_best_trial_fallback_accepted": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_soc_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_accepted_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_fallback_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_budget_relative_not_worse_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_filter_candidate_count": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_best_trial_present": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_index": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_best_trial_alpha": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_gas_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_condensate_stationarity_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_budget_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_budget_relative_residual_max": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_complementarity_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_total_density_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_combined_improved": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_budget_relative_not_worse": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_filter_accepted": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_accepted": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_fallback_accepted": jnp.zeros(
+            (plan.n_layers,),
+            dtype=bool,
+        ),
+        "line_search_selected_trial_gas_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_condensate_stationarity_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_budget_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_budget_relative_residual_max": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_complementarity_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_total_density_residual": jnp.zeros(
+            (plan.n_layers,),
+            dtype=jnp.float64,
+        ),
     }
+    restoration_vector_diagnostics = (
+        "restoration_entry_residual_vector",
+        "restoration_best_residual_vector",
+        "restoration_last_exit_predual_residual_vector",
+        "restoration_last_exit_postdual_residual_vector",
+        "restoration_first_normal_residual_vector",
+    )
+    restoration_float_diagnostics = (
+        "restoration_phase_entry_theta_at_stop",
+        "restoration_last_exit_theta",
+        "restoration_last_dual_alpha",
+        "restoration_best_theta",
+    )
+    restoration_int_diagnostics = (
+        "amount_restoration_accepted_iteration_count",
+        "restoration_phase_entry_count",
+        "restoration_phase_exit_count",
+        "restoration_phase_cooldown_at_stop",
+        "restoration_bound_multiplier_reset_count",
+        "restoration_equality_multiplier_reset_count",
+        "restoration_first_normal_selected_type",
+        "restoration_active_accepted_iteration_count_at_stop",
+        "restoration_last_active_accepted_iteration_count",
+    )
+    restoration_bool_diagnostics = (
+        "restoration_phase_active_at_stop",
+        "restoration_first_normal_attempted",
+        "restoration_first_normal_accepted",
+        "restoration_return_probe_pending",
+    )
+    step_diagnostics.update(
+        {
+            key: jnp.zeros((plan.n_layers, 6), dtype=jnp.float64)
+            for key in restoration_vector_diagnostics
+        }
+    )
+    step_diagnostics.update(
+        {
+            key: jnp.zeros((plan.n_layers,), dtype=jnp.float64)
+            for key in restoration_float_diagnostics
+        }
+    )
+    step_diagnostics.update(
+        {
+            key: jnp.zeros((plan.n_layers,), dtype=jnp.int32)
+            for key in restoration_int_diagnostics
+        }
+    )
+    step_diagnostics.update(
+        {
+            key: jnp.zeros((plan.n_layers,), dtype=bool)
+            for key in restoration_bool_diagnostics
+        }
+    )
     residual_components = {
         "gas": jnp.zeros((plan.n_layers,), dtype=jnp.float64),
         "condensate_stationarity": jnp.zeros((plan.n_layers,), dtype=jnp.float64),
@@ -7155,7 +7513,15 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
             (plan.n_layers, continuation_stage_count),
             dtype=jnp.float64,
         ),
+        "attempted": jnp.zeros(
+            (plan.n_layers, continuation_stage_count),
+            dtype=bool,
+        ),
         "converged": jnp.zeros(
+            (plan.n_layers, continuation_stage_count),
+            dtype=bool,
+        ),
+        "centered_for_continuation": jnp.zeros(
             (plan.n_layers, continuation_stage_count),
             dtype=bool,
         ),
@@ -7168,6 +7534,18 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
             dtype=jnp.float64,
         ),
         "residual_crit": jnp.zeros(
+            (plan.n_layers, continuation_stage_count),
+            dtype=jnp.float64,
+        ),
+        "continuation_log_tolerance": jnp.zeros(
+            (plan.n_layers, continuation_stage_count),
+            dtype=jnp.float64,
+        ),
+        "continuation_budget_relative_tolerance": jnp.zeros(
+            (plan.n_layers, continuation_stage_count),
+            dtype=jnp.float64,
+        ),
+        "continuation_total_density_tolerance": jnp.zeros(
             (plan.n_layers, continuation_stage_count),
             dtype=jnp.float64,
         ),
@@ -7192,6 +7570,42 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
             dtype=jnp.int32,
         ),
     }
+    continuation_diagnostics.update(
+        {
+            key: jnp.zeros(
+                (plan.n_layers, continuation_stage_count, 6),
+                dtype=jnp.float64,
+            )
+            for key in restoration_vector_diagnostics
+        }
+    )
+    continuation_diagnostics.update(
+        {
+            key: jnp.zeros(
+                (plan.n_layers, continuation_stage_count),
+                dtype=jnp.float64,
+            )
+            for key in restoration_float_diagnostics
+        }
+    )
+    continuation_diagnostics.update(
+        {
+            key: jnp.zeros(
+                (plan.n_layers, continuation_stage_count),
+                dtype=jnp.int32,
+            )
+            for key in restoration_int_diagnostics
+        }
+    )
+    continuation_diagnostics.update(
+        {
+            key: jnp.zeros(
+                (plan.n_layers, continuation_stage_count),
+                dtype=bool,
+            )
+            for key in restoration_bool_diagnostics
+        }
+    )
     for bucket, batch_result, layer_indices in zip(
         plan.buckets,
         bucket_results,
@@ -7242,7 +7656,165 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
         "dominant_residual_component_index": "dominant_residual_component_index",
         "initial_residual": "initial_residual",
         "lambda_selection_index": "lambda_selection_index",
+        "use_log_amount_boundary": "use_log_amount_boundary",
+        "use_log_activity_boundary": "use_log_activity_boundary",
+        "line_search_alpha_boundary": "line_search_alpha_boundary",
+        "line_search_alpha_r": "line_search_alpha_r",
+        "line_search_alpha_rho": "line_search_alpha_rho",
+        "line_search_selected_trial_index": "line_search_selected_trial_index",
+        "line_search_selected_trial_alpha": "line_search_selected_trial_alpha",
+        "line_search_selected_trial_residual": "line_search_selected_trial_residual",
+        "line_search_accepted_candidate_count": (
+            "line_search_accepted_candidate_count"
+        ),
+        "line_search_fallback_candidate_count": (
+            "line_search_fallback_candidate_count"
+        ),
+        "line_search_best_trial_index": "line_search_best_trial_index",
+        "line_search_best_trial_alpha": "line_search_best_trial_alpha",
+        "line_search_best_trial_residual": "line_search_best_trial_residual",
+        "line_search_best_trial_gas_residual": (
+            "line_search_best_trial_gas_residual"
+        ),
+        "line_search_best_trial_condensate_stationarity_residual": (
+            "line_search_best_trial_condensate_stationarity_residual"
+        ),
+        "line_search_best_trial_budget_residual": (
+            "line_search_best_trial_budget_residual"
+        ),
+        "line_search_best_trial_budget_relative_residual_max": (
+            "line_search_best_trial_budget_relative_residual_max"
+        ),
+        "line_search_best_trial_complementarity_residual": (
+            "line_search_best_trial_complementarity_residual"
+        ),
+        "line_search_best_trial_total_density_residual": (
+            "line_search_best_trial_total_density_residual"
+        ),
+        "line_search_finite_candidate_count": "line_search_finite_candidate_count",
+        "line_search_combined_improved_candidate_count": (
+            "line_search_combined_improved_candidate_count"
+        ),
+        "line_search_budget_relative_not_worse_candidate_count": (
+            "line_search_budget_relative_not_worse_candidate_count"
+        ),
+        "line_search_filter_candidate_count": "line_search_filter_candidate_count",
+        "line_search_budget_not_broken_candidate_count": (
+            "line_search_budget_not_broken_candidate_count"
+        ),
+        "line_search_budget_relative_not_broken_candidate_count": (
+            "line_search_budget_relative_not_broken_candidate_count"
+        ),
+        "line_search_combined_not_worse_candidate_count": (
+            "line_search_combined_not_worse_candidate_count"
+        ),
+        "line_search_best_trial_finite": "line_search_best_trial_finite",
+        "line_search_best_trial_combined_improved": (
+            "line_search_best_trial_combined_improved"
+        ),
+        "line_search_best_trial_budget_relative_not_worse": (
+            "line_search_best_trial_budget_relative_not_worse"
+        ),
+        "line_search_best_trial_filter_accepted": (
+            "line_search_best_trial_filter_accepted"
+        ),
+        "line_search_best_trial_budget_not_broken": (
+            "line_search_best_trial_budget_not_broken"
+        ),
+        "line_search_best_trial_budget_relative_not_broken": (
+            "line_search_best_trial_budget_relative_not_broken"
+        ),
+        "line_search_best_trial_combined_not_worse": (
+            "line_search_best_trial_combined_not_worse"
+        ),
+        "line_search_best_trial_accepted": "line_search_best_trial_accepted",
+        "line_search_best_trial_fallback_accepted": (
+            "line_search_best_trial_fallback_accepted"
+        ),
+        "line_search_soc_candidate_count": "line_search_soc_candidate_count",
+        "line_search_soc_accepted_candidate_count": (
+            "line_search_soc_accepted_candidate_count"
+        ),
+        "line_search_soc_fallback_candidate_count": (
+            "line_search_soc_fallback_candidate_count"
+        ),
+        "line_search_soc_budget_relative_not_worse_candidate_count": (
+            "line_search_soc_budget_relative_not_worse_candidate_count"
+        ),
+        "line_search_soc_filter_candidate_count": (
+            "line_search_soc_filter_candidate_count"
+        ),
+        "line_search_soc_best_trial_present": (
+            "line_search_soc_best_trial_present"
+        ),
+        "line_search_soc_best_trial_index": "line_search_soc_best_trial_index",
+        "line_search_soc_best_trial_alpha": "line_search_soc_best_trial_alpha",
+        "line_search_soc_best_trial_residual": (
+            "line_search_soc_best_trial_residual"
+        ),
+        "line_search_soc_best_trial_gas_residual": (
+            "line_search_soc_best_trial_gas_residual"
+        ),
+        "line_search_soc_best_trial_condensate_stationarity_residual": (
+            "line_search_soc_best_trial_condensate_stationarity_residual"
+        ),
+        "line_search_soc_best_trial_budget_residual": (
+            "line_search_soc_best_trial_budget_residual"
+        ),
+        "line_search_soc_best_trial_budget_relative_residual_max": (
+            "line_search_soc_best_trial_budget_relative_residual_max"
+        ),
+        "line_search_soc_best_trial_complementarity_residual": (
+            "line_search_soc_best_trial_complementarity_residual"
+        ),
+        "line_search_soc_best_trial_total_density_residual": (
+            "line_search_soc_best_trial_total_density_residual"
+        ),
+        "line_search_soc_best_trial_combined_improved": (
+            "line_search_soc_best_trial_combined_improved"
+        ),
+        "line_search_soc_best_trial_budget_relative_not_worse": (
+            "line_search_soc_best_trial_budget_relative_not_worse"
+        ),
+        "line_search_soc_best_trial_filter_accepted": (
+            "line_search_soc_best_trial_filter_accepted"
+        ),
+        "line_search_soc_best_trial_accepted": (
+            "line_search_soc_best_trial_accepted"
+        ),
+        "line_search_soc_best_trial_fallback_accepted": (
+            "line_search_soc_best_trial_fallback_accepted"
+        ),
+        "line_search_selected_trial_gas_residual": (
+            "line_search_selected_trial_gas_residual"
+        ),
+        "line_search_selected_trial_condensate_stationarity_residual": (
+            "line_search_selected_trial_condensate_stationarity_residual"
+        ),
+        "line_search_selected_trial_budget_residual": (
+            "line_search_selected_trial_budget_residual"
+        ),
+        "line_search_selected_trial_budget_relative_residual_max": (
+            "line_search_selected_trial_budget_relative_residual_max"
+        ),
+        "line_search_selected_trial_complementarity_residual": (
+            "line_search_selected_trial_complementarity_residual"
+        ),
+        "line_search_selected_trial_total_density_residual": (
+            "line_search_selected_trial_total_density_residual"
+        ),
     }
+    step_sources.update(
+        {
+            key: key
+            for key in (
+                restoration_vector_diagnostics
+                + restoration_float_diagnostics
+                + restoration_int_diagnostics
+                + restoration_bool_diagnostics
+            )
+        }
+    )
     for bucket_report, layer_indices in zip(bucket_reports, plan.bucket_layer_index_arrays):
         for component_name, payload_name in component_sources.items():
             residual_components[component_name] = residual_components[
@@ -7257,15 +7829,43 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
             ].at[layer_indices].set(
                 jnp.asarray(bucket_report[payload_name], dtype=diagnostic_dtype)
             )
+        candidate_diagnostics = bucket_report.get(
+            "line_search_candidate_diagnostics"
+        )
+        if candidate_diagnostics:
+            if "line_search_candidate_diagnostics" not in step_diagnostics:
+                step_diagnostics["line_search_candidate_diagnostics"] = {
+                    key: jnp.zeros(
+                        (plan.n_layers,) + jnp.asarray(value).shape[1:],
+                        dtype=jnp.asarray(value).dtype,
+                    )
+                    for key, value in candidate_diagnostics.items()
+                }
+            for key, value in candidate_diagnostics.items():
+                value_array = jnp.asarray(value)
+                step_diagnostics["line_search_candidate_diagnostics"][key] = (
+                    step_diagnostics["line_search_candidate_diagnostics"][key]
+                    .at[layer_indices]
+                    .set(value_array)
+                )
         for stage_index, stage in enumerate(
             bucket_report.get("continuation_stages", ())
         ):
             continuation_sources = {
                 "epsilon": "epsilon",
+                "attempted": "attempted",
                 "converged": "converged",
+                "centered_for_continuation": "centered_for_continuation",
                 "n_iter": "n_iter",
                 "final_residual": "final_residual",
                 "residual_crit": "residual_crit",
+                "continuation_log_tolerance": "continuation_log_tolerance",
+                "continuation_budget_relative_tolerance": (
+                    "continuation_budget_relative_tolerance"
+                ),
+                "continuation_total_density_tolerance": (
+                    "continuation_total_density_tolerance"
+                ),
                 "accepted_iteration_count": "accepted_iteration_count",
                 "rejected_trial_count": "rejected_trial_count",
                 "final_step_size": "final_step_size",
@@ -7274,6 +7874,17 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
                     "dominant_residual_component_index"
                 ),
             }
+            continuation_sources.update(
+                {
+                    key: key
+                    for key in (
+                        restoration_vector_diagnostics
+                        + restoration_float_diagnostics
+                        + restoration_int_diagnostics
+                        + restoration_bool_diagnostics
+                    )
+                }
+            )
             for diagnostic_name, payload_name in continuation_sources.items():
                 diagnostic_dtype = continuation_diagnostics[diagnostic_name].dtype
                 value = stage[payload_name]
@@ -7283,6 +7894,8 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
                         float(value),
                         dtype=diagnostic_dtype,
                     )
+                elif diagnostic_name in {"attempted", "centered_for_continuation"}:
+                    value = jnp.asarray(value, dtype=diagnostic_dtype)
                 continuation_diagnostics[diagnostic_name] = (
                     continuation_diagnostics[diagnostic_name]
                     .at[layer_indices, stage_index]
@@ -7322,6 +7935,7 @@ def _run_experimental_profile_fixed_support_batch_plan_arrays(
             "no_accepted_trial",
             "nonfinite_residual",
             "unknown_not_converged",
+            "tiny_step_stalled",
         ),
         "residual_component_labels": (
             "gas",
@@ -7506,6 +8120,11 @@ def _prepare_experimental_profile_fixed_support_prune_rescue_plan(
                 jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
                 for bucket in rescue_buckets
             ),
+            temperatures=None
+            if plan.temperatures is None
+            else plan.temperatures[
+                jnp.asarray(expanded_to_original, dtype=jnp.int32)
+            ],
         ),
         metadata,
     )
@@ -8131,7 +8750,299 @@ def run_experimental_profile_fixed_support_batch_plan_many(
         ),
         "initial_residual": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
         "lambda_selection_index": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.int32),
+        "use_log_amount_boundary": jnp.zeros((n_eval, plan.n_layers), dtype=bool),
+        "use_log_activity_boundary": jnp.zeros((n_eval, plan.n_layers), dtype=bool),
+        "line_search_alpha_boundary": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_alpha_r": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_alpha_rho": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_index": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_selected_trial_alpha": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_accepted_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_fallback_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_best_trial_index": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_best_trial_alpha": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_gas_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_condensate_stationarity_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_budget_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_budget_relative_residual_max": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_complementarity_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_best_trial_total_density_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_finite_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_combined_improved_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_budget_relative_not_worse_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_filter_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_budget_not_broken_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_budget_relative_not_broken_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_combined_not_worse_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_best_trial_finite": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_best_trial_combined_improved": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_best_trial_budget_relative_not_worse": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_best_trial_filter_accepted": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_best_trial_budget_not_broken": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_best_trial_budget_relative_not_broken": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_best_trial_combined_not_worse": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_best_trial_accepted": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_best_trial_fallback_accepted": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_soc_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_accepted_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_fallback_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_budget_relative_not_worse_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_filter_candidate_count": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_best_trial_present": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_index": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.int32,
+        ),
+        "line_search_soc_best_trial_alpha": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_gas_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_condensate_stationarity_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_budget_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_budget_relative_residual_max": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_complementarity_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_total_density_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_soc_best_trial_combined_improved": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_budget_relative_not_worse": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_filter_accepted": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_accepted": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_soc_best_trial_fallback_accepted": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=bool,
+        ),
+        "line_search_selected_trial_gas_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_condensate_stationarity_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_budget_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_budget_relative_residual_max": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_complementarity_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
+        "line_search_selected_trial_total_density_residual": jnp.zeros(
+            (n_eval, plan.n_layers),
+            dtype=jnp.float64,
+        ),
     }
+    restoration_vector_diagnostics = (
+        "restoration_entry_residual_vector",
+        "restoration_best_residual_vector",
+        "restoration_last_exit_predual_residual_vector",
+        "restoration_last_exit_postdual_residual_vector",
+        "restoration_first_normal_residual_vector",
+    )
+    restoration_float_diagnostics = (
+        "restoration_phase_entry_theta_at_stop",
+        "restoration_last_exit_theta",
+        "restoration_last_dual_alpha",
+        "restoration_best_theta",
+    )
+    restoration_int_diagnostics = (
+        "amount_restoration_accepted_iteration_count",
+        "restoration_phase_entry_count",
+        "restoration_phase_exit_count",
+        "restoration_phase_cooldown_at_stop",
+        "restoration_bound_multiplier_reset_count",
+        "restoration_equality_multiplier_reset_count",
+        "restoration_first_normal_selected_type",
+        "restoration_active_accepted_iteration_count_at_stop",
+        "restoration_last_active_accepted_iteration_count",
+    )
+    restoration_bool_diagnostics = (
+        "restoration_phase_active_at_stop",
+        "restoration_first_normal_attempted",
+        "restoration_first_normal_accepted",
+        "restoration_return_probe_pending",
+    )
+    step_diagnostics.update(
+        {
+            key: jnp.zeros((n_eval, plan.n_layers, 6), dtype=jnp.float64)
+            for key in restoration_vector_diagnostics
+        }
+    )
+    step_diagnostics.update(
+        {
+            key: jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64)
+            for key in restoration_float_diagnostics
+        }
+    )
+    step_diagnostics.update(
+        {
+            key: jnp.zeros((n_eval, plan.n_layers), dtype=jnp.int32)
+            for key in restoration_int_diagnostics
+        }
+    )
+    step_diagnostics.update(
+        {
+            key: jnp.zeros((n_eval, plan.n_layers), dtype=bool)
+            for key in restoration_bool_diagnostics
+        }
+    )
     residual_components = {
         "gas": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
         "condensate_stationarity": jnp.zeros(
@@ -8142,14 +9053,25 @@ def run_experimental_profile_fixed_support_batch_plan_many(
         "complementarity": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
         "total_density": jnp.zeros((n_eval, plan.n_layers), dtype=jnp.float64),
     }
-    epsilon_schedule = _parse_fixed_support_batch_epsilon_schedule(-10.0)
+    final_epsilon = float(
+        os.environ.get("EXOGIBBS_FIXED_SUPPORT_BATCH_EPSILON", "-10.0")
+    )
+    epsilon_schedule = _parse_fixed_support_batch_epsilon_schedule(final_epsilon)
     continuation_stage_count = len(epsilon_schedule)
     continuation_diagnostics = {
         "epsilon": jnp.zeros(
             (n_eval, plan.n_layers, continuation_stage_count),
             dtype=jnp.float64,
         ),
+        "attempted": jnp.zeros(
+            (n_eval, plan.n_layers, continuation_stage_count),
+            dtype=bool,
+        ),
         "converged": jnp.zeros(
+            (n_eval, plan.n_layers, continuation_stage_count),
+            dtype=bool,
+        ),
+        "centered_for_continuation": jnp.zeros(
             (n_eval, plan.n_layers, continuation_stage_count),
             dtype=bool,
         ),
@@ -8162,6 +9084,18 @@ def run_experimental_profile_fixed_support_batch_plan_many(
             dtype=jnp.float64,
         ),
         "residual_crit": jnp.zeros(
+            (n_eval, plan.n_layers, continuation_stage_count),
+            dtype=jnp.float64,
+        ),
+        "continuation_log_tolerance": jnp.zeros(
+            (n_eval, plan.n_layers, continuation_stage_count),
+            dtype=jnp.float64,
+        ),
+        "continuation_budget_relative_tolerance": jnp.zeros(
+            (n_eval, plan.n_layers, continuation_stage_count),
+            dtype=jnp.float64,
+        ),
+        "continuation_total_density_tolerance": jnp.zeros(
             (n_eval, plan.n_layers, continuation_stage_count),
             dtype=jnp.float64,
         ),
@@ -8186,6 +9120,42 @@ def run_experimental_profile_fixed_support_batch_plan_many(
             dtype=jnp.int32,
         ),
     }
+    continuation_diagnostics.update(
+        {
+            key: jnp.zeros(
+                (n_eval, plan.n_layers, continuation_stage_count, 6),
+                dtype=jnp.float64,
+            )
+            for key in restoration_vector_diagnostics
+        }
+    )
+    continuation_diagnostics.update(
+        {
+            key: jnp.zeros(
+                (n_eval, plan.n_layers, continuation_stage_count),
+                dtype=jnp.float64,
+            )
+            for key in restoration_float_diagnostics
+        }
+    )
+    continuation_diagnostics.update(
+        {
+            key: jnp.zeros(
+                (n_eval, plan.n_layers, continuation_stage_count),
+                dtype=jnp.int32,
+            )
+            for key in restoration_int_diagnostics
+        }
+    )
+    continuation_diagnostics.update(
+        {
+            key: jnp.zeros(
+                (n_eval, plan.n_layers, continuation_stage_count),
+                dtype=bool,
+            )
+            for key in restoration_bool_diagnostics
+        }
+    )
 
     for bucket, layer_indices in zip(plan.buckets, plan.bucket_layer_index_arrays):
         bucket_size = len(bucket.layer_indices)
@@ -8377,23 +9347,205 @@ def run_experimental_profile_fixed_support_batch_plan_many(
             ),
             "initial_residual": "initial_residual",
             "lambda_selection_index": "lambda_selection_index",
+            "use_log_amount_boundary": "use_log_amount_boundary",
+            "use_log_activity_boundary": "use_log_activity_boundary",
+            "line_search_alpha_boundary": "line_search_alpha_boundary",
+            "line_search_alpha_r": "line_search_alpha_r",
+            "line_search_alpha_rho": "line_search_alpha_rho",
+            "line_search_selected_trial_index": "line_search_selected_trial_index",
+            "line_search_selected_trial_alpha": "line_search_selected_trial_alpha",
+            "line_search_selected_trial_residual": (
+                "line_search_selected_trial_residual"
+            ),
+            "line_search_accepted_candidate_count": (
+                "line_search_accepted_candidate_count"
+            ),
+            "line_search_fallback_candidate_count": (
+                "line_search_fallback_candidate_count"
+            ),
+            "line_search_best_trial_index": "line_search_best_trial_index",
+            "line_search_best_trial_alpha": "line_search_best_trial_alpha",
+            "line_search_best_trial_residual": "line_search_best_trial_residual",
+            "line_search_best_trial_gas_residual": (
+                "line_search_best_trial_gas_residual"
+            ),
+            "line_search_best_trial_condensate_stationarity_residual": (
+                "line_search_best_trial_condensate_stationarity_residual"
+            ),
+            "line_search_best_trial_budget_residual": (
+                "line_search_best_trial_budget_residual"
+            ),
+            "line_search_best_trial_budget_relative_residual_max": (
+                "line_search_best_trial_budget_relative_residual_max"
+            ),
+            "line_search_best_trial_complementarity_residual": (
+                "line_search_best_trial_complementarity_residual"
+            ),
+            "line_search_best_trial_total_density_residual": (
+                "line_search_best_trial_total_density_residual"
+            ),
+            "line_search_finite_candidate_count": (
+                "line_search_finite_candidate_count"
+            ),
+            "line_search_combined_improved_candidate_count": (
+                "line_search_combined_improved_candidate_count"
+            ),
+            "line_search_budget_relative_not_worse_candidate_count": (
+                "line_search_budget_relative_not_worse_candidate_count"
+            ),
+            "line_search_filter_candidate_count": (
+                "line_search_filter_candidate_count"
+            ),
+            "line_search_budget_not_broken_candidate_count": (
+                "line_search_budget_not_broken_candidate_count"
+            ),
+            "line_search_budget_relative_not_broken_candidate_count": (
+                "line_search_budget_relative_not_broken_candidate_count"
+            ),
+            "line_search_combined_not_worse_candidate_count": (
+                "line_search_combined_not_worse_candidate_count"
+            ),
+            "line_search_best_trial_finite": "line_search_best_trial_finite",
+            "line_search_best_trial_combined_improved": (
+                "line_search_best_trial_combined_improved"
+            ),
+            "line_search_best_trial_budget_relative_not_worse": (
+                "line_search_best_trial_budget_relative_not_worse"
+            ),
+            "line_search_best_trial_filter_accepted": (
+                "line_search_best_trial_filter_accepted"
+            ),
+            "line_search_best_trial_budget_not_broken": (
+                "line_search_best_trial_budget_not_broken"
+            ),
+            "line_search_best_trial_budget_relative_not_broken": (
+                "line_search_best_trial_budget_relative_not_broken"
+            ),
+            "line_search_best_trial_combined_not_worse": (
+                "line_search_best_trial_combined_not_worse"
+            ),
+            "line_search_best_trial_accepted": "line_search_best_trial_accepted",
+            "line_search_best_trial_fallback_accepted": (
+                "line_search_best_trial_fallback_accepted"
+            ),
+            "line_search_soc_candidate_count": "line_search_soc_candidate_count",
+            "line_search_soc_accepted_candidate_count": (
+                "line_search_soc_accepted_candidate_count"
+            ),
+            "line_search_soc_fallback_candidate_count": (
+                "line_search_soc_fallback_candidate_count"
+            ),
+            "line_search_soc_budget_relative_not_worse_candidate_count": (
+                "line_search_soc_budget_relative_not_worse_candidate_count"
+            ),
+            "line_search_soc_filter_candidate_count": (
+                "line_search_soc_filter_candidate_count"
+            ),
+            "line_search_soc_best_trial_present": (
+                "line_search_soc_best_trial_present"
+            ),
+            "line_search_soc_best_trial_index": "line_search_soc_best_trial_index",
+            "line_search_soc_best_trial_alpha": "line_search_soc_best_trial_alpha",
+            "line_search_soc_best_trial_residual": (
+                "line_search_soc_best_trial_residual"
+            ),
+            "line_search_soc_best_trial_gas_residual": (
+                "line_search_soc_best_trial_gas_residual"
+            ),
+            "line_search_soc_best_trial_condensate_stationarity_residual": (
+                "line_search_soc_best_trial_condensate_stationarity_residual"
+            ),
+            "line_search_soc_best_trial_budget_residual": (
+                "line_search_soc_best_trial_budget_residual"
+            ),
+            "line_search_soc_best_trial_budget_relative_residual_max": (
+                "line_search_soc_best_trial_budget_relative_residual_max"
+            ),
+            "line_search_soc_best_trial_complementarity_residual": (
+                "line_search_soc_best_trial_complementarity_residual"
+            ),
+            "line_search_soc_best_trial_total_density_residual": (
+                "line_search_soc_best_trial_total_density_residual"
+            ),
+            "line_search_soc_best_trial_combined_improved": (
+                "line_search_soc_best_trial_combined_improved"
+            ),
+            "line_search_soc_best_trial_budget_relative_not_worse": (
+                "line_search_soc_best_trial_budget_relative_not_worse"
+            ),
+            "line_search_soc_best_trial_filter_accepted": (
+                "line_search_soc_best_trial_filter_accepted"
+            ),
+            "line_search_soc_best_trial_accepted": (
+                "line_search_soc_best_trial_accepted"
+            ),
+            "line_search_soc_best_trial_fallback_accepted": (
+                "line_search_soc_best_trial_fallback_accepted"
+            ),
+            "line_search_selected_trial_gas_residual": (
+                "line_search_selected_trial_gas_residual"
+            ),
+            "line_search_selected_trial_condensate_stationarity_residual": (
+                "line_search_selected_trial_condensate_stationarity_residual"
+            ),
+            "line_search_selected_trial_budget_residual": (
+                "line_search_selected_trial_budget_residual"
+            ),
+            "line_search_selected_trial_budget_relative_residual_max": (
+                "line_search_selected_trial_budget_relative_residual_max"
+            ),
+            "line_search_selected_trial_complementarity_residual": (
+                "line_search_selected_trial_complementarity_residual"
+            ),
+            "line_search_selected_trial_total_density_residual": (
+                "line_search_selected_trial_total_density_residual"
+            ),
         }
+        step_sources.update(
+            {
+                key: key
+                for key in (
+                    restoration_vector_diagnostics
+                    + restoration_float_diagnostics
+                    + restoration_int_diagnostics
+                    + restoration_bool_diagnostics
+                )
+            }
+        )
         for diagnostic_name, payload_name in step_sources.items():
             diagnostic_dtype = step_diagnostics[diagnostic_name].dtype
-            step_diagnostics[diagnostic_name] = step_diagnostics[
+            value = jnp.asarray(batch_payload[payload_name], dtype=diagnostic_dtype)
+            target_shape = (n_eval, bucket_size) + step_diagnostics[
                 diagnostic_name
-            ].at[:, layer_indices].set(
-                jnp.reshape(
-                    jnp.asarray(batch_payload[payload_name], dtype=diagnostic_dtype),
-                    (n_eval, bucket_size),
+            ].shape[2:]
+            if value.ndim == 0:
+                value = jnp.full(
+                    target_shape,
+                    value,
+                    dtype=diagnostic_dtype,
                 )
+            else:
+                value = jnp.reshape(value, target_shape)
+            step_diagnostics[diagnostic_name] = (
+                step_diagnostics[diagnostic_name]
+                .at[:, layer_indices]
+                .set(value)
             )
         continuation_sources = {
             "epsilon": "epsilon",
+            "attempted": "attempted",
             "converged": "converged",
+            "centered_for_continuation": "centered_for_continuation",
             "n_iter": "n_iter",
             "final_residual": "final_residual",
             "residual_crit": "residual_crit",
+            "continuation_log_tolerance": "continuation_log_tolerance",
+            "continuation_budget_relative_tolerance": (
+                "continuation_budget_relative_tolerance"
+            ),
+            "continuation_total_density_tolerance": (
+                "continuation_total_density_tolerance"
+            ),
             "accepted_iteration_count": "accepted_iteration_count",
             "rejected_trial_count": "rejected_trial_count",
             "final_step_size": "final_step_size",
@@ -8402,6 +9554,17 @@ def run_experimental_profile_fixed_support_batch_plan_many(
                 "dominant_residual_component_index"
             ),
         }
+        continuation_sources.update(
+            {
+                key: key
+                for key in (
+                    restoration_vector_diagnostics
+                    + restoration_float_diagnostics
+                    + restoration_int_diagnostics
+                    + restoration_bool_diagnostics
+                )
+            }
+        )
         for stage_index, stage in enumerate(continuation_payload["stages"]):
             for diagnostic_name, payload_name in continuation_sources.items():
                 diagnostic_dtype = continuation_diagnostics[diagnostic_name].dtype
@@ -8412,13 +9575,16 @@ def run_experimental_profile_fixed_support_batch_plan_many(
                         float(value),
                         dtype=diagnostic_dtype,
                     )
+                elif diagnostic_name in {"attempted", "centered_for_continuation"}:
+                    value = jnp.asarray(value, dtype=diagnostic_dtype)
                 continuation_diagnostics[diagnostic_name] = (
                     continuation_diagnostics[diagnostic_name]
                     .at[:, layer_indices, stage_index]
                     .set(
                         jnp.reshape(
                             jnp.asarray(value, dtype=diagnostic_dtype),
-                            (n_eval, bucket_size),
+                            (n_eval, bucket_size)
+                            + continuation_diagnostics[diagnostic_name].shape[3:],
                         )
                     )
                 )
@@ -8452,6 +9618,7 @@ def run_experimental_profile_fixed_support_batch_plan_many(
             "no_accepted_trial",
             "nonfinite_residual",
             "unknown_not_converged",
+            "tiny_step_stalled",
         ),
         "residual_component_labels": (
             "gas",
