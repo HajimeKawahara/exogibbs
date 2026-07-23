@@ -1,0 +1,130 @@
+{
+  "schema": "exogibbs_fixed_support_v2_gpu_matrix_v2",
+  "purpose": "Unbiased fixed-input v1/v2 comparison and separate support-lifecycle verification.",
+  "frozen_v1_baseline": {
+    "description": "2026-07 strict1000 selected-continuation diagnostic artifact. These hashes freeze historical evidence; they are not hashes of the mutable v1 source file.",
+    "artifacts": [
+      {
+        "path": "benchmarks/fixed_support_v2/data/frozen_v1_baseline/selected_case_summary.json",
+        "sha256": "9e3b28b7c856ca8bb5bbf4aebdbe216e1392294ff611f5350477d07e0484f299"
+      },
+      {
+        "path": "benchmarks/fixed_support_v2/data/frozen_v1_baseline/selected_case_summary.md",
+        "sha256": "ae41c6ec1edb2e6d3957045d53b2081fcc8a97d0c0e74d044b20f222ee37ddf1"
+      }
+    ],
+    "config": {
+      "max_inner_iterations": 1000,
+      "seed_fraction": 0.8,
+      "max_seed_amount": 1.0,
+      "residual_tolerance_multiplier": 2.0
+    }
+  },
+  "shared_initial_state": {
+    "gas": "native gas-only equilibrium on the full element budget",
+    "condensate_amounts": "budget-preserving seed on the declared fixed support",
+    "element_potential": "the historical v1 best-residual choice among zero, gas, joint gas/condensate, and damped least-squares candidates, computed once and then supplied to both solvers",
+    "rho": "unit activity (all zeros), matching the historical v1 baseline",
+    "barrier_epsilon": "first epsilon_schedule value",
+    "gas_stationarity_source": "not externally overridden; both adapters reconstruct the canonical hgas + log(P/Pref) - current qtot expression",
+    "comparison_rule": "v1 and v2 consume the same prepared plan and therefore identical q,r,lambda,rho,qtot,epsilon and support"
+  },
+  "solver_matrix": [
+    {
+      "label": "small_highT_control",
+      "family": "solar_highT_no_condensate_gas_regression",
+      "layer": 16,
+      "policy": "activity_capacity",
+      "threshold": -1.0,
+      "cap": 8,
+      "expected_support_count": 2,
+      "historical_v1_converged": true
+    },
+    {
+      "label": "large_highT_activity48",
+      "family": "solar_highT_no_condensate_gas_regression",
+      "layer": 13,
+      "policy": "activity_driving",
+      "cap": 48
+    },
+    {
+      "label": "large_highT_activity96",
+      "family": "solar_highT_no_condensate_gas_regression",
+      "layer": 13,
+      "policy": "activity_driving",
+      "cap": 96,
+      "expected_support_count": 96,
+      "historical_v1_converged": false
+    },
+    {
+      "label": "large_highT_capacity32",
+      "family": "solar_highT_no_condensate_gas_regression",
+      "layer": 13,
+      "policy": "capacity",
+      "cap": 32,
+      "expected_support_count": 32,
+      "historical_v1_converged": false
+    },
+    {
+      "label": "large_highT_capacity64",
+      "family": "solar_highT_no_condensate_gas_regression",
+      "layer": 13,
+      "policy": "capacity",
+      "cap": 64
+    },
+    {
+      "label": "large_silicate_activity48",
+      "family": "solar_silicate_first_condensation",
+      "layer": 6,
+      "policy": "activity_capacity",
+      "threshold": 0.0,
+      "cap": 48,
+      "expected_support_count": 48,
+      "historical_v1_converged": false
+    },
+    {
+      "label": "large_silicate_capacity48",
+      "family": "solar_silicate_first_condensation",
+      "layer": 5,
+      "policy": "capacity",
+      "cap": 48,
+      "expected_support_count": 48,
+      "historical_v1_converged": false
+    },
+    {
+      "label": "small_silicate_control",
+      "family": "solar_silicate_first_condensation",
+      "layer": 1,
+      "policy": "curated",
+      "expected_support_count": 3,
+      "historical_v1_converged": true
+    },
+    {
+      "label": "large_water_activity64",
+      "family": "solar_water_condensation",
+      "layer": 7,
+      "policy": "activity_capacity",
+      "threshold": 0.0,
+      "cap": 64,
+      "expected_support_count": 64,
+      "historical_v1_converged": true
+    },
+    {
+      "label": "large_water_activity128",
+      "family": "solar_water_condensation",
+      "layer": 8,
+      "policy": "activity_capacity",
+      "threshold": 0.0,
+      "cap": 128,
+      "expected_support_count": 128,
+      "historical_v1_converged": false
+    }
+  ],
+  "lifecycle_families": [
+    "solar_highT_no_condensate_gas_regression",
+    "solar_silicate_first_condensation",
+    "solar_water_condensation",
+    "lowT_strong_condensation_budget_stress",
+    "near_phase_boundary_support_sensitivity"
+  ]
+}

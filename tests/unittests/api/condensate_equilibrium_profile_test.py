@@ -422,6 +422,36 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     assert planned_arrays["gas_ln_n"].shape == (2, 2)
     assert planned_arrays["condensate_amounts"].shape == (2, 2)
     assert planned_arrays["fallback_required"].shape == (2,)
+    assert planned_arrays["epsilon_schedule"] == (
+        0.0,
+        -1.0,
+        -2.0,
+        -4.0,
+        -6.0,
+        -8.0,
+        -10.0,
+    )
+    assert planned_arrays["continuation_diagnostics"]["epsilon"].shape == (2, 7)
+    assert planned_arrays["step_diagnostics"][
+        "restoration_entry_residual_vector"
+    ].shape == (2, 6)
+    assert planned_arrays["continuation_diagnostics"][
+        "restoration_entry_residual_vector"
+    ].shape == (2, 7, 6)
+    candidate_diagnostics = planned_arrays["step_diagnostics"][
+        "line_search_candidate_diagnostics"
+    ]
+    assert candidate_diagnostics["alpha"].shape[0] == 2
+    assert candidate_diagnostics["residual"].shape == candidate_diagnostics[
+        "alpha"
+    ].shape
+    assert candidate_diagnostics["soc_trial"].shape == candidate_diagnostics[
+        "alpha"
+    ].shape
+    assert jnp.all(
+        planned_arrays["continuation_diagnostics"]["epsilon"]
+        == jnp.asarray(planned_arrays["epsilon_schedule"], dtype=jnp.float64)[None, :]
+    )
     assert jnp.array_equal(
         planned_arrays["fallback_required"],
         ~planned_arrays["converged"],
@@ -463,6 +493,8 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
 
     assert many_arrays["gas_ln_n"].shape == (2, 2, 2)
     assert many_arrays["condensate_amounts"].shape == (2, 2, 2)
+    assert many_arrays["epsilon_schedule"] == planned_arrays["epsilon_schedule"]
+    assert many_arrays["continuation_diagnostics"]["epsilon"].shape == (2, 2, 7)
     assert many_arrays["fallback_required"].shape == (2, 2)
     assert jnp.array_equal(
         many_arrays["fallback_required"],
@@ -492,14 +524,106 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
     )
     assert set(many_arrays["step_diagnostics"]) == {
         "accepted_iteration_count",
+        "dominant_residual_component_index",
         "fallback_accepted_iteration_count",
+        "final_step_size",
         "initial_residual",
         "lambda_selection_index",
+        "line_search_accepted_candidate_count",
+        "line_search_alpha_boundary",
+        "line_search_alpha_r",
+        "line_search_alpha_rho",
+        "line_search_best_trial_alpha",
+        "line_search_best_trial_accepted",
+        "line_search_best_trial_budget_not_broken",
+        "line_search_best_trial_budget_relative_not_broken",
+        "line_search_best_trial_budget_relative_not_worse",
+        "line_search_best_trial_budget_relative_residual_max",
+        "line_search_best_trial_budget_residual",
+        "line_search_best_trial_combined_improved",
+        "line_search_best_trial_combined_not_worse",
+        "line_search_best_trial_complementarity_residual",
+        "line_search_best_trial_condensate_stationarity_residual",
+        "line_search_best_trial_fallback_accepted",
+        "line_search_best_trial_filter_accepted",
+        "line_search_best_trial_finite",
+        "line_search_best_trial_gas_residual",
+        "line_search_best_trial_index",
+        "line_search_best_trial_residual",
+        "line_search_best_trial_total_density_residual",
+        "line_search_budget_not_broken_candidate_count",
+        "line_search_budget_relative_not_broken_candidate_count",
+        "line_search_budget_relative_not_worse_candidate_count",
+        "line_search_combined_improved_candidate_count",
+        "line_search_combined_not_worse_candidate_count",
+        "line_search_filter_candidate_count",
+        "line_search_finite_candidate_count",
+        "line_search_fallback_candidate_count",
+        "line_search_selected_trial_alpha",
+        "line_search_selected_trial_budget_relative_residual_max",
+        "line_search_selected_trial_budget_residual",
+        "line_search_selected_trial_complementarity_residual",
+        "line_search_selected_trial_condensate_stationarity_residual",
+        "line_search_selected_trial_gas_residual",
+        "line_search_selected_trial_index",
+        "line_search_selected_trial_residual",
+        "line_search_selected_trial_total_density_residual",
+        "line_search_soc_accepted_candidate_count",
+        "line_search_soc_best_trial_accepted",
+        "line_search_soc_best_trial_alpha",
+        "line_search_soc_best_trial_budget_relative_not_worse",
+        "line_search_soc_best_trial_budget_relative_residual_max",
+        "line_search_soc_best_trial_budget_residual",
+        "line_search_soc_best_trial_combined_improved",
+        "line_search_soc_best_trial_complementarity_residual",
+        "line_search_soc_best_trial_condensate_stationarity_residual",
+        "line_search_soc_best_trial_fallback_accepted",
+        "line_search_soc_best_trial_filter_accepted",
+        "line_search_soc_best_trial_gas_residual",
+        "line_search_soc_best_trial_index",
+        "line_search_soc_best_trial_present",
+        "line_search_soc_best_trial_residual",
+        "line_search_soc_best_trial_total_density_residual",
+        "line_search_soc_budget_relative_not_worse_candidate_count",
+        "line_search_soc_candidate_count",
+        "line_search_soc_fallback_candidate_count",
+        "line_search_soc_filter_candidate_count",
         "normal_accepted_iteration_count",
+        "rejected_trial_count",
+        "second_order_correction_accepted_iteration_count",
         "stationarity_restoration_accepted_iteration_count",
+        "stop_reason_code",
+        "use_log_activity_boundary",
+        "use_log_amount_boundary",
+    } | {
+        "amount_restoration_accepted_iteration_count",
+        "restoration_phase_entry_count",
+        "restoration_phase_exit_count",
+        "restoration_phase_entry_theta_at_stop",
+        "restoration_phase_active_at_stop",
+        "restoration_phase_cooldown_at_stop",
+        "restoration_bound_multiplier_reset_count",
+        "restoration_equality_multiplier_reset_count",
+        "restoration_last_exit_theta",
+        "restoration_last_dual_alpha",
+        "restoration_entry_residual_vector",
+        "restoration_best_residual_vector",
+        "restoration_best_theta",
+        "restoration_last_exit_predual_residual_vector",
+        "restoration_last_exit_postdual_residual_vector",
+        "restoration_first_normal_residual_vector",
+        "restoration_first_normal_attempted",
+        "restoration_first_normal_accepted",
+        "restoration_first_normal_selected_type",
+        "restoration_return_probe_pending",
+        "restoration_active_accepted_iteration_count_at_stop",
+        "restoration_last_active_accepted_iteration_count",
     }
-    for diagnostic in many_arrays["step_diagnostics"].values():
-        assert diagnostic.shape == (2, 2)
+    for name, diagnostic in many_arrays["step_diagnostics"].items():
+        expected_shape = (
+            (2, 2, 6) if name.endswith("residual_vector") else (2, 2)
+        )
+        assert diagnostic.shape == expected_shape
     assert jnp.all(
         many_arrays["step_diagnostics"]["accepted_iteration_count"]
         == (

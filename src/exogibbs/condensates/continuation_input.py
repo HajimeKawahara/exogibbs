@@ -38,6 +38,7 @@ class CondensateContinuationInput:
     condensate_standard_source: tuple[float, ...]
     gas_lambda_gauge_residual_l2: float
     gas_lambda_gauge_residual_max_abs: float
+    barrier_epsilon: float | None
     inferred_rho_from_epsilon: bool
     dual_initialization_policy: str
     dual_push_floor: float | None
@@ -65,6 +66,7 @@ class CondensateContinuationInput:
             "condensate_standard_source": self.condensate_standard_source,
             "gas_lambda_gauge_residual_l2": self.gas_lambda_gauge_residual_l2,
             "gas_lambda_gauge_residual_max_abs": self.gas_lambda_gauge_residual_max_abs,
+            "barrier_epsilon": self.barrier_epsilon,
             "inferred_rho_from_epsilon": self.inferred_rho_from_epsilon,
             "dual_initialization_policy": self.dual_initialization_policy,
             "dual_push_floor": self.dual_push_floor,
@@ -259,6 +261,7 @@ def build_condensate_continuation_input(
             dual_push_floor=effective_dual_floor,
         )
     )
+    barrier_epsilon = None if epsilon is None else float(epsilon)
     state = build_pdipm_rgie_condensate_state(
         ln_nk=_tuple_vector(q),
         ln_mk=_tuple_vector(r),
@@ -290,6 +293,7 @@ def build_condensate_continuation_input(
         gas_lambda_gauge_residual_max_abs=float(np.max(np.abs(gauge_residual)))
         if gauge_residual.size
         else 0.0,
+        barrier_epsilon=barrier_epsilon,
         inferred_rho_from_epsilon=inferred_rho,
         dual_initialization_policy=dual_policy,
         dual_push_floor=None

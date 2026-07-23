@@ -12,8 +12,10 @@ import json
 import math
 import os
 from collections import Counter
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Iterable, Mapping, Sequence
 
 import numpy as np
@@ -38,6 +40,10 @@ from exogibbs.condensates.curated_profiles import (
     CuratedProfileDefinition,
     element_budget_for_profile,
     support_payload_for_profile,
+)
+from exogibbs.condensates.fixed_support_payload import seed_fixed_support_payload
+from exogibbs.condensates.support_selection_policy import (
+    select_activity_driven_support_candidates,
 )
 from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 from exogibbs.utils.fastchem_parity import normalize_species_name
@@ -520,6 +526,11 @@ def _run_exogibbs_profile(
     args: argparse.Namespace,
     setup: Any,
     definition: CuratedProfileDefinition,
+    *,
+    native_activity_support_topk: int | None = None,
+    native_activity_max_support_count: int | None = None,
+    enable_native_activity_support_expansion: bool | None = None,
+    candidate_label: str | None = None,
 ) -> Any:
     budget = element_budget_for_profile(setup, definition)
     support_indices, support_amounts_init = support_payload_for_profile(
@@ -559,14 +570,37 @@ def _run_exogibbs_profile(
         enable_full_condensate_budget_residual_gate=not args.disable_budget_gate,
         enable_profile_native_activity_support_expansion=(
             args.enable_native_activity_support_expansion
+            if enable_native_activity_support_expansion is None
+            else bool(enable_native_activity_support_expansion)
         ),
-        profile_native_activity_support_topk=args.native_activity_support_topk,
-        profile_native_activity_max_support_count=args.native_activity_max_support_count,
+        profile_native_activity_support_policy=(
+            args.native_activity_support_policy
+        ),
+        profile_native_activity_support_topk=(
+            args.native_activity_support_topk
+            if native_activity_support_topk is None
+            else int(native_activity_support_topk)
+        ),
+        profile_native_activity_max_support_count=(
+            args.native_activity_max_support_count
+            if native_activity_max_support_count is None
+            else int(native_activity_max_support_count)
+        ),
         profile_native_activity_threshold=args.native_activity_threshold,
+        profile_fixed_support_seed_policy=args.profile_fixed_support_seed_policy,
+        enable_experimental_profile_post_solver_activity_prune=(
+            args.enable_post_solver_activity_prune
+        ),
+        experimental_profile_post_solver_activity_threshold=(
+            args.post_solver_activity_prune_threshold
+        ),
+        experimental_profile_fixed_support_rescue_residual_tolerance_multiplier=(
+            args.fixed_support_rescue_residual_tolerance_multiplier
+        ),
         seed_fraction=args.seed_fraction,
         max_seed_amount=args.max_seed_amount,
     )
-    return condensate_equilibrium_profile(
+    result = condensate_equilibrium_profile(
         setup,
         jnp.asarray(definition.temperatures, dtype=jnp.float64),
         jnp.asarray(definition.pressures, dtype=jnp.float64),
@@ -577,6 +611,697 @@ def _run_exogibbs_profile(
         options=options,
         method=args.exogibbs_method,
         return_diagnostics=True,
+    )
+    if candidate_label is None:
+        return result
+    layers = []
+    for layer in result.layers:
+        diagnostics = dict(layer.diagnostics or {})
+        diagnostics["two_candidate_batch_candidate"] = {
+            "candidate_label": str(candidate_label),
+            "enable_native_activity_support_expansion": bool(
+                options.enable_profile_native_activity_support_expansion
+            ),
+            "native_activity_support_topk": int(
+                options.profile_native_activity_support_topk
+            ),
+            "native_activity_support_policy": str(
+                options.profile_native_activity_support_policy
+            ),
+            "native_activity_max_support_count": int(
+                options.profile_native_activity_max_support_count
+            ),
+        }
+        layers.append(replace(layer, diagnostics=diagnostics))
+    diagnostics = dict(result.diagnostics or {})
+    diagnostics["two_candidate_batch_candidate"] = {
+        "candidate_label": str(candidate_label),
+        "enable_native_activity_support_expansion": bool(
+            options.enable_profile_native_activity_support_expansion
+        ),
+        "native_activity_support_topk": int(options.profile_native_activity_support_topk),
+        "native_activity_support_policy": str(
+            options.profile_native_activity_support_policy
+        ),
+        "native_activity_max_support_count": int(
+            options.profile_native_activity_max_support_count
+        ),
+    }
+    return SimpleNamespace(
+        layers=tuple(layers),
+        method=result.method,
+        diagnostics=diagnostics,
+        batched_arrays=result.batched_arrays,
+    )
+
+
+def _build_two_pass_refresh_inits(
+    args: argparse.Namespace,
+    setup: Any,
+    definition: CuratedProfileDefinition,
+    budget: np.ndarray,
+    pass0: Any,
+) -> tuple[tuple[CondensateEquilibriumInit, ...], tuple[dict[str, Any], ...]]:
+    """Build per-layer pass-1 init states from pass-0 condensate depletion."""
+
+    inits = []
+    diagnostics = []
+    formula_cond = np.asarray(setup.formula_matrix_cond, dtype=np.float64)
+    budget_array = np.asarray(budget, dtype=np.float64)
+    for layer_index, layer in enumerate(pass0.layers):
+        full_cond = np.asarray(
+            jax.device_get(layer.condensate_amounts),
+            dtype=np.float64,
+        )
+        active = np.flatnonzero(
+            np.isfinite(full_cond)
+            & (full_cond > float(args.two_pass_active_floor))
+        )
+        if active.size == 0:
+            support_indices, support_amounts_init = support_payload_for_profile(
+                setup,
+                definition,
+                budget,
+            )
+        else:
+            support_indices = tuple(int(index) for index in active.tolist())
+            support_amounts_init = tuple(
+                float(max(full_cond[int(index)], 1.0e-300))
+                for index in support_indices
+            )
+        depletion = formula_cond @ full_cond
+        residual_budget = np.maximum(
+            budget_array - float(args.two_pass_depletion_fraction) * depletion,
+            1.0e-300,
+        )
+        gas_result = equilibrium(
+            setup.gas_setup,
+            float(definition.temperatures[layer_index]),
+            float(definition.pressures[layer_index]),
+            residual_budget,
+            Pref=1.0,
+            options=EquilibriumOptions(),
+        )
+        gas_stationarity_source = setup.gas_setup.hvector_func(
+            float(definition.temperatures[layer_index])
+        ) + math.log(float(definition.pressures[layer_index])) - jnp.log(
+            jnp.asarray(gas_result.ntot, dtype=jnp.float64)
+        )
+        if args.two_pass_support_update_policy == "rerank":
+            cap = int(args.native_activity_max_support_count)
+            if cap <= 0:
+                cap = len(setup.condensate_species)
+            max_amount = float(np.max(full_cond)) if full_cond.size else 0.0
+            protect_floor = max(
+                1.0e-300,
+                max_amount * float(args.two_pass_protect_relative_floor),
+            )
+            protected = [
+                int(index)
+                for index in np.flatnonzero(
+                    np.isfinite(full_cond) & (full_cond > protect_floor)
+                ).tolist()
+            ]
+            protected.sort(key=lambda index: (-float(full_cond[index]), index))
+            protected = protected[:cap]
+            element_potential = _least_squares_element_potential(
+                formula_matrix=setup.formula_matrix,
+                gas_ln_n=jnp.asarray(gas_result.ln_n, dtype=jnp.float64),
+                gas_stationarity_source=gas_stationarity_source,
+            )
+            selection = select_activity_driven_support_candidates(
+                formula_matrix_cond=setup.formula_matrix_cond,
+                element_inventory_target=budget,
+                condensate_species_order=setup.condensate_species,
+                hvector_cond=setup.condensate_setup.hvector_func(
+                    float(definition.temperatures[layer_index])
+                ),
+                element_potential=element_potential,
+                max_positive_support_count=None,
+                activity_threshold=float(args.native_activity_threshold),
+                existing_support_indices=(),
+                temperature=float(definition.temperatures[layer_index]),
+                condensate_temperature_validity_upper=(
+                    setup.condensate_setup.metadata.get(
+                        "temperature_validity_upper"
+                    )
+                ),
+                field_provenance={
+                    "formula_matrix_cond": "exogibbs_condensate_chemical_setup",
+                    "element_inventory_target": "exogibbs_profile_budget",
+                    "hvector_cond": "exogibbs_condensate_thermochemistry",
+                    "element_potential": "exogibbs_pass0_depleted_gas_state",
+                    "condensate_temperature_validity_upper": (
+                        "exogibbs_condensate_temperature_validity_metadata"
+                    ),
+                },
+            )
+            support = list(dict.fromkeys(protected))
+            support_seen = set(support)
+            activity_added_count = 0
+            for index in selection.positive_support_indices:
+                if len(support) >= cap:
+                    break
+                index = int(index)
+                if index not in support_seen:
+                    support.append(index)
+                    support_seen.add(index)
+                    activity_added_count += 1
+            if not support:
+                support = list(support_indices)[:cap]
+                activity_added_count = 0
+            seeded_support, seeded_amounts = seed_fixed_support_payload(
+                setup=setup,
+                element_inventory_target=budget,
+                support_indices=tuple(support),
+                seed_fraction=float(args.seed_fraction),
+                max_seed_amount=float(args.max_seed_amount),
+                min_seed_amount=1.0e-300,
+            )
+            amount_by_index = {
+                int(index): float(amount)
+                for index, amount in zip(seeded_support, seeded_amounts)
+            }
+            for index in protected:
+                if int(index) in amount_by_index:
+                    amount_by_index[int(index)] = float(
+                        max(full_cond[int(index)], 1.0e-300)
+                    )
+            support_indices = tuple(int(index) for index in seeded_support)
+            support_amounts_init = tuple(
+                float(max(amount_by_index[int(index)], 1.0e-300))
+                for index in support_indices
+            )
+            refresh_diagnostics = {
+                "support_update_policy": "rerank",
+                "requested_cap": int(args.native_activity_max_support_count),
+                "effective_cap": int(cap),
+                "pass0_active_count": int(active.size),
+                "protected_count": int(len(protected)),
+                "activity_positive_count": int(len(selection.positive_support_indices)),
+                "activity_added_count": int(activity_added_count),
+                "pass1_initial_support_count": int(len(support_indices)),
+                "protect_floor": float(protect_floor),
+                "protect_relative_floor": float(args.two_pass_protect_relative_floor),
+                "activity_threshold": float(args.native_activity_threshold),
+                "depletion_fraction": float(args.two_pass_depletion_fraction),
+            }
+        else:
+            refresh_diagnostics = {
+                "support_update_policy": "append",
+                "requested_cap": int(args.native_activity_max_support_count),
+                "pass0_active_count": int(active.size),
+                "pass1_initial_support_count": int(len(support_indices)),
+                "active_floor": float(args.two_pass_active_floor),
+                "depletion_fraction": float(args.two_pass_depletion_fraction),
+            }
+        inits.append(
+            CondensateEquilibriumInit(
+                gas_ln_n=gas_result.ln_n,
+                gas_ntot=gas_result.ntot,
+                support_indices=support_indices,
+                support_amounts=support_amounts_init,
+                gas_stationarity_source=gas_stationarity_source,
+            )
+        )
+        diagnostics.append(refresh_diagnostics)
+    return tuple(inits), tuple(diagnostics)
+
+
+def _run_exogibbs_profile_with_inits(
+    args: argparse.Namespace,
+    setup: Any,
+    definition: CuratedProfileDefinition,
+    budget: np.ndarray,
+    explicit_inits: Sequence[CondensateEquilibriumInit],
+    *,
+    candidate_label: str,
+    refresh_diagnostics: Sequence[Mapping[str, Any]] | None = None,
+) -> Any:
+    options = CondensateEquilibriumOptions(
+        profile_method=args.exogibbs_method,
+        profile_warm_start_support_policy="explicit_payload",
+        return_diagnostics=True,
+        allow_caveat_tiers=True,
+        max_inner_iterations=args.max_inner_iterations,
+        enable_head_route_warm_start=True,
+        enable_depleted_gas_refresh=True,
+        enable_full_condensate_budget_residual_gate=not args.disable_budget_gate,
+        enable_profile_native_activity_support_expansion=(
+            args.enable_native_activity_support_expansion
+        ),
+        profile_native_activity_support_policy=args.native_activity_support_policy,
+        profile_native_activity_support_topk=args.native_activity_support_topk,
+        profile_native_activity_max_support_count=(
+            args.native_activity_max_support_count
+        ),
+        profile_native_activity_threshold=args.native_activity_threshold,
+        profile_native_activity_source=args.two_pass_activity_source,
+        profile_fixed_support_seed_policy=args.profile_fixed_support_seed_policy,
+        enable_experimental_profile_post_solver_activity_prune=(
+            args.enable_post_solver_activity_prune
+        ),
+        experimental_profile_post_solver_activity_threshold=(
+            args.post_solver_activity_prune_threshold
+        ),
+        experimental_profile_fixed_support_rescue_residual_tolerance_multiplier=(
+            args.fixed_support_rescue_residual_tolerance_multiplier
+        ),
+        seed_fraction=args.seed_fraction,
+        max_seed_amount=args.max_seed_amount,
+    )
+    result = condensate_equilibrium_profile(
+        setup,
+        jnp.asarray(definition.temperatures, dtype=jnp.float64),
+        jnp.asarray(definition.pressures, dtype=jnp.float64),
+        budget,
+        init=tuple(explicit_inits),
+        support_indices=None,
+        support_amounts_init=None,
+        options=options,
+        method=args.exogibbs_method,
+        return_diagnostics=True,
+    )
+    layers = []
+    for layer_index, layer in enumerate(result.layers):
+        diagnostics = dict(layer.diagnostics or {})
+        layer_refresh_diagnostics = (
+            dict(refresh_diagnostics[layer_index])
+            if refresh_diagnostics is not None
+            else {}
+        )
+        diagnostics["two_pass_lifecycle_candidate"] = {
+            "candidate_label": str(candidate_label),
+            "depletion_fraction": float(args.two_pass_depletion_fraction),
+            "active_floor": float(args.two_pass_active_floor),
+            "support_update_policy": str(args.two_pass_support_update_policy),
+            "protect_relative_floor": float(args.two_pass_protect_relative_floor),
+            "refresh_support": layer_refresh_diagnostics,
+            "native_activity_support_policy": str(
+                options.profile_native_activity_support_policy
+            ),
+            "native_activity_max_support_count": int(
+                options.profile_native_activity_max_support_count
+            ),
+        }
+        layers.append(replace(layer, diagnostics=diagnostics))
+    diagnostics = dict(result.diagnostics or {})
+    diagnostics["two_pass_lifecycle_candidate"] = {
+        "candidate_label": str(candidate_label),
+        "depletion_fraction": float(args.two_pass_depletion_fraction),
+        "active_floor": float(args.two_pass_active_floor),
+        "support_update_policy": str(args.two_pass_support_update_policy),
+        "protect_relative_floor": float(args.two_pass_protect_relative_floor),
+    }
+    return SimpleNamespace(
+        layers=tuple(layers),
+        method=result.method,
+        diagnostics=diagnostics,
+        batched_arrays=result.batched_arrays,
+    )
+
+
+def _support_count_for_layer(layer: Any) -> int:
+    indices = getattr(layer, "condensate_support_indices", None)
+    if indices is None:
+        return 0
+    return int(np.asarray(jax.device_get(indices)).size)
+
+
+def _two_candidate_native_score(
+    *,
+    setup: Any,
+    definition: CuratedProfileDefinition,
+    budget: np.ndarray,
+    layer: Any,
+    layer_index: int,
+) -> tuple[Any, ...]:
+    gas_n = np.asarray(jax.device_get(layer.gas_n), dtype=np.float64)
+    cond_n = np.asarray(jax.device_get(layer.condensate_amounts), dtype=np.float64)
+    budget_report = _budget_report(setup, gas_n, cond_n, budget)
+    inactive = _inactive_driving_report(
+        setup,
+        float(definition.temperatures[layer_index]),
+        float(definition.pressures[layer_index]),
+        gas_n,
+        cond_n,
+    )
+    gibbs = _gibbs_over_rt(
+        setup,
+        float(definition.temperatures[layer_index]),
+        float(definition.pressures[layer_index]),
+        gas_n,
+        cond_n,
+    )
+    budget_rel = float(budget_report["max_abs_relative_residual"])
+    inactive_count = int(inactive["temperature_valid_positive_inactive_count"])
+    inactive_max = float(inactive["temperature_valid_max_positive_inactive_driving"])
+    support_count = _support_count_for_layer(layer)
+    converged = bool(getattr(layer, "converged", False))
+    return (
+        0 if converged else 1,
+        0 if budget_rel <= 1.0e-3 else 1,
+        inactive_count,
+        inactive_max,
+        gibbs,
+        support_count,
+    )
+
+
+def _two_candidate_guardrail_score(
+    args: argparse.Namespace,
+    *,
+    setup: Any,
+    definition: CuratedProfileDefinition,
+    budget: np.ndarray,
+    layer: Any,
+    layer_index: int,
+) -> tuple[tuple[Any, ...], dict[str, Any]]:
+    gas_n = np.asarray(jax.device_get(layer.gas_n), dtype=np.float64)
+    cond_n = np.asarray(jax.device_get(layer.condensate_amounts), dtype=np.float64)
+    budget_report = _budget_report(setup, gas_n, cond_n, budget)
+    inactive = _inactive_driving_report(
+        setup,
+        float(definition.temperatures[layer_index]),
+        float(definition.pressures[layer_index]),
+        gas_n,
+        cond_n,
+    )
+    gibbs = _gibbs_over_rt(
+        setup,
+        float(definition.temperatures[layer_index]),
+        float(definition.pressures[layer_index]),
+        gas_n,
+        cond_n,
+    )
+    budget_rel = float(budget_report["max_abs_relative_residual"])
+    inactive_count = int(inactive["temperature_valid_positive_inactive_count"])
+    inactive_max = float(inactive["temperature_valid_max_positive_inactive_driving"])
+    support_count = _support_count_for_layer(layer)
+    converged = bool(getattr(layer, "converged", False))
+
+    invalid_rank = 0
+    if not converged:
+        invalid_rank = 2
+    elif budget_rel > args.two_candidate_budget_tolerance:
+        invalid_rank = 1
+    hard_rank = 1 if inactive_max > args.two_candidate_inactive_hard_limit else 0
+    inactive_soft_excess = max(0.0, inactive_max - args.two_candidate_inactive_soft_limit)
+    objective = (
+        gibbs
+        + args.two_candidate_support_penalty * float(support_count)
+        + args.two_candidate_inactive_penalty * inactive_soft_excess
+    )
+    score = (
+        invalid_rank,
+        hard_rank,
+        objective,
+        inactive_count,
+        inactive_max,
+        gibbs,
+        support_count,
+        budget_rel,
+    )
+    report = {
+        "policy": "guardrail",
+        "invalid_rank": invalid_rank,
+        "hard_inactive_rank": hard_rank,
+        "objective": objective,
+        "inactive_soft_excess": inactive_soft_excess,
+        "inactive_count": inactive_count,
+        "inactive_max": inactive_max,
+        "gibbs": gibbs,
+        "support_count": support_count,
+        "budget_relative_residual": budget_rel,
+        "converged": converged,
+    }
+    return score, report
+
+
+def _run_two_candidate_batch_profile(
+    args: argparse.Namespace,
+    setup: Any,
+    definition: CuratedProfileDefinition,
+) -> Any:
+    expanded_topk = (
+        args.native_activity_support_topk
+        if args.two_candidate_expanded_topk is None
+        else int(args.two_candidate_expanded_topk)
+    )
+    expanded_cap = (
+        args.native_activity_max_support_count
+        if args.two_candidate_expanded_max_support_count is None
+        else int(args.two_candidate_expanded_max_support_count)
+    )
+    compact_topk = int(args.two_candidate_compact_topk)
+    compact_cap = int(args.two_candidate_compact_max_support_count)
+    if compact_topk > 0 and compact_cap < compact_topk:
+        raise ValueError("two-candidate compact max support count must be >= topk.")
+    if expanded_topk <= 0:
+        raise ValueError("two-candidate expanded topk must be positive.")
+    if expanded_cap < expanded_topk:
+        raise ValueError("two-candidate expanded max support count must be >= topk.")
+
+    compact = _run_exogibbs_profile(
+        args,
+        setup,
+        definition,
+        native_activity_support_topk=max(1, compact_topk),
+        native_activity_max_support_count=max(1, compact_cap),
+        enable_native_activity_support_expansion=compact_topk > 0,
+        candidate_label="compact",
+    )
+    expanded = _run_exogibbs_profile(
+        args,
+        setup,
+        definition,
+        native_activity_support_topk=expanded_topk,
+        native_activity_max_support_count=expanded_cap,
+        enable_native_activity_support_expansion=True,
+        candidate_label="expanded",
+    )
+    budget = np.asarray(element_budget_for_profile(setup, definition), dtype=np.float64)
+    selected_layers = []
+    selection_rows = []
+    for layer_index, (compact_layer, expanded_layer) in enumerate(
+        zip(compact.layers, expanded.layers)
+    ):
+        compact_score = _two_candidate_native_score(
+            setup=setup,
+            definition=definition,
+            budget=budget,
+            layer=compact_layer,
+            layer_index=layer_index,
+        )
+        expanded_score = _two_candidate_native_score(
+            setup=setup,
+            definition=definition,
+            budget=budget,
+            layer=expanded_layer,
+            layer_index=layer_index,
+        )
+        compact_guardrail_score, compact_guardrail = _two_candidate_guardrail_score(
+            args,
+            setup=setup,
+            definition=definition,
+            budget=budget,
+            layer=compact_layer,
+            layer_index=layer_index,
+        )
+        expanded_guardrail_score, expanded_guardrail = _two_candidate_guardrail_score(
+            args,
+            setup=setup,
+            definition=definition,
+            budget=budget,
+            layer=expanded_layer,
+            layer_index=layer_index,
+        )
+        if args.two_candidate_selection_policy == "guardrail":
+            compact_selection_score = compact_guardrail_score
+            expanded_selection_score = expanded_guardrail_score
+        else:
+            compact_selection_score = compact_score
+            expanded_selection_score = expanded_score
+
+        if expanded_selection_score < compact_selection_score:
+            selected_label = "expanded"
+            selected_layer = expanded_layer
+            selected_score = expanded_selection_score
+        else:
+            selected_label = "compact"
+            selected_layer = compact_layer
+            selected_score = compact_selection_score
+        selection = {
+            "schema": "exogibbs_two_candidate_batch_selection_v1",
+            "selection_policy": args.two_candidate_selection_policy,
+            "selected_candidate": selected_label,
+            "compact_score": compact_score,
+            "expanded_score": expanded_score,
+            "compact_guardrail_score": compact_guardrail_score,
+            "expanded_guardrail_score": expanded_guardrail_score,
+            "compact_guardrail": compact_guardrail,
+            "expanded_guardrail": expanded_guardrail,
+            "selected_score": selected_score,
+            "compact_support_count": _support_count_for_layer(compact_layer),
+            "expanded_support_count": _support_count_for_layer(expanded_layer),
+        }
+        diagnostics = dict(selected_layer.diagnostics or {})
+        diagnostics["two_candidate_batch_selection"] = selection
+        selected_layers.append(replace(selected_layer, diagnostics=diagnostics))
+        selection_rows.append({"layer_index": int(layer_index), **selection})
+    diagnostics = {
+        "profile_schema": "exogibbs_two_candidate_batch_profile_v1",
+        "method": "two_candidate_fixed_support_batch",
+        "selection_policy": args.two_candidate_selection_policy,
+        "selection_parameters": {
+            "budget_tolerance": args.two_candidate_budget_tolerance,
+            "inactive_hard_limit": args.two_candidate_inactive_hard_limit,
+            "inactive_soft_limit": args.two_candidate_inactive_soft_limit,
+            "support_penalty": args.two_candidate_support_penalty,
+            "inactive_penalty": args.two_candidate_inactive_penalty,
+        },
+        "candidate_labels": ("compact", "expanded"),
+        "compact": compact.diagnostics,
+        "expanded": expanded.diagnostics,
+        "selection": tuple(selection_rows),
+    }
+    return SimpleNamespace(
+        layers=tuple(selected_layers),
+        method="two_candidate_fixed_support_batch",
+        diagnostics=diagnostics,
+        batched_arrays=None,
+    )
+
+
+def _run_two_pass_lifecycle_profile(
+    args: argparse.Namespace,
+    setup: Any,
+    definition: CuratedProfileDefinition,
+) -> Any:
+    pass0 = _run_exogibbs_profile(
+        args,
+        setup,
+        definition,
+        candidate_label="pass0",
+    )
+    budget = np.asarray(element_budget_for_profile(setup, definition), dtype=np.float64)
+    pass1_inits, pass1_refresh_diagnostics = _build_two_pass_refresh_inits(
+        args,
+        setup,
+        definition,
+        budget,
+        pass0,
+    )
+    pass1 = _run_exogibbs_profile_with_inits(
+        args,
+        setup,
+        definition,
+        budget,
+        pass1_inits,
+        candidate_label="pass1_depleted_activity_refresh",
+        refresh_diagnostics=pass1_refresh_diagnostics,
+    )
+    selected_layers = []
+    selection_rows = []
+    for layer_index, (pass0_layer, pass1_layer) in enumerate(
+        zip(pass0.layers, pass1.layers)
+    ):
+        pass0_score = _two_candidate_native_score(
+            setup=setup,
+            definition=definition,
+            budget=budget,
+            layer=pass0_layer,
+            layer_index=layer_index,
+        )
+        pass1_score = _two_candidate_native_score(
+            setup=setup,
+            definition=definition,
+            budget=budget,
+            layer=pass1_layer,
+            layer_index=layer_index,
+        )
+        pass0_guardrail_score, pass0_guardrail = _two_candidate_guardrail_score(
+            args,
+            setup=setup,
+            definition=definition,
+            budget=budget,
+            layer=pass0_layer,
+            layer_index=layer_index,
+        )
+        pass1_guardrail_score, pass1_guardrail = _two_candidate_guardrail_score(
+            args,
+            setup=setup,
+            definition=definition,
+            budget=budget,
+            layer=pass1_layer,
+            layer_index=layer_index,
+        )
+        if args.two_pass_selection_policy == "guardrail":
+            pass0_selection_score = pass0_guardrail_score
+            pass1_selection_score = pass1_guardrail_score
+        else:
+            pass0_selection_score = pass0_score
+            pass1_selection_score = pass1_score
+
+        if pass1_selection_score < pass0_selection_score:
+            selected_label = "pass1"
+            selected_layer = pass1_layer
+            selected_score = pass1_selection_score
+        else:
+            selected_label = "pass0"
+            selected_layer = pass0_layer
+            selected_score = pass0_selection_score
+        selection = {
+            "schema": "exogibbs_two_pass_lifecycle_selection_v1",
+            "selection_policy": args.two_pass_selection_policy,
+            "selected_candidate": selected_label,
+            "pass0_score": pass0_score,
+            "pass1_score": pass1_score,
+            "pass0_guardrail_score": pass0_guardrail_score,
+            "pass1_guardrail_score": pass1_guardrail_score,
+            "pass0_guardrail": pass0_guardrail,
+            "pass1_guardrail": pass1_guardrail,
+            "selected_score": selected_score,
+            "pass0_support_count": _support_count_for_layer(pass0_layer),
+            "pass1_support_count": _support_count_for_layer(pass1_layer),
+            "depletion_fraction": float(args.two_pass_depletion_fraction),
+            "active_floor": float(args.two_pass_active_floor),
+            "activity_source": str(args.two_pass_activity_source),
+            "support_update_policy": str(args.two_pass_support_update_policy),
+            "protect_relative_floor": float(args.two_pass_protect_relative_floor),
+            "pass1_refresh": dict(pass1_refresh_diagnostics[layer_index]),
+        }
+        diagnostics = dict(selected_layer.diagnostics or {})
+        diagnostics["two_pass_lifecycle_selection"] = selection
+        selected_layers.append(replace(selected_layer, diagnostics=diagnostics))
+        selection_rows.append({"layer_index": int(layer_index), **selection})
+    diagnostics = {
+        "profile_schema": "exogibbs_two_pass_lifecycle_profile_v1",
+        "method": "two_pass_lifecycle_fixed_candidate_batch",
+        "selection_policy": args.two_pass_selection_policy,
+        "selection_parameters": {
+            "budget_tolerance": args.two_candidate_budget_tolerance,
+            "inactive_hard_limit": args.two_candidate_inactive_hard_limit,
+            "inactive_soft_limit": args.two_candidate_inactive_soft_limit,
+            "support_penalty": args.two_candidate_support_penalty,
+            "inactive_penalty": args.two_candidate_inactive_penalty,
+            "depletion_fraction": args.two_pass_depletion_fraction,
+            "active_floor": args.two_pass_active_floor,
+            "activity_source": args.two_pass_activity_source,
+            "support_update_policy": args.two_pass_support_update_policy,
+            "protect_relative_floor": args.two_pass_protect_relative_floor,
+        },
+        "candidate_labels": ("pass0", "pass1"),
+        "pass0": pass0.diagnostics,
+        "pass1": pass1.diagnostics,
+        "pass1_refresh": tuple(pass1_refresh_diagnostics),
+        "selection": tuple(selection_rows),
+    }
+    return SimpleNamespace(
+        layers=tuple(selected_layers),
+        method="two_pass_lifecycle_fixed_candidate_batch",
+        diagnostics=diagnostics,
+        batched_arrays=None,
     )
 
 
@@ -608,6 +1333,10 @@ def _summarize_exogibbs_profile(result: Any) -> dict[str, Any]:
                     int(count),
                     0 if support_expansion_max_support_count is None else support_expansion_max_support_count,
                 )
+    if support_expansion_max_support_count is None:
+        layer_support_counts = [_support_count_for_layer(layer) for layer in result.layers]
+        if layer_support_counts:
+            support_expansion_max_support_count = int(max(layer_support_counts))
     return {
         "method": str(result.method),
         "route_counts": dict(route_counts),
@@ -636,7 +1365,12 @@ def _compare_family(
     definition: CuratedProfileDefinition,
 ) -> dict[str, Any]:
     fastchem = _run_fastchem_profile(args, definition)
-    exogibbs = _run_exogibbs_profile(args, setup, definition)
+    if args.two_pass_lifecycle_selection:
+        exogibbs = _run_two_pass_lifecycle_profile(args, setup, definition)
+    elif args.two_candidate_batch_selection:
+        exogibbs = _run_two_candidate_batch_profile(args, setup, definition)
+    else:
+        exogibbs = _run_exogibbs_profile(args, setup, definition)
     target_budget = np.asarray(element_budget_for_profile(setup, definition), dtype=np.float64)
 
     layers = []
@@ -768,42 +1502,43 @@ def _compare_family(
             fc_scaled["gas_n"],
             fc_scaled["condensate_amounts"],
         )
-        layers.append(
-            {
-                "layer_index": layer_index,
-                "temperature": float(definition.temperatures[layer_index]),
-                "pressure": float(definition.pressures[layer_index]),
-                "exogibbs_status": str(layer.status),
-                "exogibbs_converged": bool(layer.converged),
-                "exogibbs_route": str(layer.selected_route),
-                "fastchem4_element_conserved_all": bool(
-                    np.all(fastchem["element_conserved"][layer_index])
-                ),
-                "gas_log10_ratio": gas_metrics,
-                "gas_floor_sweep_log10_ratio": gas_floor_sweep,
-                "major_gas_log10_ratio": major_gas_metrics,
-                "major_overlap_gas_log10_ratio": major_overlap_gas_metrics,
-                "active_condensate_jaccard": jaccard,
-                "exogibbs_active_condensates": sorted(exo_active),
-                "fastchem4_active_condensates": sorted(fc_active),
-                "gibbs_over_rt": {
-                    "exogibbs": exo_gibbs,
-                    "fastchem4_scaled": fc_gibbs,
-                    "delta_exogibbs_minus_fastchem4_scaled": exo_gibbs - fc_gibbs,
-                },
-                "budget": {
-                    "exogibbs": exo_budget,
-                    "fastchem4_scaled": fc_budget,
-                    "fastchem4_scale_to_exogibbs_budget": fc_scaled[
-                        "scale_to_exogibbs_budget"
-                    ],
-                },
-                "inactive_driving": {
-                    "exogibbs": exo_inactive,
-                    "fastchem4_scaled": fc_inactive,
-                },
-            }
-        )
+        layer_payload = {
+            "layer_index": layer_index,
+            "temperature": float(definition.temperatures[layer_index]),
+            "pressure": float(definition.pressures[layer_index]),
+            "exogibbs_status": str(layer.status),
+            "exogibbs_converged": bool(layer.converged),
+            "exogibbs_route": str(layer.selected_route),
+            "fastchem4_element_conserved_all": bool(
+                np.all(fastchem["element_conserved"][layer_index])
+            ),
+            "gas_log10_ratio": gas_metrics,
+            "gas_floor_sweep_log10_ratio": gas_floor_sweep,
+            "major_gas_log10_ratio": major_gas_metrics,
+            "major_overlap_gas_log10_ratio": major_overlap_gas_metrics,
+            "active_condensate_jaccard": jaccard,
+            "exogibbs_active_condensates": sorted(exo_active),
+            "fastchem4_active_condensates": sorted(fc_active),
+            "gibbs_over_rt": {
+                "exogibbs": exo_gibbs,
+                "fastchem4_scaled": fc_gibbs,
+                "delta_exogibbs_minus_fastchem4_scaled": exo_gibbs - fc_gibbs,
+            },
+            "budget": {
+                "exogibbs": exo_budget,
+                "fastchem4_scaled": fc_budget,
+                "fastchem4_scale_to_exogibbs_budget": fc_scaled[
+                    "scale_to_exogibbs_budget"
+                ],
+            },
+            "inactive_driving": {
+                "exogibbs": exo_inactive,
+                "fastchem4_scaled": fc_inactive,
+            },
+        }
+        if args.include_layer_diagnostics:
+            layer_payload["exogibbs_diagnostics"] = _jsonable(layer.diagnostics or {})
+        layers.append(layer_payload)
     deltas = [
         layer["gibbs_over_rt"]["delta_exogibbs_minus_fastchem4_scaled"]
         for layer in layers
@@ -917,7 +1652,7 @@ def _write_markdown(report: dict[str, Any], path: Path) -> None:
             "{fc_budget:.3g} | {exo_inactive:.3g} |".format(
                 family=family["family"],
                 rows=family["rows"],
-                route=exo["batch_route"],
+                route=exo["batch_route"] or exo["method"],
                 max_ratio=max_text,
                 floor_1e20=floor_1e20_text,
                 major_1e8=major_1e8_text,
@@ -1008,6 +1743,24 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--max-inner-iterations", type=int, default=100)
     parser.add_argument(
+        "--fixed-support-batch-epsilon",
+        type=float,
+        default=-10.0,
+        help=(
+            "Barrier log-epsilon used by the experimental fixed-support batch "
+            "solver when no per-layer barrier epsilon is provided."
+        ),
+    )
+    parser.add_argument(
+        "--fixed-support-rescue-residual-tolerance-multiplier",
+        type=float,
+        default=1.0e9,
+        help=(
+            "Multiplier applied to exp(epsilon) for fixed-support fallback "
+            "rescue convergence."
+        ),
+    )
+    parser.add_argument(
         "--no-explicit-gas-init",
         dest="explicit_gas_init",
         action="store_false",
@@ -1016,9 +1769,157 @@ def parse_args() -> argparse.Namespace:
     parser.set_defaults(explicit_gas_init=True)
     parser.add_argument("--disable-budget-gate", action="store_true")
     parser.add_argument("--enable-native-activity-support-expansion", action="store_true")
+    parser.add_argument(
+        "--native-activity-support-policy",
+        choices=("topk_capacity", "fastchem_activity_all"),
+        default="topk_capacity",
+        help=(
+            "Policy for profile native-activity support expansion. "
+            "fastchem_activity_all adds all temperature-valid condensates with "
+            "ExoGibbs-native FastChem-style log_activity above threshold, using "
+            "max support count only as a safety cap."
+        ),
+    )
     parser.add_argument("--native-activity-support-topk", type=int, default=8)
     parser.add_argument("--native-activity-max-support-count", type=int, default=16)
     parser.add_argument("--native-activity-threshold", type=float, default=0.0)
+    parser.add_argument(
+        "--profile-fixed-support-seed-policy",
+        choices=("budget_preserving_fraction", "max_density"),
+        default="budget_preserving_fraction",
+        help=(
+            "Experimental profile fixed-support seed policy. max_density uses "
+            "ExoGibbs-native condensate capacity without shared support rescaling."
+        ),
+    )
+    parser.add_argument("--enable-post-solver-activity-prune", action="store_true")
+    parser.add_argument(
+        "--post-solver-activity-prune-threshold",
+        type=float,
+        default=-0.01,
+        help=(
+            "ExoGibbs-native FastChem-style log_activity threshold for optional "
+            "post-solver condensate removal."
+        ),
+    )
+    parser.add_argument(
+        "--two-candidate-batch-selection",
+        action="store_true",
+        help=(
+            "Run compact and expanded fixed-support batch candidates and select "
+            "per layer with ExoGibbs-native KKT/budget/Gibbs scoring."
+        ),
+    )
+    parser.add_argument(
+        "--two-pass-lifecycle-selection",
+        action="store_true",
+        help=(
+            "Run pass0 and one depleted-gas/activity-refresh pass1 candidate, "
+            "then select per layer using ExoGibbs-native scoring."
+        ),
+    )
+    parser.add_argument(
+        "--two-pass-selection-policy",
+        choices=("kkt_first", "guardrail"),
+        default="guardrail",
+    )
+    parser.add_argument("--two-pass-depletion-fraction", type=float, default=1.0)
+    parser.add_argument("--two-pass-active-floor", type=float, default=1.0e-300)
+    parser.add_argument(
+        "--two-pass-activity-source",
+        choices=("gas_only_full_budget", "initializer_gas"),
+        default="initializer_gas",
+        help=(
+            "Native activity source for pass1. initializer_gas uses the "
+            "pass0-depleted gas warm start to recompute activity support."
+        ),
+    )
+    parser.add_argument(
+        "--two-pass-support-update-policy",
+        choices=("append", "rerank"),
+        default="append",
+        help=(
+            "Support lifecycle for pass1. append keeps the pass0 active set and "
+            "lets normal native activity expansion add candidates; rerank "
+            "rebuilds a fixed-size pass1 support from depleted-gas activity "
+            "while protecting non-negligible pass0 condensates."
+        ),
+    )
+    parser.add_argument(
+        "--two-pass-protect-relative-floor",
+        type=float,
+        default=1.0e-6,
+        help=(
+            "For --two-pass-support-update-policy rerank, protect pass0 "
+            "condensates above this fraction of the pass0 max condensate amount."
+        ),
+    )
+    parser.add_argument(
+        "--two-candidate-selection-policy",
+        choices=("kkt_first", "guardrail"),
+        default="kkt_first",
+        help=(
+            "Selection policy for two-candidate batch runs. kkt_first preserves "
+            "the original inactive-KKT-first ordering; guardrail rejects failed "
+            "budget/convergence and extreme inactive drivers, then compares "
+            "Gibbs plus support/inactive penalties."
+        ),
+    )
+    parser.add_argument("--two-candidate-budget-tolerance", type=float, default=1.0e-3)
+    parser.add_argument(
+        "--two-candidate-inactive-hard-limit",
+        type=float,
+        default=1.0e3,
+        help="Guardrail policy hard inactive-driving limit.",
+    )
+    parser.add_argument(
+        "--two-candidate-inactive-soft-limit",
+        type=float,
+        default=1.0e2,
+        help="Guardrail policy inactive-driving value above which a soft penalty applies.",
+    )
+    parser.add_argument(
+        "--two-candidate-support-penalty",
+        type=float,
+        default=1.0e-5,
+        help="Guardrail policy Gibbs objective penalty per supported condensate.",
+    )
+    parser.add_argument(
+        "--two-candidate-inactive-penalty",
+        type=float,
+        default=1.0e-6,
+        help="Guardrail policy Gibbs objective penalty per inactive-driving unit above the soft limit.",
+    )
+    parser.add_argument(
+        "--two-candidate-compact-topk",
+        type=int,
+        default=0,
+        help=(
+            "Native activity top-k for the compact candidate. Use 0 for base "
+            "explicit support only."
+        ),
+    )
+    parser.add_argument(
+        "--two-candidate-compact-max-support-count",
+        type=int,
+        default=0,
+        help="Max support count for compact candidate when compact top-k is positive.",
+    )
+    parser.add_argument(
+        "--two-candidate-expanded-topk",
+        type=int,
+        default=None,
+        help="Native activity top-k for expanded candidate; defaults to --native-activity-support-topk.",
+    )
+    parser.add_argument(
+        "--two-candidate-expanded-max-support-count",
+        type=int,
+        default=None,
+        help=(
+            "Max support count for expanded candidate; defaults to "
+            "--native-activity-max-support-count."
+        ),
+    )
     parser.add_argument("--seed-fraction", type=float, default=0.8)
     parser.add_argument("--max-seed-amount", type=float, default=1.0)
     parser.add_argument("--gas-floor", type=float, default=1.0e-300)
@@ -1048,11 +1949,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--exogibbs-condensate-floor", type=float, default=0.0)
     parser.add_argument("--fastchem-condensate-floor", type=float, default=0.0)
     parser.add_argument("--top-outliers", type=int, default=8)
+    parser.add_argument(
+        "--include-layer-diagnostics",
+        action="store_true",
+        help="Include full ExoGibbs per-layer diagnostics in the JSON output.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    os.environ["EXOGIBBS_FIXED_SUPPORT_BATCH_EPSILON"] = str(
+        args.fixed_support_batch_epsilon
+    )
     config.update("jax_enable_x64", True)
     family_names = (
         tuple(FRESH_CURATED_PROFILES)
@@ -1093,13 +2002,53 @@ def main() -> None:
             "exogibbs_element_file": args.exogibbs_element_file,
             "exogibbs_method": args.exogibbs_method,
             "max_inner_iterations": args.max_inner_iterations,
+            "fixed_support_batch_epsilon": args.fixed_support_batch_epsilon,
+            "fixed_support_rescue_residual_tolerance_multiplier": (
+                args.fixed_support_rescue_residual_tolerance_multiplier
+            ),
             "explicit_gas_init": args.explicit_gas_init,
             "enable_native_activity_support_expansion": (
                 args.enable_native_activity_support_expansion
             ),
+            "native_activity_support_policy": args.native_activity_support_policy,
             "native_activity_support_topk": args.native_activity_support_topk,
             "native_activity_max_support_count": args.native_activity_max_support_count,
             "native_activity_threshold": args.native_activity_threshold,
+            "profile_fixed_support_seed_policy": (
+                args.profile_fixed_support_seed_policy
+            ),
+            "enable_post_solver_activity_prune": (
+                args.enable_post_solver_activity_prune
+            ),
+            "post_solver_activity_prune_threshold": (
+                args.post_solver_activity_prune_threshold
+            ),
+            "two_candidate_batch_selection": args.two_candidate_batch_selection,
+            "two_pass_lifecycle_selection": args.two_pass_lifecycle_selection,
+            "two_pass_selection_policy": args.two_pass_selection_policy,
+            "two_pass_depletion_fraction": args.two_pass_depletion_fraction,
+            "two_pass_active_floor": args.two_pass_active_floor,
+            "two_pass_activity_source": args.two_pass_activity_source,
+            "two_pass_support_update_policy": args.two_pass_support_update_policy,
+            "two_pass_protect_relative_floor": args.two_pass_protect_relative_floor,
+            "two_candidate_selection_policy": args.two_candidate_selection_policy,
+            "two_candidate_budget_tolerance": args.two_candidate_budget_tolerance,
+            "two_candidate_inactive_hard_limit": (
+                args.two_candidate_inactive_hard_limit
+            ),
+            "two_candidate_inactive_soft_limit": (
+                args.two_candidate_inactive_soft_limit
+            ),
+            "two_candidate_support_penalty": args.two_candidate_support_penalty,
+            "two_candidate_inactive_penalty": args.two_candidate_inactive_penalty,
+            "two_candidate_compact_topk": args.two_candidate_compact_topk,
+            "two_candidate_compact_max_support_count": (
+                args.two_candidate_compact_max_support_count
+            ),
+            "two_candidate_expanded_topk": args.two_candidate_expanded_topk,
+            "two_candidate_expanded_max_support_count": (
+                args.two_candidate_expanded_max_support_count
+            ),
             "seed_fraction": args.seed_fraction,
             "max_seed_amount": args.max_seed_amount,
             "gas_floor": args.gas_floor,

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib
+import math
 import sys
 from types import SimpleNamespace
 
@@ -277,6 +278,49 @@ def test_build_result_rejects_full_condensate_budget_residual_gate() -> None:
     assert gate["accepted"] is False
     assert gate["max_abs_relative_residual_element"] == "H"
     assert result.diagnostics["pre_full_condensate_budget_gate_status"] == CONVERGED
+
+
+def test_full_condensate_budget_gate_uses_trace_relative_floor() -> None:
+    _gas, _cond, setup = _setup_pair()
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=[math.log(1.04e-8), 0.0],
+        support_indices=[],
+        support_amounts=[],
+        selected_route="m4310_full_promoted_policy_route",
+        metric_status=TIGHT_RESIDUAL_STATUS,
+        solver_success=True,
+        element_inventory_target=jnp.asarray([1.0e-8, 1.0]),
+    )
+
+    assert result.status == CONVERGED
+    assert result.converged is True
+    assert result.diagnostics is not None
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"] is True
+    assert gate["relative_floor"] == pytest.approx(1.0e-6)
+    assert gate["element_relative_denominator"][0] == pytest.approx(1.0e-6)
+    assert gate["max_abs_relative_residual_element"] == "H"
+    assert gate["max_abs_relative_residual"] == pytest.approx(4.0e-4)
+
+    strict_result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=[math.log(1.04e-8), 0.0],
+        support_indices=[],
+        support_amounts=[],
+        selected_route="m4310_full_promoted_policy_route",
+        metric_status=TIGHT_RESIDUAL_STATUS,
+        solver_success=True,
+        element_inventory_target=jnp.asarray([1.0e-8, 1.0]),
+        full_condensate_budget_relative_floor=0.0,
+    )
+
+    assert strict_result.status == NOT_CONVERGED
+    assert strict_result.diagnostics is not None
+    strict_gate = strict_result.diagnostics["full_condensate_budget_residual_gate"]
+    assert strict_gate["accepted"] is False
+    assert strict_gate["max_abs_relative_residual"] == pytest.approx(4.0e-2)
 
 
 def test_full_condensate_budget_residual_gate_ignores_electron_row() -> None:
@@ -571,6 +615,7 @@ def test_condensate_equilibrium_options_default_to_head_route_v1_17() -> None:
     assert options.support_closure_max_positive_inactive_count is None
     assert options.enable_full_condensate_budget_residual_gate is True
     assert options.full_condensate_budget_relative_tolerance == pytest.approx(1.0e-3)
+    assert options.full_condensate_budget_relative_floor == pytest.approx(1.0e-6)
 
 
 def test_head_route_v1_17_primary_policy_keeps_pdipm_core_mainline() -> None:
@@ -3050,6 +3095,16 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             jnp.asarray([1.0, 1.0]),
             options=CondensateEquilibriumOptions(
                 full_condensate_budget_relative_tolerance=float("nan"),
+            ),
+        )
+    with pytest.raises(ValueError, match="full_condensate_budget_relative_floor"):
+        condensate_equilibrium(
+            setup,
+            300.0,
+            1.0,
+            jnp.asarray([1.0, 1.0]),
+            options=CondensateEquilibriumOptions(
+                full_condensate_budget_relative_floor=float("nan"),
             ),
         )
     with pytest.raises(ValueError, match="head_route_soft_restoration_proximity_weight"):

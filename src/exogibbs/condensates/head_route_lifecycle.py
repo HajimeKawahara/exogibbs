@@ -39,6 +39,10 @@ from exogibbs.condensates.support_boundary import (
     CondensateSupportBoundary,
     build_condensate_support_boundary,
 )
+from exogibbs.optimize.pdipm_rgie_cond import (
+    PdipmRgieCondensateState,
+    build_pdipm_rgie_condensate_state,
+)
 
 
 @dataclass(frozen=True)
@@ -222,6 +226,56 @@ def _guarded_primary_metric_status(
     return str(report["metric_status"]), report
 
 
+def _effective_primary_initial_epsilon(
+    *,
+    initial_epsilon: float,
+    primary_continuation_policy: Mapping[str, Any] | None,
+) -> float:
+    policy = dict(algorithm_v11_experimental_high_start_callsite_policy())
+    if primary_continuation_policy is not None:
+        policy.update(primary_continuation_policy)
+    value = float(policy.get("initial_epsilon", initial_epsilon))
+    if not math.isfinite(value):
+        raise ValueError("primary continuation initial_epsilon must be finite.")
+    return value
+
+
+def _state_recentered_for_continuation_policy(
+    continuation_input: CondensateContinuationInput,
+    policy: Mapping[str, Any],
+) -> PdipmRgieCondensateState:
+    target_epsilon = float(policy.get("initial_epsilon", math.nan))
+    if not math.isfinite(target_epsilon):
+        raise ValueError("continuation policy initial_epsilon must be finite.")
+    source_epsilon = continuation_input.barrier_epsilon
+    state = continuation_input.state
+    if source_epsilon is None or state.rho is None:
+        return state
+    delta = target_epsilon - float(source_epsilon)
+    if delta == 0.0:
+        return state
+    rho = tuple(float(value) + delta for value in state.rho)
+    eta = tuple(math.exp(value) for value in rho)
+    provenance = dict(state.field_provenance)
+    provenance["rho"] = (
+        f"{provenance.get('rho', 'exogibbs_native_derived')}"
+        "_recentered_to_policy_initial_epsilon"
+    )
+    provenance["eta"] = (
+        f"{provenance.get('eta', 'exogibbs_native_derived')}"
+        "_recentered_to_policy_initial_epsilon"
+    )
+    return build_pdipm_rgie_condensate_state(
+        ln_nk=state.ln_nk,
+        ln_mk=state.ln_mk,
+        element_potential=state.element_potential,
+        ln_ntot=state.ln_ntot,
+        rho=rho,
+        eta=eta,
+        field_provenance=provenance,
+    )
+
+
 def _run_primary_continuation(
     *,
     continuation_input: CondensateContinuationInput,
@@ -234,9 +288,13 @@ def _run_primary_continuation(
         policy.update(primary_continuation_policy)
     for metadata_key in ("candidate_name", "policy_name", "candidate_kind", "floor_value"):
         policy.pop(metadata_key, None)
+    state = _state_recentered_for_continuation_policy(
+        continuation_input,
+        policy,
+    )
     report = run_algorithm_v11_thermo_valid_continuation_callsite(
         explicit_opt_in=True,
-        state=continuation_input.state,
+        state=state,
         support_indices=continuation_input.support_indices,
         formula_matrix=continuation_input.formula_matrix,
         formula_matrix_cond_active=continuation_input.formula_matrix_cond_active,
@@ -363,6 +421,10 @@ def run_condensate_head_route_lifecycle(
         element_inventory_target=element_inventory_target,
         field_provenance=field_provenance,
     )
+    continuation_input_epsilon = _effective_primary_initial_epsilon(
+        initial_epsilon=initial_epsilon,
+        primary_continuation_policy=primary_continuation_policy,
+    )
     continuation_input = build_condensate_continuation_input(
         explicit_opt_in=True,
         ln_nk=support_boundary.ln_nk,
@@ -377,7 +439,7 @@ def run_condensate_head_route_lifecycle(
         condensate_standard_source=condensate_standard_source,
         condensate_species_names=condensate_species_names,
         ln_ntot=support_boundary.ln_ntot,
-        epsilon=initial_epsilon,
+        epsilon=continuation_input_epsilon,
         dual_initialization_policy=dual_initialization_policy,
         dual_push_floor=dual_push_floor,
         field_provenance=field_provenance,
