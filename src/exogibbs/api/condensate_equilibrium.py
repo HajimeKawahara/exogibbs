@@ -8390,6 +8390,117 @@ def run_experimental_profile_fixed_support_batch_plan(
     )
 
 
+def run_experimental_profile_fixed_support_v2_batch_plan(
+    plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
+    *,
+    element_inventory_target: Optional[Array] = None,
+    config: Optional[Any] = None,
+    budget_relative_floor: float = 1.0e-6,
+    support_closure_tolerance: float = 1.0e-8,
+) -> Mapping[str, Any]:
+    """Run an existing prepared profile plan through fixed-support v2.
+
+    This route is explicitly opt-in.  It reports fixed-support convergence and
+    full inactive-condensate support closure separately, and does not alter the
+    production v1 preset.
+    """
+
+    from exogibbs.optimize.fixed_support_v2.types import FixedSupportV2Config
+    from exogibbs.optimize.fixed_support_v2_profile import run_prepared_profile_v2
+
+    if not isinstance(plan, ExperimentalCondensateProfileFixedSupportBatchPlan):
+        raise TypeError(
+            "plan must be an ExperimentalCondensateProfileFixedSupportBatchPlan."
+        )
+    if plan.temperatures is None:
+        raise ValueError(
+            "The prepared plan has no temperature array required by v2. "
+            "Rebuild it with prepare_experimental_profile_fixed_support_batch_plan."
+        )
+    active_config = FixedSupportV2Config() if config is None else config
+    if not isinstance(active_config, FixedSupportV2Config):
+        raise TypeError("config must be a FixedSupportV2Config.")
+    if config is None:
+        # The integrated public v2 route includes the M2 restoration solver.
+        # Component tests may still opt out explicitly with zero calls.
+        active_config = replace(
+            active_config,
+            limits=replace(active_config.limits, max_restoration_calls=2),
+        )
+    active_config = replace(
+        active_config,
+        limits=replace(
+            active_config.limits,
+            max_normal_iterations=plan.max_iter,
+        ),
+    )
+
+    buckets = plan.buckets
+    if element_inventory_target is not None:
+        target = jnp.asarray(element_inventory_target, dtype=jnp.float64)
+        n_elements = int(plan.formula_matrix.shape[0])
+        if target.ndim == 1:
+            if target.shape[0] != n_elements:
+                raise ValueError(
+                    "element_inventory_target length must match elements."
+                )
+            target = jnp.broadcast_to(target, (plan.n_layers, n_elements))
+        elif target.ndim == 2:
+            if target.shape != (plan.n_layers, n_elements):
+                raise ValueError(
+                    "element_inventory_target must have shape "
+                    f"({plan.n_layers}, {n_elements})."
+                )
+        else:
+            raise ValueError(
+                "element_inventory_target must be one- or two-dimensional."
+            )
+        buckets = tuple(
+            replace(
+                bucket,
+                element_inventory_target=target[
+                    jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
+                ],
+            )
+            for bucket in plan.buckets
+        )
+
+    temperatures = jnp.asarray(plan.temperatures, dtype=jnp.float64)
+    hcond_full = jnp.asarray(
+        plan.setup.condensate_setup.hvector_func(temperatures),
+        dtype=jnp.float64,
+    )
+    expected_shape = (plan.n_layers, plan.condensate_count)
+    if hcond_full.shape != expected_shape:
+        hcond_full = jax.vmap(plan.setup.condensate_setup.hvector_func)(
+            temperatures
+        )
+    condensate_metadata = getattr(plan.setup.condensate_setup, "metadata", {})
+    validity_upper = condensate_metadata.get("temperature_validity_upper")
+    if validity_upper is None:
+        condensate_valid_mask = jnp.ones(expected_shape, dtype=bool)
+    else:
+        upper = jnp.asarray(validity_upper, dtype=jnp.float64)
+        if upper.shape != (plan.condensate_count,):
+            raise ValueError(
+                "temperature_validity_upper must have one value per condensate."
+            )
+        condensate_valid_mask = temperatures[:, None] <= upper[None, :]
+
+    return run_prepared_profile_v2(
+        buckets=buckets,
+        formula_matrix=plan.formula_matrix,
+        formula_matrix_cond_full=plan.setup.formula_matrix_cond,
+        condensate_standard_source_full=hcond_full,
+        condensate_valid_mask=condensate_valid_mask,
+        layer_count=plan.n_layers,
+        condensate_count=plan.condensate_count,
+        config=active_config,
+        budget_relative_floor=budget_relative_floor,
+        support_closure_tolerance=support_closure_tolerance,
+    )
+
+
 def prepare_experimental_profile_fixed_support_prune_rescue_plan(
     plan: ExperimentalCondensateProfileFixedSupportBatchPlan,
     fallback_layer_indices: Sequence[int],
@@ -9966,5 +10077,6 @@ __all__ = (
     "run_experimental_profile_fixed_support_batch_plan_many_with_cached_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_many_with_prepared_fallback_rescue",
     "run_experimental_profile_fixed_support_batch_plan_many_with_fallback_rescue",
+    "run_experimental_profile_fixed_support_v2_batch_plan",
     "validate_condensate_chemical_setup",
 )
