@@ -202,3 +202,16 @@ The next authorized work, if requested, is a separate production migration:
 4. agree on compilation and execution budgets;
 5. run the full repository and production-profile regression gates;
 6. promote only after those migration gates pass.
+
+## Production migration follow-up
+
+Production migration subsequently selected a v2-only product direction.  The
+fixed-support v1 implementation remains archival evidence rather than a
+production fallback.  The two historical v1 status mismatches are formally
+superseded for production gating, while their frozen evidence and mismatch
+records remain unchanged.
+
+The production API, immutable validation preset, release rollback boundary,
+approved runtime budget, final exclusive GPU gate, and default promotion are
+recorded in
+`documents/fixed_support_solver_v2_production_migration.md`.

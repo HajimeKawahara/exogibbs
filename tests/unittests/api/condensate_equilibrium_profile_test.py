@@ -1,4 +1,7 @@
+from types import SimpleNamespace
+
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 import exogibbs.api.condensate_equilibrium as condmod
@@ -9,6 +12,17 @@ from exogibbs.api.condensate_equilibrium import (
     CondensateEquilibriumOptions,
     CondensateEquilibriumResult,
 )
+from exogibbs.optimize.fixed_support_v2.types import (
+    KKTComponentNorms,
+    TerminalStatus,
+)
+
+
+def _head_v1_options(**kwargs) -> CondensateEquilibriumOptions:
+    """Build explicit legacy-route options for v1 compatibility tests."""
+
+    route = kwargs.pop("route", "head_v1")
+    return CondensateEquilibriumOptions(route=route, **kwargs)
 
 
 def _fake_setup() -> CondensateChemicalSetup:
@@ -76,7 +90,7 @@ def test_condensate_profile_scan_hot_from_top_uses_previous_layer_init(monkeypat
         jnp.asarray([1.0, 1.0, 1.0]),
         jnp.asarray([1.0, 1.0]),
         method="scan_hot_from_top",
-        options=CondensateEquilibriumOptions(return_diagnostics=True),
+        options=_head_v1_options(return_diagnostics=True),
         return_diagnostics=True,
     )
 
@@ -109,6 +123,7 @@ def test_condensate_profile_scan_hot_from_bottom_preserves_output_order(monkeypa
         jnp.asarray([1000.0, 1100.0, 1200.0]),
         jnp.asarray([1.0, 1.0, 1.0]),
         jnp.asarray([1.0, 1.0]),
+        options=_head_v1_options(),
         method="scan_hot_from_bottom",
     )
 
@@ -118,6 +133,170 @@ def test_condensate_profile_scan_hot_from_bottom_preserves_output_order(monkeypa
         1.1,
         1.2,
     ]
+
+
+def test_head_v2_profile_expands_support_outside_solver_until_closed(monkeypatch):
+    setup = _fake_setup()
+    calls = []
+
+    monkeypatch.setattr(
+        condmod,
+        "_native_activity_expanded_profile_support_payload",
+        lambda **kwargs: ((0,), (0.2,), {"policy": "test_initial_support"}),
+    )
+
+    def fake_run_prepared_profile_v2(**kwargs):
+        calls.append(kwargs)
+        support = tuple(kwargs["buckets"][0].support_indices)
+        closed = len(support) == 2
+        condensate_amounts = (
+            jnp.asarray([[0.2, 0.2]], dtype=jnp.float64)
+            if closed
+            else jnp.asarray([[0.2, 0.0]], dtype=jnp.float64)
+        )
+        zeros = jnp.zeros((1,), dtype=jnp.float64)
+        return {
+            "backend": "cpu",
+            "compilation_seconds": 1.0,
+            "execution_seconds": 0.1,
+            "diagnostic_seconds": 0.01,
+            "gas_log_amounts": jnp.log(
+                jnp.asarray([[0.8, 0.8]], dtype=jnp.float64)
+            ),
+            "condensate_amounts": condensate_amounts,
+            "total_gas_log_amount": jnp.log(
+                jnp.asarray([1.6], dtype=jnp.float64)
+            ),
+            "element_potential": jnp.zeros((1, 2), dtype=jnp.float64),
+            "terminal_status": jnp.asarray(
+                [int(TerminalStatus.CONVERGED)], dtype=jnp.int32
+            ),
+            "final_kkt_norms": KKTComponentNorms(
+                zeros, zeros, zeros, zeros, zeros
+            ),
+            "final_state_values_finite": jnp.asarray([True]),
+            "fixed_support_converged": jnp.asarray([True]),
+            "support_closed": jnp.asarray([closed]),
+            "support_expansion_mask": jnp.asarray(
+                [[False, not closed]], dtype=bool
+            ),
+            "inactive_condensate_driving": jnp.asarray(
+                [[0.0, 0.0 if closed else -1.0]], dtype=jnp.float64
+            ),
+        }
+
+    monkeypatch.setattr(
+        "exogibbs.optimize.fixed_support_v2_profile.run_prepared_profile_v2",
+        fake_run_prepared_profile_v2,
+    )
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=jnp.log(jnp.asarray([0.8, 0.8], dtype=jnp.float64)),
+        gas_ntot=jnp.asarray(1.6, dtype=jnp.float64),
+        support_indices=(0,),
+        support_amounts=(0.2,),
+        element_potential=jnp.zeros((2,), dtype=jnp.float64),
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        init=(initial,),
+        options=_head_v1_options(
+            route="head_v2",
+            enable_full_condensate_budget_residual_gate=False,
+            return_diagnostics=True,
+        ),
+        return_diagnostics=True,
+    )
+
+    assert len(calls) == 2
+    assert tuple(calls[0]["buckets"][0].support_indices) == (0,)
+    assert tuple(calls[1]["buckets"][0].support_indices) == (0, 1)
+    assert result.layers[0].converged
+    assert result.layers[0].selected_route == "head_v2_fixed_support_lifecycle"
+    assert result.layers[0].head_route_version == "v2.0"
+    lifecycle = result.layers[0].diagnostics["fixed_support_v2"]
+    assert lifecycle["outcome"] == "closed"
+    assert lifecycle["independent_kkt_passed"]
+    assert lifecycle["final_state_values_finite"]
+    assert lifecycle["rounds"][0]["added_support_indices"] == (1,)
+    assert result.diagnostics["route"] == "head_v2"
+
+
+def test_head_v2_rejects_hot_scan_method():
+    setup = _fake_setup()
+
+    with pytest.raises(ValueError, match="head_v2 currently supports"):
+        condmod.condensate_equilibrium_profile(
+            setup,
+            T=np.asarray([1000.0]),
+            P=np.asarray([1.0]),
+            b=jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+            method="scan_hot_from_top",
+            options=_head_v1_options(route="head_v2"),
+        )
+
+
+def test_head_v2_empty_initial_support_uses_gas_only_outcome(monkeypatch):
+    setup = _fake_setup()
+    gas_ln_n = jnp.log(jnp.asarray([0.5, 0.5], dtype=jnp.float64))
+
+    monkeypatch.setattr(
+        "exogibbs.api.equilibrium.equilibrium",
+        lambda *args, **kwargs: SimpleNamespace(
+            ln_n=gas_ln_n,
+            ntot=jnp.asarray(1.0, dtype=jnp.float64),
+        ),
+    )
+    monkeypatch.setattr(
+        (
+            "exogibbs.condensates.support_selection_policy."
+            "select_activity_driven_support_candidates"
+        ),
+        lambda **kwargs: SimpleNamespace(
+            positive_support_indices=(),
+            as_dict=lambda: {},
+        ),
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.5, 0.5], dtype=jnp.float64),
+    )
+
+    layer = result.layers[0]
+    assert layer.converged
+    assert layer.selected_route == "head_v2_gas_only_no_candidate"
+    assert layer.condensate_support_indices.size == 0
+    assert layer.diagnostics["fixed_support_v2"]["outcome"] == (
+        "gas_only_no_candidate"
+    )
+
+
+def test_head_v2_independent_kkt_gate_rejects_failed_component():
+    kkt = {
+        "gas_stationarity": 1.0e-9,
+        "condensate_stationarity": 1.0e-9,
+        "budget_scaled": 1.0e-9,
+        "complementarity": 1.0e-9,
+        "total_density_scaled": 1.0e-9,
+    }
+    tolerances = {
+        "stationarity_tolerance": 1.0e-8,
+        "budget_tolerance": 1.0e-8,
+        "complementarity_tolerance": 1.0e-8,
+        "total_density_tolerance": 1.0e-8,
+    }
+
+    assert condmod._head_v2_kkt_passed(kkt, **tolerances)
+    assert not condmod._head_v2_kkt_passed(
+        {**kkt, "budget_scaled": 1.0e-7},
+        **tolerances,
+    )
 
 
 def test_condensate_profile_initializer_defaults_to_independent_layers(monkeypatch):
@@ -152,6 +331,7 @@ def test_condensate_profile_initializer_defaults_to_independent_layers(monkeypat
         jnp.asarray([1.0, 1.0]),
         jnp.asarray([1.0, 1.0]),
         initializer=ExplicitInitializer(),
+        options=_head_v1_options(),
     )
 
     assert result.method == "vmap_cold"
@@ -180,7 +360,7 @@ def test_condensate_profile_method_can_be_selected_from_options(monkeypatch):
         jnp.asarray([1000.0, 1100.0]),
         jnp.asarray([1.0, 1.0]),
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(profile_method="scan_hot_from_top"),
+        options=_head_v1_options(profile_method="scan_hot_from_top"),
     )
 
     assert result.method == "scan_hot_from_top"
@@ -208,6 +388,7 @@ def test_condensate_profile_auto_defaults_to_scan_without_fixed_support(monkeypa
         jnp.asarray([1000.0, 1100.0]),
         jnp.asarray([1.0, 1.0]),
         jnp.asarray([1.0, 1.0]),
+        options=_head_v1_options(),
     )
 
     assert result.method == "scan_hot_from_top"
@@ -237,7 +418,7 @@ def test_condensate_profile_can_warm_start_gas_with_explicit_support(monkeypatch
         jnp.asarray([1.0, 1.0]),
         support_indices=(0,),
         support_amounts_init=(0.25,),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             profile_method="scan_hot_from_top",
             profile_warm_start_support_policy="explicit_payload",
         ),
@@ -300,7 +481,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         init=init,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             profile_method="vmap_cold",
             profile_warm_start_support_policy="explicit_payload",
             enable_experimental_profile_fixed_support_batch=True,
@@ -323,7 +504,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         init=init,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             profile_method="vmap_cold",
             profile_warm_start_support_policy="explicit_payload",
             enable_experimental_profile_fixed_support_batch=True,
@@ -342,7 +523,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         init=init,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             profile_method="vmap_cold",
             profile_warm_start_support_policy="explicit_payload",
             enable_experimental_profile_fixed_support_batch=True,
@@ -374,7 +555,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         init=init,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             enable_full_condensate_budget_residual_gate=False,
             max_inner_iterations=8,
         ),
@@ -396,7 +577,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         init=init,
-        options=CondensateEquilibriumOptions(max_inner_iterations=8),
+        options=_head_v1_options(max_inner_iterations=8),
     )
     planned_arrays = condmod.run_experimental_profile_fixed_support_batch_plan(plan)
     planned_arrays_with_shared_b = (
@@ -789,7 +970,7 @@ def test_condensate_profile_experimental_fixed_support_batch_path():
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         jnp.asarray([1.0, 1.0], dtype=jnp.float64),
         init=prune_init,
-        options=CondensateEquilibriumOptions(max_inner_iterations=8),
+        options=_head_v1_options(max_inner_iterations=8),
     )
     prune_rescue = condmod.prepare_experimental_profile_fixed_support_prune_rescue_plan(
         prune_plan,
@@ -867,7 +1048,7 @@ def test_condensate_profile_fixed_support_batch_builds_default_depleted_gas_init
             jnp.asarray([1.0, 1.0], dtype=jnp.float64),
             support_indices=(0,),
             support_amounts_init=(0.25,),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 profile_method="vmap_cold",
                 profile_warm_start_support_policy="explicit_payload",
                 enable_experimental_profile_fixed_support_batch=True,
@@ -952,7 +1133,7 @@ def test_condensate_profile_batch_can_expand_support_from_native_activity(
             jnp.asarray([1.0, 1.0], dtype=jnp.float64),
             support_indices=(0,),
             support_amounts_init=(0.25,),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 profile_method="vmap_cold",
                 profile_warm_start_support_policy="explicit_payload",
                 enable_experimental_profile_fixed_support_batch=True,

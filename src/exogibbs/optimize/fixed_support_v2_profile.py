@@ -56,6 +56,26 @@ class FixedSupportV2BucketExecution:
     backend: str
 
 
+@dataclass(frozen=True)
+class PreparedFixedSupportV2Bucket:
+    """Backend-neutral prepared inputs for one common-support v2 bucket."""
+
+    support_indices: tuple[int, ...]
+    layer_indices: tuple[int, ...]
+    formula_matrix_cond_active: Any
+    ln_nk_init: Any
+    ln_mk_init: Any
+    ln_ntot_init: Any
+    element_potential_init: Any | None
+    rho_init: Any | None
+    barrier_epsilon_init: Any | None
+    gas_stationarity_source_init: Any | None
+    element_inventory_target: Any
+    hvector: Any
+    hvector_cond_active: Any
+    ln_normalized_pressure: Any
+
+
 @lru_cache(maxsize=32)
 def _compiled_solver_factory(config: FixedSupportV2Config):
     """Reuse one JIT identity so repeated prepared calls hit JAX's cache."""
@@ -447,6 +467,7 @@ def run_prepared_profile_v2(
     config: FixedSupportV2Config = FixedSupportV2Config(),
     budget_relative_floor: float = 1.0e-6,
     support_closure_tolerance: float = 1.0e-8,
+    include_terminal_diagnostics: bool = True,
 ) -> dict[str, Any]:
     """Run prepared buckets and evaluate full-budget/support closure."""
 
@@ -517,15 +538,18 @@ def run_prepared_profile_v2(
             ag,
             budget_relative_floor=budget_relative_floor,
         )
-        diagnostic_start = time.perf_counter()
-        restoration_diagnostics = _terminal_restoration_diagnostics(
-            problems, result.continuation, config
-        )
-        normal_diagnostics = _terminal_normal_diagnostics(
-            problems, result.continuation, config
-        )
-        _block_until_ready((restoration_diagnostics, normal_diagnostics))
-        diagnostic_seconds += time.perf_counter() - diagnostic_start
+        restoration_diagnostics = None
+        normal_diagnostics = None
+        if include_terminal_diagnostics:
+            diagnostic_start = time.perf_counter()
+            restoration_diagnostics = _terminal_restoration_diagnostics(
+                problems, result.continuation, config
+            )
+            normal_diagnostics = _terminal_normal_diagnostics(
+                problems, result.continuation, config
+            )
+            _block_until_ready((restoration_diagnostics, normal_diagnostics))
+            diagnostic_seconds += time.perf_counter() - diagnostic_start
         final = result.continuation.controller.original_state
         layers = jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
         support = jnp.asarray(bucket.support_indices, dtype=jnp.int32)
@@ -654,6 +678,7 @@ def run_prepared_profile_v2(
 __all__ = [
     "FixedSupportV2BucketExecution",
     "FixedSupportV2BucketResult",
+    "PreparedFixedSupportV2Bucket",
     "run_prepared_profile_v2",
     "solve_prepared_bucket_v2",
 ]
