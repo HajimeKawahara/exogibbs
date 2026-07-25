@@ -36,6 +36,13 @@ from exogibbs.condensates.head_route_standard_gate import (
 )
 
 
+def _head_v1_options(**kwargs) -> CondensateEquilibriumOptions:
+    """Build explicit legacy-route options for v1 compatibility tests."""
+
+    route = kwargs.pop("route", "head_v1")
+    return CondensateEquilibriumOptions(route=route, **kwargs)
+
+
 def _setup_pair() -> tuple[ChemicalSetup, ChemicalSetup, CondensateChemicalSetup]:
     gas = ChemicalSetup(
         formula_matrix=jnp.asarray([[1.0, 0.0], [0.0, 1.0]]),
@@ -549,7 +556,7 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             metric_status=TIGHT_RESIDUAL_STATUS,
             max_positive_support_count=1,
@@ -589,9 +596,11 @@ def test_condensate_equilibrium_auto_selects_positive_support_and_calls_solver(m
     assert inactive_driving["production_behavior_change"] is False
 
 
-def test_condensate_equilibrium_options_default_to_head_route_v1_17() -> None:
+def test_condensate_equilibrium_options_default_to_promoted_head_v2() -> None:
     options = CondensateEquilibriumOptions()
 
+    assert options.route == "head_v2"
+    assert options.fixed_support_v2_preset == "validated_2026_07"
     assert options.max_positive_support_count is None
     assert options.max_support_add_per_round is None
     assert options.seed_initialization_policy == "max_density"
@@ -619,7 +628,7 @@ def test_condensate_equilibrium_options_default_to_head_route_v1_17() -> None:
 
 
 def test_head_route_v1_17_primary_policy_keeps_pdipm_core_mainline() -> None:
-    policy = _head_lifecycle_primary_policy(CondensateEquilibriumOptions())
+    policy = _head_lifecycle_primary_policy(_head_v1_options())
 
     assert policy["continuation_mode"] == "pdipm_core"
     assert policy["step_control_policy"] == "scalar_fraction_to_boundary"
@@ -633,7 +642,7 @@ def test_head_route_v1_17_primary_policy_keeps_pdipm_core_mainline() -> None:
 
 def test_head_route_primary_policy_allows_disabling_fast_monotone_decrease() -> None:
     policy = _head_lifecycle_primary_policy(
-        CondensateEquilibriumOptions(
+        _head_v1_options(
             head_route_primary_ipopt_allow_fast_monotone_decrease=False,
         )
     )
@@ -643,7 +652,7 @@ def test_head_route_primary_policy_allows_disabling_fast_monotone_decrease() -> 
 
 def test_head_route_primary_policy_accepts_single_loop_mode() -> None:
     policy = _head_lifecycle_primary_policy(
-        CondensateEquilibriumOptions(
+        _head_v1_options(
             head_route_primary_continuation_mode="pdipm_core_single_loop",
         )
     )
@@ -702,7 +711,7 @@ def test_support_outer_loop_does_not_grow_from_native_seed_fallback(
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 return_diagnostics=True,
                 allow_caveat_tiers=True,
                 max_positive_support_count=None,
@@ -818,7 +827,7 @@ def test_support_outer_loop_can_grow_from_lifecycle_final_state(
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             max_positive_support_count=None,
             max_support_add_per_round=None,
@@ -960,7 +969,7 @@ def test_support_outer_loop_tries_lifecycle_final_state_closure_retry(
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             max_support_outer_iterations=1,
             max_positive_support_count=None,
@@ -1077,7 +1086,7 @@ def test_support_outer_loop_preserves_solver_amounts_when_growing_from_payload(
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             max_positive_support_count=None,
             max_support_add_per_round=None,
@@ -1177,7 +1186,7 @@ def test_support_outer_loop_floors_zero_solver_amounts_before_growth(
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             max_positive_support_count=None,
             max_support_add_per_round=None,
@@ -1278,7 +1287,7 @@ def test_support_outer_loop_tries_support_cap_retry_sequence(
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 return_diagnostics=True,
                 max_positive_support_count=None,
                 support_cap_retry_counts=(1, 3),
@@ -1393,7 +1402,7 @@ def test_support_retry_selection_compares_cap_and_staged_candidates(
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 return_diagnostics=True,
                 max_positive_support_count=None,
                 max_support_add_per_round=None,
@@ -1509,7 +1518,7 @@ def test_support_retry_selection_can_select_scalar_step_control_candidate(
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             max_positive_support_count=None,
             support_cap_retry_counts=(1,),
@@ -1629,7 +1638,7 @@ def test_support_cap_retry_skips_promoted_candidate_when_closure_gate_fails(
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 return_diagnostics=True,
                 max_positive_support_count=None,
                 support_cap_retry_counts=(1, 3),
@@ -1695,7 +1704,7 @@ def test_support_closure_gate_rejects_residual_inactive_count(
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
         result=result,
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             support_closure_max_positive_inactive_driving=500.0,
             support_closure_max_positive_inactive_count=0,
         ),
@@ -1780,7 +1789,7 @@ def test_support_outer_loop_tries_staged_support_growth_retry(
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         Pref=1.0,
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 return_diagnostics=True,
                 enable_support_cap_retry=False,
                 max_support_add_per_round=None,
@@ -1835,7 +1844,7 @@ def test_condensate_equilibrium_capacity_fraction_seed_is_api_selectable(
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             metric_status=TIGHT_RESIDUAL_STATUS,
             enable_support_outer_loop=False,
@@ -1891,7 +1900,7 @@ def test_condensate_equilibrium_max_density_seed_is_api_selectable(
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             metric_status=TIGHT_RESIDUAL_STATUS,
             enable_support_outer_loop=False,
@@ -1985,7 +1994,7 @@ def test_condensate_equilibrium_soft_restoration_retry_can_accept_lifecycle(
         jnp.asarray([1.0, 1.0]),
         support_indices=(0,),
         support_amounts_init=(0.5,),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             enable_support_outer_loop=False,
             enable_head_route_soft_restoration_retry=True,
@@ -2086,7 +2095,7 @@ def test_condensate_equilibrium_ipopt_h_type_retry_can_accept_lifecycle(
         jnp.asarray([1.0, 1.0]),
         support_indices=(0,),
         support_amounts_init=(0.5,),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             enable_support_outer_loop=False,
             enable_head_route_ipopt_h_type_retry=True,
@@ -2154,7 +2163,7 @@ def test_condensate_equilibrium_retries_restricted_solver_with_refresh_warm_star
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             metric_status=TIGHT_RESIDUAL_STATUS,
             max_positive_support_count=1,
@@ -2219,7 +2228,7 @@ def test_condensate_equilibrium_passes_api_gas_state_to_baseline_solver(
         jnp.asarray([1.0, 1.0]),
         support_indices=(0,),
         support_amounts_init=(0.25,),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             enable_head_route_warm_start=False,
         ),
@@ -2279,7 +2288,7 @@ def test_condensate_equilibrium_can_request_full_budget_fixed_support_gas_init(
         jnp.asarray([1.0, 1.0]),
         support_indices=(0,),
         support_amounts_init=(0.25,),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             fixed_support_gas_init_policy="full_budget",
             enable_head_route_warm_start=False,
@@ -2325,7 +2334,7 @@ def test_condensate_equilibrium_passes_reduced_coupling_mode_to_restricted_solve
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             max_positive_support_count=1,
             restricted_reduced_coupling_mode=(
@@ -2379,7 +2388,7 @@ def test_condensate_equilibrium_passes_pdipm_activity_correction_mode_to_restric
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             max_positive_support_count=1,
             restricted_reduced_coupling_mode="pdipm_rgie_v11_activity_correction",
@@ -2464,7 +2473,7 @@ def test_condensate_equilibrium_accepts_successful_head_lifecycle_after_solver_f
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             metric_status=TIGHT_RESIDUAL_STATUS,
             max_positive_support_count=1,
@@ -2558,7 +2567,7 @@ def test_condensate_equilibrium_reflects_lifecycle_final_state_with_solver_suppo
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             metric_status=TIGHT_RESIDUAL_STATUS,
             max_positive_support_count=2,
@@ -2652,7 +2661,7 @@ def test_native_seed_fallback_prefers_lifecycle_final_state_when_available(
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             max_positive_support_count=2,
             enable_full_condensate_budget_residual_gate=False,
@@ -2807,7 +2816,7 @@ def test_condensate_budget_correction_retry_starts_from_lifecycle_final_state(
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             max_positive_support_count=2,
         ),
@@ -2863,7 +2872,7 @@ def test_condensate_equilibrium_can_disable_native_seed_fallback(
         jnp.asarray([1.0, 1.0]),
         support_indices=(0,),
         support_amounts_init=(0.5,),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             enable_support_outer_loop=False,
             max_positive_support_count=1,
@@ -2899,7 +2908,7 @@ def test_condensate_equilibrium_empty_positive_support_uses_gas_only_path(monkey
         300.0,
         1.0,
         jnp.asarray([1.0, 1.0]),
-        options=CondensateEquilibriumOptions(
+        options=_head_v1_options(
             return_diagnostics=True,
             enable_full_condensate_budget_residual_gate=False,
         ),
@@ -2936,7 +2945,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(max_positive_support_count=0),
+            options=_head_v1_options(max_positive_support_count=0),
         )
     with pytest.raises(ValueError, match="max_activity_support_count"):
         condensate_equilibrium(
@@ -2944,7 +2953,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(max_activity_support_count=0),
+            options=_head_v1_options(max_activity_support_count=0),
         )
     with pytest.raises(ValueError, match="max_support_add_per_round"):
         condensate_equilibrium(
@@ -2952,7 +2961,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(max_support_add_per_round=0),
+            options=_head_v1_options(max_support_add_per_round=0),
         )
     with pytest.raises(ValueError, match="restricted_reduced_coupling_mode"):
         condensate_equilibrium(
@@ -2960,7 +2969,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 restricted_reduced_coupling_mode="not_a_mode",
             ),
         )
@@ -2970,7 +2979,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_primary_center_tolerance_multiplier=float("nan"),
             ),
         )
@@ -2980,7 +2989,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_primary_residual_worsening_tolerance=float("inf"),
             ),
         )
@@ -2990,7 +2999,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_primary_require_residual_nonworsening="False",
             ),
         )
@@ -3000,7 +3009,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_primary_acceptance_guard="not_a_guard",
             ),
         )
@@ -3010,7 +3019,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_primary_guard_max_budget=float("nan"),
             ),
         )
@@ -3020,7 +3029,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_primary_step_control_policy="not_a_policy",
             ),
         )
@@ -3030,7 +3039,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_primary_fraction_to_boundary_safety=1.0,
             ),
         )
@@ -3040,7 +3049,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 enable_head_route_scalar_step_control_retry="False",
             ),
         )
@@ -3050,7 +3059,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 enable_support_cap_retry="False",
             ),
         )
@@ -3060,7 +3069,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 enable_head_route_soft_restoration_retry="False",
             ),
         )
@@ -3070,7 +3079,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 enable_full_condensate_budget_residual_gate="False",
             ),
         )
@@ -3083,7 +3092,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 enable_head_route_condensate_budget_correction_retry="False",
             ),
         )
@@ -3093,7 +3102,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 full_condensate_budget_relative_tolerance=float("nan"),
             ),
         )
@@ -3103,7 +3112,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 full_condensate_budget_relative_floor=float("nan"),
             ),
         )
@@ -3113,7 +3122,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_soft_restoration_proximity_weight=float("nan"),
             ),
         )
@@ -3123,7 +3132,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_soft_restoration_max_proximity=-1.0,
             ),
         )
@@ -3133,7 +3142,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 enable_head_route_ipopt_h_type_retry="False",
             ),
         )
@@ -3143,7 +3152,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_ipopt_h_type_theta_reduction_fraction=1.0,
             ),
         )
@@ -3156,7 +3165,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 head_route_ipopt_h_type_protected_component_max_normalized_increase=-1.0,
             ),
         )
@@ -3166,7 +3175,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 support_cap_retry_count=0,
             ),
         )
@@ -3176,7 +3185,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 support_cap_retry_counts=(),
             ),
         )
@@ -3186,7 +3195,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 support_cap_retry_counts=(34, 0),
             ),
         )
@@ -3196,7 +3205,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 enable_support_growth_staging_retry="False",
             ),
         )
@@ -3206,7 +3215,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 support_growth_staging_retry_add_per_rounds=(),
             ),
         )
@@ -3216,7 +3225,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 support_growth_staging_retry_add_per_rounds=(64, 0),
             ),
         )
@@ -3226,7 +3235,7 @@ def test_condensate_equilibrium_rejects_invalid_positive_support_options() -> No
             300.0,
             1.0,
             jnp.asarray([1.0, 1.0]),
-            options=CondensateEquilibriumOptions(
+            options=_head_v1_options(
                 support_closure_max_positive_inactive_count=-1,
             ),
         )

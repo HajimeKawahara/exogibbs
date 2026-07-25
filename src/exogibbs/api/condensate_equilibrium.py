@@ -27,11 +27,15 @@ from exogibbs.condensates.head_route_standard_gate import (
     NOT_CONVERGED,
     classify_head_route_standard_gate_row,
 )
+from exogibbs.condensates.fixed_support_v2_policy import (
+    FIXED_SUPPORT_V2_VALIDATED_PRESET,
+)
 
 
 Array = jax.Array
 DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR = 1.0e-6
-CondensateRoute = Literal["head_v1"]
+CondensateRoute = Literal["head_v1", "head_v2"]
+CondensateFixedSupportV2Preset = Literal["validated_2026_07"]
 CondensateResidualPolicy = Literal["head_route_tiers_v1"]
 CondensateWarmStartGasRefreshPolicy = Literal["native_gas_solver"]
 CondensatePrimaryAcceptanceGuard = Literal["tight_weighted_components"]
@@ -83,6 +87,9 @@ CONDENSATE_HEAD_ROUTE_VERSION = "v1.18"
 CONDENSATE_HEAD_ROUTE_NAME = (
     "head_route_v1_18_pdipm_lifecycle_support_growth"
 )
+CONDENSATE_HEAD_V2_ROUTE_VERSION = "v2.0"
+CONDENSATE_HEAD_V2_ROUTE_NAME = "head_v2_fixed_support_lifecycle"
+HEAD_ROUTE_V2 = "head_v2"
 HEAD_ROUTE_SOFT_RESTORATION_COMPONENT_WEIGHTS = {
     "budget": 1.0,
     "total_density": 1.0,
@@ -126,9 +133,12 @@ class CondensateChemicalSetup:
 
 @dataclass(frozen=True)
 class CondensateEquilibriumOptions:
-    """Options for the condensate HEAD route standard path."""
+    """Options for the production condensate equilibrium route."""
 
-    route: CondensateRoute = HEAD_ROUTE_STANDARD
+    route: CondensateRoute = HEAD_ROUTE_V2
+    fixed_support_v2_preset: CondensateFixedSupportV2Preset = (
+        FIXED_SUPPORT_V2_VALIDATED_PRESET
+    )
     case_id: Optional[str] = None
     profile_method: Optional[CondensateProfileMethod] = None
     profile_warm_start_support_policy: CondensateProfileWarmStartSupportPolicy = (
@@ -364,6 +374,17 @@ class ExperimentalCondensateProfileFixedSupportPruneRescueCache:
     hit_count: int = 0
 
 
+@dataclass(frozen=True)
+class _HeadV2LayerState:
+    """One host-owned fixed-support state between outer lifecycle rounds."""
+
+    support_indices: tuple[int, ...]
+    gas_ln_n: Array
+    condensate_log_amounts: Array
+    total_gas_log_amount: Array
+    element_potential: Array
+
+
 _ExperimentalProfileFixedSupportBatchPlan = (
     ExperimentalCondensateProfileFixedSupportBatchPlan
 )
@@ -519,8 +540,17 @@ def _merge_external_condensate_amounts(
 
 
 def _validate_options(options: CondensateEquilibriumOptions) -> None:
-    if options.route != HEAD_ROUTE_STANDARD:
-        raise ValueError(f"Unsupported condensate route '{options.route}'. Expected '{HEAD_ROUTE_STANDARD}'.")
+    valid_routes = {HEAD_ROUTE_STANDARD, HEAD_ROUTE_V2}
+    if options.route not in valid_routes:
+        raise ValueError(
+            f"Unsupported condensate route {options.route!r}. "
+            f"Expected one of {sorted(valid_routes)}."
+        )
+    if options.fixed_support_v2_preset != FIXED_SUPPORT_V2_VALIDATED_PRESET:
+        raise ValueError(
+            "fixed_support_v2_preset must be "
+            f"{FIXED_SUPPORT_V2_VALIDATED_PRESET!r}."
+        )
     if options.residual_policy != "head_route_tiers_v1":
         raise ValueError("Only residual_policy='head_route_tiers_v1' is supported.")
     if options.max_positive_support_count is not None and options.max_positive_support_count <= 0:
@@ -2249,6 +2279,9 @@ def build_condensate_equilibrium_result_from_solver_payload(
     selected_route: str,
     metric_status: Optional[str],
     solver_success: bool,
+    route: CondensateRoute = HEAD_ROUTE_STANDARD,
+    head_route_version: str = CONDENSATE_HEAD_ROUTE_VERSION,
+    head_route_name: str = CONDENSATE_HEAD_ROUTE_NAME,
     allow_caveat_tiers: bool = True,
     diagnostics: Optional[Mapping[str, Any]] = None,
     element_inventory_target: Array | None = None,
@@ -2352,9 +2385,9 @@ def build_condensate_equilibrium_result_from_solver_payload(
     gas_x = gas_n / jnp.clip(gas_ntot, 1.0e-300)
     support_index_array = jnp.asarray(support_indices, dtype=jnp.int32)
     support_names = tuple(setup.condensate_species[int(index)] for index in support_index_array.tolist())
-    metadata.setdefault("route", HEAD_ROUTE_STANDARD)
-    metadata.setdefault("head_route_version", CONDENSATE_HEAD_ROUTE_VERSION)
-    metadata.setdefault("head_route_name", CONDENSATE_HEAD_ROUTE_NAME)
+    metadata.setdefault("route", route)
+    metadata.setdefault("head_route_version", head_route_version)
+    metadata.setdefault("head_route_name", head_route_name)
     metadata.setdefault("selected_route", selected_route)
     metadata.setdefault("acceptance_tier", acceptance_tier)
     metadata.setdefault("warning_messages", warnings)
@@ -2393,6 +2426,8 @@ def build_condensate_equilibrium_result_from_solver_payload(
         status=status,
         converged=status in {CONVERGED, CONVERGED_WITH_CAVEAT},
         diagnostics=metadata,
+        head_route_version=head_route_version,
+        head_route_name=head_route_name,
     )
 
 
@@ -2401,6 +2436,10 @@ def _build_empty_support_gas_result(
     setup: CondensateChemicalSetup,
     gas_ln_n: Sequence[float],
     diagnostics: Optional[Mapping[str, Any]],
+    route: CondensateRoute = HEAD_ROUTE_STANDARD,
+    selected_route: str = "head_v1_empty_positive_support_gas_only",
+    head_route_version: str = CONDENSATE_HEAD_ROUTE_VERSION,
+    head_route_name: str = CONDENSATE_HEAD_ROUTE_NAME,
     element_inventory_target: Array | None = None,
     enable_full_condensate_budget_residual_gate: bool = True,
     full_condensate_budget_relative_tolerance: float = 1.0e-3,
@@ -2413,10 +2452,10 @@ def _build_empty_support_gas_result(
     gas_ntot = jnp.sum(gas_n)
     gas_x = gas_n / jnp.clip(gas_ntot, 1.0e-300)
     metadata = dict(diagnostics or {})
-    metadata.setdefault("route", HEAD_ROUTE_STANDARD)
-    metadata.setdefault("head_route_version", CONDENSATE_HEAD_ROUTE_VERSION)
-    metadata.setdefault("head_route_name", CONDENSATE_HEAD_ROUTE_NAME)
-    metadata.setdefault("selected_route", "head_v1_empty_positive_support_gas_only")
+    metadata.setdefault("route", route)
+    metadata.setdefault("head_route_version", head_route_version)
+    metadata.setdefault("head_route_name", head_route_name)
+    metadata.setdefault("selected_route", selected_route)
     metadata.setdefault("acceptance_tier", "runtime_empty_positive_support")
     metadata.setdefault("warning_messages", ())
     metadata.setdefault("fastchem4_trace_public_runtime_constructor_inputs_used", False)
@@ -2445,10 +2484,12 @@ def _build_empty_support_gas_result(
         condensate_support_indices=jnp.asarray((), dtype=jnp.int32),
         condensate_support_names=(),
         acceptance_tier=acceptance_tier,
-        selected_route="head_v1_empty_positive_support_gas_only",
+        selected_route=selected_route,
         status=status,
         converged=status in {CONVERGED, CONVERGED_WITH_CAVEAT},
         diagnostics=metadata,
+        head_route_version=head_route_version,
+        head_route_name=head_route_name,
     )
 
 
@@ -3535,11 +3576,15 @@ def _native_activity_expanded_profile_support_payload(
         options,
         seed_initialization_policy=options.profile_fixed_support_seed_policy,
     )
-    seeded_amounts = _budget_seed_for_support(
-        setup=setup,
-        b=b,
-        support_indices=seeded_support,
-        options=seed_options,
+    seeded_amounts = (
+        _budget_seed_for_support(
+            setup=setup,
+            b=b,
+            support_indices=seeded_support,
+            options=seed_options,
+        )
+        if seeded_support
+        else ()
     )
     trace = {
         "policy": (
@@ -4822,6 +4867,786 @@ def _run_activity_driven_support_outer_loop(
     )
 
 
+def _head_v2_best_residual_element_potential(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    Pref: float,
+    b: Array,
+    support_indices: Sequence[int],
+    support_amounts: Sequence[float],
+    gas_ln_n: Array,
+    total_gas_log_amount: Array,
+    epsilon: float,
+) -> Array:
+    """Return the validated global best-residual multiplier initializer."""
+
+    ag = jnp.asarray(setup.formula_matrix, dtype=jnp.float64)
+    support = jnp.asarray(
+        tuple(int(index) for index in support_indices), dtype=jnp.int32
+    )
+    ac = jnp.asarray(setup.formula_matrix_cond, dtype=jnp.float64)[:, support]
+    q = jnp.asarray(gas_ln_n, dtype=jnp.float64)
+    r = jnp.log(jnp.asarray(support_amounts, dtype=jnp.float64))
+    qtot = jnp.asarray(total_gas_log_amount, dtype=jnp.float64)
+    gamma = jnp.asarray(
+        setup.gas_setup.hvector_func(float(T)), dtype=jnp.float64
+    ) + _ln_normalized_pressure(P, Pref)
+    hcond = jnp.asarray(
+        setup.condensate_setup.hvector_func(float(T)), dtype=jnp.float64
+    )[support]
+    eta = jnp.ones_like(r)
+    gas_matrix = ag.T
+    gas_rhs = q + gamma - qtot
+    joint_matrix = jnp.concatenate([ag.T, ac.T], axis=0)
+    joint_rhs = jnp.concatenate([gas_rhs, hcond - eta])
+
+    def damped_lstsq(matrix: Array, rhs: Array) -> Array:
+        column_scale = jnp.maximum(
+            jnp.linalg.norm(matrix, axis=0),
+            jnp.asarray(1.0e-300, dtype=matrix.dtype),
+        )
+        scaled = matrix / column_scale[None, :]
+        normal = scaled.T @ scaled
+        normal_rhs = scaled.T @ rhs
+        damping = jnp.maximum(
+            jnp.asarray(1.0e-12, dtype=matrix.dtype)
+            * jnp.mean(jnp.diag(normal)),
+            jnp.asarray(1.0e-30, dtype=matrix.dtype),
+        )
+        solution = jnp.linalg.solve(
+            normal + damping * jnp.eye(normal.shape[0], dtype=matrix.dtype),
+            normal_rhs,
+        )
+        return jnp.nan_to_num(
+            solution / column_scale,
+            nan=0.0,
+            posinf=0.0,
+            neginf=0.0,
+        )
+
+    candidates = jnp.stack(
+        [
+            jnp.zeros((ag.shape[0],), dtype=jnp.float64),
+            jnp.linalg.lstsq(gas_matrix, gas_rhs, rcond=None)[0],
+            jnp.linalg.lstsq(joint_matrix, joint_rhs, rcond=None)[0],
+            damped_lstsq(gas_matrix, gas_rhs),
+            damped_lstsq(joint_matrix, joint_rhs),
+        ],
+        axis=0,
+    )
+
+    def residual_norm(element_potential: Array) -> Array:
+        values = jnp.concatenate(
+            [
+                q + gamma - qtot - ag.T @ element_potential,
+                hcond - ac.T @ element_potential - eta,
+                ag @ jnp.exp(q)
+                + ac @ jnp.exp(r)
+                - jnp.asarray(b, dtype=jnp.float64),
+                r - jnp.asarray(epsilon, dtype=jnp.float64),
+                jnp.asarray(
+                    [jnp.sum(jnp.exp(q)) - jnp.exp(qtot)],
+                    dtype=jnp.float64,
+                ),
+            ]
+        )
+        scale = jnp.max(
+            jnp.abs(values),
+            initial=jnp.asarray(0.0, dtype=values.dtype),
+        )
+        return jnp.where(
+            scale == 0.0,
+            0.0,
+            scale * jnp.linalg.norm(values / scale),
+        )
+
+    residuals = jax.vmap(residual_norm)(candidates)
+    return candidates[jnp.argmin(residuals)]
+
+
+def _head_v2_initial_state(
+    *,
+    setup: CondensateChemicalSetup,
+    T: float,
+    P: float,
+    b: Array,
+    Pref: float,
+    support_indices: Sequence[int],
+    support_amounts: Sequence[float],
+    initial_guess: CondensateEquilibriumInit | None,
+    first_epsilon: float,
+) -> _HeadV2LayerState:
+    """Build one v2 lifecycle state without depending on the v1 solver."""
+
+    from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
+
+    support = tuple(int(index) for index in support_indices)
+    amounts = jnp.asarray(support_amounts, dtype=jnp.float64)
+    candidate_q = None if initial_guess is None else initial_guess.gas_ln_n
+    if candidate_q is None:
+        gas_result = equilibrium(
+            setup.gas_setup,
+            float(T),
+            float(P),
+            jnp.asarray(b, dtype=jnp.float64),
+            Pref=Pref,
+            options=EquilibriumOptions(),
+            return_diagnostics=False,
+        )
+        q = jnp.asarray(gas_result.ln_n, dtype=jnp.float64)
+        qtot = jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64))
+    else:
+        q = jnp.asarray(candidate_q, dtype=jnp.float64)
+        if q.ndim != 1 or q.shape[0] != len(setup.gas_species):
+            raise ValueError(
+                "head_v2 initial gas_ln_n must have one value per gas species."
+            )
+        if initial_guess is not None and initial_guess.gas_ntot is not None:
+            gas_ntot = jnp.asarray(initial_guess.gas_ntot, dtype=jnp.float64)
+        else:
+            gas_ntot = jnp.sum(jnp.exp(q))
+        qtot = jnp.log(jnp.clip(gas_ntot, 1.0e-300))
+    r = jnp.log(jnp.maximum(amounts, 1.0e-300))
+    supplied_potential = (
+        None if initial_guess is None else initial_guess.element_potential
+    )
+    if supplied_potential is None:
+        element_potential = _head_v2_best_residual_element_potential(
+            setup=setup,
+            T=T,
+            P=P,
+            Pref=Pref,
+            b=b,
+            support_indices=support,
+            support_amounts=amounts,
+            gas_ln_n=q,
+            total_gas_log_amount=qtot,
+            epsilon=first_epsilon,
+        )
+    else:
+        element_potential = jnp.asarray(
+            supplied_potential, dtype=jnp.float64
+        )
+        if (
+            element_potential.ndim != 1
+            or element_potential.shape[0] != len(setup.elements)
+        ):
+            raise ValueError(
+                "head_v2 element_potential must have one value per element."
+            )
+    return _HeadV2LayerState(
+        support_indices=support,
+        gas_ln_n=q,
+        condensate_log_amounts=r,
+        total_gas_log_amount=qtot,
+        element_potential=element_potential,
+    )
+
+
+def _head_v2_prepared_buckets(
+    *,
+    setup: CondensateChemicalSetup,
+    temperatures: Sequence[float],
+    pressures: Sequence[float],
+    b: Array,
+    Pref: float,
+    states: Sequence[_HeadV2LayerState],
+) -> tuple[Any, ...]:
+    """Group pending v2 lifecycle states by exact fixed support."""
+
+    from exogibbs.optimize.fixed_support_v2_profile import (
+        PreparedFixedSupportV2Bucket,
+    )
+
+    groups: dict[tuple[int, ...], list[int]] = {}
+    for local_index, state in enumerate(states):
+        groups.setdefault(state.support_indices, []).append(local_index)
+    formula_matrix_cond = jnp.asarray(
+        setup.formula_matrix_cond, dtype=jnp.float64
+    )
+    target = jnp.asarray(b, dtype=jnp.float64)
+    buckets = []
+    for support, local_indices in groups.items():
+        support_array = jnp.asarray(support, dtype=jnp.int32)
+        buckets.append(
+            PreparedFixedSupportV2Bucket(
+                support_indices=support,
+                layer_indices=tuple(local_indices),
+                formula_matrix_cond_active=formula_matrix_cond[:, support_array],
+                ln_nk_init=jnp.stack(
+                    [states[index].gas_ln_n for index in local_indices]
+                ),
+                ln_mk_init=jnp.stack(
+                    [
+                        states[index].condensate_log_amounts
+                        for index in local_indices
+                    ]
+                ),
+                ln_ntot_init=jnp.stack(
+                    [
+                        states[index].total_gas_log_amount
+                        for index in local_indices
+                    ]
+                ),
+                element_potential_init=jnp.stack(
+                    [states[index].element_potential for index in local_indices]
+                ),
+                rho_init=None,
+                barrier_epsilon_init=None,
+                gas_stationarity_source_init=None,
+                element_inventory_target=jnp.stack(
+                    [target for _index in local_indices]
+                ),
+                hvector=jnp.stack(
+                    [
+                        jnp.asarray(
+                            setup.gas_setup.hvector_func(
+                                float(temperatures[index])
+                            ),
+                            dtype=jnp.float64,
+                        )
+                        for index in local_indices
+                    ]
+                ),
+                hvector_cond_active=jnp.stack(
+                    [
+                        jnp.asarray(
+                            setup.condensate_setup.hvector_func(
+                                float(temperatures[index])
+                            ),
+                            dtype=jnp.float64,
+                        )[support_array]
+                        for index in local_indices
+                    ]
+                ),
+                ln_normalized_pressure=jnp.stack(
+                    [
+                        _ln_normalized_pressure(
+                            float(pressures[index]), Pref
+                        )
+                        for index in local_indices
+                    ]
+                ),
+            )
+        )
+    return tuple(buckets)
+
+
+def _head_v2_kkt_row(kkt_norms: Any, index: int) -> Mapping[str, float]:
+    return {
+        name: float(np.asarray(jax.device_get(value))[index])
+        for name, value in kkt_norms._asdict().items()
+    }
+
+
+def _head_v2_kkt_passed(
+    kkt: Mapping[str, float],
+    *,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    complementarity_tolerance: float,
+    total_density_tolerance: float,
+) -> bool:
+    """Apply the independent final KKT gate used by v2 validation."""
+
+    return bool(
+        kkt["gas_stationarity"] <= stationarity_tolerance
+        and kkt["condensate_stationarity"] <= stationarity_tolerance
+        and kkt["budget_scaled"] <= budget_tolerance
+        and kkt["complementarity"] <= complementarity_tolerance
+        and kkt["total_density_scaled"] <= total_density_tolerance
+    )
+
+
+def _run_head_v2_profile(
+    *,
+    setup: CondensateChemicalSetup,
+    temperatures: np.ndarray,
+    pressures: np.ndarray,
+    b: Array,
+    Pref: float,
+    explicit_inits: Sequence[CondensateEquilibriumInit | None],
+    initializer: CondensateEquilibriumInitializer | None,
+    support_indices: Sequence[int] | None,
+    support_amounts_init: Sequence[float] | None,
+    options: CondensateEquilibriumOptions,
+    return_diagnostics: bool,
+) -> CondensateEquilibriumProfileResult:
+    """Run the production v2 route and its external support lifecycle."""
+
+    from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
+    from exogibbs.condensates.fixed_support_payload import (
+        seed_fixed_support_payload,
+    )
+    from exogibbs.condensates.fixed_support_v2_policy import (
+        fixed_support_v2_production_policy,
+    )
+    from exogibbs.optimize.fixed_support_v2.types import TerminalStatus
+    from exogibbs.optimize.fixed_support_v2_profile import run_prepared_profile_v2
+
+    policy = fixed_support_v2_production_policy(
+        options.fixed_support_v2_preset
+    )
+    lifecycle_options = replace(
+        options,
+        profile_native_activity_support_policy="topk_capacity",
+        profile_native_activity_support_topk=policy.initial_support_topk,
+        profile_native_activity_max_support_count=policy.initial_support_limit,
+        profile_native_activity_threshold=0.0,
+        profile_native_activity_source="gas_only_full_budget",
+        profile_fixed_support_seed_policy="budget_preserving_fraction",
+        seed_fraction=policy.seed_fraction,
+        max_seed_amount=policy.max_seed_amount,
+        min_seed_amount=policy.min_seed_amount,
+    )
+    n_layers = int(temperatures.shape[0])
+    records: list[dict[str, Any]] = [
+        {"layer_index": index, "rounds": []} for index in range(n_layers)
+    ]
+    pending: dict[int, _HeadV2LayerState] = {}
+    gas_only_layers: set[int] = set()
+    for layer_index in range(n_layers):
+        initial_guess = _resolve_condensate_initial_guess(
+            initializer,
+            CondensateEquilibriumInitRequest(
+                setup=setup,
+                T=float(temperatures[layer_index]),
+                P=float(pressures[layer_index]),
+                b=b,
+                Pref=Pref,
+                layer_index=layer_index,
+                user_init=explicit_inits[layer_index],
+                previous_solution=None,
+            ),
+        )
+        if support_indices is not None:
+            if support_amounts_init is None:
+                raise ValueError(
+                    "head_v2 requires support_amounts_init with explicit "
+                    "support_indices."
+                )
+            base_support = tuple(int(index) for index in support_indices)
+            base_amounts = _positive_support_amounts_for_warm_start(
+                support_amounts_init,
+                min_seed_amount=policy.min_seed_amount,
+            )
+        else:
+            payload = _support_payload_from_condensate_init(
+                initial_guess,
+                setup=setup,
+                min_seed_amount=policy.min_seed_amount,
+            )
+            base_support = () if payload is None else payload[0]
+            base_amounts = () if payload is None else payload[1]
+        if len(base_support) != len(base_amounts):
+            raise ValueError(
+                "head_v2 support indices and initial amounts must have the "
+                "same length."
+            )
+        if len(set(base_support)) != len(base_support):
+            raise ValueError("head_v2 support indices must be unique.")
+        if any(
+            index < 0 or index >= len(setup.condensate_species)
+            for index in base_support
+        ):
+            raise ValueError(
+                "head_v2 support contains an out-of-range condensate index."
+            )
+        (
+            initial_support,
+            initial_amounts,
+            support_trace,
+        ) = _native_activity_expanded_profile_support_payload(
+            setup=setup,
+            T=float(temperatures[layer_index]),
+            P=float(pressures[layer_index]),
+            b=b,
+            Pref=Pref,
+            support_indices=base_support,
+            options=lifecycle_options,
+            activity_gas_ln_n=None,
+            activity_gas_ntot=None,
+            activity_gas_stationarity_source=None,
+        )
+        base_amount_by_index = {
+            int(index): float(amount)
+            for index, amount in zip(base_support, base_amounts)
+        }
+        initial_amounts = tuple(
+            base_amount_by_index.get(int(index), float(amount))
+            for index, amount in zip(initial_support, initial_amounts)
+        )
+        records[layer_index]["initial_support_indices"] = initial_support
+        records[layer_index]["initial_support_count"] = len(initial_support)
+        records[layer_index]["initial_support_selection"] = support_trace
+        if not initial_support:
+            records[layer_index]["outcome"] = "gas_only_no_candidate"
+            gas_only_layers.add(layer_index)
+            continue
+        pending[layer_index] = _head_v2_initial_state(
+            setup=setup,
+            T=float(temperatures[layer_index]),
+            P=float(pressures[layer_index]),
+            b=b,
+            Pref=Pref,
+            support_indices=initial_support,
+            support_amounts=initial_amounts,
+            initial_guess=initial_guess,
+            first_epsilon=policy.solver_config.continuation.epsilon_schedule[0],
+        )
+
+    last_outputs: dict[int, dict[str, Any]] = {}
+    compilation_seconds = 0.0
+    execution_seconds = 0.0
+    diagnostic_seconds = 0.0
+    backend = jax.default_backend()
+    for round_index in range(policy.lifecycle_max_rounds):
+        if not pending:
+            break
+        source_indices = tuple(sorted(pending))
+        round_states = tuple(pending[index] for index in source_indices)
+        round_temperatures = tuple(
+            float(temperatures[index]) for index in source_indices
+        )
+        round_pressures = tuple(
+            float(pressures[index]) for index in source_indices
+        )
+        buckets = _head_v2_prepared_buckets(
+            setup=setup,
+            temperatures=round_temperatures,
+            pressures=round_pressures,
+            b=b,
+            Pref=Pref,
+            states=round_states,
+        )
+        hcond_full = jnp.stack(
+            [
+                jnp.asarray(
+                    setup.condensate_setup.hvector_func(temperature),
+                    dtype=jnp.float64,
+                )
+                for temperature in round_temperatures
+            ]
+        )
+        metadata = getattr(setup.condensate_setup, "metadata", {})
+        validity_upper = metadata.get("temperature_validity_upper")
+        if validity_upper is None:
+            valid_mask = jnp.ones(
+                (len(source_indices), len(setup.condensate_species)),
+                dtype=bool,
+            )
+        else:
+            upper = jnp.asarray(validity_upper, dtype=jnp.float64)
+            if upper.shape != (len(setup.condensate_species),):
+                raise ValueError(
+                    "temperature_validity_upper must have one value per "
+                    "condensate."
+                )
+            valid_mask = (
+                jnp.asarray(round_temperatures, dtype=jnp.float64)[:, None]
+                <= upper[None, :]
+            )
+        raw = run_prepared_profile_v2(
+            buckets=buckets,
+            formula_matrix=setup.formula_matrix,
+            formula_matrix_cond_full=setup.formula_matrix_cond,
+            condensate_standard_source_full=hcond_full,
+            condensate_valid_mask=valid_mask,
+            layer_count=len(source_indices),
+            condensate_count=len(setup.condensate_species),
+            config=policy.solver_config,
+            budget_relative_floor=policy.budget_relative_floor,
+            support_closure_tolerance=policy.support_closure_tolerance,
+            include_terminal_diagnostics=return_diagnostics,
+        )
+        compilation_seconds += float(raw["compilation_seconds"])
+        execution_seconds += float(raw["execution_seconds"])
+        diagnostic_seconds += float(raw["diagnostic_seconds"])
+        backend = str(raw["backend"])
+        converged = np.asarray(
+            jax.device_get(raw["fixed_support_converged"]), dtype=bool
+        )
+        closed = np.asarray(jax.device_get(raw["support_closed"]), dtype=bool)
+        expansion = np.asarray(
+            jax.device_get(raw["support_expansion_mask"]), dtype=bool
+        )
+        driving = np.asarray(
+            jax.device_get(raw["inactive_condensate_driving"]),
+            dtype=np.float64,
+        )
+        terminal = np.asarray(
+            jax.device_get(raw["terminal_status"]), dtype=np.int64
+        )
+        next_pending: dict[int, _HeadV2LayerState] = {}
+        for local_index, source_index in enumerate(source_indices):
+            current = pending[source_index]
+            candidate_indices = np.flatnonzero(expansion[local_index])
+            ordered = tuple(
+                int(index)
+                for index in candidate_indices[
+                    np.argsort(
+                        driving[local_index, candidate_indices],
+                        kind="stable",
+                    )
+                ]
+            )
+            additions = ordered[: policy.support_add_per_round]
+            remaining_capacity = max(
+                0, policy.support_limit - len(current.support_indices)
+            )
+            additions = additions[:remaining_capacity]
+            expanded_support = tuple(
+                dict.fromkeys((*current.support_indices, *additions))
+            )
+            terminal_code = int(terminal[local_index])
+            independent_kkt = _head_v2_kkt_row(
+                raw["final_kkt_norms"], local_index
+            )
+            tolerances = policy.solver_config.normal
+            independent_kkt_passed = _head_v2_kkt_passed(
+                independent_kkt,
+                stationarity_tolerance=tolerances.stationarity_tolerance,
+                budget_tolerance=tolerances.budget_tolerance,
+                complementarity_tolerance=(
+                    tolerances.complementarity_tolerance
+                ),
+                total_density_tolerance=(
+                    tolerances.total_density_tolerance
+                ),
+            )
+            final_state_values_finite = bool(
+                np.asarray(
+                    jax.device_get(
+                        raw["final_state_values_finite"][local_index]
+                    )
+                )
+            )
+            round_record = {
+                "round_index": round_index,
+                "support_indices": current.support_indices,
+                "support_count": len(current.support_indices),
+                "fixed_support_converged": bool(converged[local_index]),
+                "support_closed": bool(closed[local_index]),
+                "terminal_status": terminal_code,
+                "terminal_status_name": TerminalStatus(terminal_code).name,
+                "positive_inactive_count": int(candidate_indices.size),
+                "added_support_indices": additions,
+                "independent_kkt": independent_kkt,
+                "independent_kkt_passed": independent_kkt_passed,
+                "final_state_values_finite": final_state_values_finite,
+            }
+            records[source_index]["rounds"].append(round_record)
+            last_outputs[source_index] = {
+                "raw": raw,
+                "local_index": local_index,
+                "support_indices": current.support_indices,
+                "fixed_support_converged": bool(converged[local_index]),
+                "support_closed": bool(closed[local_index]),
+                "terminal_status": terminal_code,
+                "independent_kkt": independent_kkt,
+                "independent_kkt_passed": independent_kkt_passed,
+                "final_state_values_finite": final_state_values_finite,
+            }
+            if not converged[local_index]:
+                records[source_index]["outcome"] = "fixed_support_failed"
+                continue
+            if not independent_kkt_passed:
+                records[source_index]["outcome"] = "independent_kkt_failed"
+                continue
+            if not final_state_values_finite:
+                records[source_index]["outcome"] = "nonfinite_final_state"
+                continue
+            if closed[local_index]:
+                records[source_index]["outcome"] = "closed"
+                continue
+            if not additions:
+                records[source_index]["outcome"] = (
+                    "open_at_support_or_round_limit"
+                )
+                continue
+            seeded_support, seeded_amounts = seed_fixed_support_payload(
+                setup=setup,
+                element_inventory_target=b,
+                support_indices=expanded_support,
+                seed_fraction=policy.seed_fraction,
+                max_seed_amount=policy.max_seed_amount,
+                min_seed_amount=policy.min_seed_amount,
+            )
+            full_amounts = np.asarray(
+                jax.device_get(raw["condensate_amounts"][local_index]),
+                dtype=np.float64,
+            )
+            warm_amounts = tuple(
+                float(full_amounts[index])
+                if math.isfinite(float(full_amounts[index]))
+                and float(full_amounts[index]) > 0.0
+                else float(seed)
+                for index, seed in zip(seeded_support, seeded_amounts)
+            )
+            next_pending[source_index] = _HeadV2LayerState(
+                support_indices=seeded_support,
+                gas_ln_n=jnp.asarray(
+                    raw["gas_log_amounts"][local_index],
+                    dtype=jnp.float64,
+                ),
+                condensate_log_amounts=jnp.log(
+                    jnp.asarray(warm_amounts, dtype=jnp.float64)
+                ),
+                total_gas_log_amount=jnp.asarray(
+                    raw["total_gas_log_amount"][local_index],
+                    dtype=jnp.float64,
+                ),
+                element_potential=jnp.asarray(
+                    raw["element_potential"][local_index],
+                    dtype=jnp.float64,
+                ),
+            )
+        pending = next_pending
+    for source_index in pending:
+        records[source_index]["outcome"] = "open_at_round_limit"
+
+    layer_results: list[CondensateEquilibriumResult] = []
+    for layer_index in range(n_layers):
+        lifecycle_summary = {
+            "schema": "exogibbs_head_v2_fixed_support_lifecycle_v1",
+            "preset": policy.name,
+            "outcome": records[layer_index].get(
+                "outcome", "internal_missing_outcome"
+            ),
+            "rounds": tuple(records[layer_index]["rounds"]),
+            "compilation_seconds_total": compilation_seconds,
+            "execution_seconds_total": execution_seconds,
+            "diagnostic_seconds_total": diagnostic_seconds,
+            "backend": backend,
+            "production_preset_promoted": True,
+        }
+        if layer_index in gas_only_layers:
+            gas_result = equilibrium(
+                setup.gas_setup,
+                float(temperatures[layer_index]),
+                float(pressures[layer_index]),
+                jnp.asarray(b, dtype=jnp.float64),
+                Pref=Pref,
+                options=EquilibriumOptions(),
+                return_diagnostics=False,
+            )
+            result = _build_empty_support_gas_result(
+                setup=setup,
+                gas_ln_n=gas_result.ln_n,
+                diagnostics={"fixed_support_v2": lifecycle_summary},
+                route=HEAD_ROUTE_V2,
+                selected_route="head_v2_gas_only_no_candidate",
+                head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
+                head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
+                element_inventory_target=b,
+                enable_full_condensate_budget_residual_gate=(
+                    options.enable_full_condensate_budget_residual_gate
+                ),
+                full_condensate_budget_relative_tolerance=(
+                    options.full_condensate_budget_relative_tolerance
+                ),
+                full_condensate_budget_relative_floor=(
+                    options.full_condensate_budget_relative_floor
+                ),
+            )
+        else:
+            output = last_outputs[layer_index]
+            raw = output["raw"]
+            local_index = int(output["local_index"])
+            support = output["support_indices"]
+            full_amounts = jnp.asarray(
+                raw["condensate_amounts"][local_index], dtype=jnp.float64
+            )
+            support_amounts = full_amounts[
+                jnp.asarray(support, dtype=jnp.int32)
+            ]
+            lifecycle_summary.update(
+                {
+                    "terminal_status": output["terminal_status"],
+                    "terminal_status_name": TerminalStatus(
+                        output["terminal_status"]
+                    ).name,
+                    "fixed_support_converged": output[
+                        "fixed_support_converged"
+                    ],
+                    "support_closed": output["support_closed"],
+                    "independent_kkt": output["independent_kkt"],
+                    "independent_kkt_passed": output[
+                        "independent_kkt_passed"
+                    ],
+                    "final_state_values_finite": output[
+                        "final_state_values_finite"
+                    ],
+                }
+            )
+            accepted = bool(
+                output["fixed_support_converged"]
+                and output["support_closed"]
+                and output["independent_kkt_passed"]
+                and output["final_state_values_finite"]
+            )
+            result = build_condensate_equilibrium_result_from_solver_payload(
+                setup=setup,
+                gas_ln_n=raw["gas_log_amounts"][local_index],
+                support_indices=support,
+                support_amounts=support_amounts,
+                selected_route=CONDENSATE_HEAD_V2_ROUTE_NAME,
+                metric_status=None,
+                solver_success=accepted,
+                route=HEAD_ROUTE_V2,
+                head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
+                head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
+                allow_caveat_tiers=options.allow_caveat_tiers,
+                diagnostics={"fixed_support_v2": lifecycle_summary},
+                element_inventory_target=b,
+                enable_full_condensate_budget_residual_gate=(
+                    options.enable_full_condensate_budget_residual_gate
+                ),
+                full_condensate_budget_relative_tolerance=(
+                    options.full_condensate_budget_relative_tolerance
+                ),
+                full_condensate_budget_relative_floor=(
+                    options.full_condensate_budget_relative_floor
+                ),
+            )
+        layer_results.append(result)
+
+    gas_ln_n = jnp.stack([result.gas_ln_n for result in layer_results])
+    gas_n = jnp.stack([result.gas_n for result in layer_results])
+    gas_ntot = jnp.stack([result.gas_ntot for result in layer_results])
+    condensate_amounts = jnp.stack(
+        [result.condensate_amounts for result in layer_results]
+    )
+    profile_diagnostics = None
+    if return_diagnostics:
+        profile_diagnostics = {
+            "profile_schema": "exogibbs_condensate_equilibrium_profile_v2",
+            "route": HEAD_ROUTE_V2,
+            "preset": policy.name,
+            "method": "vmap_cold",
+            "layer_count": n_layers,
+            "compilation_seconds": compilation_seconds,
+            "execution_seconds": execution_seconds,
+            "diagnostic_seconds": diagnostic_seconds,
+            "backend": backend,
+            "layers": tuple(records),
+        }
+    return CondensateEquilibriumProfileResult(
+        layers=tuple(layer_results),
+        method="vmap_cold",
+        diagnostics=profile_diagnostics,
+        batched_arrays={
+            "gas_ln_n": gas_ln_n,
+            "gas_n": gas_n,
+            "gas_x": gas_n / jnp.clip(gas_ntot[:, None], 1.0e-300),
+            "gas_ntot": gas_ntot,
+            "condensate_amounts": condensate_amounts,
+        },
+    )
+
+
 def condensate_equilibrium(
     setup: CondensateChemicalSetup,
     T: float,
@@ -4834,16 +5659,31 @@ def condensate_equilibrium(
     init: Optional[CondensateEquilibriumInit] = None,
     options: Optional[CondensateEquilibriumOptions] = None,
 ) -> CondensateEquilibriumResult:
-    """Compute one condensate-enabled equilibrium layer through HEAD route v1.
+    """Compute one condensate-enabled equilibrium layer through a HEAD route.
 
-    When no support is supplied, the HEAD route builds native activity-driven
-    support from ExoGibbs thermochemistry and the caller's element budget.
-    Explicit support payloads are still accepted for controlled experiments.
+    ``head_v2`` is the production default.  ``head_v1`` remains available only
+    as an explicit backward-compatibility route and is not an automatic
+    fallback.
     """
 
     opts = options or CondensateEquilibriumOptions()
     validate_condensate_chemical_setup(setup)
     _validate_options(opts)
+    if opts.route == HEAD_ROUTE_V2:
+        profile = _run_head_v2_profile(
+            setup=setup,
+            temperatures=np.asarray([T], dtype=np.float64),
+            pressures=np.asarray([P], dtype=np.float64),
+            b=b,
+            Pref=Pref,
+            explicit_inits=(init,),
+            initializer=None,
+            support_indices=support_indices,
+            support_amounts_init=support_amounts_init,
+            options=opts,
+            return_diagnostics=opts.return_diagnostics,
+        )
+        return profile.layers[0]
     if support_indices is None and opts.enable_support_outer_loop:
         return _with_inactive_condensate_driving_diagnostics(
             result=_run_activity_driven_support_outer_loop(
@@ -9936,6 +10776,26 @@ def condensate_equilibrium_profile(
         if len(explicit_inits) != n_layers:
             raise ValueError("init must have one entry per profile layer.")
     requested_method = method if method is not None else opts.profile_method
+    if opts.route == HEAD_ROUTE_V2:
+        if requested_method not in {None, "auto", "vmap_cold"}:
+            raise ValueError(
+                "head_v2 currently supports profile method 'auto' or "
+                "'vmap_cold'. Support lifecycle remains outside the "
+                "fixed-support solver."
+            )
+        return _run_head_v2_profile(
+            setup=setup,
+            temperatures=temperatures,
+            pressures=pressures,
+            b=b,
+            Pref=Pref,
+            explicit_inits=explicit_inits,
+            initializer=initializer,
+            support_indices=support_indices,
+            support_amounts_init=support_amounts_init,
+            options=opts,
+            return_diagnostics=return_diagnostics or opts.return_diagnostics,
+        )
     auto_method = requested_method is None or requested_method == "auto"
     has_fixed_support_payload = _profile_has_complete_fixed_support_payload(
         explicit_inits,
@@ -10050,6 +10910,10 @@ def condensate_equilibrium_profile(
 
 
 __all__ = (
+    "CONDENSATE_HEAD_V2_ROUTE_NAME",
+    "CONDENSATE_HEAD_V2_ROUTE_VERSION",
+    "FIXED_SUPPORT_V2_VALIDATED_PRESET",
+    "HEAD_ROUTE_V2",
     "CondensateChemicalSetup",
     "CondensateEquilibriumInit",
     "CondensateEquilibriumInitRequest",
@@ -10057,6 +10921,7 @@ __all__ = (
     "CondensateEquilibriumOptions",
     "CondensateEquilibriumProfileResult",
     "CondensateEquilibriumResult",
+    "CondensateFixedSupportV2Preset",
     "CondensateProfileMethod",
     "CondensateProfileWarmStartSupportPolicy",
     "DefaultCondensateEquilibriumInitializer",

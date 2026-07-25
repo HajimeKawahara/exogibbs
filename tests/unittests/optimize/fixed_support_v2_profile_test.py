@@ -160,6 +160,25 @@ def test_support_expansion_is_reported_separately_from_solver_convergence():
     assert not jnp.any(result["support_expansion_mask"][:, 0])
 
 
+def test_prepared_profile_can_skip_terminal_diagnostic_compilation():
+    result = run_prepared_profile_v2(
+        buckets=(_bucket(),),
+        formula_matrix=jnp.asarray([[1.0]]),
+        formula_matrix_cond_full=jnp.asarray([[1.0, 1.0]]),
+        condensate_standard_source_full=jnp.asarray(
+            [[0.5, 2.0], [0.5, 2.0]]
+        ),
+        layer_count=2,
+        condensate_count=2,
+        config=_config(),
+        include_terminal_diagnostics=False,
+    )
+
+    assert result["diagnostic_seconds"] == 0.0
+    assert result["bucket_reports"][0]["terminal_restoration_diagnostics"] is None
+    assert result["bucket_reports"][0]["terminal_normal_diagnostics"] is None
+
+
 def test_support_closure_ignores_temperature_invalid_condensates():
     result = run_prepared_profile_v2(
         buckets=(_bucket(),),

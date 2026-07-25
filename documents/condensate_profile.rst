@@ -17,12 +17,33 @@ The profile API keeps two concerns separate:
   ``condensate_equilibrium``;
 * profile-level execution chooses how to reuse or batch layer initial states.
 
-The default profile method is ``"auto"``.  This is the recommended mode for
-normal use.
+The default profile method is ``"auto"``.  For the production ``head_v2``
+route, ``"auto"`` resolves to the independent fixed-support bucket path.
+``"vmap_cold"`` may be selected explicitly; hot-scan methods belong only to
+the temporary ``head_v1`` compatibility route.
 
-Method Selection
-----------------
-The available profile methods are:
+Default Fixed-Support v2 Route
+------------------------------
+The production route uses only the fixed-support v2 solver:
+
+.. code-block:: python
+
+   options = CondensateEquilibriumOptions(return_diagnostics=True)
+
+The same option is accepted by ``condensate_equilibrium`` and
+``condensate_equilibrium_profile``.  The v2 route owns an external
+``select -> solve -> inactive check -> expand`` lifecycle; support changes do
+not occur inside a fixed-support solve.  It never retries a failure with v1.
+
+The immutable numerical preset is ``"validated_2026_07"``.  Operational
+rollback uses the preceding release artifact rather than an automatic v1
+fallback.  ``route="head_v1"`` remains available only as an explicit
+compatibility route during the migration window.
+
+Legacy head_v1 Profile Methods
+------------------------------
+The following method selection and rescue behavior applies only when callers
+explicitly set ``route="head_v1"``:
 
 ``"auto"``
    Choose the execution path from the supplied inputs.  If the profile carries
@@ -43,8 +64,8 @@ The available profile methods are:
    Treat each layer independently except for any explicit initializer.  This
    method is useful when layer-to-layer warm-start dependence is undesirable.
 
-Fixed-Support Batch Path
-------------------------
+Legacy Fixed-Support Batch Path
+-------------------------------
 The fixed-support batch path is intended for repeated profile workloads where
 the active condensate support is already known or has been prepared from an
 earlier pass.  In that case each layer can be evaluated with the same
@@ -63,13 +84,13 @@ diagnostics under ``"experimental_profile_fixed_support_batch"``.  The route
 name for the public auto path is usually
 ``"experimental_profile_fixed_support_batch_fallback_rescue"``.
 
-Native Activity Support Expansion
----------------------------------
-The production fixed-support profile path does not use FastChem4 runtime
-values as constructor inputs.  When a complete fixed-support payload is
-available, ExoGibbs first treats that payload as a curated starting support,
-then expands it with a native gas-only activity screen before building the
-batched PD-IPM initial state.
+Legacy Native Activity Support Expansion
+----------------------------------------
+The legacy experimental fixed-support batch path does not use FastChem4
+runtime values as constructor inputs.  When a complete fixed-support payload
+is available, it first treats that payload as a curated starting support, then
+expands it with a native gas-only activity screen before building the batched
+PD-IPM initial state.
 
 The current default policy is:
 
@@ -102,8 +123,8 @@ The older full-budget gas initializer remains available for debugging:
        fixed_support_gas_init_policy="full_budget",
    )
 
-Fallback Rescue
----------------
+Legacy Fallback Rescue
+----------------------
 Fixed support is fast, but it is intentionally not forced.  If one or more
 layers fail the fixed-support acceptance checks, the profile path tries a
 fallback-only rescue for those layers.  The rescue expands candidate support
@@ -153,24 +174,25 @@ as ``"auto"`` and lets ExoGibbs choose the route.
 Diagnostics
 -----------
 When ``return_diagnostics=True``, profile diagnostics include the selected
-profile method and, when applicable, the fixed-support batch report.
+profile method and v2 route metadata.
 
 Useful fields include:
 
 ``result.method``
-   The resolved profile method after ``"auto"`` selection.
+   ``"vmap_cold"`` for the production v2 route.
 
 ``result.layers[i].selected_route``
-   The route selected for each layer.  For the fixed-support rescue path this
-   is usually ``"experimental_profile_fixed_support_batch_fallback_rescue"``.
+   ``"head_v2_fixed_support_lifecycle"`` for an active fixed-support result,
+   or ``"head_v2_gas_only_no_candidate"`` for an explicitly closed gas-only
+   layer.
 
-``result.diagnostics["experimental_profile_fixed_support_batch"]``
-   Present when the fixed-support batch path was accepted.  It includes
-   fallback/rescue metadata and per-layer acceptance information.
+``result.diagnostics``
+   Includes ``route="head_v2"``, the immutable preset name, aggregate timing,
+   and lifecycle round records.
 
-``result.layers[i].diagnostics``
-   Per-layer diagnostics.  Fixed-support batch results attach the batch route
-   report to each layer so failed or rescued layers can be inspected.
+``result.layers[i].diagnostics["fixed_support_v2"]``
+   Includes the lifecycle outcome, fixed-support convergence, independent KKT
+   result, support closure, finite-state gate, and per-round support records.
 
 Experimental Payload Helpers
 ----------------------------
@@ -223,12 +245,14 @@ the curated GPU sweep, the selected global setting was native activity
 overlap score had worst-family disagreement about ``0.186`` dex, roughly a
 factor of ``1.5``.
 
-For production workloads, keep ``method="auto"`` unless a conservative scan is
-needed for debugging:
+For production workloads, keep ``method="auto"``.  The independent v2 path may
+be requested explicitly with ``"vmap_cold"``.  A conservative v1 scan is a
+temporary compatibility/debugging route and must be selected explicitly:
 
 .. code-block:: python
 
    conservative = CondensateEquilibriumOptions(
+       route="head_v1",
        profile_method="scan_hot_from_top",
    )
 
