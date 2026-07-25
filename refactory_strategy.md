@@ -465,6 +465,12 @@ docstring 以外の参照が見つからなかった。
 | `minimize_cond.py:323-544` | `build_case_keyed_correctvalues_condensation_source_state_carrier` | `minimize_cond.__all__` 外 |
 | `minimize_cond.py:547-764` | `build_case_keyed_reduced_slot_solve_state_source_carrier` | `minimize_cond.__all__` 外 |
 
+実施状況:
+
+- `minimize_cond.py` の3 carrier は、最初の deletion wave で削除済み。
+- `pipm_rgie_cond.py` の候補は direct-import policy の追加確認まで保留中。
+- 上表の line number は監査対象 base `c09d327` での位置を示す。
+
 Wave A 削除前の条件:
 
 1. non-exported legacy diagnostic の direct import は supported compatibility
@@ -747,6 +753,7 @@ source behavior が不変であることは確認する。
 
 ### 2026-07-25: Phase 0 import provenance/contract gate
 
+- commit: `acdb707`
 - fixed-support v2 の全 C-shell wrapper で checkout 内 `src` を
   `PYTHONPATH` に固定した。
 - production/archive/support-atlas runner で `exogibbs.__file__` を検証し、
@@ -764,3 +771,22 @@ source behavior が不変であることは確認する。
 - 3 Python runners: intentionally invalid `PYTHONPATH` からの `--help` passed
 - Sphinx configuration: `py_compile` passed
 - Sphinx runtime import: `.venv` に `sphinx_rtd_theme` がないため未実施
+
+### 2026-07-25: first deletion wave
+
+- commit subject: `condensates: remove unused diagnostic carriers`
+- `minimize_cond.py` から default-off/repository-internal zero-call-site の
+  carrier 3群を削除した。
+  - `emit_correctvalues_condensation_diagnostic_record`
+  - `build_case_keyed_correctvalues_condensation_source_state_carrier`
+  - `build_case_keyed_reduced_slot_solve_state_source_carrier`
+- `minimize_cond.__all__`、production v2、explicit v1 solver、archive runner
+  の symbol/call path は変更していない。
+- file size: `11,067 -> 10,526` lines (`-541`)
+
+検証:
+
+- removed symbol repository search: 参照0
+- `py_compile`: passed
+- targeted optimize/API tests: `76 passed`
+- full unit tests: `512 passed, 22 warnings`
