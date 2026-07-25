@@ -6,6 +6,7 @@ if ( $status != 0 ) then
   echo "ERROR: could not enter the repository root"
   exit 1
 endif
+setenv PYTHONPATH "$cwd/src"
 
 if ( $#argv != 0 && $#argv != 4 ) then
   echo "usage: $0 [max_cold_compile max_cold_wall max_warm_execute max_warm_wall]"

@@ -21,8 +21,13 @@ import pickle
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 from typing import Any, Iterable, Mapping, Sequence
+
+ROOT = Path(__file__).resolve().parents[2]
+SOURCE_ROOT = ROOT / "src"
+sys.path.insert(0, str(SOURCE_ROOT))
 
 import numpy as np
 
@@ -31,6 +36,15 @@ os.environ.setdefault("JAX_ENABLE_X64", "1")
 import jax
 from jax import config
 import jax.numpy as jnp
+
+import exogibbs
+EXPECTED_EXOGIBBS_ROOT = (SOURCE_ROOT / "exogibbs").resolve()
+IMPORTED_EXOGIBBS_ROOT = Path(exogibbs.__file__).resolve().parent
+if IMPORTED_EXOGIBBS_ROOT != EXPECTED_EXOGIBBS_ROOT:
+    raise RuntimeError(
+        "Imported exogibbs from outside this repository: "
+        f"{IMPORTED_EXOGIBBS_ROOT} != {EXPECTED_EXOGIBBS_ROOT}"
+    )
 
 from exogibbs.api.condensate_equilibrium import (
     CondensateEquilibriumInit,
@@ -55,7 +69,6 @@ from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 from exogibbs.utils.fastchem_parity import normalize_species_name
 
 
-ROOT = Path(__file__).resolve().parents[2]
 BENCHMARK_PATH = (
     ROOT
     / "benchmarks"

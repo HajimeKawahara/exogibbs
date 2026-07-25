@@ -19,6 +19,16 @@ _slice_batch_scalar = _sweep_module["_slice_batch_scalar"]
 _write_solver_checkpoint = _sweep_module["_write_solver_checkpoint"]
 
 
+def test_support_atlas_imports_checked_out_source():
+    repository_root = Path(__file__).resolve().parents[3]
+
+    assert (
+        _sweep_module["IMPORTED_EXOGIBBS_ROOT"]
+        == _sweep_module["EXPECTED_EXOGIBBS_ROOT"]
+        == (repository_root / "src" / "exogibbs").resolve()
+    )
+
+
 def test_subset_profile_definition_preserves_requested_source_order():
     definition = CuratedProfileDefinition(
         family="test",

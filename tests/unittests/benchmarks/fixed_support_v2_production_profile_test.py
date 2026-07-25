@@ -2,8 +2,9 @@ import runpy
 from pathlib import Path
 
 
+REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 _module = runpy.run_path(
-    Path(__file__).resolve().parents[3]
+    REPOSITORY_ROOT
     / "benchmarks"
     / "fixed_support_v2"
     / "production_profile_gpu_gate.py"
@@ -12,6 +13,27 @@ _evaluate_budgets = _module["_evaluate_budgets"]
 _parse_gpu_compute_processes = _module["_parse_gpu_compute_processes"]
 _preflight_report = _module["_preflight_report"]
 DEFAULT_FAMILIES = _module["DEFAULT_FAMILIES"]
+
+
+def test_production_runner_imports_checked_out_source():
+    assert (
+        _module["IMPORTED_EXOGIBBS_ROOT"]
+        == _module["EXPECTED_EXOGIBBS_ROOT"]
+        == (REPOSITORY_ROOT / "src" / "exogibbs").resolve()
+    )
+
+
+def test_fixed_support_gpu_launchers_pin_repository_source():
+    launchers = sorted(
+        (REPOSITORY_ROOT / "benchmarks" / "fixed_support_v2").glob(
+            "run_fixed_support_v2_*.csh"
+        )
+    )
+
+    assert launchers
+    for launcher in launchers:
+        source = launcher.read_text(encoding="utf-8")
+        assert 'setenv PYTHONPATH "$cwd/src"' in source
 
 
 def test_production_profile_preflight_requires_promoted_v2_default():

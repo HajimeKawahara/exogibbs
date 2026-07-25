@@ -735,3 +735,32 @@ source behavior が不変であることは確認する。
 により `minimize_cond -> pipm_rgie_cond` の eager diagnostic edge を切る。
 10,340行の exact diagnostic cluster や6,834行の v1 batch の一括削除は、
 これらの boundary と evidence owner が明示されるまで行わない。
+
+## 12. 実施記録
+
+### 2026-07-25: audit baseline
+
+- commit: `72dedd1`
+- production/v1/archive/historical surface を監査した。
+- この strategy を削除前の判断基準として追加した。
+- runtime code の変更・削除は行っていない。
+
+### 2026-07-25: Phase 0 import provenance/contract gate
+
+- fixed-support v2 の全 C-shell wrapper で checkout 内 `src` を
+  `PYTHONPATH` に固定した。
+- production/archive/support-atlas runner で `exogibbs.__file__` を検証し、
+  repository 外からの import を fail-fast にした。
+- Sphinx configuration も repository-relative `src` を使うようにした。
+- default `head_v2` が legacy module を importせず、v2 failure を v1 へ
+  fallback せず伝播する fresh-process regression test を追加した。
+- benchmark provenance test を追加した。
+
+検証:
+
+- targeted tests: `13 passed`
+- full unit tests: `512 passed, 22 warnings`
+- C-shell syntax check: 6 runners passed
+- 3 Python runners: intentionally invalid `PYTHONPATH` からの `--help` passed
+- Sphinx configuration: `py_compile` passed
+- Sphinx runtime import: `.venv` に `sphinx_rtd_theme` がないため未実施

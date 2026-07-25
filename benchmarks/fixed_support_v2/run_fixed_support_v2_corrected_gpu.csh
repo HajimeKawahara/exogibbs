@@ -6,6 +6,7 @@ if ( $status != 0 ) then
   echo "ERROR: could not enter the repository root"
   exit 1
 endif
+setenv PYTHONPATH "$cwd/src"
 
 setenv JAX_ENABLE_X64 1
 setenv JAX_PLATFORMS cuda,cpu

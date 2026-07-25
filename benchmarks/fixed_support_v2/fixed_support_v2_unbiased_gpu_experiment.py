@@ -22,8 +22,13 @@ import math
 import os
 from pathlib import Path
 import subprocess
+import sys
 import time
 from typing import Any, Mapping, Sequence
+
+ROOT = Path(__file__).resolve().parents[2]
+SOURCE_ROOT = ROOT / "src"
+sys.path.insert(0, str(SOURCE_ROOT))
 
 import numpy as np
 
@@ -32,6 +37,15 @@ os.environ.setdefault("JAX_ENABLE_X64", "1")
 import jax
 from jax import config as jax_config
 import jax.numpy as jnp
+
+import exogibbs
+EXPECTED_EXOGIBBS_ROOT = (SOURCE_ROOT / "exogibbs").resolve()
+IMPORTED_EXOGIBBS_ROOT = Path(exogibbs.__file__).resolve().parent
+if IMPORTED_EXOGIBBS_ROOT != EXPECTED_EXOGIBBS_ROOT:
+    raise RuntimeError(
+        "Imported exogibbs from outside this repository: "
+        f"{IMPORTED_EXOGIBBS_ROOT} != {EXPECTED_EXOGIBBS_ROOT}"
+    )
 
 from exogibbs.api.condensate_equilibrium import (
     CondensateEquilibriumInit,
@@ -71,7 +85,6 @@ from support_atlas_sweep import (
 )
 
 
-ROOT = Path(__file__).resolve().parents[2]
 MATRIX_PATH = Path(__file__).with_name("fixed_support_v2_gpu_matrix.json")
 DEFAULT_OUTPUT_DIR = ROOT / "results" / "fixed_support_v2_unbiased_gpu"
 DEFAULT_SCHEDULE = (-11.0, -13.0, -15.0, -17.0)
