@@ -493,6 +493,14 @@ Wave A 削除前の条件:
 - exact replay/input-bundle cluster (`pipm_rgie_cond.py:1561-12280`)
 - selected direction/trajectory diagnostic/trace
 
+実施状況:
+
+- private one-shot profile adapter
+  `_solve_pdipm_rgie_v11_activity_correction_profile_buckets` は削除済み。
+- 同じ3-layer/budget contract を検証する prepared `prepare/run` pair と test
+  は保持している。
+- その他の Wave B 候補は未着手。
+
 exact replay/input-bundle cluster は最初に historical diagnostics module へ移す。
 その後、executable reconstruction code ではなく frozen report/document を
 evidence owner にできるか判断する。
@@ -774,6 +782,7 @@ source behavior が不変であることは確認する。
 
 ### 2026-07-25: first deletion wave
 
+- commit: `08e8859`
 - commit subject: `condensates: remove unused diagnostic carriers`
 - `minimize_cond.py` から default-off/repository-internal zero-call-site の
   carrier 3群を削除した。
@@ -790,3 +799,24 @@ source behavior が不変であることは確認する。
 - `py_compile`: passed
 - targeted optimize/API tests: `76 passed`
 - full unit tests: `512 passed, 22 warnings`
+
+### 2026-07-25: second deletion wave
+
+- commit subject: `condensates: remove obsolete profile bucket adapter`
+- source caller がなく、test からのみ到達していた private one-shot adapter
+  `_solve_pdipm_rgie_v11_activity_correction_profile_buckets` を削除した。
+- adapter 専用の重複 test を削除した。
+- current API/archive path が使用する
+  `_prepare_pdipm_rgie_v11_activity_correction_profile_buckets` と
+  `_run_pdipm_rgie_v11_activity_correction_prepared_profile_buckets`、および
+  その3-layer/budget contract test は保持した。
+- runtime source: `-191` lines
+- duplicate test: `-76` lines
+- `minimize_cond.py`: `10,526 -> 10,335` lines
+
+検証:
+
+- removed source/test symbol repository search: 参照0
+- `py_compile`: passed
+- targeted optimize/API/archive tests: `48 passed`
+- full unit tests: `511 passed, 22 warnings`
