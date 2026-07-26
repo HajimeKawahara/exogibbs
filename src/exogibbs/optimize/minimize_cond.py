@@ -16,6 +16,13 @@ from scipy.optimize import least_squares
 
 from exogibbs.api.chemistry import ThermoState
 from exogibbs.optimize.core import _compute_gk
+from exogibbs.optimize.legacy_condensate.rgie_helpers import (
+    build_rgie_condensate_init_from_policy,
+    summarize_rgie_inactive_driving,
+)
+from exogibbs.optimize.legacy_condensate.rgie_reduced_system import (
+    _recompute_pi_for_residual,
+)
 from exogibbs.optimize.fixed_support_batch import (
     FIXED_SUPPORT_BATCH_DEFAULT_EPSILON_SCHEDULE,
     FIXED_SUPPORT_BATCH_LAMBDA_INITIALIZATIONS,
@@ -77,18 +84,6 @@ def _call_pipm_rgie(symbol_name: str, *args, **kwargs):
     return getattr(pipm_rgie_cond, symbol_name)(*args, **kwargs)
 
 
-def _recompute_pi_for_residual(*args, **kwargs):
-    return _call_pipm_rgie("_recompute_pi_for_residual", *args, **kwargs)
-
-
-def build_rgie_condensate_init_from_policy(*args, **kwargs):
-    return _call_pipm_rgie(
-        "build_rgie_condensate_init_from_policy",
-        *args,
-        **kwargs,
-    )
-
-
 def compute_condensate_budget_limits(*args, **kwargs):
     return _call_pipm_rgie("compute_condensate_budget_limits", *args, **kwargs)
 
@@ -99,10 +94,6 @@ def select_conditional_capped_s_reduced_coupling_mode(*args, **kwargs):
         *args,
         **kwargs,
     )
-
-
-def summarize_rgie_inactive_driving(*args, **kwargs):
-    return _call_pipm_rgie("summarize_rgie_inactive_driving", *args, **kwargs)
 
 
 def _diagnose_full_vs_reduced_gie_direction_raw(*args, **kwargs):

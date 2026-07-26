@@ -831,6 +831,7 @@ source behavior が不変であることは確認する。
 
 ### 2026-07-26: Phase 1 lazy PIPM/RGIE boundary
 
+- commit: `b24b489`
 - commit subject: `condensates: lazy-load legacy PIPM diagnostics`
 - `minimize_cond.py` の module-level `pipm_rgie_cond` import を除去した。
 - raw solver、diagnostic、legacy helper name は lazy proxy として保持し、
@@ -845,3 +846,45 @@ source behavior が不変であることは確認する。
 - `py_compile`: passed
 - targeted optimize/API tests: `73 passed`
 - full unit tests: `512 passed, 22 warnings`
+
+### 2026-07-26: Phase 1 legacy RGIE primitive extraction
+
+- commit subject: `condensates: extract legacy RGIE support primitives`
+- `legacy_condensate/rgie_helpers.py` に、default `head_v1` support workflow が
+  使用する startup と inactive-driving summary を分離した。
+  - `build_rgie_condensate_init_from_policy`
+  - `summarize_rgie_inactive_driving`
+- `legacy_condensate/rgie_reduced_system.py` に reduced-system assembly/solve と
+  post-solve residual 用 `pi` 再計算を分離した。
+  - `_assemble_reduced_system_terms`
+  - `_regularize_q_block`
+  - `solve_reduced_gibbs_iteration_equations_cond`
+  - `_solve_reduced_gibbs_iteration_equations_cond_with_metrics`
+  - `_recompute_pi_for_residual`
+- `pipm_rgie_cond.py` は上記 symbol を import/re-export するため、既存の
+  explicit compatibility import path は維持される。
+- `minimize_cond.py` の standard support helper は小モジュールを直接使用する。
+  raw solver/alternate diagnostic proxy は引き続き opt-in call 時だけ
+  `pipm_rgie_cond.py` を load する。
+- fresh-process regression は startup、reduced residual、inactive-driving
+  summary の各 helper を実行し、その後も raw module が未 load であることを
+  確認する。
+- file size:
+  - `minimize_cond.py`: `10,415 -> 10,406` lines
+  - `pipm_rgie_cond.py`: `17,121 -> 16,668` lines
+  - 新規 focused package: `497` lines
+
+この wave は symbol の ownership を移動したもので、production `head_v2`、
+route version、preset、lifecycle owner、no-fallback contract は変更していない。
+raw v1 solver 本体と archive replay dependency の削除は行っていない。
+
+検証:
+
+- worktree import provenance: passed
+- `py_compile`: passed
+- `git diff --check`: passed
+- move-only function AST parity: `7/7`
+- legacy import alias identity: `4/4`
+- targeted legacy/API/production-route tests: `86 passed`
+- full unit tests: `512 passed, 22 warnings`
+- frozen v1 summary SHA-256: 記録済み2件とも一致
