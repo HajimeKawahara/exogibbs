@@ -247,43 +247,35 @@ historical label を付けて保持するか、相互参照を壊さず archive 
 
 ### 4.1 `pipm_rgie_cond.py`
 
-現在 17,121行。
+exact replay deletion wave 後は5,745行。
 
 | lines | 主な役割 | reachability/方針 |
 |---|---|---|
-| 39-200 | diagnostic carrier と density gauge | mixed。一部 zero-call-site |
-| 203-1501 | inventory/coupling/support/direction experiment | 主に direct/test/experimental |
-| 1504-1558 | reduced-system assembly/regularization | legacy reduced solve が使用 |
-| 1561-8046 | exact replay construction | default-off diagnostic evidence |
-| 8049-8332 | normalization と density carrier experiment | private helper + zero-call-site carrier 2件 |
-| 8335-12280 | exact-input bundle construction | default-off diagnostic evidence |
-| 12283-12538 | bundle normalization/reduced solve | diagnostic/core mixed |
-| 12543-14826 | residual/direction diagnostics | direct/test/diagnostic |
-| 14829-16771 | legacy update loop/raw solver | alternate v1/direct API |
-| 16774-17121 | trace API | direct/test/diagnostic |
+| 39-1358 | carrier、inventory/coupling/support/direction helper | 主に direct/test/experimental |
+| 1359-2054 | residual、lambda、gas-limiter diagnostic | alternate v1/direct diagnostic |
+| 2057-3569 | backend/direction/trajectory comparison | direct/test/diagnostic |
+| 3572-5204 | legacy update loop/raw solver core | alternate v1/direct API |
+| 5207-5413 | raw solver wrappers/diagnostics | alternate v1/direct API |
+| 5416-5745 | trace API | direct/test/diagnostic |
 
-`_build_kl_gas_phase_calculate_replay_results` と
-`_build_reduced_solver_exact_input_bundle` だけで10,340行、module 全体の約60.4%
-を占める。通常 runtime の switch は default-off であり production dependency
-ではない。ただし diagnostic wrapper/test からは呼べるため、削除より先に
-historical diagnostics module へ分離する。
+旧 `_build_kl_gas_phase_calculate_replay_results` と
+`_build_reduced_solver_exact_input_bundle` を中心とした default-off exact replay
+cluster は削除済みである。shared reduced-system primitive は
+`legacy_condensate/rgie_reduced_system.py` にあり、旧 import pathから再exportする。
 
 ### 4.2 `minimize_cond.py`
 
-現在 11,067行。
+exact replay deletion wave 後は10,214行。
 
 | lines | 主な役割 | reachability/方針 |
 |---|---|---|
-| 122-223 | legacy type/config | public/cross-module compatibility |
-| 226-764 | default-off diagnostic carrier | repository-internal zero-call-site 候補 |
-| 769-989 | result/diagnostic/bucket type | public または v1 batch |
-| 992-2018 | profile setup と legacy RGIE/gas helper | compatibility |
-| 2021-8854 | v1 fixed-support batch/continuation/bucket API | explicit v1 profile/archive replay |
-| 8857-9641 | standard restricted v1 layer | explicit v1 compatibility |
-| 9644-10177 | semismooth experiment | explicit support mode/direct export |
-| 10180-11067 | compatibility API/trace/`__all__` | public/direct compatibility |
+| 122-1424 | legacy type/config、profile setup、gas/RGIE helper | public/cross-module compatibility |
+| 1427-8069 | v1 fixed-support batch/continuation/bucket API | explicit v1 profile/archive replay |
+| 8072-8856 | standard restricted v1 layer/metrics | explicit v1 compatibility |
+| 8859-9392 | semismooth/active-set experiment | explicit support mode/direct export |
+| 9395-10214 | compatibility profile API/trace/`__all__` | public/direct compatibility |
 
-v1 fixed-support batch は6,834行、module 全体の約61.8%である。
+v1 fixed-support batch は約6,643行、module 全体の約65%である。
 core は60引数を持ち、result は111個の positional value に unpack される。
 これは v2 が focused typed component で置き換えた historical all-in-one kernel
 の形そのものである。
@@ -298,7 +290,7 @@ production v2 dependency ではないが、explicit v1 profile と archive runne
 - `src/exogibbs/api/__init__.py` は condensate API を lazy export する。
 - `src/exogibbs/api/condensate_equilibrium.py:10912-10947` は production API
   と legacy experimental prepared-plan API を同じ `__all__` に置く。
-- `src/exogibbs/optimize/minimize_cond.py:11030-11067` は36名を公開する。
+- `src/exogibbs/optimize/minimize_cond.py:10178-10214` は35名を公開する。
 - `src/exogibbs/optimize/pipm_rgie_cond.py` には `__all__` がない。
 - `src/exogibbs/optimize/__init__.py` は空で、追加の package-level contract
   を定義しない。
@@ -448,7 +440,7 @@ audit で扱う。
 
 ## 7. deletion candidate register
 
-この監査では、以下をまだ削除しない。
+この監査で登録した候補と、その後の実施状況を以下に示す。
 
 ### 7.1 Wave A: 高信頼 repository-internal orphan
 
@@ -468,7 +460,9 @@ docstring 以外の参照が見つからなかった。
 実施状況:
 
 - `minimize_cond.py` の3 carrier は、最初の deletion wave で削除済み。
-- `pipm_rgie_cond.py` の候補は direct-import policy の追加確認まで保留中。
+- exact replay cluster 内の2つの density carrier は、direct-import policy を
+  記録した exact replay deletion wave で削除済み。
+- `pipm_rgie_cond.py` のその他の候補は追加確認まで保留中。
 - 上表の line number は監査対象 base `c09d327` での位置を示す。
 
 Wave A 削除前の条件:
@@ -499,11 +493,27 @@ Wave A 削除前の条件:
   `_solve_pdipm_rgie_v11_activity_correction_profile_buckets` は削除済み。
 - 同じ3-layer/budget contract を検証する prepared `prepare/run` pair と test
   は保持している。
-- その他の Wave B 候補は未着手。
+- exact replay/input-bundle cluster は削除済み。
+- raw update/support/selected direction diagnostic 候補は未着手。
 
-exact replay/input-bundle cluster は最初に historical diagnostics module へ移す。
-その後、executable reconstruction code ではなく frozen report/document を
-evidence owner にできるか判断する。
+exact replay/input-bundle cluster は Phase 1 の lazy boundary と shared RGIE
+primitive extraction 完了後に再監査した。再監査結果は次の通りである。
+
+- production `head_v2` と default explicit `head_v1` から未到達
+- 通常の raw v1 solve では activation flag/context が無効
+- repository 内の有効化 caller は diagnostic unit test のみ
+- benchmark、example、active document、archive runner に executable consumer なし
+- frozen validation artifact の path/hash は cluster source に依存しない
+
+したがって、historical diagnostics module への移動は行わず deletion とする。
+historical evidence owner はこの strategy、既存 audit/design document、git history、
+および frozen report/artifact であり、10,000行超の executable reconstruction
+code 自体は evidence として保持しない。
+
+この判断は `pipm_rgie_cond.py` の暗黙 star-import surface を縮小する。ただし、
+private exact-bundle builder と repository consumer を持たない density carrier は
+supported compatibility API ではないと明示的に扱う。raw v1 solver、reduced solve、
+direction/residual diagnostic、および explicit `head_v1` route は保持する。
 
 ### 7.3 Wave C: public compatibility 判断が必要
 
@@ -625,6 +635,7 @@ Phase 0 では numerical algorithm を変更しない。
 4. raw RGIE solver
 5. semismooth experiment
 6. exact replay/input-bundle と diagnostic trace
+   （exact replay deletion 完了、残る trace は別判断）
 
 各 move で次を守る。
 
@@ -753,10 +764,14 @@ source behavior が不変であることは確認する。
 5. existing test を production v2、explicit v1、archive、historical diagnostic
    に分類する。
 
-その次の code-structure change で、move-only helper extraction と local import
-により `minimize_cond -> pipm_rgie_cond` の eager diagnostic edge を切る。
-10,340行の exact diagnostic cluster や6,834行の v1 batch の一括削除は、
-これらの boundary と evidence owner が明示されるまで行わない。
+Phase 1 の move-only helper extraction と local import により
+`minimize_cond -> pipm_rgie_cond` の eager diagnostic edge は切断済みである。
+再監査で test-only/default-off と確定した10,340行の exact diagnostic builder、
+専用 carrier/context plumbing/test の coherent deletion は完了した。
+次の change は、5,745行に縮小した `pipm_rgie_cond.py` の残る
+orphan/experimental diagnostic を symbol単位で再監査するか、raw v1 solverを
+focused legacy moduleへ分離する。約6,643行の v1 batch は explicit v1
+profile/archiveから到達するため、引き続き削除対象にしない。
 
 ## 12. 実施記録
 
@@ -887,4 +902,50 @@ raw v1 solver 本体と archive replay dependency の削除は行っていない
 - legacy import alias identity: `4/4`
 - targeted legacy/API/production-route tests: `86 passed`
 - full unit tests: `512 passed, 22 warnings`
+- frozen v1 summary SHA-256: 記録済み2件とも一致
+
+### 2026-07-26: exact replay diagnostic deletion
+
+- commit subject: `condensates: remove obsolete exact replay diagnostics`
+- default-off/test-only の exact replay/input-bundle feature を削除した。
+- `pipm_rgie_cond.py` から次の cluster 固有 symbol 10件を削除した。
+  - `_build_kl_gas_phase_calculate_replay_results`
+  - `_build_reduced_solver_exact_input_bundle`
+  - `_build_element_slot_gas_density_ntot_normalization_carrier`
+  - `build_fastchem_exact_total_element_density_convention_carrier`
+  - `build_condensate_density_budget_cap_total_element_density_carrier`
+  - `_normalize_exact_input_bundle_context`
+  - `_diagnostic_json_array`
+  - `_diagnostic_source_state_hash`
+  - `_build_ln_nk_producer_trace`
+  - `_with_lnnk_source_state_trace`
+- `minimize_cond.py` から exact replay 専用 source-trace adapter 2件を削除し、
+  `build_lnnk_constructor_source_trace` を `__all__` から除外した。
+- exact bundle activation/context parameter、emitter metadata、trace record
+  injectionをbackend comparison/raw trace wrapperから除去した。
+- exact replay専用test 6件を削除した。一般backend比較、structured wrapper、
+  gas source trace、raw v1 solver testは保持した。
+
+file size:
+
+- `pipm_rgie_cond.py`: `16,668 -> 5,745` lines (`-10,923`)
+- `minimize_cond.py`: `10,406 -> 10,214` lines (`-192`)
+- `minimize_cond_diagnostics_test.py`: `1,711 -> 1,111` lines (`-600`)
+
+この deletion は implicit `pipm_rgie_cond` star-import surface と
+`minimize_cond.__all__` を縮小する意図した compatibility cleanup である。
+production `head_v2`、explicit `head_v1` route、raw v1 solver、v1 profile batch、
+archive runner、shared reduced-system primitiveは変更していない。
+
+検証:
+
+- removed runtime/test/benchmark/example/document symbol search: 参照0
+- worktree import provenance: passed
+- `py_compile`: passed
+- `git diff --check`: passed
+- preserved top-level function/class AST parity:
+  `pipm_rgie_cond 62/62`、`minimize_cond 71/71`
+- `minimize_cond.__all__` delta: exact-source adapter 1名のみ
+- targeted legacy/API/production-route tests: `80 passed`
+- full unit tests: `506 passed, 22 warnings`
 - frozen v1 summary SHA-256: 記録済み2件とも一致

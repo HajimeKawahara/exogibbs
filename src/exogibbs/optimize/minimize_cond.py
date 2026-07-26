@@ -601,130 +601,6 @@ def _prepare_condensate_init(init: CondensateEquilibriumInit) -> CondensateEquil
     )
 
 
-def build_lnnk_constructor_source_trace(
-    ln_nk_source: Any,
-    *,
-    case_key: str = "diagnostic",
-    newton_iter: int = 0,
-    source_stage: str,
-    producer_function: str,
-    source_density_cgs_before_exp_or_normalization: Optional[Sequence[float]] = None,
-    density_domain_scale: Optional[str] = None,
-    floor_policy: str = "not supplied",
-) -> dict[str, Any]:
-    """Build a default-off diagnostic trace for a caller-owned ln_nk initializer."""
-
-    raw = np.asarray(jax.device_get(ln_nk_source))
-    raw_float64 = np.asarray(raw, dtype=np.float64)
-    finite = np.isfinite(raw_float64)
-    double_min_log = math.log(float.fromhex("0x1p-1022"))
-    density_source = None
-    if source_density_cgs_before_exp_or_normalization is not None:
-        density_source = np.asarray(
-            source_density_cgs_before_exp_or_normalization,
-            dtype=np.longdouble,
-        ).astype(float).tolist()
-    return {
-        "diagnostic_only": True,
-        "default_off": True,
-        "constructor_input": False,
-        "reference_trace_input": False,
-        "FastChem_trace_values_used_as_inputs": False,
-        "used_as_KL_constructor_input": False,
-        "available": True,
-        "case_key": str(case_key),
-        "newton_iter": int(newton_iter),
-        "source_stage": str(source_stage),
-        "producer_function": str(producer_function),
-        "raw_input_type": type(ln_nk_source).__name__,
-        "raw_input_dtype": str(raw.dtype),
-        "shape": [int(dim) for dim in raw.shape],
-        "native_longdouble_provenance_available": bool(raw.dtype == np.longdouble),
-        "preserves_native_longdouble_bits": bool(raw.dtype == np.longdouble),
-        "reconstructed_from_float64": bool(raw.dtype != np.longdouble),
-        "finite_count": int(np.count_nonzero(finite)),
-        "below_double_normal_log_count": int(
-            np.count_nonzero(finite & (raw_float64 < double_min_log))
-        ),
-        "source_density_cgs_before_exp_or_normalization_available": (
-            density_source is not None
-        ),
-        "source_density_cgs_before_exp_or_normalization": density_source,
-        "density_domain_scale_available": density_domain_scale is not None,
-        "density_domain_scale": density_domain_scale,
-        "floor_policy": str(floor_policy),
-        "next_required_field": (
-            "gas-equilibrium or FastChem-parity initializer numeric source before "
-            "the caller constructs CondensateEquilibriumInit.ln_nk"
-        ),
-    }
-
-
-def _build_lnnk_init_source_trace(
-    init: CondensateEquilibriumInit,
-    prepared: CondensateEquilibriumInit,
-    *,
-    case_key: str,
-    newton_iter: int,
-    source_stage: str,
-    producer_function: str,
-) -> dict[str, Any]:
-    """Describe the diagnostic ln_nk init handoff without changing solver inputs."""
-
-    if init.ln_nk_source_trace is not None:
-        supplied = dict(init.ln_nk_source_trace)
-        supplied.setdefault("diagnostic_only", True)
-        supplied.setdefault("default_off", True)
-        supplied.setdefault("constructor_input", False)
-        supplied.setdefault("reference_trace_input", False)
-        supplied.setdefault("FastChem_trace_values_used_as_inputs", False)
-        supplied.setdefault("used_as_KL_constructor_input", False)
-        supplied.setdefault("available", True)
-        supplied["case_key"] = str(case_key)
-        supplied["newton_iter"] = int(newton_iter)
-        supplied["consumer_boundary"] = (
-            "src/exogibbs/optimize/minimize_cond.py::"
-            "trace_condensate_reduced_solver_backends"
-        )
-        return supplied
-
-    raw = np.asarray(jax.device_get(init.ln_nk))
-    prepared_array = np.asarray(jax.device_get(prepared.ln_nk), dtype=np.float64)
-    finite = np.isfinite(prepared_array)
-    double_min_log = math.log(float.fromhex("0x1p-1022"))
-    return {
-        "diagnostic_only": True,
-        "default_off": True,
-        "constructor_input": False,
-        "reference_trace_input": False,
-        "FastChem_trace_values_used_as_inputs": False,
-        "used_as_KL_constructor_input": False,
-        "available": True,
-        "case_key": str(case_key),
-        "newton_iter": int(newton_iter),
-        "source_stage": source_stage,
-        "producer_function": producer_function,
-        "raw_input_type": type(init.ln_nk).__name__,
-        "raw_input_dtype": str(raw.dtype),
-        "prepared_jax_dtype": str(prepared.ln_nk.dtype),
-        "shape": [int(dim) for dim in prepared.ln_nk.shape],
-        "native_longdouble_provenance_available": bool(raw.dtype == np.longdouble),
-        "preserves_native_longdouble_bits": False,
-        "reconstructed_from_float64": bool(raw.dtype != np.longdouble),
-        "finite_count": int(np.count_nonzero(finite)),
-        "below_double_normal_log_count": int(
-            np.count_nonzero(finite & (prepared_array < double_min_log))
-        ),
-        "source_density_cgs_before_exp_or_normalization_available": False,
-        "density_domain_scale_available": False,
-        "floor_policy": "no pre-wrapper source floor policy available at this boundary",
-        "next_required_field": (
-            "caller/initializer source density before CondensateEquilibriumInit "
-            "stores ln_nk as a JAX float64 value"
-        ),
-    }
-
-
 def _prepare_rgie_startup_config(
     startup_config: Optional[CondensateRGIEStartupConfig],
 ) -> CondensateRGIEStartupConfig:
@@ -10064,41 +9940,10 @@ def trace_condensate_reduced_solver_backends(
     epsilon: float,
     element_indices: Optional[jnp.ndarray] = None,
     backend_configs: Optional[Sequence[dict]] = None,
-    exact_input_bundle_context: Optional[dict[str, Any]] = None,
 ):
     """Diagnostic-only wrapper for one-step reduced-solver backend comparisons."""
 
     init_prepared = _prepare_condensate_init(init)
-    emit_exact_input_bundle = (
-        False
-        if exact_input_bundle_context is None
-        else bool(exact_input_bundle_context.get("emit_exact_input_bundle", False))
-    )
-    case_key = (
-        "diagnostic"
-        if exact_input_bundle_context is None
-        else str(exact_input_bundle_context.get("case_key", "diagnostic"))
-    )
-    newton_iter = (
-        0
-        if exact_input_bundle_context is None
-        else int(exact_input_bundle_context.get("newton_iter", 0))
-    )
-    ln_nk_init_source_trace = (
-        None
-        if not emit_exact_input_bundle
-        else _build_lnnk_init_source_trace(
-            init,
-            init_prepared,
-            case_key=case_key,
-            newton_iter=newton_iter,
-            source_stage="trace_condensate_reduced_solver_backends CondensateEquilibriumInit.ln_nk",
-            producer_function=(
-                "src/exogibbs/optimize/minimize_cond.py::"
-                "trace_condensate_reduced_solver_backends"
-            ),
-        )
-    )
     return _diagnose_reduced_solver_backend_experiments_raw(
         state,
         ln_nk=init_prepared.ln_nk,
@@ -10111,42 +9956,6 @@ def trace_condensate_reduced_solver_backends(
         epsilon=epsilon,
         element_indices=element_indices,
         backend_configs=backend_configs,
-        case_key=case_key,
-        newton_iter=newton_iter,
-        condensates_jac_indices=(
-            None
-            if exact_input_bundle_context is None
-            else exact_input_bundle_context.get("condensates_jac_indices")
-        ),
-        condensate_labels_jac_order=(
-            None
-            if exact_input_bundle_context is None
-            else exact_input_bundle_context.get("condensate_labels_jac_order")
-        ),
-        element_labels_reduced_order=(
-            None
-            if exact_input_bundle_context is None
-            else exact_input_bundle_context.get("element_labels_reduced_order")
-        ),
-        row_scaled_element_condensate_jec_target_block=(
-            None
-            if exact_input_bundle_context is None
-            else exact_input_bundle_context.get(
-                "row_scaled_element_condensate_jec_target_block"
-            )
-        ),
-        selected_element_row_scaling_vector=(
-            None
-            if exact_input_bundle_context is None
-            else exact_input_bundle_context.get("selected_element_row_scaling_vector")
-        ),
-        gas_phase_calculate_lifecycle_context=(
-            None
-            if exact_input_bundle_context is None
-            else exact_input_bundle_context.get("gas_phase_calculate_lifecycle_context")
-        ),
-        emit_exact_input_bundle=emit_exact_input_bundle,
-        ln_nk_init_source_trace=ln_nk_init_source_trace,
     )
 
 
@@ -10378,7 +10187,6 @@ __all__ = [
     "CondensateRGIEStartupPolicy",
     "CondensateEquilibriumResult",
     "classify_rgie_support_proxies",
-    "build_lnnk_constructor_source_trace",
     "build_minimize_gibbs_core_lnnk_output_source_trace",
     "minimize_gibbs_core_with_source_trace",
     "compute_sk_feasible_epsilon_floor",
