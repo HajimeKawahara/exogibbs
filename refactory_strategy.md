@@ -607,6 +607,14 @@ Phase 0 では numerical algorithm を変更しない。
 
 この段階は functionality を削除せず、有効な dependency boundary を作る。
 
+実施状況:
+
+- module-level `minimize_cond -> pipm_rgie_cond` import は除去済み。
+- historical raw alias は monkeypatch compatibility を保つ lazy proxy にした。
+- plain `minimize_cond` import は `pipm_rgie_cond` を load しない。
+- default explicit `head_v1` の実行時 helper call は、まだ
+  `pipm_rgie_cond` を load する。small helper extraction は次の作業。
+
 ### Phase 2: move-only decomposition
 
 1 change につき1つの coherent unit を移す。
@@ -820,3 +828,20 @@ source behavior が不変であることは確認する。
 - `py_compile`: passed
 - targeted optimize/API/archive tests: `48 passed`
 - full unit tests: `511 passed, 22 warnings`
+
+### 2026-07-26: Phase 1 lazy PIPM/RGIE boundary
+
+- commit subject: `condensates: lazy-load legacy PIPM diagnostics`
+- `minimize_cond.py` の module-level `pipm_rgie_cond` import を除去した。
+- raw solver、diagnostic、legacy helper name は lazy proxy として保持し、
+  existing internal monkeypatch contract と `minimize_cond.__all__` を維持した。
+- fresh-process import regression を追加し、plain `minimize_cond` import 後も
+  `exogibbs.optimize.pipm_rgie_cond` が `sys.modules` にないことを確認した。
+- diagnostic/alternate legacy call は、対応する proxy が実行された時点でのみ
+  raw module を load する。
+
+検証:
+
+- `py_compile`: passed
+- targeted optimize/API tests: `73 passed`
+- full unit tests: `512 passed, 22 warnings`

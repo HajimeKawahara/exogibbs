@@ -65,22 +65,102 @@ from exogibbs.optimize.minimize import (
     minimize_gibbs_core,
     minimize_gibbs_core_with_source_trace,
 )
-from exogibbs.optimize.pipm_rgie_cond import (
-    _recompute_pi_for_residual,
-    build_rgie_condensate_init_from_policy,
-    compute_condensate_budget_limits,
-    select_conditional_capped_s_reduced_coupling_mode,
-    summarize_rgie_inactive_driving,
-    diagnose_full_vs_reduced_gie_direction as _diagnose_full_vs_reduced_gie_direction_raw,
-    diagnose_pdipm_vs_pipm_direction as _diagnose_pdipm_vs_pipm_direction_raw,
-    diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories as _diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories_raw,
-    diagnose_reduced_solver_backend_experiments as _diagnose_reduced_solver_backend_experiments_raw,
-    diagnose_gas_step_limiter_and_direction as _diagnose_gas_step_limiter_and_direction_raw,
-    diagnose_iteration_lambda_trials as _diagnose_iteration_lambda_trials_raw,
-    minimize_gibbs_cond_with_diagnostics as _minimize_gibbs_cond_with_diagnostics_raw,
-)
 
 Array = jax.Array
+
+
+def _call_pipm_rgie(symbol_name: str, *args, **kwargs):
+    """Call one legacy PIPM/RGIE symbol without importing it at module load."""
+
+    from exogibbs.optimize import pipm_rgie_cond
+
+    return getattr(pipm_rgie_cond, symbol_name)(*args, **kwargs)
+
+
+def _recompute_pi_for_residual(*args, **kwargs):
+    return _call_pipm_rgie("_recompute_pi_for_residual", *args, **kwargs)
+
+
+def build_rgie_condensate_init_from_policy(*args, **kwargs):
+    return _call_pipm_rgie(
+        "build_rgie_condensate_init_from_policy",
+        *args,
+        **kwargs,
+    )
+
+
+def compute_condensate_budget_limits(*args, **kwargs):
+    return _call_pipm_rgie("compute_condensate_budget_limits", *args, **kwargs)
+
+
+def select_conditional_capped_s_reduced_coupling_mode(*args, **kwargs):
+    return _call_pipm_rgie(
+        "select_conditional_capped_s_reduced_coupling_mode",
+        *args,
+        **kwargs,
+    )
+
+
+def summarize_rgie_inactive_driving(*args, **kwargs):
+    return _call_pipm_rgie("summarize_rgie_inactive_driving", *args, **kwargs)
+
+
+def _diagnose_full_vs_reduced_gie_direction_raw(*args, **kwargs):
+    return _call_pipm_rgie(
+        "diagnose_full_vs_reduced_gie_direction",
+        *args,
+        **kwargs,
+    )
+
+
+def _diagnose_pdipm_vs_pipm_direction_raw(*args, **kwargs):
+    return _call_pipm_rgie(
+        "diagnose_pdipm_vs_pipm_direction",
+        *args,
+        **kwargs,
+    )
+
+
+def _diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories_raw(*args, **kwargs):
+    return _call_pipm_rgie(
+        "diagnose_pdipm_vs_pipm_fixed_epsilon_trajectories",
+        *args,
+        **kwargs,
+    )
+
+
+def _diagnose_reduced_solver_backend_experiments_raw(*args, **kwargs):
+    return _call_pipm_rgie(
+        "diagnose_reduced_solver_backend_experiments",
+        *args,
+        **kwargs,
+    )
+
+
+def _diagnose_gas_step_limiter_and_direction_raw(*args, **kwargs):
+    return _call_pipm_rgie(
+        "diagnose_gas_step_limiter_and_direction",
+        *args,
+        **kwargs,
+    )
+
+
+def _diagnose_iteration_lambda_trials_raw(*args, **kwargs):
+    return _call_pipm_rgie(
+        "diagnose_iteration_lambda_trials",
+        *args,
+        **kwargs,
+    )
+
+
+def _minimize_gibbs_cond_with_diagnostics_raw(*args, **kwargs):
+    return _call_pipm_rgie(
+        "minimize_gibbs_cond_with_diagnostics",
+        *args,
+        **kwargs,
+    )
+
+
 CondensateProfileMethod = Literal[
     "vmap_cold",
     "scan_hot_from_top",
