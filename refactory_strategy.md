@@ -4,31 +4,86 @@
 
 | 項目 | 値 |
 |---|---|
-| 監査日 | 2026-07-25 |
+| 監査日 | 2026-07-27 |
 | worktree | `/home/kawahara/exogibbs-condensate-cleanup` |
 | branch | `cleanup/condensate-legacy` |
 | 監査対象 base | `c09d327` |
 | production promotion | `e68902e` は base に含まれる |
-| 現在の段階 | reachability / compatibility / evidence の監査のみ |
-| この段階でのコード削除 | なし |
+| 現在の段階 | v1 runtime retirement / production v2 cleanup |
+| この段階でのコード削除 | v1 runtime と obsolete executable evidence を削除 |
 
 この文書は、fixed-support solver v2 の production 昇格後に
 `src/exogibbs/optimize/pipm_rgie_cond.py` と
 `src/exogibbs/optimize/minimize_cond.py` を分解・整理するための判断記録である。
 
-先に結論を示す。
+先に現在の結論を示す。
 
 1. public default の `head_v2` route から、2つの巨大 legacy module への
    import/call 経路はない。
-2. ただし両 module には、explicit `head_v1`、direct optimize API、
-   experimental profile API、test、archive replay のいずれかから到達する
-   コードが残っている。
-3. 最初の実装は一括削除ではなく、import provenance と互換性 contract の
-   固定にする。
-4. 最初の構造変更は compatibility facade を維持した move-only extraction
-   にする。
-5. 削除は、direct-import compatibility の扱いを決めた後、
-   repository 内 zero-call-site carrier から段階的に行う。
+2. v1 は production fallback、correctness oracle、または将来の solver
+   development base として保持しない。
+3. `head_v1`、direct condensate optimize API、legacy experimental profile
+   API、および current-source v1 replay は runtime package から削除する。
+4. frozen validation data、記録済み hash、historical document、Git history は
+   executable v1 implementation と切り離して保持する。
+5. v2 が legacy bucket/type を借用する箇所だけを先に解消し、その後は
+   compatibility facade を作らず、v1 cluster を coherent unit で削除する。
+
+## 0. 2026-07-27 v1 retirement decision
+
+この section は、以下の旧 section にある「explicit `head_v1` を維持する」、
+「compatibility facade へ分解する」、「v1 sunset は optional」とした記述を
+上書きする。旧記述は当時の実施順序を説明する historical plan としてのみ残す。
+
+### 0.1 numerical judgment
+
+v1 は全入力で必ず非収束になるわけではない。しかし production solver として
+必要な一貫した収束性、現在 source での再現性、独立 KKT closure を持たない。
+
+- frozen strict-continuation selected cases は 8件中3件成功、5件失敗
+- historical v1 で成功していた production-gate 2件は、current v1 では
+  いずれも非収束
+- 同じ2件で v2 は収束し、独立 KKT check に合格
+- 旧99-layer比較の95件 `converged` は現在の production gate と同じ強さの
+  判定ではなく、科学的に大きな mismatch を持つ accepted row も含む
+
+したがって v1 executable は regression oracle にならない。historical evidence
+の owner は frozen JSON/Markdown、recorded hash、validation/migration document、
+および削除前 commit とする。
+
+### 0.2 product and compatibility judgment
+
+この cleanup branch は intentional breaking cleanup として扱う。
+repository外の direct import 利用を理由に無期限の deprecation facade は置かない。
+
+削除する surface:
+
+- route literal `head_v1` とその dispatch
+- `minimize_cond.py` / `pipm_rgie_cond.py` の condensate v1 API
+- v1 fixed-support batch、raw RGIE/PIPM、semismooth、diagnostic trace
+- v1 専用 environment-variable configuration
+- v1 execution を前提にした test、example、benchmark runner
+- current mutable v1 と frozen report を比較する archive replay
+
+保持する surface/evidence:
+
+- default `head_v2`、route version `v2.0`、preset `validated_2026_07`
+- fixed-support v2 implementation と external support lifecycle
+- documented experimental prepared-v2 path。ただし bucket/type は v2-native にする
+- production profile gate と provenance checks
+- frozen v1 summary/matrix path、byte content、recorded SHA-256
+- production migration、validation、design、および明示された historical audit
+
+### 0.3 implementation rule
+
+v1 code を先に美しく分割してから削除しない。削除のために必要な seam のみ作る。
+
+1. production v2 / prepared v2 code が legacy type を借用する edge を除去する。
+2. public route と export を v2-only にする。
+3. v1 runtime cluster と専用 test を削除する。
+4. archive runner を frozen-evidence integrity check へ縮退するか削除する。
+5. active docs/examples を v2-only contract に更新する。
+6. full unit suite と frozen hash check で closure を確認する。
 
 ## 1. authoritative contract
 
@@ -112,8 +167,8 @@ third-party user の direct import までは証明できない。特に次が重
 | class | 現在の内容 | 方針 |
 |---|---|---|
 | 1. production `head_v2` reachable | API route dispatch、v2 policy/profile、`fixed_support_v2/*` | 保護し、regression gate を置く |
-| 2. explicit `head_v1` compatibility | restricted layer、legacy profile batch、old RGIE mode、warm-start/depleted-gas helper | compatibility boundary の内側へ隔離 |
-| 3. frozen validation/archive evidence | frozen v1 summary、matrix、historical report、archive runner | byte/path を保存し replay dependency を隔離 |
+| 2. explicit `head_v1` compatibility | restricted layer、legacy profile batch、old RGIE mode、warm-start/depleted-gas helper | v1 retirement wave で削除 |
+| 3. frozen validation/archive evidence | frozen v1 summary、matrix、historical report | byte/path/hash を保存し mutable v1 replay は削除 |
 | 4. runtime-unreachable/obsolete experiment | zero-call-site carrier、default-off/test-only adapter | compatibility 確認後に wave 単位で削除 |
 | 5. historical documentation only | superseded audit/ablation/design input/旧 route 図 | historical と明示または archive |
 
@@ -541,50 +596,27 @@ repository call count が少ないだけでは削除しない。
 
 ## 8. target module boundary
 
-具体名は実装時に調整できるが、dependency は次の形を目標にする。
+dependency は v2-only の次の形を目標にする。
 
 ```text
 api/condensate_equilibrium.py
-  |-- production head_v2 --> optimize/fixed_support_v2_profile.py
-  |                         optimize/fixed_support_v2/*
-  |
-  `-- explicit head_v1 ---> optimize/legacy_condensate/head_v1_layer.py
-
-optimize/legacy_condensate/
-  types.py
-  rgie_reduced_system.py
-  rgie_solver.py
-  rgie_diagnostics.py
-  semismooth.py
-
-optimize/fixed_support_v1/
-  config.py
-  batch.py
-  profile.py
-
-optimize/minimize_cond.py       # backward-compatible facade
-optimize/pipm_rgie_cond.py      # backward-compatible facade
+  `-- production head_v2 --> optimize/fixed_support_v2_profile.py
+                            optimize/fixed_support_v2/*
+                            condensates/fixed_support_v2_policy.py
+                            condensates/fixed_support_payload.py
+                            condensates/support_selection_policy.py
 ```
 
 dependency rule:
 
-1. `fixed_support_v2` は `legacy_condensate`、`fixed_support_v1`、
-   `minimize_cond`、`pipm_rgie_cond` を import しない。
-2. public API は route validation 後に route implementation を lazy import する。
-3. default explicit v1 layer は小さな RGIE helper を import できるが、
-   historical diagnostics/v1 profile batch を import しない。
-4. v1 profile batch は v1 helper に依存できるが、production v2 は legacy
-   bucket representation に依存しない。
-5. archive runner は production facade を偶然経由せず explicit v1/archive
-   adapter を import する。
-6. historical diagnostic module は solver primitive に依存できるが、
-   solver primitive から historical reconstruction code へ逆依存しない。
-7. compatibility policy が removal を許可するまで、`minimize_cond.py` と
-   `pipm_rgie_cond.py` は historical import path/name/signature を維持する。
-
-既存 top-level `fixed_support_*` module も v1 batch implementation の一部だが、
-最初から全て移すと change が大きすぎる。まず giant batch を package boundary
-の内側へ隔離し、import/numerical parity の確立後に helper module を統合する。
+1. production API と `fixed_support_v2` は `legacy_condensate`、
+   `minimize_cond`、`pipm_rgie_cond`、v1 continuation/batch module を
+   import しない。
+2. public condensate route literal は `head_v2` のみとする。
+3. support lifecycle は引き続き fixed-support solver の外側に置く。
+4. v2 failure から v1 または別 solver への automatic fallback を追加しない。
+5. historical evidence は runtime import graph に入れない。
+6. `minimize_cond.py` と `pipm_rgie_cond.py` の facade は残さない。
 
 ## 9. execution plan
 
@@ -674,16 +706,15 @@ consumer を削除した test-only runtime adapter や orphan option を残さ�
 5. hard-coded old-worktree benchmark path を置換する。
 6. frozen validation artifact は変更しない。
 
-### Phase 6: optional `head_v1` sunset
+### Phase 6: `head_v1` retirement
 
-`head_v1` removal は別の product/versioning decision とする。実行する場合:
+2026-07-27 に optional ではなく実施対象へ変更した。
 
-1. deprecation を告知する。
-2. experimental v1 API の export を停止する。
-3. 必要な archive replay implementation を runtime package import から外す。
-4. v1 implementation と compatibility facade を削除する。
-5. historical artifact/migration record は保存する。
-6. 移行中も v2-to-v1 fallback を追加しない。
+1. experimental v1 API の export を停止する。
+2. archive replay implementation を runtime package import から外す。
+3. `head_v1` dispatch、v1 implementation、compatibility facade を削除する。
+4. historical artifact/migration record は保存する。
+5. v2-to-v1 fallback を追加しない。
 
 ## 10. verification gate
 
@@ -768,10 +799,16 @@ Phase 1 の move-only helper extraction と local import により
 `minimize_cond -> pipm_rgie_cond` の eager diagnostic edge は切断済みである。
 再監査で test-only/default-off と確定した10,340行の exact diagnostic builder、
 専用 carrier/context plumbing/test の coherent deletion は完了した。
-次の change は、5,745行に縮小した `pipm_rgie_cond.py` の残る
-orphan/experimental diagnostic を symbol単位で再監査するか、raw v1 solverを
-focused legacy moduleへ分離する。約6,643行の v1 batch は explicit v1
-profile/archiveから到達するため、引き続き削除対象にしない。
+
+2026-07-27 の retirement decision 後の次の change は次の順序とする。
+
+1. documented prepared-v2 API の bucket preparation を
+   `PreparedFixedSupportV2Bucket` owner へ移し、legacy type dependency を切る。
+2. `head_v1` dispatch と legacy prepared-plan runner/export を削除する。
+3. `minimize_cond.py`、`pipm_rgie_cond.py`、v1-only dependency cluster と
+   専用 test を削除する。
+4. current-v1 archive runner を削除し、frozen hash integrity test を残す。
+5. active docs/examples を v2-only contract に更新する。
 
 ## 12. 実施記録
 
@@ -949,3 +986,21 @@ archive runner、shared reduced-system primitiveは変更していない。
 - targeted legacy/API/production-route tests: `80 passed`
 - full unit tests: `506 passed, 22 warnings`
 - frozen v1 summary SHA-256: 記録済み2件とも一致
+
+### 2026-07-27: v1 retirement decision and prepared-v2 dependency seam
+
+- v1 を backward-compatibility runtime として残さず、route、solver、
+  legacy batch、mutable replay を削除する product decision を記録した。
+- frozen baseline、recorded hash、historical document、Git history を
+  executable v1 から独立した evidence owner とした。
+- documented prepared-v2 capability は保持し、legacy
+  `_PDIPMActivityFixedSupportBucket` と solver init carrier の代わりに
+  `PreparedFixedSupportV2Bucket` /
+  `PreparedFixedSupportV2LayerState` を使用する boundary を追加した。
+- prepared plan の作成後も `minimize_cond` と `pipm_rgie_cond` が import
+  されない fresh-process regression を追加した。
+
+検証:
+
+- `py_compile`: passed
+- production route / prepared-v2 profile targeted tests: `14 passed`

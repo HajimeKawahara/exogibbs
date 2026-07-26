@@ -3250,7 +3250,7 @@ def _solver_log_state_from_condensate_init(
     support_amounts_init: Sequence[float],
     source: str,
 ) -> Any | None:
-    """Build an internal restricted-solver init from a profile initializer."""
+    """Build a v2-owned prepared state from a profile initializer."""
 
     if init is None or init.gas_ln_n is None:
         return None
@@ -3272,7 +3272,9 @@ def _solver_log_state_from_condensate_init(
         or not bool(jnp.all(support_amounts > 0.0))
     ):
         return None
-    from exogibbs.optimize.minimize_cond import CondensateEquilibriumInit as SolverInit
+    from exogibbs.optimize.fixed_support_v2_profile import (
+        PreparedFixedSupportV2LayerState,
+    )
 
     element_potential = None
     if init.element_potential is not None:
@@ -3310,7 +3312,8 @@ def _solver_log_state_from_condensate_init(
         ):
             gas_stationarity_source = None
 
-    return SolverInit(
+    del source
+    return PreparedFixedSupportV2LayerState(
         ln_nk=gas_ln_n,
         ln_mk=jnp.log(jnp.maximum(support_amounts, 1.0e-300)),
         ln_ntot=jnp.log(jnp.asarray(gas_ntot, dtype=jnp.float64)),
@@ -3318,10 +3321,6 @@ def _solver_log_state_from_condensate_init(
         rho=rho,
         barrier_epsilon=barrier_epsilon,
         gas_stationarity_source=gas_stationarity_source,
-        ln_nk_source_trace={
-            "source": source,
-            "reason": "Profile or caller-provided condensate warm-start gas state.",
-        },
     )
 
 
@@ -3400,9 +3399,11 @@ def _default_fixed_support_solver_log_state(
     source: str,
 ) -> Any:
     from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
-    from exogibbs.optimize.minimize_cond import CondensateEquilibriumInit as SolverInit
+    from exogibbs.optimize.fixed_support_v2_profile import (
+        PreparedFixedSupportV2LayerState,
+    )
 
-    gas_budget, budget_trace = _fixed_support_gas_budget_for_init(
+    gas_budget, _budget_trace = _fixed_support_gas_budget_for_init(
         setup=setup,
         b=b,
         support_indices=support_indices,
@@ -3418,19 +3419,11 @@ def _default_fixed_support_solver_log_state(
         options=EquilibriumOptions(),
         return_diagnostics=False,
     )
-    return SolverInit(
+    del source
+    return PreparedFixedSupportV2LayerState(
         ln_nk=jnp.asarray(gas_result.ln_n, dtype=jnp.float64),
         ln_mk=jnp.log(jnp.maximum(jnp.asarray(support_amounts_init), 1.0e-300)),
         ln_ntot=jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64)),
-        ln_nk_source_trace={
-            "source": source,
-            "fixed_support_gas_init_policy": options.fixed_support_gas_init_policy,
-            "gas_budget": budget_trace,
-            "reason": (
-                "Initialize fixed-support gas on the policy-selected element "
-                "budget before the restricted condensate solve."
-            ),
-        },
     )
 
 
@@ -7917,8 +7910,8 @@ def _prepare_experimental_profile_fixed_support_batch_plan(
                 element_vector=jnp.asarray(b, dtype=jnp.float64),
             )
         )
-    from exogibbs.optimize.minimize_cond import (
-        _prepare_pdipm_rgie_v11_activity_correction_profile_buckets,
+    from exogibbs.optimize.fixed_support_v2_profile import (
+        prepare_fixed_support_v2_buckets,
     )
 
     temperature_array = jnp.asarray(temperatures, dtype=jnp.float64)
@@ -7927,22 +7920,47 @@ def _prepare_experimental_profile_fixed_support_batch_plan(
         dtype=jnp.float64,
     )
     if hvector_by_layer.ndim != 2 or hvector_by_layer.shape[0] != n_layers:
-        hvector_by_layer = None
+        hvector_by_layer = jnp.stack(
+            [
+                jnp.asarray(
+                    setup.gas_setup.hvector_func(float(temperature)),
+                    dtype=jnp.float64,
+                )
+                for temperature in temperatures
+            ]
+        )
     hvector_cond_by_layer = jnp.asarray(
         setup.condensate_setup.hvector_func(temperature_array),
         dtype=jnp.float64,
     )
     if hvector_cond_by_layer.ndim != 2 or hvector_cond_by_layer.shape[0] != n_layers:
-        hvector_cond_by_layer = None
-    buckets = _prepare_pdipm_rgie_v11_activity_correction_profile_buckets(
-        states=tuple(states),
+        hvector_cond_by_layer = jnp.stack(
+            [
+                jnp.asarray(
+                    setup.condensate_setup.hvector_func(float(temperature)),
+                    dtype=jnp.float64,
+                )
+                for temperature in temperatures
+            ]
+        )
+    buckets = prepare_fixed_support_v2_buckets(
         init_states=tuple(solver_inits),
         support_indices_by_layer=tuple(support_by_layer),
         formula_matrix_cond=jnp.asarray(setup.formula_matrix_cond, dtype=jnp.float64),
-        hvector_func=setup.gas_setup.hvector_func,
-        hvector_cond_func=setup.condensate_setup.hvector_func,
+        element_inventory_target_by_layer=jnp.stack(
+            [jnp.asarray(state.element_vector, dtype=jnp.float64) for state in states]
+        ),
         hvector_by_layer=hvector_by_layer,
         hvector_cond_by_layer=hvector_cond_by_layer,
+        ln_normalized_pressure_by_layer=jnp.stack(
+            [
+                jnp.asarray(
+                    state.ln_normalized_pressure,
+                    dtype=jnp.float64,
+                )
+                for state in states
+            ]
+        ),
     )
     max_iter = 100 if opts.max_inner_iterations is None else int(opts.max_inner_iterations)
     return _ExperimentalProfileFixedSupportBatchPlan(
