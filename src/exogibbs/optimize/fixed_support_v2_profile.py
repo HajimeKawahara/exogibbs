@@ -69,7 +69,6 @@ class PreparedFixedSupportV2Bucket:
     element_potential_init: Any | None
     rho_init: Any | None
     barrier_epsilon_init: Any | None
-    gas_stationarity_source_init: Any | None
     element_inventory_target: Any
     hvector: Any
     hvector_cond_active: Any
@@ -86,7 +85,6 @@ class PreparedFixedSupportV2LayerState:
     element_potential: Any | None = None
     rho: Any | None = None
     barrier_epsilon: Any | None = None
-    gas_stationarity_source: Any | None = None
 
 
 def prepare_fixed_support_v2_buckets(
@@ -178,11 +176,9 @@ def prepare_fixed_support_v2_buckets(
         element_potential_init = []
         rho_init = []
         barrier_epsilon_init = []
-        gas_stationarity_source_init = []
         have_element_potential = True
         have_rho = True
         have_barrier_epsilon = True
-        have_gas_stationarity_source = True
         for layer_index in layer_indices:
             state = init_states[layer_index]
             ln_nk = jnp.asarray(state.ln_nk, dtype=jnp.float64)
@@ -244,19 +240,6 @@ def prepare_fixed_support_v2_buckets(
                     raise ValueError("barrier_epsilon must be scalar.")
                 barrier_epsilon_init.append(barrier_epsilon)
 
-            if state.gas_stationarity_source is None:
-                have_gas_stationarity_source = False
-            else:
-                gas_source = jnp.asarray(
-                    state.gas_stationarity_source,
-                    dtype=jnp.float64,
-                )
-                if gas_source.shape != ln_nk.shape:
-                    raise ValueError(
-                        "gas_stationarity_source must match ln_nk."
-                    )
-                gas_stationarity_source_init.append(gas_source)
-
         layer_array = jnp.asarray(layer_indices, dtype=jnp.int32)
         buckets.append(
             PreparedFixedSupportV2Bucket(
@@ -277,11 +260,6 @@ def prepare_fixed_support_v2_buckets(
                 barrier_epsilon_init=(
                     jnp.stack(barrier_epsilon_init)
                     if have_barrier_epsilon
-                    else None
-                ),
-                gas_stationarity_source_init=(
-                    jnp.stack(gas_stationarity_source_init)
-                    if have_gas_stationarity_source
                     else None
                 ),
                 element_inventory_target=targets[layer_array],
@@ -356,12 +334,7 @@ def _prepared_problem_batch(
     gamma_from_thermo = jnp.asarray(bucket.hvector, dtype=dtype) + jnp.asarray(
         bucket.ln_normalized_pressure, dtype=dtype
     )[:, None]
-    gamma = (
-        gamma_from_thermo
-        if bucket.gas_stationarity_source_init is None
-        else jnp.asarray(bucket.gas_stationarity_source_init, dtype=dtype)
-        + qtot[:, None]
-    )
+    gamma = gamma_from_thermo
     floor = jnp.asarray(budget_relative_floor, dtype=dtype)
     budget_scale = 1.0 / jnp.maximum(jnp.abs(target), floor)
     total_scale = 1.0 / jnp.maximum(jnp.exp(qtot), floor)

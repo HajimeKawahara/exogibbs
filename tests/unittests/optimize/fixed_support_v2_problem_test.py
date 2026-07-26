@@ -2,16 +2,11 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from exogibbs.optimize.fixed_support_kkt import (
-    fixed_support_barrier_objective as v1_barrier_objective,
-    fixed_support_filter_theta as v1_filter_theta,
-)
 from exogibbs.optimize.fixed_support_v2.problem import (
     amount_space_equality_jacobian,
     barrier_objective,
     barrier_objective_directional_derivative,
     canonical_gas_source,
-    canonical_gas_source_from_legacy,
     filter_violation,
     linearized_residual_components,
     log_primal_coordinates,
@@ -61,20 +56,18 @@ def deterministic_fixture():
     return problem, state, hgas, pressure
 
 
-def test_canonical_residual_reproduces_v1_fixture_and_qtot_convention(
+def test_canonical_residual_matches_direct_formulas_and_qtot_convention(
     deterministic_fixture,
 ):
     problem, state, hgas, pressure = deterministic_fixture
     residual = residual_components(problem, state)
     amounts = physical_amounts(state)
     eta = jnp.exp(state.rho)
-    legacy_source = hgas + jnp.log(pressure) - state.qtot
-
-    assert canonical_gas_source_from_legacy(
-        legacy_source, state.qtot
-    ) == pytest.approx(problem.gamma)
     assert residual.gas_stationarity == pytest.approx(
-        state.q + legacy_source - problem.gas_formula_matrix.T @ state.lambda_
+        state.q
+        + problem.gamma
+        - state.qtot
+        - problem.gas_formula_matrix.T @ state.lambda_
     )
     assert residual.condensate_stationarity == pytest.approx(
         problem.condensate_standard_source
@@ -101,30 +94,34 @@ def test_canonical_residual_reproduces_v1_fixture_and_qtot_convention(
     assert gas_change == pytest.approx(jnp.full_like(state.q, -0.17))
 
 
-def test_objective_and_theta_reproduce_deterministic_v1_fixture(
+def test_objective_and_theta_match_their_canonical_formulas(
     deterministic_fixture,
 ):
-    problem, state, hgas, pressure = deterministic_fixture
-    legacy_source = hgas + jnp.log(pressure) - state.qtot
-
-    expected_phi = v1_barrier_objective(
-        q=state.q,
-        r=state.r,
-        qtot=state.qtot,
-        gas_stationarity_source=legacy_source,
-        condensate_standard_source=problem.condensate_standard_source,
-        qtot_reference=state.qtot,
-        epsilon=state.epsilon,
+    problem, state, _hgas, _pressure = deterministic_fixture
+    amounts = physical_amounts(state)
+    residual = residual_components(problem, state)
+    expected_phi = (
+        jnp.dot(
+            amounts.gas,
+            problem.gamma + state.q - state.qtot,
+        )
+        + jnp.dot(
+            amounts.condensate,
+            problem.condensate_standard_source,
+        )
+        - jnp.exp(state.epsilon) * jnp.sum(state.r)
     )
-    expected_theta = v1_filter_theta(
-        formula_matrix=problem.gas_formula_matrix,
-        formula_matrix_cond_active=problem.condensate_formula_matrix,
-        element_inventory_target=problem.target_inventory,
-        q=state.q,
-        r=state.r,
-        qtot=state.qtot,
-        relative_floor=1.0e-300,
-        use_l1_norm=True,
+    expected_theta = jnp.linalg.norm(
+        jnp.concatenate(
+            [
+                problem.budget_row_scale * residual.budget,
+                jnp.ravel(
+                    problem.total_density_row_scale
+                    * residual.total_density
+                ),
+            ]
+        ),
+        ord=1,
     )
 
     assert barrier_objective(problem, state) == pytest.approx(expected_phi)

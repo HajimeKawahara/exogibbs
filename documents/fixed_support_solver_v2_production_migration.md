@@ -6,8 +6,14 @@ The fixed-support v2 route is promoted as the production default.
 
 The fixed-support v2 solver is the only solver targeted for the new product
 route.  The frozen fixed-support v1 implementation remains archival benchmark
-evidence and is not a production fallback.  An explicit `head_v1` route is
-retained temporarily for backward compatibility only.
+evidence and is not a production fallback.
+
+**Runtime retirement follow-up (2026-07-27):** the explicit `head_v1` route,
+its mutable replay runners, and its implementation were removed after the
+promotion.  Frozen v1 summaries, recorded hashes, and this migration record
+remain immutable historical evidence.  Rollback continues to use a preceding
+release artifact; it does not dispatch to an older solver inside the current
+release.
 
 The production default is:
 

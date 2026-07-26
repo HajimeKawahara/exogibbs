@@ -29,16 +29,6 @@ def canonical_gas_source(
     return hgas + jnp.log(pressure_value / reference_value)
 
 
-def canonical_gas_source_from_legacy(
-    legacy_stationarity_source: Any,
-    initial_qtot: Any,
-) -> Any:
-    """Convert legacy ``g_init = gamma - qtot_init`` to ``gamma`` once."""
-
-    legacy_source = jnp.asarray(legacy_stationarity_source)
-    return legacy_source + jnp.asarray(initial_qtot, dtype=legacy_source.dtype)
-
-
 def physical_amounts(state: OriginalState) -> PhysicalAmounts:
     """Map the original log primal coordinates to physical amounts."""
 
@@ -358,7 +348,6 @@ __all__ = [
     "barrier_objective",
     "barrier_objective_directional_derivative",
     "canonical_gas_source",
-    "canonical_gas_source_from_legacy",
     "filter_violation",
     "linearized_residual_components",
     "log_primal_coordinates",

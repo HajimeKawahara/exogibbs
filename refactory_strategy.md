@@ -102,7 +102,7 @@ cleanup 中も次の production contract を維持する。
 - production preset は `validated_2026_07`
 - support lifecycle は fixed-support solver の外側
 - `head_v2` から `head_v1` への automatic fallback は存在しない
-- `head_v1` は明示的な backward-compatibility route
+- executable `head_v1` route は cleanup で削除する
 - rollback は solver fallback ではなく release artifact 単位
 
 `documents/fixed_support_solver_v2_validation.md:1-204` は promotion 前の
@@ -1004,3 +1004,60 @@ archive runner、shared reduced-system primitiveは変更していない。
 
 - `py_compile`: passed
 - production route / prepared-v2 profile targeted tests: `14 passed`
+
+### 2026-07-27: executable v1 retirement
+
+v1 retirement decision を実装した。この wave は intentional breaking
+cleanup であり、deprecated facade や import stub は追加していない。
+
+runtime:
+
+- `optimize/minimize_cond.py`、`optimize/pipm_rgie_cond.py`、その他の
+  condensate PIPM/PDIPM、v1 continuation、legacy fixed-support helper を
+  runtime package から削除した。
+- v1 lifecycle、acceptance gate、warm-start、support retry、diagnostic
+  carrier を `condensates/` から削除した。
+- `condensate_equilibrium.py` を production v2 と documented prepared-v2
+  の reachable closure に再構成した。
+  - file size: `10,989 -> 2,328` lines
+  - route literal: `Literal["head_v2"]`
+  - options は preset、profile method、diagnostics、full-budget gate に縮小
+  - one-layer/profile dispatch から v1 tail と fallback を物理削除
+  - legacy batch/prune/rescue/many export を削除
+- `fixed_support_payload.py` は production lifecycle が使用する
+  budget-preserving seed helper だけに縮小した。
+  - file size: `576 -> 45` lines
+- prepared-v2 state から legacy gas-stationarity-source adapter を削除し、
+  canonical thermochemical source を常に v2 内で構築するようにした。
+
+tests / executable evidence:
+
+- v1 solver、lifecycle、batch、diagnostic 専用 unit/end-to-end test を削除した。
+- mutable v1 replay、support atlas、obsolete GPU launcher、seed/rescue sweep を
+  削除した。
+- frozen v1 artifact は実行せず SHA-256 を検証する standalone test にした。
+- production profile gate と launcher は保持した。
+
+docs / examples:
+
+- active condensate profile/preset docs と curated examples を v2-only にした。
+- raw PIPM tutorial/notebook、v1 route graph、support-selection demo と生成物を
+  削除した。
+- production migration に runtime retirement follow-up を追加した。
+- validation/design の昇格前記述は historical record として保持し、
+  冒頭に lifecycle note だけを追加した。
+
+closure:
+
+- repository import/call-site search:
+  deleted runtime module への positive edge は0
+- `compileall src`: passed
+- focused production/API/archive tests: `44 passed`
+- full unit tests: `215 passed, 1 warning`
+- frozen v1 summary SHA-256:
+  - JSON:
+    `9e3b28b7c856ca8bb5bbf4aebdbe216e1392294ff611f5350477d07e0484f299`
+  - Markdown:
+    `ae41c6ec1edb2e6d3957045d53b2081fcc8a97d0c0e74d044b20f222ee37ddf1`
+- Sphinx build は環境に `sphinx` がないため未実行。toctree/reference は
+  repository-wide search で確認した。

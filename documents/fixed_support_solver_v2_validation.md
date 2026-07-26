@@ -1,5 +1,11 @@
 # Fixed-support solver v2 experimental validation closure
 
+> **Historical-record note (2026-07-27):** this document records the
+> pre-promotion validation closure.  The later production migration promoted
+> v2, and the cleanup then removed the executable `head_v1` route and mutable
+> v1 replay tools.  Frozen summaries and recorded hashes below remain
+> unchanged as historical evidence.
+
 ## Status
 
 The fixed-support PD-IPM/R-GIE solver v2 experimental solver validation was

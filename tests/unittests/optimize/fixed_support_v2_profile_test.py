@@ -40,14 +40,13 @@ class _PreparedBucket:
     element_potential_init: jax.Array | None
     rho_init: jax.Array | None
     barrier_epsilon_init: jax.Array | None
-    gas_stationarity_source_init: jax.Array | None
     element_inventory_target: jax.Array
     hvector: jax.Array
     hvector_cond_active: jax.Array
     ln_normalized_pressure: jax.Array
 
 
-def _bucket(*, legacy_source=False):
+def _bucket():
     qtot = jnp.log(jnp.asarray([0.8, 0.8]))
     return _PreparedBucket(
         support_indices=(0,),
@@ -59,9 +58,6 @@ def _bucket(*, legacy_source=False):
         element_potential_init=jnp.zeros((2, 1)),
         rho_init=None,
         barrier_epsilon_init=None,
-        gas_stationarity_source_init=(
-            -qtot[:, None] if legacy_source else None
-        ),
         element_inventory_target=jnp.ones((2, 1)),
         hvector=jnp.zeros((2, 1)),
         hvector_cond_active=jnp.full((2, 1), 0.5),
@@ -198,16 +194,6 @@ def test_support_closure_ignores_temperature_invalid_condensates():
     assert jnp.all(result["fixed_support_converged"])
     assert jnp.all(result["support_closed"])
     assert not jnp.any(result["support_expansion_mask"][:, 1])
-
-
-def test_legacy_gas_source_is_converted_to_iterate_independent_gamma():
-    problems = _prepared_problem_batch(
-        _bucket(legacy_source=True),
-        jnp.asarray([[1.0]]),
-        budget_relative_floor=1.0e-6,
-    )
-
-    assert problems.gamma == pytest.approx(jnp.zeros((2, 1)))
 
 
 def test_prepared_exact_state_policy_preserves_rho_and_barrier_epsilon():

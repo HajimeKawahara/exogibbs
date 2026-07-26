@@ -29,13 +29,6 @@ Contents
 
 .. toctree::
    :maxdepth: 1
-   :caption: notebooks:
-
-   ipynb/h2ocond.rst
-   
-   
-.. toctree::
-   :maxdepth: 1
    :caption: API:
 
    exogibbs/index.rst

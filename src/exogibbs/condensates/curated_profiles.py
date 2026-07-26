@@ -25,7 +25,6 @@ class CuratedProfileDefinition:
     empty_condensate_support: bool = False
     seed_fraction: float = 1.0e-3
     max_seed_amount: float = 1.0e-3
-    max_inner_iterations: int = 40
 
 
 def _logspace(start: float, stop: float, count: int) -> tuple[float, ...]:
@@ -159,7 +158,7 @@ def support_payload_for_profile(
     definition: CuratedProfileDefinition,
     budget: jnp.ndarray,
 ) -> tuple[tuple[int, ...], tuple[float, ...]]:
-    """Build the explicit support payload used by legacy curated demos."""
+    """Build the explicit support payload used by curated v2 profiles."""
 
     if definition.empty_condensate_support:
         return (), ()
