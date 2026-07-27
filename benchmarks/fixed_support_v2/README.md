@@ -1,41 +1,24 @@
-# Fixed-support v2 validation
+# Fixed-support v2 production and validation archive
 
-This directory archives the reproducible inputs and GPU runners for the
-fixed-support v2 experimental solver validation.  It does not select v2 from a
-production preset.
+This directory contains the production-profile gate and the immutable evidence
+retained from the pre-promotion v1/v2 comparison.
 
-Run every command from any working directory; each C shell runner enters the
-repository root relative to its own location.
+The mutable v1 solver and its replay runners were retired on 2026-07-27. They
+were not a reproducible correctness oracle: current v1 no longer reproduced
+all historical successes. The executable comparison remains available in Git
+history before the retirement commit, while the evidence used for the
+promotion decision remains in the repository.
 
-The final validation sequence is:
+The following files are intentionally retained:
 
-```console
-csh benchmarks/fixed_support_v2/run_fixed_support_v2_corrected_gpu.csh
-csh benchmarks/fixed_support_v2/run_fixed_support_v2_water128_gpu100.csh
-csh benchmarks/fixed_support_v2/run_fixed_support_v2_final_solver_matrix_gpu.csh
-```
+- `fixed_support_v2_gpu_matrix.json`, which declares the historical cases and
+  frozen artifact hashes;
+- `data/frozen_v1_baseline/selected_case_summary.json`;
+- `data/frozen_v1_baseline/selected_case_summary.md`.
 
-The first command regenerates the corrected support-lifecycle prerequisite.
-The second regenerates the focused water-128 prerequisite.  The final command
-verifies both prerequisite artifacts before running the ten-case exact-state
-solver matrix.
-
-Generated JSON and Markdown outputs are written below `results/` and are not
-repository sources.  The small files below `data/frozen_v1_baseline/` are the
-hash-pinned historical baseline inputs required by the matrix preflight.
-
-For a CPU-only input and integrity check:
-
-```console
-JAX_PLATFORMS=cpu python \
-  benchmarks/fixed_support_v2/fixed_support_v2_unbiased_gpu_experiment.py \
-  --preflight-only \
-  --cases all \
-  --lifecycle-families manifest \
-  --output-dir results/fixed_support_v2_preflight
-```
-
-The validation decision, original GPU hashes, and limitations are recorded in
+Unit tests verify the declared SHA-256 hashes without importing or executing a
+v1 runtime module. The original validation decision, GPU artifact hashes, and
+limitations remain recorded in
 `documents/fixed_support_solver_v2_validation.md`.
 
 ## Production-profile gate
@@ -62,5 +45,5 @@ csh benchmarks/fixed_support_v2/run_fixed_support_v2_production_profile_gpu.csh 
   MAX_COLD_COMPILE MAX_COLD_WALL MAX_WARM_EXECUTE MAX_WARM_WALL
 ```
 
-This runner calls the public API directly.  It does not change the public
-default, retry with v1, or replace the archived experimental solver matrix.
+This runner calls the public API directly. It does not change the public
+default or retry with a retired solver.

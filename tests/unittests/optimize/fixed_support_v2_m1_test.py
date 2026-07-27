@@ -2,12 +2,6 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from exogibbs.optimize.fixed_support_ipopt_soc import (
-    fixed_support_reduced_direction_from_rhs,
-)
-from exogibbs.optimize.fixed_support_filter import (
-    fixed_support_filter_acceptance,
-)
 from exogibbs.optimize.fixed_support_v2.filter import (
     add_margin_adjusted_entry,
     empty_filter,
@@ -22,7 +16,6 @@ from exogibbs.optimize.fixed_support_v2.normal import (
     select_ordered_trial,
 )
 from exogibbs.optimize.fixed_support_v2.problem import (
-    barrier_objective,
     canonical_gas_source,
     filter_violation,
     residual_components,
@@ -86,37 +79,16 @@ def _flatten_direction(direction):
     )
 
 
-def test_normal_reduced_direction_matches_dense_kkt_and_v1_shadow_reference():
+def test_normal_reduced_direction_matches_dense_kkt():
     problem, state = _fixture()
     residual = residual_components(problem, state)
     result = normal_reduced_direction(problem, state, residual)
     dense = jnp.linalg.solve(
         residual_jacobian(problem, state), -residual_vector(residual)
     )
-    amounts = jax.tree_util.tree_map(jnp.exp, (state.q, state.r, state.rho, state.qtot))
-    shadow = fixed_support_reduced_direction_from_rhs(
-        formula_matrix=problem.gas_formula_matrix,
-        formula_matrix_cond_active=problem.condensate_formula_matrix,
-        gas_amounts=amounts[0],
-        condensate_amounts=amounts[1],
-        condensate_duals=amounts[2],
-        total_gas_amount=amounts[3],
-        gas_rhs=residual.gas_stationarity,
-        condensate_rhs=residual.condensate_stationarity,
-        budget_rhs=residual.budget,
-        complementarity_rhs=residual.complementarity,
-        total_density_rhs=residual.total_density,
-    )
-    shadow_flat = jnp.concatenate(
-        [*shadow[:-1], shadow[-1].reshape((1,))]
-    )
-
     assert int(result.status) == TerminalStatus.NOT_TERMINATED
     assert _flatten_direction(result.direction) == pytest.approx(
         dense, abs=2.0e-11
-    )
-    assert _flatten_direction(result.direction) == pytest.approx(
-        shadow_flat, abs=2.0e-11
     )
     assert float(result.diagnostics.relative_residual) < 1.0e-12
 
@@ -267,20 +239,6 @@ def test_normal_step_selects_first_acceptable_current_origin_trial():
     assert result.trials.states.qtot[first] == pytest.approx(
         state.qtot + alpha * direction.qtot
     )
-    shadow_masks = fixed_support_filter_acceptance(
-        trial_phi=result.trials.phi,
-        trial_theta=result.trials.theta,
-        trial_alpha=result.trials.alphas,
-        trial_linearized_change=result.trials.linearized_objective_change,
-        finite=result.trials.finite,
-        current_phi=barrier_objective(problem, state),
-        current_theta=filter_violation(problem, state),
-        initial_theta=filter_violation(problem, state),
-        filter_phi=jnp.zeros((8,)),
-        filter_theta=jnp.zeros((8,)),
-        filter_valid=jnp.zeros((8,), dtype=bool),
-    )[0]
-    assert result.trials.accepted.tolist() == shadow_masks.tolist()
     assert not hasattr(result.trials, "soc")
     assert not hasattr(result.trials, "restoration")
 

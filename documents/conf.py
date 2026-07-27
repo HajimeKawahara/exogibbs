@@ -9,16 +9,29 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-import sphinx_rtd_theme
 import os
+from pathlib import Path
 import sys
+
+import sphinx_rtd_theme
 
 os.environ["JAX_PLATFORMS"] = "cpu"
 os.environ["JAX_PLATFORM_NAME"] = "cpu"
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/exogibbs_matplotlib")
 
-sys.path.insert(0, os.path.abspath("~/exogibbs"))
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+SOURCE_ROOT = REPOSITORY_ROOT / "src"
+sys.path.insert(0, str(SOURCE_ROOT))
+
+import exogibbs
+
+expected_exogibbs_root = (SOURCE_ROOT / "exogibbs").resolve()
+imported_exogibbs_root = Path(exogibbs.__file__).resolve().parent
+if imported_exogibbs_root != expected_exogibbs_root:
+    raise RuntimeError(
+        "Imported exogibbs from outside this repository: "
+        f"{imported_exogibbs_root} != {expected_exogibbs_root}"
+    )
 
 
 # -- Project information -----------------------------------------------------

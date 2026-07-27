@@ -55,9 +55,8 @@ def initialize_continuation(
     """Create the first continuation stage under the configured init policy.
 
     ``center`` is the normal solver policy and enforces complementarity at the
-    first schedule value.  ``provided`` is an audit policy: it preserves all
-    supplied numerical state so v1 and v2 can be started from exactly the same
-    ``q, r, lambda, rho, qtot, epsilon`` tuple.
+    first schedule value. ``provided`` is an audit policy: it preserves the
+    supplied ``q, r, lambda, rho, qtot, epsilon`` tuple exactly.
     """
 
     _validate_schedule(config)

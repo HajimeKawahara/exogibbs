@@ -1,5 +1,11 @@
 # Fixed-support PD-IPM/R-GIE solver v2 design
 
+> **Lifecycle note (2026-07-27):** this design records the staged v2
+> implementation and pre-promotion comparison state.  V2 is now the
+> production route, and the subsequent cleanup removed the executable v1
+> solver and `head_v1` compatibility route.  References below to retaining or
+> building alongside v1 are historical implementation context.
+
 ## 1. Status
 
 This document is the implementation contract for the next fixed-support

@@ -5,8 +5,8 @@ Current benchmark runners:
 - `python -m benchmarks.run_single_layer`
 - `python -m benchmarks.run_profile`
 
-The archived fixed-support v2 experimental validation is documented in
-`benchmarks/fixed_support_v2/README.md`.
+The fixed-support v2 production-profile gate and frozen pre-promotion evidence
+are documented in `benchmarks/fixed_support_v2/README.md`.
 
 Run from the repository root with `PYTHONPATH=src`.
 

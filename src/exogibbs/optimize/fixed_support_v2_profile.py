@@ -69,11 +69,206 @@ class PreparedFixedSupportV2Bucket:
     element_potential_init: Any | None
     rho_init: Any | None
     barrier_epsilon_init: Any | None
-    gas_stationarity_source_init: Any | None
     element_inventory_target: Any
     hvector: Any
     hvector_cond_active: Any
     ln_normalized_pressure: Any
+
+
+@dataclass(frozen=True)
+class PreparedFixedSupportV2LayerState:
+    """Validated per-layer state used only to construct v2 profile buckets."""
+
+    ln_nk: Any
+    ln_mk: Any
+    ln_ntot: Any
+    element_potential: Any | None = None
+    rho: Any | None = None
+    barrier_epsilon: Any | None = None
+
+
+def prepare_fixed_support_v2_buckets(
+    *,
+    init_states: Sequence[PreparedFixedSupportV2LayerState],
+    support_indices_by_layer: Sequence[Sequence[int]],
+    formula_matrix_cond: Any,
+    element_inventory_target_by_layer: Any,
+    hvector_by_layer: Any,
+    hvector_cond_by_layer: Any,
+    ln_normalized_pressure_by_layer: Any,
+) -> tuple[PreparedFixedSupportV2Bucket, ...]:
+    """Group validated layer states into exact-support v2 buckets."""
+
+    n_layers = len(init_states)
+    if len(support_indices_by_layer) != n_layers:
+        raise ValueError(
+            "init_states and support_indices_by_layer must have matching lengths."
+        )
+
+    formula_matrix_cond = jnp.asarray(
+        formula_matrix_cond,
+        dtype=jnp.float64,
+    )
+    if formula_matrix_cond.ndim != 2:
+        raise ValueError("formula_matrix_cond must be two-dimensional.")
+    targets = jnp.asarray(
+        element_inventory_target_by_layer,
+        dtype=jnp.float64,
+    )
+    hvectors = jnp.asarray(hvector_by_layer, dtype=jnp.float64)
+    hcond = jnp.asarray(hvector_cond_by_layer, dtype=jnp.float64)
+    ln_pressures = jnp.asarray(
+        ln_normalized_pressure_by_layer,
+        dtype=jnp.float64,
+    )
+    for name, values in (
+        ("element_inventory_target_by_layer", targets),
+        ("hvector_by_layer", hvectors),
+        ("hvector_cond_by_layer", hcond),
+        ("ln_normalized_pressure_by_layer", ln_pressures),
+    ):
+        if values.shape[0] != n_layers:
+            raise ValueError(f"{name} must have one row per layer.")
+    if targets.ndim != 2:
+        raise ValueError(
+            "element_inventory_target_by_layer must be two-dimensional."
+        )
+    if hvectors.ndim != 2:
+        raise ValueError("hvector_by_layer must be two-dimensional.")
+    if hcond.ndim != 2:
+        raise ValueError("hvector_cond_by_layer must be two-dimensional.")
+    if ln_pressures.ndim != 1:
+        raise ValueError(
+            "ln_normalized_pressure_by_layer must be one-dimensional."
+        )
+    if targets.shape[1] != formula_matrix_cond.shape[0]:
+        raise ValueError(
+            "element inventory and formula_matrix_cond must share the "
+            "element dimension."
+        )
+    if hcond.shape[1] != formula_matrix_cond.shape[1]:
+        raise ValueError(
+            "hvector_cond_by_layer must have one value per condensate."
+        )
+
+    groups: dict[tuple[int, ...], list[int]] = {}
+    for layer_index, indices in enumerate(support_indices_by_layer):
+        support = tuple(int(index) for index in indices)
+        if not support:
+            raise ValueError("fixed-support v2 buckets require non-empty support.")
+        if len(set(support)) != len(support):
+            raise ValueError("fixed-support v2 support indices must be unique.")
+        if any(
+            index < 0 or index >= formula_matrix_cond.shape[1]
+            for index in support
+        ):
+            raise ValueError(
+                "fixed-support v2 support contains an out-of-range index."
+            )
+        groups.setdefault(support, []).append(layer_index)
+
+    buckets = []
+    for support, layer_indices in groups.items():
+        support_array = jnp.asarray(support, dtype=jnp.int32)
+        ln_nk_init = []
+        ln_mk_init = []
+        ln_ntot_init = []
+        element_potential_init = []
+        rho_init = []
+        barrier_epsilon_init = []
+        have_element_potential = True
+        have_rho = True
+        have_barrier_epsilon = True
+        for layer_index in layer_indices:
+            state = init_states[layer_index]
+            ln_nk = jnp.asarray(state.ln_nk, dtype=jnp.float64)
+            ln_mk = jnp.asarray(state.ln_mk, dtype=jnp.float64)
+            ln_ntot = jnp.asarray(state.ln_ntot, dtype=jnp.float64)
+            if ln_nk.ndim != 1:
+                raise ValueError("ln_nk must be one-dimensional.")
+            if ln_ntot.ndim != 0:
+                raise ValueError("ln_ntot must be scalar.")
+            if ln_mk.ndim != 1:
+                raise ValueError("ln_mk must be one-dimensional.")
+            if ln_mk.shape[0] == formula_matrix_cond.shape[1]:
+                ln_mk = ln_mk[support_array]
+            elif ln_mk.shape[0] != support_array.shape[0]:
+                raise ValueError(
+                    "ln_mk must have full condensate length or support length."
+                )
+            ln_nk_init.append(ln_nk)
+            ln_mk_init.append(ln_mk)
+            ln_ntot_init.append(ln_ntot)
+
+            if state.element_potential is None:
+                have_element_potential = False
+            else:
+                element_potential = jnp.asarray(
+                    state.element_potential,
+                    dtype=jnp.float64,
+                )
+                if element_potential.shape != (
+                    formula_matrix_cond.shape[0],
+                ):
+                    raise ValueError(
+                        "element_potential must have one value per element."
+                    )
+                element_potential_init.append(element_potential)
+
+            if state.rho is None:
+                have_rho = False
+            else:
+                rho = jnp.asarray(state.rho, dtype=jnp.float64)
+                if rho.ndim != 1:
+                    raise ValueError("rho must be one-dimensional.")
+                if rho.shape[0] == formula_matrix_cond.shape[1]:
+                    rho = rho[support_array]
+                elif rho.shape[0] != support_array.shape[0]:
+                    raise ValueError(
+                        "rho must have full condensate length or support length."
+                    )
+                rho_init.append(rho)
+
+            if state.barrier_epsilon is None:
+                have_barrier_epsilon = False
+            else:
+                barrier_epsilon = jnp.asarray(
+                    state.barrier_epsilon,
+                    dtype=jnp.float64,
+                )
+                if barrier_epsilon.ndim != 0:
+                    raise ValueError("barrier_epsilon must be scalar.")
+                barrier_epsilon_init.append(barrier_epsilon)
+
+        layer_array = jnp.asarray(layer_indices, dtype=jnp.int32)
+        buckets.append(
+            PreparedFixedSupportV2Bucket(
+                support_indices=support,
+                layer_indices=tuple(layer_indices),
+                formula_matrix_cond_active=formula_matrix_cond[
+                    :, support_array
+                ],
+                ln_nk_init=jnp.stack(ln_nk_init),
+                ln_mk_init=jnp.stack(ln_mk_init),
+                ln_ntot_init=jnp.stack(ln_ntot_init),
+                element_potential_init=(
+                    jnp.stack(element_potential_init)
+                    if have_element_potential
+                    else None
+                ),
+                rho_init=jnp.stack(rho_init) if have_rho else None,
+                barrier_epsilon_init=(
+                    jnp.stack(barrier_epsilon_init)
+                    if have_barrier_epsilon
+                    else None
+                ),
+                element_inventory_target=targets[layer_array],
+                hvector=hvectors[layer_array],
+                hvector_cond_active=hcond[layer_array][:, support_array],
+                ln_normalized_pressure=ln_pressures[layer_array],
+            )
+        )
+    return tuple(buckets)
 
 
 @lru_cache(maxsize=32)
@@ -139,12 +334,7 @@ def _prepared_problem_batch(
     gamma_from_thermo = jnp.asarray(bucket.hvector, dtype=dtype) + jnp.asarray(
         bucket.ln_normalized_pressure, dtype=dtype
     )[:, None]
-    gamma = (
-        gamma_from_thermo
-        if bucket.gas_stationarity_source_init is None
-        else jnp.asarray(bucket.gas_stationarity_source_init, dtype=dtype)
-        + qtot[:, None]
-    )
+    gamma = gamma_from_thermo
     floor = jnp.asarray(budget_relative_floor, dtype=dtype)
     budget_scale = 1.0 / jnp.maximum(jnp.abs(target), floor)
     total_scale = 1.0 / jnp.maximum(jnp.exp(qtot), floor)
@@ -679,6 +869,8 @@ __all__ = [
     "FixedSupportV2BucketExecution",
     "FixedSupportV2BucketResult",
     "PreparedFixedSupportV2Bucket",
+    "PreparedFixedSupportV2LayerState",
+    "prepare_fixed_support_v2_buckets",
     "run_prepared_profile_v2",
     "solve_prepared_bucket_v2",
 ]

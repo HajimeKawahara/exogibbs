@@ -63,9 +63,10 @@ Quick Start: Condensate Equilibrium
 Quick Start: Condensate Profile
 -------------------------------
 Use ``condensate_equilibrium_profile`` for a one-dimensional pressure and
-temperature profile.  The recommended profile method is ``"auto"``.  With a
-complete fixed-support initializer, ``"auto"`` can use the fixed-support batch
-path with fallback rescue; otherwise it falls back to a conservative hot scan.
+temperature profile. ``"auto"`` and ``"vmap_cold"`` both select the production
+fixed-support v2 lifecycle. Support expansion is owned by the profile layer
+outside the fixed-support solver, and failures are reported without retrying a
+retired solver.
 
 .. code-block:: python
 
@@ -95,8 +96,8 @@ path with fallback rescue; otherwise it falls back to a conservative hot scan.
    print(profile.method)
    print([layer.status for layer in profile.layers])
 
-See :doc:`../condensate_profile` for the profile method contract and the
-fixed-support batch/rescue diagnostics.
+See :doc:`../condensate_profile` for the profile method contract and v2
+lifecycle diagnostics.
 
 Packaged Data
 -------------

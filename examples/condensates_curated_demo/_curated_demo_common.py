@@ -2,7 +2,7 @@
 
 The default demo path is intentionally self-contained: it builds a small
 profile-like pressure/temperature grid from native curated-family definitions
-and calls the public HEAD route API directly.
+and calls the production fixed-support v2 API directly.
 """
 
 from __future__ import annotations
@@ -63,7 +63,7 @@ def run_fresh_curated_profile(
     setup: Any,
     definition: CuratedProfileDefinition,
 ) -> tuple[list[CondensateEquilibriumResult | None], list[np.ndarray | None], list[str]]:
-    """Run one fresh profile through the public HEAD route API."""
+    """Run one fresh profile through the production fixed-support v2 API."""
 
     budget = element_budget_for_profile(setup, definition)
     support_indices, support_amounts_init = _support_payload_for_profile(
@@ -76,12 +76,7 @@ def run_fresh_curated_profile(
     errors: list[str] = []
     for temperature, pressure in zip(definition.temperatures, definition.pressures):
         options = CondensateEquilibriumOptions(
-            case_id=_case_id_for_profile(definition, temperature, pressure),
             return_diagnostics=True,
-            allow_caveat_tiers=True,
-            max_inner_iterations=definition.max_inner_iterations,
-            enable_head_route_warm_start=True,
-            enable_depleted_gas_refresh=True,
         )
         try:
             result = condensate_equilibrium(
@@ -218,7 +213,7 @@ def plot_curated_family(
     max_gas_species: int = 10,
     max_condensates: int = 8,
 ) -> Path:
-    """Run and plot one curated family through the public HEAD route API."""
+    """Run and plot one curated family through the production v2 API."""
 
     setup = condensate_chemical_setup(silent=True)
     definition = fresh_profile_definition(family)
@@ -297,7 +292,7 @@ def plot_curated_family(
     ax_gas.set_title(f"{family}{suffix}")
     converged_count = sum(1 for result in results if result is not None and result.converged)
     ax_cond.set_title(
-        f"Fresh HEAD route layers: {len(results)}, converged: {converged_count}, errors: {len(errors)}"
+        f"Fixed-support v2 layers: {len(results)}, converged: {converged_count}, errors: {len(errors)}"
     )
     if ax_gas.get_legend_handles_labels()[0]:
         ax_gas.legend(fontsize=7)

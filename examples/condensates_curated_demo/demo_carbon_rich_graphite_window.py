@@ -17,7 +17,7 @@ def main() -> None:
         preferred_gas_species=GAS_SPECIES,
         preferred_condensates=CONDENSATES,
         output_path=Path(__file__).with_suffix(".png"),
-        title_suffix="fresh HEAD route profile, C/O = 2",
+        title_suffix="production fixed-support v2 profile, C/O = 2",
     )
     print(f"wrote {output_path}")
 

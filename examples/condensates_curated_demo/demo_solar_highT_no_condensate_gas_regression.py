@@ -29,19 +29,12 @@ PRESSURES_BAR = np.logspace(-6.0, 2.0, 18)
 GAS_SPECIES = ("H2", "H1", "H2O1", "C1O1", "C1O2", "C1H4", "Mg1", "Si1", "Fe1")
 
 
-def _case_id(pressure: float) -> str:
-    pressure_label = f"{pressure:g}".replace(".", "p").replace("-", "m")
-    return f"{FAMILY}__T{int(TEMPERATURE_K)}_P{pressure_label}"
-
-
 def _run_profile(setup):
     budget = jnp.asarray(setup.gas_setup.element_vector_reference, dtype=jnp.float64)
     rows = []
     for pressure in PRESSURES_BAR:
         options = CondensateEquilibriumOptions(
-            case_id=_case_id(float(pressure)),
             return_diagnostics=True,
-            allow_caveat_tiers=True,
         )
         try:
             result = condensate_equilibrium(
