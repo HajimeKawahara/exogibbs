@@ -2,6 +2,8 @@ import numpy as np
 import jax.numpy as jnp
 import pytest
 
+from exogibbs.thermo.models import ChemicalSetup
+
 
 def _logk(temp: float, coeffs) -> float:
     a1, a2, a3, a4, a5 = coeffs
@@ -83,3 +85,38 @@ def test_chemsetup_piecewise_segments():
     assert hv_stack.shape == (2, len(species))
     assert hv_stack[0, idx].item() == pytest.approx(expected_low, rel=1e-5)
     assert hv_stack[1, idx].item() == pytest.approx(expected_high, rel=1e-5)
+
+
+def test_condensate_chemsetup_uses_injected_gas_element_order():
+    from exogibbs.presets.fastchem_cond import chemsetup
+
+    gas_setup = ChemicalSetup(
+        formula_matrix=jnp.eye(2),
+        hvector_func=lambda temperature: jnp.zeros((2,)),
+        elements=("H", "O"),
+        species=("H", "O"),
+        element_vector_reference=jnp.asarray([1.0, 1.0e-3]),
+    )
+
+    condensate_setup = chemsetup(gas_setup=gas_setup, silent=True)
+
+    assert condensate_setup.elements == gas_setup.elements
+    assert condensate_setup.formula_matrix.shape[0] == 2
+    assert condensate_setup.element_vector_reference is (
+        gas_setup.element_vector_reference
+    )
+
+
+def test_corrected_species_default_elements_keyword_is_additive():
+    from exogibbs.presets.fastchem import chemsetup
+
+    setup = chemsetup(species_default_elements=True, silent=True)
+
+    assert setup.metadata["fastchem_species_default_elements"] == "True"
+
+    with pytest.raises(ValueError, match="conflict"):
+        chemsetup(
+            species_defalt_elements=False,
+            species_default_elements=True,
+            silent=True,
+        )

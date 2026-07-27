@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 import importlib
 import math
 import sys
@@ -21,6 +22,9 @@ from exogibbs.api.condensate_equilibrium import (
     build_condensate_chemical_setup,
     build_condensate_equilibrium_result_from_solver_payload,
     validate_condensate_chemical_setup,
+)
+from exogibbs.equilibrium.condensate.setup import (
+    condensate_temperature_validity_upper,
 )
 
 
@@ -99,6 +103,80 @@ def test_condensate_chemical_setup_rejects_element_order_mismatch() -> None:
         build_condensate_chemical_setup(
             gas_setup=gas,
             condensate_setup=invalid,
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        (
+            "gas_species",
+            ("O", "H"),
+            "gas_species must match",
+        ),
+        (
+            "formula_matrix",
+            jnp.asarray([[0.0, 1.0], [1.0, 0.0]]),
+            "formula_matrix must match",
+        ),
+        (
+            "condensate_species",
+            ("other",),
+            "condensate_species must match",
+        ),
+        (
+            "formula_matrix_cond",
+            jnp.asarray([[1.0], [2.0]]),
+            "formula_matrix_cond must match",
+        ),
+    ),
+)
+def test_condensate_setup_rejects_inconsistent_duplicated_fields(
+    field,
+    value,
+    message,
+) -> None:
+    _gas, _condensate, setup = _setup_pair()
+
+    with pytest.raises(ValueError, match=message):
+        validate_condensate_chemical_setup(
+            replace(setup, **{field: value})
+        )
+
+
+def test_condensate_temperature_validity_is_typed_and_metadata_optional() -> None:
+    gas, condensate, setup = _setup_pair()
+
+    assert condensate.metadata == {"source": "unit-test-condensate"}
+    assert condensate_temperature_validity_upper(setup) is None
+
+    typed_condensate = ChemicalSetup(
+        formula_matrix=condensate.formula_matrix,
+        hvector_func=condensate.hvector_func,
+        elements=condensate.elements,
+        species=condensate.species,
+        metadata=None,
+        temperature_validity_upper=(500.0,),
+    )
+    typed_setup = build_condensate_chemical_setup(
+        gas_setup=gas,
+        condensate_setup=typed_condensate,
+    )
+
+    assert condensate_temperature_validity_upper(typed_setup) == (500.0,)
+
+
+def test_condensate_setup_validates_typed_temperature_validity() -> None:
+    gas, condensate, _setup = _setup_pair()
+    invalid_condensate = replace(
+        condensate,
+        temperature_validity_upper=(500.0, 600.0),
+    )
+
+    with pytest.raises(ValueError, match="one value per condensate"):
+        build_condensate_chemical_setup(
+            gas_setup=gas,
+            condensate_setup=invalid_condensate,
         )
 
 

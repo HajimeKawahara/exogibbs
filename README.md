@@ -12,12 +12,12 @@ The terminology follows Smith and Missen, [Chemical Reaction Equilibrium Analysi
 from jax import config
 config.update("jax_enable_x64", True)
 
+from exogibbs.api.gas import EquilibriumOptions, solve_profile
 from exogibbs.presets.ykb4 import chemsetup
-from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
 
 chem = chemsetup()
 opts = EquilibriumOptions(epsilon_crit=1e-15, max_iter=1000)
-res = equilibrium_profile(
+res = solve_profile(
     chem,
     temperature_profile,
     pressure_profile,

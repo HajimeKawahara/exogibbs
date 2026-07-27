@@ -21,13 +21,13 @@ Quick Start: Gas Equilibrium
    from jax import config
    config.update("jax_enable_x64", True)
 
-   from exogibbs.api.equilibrium import equilibrium
+   from exogibbs.api.gas import solve
    from exogibbs.presets.fastchem4 import chemsetup
 
    setup = chemsetup()
    T, P = 1500.0, 1.0  # K, bar
    b = setup.element_vector_reference
-   result = equilibrium(setup, T=T, P=P, b=b)
+   result = solve(setup, T=T, P=P, b=b)
    print(result.x)
 
 Quick Start: Condensate Equilibrium
@@ -38,9 +38,9 @@ Quick Start: Condensate Equilibrium
    import jax.numpy as jnp
    config.update("jax_enable_x64", True)
 
-   from exogibbs.api.condensate_equilibrium import (
+   from exogibbs.api.condensate import (
        CondensateEquilibriumOptions,
-       condensate_equilibrium,
+       solve,
    )
    from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 
@@ -49,7 +49,7 @@ Quick Start: Condensate Equilibrium
    species_index = {name: index for index, name in enumerate(setup.condensate_species)}
    support = tuple(species_index[name] for name in ("MgSiO3(s,l)", "Mg2SiO4(s,l)", "SiO2(s,l)"))
 
-   result = condensate_equilibrium(
+   result = solve(
        setup,
        T=1400.0,
        P=0.1,
@@ -62,7 +62,7 @@ Quick Start: Condensate Equilibrium
 
 Quick Start: Condensate Profile
 -------------------------------
-Use ``condensate_equilibrium_profile`` for a one-dimensional pressure and
+Use ``solve_profile`` for a one-dimensional pressure and
 temperature profile. ``"auto"`` and ``"vmap_cold"`` both select the production
 fixed-support v2 lifecycle. Support expansion is owned by the profile layer
 outside the fixed-support solver, and failures are reported without retrying a
@@ -74,9 +74,9 @@ retired solver.
    import jax.numpy as jnp
    config.update("jax_enable_x64", True)
 
-   from exogibbs.api.condensate_equilibrium import (
+   from exogibbs.api.condensate import (
        CondensateEquilibriumOptions,
-       condensate_equilibrium_profile,
+       solve_profile,
    )
    from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 
@@ -85,7 +85,7 @@ retired solver.
    T = jnp.asarray([1700.0, 1600.0, 1500.0, 1400.0], dtype=jnp.float64)
    P = jnp.asarray([1.0e-3, 3.0e-3, 1.0e-2, 3.0e-2], dtype=jnp.float64)
 
-   profile = condensate_equilibrium_profile(
+   profile = solve_profile(
        setup,
        T=T,
        P=P,

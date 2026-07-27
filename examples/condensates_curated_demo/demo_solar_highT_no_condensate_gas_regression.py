@@ -15,9 +15,9 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from exogibbs.api.condensate_equilibrium import (
+from exogibbs.api.condensate import (
     CondensateEquilibriumOptions,
-    condensate_equilibrium,
+    solve as condensate_equilibrium,
 )
 from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
 

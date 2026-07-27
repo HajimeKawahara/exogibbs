@@ -26,7 +26,7 @@ The public defaults are:
 
 .. code-block:: python
 
-   from exogibbs.api.condensate_equilibrium import (
+   from exogibbs.api.condensate import (
        CondensateEquilibriumOptions,
    )
 
@@ -37,7 +37,7 @@ The public defaults are:
 Profile Method
 --------------
 
-``condensate_equilibrium_profile`` accepts ``method="auto"`` and
+``solve_profile`` accepts ``method="auto"`` and
 ``method="vmap_cold"``. Both select the production batched v2 lifecycle.
 Sequential condensate hot-scan methods belonged to the retired v1 route and
 are no longer accepted.
@@ -49,7 +49,7 @@ Callers may provide one fixed support for every layer:
 
 .. code-block:: python
 
-   result = condensate_equilibrium_profile(
+   result = solve_profile(
        setup,
        temperatures,
        pressures,
@@ -71,9 +71,9 @@ Minimal Example
 
    import jax.numpy as jnp
 
-   from exogibbs.api.condensate_equilibrium import (
+   from exogibbs.api.condensate import (
        CondensateEquilibriumOptions,
-       condensate_equilibrium_profile,
+       solve_profile,
    )
    from exogibbs.presets.fastchem4_cond import (
        condensate_chemical_setup,
@@ -81,7 +81,7 @@ Minimal Example
 
    setup = condensate_chemical_setup(silent=True)
 
-   profile = condensate_equilibrium_profile(
+   profile = solve_profile(
        setup,
        T=jnp.asarray([1800.0, 1400.0, 900.0]),
        P=jnp.asarray([1.0e-3, 1.0e-2, 1.0e-1]),
@@ -120,6 +120,6 @@ Experimental Prepared v2 Plans
 
 The submodule API retains an opt-in prepared-plan adapter for research with a
 caller-supplied ``FixedSupportV2Config``. Its buckets and layer-state carriers
-are owned by ``fixed_support_v2_profile`` and do not import a historical v1
-solver. This adapter is not a production preset and does not change the public
-default.
+are owned by ``equilibrium.condensate.fixed_support.batch`` and do not import a
+historical v1 solver. This adapter is not a production preset and does not
+change the public default.
