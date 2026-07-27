@@ -4,17 +4,20 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 import jax.numpy as jnp
 from jax import jit, vmap
 
-from exogibbs.api.chemistry import ChemicalSetup
+from exogibbs.equilibrium.condensate.setup import (
+    build_condensate_chemical_setup,
+)
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.presets.fastchem import chemsetup as _base_chemsetup
 from exogibbs.presets.fastchem import _print_status
 from exogibbs.thermo.stoichiometry import build_formula_matrix
+from exogibbs.thermo.models import ChemicalSetup
 
 
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
@@ -27,7 +30,12 @@ class _SpeciesEntry:
     components: Mapping[str, int]
 
 
-def chemsetup(path: str = "fastchem/logK/logK_condensates.dat", silent=False) -> ChemicalSetup:
+def chemsetup(
+    path: str = "fastchem/logK/logK_condensates.dat",
+    silent: bool = False,
+    *,
+    gas_setup: Optional[ChemicalSetup] = None,
+) -> ChemicalSetup:
     """Build a ``ChemicalSetup`` from FastChem condensate data."""
 
     data_path = get_data_filepath(path)
@@ -38,11 +46,11 @@ def chemsetup(path: str = "fastchem/logK/logK_condensates.dat", silent=False) ->
     coeffs, uppers, segment_counts = _prepare_segment_arrays(entries)
 
     # inherit the element ordering and reference vector from the gas-phase preset
-    gas_setup = _base_chemsetup(silent=True)
-    if gas_setup.elements is None:
+    gas = gas_setup if gas_setup is not None else _base_chemsetup(silent=True)
+    if gas.elements is None:
         raise ValueError("fastchem gas preset did not provide an element ordering.")
-    elements = list(gas_setup.elements)
-    element_vector_ref = gas_setup.element_vector_reference
+    elements = list(gas.elements)
+    element_vector_ref = gas.element_vector_reference
 
     formula_matrix = build_formula_matrix(components, elements)
     if not silent:
@@ -69,18 +77,22 @@ def condensate_chemical_setup(
     species_defalt_elements: bool = True,
     element_file: Optional[str] = None,
     silent: bool = False,
+    species_default_elements: Optional[bool] = None,
 ):
     """Build the production-facing FastChem gas-condensate setup bundle."""
-
-    from exogibbs.api.condensate_equilibrium import build_condensate_chemical_setup
 
     gas_setup = _base_chemsetup(
         path=gas_path,
         species_defalt_elements=species_defalt_elements,
         element_file=element_file,
         silent=True,
+        species_default_elements=species_default_elements,
     )
-    condensate_setup = chemsetup(path=condensate_path, silent=True)
+    condensate_setup = chemsetup(
+        path=condensate_path,
+        gas_setup=gas_setup,
+        silent=True,
+    )
     bundle = build_condensate_chemical_setup(
         gas_setup=gas_setup,
         condensate_setup=condensate_setup,

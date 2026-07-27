@@ -1,1 +1,1 @@
-"""Fixed-support PD-IPM v2 implementation."""
+"""Compatibility namespace for the relocated fixed-support solver."""

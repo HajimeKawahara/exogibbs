@@ -16,6 +16,7 @@ from typing import Any, Mapping, Sequence
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOT = ROOT / "src"
+sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(SOURCE_ROOT))
 
 import numpy as np
@@ -45,12 +46,12 @@ from exogibbs.api.condensate_equilibrium import (
     CONDENSATE_HEAD_V2_ROUTE_NAME,
     CONDENSATE_HEAD_V2_ROUTE_VERSION,
 )
-from exogibbs.condensates.curated_profiles import (
+from benchmarks.fixed_support_v2.curated_profiles import (
     FRESH_CURATED_PROFILES,
     element_budget_for_profile,
     support_payload_for_profile,
 )
-from exogibbs.condensates.fixed_support_v2_policy import (
+from exogibbs.equilibrium.condensate.policy import (
     fixed_support_v2_production_policy,
 )
 from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
@@ -66,10 +67,13 @@ DEFAULT_FAMILIES = (
 )
 SOURCE_PATHS = (
     Path(__file__).resolve(),
+    Path(__file__).with_name("curated_profiles.py"),
     Path(__file__).with_name("run_fixed_support_v2_production_profile_gpu.csh"),
-    ROOT / "src/exogibbs/api/condensate_equilibrium.py",
-    ROOT / "src/exogibbs/condensates/fixed_support_v2_policy.py",
-    ROOT / "src/exogibbs/optimize/fixed_support_v2_profile.py",
+    ROOT / "src/exogibbs/api/condensate.py",
+    ROOT / "src/exogibbs/equilibrium/condensate/lifecycle.py",
+    ROOT / "src/exogibbs/equilibrium/condensate/policy.py",
+    ROOT / "src/exogibbs/equilibrium/condensate/support.py",
+    ROOT / "src/exogibbs/equilibrium/condensate/fixed_support/batch.py",
 )
 
 

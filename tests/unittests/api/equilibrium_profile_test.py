@@ -35,7 +35,9 @@ def test_equilibrium_profile_shapes_and_values(monkeypatch):
         return jnp.zeros((K,), dtype=jnp.result_type(ln_nk0, A_in.dtype))
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs", stub_minimize_gibbs, raising=True
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
     )
 
     # Profile inputs (N layers)
@@ -79,7 +81,7 @@ def test_equilibrium_profile_return_diagnostics(monkeypatch):
         return ln_n, diagnostics
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs_with_diagnostics",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs_with_diagnostics",
         stub_minimize_gibbs_with_diagnostics,
         raising=True,
     )
@@ -124,7 +126,7 @@ def test_equilibrium_profile_explicit_method_still_wins_over_initializer_default
             return request.previous_solution
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
         stub_minimize_gibbs,
         raising=True,
     )
@@ -163,7 +165,7 @@ def test_equilibrium_profile_default_method_uses_vmap_cold_with_initializer(monk
             )
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
         stub_minimize_gibbs,
         raising=True,
     )
@@ -194,7 +196,7 @@ def test_equilibrium_profile_default_method_uses_scan_hot_from_bottom_without_in
         return ln_nk0 + 1.0
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
         stub_minimize_gibbs,
         raising=True,
     )
@@ -233,7 +235,7 @@ def test_equilibrium_profile_scan_hot_from_top_uses_previous_layer_init(monkeypa
         return ln_n, diagnostics
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs_with_diagnostics",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs_with_diagnostics",
         stub_minimize_gibbs_with_diagnostics,
         raising=True,
     )
@@ -274,7 +276,7 @@ def test_equilibrium_profile_scan_hot_from_bottom_uses_previous_layer_init(monke
         return ln_n, diagnostics
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs_with_diagnostics",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs_with_diagnostics",
         stub_minimize_gibbs_with_diagnostics,
         raising=True,
     )
@@ -318,7 +320,7 @@ def test_equilibrium_profile_scan_custom_initializer_receives_previous_solution(
             return request.previous_solution
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
         stub_minimize_gibbs,
         raising=True,
     )
@@ -389,7 +391,7 @@ def test_equilibrium_profile_scan_grid_initializer_infers_metallicity_under_trac
         raising=True,
     )
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
         stub_minimize_gibbs,
         raising=True,
     )

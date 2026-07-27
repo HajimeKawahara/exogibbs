@@ -9,7 +9,11 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import sys
 from typing import Any, Sequence
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPOSITORY_ROOT))
 
 os.environ["JAX_PLATFORMS"] = "cpu"
 os.environ["JAX_PLATFORM_NAME"] = "cpu"
@@ -21,14 +25,13 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 
-from exogibbs.api.condensate_equilibrium import (
+from exogibbs.api.condensate import (
     CondensateEquilibriumOptions,
     CondensateEquilibriumResult,
-    condensate_equilibrium,
+    solve as condensate_equilibrium,
 )
-from exogibbs.api.equilibrium import EquilibriumOptions, equilibrium
-from exogibbs.condensates.curated_profiles import (
-    FRESH_CURATED_PROFILES,
+from exogibbs.api.gas import EquilibriumOptions, solve as equilibrium
+from benchmarks.fixed_support_v2.curated_profiles import (
     CuratedProfileDefinition,
     case_id_for_profile,
     element_budget_for_profile,

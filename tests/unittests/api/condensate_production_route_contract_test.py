@@ -193,7 +193,7 @@ def test_prepared_v2_plan_uses_v2_owned_buckets_without_legacy_imports() -> None
     payload = json.loads(completed.stdout.splitlines()[-1])
 
     assert payload["bucket_module"] == (
-        "exogibbs.optimize.fixed_support_v2_profile"
+        "exogibbs.equilibrium.condensate.fixed_support.batch"
     )
     assert payload["legacy_imports"] == {
         "exogibbs.optimize.minimize_cond": False,

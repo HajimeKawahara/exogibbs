@@ -13,7 +13,8 @@ from exogibbs.api.condensate_equilibrium import (
     CondensateEquilibriumInit,
     CondensateEquilibriumOptions,
 )
-from exogibbs.optimize.fixed_support_v2.types import (
+from exogibbs.equilibrium.condensate import lifecycle as _lifecycle
+from exogibbs.equilibrium.condensate.fixed_support.types import (
     KKTComponentNorms,
     TerminalStatus,
 )
@@ -64,7 +65,7 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
     calls = []
 
     monkeypatch.setattr(
-        condmod,
+        _lifecycle,
         "_native_activity_expanded_profile_support_payload",
         lambda **kwargs: (
             (0,),
@@ -73,7 +74,7 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
         ),
     )
 
-    def fake_run_prepared_profile_v2(**kwargs):
+    def fake_run_fixed_support_profile(**kwargs):
         calls.append(kwargs)
         support = tuple(kwargs["buckets"][0].support_indices)
         closed = len(support) == 2
@@ -121,8 +122,16 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
         }
 
     monkeypatch.setattr(
-        "exogibbs.optimize.fixed_support_v2_profile.run_prepared_profile_v2",
-        fake_run_prepared_profile_v2,
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.batch."
+            "run_fixed_support_profile"
+        ),
+        fake_run_fixed_support_profile,
+    )
+    monkeypatch.setattr(
+        _lifecycle,
+        "evaluate_profile_support_closure",
+        lambda result, **kwargs: result,
     )
     initial = CondensateEquilibriumInit(
         gas_ln_n=jnp.log(jnp.asarray([0.8, 0.8], dtype=jnp.float64)),
@@ -180,7 +189,7 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
     gas_ln_n = jnp.log(jnp.asarray([0.5, 0.5], dtype=jnp.float64))
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.equilibrium",
+        "exogibbs.equilibrium.gas.solve.equilibrium",
         lambda *args, **kwargs: SimpleNamespace(
             ln_n=gas_ln_n,
             ntot=jnp.asarray(1.0, dtype=jnp.float64),

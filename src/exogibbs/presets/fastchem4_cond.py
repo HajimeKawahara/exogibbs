@@ -10,10 +10,13 @@ import jax.numpy as jnp
 import numpy as np
 from jax import jit, vmap
 
-from exogibbs.api.chemistry import ChemicalSetup, setup_float_dtype
+from exogibbs.equilibrium.condensate.setup import (
+    build_condensate_chemical_setup,
+)
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.presets.fastchem import _print_status
 from exogibbs.presets.fastchem4 import chemsetup as _base_chemsetup
+from exogibbs.thermo.models import ChemicalSetup, setup_float_dtype
 
 
 _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
@@ -71,16 +74,16 @@ def condensate_chemical_setup(
     species_defalt_elements: bool = True,
     element_file: Optional[str] = None,
     silent: bool = False,
+    species_default_elements: Optional[bool] = None,
 ):
     """Build the production-facing FastChem4 gas-condensate setup bundle."""
-
-    from exogibbs.api.condensate_equilibrium import build_condensate_chemical_setup
 
     gas_setup = _base_chemsetup(
         path=gas_path,
         species_defalt_elements=species_defalt_elements,
         element_file=element_file,
         silent=True,
+        species_default_elements=species_default_elements,
     )
     condensate_setup = chemsetup(
         path=condensate_path,
@@ -145,6 +148,9 @@ def _build_chemical_setup(
         elements=tuple(elements),
         species=tuple(species),
         element_vector_reference=element_vector_ref,
+        temperature_validity_upper=tuple(
+            float(value) for value in validity_upper
+        ),
         metadata={
             "source": "FastChem4",
             "dataset": "condensates",

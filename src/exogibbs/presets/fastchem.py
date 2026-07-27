@@ -9,9 +9,8 @@ from typing import List
 from typing import Optional
 from typing import Tuple
 
-from exogibbs.api.chemistry import ChemicalSetup
-from exogibbs.api.chemistry import setup_float_dtype
 from exogibbs.io.load_data import get_data_filepath
+from exogibbs.thermo.models import ChemicalSetup, setup_float_dtype
 from exogibbs.thermo.stoichiometry import build_formula_matrix
 from exogibbs.utils.nameparser import set_elements_from_components
 
@@ -19,7 +18,14 @@ _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
 
 
-def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, element_file=None, silent=False) -> ChemicalSetup:
+def chemsetup(
+    path="fastchem/logK/logK.dat",
+    species_defalt_elements=True,
+    element_file=None,
+    silent=False,
+    *,
+    species_default_elements: Optional[bool] = None,
+) -> ChemicalSetup:
 
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
@@ -38,6 +44,10 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
         The element species are the reference, therefore its coefficients are all zero.
         The element species are automatically added in this function.
     """
+    species_defalt_elements = _resolve_species_default_elements(
+        species_defalt_elements=species_defalt_elements,
+        species_default_elements=species_default_elements,
+    )
     float_dtype = setup_float_dtype()
     path_fastchem_data = get_data_filepath(path)
     # molecules species
@@ -56,7 +66,13 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
     elif element_file is not None:
         print("setting reference element vector from the provided element file:", element_file)
         import pandas as pd
-        element_df = pd.read_csv(get_data_filepath(element_file), sep='\s+', comment="#", header=None, names=["element", "abundance"])
+        element_df = pd.read_csv(
+            get_data_filepath(element_file),
+            sep=r"\s+",
+            comment="#",
+            header=None,
+            names=["element", "abundance"],
+        )
         elements = element_df["element"].tolist()[1:] + ["e-"]
         element_abundances = np.asarray(
             element_df["abundance"].tolist()[1:],
@@ -142,6 +158,29 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
             ),
         },
     )
+
+
+def _resolve_species_default_elements(
+    *,
+    species_defalt_elements: bool,
+    species_default_elements: Optional[bool],
+) -> bool:
+    """Resolve the corrected keyword while retaining the historical typo."""
+
+    if not isinstance(species_defalt_elements, bool):
+        raise TypeError("species_defalt_elements must be a bool.")
+    if species_default_elements is None:
+        return species_defalt_elements
+    if not isinstance(species_default_elements, bool):
+        raise TypeError("species_default_elements must be a bool or None.")
+    if (
+        species_defalt_elements is not True
+        and species_defalt_elements != species_default_elements
+    ):
+        raise ValueError(
+            "species_defalt_elements and species_default_elements conflict."
+        )
+    return species_default_elements
 
 
 def _print_status(species_molecule, elements, species, preset_name="fastchem"):

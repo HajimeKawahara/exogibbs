@@ -25,6 +25,7 @@ Contents
    presets/ykb4.rst
    presets/fastchem.rst
    presets/fastchem4.rst
+   equilibrium_solvers.rst
    condensate_profile.rst
 
 .. toctree::

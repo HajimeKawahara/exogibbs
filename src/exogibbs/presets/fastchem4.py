@@ -13,18 +13,19 @@ import jax.numpy as jnp
 import numpy as np
 from jax import jit, vmap
 
-from exogibbs.api.chemistry import ChemicalSetup, setup_float_dtype
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.presets.fastchem import (
     _default_elements,
     _elements_ref_AAG21,
     _parse_fastchem_coeffs_with_metadata,
+    _resolve_species_default_elements,
     _restrict_species_to_elements,
     _set_element_species,
     _print_status,
     logk,
 )
 from exogibbs.thermo.stoichiometry import build_formula_matrix
+from exogibbs.thermo.models import ChemicalSetup, setup_float_dtype
 from exogibbs.utils.nameparser import set_elements_from_components
 
 
@@ -33,9 +34,15 @@ def chemsetup(
     species_defalt_elements: bool = True,
     element_file: Optional[str] = None,
     silent: bool = False,
+    *,
+    species_default_elements: Optional[bool] = None,
 ) -> ChemicalSetup:
     """Build a gas-phase ``ChemicalSetup`` from packaged FastChem4 logK data."""
 
+    species_defalt_elements = _resolve_species_default_elements(
+        species_defalt_elements=species_defalt_elements,
+        species_default_elements=species_default_elements,
+    )
     float_dtype = setup_float_dtype()
     data_path = get_data_filepath(path)
     text = open(data_path, "r", encoding="utf-8").read()
