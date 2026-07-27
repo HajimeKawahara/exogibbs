@@ -2,7 +2,16 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+import sys
+
 import jax.numpy as jnp
+
+
+# Benchmark fixtures are intentionally repository-only and are not installed
+# with the src-layout package.
+_REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(_REPOSITORY_ROOT))
 
 from benchmarks.fixed_support_v2.curated_profiles import (
     FRESH_CURATED_PROFILES,
