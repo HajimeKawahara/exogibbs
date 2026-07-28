@@ -9,7 +9,7 @@ from jax import core
 
 from exogibbs.equilibrium.gas.grid.types import (
     _COMPOSITION_AXIS_NAME,
-    _freeze_setup_metadata,
+    _setup_metadata_matches,
     Array,
     EquilibriumGrid,
     EquilibriumGridInterpolationOptions,
@@ -152,10 +152,13 @@ def validate_equilibrium_grid_compatibility(
             "Equilibrium grid species mismatch: grid metadata does not match "
             "the runtime setup.species ordering/content."
         )
-    if grid.metadata.preset_setup_metadata != _freeze_setup_metadata(setup.metadata):
+    if not _setup_metadata_matches(
+        grid.metadata.preset_setup_metadata,
+        setup.metadata,
+    ):
         raise ValueError(
-            "Equilibrium grid setup metadata mismatch: grid metadata does not match "
-            "the runtime setup.metadata."
+            "Equilibrium grid setup metadata mismatch: a field stored by the "
+            "grid is missing or different in the runtime setup.metadata."
         )
     if grid.metadata.composition_axis_name != expected_composition_axis_name:
         raise ValueError(

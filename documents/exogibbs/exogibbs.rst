@@ -9,6 +9,8 @@ Subpackages
 
    exogibbs.api
    exogibbs.condensates
+   exogibbs.equilibrium
+   exogibbs.experimental
    exogibbs.io
    exogibbs.math
    exogibbs.optimize
@@ -16,6 +18,17 @@ Subpackages
    exogibbs.test
    exogibbs.thermo
    exogibbs.utils
+
+Submodules
+----------
+
+exogibbs.exogibbs\_version module
+---------------------------------
+
+.. automodule:: exogibbs.exogibbs_version
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------

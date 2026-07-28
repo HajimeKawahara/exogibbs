@@ -208,6 +208,8 @@ cython_debug/
 /.codex
 /.vscode/
 /documents/_build/
+/documents/examples/
+/documents/sg_execution_times.rst
 /documents/backreferences/
 /documents/exogibbs/Makefile
 /documents/exogibbs/make.bat

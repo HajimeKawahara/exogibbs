@@ -40,8 +40,9 @@ project = "Exogibbs"
 copyright = "2025, ExoGibbs contributors"
 author = "Exogibbs contributors"
 
-# The full version, including alpha/beta/rc tags
-release = "2.0.0"
+# The short and full versions, including alpha/beta/rc tags.
+version = "0.4"
+release = "0.4.0"
 
 
 # -- General configuration ---------------------------------------------------

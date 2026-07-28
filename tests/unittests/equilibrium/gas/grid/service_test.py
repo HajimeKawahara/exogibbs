@@ -64,6 +64,141 @@ def test_equilibrium_grid_metadata_from_setup_captures_preset_and_settings():
     assert metadata.verification_passed is None
 
 
+def test_equilibrium_grid_metadata_retains_runtime_trace_provenance():
+    source_records = {"H1": {"record_line": "trace"}}
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((1, 1)),
+        hvector_func=lambda T: jnp.asarray([T]),
+        elements=("H",),
+        species=("H1",),
+        metadata={
+            "source": "fastchem v3.1.3",
+            "dataset": "gas",
+            "fastchem_logk_file": "fastchem/logK/logK.dat",
+            "fastchem_logk_source_records": source_records,
+            "fastchem_hvector_logk_source_trace": lambda T: {"T": T},
+            "fastchem_hvector_logk_source_trace_function": "trace.builder",
+        },
+    )
+
+    metadata = EquilibriumGridMetadata.from_setup(
+        setup,
+        preset_name="fastchem",
+        source="exogibbs",
+    )
+
+    assert metadata.preset_setup_metadata["fastchem_logk_source_records"] == (
+        source_records
+    )
+    assert (
+        metadata.preset_setup_metadata[
+            "fastchem_hvector_logk_source_trace_function"
+        ]
+        == "trace.builder"
+    )
+    assert metadata.matches_setup(setup, "fastchem")
+
+
+def test_equilibrium_grid_metadata_accepts_new_runtime_trace_fields():
+    setup_at_grid_build = ChemicalSetup(
+        formula_matrix=jnp.ones((1, 1)),
+        hvector_func=lambda T: jnp.asarray([T]),
+        elements=("H",),
+        species=("H1",),
+        metadata={
+            "source": "fastchem v3.1.3",
+            "dataset": "gas",
+            "fastchem_logk_file": "fastchem/logK/logK.dat",
+        },
+    )
+    runtime_setup = ChemicalSetup(
+        formula_matrix=setup_at_grid_build.formula_matrix,
+        hvector_func=setup_at_grid_build.hvector_func,
+        elements=setup_at_grid_build.elements,
+        species=setup_at_grid_build.species,
+        metadata={
+            **setup_at_grid_build.metadata,
+            "fastchem_logk_source_records": {
+                "H1": {"polynomial_coefficients": [0.0] * 5}
+            },
+        },
+    )
+    metadata = EquilibriumGridMetadata.from_setup(
+        setup_at_grid_build,
+        preset_name="fastchem",
+        source="exogibbs",
+    )
+
+    assert metadata.matches_setup(runtime_setup, "fastchem")
+
+
+def test_equilibrium_grid_metadata_rejects_unknown_runtime_field():
+    build_setup = ChemicalSetup(
+        formula_matrix=jnp.ones((1, 1)),
+        hvector_func=lambda T: jnp.asarray([T]),
+        elements=("H",),
+        species=("H1",),
+        metadata={
+            "source": "fastchem v3.1.3",
+            "dataset": "gas",
+            "fastchem_logk_file": "fastchem/logK/logK.dat",
+        },
+    )
+    changed_runtime_setup = ChemicalSetup(
+        formula_matrix=build_setup.formula_matrix,
+        hvector_func=build_setup.hvector_func,
+        elements=build_setup.elements,
+        species=build_setup.species,
+        metadata={
+            **build_setup.metadata,
+            "standard_pressure_bar": 2.0,
+        },
+    )
+    metadata = EquilibriumGridMetadata.from_setup(
+        build_setup,
+        preset_name="fastchem",
+        source="exogibbs",
+    )
+
+    assert not metadata.matches_setup(changed_runtime_setup, "fastchem")
+
+
+def test_equilibrium_grid_metadata_rejects_changed_stored_source_record():
+    build_setup = ChemicalSetup(
+        formula_matrix=jnp.ones((1, 1)),
+        hvector_func=lambda T: jnp.asarray([T]),
+        elements=("H",),
+        species=("H1",),
+        metadata={
+            "source": "fastchem v3.1.3",
+            "dataset": "gas",
+            "fastchem_logk_file": "fastchem/logK/logK.dat",
+            "fastchem_logk_source_records": {
+                "H1": {"polynomial_coefficients": [1.0] * 5}
+            },
+        },
+    )
+    changed_runtime_setup = ChemicalSetup(
+        formula_matrix=build_setup.formula_matrix,
+        hvector_func=build_setup.hvector_func,
+        elements=build_setup.elements,
+        species=build_setup.species,
+        metadata={
+            **build_setup.metadata,
+            "fastchem_logk_source_records": {
+                "H1": {"polynomial_coefficients": [2.0] * 5}
+            },
+        },
+    )
+    metadata = EquilibriumGridMetadata.from_setup(
+        build_setup,
+        preset_name="fastchem",
+        source="exogibbs",
+    )
+
+    assert not metadata.matches_setup(changed_runtime_setup, "fastchem")
+
+
 def test_compute_physical_metal_mass_fraction_ignores_electrons():
     setup = ChemicalSetup(
         formula_matrix=jnp.ones((4, 2)),
@@ -606,6 +741,37 @@ def test_validate_equilibrium_grid_compatibility_accepts_matching_setup():
         species=grid.metadata.preset_species,
         metadata=grid.metadata.preset_setup_metadata,
     )
+
+    validate_equilibrium_grid_compatibility(grid, setup, "fastchem")
+
+
+@pytest.mark.parametrize(
+    ("grid_kind", "setup_kwargs"),
+    [
+        ("fastchem", {}),
+        (
+            "fastchem_extended",
+            {
+                "path": "fastchem/logK/logK_extended.dat",
+                "species_default_elements": False,
+                "element_file": (
+                    "fastchem/element_abundances/asplund_2020_extended.dat"
+                ),
+            },
+        ),
+    ],
+)
+def test_packaged_fastchem_grid_accepts_current_preset(
+    grid_kind,
+    setup_kwargs,
+):
+    from exogibbs.io.load_data import get_default_equilibrium_grid_path
+    from exogibbs.presets.fastchem import chemsetup
+
+    grid = load_equilibrium_grid_netcdf(
+        str(get_default_equilibrium_grid_path(grid_kind))
+    )
+    setup = chemsetup(silent=True, **setup_kwargs)
 
     validate_equilibrium_grid_compatibility(grid, setup, "fastchem")
 
