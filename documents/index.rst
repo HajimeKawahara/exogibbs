@@ -2,7 +2,7 @@
    sphinx-quickstart on Mon Jan 11 14:38:51 2021.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
-   
+
 ExoGibbs
 ==================================
 
@@ -12,7 +12,7 @@ Version 0.4
 
 
 `ExoGibbs <https://github.com/HajimeKawahara/exogibbs>`_ provides an auto-differentiable thermalchemical equilibrium solver
-based on the Gibbs free energy minimization method, powered by `JAX <https://github.com/google/jax>`_. 
+based on the Gibbs free energy minimization method, powered by `JAX <https://github.com/google/jax>`_.
 
 
 Contents
@@ -34,6 +34,14 @@ Contents
 
    exogibbs/index.rst
 
+.. toctree::
+   :maxdepth: 1
+   :caption: VALIDATION:
+
+   v0_4_fastchem4_validation_demo
+   fastchem4_production_comparison
+   comparison_example_lineage
+
 License & Attribution
 ---------------------
 
@@ -44,4 +52,3 @@ Copyright 2025-, Contributors
 -
 
 ExoGibbs is free software made available under the GPLv3 License.
-   

@@ -9,13 +9,18 @@ Implemented benchmark runners:
 - single-layer benchmark: `benchmarks/run_single_layer.py`
 - atmospheric-profile benchmark: `benchmarks/run_profile.py`
 
-Current non-goals:
+Current timing-baseline non-goals:
 
-- FastChem comparison runner
 - markdown report generation
 - plotting
 - CI gating
 - solver modifications or solver-side instrumentation
+
+The independent ExoGibbs production-default comparison with a FastChem v4.0.3
+standalone executable is a separate correctness-evidence workflow. It shares
+neither timing status semantics nor solver inputs with these runners; see
+`benchmarks/fastchem4/README.md` and
+`documents/fastchem4_production_comparison.rst`.
 
 ## Anchor Cases
 

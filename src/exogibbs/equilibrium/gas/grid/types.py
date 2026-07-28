@@ -41,8 +41,13 @@ _GRID_SCALAR_DIMS = (
     _GRID_DIM_PRESSURE,
     _GRID_DIM_COMPOSITION,
 )
-
-
+_LEGACY_RUNTIME_ADDITIONAL_SETUP_METADATA_KEYS = frozenset(
+    {
+        "fastchem_hvector_logk_source_trace",
+        "fastchem_hvector_logk_source_trace_function",
+        "fastchem_logk_source_records",
+    }
+)
 def _metadata_json_safe(value: Any) -> Any:
     """Return a deterministic JSON-safe metadata value."""
 
@@ -71,6 +76,33 @@ def _freeze_setup_metadata(
     if metadata is None:
         return None
     return {str(key): _metadata_json_safe(value) for key, value in metadata.items()}
+
+
+def _setup_metadata_matches(
+    stored_metadata: Optional[Mapping[str, Any]],
+    runtime_metadata: Optional[Mapping[str, Any]],
+) -> bool:
+    """Match every stored setup field while allowing newer runtime fields.
+
+    Older packaged grids predate detailed source-record trace metadata.  A
+    runtime setup may therefore add those known trace fields that the grid
+    could not store, but it may not add other fields or remove or change any
+    field that the grid did store.  Newly generated grids retain the detailed
+    trace fields and consequently compare them as part of this same contract.
+    """
+
+    stored = _freeze_setup_metadata(stored_metadata)
+    runtime = _freeze_setup_metadata(runtime_metadata)
+    if stored is None or runtime is None:
+        return stored == runtime
+    stored_fields_match = all(
+        key in runtime and runtime[key] == value
+        for key, value in stored.items()
+    )
+    additional_runtime_keys = set(runtime) - set(stored)
+    return stored_fields_match and additional_runtime_keys.issubset(
+        _LEGACY_RUNTIME_ADDITIONAL_SETUP_METADATA_KEYS
+    )
 
 
 @dataclass(frozen=True)
@@ -163,7 +195,10 @@ class EquilibriumGridMetadata:
         """Return True when a runtime setup matches this grid's preset signature."""
         return (
             self.preset_name == preset_name
-            and self.preset_setup_metadata == _freeze_setup_metadata(setup.metadata)
+            and _setup_metadata_matches(
+                self.preset_setup_metadata,
+                setup.metadata,
+            )
             and self.preset_elements == (tuple(setup.elements) if setup.elements is not None else None)
             and self.preset_species == (tuple(setup.species) if setup.species is not None else None)
         )
