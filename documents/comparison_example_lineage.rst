@@ -22,6 +22,46 @@ These plots are human-readable companions to the provenance-bearing runner in
 :doc:`v0_4_fastchem4_validation_demo` and
 :doc:`fastchem4_production_comparison`.
 
+The pressure-profile view below uses the condensate example's optional
+``l-dwarf`` mode.  Its rows separate gas mixing ratios from condensate amounts,
+and its columns separate the independently completed FastChem and ExoGibbs
+calculations.  In each upper panel, dashed curves are gas-only equilibrium and
+solid curves with markers are the gas phase in local equilibrium with
+condensates.  Matching colors identify the same species across solver columns
+and gas states.
+
+.. figure:: _static/comparison_with_fastchem4_ldwarf_profile.png
+   :alt: Gas and condensate abundance profiles from FastChem 4 and ExoGibbs
+   :width: 100%
+   :align: center
+
+   Gas-only and equilibrium-condensation calculations along an illustrative
+   L-dwarf-like pressure-temperature trajectory.  In the upper row, dashed
+   curves show gas-only equilibrium and solid curves with markers show the gas
+   phase when condensates are allowed.  The lower row shows the corresponding
+   equilibrium condensate amounts.
+
+The 13 layers span ``1e-4``--``1e2`` bar and 1100--2600 K according to
+``T = 1100 + 160 q + 15 q^2`` K, where
+``q = log10(P / bar) + 4``.  This explicit trajectory is chosen to expose
+refractory-condensate transitions in a warm substellar regime.  It is not a
+self-consistent radiative-convective or cloud model.  Both gas states use the
+same total elemental budget at every layer and are solved independently.  The
+separation between their curves therefore shows local sequestration into
+condensates; it does not represent rainout, settling, vertical mixing, or
+cloud transport.  Neither gas-only result is supplied to a condensate solver.
+The formal v0.4 release evidence remains the fixed four-point benchmark rather
+than this visualization.
+
+Generate the tracked documentation image from the repository root with:
+
+.. code-block:: bash
+
+   python examples/comparisons/comparison_with_fastchem4_condensates.py \
+     --fastchem-executable /tmp/exogibbs_fastchem4 \
+     --profile l-dwarf \
+     --output documents/_static/comparison_with_fastchem4_ldwarf_profile.png
+
 Restored historical validation traces
 -------------------------------------
 

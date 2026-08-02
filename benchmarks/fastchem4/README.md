@@ -28,7 +28,11 @@ Readable visual companions are available in
 `examples/comparisons/comparison_with_fastchem4_gas.py` and
 `examples/comparisons/comparison_with_fastchem4_condensates.py`. The former
 uses the adapter's `chemistry_mode="gas"` path; the production runner retains
-the default equilibrium-condensation mode.
+the default equilibrium-condensation mode. The latter retains the four v0.4
+points by default and also provides an illustrative atmospheric pressure
+profile through `--profile l-dwarf`. Its gas panels overlay separate gas-only
+and equilibrium-condensation runs for each solver. That visualization is not
+an additional release acceptance case.
 
 ## Shared input contract
 

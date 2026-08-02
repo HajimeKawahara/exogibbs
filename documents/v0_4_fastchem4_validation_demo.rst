@@ -228,16 +228,31 @@ standalone executable:
    python examples/comparisons/comparison_with_fastchem4_condensates.py \
      --fastchem-executable /path/to/fastchem
 
+   python examples/comparisons/comparison_with_fastchem4_condensates.py \
+     --fastchem-executable /path/to/fastchem \
+     --profile l-dwarf
+
 The downloaded files are source views of repository examples, not standalone
 single-file programs: keep them at the paths above inside an ExoGibbs source
 checkout.  The gas-only example normally finishes in a few seconds.  The
 gas-plus-condensate example runs the full four-layer production lifecycle and
-can take roughly 4--5 minutes on CPU without intermediate output.
+can take roughly 4--5 minutes on CPU without intermediate output.  Its
+13-layer ``l-dwarf`` mode can take roughly 10 minutes.
 
 The first script restores the historical gas-only visual comparison on the
 current FastChem 4 data and gas API.  The second uses the production
 fixed-support-v2 condensate route at the four v0.4 demo points.  Both write
 their figures under ``results/fastchem4_examples`` by default.
+The optional ``l-dwarf`` mode uses the same gas-plus-condensate route to make
+a 2-by-2 pressure-profile figure: gas and condensate rows, with FastChem and
+ExoGibbs columns.  It is an illustrative local-equilibrium trajectory without
+rainout or vertical transport, not a self-consistent atmosphere model and not
+an additional v0.4 acceptance case.  Each gas panel overlays a separate
+gas-only calculation (dashed) and the gas phase in local equilibrium with
+condensates (solid with markers), using the same total elemental budget.  The
+separation directly displays the local gas-phase response to condensation.  No result
+from either comparison calculation is used to initialize or configure the
+other.
 The historical ``comparison_with_fastchem.py``,
 ``comparison_with_fastchem_extended.py``, and
 ``comparison_with_fastchem_cond.py`` paths remain as compatibility entry
