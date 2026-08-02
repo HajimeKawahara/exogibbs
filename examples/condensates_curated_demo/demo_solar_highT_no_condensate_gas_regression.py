@@ -68,7 +68,13 @@ def _series(rows, setup, species: str) -> np.ndarray:
 
 def _plot_profile(rows, setup) -> Path:
     pressures = np.asarray([row[0] for row in rows], dtype=float)
-    output_path = Path(__file__).with_suffix(".png")
+    output_path = (
+        Path(__file__).resolve().parents[2]
+        / "results"
+        / "condensates_curated_demo"
+        / Path(__file__).with_suffix(".png").name
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     fig, ax = plt.subplots(1, 1, figsize=(6.0, 5.0))
     for species in GAS_SPECIES:
         values = _series(rows, setup, species)

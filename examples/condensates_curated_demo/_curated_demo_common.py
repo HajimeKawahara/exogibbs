@@ -46,6 +46,14 @@ config.update("jax_enable_x64", True)
 ACCEPTED_STATUSES = {"converged", "converged_with_caveat"}
 
 
+def curated_output_path(script_path: str | Path) -> Path:
+    """Return the standard results path for a curated demo script."""
+
+    output_directory = REPOSITORY_ROOT / "results" / "condensates_curated_demo"
+    output_directory.mkdir(parents=True, exist_ok=True)
+    return output_directory / Path(script_path).with_suffix(".png").name
+
+
 def _pressure_label(pressure: float) -> str:
     return pressure_label(pressure)
 

@@ -211,10 +211,7 @@ cython_debug/
 /documents/examples/
 /documents/sg_execution_times.rst
 /documents/backreferences/
-/documents/exogibbs/Makefile
-/documents/exogibbs/make.bat
-/documents/exogibbs/index.rst
-/documents/exogibbs/exogibbs.*.rst
+/documents/exogibbs/
 *~
 codex_log.txt
 audit_findings.txt

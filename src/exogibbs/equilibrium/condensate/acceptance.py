@@ -202,6 +202,7 @@ def apply_full_condensate_budget_residual_gate(
         relative_tolerance=relative_tolerance,
         relative_floor=relative_floor,
     )
+    report["enabled"] = bool(enabled)
     metadata["full_condensate_budget_residual_gate"] = report
     if not enabled or report["accepted"] or status != CONVERGED:
         return status, acceptance_tier, warning_messages, metadata
@@ -229,6 +230,7 @@ def polish_gas_log_amounts_for_full_condensate_budget_gate(
     condensate_amounts: Array,
     element_inventory_target: Array,
     relative_tolerance: float,
+    relative_floor: float = DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR,
     max_iterations: int = 16,
     max_abs_delta_q: float = 2.0,
 ) -> tuple[jnp.ndarray, Mapping[str, Any] | None]:
@@ -276,6 +278,7 @@ def polish_gas_log_amounts_for_full_condensate_budget_gate(
             condensate_amounts=condensates,
             element_inventory_target=element_inventory_target,
             relative_tolerance=relative_tolerance,
+            relative_floor=relative_floor,
         )
 
     initial_report = gate_report(q)
@@ -389,6 +392,7 @@ def accept_condensate_result_state(
                 relative_tolerance=(
                     full_condensate_budget_relative_tolerance
                 ),
+                relative_floor=full_condensate_budget_relative_floor,
             )
         )
         if polish_report is not None:

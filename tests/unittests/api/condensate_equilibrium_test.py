@@ -223,6 +223,29 @@ def test_v2_result_rejects_failed_full_budget_gate() -> None:
     assert gate["max_abs_relative_residual_element"] == "H"
 
 
+def test_disabled_full_budget_gate_reports_disabled_state() -> None:
+    _gas, _condensate, setup = _setup_pair()
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=(0.0, 0.0),
+        support_indices=(0,),
+        support_amounts=(1.0,),
+        selected_route=CONDENSATE_HEAD_V2_ROUTE_NAME,
+        solver_success=True,
+        route=HEAD_ROUTE_V2,
+        head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
+        head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
+        element_inventory_target=jnp.asarray([1.0, 1.0]),
+        enable_full_condensate_budget_residual_gate=False,
+    )
+
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert result.converged
+    assert gate["enabled"] is False
+    assert gate["accepted"] is False
+
+
 def test_full_budget_gate_uses_trace_relative_floor() -> None:
     _gas, _condensate, setup = _setup_pair()
     result = build_condensate_equilibrium_result_from_solver_payload(
@@ -273,6 +296,31 @@ def test_gas_log_amount_polish_repairs_trace_budget_residual() -> None:
     assert report is not None
     assert report["accepted"]
     assert float(jnp.exp(polished)[1]) < 2.0e-9
+
+
+def test_gas_log_amount_polish_uses_configured_relative_floor() -> None:
+    _gas, _condensate, setup = _setup_pair()
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=(math.log(2.0e-12), 0.0),
+        support_indices=(),
+        support_amounts=(),
+        selected_route=CONDENSATE_HEAD_V2_ROUTE_NAME,
+        solver_success=True,
+        route=HEAD_ROUTE_V2,
+        head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
+        head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
+        element_inventory_target=jnp.asarray([1.0e-12, 1.0]),
+        full_condensate_budget_relative_floor=1.0e-12,
+    )
+
+    polish = result.diagnostics[
+        "full_condensate_budget_gas_log_amount_polish"
+    ]
+    assert result.converged
+    assert polish["accepted"]
+    assert float(result.gas_n[0]) == pytest.approx(1.0e-12)
 
 
 def test_options_select_only_the_promoted_v2_route() -> None:

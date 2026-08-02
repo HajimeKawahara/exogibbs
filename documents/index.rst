@@ -11,7 +11,7 @@ Version 0.4
 |:frog:| `DeepWiki for ExoGibbs <https://deepwiki.com/HajimeKawahara/exogibbs>`_
 
 
-`ExoGibbs <https://github.com/HajimeKawahara/exogibbs>`_ provides an auto-differentiable thermalchemical equilibrium solver
+`ExoGibbs <https://github.com/HajimeKawahara/exogibbs>`_ provides an auto-differentiable thermochemical equilibrium solver
 based on the Gibbs free energy minimization method, powered by `JAX <https://github.com/google/jax>`_.
 
 
@@ -49,6 +49,5 @@ Copyright 2025-, Contributors
 
 - `Hajime Kawahara <http://secondearths.sakura.ne.jp/en/index.html>`_ (@HajimeKawahara, maintainer)
 - `Yui Kawashima <https://sites.google.com/view/yuikawashima/home>`_ (@ykawashima, the reference code author we inherit, the presets ykb4 originally comes from this code.)
--
 
 ExoGibbs is free software made available under the GPLv3 License.
