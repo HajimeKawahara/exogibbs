@@ -4,7 +4,9 @@
 
 
 import re
-from typing import Dict, List
+from typing import Dict, List, Set
+
+
 # Matches trailing parenthetical annotations such as "(CNN)", "(g)", "(s,l)".
 _PAREN_ANNOT_TAIL = re.compile(r"(?:\([A-Za-z0-9+\-_,\s]*\))+$")
 # Add this near the top with the other imports/regexes
@@ -13,14 +15,17 @@ _CHARGE = re.compile(r"^([A-Za-z0-9*]+)([+-]\d*)$")  # unchanged
 _ELNUM = re.compile(r"([A-Z][a-z]?)(\d*)")
 
 
-def set_elements_from_components(components: Dict[str, Dict[str, int]]) -> List[str]:
+def set_elements_from_components(
+    components: Dict[str, Dict[str, int]],
+) -> Set[str]:
     """
     Extract a set of unique element symbols from the given species components dictionary.
 
     Args:
         components (Dict[str, Dict[str, int]]): A dictionary mapping species names to their elemental compositions.
 
-    Example:
+    Example::
+
         components = {
             "H2O": {"H": 2, "O": 1},
             "CO2": {"C": 1, "O": 2},
@@ -31,7 +36,7 @@ def set_elements_from_components(components: Dict[str, Dict[str, int]]) -> List[
         # elements will be {'H', 'O', 'C', 'e-'}
 
     Returns:
-        set: A set of unique element symbols.
+        Set[str]: A set of unique element symbols.
     """
     element_set = set()
     for spec in components.keys():
@@ -44,12 +49,13 @@ def sanitize_formula(s: str) -> str:
     """
     Remove leading database markers and trailing parenthetical annotations.
 
-    Examples:
-        "*CO2"         -> "CO2"
-        "C1N2(CNN)"    -> "C1N2"   # isomer/state tag removed
-        "C1N2(NCN)"    -> "C1N2"
-        "H2O(g)"       -> "H2O"
-        "e1-"          -> "e1-"    # charge kept; handled by parse_formula_with_charge
+    Examples::
+
+        "*CO2"      -> "CO2"
+        "C1N2(CNN)" -> "C1N2"
+        "C1N2(NCN)" -> "C1N2"
+        "H2O(g)"    -> "H2O"
+        "e1-"       -> "e1-"
     """
     # Strip leading DB markers (CEA-style phase flags, etc.)
     s = s.lstrip("*^#@~ ")

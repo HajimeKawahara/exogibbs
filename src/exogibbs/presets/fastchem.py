@@ -6,11 +6,11 @@ from jax import jit
 from typing import Union
 from typing import Dict
 from typing import List
+from typing import Optional
 from typing import Tuple
 
-from exogibbs.api.chemistry import ChemicalSetup
-from exogibbs.api.chemistry import setup_float_dtype
 from exogibbs.io.load_data import get_data_filepath
+from exogibbs.thermo.models import ChemicalSetup, setup_float_dtype
 from exogibbs.thermo.stoichiometry import build_formula_matrix
 from exogibbs.utils.nameparser import set_elements_from_components
 
@@ -18,7 +18,14 @@ _SPECIES_PATTERN = re.compile(r"^\s*([^\s:]+)")
 
 
 
-def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, element_file=None, silent=False) -> ChemicalSetup:
+def chemsetup(
+    path="fastchem/logK/logK.dat",
+    species_defalt_elements=True,
+    element_file=None,
+    silent=False,
+    *,
+    species_default_elements: Optional[bool] = None,
+) -> ChemicalSetup:
 
     """
     Prepare a JAX-friendly ChemicalSetup from JANAF-like Gibbs matrices.
@@ -37,11 +44,16 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
         The element species are the reference, therefore its coefficients are all zero.
         The element species are automatically added in this function.
     """
+    species_defalt_elements = _resolve_species_default_elements(
+        species_defalt_elements=species_defalt_elements,
+        species_default_elements=species_default_elements,
+    )
     float_dtype = setup_float_dtype()
     path_fastchem_data = get_data_filepath(path)
     # molecules species
-    acoeff_molecule, components_molecule = _parse_fastchem_coeffs(
-        open(path_fastchem_data, "r", encoding="utf-8").read()
+    acoeff_molecule, components_molecule, source_records_molecule = _parse_fastchem_coeffs_with_metadata(
+        open(path_fastchem_data, "r", encoding="utf-8").read(),
+        source_file=path,
     )
     
     # elements and element species
@@ -54,7 +66,13 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
     elif element_file is not None:
         print("setting reference element vector from the provided element file:", element_file)
         import pandas as pd
-        element_df = pd.read_csv(get_data_filepath(element_file), sep='\s+', comment="#", header=None, names=["element", "abundance"])
+        element_df = pd.read_csv(
+            get_data_filepath(element_file),
+            sep=r"\s+",
+            comment="#",
+            header=None,
+            names=["element", "abundance"],
+        )
         elements = element_df["element"].tolist()[1:] + ["e-"]
         element_abundances = np.asarray(
             element_df["abundance"].tolist()[1:],
@@ -77,6 +95,11 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
             components_molecule,
             elements,
         )
+    source_records_molecule = {
+        species: source_records_molecule[species]
+        for species in components_molecule
+        if species in source_records_molecule
+    }
     species_molecule = list(acoeff_molecule.keys())
     
 
@@ -101,6 +124,18 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
         return jnp.moveaxis(hvector, 0, -1)
 
     hvector_func_jit = jit(hvector_func)
+    hvector_logk_source_trace = _build_fastchem_hvector_logk_source_trace_builder(
+        species=species,
+        source_records=source_records_molecule,
+        coefficients=acoeff,
+        coefficient_array=ccoeff_array,
+        float_dtype=float_dtype,
+        provider_path=path,
+    )
+    try:
+        hvector_func_jit.fastchem_hvector_logk_source_trace = hvector_logk_source_trace
+    except AttributeError:
+        pass
 
     return ChemicalSetup(
         formula_matrix=formula_matrix,
@@ -116,8 +151,36 @@ def chemsetup(path="fastchem/logK/logK.dat", species_defalt_elements=True, eleme
                 element_file if element_file is not None else "fastchem/element_abundances/asplund_2020.dat"
             ),
             "fastchem_species_default_elements": str(species_defalt_elements),
+            "fastchem_logk_source_records": source_records_molecule,
+            "fastchem_hvector_logk_source_trace": hvector_logk_source_trace,
+            "fastchem_hvector_logk_source_trace_function": (
+                "src/exogibbs/presets/fastchem.py::_build_fastchem_hvector_logk_source_trace_builder"
+            ),
         },
     )
+
+
+def _resolve_species_default_elements(
+    *,
+    species_defalt_elements: bool,
+    species_default_elements: Optional[bool],
+) -> bool:
+    """Resolve the corrected keyword while retaining the historical typo."""
+
+    if not isinstance(species_defalt_elements, bool):
+        raise TypeError("species_defalt_elements must be a bool.")
+    if species_default_elements is None:
+        return species_defalt_elements
+    if not isinstance(species_default_elements, bool):
+        raise TypeError("species_default_elements must be a bool or None.")
+    if (
+        species_defalt_elements is not True
+        and species_defalt_elements != species_default_elements
+    ):
+        raise ValueError(
+            "species_defalt_elements and species_default_elements conflict."
+        )
+    return species_default_elements
 
 
 def _print_status(species_molecule, elements, species, preset_name="fastchem"):
@@ -135,6 +198,113 @@ def _print_status(species_molecule, elements, species, preset_name="fastchem"):
 def logk(T, ccoeff):
     a1, a2, a3, a4, a5 = ccoeff
     return a1 / T + a2 * jnp.log(T) + a3 + a4 * T + a5 * T**2
+
+
+def _build_fastchem_hvector_logk_source_trace_builder(
+    *,
+    species: List[str],
+    source_records: Dict[str, Dict[str, object]],
+    coefficients: Dict[str, List[float]],
+    coefficient_array: jnp.ndarray,
+    float_dtype: jnp.dtype,
+    provider_path: str,
+):
+    """Build a default-off FastChem preset hvector/logK source-term trace."""
+
+    provider_function_identity = "src/exogibbs/presets/fastchem.py::chemsetup hvector_func"
+    provider_closure_identity = (
+        "src/exogibbs/presets/fastchem.py::chemsetup.<locals>.hvector_func"
+    )
+
+    def trace(T: Union[float, jnp.ndarray], limit: Optional[int] = None) -> Dict[str, object]:
+        temperature_input = jnp.asarray(T)
+        temperature_np = np.asarray(temperature_input)
+        temperature_float = float(np.ravel(temperature_np.astype(float))[0])
+        coeff_np = np.asarray(coefficient_array)
+        rows = []
+        row_species = species if limit is None else species[:limit]
+        for source_index, label in enumerate(row_species):
+            coeff = [float(value) for value in coefficients[label]]
+            raw_logk = (
+                coeff[0] / temperature_float
+                + coeff[1] * float(np.log(temperature_float))
+                + coeff[2]
+                + coeff[3] * temperature_float
+                + coeff[4] * temperature_float**2
+            )
+            record = source_records.get(label, {})
+            rows.append(
+                {
+                    "species_label": label,
+                    "molecule_label": label,
+                    "source_file": record.get("source_file", provider_path),
+                    "source_record": record.get("record_line"),
+                    "source_index": int(source_index),
+                    "source_record_name": record.get("record_name"),
+                    "record_line_number": record.get("record_line_number"),
+                    "coefficient_line_number": record.get("coefficient_line_number"),
+                    "polynomial_coefficients": coeff,
+                    "temperature_segment": {
+                        "index": record.get("selected_temperature_segment_index"),
+                        "upper_bound": record.get(
+                            "selected_temperature_segment_upper_bound"
+                        ),
+                        "semantics": record.get(
+                            "selected_temperature_segment_semantics",
+                            "element species or no FastChem molecule source record",
+                        ),
+                    },
+                    "raw_logK_source_term": float(raw_logk),
+                    "KL_hvector_value": float(-raw_logk),
+                    "sign_convention": "hvector = -logK(T)",
+                    "density_gauge_pressure_temperature_correction": (
+                        "none in FastChem gas logK provider; pressure term is applied later in _compute_gk"
+                    ),
+                    "final_mass_action_equivalent_term": float(raw_logk),
+                    "native_dtype": "Python float parsed from FastChem logK text",
+                    "python_dtype": type(raw_logk).__name__,
+                    "jax_dtype": str(coefficient_array.dtype),
+                    "cast_to_float64_occurred": str(coefficient_array.dtype) == "float64",
+                    "source_stage_label": "FastChem-preset logK coefficient source",
+                    "producer_stage_label": "chemsetup hvector_func closure",
+                    "provider_function_identity": provider_function_identity,
+                    "provider_closure_identity": provider_closure_identity,
+                    "coefficient_array_origin": (
+                        "ccoeff_array = jnp.asarray([acoeff[spec] for spec in species], dtype=setup_float_dtype())"
+                    ),
+                    "temperature_input_dtype": str(temperature_np.dtype),
+                    "temperature_materialization_site": (
+                        "src/exogibbs/presets/fastchem.py::chemsetup hvector_func T = jnp.asarray(T)"
+                    ),
+                    "output_dtype": str(coefficient_array.dtype),
+                    "output_materialization_site": (
+                        "src/exogibbs/presets/fastchem.py::chemsetup hvector_func returns -vmap_logk(T, ccoeff_array)"
+                    ),
+                }
+            )
+        return {
+            "diagnostic_only": True,
+            "default_off": True,
+            "constructor_input": False,
+            "FastChem_trace_values_used_as_KL_constructor_inputs": False,
+            "provider_function_identity": provider_function_identity,
+            "provider_closure_identity": provider_closure_identity,
+            "provider_path": provider_path,
+            "species_count": len(species),
+            "emitted_row_count": len(rows),
+            "coefficient_array_dtype": str(coeff_np.dtype),
+            "coefficient_array_origin": (
+                "ccoeff_array = jnp.asarray([acoeff[spec] for spec in species], dtype=setup_float_dtype())"
+            ),
+            "temperature_input_dtype": str(temperature_np.dtype),
+            "temperature_input_value": temperature_float,
+            "output_dtype": str(coefficient_array.dtype),
+            "source_stage_label": "FastChem-preset hvector/logK source-term trace",
+            "producer_stage_label": "chemsetup hvector_func",
+            "rows": rows,
+        }
+
+    return trace
 
 
 def _set_element_species(elements):
@@ -280,8 +450,18 @@ def _parse_fastchem_coeffs(
             coeffs: mapping ``species -> [a1, a2, a3, a4, a5]``
             components: mapping ``species -> {element_symbol: count}``
     """
+    coeffs, components, _metadata = _parse_fastchem_coeffs_with_metadata(text)
+    return coeffs, components
+
+
+def _parse_fastchem_coeffs_with_metadata(
+    text: str,
+    source_file: Optional[str] = None,
+) -> Tuple[Dict[str, List[float]], Dict[str, Dict[str, int]], Dict[str, Dict[str, object]]]:
+    """Parse FastChem gas logK coefficients with source-record metadata."""
     coeffs: Dict[str, List[float]] = {}
     components: Dict[str, Dict[str, int]] = {}
+    metadata: Dict[str, Dict[str, object]] = {}
     lines = text.splitlines()
     for i, line in enumerate(lines):
         stripped = line.strip()
@@ -315,6 +495,10 @@ def _parse_fastchem_coeffs(
             comp[el] = cnt
         if comp:
             components[species] = comp
+        record_name = ""
+        name_part = line.split(":", 1)[0].strip().split()
+        if len(name_part) > 1:
+            record_name = " ".join(name_part[1:])
         j = i + 1
         while j < len(lines):
             candidate = lines[j].strip()
@@ -326,8 +510,26 @@ def _parse_fastchem_coeffs(
             if arr.size != 5:
                 raise ValueError(f"{species}: not 5 coefficients (found {arr.size})")
             coeffs[species] = arr.tolist()
+            metadata[species] = {
+                "species": species,
+                "record_name": record_name,
+                "source_file": source_file,
+                "record_line_number": i + 1,
+                "coefficient_line_number": j + 1,
+                "record_line": line,
+                "coefficient_line": lines[j],
+                "coefficients": arr.tolist(),
+                "selected_temperature_segment_index": None,
+                "selected_temperature_segment_upper_bound": None,
+                "selected_temperature_segment_semantics": (
+                    "gas logK.dat has one five-coefficient fit per species record; "
+                    "src/exogibbs/presets/fastchem.py::logk performs no temperature segment selection"
+                ),
+                "parser_file_function": "src/exogibbs/presets/fastchem.py::_parse_fastchem_coeffs_with_metadata",
+                "logk_file_function": "src/exogibbs/presets/fastchem.py::logk",
+            }
             break
         else:
             raise ValueError(f"{species}: missing coefficient line")
 
-    return coeffs, components
+    return coeffs, components, metadata

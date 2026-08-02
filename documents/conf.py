@@ -9,22 +9,65 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-import sphinx_rtd_theme
 import os
+from pathlib import Path
 import sys
 
-sys.path.insert(0, os.path.abspath("~/exogibbs"))
+import sphinx_rtd_theme
+from sphinx.application import Sphinx
+from sphinx.ext.apidoc import main as sphinx_apidoc
+
+os.environ["JAX_PLATFORMS"] = "cpu"
+os.environ["JAX_PLATFORM_NAME"] = "cpu"
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/exogibbs_matplotlib")
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+SOURCE_ROOT = REPOSITORY_ROOT / "src"
+PACKAGE_ROOT = SOURCE_ROOT / "exogibbs"
+API_REFERENCE_ROOT = Path(__file__).resolve().parent / "exogibbs"
+sys.path.insert(0, str(SOURCE_ROOT))
+
+import exogibbs
+
+expected_exogibbs_root = (SOURCE_ROOT / "exogibbs").resolve()
+imported_exogibbs_root = Path(exogibbs.__file__).resolve().parent
+if imported_exogibbs_root != expected_exogibbs_root:
+    raise RuntimeError(
+        "Imported exogibbs from outside this repository: "
+        f"{imported_exogibbs_root} != {expected_exogibbs_root}"
+    )
+
+
+def _generate_api_reference(_app: Sphinx) -> None:
+    """Generate a fresh API reference before Sphinx discovers source files."""
+    sphinx_apidoc(
+        [
+            "--force",
+            "--remove-old",
+            "--tocfile",
+            "index",
+            "--output-dir",
+            str(API_REFERENCE_ROOT),
+            str(PACKAGE_ROOT),
+            str(PACKAGE_ROOT / "exogibbs_version.py"),
+        ]
+    )
+
+
+def setup(app: Sphinx) -> None:
+    """Register documentation build hooks."""
+    app.connect("builder-inited", _generate_api_reference)
 
 
 # -- Project information -----------------------------------------------------
 
-project = "Exogibbs"
+project = "ExoGibbs"
 copyright = "2025, ExoGibbs contributors"
-author = "Exogibbs contributors"
+author = "ExoGibbs contributors"
 
-# The full version, including alpha/beta/rc tags
-release = "2.0.0"
+# The short and full versions, including alpha/beta/rc tags.
+version = "0.4"
+release = "0.4.0"
 
 
 # -- General configuration ---------------------------------------------------
@@ -63,8 +106,6 @@ html_logo = "_static/exogibbs_logo.png"
 # html_theme_options = {
 #    'style_nav_header_background': '#333',
 # }
-html_css_files = ["header.css"]
-
 # Sphinx-Gallery
 from sphinx_gallery.sorting import FileNameSortKey
 sphinx_gallery_conf = {

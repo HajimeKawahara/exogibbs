@@ -1,10 +1,15 @@
 import jax
 import jax.numpy as jnp
+import pytest
 
 from jax import config
 
 from exogibbs.presets.ykb4 import chemsetup
-from exogibbs.api.equilibrium import equilibrium_profile, EquilibriumOptions
+from exogibbs.api.equilibrium import (
+    EquilibriumOptions,
+    equilibrium,
+    equilibrium_profile,
+)
 
 
 config.update("jax_enable_x64", True)
@@ -40,3 +45,15 @@ def test_equilibrium_profile_jit_under_grad():
     g = jax.grad(f)(0.1)
     assert jnp.isfinite(g)
 
+
+def test_equilibrium_forward_mode_jvp_is_explicitly_unsupported():
+    """The gas solver's custom VJP intentionally supports reverse mode only."""
+
+    setup = chemsetup()
+    b = setup.element_vector_reference
+
+    def f(temperature):
+        return jnp.sum(equilibrium(setup, temperature, 1.0, b).ln_n)
+
+    with pytest.raises(TypeError, match="forward-mode autodiff"):
+        jax.jvp(f, (300.0,), (1.0,))

@@ -1,130 +1,395 @@
+"""Validate the public gas solver against the analytical H-C-O system.
+
+This restores the historical four-species comparison for
+``CO + 3 H2 <-> CH4 + H2O`` with the current ``exogibbs.api.gas`` interface.
+The equilibrium composition and the elemental derivatives of ``ln(n_CO)`` are
+checked independently before a compact comparison figure is written.
 """
-Validation of Gibbs Minimization Against Analytical HCO System
-============================================================
 
-This example demonstrates and validates the ExoGibbs thermochemical equilibrium
-solver against the analytical solution for the hydrogen dissociation equilibrium:
+from __future__ import annotations
 
-    CO + 3H₂ ⇌ CH₄ + H₂O
+import argparse
+import os
+from pathlib import Path
+import sys
+from typing import Mapping
 
-The HCO system provides analytical solutions that can be used to verify
-the numerical accuracy of the Gibbs energy minimization algorithm and its
-automatic differentiation capabilities.
 
-Key validations performed:
-- Single-point equilibrium composition
-- Elements derivatives (∂ln n/∂b)
-"""
-from exogibbs.api.chemistry import ThermoState
-from exogibbs.optimize.minimize import minimize_gibbs
-from exogibbs.test.analytic_hcosystem import HCOSystem
-from exogibbs.optimize.core import compute_ln_normalized_pressure
-import numpy as np
-from jax import jacrev
-import jax.numpy as jnp
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
+
+os.environ.setdefault("JAX_PLATFORMS", "cpu")
+os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
+os.environ.setdefault("JAX_ENABLE_X64", "1")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/exogibbs_matplotlib")
+
+import jax
 from jax import config
+import jax.numpy as jnp
+import matplotlib.pyplot as plt
+import numpy as np
+
+from exogibbs.api.chemistry import ChemicalSetup
+from exogibbs.api.gas import EquilibriumOptions, solve
+from exogibbs.test.analytic_hcosystem import (
+    HCOSystem,
+    derivative_dlnnCO_db,
+    function_equilibrium,
+)
+
 
 config.update("jax_enable_x64", True)
 
-##############################################################################
-# Setup Test System and Parameters
-# ---------------------------------
-# We initialize the analytical HCO system and define the thermochemical
-# equilibrium problem parameters.
+TEMPERATURE_K = 1500.0
+PRESSURE_BAR = 1.5
+REFERENCE_PRESSURE_BAR = 1.0
+ELEMENT_VECTOR = jnp.array([0.5, 0.2, 0.3], dtype=jnp.float64)
+OPTIONS = EquilibriumOptions(epsilon_crit=1.0e-11, max_iter=1000)
 
-# Initialize the analytic HCO system
-hcosystem = HCOSystem()
-
-# Define stoichiometric constraint matrix:
-# Species order: [H₂, CO, CH₄, H₂O]
-# Elements order: [H, C, O]
-formula_matrix = jnp.array(
-    [[2.0, 0.0, 0.0], [0.0, 1.0, 1.0], [4.0, 1.0, 0.0], [2.0, 0.0, 1.0]]
-).T
-
-# check if the formula matrix is full raw rank
-rank = np.linalg.matrix_rank(formula_matrix)
-print("formula matrix is row-full rank",rank == formula_matrix.shape[0])
-
-# Thermodynamic conditions
-temperature = 1500.0  # K
-P = 1.5  # bar
-Pref = 1.0  # bar, reference pressure
-ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
-
-# Initial guess for log number densities
-ln_nk = jnp.array([0.0, 0.0, 0.0, 0.0])  # log(n_H₂), log(n_CO), log(n_CH₄), log(n_H₂O)
-ln_ntot = 0.0  # log(total number density)
+EQUILIBRIUM_ABSOLUTE_TOLERANCE = 1.0e-10
+COMPOSITION_RELATIVE_TOLERANCE = 2.0e-9
+DERIVATIVE_RELATIVE_TOLERANCE = 1.0e-5
+BUDGET_ABSOLUTE_TOLERANCE = 2.0e-10
 
 
-def hvector_func(temperature):
-    """Chemical potential function h(T) = μ°(T)/RT for [H₂, CO, CH₄, H₂O]"""
-    return hcosystem.hv_hco(temperature)
-
-
-# Element abundance constraint:
-bH = 0.5
-bC = 0.2
-bO = 0.3
-element_vector = jnp.array([bH, bC, bO])  # H, C, O
-
-# ThermoState instance
-thermo_state = ThermoState(temperature, ln_normalized_pressure, element_vector)
-
-# Convergence criteria
-epsilon_crit = 1e-11
-max_iter = 1000
-
-##############################################################################
-# Single-Point Equilibrium Validation
-# ------------------------------------
-# First, we solve for equilibrium at a single temperature and pressure point
-# using both the core and main minimize_gibbs functions.
-
-# Run Gibbs minimization using core function (returns iteration count)
-
-ln_nk_result = minimize_gibbs(
-    thermo_state,
-    ln_nk,
-    ln_ntot,
-    formula_matrix,
-    hvector_func,
-    epsilon_crit=epsilon_crit,
-    max_iter=max_iter,
-)
-
-
-print(
-    f"Log number densities: ln(n_H2)={ln_nk_result[0]:.6f}, ln(n_CO)={ln_nk_result[1]:.6f}, ln(n_CH4)={ln_nk_result[2]:.6f}, ln(n_H2O)={ln_nk_result[3]:.6f}"
-)
-from exogibbs.test.analytic_hcosystem import function_equilibrium
-
-hco_system = HCOSystem()
-k = hco_system.equilibrium_constant(temperature, P / Pref)
-n_CO = jnp.exp(ln_nk_result[1])
-res = function_equilibrium(n_CO, k, bC, bH, bO)
-assert jnp.abs(res) < epsilon_crit * 10.0
-
-# element derivatives
-from exogibbs.test.analytic_hcosystem import derivative_dlnnCO_db
-
-dlnn_db = jacrev(
-    lambda element_vector_in: minimize_gibbs(
-        ThermoState(temperature, ln_normalized_pressure, element_vector_in),
-        ln_nk,
-        ln_ntot,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit=epsilon_crit,
-        max_iter=max_iter,
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Validate ExoGibbs equilibrium and elemental derivatives "
+            "against the analytical H-C-O system."
+        )
     )
-)(element_vector) # (n_species, n_elements)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=(
+            REPOSITORY_ROOT
+            / "results"
+            / "comparisons"
+            / "comparison_with_hcosystem.png"
+        ),
+        help="Output PNG path.",
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Display the figure after saving it.",
+    )
+    return parser.parse_args()
 
-# analytical derivatives
-gradf = derivative_dlnnCO_db(ln_nk_result[1], bC, bH, bO, k)
 
-diff = jnp.abs(dlnn_db[1,:] / gradf - 1.0)
+def _build_setup() -> tuple[ChemicalSetup, HCOSystem]:
+    analytic = HCOSystem()
+    formula_matrix = jnp.array(
+        [
+            [2.0, 0.0, 4.0, 2.0],
+            [0.0, 1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0, 1.0],
+        ],
+        dtype=jnp.float64,
+    )
+    setup = ChemicalSetup(
+        formula_matrix=formula_matrix,
+        hvector_func=analytic.hv_hco,
+        elements=("H", "C", "O"),
+        species=("H2", "CO", "CH4", "H2O"),
+        element_vector_reference=ELEMENT_VECTOR,
+        metadata={"source": "JANAF", "validation": "analytic_hcosystem"},
+    )
+    return setup, analytic
 
-assert jnp.all(
-    diff < 1.0e-5
-), f"Derivative mismatch: {diff}"  # 2.32238010e-06 4.02220479e-11 1.80632038e-06 2025/8/7
+
+def _require_converged(
+    diagnostics: Mapping[str, jax.Array],
+) -> None:
+    converged = bool(np.asarray(jax.device_get(diagnostics["converged"])))
+    residual = float(
+        np.asarray(jax.device_get(diagnostics["final_residual"]))
+    )
+    if not converged or not np.isfinite(residual):
+        raise RuntimeError(
+            "H-C-O calculation did not converge: "
+            f"converged={converged}, residual={residual:.3e}."
+        )
+
+
+def _bisect_analytic_co(
+    equilibrium_constant: float,
+    *,
+    b_hydrogen: float,
+    b_carbon: float,
+    b_oxygen: float,
+) -> float:
+    lower = max(
+        0.0,
+        (2.0 * b_carbon + b_oxygen - 0.5 * b_hydrogen) / 3.0,
+    )
+    upper = min(b_carbon, b_oxygen)
+
+    def evaluate(n_co: float) -> float:
+        return float(
+            function_equilibrium(
+                n_co,
+                equilibrium_constant,
+                b_carbon,
+                b_hydrogen,
+                b_oxygen,
+            )
+        )
+
+    lower_value = evaluate(lower)
+    upper_value = evaluate(upper)
+    if lower_value == 0.0:
+        return lower
+    if upper_value == 0.0:
+        return upper
+    if lower_value * upper_value > 0.0:
+        raise RuntimeError(
+            "The analytical H-C-O root is not bracketed in the physical "
+            f"interval [{lower:.6g}, {upper:.6g}]."
+        )
+
+    for _ in range(100):
+        midpoint = 0.5 * (lower + upper)
+        midpoint_value = evaluate(midpoint)
+        if midpoint_value == 0.0:
+            return midpoint
+        if lower_value * midpoint_value <= 0.0:
+            upper = midpoint
+            upper_value = midpoint_value
+        else:
+            lower = midpoint
+            lower_value = midpoint_value
+    return 0.5 * (lower + upper)
+
+
+def _analytic_amounts(
+    n_co: float,
+    *,
+    b_hydrogen: float,
+    b_carbon: float,
+    b_oxygen: float,
+) -> np.ndarray:
+    n_ch4 = b_carbon - n_co
+    n_h2o = b_oxygen - n_co
+    n_h2 = 0.5 * (b_hydrogen - 4.0 * n_ch4 - 2.0 * n_h2o)
+    amounts = np.array([n_h2, n_co, n_ch4, n_h2o], dtype=np.float64)
+    if np.any(~np.isfinite(amounts)) or np.any(amounts <= 0.0):
+        raise RuntimeError(
+            f"The analytical H-C-O solution is not physical: {amounts}."
+        )
+    return amounts
+
+
+def main() -> None:
+    args = _parse_args()
+    setup, analytic = _build_setup()
+    formula_matrix = np.asarray(setup.formula_matrix, dtype=np.float64)
+    if np.linalg.matrix_rank(formula_matrix) != formula_matrix.shape[0]:
+        raise RuntimeError("The H-C-O formula matrix is not row-full-rank.")
+
+    result, diagnostics = solve(
+        setup,
+        TEMPERATURE_K,
+        PRESSURE_BAR,
+        ELEMENT_VECTOR,
+        Pref=REFERENCE_PRESSURE_BAR,
+        options=OPTIONS,
+        return_diagnostics=True,
+    )
+    _require_converged(diagnostics)
+
+    amounts = np.asarray(jax.device_get(result.n), dtype=np.float64)
+    if np.any(~np.isfinite(amounts)) or np.any(amounts <= 0.0):
+        raise RuntimeError(
+            f"ExoGibbs returned non-physical H-C-O amounts: {amounts}."
+        )
+
+    budget = formula_matrix @ amounts
+    budget_error = float(
+        np.max(np.abs(budget - np.asarray(ELEMENT_VECTOR)))
+    )
+    if budget_error > BUDGET_ABSOLUTE_TOLERANCE:
+        raise RuntimeError(
+            f"H-C-O elemental-budget error {budget_error:.3e} exceeds "
+            f"{BUDGET_ABSOLUTE_TOLERANCE:.1e}."
+        )
+
+    b_hydrogen, b_carbon, b_oxygen = (
+        float(value) for value in np.asarray(ELEMENT_VECTOR)
+    )
+    equilibrium_constant = float(
+        analytic.equilibrium_constant(
+            TEMPERATURE_K, PRESSURE_BAR / REFERENCE_PRESSURE_BAR
+        )
+    )
+    equilibrium_residual = abs(
+        float(
+            function_equilibrium(
+                amounts[1],
+                equilibrium_constant,
+                b_carbon,
+                b_hydrogen,
+                b_oxygen,
+            )
+        )
+    )
+    if equilibrium_residual > EQUILIBRIUM_ABSOLUTE_TOLERANCE:
+        raise RuntimeError(
+            f"H-C-O equilibrium residual {equilibrium_residual:.3e} exceeds "
+            f"{EQUILIBRIUM_ABSOLUTE_TOLERANCE:.1e}."
+        )
+
+    analytic_n_co = _bisect_analytic_co(
+        equilibrium_constant,
+        b_hydrogen=b_hydrogen,
+        b_carbon=b_carbon,
+        b_oxygen=b_oxygen,
+    )
+    analytic_amounts = _analytic_amounts(
+        analytic_n_co,
+        b_hydrogen=b_hydrogen,
+        b_carbon=b_carbon,
+        b_oxygen=b_oxygen,
+    )
+    composition_relative_error = float(
+        np.max(np.abs(amounts / analytic_amounts - 1.0))
+    )
+    if (
+        not np.isfinite(composition_relative_error)
+        or composition_relative_error > COMPOSITION_RELATIVE_TOLERANCE
+    ):
+        raise RuntimeError(
+            "H-C-O analytical composition validation failed: "
+            f"maximum relative error={composition_relative_error:.3e}."
+        )
+
+    numerical_derivative = jax.jacrev(
+        lambda element_vector: solve(
+            setup,
+            TEMPERATURE_K,
+            PRESSURE_BAR,
+            element_vector,
+            Pref=REFERENCE_PRESSURE_BAR,
+            options=OPTIONS,
+        ).ln_n
+    )(ELEMENT_VECTOR)[1, :]
+    analytical_derivative = derivative_dlnnCO_db(
+        result.ln_n[1],
+        b_carbon,
+        b_hydrogen,
+        b_oxygen,
+        equilibrium_constant,
+    )
+    numerical_derivative_np = np.asarray(
+        jax.device_get(numerical_derivative), dtype=np.float64
+    )
+    analytical_derivative_np = np.asarray(
+        jax.device_get(analytical_derivative), dtype=np.float64
+    )
+    derivative_relative_error_by_element = np.abs(
+        numerical_derivative_np / analytical_derivative_np - 1.0
+    )
+    derivative_relative_error = float(
+        np.max(derivative_relative_error_by_element)
+    )
+    if (
+        np.any(~np.isfinite(derivative_relative_error_by_element))
+        or derivative_relative_error > DERIVATIVE_RELATIVE_TOLERANCE
+    ):
+        raise RuntimeError(
+            "H-C-O elemental-derivative validation failed: "
+            f"relative errors={derivative_relative_error_by_element}."
+        )
+
+    species_labels = (r"H$_2$", "CO", r"CH$_4$", r"H$_2$O")
+    element_labels = ("H", "C", "O")
+    species_positions = np.arange(len(species_labels))
+    element_positions = np.arange(len(element_labels))
+    bar_width = 0.36
+
+    figure, axes = plt.subplots(1, 2, figsize=(11.0, 4.6))
+    axes[0].bar(
+        species_positions - bar_width / 2.0,
+        amounts,
+        width=bar_width,
+        label="ExoGibbs",
+        color="tab:blue",
+    )
+    axes[0].bar(
+        species_positions + bar_width / 2.0,
+        analytic_amounts,
+        width=bar_width,
+        label="Analytical",
+        color="tab:orange",
+        alpha=0.8,
+    )
+    axes[0].set(
+        xticks=species_positions,
+        xticklabels=species_labels,
+        ylabel="Equilibrium amount",
+        title=f"Composition at {TEMPERATURE_K:.0f} K, {PRESSURE_BAR:g} bar",
+    )
+    axes[0].set_yscale("log")
+    axes[0].legend()
+    axes[0].grid(axis="y", alpha=0.25)
+
+    axes[1].bar(
+        element_positions - bar_width / 2.0,
+        numerical_derivative_np,
+        width=bar_width,
+        label="ExoGibbs AD",
+        color="tab:blue",
+    )
+    axes[1].bar(
+        element_positions + bar_width / 2.0,
+        analytical_derivative_np,
+        width=bar_width,
+        label="Analytical",
+        color="tab:orange",
+        alpha=0.8,
+    )
+    axes[1].axhline(0.0, color="black", linewidth=0.8)
+    axes[1].set(
+        xticks=element_positions,
+        xticklabels=element_labels,
+        xlabel="Elemental budget component",
+        ylabel=r"$\partial\ln n_{\rm CO}/\partial b$",
+        title=r"Elemental derivatives of $\ln n_{\rm CO}$",
+    )
+    axes[1].set_yscale("symlog", linthresh=1.0e-5)
+    axes[1].legend()
+    axes[1].grid(axis="y", alpha=0.25)
+
+    figure.suptitle(
+        r"ExoGibbs validation for "
+        r"$\mathrm{CO}+3\mathrm{H}_2\rightleftharpoons"
+        r"\mathrm{CH}_4+\mathrm{H}_2\mathrm{O}$"
+    )
+    figure.tight_layout(rect=(0.0, 0.0, 1.0, 0.93))
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(args.output, dpi=160, bbox_inches="tight")
+    if args.show:
+        plt.show()
+    plt.close(figure)
+
+    print("H-C-O analytical validation passed.")
+    print(
+        "  Equilibrium: "
+        f"residual={equilibrium_residual:.3e}, "
+        f"composition relative error={composition_relative_error:.3e}, "
+        f"budget error={budget_error:.3e}"
+    )
+    print(
+        "  dln(n_CO)/db relative errors [H, C, O]: "
+        + np.array2string(
+            derivative_relative_error_by_element,
+            precision=3,
+            suppress_small=False,
+        )
+    )
+    print(f"  Figure: {args.output}")
+
+
+if __name__ == "__main__":
+    main()

@@ -4,6 +4,13 @@ Current benchmark runners:
 
 - `python -m benchmarks.run_single_layer`
 - `python -m benchmarks.run_profile`
+- `python -m benchmarks.fastchem4.run_production_comparison` (requires an
+  external FastChem v4.0.3 standalone executable)
+
+The fixed-support v2 production-profile gate and frozen pre-promotion evidence
+are documented in `benchmarks/fixed_support_v2/README.md`.
+The independent production comparison with FastChem 4 is documented in
+`benchmarks/fastchem4/README.md`.
 
 Run from the repository root with `PYTHONPATH=src`.
 
@@ -53,13 +60,20 @@ PYTHONPATH=src python -m benchmarks.run_profile --method scan_hot_from_top --war
 
 ## Output
 
-JSON output is written to the path given by `--output`.
+The timing runners write JSON to the path given by `--output`. The FastChem 4
+comparison additionally writes `<output-stem>.preflight.json` and a Markdown
+report beside its JSON result.
 
 Recommended location:
 
 - `results/benchmarks/`
+- FastChem 4 comparison: `results/fastchem4_production_comparison/`
 
 ## Interpreting Results
+
+The status semantics below apply to the timing runners. The FastChem 4
+comparison uses `complete` or `incomplete` for execution completeness and does
+not apply a scientific agreement threshold; see its dedicated README.
 
 - `first_call_s`: first measured call after JIT setup; includes first-execution overhead and is not the main optimization target
 - `warm_call_median_s`: main steady-state timing metric for repeated-call workloads

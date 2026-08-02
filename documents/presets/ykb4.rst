@@ -11,13 +11,16 @@ Quick Start
 -----------
 .. code-block:: python
 
+   from jax import config
+   config.update("jax_enable_x64", True)
+   
    from exogibbs.presets.ykb4 import chemsetup
-   from exogibbs.api.equilibrium import equilibrium
+   from exogibbs.api.gas import solve
 
    setup = chemsetup()
    T, P = 1500.0, 1.0  # K, bar
    b = setup.element_vector_reference  # or your own jnp.array([...])
-   result = equilibrium(setup, T=T, P=P, b=b)
+   result = solve(setup, T=T, P=P, b=b)
    print(result.x)  # mole fractions (K,)
 
 Elements

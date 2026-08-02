@@ -1,470 +1,466 @@
-"""
-Validation of Gibbs Minimization Against Analytical H System
-============================================================
+"""Validate the public gas solver against the analytical H/H2 system.
 
-This example demonstrates and validates the ExoGibbs thermochemical equilibrium
-solver against the analytical solution for the hydrogen dissociation equilibrium:
-
-    2H ⇌ H₂
-
-The H system provides exact analytical solutions that can be used to verify
-the numerical accuracy of the Gibbs energy minimization algorithm and its
-automatic differentiation capabilities.
-
-Key validations performed:
-- Single-point equilibrium composition
-- Temperature derivatives (∂ln n/∂T)
-- Pressure derivatives (∂ln n/∂ln P)
-- Vectorized computation over temperature range
-- Volume mixing ratio (VMR) calculations
+This restores the historical hydrogen-system comparison with the current
+``exogibbs.api.gas`` interface.  It checks equilibrium amounts and reverse-mode
+derivatives at one point and across temperature and pressure sweeps.
 """
 
-from exogibbs.api.chemistry import ThermoState
-from exogibbs.optimize.minimize import minimize_gibbs_core
-from exogibbs.optimize.minimize import minimize_gibbs
-from exogibbs.test.analytic_hsystem import HSystem
-from exogibbs.optimize.core import compute_ln_normalized_pressure
-import numpy as np
-from jax import jacrev
-import jax.numpy as jnp
+from __future__ import annotations
+
+import argparse
+import os
+from pathlib import Path
+import sys
+from typing import Mapping
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPOSITORY_ROOT / "src"))
+
+os.environ.setdefault("JAX_PLATFORMS", "cpu")
+os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
+os.environ.setdefault("JAX_ENABLE_X64", "1")
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/exogibbs_matplotlib")
+
+import jax
 from jax import config
+import jax.numpy as jnp
+import matplotlib.pyplot as plt
+import numpy as np
+
+from exogibbs.api.chemistry import ChemicalSetup
+from exogibbs.api.gas import EquilibriumOptions, solve
+from exogibbs.test.analytic_hsystem import HSystem
+
 
 config.update("jax_enable_x64", True)
 
-##############################################################################
-# Setup Test System and Parameters
-# ---------------------------------
-# We initialize the analytical H system and define the thermochemical
-# equilibrium problem parameters.
+TEMPERATURE_K = 3500.0
+PRESSURE_BAR = 1.0
+REFERENCE_PRESSURE_BAR = 1.0
+TEMPERATURES_K = jnp.linspace(300.0, 6000.0, 121)
+PRESSURES_BAR = jnp.logspace(-3.0, 3.0, 101)
+ELEMENT_VECTOR = jnp.array([1.0], dtype=jnp.float64)
+OPTIONS = EquilibriumOptions(epsilon_crit=1.0e-11, max_iter=1000)
 
-# Initialize the analytic H system
-hsystem = HSystem()
-
-# Define stoichiometric constraint matrix: [H atoms per species]
-# Species order: [H, H₂]
-formula_matrix = jnp.array([[1.0, 2.0]])
-
-# Thermodynamic conditions
-temperature = 3500.0  # K
-P = 1.0  # bar
-Pref = 1.0  # bar, reference pressure
-ln_normalized_pressure = compute_ln_normalized_pressure(P, Pref)
-
-# Initial guess for log number densities
-ln_nk = jnp.array([0.0, 0.0])  # log(n_H), log(n_H₂)
-ln_ntot = 0.0  # log(total number density)
+POINT_ABSOLUTE_TOLERANCE = 2.0e-10
+SWEEP_ABSOLUTE_TOLERANCE = 1.0e-9
+BUDGET_ABSOLUTE_TOLERANCE = 2.0e-10
+PLOT_FLOOR = 1.0e-30
 
 
-def hvector_func(temperature):
-    """Chemical potential function h(T) = μ°(T)/RT for [H, H₂]"""
-    return jnp.array([hsystem.hv_h(temperature), hsystem.hv_h2(temperature)])
-
-
-# Element abundance constraint: total H nuclei = 1.0
-element_vector = jnp.array([1.0])
-
-# ThermoState instance
-thermo_state = ThermoState(temperature, ln_normalized_pressure, element_vector)
-
-# Convergence criteria
-epsilon_crit = 1e-11
-max_iter = 1000
-
-##############################################################################
-# Single-Point Equilibrium Validation
-# ------------------------------------
-# First, we solve for equilibrium at a single temperature and pressure point
-# using both the core and main minimize_gibbs functions.
-
-# Run Gibbs minimization using core function (returns iteration count)
-ln_nk_result, ln_ntot_result, counter = minimize_gibbs_core(
-    thermo_state,
-    ln_nk,
-    ln_ntot,
-    formula_matrix,
-    hvector_func,
-    epsilon_crit=epsilon_crit,
-    max_iter=max_iter,
-)
-
-print(f"Convergence: {counter} iterations")
-print(
-    f"Log number densities: ln(n_H)={ln_nk_result[0]:.6f}, ln(n_H₂)={ln_nk_result[1]:.6f}"
-)
-
-# Run using main minimize_gibbs function (auto-differentiable version)
-ln_nk_result = minimize_gibbs(
-    thermo_state,
-    ln_nk,
-    ln_ntot,
-    formula_matrix,
-    hvector_func,
-    epsilon_crit=epsilon_crit,
-    max_iter=max_iter,
-)
-
-##############################################################################
-# Temperature Derivative Validation
-# ----------------------------------
-# Test automatic differentiation for temperature derivatives ∂ln(n)/∂T
-# against the analytical H system solution.
-
-# Compute temperature derivative using JAX automatic differentiation
-
-dln_dT = jacrev(
-    lambda temperature_in: minimize_gibbs(
-        ThermoState(
-            temperature_in,
-            ln_normalized_pressure,
-            element_vector,
-        ),
-        ln_nk,
-        ln_ntot,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit=epsilon_crit,
-        max_iter=max_iter,
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Validate ExoGibbs equilibrium and reverse-mode derivatives "
+            "against the analytical H/H2 system."
+        )
     )
-)(temperature)
-print(f"Numerical dln_dT: {dln_dT}")
-
-# Compare with analytical solution
-k = hsystem.compute_k(ln_normalized_pressure, temperature)
-refH = hsystem.ln_nH_dT(jnp.array([temperature]), ln_normalized_pressure)[0]
-refH2 = hsystem.ln_nH2_dT(jnp.array([temperature]), ln_normalized_pressure)[0]
-print(f"Analytical dln_dT: H={refH:.6f}, H₂={refH2:.6f}")
-
-# Validate numerical accuracy
-diff = refH - dln_dT[0]
-diff2 = refH2 - dln_dT[1]
-print(f"Temperature derivative errors: H={diff:.2e}, H₂={diff2:.2e}")
-
-
-##############################################################################
-# Pressure Derivative Validation
-# --------------------------------
-# Test automatic differentiation for pressure derivatives ∂ln(n)/∂ln(P)
-# against the analytical H system solution.
-
-# Compute pressure derivative using JAX automatic differentiation
-dln_dlogp = jacrev(
-    lambda ln_normalized_pressure: minimize_gibbs(
-        ThermoState(
-            temperature,
-            ln_normalized_pressure,
-            element_vector,
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=(
+            REPOSITORY_ROOT
+            / "results"
+            / "comparisons"
+            / "comparison_with_hsystem.png"
         ),
-        ln_nk,
-        ln_ntot,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit=epsilon_crit,
-        max_iter=max_iter,
+        help="Output PNG path.",
     )
-)(ln_normalized_pressure)
-print(f"Numerical dln_dlogp: {dln_dlogp}")
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Display the figure after saving it.",
+    )
+    return parser.parse_args()
 
-# Compare with analytical solution
-refH = hsystem.ln_nH_dlogp(jnp.array([temperature]), ln_normalized_pressure)[0]
-refH2 = hsystem.ln_nH2_dlogp(jnp.array([temperature]), ln_normalized_pressure)[0]
-print(f"Analytical dln_dlogp: H={refH:.6f}, H₂={refH2:.6f}")
 
-# Validate numerical accuracy
-diff = refH - dln_dlogp[0]
-diff2 = refH2 - dln_dlogp[1]
-print(f"Pressure derivative errors: H={diff:.2e}, H₂={diff2:.2e}")
+def _build_setup() -> tuple[ChemicalSetup, HSystem]:
+    analytic = HSystem()
 
-##############################################################################
-# Vectorized Temperature Range Analysis
-# --------------------------------------
-# Demonstrate vectorized computation over a wide temperature range to
-# validate equilibrium solutions and derivatives across different conditions.
-
-from jax import vmap, jit
-
-# Define temperature range for comprehensive analysis
-Tarr = jnp.linspace(300.0, 6000.0, 300)  # 300K to 6000K
-print(f"Temperature range: {Tarr[0]:.0f}K to {Tarr[-1]:.0f}K ({len(Tarr)} points)")
-
-# Initial conditions for vectorized computation
-ln_nk_init = jnp.array([0.0, 0.0])
-ln_ntot_init = 0.0
-
-# Vectorize minimize_gibbs over temperature axis
-def func(T):
-        return minimize_gibbs(
-            ThermoState(T, ln_normalized_pressure, element_vector),
-            ln_nk_init,
-            ln_ntot_init,
-            formula_matrix,
-            hvector_func,
-            epsilon_crit,
-            max_iter,
+    def hvector_func(temperature: jax.Array) -> jax.Array:
+        return jnp.array(
+            [analytic.hv_h(temperature), analytic.hv_h2(temperature)]
         )
 
-ln_nk_arr = vmap(func)(Tarr)
-
-# Vectorize temperature derivatives
-vmap_minimize_gibbs_dT = vmap(jacrev(func), in_axes=(0,))
-
-# Compute temperature derivatives across temperature range
-dln_dT_arr = vmap_minimize_gibbs_dT(Tarr)
-
-##############################################################################
-# Comparison with Analytical Solutions
-# -------------------------------------
-# Compute analytical reference solutions and compare numerical accuracy
-# across the entire temperature range.
-
-# Compute analytical equilibrium constants
-karr = vmap(hsystem.compute_k, in_axes=(None, 0))(ln_normalized_pressure, Tarr)
-
-# Convert log number densities to volume mixing ratios (VMRs)
-n_H = jnp.exp(ln_nk_arr[:, 0])
-n_H2 = jnp.exp(ln_nk_arr[:, 1])
-ntot = n_H + n_H2
-vmrH = n_H / ntot
-vmrH2 = n_H2 / ntot
-
-# Compare VMRs with analytical solutions
-diffH = vmrH - vmap(hsystem.vmr_h)(karr)
-diffH2 = vmrH2 - vmap(hsystem.vmr_h2)(karr)
-
-# Compare temperature derivatives with analytical solutions
-diff_dT_H = dln_dT_arr[:, 0] - hsystem.ln_nH_dT(Tarr, ln_normalized_pressure)
-diff_dT_H2 = dln_dT_arr[:, 1] - hsystem.ln_nH2_dT(Tarr, ln_normalized_pressure)
-
-# Report maximum errors across temperature range
-print(
-    f"Maximum VMR errors: H={jnp.max(jnp.abs(diffH)):.2e}, H₂={jnp.max(jnp.abs(diffH2)):.2e}"
-)
-print(
-    f"Maximum dln_dT errors: H={jnp.max(jnp.abs(diff_dT_H)):.2e}, H₂={jnp.max(jnp.abs(diff_dT_H2)):.2e}"
-)
-
-##############################################################################
-# Visualization of Results
-# -------------------------
-# Create comprehensive plots showing equilibrium compositions and temperature
-# derivatives across the temperature range, comparing numerical and analytical solutions.
-print("vis 1")
-import matplotlib.pyplot as plt
-
-# Create three-panel figure
-fig = plt.figure(figsize=(10, 12))
-
-# Panel 1: Volume mixing ratios (linear scale)
-ax1 = fig.add_subplot(311)
-plt.plot(Tarr, vmrH, label="H (numerical)", alpha=0.7, linewidth=2)
-plt.plot(Tarr, vmrH2, label="H₂ (numerical)", alpha=0.7, linewidth=2)
-plt.plot(Tarr, vmap(hsystem.vmr_h)(karr), ls="--", label="H (analytical)", linewidth=2)
-plt.plot(
-    Tarr, vmap(hsystem.vmr_h2)(karr), ls="--", label="H₂ (analytical)", linewidth=2
-)
-plt.ylabel("Volume Mixing Ratio")
-plt.title("Hydrogen Dissociation Equilibrium: 2H ⇌ H₂")
-plt.legend()
-plt.grid(True, alpha=0.3)
-
-# Panel 2: Volume mixing ratios (log scale)
-ax2 = fig.add_subplot(312)
-plt.plot(Tarr, vmrH, label="H (numerical)", alpha=0.7, linewidth=2)
-plt.plot(Tarr, vmrH2, label="H₂ (numerical)", alpha=0.7, linewidth=2)
-plt.plot(Tarr, vmap(hsystem.vmr_h)(karr), ls="--", label="H (analytical)", linewidth=2)
-plt.plot(
-    Tarr, vmap(hsystem.vmr_h2)(karr), ls="--", label="H₂ (analytical)", linewidth=2
-)
-plt.yscale("log")
-plt.ylabel("Volume Mixing Ratio (log scale)")
-plt.legend()
-plt.grid(True, alpha=0.3)
-
-# Panel 3: Temperature derivatives (log scale)
-ax3 = fig.add_subplot(313)
-plt.plot(Tarr, jnp.abs(dln_dT_arr[:, 0]), label="H (numerical)", alpha=0.7, linewidth=2)
-plt.plot(
-    Tarr, jnp.abs(dln_dT_arr[:, 1]), label="H₂ (numerical)", alpha=0.7, linewidth=2
-)
-plt.plot(
-    Tarr,
-    jnp.abs(hsystem.ln_nH_dT(Tarr, ln_normalized_pressure)),
-    ls="--",
-    label="H (analytical)",
-    linewidth=2,
-)
-plt.plot(
-    Tarr,
-    jnp.abs(hsystem.ln_nH2_dT(Tarr, ln_normalized_pressure)),
-    ls="--",
-    label="H₂ (analytical)",
-    linewidth=2,
-)
-plt.yscale("log")
-plt.ylabel("|∂ln(n)/∂T| (K⁻¹)")
-plt.xlabel("Temperature (K)")
-plt.legend()
-plt.grid(True, alpha=0.3)
-
-plt.tight_layout()
-plt.savefig("gibbs_minimization.png", dpi=150, bbox_inches="tight")
-plt.show()
-
-print("\\nVisualization saved as 'gibbs_minimization.png'")
-
-##############################################################################
-# Vectorized Pressure Range Analysis
-# -----------------------------------
-# Demonstrate vectorized computation over a pressure range to validate
-# equilibrium solutions and pressure derivatives across different conditions.
-print("vis 2")
-
-# Define pressure range for comprehensive analysis
-Parr = jnp.logspace(-3, 3, 200)  # 0.001 to 1000 bar (log scale)
-ln_normalized_pressure_arr = jnp.log(Parr / Pref)
-print(f"Pressure range: {Parr[0]:.3f} to {Parr[-1]:.0f} bar ({len(Parr)} points)")
+    setup = ChemicalSetup(
+        formula_matrix=jnp.array([[1.0, 2.0]], dtype=jnp.float64),
+        hvector_func=hvector_func,
+        elements=("H",),
+        species=("H", "H2"),
+        element_vector_reference=ELEMENT_VECTOR,
+        metadata={"source": "JANAF", "validation": "analytic_hsystem"},
+    )
+    return setup, analytic
 
 
-# Vectorize minimize_gibbs over temperature axis
-def funcp(logpin):
-        return minimize_gibbs(
-            ThermoState(temperature, logpin, element_vector),
-            ln_nk_init,
-            ln_ntot_init,
-            formula_matrix,
-            hvector_func,
-            epsilon_crit,
-            max_iter,
+def _require_converged(
+    diagnostics: Mapping[str, jax.Array],
+    *,
+    label: str,
+) -> None:
+    converged = np.asarray(jax.device_get(diagnostics["converged"]), dtype=bool)
+    residual = np.asarray(
+        jax.device_get(diagnostics["final_residual"]), dtype=np.float64
+    )
+    if not np.all(converged):
+        failed = np.flatnonzero(~converged.reshape(-1)).tolist()
+        raise RuntimeError(f"{label} did not converge at indices {failed}.")
+    if not np.all(np.isfinite(residual)):
+        raise RuntimeError(f"{label} returned non-finite convergence residuals.")
+
+
+def _solve_with_diagnostics(
+    setup: ChemicalSetup,
+    temperature: jax.Array,
+    pressure: jax.Array,
+):
+    return solve(
+        setup,
+        temperature,
+        pressure,
+        ELEMENT_VECTOR,
+        Pref=REFERENCE_PRESSURE_BAR,
+        options=OPTIONS,
+        return_diagnostics=True,
+    )
+
+
+def _ln_n_at_temperature(
+    setup: ChemicalSetup,
+    temperature: jax.Array,
+) -> jax.Array:
+    return solve(
+        setup,
+        temperature,
+        PRESSURE_BAR,
+        ELEMENT_VECTOR,
+        Pref=REFERENCE_PRESSURE_BAR,
+        options=OPTIONS,
+    ).ln_n
+
+
+def _ln_n_at_log_pressure(
+    setup: ChemicalSetup,
+    log_pressure: jax.Array,
+) -> jax.Array:
+    pressure = REFERENCE_PRESSURE_BAR * jnp.exp(log_pressure)
+    return solve(
+        setup,
+        TEMPERATURE_K,
+        pressure,
+        ELEMENT_VECTOR,
+        Pref=REFERENCE_PRESSURE_BAR,
+        options=OPTIONS,
+    ).ln_n
+
+
+def _maximum_absolute_error(left: jax.Array, right: jax.Array) -> float:
+    difference = np.asarray(jax.device_get(left - right), dtype=np.float64)
+    return float(np.max(np.abs(difference)))
+
+
+def _validate_budget(
+    setup: ChemicalSetup,
+    amounts: jax.Array,
+    *,
+    label: str,
+) -> float:
+    closure = amounts @ setup.formula_matrix.T
+    error = _maximum_absolute_error(closure, ELEMENT_VECTOR)
+    if not np.isfinite(error) or error > BUDGET_ABSOLUTE_TOLERANCE:
+        raise RuntimeError(
+            f"{label} elemental-budget error {error:.3e} exceeds "
+            f"{BUDGET_ABSOLUTE_TOLERANCE:.1e}."
+        )
+    return error
+
+
+def _positive(values: jax.Array) -> np.ndarray:
+    array = np.asarray(jax.device_get(values), dtype=np.float64)
+    return np.clip(np.abs(array), PLOT_FLOOR, None)
+
+
+def main() -> None:
+    args = _parse_args()
+    setup, analytic = _build_setup()
+    log_pressure = jnp.log(PRESSURE_BAR / REFERENCE_PRESSURE_BAR)
+
+    point_result, point_diagnostics = _solve_with_diagnostics(
+        setup,
+        jnp.asarray(TEMPERATURE_K),
+        jnp.asarray(PRESSURE_BAR),
+    )
+    _require_converged(point_diagnostics, label="Single-point calculation")
+
+    point_k = analytic.compute_k(log_pressure, TEMPERATURE_K)
+    point_reference = jnp.array(
+        [analytic.nh(point_k), analytic.nh2(point_k)]
+    )
+    point_amount_error = _maximum_absolute_error(point_result.n, point_reference)
+    point_budget_error = _validate_budget(
+        setup, point_result.n[None, :], label="Single-point calculation"
+    )
+
+    temperature_gradient = jax.jacrev(
+        lambda value: _ln_n_at_temperature(setup, value)
+    )(jnp.asarray(TEMPERATURE_K))
+    temperature_gradient_reference = jnp.array(
+        [
+            analytic.ln_nH_dT(jnp.array([TEMPERATURE_K]), log_pressure)[0],
+            analytic.ln_nH2_dT(jnp.array([TEMPERATURE_K]), log_pressure)[0],
+        ]
+    )
+    point_temperature_gradient_error = _maximum_absolute_error(
+        temperature_gradient, temperature_gradient_reference
+    )
+
+    pressure_gradient = jax.jacrev(
+        lambda value: _ln_n_at_log_pressure(setup, value)
+    )(log_pressure)
+    pressure_gradient_reference = jnp.array(
+        [
+            analytic.ln_nH_dlogp(
+                jnp.array([TEMPERATURE_K]), log_pressure
+            )[0],
+            analytic.ln_nH2_dlogp(
+                jnp.array([TEMPERATURE_K]), log_pressure
+            )[0],
+        ]
+    )
+    point_pressure_gradient_error = _maximum_absolute_error(
+        pressure_gradient, pressure_gradient_reference
+    )
+
+    (
+        temperature_result,
+        temperature_diagnostics,
+    ) = jax.vmap(
+        lambda value: _solve_with_diagnostics(
+            setup, value, jnp.asarray(PRESSURE_BAR)
+        )
+    )(TEMPERATURES_K)
+    _require_converged(
+        temperature_diagnostics, label="Temperature sweep"
+    )
+    temperature_budget_error = _validate_budget(
+        setup, temperature_result.n, label="Temperature sweep"
+    )
+
+    temperature_k = jax.vmap(
+        lambda value: analytic.compute_k(log_pressure, value)
+    )(TEMPERATURES_K)
+    temperature_vmr_reference = jnp.column_stack(
+        (analytic.vmr_h(temperature_k), analytic.vmr_h2(temperature_k))
+    )
+    temperature_vmr_error = _maximum_absolute_error(
+        temperature_result.x, temperature_vmr_reference
+    )
+    temperature_gradients = jax.vmap(
+        jax.jacrev(lambda value: _ln_n_at_temperature(setup, value))
+    )(TEMPERATURES_K)
+    temperature_gradient_references = jnp.column_stack(
+        (
+            analytic.ln_nH_dT(TEMPERATURES_K, log_pressure),
+            analytic.ln_nH2_dT(TEMPERATURES_K, log_pressure),
+        )
+    )
+    temperature_gradient_error = _maximum_absolute_error(
+        temperature_gradients, temperature_gradient_references
+    )
+
+    log_pressures = jnp.log(PRESSURES_BAR / REFERENCE_PRESSURE_BAR)
+    pressure_result, pressure_diagnostics = jax.vmap(
+        lambda value: _solve_with_diagnostics(
+            setup, jnp.asarray(TEMPERATURE_K), value
+        )
+    )(PRESSURES_BAR)
+    _require_converged(pressure_diagnostics, label="Pressure sweep")
+    pressure_budget_error = _validate_budget(
+        setup, pressure_result.n, label="Pressure sweep"
+    )
+
+    pressure_k = jax.vmap(
+        lambda value: analytic.compute_k(value, TEMPERATURE_K)
+    )(log_pressures)
+    pressure_vmr_reference = jnp.column_stack(
+        (analytic.vmr_h(pressure_k), analytic.vmr_h2(pressure_k))
+    )
+    pressure_vmr_error = _maximum_absolute_error(
+        pressure_result.x, pressure_vmr_reference
+    )
+    pressure_gradients = jax.vmap(
+        jax.jacrev(lambda value: _ln_n_at_log_pressure(setup, value))
+    )(log_pressures)
+    temperatures = jnp.full_like(log_pressures, TEMPERATURE_K)
+    pressure_gradient_references = jnp.column_stack(
+        (
+            analytic.ln_nH_dlogp(temperatures, log_pressures),
+            analytic.ln_nH2_dlogp(temperatures, log_pressures),
+        )
+    )
+    pressure_gradient_error = _maximum_absolute_error(
+        pressure_gradients, pressure_gradient_references
+    )
+
+    point_errors = (
+        point_amount_error,
+        point_temperature_gradient_error,
+        point_pressure_gradient_error,
+    )
+    if not np.all(np.isfinite(point_errors)) or max(point_errors) > (
+        POINT_ABSOLUTE_TOLERANCE
+    ):
+        raise RuntimeError(
+            "Single-point analytical validation failed: "
+            f"amount={point_amount_error:.3e}, "
+            f"dln(n)/dT={point_temperature_gradient_error:.3e}, "
+            f"dln(n)/dln(P)={point_pressure_gradient_error:.3e}."
         )
 
-ln_nk_arr_pressure = vmap(funcp)(ln_normalized_pressure_arr)
+    sweep_errors = (
+        temperature_vmr_error,
+        temperature_gradient_error,
+        pressure_vmr_error,
+        pressure_gradient_error,
+    )
+    if not np.all(np.isfinite(sweep_errors)) or max(sweep_errors) > (
+        SWEEP_ABSOLUTE_TOLERANCE
+    ):
+        raise RuntimeError(
+            "Sweep analytical validation failed: "
+            f"T VMR={temperature_vmr_error:.3e}, "
+            f"T derivative={temperature_gradient_error:.3e}, "
+            f"P VMR={pressure_vmr_error:.3e}, "
+            f"P derivative={pressure_gradient_error:.3e}."
+        )
 
-# Vectorize temperature derivatives
-vmap_minimize_gibbs_dlogp = vmap(jacrev(funcp), in_axes=(0,))
+    temperatures_np = np.asarray(TEMPERATURES_K)
+    pressures_np = np.asarray(PRESSURES_BAR)
+    temperature_x_np = np.asarray(temperature_result.x)
+    temperature_ref_np = np.asarray(temperature_vmr_reference)
+    pressure_x_np = np.asarray(pressure_result.x)
+    pressure_ref_np = np.asarray(pressure_vmr_reference)
 
-# Compute pressure derivatives across pressure range
-dln_dlogp_arr = vmap_minimize_gibbs_dlogp(ln_normalized_pressure_arr)
+    figure, axes = plt.subplots(2, 2, figsize=(12.0, 8.5))
+    labels = ("H", r"H$_2$")
+    colors = ("tab:orange", "tab:blue")
+    for species_index, (label, color) in enumerate(zip(labels, colors)):
+        axes[0, 0].plot(
+            temperatures_np,
+            temperature_x_np[:, species_index],
+            color=color,
+            label=f"{label}, ExoGibbs",
+        )
+        axes[0, 0].plot(
+            temperatures_np,
+            temperature_ref_np[:, species_index],
+            color=color,
+            linestyle="--",
+            label=f"{label}, analytical",
+        )
+        axes[0, 1].plot(
+            temperatures_np,
+            _positive(temperature_gradients[:, species_index]),
+            color=color,
+            label=f"{label}, ExoGibbs AD",
+        )
+        axes[0, 1].plot(
+            temperatures_np,
+            _positive(
+                temperature_gradient_references[:, species_index]
+            ),
+            color=color,
+            linestyle="--",
+            label=f"{label}, analytical",
+        )
+        axes[1, 0].plot(
+            pressures_np,
+            pressure_x_np[:, species_index],
+            color=color,
+            label=f"{label}, ExoGibbs",
+        )
+        axes[1, 0].plot(
+            pressures_np,
+            pressure_ref_np[:, species_index],
+            color=color,
+            linestyle="--",
+            label=f"{label}, analytical",
+        )
+        axes[1, 1].plot(
+            pressures_np,
+            _positive(pressure_gradients[:, species_index]),
+            color=color,
+            label=f"{label}, ExoGibbs AD",
+        )
+        axes[1, 1].plot(
+            pressures_np,
+            _positive(pressure_gradient_references[:, species_index]),
+            color=color,
+            linestyle="--",
+            label=f"{label}, analytical",
+        )
 
-# Compute analytical equilibrium constants for pressure range
-karr_pressure = vmap(hsystem.compute_k, in_axes=(0, None))(
-    ln_normalized_pressure_arr, temperature
-)
+    axes[0, 0].set(
+        xlabel="Temperature (K)",
+        ylabel="Volume mixing ratio",
+        title=f"Composition at {PRESSURE_BAR:g} bar",
+    )
+    axes[0, 1].set(
+        xlabel="Temperature (K)",
+        ylabel=r"$|\partial\ln n/\partial T|$ (K$^{-1}$)",
+        title=f"Temperature derivatives at {PRESSURE_BAR:g} bar",
+    )
+    axes[1, 0].set(
+        xlabel="Pressure (bar)",
+        ylabel="Volume mixing ratio",
+        title=f"Composition at {TEMPERATURE_K:.0f} K",
+    )
+    axes[1, 1].set(
+        xlabel="Pressure (bar)",
+        ylabel=r"$|\partial\ln n/\partial\ln P|$",
+        title=f"Pressure derivatives at {TEMPERATURE_K:.0f} K",
+    )
+    for axis in axes.flat:
+        axis.set_yscale("log")
+        axis.grid(alpha=0.25)
+        axis.legend(fontsize=8)
+    axes[1, 0].set_xscale("log")
+    axes[1, 1].set_xscale("log")
 
-# Convert log number densities to volume mixing ratios (VMRs)
-n_H_pressure = jnp.exp(ln_nk_arr_pressure[:, 0])
-n_H2_pressure = jnp.exp(ln_nk_arr_pressure[:, 1])
-ntot_pressure = n_H_pressure + n_H2_pressure
-vmrH_pressure = n_H_pressure / ntot_pressure
-vmrH2_pressure = n_H2_pressure / ntot_pressure
+    figure.suptitle(
+        r"ExoGibbs validation against the analytical $2\mathrm{H}"
+        r"\rightleftharpoons\mathrm{H}_2$ system"
+    )
+    figure.tight_layout()
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(args.output, dpi=160, bbox_inches="tight")
+    if args.show:
+        plt.show()
+    plt.close(figure)
 
-# Compare VMRs with analytical solutions
-diffH_pressure = vmrH_pressure - vmap(hsystem.vmr_h)(karr_pressure)
-diffH2_pressure = vmrH2_pressure - vmap(hsystem.vmr_h2)(karr_pressure)
+    print("H/H2 analytical validation passed.")
+    print(
+        "  Single point: "
+        f"amount error={point_amount_error:.3e}, "
+        f"dln(n)/dT error={point_temperature_gradient_error:.3e}, "
+        f"dln(n)/dln(P) error={point_pressure_gradient_error:.3e}"
+    )
+    print(
+        "  Temperature sweep: "
+        f"VMR error={temperature_vmr_error:.3e}, "
+        f"derivative error={temperature_gradient_error:.3e}, "
+        f"budget error={temperature_budget_error:.3e}"
+    )
+    print(
+        "  Pressure sweep: "
+        f"VMR error={pressure_vmr_error:.3e}, "
+        f"derivative error={pressure_gradient_error:.3e}, "
+        f"budget error={pressure_budget_error:.3e}"
+    )
+    print(f"  Single-point budget error={point_budget_error:.3e}")
+    print(f"  Figure: {args.output}")
 
-# Compare pressure derivatives with analytical solutions
-temp_array = jnp.full_like(ln_normalized_pressure_arr, temperature)
-diff_dlogp_H = dln_dlogp_arr[:, 0] - hsystem.ln_nH_dlogp(
-    temp_array, ln_normalized_pressure_arr
-)
-diff_dlogp_H2 = dln_dlogp_arr[:, 1] - hsystem.ln_nH2_dlogp(
-    temp_array, ln_normalized_pressure_arr
-)
 
-# Report maximum errors across pressure range
-print(
-    f"Maximum VMR errors: H={jnp.max(jnp.abs(diffH_pressure)):.2e}, H₂={jnp.max(jnp.abs(diffH2_pressure)):.2e}"
-)
-print(
-    f"Maximum dln_dlogp errors: H={jnp.max(jnp.abs(diff_dlogp_H)):.2e}, H₂={jnp.max(jnp.abs(diff_dlogp_H2)):.2e}"
-)
-
-##############################################################################
-# Pressure Visualization
-# -----------------------
-# Create comprehensive plots showing equilibrium compositions and pressure
-# derivatives across the pressure range.
-
-# Create three-panel figure for pressure analysis
-fig_pressure = plt.figure(figsize=(10, 12))
-
-# Panel 1: Volume mixing ratios vs pressure (linear scale)
-ax1_p = fig_pressure.add_subplot(311)
-plt.plot(Parr, vmrH_pressure, label="H (numerical)", alpha=0.7, linewidth=2)
-plt.plot(Parr, vmrH2_pressure, label="H₂ (numerical)", alpha=0.7, linewidth=2)
-plt.plot(
-    Parr,
-    vmap(hsystem.vmr_h)(karr_pressure),
-    ls="--",
-    label="H (analytical)",
-    linewidth=2,
-)
-plt.plot(
-    Parr,
-    vmap(hsystem.vmr_h2)(karr_pressure),
-    ls="--",
-    label="H₂ (analytical)",
-    linewidth=2,
-)
-plt.xscale("log")
-plt.ylabel("Volume Mixing Ratio")
-plt.title(f"Hydrogen Dissociation Equilibrium vs Pressure at T={temperature:.0f}K")
-plt.legend()
-plt.grid(True, alpha=0.3)
-
-# Panel 2: Volume mixing ratios vs pressure (log scale)
-ax2_p = fig_pressure.add_subplot(312)
-plt.plot(Parr, vmrH_pressure, label="H (numerical)", alpha=0.7, linewidth=2)
-plt.plot(Parr, vmrH2_pressure, label="H₂ (numerical)", alpha=0.7, linewidth=2)
-plt.plot(
-    Parr,
-    vmap(hsystem.vmr_h)(karr_pressure),
-    ls="--",
-    label="H (analytical)",
-    linewidth=2,
-)
-plt.plot(
-    Parr,
-    vmap(hsystem.vmr_h2)(karr_pressure),
-    ls="--",
-    label="H₂ (analytical)",
-    linewidth=2,
-)
-plt.xscale("log")
-plt.yscale("log")
-plt.ylabel("Volume Mixing Ratio (log scale)")
-plt.legend()
-plt.grid(True, alpha=0.3)
-
-# Panel 3: Pressure derivatives (log scale)
-ax3_p = fig_pressure.add_subplot(313)
-plt.plot(
-    Parr, jnp.abs(dln_dlogp_arr[:, 0]), label="H (numerical)", alpha=0.7, linewidth=2
-)
-plt.plot(
-    Parr, jnp.abs(dln_dlogp_arr[:, 1]), label="H₂ (numerical)", alpha=0.7, linewidth=2
-)
-plt.plot(
-    Parr,
-    jnp.abs(hsystem.ln_nH_dlogp(temp_array, ln_normalized_pressure_arr)),
-    ls="--",
-    label="H (analytical)",
-    linewidth=2,
-)
-plt.plot(
-    Parr,
-    jnp.abs(hsystem.ln_nH2_dlogp(temp_array, ln_normalized_pressure_arr)),
-    ls="--",
-    label="H₂ (analytical)",
-    linewidth=2,
-)
-plt.xscale("log")
-plt.yscale("log")
-plt.ylabel("|∂ln(n)/∂ln(P)|")
-plt.xlabel("Pressure (bar)")
-plt.legend()
-plt.grid(True, alpha=0.3)
-
-plt.tight_layout()
-plt.savefig("gibbs_minimization_pressure.png", dpi=150, bbox_inches="tight")
-plt.show()
-
-print("\nPressure analysis visualization saved as 'gibbs_minimization_pressure.png'")
+if __name__ == "__main__":
+    main()

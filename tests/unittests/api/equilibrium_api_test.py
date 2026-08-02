@@ -83,7 +83,11 @@ def test_equilibrium_happy_path(monkeypatch):
         return jnp.zeros((K,), dtype=jnp.result_type(ln_nk0, A_in.dtype))
 
     # Patch by fully-qualified name so it works regardless of how the module was imported elsewhere
-    monkeypatch.setattr("exogibbs.api.equilibrium.minimize_gibbs", stub_minimize_gibbs, raising=True)
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
 
     b = jnp.array([2.0, 1.0, 3.0], dtype=jnp.float64)
     out = eqmod.equilibrium(setup, T=1000.0, P=1.0, b=b,
@@ -112,7 +116,7 @@ def test_equilibrium_b_shape_validation(monkeypatch):
     # Not strictly needed for this test (should fail before calling the minimizer),
     # but patch anyway to keep isolation consistent.
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
         lambda *args, **kw: jnp.zeros((K,)),
         raising=True,
     )
@@ -140,7 +144,11 @@ def test_equilibrium_respects_init(monkeypatch):
         captured["ln_ntot0"] = ln_ntot0
         return ln_nk0 + c
 
-    monkeypatch.setattr("exogibbs.api.equilibrium.minimize_gibbs", stub_minimize_gibbs, raising=True)
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
 
     ln_nk_init = jnp.full((K,), 0.3, dtype=jnp.float32)
     ln_ntot_init = jnp.asarray(0.7, dtype=jnp.float32)
@@ -429,7 +437,11 @@ def test_equilibrium_uses_custom_initializer(monkeypatch):
                 ln_ntot=jnp.asarray(1.5, dtype=jnp.float32),
             )
 
-    monkeypatch.setattr("exogibbs.api.equilibrium.minimize_gibbs", stub_minimize_gibbs, raising=True)
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
 
     b = jnp.array([1.0, 1.0], dtype=jnp.float32)
     out = eqmod.equilibrium(
@@ -505,7 +517,11 @@ def test_equilibrium_uses_grid_initializer_with_inferred_metallicity(monkeypatch
         stub_interpolate_equilibrium_grid,
         raising=True,
     )
-    monkeypatch.setattr("exogibbs.api.equilibrium.minimize_gibbs", stub_minimize_gibbs, raising=True)
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
 
     out = eqmod.equilibrium(
         setup,
@@ -551,7 +567,7 @@ def test_equilibrium_return_diagnostics(monkeypatch):
         return ln_n, diagnostics
 
     monkeypatch.setattr(
-        "exogibbs.api.equilibrium.minimize_gibbs_with_diagnostics",
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs_with_diagnostics",
         stub_minimize_gibbs_with_diagnostics,
         raising=True,
     )
