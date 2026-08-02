@@ -1,6 +1,8 @@
 import ast
 import hashlib
+import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -8,6 +10,22 @@ import pytest
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 EXAMPLE_ROOT = REPOSITORY_ROOT / "examples" / "comparisons"
+
+
+@pytest.fixture(scope="module")
+def fastchem4_condensate_example():
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg", force=True)
+    path = EXAMPLE_ROOT / "comparison_with_fastchem4_condensates.py"
+    spec = importlib.util.spec_from_file_location(
+        "comparison_with_fastchem4_condensates_test_module",
+        path,
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _guarded_main_call_count(tree: ast.Module) -> int:
@@ -61,6 +79,163 @@ def test_fastchem4_comparison_example_is_current_and_main_guarded(
     assert "elements_conserved" in source
 
     assert _guarded_main_call_count(tree) == 1
+
+
+def test_l_dwarf_gas_only_runs_remain_independent_of_condensation_runs():
+    path = EXAMPLE_ROOT / "comparison_with_fastchem4_condensates.py"
+    source = path.read_text(encoding="utf-8")
+    tree = ast.parse(source, filename=str(path))
+    calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call)]
+
+    fastchem_modes = []
+    for call in calls:
+        if not isinstance(call.func, ast.Name):
+            continue
+        if call.func.id != "run_fastchem_executable":
+            continue
+        for keyword in call.keywords:
+            if keyword.arg == "chemistry_mode":
+                assert isinstance(keyword.value, ast.Constant)
+                fastchem_modes.append(keyword.value.value)
+    assert sorted(fastchem_modes) == ["equilibrium_condensation", "gas"]
+
+    exogibbs_solve_calls = [
+        call
+        for call in calls
+        if isinstance(call.func, ast.Name)
+        and call.func.id in {"solve_condensate_profile", "solve_gas_profile"}
+    ]
+    assert len(exogibbs_solve_calls) == 2
+    for call in exogibbs_solve_calls:
+        assert "fastchem" not in ast.unparse(call).lower()
+    gas_solve_call = next(
+        call
+        for call in exogibbs_solve_calls
+        if isinstance(call.func, ast.Name)
+        and call.func.id == "solve_gas_profile"
+    )
+    assert isinstance(gas_solve_call.args[0], ast.Attribute)
+    assert isinstance(gas_solve_call.args[0].value, ast.Name)
+    assert gas_solve_call.args[0].value.id == "setup"
+    assert gas_solve_call.args[0].attr == "gas_setup"
+
+
+def test_l_dwarf_profile_is_positive_monotonic_and_reproducible(
+    fastchem4_condensate_example,
+):
+    module = fastchem4_condensate_example
+    validation_temperatures, validation_pressures = module._profile_conditions(
+        "validation"
+    )
+    temperatures, pressures = module._profile_conditions("l-dwarf")
+
+    np.testing.assert_array_equal(
+        validation_temperatures,
+        np.asarray([1800.0, 1600.0, 1400.0, 1200.0]),
+    )
+    np.testing.assert_array_equal(
+        validation_pressures,
+        np.full(4, 0.1),
+    )
+    np.testing.assert_allclose(pressures, np.logspace(-4.0, 2.0, 13))
+    assert temperatures.shape == pressures.shape
+    assert np.all(np.isfinite(temperatures))
+    assert np.all(np.diff(temperatures) > 0.0)
+    assert np.all(np.diff(pressures) > 0.0)
+    assert temperatures[0] == pytest.approx(1100.0)
+    assert temperatures[-1] == pytest.approx(2600.0)
+    assert module._default_output_path("l-dwarf").name == (
+        "comparison_with_fastchem4_ldwarf_profile.png"
+    )
+
+
+def test_l_dwarf_figure_has_shared_solver_columns(
+    fastchem4_condensate_example,
+):
+    module = fastchem4_condensate_example
+    temperatures, pressures = module._profile_conditions("l-dwarf")
+    setup = SimpleNamespace(
+        gas_species=list(module.GAS_SPECIES),
+        condensate_species=list(module.CONDENSATE_SPECIES),
+    )
+    gas_shape = (pressures.size, len(setup.gas_species))
+    condensate_shape = (pressures.size, len(setup.condensate_species))
+    gas_scale = np.geomspace(1.0, 1.0e-8, gas_shape[1])
+    condensate_scale = np.geomspace(1.0e-3, 1.0e-12, condensate_shape[1])
+    fastchem_x = np.broadcast_to(gas_scale, gas_shape).copy()
+    exogibbs_x = fastchem_x * 0.99
+    fastchem_gas_only_x = fastchem_x * 0.8
+    exogibbs_gas_only_x = exogibbs_x * 0.81
+    fastchem_condensates = np.broadcast_to(
+        condensate_scale,
+        condensate_shape,
+    ).copy()
+    exogibbs_condensates = fastchem_condensates * 1.01
+
+    fig = module._make_l_dwarf_profile_figure(
+        pressures=pressures,
+        temperatures=temperatures,
+        setup=setup,
+        exogibbs_gas_only_x=exogibbs_gas_only_x,
+        exogibbs_x=exogibbs_x,
+        exogibbs_condensates=exogibbs_condensates,
+        fastchem_gas_only_x=fastchem_gas_only_x,
+        fastchem_x=fastchem_x,
+        fastchem_condensates=fastchem_condensates,
+    )
+    try:
+        assert len(fig.axes) == 4
+        fastchem_gas_axis, exogibbs_gas_axis = fig.axes[:2]
+        fastchem_cond_axis, exogibbs_cond_axis = fig.axes[2:]
+        assert fastchem_gas_axis.get_shared_x_axes().joined(
+            fastchem_gas_axis,
+            exogibbs_gas_axis,
+        )
+        assert fastchem_cond_axis.get_shared_x_axes().joined(
+            fastchem_cond_axis,
+            exogibbs_cond_axis,
+        )
+        assert fastchem_gas_axis.get_shared_y_axes().joined(
+            fastchem_gas_axis,
+            exogibbs_cond_axis,
+        )
+        assert fastchem_gas_axis.get_xscale() == "log"
+        assert fastchem_gas_axis.get_yscale() == "log"
+        assert fastchem_gas_axis.get_ylim()[0] > fastchem_gas_axis.get_ylim()[1]
+        assert "FastChem 4" in fastchem_gas_axis.get_title()
+        assert "ExoGibbs" in exogibbs_gas_axis.get_title()
+        assert len(fastchem_gas_axis.lines) == 2 * len(module.GAS_SPECIES)
+        assert len(exogibbs_gas_axis.lines) == 2 * len(module.GAS_SPECIES)
+        assert len(fastchem_cond_axis.lines) == len(module.CONDENSATE_SPECIES)
+        assert len(exogibbs_cond_axis.lines) == len(module.CONDENSATE_SPECIES)
+
+        fastchem_condensed_line = fastchem_gas_axis.lines[0]
+        fastchem_gas_only_line = fastchem_gas_axis.lines[1]
+        np.testing.assert_allclose(
+            fastchem_gas_only_line.get_xdata(),
+            fastchem_gas_only_x[:, 0],
+        )
+        np.testing.assert_allclose(
+            fastchem_condensed_line.get_xdata(),
+            fastchem_x[:, 0],
+        )
+        np.testing.assert_allclose(
+            fastchem_gas_only_line.get_ydata(),
+            pressures,
+        )
+        assert fastchem_gas_only_line.get_color() == (
+            fastchem_condensed_line.get_color()
+        )
+        assert fastchem_gas_only_line.get_linestyle() == "--"
+        assert fastchem_condensed_line.get_linestyle() == "-"
+        assert fastchem_condensed_line.get_marker() == "o"
+        gas_state_labels = {
+            text.get_text()
+            for text in exogibbs_gas_axis.get_legend().get_texts()
+        }
+        assert gas_state_labels == {"Gas-only", "With condensates"}
+    finally:
+        module.plt.close(fig)
 
 
 @pytest.mark.parametrize(

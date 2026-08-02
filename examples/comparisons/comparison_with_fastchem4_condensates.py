@@ -1,10 +1,16 @@
 """Visual comparison of production ExoGibbs and FastChem 4 condensation.
 
-The four points are the v0.4 validation-demo conditions.  Both programs read
-the same gas thermochemistry, condensate thermochemistry, element abundances,
-temperatures, and pressures.  FastChem runs as an independent process and its
-output is never supplied to an ExoGibbs constructor, initializer, support
-selector, retry, or route decision.
+The default four points are the v0.4 validation-demo conditions.  The optional
+``l-dwarf`` profile adds a pressure-profile visualization with gas and
+condensate rows and FastChem and ExoGibbs columns.  Its gas panels overlay
+gas-only equilibrium and the gas phase in local equilibrium with condensates.
+It is an illustrative local-equilibrium trajectory, not a self-consistent
+atmosphere or cloud model.
+
+Both programs read the same gas thermochemistry, condensate thermochemistry,
+element abundances, temperatures, and pressures.  FastChem runs as an
+independent process and its output is never supplied to an ExoGibbs
+constructor, initializer, support selector, retry, or route decision.
 
 The formal provenance and machine-readable comparison remain in
 ``benchmarks/fastchem4``; this script exposes the essential solve, alignment,
@@ -32,6 +38,8 @@ import jax
 from jax import config
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 import numpy as np
 
 from benchmarks.fastchem4.comparison import (
@@ -46,6 +54,10 @@ from benchmarks.fastchem4.fastchem_executable import (
 from exogibbs.api.condensate import (
     CondensateEquilibriumOptions,
     solve_profile as solve_condensate_profile,
+)
+from exogibbs.api.gas import (
+    EquilibriumOptions as GasEquilibriumOptions,
+    solve_profile as solve_gas_profile,
 )
 from exogibbs.presets.fastchem4_cond import (
     condensate_chemical_setup,
@@ -62,18 +74,31 @@ ELEMENT_FILE = DATA_ROOT / "element_abundances" / "asplund_2021.dat"
 GAS_LOGK_FILE = DATA_ROOT / "logK" / "logK_wo_ions.dat"
 CONDENSATE_LOGK_FILE = DATA_ROOT / "logK" / "logK_condensates.dat"
 
-TEMPERATURES_K = np.asarray([1800.0, 1600.0, 1400.0, 1200.0])
-PRESSURES_BAR = np.full(TEMPERATURES_K.shape, 0.1)
+VALIDATION_TEMPERATURES_K = np.asarray([1800.0, 1600.0, 1400.0, 1200.0])
+VALIDATION_PRESSURES_BAR = np.full(VALIDATION_TEMPERATURES_K.shape, 0.1)
+# Smooth illustrative warm-substellar trajectory. It is deliberately analytic,
+# so it cannot be mistaken for a specific radiative-convective atmosphere.
+L_DWARF_PRESSURES_BAR = np.logspace(-4.0, 2.0, 13)
+L_DWARF_LOG_PRESSURE_COORDINATE = np.log10(L_DWARF_PRESSURES_BAR) + 4.0
+L_DWARF_TEMPERATURES_K = (
+    1100.0
+    + 160.0 * L_DWARF_LOG_PRESSURE_COORDINATE
+    + 15.0 * L_DWARF_LOG_PRESSURE_COORDINATE**2
+)
+PROFILE_CHOICES = ("validation", "l-dwarf")
 MAJOR_GAS_THRESHOLD = 1.0e-8
 ACTIVE_CONDENSATE_FLOOR = 1.0e-8
-PLOT_FLOOR = 1.0e-20
+GAS_PLOT_FLOOR = 1.0e-20
+CONDENSATE_PLOT_FLOOR = 1.0e-20
 GAS_SPECIES = (
     "H2",
     "H2O1",
     "C1O1",
     "C1H4",
-    "H3N1",
     "O1Ti1",
+    "O1Si1",
+    "Mg1",
+    "Fe1",
 )
 CONDENSATE_SPECIES = (
     "Al2O3(s,l)",
@@ -90,8 +115,10 @@ DISPLAY_NAMES = {
     "H2O1": r"H$_2$O",
     "C1O1": "CO",
     "C1H4": r"CH$_4$",
-    "H3N1": r"NH$_3$",
     "O1Ti1": "TiO",
+    "O1Si1": "SiO",
+    "Mg1": "Mg",
+    "Fe1": "Fe",
 }
 
 
@@ -109,15 +136,19 @@ def _parse_args() -> argparse.Namespace:
         help="Path to the FastChem 4 standalone executable.",
     )
     parser.add_argument(
+        "--profile",
+        choices=PROFILE_CHOICES,
+        default="validation",
+        help=(
+            "Conditions and plot layout: the v0.4 validation points or an "
+            "illustrative L-dwarf-like pressure profile."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
-        default=(
-            REPOSITORY_ROOT
-            / "results"
-            / "fastchem4_examples"
-            / "comparison_with_fastchem4_condensates.png"
-        ),
-        help="Output PNG path.",
+        default=None,
+        help="Output PNG path; the filename defaults to the selected profile.",
     )
     parser.add_argument(
         "--show",
@@ -127,10 +158,30 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _positive(values: np.ndarray) -> np.ndarray:
+def _profile_conditions(profile: str) -> tuple[np.ndarray, np.ndarray]:
+    if profile == "validation":
+        return (
+            VALIDATION_TEMPERATURES_K.copy(),
+            VALIDATION_PRESSURES_BAR.copy(),
+        )
+    if profile == "l-dwarf":
+        return L_DWARF_TEMPERATURES_K.copy(), L_DWARF_PRESSURES_BAR.copy()
+    raise ValueError(f"Unknown comparison profile: {profile!r}")
+
+
+def _default_output_path(profile: str) -> Path:
+    filename = (
+        "comparison_with_fastchem4_condensates.png"
+        if profile == "validation"
+        else "comparison_with_fastchem4_ldwarf_profile.png"
+    )
+    return REPOSITORY_ROOT / "results" / "fastchem4_examples" / filename
+
+
+def _positive(values: np.ndarray, *, floor: float) -> np.ndarray:
     array = np.asarray(values, dtype=np.float64)
     return np.where(
-        np.isfinite(array) & (array > PLOT_FLOOR),
+        np.isfinite(array) & (array > floor),
         array,
         np.nan,
     )
@@ -182,8 +233,69 @@ def _validate_comparison_contract(*, setup, fastchem, exogibbs) -> None:
         )
 
 
+def _validate_gas_only_comparison_contract(
+    *,
+    setup,
+    fastchem,
+    exogibbs_x: np.ndarray,
+    exogibbs_converged: np.ndarray,
+) -> None:
+    gas_catalog_matches = sorted(
+        occurrence_keys(setup.gas_species)
+    ) == sorted(occurrence_keys(fastchem.gas_names))
+    if not gas_catalog_matches:
+        raise RuntimeError(
+            "FastChem and ExoGibbs gas-only catalogs do not match. Check the "
+            "FastChem version and shared input files."
+        )
+
+    expected_shape = (exogibbs_converged.size, len(setup.gas_species))
+    if exogibbs_x.shape != expected_shape:
+        raise RuntimeError(
+            "ExoGibbs gas-only mixing ratios have shape "
+            f"{exogibbs_x.shape}; expected {expected_shape}."
+        )
+
+    exogibbs_failed = np.flatnonzero(~exogibbs_converged)
+    invalid_exogibbs_x = np.flatnonzero(
+        np.any(~np.isfinite(exogibbs_x) | (exogibbs_x < 0.0), axis=1)
+        | (np.sum(exogibbs_x, axis=1) <= 0.0)
+    )
+    fastchem_failed = np.flatnonzero(~fastchem.converged)
+    unconserved = np.flatnonzero(~fastchem.elements_conserved)
+    gas_density = np.sum(fastchem.gas_number_densities, axis=1)
+    invalid_gas_density = np.flatnonzero(
+        ~np.isfinite(gas_density) | (gas_density <= 0.0)
+    )
+    invalid_element_density = np.flatnonzero(
+        ~np.isfinite(fastchem.total_element_density)
+        | (fastchem.total_element_density <= 0.0)
+    )
+    if (
+        exogibbs_failed.size
+        or invalid_exogibbs_x.size
+        or fastchem_failed.size
+        or unconserved.size
+        or invalid_gas_density.size
+        or invalid_element_density.size
+    ):
+        raise RuntimeError(
+            "Gas-only comparison output failed validation: "
+            f"ExoGibbs not converged={exogibbs_failed.tolist()}, "
+            f"invalid ExoGibbs mixing ratios={invalid_exogibbs_x.tolist()}, "
+            f"FastChem not converged={fastchem_failed.tolist()}, "
+            f"FastChem elements not conserved={unconserved.tolist()}, "
+            f"invalid gas density={invalid_gas_density.tolist()}, "
+            "invalid total element density="
+            f"{invalid_element_density.tolist()}."
+        )
+
+
 def _print_summary(
     *,
+    profile: str,
+    temperatures: np.ndarray,
+    pressures: np.ndarray,
     setup,
     exogibbs_result,
     exogibbs_x: np.ndarray,
@@ -193,11 +305,19 @@ def _print_summary(
     fastchem_condensates: np.ndarray,
 ) -> None:
     print("Production gas-plus-condensate comparison")
+    print(f"  profile: {profile}")
+    if profile == "l-dwarf":
+        print(
+            "  interpretation: illustrative local equilibrium without "
+            "rainout or cloud transport"
+        )
     print(
-        " T [K] | status Exo/FC/FC-elements | major gases Exo/FC | "
+        " T [K] | P [bar] | status Exo/FC/FC-elements | major gases Exo/FC | "
         "Jaccard | mean/max [dex] | active condensates Exo/FC | Jaccard"
     )
-    for layer_index, temperature in enumerate(TEMPERATURES_K):
+    for layer_index, (temperature, pressure) in enumerate(
+        zip(temperatures, pressures)
+    ):
         gas_metrics = gas_major_species_metrics(
             names=setup.gas_species,
             left_values=exogibbs_x[layer_index],
@@ -218,7 +338,7 @@ def _print_summary(
             fastchem.element_conservation_status[layer_index]
         )
         print(
-            f" {temperature:5.0f} | "
+            f" {temperature:5.0f} | {pressure:7.1e} | "
             f"{exogibbs_status}/{fastchem_status}/{fastchem_conserved} | "
             f"{gas_metrics['left_major_count']:2d}/"
             f"{gas_metrics['right_major_count']:2d} | "
@@ -231,8 +351,9 @@ def _print_summary(
         )
 
 
-def _plot_comparison(
+def _plot_validation_comparison(
     *,
+    temperatures: np.ndarray,
     setup,
     exogibbs_x: np.ndarray,
     exogibbs_condensates: np.ndarray,
@@ -256,14 +377,14 @@ def _plot_comparison(
         color = gas_colors(species_index % 10)
         label = DISPLAY_NAMES.get(species, species)
         ax_gas.plot(
-            TEMPERATURES_K,
-            _positive(fastchem_x[:, slot]),
+            temperatures,
+            _positive(fastchem_x[:, slot], floor=GAS_PLOT_FLOOR),
             color=color,
             linewidth=1.8,
         )
         ax_gas.plot(
-            TEMPERATURES_K,
-            _positive(exogibbs_x[:, slot]),
+            temperatures,
+            _positive(exogibbs_x[:, slot], floor=GAS_PLOT_FLOOR),
             "--o",
             color=color,
             linewidth=1.8,
@@ -277,14 +398,20 @@ def _plot_comparison(
         slot = setup.condensate_species.index(species)
         color = cond_colors(species_index % 20)
         ax_condensate.plot(
-            TEMPERATURES_K,
-            _positive(fastchem_condensates[:, slot]),
+            temperatures,
+            _positive(
+                fastchem_condensates[:, slot],
+                floor=CONDENSATE_PLOT_FLOOR,
+            ),
             color=color,
             linewidth=1.8,
         )
         ax_condensate.plot(
-            TEMPERATURES_K,
-            _positive(exogibbs_condensates[:, slot]),
+            temperatures,
+            _positive(
+                exogibbs_condensates[:, slot],
+                floor=CONDENSATE_PLOT_FLOOR,
+            ),
             "--o",
             color=color,
             linewidth=1.8,
@@ -323,19 +450,231 @@ def _plot_comparison(
     plt.close(fig)
 
 
+def _make_l_dwarf_profile_figure(
+    *,
+    pressures: np.ndarray,
+    temperatures: np.ndarray,
+    setup,
+    exogibbs_gas_only_x: np.ndarray,
+    exogibbs_x: np.ndarray,
+    exogibbs_condensates: np.ndarray,
+    fastchem_gas_only_x: np.ndarray,
+    fastchem_x: np.ndarray,
+    fastchem_condensates: np.ndarray,
+) -> Figure:
+    fig, axes = plt.subplots(
+        2,
+        2,
+        figsize=(12.0, 9.0),
+        sharex="row",
+        sharey=True,
+    )
+    fastchem_gas_axis, exogibbs_gas_axis = axes[0]
+    fastchem_cond_axis, exogibbs_cond_axis = axes[1]
+    gas_colors = plt.get_cmap("tab10")
+    condensate_colors = plt.get_cmap("tab20")
+
+    plotted_gases = 0
+    for species_index, species in enumerate(GAS_SPECIES):
+        if species not in setup.gas_species:
+            continue
+        slot = setup.gas_species.index(species)
+        color = gas_colors(species_index % 10)
+        label = DISPLAY_NAMES.get(species, species)
+        fastchem_gas_axis.plot(
+            _positive(fastchem_x[:, slot], floor=GAS_PLOT_FLOOR),
+            pressures,
+            "-o",
+            color=color,
+            linewidth=1.8,
+            markersize=3.0,
+            label=label,
+        )
+        fastchem_gas_axis.plot(
+            _positive(fastchem_gas_only_x[:, slot], floor=GAS_PLOT_FLOOR),
+            pressures,
+            "--",
+            color=color,
+            linewidth=1.3,
+            alpha=0.9,
+        )
+        exogibbs_gas_axis.plot(
+            _positive(exogibbs_x[:, slot], floor=GAS_PLOT_FLOOR),
+            pressures,
+            "-o",
+            color=color,
+            linewidth=1.8,
+            markersize=3.0,
+        )
+        exogibbs_gas_axis.plot(
+            _positive(exogibbs_gas_only_x[:, slot], floor=GAS_PLOT_FLOOR),
+            pressures,
+            "--",
+            color=color,
+            linewidth=1.3,
+            alpha=0.9,
+        )
+        plotted_gases += 1
+
+    plotted_condensates = 0
+    for species_index, species in enumerate(CONDENSATE_SPECIES):
+        if species not in setup.condensate_species:
+            continue
+        slot = setup.condensate_species.index(species)
+        color = condensate_colors(species_index % 20)
+        fastchem_cond_axis.plot(
+            _positive(
+                fastchem_condensates[:, slot],
+                floor=CONDENSATE_PLOT_FLOOR,
+            ),
+            pressures,
+            "-o",
+            color=color,
+            linewidth=1.6,
+            markersize=3.0,
+            label=species,
+        )
+        exogibbs_cond_axis.plot(
+            _positive(
+                exogibbs_condensates[:, slot],
+                floor=CONDENSATE_PLOT_FLOOR,
+            ),
+            pressures,
+            "-o",
+            color=color,
+            linewidth=1.6,
+            markersize=3.0,
+        )
+        plotted_condensates += 1
+
+    if plotted_gases == 0 or plotted_condensates == 0:
+        raise RuntimeError(
+            "None of the requested gas or condensate species could be plotted."
+        )
+
+    for axis in axes.flat:
+        axis.set_xscale("log")
+        axis.set_yscale("log")
+        axis.grid(alpha=0.25)
+    fastchem_gas_axis.set_ylim(
+        float(np.max(pressures)) * 1.15,
+        float(np.min(pressures)) / 1.15,
+    )
+
+    fastchem_gas_axis.set_title("FastChem 4 — gas phase")
+    exogibbs_gas_axis.set_title("ExoGibbs — gas phase")
+    fastchem_cond_axis.set_title("FastChem 4 — condensates")
+    exogibbs_cond_axis.set_title("ExoGibbs — condensates")
+
+    for axis in axes[0]:
+        axis.set_xlabel("Gas mixing ratio")
+    for axis in axes[1]:
+        axis.set_xlabel("Condensate amount / total element density")
+    for axis in axes[:, 0]:
+        axis.set_ylabel("Pressure [bar]")
+
+    fastchem_gas_axis.legend(fontsize=7, ncol=2, loc="best")
+    gas_state_handles = (
+        Line2D(
+            (0,),
+            (0,),
+            color="black",
+            linestyle="--",
+            linewidth=1.4,
+            label="Gas-only",
+        ),
+        Line2D(
+            (0,),
+            (0,),
+            color="black",
+            linestyle="-",
+            marker="o",
+            markersize=3.0,
+            linewidth=1.6,
+            label="With condensates",
+        ),
+    )
+    exogibbs_gas_axis.legend(
+        handles=gas_state_handles,
+        fontsize=7,
+        loc="best",
+        title="Gas state",
+        title_fontsize=7,
+    )
+    fastchem_cond_axis.legend(fontsize=6, ncol=2, loc="best")
+    fig.suptitle(
+        "Equilibrium condensation along an illustrative L-dwarf-like profile\n"
+        f"{np.min(temperatures):.0f}--{np.max(temperatures):.0f} K",
+        fontsize=12,
+    )
+    profile_note = (
+        r"$10^{-4} \leq P \leq 10^{2}$ bar; "
+        r"$T=1100+160q+15q^2$ K, "
+        r"$q=\log_{10}(P/\mathrm{bar})+4$; local equilibrium, no rainout"
+    )
+    fig.text(0.5, 0.012, profile_note, ha="center", fontsize=9)
+    fig.tight_layout(rect=(0.0, 0.04, 1.0, 0.96))
+    return fig
+
+
+def _plot_l_dwarf_profile_comparison(
+    *,
+    pressures: np.ndarray,
+    temperatures: np.ndarray,
+    setup,
+    exogibbs_gas_only_x: np.ndarray,
+    exogibbs_x: np.ndarray,
+    exogibbs_condensates: np.ndarray,
+    fastchem_gas_only_x: np.ndarray,
+    fastchem_x: np.ndarray,
+    fastchem_condensates: np.ndarray,
+    output_path: Path,
+    show: bool,
+) -> None:
+    fig = _make_l_dwarf_profile_figure(
+        pressures=pressures,
+        temperatures=temperatures,
+        setup=setup,
+        exogibbs_gas_only_x=exogibbs_gas_only_x,
+        exogibbs_x=exogibbs_x,
+        exogibbs_condensates=exogibbs_condensates,
+        fastchem_gas_only_x=fastchem_gas_only_x,
+        fastchem_x=fastchem_x,
+        fastchem_condensates=fastchem_condensates,
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=200, bbox_inches="tight")
+    print(f"figure: {output_path}")
+    if show:
+        plt.show()
+    plt.close(fig)
+
+
 def main() -> None:
     args = _parse_args()
+    temperatures, pressures = _profile_conditions(args.profile)
+    output_path = args.output or _default_output_path(args.profile)
 
     # 1. Run FastChem as an independent equilibrium-condensation process.
     fastchem = run_fastchem_executable(
         executable=args.fastchem_executable,
-        temperatures=TEMPERATURES_K,
-        pressures=PRESSURES_BAR,
+        temperatures=temperatures,
+        pressures=pressures,
         element_abundance_file=ELEMENT_FILE,
         gas_logk_file=GAS_LOGK_FILE,
         condensate_logk_file=CONDENSATE_LOGK_FILE,
         chemistry_mode="equilibrium_condensation",
     )
+    fastchem_gas_only = None
+    if args.profile == "l-dwarf":
+        fastchem_gas_only = run_fastchem_executable(
+            executable=args.fastchem_executable,
+            temperatures=temperatures,
+            pressures=pressures,
+            element_abundance_file=ELEMENT_FILE,
+            gas_logk_file=GAS_LOGK_FILE,
+            chemistry_mode="gas",
+        )
 
     # 2. Build and run ExoGibbs only from the shared input files.
     setup = condensate_chemical_setup(
@@ -354,13 +693,36 @@ def main() -> None:
     budget = jnp.asarray(aligned_abundance.vector, dtype=jnp.float64)
     exogibbs = solve_condensate_profile(
         setup,
-        T=jnp.asarray(TEMPERATURES_K, dtype=jnp.float64),
-        P=jnp.asarray(PRESSURES_BAR, dtype=jnp.float64),
+        T=jnp.asarray(temperatures, dtype=jnp.float64),
+        P=jnp.asarray(pressures, dtype=jnp.float64),
         b=budget,
         options=CondensateEquilibriumOptions(return_diagnostics=True),
         return_diagnostics=True,
     )
     jax.block_until_ready(exogibbs.batched_arrays)
+
+    exogibbs_gas_only_x = None
+    exogibbs_gas_only_converged = None
+    if args.profile == "l-dwarf":
+        exogibbs_gas_only, gas_only_diagnostics = solve_gas_profile(
+            setup.gas_setup,
+            T=jnp.asarray(temperatures, dtype=jnp.float64),
+            P=jnp.asarray(pressures, dtype=jnp.float64),
+            b=budget,
+            options=GasEquilibriumOptions(),
+            return_diagnostics=True,
+        )
+        jax.block_until_ready(
+            (exogibbs_gas_only.x, gas_only_diagnostics["converged"])
+        )
+        exogibbs_gas_only_x = np.asarray(
+            exogibbs_gas_only.x,
+            dtype=np.float64,
+        )
+        exogibbs_gas_only_converged = np.asarray(
+            gas_only_diagnostics["converged"],
+            dtype=bool,
+        )
 
     # 3. Align names only after both independent calculations are complete.
     _validate_comparison_contract(
@@ -368,6 +730,15 @@ def main() -> None:
         fastchem=fastchem,
         exogibbs=exogibbs,
     )
+    if fastchem_gas_only is not None:
+        assert exogibbs_gas_only_x is not None
+        assert exogibbs_gas_only_converged is not None
+        _validate_gas_only_comparison_contract(
+            setup=setup,
+            fastchem=fastchem_gas_only,
+            exogibbs_x=exogibbs_gas_only_x,
+            exogibbs_converged=exogibbs_gas_only_converged,
+        )
     fastchem_gas_density = align_species_values(
         setup.gas_species,
         fastchem.gas_names,
@@ -387,6 +758,18 @@ def main() -> None:
         fastchem_condensate_density
         / fastchem.total_element_density[:, None]
     )
+    fastchem_gas_only_x = None
+    if fastchem_gas_only is not None:
+        fastchem_gas_only_density = align_species_values(
+            setup.gas_species,
+            fastchem_gas_only.gas_names,
+            fastchem_gas_only.gas_number_densities,
+        )
+        fastchem_gas_only_x = fastchem_gas_only_density / np.sum(
+            fastchem_gas_only_density,
+            axis=1,
+            keepdims=True,
+        )
     exogibbs_x = np.stack(
         [
             np.asarray(layer.gas_x, dtype=np.float64)
@@ -402,6 +785,9 @@ def main() -> None:
 
     # 4. Print a compact numerical summary and make the visual comparison.
     _print_summary(
+        profile=args.profile,
+        temperatures=temperatures,
+        pressures=pressures,
         setup=setup,
         exogibbs_result=exogibbs,
         exogibbs_x=exogibbs_x,
@@ -410,15 +796,33 @@ def main() -> None:
         fastchem_x=fastchem_x,
         fastchem_condensates=fastchem_condensates,
     )
-    _plot_comparison(
-        setup=setup,
-        exogibbs_x=exogibbs_x,
-        exogibbs_condensates=exogibbs_condensates,
-        fastchem_x=fastchem_x,
-        fastchem_condensates=fastchem_condensates,
-        output_path=args.output,
-        show=args.show,
-    )
+    if args.profile == "validation":
+        _plot_validation_comparison(
+            temperatures=temperatures,
+            setup=setup,
+            exogibbs_x=exogibbs_x,
+            exogibbs_condensates=exogibbs_condensates,
+            fastchem_x=fastchem_x,
+            fastchem_condensates=fastchem_condensates,
+            output_path=output_path,
+            show=args.show,
+        )
+    else:
+        assert exogibbs_gas_only_x is not None
+        assert fastchem_gas_only_x is not None
+        _plot_l_dwarf_profile_comparison(
+            pressures=pressures,
+            temperatures=temperatures,
+            setup=setup,
+            exogibbs_gas_only_x=exogibbs_gas_only_x,
+            exogibbs_x=exogibbs_x,
+            exogibbs_condensates=exogibbs_condensates,
+            fastchem_gas_only_x=fastchem_gas_only_x,
+            fastchem_x=fastchem_x,
+            fastchem_condensates=fastchem_condensates,
+            output_path=output_path,
+            show=args.show,
+        )
 
 
 if __name__ == "__main__":
