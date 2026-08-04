@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-from _curated_demo_common import plot_curated_family
+from _curated_demo_common import curated_output_path, plot_curated_family
 
 FAMILY = "near_phase_boundary_support_sensitivity"
 GAS_SPECIES = ("H2", "H2O1", "C1O1", "Mg1", "Si1", "Fe1", "Ca1", "Ti1")
@@ -16,7 +14,7 @@ def main() -> None:
         family=FAMILY,
         preferred_gas_species=GAS_SPECIES,
         preferred_condensates=CONDENSATES,
-        output_path=Path(__file__).with_suffix(".png"),
+        output_path=curated_output_path(__file__),
         title_suffix="production fixed-support v2 profile",
     )
     print(f"wrote {output_path}")

@@ -94,6 +94,15 @@ Minimal Example
    print(profile.method)
    print([layer.status for layer in profile.layers])
 
+Curated Examples
+----------------
+
+The repository includes ten production-route examples covering gas-only,
+phase-boundary, silicate, sulfide, graphite, water, and budget-stress cases in
+`examples/condensates_curated_demo <https://github.com/HajimeKawahara/exogibbs/tree/main/examples/condensates_curated_demo>`_.
+These examples run from a source checkout because they reuse the benchmark case
+definitions.
+
 Diagnostics
 -----------
 

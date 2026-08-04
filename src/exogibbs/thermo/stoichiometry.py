@@ -1,6 +1,7 @@
-"""Stoichiometry utilities: build a formula matrices from molecular formulae.
+"""Stoichiometry utilities for building formula matrices.
 
 This module provides:
+
 - A parser that converts chemical formula strings (e.g., "H2O", "C1O2")
   into dictionaries {element: coefficient}.
 - A function to build a formula (stoichiometric) matrix from a DataFrame
@@ -11,9 +12,11 @@ any specific chemical potential source (JANAF, CEA, GGchem, etc.).
 """
 
 from typing import Dict, List, Optional, Sequence, Tuple, Union
+
 import numpy as np
 import pandas as pd
 from scipy.linalg import qr
+
 from exogibbs.utils.nameparser import parse_formula_with_charge, sanitize_formula
 
 
@@ -132,4 +135,3 @@ def contract_formula_matrix(formula_matrix, formula_matrix_cond):
     formula_matrix_cond_eff = formula_matrix_cond[indep_element_mask, :]
     print("Contraction of the system performed.")
     return formula_matrix_gas_eff, formula_matrix_cond_eff, indep_element_mask
-

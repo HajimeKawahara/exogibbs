@@ -120,6 +120,8 @@ def condensate_equilibrium_profile(
         raise ValueError("T and P must be 1D arrays of equal length.")
     if temperatures.shape[0] != pressures.shape[0]:
         raise ValueError("T and P must have the same length.")
+    if temperatures.shape[0] == 0:
+        raise ValueError("T and P must contain at least one profile layer.")
     opts = options or CondensateEquilibriumOptions()
     _validate_options(opts)
     n_layers = int(temperatures.shape[0])

@@ -14,6 +14,8 @@ from pathlib import Path
 import sys
 
 import sphinx_rtd_theme
+from sphinx.application import Sphinx
+from sphinx.ext.apidoc import main as sphinx_apidoc
 
 os.environ["JAX_PLATFORMS"] = "cpu"
 os.environ["JAX_PLATFORM_NAME"] = "cpu"
@@ -21,6 +23,8 @@ os.environ.setdefault("MPLCONFIGDIR", "/tmp/exogibbs_matplotlib")
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 SOURCE_ROOT = REPOSITORY_ROOT / "src"
+PACKAGE_ROOT = SOURCE_ROOT / "exogibbs"
+API_REFERENCE_ROOT = Path(__file__).resolve().parent / "exogibbs"
 sys.path.insert(0, str(SOURCE_ROOT))
 
 import exogibbs
@@ -34,11 +38,32 @@ if imported_exogibbs_root != expected_exogibbs_root:
     )
 
 
+def _generate_api_reference(_app: Sphinx) -> None:
+    """Generate a fresh API reference before Sphinx discovers source files."""
+    sphinx_apidoc(
+        [
+            "--force",
+            "--remove-old",
+            "--tocfile",
+            "index",
+            "--output-dir",
+            str(API_REFERENCE_ROOT),
+            str(PACKAGE_ROOT),
+            str(PACKAGE_ROOT / "exogibbs_version.py"),
+        ]
+    )
+
+
+def setup(app: Sphinx) -> None:
+    """Register documentation build hooks."""
+    app.connect("builder-inited", _generate_api_reference)
+
+
 # -- Project information -----------------------------------------------------
 
-project = "Exogibbs"
+project = "ExoGibbs"
 copyright = "2025, ExoGibbs contributors"
-author = "Exogibbs contributors"
+author = "ExoGibbs contributors"
 
 # The short and full versions, including alpha/beta/rc tags.
 version = "0.4"
@@ -81,8 +106,6 @@ html_logo = "_static/exogibbs_logo.png"
 # html_theme_options = {
 #    'style_nav_header_background': '#333',
 # }
-html_css_files = ["header.css"]
-
 # Sphinx-Gallery
 from sphinx_gallery.sorting import FileNameSortKey
 sphinx_gallery_conf = {

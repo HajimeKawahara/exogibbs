@@ -2,13 +2,13 @@ name: Run pytest
 
 on:
   push:
-    branches: [ "develop", "main" ]
+    branches: [ "develop", "main", "release*" ]
   pull_request:
     branches: [ "develop", "main" ]
 
 permissions:
   checks: write
-  contents: write
+  contents: read
   pull-requests: write
 
 jobs:
@@ -37,7 +37,6 @@ jobs:
         run: |
           mkdir -p results
           pytest tests/unittests --junit-xml results/pytest.xml
-        continue-on-error: true
 
       - name: Upload Unit Test Results
         if: ${{ always() }}
@@ -53,6 +52,36 @@ jobs:
           path: artifacts
 
       - name: Publish Unit Test Results
+        if: ${{ always() }}
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: artifacts/**/*.xml
+
+  docs:
+    name: Build documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package and documentation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[docs]"
+
+      - name: Build documentation
+        run: ./update_doc.sh
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v4
+        with:
+          name: Documentation HTML
+          path: documents/_build/html

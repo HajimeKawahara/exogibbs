@@ -182,6 +182,18 @@ def test_head_v2_rejects_hot_scan_method():
         )
 
 
+def test_head_v2_rejects_empty_profile():
+    setup = _fake_setup()
+
+    with pytest.raises(ValueError, match="at least one profile layer"):
+        condmod.condensate_equilibrium_profile(
+            setup,
+            T=np.asarray([]),
+            P=np.asarray([]),
+            b=jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        )
+
+
 def test_head_v2_empty_initial_support_uses_gas_only_outcome(
     monkeypatch,
 ):

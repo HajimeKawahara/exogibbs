@@ -32,6 +32,8 @@ nk_result = res.x #mixing ratio
 
 - ykb4: number of species: 160     elements: 12
 - fastchem: number of species: 523    elements: 28
+- fastchem4: number of gas species: 422    elements: 28
+- fastchem4_cond: number of condensate species: 219
 
 ## v0.4 validation milestone
 
@@ -57,10 +59,25 @@ also records the restored grid-initializer, analytical H and H/C/O, and
 historical YK B4 regression demonstrations without treating them as extra
 v0.4 acceptance points.
 
+## Documentation
+
+Install the pinned documentation dependencies and build the HTML pages with:
+
+```bash
+python -m pip install -e ".[docs]"
+./update_doc.sh
+```
+
+The generated API reference and HTML output are written under `documents/`
+and are intentionally excluded from version control. CI also publishes the
+HTML output as the `Documentation HTML` artifact.
+
 ExoGibbs is designed to plug into [ExoJAX](https://github.com/HajimeKawahara/exojax) and enable gradient-based equilibrium retrievals.
 It is still in a beta stage, so please use it at your own risk.
 
 
-This package bundles logK data from [FastChem](https://github.com/NewStrangeWorlds/FastChem) in `fastchem` presets,
-which is distributed under the GNU General Public License v3 (GPLv3).
+This package bundles equilibrium-constant and elemental-abundance data from
+[FastChem](https://github.com/NewStrangeWorlds/FastChem) v3.1.3 and v4.0.3 in
+the `fastchem` and `fastchem4` presets. FastChem is distributed under the GNU
+General Public License v3 (GPLv3).
 Accordingly, ExoGibbs is also distributed under the GPLv3 license.
