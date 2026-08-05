@@ -180,9 +180,18 @@ def test_executable_adapter_rejects_invalid_options(
         run_fastchem_executable(**kwargs)
 
 
-def test_executable_adapter_writes_ce_nd_inputs_and_parses_outputs(
+@pytest.mark.parametrize(
+    ("chemistry_mode", "calculation_type"),
+    [
+        ("equilibrium_condensation", "ce"),
+        ("rainout_condensation", "cr"),
+    ],
+)
+def test_executable_adapter_writes_condensation_nd_inputs_and_parses_outputs(
     tmp_path,
     monkeypatch,
+    chemistry_mode,
+    calculation_type,
 ):
     paths = _make_input_files(tmp_path)
 
@@ -208,7 +217,7 @@ def test_executable_adapter_writes_ce_nd_inputs_and_parses_outputs(
         ]
         assert config_values[:6] == [
             "profile.dat",
-            "ce",
+            calculation_type,
             "chemistry.dat condensates.dat",
             "monitor.dat",
             "2",
@@ -251,6 +260,7 @@ def test_executable_adapter_writes_ce_nd_inputs_and_parses_outputs(
         element_abundance_file=paths["element_abundance_file"],
         gas_logk_file=paths["gas_logk_file"],
         condensate_logk_file=paths["condensate_logk_file"],
+        chemistry_mode=chemistry_mode,
         verbosity=2,
     )
 
@@ -267,7 +277,7 @@ def test_executable_adapter_writes_ce_nd_inputs_and_parses_outputs(
     assert result.status is result.convergence_status
     assert result.iterations is result.total_iterations
     assert result.stdout == "FastChem finished!\n"
-    assert result.chemistry_mode == "equilibrium_condensation"
+    assert result.chemistry_mode == chemistry_mode
 
 
 def test_executable_adapter_runs_gas_mode_without_condensate_files(

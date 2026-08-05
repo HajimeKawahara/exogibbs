@@ -2,10 +2,38 @@
 
 from __future__ import annotations
 
-import numpy as np
+import builtins
 
+import numpy as np
+import pytest
+
+from exogibbs.presets import fastchem4 as fastchem4_module
+from exogibbs.presets import fastchem4_cond as fastchem4_cond_module
 from exogibbs.presets.fastchem4 import chemsetup
 from exogibbs.presets.fastchem4_cond import condensate_chemical_setup
+
+
+@pytest.mark.parametrize(
+    "preset_module",
+    (fastchem4_module, fastchem4_cond_module),
+)
+def test_fastchem4_preset_closes_thermochemistry_file(
+    monkeypatch: pytest.MonkeyPatch,
+    preset_module,
+) -> None:
+    streams = []
+
+    def tracking_open(*args, **kwargs):
+        stream = builtins.open(*args, **kwargs)
+        streams.append(stream)
+        return stream
+
+    monkeypatch.setattr(preset_module, "open", tracking_open, raising=False)
+
+    preset_module.chemsetup(silent=True)
+
+    assert streams
+    assert all(stream.closed for stream in streams)
 
 
 def test_fastchem4_gas_setup_uses_packaged_data() -> None:

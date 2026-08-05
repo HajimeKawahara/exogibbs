@@ -45,7 +45,8 @@ def chemsetup(
     )
     float_dtype = setup_float_dtype()
     data_path = get_data_filepath(path)
-    text = open(data_path, "r", encoding="utf-8").read()
+    with open(data_path, "r", encoding="utf-8") as stream:
+        text = stream.read()
     acoeff_molecule, components_molecule, source_records_molecule = (
         _parse_fastchem_coeffs_with_metadata(text, source_file=path)
     )
