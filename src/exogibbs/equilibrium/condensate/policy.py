@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 import math
+from typing import Optional
 
 from exogibbs.equilibrium.condensate.fixed_support.types import (
     ContinuationConfig,
@@ -12,6 +13,7 @@ from exogibbs.equilibrium.condensate.types import (
     FIXED_SUPPORT_V2_VALIDATED_PRESET,
     HEAD_ROUTE_V2,
     CondensateEquilibriumOptions,
+    CondensateProfileMethod,
 )
 
 
@@ -36,6 +38,64 @@ class FixedSupportV2ProductionPolicy:
     max_cold_wall_seconds: float = 960.0
     max_warm_execution_seconds: float = 20.0
     max_warm_wall_seconds: float = 25.0
+    rainout_gauge_minimum_targets: tuple[float, ...] = (
+        1.0e-3,
+        1.0e-4,
+        1.0e-5,
+        1.0e-6,
+        1.0e-7,
+    )
+    rainout_gauge_maximum_total: float = 3.0e8
+    rainout_gauge_total_targets: tuple[float, ...] = (
+        3.0e8,
+        2.0e8,
+        1.0e8,
+        7.0e7,
+        5.0e7,
+        3.0e7,
+        2.0e7,
+        1.0e7,
+        7.0e6,
+        5.0e6,
+        3.0e6,
+        2.0e6,
+        1.0e6,
+        7.0e5,
+        5.0e5,
+        3.0e5,
+        2.0e5,
+        1.0e5,
+        7.0e4,
+        5.0e4,
+        3.0e4,
+        2.0e4,
+        1.0e4,
+        7.0e3,
+        5.0e3,
+        3.0e3,
+        2.0e3,
+        1.0e3,
+        7.0e2,
+        5.0e2,
+        3.0e2,
+        2.0e2,
+        1.0e2,
+        7.0e1,
+        5.0e1,
+        3.0e1,
+        2.0e1,
+        1.0e1,
+        7.0,
+        5.0,
+        3.0,
+        2.0,
+        1.0,
+    )
+    rainout_trace_capacity_relative_tolerance: float = 1.0e-18
+    rainout_trace_condensate_stationarity_tolerance: float = 1.0e-5
+    rainout_trace_exact_retry_scales: int = 8
+    rainout_allow_trace_capacity_acceptance: bool = False
+    rainout_depletion_roundoff_multiplier: float = 64.0
 
 
 def fixed_support_v2_production_policy(
@@ -66,7 +126,11 @@ def fixed_support_v2_production_policy(
     )
 
 
-def validate_condensate_options(options: CondensateEquilibriumOptions) -> None:
+def validate_condensate_options(
+    options: CondensateEquilibriumOptions,
+    *,
+    profile_method: Optional[CondensateProfileMethod] = None,
+) -> None:
     """Validate the compact production-v2 option contract."""
 
     if options.route != HEAD_ROUTE_V2:
@@ -79,9 +143,28 @@ def validate_condensate_options(options: CondensateEquilibriumOptions) -> None:
             "fixed_support_v2_preset must be "
             f"{FIXED_SUPPORT_V2_VALIDATED_PRESET!r}."
         )
-    if options.profile_method not in {None, "auto", "vmap_cold"}:
+    effective_profile_method = (
+        profile_method if profile_method is not None else options.profile_method
+    )
+    if not isinstance(options.rainout, bool):
+        raise TypeError("rainout must be a bool.")
+    if options.rainout and effective_profile_method not in {
+        None,
+        "auto",
+        "scan_hot_from_bottom",
+    }:
         raise ValueError(
-            "profile_method must be None, 'auto', or 'vmap_cold'."
+            "rainout=True requires profile method 'auto' or "
+            "'scan_hot_from_bottom'."
+        )
+    if (
+        not options.rainout
+        and effective_profile_method not in {None, "auto", "vmap_cold"}
+    ):
+        raise ValueError(
+            "head_v2 currently supports profile method 'auto' or "
+            "'vmap_cold' when rainout=False. "
+            "'scan_hot_from_bottom' is reserved for rainout=True."
         )
     if not isinstance(options.return_diagnostics, bool):
         raise TypeError("return_diagnostics must be a bool.")

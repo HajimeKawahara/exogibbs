@@ -39,7 +39,8 @@ def chemsetup(
     """Build a condensate ``ChemicalSetup`` from packaged FastChem4 logK data."""
 
     data_path = get_data_filepath(path)
-    text = open(data_path, "r", encoding="utf-8").read()
+    with open(data_path, "r", encoding="utf-8") as stream:
+        text = stream.read()
     entries = _parse_condensate_logk(text)
     species = [entry.name for entry in entries]
     validity_upper = [float(entry.segments[-1][0]) for entry in entries]

@@ -234,7 +234,11 @@ def polish_gas_log_amounts_for_full_condensate_budget_gate(
     max_iterations: int = 16,
     max_abs_delta_q: float = 2.0,
 ) -> tuple[jnp.ndarray, Mapping[str, Any] | None]:
-    """Restore full element budget by minimally adjusting gas log amounts."""
+    """Return a diagnostic-only gas budget transform.
+
+    Production acceptance deliberately does not call this helper because a
+    gas-only amount correction cannot certify inactive-condensate closure.
+    """
 
     q = np.asarray(gas_ln_n, dtype=np.float64).copy()
     condensates = np.asarray(condensate_amounts, dtype=np.float64)
@@ -378,29 +382,27 @@ def accept_condensate_result_state(
     )
     warning_messages: tuple[str, ...] = ()
     metadata: dict[str, Any] = dict(diagnostics or {})
+    has_positive_condensate = bool(
+        np.any(np.asarray(condensate_amounts_array, dtype=np.float64) > 0.0)
+    )
     if (
         enable_full_condensate_budget_residual_gate
         and element_inventory_target is not None
         and status == CONVERGED
     ):
-        polished_gas_ln_n, polish_report = (
-            polish_gas_log_amounts_for_full_condensate_budget_gate(
-                setup=setup,
-                gas_ln_n=gas_ln_n_array,
-                condensate_amounts=condensate_amounts_array,
-                element_inventory_target=element_inventory_target,
-                relative_tolerance=(
-                    full_condensate_budget_relative_tolerance
-                ),
-                relative_floor=full_condensate_budget_relative_floor,
-            )
-        )
-        if polish_report is not None:
-            metadata["full_condensate_budget_gas_log_amount_polish"] = (
-                polish_report
-            )
-            if bool(polish_report["accepted"]):
-                gas_ln_n_array = polished_gas_ln_n
+        metadata["full_condensate_budget_gas_log_amount_polish"] = {
+            "polish_schema": (
+                "exogibbs_full_condensate_budget_gas_log_amount_polish_v1"
+            ),
+            "triggered": False,
+            "accepted": False,
+            "skip_reason": (
+                "positive_condensate_uses_zero_barrier_joint_kkt"
+                if has_positive_condensate
+                else "gas_only_budget_transform_disabled_requires_resolve"
+            ),
+            "fastchem4_trace_public_runtime_constructor_inputs_used": False,
+        }
 
     gas_n = jnp.exp(gas_ln_n_array)
     gas_ntot = jnp.sum(gas_n)
@@ -423,6 +425,23 @@ def accept_condensate_result_state(
         relative_tolerance=full_condensate_budget_relative_tolerance,
         relative_floor=full_condensate_budget_relative_floor,
     )
+    if has_positive_condensate and status == CONVERGED:
+        lifecycle = metadata.get("fixed_support_v2", {})
+        exact_audit = (
+            lifecycle.get("zero_barrier_active_support_polish")
+            if isinstance(lifecycle, Mapping)
+            else None
+        )
+        if not isinstance(exact_audit, Mapping) or not bool(
+            exact_audit.get("accepted", False)
+        ):
+            metadata["pre_physical_condensate_kkt_audit_status"] = status
+            status = NOT_CONVERGED
+            acceptance_tier = "physical_condensate_kkt_audit_failed"
+            warning_messages = tuple(warning_messages) + (
+                "A positive-condensate state lacked an accepted zero-barrier "
+                "physical KKT audit.",
+            )
     return AcceptedCondensateState(
         gas_ln_n=gas_ln_n_array,
         gas_n=gas_n,

@@ -30,6 +30,13 @@ Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: EXAMPLES:
+
+   ito_2025_rainout_comparison
+   comparison_example_lineage
+
+.. toctree::
+   :maxdepth: 1
    :caption: API:
 
    exogibbs/index.rst
@@ -40,7 +47,6 @@ Contents
 
    v0_4_fastchem4_validation_demo
    fastchem4_production_comparison
-   comparison_example_lineage
 
 License & Attribution
 ---------------------

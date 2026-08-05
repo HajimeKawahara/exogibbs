@@ -35,11 +35,19 @@ _MONITOR_PREFIX = (
     "m(u)",
 )
 _PROFILE_MATCH_RTOL = 1.0e-9
-FastChemChemistryMode = Literal["gas", "equilibrium_condensation"]
+FastChemChemistryMode = Literal[
+    "gas",
+    "equilibrium_condensation",
+    "rainout_condensation",
+]
 _CHEMISTRY_TYPES: dict[FastChemChemistryMode, str] = {
     "gas": "g",
     "equilibrium_condensation": "ce",
+    "rainout_condensation": "cr",
 }
+_CONDENSATION_MODES = frozenset(
+    {"equilibrium_condensation", "rainout_condensation"}
+)
 
 
 @dataclass(frozen=True)
@@ -480,14 +488,15 @@ def _write_config(
     max_internal_iterations: int,
 ) -> None:
     calculation_type = _CHEMISTRY_TYPES[chemistry_mode]
+    uses_condensates = chemistry_mode in _CONDENSATION_MODES
     chemistry_outputs = (
         "chemistry.dat condensates.dat"
-        if chemistry_mode == "equilibrium_condensation"
+        if uses_condensates
         else "chemistry.dat"
     )
     species_inputs = (
         "gas_logk.dat condensate_logk.dat"
-        if chemistry_mode == "equilibrium_condensation"
+        if uses_condensates
         else "gas_logk.dat"
     )
     config = f"""#Atmospheric profile input file
@@ -619,7 +628,7 @@ def run_fastchem_executable(
     max_chemistry_iterations: int = 80_000,
     max_internal_iterations: int = 20_000,
 ) -> FastChemExecutableResult:
-    """Run FastChem gas or equilibrium-condensation chemistry for a profile."""
+    """Run FastChem gas or condensation chemistry for a profile."""
 
     temperature_array, pressure_array = _validate_profile(
         temperatures, pressures
@@ -634,11 +643,12 @@ def run_fastchem_executable(
     )
     gas_logk_path = _resolve_input_file(gas_logk_file, name="gas_logk_file")
     condensate_logk_path: Path | None = None
-    if chemistry_mode_value == "equilibrium_condensation":
+    uses_condensates = chemistry_mode_value in _CONDENSATION_MODES
+    if uses_condensates:
         if condensate_logk_file is None:
             raise ValueError(
                 "condensate_logk_file is required for "
-                "equilibrium_condensation mode."
+                f"{chemistry_mode_value} mode."
             )
         condensate_logk_path = _resolve_input_file(
             condensate_logk_file, name="condensate_logk_file"
@@ -718,7 +728,7 @@ def run_fastchem_executable(
             "chemistry output": work_directory / "chemistry.dat",
             "monitor output": work_directory / "monitor.dat",
         }
-        if chemistry_mode_value == "equilibrium_condensation":
+        if uses_condensates:
             output_paths["condensate output"] = (
                 work_directory / "condensates.dat"
             )
@@ -742,7 +752,7 @@ def run_fastchem_executable(
             output_paths["monitor output"].read_text(encoding="utf-8"),
             source="monitor output",
         )
-        if chemistry_mode_value == "equilibrium_condensation":
+        if uses_condensates:
             condensates = _parse_condensate_output(
                 output_paths["condensate output"].read_text(
                     encoding="utf-8"

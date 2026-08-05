@@ -706,6 +706,37 @@ def _head_v2_kkt_row(kkt_norms: Any, index: int) -> Mapping[str, float]:
     }
 
 
+def _head_v2_zero_barrier_initializer_kkt_passed(
+    kkt: Mapping[str, float],
+    *,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    complementarity_tolerance: float,
+    total_density_tolerance: float,
+) -> bool:
+    """Return whether a finite-barrier state may initialize exact polish.
+
+    Active-condensate stationarity is deliberately omitted: its finite-barrier
+    residual contains the ``mu / m`` bias that the zero-barrier solve removes.
+    The remaining components are only an initializer-quality gate and never a
+    physical acceptance decision.
+    """
+
+    required = (
+        ("gas_stationarity", stationarity_tolerance),
+        ("budget_scaled", budget_tolerance),
+        ("complementarity", complementarity_tolerance),
+        ("total_density_scaled", total_density_tolerance),
+    )
+    return bool(
+        all(
+            math.isfinite(float(kkt[name]))
+            and float(kkt[name]) <= float(tolerance)
+            for name, tolerance in required
+        )
+    )
+
+
 def _resolve_condensate_initial_guess(
     initializer: Optional[CondensateEquilibriumInitializer],
     request: CondensateEquilibriumInitRequest,
@@ -742,6 +773,9 @@ def _run_head_v2_profile(
     )
     from exogibbs.equilibrium.condensate.fixed_support.types import (
         TerminalStatus,
+    )
+    from exogibbs.equilibrium.condensate.fixed_support.zero_barrier import (
+        polish_zero_barrier_active_support,
     )
 
     policy = fixed_support_v2_production_policy(
@@ -974,6 +1008,21 @@ def _run_head_v2_profile(
                     tolerances.total_density_tolerance
                 ),
             )
+            zero_barrier_initializer_kkt_passed = (
+                _head_v2_zero_barrier_initializer_kkt_passed(
+                    independent_kkt,
+                    stationarity_tolerance=(
+                        tolerances.stationarity_tolerance
+                    ),
+                    budget_tolerance=tolerances.budget_tolerance,
+                    complementarity_tolerance=(
+                        tolerances.complementarity_tolerance
+                    ),
+                    total_density_tolerance=(
+                        tolerances.total_density_tolerance
+                    ),
+                )
+            )
             final_state_values_finite = bool(
                 np.asarray(
                     jax.device_get(
@@ -993,6 +1042,9 @@ def _run_head_v2_profile(
                 "added_support_indices": additions,
                 "independent_kkt": independent_kkt,
                 "independent_kkt_passed": independent_kkt_passed,
+                "zero_barrier_initializer_kkt_passed": (
+                    zero_barrier_initializer_kkt_passed
+                ),
                 "final_state_values_finite": final_state_values_finite,
             }
             records[source_index]["rounds"].append(round_record)
@@ -1005,6 +1057,9 @@ def _run_head_v2_profile(
                 "terminal_status": terminal_code,
                 "independent_kkt": independent_kkt,
                 "independent_kkt_passed": independent_kkt_passed,
+                "zero_barrier_initializer_kkt_passed": (
+                    zero_barrier_initializer_kkt_passed
+                ),
                 "final_state_values_finite": final_state_values_finite,
             }
             if not converged[local_index]:
@@ -1117,9 +1172,9 @@ def _run_head_v2_profile(
             full_amounts = jnp.asarray(
                 raw["condensate_amounts"][local_index], dtype=jnp.float64
             )
-            support_amounts = full_amounts[
-                jnp.asarray(support, dtype=jnp.int32)
-            ]
+            gas_log_amounts = jnp.asarray(
+                raw["gas_log_amounts"][local_index], dtype=jnp.float64
+            )
             lifecycle_summary.update(
                 {
                     "terminal_status": output["terminal_status"],
@@ -1134,20 +1189,136 @@ def _run_head_v2_profile(
                     "independent_kkt_passed": output[
                         "independent_kkt_passed"
                     ],
+                    "zero_barrier_initializer_kkt_passed": output[
+                        "zero_barrier_initializer_kkt_passed"
+                    ],
                     "final_state_values_finite": output[
                         "final_state_values_finite"
                     ],
                 }
             )
-            accepted = bool(
+            fixed_support_accepted = bool(
                 output["fixed_support_converged"]
                 and output["support_closed"]
                 and output["independent_kkt_passed"]
                 and output["final_state_values_finite"]
             )
+            exact_initializer_eligible = bool(
+                support
+                and output["support_closed"]
+                and output["zero_barrier_initializer_kkt_passed"]
+                and output["final_state_values_finite"]
+            )
+            rescue_attempted = bool(
+                exact_initializer_eligible and not fixed_support_accepted
+            )
+            initializer_report = {
+                "schema": (
+                    "exogibbs_zero_barrier_initializer_provenance_v1"
+                ),
+                "eligible": exact_initializer_eligible,
+                "attempted": exact_initializer_eligible,
+                "role": "initializer_only",
+                "source": "fixed_support_terminal_state",
+                "rescue_attempted": rescue_attempted,
+                "raw_fixed_support_converged": output[
+                    "fixed_support_converged"
+                ],
+                "raw_support_closed": output["support_closed"],
+                "raw_independent_kkt_passed": output[
+                    "independent_kkt_passed"
+                ],
+                "raw_noncondensate_kkt_passed": output[
+                    "zero_barrier_initializer_kkt_passed"
+                ],
+                "raw_final_state_values_finite": output[
+                    "final_state_values_finite"
+                ],
+                "raw_terminal_status": output["terminal_status"],
+                "raw_terminal_status_name": TerminalStatus(
+                    output["terminal_status"]
+                ).name,
+            }
+            lifecycle_summary["zero_barrier_initializer"] = (
+                initializer_report
+            )
+            accepted = False
+            if exact_initializer_eligible:
+                temperature = float(temperatures[layer_index])
+                upper = condensate_temperature_validity_upper(setup)
+                valid_mask = (
+                    np.ones(len(setup.condensate_species), dtype=bool)
+                    if upper is None
+                    else temperature <= np.asarray(upper, dtype=np.float64)
+                )
+                exact = polish_zero_barrier_active_support(
+                    gas_formula_matrix=setup.formula_matrix,
+                    condensate_formula_matrix_full=(
+                        setup.formula_matrix_cond
+                    ),
+                    target_inventory=b,
+                    gas_standard_source=(
+                        setup.gas_setup.hvector_func(temperature)
+                        + _ln_normalized_pressure(
+                            float(pressures[layer_index]), Pref
+                        )
+                    ),
+                    condensate_standard_source_full=(
+                        setup.condensate_setup.hvector_func(temperature)
+                    ),
+                    gas_log_amounts_init=gas_log_amounts,
+                    condensate_amounts_init=full_amounts,
+                    total_gas_log_amount_init=(
+                        raw["total_gas_log_amount"][local_index]
+                    ),
+                    element_potential_init=(
+                        raw["element_potential"][local_index]
+                    ),
+                    support_indices=support,
+                    condensate_valid_mask=valid_mask,
+                    stationarity_tolerance=(
+                        policy.solver_config.normal.stationarity_tolerance
+                    ),
+                    budget_tolerance=(
+                        policy.solver_config.normal.budget_tolerance
+                    ),
+                    total_density_tolerance=(
+                        policy.solver_config.normal.total_density_tolerance
+                    ),
+                    support_closure_tolerance=(
+                        policy.support_closure_tolerance
+                    ),
+                    budget_relative_floor=policy.budget_relative_floor,
+                )
+                lifecycle_summary[
+                    "zero_barrier_active_support_polish"
+                ] = exact.report
+                accepted = bool(exact.accepted)
+                if accepted:
+                    support = exact.support_indices
+                    gas_log_amounts = jnp.asarray(
+                        exact.gas_log_amounts, dtype=jnp.float64
+                    )
+                    full_amounts = jnp.asarray(
+                        exact.condensate_amounts, dtype=jnp.float64
+                    )
+                    lifecycle_summary["support_indices_after_polish"] = (
+                        support
+                    )
+                    if rescue_attempted:
+                        lifecycle_summary["outcome"] = (
+                            "zero_barrier_active_support_rescued"
+                        )
+                else:
+                    lifecycle_summary["outcome"] = (
+                        "zero_barrier_active_support_polish_failed"
+                    )
+            support_amounts = full_amounts[
+                jnp.asarray(support, dtype=jnp.int32)
+            ]
             result = build_condensate_equilibrium_result_from_solver_payload(
                 setup=setup,
-                gas_ln_n=raw["gas_log_amounts"][local_index],
+                gas_ln_n=gas_log_amounts,
                 support_indices=support,
                 support_amounts=support_amounts,
                 selected_route=CONDENSATE_HEAD_V2_ROUTE_NAME,
