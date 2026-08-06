@@ -214,6 +214,34 @@ class PhysicalAmounts(NamedTuple):
     total_gas: Array
 
 
+class DifferentiableFixedSupportResult(NamedTuple):
+    """Physical zero-barrier solution on one caller-selected support.
+
+    The condensate vector contains only the active columns supplied to the
+    fixed-support kernel.  Catalog support discovery remains a separate,
+    discrete lifecycle operation.
+    """
+
+    gas_log_amounts: Array
+    condensate_amounts: Array
+
+
+class FixedSupportSolveDiagnostics(NamedTuple):
+    """Non-differentiable convergence report for a zero-barrier solve."""
+
+    converged: Array
+    residual_norm: Array
+    iterations: Array
+
+
+class FixedSupportSourceCotangents(NamedTuple):
+    """Cotangents of the zero-barrier thermochemical source arrays."""
+
+    target_inventory: Array
+    gas_source: Array
+    condensate_standard_source: Array
+
+
 class ResidualComponents(NamedTuple):
     """Canonical KKT residual blocks in mathematical equation order."""
 
@@ -531,6 +559,9 @@ __all__ = [
     "NormalTrialSelection",
     "OriginalDirection",
     "OriginalState",
+    "DifferentiableFixedSupportResult",
+    "FixedSupportSolveDiagnostics",
+    "FixedSupportSourceCotangents",
     "PhysicalAmounts",
     "ResidualComponents",
     "RestorationConfig",

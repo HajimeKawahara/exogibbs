@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import jax.numpy as jnp
 
 from exogibbs.equilibrium.condensate.fixed_support.problem import physical_amounts
@@ -39,6 +41,34 @@ def _symmetric_ruiz_equilibration(
 def _scaled_solve(scaled_matrix, scaled_rhs, total_scale):
     scaled_solution = jnp.linalg.solve(scaled_matrix, scaled_rhs)
     return total_scale * scaled_solution
+
+
+def solve_symmetric_reduced_system(
+    matrix: Any,
+    rhs: Any,
+    config: LinearSolverConfig = LinearSolverConfig(),
+) -> Any:
+    """Solve one symmetric reduced system with the canonical scaling policy.
+
+    Both the finite-barrier R-GIE direction and the zero-barrier implicit VJP
+    use symmetric, generally indefinite, reduced systems.  Keeping their Ruiz
+    equilibration and iterative-refinement policy in one helper prevents the
+    forward and adjoint paths from silently acquiring different numerics.
+    """
+
+    scaled_matrix, scaled_rhs, total_scale = _symmetric_ruiz_equilibration(
+        matrix, rhs, config.ruiz_iterations
+    )
+    solution = _scaled_solve(scaled_matrix, scaled_rhs, total_scale)
+    for _ in range(config.iterative_refinement_steps):
+        unscaled_residual = rhs - matrix @ solution
+        correction = _scaled_solve(
+            scaled_matrix,
+            total_scale * unscaled_residual,
+            total_scale,
+        )
+        solution = solution + correction
+    return solution
 
 
 def reduced_direction_from_rhs(
@@ -90,18 +120,7 @@ def reduced_direction_from_rhs(
     rhs = jnp.concatenate(
         [reduced_budget_rhs, reduced_total_rhs.reshape((1,))]
     )
-    scaled_matrix, scaled_rhs, total_scale = _symmetric_ruiz_equilibration(
-        matrix, rhs, config.ruiz_iterations
-    )
-    solution = _scaled_solve(scaled_matrix, scaled_rhs, total_scale)
-    for _ in range(config.iterative_refinement_steps):
-        unscaled_residual = rhs - matrix @ solution
-        correction = _scaled_solve(
-            scaled_matrix,
-            total_scale * unscaled_residual,
-            total_scale,
-        )
-        solution = solution + correction
+    solution = solve_symmetric_reduced_system(matrix, rhs, config)
 
     delta_lambda = solution[:-1]
     delta_qtot = solution[-1]
@@ -186,4 +205,8 @@ def normal_reduced_direction(
     )
 
 
-__all__ = ["normal_reduced_direction", "reduced_direction_from_rhs"]
+__all__ = [
+    "normal_reduced_direction",
+    "reduced_direction_from_rhs",
+    "solve_symmetric_reduced_system",
+]

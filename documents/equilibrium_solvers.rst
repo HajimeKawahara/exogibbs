@@ -148,6 +148,42 @@ raw species requiring a depleted element are not carried into it. A failed
 warm solve is retried cold at the same abundance scale, and no condensate
 support is carried between layers.
 
+Fixed-support reverse mode
+--------------------------
+
+The accepted zero-barrier equations have a JAX-compatible custom VJP once the
+positive condensate support is fixed.  The numerical kernel is available as
+``exogibbs.equilibrium.condensate.fixed_support.minimize_gibbs_fixed_support``.
+It returns gas log amounts and physical amounts for the supplied active
+condensate columns.  Temperature, normalized log pressure, and the elemental
+target are differentiable; formula matrices, support, and initial values are
+held fixed.  Before differentiating, run
+``minimize_gibbs_fixed_support_with_diagnostics`` once and check
+``diagnostics.converged``, ``diagnostics.residual_norm``, and
+``diagnostics.iterations``.  This audit route is separate from the custom-VJP
+result so that diagnostic booleans and counters do not become differentiation
+targets; its returned physical state is for certification, not reverse-mode
+AD.  Differentiate the ordinary ``minimize_gibbs_fixed_support`` result.  The
+requested residual tolerance is floored at ten machine epsilons, so the default
+is also usable when JAX runs in float32 mode.
+The condensate formula matrix, initial amounts, and thermochemical source
+callable must all be restricted to the same support and use the same order;
+slice a full-catalog ``condensate_setup.hvector_func(T)`` before passing it to
+the kernel.
+
+This is a local, piecewise-smooth contract.  Active amounts must remain
+positive, inactive condensate driving forces must remain strictly positive,
+and the reduced zero-barrier KKT matrix must remain nonsingular.  A support or
+temperature-validity change is generally nondifferentiable.  The host-side
+support discovery, support expansion, acceptance gates, and rainout inventory
+propagation are therefore not included in this VJP.  A failed zero-barrier
+solve reports ``diagnostics.converged=False`` on the audit route, while the
+custom VJP returns non-finite source cotangents rather than differentiating an
+uncertified iterate.  Primal convergence alone does not certify a derivative
+when the reduced KKT matrix is singular.  This is a first-order reverse-mode
+contract; forward-mode ``jvp`` and higher-order derivatives are not supported
+by the custom-VJP route.
+
 Execution and JAX Contracts
 ---------------------------
 
@@ -174,7 +210,8 @@ Execution and JAX Contracts
    * - Differentiation
      - Custom VJP supports reverse-mode derivatives; forward-mode ``jvp`` is
        intentionally unsupported
-     - The complete lifecycle is not a differentiable or JIT-compatible
+     - The zero-barrier fixed-support kernel has a custom reverse-mode VJP;
+       the complete lifecycle is not a differentiable or JIT-compatible
        public contract
    * - Diagnostics
      - Optional numerical diagnostics use a distinct solver route
