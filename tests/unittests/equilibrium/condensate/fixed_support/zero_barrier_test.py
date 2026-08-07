@@ -414,27 +414,41 @@ def test_reduced_log_fallback_branches_layer_839_trace_support() -> None:
 
     assert result.accepted
     assert result.support_indices == (0,)
-    assert result.report["selected_numerical_formulation"] == (
-        "reduced_log_domain_support_search"
-    )
-    assert linear_supports == ((0, 1), (1,), ())
-    assert all(
-        amount < 0.0
-        for amount in result.report["attempts"][0][
-            "active_condensate_amounts"
-        ]
-    )
-    assert fallback["accepted"]
-    assert fallback["visited_supports"] == ((0, 1), (1,), (0,))
-    assert tuple(node["accepted"] for node in fallback["nodes"]) == (
-        False,
-        False,
-        True,
-    )
-    assert all(
-        not node["solve"]["greedy_drop_enabled"]
-        for node in fallback["nodes"]
-    )
+    selected = result.report["selected_numerical_formulation"]
+    # BLAS-level differences can reverse the order of two negative amounts
+    # near 1e-27.  Either route is valid if its own audit and closure pass.
+    assert selected in {
+        "capacity_scaled_linear_amounts",
+        "reduced_log_domain_support_search",
+    }
+    assert linear_supports[0] == (0, 1)
+    if selected == "reduced_log_domain_support_search":
+        assert linear_supports == ((0, 1), (1,), ())
+        assert all(
+            amount < 0.0
+            for amount in result.report["attempts"][0][
+                "active_condensate_amounts"
+            ]
+        )
+        assert fallback["accepted"]
+        assert fallback["visited_supports"] == ((0, 1), (1,), (0,))
+        assert tuple(node["accepted"] for node in fallback["nodes"]) == (
+            False,
+            False,
+            True,
+        )
+        assert all(
+            not node["solve"]["greedy_drop_enabled"]
+            for node in fallback["nodes"]
+        )
+    else:
+        assert linear_supports[-1] == (0,)
+        assert result.report["linear_amount_physical_audit"]["accepted"]
+        assert not fallback["attempted"]
+        assert not fallback["accepted"]
+        assert fallback["skip_reason"] == (
+            "linear_amount_physical_audit_accepted"
+        )
     assert reconstructed == pytest.approx(target, rel=1.0e-12)
     assert gas_inventory[1] / target[1] == pytest.approx(
         0.7947931234846488,
@@ -443,6 +457,42 @@ def test_reduced_log_fallback_branches_layer_839_trace_support() -> None:
     assert result.condensate_amounts[0] > 0.0
     assert result.condensate_amounts[1] == 0.0
     assert result.report["full_condensate_driving"][1] > 0.0
+
+    # Exercise the breadth-first fallback independently of the linear route.
+    branched = _solve_reduced_log_domain_support_branches(
+        gas_formula_matrix=gas_formula,
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=target,
+        gas_standard_source=gamma,
+        condensate_standard_source_full=hcond,
+        gas_log_amounts_init=np.log(gas_init),
+        condensate_amounts_init=np.asarray(
+            [0.5 * target[1], 0.25 * target[1]],
+            dtype=np.float64,
+        ),
+        total_gas_log_amount_init=float(np.log(np.sum(gas_init))),
+        element_potential_init=np.zeros(3, dtype=np.float64),
+        support_indices=(0, 1),
+        condensate_valid_mask=np.ones(2, dtype=bool),
+        budget_scale=np.reciprocal(target),
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+        max_function_evaluations=400,
+    )
+    branch_report = branched["report"]
+
+    assert branched["accepted"]
+    assert branched["candidate"]["support_indices"] == (0,)
+    assert branch_report["visited_supports"] == ((0, 1), (1,), (0,))
+    assert tuple(
+        node["accepted"] for node in branch_report["nodes"]
+    ) == (False, False, True)
+    assert all(
+        not node["solve"]["greedy_drop_enabled"]
+        for node in branch_report["nodes"]
+    )
 
 
 def test_reduced_log_support_rejects_active_phase_at_amount_floor() -> None:
