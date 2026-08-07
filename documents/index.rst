@@ -37,6 +37,14 @@ Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: VJP RETRIEVALS:
+
+   ipynb/exojax_nuts_gas_no_grid
+   ipynb/exojax_nuts_gas_grid
+   ipynb/exojax_nuts_condensate_fixed_support
+
+.. toctree::
+   :maxdepth: 1
    :caption: API:
 
    exogibbs/index.rst
