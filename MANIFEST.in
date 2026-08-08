@@ -48,3 +48,6 @@ include src/exogibbs/data/fastchem/element_abundances/README.TXT
 #grids for GridEquilibriumInitializer 
 include src/exogibbs/data/grids/fastchem/grid_exogibbs.nc
 include src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc
+
+# Unvalidated transcription retained in the repository but not distributed
+recursive-exclude src/exogibbs/data/sharp_huebner *

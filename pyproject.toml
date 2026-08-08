@@ -53,6 +53,9 @@ Issues = "https://github.com/HajimeKawahara/exogibbs/issues"
 include-package-data = true
 package-dir = { "" = "src" }
 
+[tool.setuptools.exclude-package-data]
+exogibbs = ["data/sharp_huebner/*"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
