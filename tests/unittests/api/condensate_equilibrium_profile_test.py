@@ -460,6 +460,69 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
     )
 
 
+def test_head_v2_grid_like_gas_init_seeds_exact_gas_solves(
+    monkeypatch,
+):
+    setup = _fake_setup()
+    seed_ln_n = jnp.log(jnp.asarray([0.25, 0.75], dtype=jnp.float64))
+    exact_ln_n = jnp.log(jnp.asarray([0.5, 0.5], dtype=jnp.float64))
+    gas_inits = []
+    activity_gas_states = []
+
+    def fake_gas_equilibrium(*args, **kwargs):
+        gas_inits.append(kwargs.get("init"))
+        return SimpleNamespace(
+            ln_n=exact_ln_n,
+            ntot=jnp.asarray(1.0, dtype=jnp.float64),
+        )
+
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.equilibrium",
+        fake_gas_equilibrium,
+    )
+
+    def fake_element_potential(*, gas_ln_n, **kwargs):
+        activity_gas_states.append(gas_ln_n)
+        return jnp.zeros((2,), dtype=jnp.float64)
+
+    monkeypatch.setattr(
+        _lifecycle,
+        "_least_squares_element_potential",
+        fake_element_potential,
+    )
+    monkeypatch.setattr(
+        (
+            "exogibbs.condensates.support_selection_policy."
+            "select_activity_driven_support_candidates"
+        ),
+        lambda **kwargs: SimpleNamespace(
+            positive_support_indices=(),
+            as_dict=lambda: {},
+        ),
+    )
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=seed_ln_n,
+        gas_ntot=jnp.asarray(1.0, dtype=jnp.float64),
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.5, 0.5], dtype=jnp.float64),
+        init=(initial,),
+    )
+
+    assert result.layers[0].converged
+    assert len(gas_inits) == 2
+    for gas_init in gas_inits:
+        assert gas_init is not None
+        np.testing.assert_allclose(gas_init.ln_nk, seed_ln_n)
+        assert float(gas_init.ln_ntot) == pytest.approx(0.0)
+    assert len(activity_gas_states) == 1
+    np.testing.assert_allclose(activity_gas_states[0], exact_ln_n)
+
+
 def test_head_v2_independent_kkt_gate_rejects_failed_component():
     kkt = {
         "gas_stationarity": 1.0e-9,

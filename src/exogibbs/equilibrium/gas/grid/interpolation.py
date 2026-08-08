@@ -14,6 +14,7 @@ from exogibbs.equilibrium.gas.grid.types import (
     EquilibriumGrid,
     EquilibriumGridInterpolationOptions,
     EquilibriumGridInterpolationResult,
+    EquilibriumGridMetadata,
 )
 from exogibbs.thermo.models import ChemicalSetup
 from exogibbs.utils.elements import element_mass
@@ -133,42 +134,60 @@ def validate_equilibrium_grid_compatibility(
     It raises ``ValueError`` on the first mismatch and returns ``None`` on success.
     Verification-related metadata is intentionally not part of compatibility.
     """
-    if grid.metadata.preset_name != preset_name:
+    _validate_equilibrium_grid_metadata_compatibility(
+        grid.metadata,
+        setup,
+        preset_name,
+        expected_composition_axis_name=expected_composition_axis_name,
+    )
+
+
+def _validate_equilibrium_grid_metadata_compatibility(
+    metadata: EquilibriumGridMetadata,
+    setup: ChemicalSetup,
+    preset_name: str,
+    *,
+    expected_composition_axis_name: str = _COMPOSITION_AXIS_NAME,
+    grid_label: str = "Equilibrium grid",
+) -> None:
+    """Validate grid metadata against a runtime chemical setup."""
+
+    if metadata.preset_name != preset_name:
         raise ValueError(
-            f"Equilibrium grid preset mismatch: grid uses '{grid.metadata.preset_name}' "
+            f"{grid_label} preset mismatch: grid uses '{metadata.preset_name}' "
             f"but runtime requested '{preset_name}'."
         )
-    if grid.metadata.preset_elements != (
+    if metadata.preset_elements != (
         tuple(setup.elements) if setup.elements is not None else None
     ):
         raise ValueError(
-            "Equilibrium grid elements mismatch: grid metadata does not match "
+            f"{grid_label} elements mismatch: grid metadata does not match "
             "the runtime setup.elements ordering/content."
         )
-    if grid.metadata.preset_species != (
+    if metadata.preset_species != (
         tuple(setup.species) if setup.species is not None else None
     ):
         raise ValueError(
-            "Equilibrium grid species mismatch: grid metadata does not match "
+            f"{grid_label} species mismatch: grid metadata does not match "
             "the runtime setup.species ordering/content."
         )
     if not _setup_metadata_matches(
-        grid.metadata.preset_setup_metadata,
+        metadata.preset_setup_metadata,
         setup.metadata,
     ):
         raise ValueError(
-            "Equilibrium grid setup metadata mismatch: a field stored by the "
+            f"{grid_label} setup metadata mismatch: a field stored by the "
             "grid is missing or different in the runtime setup.metadata."
         )
-    if grid.metadata.composition_axis_name != expected_composition_axis_name:
+    if metadata.composition_axis_name != expected_composition_axis_name:
         raise ValueError(
-            "Equilibrium grid composition axis mismatch: "
+            f"{grid_label} composition axis mismatch: "
             f"expected '{expected_composition_axis_name}' but grid stores "
-            f"'{grid.metadata.composition_axis_name}'."
+            f"'{metadata.composition_axis_name}'."
         )
-    if not grid.metadata.matches_setup(setup, preset_name):
+    if not metadata.matches_setup(setup, preset_name):
         raise ValueError(
-            "Equilibrium grid preset signature mismatch: the stored preset/setup "
+            f"{grid_label} preset signature mismatch: the stored preset/setup "
             "signature is not compatible with the runtime setup."
         )
 
@@ -216,6 +235,28 @@ def _interpolate_grid_field(
     return interpolated
 
 
+def _interpolate_equilibrium_grid_field(
+    grid: EquilibriumGrid,
+    field: Array,
+    temperature: float,
+    pressure: float,
+    log10_z_over_z_sun: float,
+    *,
+    options: Optional[EquilibriumGridInterpolationOptions] = None,
+) -> Array:
+    """Interpolate one field on an equilibrium grid."""
+
+    active_options = options or EquilibriumGridInterpolationOptions()
+    return _interpolate_grid_field(
+        grid,
+        field,
+        _as_scalar_query(temperature, "temperature"),
+        _as_scalar_query(pressure, "pressure"),
+        _as_scalar_query(log10_z_over_z_sun, "log10_z_over_z_sun"),
+        active_options,
+    )
+
+
 def interpolate_equilibrium_grid(
     grid: EquilibriumGrid,
     temperature: float,
@@ -231,7 +272,10 @@ def interpolate_equilibrium_grid(
     active_options = options or EquilibriumGridInterpolationOptions()
     temperature_query = _as_scalar_query(temperature, "temperature")
     pressure_query = _as_scalar_query(pressure, "pressure")
-    composition_query = _as_scalar_query(log10_z_over_z_sun, "log10_z_over_z_sun")
+    composition_query = _as_scalar_query(
+        log10_z_over_z_sun,
+        "log10_z_over_z_sun",
+    )
     return EquilibriumGridInterpolationResult(
         ln_n=_interpolate_grid_field(
             grid,

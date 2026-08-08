@@ -42,6 +42,7 @@ Contents
    ipynb/exojax_nuts_gas_no_grid
    ipynb/exojax_nuts_gas_grid
    ipynb/exojax_nuts_condensate_fixed_support
+   ipynb/exojax_nuts_condensate_grid
 
 .. toctree::
    :maxdepth: 1

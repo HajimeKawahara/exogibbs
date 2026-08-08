@@ -95,6 +95,29 @@ def test_build_condensate_chemical_setup_validates_element_order() -> None:
     assert setup.condensate_species == ("H2O_s",)
 
 
+def test_one_layer_solver_forwards_initializer(monkeypatch) -> None:
+    _gas, _condensate, setup = _setup_pair()
+    initializer = object()
+    captured = {}
+
+    def fake_profile(**kwargs):
+        captured.update(kwargs)
+        return type("Profile", (), {"layers": ("layer",)})()
+
+    monkeypatch.setattr(condmod, "_run_head_v2_profile", fake_profile)
+
+    result = condmod.condensate_equilibrium(
+        setup,
+        T=1000.0,
+        P=1.0,
+        b=jnp.asarray([1.0, 1.0]),
+        initializer=initializer,
+    )
+
+    assert result == "layer"
+    assert captured["initializer"] is initializer
+
+
 def test_condensate_chemical_setup_rejects_element_order_mismatch() -> None:
     gas, condensate, _setup = _setup_pair()
     invalid = ChemicalSetup(

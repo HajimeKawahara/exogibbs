@@ -116,6 +116,7 @@ class CondensateEquilibriumInitRequest:
     layer_index: Optional[int] = None
     user_init: Optional[CondensateEquilibriumInit] = None
     previous_solution: Optional[CondensateEquilibriumInit] = None
+    explicit_log10_z_over_z_sun: Optional[float] = None
 
 
 @runtime_checkable

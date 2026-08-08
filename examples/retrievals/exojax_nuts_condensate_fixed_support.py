@@ -33,11 +33,12 @@ The full run is intended for a GPU.  This example never downloads a database.
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import itertools
 import json
 from pathlib import Path
 import sys
+import time
 from typing import Any, Mapping, Optional, Sequence, Union
 
 import jax
@@ -63,8 +64,14 @@ from _exojax_nuts_common import (  # noqa: E402
     write_run_outputs,
 )
 from exogibbs.api.gas import (  # noqa: E402
+    EquilibriumInitRequest,
     EquilibriumOptions,
+    GridEquilibriumInitializer,
     solve_profile as solve_gas_profile,
+)
+from exogibbs.api.condensate import (  # noqa: E402
+    CondensateEquilibriumInitRequest,
+    GridCondensateEquilibriumInitializer,
 )
 from exogibbs.equilibrium.condensate.acceptance import (  # noqa: E402
     least_squares_element_potential,
@@ -108,6 +115,39 @@ MIN_ACTIVE_GRAPHITE_AMOUNT = 1.0e-8
 MIN_INACTIVE_DRIVING_MARGIN = 2.0e-2
 DEFAULT_RELATIVE_NOISE = 2.0e-3
 CONDENSATE_MODEL_SCOPE = "fastchem4_gas_plus_graphite_only"
+GRID_PRESET_NAME = "fastchem4_graphite"
+GRID_COMPOSITION_POINTS = 3
+GRID_EQUIVALENCE_RTOL = 1.0e-8
+GRID_EQUIVALENCE_ATOL = 1.0e-10
+FIXED_GRID_COMPOSITION_AXIS_DEFINITION = (
+    "Physical log10(Z/Zsun) coordinate obtained by scaling only C and O "
+    "together from the carbon-rich retrieval reference inventory."
+)
+
+
+@dataclass(frozen=True)
+class GraphiteGridInitializer:
+    """Gas and fixed-graphite states tabulated over the local prior box."""
+
+    gas_initializer: GridEquilibriumInitializer
+    fixed_initializers: tuple[GridCondensateEquilibriumInitializer, ...]
+
+    @property
+    def grid(self):
+        """Return the shared gas grid for metadata reporting."""
+
+        return self.gas_initializer.grid
+
+
+@dataclass(frozen=True)
+class GraphiteGridProfileInitialValues:
+    """Interpolated gas-only and fixed-graphite profile initial values."""
+
+    gas_log_amounts: Any
+    gas_total_log_amounts: Any
+    fixed_gas_log_amounts: Any
+    fixed_total_log_amounts: Any
+    graphite_amounts: Any
 
 
 @dataclass(frozen=True)
@@ -132,6 +172,8 @@ class GraphiteProfilePlan:
     graphite_seed_amount: float
     nominal_graphite_driving_margin: Any
     nominal_fixed_support_residual: Any
+    grid_initializer: Optional[GraphiteGridInitializer] = None
+    grid_build_seconds: Optional[float] = None
 
     @property
     def active_mask(self) -> np.ndarray:
@@ -183,6 +225,21 @@ def graphite_only_chemical_setup(
         if full_setup is None
         else full_setup
     )
+    if source.gas_setup.element_vector_reference is None:
+        raise ValueError("FastChem4 setup did not provide a reference inventory.")
+    carbon_index = source.elements.index("C")
+    oxygen_index = source.elements.index("O")
+    reference = jnp.asarray(
+        source.gas_setup.element_vector_reference,
+        dtype=jnp.float64,
+    )
+    carbon_rich_reference = reference.at[carbon_index].set(
+        CARBON_TO_OXYGEN_RATIO * reference[oxygen_index]
+    )
+    gas_setup = replace(
+        source.gas_setup,
+        element_vector_reference=carbon_rich_reference,
+    )
     graphite_index = source.condensate_species.index(GRAPHITE_SPECIES)
     source_condensates = source.condensate_setup
     selected_index = jnp.asarray([graphite_index], dtype=jnp.int32)
@@ -221,12 +278,12 @@ def graphite_only_chemical_setup(
         hvector_func=graphite_hvector,
         elements=tuple(source.elements),
         species=(GRAPHITE_SPECIES,),
-        element_vector_reference=source_condensates.element_vector_reference,
+        element_vector_reference=carbon_rich_reference,
         metadata=metadata,
         temperature_validity_upper=selected_validity,
     )
     return build_condensate_chemical_setup(
-        gas_setup=source.gas_setup,
+        gas_setup=gas_setup,
         condensate_setup=reduced_condensates,
     )
 
@@ -259,6 +316,303 @@ def scale_carbon_and_oxygen(
     indices = jnp.asarray([carbon_index, oxygen_index], dtype=jnp.int32)
     scale = jnp.power(jnp.asarray(10.0, dtype=values.dtype), log_co_scale)
     return values.at[indices].set(values[indices] * scale)
+
+
+def _prior_temperature_axis(pressures_bar: Any) -> jax.Array:
+    """Return the sorted union of profile temperatures at all prior corners."""
+
+    temperatures = np.asarray(
+        [
+            float(value)
+            for t0_kelvin, alpha in itertools.product(
+                T0_PRIOR_BOUNDS_K,
+                ALPHA_PRIOR_BOUNDS,
+            )
+            for value in powerlaw_temperature(
+                pressures_bar,
+                t0_kelvin,
+                alpha,
+            )
+        ],
+        dtype=np.float64,
+    )
+    return jnp.asarray(np.unique(temperatures), dtype=jnp.float64)
+
+
+def _gas_grid_temperature_axis(pressures_bar: Any) -> jax.Array:
+    """Return a compact gas-grid axis spanning all profile prior corners."""
+
+    corner_axis = np.asarray(
+        _prior_temperature_axis(pressures_bar),
+        dtype=np.float64,
+    )
+    return jnp.linspace(
+        np.nextafter(corner_axis[0], -np.inf),
+        np.nextafter(corner_axis[-1], np.inf),
+        4,
+        dtype=jnp.float64,
+    )
+
+
+def build_graphite_grid_initializer(
+    plan: GraphiteProfilePlan,
+) -> tuple[GraphiteGridInitializer, float]:
+    """Precompute gas-only and fixed-graphite grids for the local prior."""
+
+    from exogibbs.api import (
+        EquilibriumGrid,
+        EquilibriumGridMetadata,
+        EquilibriumGridOutputs,
+        build_equilibrium_grid,
+        compute_physical_log10_z_over_z_sun,
+    )
+    from exogibbs.api.condensate import (
+        FixedSupportCondensateEquilibriumGrid,
+    )
+
+    setup = plan.setup
+    reference = plan.reference_element_vector
+    log_co_scale_axis = jnp.linspace(
+        LOG_CO_SCALE_PRIOR_BOUNDS[0],
+        LOG_CO_SCALE_PRIOR_BOUNDS[1],
+        GRID_COMPOSITION_POINTS,
+        dtype=jnp.float64,
+    )
+    composition_axis = jnp.asarray(
+        [
+            compute_physical_log10_z_over_z_sun(
+                setup.gas_setup,
+                scale_carbon_and_oxygen(
+                    reference,
+                    plan.carbon_index,
+                    plan.oxygen_index,
+                    log_co_scale,
+                ),
+            )
+            for log_co_scale in log_co_scale_axis
+        ],
+        dtype=jnp.float64,
+    )
+    gas_temperature_axis = _gas_grid_temperature_axis(plan.pressures_bar)
+
+    started = time.perf_counter()
+    gas_grid = build_equilibrium_grid(
+        GRID_PRESET_NAME,
+        gas_temperature_axis,
+        plan.pressures_bar,
+        composition_axis,
+        setup_builder=lambda: setup.gas_setup,
+        options=EquilibriumOptions(
+            epsilon_crit=GAS_RESIDUAL_TOLERANCE,
+            max_iter=GAS_MAX_ITERATIONS,
+        ),
+        verify_exogibbs_against_fastchem=False,
+    )
+    gas_initializer = GridEquilibriumInitializer(
+        grid=gas_grid,
+        preset_name=GRID_PRESET_NAME,
+    )
+    _, formula_matrix_cond, graphite_hvector = _graphite_support_arrays(
+        setup,
+        plan.graphite_species_index,
+    )
+    condensate_metadata = replace(
+        EquilibriumGridMetadata.from_setup(
+            setup.condensate_setup,
+            preset_name=GRID_PRESET_NAME,
+            source="exogibbs",
+            verify_exogibbs_against_fastchem=False,
+        ),
+            composition_axis_definition=(
+                FIXED_GRID_COMPOSITION_AXIS_DEFINITION
+            ),
+    )
+    fixed_initializers = []
+    for layer_index in plan.active_indices:
+        central_pressure = float(plan.pressures_bar[layer_index])
+        fixed_pressure_axis = jnp.asarray(
+            [central_pressure],
+            dtype=jnp.float64,
+        )
+        fixed_temperature_axis = _prior_temperature_axis(
+            jnp.asarray([central_pressure], dtype=jnp.float64)
+        )
+        fixed_q_slices = []
+        fixed_m_slices = []
+        for temperature in fixed_temperature_axis:
+            fixed_q_composition = []
+            fixed_m_composition = []
+            for composition_position, log_co_scale in enumerate(
+                log_co_scale_axis
+            ):
+                inventory = scale_carbon_and_oxygen(
+                    reference,
+                    plan.carbon_index,
+                    plan.oxygen_index,
+                    log_co_scale,
+                )
+                gas_initial = gas_initializer(
+                    EquilibriumInitRequest(
+                        setup=setup.gas_setup,
+                        T=temperature,
+                        P=central_pressure,
+                        b=inventory,
+                        K=len(setup.gas_species),
+                        explicit_log10_z_over_z_sun=(
+                            composition_axis[composition_position]
+                        ),
+                    )
+                )
+                fixed, diagnostics = (
+                    minimize_gibbs_fixed_support_with_diagnostics(
+                        ThermoState(
+                            temperature,
+                            jnp.log(
+                                central_pressure / REFERENCE_PRESSURE_BAR
+                            ),
+                            inventory,
+                        ),
+                        gas_initial.ln_nk,
+                        plan.graphite_amounts_init[
+                            layer_index
+                        ].reshape((1,)),
+                        gas_initial.ln_ntot,
+                        setup.formula_matrix,
+                        formula_matrix_cond,
+                        setup.gas_setup.hvector_func,
+                        graphite_hvector,
+                        residual_crit=CONDENSATE_RESIDUAL_TOLERANCE,
+                        max_iter=CONDENSATE_MAX_ITERATIONS,
+                    )
+                )
+                amount = fixed.condensate_amounts[0]
+                if not bool(
+                    diagnostics.converged
+                    & jnp.isfinite(diagnostics.residual_norm)
+                    & jnp.isfinite(amount)
+                    & (amount > MIN_ACTIVE_GRAPHITE_AMOUNT)
+                ):
+                    raise RuntimeError(
+                        "Fixed-graphite grid construction did not converge at "
+                        f"T={float(temperature)}, P={central_pressure}, "
+                        f"log_co_scale={float(log_co_scale)}."
+                    )
+                fixed_q_composition.append(fixed.gas_log_amounts)
+                fixed_m_composition.append(fixed.condensate_amounts)
+            fixed_q_slices.append(
+                jnp.stack(fixed_q_composition, axis=0)[None, ...]
+            )
+            fixed_m_slices.append(
+                jnp.stack(fixed_m_composition, axis=0)[None, ...]
+            )
+
+        fixed_q = jnp.stack(fixed_q_slices, axis=0)
+        fixed_m = jnp.stack(fixed_m_slices, axis=0)
+        fixed_n = jnp.exp(fixed_q)
+        fixed_ntot = jnp.sum(fixed_n, axis=-1)
+        fixed_gas_grid = EquilibriumGrid(
+            temperature_axis=fixed_temperature_axis,
+            pressure_axis=fixed_pressure_axis,
+            log10_z_over_z_sun_axis=composition_axis,
+            outputs=EquilibriumGridOutputs(
+                ln_n=fixed_q,
+                n=fixed_n,
+                x=fixed_n / jnp.clip(fixed_ntot[..., None], 1.0e-300),
+                ntot=fixed_ntot,
+            ),
+            metadata=replace(
+                gas_grid.metadata,
+                composition_axis_definition=(
+                    FIXED_GRID_COMPOSITION_AXIS_DEFINITION
+                ),
+            ),
+        )
+        fixed_grid = FixedSupportCondensateEquilibriumGrid(
+            gas_grid=fixed_gas_grid,
+            condensate_amounts=fixed_m,
+            support_indices=(plan.graphite_species_index,),
+            condensate_setup_metadata=condensate_metadata,
+        )
+        fixed_initializers.append(
+            GridCondensateEquilibriumInitializer(
+                grid=fixed_grid,
+                preset_name=GRID_PRESET_NAME,
+            )
+        )
+        jax.block_until_ready(fixed_m)
+    elapsed = time.perf_counter() - started
+    return GraphiteGridInitializer(
+        gas_initializer=gas_initializer,
+        fixed_initializers=tuple(fixed_initializers),
+    ), elapsed
+
+
+def interpolate_graphite_grid_initial_values(
+    plan: GraphiteProfilePlan,
+    temperatures: Any,
+    element_vector: Any,
+) -> GraphiteGridProfileInitialValues:
+    """Interpolate gas-only and fixed-graphite states for the profile."""
+
+    if plan.grid_initializer is None:
+        raise ValueError("The profile plan does not have a grid initializer.")
+
+    def interpolate_layer(temperature, pressure):
+        initial = plan.grid_initializer.gas_initializer(
+            EquilibriumInitRequest(
+                setup=plan.setup.gas_setup,
+                T=temperature,
+                P=pressure,
+                b=element_vector,
+                K=len(plan.setup.gas_species),
+            )
+        )
+        return initial.ln_nk, initial.ln_ntot
+
+    gas_q, gas_qtot = jax.vmap(interpolate_layer)(
+        jnp.asarray(temperatures),
+        plan.pressures_bar,
+    )
+    active = jnp.asarray(plan.active_indices, dtype=jnp.int32)
+    if len(plan.grid_initializer.fixed_initializers) != len(
+        plan.active_indices
+    ):
+        raise ValueError(
+            "The fixed grid initializer count must match active_indices."
+        )
+    fixed_values = []
+    for initializer, layer_index in zip(
+        plan.grid_initializer.fixed_initializers,
+        plan.active_indices,
+    ):
+        initial = initializer(
+            CondensateEquilibriumInitRequest(
+                setup=plan.setup,
+                T=jnp.asarray(temperatures)[layer_index],
+                P=plan.pressures_bar[layer_index],
+                b=element_vector,
+            )
+        )
+        fixed_values.append(
+            (
+                initial.gas_ln_n,
+                jnp.log(jnp.clip(initial.gas_ntot, 1.0e-300)),
+                initial.support_amounts[0],
+            )
+        )
+    fixed_q_active = jnp.stack([value[0] for value in fixed_values])
+    fixed_qtot_active = jnp.stack([value[1] for value in fixed_values])
+    graphite_active = jnp.stack([value[2] for value in fixed_values])
+    fixed_q = gas_q.at[active].set(fixed_q_active)
+    fixed_qtot = gas_qtot.at[active].set(fixed_qtot_active)
+    graphite = plan.graphite_amounts_init.at[active].set(graphite_active)
+    return GraphiteGridProfileInitialValues(
+        gas_log_amounts=gas_q,
+        gas_total_log_amounts=gas_qtot,
+        fixed_gas_log_amounts=fixed_q,
+        fixed_total_log_amounts=fixed_qtot,
+        graphite_amounts=graphite,
+    )
 
 
 def _graphite_support_arrays(setup: Any, graphite_index: int):
@@ -413,6 +767,8 @@ def prepare_graphite_profile(
     pressures_bar: Any,
     *,
     setup: Optional[Any] = None,
+    grid_initializer: Optional[GraphiteGridInitializer] = None,
+    grid_build_seconds: Optional[float] = None,
 ) -> GraphiteProfilePlan:
     """Discover and certify the nominal static graphite layer partition."""
 
@@ -424,7 +780,7 @@ def prepare_graphite_profile(
     if not bool(jnp.all(jnp.diff(pressure) > 0.0)):
         raise ValueError("pressures_bar must be ordered from top to bottom.")
 
-    chemistry = graphite_only_chemical_setup(setup)
+    chemistry = graphite_only_chemical_setup() if setup is None else setup
     graphite_index = chemistry.condensate_species.index(GRAPHITE_SPECIES)
     carbon_index = chemistry.elements.index("C")
     oxygen_index = chemistry.elements.index("O")
@@ -541,6 +897,8 @@ def prepare_graphite_profile(
         graphite_seed_amount=seed_amount,
         nominal_graphite_driving_margin=margins,
         nominal_fixed_support_residual=fixed_diagnostics.residual_norm,
+        grid_initializer=grid_initializer,
+        grid_build_seconds=grid_build_seconds,
     )
 
 
@@ -563,6 +921,19 @@ def solve_hybrid_log_amounts(
     _, formula_matrix_cond, graphite_hvector = _graphite_support_arrays(
         plan.setup, plan.graphite_species_index
     )
+    if plan.grid_initializer is None:
+        gas_log_amounts_init = plan.hybrid_log_amounts_init
+        total_gas_log_amounts_init = plan.hybrid_total_log_amounts_init
+        graphite_amounts_init = plan.graphite_amounts_init
+    else:
+        grid_initial = interpolate_graphite_grid_initial_values(
+            plan,
+            temperature,
+            inventory,
+        )
+        gas_log_amounts_init = grid_initial.fixed_gas_log_amounts
+        total_gas_log_amounts_init = grid_initial.fixed_total_log_amounts
+        graphite_amounts_init = grid_initial.graphite_amounts
     result = jnp.zeros_like(plan.hybrid_log_amounts_init)
 
     active = jnp.asarray(plan.active_indices, dtype=jnp.int32)
@@ -589,9 +960,9 @@ def solve_hybrid_log_amounts(
     active_q = jax.vmap(active_layer)(
         temperature[active],
         plan.pressures_bar[active],
-        plan.hybrid_log_amounts_init[active],
-        plan.hybrid_total_log_amounts_init[active],
-        plan.graphite_amounts_init[active],
+        gas_log_amounts_init[active],
+        total_gas_log_amounts_init[active],
+        graphite_amounts_init[active],
     )
     result = result.at[active].set(active_q)
 
@@ -615,8 +986,8 @@ def solve_hybrid_log_amounts(
     inactive_q = jax.vmap(inactive_layer)(
         temperature[inactive],
         plan.pressures_bar[inactive],
-        plan.gas_only_log_amounts[inactive],
-        plan.gas_only_total_log_amounts[inactive],
+        gas_log_amounts_init[inactive],
+        total_gas_log_amounts_init[inactive],
     )
     return result.at[inactive].set(inactive_q)
 
@@ -643,7 +1014,11 @@ def _prior_corners() -> tuple[tuple[float, float, float], ...]:
     )
 
 
-def preflight_graphite_plan(plan: GraphiteProfilePlan) -> dict[str, Any]:
+def preflight_graphite_plan(
+    plan: GraphiteProfilePlan,
+    *,
+    case_name: str = CASE_NAME,
+) -> dict[str, Any]:
     """Check support identity, primal convergence, and reverse-mode gradients."""
 
     nominal_mask = plan.active_mask
@@ -655,6 +1030,11 @@ def preflight_graphite_plan(plan: GraphiteProfilePlan) -> dict[str, Any]:
         else float("inf")
     )
     corner_rows: list[dict[str, Any]] = []
+    maximum_corner_co_vmr_difference = 0.0
+    maximum_grid_fixed_iterations = 0
+    maximum_baseline_fixed_iterations = 0
+    all_grid_primal_equivalent = True
+    all_fixed_iterations_not_greater = True
     for t0_kelvin, alpha, log_co_scale in _prior_corners():
         temperature = powerlaw_temperature(
             plan.pressures_bar, t0_kelvin, alpha
@@ -672,8 +1052,33 @@ def preflight_graphite_plan(plan: GraphiteProfilePlan) -> dict[str, Any]:
                 plan.reference_element_vector.shape[0],
             ),
         )
+        if plan.grid_initializer is None:
+            gas_log_amounts_init = plan.gas_only_log_amounts
+            gas_total_log_amounts_init = plan.gas_only_total_log_amounts
+            fixed_gas_log_amounts_init = plan.hybrid_log_amounts_init
+            fixed_total_log_amounts_init = (
+                plan.hybrid_total_log_amounts_init
+            )
+            graphite_amounts_init = plan.graphite_amounts_init
+        else:
+            grid_initial = interpolate_graphite_grid_initial_values(
+                plan,
+                temperature,
+                inventory,
+            )
+            gas_log_amounts_init = grid_initial.gas_log_amounts
+            gas_total_log_amounts_init = (
+                grid_initial.gas_total_log_amounts
+            )
+            fixed_gas_log_amounts_init = (
+                grid_initial.fixed_gas_log_amounts
+            )
+            fixed_total_log_amounts_init = (
+                grid_initial.fixed_total_log_amounts
+            )
+            graphite_amounts_init = grid_initial.graphite_amounts
         (
-            _gas_q,
+            gas_q,
             gas_diagnostics,
             margins,
             fixed_result,
@@ -684,12 +1089,122 @@ def preflight_graphite_plan(plan: GraphiteProfilePlan) -> dict[str, Any]:
             temperature,
             plan.pressures_bar,
             inventories,
-            plan.gas_only_log_amounts,
-            plan.gas_only_total_log_amounts,
-            plan.graphite_amounts_init,
-            fixed_gas_log_amounts_init=plan.hybrid_log_amounts_init,
-            fixed_total_log_amounts_init=plan.hybrid_total_log_amounts_init,
+            gas_log_amounts_init,
+            gas_total_log_amounts_init,
+            graphite_amounts_init,
+            fixed_gas_log_amounts_init=fixed_gas_log_amounts_init,
+            fixed_total_log_amounts_init=fixed_total_log_amounts_init,
         )
+        baseline_maximum_active_fixed_support_iterations = None
+        baseline_converged = None
+        co_vmr_absolute_difference = None
+        grid_primal_equivalent = True
+        fixed_iterations_not_greater = True
+        if plan.grid_initializer is not None:
+            (
+                baseline_gas_q,
+                baseline_gas_diagnostics,
+                _baseline_margins,
+                baseline_fixed_result,
+                baseline_fixed_diagnostics,
+            ) = _audit_graphite_candidate(
+                plan.setup,
+                plan.graphite_species_index,
+                temperature,
+                plan.pressures_bar,
+                inventories,
+                plan.gas_only_log_amounts,
+                plan.gas_only_total_log_amounts,
+                plan.graphite_amounts_init,
+                fixed_gas_log_amounts_init=plan.hybrid_log_amounts_init,
+                fixed_total_log_amounts_init=(
+                    plan.hybrid_total_log_amounts_init
+                ),
+            )
+            active_mask_array = jnp.asarray(nominal_mask)[:, None]
+            grid_hybrid_q = jnp.where(
+                active_mask_array,
+                fixed_result.gas_log_amounts,
+                gas_q,
+            )
+            baseline_hybrid_q = jnp.where(
+                active_mask_array,
+                baseline_fixed_result.gas_log_amounts,
+                baseline_gas_q,
+            )
+
+            def co_vmr(log_amounts):
+                log_total = jax.scipy.special.logsumexp(
+                    log_amounts,
+                    axis=1,
+                )
+                return jnp.exp(
+                    log_amounts[:, plan.co_species_index] - log_total
+                )
+
+            grid_co_vmr = co_vmr(grid_hybrid_q)
+            baseline_co_vmr = co_vmr(baseline_hybrid_q)
+            co_vmr_absolute_difference = float(
+                jnp.max(jnp.abs(grid_co_vmr - baseline_co_vmr))
+            )
+            grid_primal_equivalent = bool(
+                jnp.allclose(
+                    grid_co_vmr,
+                    baseline_co_vmr,
+                    rtol=GRID_EQUIVALENCE_RTOL,
+                    atol=GRID_EQUIVALENCE_ATOL,
+                )
+            )
+            grid_fixed_iterations = np.asarray(
+                jax.device_get(fixed_diagnostics.iterations)
+            )[nominal_mask]
+            baseline_fixed_iterations = np.asarray(
+                jax.device_get(baseline_fixed_diagnostics.iterations)
+            )[nominal_mask]
+            baseline_fixed_converged = np.asarray(
+                jax.device_get(baseline_fixed_diagnostics.converged),
+                dtype=bool,
+            )[nominal_mask]
+            baseline_fixed_residuals = np.asarray(
+                jax.device_get(baseline_fixed_diagnostics.residual_norm),
+                dtype=float,
+            )[nominal_mask]
+            baseline_converged = bool(
+                jnp.all(baseline_gas_diagnostics["converged"])
+                and np.all(baseline_fixed_converged)
+                and np.all(np.isfinite(baseline_fixed_residuals))
+                and np.max(baseline_fixed_residuals)
+                <= CONDENSATE_RESIDUAL_TOLERANCE
+            )
+            grid_primal_equivalent = (
+                grid_primal_equivalent and baseline_converged
+            )
+            fixed_iterations_not_greater = bool(
+                np.max(grid_fixed_iterations)
+                <= np.max(baseline_fixed_iterations)
+            )
+            baseline_maximum_active_fixed_support_iterations = int(
+                np.max(baseline_fixed_iterations)
+            )
+            maximum_corner_co_vmr_difference = max(
+                maximum_corner_co_vmr_difference,
+                co_vmr_absolute_difference,
+            )
+            maximum_grid_fixed_iterations = max(
+                maximum_grid_fixed_iterations,
+                int(np.max(grid_fixed_iterations)),
+            )
+            maximum_baseline_fixed_iterations = max(
+                maximum_baseline_fixed_iterations,
+                baseline_maximum_active_fixed_support_iterations,
+            )
+            all_grid_primal_equivalent = (
+                all_grid_primal_equivalent and grid_primal_equivalent
+            )
+            all_fixed_iterations_not_greater = (
+                all_fixed_iterations_not_greater
+                and fixed_iterations_not_greater
+            )
         amounts = fixed_result.condensate_amounts[:, 0]
         valid_fixed = (
             fixed_diagnostics.converged
@@ -749,6 +1264,8 @@ def preflight_graphite_plan(plan: GraphiteProfilePlan) -> dict[str, Any]:
             and active_amount_min > MIN_ACTIVE_GRAPHITE_AMOUNT
             and inactive_margin_min > MIN_INACTIVE_DRIVING_MARGIN
             and temperature_valid
+            and grid_primal_equivalent
+            and fixed_iterations_not_greater
         )
         corner_rows.append(
             {
@@ -766,7 +1283,30 @@ def preflight_graphite_plan(plan: GraphiteProfilePlan) -> dict[str, Any]:
                 "minimum_active_graphite_amount": active_amount_min,
                 "minimum_inactive_driving_margin": inactive_margin_min,
                 "graphite_temperature_valid": temperature_valid,
-                "uses_frozen_nuts_initialization": True,
+                "uses_frozen_nuts_initialization": (
+                    plan.grid_initializer is None
+                ),
+                "maximum_gas_iterations": int(
+                    jnp.max(gas_diagnostics["n_iter"])
+                ),
+                "maximum_active_fixed_support_iterations": int(
+                    np.max(
+                        np.asarray(jax.device_get(fixed_diagnostics.iterations))[
+                            nominal_mask
+                        ]
+                    )
+                ),
+                "baseline_maximum_active_fixed_support_iterations": (
+                    baseline_maximum_active_fixed_support_iterations
+                ),
+                "baseline_converged": baseline_converged,
+                "maximum_grid_no_grid_co_vmr_absolute_difference": (
+                    co_vmr_absolute_difference
+                ),
+                "grid_no_grid_primal_equivalent": grid_primal_equivalent,
+                "fixed_support_iterations_not_greater": (
+                    fixed_iterations_not_greater
+                ),
                 "passed": corner_ok,
             }
         )
@@ -789,9 +1329,40 @@ def preflight_graphite_plan(plan: GraphiteProfilePlan) -> dict[str, Any]:
     gradient_finite = bool(
         np.all(np.isfinite(np.asarray(gradient_values, dtype=float)))
     )
+    grid_no_grid_equivalence = (
+        None
+        if plan.grid_initializer is None
+        else {
+            "relative_tolerance": GRID_EQUIVALENCE_RTOL,
+            "absolute_tolerance": GRID_EQUIVALENCE_ATOL,
+            "maximum_corner_co_vmr_absolute_difference": (
+                maximum_corner_co_vmr_difference
+            ),
+            "maximum_grid_fixed_support_iterations": (
+                maximum_grid_fixed_iterations
+            ),
+            "maximum_baseline_fixed_support_iterations": (
+                maximum_baseline_fixed_iterations
+            ),
+            "all_corner_primals_equivalent": all_grid_primal_equivalent,
+            "all_fixed_support_iterations_not_greater": (
+                all_fixed_iterations_not_greater
+            ),
+            "passed": bool(
+                all_grid_primal_equivalent
+                and all_fixed_iterations_not_greater
+            ),
+        }
+    )
     report = {
         "schema": "exogibbs_condensate_fixed_support_nuts_preflight_v1",
-        "case_name": CASE_NAME,
+        "case_name": case_name,
+        "initializer": (
+            "runtime_fastchem4_gas_and_fixed_graphite_grids"
+            if plan.grid_initializer is not None
+            else "frozen_nominal_state"
+        ),
+        "grid_build_seconds": plan.grid_build_seconds,
         "local_fixed_support_contract": True,
         "condensate_model_scope": CONDENSATE_MODEL_SCOPE,
         "condensate_catalog_mode": "reduced_explicit",
@@ -827,9 +1398,36 @@ def preflight_graphite_plan(plan: GraphiteProfilePlan) -> dict[str, Any]:
             "log_co_scale": gradient_values[2],
         },
         "gradient_finite": gradient_finite,
+        "grid_no_grid_equivalence": grid_no_grid_equivalence,
     }
+    if plan.grid_initializer is not None:
+        grid = plan.grid_initializer.grid
+        report["grid_bounds"] = {
+            "temperature_kelvin": [
+                float(jnp.min(grid.temperature_axis)),
+                float(jnp.max(grid.temperature_axis)),
+            ],
+            "pressure_bar": [
+                float(jnp.min(grid.pressure_axis)),
+                float(jnp.max(grid.pressure_axis)),
+            ],
+            "log10_z_over_z_sun": [
+                float(jnp.min(grid.log10_z_over_z_sun_axis)),
+                float(jnp.max(grid.log10_z_over_z_sun_axis)),
+            ],
+        }
+        report["grid_composition_note"] = (
+            "Local fixed-support grids use the retrieval's exact C/O scaling "
+            "rule. The shared gas grid uses canonical uniform-metal scaling "
+            "as an approximate seed at the same physical log10(Z/Zsun)."
+        )
     report["passed"] = bool(
-        gradient_finite and all(row["passed"] for row in corner_rows)
+        gradient_finite
+        and all(row["passed"] for row in corner_rows)
+        and (
+            grid_no_grid_equivalence is None
+            or grid_no_grid_equivalence["passed"]
+        )
     )
     if not report["passed"]:
         failed = [row for row in corner_rows if not row["passed"]]
@@ -910,22 +1508,38 @@ def _json_ready_plan_metadata(plan: GraphiteProfilePlan) -> dict[str, Any]:
         "full_catalog_equilibrium_claimed": False,
         "full_catalog_support_closure_checked": False,
         "element_count": len(plan.setup.elements),
+        "initializer": (
+            "runtime_fastchem4_gas_and_fixed_graphite_grids"
+            if plan.grid_initializer is not None
+            else "frozen_nominal_state"
+        ),
+        "grid_build_seconds": plan.grid_build_seconds,
     }
 
 
-def _preflight_output_path(output_directory: Union[str, Path]) -> Path:
+def _preflight_output_path(
+    output_directory: Union[str, Path],
+    *,
+    case_name: str = CASE_NAME,
+) -> Path:
     output = Path(output_directory)
     output.mkdir(parents=True, exist_ok=True)
-    return output / f"{CASE_NAME}_preflight.json"
+    return output / f"{case_name}_preflight.json"
 
 
-def build_parser() -> argparse.ArgumentParser:
+def build_parser(*, case_name: str = CASE_NAME) -> argparse.ArgumentParser:
     """Build the command-line parser shared with the gas retrieval demos."""
 
-    parser = argparse.ArgumentParser(description=__doc__)
+    description = __doc__
+    if case_name != CASE_NAME:
+        description = (
+            "Run the local graphite fixed-support retrieval with a runtime "
+            "FastChem4 fixed-support grid initializer."
+        )
+    parser = argparse.ArgumentParser(description=description)
     add_common_cli_arguments(
         parser,
-        default_output_dir=Path("results") / "vjp_retrieval" / CASE_NAME,
+        default_output_dir=Path("results") / "vjp_retrieval" / case_name,
     )
     # Eight layers leave a useful gap between the last graphite layer and the
     # first gas-only layer.  Other grids are allowed only when preflight passes.
@@ -946,10 +1560,15 @@ def _print_preflight_summary(report: Mapping[str, Any], path: Path) -> None:
     print(f"  report: {path}")
 
 
-def main(argv: Optional[Sequence[str]] = None) -> None:
-    """Run chemistry preflight and, unless requested otherwise, NUTS."""
+def run_condensate_demo(
+    *,
+    use_grid_initializer: bool,
+    case_name: str,
+    argv: Optional[Sequence[str]] = None,
+) -> None:
+    """Run one fixed-support retrieval with optional grid initialization."""
 
-    parser = build_parser()
+    parser = build_parser(case_name=case_name)
     args = parser.parse_args(argv)
     settings = resolve_run_settings(args)
     nlayer, nu_points = resolve_demo_shape(args)
@@ -965,13 +1584,32 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     else:
         pressures = pressure_profile(nlayer)
 
-    plan = prepare_graphite_profile(pressures)
-    preflight = preflight_graphite_plan(plan)
+    chemistry = graphite_only_chemical_setup()
+    plan = prepare_graphite_profile(
+        pressures,
+        setup=chemistry,
+    )
+    if use_grid_initializer:
+        (
+            grid_initializer,
+            grid_build_seconds,
+        ) = build_graphite_grid_initializer(
+            plan,
+        )
+        plan = replace(
+            plan,
+            grid_initializer=grid_initializer,
+            grid_build_seconds=grid_build_seconds,
+        )
+    preflight = preflight_graphite_plan(plan, case_name=case_name)
     preflight["plan"] = _json_ready_plan_metadata(plan)
     if args.relative_noise <= 0.0:
         raise ValueError("--relative-noise must be positive.")
     if context is None:
-        preflight_path = _preflight_output_path(args.output_dir)
+        preflight_path = _preflight_output_path(
+            args.output_dir,
+            case_name=case_name,
+        )
         preflight_path.write_text(
             json.dumps(preflight, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
@@ -1023,7 +1661,10 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         "alpha": spectral_gradient_values[1],
         "log_co_scale": spectral_gradient_values[2],
     }
-    preflight_path = _preflight_output_path(args.output_dir)
+    preflight_path = _preflight_output_path(
+        args.output_dir,
+        case_name=case_name,
+    )
     preflight_path.write_text(
         json.dumps(preflight, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -1032,7 +1673,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     if args.preflight_only:
         write_run_outputs(
             args.output_dir,
-            case_name=CASE_NAME,
+            case_name=case_name,
             context=context,
             observation=observation,
             metadata={"preflight": preflight},
@@ -1043,7 +1684,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
     mcmc = run_reverse_mode_nuts(model, observation, settings)
     write_run_outputs(
         args.output_dir,
-        case_name=CASE_NAME,
+        case_name=case_name,
         context=context,
         observation=observation,
         mcmc=mcmc,
@@ -1057,7 +1698,17 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             ),
         },
     )
-    print(f"{CASE_NAME}: completed; outputs: {args.output_dir}")
+    print(f"{case_name}: completed; outputs: {args.output_dir}")
+
+
+def main(argv: Optional[Sequence[str]] = None) -> None:
+    """Run the frozen-nominal fixed-support tutorial."""
+
+    run_condensate_demo(
+        use_grid_initializer=False,
+        case_name=CASE_NAME,
+        argv=argv,
+    )
 
 
 if __name__ == "__main__":

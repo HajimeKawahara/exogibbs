@@ -27,6 +27,7 @@ NOTEBOOK_STEMS = (
     "exojax_nuts_gas_no_grid",
     "exojax_nuts_gas_grid",
     "exojax_nuts_condensate_fixed_support",
+    "exojax_nuts_condensate_grid",
 )
 GENERATED_HEADER = (
     ".. This file is generated from the sibling .ipynb by "

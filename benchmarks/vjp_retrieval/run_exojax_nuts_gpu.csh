@@ -9,7 +9,7 @@ endif
 
 if ( $#argv < 1 ) then
   echo "usage: $0 CASE [CO_DATABASE] [demo options]"
-  echo "CASE: gas_no_grid | gas_grid | condensate_fixed_support"
+  echo "CASE: gas_no_grid | gas_grid | condensate_fixed_support | condensate_grid"
   echo "CO_DATABASE may instead be set with EXOJAX_CO_DATABASE."
   exit 2
 endif
@@ -26,9 +26,12 @@ case gas_grid:
 case condensate_fixed_support:
   set RUNNER = examples/retrievals/exojax_nuts_condensate_fixed_support.py
   breaksw
+case condensate_grid:
+  set RUNNER = examples/retrievals/exojax_nuts_condensate_grid.py
+  breaksw
 default:
   echo "ERROR: unknown CASE '$CASE_NAME'"
-  echo "expected gas_no_grid, gas_grid, or condensate_fixed_support"
+  echo "expected gas_no_grid, gas_grid, condensate_fixed_support, or condensate_grid"
   exit 2
 endsw
 
@@ -92,9 +95,12 @@ echo "case:        $CASE_NAME"
 echo "runner:      $RUNNER"
 echo "CO database: $CO_DATABASE"
 echo "output:      $OUTDIR"
-if ( "$CASE_NAME" == "condensate_fixed_support" ) then
+if ( "$CASE_NAME" == "condensate_fixed_support" || "$CASE_NAME" == "condensate_grid" ) then
   echo "model:       FastChem4 gas + reduced C(s)-only condensate catalog"
   echo "             (not full-catalog condensate equilibrium)"
+endif
+if ( "$CASE_NAME" == "condensate_grid" ) then
+  echo "initializer: runtime FastChem4 fixed-support condensate grids"
 endif
 date
 
