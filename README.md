@@ -35,14 +35,26 @@ nk_result = res.x #mixing ratio
 - fastchem4: number of gas species: 422    elements: 28
 - fastchem4_cond: number of condensate species: 219
 
+## v0.5 release highlights
+
+Version 0.5 adds a custom VJP for fixed-support condensate equilibrium,
+opt-in bottom-to-top rainout profiles, condensate grid initialization, and
+end-to-end ExoJAX/NumPyro NUTS examples. The differentiable contract is local
+to a fixed condensate support; support changes and rainout propagation remain
+outside automatic differentiation.
+
+See the [condensate solver guide](https://github.com/HajimeKawahara/exogibbs/blob/main/documents/equilibrium_solvers.rst),
+the [profile and rainout guide](https://github.com/HajimeKawahara/exogibbs/blob/main/documents/condensate_profile.rst),
+and the [Ito et al. (2025) validation](https://github.com/HajimeKawahara/exogibbs/blob/main/documents/ito_2025_rainout_comparison.rst).
+
 ## v0.4 validation milestone
 
 An independent four-point comparison with FastChem 4.0.3 found identical
 major-gas species sets at 0.1 bar and 1200, 1400, 1600, and 1800 K, with
 convergence and elemental-budget closure in both solvers. This supports the
 scoped v0.4 major-gas milestone for the gas phase of the production
-gas-plus-condensate solver. Detailed condensate phase selection remains a
-v0.5 validation target.
+gas-plus-condensate solver. Detailed condensate phase selection was outside
+the scoped v0.4 claim.
 
 See the
 [v0.4 FastChem validation demo](https://github.com/HajimeKawahara/exogibbs/blob/main/documents/v0_4_fastchem4_validation_demo.rst)

@@ -13,7 +13,11 @@ DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR = 1.0e-6
 FIXED_SUPPORT_V2_VALIDATED_PRESET = "validated_2026_07"
 CondensateRoute = Literal["head_v2"]
 CondensateFixedSupportV2Preset = Literal["validated_2026_07"]
-CondensateProfileMethod = Literal["auto", "vmap_cold"]
+CondensateProfileMethod = Literal[
+    "auto",
+    "vmap_cold",
+    "scan_hot_from_bottom",
+]
 CondensateProfileNativeActivitySupportPolicy = Literal[
     "topk_capacity",
     "fastchem_activity_all",
@@ -48,6 +52,7 @@ class CondensateEquilibriumOptions:
     full_condensate_budget_relative_floor: float = (
         DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR
     )
+    rainout: bool = False
 
 
 @dataclass(frozen=True)
@@ -111,6 +116,7 @@ class CondensateEquilibriumInitRequest:
     layer_index: Optional[int] = None
     user_init: Optional[CondensateEquilibriumInit] = None
     previous_solution: Optional[CondensateEquilibriumInit] = None
+    explicit_log10_z_over_z_sun: Optional[float] = None
 
 
 @runtime_checkable
@@ -132,6 +138,11 @@ class CondensateEquilibriumProfileResult:
     method: CondensateProfileMethod
     diagnostics: Optional[Mapping[str, Any]] = None
     batched_arrays: Optional[Mapping[str, Array]] = None
+    rainout: bool = False
+    element_inventory_target: Optional[Array] = None
+    gas_element_inventory: Optional[Array] = None
+    rainout_element_inventory_out: Optional[Array] = None
+    rainout_abundance_scale: Optional[Array] = None
 
 
 @dataclass(frozen=True)

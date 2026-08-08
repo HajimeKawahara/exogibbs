@@ -6,7 +6,7 @@
 ExoGibbs
 ==================================
 
-Version 0.4
+Version 0.5
 
 |:frog:| `DeepWiki for ExoGibbs <https://deepwiki.com/HajimeKawahara/exogibbs>`_
 
@@ -30,6 +30,22 @@ Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: EXAMPLES:
+
+   ito_2025_rainout_comparison
+   comparison_example_lineage
+
+.. toctree::
+   :maxdepth: 1
+   :caption: VJP RETRIEVALS:
+
+   ipynb/exojax_nuts_gas_no_grid
+   ipynb/exojax_nuts_gas_grid
+   ipynb/exojax_nuts_condensate_fixed_support
+   ipynb/exojax_nuts_condensate_grid
+
+.. toctree::
+   :maxdepth: 1
    :caption: API:
 
    exogibbs/index.rst
@@ -40,7 +56,6 @@ Contents
 
    v0_4_fastchem4_validation_demo
    fastchem4_production_comparison
-   comparison_example_lineage
 
 License & Attribution
 ---------------------

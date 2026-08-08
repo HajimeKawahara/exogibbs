@@ -905,6 +905,35 @@ def test_interpolate_equilibrium_grid_returns_species_ordered_state():
     assert jnp.isclose(init.ln_ntot, jnp.log(result.ntot))
 
 
+def test_interpolate_equilibrium_grid_supports_singleton_axes():
+    grid = EquilibriumGrid(
+        temperature_axis=jnp.asarray([1000.0]),
+        pressure_axis=jnp.asarray([1.0]),
+        log10_z_over_z_sun_axis=jnp.asarray([0.0]),
+        outputs=EquilibriumGridOutputs(
+            ln_n=jnp.asarray([[[[-2.0, -3.0]]]]),
+            n=jnp.asarray([[[[0.2, 0.1]]]]),
+            x=jnp.asarray([[[[2.0 / 3.0, 1.0 / 3.0]]]]),
+            ntot=jnp.asarray([[[0.3]]]),
+        ),
+        metadata=EquilibriumGridMetadata(
+            preset_name="fake",
+            preset_setup_metadata={"source": "test"},
+            preset_elements=("H",),
+            preset_species=("A", "B"),
+            source="exogibbs",
+            verify_exogibbs_against_fastchem=False,
+        ),
+    )
+
+    result = interpolate_equilibrium_grid(grid, 1000.0, 1.0, 0.0)
+
+    assert jnp.allclose(result.ln_n, jnp.asarray([-2.0, -3.0]))
+    assert jnp.isclose(result.ntot, 0.3)
+    with pytest.raises(ValueError, match="outside"):
+        interpolate_equilibrium_grid(grid, 1000.0, 2.0, 0.0)
+
+
 def test_equilibrium_grid_interpolate_method_works_after_netcdf_roundtrip(tmp_path):
     grid = EquilibriumGrid(
         temperature_axis=jnp.asarray([1000.0, 2000.0]),

@@ -10,10 +10,13 @@ from exogibbs.equilibrium.condensate import lifecycle as _lifecycle
 from exogibbs.equilibrium.condensate import acceptance as _acceptance
 from exogibbs.equilibrium.condensate.initialization import (
     DefaultCondensateEquilibriumInitializer,
+    FixedSupportCondensateEquilibriumGrid,
+    GridCondensateEquilibriumInitializer,
 )
 from exogibbs.equilibrium.condensate.policy import (
     validate_condensate_options as _validate_options,
 )
+from exogibbs.equilibrium.condensate.profile import run_rainout_profile
 from exogibbs.equilibrium.condensate.setup import (
     CondensateChemicalSetup,
     build_condensate_chemical_setup,
@@ -73,6 +76,7 @@ def condensate_equilibrium(
     support_indices: Optional[Sequence[int]] = None,
     support_amounts_init: Optional[Sequence[float]] = None,
     init: Optional[CondensateEquilibriumInit] = None,
+    initializer: Optional[CondensateEquilibriumInitializer] = None,
     options: Optional[CondensateEquilibriumOptions] = None,
 ) -> CondensateEquilibriumResult:
     """Compute one layer through the production fixed-support v2 route."""
@@ -80,6 +84,11 @@ def condensate_equilibrium(
     opts = options or CondensateEquilibriumOptions()
     validate_condensate_chemical_setup(setup)
     _validate_options(opts)
+    if opts.rainout:
+        raise ValueError(
+            "rainout=True is a dependent profile operation; use "
+            "condensate_equilibrium_profile instead of the one-layer solver."
+        )
     profile = _run_head_v2_profile(
         setup=setup,
         temperatures=np.asarray([T], dtype=np.float64),
@@ -87,7 +96,7 @@ def condensate_equilibrium(
         b=b,
         Pref=Pref,
         explicit_inits=(init,),
-        initializer=None,
+        initializer=initializer,
         support_indices=support_indices,
         support_amounts_init=support_amounts_init,
         options=opts,
@@ -123,7 +132,7 @@ def condensate_equilibrium_profile(
     if temperatures.shape[0] == 0:
         raise ValueError("T and P must contain at least one profile layer.")
     opts = options or CondensateEquilibriumOptions()
-    _validate_options(opts)
+    _validate_options(opts, profile_method=method)
     n_layers = int(temperatures.shape[0])
     if init is None:
         explicit_inits: tuple[CondensateEquilibriumInit | None, ...] = (
@@ -134,11 +143,36 @@ def condensate_equilibrium_profile(
         if len(explicit_inits) != n_layers:
             raise ValueError("init must have one entry per profile layer.")
     requested_method = method if method is not None else opts.profile_method
+    if opts.rainout:
+        if requested_method not in {
+            None,
+            "auto",
+            "scan_hot_from_bottom",
+        }:
+            raise ValueError(
+                "rainout=True requires profile method 'auto' or "
+                "'scan_hot_from_bottom'."
+            )
+        return run_rainout_profile(
+            setup=setup,
+            temperatures=temperatures,
+            pressures=pressures,
+            b=b,
+            Pref=Pref,
+            explicit_inits=explicit_inits,
+            initializer=initializer,
+            support_indices=support_indices,
+            support_amounts_init=support_amounts_init,
+            options=opts,
+            return_diagnostics=(
+                return_diagnostics or opts.return_diagnostics
+            ),
+        )
     if requested_method not in {None, "auto", "vmap_cold"}:
         raise ValueError(
             "head_v2 currently supports profile method 'auto' or "
-            "'vmap_cold'. Support lifecycle remains outside the "
-            "fixed-support solver."
+            "'vmap_cold' when rainout=False. "
+            "'scan_hot_from_bottom' is reserved for rainout=True."
         )
     return _run_head_v2_profile(
         setup=setup,
@@ -175,6 +209,8 @@ __all__ = (
     "CondensateProfileMethod",
     "DefaultCondensateEquilibriumInitializer",
     "ExperimentalCondensateProfileFixedSupportBatchPlan",
+    "FixedSupportCondensateEquilibriumGrid",
+    "GridCondensateEquilibriumInitializer",
     "build_condensate_chemical_setup",
     "build_condensate_equilibrium_result_from_solver_payload",
     "condensate_equilibrium",

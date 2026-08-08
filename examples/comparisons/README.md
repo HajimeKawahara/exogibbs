@@ -12,6 +12,14 @@ production comparison in `benchmarks/fastchem4`:
   `l-dwarf` mode makes a 2-by-2 atmospheric-profile plot with gas and
   condensate rows and FastChem and ExoGibbs columns. Each gas panel overlays
   gas-only equilibrium and the gas phase in equilibrium with condensates.
+- `comparison_with_ito_2025.py` compares the supplied Ito et al. (2025)
+  H/O/Si rainout profile with ExoGibbs and FastChem 4. For each target above
+  the ground, both solvers receive the gas-derived elemental inventory from
+  the one-grid-higher-pressure Ito layer.
+- `comparison_with_ito_2025_rainout.py` uses the Ito Layer 1 gas as the single
+  lower boundary, then propagates each solver's own gas-phase H/O/Si inventory
+  through Layers 2 and above. ExoGibbs uses its bottom-scan rainout option and
+  FastChem uses its native `cr` profile mode.
 
 The historical entry points `comparison_with_fastchem.py`,
 `comparison_with_fastchem_extended.py`, and
@@ -63,6 +71,14 @@ python examples/comparisons/comparison_with_fastchem4_condensates.py \
   --fastchem-executable /path/to/fastchem \
   --profile l-dwarf
 
+python examples/comparisons/comparison_with_ito_2025.py \
+  --fastchem-executable /path/to/fastchem \
+  --input external_data/Ito_2025.xlsx
+
+python examples/comparisons/comparison_with_ito_2025_rainout.py \
+  --fastchem-executable /path/to/fastchem \
+  --input external_data/Ito_2025.xlsx
+
 python examples/comparisons/comparison_with_fastchem_initializer.py \
   --fastchem-executable /path/to/fastchem
 
@@ -73,6 +89,46 @@ python examples/comparisons/comparison_with_ykcode.py
 
 PNG files are written under `results/` by default. Add `--show` to display the
 Matplotlib window.
+
+The Ito comparison excludes Layer 1 because the ground calculation uses a
+different magma-interface and water-solubility system. Target Layer `i >= 2`
+uses the H/O/Si inventory reconstructed from Ito Layer `i - 1`; solver output
+is not recursively propagated. ExoGibbs uses Ito's exact five gas molecules
+and two condensates. FastChem uses the same molecules and condensates but
+necessarily adds the H/O/Si elemental reference gases. Helium remains outside
+equilibrium chemistry and is
+restored with the fixed Ito EOS ratio `He/H2 = 0.1896551724`, including its
+effect on reactive partial pressure. The restartable NPZ, layer CSV, JSON
+summary, and comparison PNG are written under `results/ito_2025/`.
+The ExoGibbs input is uniformly rescaled when rainout leaves a trace element
+below the production solver's absolute numerical floor. This numerical gauge
+does not change H/O/Si ratios or gas mole fractions, and reported condensate
+amounts are scaled back to the original input convention. Minimum element
+gauges are tried from `1e-3` through `1e-7`, using the largest convergent gauge
+for the best trace-species conditioning. Resume checkpoints
+include hashes for the script, workbook, FastChem executable, and both
+thermochemical tables; use `--retry-failed` to repeat only unsuccessful layers.
+The figure uses species-specific panels and clips plotted mole fractions below
+`1e-45`; raw values remain in the CSV and NPZ outputs.
+
+The propagated-rainout comparison also excludes Layer 1 from the shared
+equilibrium solve, but uses its gas composition once as the lower boundary.
+The workbook's ground-to-top Layers 2+ are reversed for the ExoGibbs
+top-to-bottom profile API; the returned arrays are restored to workbook order.
+FastChem receives workbook order directly because native `cr` advances from
+the first row upward. The He pressure correction is a whole-profile fixed
+point for both solvers, so every iteration restarts from the same Layer 1
+boundary. Its CSV, JSON, NPZ, and eight-panel comparison PNG are written under
+`results/ito_2025_rainout/`. The production calculation requires an accepted
+zero-barrier physical refinement for every positive condensate and does not
+accept the legacy trace-capacity terminal tier. Rainout propagation uses
+`b_current - A_cond @ m_cond`; `A_gas @ n_gas` remains an independent
+cross-check. Once an ExoGibbs element target reaches exact zero, reported gas
+species requiring that element are masked and renormalized; the raw gas-element
+inventory remains in the NPZ audit arrays. The CSV, NPZ, JSON, and figure also
+report SiO saturation and support state, conservative-inventory mismatch,
+numerical-depletion events, and gas reintroduction after exact depletion. The
+outputs retain FastChem's per-layer element-conservation mask.
 
 On a typical CPU, the gas-only example finishes in a few seconds. The default
 gas-plus-condensate example runs the real four-layer production lifecycle and

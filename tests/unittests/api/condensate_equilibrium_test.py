@@ -75,6 +75,11 @@ def _build_v2_result(
         head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
         head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
         element_inventory_target=element_inventory_target,
+        diagnostics={
+            "fixed_support_v2": {
+                "zero_barrier_active_support_polish": {"accepted": True}
+            }
+        },
     )
 
 
@@ -88,6 +93,29 @@ def test_build_condensate_chemical_setup_validates_element_order() -> None:
     assert setup.elements == ("H", "O")
     assert setup.gas_species == ("H", "O")
     assert setup.condensate_species == ("H2O_s",)
+
+
+def test_one_layer_solver_forwards_initializer(monkeypatch) -> None:
+    _gas, _condensate, setup = _setup_pair()
+    initializer = object()
+    captured = {}
+
+    def fake_profile(**kwargs):
+        captured.update(kwargs)
+        return type("Profile", (), {"layers": ("layer",)})()
+
+    monkeypatch.setattr(condmod, "_run_head_v2_profile", fake_profile)
+
+    result = condmod.condensate_equilibrium(
+        setup,
+        T=1000.0,
+        P=1.0,
+        b=jnp.asarray([1.0, 1.0]),
+        initializer=initializer,
+    )
+
+    assert result == "layer"
+    assert captured["initializer"] is initializer
 
 
 def test_condensate_chemical_setup_rejects_element_order_mismatch() -> None:
@@ -238,6 +266,11 @@ def test_disabled_full_budget_gate_reports_disabled_state() -> None:
         head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
         element_inventory_target=jnp.asarray([1.0, 1.0]),
         enable_full_condensate_budget_residual_gate=False,
+        diagnostics={
+            "fixed_support_v2": {
+                "zero_barrier_active_support_polish": {"accepted": True}
+            }
+        },
     )
 
     gate = result.diagnostics["full_condensate_budget_residual_gate"]
@@ -298,7 +331,7 @@ def test_gas_log_amount_polish_repairs_trace_budget_residual() -> None:
     assert float(jnp.exp(polished)[1]) < 2.0e-9
 
 
-def test_gas_log_amount_polish_uses_configured_relative_floor() -> None:
+def test_gas_budget_transform_is_disabled_and_raw_state_is_rejected() -> None:
     _gas, _condensate, setup = _setup_pair()
 
     result = build_condensate_equilibrium_result_from_solver_payload(
@@ -318,9 +351,74 @@ def test_gas_log_amount_polish_uses_configured_relative_floor() -> None:
     polish = result.diagnostics[
         "full_condensate_budget_gas_log_amount_polish"
     ]
-    assert result.converged
-    assert polish["accepted"]
-    assert float(result.gas_n[0]) == pytest.approx(1.0e-12)
+    assert not result.converged
+    assert not polish["triggered"]
+    assert polish["skip_reason"] == (
+        "gas_only_budget_transform_disabled_requires_resolve"
+    )
+    assert float(result.gas_n[0]) == pytest.approx(2.0e-12)
+
+
+def test_positive_condensate_requires_zero_barrier_physical_audit() -> None:
+    _gas, _condensate, setup = _setup_pair()
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=(0.0, 0.0),
+        support_indices=(0,),
+        support_amounts=(1.0,),
+        selected_route=CONDENSATE_HEAD_V2_ROUTE_NAME,
+        solver_success=True,
+        element_inventory_target=jnp.asarray([3.0, 2.0]),
+    )
+
+    assert not result.converged
+    assert result.acceptance_tier == "physical_condensate_kkt_audit_failed"
+
+
+def test_gas_budget_transform_never_publishes_a_stationarity_breaking_state() -> None:
+    gas = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0, 2.0]]),
+        hvector_func=lambda temperature: jnp.zeros(2),
+        elements=("A",),
+        species=("A", "A2"),
+    )
+    condensate = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1.0]]),
+        hvector_func=lambda temperature: jnp.zeros(1),
+        elements=("A",),
+        species=("A_s",),
+    )
+    setup = build_condensate_chemical_setup(
+        gas_setup=gas,
+        condensate_setup=condensate,
+    )
+    atomic_fraction = 0.5 * (math.sqrt(5.0) - 1.0)
+    gas_ln_n = jnp.log(
+        jnp.asarray([atomic_fraction, atomic_fraction**2])
+    )
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=gas_ln_n,
+        support_indices=(),
+        support_amounts=(),
+        selected_route="head_v2_gas_only_no_candidate",
+        solver_success=True,
+        element_inventory_target=jnp.asarray([1.3]),
+        full_condensate_budget_relative_tolerance=1.0e-10,
+    )
+
+    polish = result.diagnostics[
+        "full_condensate_budget_gas_log_amount_polish"
+    ]
+    assert not result.converged
+    assert not polish["triggered"]
+    assert not polish["accepted"]
+    assert polish["skip_reason"] == (
+        "gas_only_budget_transform_disabled_requires_resolve"
+    )
+    assert result.gas_ln_n.tolist() == pytest.approx(gas_ln_n.tolist())
 
 
 def test_options_select_only_the_promoted_v2_route() -> None:
@@ -332,6 +430,24 @@ def test_options_select_only_the_promoted_v2_route() -> None:
         condmod._validate_options(
             CondensateEquilibriumOptions(route="head_v1")
         )
+
+
+def test_rainout_option_preserves_existing_positional_field_order() -> None:
+    options = CondensateEquilibriumOptions(
+        "head_v2",
+        "validated_2026_07",
+        "auto",
+        True,
+        False,
+        2.0e-3,
+        2.0e-6,
+    )
+
+    assert options.return_diagnostics is True
+    assert options.enable_full_condensate_budget_residual_gate is False
+    assert options.full_condensate_budget_relative_tolerance == 2.0e-3
+    assert options.full_condensate_budget_relative_floor == 2.0e-6
+    assert options.rainout is False
 
 
 def test_api_init_does_not_import_condensate_equilibrium_by_default() -> None:
