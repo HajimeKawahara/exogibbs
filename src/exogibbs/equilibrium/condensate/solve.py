@@ -10,6 +10,8 @@ from exogibbs.equilibrium.condensate import lifecycle as _lifecycle
 from exogibbs.equilibrium.condensate import acceptance as _acceptance
 from exogibbs.equilibrium.condensate.initialization import (
     DefaultCondensateEquilibriumInitializer,
+    FixedSupportCondensateEquilibriumGrid,
+    GridCondensateEquilibriumInitializer,
 )
 from exogibbs.equilibrium.condensate.policy import (
     validate_condensate_options as _validate_options,
@@ -74,6 +76,7 @@ def condensate_equilibrium(
     support_indices: Optional[Sequence[int]] = None,
     support_amounts_init: Optional[Sequence[float]] = None,
     init: Optional[CondensateEquilibriumInit] = None,
+    initializer: Optional[CondensateEquilibriumInitializer] = None,
     options: Optional[CondensateEquilibriumOptions] = None,
 ) -> CondensateEquilibriumResult:
     """Compute one layer through the production fixed-support v2 route."""
@@ -93,7 +96,7 @@ def condensate_equilibrium(
         b=b,
         Pref=Pref,
         explicit_inits=(init,),
-        initializer=None,
+        initializer=initializer,
         support_indices=support_indices,
         support_amounts_init=support_amounts_init,
         options=opts,
@@ -206,6 +209,8 @@ __all__ = (
     "CondensateProfileMethod",
     "DefaultCondensateEquilibriumInitializer",
     "ExperimentalCondensateProfileFixedSupportBatchPlan",
+    "FixedSupportCondensateEquilibriumGrid",
+    "GridCondensateEquilibriumInitializer",
     "build_condensate_chemical_setup",
     "build_condensate_equilibrium_result_from_solver_payload",
     "condensate_equilibrium",

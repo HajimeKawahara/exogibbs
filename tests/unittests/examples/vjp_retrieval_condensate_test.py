@@ -16,6 +16,8 @@ import pytest
 from exogibbs.equilibrium.condensate.fixed_support.types import (
     DifferentiableFixedSupportResult,
 )
+from exogibbs.equilibrium.condensate.types import CondensateEquilibriumInit
+from exogibbs.equilibrium.gas.types import EquilibriumInit
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
@@ -24,6 +26,12 @@ EXAMPLE_PATH = (
     / "examples"
     / "retrievals"
     / "exojax_nuts_condensate_fixed_support.py"
+)
+GRID_EXAMPLE_PATH = (
+    REPOSITORY_ROOT
+    / "examples"
+    / "retrievals"
+    / "exojax_nuts_condensate_grid.py"
 )
 
 
@@ -52,7 +60,7 @@ def test_example_is_main_guarded_and_states_local_contract():
     assert "rainout" in source
     assert "C/O = 2" in source
     assert "full-catalog equilibrium is not supported" in source
-    assert "fixed_gas_log_amounts_init=plan.hybrid_log_amounts_init" in source
+    assert "fixed_gas_log_amounts_init=fixed_gas_log_amounts_init" in source
 
     guarded_main = [
         node
@@ -68,6 +76,18 @@ def test_example_is_main_guarded_and_states_local_contract():
         )
     ]
     assert len(guarded_main) == 1
+
+
+def test_condensate_grid_wrapper_selects_shared_grid_runner():
+    source = GRID_EXAMPLE_PATH.read_text(encoding="utf-8")
+    common_source = EXAMPLE_PATH.read_text(encoding="utf-8")
+
+    compile(source, str(GRID_EXAMPLE_PATH), "exec")
+    assert "use_grid_initializer=True" in source
+    assert "run_condensate_demo" in source
+    assert "use_grid_initializer=False" in common_source
+    assert "interpolate_graphite_grid_initial_values" in common_source
+    assert "GridCondensateEquilibriumInitializer" in common_source
 
 
 def test_pressure_and_temperature_profiles_match_exojax_convention(
@@ -127,6 +147,71 @@ def test_condensate_model_declares_a_graphite_only_reduced_catalog(
     assert setup.condensate_setup.temperature_validity_upper == (6000.0,)
     assert metadata["temperature_validity_upper"] == (6000.0,)
     assert np.asarray(setup.condensate_setup.hvector_func(1160.0)).shape == (1,)
+    carbon = setup.elements.index("C")
+    oxygen = setup.elements.index("O")
+    reference = setup.gas_setup.element_vector_reference
+    assert float(reference[carbon] / reference[oxygen]) == pytest.approx(2.0)
+
+
+def test_grid_initial_values_are_interpolated_for_each_layer(
+    condensate_example,
+):
+    module = condensate_example
+
+    class FakeGasGridInitializer:
+        def __call__(self, request):
+            return EquilibriumInit(
+                ln_nk=jnp.asarray([request.T, request.P]),
+                ln_ntot=jnp.log(jnp.asarray(2.0)),
+            )
+
+    class FakeFixedGridInitializer:
+        def __call__(self, request):
+            return CondensateEquilibriumInit(
+                gas_ln_n=jnp.asarray([-request.T, -request.P]),
+                gas_ntot=jnp.asarray(3.0),
+                support_indices=(0,),
+                support_amounts=jnp.asarray([request.P]),
+            )
+
+    plan = SimpleNamespace(
+        grid_initializer=SimpleNamespace(
+            gas_initializer=FakeGasGridInitializer(),
+            fixed_initializers=(
+                FakeFixedGridInitializer(),
+                FakeFixedGridInitializer(),
+            ),
+        ),
+        setup=SimpleNamespace(
+            gas_setup=SimpleNamespace(),
+            gas_species=("A", "B"),
+        ),
+        pressures_bar=jnp.asarray([0.1, 1.0, 10.0]),
+        active_indices=(0, 2),
+        graphite_amounts_init=jnp.ones((3,)),
+    )
+    temperatures = jnp.asarray([900.0, 1000.0, 1100.0])
+
+    initial = module.interpolate_graphite_grid_initial_values(
+        plan,
+        temperatures,
+        jnp.asarray([1.0, 0.1]),
+    )
+
+    np.testing.assert_allclose(initial.gas_log_amounts[:, 0], temperatures)
+    np.testing.assert_allclose(
+        initial.gas_log_amounts[:, 1], plan.pressures_bar
+    )
+    np.testing.assert_allclose(initial.gas_total_log_amounts, np.log(2.0))
+    np.testing.assert_allclose(
+        initial.fixed_gas_log_amounts[:, 0],
+        [-900.0, 1000.0, -1100.0],
+    )
+    np.testing.assert_allclose(
+        initial.fixed_total_log_amounts,
+        [np.log(3.0), np.log(2.0), np.log(3.0)],
+    )
+    np.testing.assert_allclose(initial.graphite_amounts, [0.1, 1.0, 10.0])
 
 
 def test_hybrid_solver_uses_static_condensate_and_gas_partitions(

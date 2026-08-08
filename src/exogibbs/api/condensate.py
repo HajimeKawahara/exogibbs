@@ -2,6 +2,8 @@
 
 from exogibbs.equilibrium.condensate.initialization import (
     DefaultCondensateEquilibriumInitializer,
+    FixedSupportCondensateEquilibriumGrid,
+    GridCondensateEquilibriumInitializer,
 )
 from exogibbs.equilibrium.condensate.setup import (
     CondensateChemicalSetup,
@@ -47,6 +49,8 @@ __all__ = (
     "CondensateFixedSupportV2Preset",
     "CondensateProfileMethod",
     "DefaultCondensateEquilibriumInitializer",
+    "FixedSupportCondensateEquilibriumGrid",
+    "GridCondensateEquilibriumInitializer",
     "build_condensate_chemical_setup",
     "solve",
     "solve_profile",

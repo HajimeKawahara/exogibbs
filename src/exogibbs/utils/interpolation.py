@@ -23,6 +23,10 @@ def interp1d(xq: Array, x: Array, y: Array, method: str = "linear") -> Array:
 def _bracket(axis: Array, query: Array, extrap: Union[bool, float, Tuple[object, ...]]):
     axis = jnp.asarray(axis)
     query = jnp.asarray(query)
+    if axis.shape[0] == 1:
+        index = jnp.asarray(0, dtype=jnp.int32)
+        outside = (query != axis[0]) if extrap is False else jnp.asarray(False)
+        return index, index, jnp.zeros_like(query), outside
     upper = jnp.searchsorted(axis, query, side="right")
     upper = jnp.clip(upper, 1, axis.shape[0] - 1)
     lower = upper - 1

@@ -60,7 +60,7 @@ from exogibbs.equilibrium.condensate.types import (
     ExperimentalCondensateProfileFixedSupportBatchPlan,
     HeadV2LayerState,
 )
-from exogibbs.equilibrium.gas.types import ThermoState
+from exogibbs.equilibrium.gas.types import EquilibriumInit, ThermoState
 
 
 _ExperimentalProfileFixedSupportBatchPlan = (
@@ -174,6 +174,31 @@ def _ln_normalized_pressure(pressure: float, reference_pressure: float) -> Array
     return jnp.log(jnp.asarray(pressure) / jnp.asarray(reference_pressure))
 
 
+def _gas_init_from_condensate_init(
+    init: CondensateEquilibriumInit | None,
+    *,
+    gas_species_count: int,
+) -> EquilibriumInit | None:
+    """Return a valid gas-solver seed from a condensate initializer."""
+
+    if init is None or init.gas_ln_n is None or init.gas_ntot is None:
+        return None
+    gas_ln_n = jnp.asarray(init.gas_ln_n, dtype=jnp.float64)
+    gas_ntot = jnp.asarray(init.gas_ntot, dtype=jnp.float64)
+    if (
+        gas_ln_n.shape != (gas_species_count,)
+        or gas_ntot.ndim != 0
+        or not bool(jnp.all(jnp.isfinite(gas_ln_n)))
+        or not bool(jnp.isfinite(gas_ntot))
+        or float(gas_ntot) <= 0.0
+    ):
+        return None
+    return EquilibriumInit(
+        ln_nk=gas_ln_n,
+        ln_ntot=jnp.log(gas_ntot),
+    )
+
+
 def _solver_log_state_from_condensate_init(
     init: CondensateEquilibriumInit | None,
     *,
@@ -261,6 +286,7 @@ def _native_activity_expanded_profile_support_payload(
     activity_gas_ln_n: Sequence[float] | Array | None = None,
     activity_gas_ntot: Sequence[float] | Array | float | None = None,
     activity_gas_stationarity_source: Sequence[float] | Array | None = None,
+    gas_equilibrium_init: EquilibriumInit | None = None,
 ) -> tuple[tuple[int, ...], tuple[float, ...], Mapping[str, Any]]:
     from exogibbs.equilibrium.gas.solve import equilibrium
     from exogibbs.equilibrium.gas.types import EquilibriumOptions
@@ -307,6 +333,7 @@ def _native_activity_expanded_profile_support_payload(
             float(P),
             jnp.asarray(b, dtype=jnp.float64),
             Pref=Pref,
+            init=gas_equilibrium_init,
             options=EquilibriumOptions(),
             return_diagnostics=False,
         )
@@ -787,6 +814,7 @@ def _run_head_v2_profile(
     ]
     pending: dict[int, _HeadV2LayerState] = {}
     gas_only_layers: set[int] = set()
+    initial_guesses: list[CondensateEquilibriumInit] = []
     for layer_index in range(n_layers):
         initial_guess = _resolve_condensate_initial_guess(
             initializer,
@@ -800,6 +828,11 @@ def _run_head_v2_profile(
                 user_init=explicit_inits[layer_index],
                 previous_solution=None,
             ),
+        )
+        initial_guesses.append(initial_guess)
+        gas_equilibrium_init = _gas_init_from_condensate_init(
+            initial_guess,
+            gas_species_count=len(setup.gas_species),
         )
         if support_indices is not None:
             if support_amounts_init is None:
@@ -857,6 +890,7 @@ def _run_head_v2_profile(
             activity_gas_ln_n=None,
             activity_gas_ntot=None,
             activity_gas_stationarity_source=None,
+            gas_equilibrium_init=gas_equilibrium_init,
         )
         base_amount_by_index = {
             int(index): float(amount)
@@ -1136,12 +1170,17 @@ def _run_head_v2_profile(
             "production_preset_promoted": True,
         }
         if layer_index in gas_only_layers:
+            gas_equilibrium_init = _gas_init_from_condensate_init(
+                initial_guesses[layer_index],
+                gas_species_count=len(setup.gas_species),
+            )
             gas_result = equilibrium(
                 setup.gas_setup,
                 float(temperatures[layer_index]),
                 float(pressures[layer_index]),
                 jnp.asarray(b, dtype=jnp.float64),
                 Pref=Pref,
+                init=gas_equilibrium_init,
                 options=EquilibriumOptions(),
                 return_diagnostics=False,
             )
