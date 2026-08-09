@@ -2,8 +2,9 @@
 
 The comparison examples have two distinct roles.
 
-The current FastChem 4 scripts are readable companions to the formal
-production comparison in `benchmarks/fastchem4`:
+The current scripts include readable companions to the formal FastChem 4
+production comparison in `benchmarks/fastchem4` and focused literature
+demonstrations:
 
 - `comparison_with_fastchem4_gas.py` compares two gas-only calculations over
   a pressure profile.
@@ -16,6 +17,11 @@ production comparison in `benchmarks/fastchem4`:
   reduced H/He/K/Cl and H/He/Na/S systems at 1 bar. It checks the Visscher et
   al. (2006) Na2S and Morley et al. (2012) KCl analytic fits and optionally
   compares the same local-equilibrium catalogs with FastChem 4.
+- `comparison_with_visscher_2010_forsterite_enstatite.py` compares two
+  one-bar reduced protosolar systems that differ only by whether enstatite is
+  an allowed condensate. It demonstrates forsterite formation, enstatite
+  takeover, silica suppression, and the alternative silica phase when
+  enstatite is excluded.
 - `comparison_with_ito_2025.py` compares the supplied Ito et al. (2025)
   H/O/Si rainout profile with ExoGibbs and FastChem 4. For each target above
   the ground, both solvers receive the gas-derived elemental inventory from
@@ -30,11 +36,11 @@ The historical entry points `comparison_with_fastchem.py`,
 `comparison_with_fastchem_cond.py` are retained as small compatibility
 wrappers around these current implementations.
 
-They replace the historical PyFastChem 3 examples with the current ExoGibbs
-public APIs and an independently built FastChem 4 standalone executable.
-FastChem results are aligned and plotted only after ExoGibbs has solved; they
-are never used as ExoGibbs constructor, initialization, support-selection,
-retry, or route inputs.
+The scripts that invoke FastChem 4 replace the historical PyFastChem 3
+examples with the current ExoGibbs public APIs and an independently built
+FastChem 4 standalone executable. FastChem results are aligned and plotted
+only after ExoGibbs has solved; they are never used as ExoGibbs constructor,
+initialization, support-selection, retry, or route inputs.
 
 Four restored examples preserve older validation lineages:
 
@@ -77,6 +83,8 @@ python examples/comparisons/comparison_with_fastchem4_condensates.py \
 
 python examples/comparisons/comparison_with_visscher_2006_na2s_morley_2012_kcl.py \
   --fastchem-executable /path/to/fastchem
+
+python examples/comparisons/comparison_with_visscher_2010_forsterite_enstatite.py
 
 python examples/comparisons/comparison_with_ito_2025.py \
   --fastchem-executable /path/to/fastchem \
