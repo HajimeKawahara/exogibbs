@@ -32,6 +32,7 @@ Contents
    :maxdepth: 1
    :caption: EXAMPLES:
 
+   visscher_2006_na2s_morley_2012_kcl
    ito_2025_rainout_comparison
    comparison_example_lineage
 
