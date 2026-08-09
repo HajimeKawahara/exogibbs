@@ -35,6 +35,7 @@ Contents
    visscher_2006_na2s_morley_2012_kcl
    visscher_2010_forsterite_enstatite_competition
    ito_2025_rainout_comparison
+   fe_fes_rainout_demo
    comparison_example_lineage
 
 .. toctree::
