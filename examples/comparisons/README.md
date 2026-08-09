@@ -12,6 +12,10 @@ production comparison in `benchmarks/fastchem4`:
   `l-dwarf` mode makes a 2-by-2 atmospheric-profile plot with gas and
   condensate rows and FastChem and ExoGibbs columns. Each gas panel overlays
   gas-only equilibrium and the gas phase in equilibrium with condensates.
+- `comparison_with_visscher_2006_na2s_morley_2012_kcl.py` scans independent
+  reduced H/He/K/Cl and H/He/Na/S systems at 1 bar. It checks the Visscher et
+  al. (2006) Na2S and Morley et al. (2012) KCl analytic fits and optionally
+  compares the same local-equilibrium catalogs with FastChem 4.
 - `comparison_with_ito_2025.py` compares the supplied Ito et al. (2025)
   H/O/Si rainout profile with ExoGibbs and FastChem 4. For each target above
   the ground, both solvers receive the gas-derived elemental inventory from
@@ -70,6 +74,9 @@ python examples/comparisons/comparison_with_fastchem4_condensates.py \
 python examples/comparisons/comparison_with_fastchem4_condensates.py \
   --fastchem-executable /path/to/fastchem \
   --profile l-dwarf
+
+python examples/comparisons/comparison_with_visscher_2006_na2s_morley_2012_kcl.py \
+  --fastchem-executable /path/to/fastchem
 
 python examples/comparisons/comparison_with_ito_2025.py \
   --fastchem-executable /path/to/fastchem \
