@@ -30,6 +30,10 @@ demonstrations:
   lower boundary, then propagates each solver's own gas-phase H/O/Si inventory
   through Layers 2 and above. ExoGibbs uses its bottom-scan rainout option and
   FastChem uses its native `cr` profile mode.
+- `demo_fe_fes_rainout.py` solves the same reduced one-bar H/Fe/S profile as
+  independent local equilibria and as a dependent bottom-to-top rainout scan.
+  Retained iron forms FeS and removes H2S at low temperature; rainout depletes
+  iron first, suppressing FeS and leaving H2S in the gas.
 
 The historical entry points `comparison_with_fastchem.py`,
 `comparison_with_fastchem_extended.py`, and
@@ -93,6 +97,8 @@ python examples/comparisons/comparison_with_ito_2025.py \
 python examples/comparisons/comparison_with_ito_2025_rainout.py \
   --fastchem-executable /path/to/fastchem \
   --input external_data/Ito_2025.xlsx
+
+python examples/comparisons/demo_fe_fes_rainout.py
 
 python examples/comparisons/comparison_with_fastchem_initializer.py \
   --fastchem-executable /path/to/fastchem
