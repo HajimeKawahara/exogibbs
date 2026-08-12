@@ -92,7 +92,14 @@ class AcceptedCondensateState:
 
 @dataclass(frozen=True)
 class CondensateEquilibriumInit:
-    """Optional condensate profile initial guess for one layer."""
+    """Optional caller-gauge initial guess for one condensate layer.
+
+    ``gas_ln_n``, ``gas_ntot``, ``condensate_amounts``, and
+    ``support_amounts`` describe amounts in the caller's gauge.
+    ``barrier_epsilon`` is ``log(nu)`` in the same gauge and shifts by
+    ``log(s)`` when those amounts are uniformly scaled by ``s``.
+    ``element_potential`` and ``rho`` are intensive and remain unchanged.
+    """
 
     gas_ln_n: Optional[Array] = None
     gas_ntot: Optional[Array] = None
@@ -106,7 +113,11 @@ class CondensateEquilibriumInit:
 
 @dataclass(frozen=True)
 class CondensateEquilibriumInitRequest:
-    """Inputs available to a condensate profile initializer for one layer."""
+    """Inputs available to a condensate profile initializer for one layer.
+
+    ``b`` uses the caller's amount gauge. Initializers must express all
+    gauge-dependent fields in that same gauge.
+    """
 
     setup: CondensateChemicalSetup
     T: float

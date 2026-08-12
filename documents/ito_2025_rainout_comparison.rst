@@ -83,9 +83,10 @@ Numerical stability checks
 --------------------------
 
 The low-pressure trace inventory is more demanding than the visual agreement
-of the major gases. Oxygen falls below the ordinary solver budget floor from
-Layer 494 onward and reaches approximately ``9.97e-40`` at Layer 856. The
-recorded profile nevertheless passed every declared rerun criterion:
+of the major gases. In the canonical amount-gauge audit, oxygen falls below
+the configured caller-gauge budget floor from Layer 187 onward and reaches
+approximately ``9.97e-40`` at Layer 856. The recorded profile nevertheless
+passed every declared rerun criterion:
 
 .. list-table::
    :header-rows: 1
@@ -98,10 +99,10 @@ recorded profile nevertheless passed every declared rerun criterion:
      - 855 / 855
      - 855 / 855
    * - Maximum ``|ln S|`` for supported positive ``SiO(s)``
-     - ``1.14e-13``
+     - ``1.42e-13``
      - ``1e-5``
    * - Maximum positive-target relative inventory mismatch
-     - ``5.04e-14``
+     - ``1.04e-13``
      - ``1e-3``
    * - Positive-to-exact-zero depletion events
      - 0

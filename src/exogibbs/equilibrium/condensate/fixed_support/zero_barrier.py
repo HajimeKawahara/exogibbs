@@ -7,12 +7,23 @@ from dataclasses import dataclass
 from typing import Any, Sequence
 
 import numpy as np
-from scipy.optimize import least_squares
+from scipy.optimize import least_squares, linprog, minimize
 from scipy.special import logsumexp
 
 
 _INITIALIZER_CAPACITY_FRACTION = float(np.sqrt(np.finfo(np.float64).eps))
 _REDUCED_SUPPORT_NODE_LIMIT = 32
+_ACTIVE_SET_CLOSURE_ROUND_LIMIT = 8
+_BASIC_SUPPORT_LP_ITERATION_LIMIT = 1000
+_BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR = 64.0 * np.finfo(np.float64).eps
+_FINITE_BARRIER_HOMOTOPY_CENTRALITY_TOLERANCE = 1.0e-4
+_FINITE_BARRIER_HOMOTOPY_RESIDUAL_TOLERANCE = 1.0e-8
+_FINITE_BARRIER_HOMOTOPY_MINIMUM_GAP_RATIO = 4.0
+_FINITE_BARRIER_HOMOTOPY_MAXIMUM_STEP_COUNT = 12
+_FINITE_BARRIER_HOMOTOPY_MAX_NFEV_PER_STEP = 100
+_DUAL_SUPPORT_ORACLE_ITERATION_LIMIT = 200
+_DUAL_SUPPORT_ORACLE_FEASIBILITY_TOLERANCE = 1.0e-10
+_SIMPLEX_PIVOT_INVENTORY_RESIDUAL_TOLERANCE = 1.0e-10
 
 
 def _least_squares_with_scipy_overflow_guard(*args: Any, **kwargs: Any) -> Any:
@@ -41,6 +52,36 @@ class ZeroBarrierPolishResult:
     report: dict[str, Any]
 
 
+@dataclass
+class _FunctionEvaluationBudget:
+    """Shared hard limit for nonlinear evaluations in one active-set search."""
+
+    limit: int
+    used: int = 0
+
+    @property
+    def remaining(self) -> int:
+        return max(int(self.limit) - int(self.used), 0)
+
+    def consume(self, count: int) -> None:
+        evaluations = int(count)
+        if evaluations < 0 or evaluations > self.remaining:
+            raise RuntimeError("Invalid zero-barrier function-evaluation count.")
+        self.used += evaluations
+
+
+def _function_evaluation_call_limit(
+    max_function_evaluations: int,
+    budget: _FunctionEvaluationBudget | None,
+) -> int:
+    """Return the remaining per-call evaluation allowance."""
+
+    call_limit = int(max_function_evaluations)
+    if budget is not None:
+        call_limit = min(call_limit, budget.remaining)
+    return max(call_limit, 0)
+
+
 def _maximum_condensate_amount_scales(
     condensate_formula_matrix: np.ndarray,
     target_inventory: np.ndarray,
@@ -66,6 +107,1075 @@ def _maximum_condensate_amount_scales(
     return np.asarray(scales, dtype=np.float64)
 
 
+class _DualSupportOracleEvaluationLimit(RuntimeError):
+    """Internal stop raised when the shared nonlinear budget is exhausted."""
+
+
+def _select_support_with_zero_barrier_dual(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    condensate_valid_mask: np.ndarray,
+    stationarity_tolerance: float,
+    support_closure_tolerance: float,
+    max_function_evaluations: int,
+    enabled: bool,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> dict[str, Any]:
+    """Select a zero-barrier support from the convex thermodynamic dual.
+
+    Structural zero rows and the species that consume them are removed.  On
+    the remaining physical gas branch, the dual maximizes the target-weighted
+    element potential subject to gas normalization and nonnegative driving
+    for every temperature-valid condensate.  The selected tight constraints
+    are only an initializer: an independent exact solve and full physical
+    audit remain authoritative.
+    """
+
+    ag_full = np.asarray(gas_formula_matrix, dtype=np.float64)
+    ac_full = np.asarray(
+        condensate_formula_matrix_full, dtype=np.float64
+    )
+    target_full = np.asarray(target_inventory, dtype=np.float64)
+    gamma_full = np.asarray(gas_standard_source, dtype=np.float64)
+    hcond_full = np.asarray(
+        condensate_standard_source_full, dtype=np.float64
+    )
+    q_initial_full = np.asarray(
+        gas_log_amounts_init, dtype=np.float64
+    )
+    amounts_initial_full = np.asarray(
+        condensate_amounts_init, dtype=np.float64
+    )
+    lambda_initial_full = np.asarray(
+        element_potential_init, dtype=np.float64
+    )
+    valid_mask = np.asarray(condensate_valid_mask, dtype=bool)
+    base_report: dict[str, Any] = {
+        "schema": "exogibbs_zero_barrier_dual_support_oracle_v1",
+        "role": "initializer_support_selection_only",
+        "enabled": bool(enabled),
+        "eligible": False,
+        "attempted": False,
+        "applied": False,
+        "method": "scipy_slsqp_convex_dual_gas_boundary",
+        "iteration_limit": _DUAL_SUPPORT_ORACLE_ITERATION_LIMIT,
+        "feasibility_tolerance": (
+            _DUAL_SUPPORT_ORACLE_FEASIBILITY_TOLERANCE
+        ),
+        "support_selection_tolerance": max(
+            float(stationarity_tolerance),
+            float(support_closure_tolerance),
+        ),
+    }
+
+    def failed(reason: str) -> dict[str, Any]:
+        base_report["failure_reason"] = reason
+        return {
+            "applied": False,
+            "support_indices": (),
+            "gas_log_amounts": q_initial_full.copy(),
+            "condensate_amounts": amounts_initial_full.copy(),
+            "total_gas_log_amount": float(total_gas_log_amount_init),
+            "element_potential": lambda_initial_full.copy(),
+            "report": base_report,
+        }
+
+    if not enabled:
+        base_report["skip_reason"] = "disabled_after_first_active_set_pass"
+        return failed("disabled")
+    if (
+        np.any(target_full < 0.0)
+        or np.any(ag_full < 0.0)
+        or np.any(ac_full < 0.0)
+    ):
+        base_report["skip_reason"] = "nonnegative_structure_required"
+        return failed("ineligible_structure")
+
+    positive_rows = target_full > 0.0
+    zero_rows = target_full == 0.0
+    if not np.any(positive_rows):
+        base_report["skip_reason"] = "no_positive_target_row"
+        return failed("ineligible_structure")
+    suppressed_gases = (
+        np.any(ag_full[zero_rows] > 0.0, axis=0)
+        if np.any(zero_rows)
+        else np.zeros(ag_full.shape[1], dtype=bool)
+    )
+    retained_gases = ~suppressed_gases
+    selectable_condensates = valid_mask & (
+        ~np.any(ac_full[zero_rows] > 0.0, axis=0)
+        if np.any(zero_rows)
+        else np.ones(ac_full.shape[1], dtype=bool)
+    )
+    selectable_indices = np.flatnonzero(selectable_condensates)
+    if not np.any(retained_gases):
+        base_report["skip_reason"] = "no_structurally_possible_gas"
+        return failed("ineligible_structure")
+    if not selectable_indices.size:
+        base_report["skip_reason"] = "no_selectable_condensate"
+        return failed("ineligible_structure")
+
+    ag = ag_full[positive_rows][:, retained_gases]
+    ac = ac_full[positive_rows][:, selectable_indices]
+    target = target_full[positive_rows]
+    gamma = gamma_full[retained_gases]
+    hcond = hcond_full[selectable_indices]
+    lambda_reference = lambda_initial_full[positive_rows]
+    if (
+        np.any(~np.any(ag > 0.0, axis=1))
+        or np.any(~np.isfinite(lambda_reference))
+    ):
+        base_report["skip_reason"] = "unrepresented_positive_target_row"
+        return failed("ineligible_structure")
+
+    target_max = float(np.max(target))
+    target_ratio = target / target_max
+    coordinate_scale = np.sqrt(target_max / target)
+    selection_tolerance = max(
+        float(stationarity_tolerance),
+        float(support_closure_tolerance),
+    )
+    feasibility_tolerance = min(
+        _DUAL_SUPPORT_ORACLE_FEASIBILITY_TOLERANCE,
+        max(selection_tolerance, 64.0 * np.finfo(np.float64).eps),
+    )
+    base_report.update(
+        {
+            "eligible": True,
+            "attempted": True,
+            "positive_target_rows": tuple(
+                int(index)
+                for index in np.flatnonzero(positive_rows).tolist()
+            ),
+            "zero_target_rows": tuple(
+                int(index)
+                for index in np.flatnonzero(zero_rows).tolist()
+            ),
+            "suppressed_gas_indices": tuple(
+                int(index)
+                for index in np.flatnonzero(suppressed_gases).tolist()
+            ),
+            "selectable_condensate_count": int(selectable_indices.size),
+            "feasibility_tolerance": feasibility_tolerance,
+        }
+    )
+
+    cached_values: np.ndarray | None = None
+    cached_state: tuple[
+        np.ndarray, float, np.ndarray, np.ndarray
+    ] | None = None
+
+    def state(values: np.ndarray):
+        nonlocal cached_values, cached_state
+        current = np.asarray(values, dtype=np.float64)
+        if cached_values is not None and np.array_equal(current, cached_values):
+            assert cached_state is not None
+            return cached_state
+        potential = lambda_reference + coordinate_scale * current
+        logits = ag.T @ potential - gamma
+        normalization = float(logsumexp(logits))
+        fractions = np.exp(logits - normalization)
+        mean_formula = ag @ fractions
+        driving = hcond - ac.T @ potential
+        cached_values = current.copy()
+        cached_state = (potential, normalization, mean_formula, driving)
+        return cached_state
+
+    evaluation_limit = min(
+        _DUAL_SUPPORT_ORACLE_ITERATION_LIMIT,
+        _function_evaluation_call_limit(
+            max_function_evaluations,
+            function_evaluation_budget,
+        ),
+    )
+    if evaluation_limit <= 0:
+        base_report["skip_reason"] = "function_evaluation_limit_reached"
+        return failed("function_evaluation_limit_reached")
+    objective_evaluations = 0
+
+    def objective(values: np.ndarray) -> float:
+        nonlocal objective_evaluations
+        if objective_evaluations >= evaluation_limit:
+            raise _DualSupportOracleEvaluationLimit
+        objective_evaluations += 1
+        return -float(target_ratio @ (coordinate_scale * values))
+
+    def objective_jacobian(values: np.ndarray) -> np.ndarray:
+        del values
+        return -(target_ratio * coordinate_scale)
+
+    def normalization_constraint(values: np.ndarray) -> float:
+        return -state(values)[1]
+
+    def normalization_jacobian(values: np.ndarray) -> np.ndarray:
+        return -(state(values)[2] * coordinate_scale)
+
+    def driving_constraint(values: np.ndarray) -> np.ndarray:
+        return state(values)[3]
+
+    def driving_jacobian(values: np.ndarray) -> np.ndarray:
+        del values
+        return -ac.T * coordinate_scale[None, :]
+
+    try:
+        optimization = minimize(
+            objective,
+            np.zeros_like(lambda_reference),
+            jac=objective_jacobian,
+            constraints=(
+                {
+                    "type": "eq",
+                    "fun": normalization_constraint,
+                    "jac": normalization_jacobian,
+                },
+                {
+                    "type": "ineq",
+                    "fun": driving_constraint,
+                    "jac": driving_jacobian,
+                },
+            ),
+            method="SLSQP",
+            options={
+                "disp": False,
+                "ftol": 1.0e-12,
+                "maxiter": _DUAL_SUPPORT_ORACLE_ITERATION_LIMIT,
+            },
+        )
+    except _DualSupportOracleEvaluationLimit:
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(evaluation_limit)
+        base_report.update(
+            {
+                "function_evaluations": evaluation_limit,
+                "function_evaluations_conservative": True,
+                "skip_reason": "function_evaluation_limit_reached",
+            }
+        )
+        return failed("function_evaluation_limit_reached")
+    except (FloatingPointError, OverflowError, ValueError) as error:
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(evaluation_limit)
+        base_report.update(
+            {
+                "function_evaluations": evaluation_limit,
+                "function_evaluations_conservative": bool(
+                    function_evaluation_budget is not None
+                ),
+                "optimizer_success": False,
+                "optimizer_status": -1,
+                "optimizer_message": f"{type(error).__name__}: {error}",
+            }
+        )
+        return failed("optimizer_exception")
+
+    if function_evaluation_budget is not None:
+        function_evaluation_budget.consume(objective_evaluations)
+    potential, normalization, _mean_formula, driving = state(optimization.x)
+    finite_solution = bool(
+        np.all(np.isfinite(optimization.x))
+        and np.all(np.isfinite(potential))
+        and np.isfinite(normalization)
+        and np.all(np.isfinite(driving))
+    )
+    feasible = bool(
+        finite_solution
+        and abs(normalization) <= feasibility_tolerance
+        and float(np.min(driving)) >= -feasibility_tolerance
+    )
+    tight_mask = driving <= selection_tolerance
+    selected_support = tuple(
+        int(index) for index in selectable_indices[tight_mask].tolist()
+    )
+    selected_matrix = ac_full[positive_rows][:, selected_support]
+    selected_rank = (
+        int(np.linalg.matrix_rank(selected_matrix))
+        if selected_support
+        else 0
+    )
+    support_valid = bool(
+        selected_support
+        and len(selected_support) <= int(np.count_nonzero(positive_rows))
+        and selected_rank == len(selected_support)
+    )
+    inactive_driving = driving[~tight_mask]
+    base_report.update(
+        {
+            "optimizer_success": bool(optimization.success),
+            "optimizer_status": int(optimization.status),
+            "optimizer_message": str(optimization.message),
+            "optimizer_iterations": int(optimization.nit),
+            "function_evaluations": int(objective_evaluations),
+            "gas_normalization_log_residual": normalization,
+            "minimum_condensate_driving": float(np.min(driving)),
+            "selected_support_indices": selected_support,
+            "selected_support_count": len(selected_support),
+            "selected_support_rank": selected_rank,
+            "smallest_inactive_driving": (
+                float(np.min(inactive_driving))
+                if inactive_driving.size
+                else np.inf
+            ),
+            "dual_feasibility_passed": feasible,
+            "support_structure_passed": support_valid,
+        }
+    )
+    if not optimization.success:
+        return failed("optimizer_failed")
+    if not feasible:
+        return failed("dual_feasibility_failed")
+    if not support_valid:
+        return failed("selected_support_not_full_column_rank")
+
+    q_selected = q_initial_full.copy()
+    logits = ag.T @ potential - gamma
+    normalization = float(logsumexp(logits))
+    q_selected[retained_gases] = (
+        float(total_gas_log_amount_init) + logits - normalization
+    )
+    amounts_selected = np.zeros_like(amounts_initial_full)
+    selected_array = np.asarray(selected_support, dtype=np.int64)
+    amounts_selected[selected_array] = np.maximum(
+        amounts_initial_full[selected_array], 0.0
+    )
+    lambda_selected = lambda_initial_full.copy()
+    lambda_selected[positive_rows] = potential
+    base_report["applied"] = True
+    return {
+        "applied": True,
+        "support_indices": selected_support,
+        "gas_log_amounts": q_selected,
+        "condensate_amounts": amounts_selected,
+        "total_gas_log_amount": float(total_gas_log_amount_init),
+        "element_potential": lambda_selected,
+        "report": base_report,
+    }
+
+
+def _select_support_with_finite_barrier_homotopy(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    support_indices: Sequence[int],
+    budget_scale: np.ndarray,
+    max_function_evaluations: int,
+    enabled: bool,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> dict[str, Any]:
+    """Select a zero-barrier support by following the finite central path.
+
+    This is an initializer only.  It removes structurally impossible species,
+    analytically eliminates gas log amounts, and takes bounded half-decade
+    barrier steps.  It retains the deepest continuation state whose max-norm
+    residual is at most ``1e-8`` and stops when the next step loses that
+    certificate.  A support is selected only when the final adjacent
+    capacity-relative amount gap is at least four.  The subsequent exact
+    solve and physical audit remain authoritative.
+    """
+
+    ag_full = np.asarray(gas_formula_matrix, dtype=np.float64)
+    ac_full = np.asarray(
+        condensate_formula_matrix_full, dtype=np.float64
+    )
+    target_full = np.asarray(target_inventory, dtype=np.float64)
+    gamma_full = np.asarray(gas_standard_source, dtype=np.float64)
+    hcond_full = np.asarray(
+        condensate_standard_source_full, dtype=np.float64
+    )
+    q_initial_full = np.asarray(
+        gas_log_amounts_init, dtype=np.float64
+    )
+    amounts_initial_full = np.asarray(
+        condensate_amounts_init, dtype=np.float64
+    )
+    lambda_initial_full = np.asarray(
+        element_potential_init, dtype=np.float64
+    )
+    initial_support = tuple(int(index) for index in support_indices)
+    base_report: dict[str, Any] = {
+        "schema": "exogibbs_zero_barrier_finite_homotopy_initializer_v1",
+        "role": "initializer_support_selection_only",
+        "enabled": bool(enabled),
+        "eligible": False,
+        "attempted": False,
+        "applied": False,
+        "maximum_step_count": (
+            _FINITE_BARRIER_HOMOTOPY_MAXIMUM_STEP_COUNT
+        ),
+        "barrier_log10_step": -0.5,
+        "centrality_relative_spread_tolerance": (
+            _FINITE_BARRIER_HOMOTOPY_CENTRALITY_TOLERANCE
+        ),
+        "continuation_residual_tolerance": (
+            _FINITE_BARRIER_HOMOTOPY_RESIDUAL_TOLERANCE
+        ),
+        "minimum_capacity_relative_gap_ratio": (
+            _FINITE_BARRIER_HOMOTOPY_MINIMUM_GAP_RATIO
+        ),
+        "maximum_function_evaluations_per_step": (
+            _FINITE_BARRIER_HOMOTOPY_MAX_NFEV_PER_STEP
+        ),
+        "initial_support_indices": initial_support,
+    }
+
+    def failed(reason: str) -> dict[str, Any]:
+        base_report["failure_reason"] = reason
+        return {
+            "applied": False,
+            "support_indices": initial_support,
+            "gas_log_amounts": q_initial_full.copy(),
+            "condensate_amounts": amounts_initial_full.copy(),
+            "total_gas_log_amount": float(total_gas_log_amount_init),
+            "element_potential": lambda_initial_full.copy(),
+            "report": base_report,
+        }
+
+    if not enabled:
+        base_report["skip_reason"] = "disabled_after_first_active_set_pass"
+        return failed("disabled")
+    if (
+        np.any(target_full < 0.0)
+        or np.any(ag_full < 0.0)
+        or np.any(ac_full < 0.0)
+    ):
+        base_report["skip_reason"] = "nonnegative_structure_required"
+        return failed("ineligible_structure")
+
+    positive_rows = target_full > 0.0
+    zero_rows = target_full == 0.0
+    if not np.any(positive_rows):
+        base_report["skip_reason"] = "no_positive_target_row"
+        return failed("ineligible_structure")
+    suppressed_gases = (
+        np.any(ag_full[zero_rows] > 0.0, axis=0)
+        if np.any(zero_rows)
+        else np.zeros(ag_full.shape[1], dtype=bool)
+    )
+    retained_gases = ~suppressed_gases
+    if not np.any(retained_gases):
+        base_report["skip_reason"] = "no_structurally_possible_gas"
+        return failed("ineligible_structure")
+    forced_dropped = tuple(
+        index
+        for index in initial_support
+        if np.any(ac_full[zero_rows, index] > 0.0)
+    )
+    forced_set = set(forced_dropped)
+    continuation_support = tuple(
+        index for index in initial_support if index not in forced_set
+    )
+    base_report.update(
+        {
+            "positive_target_rows": tuple(
+                int(index)
+                for index in np.flatnonzero(positive_rows).tolist()
+            ),
+            "zero_target_rows": tuple(
+                int(index)
+                for index in np.flatnonzero(zero_rows).tolist()
+            ),
+            "suppressed_gas_indices": tuple(
+                int(index)
+                for index in np.flatnonzero(suppressed_gases).tolist()
+            ),
+            "structural_zero_dropped_support_indices": forced_dropped,
+            "continuation_support_indices": continuation_support,
+        }
+    )
+    if len(continuation_support) < 2:
+        base_report["skip_reason"] = "fewer_than_two_selectable_phases"
+        return failed("no_support_gap_possible")
+
+    active = np.asarray(continuation_support, dtype=np.int64)
+    ag = ag_full[positive_rows][:, retained_gases]
+    ac = ac_full[positive_rows][:, active]
+    target = target_full[positive_rows]
+    gamma = gamma_full[retained_gases]
+    hcond = hcond_full[active]
+    if np.any(~np.any(ac > 0.0, axis=0)):
+        base_report["skip_reason"] = "zero_stoichiometry_active_phase"
+        return failed("ineligible_structure")
+    amount_scales = _maximum_condensate_amount_scales(ac, target)
+    active_amounts_initial = amounts_initial_full[active]
+    lambda_initial = lambda_initial_full[positive_rows]
+    initial_driving = hcond - ac.T @ lambda_initial
+    central_products = active_amounts_initial * initial_driving
+    central_products_valid = bool(
+        np.all(np.isfinite(central_products))
+        and np.all(central_products > 0.0)
+        and np.all(np.isfinite(amount_scales))
+        and np.all(amount_scales > 0.0)
+        and np.all(np.isfinite(active_amounts_initial))
+        and np.all(active_amounts_initial > 0.0)
+    )
+    if not central_products_valid:
+        base_report["skip_reason"] = "invalid_finite_barrier_central_products"
+        return failed("centrality_guard_failed")
+    mu0 = float(np.median(central_products))
+    centrality_spread = float(
+        np.max(np.abs(central_products / mu0 - 1.0), initial=0.0)
+    )
+    base_report.update(
+        {
+            "initial_barrier_scale": mu0,
+            "initial_centrality_relative_spread_max_abs": (
+                centrality_spread
+            ),
+        }
+    )
+    if (
+        not np.isfinite(mu0)
+        or mu0 <= 0.0
+        or centrality_spread
+        > _FINITE_BARRIER_HOMOTOPY_CENTRALITY_TOLERANCE
+    ):
+        base_report["skip_reason"] = "finite_barrier_state_not_central"
+        return failed("centrality_guard_failed")
+
+    log_relative_initial = (
+        np.log(active_amounts_initial) - np.log(amount_scales)
+    )
+    if not np.all(np.isfinite(log_relative_initial)):
+        base_report["skip_reason"] = "nonfinite_capacity_relative_amount"
+        return failed("centrality_guard_failed")
+    element_count = target.size
+    x = np.concatenate(
+        [
+            lambda_initial,
+            [float(total_gas_log_amount_init)],
+            log_relative_initial,
+        ]
+    )
+    rounds: list[dict[str, Any]] = []
+    base_report["eligible"] = True
+    base_report["attempted"] = True
+
+    def state(values: np.ndarray):
+        lambda_ = values[:element_count]
+        qtot = float(values[element_count])
+        log_relative = values[element_count + 1 :]
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            amounts = amount_scales * np.exp(log_relative)
+        logits = ag.T @ lambda_ - gamma
+        normalization = float(logsumexp(logits))
+        log_fractions = logits - normalization
+        fractions = np.exp(log_fractions)
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            gas = np.exp(qtot + log_fractions)
+        gas_inventory = ag @ gas
+        driving = hcond - ac.T @ lambda_
+        return (
+            lambda_,
+            qtot,
+            log_relative,
+            amounts,
+            normalization,
+            log_fractions,
+            fractions,
+            gas,
+            gas_inventory,
+            driving,
+        )
+
+    last_certified_x: np.ndarray | None = None
+    continuation_termination_reason = "maximum_step_count_reached"
+    for step_index in range(
+        _FINITE_BARRIER_HOMOTOPY_MAXIMUM_STEP_COUNT
+    ):
+        mu = float(mu0 * 10.0 ** (-0.5 * (step_index + 1)))
+
+        def residual(values: np.ndarray) -> np.ndarray:
+            (
+                _lambda,
+                _qtot,
+                _log_relative,
+                amounts,
+                normalization,
+                _log_fractions,
+                _fractions,
+                _gas,
+                gas_inventory,
+                driving,
+            ) = state(values)
+            return np.concatenate(
+                [
+                    amounts * driving / mu - 1.0,
+                    np.asarray([normalization], dtype=np.float64),
+                    budget_scale[positive_rows]
+                    * (gas_inventory + ac @ amounts - target),
+                ]
+            )
+
+        def jacobian(values: np.ndarray) -> np.ndarray:
+            (
+                _lambda,
+                _qtot,
+                _log_relative,
+                amounts,
+                _normalization,
+                _log_fractions,
+                fractions,
+                gas,
+                gas_inventory,
+                driving,
+            ) = state(values)
+            support_count = active.size
+            variable_count = element_count + 1 + support_count
+            matrix = np.zeros(
+                (variable_count, variable_count), dtype=np.float64
+            )
+            matrix[:support_count, :element_count] = (
+                -(amounts / mu)[:, None] * ac.T
+            )
+            matrix[
+                :support_count, element_count + 1 :
+            ] = np.diag(amounts * driving / mu)
+            mean_formula = ag @ fractions
+            matrix[support_count, :element_count] = mean_formula
+            budget_row_start = support_count + 1
+            centered_formula = ag.T - mean_formula
+            gas_covariance = ag @ (gas[:, None] * centered_formula)
+            positive_budget_scale = budget_scale[positive_rows]
+            matrix[budget_row_start:, :element_count] = (
+                positive_budget_scale[:, None] * gas_covariance
+            )
+            matrix[budget_row_start:, element_count] = (
+                positive_budget_scale * gas_inventory
+            )
+            matrix[budget_row_start:, element_count + 1 :] = (
+                positive_budget_scale[:, None]
+                * ac
+                * amounts[None, :]
+            )
+            return matrix
+
+        call_evaluation_limit = min(
+            _FINITE_BARRIER_HOMOTOPY_MAX_NFEV_PER_STEP,
+            _function_evaluation_call_limit(
+                max_function_evaluations,
+                function_evaluation_budget,
+            ),
+        )
+        if call_evaluation_limit <= 0:
+            rounds.append(
+                {
+                    "step_index": step_index,
+                    "barrier_scale": mu,
+                    "optimizer_success": False,
+                    "function_evaluations": 0,
+                    "failure_reason": "function_evaluation_limit_reached",
+                }
+            )
+            continuation_termination_reason = (
+                "function_evaluation_limit_reached"
+            )
+            if last_certified_x is None:
+                base_report["rounds"] = tuple(rounds)
+                return failed("continuation_failed")
+            break
+        try:
+            optimization = _least_squares_with_scipy_overflow_guard(
+                residual,
+                x,
+                jac=jacobian,
+                method="trf",
+                x_scale="jac",
+                ftol=1.0e-13,
+                xtol=1.0e-13,
+                gtol=1.0e-13,
+                max_nfev=call_evaluation_limit,
+            )
+        except (FloatingPointError, OverflowError, ValueError) as error:
+            conservative_evaluations = 0
+            if function_evaluation_budget is not None:
+                function_evaluation_budget.consume(call_evaluation_limit)
+                conservative_evaluations = call_evaluation_limit
+            rounds.append(
+                {
+                    "step_index": step_index,
+                    "barrier_scale": mu,
+                    "optimizer_success": False,
+                    "function_evaluations": conservative_evaluations,
+                    "function_evaluations_conservative": bool(
+                        function_evaluation_budget is not None
+                    ),
+                    "failure_reason": f"{type(error).__name__}: {error}",
+                }
+            )
+            continuation_termination_reason = "optimizer_exception"
+            if last_certified_x is None:
+                base_report["rounds"] = tuple(rounds)
+                return failed("continuation_failed")
+            break
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(int(optimization.nfev))
+        x = np.asarray(optimization.x, dtype=np.float64)
+        final_residual = residual(x)
+        residual_norm = float(
+            np.max(np.abs(final_residual), initial=0.0)
+        )
+        log_relative = x[element_count + 1 :]
+        sorted_log_relative = np.sort(log_relative)
+        log_gaps = np.diff(sorted_log_relative)
+        gap_index = int(np.argmax(log_gaps))
+        split_count = int(log_relative.size - gap_index - 1)
+        round_report = {
+            "step_index": step_index,
+            "barrier_scale": mu,
+            "optimizer_success": bool(optimization.success),
+            "optimizer_status": int(optimization.status),
+            "optimizer_message": str(optimization.message),
+            "function_evaluations": int(optimization.nfev),
+            "continuation_residual_max_abs": residual_norm,
+            "largest_log_capacity_relative_gap": float(
+                log_gaps[gap_index]
+            ),
+            "support_count_above_largest_gap": split_count,
+        }
+        rounds.append(round_report)
+        if (
+            not optimization.success
+            or not np.all(np.isfinite(final_residual))
+            or residual_norm
+            > _FINITE_BARRIER_HOMOTOPY_RESIDUAL_TOLERANCE
+        ):
+            continuation_termination_reason = (
+                "continuation_certificate_lost"
+            )
+            if last_certified_x is None:
+                base_report["rounds"] = tuple(rounds)
+                return failed("continuation_failed")
+            break
+        last_certified_x = x.copy()
+
+    if last_certified_x is None:
+        base_report["rounds"] = tuple(rounds)
+        return failed("continuation_failed")
+    x = last_certified_x
+    certified_rounds = tuple(
+        item
+        for item in rounds
+        if item.get("optimizer_success", False)
+        and item.get("continuation_residual_max_abs", np.inf)
+        <= _FINITE_BARRIER_HOMOTOPY_RESIDUAL_TOLERANCE
+    )
+    base_report.update(
+        {
+            "rounds": tuple(rounds),
+            "attempted_step_count": len(rounds),
+            "certified_step_count": len(certified_rounds),
+            "selected_step_index": int(certified_rounds[-1]["step_index"]),
+            "continuation_termination_reason": (
+                continuation_termination_reason
+            ),
+        }
+    )
+
+    final_state = state(x)
+    (
+        lambda_final,
+        qtot_final,
+        log_relative_final,
+        amounts_final,
+        _normalization_final,
+        log_fractions_final,
+        _fractions_final,
+        _gas_final,
+        _gas_inventory_final,
+        _driving_final,
+    ) = final_state
+    sorted_log_relative = np.sort(log_relative_final)
+    log_gaps = np.diff(sorted_log_relative)
+    gap_index = int(np.argmax(log_gaps))
+    largest_log_gap = float(log_gaps[gap_index])
+    gap_lower = float(sorted_log_relative[gap_index])
+    gap_upper = float(sorted_log_relative[gap_index + 1])
+    gap_guard_passed = bool(
+        largest_log_gap
+        >= np.log(_FINITE_BARRIER_HOMOTOPY_MINIMUM_GAP_RATIO)
+    )
+    base_report.update(
+        {
+            "final_largest_log_capacity_relative_gap": largest_log_gap,
+            "final_largest_capacity_relative_gap_ratio": float(
+                np.exp(largest_log_gap)
+            ),
+            "final_gap_lower_log_capacity_relative_amount": gap_lower,
+            "final_gap_upper_log_capacity_relative_amount": gap_upper,
+            "gap_guard_passed": gap_guard_passed,
+        }
+    )
+    if not gap_guard_passed:
+        base_report["skip_reason"] = "capacity_relative_gap_not_clear"
+        return failed("support_gap_guard_failed")
+
+    gap_midpoint = 0.5 * (gap_lower + gap_upper)
+    retained_active_mask = log_relative_final > gap_midpoint
+    selected_support = tuple(
+        index
+        for index, retained in zip(
+            continuation_support, retained_active_mask.tolist()
+        )
+        if retained
+    )
+    if not selected_support or len(selected_support) >= len(initial_support):
+        base_report["skip_reason"] = "support_gap_did_not_reduce_support"
+        return failed("support_gap_guard_failed")
+
+    full_q = q_initial_full.copy()
+    full_q[retained_gases] = qtot_final + log_fractions_final
+    full_amounts = np.zeros_like(amounts_initial_full)
+    selected_set = set(selected_support)
+    for index, amount in zip(
+        continuation_support, amounts_final.tolist()
+    ):
+        if index in selected_set:
+            full_amounts[index] = float(amount)
+    full_lambda = lambda_initial_full.copy()
+    full_lambda[positive_rows] = lambda_final
+    dropped_support = tuple(
+        index for index in initial_support if index not in selected_set
+    )
+    base_report.update(
+        {
+            "applied": True,
+            "selected_support_indices": selected_support,
+            "selected_support_count": len(selected_support),
+            "dropped_support_indices": dropped_support,
+        }
+    )
+    return {
+        "applied": True,
+        "support_indices": selected_support,
+        "gas_log_amounts": full_q,
+        "condensate_amounts": full_amounts,
+        "total_gas_log_amount": qtot_final,
+        "element_potential": full_lambda,
+        "report": base_report,
+    }
+
+
+def _reduce_initial_condensate_support_to_basic(
+    *,
+    condensate_formula_matrix_full: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    target_inventory: np.ndarray,
+    condensate_amounts: np.ndarray,
+    support_indices: Sequence[int],
+    budget_scale: np.ndarray,
+    budget_tolerance: float,
+    enabled: bool,
+) -> tuple[tuple[int, ...], np.ndarray, dict[str, Any]]:
+    """Return a nonnegative basic representation of initial condensates.
+
+    The linear program preserves the finite-barrier condensate inventory and
+    minimizes its zero-barrier Gibbs term.  It is an initializer reduction;
+    the joint exact solve and independent physical audit remain authoritative.
+    """
+
+    support = tuple(int(index) for index in support_indices)
+    full_amounts = np.asarray(condensate_amounts, dtype=np.float64)
+    canonical_support = tuple(sorted(support))
+    active = np.asarray(canonical_support, dtype=np.int64)
+    ac = condensate_formula_matrix_full[:, active]
+    hcond = condensate_standard_source_full[active]
+    amounts_before = full_amounts[active]
+    amount_scales = _maximum_condensate_amount_scales(
+        ac, target_inventory
+    )
+    scaled_matrix = (
+        budget_scale[:, None] * ac * amount_scales[None, :]
+    )
+    input_rank = int(np.linalg.matrix_rank(scaled_matrix))
+    base_report: dict[str, Any] = {
+        "schema": "exogibbs_zero_barrier_basic_support_reduction_v1",
+        "role": "initial_exact_solve_only",
+        "enabled": bool(enabled),
+        "attempted": False,
+        "applied": False,
+        "method": "scipy_linprog_highs_dual_simplex",
+        "initial_support_indices": support,
+        "canonical_support_indices": canonical_support,
+        "initial_support_count": len(support),
+        "initial_support_rank": input_rank,
+        "initial_support_nullity": len(support) - input_rank,
+        "relative_amount_floor": (
+            _BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR
+        ),
+        "iteration_limit": _BASIC_SUPPORT_LP_ITERATION_LIMIT,
+    }
+    if not enabled:
+        base_report["skip_reason"] = "disabled_for_active_set_retry"
+        return support, full_amounts.copy(), base_report
+    eligible = bool(
+        support
+        and len(support) > input_rank
+        and np.all(ac >= 0.0)
+        and np.all(np.any(ac > 0.0, axis=0))
+        and np.all(np.isfinite(amounts_before))
+        and np.all(amounts_before >= 0.0)
+        and np.all(np.isfinite(amount_scales))
+        and np.all(amount_scales > 0.0)
+    )
+    if not eligible:
+        base_report["skip_reason"] = "not_rank_reduction_eligible"
+        return support, full_amounts.copy(), base_report
+
+    burden = ac @ amounts_before
+    scaled_burden = budget_scale * burden
+    objective = hcond * amount_scales
+    objective_scale = max(
+        float(np.max(np.abs(objective), initial=0.0)),
+        1.0e-300,
+    )
+    base_report["attempted"] = True
+    try:
+        solution = linprog(
+            objective / objective_scale,
+            A_eq=scaled_matrix,
+            b_eq=scaled_burden,
+            bounds=(0.0, None),
+            method="highs-ds",
+            options={
+                "dual_feasibility_tolerance": 1.0e-10,
+                "maxiter": _BASIC_SUPPORT_LP_ITERATION_LIMIT,
+                "presolve": True,
+                "primal_feasibility_tolerance": 1.0e-10,
+            },
+        )
+    except (FloatingPointError, OverflowError, ValueError) as error:
+        base_report.update(
+            {
+                "solver_success": False,
+                "solver_status": -1,
+                "solver_message": str(error),
+                "solver_iterations": 0,
+                "failure_reason": "solver_exception",
+            }
+        )
+        return support, full_amounts.copy(), base_report
+
+    base_report.update(
+        {
+            "solver_success": bool(solution.success),
+            "solver_status": int(solution.status),
+            "solver_message": str(solution.message),
+            "solver_iterations": int(solution.nit),
+        }
+    )
+    if not solution.success:
+        base_report["failure_reason"] = "linear_program_failed"
+        return support, full_amounts.copy(), base_report
+
+    relative_amounts = np.asarray(solution.x, dtype=np.float64)
+    retained_mask = (
+        relative_amounts > _BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR
+    )
+    reduced_amounts = np.where(
+        retained_mask,
+        amount_scales * relative_amounts,
+        0.0,
+    )
+    amount_by_index = {
+        int(index): float(amount)
+        for index, amount in zip(active.tolist(), reduced_amounts.tolist())
+        if amount > 0.0
+    }
+    amount_scale_by_index = {
+        int(index): float(scale)
+        for index, scale in zip(active.tolist(), amount_scales.tolist())
+    }
+    reduced_support = tuple(
+        index for index in support if index in amount_by_index
+    )
+    reduced_full_amounts = np.zeros_like(full_amounts)
+    if reduced_support:
+        reduced_full_amounts[
+            np.asarray(reduced_support, dtype=np.int64)
+        ] = np.asarray(
+            [amount_by_index[index] for index in reduced_support],
+            dtype=np.float64,
+        )
+    reconstructed = (
+        condensate_formula_matrix_full[:, reduced_support]
+        @ reduced_full_amounts[np.asarray(reduced_support, dtype=np.int64)]
+        if reduced_support
+        else np.zeros_like(burden)
+    )
+    scaled_inventory_residual = budget_scale * (reconstructed - burden)
+    residual_norm = float(
+        np.max(np.abs(scaled_inventory_residual), initial=0.0)
+    )
+    residual_tolerance = min(0.1 * float(budget_tolerance), 1.0e-9)
+    reduced_scaled_matrix = (
+        budget_scale[:, None]
+        * condensate_formula_matrix_full[:, reduced_support]
+        * np.asarray(
+            [amount_scale_by_index[index] for index in reduced_support],
+            dtype=np.float64,
+        )[None, :]
+        if reduced_support
+        else np.zeros((target_inventory.size, 0), dtype=np.float64)
+    )
+    reduced_rank = (
+        int(np.linalg.matrix_rank(reduced_scaled_matrix))
+        if reduced_support
+        else 0
+    )
+    candidate_dropped = tuple(
+        index for index in support if index not in set(reduced_support)
+    )
+    valid = bool(
+        reduced_support
+        and len(reduced_support) < len(support)
+        and len(reduced_support) <= input_rank
+        and reduced_rank == len(reduced_support)
+        and np.all(np.isfinite(reduced_full_amounts))
+        and residual_norm <= residual_tolerance
+    )
+    base_report.update(
+        {
+            "applied": valid,
+            "candidate_support_indices": reduced_support,
+            "candidate_support_count": len(reduced_support),
+            "candidate_support_rank": reduced_rank,
+            "candidate_dropped_support_indices": candidate_dropped,
+            "objective_before": float(hcond @ amounts_before),
+            "objective_after": float(
+                hcond @ reduced_full_amounts[active]
+            ),
+            "scaled_inventory_residual_max_abs": residual_norm,
+            "scaled_inventory_residual_tolerance": residual_tolerance,
+        }
+    )
+    if not valid:
+        base_report["failure_reason"] = "postsolve_validation_failed"
+        return support, full_amounts.copy(), base_report
+    base_report.update(
+        {
+            "final_support_indices": reduced_support,
+            "final_support_count": len(reduced_support),
+            "final_support_rank": reduced_rank,
+            "dropped_support_indices": candidate_dropped,
+        }
+    )
+    return reduced_support, reduced_full_amounts, base_report
+
+
 def _physical_zero_barrier_audit(
     *,
     gas_formula_matrix: np.ndarray,
@@ -85,9 +1195,15 @@ def _physical_zero_barrier_audit(
     budget_tolerance: float,
     total_density_tolerance: float,
     support_closure_tolerance: float,
+    budget_residual_amount_scale: float = 1.0,
 ) -> dict[str, Any]:
     """Audit one candidate independently of its numerical formulation."""
 
+    budget_amount_scale = float(budget_residual_amount_scale)
+    if not np.isfinite(budget_amount_scale) or budget_amount_scale <= 0.0:
+        raise ValueError(
+            "budget_residual_amount_scale must be finite and positive."
+        )
     q = np.asarray(gas_log_amounts, dtype=np.float64)
     amounts = np.asarray(condensate_amounts, dtype=np.float64)
     lambda_ = np.asarray(element_potential, dtype=np.float64)
@@ -116,10 +1232,14 @@ def _physical_zero_barrier_audit(
         - qtot
         - gas_formula_matrix.T @ lambda_
     )
-    budget_residual_scaled = budget_scale * (
+    budget_residual = (
         gas_formula_matrix @ gas
         + condensate_formula_matrix_full @ amounts
         - target_inventory
+    )
+    budget_residual_scaled = budget_scale * np.divide(
+        budget_residual,
+        budget_amount_scale,
     )
     active_driving = full_driving[support_mask]
     active_amounts = amounts[support_mask]
@@ -177,6 +1297,369 @@ def _physical_zero_barrier_audit(
     }
 
 
+def _physical_audit_local_kkt_passed(
+    audit: dict[str, Any],
+    *,
+    optimizer_success: bool,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+) -> bool:
+    """Return whether all fixed-support blocks pass except closure."""
+
+    return bool(
+        audit["finite"]
+        and optimizer_success
+        and audit["positive_active_amounts"]
+        and audit["gas_stationarity_max_abs"] <= stationarity_tolerance
+        and audit["active_condensate_driving_max_abs"]
+        <= stationarity_tolerance
+        and audit["budget_scaled_max_abs"] <= budget_tolerance
+        and audit["total_density_scaled_abs"] <= total_density_tolerance
+    )
+
+
+def _physical_audit_root_blocks_passed(
+    audit: dict[str, Any],
+    *,
+    optimizer_success: bool,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+) -> bool:
+    """Return whether equality/root blocks authorize a support deletion.
+
+    Positivity and inactive closure are intentionally excluded: a converged
+    exact support root may expose a non-positive active amount that must be
+    removed.  Optimizer failure or any unresolved equality block, however,
+    must never be interpreted as evidence for deleting a phase.
+    """
+
+    return bool(
+        audit["finite"]
+        and optimizer_success
+        and audit["gas_stationarity_max_abs"] <= stationarity_tolerance
+        and audit["active_condensate_driving_max_abs"]
+        <= stationarity_tolerance
+        and audit["budget_scaled_max_abs"] <= budget_tolerance
+        and audit["total_density_scaled_abs"] <= total_density_tolerance
+    )
+
+
+def _solve_normalized_gas_reduced_linear_support(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    support_indices: Sequence[int],
+    condensate_valid_mask: np.ndarray,
+    budget_scale: np.ndarray,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+    support_closure_tolerance: float,
+    max_function_evaluations: int,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> dict[str, Any]:
+    """Solve a support after analytically eliminating gas log amounts.
+
+    Gas stationarity gives gas fractions from element potentials.  The
+    remaining unknowns are element potentials, total gas, and capacity-scaled
+    linear condensate amounts.  Keeping amounts linear preserves the existing
+    deterministic negative-amount drop rule, while the system dimension no
+    longer grows with the gas catalog.
+    """
+
+    ag = gas_formula_matrix
+    ac_full = condensate_formula_matrix_full
+    target = target_inventory
+    gamma = gas_standard_source
+    hcond_full = condensate_standard_source_full
+    element_count, gas_count = ag.shape
+    condensate_count = ac_full.shape[1]
+    current_support = tuple(int(index) for index in support_indices)
+    current_qtot = float(total_gas_log_amount_init)
+    current_lambda = np.asarray(
+        element_potential_init, dtype=np.float64
+    ).copy()
+    current_full_m = np.asarray(
+        condensate_amounts_init, dtype=np.float64
+    ).copy()
+    dropped: list[int] = []
+    attempts: list[dict[str, Any]] = []
+    last_candidate: dict[str, Any] | None = None
+
+    for _drop_round in range(len(current_support) + 1):
+        active = np.asarray(current_support, dtype=np.int64)
+        ac = ac_full[:, active]
+        hcond = hcond_full[active]
+        amount_scales = _maximum_condensate_amount_scales(ac, target)
+        active_initial = np.maximum(
+            current_full_m[active], 1.0e-300 * amount_scales
+        )
+        relative_initial = active_initial / amount_scales
+        x0 = np.concatenate(
+            [current_lambda, [current_qtot], relative_initial]
+        )
+
+        def unpack(values: np.ndarray):
+            lambda_ = values[:element_count]
+            qtot = values[element_count]
+            relative_amounts = values[element_count + 1 :]
+            return lambda_, qtot, amount_scales * relative_amounts
+
+        def gas_state(values: np.ndarray):
+            lambda_, qtot, amounts = unpack(values)
+            logits = ag.T @ lambda_ - gamma
+            normalization = float(logsumexp(logits))
+            log_fractions = logits - normalization
+            fractions = np.exp(log_fractions)
+            with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+                gas = np.exp(qtot + log_fractions)
+            return (
+                lambda_,
+                qtot,
+                amounts,
+                logits,
+                normalization,
+                log_fractions,
+                fractions,
+                gas,
+            )
+
+        def residual(values: np.ndarray) -> np.ndarray:
+            (
+                lambda_,
+                _qtot,
+                amounts,
+                _logits,
+                normalization,
+                _log_fractions,
+                _fractions,
+                gas,
+            ) = gas_state(values)
+            # Trust-region trial points may overflow before being rejected.
+            # Preserve the non-finite residual for the optimizer and final
+            # physical audit, but do not leak a benign NumPy warning.
+            with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+                budget_residual = budget_scale * (
+                    ag @ gas + ac @ amounts - target
+                )
+            return np.concatenate(
+                [
+                    hcond - ac.T @ lambda_,
+                    np.asarray([normalization], dtype=np.float64),
+                    budget_residual,
+                ]
+            )
+
+        def jacobian(values: np.ndarray) -> np.ndarray:
+            (
+                _lambda,
+                _qtot,
+                _amounts,
+                _logits,
+                _normalization,
+                _log_fractions,
+                fractions,
+                gas,
+            ) = gas_state(values)
+            support_count = len(current_support)
+            variable_count = element_count + 1 + support_count
+            matrix = np.zeros(
+                (variable_count, variable_count), dtype=np.float64
+            )
+            if support_count:
+                matrix[:support_count, :element_count] = -ac.T
+            normalization_row = support_count
+            mean_formula = ag @ fractions
+            matrix[normalization_row, :element_count] = mean_formula
+            budget_row_start = support_count + 1
+            gas_inventory = ag @ gas
+            gas_covariance = (
+                ag @ (gas[:, None] * ag.T)
+                - gas_inventory[:, None] * mean_formula[None, :]
+            )
+            matrix[budget_row_start:, :element_count] = (
+                budget_scale[:, None] * gas_covariance
+            )
+            matrix[budget_row_start:, element_count] = (
+                budget_scale * gas_inventory
+            )
+            if support_count:
+                matrix[budget_row_start:, element_count + 1 :] = (
+                    budget_scale[:, None]
+                    * ac
+                    * amount_scales[None, :]
+                )
+            return matrix
+
+        call_evaluation_limit = _function_evaluation_call_limit(
+            max_function_evaluations,
+            function_evaluation_budget,
+        )
+        if call_evaluation_limit <= 0:
+            attempts.append(
+                {
+                    "support_indices": current_support,
+                    "optimizer_success": False,
+                    "function_evaluations": 0,
+                    "failure_reason": "function_evaluation_limit_reached",
+                }
+            )
+            break
+        variable_scale = np.clip(
+            np.maximum(np.abs(x0), 1.0), 1.0, 100.0
+        )
+        try:
+            optimization = _least_squares_with_scipy_overflow_guard(
+                residual,
+                x0,
+                jac=jacobian,
+                method="trf",
+                x_scale=variable_scale,
+                ftol=1.0e-13,
+                xtol=1.0e-13,
+                gtol=1.0e-13,
+                max_nfev=call_evaluation_limit,
+            )
+        except (FloatingPointError, OverflowError, ValueError) as error:
+            conservative_evaluations = 0
+            if function_evaluation_budget is not None:
+                function_evaluation_budget.consume(call_evaluation_limit)
+                conservative_evaluations = call_evaluation_limit
+            attempts.append(
+                {
+                    "support_indices": current_support,
+                    "optimizer_success": False,
+                    "function_evaluations": conservative_evaluations,
+                    "function_evaluations_conservative": bool(
+                        function_evaluation_budget is not None
+                    ),
+                    "failure_reason": f"{type(error).__name__}: {error}",
+                }
+            )
+            break
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(int(optimization.nfev))
+        (
+            lambda_,
+            qtot,
+            active_amounts,
+            _logits,
+            normalization,
+            log_fractions,
+            _fractions,
+            _gas,
+        ) = gas_state(optimization.x)
+        q = qtot + log_fractions
+        full_m = np.zeros(condensate_count, dtype=np.float64)
+        if active.size:
+            full_m[active] = active_amounts
+        audit = _physical_zero_barrier_audit(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts=q,
+            condensate_amounts=full_m,
+            total_gas_log_amount=qtot,
+            element_potential=lambda_,
+            support_indices=current_support,
+            condensate_valid_mask=condensate_valid_mask,
+            budget_scale=budget_scale,
+            optimizer_success=bool(optimization.success),
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+        )
+        drop_authorized_by_root = _physical_audit_root_blocks_passed(
+            audit,
+            optimizer_success=bool(optimization.success),
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+        )
+        attempts.append(
+            {
+                "support_indices": current_support,
+                "optimizer_success": bool(optimization.success),
+                "optimizer_status": int(optimization.status),
+                "optimizer_message": str(optimization.message),
+                "function_evaluations": int(optimization.nfev),
+                "cost": float(optimization.cost),
+                "optimality": float(optimization.optimality),
+                "reduced_variable_count": int(optimization.x.size),
+                "eliminated_gas_variable_count": gas_count,
+                "normalization_log_residual": normalization,
+                "drop_authorized_by_root": drop_authorized_by_root,
+                "active_condensate_amounts": tuple(
+                    float(value) for value in active_amounts.tolist()
+                ),
+            }
+        )
+        last_candidate = {
+            "accepted": bool(audit["accepted"]),
+            "gas_log_amounts": q,
+            "condensate_amounts": full_m,
+            "total_gas_log_amount": float(qtot),
+            "element_potential": lambda_,
+            "support_indices": current_support,
+            "optimizer_success": bool(optimization.success),
+            "optimizer_status": int(optimization.status),
+            "optimizer_message": str(optimization.message),
+            "function_evaluations": int(optimization.nfev),
+            "audit": audit,
+        }
+        nonpositive = np.flatnonzero(active_amounts <= 0.0)
+        if not nonpositive.size:
+            break
+        if not drop_authorized_by_root:
+            break
+        relative_amounts = active_amounts / amount_scales
+        local_drop = int(
+            nonpositive[np.argmin(relative_amounts[nonpositive])]
+        )
+        dropped_index = current_support[local_drop]
+        dropped.append(dropped_index)
+        current_support = tuple(
+            index for index in current_support if index != dropped_index
+        )
+        current_qtot = float(qtot)
+        current_lambda = lambda_
+        current_full_m = np.zeros(condensate_count, dtype=np.float64)
+        for index, amount in zip(active.tolist(), active_amounts.tolist()):
+            if index != dropped_index:
+                current_full_m[index] = max(float(amount), 1.0e-300)
+
+    accepted = bool(last_candidate and last_candidate["accepted"])
+    return {
+        "accepted": accepted,
+        "candidate": last_candidate,
+        "report": {
+            "schema": (
+                "exogibbs_zero_barrier_normalized_gas_reduced_linear_v1"
+            ),
+            "attempted": True,
+            "accepted": accepted,
+            "gas_variable_count": gas_count,
+            "maximum_reduced_variable_count": (
+                element_count + 1 + len(tuple(support_indices))
+            ),
+            "dropped_support_indices": tuple(dropped),
+            "attempts": tuple(attempts),
+        },
+    }
+
+
 def _reduced_log_domain_eligibility(
     *,
     gas_formula_matrix: np.ndarray,
@@ -224,6 +1707,7 @@ def _solve_reduced_log_domain_active_support(
     support_closure_tolerance: float,
     max_function_evaluations: int,
     allow_greedy_drop: bool = True,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
 ) -> dict[str, Any]:
     """Solve positive nonnegative-stoichiometry budgets in log space."""
 
@@ -247,7 +1731,6 @@ def _solve_reduced_log_domain_active_support(
         1.0e-6 * abs(log_relative_amount_floor),
     )
     current_support = tuple(int(index) for index in support_indices)
-    current_q = np.asarray(gas_log_amounts_init, dtype=np.float64).copy()
     current_qtot = float(total_gas_log_amount_init)
     current_lambda = np.asarray(
         element_potential_init, dtype=np.float64
@@ -320,60 +1803,72 @@ def _solve_reduced_log_domain_active_support(
             v = values[element_count + 1 :]
             return lambda_, y, v
 
-        def budget_log_terms(
-            element_index: int,
-            *,
-            logits: np.ndarray,
-            y: float,
-            v: np.ndarray,
-        ) -> tuple[np.ndarray, tuple[tuple[str, int], ...]]:
-            terms: list[float] = []
-            owners: list[tuple[str, int]] = []
-            for gas_index in np.flatnonzero(ag[element_index] > 0.0):
-                terms.append(
-                    float(
-                        y
-                        + logits[gas_index]
-                        + np.log(ag[element_index, gas_index])
-                    )
-                )
-                owners.append(("gas", int(gas_index)))
-            for local_index in np.flatnonzero(ac[element_index] > 0.0):
-                terms.append(
-                    float(
-                        np.log(ac[element_index, local_index])
-                        + log_kappa[local_index]
-                        + v[local_index]
-                    )
-                )
-                owners.append(("condensate", int(local_index)))
-            return np.asarray(terms, dtype=np.float64), tuple(owners)
+        log_gas_coefficients = np.full(ag.shape, -np.inf, dtype=np.float64)
+        positive_gas_coefficients = ag > 0.0
+        log_gas_coefficients[positive_gas_coefficients] = np.log(
+            ag[positive_gas_coefficients]
+        )
+        log_condensate_coefficients = np.full(
+            ac.shape, -np.inf, dtype=np.float64
+        )
+        positive_condensate_coefficients = ac > 0.0
+        if active.size:
+            log_condensate_coefficients[
+                positive_condensate_coefficients
+            ] = (
+                np.log(ac[positive_condensate_coefficients])
+                + np.broadcast_to(log_kappa, ac.shape)[
+                    positive_condensate_coefficients
+                ]
+            )
 
-        def residual(values: np.ndarray) -> np.ndarray:
+        def log_budget_state(values: np.ndarray):
             lambda_, y, v = unpack(values)
             logits = ag.T @ lambda_ - gamma
-            budget_residuals = np.empty(element_count, dtype=np.float64)
-            for element_index in range(element_count):
-                terms, _owners = budget_log_terms(
-                    element_index,
-                    logits=logits,
-                    y=y,
-                    v=v,
-                )
-                budget_residuals[element_index] = (
-                    logsumexp(terms) - log_beta[element_index]
-                )
+            gas_terms = log_gas_coefficients + logits[None, :] + y
+            condensate_terms = log_condensate_coefficients + v[None, :]
+            all_terms = np.concatenate(
+                [gas_terms, condensate_terms], axis=1
+            )
+            log_budgets = logsumexp(all_terms, axis=1)
+            return (
+                lambda_,
+                y,
+                v,
+                logits,
+                gas_terms,
+                condensate_terms,
+                log_budgets,
+            )
+
+        def residual(values: np.ndarray) -> np.ndarray:
+            (
+                lambda_,
+                _y,
+                _v,
+                logits,
+                _gas_terms,
+                _condensate_terms,
+                log_budgets,
+            ) = log_budget_state(values)
             return np.concatenate(
                 [
                     hcond - ac.T @ lambda_,
                     np.asarray([logsumexp(logits)], dtype=np.float64),
-                    budget_residuals,
+                    log_budgets - log_beta,
                 ]
             )
 
         def jacobian(values: np.ndarray) -> np.ndarray:
-            lambda_, y, v = unpack(values)
-            logits = ag.T @ lambda_ - gamma
+            (
+                _lambda,
+                _y,
+                _v,
+                logits,
+                gas_terms,
+                condensate_terms,
+                log_budgets,
+            ) = log_budget_state(values)
             support_count = len(current_support)
             variable_count = element_count + 1 + support_count
             matrix = np.zeros(
@@ -389,23 +1884,20 @@ def _solve_reduced_log_domain_active_support(
             budget_row_start = support_count + 1
             y_column = element_count
             v_column_start = element_count + 1
-            for element_index in range(element_count):
-                terms, owners = budget_log_terms(
-                    element_index,
-                    logits=logits,
-                    y=y,
-                    v=v,
-                )
-                weights = np.exp(terms - logsumexp(terms))
-                row = budget_row_start + element_index
-                for weight, (kind, local_index) in zip(weights, owners):
-                    if kind == "gas":
-                        matrix[row, :element_count] += (
-                            weight * ag[:, local_index]
-                        )
-                        matrix[row, y_column] += weight
-                    else:
-                        matrix[row, v_column_start + local_index] += weight
+            gas_weights = np.exp(gas_terms - log_budgets[:, None])
+            condensate_weights = np.exp(
+                condensate_terms - log_budgets[:, None]
+            )
+            matrix[budget_row_start:, :element_count] = (
+                gas_weights @ ag.T
+            )
+            matrix[budget_row_start:, y_column] = np.sum(
+                gas_weights, axis=1
+            )
+            if support_count:
+                matrix[
+                    budget_row_start:, v_column_start:
+                ] = condensate_weights
             return matrix
 
         lower = np.concatenate(
@@ -421,10 +1913,28 @@ def _solve_reduced_log_domain_active_support(
         upper = np.concatenate(
             [
                 np.full(element_count + 1, np.inf, dtype=np.float64),
-                np.zeros(len(current_support), dtype=np.float64),
+                # Capacity normalizes v but is not an optimizer constraint.
+                # A hard upper bound creates projected-gradient false
+                # convergence when a phase consumes nearly all its capacity;
+                # the independent physical budget audit remains the gate.
+                np.full(len(current_support), np.inf, dtype=np.float64),
             ]
         )
         variable_scale = np.clip(np.maximum(np.abs(x0), 1.0), 1.0, 100.0)
+        call_evaluation_limit = _function_evaluation_call_limit(
+            max_function_evaluations,
+            function_evaluation_budget,
+        )
+        if call_evaluation_limit <= 0:
+            attempts.append(
+                {
+                    "support_indices": current_support,
+                    "optimizer_success": False,
+                    "function_evaluations": 0,
+                    "failure_reason": "function_evaluation_limit_reached",
+                }
+            )
+            break
         try:
             optimization = _least_squares_with_scipy_overflow_guard(
                 residual,
@@ -436,17 +1946,27 @@ def _solve_reduced_log_domain_active_support(
                 ftol=1.0e-13,
                 xtol=1.0e-13,
                 gtol=1.0e-13,
-                max_nfev=int(max_function_evaluations),
+                max_nfev=call_evaluation_limit,
             )
         except (FloatingPointError, OverflowError, ValueError) as error:
+            conservative_evaluations = 0
+            if function_evaluation_budget is not None:
+                function_evaluation_budget.consume(call_evaluation_limit)
+                conservative_evaluations = call_evaluation_limit
             attempts.append(
                 {
                     "support_indices": current_support,
                     "optimizer_success": False,
+                    "function_evaluations": conservative_evaluations,
+                    "function_evaluations_conservative": bool(
+                        function_evaluation_budget is not None
+                    ),
                     "failure_reason": f"{type(error).__name__}: {error}",
                 }
             )
             break
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(int(optimization.nfev))
         lambda_, y, v = unpack(optimization.x)
         logits = ag.T @ lambda_ - gamma
         qtot = log_inventory_total + y
@@ -484,8 +2004,17 @@ def _solve_reduced_log_domain_active_support(
             total_density_tolerance=total_density_tolerance,
             support_closure_tolerance=support_closure_tolerance,
         )
+        drop_authorized_by_root = _physical_audit_root_blocks_passed(
+            audit,
+            optimizer_success=bool(optimization.success),
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+        )
         accepted = bool(audit["accepted"] and not at_lower_bound.size)
         log_residual = residual(optimization.x)
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            relative_phase_amounts = np.exp(v)
         attempt = {
             "support_indices": current_support,
             "optimizer_success": bool(optimization.success),
@@ -498,11 +2027,12 @@ def _solve_reduced_log_domain_active_support(
                 np.max(np.abs(log_residual), initial=0.0)
             ),
             "relative_phase_amounts": tuple(
-                float(value) for value in np.exp(v).tolist()
+                float(value) for value in relative_phase_amounts.tolist()
             ),
             "active_phase_at_lower_bound": bool(at_lower_bound.size),
             "lower_bound_support_indices": lower_bound_support_indices,
             "physical_audit_accepted": bool(audit["accepted"]),
+            "drop_authorized_by_root": drop_authorized_by_root,
             "physical_budget_scaled_max_abs": audit[
                 "budget_scaled_max_abs"
             ],
@@ -519,6 +2049,8 @@ def _solve_reduced_log_domain_active_support(
             "optimizer_status": int(optimization.status),
             "optimizer_message": str(optimization.message),
             "function_evaluations": int(optimization.nfev),
+            "active_phase_at_lower_bound": bool(at_lower_bound.size),
+            "lower_bound_support_indices": lower_bound_support_indices,
             "audit": audit,
         }
         if accepted:
@@ -527,13 +2059,14 @@ def _solve_reduced_log_domain_active_support(
             break
         if not at_lower_bound.size:
             break
+        if not drop_authorized_by_root:
+            break
         local_drop = int(at_lower_bound[np.argmin(v[at_lower_bound])])
         dropped_index = current_support[local_drop]
         dropped.append(dropped_index)
         current_support = tuple(
             index for index in current_support if index != dropped_index
         )
-        current_q = q
         current_qtot = float(qtot)
         current_lambda = lambda_
         current_full_m = full_m
@@ -553,6 +2086,344 @@ def _solve_reduced_log_domain_active_support(
             "dropped_support_indices": tuple(dropped),
             "attempts": tuple(attempts),
         },
+    }
+
+
+def _solve_structural_zero_reduced_log_domain_active_support(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    support_indices: Sequence[int],
+    condensate_valid_mask: np.ndarray,
+    budget_scale: np.ndarray,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+    support_closure_tolerance: float,
+    max_function_evaluations: int,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> dict[str, Any]:
+    """Run the normalized reduced solve after removing zero rows.
+
+    With nonnegative stoichiometry, an exactly zero inventory row forces every
+    species using that row to zero.  Those gases and rows can be omitted from
+    the positive log solve.  Their potentials are then reconstructed so their
+    total contribution is safely below the unchanged full physical audit.
+    """
+
+    ag = gas_formula_matrix
+    ac_full = condensate_formula_matrix_full
+    target = target_inventory
+    gamma = gas_standard_source
+    initial_support = tuple(int(index) for index in support_indices)
+    positive_rows = target > 0.0
+    zero_rows = target == 0.0
+    forced_dropped = tuple(
+        index
+        for index in initial_support
+        if np.any(ac_full[zero_rows, index] > 0.0)
+    )
+    support = tuple(
+        index for index in initial_support if index not in set(forced_dropped)
+    )
+    amounts_for_solve = np.asarray(
+        condensate_amounts_init, dtype=np.float64
+    ).copy()
+    if forced_dropped:
+        amounts_for_solve[
+            np.asarray(forced_dropped, dtype=np.int64)
+        ] = 0.0
+    base_report: dict[str, Any] = {
+        "schema": (
+            "exogibbs_zero_barrier_structural_zero_log_rescue_v1"
+        ),
+        "eligible": False,
+        "attempted": False,
+        "accepted": False,
+        "zero_target_rows": tuple(
+            int(index) for index in np.flatnonzero(zero_rows).tolist()
+        ),
+        "initial_support_indices": initial_support,
+        "structural_zero_dropped_support_indices": forced_dropped,
+    }
+    if np.any(target < 0.0):
+        base_report["skip_reason"] = "negative_target_row"
+        return {"accepted": False, "candidate": None, "report": base_report}
+    if np.any(ag < 0.0) or np.any(ac_full < 0.0):
+        base_report["skip_reason"] = "signed_stoichiometry_row"
+        return {"accepted": False, "candidate": None, "report": base_report}
+    if not np.any(positive_rows):
+        base_report["skip_reason"] = "no_positive_target_row"
+        return {"accepted": False, "candidate": None, "report": base_report}
+    suppressed_gases = (
+        np.any(ag[zero_rows] > 0.0, axis=0)
+        if np.any(zero_rows)
+        else np.zeros(ag.shape[1], dtype=bool)
+    )
+    retained_gases = ~suppressed_gases
+    if not np.any(retained_gases):
+        base_report["skip_reason"] = "no_gas_without_zero_target_element"
+        return {"accepted": False, "candidate": None, "report": base_report}
+    eligible, reason = _reduced_log_domain_eligibility(
+        gas_formula_matrix=ag[positive_rows][:, retained_gases],
+        condensate_formula_matrix_full=ac_full[positive_rows],
+        target_inventory=target[positive_rows],
+        support_indices=support,
+    )
+    base_report.update(
+        {
+            "eligible": eligible,
+            "retained_gas_count": int(np.count_nonzero(retained_gases)),
+            "suppressed_gas_indices": tuple(
+                int(index)
+                for index in np.flatnonzero(suppressed_gases).tolist()
+            ),
+        }
+    )
+    if not eligible:
+        base_report["skip_reason"] = reason
+        return {"accepted": False, "candidate": None, "report": base_report}
+
+    base_report["attempted"] = True
+    reduced = _solve_normalized_gas_reduced_linear_support(
+        gas_formula_matrix=ag[positive_rows][:, retained_gases],
+        condensate_formula_matrix_full=ac_full[positive_rows],
+        target_inventory=target[positive_rows],
+        gas_standard_source=gamma[retained_gases],
+        condensate_standard_source_full=condensate_standard_source_full,
+        gas_log_amounts_init=np.asarray(gas_log_amounts_init)[retained_gases],
+        condensate_amounts_init=amounts_for_solve,
+        total_gas_log_amount_init=total_gas_log_amount_init,
+        element_potential_init=np.asarray(element_potential_init)[positive_rows],
+        support_indices=support,
+        condensate_valid_mask=condensate_valid_mask,
+        budget_scale=budget_scale[positive_rows],
+        stationarity_tolerance=stationarity_tolerance,
+        budget_tolerance=budget_tolerance,
+        total_density_tolerance=total_density_tolerance,
+        support_closure_tolerance=support_closure_tolerance,
+        max_function_evaluations=max_function_evaluations,
+        function_evaluation_budget=function_evaluation_budget,
+    )
+    candidate = reduced["candidate"]
+    normalized_local_kkt_passed = bool(
+        candidate is not None
+        and _physical_audit_local_kkt_passed(
+            candidate["audit"],
+            optimizer_success=bool(candidate["optimizer_success"]),
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+        )
+    )
+    base_report["normalized_linear_local_kkt_passed"] = (
+        normalized_local_kkt_passed
+    )
+    if normalized_local_kkt_passed:
+        base_report["inner_formulation"] = (
+            "normalized_gas_reduced_linear_amounts"
+        )
+    else:
+        base_report["normalized_linear_solve"] = reduced["report"]
+        reduced = _solve_reduced_log_domain_active_support(
+            gas_formula_matrix=ag[positive_rows][:, retained_gases],
+            condensate_formula_matrix_full=ac_full[positive_rows],
+            target_inventory=target[positive_rows],
+            gas_standard_source=gamma[retained_gases],
+            condensate_standard_source_full=(
+                condensate_standard_source_full
+            ),
+            gas_log_amounts_init=np.asarray(gas_log_amounts_init)[
+                retained_gases
+            ],
+            condensate_amounts_init=amounts_for_solve,
+            total_gas_log_amount_init=total_gas_log_amount_init,
+            element_potential_init=np.asarray(element_potential_init)[
+                positive_rows
+            ],
+            support_indices=support,
+            condensate_valid_mask=condensate_valid_mask,
+            budget_scale=budget_scale[positive_rows],
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            allow_greedy_drop=True,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+        base_report["inner_formulation"] = "reduced_log_domain"
+    base_report["solve"] = reduced["report"]
+    candidate = reduced["candidate"]
+    if candidate is None:
+        base_report["failure_reason"] = "reduced_solver_no_candidate"
+        return {"accepted": False, "candidate": None, "report": base_report}
+
+    full_lambda = np.zeros_like(target, dtype=np.float64)
+    full_lambda[positive_rows] = np.asarray(
+        candidate["element_potential"], dtype=np.float64
+    )
+    qtot = float(candidate["total_gas_log_amount"])
+    full_amounts = np.asarray(
+        candidate["condensate_amounts"], dtype=np.float64
+    )
+    full_support = tuple(candidate["support_indices"])
+    log_fraction_cap: float | None = None
+    zero_potential: float | None = None
+    inactive_phase_limits: tuple[tuple[int, float], ...] = ()
+    zero_potential_limits = [0.0]
+    if np.any(zero_rows) and np.any(suppressed_gases):
+        if budget_tolerance <= 0.0 or total_density_tolerance <= 0.0:
+            base_report["failure_reason"] = "zero_tolerance_reconstruction"
+            return {"accepted": False, "candidate": None, "report": base_report}
+        suppressed_count = int(np.count_nonzero(suppressed_gases))
+        coefficient_sums = np.sum(ag[:, suppressed_gases], axis=1)
+        log_fraction_limits = [
+            float(np.log(0.01 * total_density_tolerance / suppressed_count))
+        ]
+        for row in np.flatnonzero(coefficient_sums > 0.0):
+            amount_limit = 0.01 * budget_tolerance / budget_scale[row]
+            if not np.isfinite(amount_limit) or amount_limit <= 0.0:
+                base_report["failure_reason"] = (
+                    "invalid_structural_zero_amount_limit"
+                )
+                return {
+                    "accepted": False,
+                    "candidate": None,
+                    "report": base_report,
+                }
+            log_fraction_limits.append(
+                float(
+                    np.log(amount_limit)
+                    - qtot
+                    - np.log(coefficient_sums[row])
+                )
+            )
+        log_fraction_cap = min(-50.0, *log_fraction_limits)
+        base_logits = (
+            ag[positive_rows][:, suppressed_gases].T
+            @ full_lambda[positive_rows]
+            - gamma[suppressed_gases]
+        )
+        zero_coefficients = np.sum(
+            ag[zero_rows][:, suppressed_gases], axis=0
+        )
+        zero_potential_limits.extend(
+            float(value)
+            for value in (
+                (log_fraction_cap - base_logits) / zero_coefficients
+            ).tolist()
+        )
+
+    if np.any(zero_rows):
+        support_mask = np.zeros(ac_full.shape[1], dtype=bool)
+        if full_support:
+            support_mask[np.asarray(full_support, dtype=np.int64)] = True
+        zero_condensate_coefficients = np.sum(ac_full[zero_rows], axis=0)
+        inactive_zero_phases = np.flatnonzero(
+            condensate_valid_mask
+            & ~support_mask
+            & (zero_condensate_coefficients > 0.0)
+        )
+        base_driving = (
+            condensate_standard_source_full
+            - ac_full[positive_rows].T @ full_lambda[positive_rows]
+        )
+        inactive_phase_limits = tuple(
+            (
+                int(index),
+                float(
+                    (
+                        base_driving[index]
+                        - support_closure_tolerance
+                    )
+                    / zero_condensate_coefficients[index]
+                ),
+            )
+            for index in inactive_zero_phases.tolist()
+        )
+        zero_potential_limits.extend(
+            limit for _index, limit in inactive_phase_limits
+        )
+        zero_potential = float(min(zero_potential_limits))
+        full_lambda[zero_rows] = zero_potential
+
+    full_q = qtot + ag.T @ full_lambda - gamma
+    audit = _physical_zero_barrier_audit(
+        gas_formula_matrix=ag,
+        condensate_formula_matrix_full=ac_full,
+        target_inventory=target,
+        gas_standard_source=gamma,
+        condensate_standard_source_full=condensate_standard_source_full,
+        gas_log_amounts=full_q,
+        condensate_amounts=full_amounts,
+        total_gas_log_amount=qtot,
+        element_potential=full_lambda,
+        support_indices=full_support,
+        condensate_valid_mask=condensate_valid_mask,
+        budget_scale=budget_scale,
+        optimizer_success=bool(candidate["optimizer_success"]),
+        stationarity_tolerance=stationarity_tolerance,
+        budget_tolerance=budget_tolerance,
+        total_density_tolerance=total_density_tolerance,
+        support_closure_tolerance=support_closure_tolerance,
+    )
+    active_phase_at_lower_bound = bool(
+        candidate.get("active_phase_at_lower_bound", False)
+    )
+    accepted = bool(
+        audit["accepted"] and not active_phase_at_lower_bound
+    )
+    base_report.update(
+        {
+            "accepted": accepted,
+            "active_phase_at_lower_bound": active_phase_at_lower_bound,
+            "lower_bound_support_indices": tuple(
+                candidate.get("lower_bound_support_indices", ())
+            ),
+            "reconstruction_log_gas_fraction_cap": log_fraction_cap,
+            "reconstructed_zero_row_potential": zero_potential,
+            "inactive_zero_row_phase_potential_limits": (
+                inactive_phase_limits
+            ),
+            "full_physical_audit": {
+                key: audit[key]
+                for key in (
+                    "accepted",
+                    "finite",
+                    "positive_active_amounts",
+                    "gas_stationarity_max_abs",
+                    "active_condensate_driving_max_abs",
+                    "inactive_condensate_violation_max_abs",
+                    "budget_scaled_max_abs",
+                    "total_density_scaled_abs",
+                )
+            },
+        }
+    )
+    full_candidate = dict(candidate)
+    full_candidate.update(
+        {
+            "accepted": accepted,
+            "gas_log_amounts": full_q,
+            "condensate_amounts": full_amounts,
+            "total_gas_log_amount": qtot,
+            "element_potential": full_lambda,
+            "support_indices": full_support,
+            "audit": audit,
+        }
+    )
+    return {
+        "accepted": accepted,
+        "candidate": full_candidate,
+        "report": base_report,
     }
 
 
@@ -576,6 +2447,7 @@ def _solve_reduced_log_domain_support_branches(
     support_closure_tolerance: float,
     max_function_evaluations: int,
     max_support_nodes: int = _REDUCED_SUPPORT_NODE_LIMIT,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
 ) -> dict[str, Any]:
     """Explore bounded leave-one-out supports with exact physical closure.
 
@@ -594,7 +2466,14 @@ def _solve_reduced_log_domain_support_branches(
     node_reports: list[dict[str, Any]] = []
     accepted_result: dict[str, Any] | None = None
 
+    evaluation_limit_reached = False
     while queue and len(visited) < int(max_support_nodes):
+        if (
+            function_evaluation_budget is not None
+            and function_evaluation_budget.remaining <= 0
+        ):
+            evaluation_limit_reached = True
+            break
         support = queue.pop(0)
         if support in visited:
             continue
@@ -622,6 +2501,7 @@ def _solve_reduced_log_domain_support_branches(
             support_closure_tolerance=support_closure_tolerance,
             max_function_evaluations=max_function_evaluations,
             allow_greedy_drop=False,
+            function_evaluation_budget=function_evaluation_budget,
         )
         node_reports.append(
             {
@@ -663,6 +2543,9 @@ def _solve_reduced_log_domain_support_branches(
             "node_limit_reached": bool(
                 queue and len(visited) >= int(max_support_nodes)
             ),
+            "function_evaluation_limit_reached": (
+                evaluation_limit_reached
+            ),
             "visited_supports": tuple(
                 node["support_indices"] for node in node_reports
             ),
@@ -692,6 +2575,224 @@ def _gas_elemental_capacities(
         if positive.size == candidates.size:
             capacities[index] = float(np.min(positive))
     return capacities
+
+
+def _pivot_rank_one_support_addition(
+    *,
+    condensate_formula_matrix_full: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    target_inventory: np.ndarray,
+    condensate_amounts: np.ndarray,
+    support_indices: Sequence[int],
+    added_support_index: int,
+    budget_scale: np.ndarray,
+) -> dict[str, Any]:
+    """Pivot one favorable phase into a rank-one dependent support.
+
+    The null direction is formed in capacity-relative amount coordinates, so
+    a uniform change of the inventory gauge leaves the pivot unchanged.  This
+    is only an initializer transformation: rank, descent, nonnegativity,
+    unique-limiter, and scaled inventory-preservation guards must all pass.
+    """
+
+    ac_full = np.asarray(
+        condensate_formula_matrix_full, dtype=np.float64
+    )
+    hcond_full = np.asarray(
+        condensate_standard_source_full, dtype=np.float64
+    )
+    target = np.asarray(target_inventory, dtype=np.float64)
+    full_amounts = np.asarray(condensate_amounts, dtype=np.float64)
+    base_support = tuple(int(index) for index in support_indices)
+    added_index = int(added_support_index)
+    extended_support = base_support + (added_index,)
+    report: dict[str, Any] = {
+        "schema": "exogibbs_zero_barrier_rank_one_simplex_pivot_v1",
+        "attempted": False,
+        "applied": False,
+        "coordinate_system": "capacity_relative_condensate_amount",
+        "base_support_indices": base_support,
+        "added_support_index": added_index,
+        "extended_support_indices": extended_support,
+        "inventory_residual_tolerance": (
+            _SIMPLEX_PIVOT_INVENTORY_RESIDUAL_TOLERANCE
+        ),
+    }
+
+    def failed(reason: str) -> dict[str, Any]:
+        report["failure_reason"] = reason
+        return {
+            "applied": False,
+            "support_indices": extended_support,
+            "condensate_amounts": full_amounts.copy(),
+            "report": report,
+        }
+
+    if (
+        not base_support
+        or added_index in set(base_support)
+        or np.any(target < 0.0)
+        or np.any(ac_full < 0.0)
+    ):
+        return failed("ineligible_structure")
+    positive_rows = target > 0.0
+    zero_rows = target == 0.0
+    if (
+        not np.any(positive_rows)
+        or (
+            np.any(zero_rows)
+            and np.any(ac_full[zero_rows, added_index] > 0.0)
+        )
+    ):
+        return failed("structurally_impossible_added_phase")
+
+    extended = np.asarray(extended_support, dtype=np.int64)
+    ac = ac_full[positive_rows][:, extended]
+    target_positive = target[positive_rows]
+    amount_scales = _maximum_condensate_amount_scales(
+        ac, target_positive
+    )
+    if (
+        np.any(~np.any(ac > 0.0, axis=0))
+        or not np.all(np.isfinite(amount_scales))
+        or np.any(amount_scales <= 0.0)
+    ):
+        return failed("invalid_capacity_scale")
+    base_amounts = full_amounts[np.asarray(base_support, dtype=np.int64)]
+    if not np.all(np.isfinite(base_amounts)) or np.any(base_amounts <= 0.0):
+        return failed("nonpositive_base_amount")
+
+    scaled_matrix = (
+        np.asarray(budget_scale, dtype=np.float64)[positive_rows, None]
+        * ac
+        * amount_scales[None, :]
+    )
+    base_rank = int(np.linalg.matrix_rank(scaled_matrix[:, :-1]))
+    extended_rank = int(np.linalg.matrix_rank(scaled_matrix))
+    report.update(
+        {
+            "attempted": True,
+            "base_rank": base_rank,
+            "extended_rank": extended_rank,
+            "extended_nullity": len(extended_support) - extended_rank,
+        }
+    )
+    if (
+        base_rank != len(base_support)
+        or extended_rank != len(base_support)
+    ):
+        return failed("not_one_new_rank_deficiency")
+
+    try:
+        _left, _singular_values, right_vectors = np.linalg.svd(
+            scaled_matrix, full_matrices=True
+        )
+    except np.linalg.LinAlgError:
+        return failed("nullspace_factorization_failed")
+    relative_direction = np.asarray(
+        right_vectors[-1], dtype=np.float64
+    )
+    direction_scale = float(
+        np.max(np.abs(relative_direction), initial=0.0)
+    )
+    direction_tolerance = 64.0 * np.finfo(np.float64).eps * max(
+        direction_scale, 1.0
+    )
+    if abs(float(relative_direction[-1])) <= direction_tolerance:
+        return failed("added_phase_has_no_null_direction")
+    relative_direction *= np.sign(relative_direction[-1])
+    decreasing = np.flatnonzero(
+        relative_direction[:-1] < -direction_tolerance
+    )
+    if not decreasing.size:
+        return failed("no_leaving_phase")
+
+    amount_direction = amount_scales * relative_direction
+    objective_terms = hcond_full[extended] * amount_direction
+    objective_direction = float(np.sum(objective_terms))
+    objective_scale = max(float(np.sum(np.abs(objective_terms))), 1.0e-300)
+    objective_tolerance = 64.0 * np.finfo(np.float64).eps * objective_scale
+    report["objective_direction"] = objective_direction
+    report["objective_direction_tolerance"] = objective_tolerance
+    if objective_direction >= -objective_tolerance:
+        return failed("nondecreasing_pivot_direction")
+
+    relative_before = np.concatenate(
+        [base_amounts / amount_scales[:-1], np.asarray([0.0])]
+    )
+    limiting_steps = (
+        relative_before[decreasing]
+        / -relative_direction[decreasing]
+    )
+    if (
+        not np.all(np.isfinite(limiting_steps))
+        or np.any(limiting_steps <= 0.0)
+    ):
+        return failed("invalid_limiting_step")
+    step = float(np.min(limiting_steps))
+    tie_tolerance = 64.0 * np.finfo(np.float64).eps * max(step, 1.0)
+    limiting = decreasing[
+        np.abs(limiting_steps - step) <= tie_tolerance
+    ]
+    if limiting.size != 1:
+        report["limiting_local_indices"] = tuple(
+            int(index) for index in limiting.tolist()
+        )
+        return failed("nonunique_limiting_phase")
+    leaving_local = int(limiting[0])
+    leaving_index = base_support[leaving_local]
+    relative_after = relative_before + step * relative_direction
+    relative_tolerance = 256.0 * np.finfo(np.float64).eps * max(
+        float(np.max(np.abs(relative_after), initial=0.0)), 1.0
+    )
+    relative_after[leaving_local] = 0.0
+    if (
+        np.any(relative_after < -relative_tolerance)
+        or np.any(
+            np.delete(relative_after, leaving_local)
+            <= relative_tolerance
+        )
+    ):
+        return failed("pivot_amount_nonpositivity")
+    relative_after = np.maximum(relative_after, 0.0)
+    extended_amounts_after = amount_scales * relative_after
+    candidate_amounts = full_amounts.copy()
+    candidate_amounts[extended] = extended_amounts_after
+    candidate_amounts[leaving_index] = 0.0
+    candidate_support = tuple(
+        index for index in extended_support if index != leaving_index
+    )
+    inventory_residual = (
+        ac_full
+        @ (candidate_amounts - full_amounts)
+    )
+    scaled_inventory_residual = (
+        np.asarray(budget_scale, dtype=np.float64) * inventory_residual
+    )
+    residual_norm = float(
+        np.max(np.abs(scaled_inventory_residual), initial=0.0)
+    )
+    report.update(
+        {
+            "leaving_support_index": leaving_index,
+            "pivot_step": step,
+            "scaled_inventory_residual_max_abs": residual_norm,
+            "candidate_support_indices": candidate_support,
+        }
+    )
+    if (
+        not np.all(np.isfinite(candidate_amounts))
+        or residual_norm
+        > _SIMPLEX_PIVOT_INVENTORY_RESIDUAL_TOLERANCE
+    ):
+        return failed("inventory_preservation_failed")
+    report["applied"] = True
+    return {
+        "applied": True,
+        "support_indices": candidate_support,
+        "condensate_amounts": candidate_amounts,
+        "report": report,
+    }
 
 
 def _capacity_regularized_initializer(
@@ -835,7 +2936,7 @@ def _capacity_regularized_initializer(
     return q_after, qtot_after, lambda_after, report
 
 
-def polish_zero_barrier_active_support(
+def _polish_zero_barrier_support_once(
     *,
     gas_formula_matrix: Any,
     condensate_formula_matrix_full: Any,
@@ -854,15 +2955,19 @@ def polish_zero_barrier_active_support(
     support_closure_tolerance: float = 1.0e-8,
     budget_relative_floor: float = 1.0e-6,
     max_function_evaluations: int = 400,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+    reduce_initial_support: bool = True,
+    use_zero_barrier_dual: bool = True,
+    use_finite_barrier_homotopy: bool = True,
 ) -> ZeroBarrierPolishResult:
-    """Refine one fixed support against the physical zero-barrier KKT system.
+    """Run one exact zero-barrier solve/drop and reduced-support search.
 
-    Gas log amounts, active condensate amounts, total gas, and element
-    potentials are solved together.  Condensate amounts use capacity-scaled
-    linear coordinates so that a phase with a negative exact amount can be
-    removed explicitly.  A returned state is accepted only after all physical
-    stationarity, inventory, total-density, positivity, and inactive-support
-    closure checks pass.
+    The primary solve analytically eliminates gas log amounts and solves for
+    element potentials, total gas, and capacity-scaled linear condensate
+    amounts.  Structural zero rows are removed before that reduced solve.  A
+    dense joint solve remains as a compatibility fallback.  Every returned
+    state must pass the unchanged physical stationarity, inventory,
+    total-density, positivity, and inactive-support closure checks.
     """
 
     ag = np.asarray(gas_formula_matrix, dtype=np.float64)
@@ -921,6 +3026,8 @@ def polish_zero_barrier_active_support(
         )
     ):
         raise ValueError("Zero-barrier polish tolerances must be non-negative.")
+    if int(max_function_evaluations) <= 0:
+        raise ValueError("max_function_evaluations must be positive.")
 
     if condensate_valid_mask is None:
         valid_mask = np.ones(condensate_count, dtype=bool)
@@ -948,6 +3055,126 @@ def polish_zero_barrier_active_support(
         zero_target_absolute_scale,
     )
     budget_scale = 1.0 / budget_denominator
+    dual_support = _select_support_with_zero_barrier_dual(
+        gas_formula_matrix=ag,
+        condensate_formula_matrix_full=ac_full,
+        target_inventory=target,
+        gas_standard_source=gamma,
+        condensate_standard_source_full=hcond_full,
+        gas_log_amounts_init=q_initial,
+        condensate_amounts_init=full_m_initial,
+        total_gas_log_amount_init=qtot_initial,
+        element_potential_init=lambda_initial,
+        condensate_valid_mask=valid_mask,
+        stationarity_tolerance=stationarity_tolerance,
+        support_closure_tolerance=support_closure_tolerance,
+        max_function_evaluations=max_function_evaluations,
+        enabled=bool(reduce_initial_support and use_zero_barrier_dual),
+        function_evaluation_budget=function_evaluation_budget,
+    )
+    dual_support_report = dict(dual_support["report"])
+    finite_homotopy = _select_support_with_finite_barrier_homotopy(
+        gas_formula_matrix=ag,
+        condensate_formula_matrix_full=ac_full,
+        target_inventory=target,
+        gas_standard_source=gamma,
+        condensate_standard_source_full=hcond_full,
+        gas_log_amounts_init=q_initial,
+        condensate_amounts_init=full_m_initial,
+        total_gas_log_amount_init=qtot_initial,
+        element_potential_init=lambda_initial,
+        support_indices=support_initial,
+        budget_scale=budget_scale,
+        max_function_evaluations=max_function_evaluations,
+        enabled=bool(
+            reduce_initial_support
+            and use_finite_barrier_homotopy
+            and not dual_support["applied"]
+        ),
+        function_evaluation_budget=function_evaluation_budget,
+    )
+    finite_homotopy_report = dict(finite_homotopy["report"])
+    if dual_support["applied"]:
+        reduced_support = tuple(dual_support["support_indices"])
+        reduced_full_m = np.asarray(
+            dual_support["condensate_amounts"], dtype=np.float64
+        )
+        reduced_q_initial = np.asarray(
+            dual_support["gas_log_amounts"], dtype=np.float64
+        )
+        reduced_qtot_initial = float(
+            dual_support["total_gas_log_amount"]
+        )
+        reduced_lambda_initial = np.asarray(
+            dual_support["element_potential"], dtype=np.float64
+        )
+        _, _, basic_support_reduction = (
+            _reduce_initial_condensate_support_to_basic(
+                condensate_formula_matrix_full=ac_full,
+                condensate_standard_source_full=hcond_full,
+                target_inventory=target,
+                condensate_amounts=reduced_full_m,
+                support_indices=reduced_support,
+                budget_scale=budget_scale,
+                budget_tolerance=budget_tolerance,
+                enabled=False,
+            )
+        )
+        basic_support_reduction["skip_reason"] = (
+            "zero_barrier_dual_support_selected"
+        )
+        basic_support_reduction["input_initializer"] = (
+            "zero_barrier_dual_support"
+        )
+    elif finite_homotopy["applied"]:
+        homotopy_support = tuple(finite_homotopy["support_indices"])
+        homotopy_full_m = np.asarray(
+            finite_homotopy["condensate_amounts"], dtype=np.float64
+        )
+        (
+            reduced_support,
+            reduced_full_m,
+            basic_support_reduction,
+        ) = _reduce_initial_condensate_support_to_basic(
+            condensate_formula_matrix_full=ac_full,
+            condensate_standard_source_full=hcond_full,
+            target_inventory=target,
+            condensate_amounts=homotopy_full_m,
+            support_indices=homotopy_support,
+            budget_scale=budget_scale,
+            budget_tolerance=budget_tolerance,
+            enabled=bool(reduce_initial_support),
+        )
+        basic_support_reduction["input_initializer"] = (
+            "finite_barrier_homotopy_selected_support"
+        )
+        reduced_q_initial = np.asarray(
+            finite_homotopy["gas_log_amounts"], dtype=np.float64
+        )
+        reduced_qtot_initial = float(
+            finite_homotopy["total_gas_log_amount"]
+        )
+        reduced_lambda_initial = np.asarray(
+            finite_homotopy["element_potential"], dtype=np.float64
+        )
+    else:
+        (
+            reduced_support,
+            reduced_full_m,
+            basic_support_reduction,
+        ) = _reduce_initial_condensate_support_to_basic(
+            condensate_formula_matrix_full=ac_full,
+            condensate_standard_source_full=hcond_full,
+            target_inventory=target,
+            condensate_amounts=full_m_initial,
+            support_indices=support_initial,
+            budget_scale=budget_scale,
+            budget_tolerance=budget_tolerance,
+            enabled=bool(reduce_initial_support),
+        )
+        reduced_q_initial = q_initial.copy()
+        reduced_qtot_initial = qtot_initial
+        reduced_lambda_initial = lambda_initial.copy()
     (
         q_initial,
         qtot_initial,
@@ -957,23 +3184,264 @@ def polish_zero_barrier_active_support(
         gas_formula_matrix=ag,
         target_inventory=target,
         gas_standard_source=gamma,
-        gas_log_amounts=q_initial,
-        total_gas_log_amount=qtot_initial,
-        element_potential=lambda_initial,
+        gas_log_amounts=reduced_q_initial,
+        total_gas_log_amount=reduced_qtot_initial,
+        element_potential=reduced_lambda_initial,
     )
-    current_support = support_initial
+    initializer_regularization["applied_to_reduced_primary"] = False
+    initializer_regularization[
+        "applied_to_dense_compatibility_fallback"
+    ] = True
+    current_support = reduced_support
     current_q = q_initial.copy()
     current_qtot = qtot_initial
     current_lambda = lambda_initial.copy()
-    current_full_m = full_m_initial.copy()
-    dropped: list[int] = []
+    current_full_m = reduced_full_m
+    dropped = list(
+        index for index in support_initial if index not in set(reduced_support)
+    )
     attempts: list[dict[str, Any]] = []
     last_optimizer_success = False
     last_optimizer_status = 0
     last_optimizer_message = "not run"
     last_nfev = 0
+    selected_formulation = "capacity_scaled_linear_amounts"
+    reduced_primary_selected = False
+    dense_solver_attempted = False
+    primary_candidate: dict[str, Any] | None = None
+    normalized_primary_report: dict[str, Any] = {
+        "schema": (
+            "exogibbs_zero_barrier_normalized_gas_reduced_linear_v1"
+        ),
+        "attempted": False,
+        "accepted": False,
+        "skip_reason": "structural_zero_reduced_solver_selected",
+    }
+    structural_log_rescue_report: dict[str, Any] = {
+        "schema": (
+            "exogibbs_zero_barrier_structural_zero_log_rescue_v1"
+        ),
+        "eligible": False,
+        "attempted": False,
+        "accepted": False,
+        "skip_reason": "normalized_gas_reduced_local_kkt_passed",
+    }
+    structural_zero_preferred = bool(
+        np.any(target == 0.0)
+        and np.all(target >= 0.0)
+        and np.all(ag >= 0.0)
+        and np.all(ac_full >= 0.0)
+    )
+    if not structural_zero_preferred:
+        structural_log_rescue_report["skip_reason"] = (
+            "no_eligible_structural_zero_rows"
+        )
 
-    for _drop_round in range(len(support_initial) + 1):
+    def run_structural_log_rescue() -> dict[str, Any]:
+        return _solve_structural_zero_reduced_log_domain_active_support(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts_init=reduced_q_initial,
+            condensate_amounts_init=reduced_full_m,
+            total_gas_log_amount_init=reduced_qtot_initial,
+            element_potential_init=reduced_lambda_initial,
+            support_indices=reduced_support,
+            condensate_valid_mask=valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+
+    def candidate_has_local_kkt(candidate: dict[str, Any] | None) -> bool:
+        return bool(
+            candidate is not None
+            and not candidate.get("active_phase_at_lower_bound", False)
+            and _physical_audit_local_kkt_passed(
+                candidate["audit"],
+                optimizer_success=bool(candidate["optimizer_success"]),
+                stationarity_tolerance=stationarity_tolerance,
+                budget_tolerance=budget_tolerance,
+                total_density_tolerance=total_density_tolerance,
+            )
+        )
+
+    def structural_selected_formulation() -> str:
+        if structural_log_rescue_report.get("inner_formulation") == (
+            "reduced_log_domain"
+        ):
+            return "structural_zero_reduced_log_domain"
+        return "structural_zero_normalized_gas_reduced_linear_amounts"
+
+    if structural_zero_preferred:
+        structural_log_rescue = run_structural_log_rescue()
+        structural_log_rescue_report = dict(
+            structural_log_rescue["report"]
+        )
+        primary_candidate = structural_log_rescue["candidate"]
+        if candidate_has_local_kkt(primary_candidate):
+            reduced_primary_selected = True
+            selected_formulation = structural_selected_formulation()
+
+    if not reduced_primary_selected:
+        normalized_primary = _solve_normalized_gas_reduced_linear_support(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts_init=reduced_q_initial,
+            condensate_amounts_init=reduced_full_m,
+            total_gas_log_amount_init=reduced_qtot_initial,
+            element_potential_init=reduced_lambda_initial,
+            support_indices=reduced_support,
+            condensate_valid_mask=valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+        normalized_primary_report = dict(normalized_primary["report"])
+        primary_candidate = normalized_primary["candidate"]
+        if candidate_has_local_kkt(primary_candidate):
+            reduced_primary_selected = True
+            selected_formulation = "normalized_gas_reduced_linear_amounts"
+
+    support_initializer_applied = bool(
+        dual_support["applied"] or finite_homotopy["applied"]
+    )
+    if support_initializer_applied and not reduced_primary_selected:
+        remaining_before_retry = (
+            None
+            if function_evaluation_budget is None
+            else function_evaluation_budget.remaining
+        )
+        retry_result = _polish_zero_barrier_support_once(
+            gas_formula_matrix=gas_formula_matrix,
+            condensate_formula_matrix_full=(
+                condensate_formula_matrix_full
+            ),
+            target_inventory=target_inventory,
+            gas_standard_source=gas_standard_source,
+            condensate_standard_source_full=(
+                condensate_standard_source_full
+            ),
+            gas_log_amounts_init=gas_log_amounts_init,
+            condensate_amounts_init=condensate_amounts_init,
+            total_gas_log_amount_init=total_gas_log_amount_init,
+            element_potential_init=element_potential_init,
+            support_indices=support_indices,
+            condensate_valid_mask=condensate_valid_mask,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            budget_relative_floor=budget_relative_floor,
+            max_function_evaluations=max_function_evaluations,
+            function_evaluation_budget=function_evaluation_budget,
+            reduce_initial_support=reduce_initial_support,
+            use_zero_barrier_dual=False,
+            use_finite_barrier_homotopy=not finite_homotopy["applied"],
+        )
+        retry_report = dict(retry_result.report)
+        retry_initializer_diagnostics = {
+            "schema": (
+                "exogibbs_zero_barrier_retry_initializer_diagnostics_v1"
+            ),
+            "zero_barrier_dual_support_oracle": retry_report.get(
+                "zero_barrier_dual_support_oracle"
+            ),
+            "finite_barrier_homotopy_initializer": retry_report.get(
+                "finite_barrier_homotopy_initializer"
+            ),
+            "support_initializer_postselection_fallback": retry_report.get(
+                "support_initializer_postselection_fallback"
+            ),
+        }
+        retry_report["zero_barrier_dual_support_oracle"] = (
+            dual_support_report
+        )
+        retry_report["finite_barrier_homotopy_initializer"] = (
+            finite_homotopy_report
+        )
+        retry_report["support_initializer_postselection_fallback"] = {
+            "schema": (
+                "exogibbs_zero_barrier_support_initializer_fallback_v1"
+            ),
+            "attempted": True,
+            "reason": "selected_support_local_root_failed",
+            "selected_support_indices": reduced_support,
+            "selected_support_source": (
+                "zero_barrier_dual_support"
+                if dual_support["applied"]
+                else "finite_barrier_homotopy"
+            ),
+            "remaining_function_evaluations_before_retry": (
+                remaining_before_retry
+            ),
+            "selected_support_normalized_solve": (
+                normalized_primary_report
+            ),
+            "selected_support_structural_zero_solve": (
+                structural_log_rescue_report
+            ),
+            "retry_accepted": bool(retry_result.accepted),
+            "retry_support_indices": tuple(retry_result.support_indices),
+            "retry_selected_numerical_formulation": retry_report.get(
+                "selected_numerical_formulation"
+            ),
+            "retry_initializer_diagnostics": retry_initializer_diagnostics,
+        }
+        return ZeroBarrierPolishResult(
+            accepted=retry_result.accepted,
+            gas_log_amounts=retry_result.gas_log_amounts,
+            condensate_amounts=retry_result.condensate_amounts,
+            total_gas_log_amount=retry_result.total_gas_log_amount,
+            element_potential=retry_result.element_potential,
+            support_indices=retry_result.support_indices,
+            report=retry_report,
+        )
+
+    if reduced_primary_selected and primary_candidate is not None:
+        current_q = np.asarray(
+            primary_candidate["gas_log_amounts"], dtype=np.float64
+        )
+        current_full_m = np.asarray(
+            primary_candidate["condensate_amounts"], dtype=np.float64
+        )
+        current_qtot = float(primary_candidate["total_gas_log_amount"])
+        current_lambda = np.asarray(
+            primary_candidate["element_potential"], dtype=np.float64
+        )
+        current_support = tuple(primary_candidate["support_indices"])
+        last_optimizer_success = bool(
+            primary_candidate["optimizer_success"]
+        )
+        last_optimizer_status = int(primary_candidate["optimizer_status"])
+        last_optimizer_message = str(
+            primary_candidate["optimizer_message"]
+        )
+        last_nfev = int(primary_candidate["function_evaluations"])
+        dropped = [
+            index
+            for index in support_initial
+            if index not in set(current_support)
+        ]
+
+    dense_drop_rounds = (
+        0 if reduced_primary_selected else len(current_support) + 1
+    )
+    for _drop_round in range(dense_drop_rounds):
+        dense_solver_attempted = True
         active = np.asarray(current_support, dtype=np.int64)
         ac = ac_full[:, active]
         hcond = hcond_full[active]
@@ -1059,6 +3527,26 @@ def polish_zero_barrier_active_support(
                 matrix[total_row, qtot_column] = -np.sum(gas_fractions)
             return matrix
 
+        call_evaluation_limit = _function_evaluation_call_limit(
+            max_function_evaluations,
+            function_evaluation_budget,
+        )
+        if call_evaluation_limit <= 0:
+            last_optimizer_success = False
+            last_optimizer_status = 0
+            last_optimizer_message = "function evaluation limit reached"
+            last_nfev = 0
+            attempts.append(
+                {
+                    "support_indices": current_support,
+                    "optimizer_success": False,
+                    "optimizer_status": last_optimizer_status,
+                    "optimizer_message": last_optimizer_message,
+                    "function_evaluations": 0,
+                    "failure_reason": "function_evaluation_limit_reached",
+                }
+            )
+            break
         try:
             optimization = _least_squares_with_scipy_overflow_guard(
                 residual,
@@ -1069,29 +3557,66 @@ def polish_zero_barrier_active_support(
                 ftol=1.0e-13,
                 xtol=1.0e-13,
                 gtol=1.0e-13,
-                max_nfev=int(max_function_evaluations),
+                max_nfev=call_evaluation_limit,
             )
         except (FloatingPointError, OverflowError, ValueError) as error:
+            conservative_evaluations = 0
+            if function_evaluation_budget is not None:
+                function_evaluation_budget.consume(call_evaluation_limit)
+                conservative_evaluations = call_evaluation_limit
             last_optimizer_success = False
             last_optimizer_status = 0
             last_optimizer_message = f"{type(error).__name__}: {error}"
-            last_nfev = 0
+            last_nfev = conservative_evaluations
             attempts.append(
                 {
                     "support_indices": current_support,
                     "optimizer_success": False,
                     "optimizer_status": last_optimizer_status,
                     "optimizer_message": last_optimizer_message,
-                    "function_evaluations": 0,
+                    "function_evaluations": last_nfev,
+                    "function_evaluations_conservative": bool(
+                        function_evaluation_budget is not None
+                    ),
                     "failure_reason": "linear_amount_solver_exception",
                 }
             )
             break
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(int(optimization.nfev))
         q, active_amounts, qtot, lambda_ = unpack(optimization.x)
         last_optimizer_success = bool(optimization.success)
         last_optimizer_status = int(optimization.status)
         last_optimizer_message = str(optimization.message)
         last_nfev = int(optimization.nfev)
+        candidate_full_m = np.zeros(condensate_count, dtype=np.float64)
+        candidate_full_m[active] = active_amounts
+        candidate_audit = _physical_zero_barrier_audit(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts=q,
+            condensate_amounts=candidate_full_m,
+            total_gas_log_amount=qtot,
+            element_potential=lambda_,
+            support_indices=current_support,
+            condensate_valid_mask=valid_mask,
+            budget_scale=budget_scale,
+            optimizer_success=last_optimizer_success,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+        )
+        drop_authorized_by_root = _physical_audit_root_blocks_passed(
+            candidate_audit,
+            optimizer_success=last_optimizer_success,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+        )
         attempts.append(
             {
                 "support_indices": current_support,
@@ -1101,6 +3626,7 @@ def polish_zero_barrier_active_support(
                 "function_evaluations": last_nfev,
                 "cost": float(optimization.cost),
                 "optimality": float(optimization.optimality),
+                "drop_authorized_by_root": drop_authorized_by_root,
                 "active_condensate_amounts": tuple(
                     float(value) for value in active_amounts.tolist()
                 ),
@@ -1108,6 +3634,12 @@ def polish_zero_barrier_active_support(
         )
         nonpositive = np.flatnonzero(active_amounts <= 0.0)
         if nonpositive.size:
+            current_q = q
+            current_qtot = float(qtot)
+            current_lambda = lambda_
+            current_full_m = candidate_full_m
+            if not drop_authorized_by_root:
+                break
             relative_amounts = active_amounts / amount_scales
             local_drop = int(
                 nonpositive[
@@ -1119,9 +3651,6 @@ def polish_zero_barrier_active_support(
             current_support = tuple(
                 index for index in current_support if index != dropped_index
             )
-            current_q = q
-            current_qtot = float(qtot)
-            current_lambda = lambda_
             current_full_m = np.zeros(condensate_count, dtype=np.float64)
             for index, amount in zip(active.tolist(), active_amounts.tolist()):
                 if index != dropped_index:
@@ -1130,8 +3659,7 @@ def polish_zero_barrier_active_support(
         current_q = q
         current_qtot = float(qtot)
         current_lambda = lambda_
-        current_full_m = np.zeros(condensate_count, dtype=np.float64)
-        current_full_m[active] = active_amounts
+        current_full_m = candidate_full_m
         break
 
     linear_audit = _physical_zero_barrier_audit(
@@ -1153,11 +3681,18 @@ def polish_zero_barrier_active_support(
         total_density_tolerance=total_density_tolerance,
         support_closure_tolerance=support_closure_tolerance,
     )
+    linear_local_kkt_passed = _physical_audit_local_kkt_passed(
+        linear_audit,
+        optimizer_success=last_optimizer_success,
+        stationarity_tolerance=stationarity_tolerance,
+        budget_tolerance=budget_tolerance,
+        total_density_tolerance=total_density_tolerance,
+    )
     fallback_eligible, fallback_reason = _reduced_log_domain_eligibility(
         gas_formula_matrix=ag,
         condensate_formula_matrix_full=ac_full,
         target_inventory=target,
-        support_indices=support_initial,
+        support_indices=reduced_support,
     )
     fallback_report: dict[str, Any] = {
         "schema": "exogibbs_zero_barrier_reduced_support_search_v1",
@@ -1165,13 +3700,29 @@ def polish_zero_barrier_active_support(
         "attempted": False,
         "accepted": False,
         "skip_reason": (
-            "linear_amount_physical_audit_accepted"
-            if linear_audit["accepted"]
-            else fallback_reason
+            (
+                "reduced_primary_physical_audit_accepted"
+                if linear_audit["accepted"]
+                else "reduced_primary_inactive_support_closure_only"
+            )
+            if reduced_primary_selected
+            else (
+                "linear_amount_physical_audit_accepted"
+                if linear_audit["accepted"]
+                else (
+                    "linear_amount_inactive_support_closure_only"
+                    if linear_local_kkt_passed
+                    else fallback_reason
+                )
+            )
         ),
     }
-    selected_formulation = "capacity_scaled_linear_amounts"
-    if not linear_audit["accepted"] and fallback_eligible:
+    if (
+        not reduced_primary_selected
+        and not linear_audit["accepted"]
+        and not linear_local_kkt_passed
+        and fallback_eligible
+    ):
         reduced = _solve_reduced_log_domain_support_branches(
             gas_formula_matrix=ag,
             condensate_formula_matrix_full=ac_full,
@@ -1179,10 +3730,10 @@ def polish_zero_barrier_active_support(
             gas_standard_source=gamma,
             condensate_standard_source_full=hcond_full,
             gas_log_amounts_init=q_initial,
-            condensate_amounts_init=full_m_initial,
+            condensate_amounts_init=reduced_full_m,
             total_gas_log_amount_init=qtot_initial,
             element_potential_init=lambda_initial,
-            support_indices=support_initial,
+            support_indices=reduced_support,
             condensate_valid_mask=valid_mask,
             budget_scale=budget_scale,
             stationarity_tolerance=stationarity_tolerance,
@@ -1190,6 +3741,7 @@ def polish_zero_barrier_active_support(
             total_density_tolerance=total_density_tolerance,
             support_closure_tolerance=support_closure_tolerance,
             max_function_evaluations=max_function_evaluations,
+            function_evaluation_budget=function_evaluation_budget,
         )
         fallback_report = dict(reduced["report"])
         if reduced["accepted"]:
@@ -1275,7 +3827,14 @@ def polish_zero_barrier_active_support(
         ),
         "zero_target_absolute_scale": zero_target_absolute_scale,
         "initializer_regularization": initializer_regularization,
+        "zero_barrier_dual_support_oracle": dual_support_report,
+        "finite_barrier_homotopy_initializer": finite_homotopy_report,
+        "basic_support_reduction": basic_support_reduction,
         "selected_numerical_formulation": selected_formulation,
+        "normalized_gas_reduced_primary": normalized_primary_report,
+        "structural_zero_reduced_log_rescue": (
+            structural_log_rescue_report
+        ),
         "linear_amount_physical_audit": {
             key: linear_audit[key]
             for key in (
@@ -1288,7 +3847,31 @@ def polish_zero_barrier_active_support(
                 "budget_scaled_max_abs",
                 "total_density_scaled_abs",
             )
+        }
+        | {
+            "attempted": dense_solver_attempted,
+            "role": "compatibility_fallback",
+            "audit_source": (
+                "capacity_scaled_linear_amounts"
+                if dense_solver_attempted
+                else selected_formulation
+            ),
+            "local_kkt_passed": linear_local_kkt_passed,
         },
+        "selected_physical_audit": {
+            key: audit[key]
+            for key in (
+                "accepted",
+                "finite",
+                "positive_active_amounts",
+                "gas_stationarity_max_abs",
+                "active_condensate_driving_max_abs",
+                "inactive_condensate_violation_max_abs",
+                "budget_scaled_max_abs",
+                "total_density_scaled_abs",
+            )
+        }
+        | {"formulation": selected_formulation},
         "reduced_log_domain_fallback": fallback_report,
         "full_condensate_driving": tuple(
             float(value) for value in full_driving.tolist()
@@ -1306,6 +3889,605 @@ def polish_zero_barrier_active_support(
         element_potential=np.asarray(current_lambda, dtype=np.float64),
         support_indices=current_support,
         report=report,
+    )
+
+
+def _local_zero_barrier_kkt_failure_reasons(
+    report: dict[str, Any],
+    *,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+) -> tuple[str, ...]:
+    """Return failed physical blocks other than inactive-support closure."""
+
+    reasons = []
+    if not report["finite"]:
+        reasons.append("nonfinite_state")
+    if not report["optimizer_success"]:
+        reasons.append("optimizer_failed")
+    if not report["positive_active_amounts"]:
+        reasons.append("nonpositive_active_amount")
+    if report["gas_stationarity_max_abs"] > stationarity_tolerance:
+        reasons.append("gas_stationarity")
+    if (
+        report["active_condensate_driving_max_abs"]
+        > stationarity_tolerance
+    ):
+        reasons.append("active_condensate_stationarity")
+    if report["budget_scaled_max_abs"] > budget_tolerance:
+        reasons.append("element_budget")
+    if report["total_density_scaled_abs"] > total_density_tolerance:
+        reasons.append("total_density")
+    return tuple(reasons)
+
+
+def _zero_barrier_report_function_evaluations(
+    report: dict[str, Any],
+) -> tuple[int, int]:
+    """Return dense and gas-eliminated evaluation counts for one solve pass."""
+
+    linear = sum(
+        int(attempt.get("function_evaluations", 0))
+        for attempt in report.get("attempts", ())
+    )
+    reduced = sum(
+        int(attempt.get("function_evaluations", 0))
+        for attempt in report.get(
+            "normalized_gas_reduced_primary", {}
+        ).get("attempts", ())
+    )
+    reduced += sum(
+        int(round_report.get("function_evaluations", 0))
+        for round_report in report.get(
+            "finite_barrier_homotopy_initializer", {}
+        ).get("rounds", ())
+    )
+    reduced += int(
+        report.get("zero_barrier_dual_support_oracle", {}).get(
+            "function_evaluations", 0
+        )
+    )
+    structural_report = report.get(
+        "structural_zero_reduced_log_rescue", {}
+    )
+    for solve_key in ("normalized_linear_solve", "solve"):
+        structural_solve = structural_report.get(solve_key, {})
+        reduced += sum(
+            int(attempt.get("function_evaluations", 0))
+            for attempt in structural_solve.get("attempts", ())
+        )
+    def retry_initializer_evaluations(
+        fallback_report: dict[str, Any],
+    ) -> int:
+        retry_reduced = sum(
+            int(attempt.get("function_evaluations", 0))
+            for attempt in fallback_report.get(
+                "selected_support_normalized_solve", {}
+            ).get("attempts", ())
+        )
+        discarded_structural = fallback_report.get(
+            "selected_support_structural_zero_solve", {}
+        )
+        for solve_key in ("normalized_linear_solve", "solve"):
+            structural_solve = discarded_structural.get(solve_key, {})
+            retry_reduced += sum(
+                int(attempt.get("function_evaluations", 0))
+                for attempt in structural_solve.get("attempts", ())
+            )
+        retry_diagnostics = fallback_report.get(
+            "retry_initializer_diagnostics", {}
+        )
+        retry_reduced += int(
+            (
+                retry_diagnostics.get(
+                    "zero_barrier_dual_support_oracle"
+                )
+                or {}
+            ).get("function_evaluations", 0)
+        )
+        retry_reduced += sum(
+            int(round_report.get("function_evaluations", 0))
+            for round_report in (
+                retry_diagnostics.get(
+                    "finite_barrier_homotopy_initializer"
+                )
+                or {}
+            ).get("rounds", ())
+        )
+        nested_fallback = retry_diagnostics.get(
+            "support_initializer_postselection_fallback"
+        )
+        if nested_fallback:
+            retry_reduced += retry_initializer_evaluations(nested_fallback)
+        return retry_reduced
+
+    initializer_retry = report.get(
+        "support_initializer_postselection_fallback", {}
+    )
+    reduced += retry_initializer_evaluations(initializer_retry)
+    fallback = report.get("reduced_log_domain_fallback", {})
+    for node in fallback.get("nodes", ()):
+        solve_report = node.get("solve", {})
+        reduced += sum(
+            int(attempt.get("function_evaluations", 0))
+            for attempt in solve_report.get("attempts", ())
+        )
+    return linear, reduced
+
+
+def polish_zero_barrier_active_support(
+    *,
+    gas_formula_matrix: Any,
+    condensate_formula_matrix_full: Any,
+    target_inventory: Any,
+    gas_standard_source: Any,
+    condensate_standard_source_full: Any,
+    gas_log_amounts_init: Any,
+    condensate_amounts_init: Any,
+    total_gas_log_amount_init: Any,
+    element_potential_init: Any,
+    support_indices: Sequence[int],
+    condensate_valid_mask: Any | None = None,
+    stationarity_tolerance: float = 1.0e-8,
+    budget_tolerance: float = 1.0e-8,
+    total_density_tolerance: float = 1.0e-8,
+    support_closure_tolerance: float = 1.0e-8,
+    budget_relative_floor: float = 1.0e-6,
+    max_function_evaluations: int = 400,
+) -> ZeroBarrierPolishResult:
+    """Refine and close an exact zero-barrier condensate support.
+
+    Each solve pass may remove phases with non-positive exact amounts.  When
+    every local physical block passes but an inactive phase remains favorable,
+    the most negative temperature-valid phase is added and the exact solve is
+    repeated from the refined state.  The deterministic search caches locally
+    valid states, rejects addition edges that return to a visited state, and
+    backtracks to untried candidates.  It fails closed on local KKT failure or
+    exhausted search and work limits.
+    """
+
+    original_support = tuple(int(index) for index in support_indices)
+    current_arguments = {
+        "gas_formula_matrix": gas_formula_matrix,
+        "condensate_formula_matrix_full": condensate_formula_matrix_full,
+        "target_inventory": target_inventory,
+        "gas_standard_source": gas_standard_source,
+        "condensate_standard_source_full": (
+            condensate_standard_source_full
+        ),
+        "gas_log_amounts_init": gas_log_amounts_init,
+        "condensate_amounts_init": condensate_amounts_init,
+        "total_gas_log_amount_init": total_gas_log_amount_init,
+        "element_potential_init": element_potential_init,
+        "support_indices": original_support,
+        "condensate_valid_mask": condensate_valid_mask,
+        "stationarity_tolerance": stationarity_tolerance,
+        "budget_tolerance": budget_tolerance,
+        "total_density_tolerance": total_density_tolerance,
+        "support_closure_tolerance": support_closure_tolerance,
+        "budget_relative_floor": budget_relative_floor,
+        "max_function_evaluations": max_function_evaluations,
+        "reduce_initial_support": True,
+    }
+    condensate_count = int(
+        np.asarray(condensate_standard_source_full).size
+    )
+    valid_mask = (
+        np.ones(condensate_count, dtype=bool)
+        if condensate_valid_mask is None
+        else np.asarray(condensate_valid_mask, dtype=bool)
+    )
+    closure_target = np.asarray(target_inventory, dtype=np.float64)
+    closure_ac_full = np.asarray(
+        condensate_formula_matrix_full, dtype=np.float64
+    )
+    closure_hcond_full = np.asarray(
+        condensate_standard_source_full, dtype=np.float64
+    )
+    closure_positive_target = np.abs(
+        closure_target[closure_target != 0.0]
+    )
+    closure_inventory_scale = (
+        float(np.max(closure_positive_target))
+        if closure_positive_target.size
+        else 1.0
+    )
+    closure_zero_target_scale = max(
+        float(budget_relative_floor),
+        np.finfo(np.float64).eps * closure_inventory_scale,
+        1.0e-300,
+    )
+    closure_budget_scale = np.reciprocal(
+        np.where(
+            closure_target != 0.0,
+            np.maximum(np.abs(closure_target), 1.0e-300),
+            closure_zero_target_scale,
+        )
+    )
+    round_limit = _ACTIVE_SET_CLOSURE_ROUND_LIMIT
+    evaluation_limit = (
+        max(1, int(max_function_evaluations))
+        * _ACTIVE_SET_CLOSURE_ROUND_LIMIT
+    )
+    evaluation_budget = _FunctionEvaluationBudget(evaluation_limit)
+    current_arguments["function_evaluation_budget"] = evaluation_budget
+    visited_inputs: list[tuple[int, ...]] = []
+    visited_output_keys: set[tuple[int, ...]] = set()
+    visited_outputs: list[tuple[int, ...]] = []
+    node_results: dict[tuple[int, ...], ZeroBarrierPolishResult] = {}
+    node_incoming_edges: dict[
+        tuple[int, ...], tuple[tuple[int, ...], int] | None
+    ] = {}
+    node_stack: list[tuple[int, ...]] = []
+    added_support_indices: list[int] = []
+    blacklisted_addition_edges: list[tuple[tuple[int, ...], int]] = []
+    blacklisted_addition_edge_set: set[
+        tuple[tuple[int, ...], int]
+    ] = set()
+    pending_addition_edge: tuple[tuple[int, ...], int] | None = None
+    round_reports: list[dict[str, Any]] = []
+    cumulative_linear_evaluations = 0
+    cumulative_reduced_evaluations = 0
+    termination_reason = "round_limit_reached"
+    final_result: ZeroBarrierPolishResult | None = None
+    initial_basic_support_reduction: dict[str, Any] | None = None
+    initial_dual_support_oracle: dict[str, Any] | None = None
+    initial_finite_homotopy: dict[str, Any] | None = None
+
+    for round_index in range(round_limit):
+        input_support = tuple(current_arguments["support_indices"])
+        attempted_addition_edge = pending_addition_edge
+        pending_addition_edge = None
+        visited_inputs.append(input_support)
+        evaluations_before_round = evaluation_budget.used
+        result = _polish_zero_barrier_support_once(**current_arguments)
+        evaluations_in_round = (
+            evaluation_budget.used - evaluations_before_round
+        )
+        current_arguments["reduce_initial_support"] = False
+        final_result = result
+        output_support = tuple(result.support_indices)
+        report = result.report
+        if (
+            initial_basic_support_reduction is None
+            and "basic_support_reduction" in report
+        ):
+            initial_basic_support_reduction = dict(
+                report["basic_support_reduction"]
+            )
+        if (
+            initial_dual_support_oracle is None
+            and report.get("zero_barrier_dual_support_oracle", {}).get(
+                "enabled", False
+            )
+        ):
+            initial_dual_support_oracle = dict(
+                report["zero_barrier_dual_support_oracle"]
+            )
+        if (
+            initial_finite_homotopy is None
+            and report.get("finite_barrier_homotopy_initializer", {}).get(
+                "enabled", False
+            )
+        ):
+            initial_finite_homotopy = dict(
+                report["finite_barrier_homotopy_initializer"]
+            )
+        linear_evaluations, reduced_evaluations = (
+            _zero_barrier_report_function_evaluations(report)
+        )
+        if linear_evaluations + reduced_evaluations != evaluations_in_round:
+            raise RuntimeError(
+                "Zero-barrier diagnostics do not match the shared "
+                "function-evaluation budget."
+            )
+        cumulative_linear_evaluations += linear_evaluations
+        cumulative_reduced_evaluations += reduced_evaluations
+        failure_reasons = _local_zero_barrier_kkt_failure_reasons(
+            report,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+        )
+        output_key = tuple(sorted(output_support))
+        added_index: int | None = None
+        added_driving: float | None = None
+        rejected_added_index: int | None = None
+        rejected_addition_edge: tuple[tuple[int, ...], int] | None = None
+        addition_base_support: tuple[int, ...] | None = None
+        addition_pivot_report: dict[str, Any] | None = None
+        backtracked_supports: list[tuple[int, ...]] = []
+        backtracked_edges: list[tuple[tuple[int, ...], int]] = []
+        action = "stop"
+        stop = True
+
+        if result.accepted:
+            visited_output_keys.add(output_key)
+            visited_outputs.append(output_support)
+            termination_reason = "accepted"
+            action = "accepted"
+        elif evaluation_budget.remaining <= 0:
+            visited_output_keys.add(output_key)
+            visited_outputs.append(output_support)
+            termination_reason = "function_evaluation_limit_reached"
+            action = "stop_evaluation_limit"
+        elif failure_reasons:
+            visited_output_keys.add(output_key)
+            visited_outputs.append(output_support)
+            termination_reason = "local_kkt_failed"
+            action = "stop_local_kkt_failure"
+        else:
+            if output_key in visited_output_keys:
+                if attempted_addition_edge is None:
+                    termination_reason = "support_cycle_detected"
+                    action = "stop_cycle"
+                else:
+                    rejected_added_index = attempted_addition_edge[1]
+                    rejected_addition_edge = attempted_addition_edge
+                    if (
+                        attempted_addition_edge
+                        not in blacklisted_addition_edge_set
+                    ):
+                        blacklisted_addition_edge_set.add(
+                            attempted_addition_edge
+                        )
+                        blacklisted_addition_edges.append(
+                            attempted_addition_edge
+                        )
+                        backtracked_edges.append(attempted_addition_edge)
+            else:
+                visited_output_keys.add(output_key)
+                visited_outputs.append(output_support)
+                node_results[output_key] = result
+                node_incoming_edges[output_key] = attempted_addition_edge
+                node_stack.append(output_key)
+
+            if action != "stop_cycle":
+                selected_base_result: ZeroBarrierPolishResult | None = None
+                selected_base_key: tuple[int, ...] | None = None
+                while node_stack:
+                    base_key = node_stack[-1]
+                    base_result = node_results[base_key]
+                    base_support = tuple(base_result.support_indices)
+                    base_driving = np.asarray(
+                        base_result.report["full_condensate_driving"],
+                        dtype=np.float64,
+                    )
+                    active_mask = np.zeros(condensate_count, dtype=bool)
+                    if base_support:
+                        active_mask[
+                            np.asarray(base_support, dtype=np.int64)
+                        ] = True
+                    all_candidates = tuple(
+                        sorted(
+                            (
+                                int(index)
+                                for index in np.flatnonzero(
+                                    valid_mask
+                                    & ~active_mask
+                                    & (
+                                        base_driving
+                                        < -float(support_closure_tolerance)
+                                    )
+                                ).tolist()
+                            ),
+                            key=lambda index: (
+                                float(base_driving[index]),
+                                index,
+                            ),
+                        )
+                    )
+                    selected_index: int | None = None
+                    for candidate_index in all_candidates:
+                        candidate_edge = (base_key, candidate_index)
+                        if (
+                            candidate_edge
+                            in blacklisted_addition_edge_set
+                        ):
+                            continue
+                        candidate_support = base_support + (candidate_index,)
+                        candidate_key = tuple(sorted(candidate_support))
+                        if candidate_key in visited_output_keys:
+                            blacklisted_addition_edge_set.add(candidate_edge)
+                            blacklisted_addition_edges.append(candidate_edge)
+                            backtracked_edges.append(candidate_edge)
+                            continue
+                        selected_index = candidate_index
+                        break
+
+                    if selected_index is not None:
+                        added_index = selected_index
+                        added_driving = float(base_driving[selected_index])
+                        addition_base_support = base_support
+                        selected_base_result = base_result
+                        selected_base_key = base_key
+                        break
+                    if not all_candidates:
+                        termination_reason = (
+                            "inactive_violation_without_addable_phase"
+                        )
+                        action = "stop_no_addable_phase"
+                        break
+
+                    exhausted_key = node_stack.pop()
+                    exhausted_result = node_results[exhausted_key]
+                    backtracked_supports.append(
+                        tuple(exhausted_result.support_indices)
+                    )
+                    incoming_edge = node_incoming_edges[exhausted_key]
+                    if incoming_edge is None:
+                        termination_reason = "support_cycle_detected"
+                        action = "stop_cycle"
+                        break
+                    if incoming_edge not in blacklisted_addition_edge_set:
+                        blacklisted_addition_edge_set.add(incoming_edge)
+                        blacklisted_addition_edges.append(incoming_edge)
+                        backtracked_edges.append(incoming_edge)
+
+                if selected_base_result is not None:
+                    unpivoted_next_support = (
+                        tuple(selected_base_result.support_indices)
+                        + (int(added_index),)
+                    )
+                    addition_pivot = _pivot_rank_one_support_addition(
+                        condensate_formula_matrix_full=closure_ac_full,
+                        condensate_standard_source_full=(
+                            closure_hcond_full
+                        ),
+                        target_inventory=closure_target,
+                        condensate_amounts=(
+                            selected_base_result.condensate_amounts
+                        ),
+                        support_indices=(
+                            selected_base_result.support_indices
+                        ),
+                        added_support_index=int(added_index),
+                        budget_scale=closure_budget_scale,
+                    )
+                    addition_pivot_report = dict(
+                        addition_pivot["report"]
+                    )
+                    next_support = tuple(
+                        addition_pivot["support_indices"]
+                    )
+                    next_condensate_amounts = (
+                        np.asarray(
+                            addition_pivot["condensate_amounts"],
+                            dtype=np.float64,
+                        )
+                        if addition_pivot["applied"]
+                        else selected_base_result.condensate_amounts
+                    )
+                    if not addition_pivot["applied"]:
+                        next_support = unpivoted_next_support
+                    if evaluation_budget.remaining <= 0:
+                        termination_reason = (
+                            "function_evaluation_limit_reached"
+                        )
+                        action = "stop_evaluation_limit"
+                    elif round_index + 1 >= round_limit:
+                        termination_reason = "round_limit_reached"
+                        action = "stop_round_limit"
+                    else:
+                        action = "add_inactive_phase"
+                        stop = False
+                        added_support_indices.append(int(added_index))
+                        pending_addition_edge = (
+                            tuple(selected_base_key),
+                            int(added_index),
+                        )
+                        current_arguments.update(
+                            gas_log_amounts_init=(
+                                selected_base_result.gas_log_amounts
+                            ),
+                            condensate_amounts_init=(
+                                next_condensate_amounts
+                            ),
+                            total_gas_log_amount_init=(
+                                selected_base_result.total_gas_log_amount
+                            ),
+                            element_potential_init=(
+                                selected_base_result.element_potential
+                            ),
+                            support_indices=next_support,
+                        )
+
+        round_reports.append(
+            {
+                "round_index": round_index,
+                "input_support_indices": input_support,
+                "output_support_indices": output_support,
+                "dropped_support_indices": tuple(
+                    index
+                    for index in input_support
+                    if index not in set(output_support)
+                ),
+                "accepted": bool(result.accepted),
+                "local_kkt_passed": not failure_reasons,
+                "local_kkt_failure_reasons": failure_reasons,
+                "inactive_condensate_violation_max_abs": float(
+                    report["inactive_condensate_violation_max_abs"]
+                ),
+                "action": action,
+                "added_support_index": added_index,
+                "added_support_driving": added_driving,
+                "addition_base_support_indices": addition_base_support,
+                "rank_one_simplex_pivot": addition_pivot_report,
+                "rejected_added_support_index": rejected_added_index,
+                "rejected_addition_edge": rejected_addition_edge,
+                "backtracked_support_indices": tuple(backtracked_supports),
+                "backtracked_addition_edges": tuple(backtracked_edges),
+                "selected_numerical_formulation": report[
+                    "selected_numerical_formulation"
+                ],
+                "linear_function_evaluations": linear_evaluations,
+                "reduced_function_evaluations": reduced_evaluations,
+                "function_evaluations": (
+                    linear_evaluations + reduced_evaluations
+                ),
+            }
+        )
+        if stop:
+            break
+
+    if final_result is None:
+        raise RuntimeError("Zero-barrier active-set closure did not run.")
+    final_report = dict(final_result.report)
+    final_support = tuple(final_result.support_indices)
+    final_report["initial_support_indices"] = original_support
+    final_report["final_support_indices"] = final_support
+    final_report["dropped_support_indices"] = tuple(
+        index for index in original_support if index not in set(final_support)
+    )
+    if initial_basic_support_reduction is not None:
+        final_report["basic_support_reduction"] = (
+            initial_basic_support_reduction
+        )
+    if initial_dual_support_oracle is not None:
+        final_report["zero_barrier_dual_support_oracle"] = (
+            initial_dual_support_oracle
+        )
+    if initial_finite_homotopy is not None:
+        final_report["finite_barrier_homotopy_initializer"] = (
+            initial_finite_homotopy
+        )
+    final_report["exact_active_set_closure"] = {
+        "schema": "exogibbs_zero_barrier_exact_active_set_closure_v1",
+        "attempted": True,
+        "search_strategy": "bounded_depth_first",
+        "addition_attempted": bool(added_support_indices),
+        "accepted": bool(final_result.accepted),
+        "termination_reason": termination_reason,
+        "round_limit": round_limit,
+        "function_evaluation_limit": evaluation_limit,
+        "round_count": len(round_reports),
+        "initial_support_indices": original_support,
+        "final_support_indices": final_support,
+        "visited_supports": tuple(visited_inputs),
+        "visited_output_supports": tuple(visited_outputs),
+        "added_support_indices": tuple(added_support_indices),
+        "blacklisted_addition_edges": tuple(blacklisted_addition_edges),
+        "cumulative_linear_function_evaluations": (
+            cumulative_linear_evaluations
+        ),
+        "cumulative_reduced_function_evaluations": (
+            cumulative_reduced_evaluations
+        ),
+        "cumulative_function_evaluations": (
+            cumulative_linear_evaluations
+            + cumulative_reduced_evaluations
+        ),
+        "rounds": tuple(round_reports),
+    }
+    return ZeroBarrierPolishResult(
+        accepted=final_result.accepted,
+        gas_log_amounts=final_result.gas_log_amounts,
+        condensate_amounts=final_result.condensate_amounts,
+        total_gas_log_amount=final_result.total_gas_log_amount,
+        element_potential=final_result.element_potential,
+        support_indices=final_support,
+        report=final_report,
     )
 
 

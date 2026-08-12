@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import replace
+import math
 
 import jax.numpy as jnp
 import numpy as np
@@ -18,7 +19,9 @@ from exogibbs.equilibrium.condensate.policy import (
 from exogibbs.equilibrium.condensate.profile import (
     _accept_trace_capacity_candidate,
     _conservation_rainout_inventory,
+    _gas_warm_start_for_next_layer,
     _rainout_gauge_scales,
+    _scale_initial_guess,
     _trace_capacity_acceptance_report,
 )
 from exogibbs.equilibrium.condensate.setup import (
@@ -228,6 +231,41 @@ def _trace_test_candidate(
         condensate_support_indices=jnp.asarray([0], dtype=jnp.int32),
         condensate_support_names=("H[s]",),
         diagnostics=diagnostics,
+    )
+
+
+def test_rainout_amount_scaling_shifts_barrier_epsilon() -> None:
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=jnp.asarray([0.0]),
+        gas_ntot=jnp.asarray(1.0),
+        condensate_amounts=jnp.asarray([0.25]),
+        support_amounts=(0.25,),
+        barrier_epsilon=jnp.asarray(-11.0),
+    )
+
+    scaled = _scale_initial_guess(initial, 1.0e8)
+
+    assert float(scaled.barrier_epsilon) == pytest.approx(
+        -11.0 + math.log(1.0e8)
+    )
+
+
+def test_rainout_warm_start_floor_scales_with_inventory() -> None:
+    base = _gas_warm_start_for_next_layer(
+        np.asarray([1.0, 0.0]),
+        inventory_sum=1.0,
+        conservation_inventory_sum=1.0,
+    )
+    scaled = _gas_warm_start_for_next_layer(
+        np.asarray([1.0e-12, 0.0]),
+        inventory_sum=1.0e-12,
+        conservation_inventory_sum=1.0e-12,
+    )
+
+    np.testing.assert_allclose(
+        np.asarray(scaled.gas_ln_n) - math.log(1.0e-12),
+        np.asarray(base.gas_ln_n),
+        rtol=1.0e-12,
     )
 
 
@@ -669,7 +707,7 @@ def test_rainout_depletion_snap_uses_reduced_crosscheck_error() -> None:
     )
 
 
-def test_rainout_retries_a_converged_state_failing_floorless_budget(
+def test_rainout_retries_cold_after_converged_warm_fails_floorless_budget(
     monkeypatch,
 ) -> None:
     setup = _fake_setup()
@@ -680,7 +718,7 @@ def test_rainout_retries_a_converged_state_failing_floorless_budget(
         scale = float(np.sum(scaled_budget))
         calls.append(scale)
         gas_n = scaled_budget[:2].copy()
-        if len(calls) <= 2:
+        if len(calls) == 1:
             gas_n[0] *= 1.1
         return _one_layer_profile(gas_n)
 
@@ -695,6 +733,14 @@ def test_rainout_retries_a_converged_state_failing_floorless_budget(
         T=np.asarray([200.0]),
         P=np.asarray([10.0]),
         b=jnp.asarray([0.6, 0.4, 0.0], dtype=jnp.float64),
+        init=(
+            CondensateEquilibriumInit(
+                gas_ln_n=jnp.log(
+                    jnp.asarray([0.6, 0.4], dtype=jnp.float64)
+                ),
+                gas_ntot=jnp.asarray(1.0, dtype=jnp.float64),
+            ),
+        ),
         options=CondensateEquilibriumOptions(rainout=True),
     )
 
@@ -702,8 +748,8 @@ def test_rainout_retries_a_converged_state_failing_floorless_budget(
     assert attempts[0]["rainout_floorless_budget_accepted"] is False
     assert attempts[0]["rainout_floorless_relative_tolerance"] == 1.0e-3
     assert attempts[0]["rainout_floorless_element_budget_residual"][0] > 0.0
-    assert attempts[2]["rainout_floorless_budget_accepted"] is True
-    assert calls[2] < calls[0]
+    assert attempts[1]["rainout_floorless_budget_accepted"] is True
+    np.testing.assert_allclose(calls, [calls[0], calls[0]])
 
 
 def test_rainout_method_conflicts_and_one_layer_api_are_rejected() -> None:
@@ -790,12 +836,10 @@ def test_rainout_stops_before_upper_layers_after_nonconvergence(
             options=CondensateEquilibriumOptions(rainout=True),
         )
 
-    assert temperatures_seen[0] == 300.0
-    assert all(temperature == 200.0 for temperature in temperatures_seen[1:])
-    assert 100.0 not in temperatures_seen
+    assert temperatures_seen == [300.0, 200.0, 200.0]
 
 
-def test_rainout_retries_uniform_gauge_and_restores_caller_scale(
+def test_rainout_retries_cold_in_one_uniform_gauge_and_restores_caller_scale(
     monkeypatch,
 ) -> None:
     setup = _fake_setup()
@@ -810,7 +854,7 @@ def test_rainout_retries_uniform_gauge_and_restores_caller_scale(
         initial_gas_seen.append(
             None if gas_ln_n is None else np.exp(np.asarray(gas_ln_n))
         )
-        if np.isclose(scale, maximum_scale):
+        if np.isclose(scale, maximum_scale) and gas_ln_n is not None:
             raise ValueError("element_potential must contain only finite values.")
         return _one_layer_profile(np.asarray(kwargs["b"])[:2])
 
@@ -837,29 +881,30 @@ def test_rainout_retries_uniform_gauge_and_restores_caller_scale(
         options=CondensateEquilibriumOptions(rainout=True),
     )
 
-    expected_retry_scale = 2.0e8 / 0.60000001
     np.testing.assert_allclose(
-        scales_seen[:3],
-        [maximum_scale, maximum_scale, expected_retry_scale],
+        scales_seen,
+        [maximum_scale, maximum_scale],
     )
     np.testing.assert_allclose(
         initial_gas_seen[0],
         np.asarray([0.6, 1.0e-8]) * maximum_scale,
     )
     assert initial_gas_seen[1] is None
-    np.testing.assert_allclose(
-        initial_gas_seen[2],
-        np.asarray([0.6, 1.0e-8]) * expected_retry_scale,
-    )
     np.testing.assert_allclose(np.asarray(result.layers[0].gas_n), [0.6, 1.0e-8])
     np.testing.assert_allclose(
         np.asarray(result.layers[0].condensate_amounts), [0.0]
     )
     np.testing.assert_allclose(
-        np.asarray(result.rainout_abundance_scale), [expected_retry_scale]
+        np.asarray(result.rainout_abundance_scale), [maximum_scale]
     )
     rainout_diagnostics = result.layers[0].diagnostics["rainout"]
+    assert rainout_diagnostics["schema"] == (
+        "exogibbs_condensate_rainout_layer_v2"
+    )
     assert rainout_diagnostics["solver_diagnostics_gauge"] == (
+        "canonical_internal_amount_gauge"
+    )
+    assert rainout_diagnostics["budget_audit_gauge"] == (
         "caller_abundance_gauge_times_abundance_scale"
     )
     assert rainout_diagnostics["public_result_gauge"] == (

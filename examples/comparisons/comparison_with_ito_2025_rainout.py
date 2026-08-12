@@ -455,8 +455,11 @@ def _exogibbs_profile_diagnostics(
     )
 
     policy = fixed_support_v2_production_policy()
+    caller_amount_scale = np.sum(
+        np.where(positive_target, target, 0.0), axis=1
+    )
     caller_budget_floor = (
-        float(policy.budget_relative_floor) / abundance_scale
+        float(policy.budget_relative_floor) * caller_amount_scale
     )[:, None]
     floor_scaled_mismatch = absolute_mismatch / np.maximum(
         np.abs(target), caller_budget_floor

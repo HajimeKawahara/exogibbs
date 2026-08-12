@@ -76,13 +76,14 @@ def _rainout_gauge_scales(
     maximum_total: float,
     total_targets: Sequence[float],
 ) -> tuple[float, ...]:
-    """Return bounded gauges with the highest feasible gauge first.
+    """Return bounded scale candidates with the preferred value first.
 
     Rainout normalizes the total element inventory after every layer.  Using
     the largest feasible total as the primary gauge therefore keeps the
-    working scale constant along the profile.  The remaining values are
-    strictly descending retry gauges; trace-element thresholds never select
-    the primary gauge.
+    working scale constant along the profile. The remaining values preserve
+    the historical scale policy for diagnostics and low-level tests;
+    production uses only the preferred value because every uniform scale is
+    normalized to the same canonical solver gauge.
     """
 
     active = inventory[normalization_mask]
@@ -164,6 +165,15 @@ def _scale_initial_guess(
             if initial_guess.support_amounts is None
             else tuple(float(value) * scale for value in initial_guess.support_amounts)
         ),
+        barrier_epsilon=(
+            None
+            if initial_guess.barrier_epsilon is None
+            else jnp.asarray(
+                initial_guess.barrier_epsilon,
+                dtype=jnp.float64,
+            )
+            + log_scale
+        ),
     )
 
 
@@ -220,7 +230,7 @@ def _with_rainout_layer_diagnostics(
 ) -> CondensateEquilibriumResult:
     diagnostics = dict(result.diagnostics or {})
     diagnostics["rainout"] = {
-        "schema": "exogibbs_condensate_rainout_layer_v1",
+        "schema": "exogibbs_condensate_rainout_layer_v2",
         "layer_index": layer_index,
         "scan_direction": "bottom_to_top",
         "abundance_scale": abundance_scale,
@@ -235,7 +245,8 @@ def _with_rainout_layer_diagnostics(
             else abundance_scale / previous_abundance_scale
         ),
         "working_inventory_total": working_inventory_total,
-        "solver_diagnostics_gauge": (
+        "solver_diagnostics_gauge": "canonical_internal_amount_gauge",
+        "budget_audit_gauge": (
             "caller_abundance_gauge_times_abundance_scale"
         ),
         "public_result_gauge": "caller_abundance_gauge",
@@ -847,10 +858,16 @@ def _gas_warm_start_for_next_layer(
     normalization = inventory_sum / conservation_inventory_sum
     gas_n = np.asarray(gas_amounts, dtype=np.float64)
     scaled_gas_n = gas_n * normalization
-    warm_floor = 1.0e-300 * max(1.0, float(np.sum(scaled_gas_n)))
+    scaled_gas_total = float(np.sum(scaled_gas_n))
+    if not math.isfinite(scaled_gas_total) or scaled_gas_total <= 0.0:
+        raise RuntimeError("Rainout gas warm start must have positive total amount.")
+    log_warm_floor = math.log(scaled_gas_total) + math.log(1.0e-300)
+    with np.errstate(divide="ignore"):
+        warm_gas_ln_n = np.maximum(np.log(scaled_gas_n), log_warm_floor)
+    warm_floor = 1.0e-300 * scaled_gas_total
     warm_gas_n = np.maximum(scaled_gas_n, warm_floor)
     return CondensateEquilibriumInit(
-        gas_ln_n=jnp.log(jnp.asarray(warm_gas_n, dtype=jnp.float64)),
+        gas_ln_n=jnp.asarray(warm_gas_ln_n, dtype=jnp.float64),
         gas_ntot=jnp.asarray(np.sum(warm_gas_n), dtype=jnp.float64),
     )
 
@@ -925,13 +942,18 @@ def run_rainout_profile(
                 previous_solution=previous_solution,
             ),
         )
-        scales = _rainout_gauge_scales(
+        candidate_scales = _rainout_gauge_scales(
             current_inventory,
             normalization_mask,
             minimum_targets=policy.rainout_gauge_minimum_targets,
             maximum_total=policy.rainout_gauge_maximum_total,
             total_targets=policy.rainout_gauge_total_targets,
         )
+        # The lifecycle normalizes every uniform caller scale to the same
+        # canonical inventory. Retrying lower scales therefore repeats the
+        # same numerical problem; only a warm-to-cold initializer retry is
+        # meaningful after amount-gauge normalization.
+        scales = candidate_scales[:1]
         attempts: list[Mapping[str, Any]] = []
         accepted_profile: CondensateEquilibriumProfileResult | None = None
         accepted_scale: float | None = None

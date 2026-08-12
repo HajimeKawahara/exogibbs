@@ -1,0 +1,3 @@
+[submodule "doc_ExoGibbs"]
+	path = doc_ExoGibbs
+	url = https://github.com/HajimeKawahara/doc_ExoGibbs.git

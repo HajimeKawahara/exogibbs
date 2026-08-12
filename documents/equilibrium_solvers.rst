@@ -99,8 +99,9 @@ roundoff bound may be snapped to exact depletion; such rows use a reduced
 propagation state so trace gas values in the raw full-network result cannot
 resurrect the element in a later layer.
 
-Rainout stops with ``RuntimeError`` if a layer cannot be accepted after the
-production numerical-gauge attempts; dependent upper layers are not evaluated.
+Rainout stops with ``RuntimeError`` if a layer cannot be accepted at its single
+scheduled abundance scale after all available initialization attempts;
+dependent upper layers are not evaluated.
 The one-layer condensate solver rejects ``rainout=True`` because there is no
 adjacent layer to receive the depleted inventory.
 
@@ -111,19 +112,81 @@ state must pass a joint zero-barrier refinement of gas amounts, condensate
 amounts, total gas, and element potentials, including active stationarity and
 inactive-support closure. Gas-only budget repair is also not applied as a
 post-solve transformation; a state outside the budget gate is rejected and a
-different production gauge or cold initialization is tried.
+cold initialization is tried once at the same scheduler abundance scale when
+a resolved warm or custom initializer was available.
+
+When a finite-barrier round converges to a finite state and passes the
+independent KKT gate but its support remains open, the lifecycle makes one
+catalog-wide zero-barrier closure attempt before adding phases to the finite-
+barrier support. Passing both the unchanged internal audit and the caller-
+gauge audit skips further finite-barrier expansion. A rejected exact candidate
+is discarded, and expansion resumes from the unmodified finite-barrier state.
+
+The exact refinement uses a deterministic, bounded add/drop active-set search.
+Before its first joint root, a guarded zero-barrier dual oracle considers all
+temperature-valid, structurally possible phases on the positive-gas boundary.
+It maximizes the target-weighted element potential subject to gas
+normalization and nonnegative phase driving. Tight dual constraints select an
+initializer support; only the subsequent exact root and full physical audit
+can accept it.
+
+If the oracle is ineligible, infeasible, or its selected support does not
+produce a local exact root, a bounded gas-eliminated homotopy may follow the
+original finite-barrier central state toward zero. It retains the deepest
+certified half-decade state when a later step loses its residual certificate,
+and selects a support only across a clear capacity-relative amount gap. A
+nonnegative linear program may then replace an eligible rank-deficient active
+support by a basic support while preserving ``A_cond @ m``. Failed initializer
+selection retains or retries the original support. These support selectors
+and reductions are initializers only; none can bypass the joint physical
+audit.
+
+It adds the most negative temperature-valid inactive phase only when every
+other zero-barrier acceptance block passes. Locally valid states are cached.
+When the addition creates exactly one rank dependency, a guarded simplex pivot
+may exchange the unique limiting phase while preserving ``A_cond @ m``.
+If an addition returns to any visited state, that edge is rejected; exhausted
+child searches are unwound and the next unblacklisted candidate from the
+nearest cached ancestor is tried within the search bounds.
+Acceptance requires one visited support to pass the full audit over every
+temperature-valid phase, and search exhaustion fails closed.
+
+Before any condensate lifecycle solve, the positive non-charge element
+inventory is normalized to unit total. The continuation values
+``(-11, -13, -15, -17)`` are log barriers in this canonical amount gauge;
+seeds, restoration floors, support closure, and zero-barrier refinement use
+the same gauge. Accepted positive-condensate states are restored to the
+caller's scale and pass a final caller-scale zero-barrier KKT audit. Public
+result construction also applies the configured caller-scale element-budget
+gate. The v2 budget denominator for a non-charge element row ``i`` is
+``max(abs(b[i]), relative_floor * B)``, with ``B`` equal to the sum of positive
+non-charge targets; non-finite scales fail closed.
+
+The experimental prepared fixed-support adapter remains a low-level interface;
+its caller owns both the input amount gauge and barrier schedule.
 
 Trace-gas initial amounts are regularized only for the zero-barrier optimizer,
-using their elemental capacities; the accepted equations remain floorless. If
-the primary capacity-scaled linear-amount refinement fails for an eligible
-positive budget, a normalized log-domain fallback explores a bounded set of
-leave-one-out supports from fresh copies of the original initializer. A phase
-at the fallback amount bound cannot be accepted as active. Every branch must
-pass the ordinary physical KKT and budget audit, so exhausting the search is a
-hard failure rather than an approximate trace-phase acceptance.
+using their elemental capacities; the accepted equations remain floorless. In
+the exact refinement, gas stationarity analytically eliminates the
+per-species gas log amounts from the preferred nonlinear systems. Their size
+therefore depends on the number of elements and active condensates rather than
+the full gas catalog. Every reduced candidate is reconstructed in the full
+catalog and must pass the unchanged physical audit. For non-negative
+stoichiometry with exact-zero element rows, structurally impossible gases and
+phases are omitted and the absent-element potentials are reconstructed to
+close both gas and inactive-phase inequalities. The dense all-gas formulation
+is retained only as a compatibility fallback when reduced formulations do not
+pass a local KKT block. For an eligible positive budget, a normalized
+log-domain fallback may also explore a bounded set of leave-one-out supports.
+Its starting support and condensate amounts are the basic representation when
+the reduction was applied, or the original closed support otherwise; its gas
+variables come from the capacity-regularized initializer. A phase at the
+fallback amount bound cannot be accepted as active. Every branch must pass the
+ordinary physical KKT and budget audit, so exhausting the search is a hard
+failure rather than an approximate trace-phase acceptance.
 
-A closed and finite barrier terminal state may serve as an initializer for the
-zero-barrier refinement when its gas, budget, complementarity, and
+A closed and finite barrier terminal state may also serve as an initializer
+for the zero-barrier refinement when its gas, budget, complementarity, and
 total-density residuals already pass. This handles the trace-phase case where
 the finite barrier biases only condensate stationarity. The raw failure remains
 in diagnostics, and acceptance still depends exclusively on the complete
@@ -201,8 +264,8 @@ Execution and JAX Contracts
        ``scan_hot_from_bottom`` for rainout
    * - Support
      - Fixed gas species set
-     - Monotone active-condensate discovery and expansion around fixed-support
-       solves
+     - Host-side discovery around fixed-support solves, followed by bounded
+       exact add/drop closure
    * - JIT and batching
      - One-layer and profile numerical routes are JAX-compatible
      - The complete support lifecycle and dependent rainout scan are Python

@@ -129,7 +129,11 @@ class SOCConfig:
 
 @dataclass(frozen=True)
 class ContinuationConfig:
-    """Barrier schedule owned by the outer continuation controller."""
+    """Barrier schedule owned by the outer continuation controller.
+
+    The production lifecycle supplies states in its canonical amount gauge.
+    Experimental prepared callers remain responsible for their input gauge.
+    """
 
     epsilon_schedule: Tuple[float, ...] = (-11.0, -13.0, -15.0, -17.0)
     initial_state_policy: Literal["center", "provided"] = "center"
