@@ -134,8 +134,8 @@ class GridCondensateEquilibriumInitializer:
     """Initialize gas and condensate fields from a fixed-support grid.
 
     Interpolated support amounts are also scattered into the full runtime
-    condensate catalog. Non-grid fields from explicit or previous state are
-    retained.
+    condensate catalog and rescaled to the caller's element-inventory gauge.
+    Non-grid fields from explicit or previous state are retained.
     """
 
     grid: FixedSupportCondensateEquilibriumGrid
@@ -193,14 +193,47 @@ class GridCondensateEquilibriumInitializer:
             (len(request.setup.condensate_species),),
             dtype=support_amounts.dtype,
         ).at[jnp.asarray(support_indices)].set(support_amounts)
+        gas_ln_n = jnp.asarray(gas_state.ln_n)
+        grid_inventory = (
+            jnp.asarray(request.setup.formula_matrix) @ jnp.exp(gas_ln_n)
+            + jnp.asarray(request.setup.formula_matrix_cond)
+            @ condensate_amounts
+        )
+        physical_rows = jnp.asarray(
+            [
+                str(element) not in {"e-", "electron"}
+                for element in request.setup.elements
+            ],
+            dtype=bool,
+        )
+        request_inventory = jnp.asarray(request.b)
+        request_amount_scale = jnp.sum(
+            jnp.where(
+                physical_rows & (request_inventory > 0.0),
+                request_inventory,
+                jnp.zeros_like(request_inventory),
+            )
+        )
+        grid_amount_scale = jnp.sum(
+            jnp.where(
+                physical_rows & (grid_inventory > 0.0),
+                grid_inventory,
+                jnp.zeros_like(grid_inventory),
+            )
+        )
+        amount_ratio = request_amount_scale / grid_amount_scale
+        gas_ln_n = gas_ln_n + jnp.log(amount_ratio)
+        gas_ntot = jnp.asarray(gas_state.ntot) * amount_ratio
+        condensate_amounts = condensate_amounts * amount_ratio
+        support_amounts = jnp.asarray(support_amounts) * amount_ratio
         base = DefaultCondensateEquilibriumInitializer()(request)
         return replace(
             base,
-            gas_ln_n=jnp.asarray(gas_state.ln_n),
-            gas_ntot=jnp.asarray(gas_state.ntot),
+            gas_ln_n=gas_ln_n,
+            gas_ntot=gas_ntot,
             condensate_amounts=condensate_amounts,
             support_indices=support_indices,
-            support_amounts=jnp.asarray(support_amounts),
+            support_amounts=support_amounts,
         )
 
 

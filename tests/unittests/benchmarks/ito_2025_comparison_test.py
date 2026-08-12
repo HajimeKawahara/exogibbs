@@ -347,6 +347,50 @@ def test_rainout_inventory_diagnostics_expose_depletion_and_reintroduction(
     assert not summary["rerun_pass_criteria"]["overall_passed"]
 
 
+def test_rainout_budget_floor_uses_caller_inventory_not_scheduler_scale(
+    rainout_comparison_module,
+) -> None:
+    solution_type = rainout_comparison_module["RainoutSolution"]
+    target = np.asarray([[9.0, 5.0e-6, 1.0]], dtype=np.float64)
+    gas = target.copy()
+    solution = solution_type(
+        gas_fractions=np.full((1, 6), 1.0 / 6.0),
+        atomic_gas_fractions=np.zeros((1, 3)),
+        condensate_amounts=np.zeros((1, 2)),
+        reactive_pressure_bar=np.asarray([1.0]),
+        converged=np.asarray([True]),
+        status=("converged",),
+        acceptance_tier=("fixed_support_v2_accepted",),
+        fixed_point_iterations=1,
+        solver_iterations=np.asarray([-1]),
+        element_inventory_target=target,
+        gas_element_inventory=gas,
+        element_inventory_out=target,
+        abundance_scale=np.asarray([3.0e8]),
+        sio_log_saturation_ratio=np.asarray([-1.0]),
+        sio_saturation_ratio=np.asarray([np.exp(-1.0)]),
+        sio_support_active=np.asarray([False]),
+        sio_condensate_positive=np.asarray([False]),
+    )
+
+    diagnostics = rainout_comparison_module[
+        "_exogibbs_profile_diagnostics"
+    ](solution)
+
+    assert diagnostics["positive_target_below_budget_floor_element_mask"][
+        0, 1
+    ]
+    expected_floor = 1.0e-6 * np.sum(target[0])
+    mismatch = diagnostics["gas_vs_conservative_inventory_absolute_mismatch"]
+    floor_scaled = diagnostics[
+        "gas_vs_conservative_inventory_floor_scaled_mismatch"
+    ]
+    np.testing.assert_allclose(
+        floor_scaled[0],
+        mismatch[0] / np.maximum(np.abs(target[0]), expected_floor),
+    )
+
+
 def test_rainout_outputs_report_depletion_and_actual_conservation_mask(
     rainout_comparison_module,
     tmp_path: Path,

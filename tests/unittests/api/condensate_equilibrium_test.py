@@ -8,6 +8,7 @@ import math
 import sys
 
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 import exogibbs.api.condensate_equilibrium as condmod
@@ -25,6 +26,9 @@ from exogibbs.api.condensate_equilibrium import (
 )
 from exogibbs.equilibrium.condensate.setup import (
     condensate_temperature_validity_upper,
+)
+from exogibbs.equilibrium.condensate.acceptance import (
+    full_condensate_element_budget_residual_report,
 )
 
 
@@ -296,8 +300,50 @@ def test_full_budget_gate_uses_trace_relative_floor() -> None:
 
     gate = result.diagnostics["full_condensate_budget_residual_gate"]
     assert result.converged
+    assert gate["gate_schema"] == (
+        "exogibbs_full_condensate_element_budget_residual_gate_v2"
+    )
     assert gate["relative_floor"] == pytest.approx(1.0e-6)
     assert gate["max_abs_relative_residual"] == pytest.approx(4.0e-4)
+
+
+def test_full_budget_gate_rejects_overflowed_amount_scale() -> None:
+    _gas, _condensate, setup = _setup_pair()
+    report = full_condensate_element_budget_residual_report(
+        setup=setup,
+        gas_n=np.zeros(2, dtype=np.float64),
+        condensate_amounts=np.zeros(1, dtype=np.float64),
+        element_inventory_target=np.asarray([1.0e308, 1.0e308]),
+        relative_tolerance=1.0e-6,
+    )
+
+    assert not report["accepted"]
+    assert not report["amount_gauge_scale_finite"]
+    assert report["max_abs_relative_residual"] == pytest.approx(1.0)
+
+
+def test_result_mole_fractions_are_stable_in_a_tiny_amount_gauge() -> None:
+    _gas, _condensate, setup = _setup_pair()
+    amount_scale = 1.0e-305
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=(
+            math.log(0.5 * amount_scale),
+            math.log(0.5 * amount_scale),
+        ),
+        support_indices=(),
+        support_amounts=(),
+        selected_route=CONDENSATE_HEAD_V2_ROUTE_NAME,
+        solver_success=True,
+        element_inventory_target=jnp.asarray(
+            [0.5 * amount_scale, 0.5 * amount_scale]
+        ),
+    )
+
+    assert result.converged
+    assert result.gas_x.tolist() == pytest.approx([0.5, 0.5])
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["absolute_floor"] / amount_scale == pytest.approx(1.0e-6)
 
 
 def test_gas_log_amount_polish_repairs_trace_budget_residual() -> None:

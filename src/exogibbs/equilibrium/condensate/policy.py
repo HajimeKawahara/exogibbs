@@ -112,6 +112,8 @@ def fixed_support_v2_production_policy(
         name=name,
         solver_config=FixedSupportV2Config(
             continuation=ContinuationConfig(
+                # These are log barriers after the lifecycle normalizes the
+                # positive non-charge element inventory to unit total.
                 epsilon_schedule=(-11.0, -13.0, -15.0, -17.0),
                 initial_state_policy="center",
             ),
