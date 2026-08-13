@@ -26,13 +26,22 @@ def _bound_multiplier_return(
     barrier,
     fraction_to_boundary,
     reset_threshold,
+    active_mask=None,
 ):
     """Apply the Ipopt linearized bound-multiplier restoration return."""
 
     dtype = entry_amount.dtype
+    if active_mask is None:
+        active_mask = jnp.ones_like(entry_multiplier, dtype=jnp.bool_)
+    else:
+        active_mask = jnp.asarray(active_mask, dtype=jnp.bool_)
     delta = (barrier - restored_amount * entry_multiplier) / entry_amount
     alpha_bound = jnp.min(
-        jnp.where(delta < 0.0, -entry_multiplier / delta, jnp.inf),
+        jnp.where(
+            active_mask & (delta < 0.0),
+            -entry_multiplier / delta,
+            jnp.inf,
+        ),
         initial=jnp.asarray(jnp.inf, dtype=dtype),
     )
     alpha = jnp.minimum(
@@ -40,11 +49,15 @@ def _bound_multiplier_return(
         jnp.asarray(fraction_to_boundary, dtype=dtype) * alpha_bound,
     )
     candidate = entry_multiplier + alpha * delta
-    reset = (~jnp.all(jnp.isfinite(candidate))) | (
-        jnp.max(candidate, initial=0.0)
+    reset = (~jnp.all(jnp.where(active_mask, jnp.isfinite(candidate), True))) | (
+        jnp.max(jnp.where(active_mask, candidate, 0.0), initial=0.0)
         > jnp.asarray(reset_threshold, dtype=dtype)
     )
-    returned = jnp.where(reset, jnp.ones_like(candidate), candidate)
+    returned = jnp.where(
+        active_mask,
+        jnp.where(reset, jnp.ones_like(candidate), candidate),
+        jnp.ones_like(candidate),
+    )
     return returned, alpha, reset
 
 
@@ -69,6 +82,13 @@ def apply_restoration_return(
     ng = entry.q.shape[0]
     nc = entry.r.shape[0]
     dtype = restoration_state.x.dtype
+    slot_mask = (
+        jnp.ones_like(entry.r, dtype=jnp.bool_)
+        if problem.condensate_slot_mask is None
+        else jnp.asarray(problem.condensate_slot_mask, dtype=jnp.bool_)
+    )
+    dummy_mask = ~slot_mask
+    dummy_amount = jnp.exp(jnp.asarray(entry.epsilon, dtype=dtype))
     floor = jnp.asarray(config.restoration.representation_floor, dtype=dtype)
     floored_x = jnp.maximum(restoration_state.x, floor)
     injection = floored_x - restoration_state.x
@@ -102,27 +122,44 @@ def apply_restoration_return(
         )
     )
 
-    q = jnp.log(floored_x[:ng])
-    r = jnp.log(floored_x[ng : ng + nc])
+    returned_x = floored_x.at[ng : ng + nc].set(
+        jnp.where(slot_mask, floored_x[ng : ng + nc], dummy_amount)
+    )
+    q = jnp.log(returned_x[:ng])
+    r = jnp.where(
+        slot_mask,
+        jnp.log(returned_x[ng : ng + nc]),
+        jnp.asarray(entry.epsilon, dtype=dtype),
+    )
     qtot = jnp.log(floored_x[-1])
-    entry_m = restoration_state.entry_x[ng : ng + nc]
-    entry_eta = jnp.exp(entry.rho)
+    entry_m = jnp.where(
+        slot_mask,
+        restoration_state.entry_x[ng : ng + nc],
+        dummy_amount,
+    )
+    entry_eta = jnp.where(slot_mask, jnp.exp(entry.rho), 1.0)
+    restored_m = jnp.where(
+        slot_mask,
+        returned_x[ng : ng + nc],
+        dummy_amount,
+    )
     restored_eta, alpha_dual, bound_reset = _bound_multiplier_return(
         entry_amount=entry_m,
-        restored_amount=floored_x[ng : ng + nc],
+        restored_amount=restored_m,
         entry_multiplier=entry_eta,
         barrier=restoration_state.restoration_mu,
         fraction_to_boundary=(
             config.restoration.return_dual_fraction_to_boundary
         ),
         reset_threshold=config.restoration.bound_multiplier_reset_threshold,
+        active_mask=slot_mask,
     )
-    rho = jnp.log(restored_eta)
+    rho = jnp.where(slot_mask, jnp.log(restored_eta), 0.0)
     pre_return_state = OriginalState(
         q=q,
         r=r,
         lambda_=entry.lambda_,
-        rho=entry.rho,
+        rho=jnp.where(slot_mask, entry.rho, 0.0),
         qtot=qtot,
         epsilon=entry.epsilon,
         iteration=entry.iteration,
@@ -136,6 +173,28 @@ def apply_restoration_return(
         epsilon=entry.epsilon,
         iteration=entry.iteration,
     )
+    hcond = jnp.asarray(problem.condensate_standard_source, dtype=dtype)
+    dummy_contract_ok = (
+        jnp.all(jnp.where(dummy_mask[None, :], ac == 0.0, True))
+        & jnp.all(jnp.where(dummy_mask, hcond == 1.0, True))
+        & jnp.all(
+            jnp.where(
+                dummy_mask,
+                jnp.asarray(restoration_state.restoration_mu, dtype=dtype)
+                == dummy_amount,
+                True,
+            )
+        )
+    )
+    dummy_stationarity = hcond - ac.T @ returned_state.lambda_ - jnp.exp(rho)
+    dummy_complementarity = r + rho - jnp.asarray(entry.epsilon, dtype=dtype)
+    dummy_anchor_ok = (
+        jnp.all(jnp.isfinite(jnp.where(dummy_mask, dummy_stationarity, 0.0)))
+        & jnp.all(jnp.isfinite(jnp.where(dummy_mask, dummy_complementarity, 0.0)))
+        & jnp.all(jnp.where(dummy_mask, dummy_stationarity == 0.0, True))
+        & jnp.all(jnp.where(dummy_mask, dummy_complementarity == 0.0, True))
+    )
+    return_contract_ok = dummy_contract_ok & dummy_anchor_ok
     diagnostics = RestorationReturnDiagnostics(
         alpha_dual=alpha_dual,
         bound_multiplier_reset=bound_reset,
@@ -149,13 +208,20 @@ def apply_restoration_return(
     return RestorationReturnResult(
         original_state=returned_state,
         diagnostics=diagnostics,
-        accepted=floor_audit_ok,
+        accepted=floor_audit_ok & return_contract_ok,
         status=jnp.where(
-            floor_audit_ok,
-            jnp.asarray(TerminalStatus.NOT_TERMINATED, dtype=jnp.int32),
+            ~return_contract_ok,
             jnp.asarray(
-                TerminalStatus.RETURN_REPRESENTATION_FLOOR_FAILED,
+                TerminalStatus.INTERNAL_CONTRACT_ERROR,
                 dtype=jnp.int32,
+            ),
+            jnp.where(
+                floor_audit_ok,
+                jnp.asarray(TerminalStatus.NOT_TERMINATED, dtype=jnp.int32),
+                jnp.asarray(
+                    TerminalStatus.RETURN_REPRESENTATION_FLOOR_FAILED,
+                    dtype=jnp.int32,
+                ),
             ),
         ),
     )

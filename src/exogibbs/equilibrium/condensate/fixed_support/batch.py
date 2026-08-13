@@ -40,7 +40,7 @@ from exogibbs.equilibrium.condensate.fixed_support.types import (
 
 
 class FixedSupportV2BucketResult(NamedTuple):
-    """Batched numerical result for one common-support bucket."""
+    """Batched numerical result for one fixed-shape bucket."""
 
     continuation: ContinuationState
     final_kkt_norms: KKTComponentNorms
@@ -67,9 +67,16 @@ class FixedSupportV2BucketExecution:
 
 @dataclass(frozen=True)
 class PreparedFixedSupportV2Bucket:
-    """Backend-neutral prepared inputs for one common-support v2 bucket."""
+    """Backend-neutral prepared inputs for one v2 bucket.
 
-    support_indices: tuple[int, ...]
+    Exact-support buckets retain the historical one-dimensional
+    ``support_indices`` and two-dimensional condensate formula matrix.  A
+    fixed-shape bucket instead stores per-row indices and formula matrices,
+    together with a boolean mask that distinguishes physical slots from
+    synthetic padding slots.
+    """
+
+    support_indices: Any
     layer_indices: tuple[int, ...]
     formula_matrix_cond_active: Any
     ln_nk_init: Any
@@ -82,6 +89,25 @@ class PreparedFixedSupportV2Bucket:
     hvector: Any
     hvector_cond_active: Any
     ln_normalized_pressure: Any
+    condensate_slot_mask: Any | None = None
+    valid_batch_size: int | None = None
+    source_layer_indices: tuple[int, ...] | None = None
+
+
+@dataclass(frozen=True)
+class FixedSupportV2BatchShape:
+    """Fixed condensate and batch capacities for one padded executable."""
+
+    support_capacity: int
+    batch_capacity: int
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("support_capacity", self.support_capacity),
+            ("batch_capacity", self.batch_capacity),
+        ):
+            if isinstance(value, bool) or not isinstance(value, int) or value < 1:
+                raise ValueError(f"{name} must be a positive integer.")
 
 
 @dataclass(frozen=True)
@@ -96,6 +122,189 @@ class PreparedFixedSupportV2LayerState:
     barrier_epsilon: Any | None = None
 
 
+def _pad_leading_axis(values, capacity: int):
+    """Pad one nonempty row array by repeating its final valid row."""
+
+    values = jnp.asarray(values)
+    padding = capacity - values.shape[0]
+    if padding <= 0:
+        return values
+    repeated = jnp.broadcast_to(values[-1], (padding,) + values.shape[1:])
+    return jnp.concatenate([values, repeated], axis=0)
+
+
+def _support_ordered_values(
+    values,
+    support_array,
+    *,
+    catalog_count: int,
+    name: str,
+):
+    values = jnp.asarray(values, dtype=jnp.float64)
+    if values.ndim != 1:
+        raise ValueError(f"{name} must be one-dimensional.")
+    if values.shape[0] == catalog_count:
+        return values[support_array]
+    if values.shape[0] != support_array.shape[0]:
+        raise ValueError(
+            f"{name} must have full condensate length or support length."
+        )
+    return values
+
+
+def _prepare_fixed_shape_bucket(
+    *,
+    init_states,
+    supports,
+    formula_matrix_cond,
+    targets,
+    hvectors,
+    hcond,
+    ln_pressures,
+    source_layers,
+    fixed_shape: FixedSupportV2BatchShape,
+) -> tuple[PreparedFixedSupportV2Bucket, ...]:
+    """Prepare one heterogeneous bucket with fixed ``(B, K)`` capacities."""
+
+    layer_count = len(init_states)
+    if layer_count == 0:
+        raise ValueError("A fixed-shape batch requires at least one layer.")
+    if layer_count > fixed_shape.batch_capacity:
+        raise ValueError(
+            "fixed-support v2 layer count exceeds fixed batch capacity."
+        )
+    if any(len(support) > fixed_shape.support_capacity for support in supports):
+        raise ValueError(
+            "fixed-support v2 support exceeds fixed support capacity."
+        )
+
+    element_count, catalog_count = formula_matrix_cond.shape
+    support_rows = []
+    slot_masks = []
+    formula_rows = []
+    ln_nk_rows = []
+    ln_mk_rows = []
+    ln_ntot_rows = []
+    hcond_rows = []
+    element_potential_rows = []
+    rho_rows = []
+    epsilon_rows = []
+    have_element_potential = True
+    have_rho = True
+    have_epsilon = True
+
+    for layer_index, (state, support) in enumerate(zip(init_states, supports)):
+        support_array = jnp.asarray(support, dtype=jnp.int32)
+        support_count = len(support)
+        slot_mask = jnp.arange(fixed_shape.support_capacity) < support_count
+        safe_support = jnp.zeros(
+            (fixed_shape.support_capacity,), dtype=jnp.int32
+        ).at[:support_count].set(support_array)
+        formula_row = jnp.zeros(
+            (element_count, fixed_shape.support_capacity), dtype=jnp.float64
+        ).at[:, :support_count].set(formula_matrix_cond[:, support_array])
+        hcond_row = jnp.ones(
+            (fixed_shape.support_capacity,), dtype=jnp.float64
+        ).at[:support_count].set(hcond[layer_index, support_array])
+
+        ln_nk = jnp.asarray(state.ln_nk, dtype=jnp.float64)
+        ln_ntot = jnp.asarray(state.ln_ntot, dtype=jnp.float64)
+        if ln_nk.ndim != 1:
+            raise ValueError("ln_nk must be one-dimensional.")
+        if ln_ntot.ndim != 0:
+            raise ValueError("ln_ntot must be scalar.")
+        real_ln_mk = _support_ordered_values(
+            state.ln_mk,
+            support_array,
+            catalog_count=catalog_count,
+            name="ln_mk",
+        )
+        ln_mk = jnp.zeros(
+            (fixed_shape.support_capacity,), dtype=jnp.float64
+        ).at[:support_count].set(real_ln_mk)
+
+        support_rows.append(safe_support)
+        slot_masks.append(slot_mask)
+        formula_rows.append(formula_row)
+        ln_nk_rows.append(ln_nk)
+        ln_mk_rows.append(ln_mk)
+        ln_ntot_rows.append(ln_ntot)
+        hcond_rows.append(hcond_row)
+
+        if state.element_potential is None:
+            have_element_potential = False
+        else:
+            element_potential = jnp.asarray(
+                state.element_potential, dtype=jnp.float64
+            )
+            if element_potential.shape != (element_count,):
+                raise ValueError(
+                    "element_potential must have one value per element."
+                )
+            element_potential_rows.append(element_potential)
+
+        if state.rho is None:
+            have_rho = False
+        else:
+            real_rho = _support_ordered_values(
+                state.rho,
+                support_array,
+                catalog_count=catalog_count,
+                name="rho",
+            )
+            rho_rows.append(
+                jnp.zeros(
+                    (fixed_shape.support_capacity,), dtype=jnp.float64
+                ).at[:support_count].set(real_rho)
+            )
+
+        if state.barrier_epsilon is None:
+            have_epsilon = False
+        else:
+            epsilon = jnp.asarray(
+                state.barrier_epsilon, dtype=jnp.float64
+            )
+            if epsilon.ndim != 0:
+                raise ValueError("barrier_epsilon must be scalar.")
+            epsilon_rows.append(epsilon)
+
+    def stacked_and_padded(rows):
+        return _pad_leading_axis(jnp.stack(rows), fixed_shape.batch_capacity)
+
+    return (
+        PreparedFixedSupportV2Bucket(
+            support_indices=stacked_and_padded(support_rows),
+            layer_indices=tuple(range(layer_count)),
+            formula_matrix_cond_active=stacked_and_padded(formula_rows),
+            ln_nk_init=stacked_and_padded(ln_nk_rows),
+            ln_mk_init=stacked_and_padded(ln_mk_rows),
+            ln_ntot_init=stacked_and_padded(ln_ntot_rows),
+            element_potential_init=(
+                stacked_and_padded(element_potential_rows)
+                if have_element_potential
+                else None
+            ),
+            rho_init=(
+                stacked_and_padded(rho_rows) if have_rho else None
+            ),
+            barrier_epsilon_init=(
+                stacked_and_padded(epsilon_rows) if have_epsilon else None
+            ),
+            element_inventory_target=_pad_leading_axis(
+                targets, fixed_shape.batch_capacity
+            ),
+            hvector=_pad_leading_axis(hvectors, fixed_shape.batch_capacity),
+            hvector_cond_active=stacked_and_padded(hcond_rows),
+            ln_normalized_pressure=_pad_leading_axis(
+                ln_pressures, fixed_shape.batch_capacity
+            ),
+            condensate_slot_mask=stacked_and_padded(slot_masks),
+            valid_batch_size=layer_count,
+            source_layer_indices=source_layers,
+        ),
+    )
+
+
 def prepare_fixed_support_v2_buckets(
     *,
     init_states: Sequence[PreparedFixedSupportV2LayerState],
@@ -105,14 +314,24 @@ def prepare_fixed_support_v2_buckets(
     hvector_by_layer: Any,
     hvector_cond_by_layer: Any,
     ln_normalized_pressure_by_layer: Any,
+    fixed_shape: FixedSupportV2BatchShape | None = None,
+    source_layer_indices: Sequence[int] | None = None,
 ) -> tuple[PreparedFixedSupportV2Bucket, ...]:
-    """Group validated layer states into exact-support v2 buckets."""
+    """Prepare exact-support buckets or one optional fixed-shape bucket."""
 
     n_layers = len(init_states)
     if len(support_indices_by_layer) != n_layers:
         raise ValueError(
             "init_states and support_indices_by_layer must have matching lengths."
         )
+    if source_layer_indices is None:
+        source_layers = tuple(range(n_layers))
+    else:
+        source_layers = tuple(int(index) for index in source_layer_indices)
+        if len(source_layers) != n_layers:
+            raise ValueError(
+                "source_layer_indices must have one value per layer."
+            )
 
     formula_matrix_cond = jnp.asarray(
         formula_matrix_cond,
@@ -160,10 +379,10 @@ def prepare_fixed_support_v2_buckets(
             "hvector_cond_by_layer must have one value per condensate."
         )
 
-    groups: dict[tuple[int, ...], list[int]] = {}
-    for layer_index, indices in enumerate(support_indices_by_layer):
+    supports = []
+    for indices in support_indices_by_layer:
         support = tuple(int(index) for index in indices)
-        if not support:
+        if not support and fixed_shape is None:
             raise ValueError("fixed-support v2 buckets require non-empty support.")
         if len(set(support)) != len(support):
             raise ValueError("fixed-support v2 support indices must be unique.")
@@ -174,6 +393,25 @@ def prepare_fixed_support_v2_buckets(
             raise ValueError(
                 "fixed-support v2 support contains an out-of-range index."
             )
+        supports.append(support)
+
+    if fixed_shape is not None:
+        if not isinstance(fixed_shape, FixedSupportV2BatchShape):
+            raise TypeError("fixed_shape must be a FixedSupportV2BatchShape.")
+        return _prepare_fixed_shape_bucket(
+            init_states=init_states,
+            supports=tuple(supports),
+            formula_matrix_cond=formula_matrix_cond,
+            targets=targets,
+            hvectors=hvectors,
+            hcond=hcond,
+            ln_pressures=ln_pressures,
+            source_layers=source_layers,
+            fixed_shape=fixed_shape,
+        )
+
+    groups: dict[tuple[int, ...], list[int]] = {}
+    for layer_index, support in enumerate(supports):
         groups.setdefault(support, []).append(layer_index)
 
     buckets = []
@@ -275,6 +513,9 @@ def prepare_fixed_support_v2_buckets(
                 hvector=hvectors[layer_array],
                 hvector_cond_active=hcond[layer_array][:, support_array],
                 ln_normalized_pressure=ln_pressures[layer_array],
+                source_layer_indices=tuple(
+                    source_layers[index] for index in layer_indices
+                ),
             )
         )
     return tuple(buckets)
@@ -310,6 +551,80 @@ def _block_until_ready(tree) -> None:
         leaf.block_until_ready()
 
 
+def _bucket_slot_arrays(bucket):
+    """Return canonical ``[B, K]`` indices/mask and valid batch metadata."""
+
+    q = jnp.asarray(bucket.ln_nk_init)
+    if q.ndim != 2:
+        raise ValueError("Prepared ln_nk_init must be two-dimensional.")
+    batch_capacity = q.shape[0]
+    support = jnp.asarray(bucket.support_indices, dtype=jnp.int32)
+    if support.ndim == 1:
+        support = jnp.broadcast_to(
+            support, (batch_capacity, support.shape[0])
+        )
+    elif support.ndim != 2 or support.shape[0] != batch_capacity:
+        raise ValueError(
+            "Prepared support indices must have shape [K] or [B, K]."
+        )
+    raw_mask = getattr(bucket, "condensate_slot_mask", None)
+    if raw_mask is None:
+        slot_mask = jnp.ones_like(support, dtype=bool)
+    else:
+        slot_mask = jnp.asarray(raw_mask, dtype=bool)
+        if slot_mask.ndim == 1:
+            slot_mask = jnp.broadcast_to(slot_mask, support.shape)
+        if slot_mask.shape != support.shape:
+            raise ValueError(
+                "Prepared condensate_slot_mask must match support indices."
+            )
+    if bool(jnp.any(support == -1)):
+        raise ValueError("Prepared support indices must not use -1 sentinels.")
+    if bool(jnp.any(support < 0)):
+        raise ValueError("Prepared support indices must be non-negative.")
+    if bool(jnp.any((~slot_mask) & (support != 0))):
+        raise ValueError("Prepared padding support indices must use safe index 0.")
+    raw_valid_count = getattr(bucket, "valid_batch_size", None)
+    valid_count = (
+        len(tuple(bucket.layer_indices))
+        if raw_valid_count is None
+        else int(raw_valid_count)
+    )
+    if valid_count != len(tuple(bucket.layer_indices)):
+        raise ValueError(
+            "valid_batch_size must equal the number of physical layer indices."
+        )
+    if valid_count < 1 or valid_count > batch_capacity:
+        raise ValueError(
+            "valid_batch_size must be within the prepared batch capacity."
+        )
+    return support, slot_mask, valid_count, batch_capacity
+
+
+def _slice_valid_batch(tree, valid_count: int, batch_capacity: int):
+    def take_prefix(value):
+        shape = getattr(value, "shape", None)
+        if shape is not None and len(shape) > 0 and shape[0] == batch_capacity:
+            return value[:valid_count]
+        return value
+
+    return jax.tree_util.tree_map(take_prefix, tree)
+
+
+def _real_supports_by_layer(bucket) -> tuple[tuple[int, ...], ...]:
+    support, slot_mask, valid_count, _batch_capacity = _bucket_slot_arrays(bucket)
+    support_host = jax.device_get(support[:valid_count])
+    mask_host = jax.device_get(slot_mask[:valid_count])
+    return tuple(
+        tuple(
+            int(index)
+            for index, active in zip(indices, mask)
+            if bool(active)
+        )
+        for indices, mask in zip(support_host, mask_host)
+    )
+
+
 def _validate_profile_structure(
     buckets: Sequence[Any],
     *,
@@ -321,15 +636,36 @@ def _validate_profile_structure(
     layer_indices = []
     for bucket in buckets:
         layers = tuple(int(value) for value in bucket.layer_indices)
-        support = tuple(int(value) for value in bucket.support_indices)
+        has_explicit_slot_mask = (
+            getattr(bucket, "condensate_slot_mask", None) is not None
+        )
+        support, slot_mask, valid_count, _batch_capacity = (
+            _bucket_slot_arrays(bucket)
+        )
+        support_host = jax.device_get(support)
+        mask_host = jax.device_get(slot_mask)
         if len(set(layers)) != len(layers):
             raise ValueError("A prepared bucket contains duplicate layer indices.")
         if any(index < 0 or index >= layer_count for index in layers):
             raise ValueError("A prepared bucket contains an invalid layer index.")
-        if len(set(support)) != len(support):
-            raise ValueError("A prepared bucket contains duplicate support indices.")
-        if any(index < 0 or index >= condensate_count for index in support):
+        if bool(jnp.any((support < 0) | (support >= condensate_count))):
             raise ValueError("A prepared bucket contains an invalid support index.")
+        for row_index in range(valid_count):
+            real_support = tuple(
+                int(index)
+                for index, active in zip(
+                    support_host[row_index], mask_host[row_index]
+                )
+                if bool(active)
+            )
+            if not real_support and not has_explicit_slot_mask:
+                raise ValueError(
+                    "fixed-support v2 buckets require non-empty support."
+                )
+            if len(set(real_support)) != len(real_support):
+                raise ValueError(
+                    "A prepared bucket contains duplicate support indices."
+                )
         layer_indices.extend(layers)
     if sorted(layer_indices) != list(range(layer_count)):
         raise ValueError(
@@ -348,6 +684,13 @@ def _prepared_problem_batch(
     batch_size = q.shape[0]
     ag = jnp.asarray(formula_matrix, dtype=dtype)
     ac = jnp.asarray(bucket.formula_matrix_cond_active, dtype=dtype)
+    if ac.ndim == 2:
+        ac = jnp.broadcast_to(ac, (batch_size,) + ac.shape)
+    elif ac.ndim != 3 or ac.shape[0] != batch_size:
+        raise ValueError(
+            "Prepared condensate formula matrix must have shape [E, K] "
+            "or [B, E, K]."
+        )
     target = jnp.asarray(bucket.element_inventory_target, dtype=dtype)
     qtot = jnp.asarray(bucket.ln_ntot_init, dtype=dtype)
     gamma_from_thermo = jnp.asarray(bucket.hvector, dtype=dtype) + jnp.asarray(
@@ -357,22 +700,35 @@ def _prepared_problem_batch(
     floor = jnp.asarray(budget_relative_floor, dtype=dtype)
     budget_scale = 1.0 / jnp.maximum(jnp.abs(target), floor)
     total_scale = 1.0 / jnp.maximum(jnp.exp(qtot), floor)
-    support = jnp.asarray(bucket.support_indices, dtype=jnp.int32)
+    support, slot_mask, _valid_count, prepared_batch_size = (
+        _bucket_slot_arrays(bucket)
+    )
+    if prepared_batch_size != batch_size:
+        raise ValueError("Prepared bucket arrays must share one batch capacity.")
+    hcond = jnp.asarray(bucket.hvector_cond_active, dtype=dtype)
+    if hcond.shape != support.shape:
+        raise ValueError(
+            "Prepared condensate sources must match the [B, K] slot shape."
+        )
+    if ac.shape != (batch_size, ag.shape[0], support.shape[1]):
+        raise ValueError(
+            "Prepared condensate formula matrices must match the [B, E, K] "
+            "slot shape."
+        )
+    if bool(jnp.any(jnp.where(slot_mask[:, None, :], 0.0, ac) != 0.0)):
+        raise ValueError("Prepared padding formula columns must be zero.")
+    if bool(jnp.any(jnp.where(slot_mask, 1.0, hcond) != 1.0)):
+        raise ValueError("Prepared padding condensate sources must equal one.")
     return FixedSupportProblem(
         gas_formula_matrix=jnp.broadcast_to(
             ag, (batch_size,) + ag.shape
         ),
-        condensate_formula_matrix=jnp.broadcast_to(
-            ac, (batch_size,) + ac.shape
-        ),
+        condensate_formula_matrix=ac,
         target_inventory=target,
         gamma=gamma,
-        condensate_standard_source=jnp.asarray(
-            bucket.hvector_cond_active, dtype=dtype
-        ),
-        support_indices=jnp.broadcast_to(
-            support, (batch_size,) + support.shape
-        ),
+        condensate_standard_source=hcond,
+        support_indices=support,
+        condensate_slot_mask=slot_mask,
         budget_row_scale=budget_scale,
         total_density_row_scale=total_scale,
     )
@@ -419,6 +775,11 @@ def _prepared_original_state_batch(bucket, problems, config):
     else:
         rho = first_epsilon - r
         epsilon = jnp.full((batch_size,), first_epsilon, dtype=dtype)
+    slot_mask = jnp.asarray(problems.condensate_slot_mask, dtype=bool)
+    if r.shape != slot_mask.shape:
+        raise ValueError("Prepared ln_mk_init must match the [B, K] slot shape.")
+    r = jnp.where(slot_mask, r, epsilon[:, None])
+    rho = jnp.where(slot_mask, rho, jnp.zeros_like(rho))
     return OriginalState(
         q=q,
         r=r,
@@ -438,7 +799,7 @@ def solve_prepared_bucket_v2(
     budget_relative_floor: float = 1.0e-6,
     include_solver_diagnostics: bool = True,
 ) -> FixedSupportV2BucketExecution:
-    """Compile and run one same-support prepared bucket with v2."""
+    """Compile and run one prepared fixed-shape bucket with v2."""
 
     problems = _prepared_problem_batch(
         bucket,
@@ -697,6 +1058,10 @@ def run_fixed_support_profile(
     backend = jax.default_backend()
 
     for bucket in buckets:
+        slot_indices, slot_mask, valid_count, batch_capacity = (
+            _bucket_slot_arrays(bucket)
+        )
+        real_supports = _real_supports_by_layer(bucket)
         execution = solve_prepared_bucket_v2(
             bucket,
             ag,
@@ -715,27 +1080,27 @@ def run_fixed_support_profile(
         bucket_diagnostic_compilation_seconds = 0.0
         bucket_diagnostic_execution_seconds = 0.0
         if include_terminal_diagnostics:
-            continuation = result.continuation
+            full_continuation = result.continuation
             restoration = _compiled_terminal_restoration_diagnostics_factory(
                 config
             )
             normal = _compiled_terminal_normal_diagnostics_factory(config)
             diagnostic_compile_start = time.perf_counter()
             compiled_restoration = restoration.lower(
-                problems, continuation.controller
+                problems, full_continuation.controller
             ).compile()
             compiled_normal = normal.lower(
-                problems, continuation.controller
+                problems, full_continuation.controller
             ).compile()
             bucket_diagnostic_compilation_seconds = (
                 time.perf_counter() - diagnostic_compile_start
             )
             diagnostic_execution_start = time.perf_counter()
             restoration_diagnostics = compiled_restoration(
-                problems, continuation.controller
+                problems, full_continuation.controller
             )
             normal_diagnostics = compiled_normal(
-                problems, continuation.controller
+                problems, full_continuation.controller
             )
             _block_until_ready((restoration_diagnostics, normal_diagnostics))
             bucket_diagnostic_execution_seconds = (
@@ -750,6 +1115,15 @@ def run_fixed_support_profile(
             diagnostic_seconds += (
                 bucket_diagnostic_compilation_seconds
                 + bucket_diagnostic_execution_seconds
+            )
+            continuation = _slice_valid_batch(
+                full_continuation, valid_count, batch_capacity
+            )
+            restoration_diagnostics = _slice_valid_batch(
+                restoration_diagnostics, valid_count, batch_capacity
+            )
+            normal_diagnostics = _slice_valid_batch(
+                normal_diagnostics, valid_count, batch_capacity
             )
             terminal = continuation.terminal_status
             completed_stages = continuation.completed_stage_count
@@ -769,8 +1143,8 @@ def run_fixed_support_profile(
             last_return = continuation.controller.last_return_diagnostics
             final = continuation.controller.original_state
         else:
-            terminal = result.terminal_status
-            completed_stages = result.completed_stage_count
+            terminal = result.terminal_status[:valid_count]
+            completed_stages = result.completed_stage_count[:valid_count]
             stage_statuses = None
             stage_normal_iterations = None
             stage_restoration_calls = None
@@ -779,13 +1153,34 @@ def run_fixed_support_profile(
             stage_soc_attempts = None
             stage_soc_accepted = None
             last_return = None
-            final = result.final_state
+            final = _slice_valid_batch(
+                result.final_state, valid_count, batch_capacity
+            )
+        bucket_kkt_norms = _slice_valid_batch(
+            result.final_kkt_norms, valid_count, batch_capacity
+        )
         layers = jnp.asarray(bucket.layer_indices, dtype=jnp.int32)
-        support = jnp.asarray(bucket.support_indices, dtype=jnp.int32)
         gas_log_amounts = gas_log_amounts.at[layers].set(final.q)
-        condensate_amounts = condensate_amounts.at[
-            layers[:, None], support[None, :]
-        ].set(jnp.exp(final.r))
+        physical_slot_amounts = jnp.where(
+            slot_mask[:valid_count],
+            jnp.exp(final.r),
+            jnp.zeros_like(final.r),
+        )
+        row_indices = jnp.arange(valid_count, dtype=jnp.int32)[:, None]
+        catalog_amounts = jnp.zeros(
+            (valid_count, condensate_count), dtype=ag.dtype
+        ).at[row_indices, slot_indices[:valid_count]].add(
+            physical_slot_amounts
+        )
+        catalog_support_count = jnp.zeros(
+            (valid_count, condensate_count), dtype=jnp.int32
+        ).at[row_indices, slot_indices[:valid_count]].add(
+            slot_mask[:valid_count].astype(jnp.int32)
+        )
+        catalog_support_mask = catalog_support_count > 0
+        condensate_amounts = condensate_amounts.at[layers].set(
+            catalog_amounts
+        )
         total_gas_log_amount = total_gas_log_amount.at[layers].set(final.qtot)
         element_potential = element_potential.at[layers].set(final.lambda_)
         terminal_status = terminal_status.at[layers].set(
@@ -797,12 +1192,12 @@ def run_fixed_support_profile(
         final_kkt_norms = jax.tree_util.tree_map(
             lambda current, bucket_value: current.at[layers].set(bucket_value),
             final_kkt_norms,
-            result.final_kkt_norms,
+            bucket_kkt_norms,
         )
         target_by_layer = target_by_layer.at[layers].set(
-            bucket.element_inventory_target
+            bucket.element_inventory_target[:valid_count]
         )
-        support_mask = support_mask.at[layers[:, None], support[None, :]].set(True)
+        support_mask = support_mask.at[layers].set(catalog_support_mask)
         bucket_state_finite = (
             jnp.all(jnp.isfinite(final.q), axis=1)
             & jnp.all(jnp.isfinite(final.r), axis=1)
@@ -817,12 +1212,31 @@ def run_fixed_support_profile(
         compilation_seconds += execution.compilation_seconds
         execution_seconds += execution.execution_seconds
         backend = execution.backend
+        support_union = tuple(
+            dict.fromkeys(
+                index for support in real_supports for index in support
+            )
+        )
         bucket_reports.append(
             {
-                "support_indices": tuple(
-                    int(value) for value in bucket.support_indices
-                ),
+                "support_indices": support_union,
+                "support_indices_by_layer": real_supports,
                 "layer_indices": tuple(int(value) for value in bucket.layer_indices),
+                "source_layer_indices": (
+                    tuple(
+                        int(value)
+                        for value in getattr(
+                            bucket,
+                            "source_layer_indices",
+                            (),
+                        )
+                    )
+                    if getattr(bucket, "source_layer_indices", None) is not None
+                    else tuple(int(value) for value in bucket.layer_indices)
+                ),
+                "support_capacity": int(slot_indices.shape[1]),
+                "batch_capacity": int(batch_capacity),
+                "valid_batch_size": int(valid_count),
                 "compilation_seconds": execution.compilation_seconds,
                 "execution_seconds": execution.execution_seconds,
                 "diagnostic_compilation_seconds": (
@@ -842,7 +1256,7 @@ def run_fixed_support_profile(
                 "stage_last_return_diagnostics": stage_last_return,
                 "stage_soc_attempt_counts": stage_soc_attempts,
                 "stage_soc_accepted_counts": stage_soc_accepted,
-                "final_kkt_norms": result.final_kkt_norms,
+                "final_kkt_norms": bucket_kkt_norms,
                 "terminal_restoration_diagnostics": restoration_diagnostics,
                 "terminal_normal_diagnostics": normal_diagnostics,
                 "last_return_diagnostics": last_return,
@@ -876,6 +1290,7 @@ def run_fixed_support_profile(
 
 
 __all__ = [
+    "FixedSupportV2BatchShape",
     "FixedSupportV2BucketExecution",
     "FixedSupportV2ProductionBucketResult",
     "FixedSupportV2BucketResult",

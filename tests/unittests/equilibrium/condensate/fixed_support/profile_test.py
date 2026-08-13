@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import math
 from types import SimpleNamespace
 
@@ -20,9 +20,12 @@ from exogibbs.equilibrium.condensate.fixed_support.types import (
     TerminalStatus,
 )
 from exogibbs.equilibrium.condensate.fixed_support.batch import (
+    FixedSupportV2BatchShape,
+    PreparedFixedSupportV2LayerState,
     _compiled_solver_factory,
     _prepared_original_state_batch,
     _prepared_problem_batch,
+    prepare_fixed_support_v2_buckets,
     run_fixed_support_profile,
 )
 from exogibbs.equilibrium.condensate.support import (
@@ -66,6 +69,41 @@ def _bucket():
         hvector_cond_active=jnp.full((2, 1), 0.5),
         ln_normalized_pressure=jnp.zeros((2,)),
     )
+
+
+def _fixed_shape_prepare_kwargs():
+    return {
+        "init_states": (
+            PreparedFixedSupportV2LayerState(
+                ln_nk=jnp.log(jnp.asarray([0.8])),
+                ln_mk=jnp.log(jnp.asarray([0.2])),
+                ln_ntot=jnp.log(jnp.asarray(0.8)),
+                element_potential=jnp.zeros((1,)),
+            ),
+            PreparedFixedSupportV2LayerState(
+                ln_nk=jnp.log(jnp.asarray([0.8])),
+                ln_mk=jnp.log(jnp.asarray([0.2])),
+                ln_ntot=jnp.log(jnp.asarray(0.8)),
+                element_potential=jnp.zeros((1,)),
+            ),
+        ),
+        "support_indices_by_layer": ((0,), (1,)),
+        "formula_matrix_cond": jnp.asarray([[1.0, 1.0]]),
+        "element_inventory_target_by_layer": jnp.ones((2, 1)),
+        "hvector_by_layer": jnp.zeros((2, 1)),
+        "hvector_cond_by_layer": jnp.asarray([[0.5, 2.0], [2.0, 0.5]]),
+        "ln_normalized_pressure_by_layer": jnp.zeros((2,)),
+    }
+
+
+def _fixed_shape_bucket():
+    return prepare_fixed_support_v2_buckets(
+        **_fixed_shape_prepare_kwargs(),
+        fixed_shape=FixedSupportV2BatchShape(
+            support_capacity=2,
+            batch_capacity=3,
+        ),
+    )[0]
 
 
 def _config():
@@ -175,6 +213,229 @@ def test_fixed_support_batch_does_not_own_full_catalog_closure():
     assert "support_expansion_mask" not in result
     assert "support_closed" not in result
     assert result["support_mask"].shape == (2, 2)
+
+
+def test_fixed_shape_preparation_builds_heterogeneous_anchored_slots():
+    bucket = _fixed_shape_bucket()
+    problems = _prepared_problem_batch(
+        bucket,
+        jnp.asarray([[1.0]]),
+        budget_relative_floor=1.0e-6,
+    )
+    states = _prepared_original_state_batch(bucket, problems, _config())
+    epsilon = math.log(0.1)
+
+    assert bucket.valid_batch_size == 2
+    assert bucket.layer_indices == (0, 1)
+    assert bucket.support_indices.tolist() == [[0, 0], [1, 0], [1, 0]]
+    assert bucket.condensate_slot_mask.tolist() == [
+        [True, False],
+        [True, False],
+        [True, False],
+    ]
+    assert bucket.formula_matrix_cond_active.shape == (3, 1, 2)
+    assert bucket.hvector_cond_active == pytest.approx(
+        jnp.asarray([[0.5, 1.0], [0.5, 1.0], [0.5, 1.0]])
+    )
+    assert problems.condensate_formula_matrix[:, :, 1] == pytest.approx(
+        jnp.zeros((3, 1))
+    )
+    assert states.r[:, 1] == pytest.approx(jnp.full((3,), epsilon))
+    assert states.rho[:, 1] == pytest.approx(jnp.zeros((3,)))
+
+
+def test_fixed_shape_problem_leaves_do_not_depend_on_real_support_count():
+    shape = FixedSupportV2BatchShape(support_capacity=2, batch_capacity=3)
+    first = _fixed_shape_bucket()
+    changed_kwargs = _fixed_shape_prepare_kwargs()
+    changed_kwargs["support_indices_by_layer"] = ((0, 1), (1,))
+    changed_kwargs["init_states"] = (
+        replace(
+            changed_kwargs["init_states"][0],
+            ln_mk=jnp.log(jnp.asarray([0.1, 0.1])),
+        ),
+        changed_kwargs["init_states"][1],
+    )
+    changed = prepare_fixed_support_v2_buckets(
+        **changed_kwargs,
+        fixed_shape=shape,
+    )[0]
+
+    def problem_signature(bucket):
+        problem = _prepared_problem_batch(
+            bucket,
+            jnp.asarray([[1.0]]),
+            budget_relative_floor=1.0e-6,
+        )
+        return tuple(
+            (tuple(leaf.shape), leaf.dtype)
+            for leaf in jax.tree_util.tree_leaves(problem)
+        )
+
+    assert problem_signature(first) == problem_signature(changed)
+
+
+def test_fixed_shape_profile_scatter_excludes_dummy_slots_and_batch_rows():
+    result = run_fixed_support_profile(
+        buckets=(_fixed_shape_bucket(),),
+        formula_matrix=jnp.asarray([[1.0]]),
+        layer_count=2,
+        condensate_count=2,
+        config=_config(),
+        include_terminal_diagnostics=False,
+    )
+
+    assert jnp.all(result["fixed_support_converged"])
+    assert result["condensate_amounts"] == pytest.approx(
+        jnp.asarray([[0.2, 0.0], [0.0, 0.2]])
+    )
+    assert result["support_mask"].tolist() == [
+        [True, False],
+        [False, True],
+    ]
+    report = result["bucket_reports"][0]
+    assert report["support_indices_by_layer"] == ((0,), (1,))
+    assert report["support_capacity"] == 2
+    assert report["batch_capacity"] == 3
+    assert report["valid_batch_size"] == 2
+    assert report["terminal_status"].shape == (2,)
+    assert report["final_kkt_norms"].budget_scaled.shape == (2,)
+
+
+def test_fixed_shape_all_dummy_bucket_warms_gas_only_executable():
+    bucket = prepare_fixed_support_v2_buckets(
+        init_states=(
+            PreparedFixedSupportV2LayerState(
+                ln_nk=jnp.log(jnp.asarray([1.0])),
+                ln_mk=jnp.asarray([], dtype=jnp.float64),
+                ln_ntot=jnp.asarray(0.0),
+                element_potential=jnp.zeros((1,)),
+            ),
+        ),
+        support_indices_by_layer=((),),
+        formula_matrix_cond=jnp.asarray([[1.0]]),
+        element_inventory_target_by_layer=jnp.ones((1, 1)),
+        hvector_by_layer=jnp.zeros((1, 1)),
+        hvector_cond_by_layer=jnp.zeros((1, 1)),
+        ln_normalized_pressure_by_layer=jnp.zeros((1,)),
+        fixed_shape=FixedSupportV2BatchShape(
+            support_capacity=2,
+            batch_capacity=1,
+        ),
+    )[0]
+
+    result = run_fixed_support_profile(
+        buckets=(bucket,),
+        formula_matrix=jnp.asarray([[1.0]]),
+        layer_count=1,
+        condensate_count=1,
+        config=_config(),
+        include_terminal_diagnostics=False,
+    )
+
+    assert jnp.all(result["fixed_support_converged"])
+    assert result["condensate_amounts"] == pytest.approx(jnp.zeros((1, 1)))
+    assert not jnp.any(result["support_mask"])
+    assert result["bucket_reports"][0]["support_indices_by_layer"] == ((),)
+
+
+def test_all_dummy_and_real_support_share_one_compiled_shape():
+    config = _config()
+    shape = FixedSupportV2BatchShape(support_capacity=2, batch_capacity=1)
+
+    def bucket_for(support, ln_mk):
+        return prepare_fixed_support_v2_buckets(
+            init_states=(
+                PreparedFixedSupportV2LayerState(
+                    ln_nk=jnp.log(jnp.asarray([1.0])),
+                    ln_mk=jnp.asarray(ln_mk, dtype=jnp.float64),
+                    ln_ntot=jnp.asarray(0.0),
+                    element_potential=jnp.zeros((1,)),
+                ),
+            ),
+            support_indices_by_layer=(support,),
+            formula_matrix_cond=jnp.asarray([[1.0]]),
+            element_inventory_target_by_layer=jnp.ones((1, 1)),
+            hvector_by_layer=jnp.zeros((1, 1)),
+            hvector_cond_by_layer=jnp.asarray([[0.5]]),
+            ln_normalized_pressure_by_layer=jnp.zeros((1,)),
+            fixed_shape=shape,
+        )[0]
+
+    dummy_bucket = bucket_for((), ())
+    real_bucket = bucket_for((0,), (math.log(0.2),))
+    compiled = _compiled_solver_factory(config, False)
+    compiled.clear_cache()
+
+    def run(bucket):
+        problems = _prepared_problem_batch(
+            bucket,
+            jnp.asarray([[1.0]]),
+            budget_relative_floor=1.0e-6,
+        )
+        states = _prepared_original_state_batch(bucket, problems, config)
+        result = compiled(problems, states)
+        jax.block_until_ready(result)
+
+    run(dummy_bucket)
+    cache_size_after_dummy = compiled._cache_size()
+    run(real_bucket)
+
+    assert cache_size_after_dummy == 1
+    assert compiled._cache_size() == cache_size_after_dummy
+
+
+@pytest.mark.parametrize(
+    ("fixed_shape", "message"),
+    [
+        (
+            FixedSupportV2BatchShape(support_capacity=1, batch_capacity=2),
+            "support exceeds fixed support capacity",
+        ),
+        (
+            FixedSupportV2BatchShape(support_capacity=2, batch_capacity=1),
+            "layer count exceeds fixed batch capacity",
+        ),
+    ],
+)
+def test_fixed_shape_capacity_overflow_fails_without_resizing(
+    fixed_shape,
+    message,
+):
+    kwargs = _fixed_shape_prepare_kwargs()
+    if fixed_shape.support_capacity == 1:
+        kwargs["support_indices_by_layer"] = ((0, 1), (1,))
+        kwargs["init_states"] = (
+            replace(
+                kwargs["init_states"][0],
+                ln_mk=jnp.log(jnp.asarray([0.1, 0.1])),
+            ),
+            kwargs["init_states"][1],
+        )
+
+    with pytest.raises(ValueError, match=message):
+        prepare_fixed_support_v2_buckets(
+            **kwargs,
+            fixed_shape=fixed_shape,
+        )
+
+
+def test_fixed_shape_rejects_negative_padding_sentinel():
+    bucket = _fixed_shape_bucket()
+    invalid = replace(
+        bucket,
+        support_indices=bucket.support_indices.at[0, 1].set(-1),
+    )
+
+    with pytest.raises(ValueError, match="must not use -1 sentinels"):
+        run_fixed_support_profile(
+            buckets=(invalid,),
+            formula_matrix=jnp.asarray([[1.0]]),
+            layer_count=2,
+            condensate_count=2,
+            config=_config(),
+            include_terminal_diagnostics=False,
+        )
 
 
 def test_historical_profile_adapter_retains_closure_report():

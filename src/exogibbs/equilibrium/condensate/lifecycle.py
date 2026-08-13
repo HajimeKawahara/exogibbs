@@ -778,8 +778,10 @@ def _head_v2_prepared_buckets(
     b: Array,
     Pref: float,
     states: Sequence[_HeadV2LayerState],
+    fixed_shape: Any | None = None,
+    source_layer_indices: Sequence[int] | None = None,
 ) -> tuple[Any, ...]:
-    """Group pending v2 lifecycle states by exact fixed support."""
+    """Prepare pending v2 lifecycle states with an optional fixed shape."""
 
     from exogibbs.equilibrium.condensate.fixed_support.batch import (
         PreparedFixedSupportV2LayerState,
@@ -829,6 +831,8 @@ def _head_v2_prepared_buckets(
                 for pressure in pressures
             ]
         ),
+        fixed_shape=fixed_shape,
+        source_layer_indices=source_layer_indices,
     )
 
 
@@ -902,6 +906,7 @@ def _run_head_v2_profile(
         fixed_support_v2_production_policy,
     )
     from exogibbs.equilibrium.condensate.fixed_support.batch import (
+        FixedSupportV2BatchShape,
         run_fixed_support_profile,
     )
     from exogibbs.equilibrium.condensate.fixed_support.types import (
@@ -939,10 +944,21 @@ def _run_head_v2_profile(
         "public_result_gauge": "caller_element_inventory",
     }
     n_layers = int(temperatures.shape[0])
+    fixed_batch_shape = FixedSupportV2BatchShape(
+        support_capacity=max(
+            1,
+            min(
+                policy.support_limit,
+                len(setup.condensate_species),
+            ),
+        ),
+        batch_capacity=n_layers,
+    )
     records: list[dict[str, Any]] = [
         {"layer_index": index, "rounds": []} for index in range(n_layers)
     ]
     pending: dict[int, _HeadV2LayerState] = {}
+    gas_only_states: dict[int, _HeadV2LayerState] = {}
     gas_only_layers: set[int] = set()
     initial_guesses: list[CondensateEquilibriumInit] = []
     for layer_index in range(n_layers):
@@ -1040,6 +1056,19 @@ def _run_head_v2_profile(
         if not initial_support:
             records[layer_index]["outcome"] = "gas_only_no_candidate"
             gas_only_layers.add(layer_index)
+            gas_only_states[layer_index] = _head_v2_initial_state(
+                setup=setup,
+                T=float(temperatures[layer_index]),
+                P=float(pressures[layer_index]),
+                b=b,
+                Pref=Pref,
+                support_indices=(),
+                support_amounts=(),
+                initial_guess=initial_guess,
+                first_epsilon=(
+                    policy.solver_config.continuation.epsilon_schedule[0]
+                ),
+            )
             continue
         pending[layer_index] = _head_v2_initial_state(
             setup=setup,
@@ -1183,6 +1212,83 @@ def _run_head_v2_profile(
     diagnostic_compilation_seconds = 0.0
     diagnostic_execution_seconds = 0.0
     backend = jax.default_backend()
+
+    def accumulate_solver_timing(raw: Mapping[str, Any]) -> None:
+        nonlocal compilation_seconds
+        nonlocal execution_seconds
+        nonlocal diagnostic_seconds
+        nonlocal diagnostic_compilation_seconds
+        nonlocal diagnostic_execution_seconds
+        nonlocal backend
+
+        compilation_seconds += float(raw["compilation_seconds"])
+        execution_seconds += float(raw["execution_seconds"])
+        round_diagnostic_seconds = float(raw["diagnostic_seconds"])
+        diagnostic_seconds += round_diagnostic_seconds
+        round_diagnostic_compilation = raw.get(
+            "diagnostic_compilation_seconds"
+        )
+        round_diagnostic_execution = raw.get(
+            "diagnostic_execution_seconds"
+        )
+        if (
+            round_diagnostic_compilation is None
+            and round_diagnostic_execution is None
+        ):
+            diagnostic_execution_seconds += round_diagnostic_seconds
+        else:
+            if round_diagnostic_compilation is None:
+                round_diagnostic_compilation = (
+                    round_diagnostic_seconds
+                    - float(round_diagnostic_execution)
+                )
+            if round_diagnostic_execution is None:
+                round_diagnostic_execution = (
+                    round_diagnostic_seconds
+                    - float(round_diagnostic_compilation)
+                )
+            diagnostic_compilation_seconds += float(
+                round_diagnostic_compilation
+            )
+            diagnostic_execution_seconds += float(
+                round_diagnostic_execution
+            )
+        backend = str(raw["backend"])
+
+    if (
+        not pending
+        and gas_only_states
+        and setup.condensate_species
+    ):
+        source_indices = tuple(sorted(gas_only_states))
+        warmup = run_fixed_support_profile(
+            buckets=_head_v2_prepared_buckets(
+                setup=setup,
+                temperatures=tuple(
+                    float(temperatures[index]) for index in source_indices
+                ),
+                pressures=tuple(
+                    float(pressures[index]) for index in source_indices
+                ),
+                b=b,
+                Pref=Pref,
+                states=tuple(
+                    gas_only_states[index] for index in source_indices
+                ),
+                fixed_shape=fixed_batch_shape,
+                source_layer_indices=source_indices,
+            ),
+            formula_matrix=setup.formula_matrix,
+            layer_count=len(source_indices),
+            condensate_count=len(setup.condensate_species),
+            config=policy.solver_config,
+            budget_relative_floor=policy.budget_relative_floor,
+            include_terminal_diagnostics=return_diagnostics,
+        )
+        accumulate_solver_timing(warmup)
+        for source_index in source_indices:
+            records[source_index]["fixed_shape_warmup"] = True
+
     for round_index in range(policy.lifecycle_max_rounds):
         if not pending:
             break
@@ -1201,6 +1307,8 @@ def _run_head_v2_profile(
             b=b,
             Pref=Pref,
             states=round_states,
+            fixed_shape=fixed_batch_shape,
+            source_layer_indices=source_indices,
         )
         hcond_full = jnp.stack(
             [
@@ -1246,37 +1354,7 @@ def _run_head_v2_profile(
             budget_relative_floor=policy.budget_relative_floor,
             support_closure_tolerance=policy.support_closure_tolerance,
         )
-        compilation_seconds += float(raw["compilation_seconds"])
-        execution_seconds += float(raw["execution_seconds"])
-        round_diagnostic_seconds = float(raw["diagnostic_seconds"])
-        diagnostic_seconds += round_diagnostic_seconds
-        round_diagnostic_compilation = raw.get(
-            "diagnostic_compilation_seconds"
-        )
-        round_diagnostic_execution = raw.get("diagnostic_execution_seconds")
-        if (
-            round_diagnostic_compilation is None
-            and round_diagnostic_execution is None
-        ):
-            diagnostic_execution_seconds += round_diagnostic_seconds
-        else:
-            if round_diagnostic_compilation is None:
-                round_diagnostic_compilation = (
-                    round_diagnostic_seconds
-                    - float(round_diagnostic_execution)
-                )
-            if round_diagnostic_execution is None:
-                round_diagnostic_execution = (
-                    round_diagnostic_seconds
-                    - float(round_diagnostic_compilation)
-                )
-            diagnostic_compilation_seconds += float(
-                round_diagnostic_compilation
-            )
-            diagnostic_execution_seconds += float(
-                round_diagnostic_execution
-            )
-        backend = str(raw["backend"])
+        accumulate_solver_timing(raw)
         converged = np.asarray(
             jax.device_get(raw["fixed_support_converged"]), dtype=bool
         )
@@ -1563,6 +1641,9 @@ def _run_head_v2_profile(
             "preset": policy.name,
             "outcome": records[layer_index].get(
                 "outcome", "internal_missing_outcome"
+            ),
+            "fixed_shape_warmup": bool(
+                records[layer_index].get("fixed_shape_warmup", False)
             ),
             "rounds": tuple(records[layer_index]["rounds"]),
             "compilation_seconds_total": compilation_seconds,

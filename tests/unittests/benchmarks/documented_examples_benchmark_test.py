@@ -222,8 +222,13 @@ def test_timing_collector_aggregates_and_restores_hooks(
         "diagnostic_execution_seconds": 0.04,
         "bucket_reports": (
             {
-                "support_indices": (2,),
+                "support_indices": (2, 3),
+                "support_indices_by_layer": ((2,), (3,)),
                 "layer_indices": (0, 1),
+                "source_layer_indices": (4, 7),
+                "support_capacity": 8,
+                "batch_capacity": 4,
+                "valid_batch_size": 2,
                 "compilation_seconds": 0.2,
                 "execution_seconds": 0.3,
                 "diagnostic_compilation_seconds": 0.06,
@@ -309,8 +314,12 @@ def test_timing_collector_aggregates_and_restores_hooks(
     assert summary["pdipm"]["shape_compilation"][0]["invocation_count"] == 2
     assert summary["pdipm"]["shape_compilation"][0]["signature"] == (
         "backend=cpu,dtype=float64,config=dc937b598926,elements=3,gas=5,"
-        "support=1,batch=2,diagnostics=1"
+        "support=8,batch=4,diagnostics=1"
     )
+    bucket_record = summary["pdipm"]["calls"][0]["buckets"][0]
+    assert bucket_record["support_indices_by_layer"] == ((2,), (3,))
+    assert bucket_record["source_layer_indices"] == (4, 7)
+    assert bucket_record["valid_batch_size"] == 2
     assert summary["zero_barrier"]["host_wall_seconds"] == 1.0
     assert summary["zero_barrier"]["function_evaluations"] == 7
     assert summary["zero_barrier"]["calls"][0]["active_set_round_count"] == 2

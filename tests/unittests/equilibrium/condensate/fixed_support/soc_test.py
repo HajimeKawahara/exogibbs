@@ -47,6 +47,7 @@ def _fixture():
         support_indices=jnp.asarray([2, 5], dtype=jnp.int32),
         budget_row_scale=1.0 / target,
         total_density_row_scale=1.0 / jnp.exp(qtot),
+        condensate_slot_mask=jnp.asarray([True, True]),
     )
     state = OriginalState(
         q=jnp.log(jnp.asarray([0.21, 0.18, 0.04])),
@@ -70,6 +71,7 @@ def _infeasible_fixture():
         support_indices=jnp.asarray([0], dtype=jnp.int32),
         budget_row_scale=jnp.asarray([1.0]),
         total_density_row_scale=jnp.asarray(1.0 / 0.8),
+        condensate_slot_mask=jnp.asarray([True]),
     )
     state = OriginalState(
         q=jnp.log(jnp.asarray([0.05, 0.05])),
@@ -95,6 +97,7 @@ def _finite_soc_fixture():
         support_indices=jnp.asarray([0], dtype=jnp.int32),
         budget_row_scale=jnp.asarray([1.0 / 0.7417846284038427]),
         total_density_row_scale=jnp.asarray(1.0 / 0.8277107516608474),
+        condensate_slot_mask=jnp.asarray([True]),
     )
     state = OriginalState(
         q=jnp.log(jnp.asarray([0.43966721008714027, 0.14666067254281664])),

@@ -43,6 +43,7 @@ def deterministic_fixture():
         support_indices=jnp.asarray([2, 5], dtype=jnp.int32),
         budget_row_scale=1.0 / target,
         total_density_row_scale=1.0 / jnp.exp(qtot),
+        condensate_slot_mask=jnp.asarray([True, True]),
     )
     state = OriginalState(
         q=q,

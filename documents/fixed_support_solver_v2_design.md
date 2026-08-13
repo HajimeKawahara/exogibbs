@@ -204,6 +204,7 @@ gas standard-state source and pressure convention
 condensate standard-state source
 support indices
 row and variable scaling
+condensate slot mask
 ```
 
 The canonical gas source is
@@ -270,6 +271,7 @@ RestorationState:
     row_scales
     iteration
     accepted_iteration_count
+    proximity_mask
 ```
 
 Elastic slacks, duals, scales, and the restoration barrier persist across
@@ -549,8 +551,19 @@ defined SOC attempt.  No additional long-lived mode is introduced.
 
 ## 14. GPU execution model
 
-Compilation buckets already group layers with a common support shape.  v2
-keeps this model.
+The production adapter pads every profile call to support capacity
+``K = max(1, min(support_limit, catalog_size))`` and batch capacity equal to
+the original profile layer count.  Physical support indices and a dynamic
+slot mask are passed as array values, so changing phase identities or support
+counts does not change the executable shape.  Padding slots use ``Ac = 0``
+and ``hcond = 1``; at barrier ``epsilon`` they are anchored at
+``r = epsilon, rho = 0`` and are excluded from catalog scatter and closure.
+Batch padding repeats the last physical row and discards repeated outputs.
+An all-gas profile executes one all-dummy bucket to warm the same executable
+before returning the unchanged gas-only result.  Capacity overflow is an
+error rather than an adaptive resize.
+
+Exact-support grouping remains available to compatibility adapters.
 
 One compiled controller uses a fixed-shape batched `lax.while_loop`.  Each
 super-iteration forms `normal_mask` and `restoration_mask`.
