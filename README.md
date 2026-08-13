@@ -35,6 +35,23 @@ nk_result = res.x #mixing ratio
 - fastchem4: number of gas species: 422    elements: 28
 - fastchem4_cond: number of condensate species: 219
 
+## v0.6 release highlights
+
+Version 0.6 strengthens condensate equilibrium with canonical amount-gauge
+normalization, stricter zero-barrier closure and physical audits, and stable
+solver shapes across profile support changes. Rainout and custom/grid
+initializers now follow a consistent caller-gauge contract. Budget and
+rainout diagnostic schemas advance to v2.
+
+This release also adds validation examples for KCl/Na2S condensation,
+forsterite-enstatite competition, and Fe-FeS local equilibrium versus
+sequential rainout, together with timing tools for the documented examples
+and repeated full-catalog L-dwarf profiles.
+
+See the [condensate solver guide](https://github.com/HajimeKawahara/exogibbs/blob/main/documents/equilibrium_solvers.rst),
+the [profile and rainout guide](https://github.com/HajimeKawahara/exogibbs/blob/main/documents/condensate_profile.rst),
+and the [documented example benchmarks](https://github.com/HajimeKawahara/exogibbs/blob/main/benchmarks/documented_examples/README.md).
+
 ## v0.5 release highlights
 
 Version 0.5 adds a custom VJP for fixed-support condensate equilibrium,

@@ -6,7 +6,7 @@
 ExoGibbs
 ==================================
 
-Version 0.5
+Version 0.6
 
 |:frog:| `DeepWiki for ExoGibbs <https://deepwiki.com/HajimeKawahara/exogibbs>`_
 
