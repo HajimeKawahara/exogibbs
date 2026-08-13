@@ -260,8 +260,25 @@ class TimingCollector:
             support_indices = tuple(
                 int(item) for item in report.get("support_indices", ())
             )
+            support_indices_by_layer = tuple(
+                tuple(int(item) for item in support)
+                for support in report.get("support_indices_by_layer", ())
+            )
             layer_indices = tuple(
                 int(item) for item in report.get("layer_indices", ())
+            )
+            source_layer_indices = tuple(
+                int(item)
+                for item in report.get(
+                    "source_layer_indices",
+                    layer_indices,
+                )
+            )
+            support_capacity = int(
+                report.get("support_capacity", len(support_indices))
+            )
+            batch_capacity = int(
+                report.get("batch_capacity", len(layer_indices))
             )
             element_count = formula_shape[0] if formula_shape else None
             gas_count = formula_shape[1] if formula_shape else None
@@ -270,7 +287,7 @@ class TimingCollector:
                 f"dtype={getattr(formula_matrix, 'dtype', None)},"
                 f"config={config_fingerprint},"
                 f"elements={element_count},gas={gas_count},"
-                f"support={len(support_indices)},batch={len(layer_indices)},"
+                f"support={support_capacity},batch={batch_capacity},"
                 f"diagnostics={int(include_diagnostics)}"
             )
             bucket_diagnostic_compilation, bucket_diagnostic_execution = (
@@ -280,10 +297,15 @@ class TimingCollector:
                 {
                     "bucket_index": bucket_index,
                     "signature": signature,
-                    "support_count": len(support_indices),
-                    "batch_size": len(layer_indices),
+                    "support_count": support_capacity,
+                    "batch_size": batch_capacity,
+                    "valid_batch_size": int(
+                        report.get("valid_batch_size", len(layer_indices))
+                    ),
                     "support_indices": support_indices,
+                    "support_indices_by_layer": support_indices_by_layer,
                     "layer_indices": layer_indices,
+                    "source_layer_indices": source_layer_indices,
                     "compilation_seconds": _float(
                         report, "compilation_seconds"
                     ),

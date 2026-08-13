@@ -37,6 +37,7 @@ def _equilibrium_fixture():
         support_indices=jnp.asarray([0], dtype=jnp.int32),
         budget_row_scale=jnp.asarray([1.0]),
         total_density_row_scale=jnp.asarray(1.0 / 0.8),
+        condensate_slot_mask=jnp.asarray([True]),
     )
     state = OriginalState(
         q=jnp.log(jnp.asarray([0.8])),
@@ -79,6 +80,29 @@ def test_recenter_for_epsilon_preserves_warm_primal_and_centers_complementarity(
     assert residual.complementarity == pytest.approx(jnp.zeros((1,)))
 
 
+def test_recenter_for_epsilon_anchors_dummy_slots_at_unit_source_solution():
+    _problem, state = _equilibrium_fixture()
+    padded = state._replace(
+        r=jnp.asarray([state.r[0], 3.0]),
+        rho=jnp.asarray([state.rho[0], -4.0]),
+    )
+    epsilon = -7.0
+
+    centered = jax.jit(recenter_for_epsilon)(
+        padded,
+        epsilon,
+        jnp.asarray([True, False]),
+    )
+
+    assert centered.r[0] == state.r[0]
+    assert centered.rho[0] == pytest.approx(epsilon - state.r[0])
+    assert centered.r[1] == epsilon
+    assert centered.rho[1] == 0.0
+    assert centered.r + centered.rho == pytest.approx(
+        jnp.full((2,), epsilon)
+    )
+
+
 def test_provided_initial_state_policy_preserves_exact_solver_state():
     problem, state = _equilibrium_fixture()
     supplied = state._replace(
@@ -107,6 +131,33 @@ def test_provided_initial_state_policy_preserves_exact_solver_state():
         initial.controller.original_state.epsilon, supplied.epsilon
     )
     assert int(initial.controller.original_state.iteration) == 0
+
+
+def test_provided_initial_state_policy_preserves_real_slot_dtypes():
+    problem, state = _equilibrium_fixture()
+    supplied = state._replace(
+        r=jnp.asarray(state.r, dtype=jnp.float32),
+        rho=jnp.asarray(state.rho, dtype=jnp.float32),
+        epsilon=jnp.asarray(state.epsilon, dtype=jnp.float32),
+    )
+    config = FixedSupportV2Config(
+        continuation=ContinuationConfig(
+            epsilon_schedule=(float(state.epsilon),),
+            initial_state_policy="provided",
+        ),
+        soc=SOCConfig(enabled=False),
+        limits=SolverLimitConfig(max_normal_iterations=0),
+    )
+
+    initial = initialize_continuation(problem, supplied, config)
+    preserved = initial.controller.original_state
+
+    assert preserved.r.dtype == supplied.r.dtype
+    assert preserved.rho.dtype == supplied.rho.dtype
+    assert preserved.epsilon.dtype == supplied.epsilon.dtype
+    assert jnp.array_equal(preserved.r, supplied.r)
+    assert jnp.array_equal(preserved.rho, supplied.rho)
+    assert jnp.array_equal(preserved.epsilon, supplied.epsilon)
 
 
 def test_continuation_rejects_unknown_initial_state_policy():

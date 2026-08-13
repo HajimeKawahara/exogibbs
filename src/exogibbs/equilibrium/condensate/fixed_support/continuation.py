@@ -34,13 +34,25 @@ def _validate_schedule(config: FixedSupportV2Config) -> None:
         )
 
 
-def recenter_for_epsilon(state: OriginalState, epsilon) -> OriginalState:
-    """Transfer a warm start and center bound multipliers at a new barrier."""
+def recenter_for_epsilon(
+    state: OriginalState,
+    epsilon,
+    condensate_slot_mask=None,
+) -> OriginalState:
+    """Transfer a warm start and center every slot at a new barrier."""
 
     dtype = jnp.asarray(state.q).dtype
     next_epsilon = jnp.asarray(epsilon, dtype=dtype)
+    r = jnp.asarray(state.r, dtype=dtype)
+    if condensate_slot_mask is None:
+        slot_mask = jnp.ones_like(r, dtype=jnp.bool_)
+    else:
+        slot_mask = jnp.asarray(condensate_slot_mask, dtype=jnp.bool_)
+    centered_r = jnp.where(slot_mask, r, next_epsilon)
+    centered_rho = jnp.where(slot_mask, next_epsilon - r, 0.0)
     return state._replace(
-        rho=next_epsilon - jnp.asarray(state.r, dtype=dtype),
+        r=centered_r,
+        rho=centered_rho,
         epsilon=next_epsilon,
         iteration=jnp.asarray(0, dtype=jnp.int32),
     )
@@ -55,16 +67,42 @@ def initialize_continuation(
 
     ``center`` is the normal solver policy and enforces complementarity at the
     first schedule value. ``provided`` is an audit policy: it preserves the
-    supplied ``q, r, lambda, rho, qtot, epsilon`` tuple exactly.
+    supplied real-slot ``q, r, lambda, rho, qtot, epsilon`` tuple exactly.
+    Both policies anchor synthetic slots at the unit-source barrier solution.
     """
 
     _validate_schedule(config)
     schedule = config.continuation.epsilon_schedule
     if config.continuation.initial_state_policy == "center":
-        initial_state = recenter_for_epsilon(original_state, schedule[0])
+        initial_state = recenter_for_epsilon(
+            original_state,
+            schedule[0],
+            problem.condensate_slot_mask,
+        )
     else:
+        slot_mask = (
+            jnp.ones_like(original_state.r, dtype=jnp.bool_)
+            if problem.condensate_slot_mask is None
+            else jnp.asarray(
+                problem.condensate_slot_mask,
+                dtype=jnp.bool_,
+            )
+        )
         initial_state = original_state._replace(
-            iteration=jnp.asarray(0, dtype=jnp.int32)
+            r=jnp.where(
+                slot_mask,
+                original_state.r,
+                jnp.asarray(
+                    original_state.epsilon,
+                    dtype=jnp.asarray(original_state.r).dtype,
+                ),
+            ),
+            rho=jnp.where(
+                slot_mask,
+                original_state.rho,
+                jnp.zeros_like(original_state.rho),
+            ),
+            iteration=jnp.asarray(0, dtype=jnp.int32),
         )
     controller = initialize_controller(problem, initial_state, config)
     stage_count = len(schedule)
@@ -161,7 +199,9 @@ def _advance_converged_stage(problem, state, config):
             dtype=recorded.controller.original_state.q.dtype,
         )
         warm_start = recenter_for_epsilon(
-            recorded.controller.original_state, schedule[next_index]
+            recorded.controller.original_state,
+            schedule[next_index],
+            problem.condensate_slot_mask,
         )
         return recorded._replace(
             controller=initialize_controller(problem, warm_start, config),

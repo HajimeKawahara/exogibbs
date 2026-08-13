@@ -65,6 +65,29 @@ def _validate_config(config: FixedSupportV2Config) -> None:
         raise ValueError("max_restoration_iterations must be non-negative.")
 
 
+def _anchor_dummy_slots(
+    problem: FixedSupportProblem,
+    state: OriginalState,
+) -> OriginalState:
+    """Set synthetic slots to the exact unit-source barrier solution."""
+
+    dtype = jnp.asarray(state.q).dtype
+    slot_mask = (
+        jnp.ones_like(state.r, dtype=jnp.bool_)
+        if problem.condensate_slot_mask is None
+        else jnp.asarray(problem.condensate_slot_mask, dtype=jnp.bool_)
+    )
+    epsilon = jnp.asarray(state.epsilon, dtype=dtype)
+    return state._replace(
+        r=jnp.where(slot_mask, jnp.asarray(state.r, dtype=dtype), epsilon),
+        rho=jnp.where(
+            slot_mask,
+            jnp.asarray(state.rho, dtype=dtype),
+            jnp.asarray(0.0, dtype=dtype),
+        ),
+    )
+
+
 def restoration_constraint_jacobian(
     problem: FixedSupportProblem,
     row_scales,
@@ -110,20 +133,48 @@ def _proximity_coefficient(state: RestorationState, config) -> jax.Array:
     )
 
 
+def _restoration_proximity_mask(state: RestorationState):
+    if state.proximity_mask is None:
+        return jnp.ones_like(state.x, dtype=state.x.dtype)
+    return jnp.asarray(state.proximity_mask, dtype=state.x.dtype)
+
+
+def _restoration_proximity_mask_bool(state: RestorationState):
+    if state.proximity_mask is None:
+        return jnp.ones_like(state.x, dtype=jnp.bool_)
+    return jnp.asarray(state.proximity_mask, dtype=jnp.bool_)
+
+
+def _proximity_hessian_diagonal(state: RestorationState, config):
+    proximity_mask = _restoration_proximity_mask(state)
+    return (
+        _proximity_coefficient(state, config)
+        * proximity_mask
+        / (state.variable_scales**2)
+    )
+
+
+def _dummy_linear_coefficient(state: RestorationState):
+    proximity_mask = _restoration_proximity_mask(state)
+    return 1.0 - proximity_mask
+
+
 def restoration_elastic_objective(
     state: RestorationState,
     config,
 ):
-    """Return the elastic L1 plus scaled proximity objective."""
+    """Return elastic, real-variable proximity, and dummy-source terms."""
 
+    proximity_mask = _restoration_proximity_mask(state)
     displacement = (state.x - state.entry_x) / state.variable_scales
     proximity = 0.5 * _proximity_coefficient(state, config) * jnp.dot(
-        displacement, displacement
+        proximity_mask * displacement, displacement
     )
+    dummy_linear = jnp.dot(_dummy_linear_coefficient(state), state.x)
     elastic = jnp.asarray(config.elastic_penalty, dtype=state.x.dtype) * jnp.sum(
         state.positive_slack + state.negative_slack
     )
-    return elastic + proximity
+    return elastic + proximity + dummy_linear
 
 
 def restoration_barrier_objective(
@@ -147,9 +198,9 @@ def restoration_barrier_directional_derivative(
 ):
     """Return the internal barrier-objective directional derivative."""
 
-    zeta = _proximity_coefficient(state, config)
     gradient_x = (
-        zeta * (state.x - state.entry_x) / (state.variable_scales**2)
+        _proximity_hessian_diagonal(state, config) * (state.x - state.entry_x)
+        + _dummy_linear_coefficient(state)
         - state.restoration_mu / state.x
     )
     penalty = jnp.asarray(config.elastic_penalty, dtype=state.x.dtype)
@@ -170,11 +221,12 @@ def restoration_residuals(
     """Evaluate all seven primal-dual restoration KKT blocks."""
 
     jacobian = restoration_constraint_jacobian(problem, state.row_scales)
-    zeta = _proximity_coefficient(state, config)
     penalty = jnp.asarray(config.elastic_penalty, dtype=state.x.dtype)
     return RestorationResiduals(
         dual_x=(
-            zeta * (state.x - state.entry_x) / (state.variable_scales**2)
+            _proximity_hessian_diagonal(state, config)
+            * (state.x - state.entry_x)
+            + _dummy_linear_coefficient(state)
             + jacobian.T @ state.equality_dual
             - state.lower_bound_dual_x
         ),
@@ -253,9 +305,7 @@ def restoration_kkt_jacobian(
     jacobian = restoration_constraint_jacobian(problem, state.row_scales)
     nx, nc = x.shape[0], p.shape[0]
     zeros = lambda rows, columns: jnp.zeros((rows, columns), dtype=x.dtype)
-    hessian = jnp.diag(
-        _proximity_coefficient(state, config) / (state.variable_scales**2)
-    )
+    hessian = jnp.diag(_proximity_hessian_diagonal(state, config))
     return jnp.block(
         [
             [hessian, zeros(nx, nc), zeros(nx, nc), jacobian.T, -jnp.eye(nx), zeros(nx, nc), zeros(nx, nc)],
@@ -298,9 +348,7 @@ def restoration_direction(
     zx = state.lower_bound_dual_x
     zp = state.lower_bound_dual_positive
     zv = state.lower_bound_dual_negative
-    zeta_diagonal = _proximity_coefficient(state, config) / (
-        state.variable_scales**2
-    )
+    zeta_diagonal = _proximity_hessian_diagonal(state, config)
     # These are algebraically ``1 / (H + z/x)``, ``1 / (zp/p)`` and
     # ``1 / (zv/v)``.  Forming ``z/x`` overflows for perfectly valid trace
     # amounts (for example x=1e-300), so keep the same Schur equation in a
@@ -308,10 +356,13 @@ def restoration_direction(
     inverse_wx = x / (zeta_diagonal * x + zx)
     inverse_wp = p / zp
     inverse_wv = v / zv
-    proximity_gradient = zeta_diagonal * (x - state.entry_x)
+    objective_gradient = (
+        zeta_diagonal * (x - state.entry_x)
+        + _dummy_linear_coefficient(state)
+    )
     jacobian_dual = jacobian.T @ state.equality_dual
     scaled_ax = (
-        state.restoration_mu - x * (proximity_gradient + jacobian_dual)
+        state.restoration_mu - x * (objective_gradient + jacobian_dual)
     ) / (zeta_diagonal * x + zx)
     scaled_ap = (
         state.restoration_mu
@@ -501,6 +552,11 @@ def _trial_states(state, direction, alphas):
         entry_phi=_broadcast(state.entry_phi, count),
         entry_theta=_broadcast(state.entry_theta, count),
         variable_scales=_broadcast(state.variable_scales, count),
+        proximity_mask=(
+            None
+            if state.proximity_mask is None
+            else _broadcast(_restoration_proximity_mask_bool(state), count)
+        ),
         row_scales=_broadcast(state.row_scales, count),
         iteration=_broadcast(state.iteration + 1, count),
         accepted_iteration_count=_broadcast(
@@ -642,7 +698,15 @@ def initialize_restoration(
     """Initialize persistent state exactly once on restoration entry."""
 
     _validate_config(config)
+    original_state = _anchor_dummy_slots(problem, original_state)
     amounts = physical_amounts(original_state)
+    dtype = jnp.asarray(original_state.q).dtype
+    mu = jnp.exp(jnp.asarray(original_state.epsilon, dtype=dtype))
+    slot_mask = (
+        jnp.ones_like(original_state.r, dtype=jnp.bool_)
+        if problem.condensate_slot_mask is None
+        else jnp.asarray(problem.condensate_slot_mask, dtype=jnp.bool_)
+    )
     raw_x = jnp.concatenate(
         [amounts.gas, amounts.condensate, amounts.total_gas.reshape((1,))]
     )
@@ -676,9 +740,21 @@ def initialize_restoration(
         scale_floor_fraction * condensate_reference,
     )
     tiny = jnp.asarray(jnp.finfo(dtype).tiny, dtype=dtype)
+    condensate_scales = jnp.where(
+        slot_mask,
+        condensate_scales,
+        jnp.maximum(mu, tiny),
+    )
     variable_scales = jnp.maximum(
         jnp.concatenate([gas_scales, condensate_scales, raw_x[-1:]]),
         tiny,
+    )
+    proximity_mask = jnp.concatenate(
+        [
+            jnp.ones((ng,), dtype=jnp.bool_),
+            slot_mask,
+            jnp.ones((1,), dtype=jnp.bool_),
+        ]
     )
     # Restoration is an interior-point NLP.  Merely replacing an underflowed
     # amount by 1e-300 gives z=mu/x near 1e295 and destroys useful scaling.
@@ -694,6 +770,9 @@ def initialize_restoration(
         * variable_scales,
     )
     floored_x = jnp.maximum(raw_x, interior_floor)
+    floored_x = floored_x.at[ng : ng + nc].set(
+        jnp.where(slot_mask, floored_x[ng : ng + nc], mu)
+    )
     injection = floored_x - raw_x
     scaled_budget_injection = row_scales[:-1] * (
         ag @ injection[:ng] + ac @ injection[ng : ng + nc]
@@ -717,7 +796,6 @@ def initialize_restoration(
     jacobian = restoration_constraint_jacobian(problem, row_scales)
     offset = restoration_constraint_offset(problem, row_scales)
     c = jacobian @ x + offset
-    mu = jnp.exp(jnp.asarray(original_state.epsilon, dtype=dtype))
     slack_center = jnp.sqrt(mu)
     positive = jnp.maximum(c, 0.0) + slack_center
     negative = jnp.maximum(-c, 0.0) + slack_center
@@ -736,6 +814,7 @@ def initialize_restoration(
         entry_phi=barrier_objective(problem, original_state),
         entry_theta=filter_violation(problem, original_state),
         variable_scales=variable_scales,
+        proximity_mask=proximity_mask,
         row_scales=row_scales,
         iteration=jnp.asarray(0, dtype=jnp.int32),
         accepted_iteration_count=jnp.asarray(0, dtype=jnp.int32),

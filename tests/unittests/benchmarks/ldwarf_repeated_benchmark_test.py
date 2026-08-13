@@ -99,6 +99,42 @@ def test_pdipm_support_signature_detects_identity_not_only_shape() -> None:
     assert signature != _pdipm_support_signature(same_shape_different_support)
 
 
+def test_pdipm_support_signature_uses_real_support_for_each_padded_row() -> None:
+    first = (
+        {
+            "buckets": (
+                {
+                    "layer_indices": (0, 1),
+                    "source_layer_indices": (2, 7),
+                    "support_indices": (2, 3, 4),
+                    "support_indices_by_layer": ((2,), (3, 4)),
+                    "support_capacity": 128,
+                    "batch_capacity": 13,
+                },
+            )
+        },
+    )
+    changed = (
+        {
+            "buckets": (
+                {
+                    "layer_indices": (0, 1),
+                    "source_layer_indices": (2, 7),
+                    "support_indices": (2, 3, 4),
+                    "support_indices_by_layer": ((3,), (2, 4)),
+                    "support_capacity": 128,
+                    "batch_capacity": 13,
+                },
+            )
+        },
+    )
+
+    assert _pdipm_support_signature(first) == (
+        (((2,), (2,)), ((7,), (3, 4))),
+    )
+    assert _pdipm_support_signature(first) != _pdipm_support_signature(changed)
+
+
 def test_new_shape_and_validation_fail_closed() -> None:
     cold = {
         "pdipm": {"shape_compilation": ({"signature": "shape-a"},)}
@@ -121,6 +157,7 @@ def test_new_shape_and_validation_fail_closed() -> None:
         _result_status(
             all_evaluations_accepted=False,
             timing_attribution_consistent=True,
+            no_new_pdipm_executable_shapes_after_cold=True,
         )
         == "fail_validation"
     )
@@ -128,8 +165,17 @@ def test_new_shape_and_validation_fail_closed() -> None:
         _result_status(
             all_evaluations_accepted=True,
             timing_attribution_consistent=False,
+            no_new_pdipm_executable_shapes_after_cold=True,
         )
         == "fail_timing"
+    )
+    assert (
+        _result_status(
+            all_evaluations_accepted=True,
+            timing_attribution_consistent=True,
+            no_new_pdipm_executable_shapes_after_cold=False,
+        )
+        == "fail_recompilation"
     )
 
 

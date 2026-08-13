@@ -166,8 +166,10 @@ solver phase wall
 
 `pdipm_wall_seconds` is a parent subtotal, so do not add it again to its
 compile, execute, diagnostic, and internal-orchestration children. A PD-IPM
-call is one lifecycle invocation; a bucket is one same-support executable
-invocation within that call. Both counts are recorded.
+call is one lifecycle invocation; a bucket is one fixed-shape executable
+invocation within that call. Physical supports may differ between rows and
+are recorded separately from the executable capacities. Both counts are
+recorded.
 
 Every named setup or solver phase has the same partition in `phase_budgets`.
 This exposes, for example, the L-dwarf gas-only phase and the separate KCl,

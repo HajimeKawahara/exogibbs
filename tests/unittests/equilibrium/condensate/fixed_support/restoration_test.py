@@ -47,6 +47,7 @@ def _fixture(*, epsilon=1.0e-7):
         support_indices=jnp.asarray([0], dtype=jnp.int32),
         budget_row_scale=1.0 / target,
         total_density_row_scale=jnp.asarray(1.0 / 0.8),
+        condensate_slot_mask=jnp.asarray([True]),
     )
     original = OriginalState(
         q=q,
@@ -64,8 +65,82 @@ def _flat_direction(direction):
     return jnp.concatenate([jnp.ravel(block) for block in direction])
 
 
+def _padded_fixture(*, epsilon=1.0e-7):
+    problem, original = _fixture(epsilon=epsilon)
+    padded_problem = problem._replace(
+        condensate_formula_matrix=jnp.asarray([[1.0, 0.0]]),
+        condensate_standard_source=jnp.asarray([0.0, 1.0]),
+        support_indices=jnp.asarray([0, 0], dtype=jnp.int32),
+        condensate_slot_mask=jnp.asarray([True, False]),
+    )
+    padded_original = original._replace(
+        r=jnp.asarray([original.r[0], 3.0]),
+        rho=jnp.asarray([original.rho[0], -4.0]),
+    )
+    return padded_problem, padded_original
+
+
 def test_default_restoration_limit_covers_large_support_recovery():
     assert SolverLimitConfig().max_restoration_iterations == 100
+
+
+def test_legacy_restoration_state_without_slot_mask_remains_jittable():
+    problem, original = _fixture()
+    config = FixedSupportV2Config()
+    state = initialize_restoration(problem, original, config)._replace(
+        proximity_mask=None
+    )
+
+    result = jax.jit(
+        lambda current: restoration_iteration(problem, current, config)
+    )(state)
+
+    assert result.state.proximity_mask is None
+
+
+def test_dummy_restoration_block_is_exact_and_independent_of_real_direction():
+    problem, original = _fixture(epsilon=1.0e-2)
+    padded_problem, padded_original = _padded_fixture(epsilon=1.0e-2)
+    config = FixedSupportV2Config(
+        restoration=RestorationConfig(elastic_penalty=2.0)
+    )
+    state = initialize_restoration(problem, original, config)
+    padded_state = initialize_restoration(
+        padded_problem, padded_original, config
+    )
+    direction = restoration_direction(problem, state, config.restoration)
+    padded_direction = restoration_direction(
+        padded_problem, padded_state, config.restoration
+    )
+    residual = restoration_residuals(
+        padded_problem, padded_state, config.restoration
+    )
+    mu = jnp.exp(padded_original.epsilon)
+    real_x_indices = jnp.asarray([0, 1, 2, 4])
+
+    assert padded_state.x[3] == pytest.approx(mu)
+    assert padded_state.lower_bound_dual_x[3] == pytest.approx(1.0)
+    assert jnp.array_equal(
+        padded_state.proximity_mask,
+        jnp.asarray([True, True, True, False, True]),
+    )
+    assert residual.dual_x[3] == pytest.approx(0.0)
+    assert residual.complementarity_x[3] == pytest.approx(0.0)
+    assert padded_direction.direction.x[3] == pytest.approx(0.0)
+    assert padded_direction.direction.lower_bound_dual_x[3] == pytest.approx(
+        0.0
+    )
+    assert padded_direction.direction.x[real_x_indices] == pytest.approx(
+        direction.direction.x
+    )
+
+    def dummy_barrier_objective(amount):
+        trial_x = padded_state.x.at[3].set(amount)
+        return restoration_barrier_objective(
+            padded_state._replace(x=trial_x), config.restoration
+        )
+
+    assert jax.grad(dummy_barrier_objective)(mu) == pytest.approx(0.0)
 
 
 def test_restoration_schur_direction_matches_dense_kkt():

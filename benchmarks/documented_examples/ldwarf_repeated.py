@@ -207,19 +207,49 @@ def _shape_signatures(timing: Mapping[str, Any]) -> tuple[str, ...]:
 def _pdipm_support_signature(
     calls: Sequence[Mapping[str, Any]],
 ) -> tuple[tuple[tuple[tuple[int, ...], tuple[int, ...]], ...], ...]:
-    """Return the exact fixed-support buckets used by each PD-IPM call."""
+    """Return the real per-layer supports used by each PD-IPM call."""
+
+    def bucket_entries(
+        bucket: Mapping[str, Any],
+    ) -> tuple[tuple[tuple[int, ...], tuple[int, ...]], ...]:
+        layer_indices = tuple(
+            int(value)
+            for value in bucket.get(
+                "source_layer_indices",
+                bucket.get("layer_indices", ()),
+            )
+        )
+        supports_by_layer = tuple(
+            tuple(int(value) for value in support)
+            for support in bucket.get("support_indices_by_layer", ())
+        )
+        if supports_by_layer:
+            if len(supports_by_layer) != len(layer_indices):
+                raise ValueError(
+                    "PD-IPM support metadata must have one row per layer."
+                )
+            return tuple(
+                ((layer_index,), support)
+                for layer_index, support in zip(
+                    layer_indices, supports_by_layer
+                )
+            )
+        return (
+            (
+                layer_indices,
+                tuple(
+                    int(value)
+                    for value in bucket.get("support_indices", ())
+                ),
+            ),
+        )
 
     return tuple(
         tuple(
             sorted(
-                (
-                    tuple(int(value) for value in bucket.get("layer_indices", ())),
-                    tuple(
-                        int(value)
-                        for value in bucket.get("support_indices", ())
-                    ),
-                )
+                entry
                 for bucket in call.get("buckets", ())
+                for entry in bucket_entries(bucket)
             )
         )
         for call in calls
@@ -238,12 +268,17 @@ def _new_shape_signatures(
 
 
 def _result_status(
-    *, all_evaluations_accepted: bool, timing_attribution_consistent: bool
+    *,
+    all_evaluations_accepted: bool,
+    timing_attribution_consistent: bool,
+    no_new_pdipm_executable_shapes_after_cold: bool,
 ) -> str:
     if not all_evaluations_accepted:
         return "fail_validation"
     if not timing_attribution_consistent:
         return "fail_timing"
+    if not no_new_pdipm_executable_shapes_after_cold:
+        return "fail_recompilation"
     return "pass"
 
 
@@ -443,6 +478,7 @@ def _run_benchmark(
     result_status = _result_status(
         all_evaluations_accepted=all_accepted,
         timing_attribution_consistent=timing_valid,
+        no_new_pdipm_executable_shapes_after_cold=not new_shapes,
     )
     late_shape_evaluations = tuple(
         record["evaluation"]
@@ -534,6 +570,7 @@ def _run_benchmark(
         "validation": {
             "all_evaluations_accepted": all_accepted,
             "timing_attribution_consistent": timing_valid,
+            "no_new_pdipm_executable_shapes_after_cold": not new_shapes,
             "final_support_identity_preserved": final_support_preserved,
             "pdipm_support_identity_preserved": pdipm_support_preserved,
             "failed_evaluations": tuple(
