@@ -119,6 +119,12 @@ def test_prepared_profile_runs_one_masked_bucket_and_reports_closed_support():
     assert result["compilation_seconds"] >= 0.0
     assert result["execution_seconds"] >= 0.0
     assert result["diagnostic_seconds"] >= 0.0
+    assert result["diagnostic_compilation_seconds"] >= 0.0
+    assert result["diagnostic_execution_seconds"] >= 0.0
+    assert result["diagnostic_seconds"] == pytest.approx(
+        result["diagnostic_compilation_seconds"]
+        + result["diagnostic_execution_seconds"]
+    )
     assert result["terminal_status"] == pytest.approx(
         jnp.full((2,), int(TerminalStatus.CONVERGED))
     )
@@ -138,6 +144,8 @@ def test_prepared_profile_runs_one_masked_bucket_and_reports_closed_support():
     )
     assert len(result["bucket_reports"]) == 1
     report = result["bucket_reports"][0]
+    assert report["diagnostic_compilation_seconds"] >= 0.0
+    assert report["diagnostic_execution_seconds"] >= 0.0
     restoration = report["terminal_restoration_diagnostics"]
     assert restoration["available"].shape == (2,)
     assert not jnp.any(restoration["available"])
@@ -212,6 +220,10 @@ def test_prepared_profile_can_skip_terminal_diagnostic_compilation():
     )
 
     assert result["diagnostic_seconds"] == 0.0
+    assert result["diagnostic_compilation_seconds"] == 0.0
+    assert result["diagnostic_execution_seconds"] == 0.0
+    assert result["bucket_reports"][0]["diagnostic_compilation_seconds"] == 0.0
+    assert result["bucket_reports"][0]["diagnostic_execution_seconds"] == 0.0
     assert result["bucket_reports"][0]["terminal_restoration_diagnostics"] is None
     assert result["bucket_reports"][0]["terminal_normal_diagnostics"] is None
     assert result["bucket_reports"][0]["stage_statuses"] is None
