@@ -596,13 +596,6 @@ def _compiled_terminal_restoration_diagnostics_factory(config):
     return jax.jit(jax.vmap(diagnose))
 
 
-def _terminal_restoration_diagnostics(problems, continuation, config):
-    """Replay one terminal restoration step for compact failure diagnosis."""
-
-    compiled = _compiled_terminal_restoration_diagnostics_factory(config)
-    return compiled(problems, continuation.controller)
-
-
 @lru_cache(maxsize=32)
 def _compiled_terminal_normal_diagnostics_factory(config):
     """Reuse the compact terminal-normal diagnostic JIT."""
@@ -658,13 +651,6 @@ def _compiled_terminal_normal_diagnostics_factory(config):
     return jax.jit(jax.vmap(diagnose))
 
 
-def _terminal_normal_diagnostics(problems, continuation, config):
-    """Replay one terminal normal step for compact failure diagnosis."""
-
-    compiled = _compiled_terminal_normal_diagnostics_factory(config)
-    return compiled(problems, continuation.controller)
-
-
 def run_fixed_support_profile(
     *,
     buckets: Sequence[Any],
@@ -706,6 +692,8 @@ def run_fixed_support_profile(
     compilation_seconds = 0.0
     execution_seconds = 0.0
     diagnostic_seconds = 0.0
+    diagnostic_compilation_seconds = 0.0
+    diagnostic_execution_seconds = 0.0
     backend = jax.default_backend()
 
     for bucket in buckets:
@@ -724,17 +712,45 @@ def run_fixed_support_profile(
         )
         restoration_diagnostics = None
         normal_diagnostics = None
+        bucket_diagnostic_compilation_seconds = 0.0
+        bucket_diagnostic_execution_seconds = 0.0
         if include_terminal_diagnostics:
             continuation = result.continuation
-            diagnostic_start = time.perf_counter()
-            restoration_diagnostics = _terminal_restoration_diagnostics(
-                problems, continuation, config
+            restoration = _compiled_terminal_restoration_diagnostics_factory(
+                config
             )
-            normal_diagnostics = _terminal_normal_diagnostics(
-                problems, continuation, config
+            normal = _compiled_terminal_normal_diagnostics_factory(config)
+            diagnostic_compile_start = time.perf_counter()
+            compiled_restoration = restoration.lower(
+                problems, continuation.controller
+            ).compile()
+            compiled_normal = normal.lower(
+                problems, continuation.controller
+            ).compile()
+            bucket_diagnostic_compilation_seconds = (
+                time.perf_counter() - diagnostic_compile_start
+            )
+            diagnostic_execution_start = time.perf_counter()
+            restoration_diagnostics = compiled_restoration(
+                problems, continuation.controller
+            )
+            normal_diagnostics = compiled_normal(
+                problems, continuation.controller
             )
             _block_until_ready((restoration_diagnostics, normal_diagnostics))
-            diagnostic_seconds += time.perf_counter() - diagnostic_start
+            bucket_diagnostic_execution_seconds = (
+                time.perf_counter() - diagnostic_execution_start
+            )
+            diagnostic_compilation_seconds += (
+                bucket_diagnostic_compilation_seconds
+            )
+            diagnostic_execution_seconds += (
+                bucket_diagnostic_execution_seconds
+            )
+            diagnostic_seconds += (
+                bucket_diagnostic_compilation_seconds
+                + bucket_diagnostic_execution_seconds
+            )
             terminal = continuation.terminal_status
             completed_stages = continuation.completed_stage_count
             stage_statuses = continuation.stage_statuses
@@ -809,6 +825,12 @@ def run_fixed_support_profile(
                 "layer_indices": tuple(int(value) for value in bucket.layer_indices),
                 "compilation_seconds": execution.compilation_seconds,
                 "execution_seconds": execution.execution_seconds,
+                "diagnostic_compilation_seconds": (
+                    bucket_diagnostic_compilation_seconds
+                ),
+                "diagnostic_execution_seconds": (
+                    bucket_diagnostic_execution_seconds
+                ),
                 "terminal_status": terminal,
                 "completed_stage_count": completed_stages,
                 "stage_statuses": stage_statuses,
@@ -836,6 +858,8 @@ def run_fixed_support_profile(
         "compilation_seconds": compilation_seconds,
         "execution_seconds": execution_seconds,
         "diagnostic_seconds": diagnostic_seconds,
+        "diagnostic_compilation_seconds": diagnostic_compilation_seconds,
+        "diagnostic_execution_seconds": diagnostic_execution_seconds,
         "gas_log_amounts": gas_log_amounts,
         "condensate_amounts": condensate_amounts,
         "total_gas_log_amount": total_gas_log_amount,

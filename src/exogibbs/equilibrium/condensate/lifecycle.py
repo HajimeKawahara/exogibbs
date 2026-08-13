@@ -1180,6 +1180,8 @@ def _run_head_v2_profile(
     compilation_seconds = 0.0
     execution_seconds = 0.0
     diagnostic_seconds = 0.0
+    diagnostic_compilation_seconds = 0.0
+    diagnostic_execution_seconds = 0.0
     backend = jax.default_backend()
     for round_index in range(policy.lifecycle_max_rounds):
         if not pending:
@@ -1246,7 +1248,34 @@ def _run_head_v2_profile(
         )
         compilation_seconds += float(raw["compilation_seconds"])
         execution_seconds += float(raw["execution_seconds"])
-        diagnostic_seconds += float(raw["diagnostic_seconds"])
+        round_diagnostic_seconds = float(raw["diagnostic_seconds"])
+        diagnostic_seconds += round_diagnostic_seconds
+        round_diagnostic_compilation = raw.get(
+            "diagnostic_compilation_seconds"
+        )
+        round_diagnostic_execution = raw.get("diagnostic_execution_seconds")
+        if (
+            round_diagnostic_compilation is None
+            and round_diagnostic_execution is None
+        ):
+            diagnostic_execution_seconds += round_diagnostic_seconds
+        else:
+            if round_diagnostic_compilation is None:
+                round_diagnostic_compilation = (
+                    round_diagnostic_seconds
+                    - float(round_diagnostic_execution)
+                )
+            if round_diagnostic_execution is None:
+                round_diagnostic_execution = (
+                    round_diagnostic_seconds
+                    - float(round_diagnostic_compilation)
+                )
+            diagnostic_compilation_seconds += float(
+                round_diagnostic_compilation
+            )
+            diagnostic_execution_seconds += float(
+                round_diagnostic_execution
+            )
         backend = str(raw["backend"])
         converged = np.asarray(
             jax.device_get(raw["fixed_support_converged"]), dtype=bool
@@ -1539,6 +1568,10 @@ def _run_head_v2_profile(
             "compilation_seconds_total": compilation_seconds,
             "execution_seconds_total": execution_seconds,
             "diagnostic_seconds_total": diagnostic_seconds,
+            "diagnostic_compilation_seconds_total": (
+                diagnostic_compilation_seconds
+            ),
+            "diagnostic_execution_seconds_total": diagnostic_execution_seconds,
             "backend": backend,
             "production_preset_promoted": True,
             "amount_gauge": amount_gauge,
@@ -1811,6 +1844,8 @@ def _run_head_v2_profile(
             "compilation_seconds": compilation_seconds,
             "execution_seconds": execution_seconds,
             "diagnostic_seconds": diagnostic_seconds,
+            "diagnostic_compilation_seconds": diagnostic_compilation_seconds,
+            "diagnostic_execution_seconds": diagnostic_execution_seconds,
             "backend": backend,
             "layers": tuple(records),
             "amount_gauge": amount_gauge,
