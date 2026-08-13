@@ -54,6 +54,7 @@ def _fixture():
         support_indices=jnp.asarray([2, 5], dtype=jnp.int32),
         budget_row_scale=1.0 / target,
         total_density_row_scale=1.0 / jnp.exp(qtot),
+        condensate_slot_mask=jnp.asarray([True, True]),
     )
     state = OriginalState(
         q=q,
@@ -103,6 +104,7 @@ def test_singular_reduced_system_returns_typed_linear_failure():
         support_indices=jnp.asarray([0], dtype=jnp.int32),
         budget_row_scale=jnp.ones((1,)),
         total_density_row_scale=jnp.asarray(1.0),
+        condensate_slot_mask=jnp.asarray([True]),
     )
     state = OriginalState(
         q=jnp.log(jnp.asarray([0.4, 0.6])),

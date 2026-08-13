@@ -51,3 +51,6 @@ include src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc
 
 # Unvalidated transcription retained in the repository but not distributed
 recursive-exclude src/exogibbs/data/sharp_huebner *
+
+# Documentation submodule is published separately
+prune doc_ExoGibbs

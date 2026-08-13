@@ -88,6 +88,7 @@ def _empty_restoration_state(
         entry_phi=jnp.asarray(0.0, dtype=dtype),
         entry_theta=jnp.asarray(0.0, dtype=dtype),
         variable_scales=jnp.ones_like(x),
+        proximity_mask=jnp.ones_like(x, dtype=jnp.bool_),
         row_scales=jnp.ones_like(equality),
         iteration=jnp.asarray(0, dtype=jnp.int32),
         accepted_iteration_count=jnp.asarray(0, dtype=jnp.int32),

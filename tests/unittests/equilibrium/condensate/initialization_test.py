@@ -14,6 +14,7 @@ from exogibbs.api.condensate_equilibrium import (
     FixedSupportCondensateEquilibriumGrid as CompatibilityFixedSupportGrid,
     GridCondensateEquilibriumInitializer as CompatibilityGridInitializer,
 )
+from exogibbs.equilibrium.condensate import lifecycle as _lifecycle
 from exogibbs.equilibrium.condensate.setup import CondensateChemicalSetup
 from exogibbs.equilibrium.condensate.types import (
     CondensateEquilibriumInit,
@@ -33,9 +34,21 @@ def _condensate_setup() -> CondensateChemicalSetup:
     elements = ("H", "He", "O", "e-")
     gas_species = ("H2", "H2O")
     condensate_species = ("O[s]", "H2O[s]", "O2[s]")
-    gas_formula_matrix = jnp.zeros((len(elements), len(gas_species)))
-    condensate_formula_matrix = jnp.zeros(
-        (len(elements), len(condensate_species))
+    gas_formula_matrix = jnp.asarray(
+        [
+            [2.0, 2.0],
+            [0.0, 0.0],
+            [0.0, 1.0],
+            [0.0, 0.0],
+        ]
+    )
+    condensate_formula_matrix = jnp.asarray(
+        [
+            [0.0, 2.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [1.0, 1.0, 2.0],
+            [0.0, 0.0, 0.0],
+        ]
     )
     gas_setup = ChemicalSetup(
         formula_matrix=gas_formula_matrix,
@@ -126,6 +139,21 @@ def _fixed_support_grid(
     )
 
 
+def _grid_to_caller_amount_ratio(
+    setup,
+    element_vector,
+    gas_ln_n,
+    condensate_amounts,
+):
+    grid_inventory = (
+        setup.formula_matrix @ jnp.exp(jnp.asarray(gas_ln_n))
+        + setup.formula_matrix_cond @ jnp.asarray(condensate_amounts)
+    )
+    return jnp.sum(jnp.asarray(element_vector)[:3]) / jnp.sum(
+        grid_inventory[:3]
+    )
+
+
 def test_grid_condensate_initializer_maps_linear_total_and_preserves_user_init(
     monkeypatch,
 ):
@@ -189,14 +217,25 @@ def test_grid_condensate_initializer_maps_linear_total_and_preserves_user_init(
     assert captured["pressure"] == 0.3
     assert captured["composition"] == 0.25
     assert captured["options"] is None
-    assert jnp.allclose(result.gas_ln_n, jnp.asarray([-3.0, -4.0]))
-    assert jnp.isclose(result.gas_ntot, 2.5)
+    raw_gas_ln_n = jnp.asarray([-3.0, -4.0])
+    raw_condensates = jnp.asarray([0.2, 0.0, 0.4])
+    amount_ratio = _grid_to_caller_amount_ratio(
+        setup,
+        jnp.asarray([1.0, 0.1, 0.02, 0.0]),
+        raw_gas_ln_n,
+        raw_condensates,
+    )
+    assert jnp.allclose(result.gas_ln_n, raw_gas_ln_n + jnp.log(amount_ratio))
+    assert jnp.isclose(result.gas_ntot, 2.5 * amount_ratio)
     assert jnp.allclose(
         result.condensate_amounts,
-        jnp.asarray([0.2, 0.0, 0.4]),
+        raw_condensates * amount_ratio,
     )
     assert result.support_indices == (0, 2)
-    assert jnp.allclose(result.support_amounts, jnp.asarray([0.2, 0.4]))
+    assert jnp.allclose(
+        result.support_amounts,
+        jnp.asarray([0.2, 0.4]) * amount_ratio,
+    )
     assert jnp.allclose(result.element_potential, user_init.element_potential)
     assert jnp.allclose(result.rho, user_init.rho)
     assert jnp.isclose(result.barrier_epsilon, user_init.barrier_epsilon)
@@ -254,14 +293,25 @@ def test_grid_condensate_initializer_infers_coordinate_and_preserves_previous(
         element_vector,
     )
     assert jnp.isclose(captured["composition"], expected)
-    assert jnp.allclose(result.gas_ln_n, jnp.asarray([-1.0, -2.0]))
-    assert jnp.isclose(result.gas_ntot, 1.5)
+    raw_gas_ln_n = jnp.asarray([-1.0, -2.0])
+    raw_condensates = jnp.asarray([0.2, 0.0, 0.4])
+    amount_ratio = _grid_to_caller_amount_ratio(
+        setup,
+        element_vector,
+        raw_gas_ln_n,
+        raw_condensates,
+    )
+    assert jnp.allclose(result.gas_ln_n, raw_gas_ln_n + jnp.log(amount_ratio))
+    assert jnp.isclose(result.gas_ntot, 1.5 * amount_ratio)
     assert jnp.allclose(
         result.condensate_amounts,
-        jnp.asarray([0.2, 0.0, 0.4]),
+        raw_condensates * amount_ratio,
     )
     assert result.support_indices == (0, 2)
-    assert jnp.allclose(result.support_amounts, jnp.asarray([0.2, 0.4]))
+    assert jnp.allclose(
+        result.support_amounts,
+        jnp.asarray([0.2, 0.4]) * amount_ratio,
+    )
     assert jnp.allclose(result.element_potential, previous.element_potential)
     assert jnp.allclose(result.rho, previous.rho)
     assert jnp.isclose(result.barrier_epsilon, previous.barrier_epsilon)
@@ -382,14 +432,16 @@ def test_grid_condensate_initializer_is_trace_safe():
     )
     initializer = GridCondensateEquilibriumInitializer(grid, "test")
 
+    base_element_vector = jnp.asarray([1.0, 0.1, 0.02, 0.0])
+
     @jax.jit
-    def lookup(temperature, pressure, composition):
+    def lookup(temperature, pressure, composition, amount_scale):
         result = initializer(
             CondensateEquilibriumInitRequest(
                 setup=setup,
                 T=temperature,
                 P=pressure,
-                b=jnp.asarray([1.0, 0.1, 0.02, 0.0]),
+                b=amount_scale * base_element_vector,
                 explicit_log10_z_over_z_sun=composition,
             )
         )
@@ -404,18 +456,109 @@ def test_grid_condensate_initializer_is_trace_safe():
         jnp.asarray(1000.0),
         jnp.asarray(0.5),
         jnp.asarray(0.0),
+        jnp.asarray(1.0),
     )
 
-    assert jnp.allclose(gas_ln_n, jnp.zeros((2,)))
-    assert jnp.isclose(gas_ntot, 1.0)
-    assert jnp.allclose(condensates, jnp.asarray([1.0, 0.0, 1.0]))
-    assert jnp.allclose(support_amounts, jnp.asarray([1.0, 1.0]))
+    raw_gas_ln_n = jnp.zeros((2,))
+    raw_condensates = jnp.asarray([1.0, 0.0, 1.0])
+    amount_ratio = _grid_to_caller_amount_ratio(
+        setup,
+        base_element_vector,
+        raw_gas_ln_n,
+        raw_condensates,
+    )
+    assert jnp.allclose(gas_ln_n, raw_gas_ln_n + jnp.log(amount_ratio))
+    assert jnp.isclose(gas_ntot, amount_ratio)
+    assert jnp.allclose(condensates, raw_condensates * amount_ratio)
+    assert jnp.allclose(
+        support_amounts,
+        jnp.asarray([1.0, 1.0]) * amount_ratio,
+    )
+    scaled = lookup(1000.0, 0.5, 0.0, 1.0e-12)
+    assert jnp.allclose(scaled[0], gas_ln_n + jnp.log(1.0e-12))
+    assert jnp.isclose(scaled[1] / 1.0e-12, gas_ntot)
+    assert jnp.allclose(scaled[2] / 1.0e-12, condensates)
+    assert jnp.allclose(scaled[3] / 1.0e-12, support_amounts)
     slope = jax.grad(
         lambda temperature: jnp.sum(
-            lookup(temperature, 0.5, 0.0)[3]
+            lookup(temperature, 0.5, 0.0, 1.0)[3]
         )
     )(1000.0)
-    assert jnp.isclose(slope, 2.0e-3)
+    gas_inventory_scale = jnp.sum(
+        (setup.formula_matrix @ jnp.ones((2,)))[:3]
+    )
+    condensate_inventory_scale = jnp.sum(
+        (
+            setup.formula_matrix_cond
+            @ jnp.asarray([1.0, 0.0, 1.0])
+        )[:3]
+    )
+    expected_slope = (
+        jnp.sum(base_element_vector[:3])
+        * 2.0
+        * gas_inventory_scale
+        / (gas_inventory_scale + condensate_inventory_scale) ** 2
+        / 1000.0
+    )
+    assert jnp.isclose(slope, expected_slope)
+
+
+def test_grid_condensate_initializer_matches_lifecycle_amount_gauge():
+    setup = _condensate_setup()
+    initializer = GridCondensateEquilibriumInitializer(
+        _fixed_support_grid(setup),
+        "test",
+    )
+    base_element_vector = jnp.asarray([1.0, 0.1, 0.02, 0.0])
+    canonical_states = []
+
+    for scale in (1.0e-12, 1.0, 1.0e8):
+        caller_inventory = scale * base_element_vector
+        amount_scale = _lifecycle._inventory_amount_gauge_scale(
+            setup,
+            caller_inventory,
+        )
+        initial = initializer(
+            CondensateEquilibriumInitRequest(
+                setup=setup,
+                T=1000.0,
+                P=0.5,
+                b=caller_inventory,
+                explicit_log10_z_over_z_sun=0.0,
+                user_init=CondensateEquilibriumInit(
+                    element_potential=jnp.arange(4.0),
+                    rho=jnp.asarray([0.3, 0.4]),
+                    barrier_epsilon=jnp.asarray(
+                        -13.0 + jnp.log(amount_scale)
+                    ),
+                ),
+            )
+        )
+        canonical_states.append(
+            _lifecycle._normalize_condensate_init_amount_gauge(
+                initial,
+                amount_scale,
+            )
+        )
+
+    reference = canonical_states[1]
+    for state in canonical_states:
+        assert jnp.allclose(state.gas_ln_n, reference.gas_ln_n)
+        assert jnp.allclose(state.gas_ntot, reference.gas_ntot)
+        assert jnp.allclose(
+            state.condensate_amounts,
+            reference.condensate_amounts,
+        )
+        assert jnp.allclose(
+            jnp.asarray(state.support_amounts),
+            jnp.asarray(reference.support_amounts),
+        )
+        assert jnp.allclose(
+            state.element_potential,
+            reference.element_potential,
+        )
+        assert jnp.allclose(state.rho, reference.rho)
+        assert jnp.isclose(state.barrier_epsilon, -13.0)
 
 
 def test_grid_condensate_initializer_is_exported_by_compatibility_api():

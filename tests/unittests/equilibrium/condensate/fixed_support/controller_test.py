@@ -40,6 +40,7 @@ def _equilibrium_fixture():
         support_indices=jnp.asarray([0], dtype=jnp.int32),
         budget_row_scale=jnp.asarray([1.0]),
         total_density_row_scale=jnp.asarray(1.0 / 0.8),
+        condensate_slot_mask=jnp.asarray([True]),
     )
     state = OriginalState(
         q=jnp.log(jnp.asarray([0.8])),
@@ -63,6 +64,7 @@ def _infeasible_fixture():
         support_indices=jnp.asarray([0], dtype=jnp.int32),
         budget_row_scale=jnp.asarray([1.0]),
         total_density_row_scale=jnp.asarray(1.0 / 0.8),
+        condensate_slot_mask=jnp.asarray([True]),
     )
     state = OriginalState(
         q=jnp.log(jnp.asarray([0.05, 0.05])),
@@ -90,6 +92,22 @@ def _controller_config(**kwargs):
     )
 
 
+def _padded_equilibrium_fixture():
+    problem, state = _equilibrium_fixture()
+    return (
+        problem._replace(
+            condensate_formula_matrix=jnp.asarray([[1.0, 0.0]]),
+            condensate_standard_source=jnp.asarray([0.5, 1.0]),
+            support_indices=jnp.asarray([0, 0], dtype=jnp.int32),
+            condensate_slot_mask=jnp.asarray([True, False]),
+        ),
+        state._replace(
+            r=jnp.asarray([state.r[0], 3.0]),
+            rho=jnp.asarray([state.rho[0], -4.0]),
+        ),
+    )
+
+
 def test_return_map_uses_linearized_bound_update_and_zero_lambda():
     problem, entry = _equilibrium_fixture()
     config = _controller_config()
@@ -106,6 +124,68 @@ def test_return_map_uses_linearized_bound_update_and_zero_lambda():
     assert float(result.diagnostics.alpha_dual) == pytest.approx(1.0)
     assert bool(result.diagnostics.equality_multiplier_reset)
     assert not bool(result.diagnostics.bound_multiplier_reset)
+
+
+def test_return_map_reanchors_dummy_and_rejects_invalid_dummy_source():
+    problem, entry = _padded_equilibrium_fixture()
+    config = _controller_config()
+    restoration = initialize_restoration(problem, entry, config)._replace(
+        x=jnp.asarray([0.8, 0.1, 3.0, 0.8])
+    )
+
+    result = apply_restoration_return(problem, restoration, config)
+    invalid = apply_restoration_return(
+        problem._replace(condensate_standard_source=jnp.asarray([0.5, 0.9])),
+        restoration,
+        config,
+    )
+
+    assert bool(result.accepted)
+    assert result.original_state.r[1] == entry.epsilon
+    assert result.original_state.rho[1] == 0.0
+    assert result.diagnostics.post_return_norms.condensate_stationarity == (
+        pytest.approx(0.25)
+    )
+    assert not bool(invalid.accepted)
+    assert int(invalid.status) == TerminalStatus.INTERNAL_CONTRACT_ERROR
+
+
+def test_forced_restoration_padding_matches_unpadded_trajectory_and_status():
+    problem, entry = _infeasible_fixture()
+    padded_problem = problem._replace(
+        condensate_formula_matrix=jnp.asarray([[1.0, 0.0]]),
+        condensate_standard_source=jnp.asarray([0.0, 1.0]),
+        support_indices=jnp.asarray([0, 0], dtype=jnp.int32),
+        condensate_slot_mask=jnp.asarray([True, False]),
+    )
+    padded_entry = entry._replace(
+        r=jnp.asarray([entry.r[0], 2.0]),
+        rho=jnp.asarray([entry.rho[0], -3.0]),
+    )
+    config = _controller_config()
+    state = initialize_restoration(problem, entry, config)
+    padded_state = initialize_restoration(
+        padded_problem, padded_entry, config
+    )
+    filter_state = empty_filter(
+        config.limits.filter_capacity, dtype=state.x.dtype
+    )
+
+    result = solve_restoration(problem, state, filter_state, config)
+    padded_result = solve_restoration(
+        padded_problem, padded_state, filter_state, config
+    )
+    real_x_indices = jnp.asarray([0, 1, 2, 4])
+
+    assert int(padded_result.status) == int(result.status)
+    assert bool(padded_result.return_accepted) == bool(result.return_accepted)
+    assert int(padded_result.state.iteration) == int(result.state.iteration)
+    assert padded_result.state.x[real_x_indices] == pytest.approx(
+        result.state.x
+    )
+    assert padded_result.state.x[3] == pytest.approx(
+        jnp.exp(entry.epsilon)
+    )
 
 
 def test_return_map_resets_all_bound_multipliers_above_global_threshold():

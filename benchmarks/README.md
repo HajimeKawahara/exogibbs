@@ -4,6 +4,8 @@ Current benchmark runners:
 
 - `python -m benchmarks.run_single_layer`
 - `python -m benchmarks.run_profile`
+- `python -m benchmarks.documented_examples.run`
+- `python -m benchmarks.documented_examples.ldwarf_repeated`
 - `python -m benchmarks.fastchem4.run_production_comparison` (requires an
   external FastChem v4.0.3 standalone executable)
 
@@ -11,6 +13,8 @@ The fixed-support v2 production-profile gate and frozen pre-promotion evidence
 are documented in `benchmarks/fixed_support_v2/README.md`.
 The independent production comparison with FastChem 4 is documented in
 `benchmarks/fastchem4/README.md`.
+The CPU/GPU and compiler-option timing matrix for all documentation examples
+is documented in `benchmarks/documented_examples/README.md`.
 
 Run from the repository root with `PYTHONPATH=src`.
 

@@ -114,10 +114,6 @@ def full_condensate_element_budget_residual_report(
         + formula_matrix_cond @ cond_amounts
     )
     residual = reconstructed - target
-    floor = float(relative_floor)
-    denominator = np.maximum(np.abs(target), max(floor, 1.0e-300))
-    signed_relative = residual / denominator
-    absolute_relative = np.abs(signed_relative)
     gate_mask = np.asarray(
         tuple(
             str(element) not in {"e-", "electron"}
@@ -125,9 +121,31 @@ def full_condensate_element_budget_residual_report(
         ),
         dtype=bool,
     )
+    floor = float(relative_floor)
+    positive = gate_mask & (target > 0.0)
+    with np.errstate(invalid="ignore", over="ignore"):
+        amount_scale = (
+            float(np.sum(target[positive])) if np.any(positive) else 1.0
+        )
+        candidate_floor = floor * amount_scale
+    amount_scale_finite = bool(
+        np.isfinite(amount_scale) and amount_scale > 0.0
+    )
+    floor_finite = bool(np.isfinite(candidate_floor) and candidate_floor >= 0.0)
+    minimum_floor = np.nextafter(0.0, 1.0)
+    absolute_floor = (
+        max(candidate_floor, minimum_floor)
+        if amount_scale_finite and floor_finite
+        else minimum_floor
+    )
+    denominator = np.maximum(np.abs(target), absolute_floor)
+    signed_relative = residual / denominator
+    absolute_relative = np.abs(signed_relative)
     gated_absolute_relative = np.where(gate_mask, absolute_relative, 0.0)
     finite = bool(
-        np.all(np.isfinite(np.where(gate_mask, absolute_relative, 0.0)))
+        amount_scale_finite
+        and floor_finite
+        and np.all(np.isfinite(np.where(gate_mask, absolute_relative, 0.0)))
     )
     sanitized = np.where(
         np.isfinite(gated_absolute_relative),
@@ -139,12 +157,15 @@ def full_condensate_element_budget_residual_report(
     tolerance = float(relative_tolerance)
     return {
         "gate_schema": (
-            "exogibbs_full_condensate_element_budget_residual_gate_v1"
+            "exogibbs_full_condensate_element_budget_residual_gate_v2"
         ),
         "gate_name": "full_condensate_element_budget_residual",
         "accepted": bool(finite and max_abs_relative <= tolerance),
         "relative_tolerance": tolerance,
         "relative_floor": floor,
+        "absolute_floor": absolute_floor,
+        "amount_gauge_scale": amount_scale,
+        "amount_gauge_scale_finite": amount_scale_finite,
         "max_abs_relative_residual": max_abs_relative,
         "max_abs_relative_residual_element": setup.elements[max_index],
         "max_abs_relative_residual_element_index": max_index,
@@ -406,7 +427,8 @@ def accept_condensate_result_state(
 
     gas_n = jnp.exp(gas_ln_n_array)
     gas_ntot = jnp.sum(gas_n)
-    gas_x = gas_n / jnp.clip(gas_ntot, 1.0e-300)
+    relative_gas_n = jnp.exp(gas_ln_n_array - jnp.max(gas_ln_n_array))
+    gas_x = relative_gas_n / jnp.sum(relative_gas_n)
     (
         status,
         acceptance_tier,

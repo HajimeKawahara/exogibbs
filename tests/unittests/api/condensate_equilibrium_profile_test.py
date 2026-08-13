@@ -1,5 +1,6 @@
 """Production v2 condensate profile tests."""
 
+import math
 from types import SimpleNamespace
 
 import jax.numpy as jnp
@@ -17,6 +18,9 @@ from exogibbs.equilibrium.condensate import lifecycle as _lifecycle
 from exogibbs.equilibrium.condensate.fixed_support.types import (
     KKTComponentNorms,
     TerminalStatus,
+)
+from exogibbs.equilibrium.condensate.fixed_support.zero_barrier import (
+    _physical_zero_barrier_audit,
 )
 
 
@@ -58,11 +62,312 @@ def _fake_setup() -> CondensateChemicalSetup:
     )
 
 
+def _amount_gauge_fake_setup() -> CondensateChemicalSetup:
+    base = _fake_setup()
+    condensate_setup = ChemicalSetup(
+        formula_matrix=base.formula_matrix_cond,
+        hvector_func=lambda temperature: jnp.asarray(
+            [math.log(0.5), 0.0], dtype=jnp.float64
+        ),
+        elements=base.elements,
+        species=base.condensate_species,
+        metadata={},
+    )
+    return CondensateChemicalSetup(
+        gas_setup=base.gas_setup,
+        condensate_setup=condensate_setup,
+        formula_matrix=base.formula_matrix,
+        formula_matrix_cond=base.formula_matrix_cond,
+        gas_species=base.gas_species,
+        condensate_species=base.condensate_species,
+        elements=base.elements,
+    )
+
+
+def _prepared_real_support(bucket, row: int = 0) -> tuple[int, ...]:
+    indices = np.asarray(bucket.support_indices)
+    mask = getattr(bucket, "condensate_slot_mask", None)
+    if indices.ndim == 1:
+        return tuple(int(index) for index in indices)
+    if mask is None:
+        return tuple(int(index) for index in indices[row])
+    return tuple(
+        int(index)
+        for index in indices[row][np.asarray(mask, dtype=bool)[row]]
+    )
+
+
+def test_amount_gauge_scale_and_initializer_normalization() -> None:
+    setup = SimpleNamespace(elements=("H", "O", "e-"))
+    scale = _lifecycle._inventory_amount_gauge_scale(
+        setup,
+        jnp.asarray([2.0e-12, 3.0e-12, 1.0e9]),
+    )
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=jnp.log(jnp.asarray([2.0e-12, 3.0e-12])),
+        gas_ntot=jnp.asarray(5.0e-12),
+        condensate_amounts=jnp.asarray([1.0e-12]),
+        support_indices=(0,),
+        support_amounts=(1.0e-12,),
+        element_potential=jnp.asarray([1.0, 2.0, 3.0]),
+        rho=jnp.asarray([4.0]),
+        barrier_epsilon=jnp.asarray(-11.0 + math.log(5.0e-12)),
+    )
+
+    normalized = _lifecycle._normalize_condensate_init_amount_gauge(
+        initial,
+        scale,
+    )
+
+    assert scale == pytest.approx(5.0e-12)
+    np.testing.assert_allclose(jnp.exp(normalized.gas_ln_n), [0.4, 0.6])
+    assert float(normalized.gas_ntot) == pytest.approx(1.0)
+    np.testing.assert_allclose(normalized.condensate_amounts, [0.2])
+    assert normalized.support_amounts == pytest.approx((0.2,))
+    np.testing.assert_array_equal(
+        normalized.element_potential, initial.element_potential
+    )
+    np.testing.assert_array_equal(normalized.rho, initial.rho)
+    assert float(normalized.barrier_epsilon) == pytest.approx(-11.0)
+
+
+@pytest.mark.parametrize(
+    ("target", "message"),
+    (
+        ([1.0, 0.0], "one value per element"),
+        ([math.nan, 0.0, 0.0], "only finite values"),
+        ([-1.0, 0.0, 1.0], "must be non-negative"),
+        ([0.0, 0.0, 1.0], "positive non-charge amount"),
+    ),
+)
+def test_amount_gauge_scale_rejects_invalid_targets(target, message):
+    setup = SimpleNamespace(elements=("H", "O", "e-"))
+
+    with pytest.raises(ValueError, match=message):
+        _lifecycle._inventory_amount_gauge_scale(setup, target)
+
+
+def test_caller_budget_audit_keeps_trace_row_scale_finite() -> None:
+    amount_scale = 1.0e-12
+    target = np.asarray([amount_scale, 1.0e-312], dtype=np.float64)
+    gas_log_amounts = np.log(target)
+    total_gas_log_amount = float(np.log(np.sum(target)))
+    budget_scale = _lifecycle._canonical_budget_scale_for_caller_audit(
+        target,
+        amount_scale=amount_scale,
+        relative_floor=1.0e-6,
+    )
+
+    audit = _physical_zero_barrier_audit(
+        gas_formula_matrix=np.eye(2),
+        condensate_formula_matrix_full=np.zeros((2, 0)),
+        target_inventory=target,
+        gas_standard_source=np.zeros(2),
+        condensate_standard_source_full=np.zeros(0),
+        gas_log_amounts=gas_log_amounts,
+        condensate_amounts=np.zeros(0),
+        total_gas_log_amount=total_gas_log_amount,
+        element_potential=gas_log_amounts - total_gas_log_amount,
+        support_indices=(),
+        condensate_valid_mask=np.zeros(0, dtype=bool),
+        budget_scale=budget_scale,
+        optimizer_success=True,
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+        budget_residual_amount_scale=amount_scale,
+    )
+
+    assert np.all(np.isfinite(budget_scale))
+    assert audit["accepted"]
+    assert audit["budget_scaled_max_abs"] < 1.0e-8
+
+
+@pytest.mark.parametrize("amount_scale", (1.0e-305, 1.0e-12, 1.0, 1.0e8))
+def test_head_v2_uses_one_canonical_amount_gauge_and_rescales_results(
+    monkeypatch,
+    amount_scale,
+):
+    setup = _amount_gauge_fake_setup()
+    captured = {}
+
+    def fake_support_payload(**kwargs):
+        captured["support_target"] = np.asarray(kwargs["b"])
+        captured["gas_init"] = kwargs["gas_equilibrium_init"]
+        return (0,), (0.2,), {"policy": "test_canonical_support"}
+
+    monkeypatch.setattr(
+        _lifecycle,
+        "_native_activity_expanded_profile_support_payload",
+        fake_support_payload,
+    )
+
+    def fake_run_fixed_support_profile(**kwargs):
+        bucket = kwargs["buckets"][0]
+        captured["bucket_target"] = np.asarray(
+            bucket.element_inventory_target
+        )
+        captured["bucket_gas"] = np.exp(np.asarray(bucket.ln_nk_init))
+        slot_amounts = np.exp(np.asarray(bucket.ln_mk_init))
+        slot_mask = np.asarray(bucket.condensate_slot_mask, dtype=bool)
+        captured["bucket_condensate"] = tuple(
+            tuple(row[row_mask])
+            for row, row_mask in zip(slot_amounts, slot_mask)
+        )
+        zeros = jnp.zeros((1,), dtype=jnp.float64)
+        return {
+            "backend": "cpu",
+            "compilation_seconds": 0.0,
+            "execution_seconds": 0.0,
+            "diagnostic_seconds": 0.0,
+            "gas_log_amounts": jnp.log(
+                jnp.asarray([[0.4, 0.4]], dtype=jnp.float64)
+            ),
+            "condensate_amounts": jnp.asarray(
+                [[0.2, 0.0]], dtype=jnp.float64
+            ),
+            "total_gas_log_amount": jnp.log(
+                jnp.asarray([0.8], dtype=jnp.float64)
+            ),
+            "element_potential": jnp.full(
+                (1, 2), math.log(0.5), dtype=jnp.float64
+            ),
+            "terminal_status": jnp.asarray(
+                [int(TerminalStatus.CONVERGED)], dtype=jnp.int32
+            ),
+            "final_kkt_norms": KKTComponentNorms(
+                zeros, zeros, zeros, zeros, zeros
+            ),
+            "final_state_values_finite": jnp.asarray([True]),
+            "fixed_support_converged": jnp.asarray([True]),
+            "support_closed": jnp.asarray([True]),
+            "support_expansion_mask": jnp.asarray(
+                [[False, False]], dtype=bool
+            ),
+            "inactive_condensate_driving": jnp.zeros(
+                (1, 2), dtype=jnp.float64
+            ),
+        }
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.batch."
+            "run_fixed_support_profile"
+        ),
+        fake_run_fixed_support_profile,
+    )
+    monkeypatch.setattr(
+        _lifecycle,
+        "evaluate_profile_support_closure",
+        lambda result, **kwargs: result,
+    )
+
+    def fake_zero_barrier_polish(**kwargs):
+        captured["zero_barrier_target"] = np.asarray(
+            kwargs["target_inventory"]
+        )
+        return SimpleNamespace(
+            accepted=True,
+            gas_log_amounts=np.asarray(kwargs["gas_log_amounts_init"]),
+            condensate_amounts=np.asarray(
+                kwargs["condensate_amounts_init"]
+            ),
+            total_gas_log_amount=float(
+                kwargs["total_gas_log_amount_init"]
+            ),
+            element_potential=np.asarray(kwargs["element_potential_init"]),
+            support_indices=tuple(kwargs["support_indices"]),
+            report={"accepted": True, "polish_schema": "unit_test"},
+        )
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "polish_zero_barrier_active_support"
+        ),
+        fake_zero_barrier_polish,
+    )
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=jnp.log(
+            amount_scale * jnp.asarray([0.4, 0.4], dtype=jnp.float64)
+        ),
+        gas_ntot=jnp.asarray(0.8 * amount_scale, dtype=jnp.float64),
+        support_indices=(0,),
+        support_amounts=(0.2 * amount_scale,),
+        element_potential=jnp.full(
+            (2,), math.log(0.5), dtype=jnp.float64
+        ),
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=amount_scale * jnp.asarray([0.6, 0.4], dtype=jnp.float64),
+        init=(initial,),
+        options=CondensateEquilibriumOptions(return_diagnostics=True),
+        return_diagnostics=True,
+    )
+
+    np.testing.assert_allclose(captured["support_target"], [0.6, 0.4])
+    np.testing.assert_allclose(captured["bucket_target"], [[0.6, 0.4]])
+    np.testing.assert_allclose(captured["bucket_gas"], [[0.4, 0.4]])
+    np.testing.assert_allclose(captured["bucket_condensate"], [[0.2]])
+    np.testing.assert_allclose(captured["zero_barrier_target"], [0.6, 0.4])
+    np.testing.assert_allclose(
+        jnp.exp(captured["gas_init"].ln_nk), [0.4, 0.4]
+    )
+    layer = result.layers[0]
+    np.testing.assert_allclose(
+        layer.gas_n / amount_scale,
+        [0.4, 0.4],
+    )
+    np.testing.assert_allclose(
+        layer.condensate_amounts / amount_scale,
+        [0.2, 0.0],
+    )
+    assert float(layer.gas_ntot / amount_scale) == pytest.approx(0.8)
+    np.testing.assert_allclose(layer.gas_x, [0.5, 0.5])
+    np.testing.assert_allclose(
+        result.batched_arrays["gas_x"][0],
+        layer.gas_x,
+    )
+    assert layer.condensate_support_names == ("H[s]",)
+    gauge = layer.diagnostics["fixed_support_v2"]["amount_gauge"]
+    assert gauge["caller_inventory_amount_scale"] == pytest.approx(
+        amount_scale
+    )
+    assert gauge["normalized_epsilon_schedule"] == (
+        -11.0,
+        -13.0,
+        -15.0,
+        -17.0,
+    )
+    assert gauge["caller_equivalent_epsilon_schedule"][0] == pytest.approx(
+        -11.0 + math.log(amount_scale)
+    )
+    caller_kkt = layer.diagnostics["fixed_support_v2"][
+        "caller_gauge_zero_barrier_kkt"
+    ]
+    assert caller_kkt["accepted"]
+    assert caller_kkt["budget_scaled_max_abs"] < 1.0e-12
+    budget = layer.diagnostics["full_condensate_budget_residual_gate"]
+    assert budget["accepted"]
+    assert budget["amount_gauge_scale"] == pytest.approx(amount_scale)
+    assert budget["absolute_floor"] == pytest.approx(
+        1.0e-6 * amount_scale
+    )
+
+
+@pytest.mark.parametrize("early_internal_accepted", (False, True))
 def test_head_v2_profile_expands_support_outside_solver_until_closed(
     monkeypatch,
+    early_internal_accepted,
 ):
-    setup = _fake_setup()
+    setup = _amount_gauge_fake_setup()
     calls = []
+    exact_calls = []
 
     monkeypatch.setattr(
         _lifecycle,
@@ -76,10 +381,10 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
 
     def fake_run_fixed_support_profile(**kwargs):
         calls.append(kwargs)
-        support = tuple(kwargs["buckets"][0].support_indices)
+        support = _prepared_real_support(kwargs["buckets"][0])
         closed = len(support) == 2
         condensate_amounts = (
-            jnp.asarray([[0.2, 0.2]], dtype=jnp.float64)
+            jnp.asarray([[0.2, 0.1]], dtype=jnp.float64)
             if closed
             else jnp.asarray([[0.2, 0.0]], dtype=jnp.float64)
         )
@@ -90,13 +395,15 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
             "execution_seconds": 0.1,
             "diagnostic_seconds": 0.01,
             "gas_log_amounts": jnp.log(
-                jnp.asarray([[0.8, 0.8]], dtype=jnp.float64)
+                jnp.asarray([[0.4, 0.4]], dtype=jnp.float64)
             ),
             "condensate_amounts": condensate_amounts,
             "total_gas_log_amount": jnp.log(
-                jnp.asarray([1.6], dtype=jnp.float64)
+                jnp.asarray([0.8], dtype=jnp.float64)
             ),
-            "element_potential": jnp.zeros((1, 2), dtype=jnp.float64),
+            "element_potential": jnp.full(
+                (1, 2), math.log(0.5), dtype=jnp.float64
+            ),
             "terminal_status": jnp.asarray(
                 [int(TerminalStatus.CONVERGED)],
                 dtype=jnp.int32,
@@ -135,17 +442,32 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
     )
 
     def fake_zero_barrier_polish(**kwargs):
+        exact_calls.append(kwargs)
         amounts = np.asarray(
             kwargs["condensate_amounts_init"], dtype=np.float64
         ).copy()
         initial_support = tuple(kwargs["support_indices"])
-        final_support = initial_support[:-1]
-        amounts[initial_support[-1]] = 0.0
-        return SimpleNamespace(
-            accepted=True,
-            gas_log_amounts=np.asarray(
+        closed_support = len(initial_support) == 2
+        accepted = closed_support or early_internal_accepted
+        final_support = (
+            initial_support[:-1] if closed_support else initial_support
+        )
+        if closed_support:
+            amounts[initial_support[-1]] = 0.0
+            gas_log_amounts = np.asarray(
                 kwargs["gas_log_amounts_init"], dtype=np.float64
-            ),
+            )
+        elif not accepted:
+            # A rejected exact candidate must not seed the next finite round.
+            amounts[:] = 0.9
+            gas_log_amounts = np.log(np.asarray([0.1, 0.1]))
+        else:
+            gas_log_amounts = np.asarray(
+                kwargs["gas_log_amounts_init"], dtype=np.float64
+            )
+        return SimpleNamespace(
+            accepted=accepted,
+            gas_log_amounts=gas_log_amounts,
             condensate_amounts=amounts,
             total_gas_log_amount=float(
                 kwargs["total_gas_log_amount_init"]
@@ -155,11 +477,13 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
             ),
             support_indices=final_support,
             report={
-                "accepted": True,
+                "accepted": accepted,
                 "polish_schema": "unit_test",
                 "initial_support_indices": initial_support,
                 "final_support_indices": final_support,
-                "dropped_support_indices": initial_support[-1:],
+                "dropped_support_indices": (
+                    initial_support[-1:] if closed_support else ()
+                ),
             },
         )
 
@@ -169,6 +493,30 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
             "polish_zero_barrier_active_support"
         ),
         fake_zero_barrier_polish,
+    )
+    caller_audit_calls = []
+
+    def fake_caller_audit(**kwargs):
+        caller_audit_calls.append(kwargs)
+        if early_internal_accepted and len(caller_audit_calls) == 1:
+            return {
+                "accepted": False,
+                "finite": True,
+                "positive_active_amounts": True,
+                "gas_stationarity_max_abs": 0.0,
+                "active_condensate_driving_max_abs": 0.0,
+                "inactive_condensate_violation_max_abs": 0.0,
+                "budget_scaled_max_abs": 1.0,
+                "total_density_scaled_abs": 0.0,
+            }
+        return _physical_zero_barrier_audit(**kwargs)
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "_physical_zero_barrier_audit"
+        ),
+        fake_caller_audit,
     )
     initial = CondensateEquilibriumInit(
         gas_ln_n=jnp.log(jnp.asarray([0.8, 0.8], dtype=jnp.float64)),
@@ -182,7 +530,7 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
         setup,
         T=np.asarray([1000.0]),
         P=np.asarray([1.0]),
-        b=jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        b=jnp.asarray([1.2, 0.8], dtype=jnp.float64),
         init=(initial,),
         options=CondensateEquilibriumOptions(
             enable_full_condensate_budget_residual_gate=False,
@@ -192,8 +540,17 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
     )
 
     assert len(calls) == 2
-    assert tuple(calls[0]["buckets"][0].support_indices) == (0,)
-    assert tuple(calls[1]["buckets"][0].support_indices) == (0, 1)
+    assert [
+        tuple(call["support_indices"]) for call in exact_calls
+    ] == [(0,), (0, 1)]
+    assert _prepared_real_support(calls[0]["buckets"][0]) == (0,)
+    assert _prepared_real_support(calls[1]["buckets"][0]) == (0, 1)
+    assert calls[0]["buckets"][0].support_indices.shape == (1, 2)
+    assert calls[1]["buckets"][0].support_indices.shape == (1, 2)
+    np.testing.assert_allclose(
+        np.exp(np.asarray(calls[1]["buckets"][0].ln_nk_init)),
+        [[0.4, 0.4]],
+    )
     assert result.layers[0].converged
     assert result.layers[0].selected_route == (
         "head_v2_fixed_support_lifecycle"
@@ -203,12 +560,275 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
     assert lifecycle["outcome"] == "closed"
     assert lifecycle["independent_kkt_passed"]
     assert lifecycle["rounds"][0]["added_support_indices"] == (1,)
+    assert lifecycle["rounds"][0]["early_zero_barrier_eligible"]
+    assert lifecycle["rounds"][0][
+        "early_zero_barrier_internal_accepted"
+    ] is early_internal_accepted
+    assert not lifecycle["rounds"][0]["early_zero_barrier_accepted"]
     assert lifecycle["support_indices_after_polish"] == (0,)
     assert result.layers[0].condensate_support_names == ("H[s]",)
     assert result.layers[0].condensate_amounts.tolist() == pytest.approx(
-        [0.2, 0.0]
+        [0.4, 0.0]
     )
     assert result.diagnostics["route"] == "head_v2"
+
+
+def test_head_v2_closes_open_support_before_finite_support_expansion(
+    monkeypatch,
+):
+    setup = _amount_gauge_fake_setup()
+    fixed_support_calls = []
+    exact_calls = []
+
+    monkeypatch.setattr(
+        _lifecycle,
+        "_native_activity_expanded_profile_support_payload",
+        lambda **kwargs: (
+            (0,),
+            (0.2,),
+            {"policy": "test_initial_support"},
+        ),
+    )
+
+    def fake_run_fixed_support_profile(**kwargs):
+        fixed_support_calls.append(kwargs)
+        zeros = jnp.zeros((1,), dtype=jnp.float64)
+        return {
+            "backend": "cpu",
+            "compilation_seconds": 0.0,
+            "execution_seconds": 0.0,
+            "diagnostic_seconds": 0.0,
+            "gas_log_amounts": jnp.log(
+                jnp.asarray([[0.4, 0.4]], dtype=jnp.float64)
+            ),
+            "condensate_amounts": jnp.asarray(
+                [[0.2, 0.0]], dtype=jnp.float64
+            ),
+            "total_gas_log_amount": jnp.log(
+                jnp.asarray([0.8], dtype=jnp.float64)
+            ),
+            "element_potential": jnp.full(
+                (1, 2), math.log(0.5), dtype=jnp.float64
+            ),
+            "terminal_status": jnp.asarray(
+                [int(TerminalStatus.CONVERGED)], dtype=jnp.int32
+            ),
+            "final_kkt_norms": KKTComponentNorms(
+                zeros, zeros, zeros, zeros, zeros
+            ),
+            "final_state_values_finite": jnp.asarray([True]),
+            "fixed_support_converged": jnp.asarray([True]),
+            "support_closed": jnp.asarray([False]),
+            "support_expansion_mask": jnp.asarray(
+                [[False, True]], dtype=bool
+            ),
+            "inactive_condensate_driving": jnp.asarray(
+                [[0.0, -1.0]], dtype=jnp.float64
+            ),
+        }
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.batch."
+            "run_fixed_support_profile"
+        ),
+        fake_run_fixed_support_profile,
+    )
+    monkeypatch.setattr(
+        _lifecycle,
+        "evaluate_profile_support_closure",
+        lambda result, **kwargs: result,
+    )
+
+    def fake_zero_barrier_polish(**kwargs):
+        exact_calls.append(kwargs)
+        return SimpleNamespace(
+            accepted=True,
+            gas_log_amounts=np.asarray(kwargs["gas_log_amounts_init"]),
+            condensate_amounts=np.asarray(
+                kwargs["condensate_amounts_init"]
+            ),
+            total_gas_log_amount=float(
+                kwargs["total_gas_log_amount_init"]
+            ),
+            element_potential=np.asarray(kwargs["element_potential_init"]),
+            support_indices=tuple(kwargs["support_indices"]),
+            report={"accepted": True, "polish_schema": "unit_test"},
+        )
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "polish_zero_barrier_active_support"
+        ),
+        fake_zero_barrier_polish,
+    )
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=jnp.log(jnp.asarray([0.4, 0.4], dtype=jnp.float64)),
+        gas_ntot=jnp.asarray(0.8, dtype=jnp.float64),
+        support_indices=(0,),
+        support_amounts=(0.2,),
+        element_potential=jnp.full(
+            (2,), math.log(0.5), dtype=jnp.float64
+        ),
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.6, 0.4], dtype=jnp.float64),
+        init=(initial,),
+        options=CondensateEquilibriumOptions(
+            enable_full_condensate_budget_residual_gate=False,
+            return_diagnostics=True,
+        ),
+        return_diagnostics=True,
+    )
+
+    assert len(fixed_support_calls) == 1
+    assert len(exact_calls) == 1
+    assert tuple(exact_calls[0]["support_indices"]) == (0,)
+    assert result.layers[0].converged
+    lifecycle = result.layers[0].diagnostics["fixed_support_v2"]
+    assert lifecycle["outcome"] == "zero_barrier_open_support_rescued"
+    assert lifecycle["zero_barrier_initializer"]["source"] == (
+        "open_converged_finite_support_state"
+    )
+    assert lifecycle["rounds"][0]["early_zero_barrier_accepted"]
+    assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
+
+
+def test_head_v2_discards_exact_candidate_rejected_in_caller_gauge(
+    monkeypatch,
+):
+    setup = _amount_gauge_fake_setup()
+    monkeypatch.setattr(
+        _lifecycle,
+        "_native_activity_expanded_profile_support_payload",
+        lambda **kwargs: (
+            (0,),
+            (0.2,),
+            {"policy": "test_initial_support"},
+        ),
+    )
+
+    def fake_run_fixed_support_profile(**kwargs):
+        zeros = jnp.zeros((1,), dtype=jnp.float64)
+        return {
+            "backend": "cpu",
+            "compilation_seconds": 0.0,
+            "execution_seconds": 0.0,
+            "diagnostic_seconds": 0.0,
+            "gas_log_amounts": jnp.log(
+                jnp.asarray([[0.4, 0.4]], dtype=jnp.float64)
+            ),
+            "condensate_amounts": jnp.asarray(
+                [[0.2, 0.0]], dtype=jnp.float64
+            ),
+            "total_gas_log_amount": jnp.log(
+                jnp.asarray([0.8], dtype=jnp.float64)
+            ),
+            "element_potential": jnp.full(
+                (1, 2), math.log(0.5), dtype=jnp.float64
+            ),
+            "terminal_status": jnp.asarray(
+                [int(TerminalStatus.CONVERGED)], dtype=jnp.int32
+            ),
+            "final_kkt_norms": KKTComponentNorms(
+                zeros, zeros, zeros, zeros, zeros
+            ),
+            "final_state_values_finite": jnp.asarray([True]),
+            "fixed_support_converged": jnp.asarray([True]),
+            "support_closed": jnp.asarray([True]),
+            "support_expansion_mask": jnp.asarray(
+                [[False, False]], dtype=bool
+            ),
+            "inactive_condensate_driving": jnp.zeros(
+                (1, 2), dtype=jnp.float64
+            ),
+        }
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.batch."
+            "run_fixed_support_profile"
+        ),
+        fake_run_fixed_support_profile,
+    )
+    monkeypatch.setattr(
+        _lifecycle,
+        "evaluate_profile_support_closure",
+        lambda result, **kwargs: result,
+    )
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "polish_zero_barrier_active_support"
+        ),
+        lambda **kwargs: SimpleNamespace(
+            accepted=True,
+            gas_log_amounts=np.log(np.asarray([0.1, 0.1])),
+            condensate_amounts=np.asarray([0.0, 0.9]),
+            total_gas_log_amount=math.log(0.2),
+            element_potential=np.asarray([-1.0, -1.0]),
+            support_indices=(1,),
+            report={"accepted": True, "polish_schema": "unit_test"},
+        ),
+    )
+
+    def reject_caller_audit(**kwargs):
+        return {
+            "accepted": False,
+            "finite": True,
+            "positive_active_amounts": True,
+            "gas_stationarity_max_abs": 0.0,
+            "active_condensate_driving_max_abs": 0.0,
+            "inactive_condensate_violation_max_abs": 0.0,
+            "budget_scaled_max_abs": 1.0,
+            "total_density_scaled_abs": 0.0,
+        }
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "_physical_zero_barrier_audit"
+        ),
+        reject_caller_audit,
+    )
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=jnp.log(jnp.asarray([0.4, 0.4], dtype=jnp.float64)),
+        gas_ntot=jnp.asarray(0.8, dtype=jnp.float64),
+        support_indices=(0,),
+        support_amounts=(0.2,),
+        element_potential=jnp.full(
+            (2,), math.log(0.5), dtype=jnp.float64
+        ),
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.6, 0.4], dtype=jnp.float64),
+        init=(initial,),
+        options=CondensateEquilibriumOptions(
+            enable_full_condensate_budget_residual_gate=False,
+            return_diagnostics=True,
+        ),
+        return_diagnostics=True,
+    )
+
+    layer = result.layers[0]
+    assert not layer.converged
+    assert layer.condensate_support_names == ("H[s]",)
+    np.testing.assert_allclose(layer.gas_n, [0.4, 0.4])
+    np.testing.assert_allclose(layer.condensate_amounts, [0.2, 0.0])
+    lifecycle = layer.diagnostics["fixed_support_v2"]
+    assert lifecycle["outcome"] == (
+        "caller_gauge_zero_barrier_kkt_failed"
+    )
+    assert not lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
 
 
 @pytest.mark.parametrize(
@@ -231,7 +851,7 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
     expected_calls,
     expected_outcome,
 ):
-    setup = _fake_setup()
+    setup = _amount_gauge_fake_setup()
     exact_calls = []
 
     monkeypatch.setattr(
@@ -252,15 +872,17 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
             "execution_seconds": 0.0,
             "diagnostic_seconds": 0.0,
             "gas_log_amounts": jnp.log(
-                jnp.asarray([[0.8, 1.0]], dtype=jnp.float64)
+                jnp.asarray([[0.4, 0.4]], dtype=jnp.float64)
             ),
             "condensate_amounts": jnp.asarray(
                 [[0.2, 0.0]], dtype=jnp.float64
             ),
             "total_gas_log_amount": jnp.log(
-                jnp.asarray([1.8], dtype=jnp.float64)
+                jnp.asarray([0.8], dtype=jnp.float64)
             ),
-            "element_potential": jnp.zeros((1, 2), dtype=jnp.float64),
+            "element_potential": jnp.full(
+                (1, 2), math.log(0.5), dtype=jnp.float64
+            ),
             "terminal_status": jnp.asarray(
                 [int(TerminalStatus.NORMAL_DUAL_STEP_FAILED)],
                 dtype=jnp.int32,
@@ -328,18 +950,20 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
         fake_zero_barrier_polish,
     )
     initial = CondensateEquilibriumInit(
-        gas_ln_n=jnp.log(jnp.asarray([0.8, 1.0], dtype=jnp.float64)),
-        gas_ntot=jnp.asarray(1.8, dtype=jnp.float64),
+        gas_ln_n=jnp.log(jnp.asarray([0.8, 0.8], dtype=jnp.float64)),
+        gas_ntot=jnp.asarray(1.6, dtype=jnp.float64),
         support_indices=(0,),
-        support_amounts=(0.2,),
-        element_potential=jnp.zeros((2,), dtype=jnp.float64),
+        support_amounts=(0.4,),
+        element_potential=jnp.full(
+            (2,), math.log(0.5), dtype=jnp.float64
+        ),
     )
 
     result = condmod.condensate_equilibrium_profile(
         setup,
         T=np.asarray([1000.0]),
         P=np.asarray([1.0]),
-        b=jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        b=jnp.asarray([1.2, 0.8], dtype=jnp.float64),
         init=(initial,),
         options=CondensateEquilibriumOptions(
             enable_full_condensate_budget_residual_gate=False,
@@ -425,6 +1049,7 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
 ):
     setup = _fake_setup()
     gas_ln_n = jnp.log(jnp.asarray([0.5, 0.5], dtype=jnp.float64))
+    warmup_calls = []
 
     monkeypatch.setattr(
         "exogibbs.equilibrium.gas.solve.equilibrium",
@@ -432,6 +1057,25 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
             ln_n=gas_ln_n,
             ntot=jnp.asarray(1.0, dtype=jnp.float64),
         ),
+    )
+
+    def fake_run_fixed_support_profile(**kwargs):
+        warmup_calls.append(kwargs)
+        return {
+            "compilation_seconds": 0.25,
+            "execution_seconds": 0.5,
+            "diagnostic_seconds": 0.0,
+            "diagnostic_compilation_seconds": 0.0,
+            "diagnostic_execution_seconds": 0.0,
+            "backend": "cpu",
+        }
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.batch."
+            "run_fixed_support_profile"
+        ),
+        fake_run_fixed_support_profile,
     )
     monkeypatch.setattr(
         (
@@ -455,9 +1099,56 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
     assert layer.converged
     assert layer.selected_route == "head_v2_gas_only_no_candidate"
     assert layer.condensate_support_indices.size == 0
+    assert len(warmup_calls) == 1
+    warmup_bucket = warmup_calls[0]["buckets"][0]
+    assert warmup_bucket.support_indices.shape == (1, 2)
+    assert not np.any(np.asarray(warmup_bucket.condensate_slot_mask))
     assert layer.diagnostics["fixed_support_v2"]["outcome"] == (
         "gas_only_no_candidate"
     )
+    assert layer.diagnostics["fixed_support_v2"]["fixed_shape_warmup"]
+
+
+def test_head_v2_empty_catalog_skips_unnecessary_fixed_shape_warmup(
+    monkeypatch,
+):
+    base = _fake_setup()
+    empty_condensates = ChemicalSetup(
+        formula_matrix=jnp.zeros((2, 0), dtype=jnp.float64),
+        hvector_func=lambda temperature: jnp.zeros((0,), dtype=jnp.float64),
+        elements=base.elements,
+        species=(),
+        metadata={},
+    )
+    setup = CondensateChemicalSetup(
+        gas_setup=base.gas_setup,
+        condensate_setup=empty_condensates,
+        formula_matrix=base.formula_matrix,
+        formula_matrix_cond=empty_condensates.formula_matrix,
+        gas_species=base.gas_species,
+        condensate_species=(),
+        elements=base.elements,
+    )
+    gas_ln_n = jnp.log(jnp.asarray([0.5, 0.5], dtype=jnp.float64))
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.equilibrium",
+        lambda *args, **kwargs: SimpleNamespace(
+            ln_n=gas_ln_n,
+            ntot=jnp.asarray(1.0, dtype=jnp.float64),
+        ),
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.5, 0.5], dtype=jnp.float64),
+    )
+
+    assert result.layers[0].converged
+    assert not result.layers[0].diagnostics["fixed_support_v2"][
+        "fixed_shape_warmup"
+    ]
 
 
 def test_head_v2_grid_like_gas_init_seeds_exact_gas_solves(
@@ -543,3 +1234,84 @@ def test_head_v2_independent_kkt_gate_rejects_failed_component():
         {**kkt, "budget_scaled": 1.0e-7},
         **tolerances,
     )
+
+
+def test_head_v2_real_solver_is_amount_gauge_covariant(monkeypatch):
+    setup = _amount_gauge_fake_setup()
+    monkeypatch.setattr(
+        _lifecycle,
+        "_native_activity_expanded_profile_support_payload",
+        lambda **kwargs: (
+            (0,),
+            (0.2,),
+            {"policy": "test_deterministic_support"},
+        ),
+    )
+
+    scales = (1.0e-12, 1.0, 1.0e8)
+    layers = []
+    for scale in scales:
+        initial = CondensateEquilibriumInit(
+            gas_ln_n=jnp.log(
+                scale * jnp.asarray([0.4, 0.4], dtype=jnp.float64)
+            ),
+            gas_ntot=jnp.asarray(0.8 * scale, dtype=jnp.float64),
+            support_indices=(0,),
+            support_amounts=(0.2 * scale,),
+            element_potential=jnp.full(
+                (2,), math.log(0.5), dtype=jnp.float64
+            ),
+        )
+        profile = condmod.condensate_equilibrium_profile(
+            setup,
+            T=np.asarray([1000.0]),
+            P=np.asarray([1.0]),
+            b=scale * jnp.asarray([0.6, 0.4], dtype=jnp.float64),
+            init=(initial,),
+            options=CondensateEquilibriumOptions(return_diagnostics=True),
+            return_diagnostics=True,
+        )
+        layer = profile.layers[0]
+        lifecycle = layer.diagnostics["fixed_support_v2"]
+        assert layer.converged
+        polish = lifecycle["zero_barrier_active_support_polish"]
+        closure = polish["exact_active_set_closure"]
+        assert polish["accepted"]
+        assert closure["accepted"]
+        assert closure["termination_reason"] == "accepted"
+        assert closure["round_count"] >= 1
+        assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
+        layers.append(layer)
+
+    reference = layers[1]
+    reference_polish = reference.diagnostics["fixed_support_v2"][
+        "zero_barrier_active_support_polish"
+    ]
+    for scale, layer in zip(scales, layers):
+        np.testing.assert_allclose(
+            np.asarray(layer.gas_n) / scale,
+            np.asarray(reference.gas_n),
+            rtol=1.0e-10,
+            atol=1.0e-12,
+        )
+        np.testing.assert_allclose(
+            np.asarray(layer.condensate_amounts) / scale,
+            np.asarray(reference.condensate_amounts),
+            rtol=1.0e-10,
+            atol=1.0e-12,
+        )
+        np.testing.assert_allclose(
+            np.asarray(layer.gas_x),
+            np.asarray(reference.gas_x),
+            rtol=1.0e-10,
+            atol=1.0e-12,
+        )
+        polish = layer.diagnostics["fixed_support_v2"][
+            "zero_barrier_active_support_polish"
+        ]
+        np.testing.assert_allclose(
+            polish["element_potential"],
+            reference_polish["element_potential"],
+            rtol=1.0e-10,
+            atol=1.0e-12,
+        )

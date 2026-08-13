@@ -129,7 +129,11 @@ class SOCConfig:
 
 @dataclass(frozen=True)
 class ContinuationConfig:
-    """Barrier schedule owned by the outer continuation controller."""
+    """Barrier schedule owned by the outer continuation controller.
+
+    The production lifecycle supplies states in its canonical amount gauge.
+    Experimental prepared callers remain responsible for their input gauge.
+    """
 
     epsilon_schedule: Tuple[float, ...] = (-11.0, -13.0, -15.0, -17.0)
     initial_state_policy: Literal["center", "provided"] = "center"
@@ -172,6 +176,8 @@ class FixedSupportProblem(NamedTuple):
     independent of the current iterate.  ``budget_row_scale`` and
     ``total_density_row_scale`` are the fixed multipliers ``Wb`` and ``wt``
     used by the filter for the complete fixed-epsilon solve.
+    ``condensate_slot_mask`` is dynamic boolean data: false slots are
+    synthetic unit-source columns with zero elemental formula.
     """
 
     gas_formula_matrix: Array
@@ -182,6 +188,7 @@ class FixedSupportProblem(NamedTuple):
     support_indices: Array
     budget_row_scale: Array
     total_density_row_scale: Array
+    condensate_slot_mask: Any = None
 
 
 class OriginalState(NamedTuple):
@@ -327,7 +334,12 @@ class FilterUpdateResult(NamedTuple):
 
 
 class RestorationState(NamedTuple):
-    """Complete persistent state of one restoration NLP."""
+    """Complete persistent state of one restoration NLP.
+
+    ``proximity_mask`` selects variables governed by the usual restoration
+    proximity term.  Synthetic condensate slots instead use their independent
+    linear source and bound barrier.
+    """
 
     x: Array
     positive_slack: Array
@@ -345,6 +357,7 @@ class RestorationState(NamedTuple):
     row_scales: Array
     iteration: Array
     accepted_iteration_count: Array
+    proximity_mask: Any = None
 
 
 class RestorationResiduals(NamedTuple):
