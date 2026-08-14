@@ -38,6 +38,7 @@ from exogibbs.equilibrium.condensate.types import (
     CondensateProfileMethod,
     ExperimentalCondensateProfileFixedSupportBatchPlan,
 )
+from exogibbs.thermo.fugacity import LogFugacityCoefficientFunction
 
 
 # Supported compatibility helpers remain reachable from the historical API.
@@ -78,8 +79,13 @@ def condensate_equilibrium(
     init: Optional[CondensateEquilibriumInit] = None,
     initializer: Optional[CondensateEquilibriumInitializer] = None,
     options: Optional[CondensateEquilibriumOptions] = None,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> CondensateEquilibriumResult:
-    """Compute one layer through the production fixed-support v2 route."""
+    """Compute one layer through the production fixed-support v2 route.
+
+    ``lnphi_func`` receives ``(T, P_bar, None)`` and returns natural-log
+    fugacity coefficients in gas-species order for the current pure mode.
+    """
 
     opts = options or CondensateEquilibriumOptions()
     validate_condensate_chemical_setup(setup)
@@ -101,6 +107,7 @@ def condensate_equilibrium(
         support_amounts_init=support_amounts_init,
         options=opts,
         return_diagnostics=opts.return_diagnostics,
+        lnphi_func=lnphi_func,
     )
     return profile.layers[0]
 
@@ -119,8 +126,13 @@ def condensate_equilibrium_profile(
     options: Optional[CondensateEquilibriumOptions] = None,
     method: Optional[CondensateProfileMethod] = None,
     return_diagnostics: bool = False,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> CondensateEquilibriumProfileResult:
-    """Compute a 1D profile through the production v2 lifecycle."""
+    """Compute a 1D profile through the production v2 lifecycle.
+
+    ``lnphi_func`` receives ``(T, P_bar, None)`` and returns natural-log
+    fugacity coefficients in gas-species order for the current pure mode.
+    """
 
     validate_condensate_chemical_setup(setup)
     temperatures = np.asarray(T, dtype=np.float64)
@@ -167,6 +179,7 @@ def condensate_equilibrium_profile(
             return_diagnostics=(
                 return_diagnostics or opts.return_diagnostics
             ),
+            lnphi_func=lnphi_func,
         )
     if requested_method not in {None, "auto", "vmap_cold"}:
         raise ValueError(
@@ -186,6 +199,7 @@ def condensate_equilibrium_profile(
         support_amounts_init=support_amounts_init,
         options=opts,
         return_diagnostics=return_diagnostics or opts.return_diagnostics,
+        lnphi_func=lnphi_func,
     )
 
 
@@ -211,6 +225,7 @@ __all__ = (
     "ExperimentalCondensateProfileFixedSupportBatchPlan",
     "FixedSupportCondensateEquilibriumGrid",
     "GridCondensateEquilibriumInitializer",
+    "LogFugacityCoefficientFunction",
     "build_condensate_chemical_setup",
     "build_condensate_equilibrium_result_from_solver_payload",
     "condensate_equilibrium",

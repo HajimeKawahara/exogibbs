@@ -28,6 +28,7 @@ from exogibbs.equilibrium.condensate.types import (
     CondensateFixedSupportV2Preset,
     CondensateProfileMethod,
 )
+from exogibbs.thermo.fugacity import LogFugacityCoefficientFunction
 
 
 solve = condensate_equilibrium
@@ -51,6 +52,7 @@ __all__ = (
     "DefaultCondensateEquilibriumInitializer",
     "FixedSupportCondensateEquilibriumGrid",
     "GridCondensateEquilibriumInitializer",
+    "LogFugacityCoefficientFunction",
     "build_condensate_chemical_setup",
     "solve",
     "solve_profile",

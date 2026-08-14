@@ -29,6 +29,7 @@ from exogibbs.equilibrium.condensate.types import (
     CondensateEquilibriumProfileResult,
     CondensateEquilibriumResult,
 )
+from exogibbs.thermo.fugacity import LogFugacityCoefficientFunction
 
 
 def _validate_rainout_inventory(
@@ -885,6 +886,7 @@ def run_rainout_profile(
     support_amounts_init: Optional[Sequence[float]],
     options: CondensateEquilibriumOptions,
     return_diagnostics: bool,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> CondensateEquilibriumProfileResult:
     """Run dependent equilibrium layers from the bottom of a profile.
 
@@ -1003,6 +1005,7 @@ def run_rainout_profile(
                         ),
                         options=options,
                         return_diagnostics=return_diagnostics,
+                        lnphi_func=lnphi_func,
                     )
                 except (FloatingPointError, OverflowError) as error:
                     attempts.append(

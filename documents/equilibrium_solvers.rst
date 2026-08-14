@@ -59,6 +59,44 @@ vector, the full condensate vector, the accepted active-support indices and
 names, status, route, and optional diagnostics.  Common dense arrays are also
 available in ``result.batched_arrays``.
 
+Pure-component non-ideal gas correction
+---------------------------------------
+
+Both solver modules accept an optional ``lnphi_func`` keyword:
+
+.. code-block:: python
+
+   def lnphi_func(temperature, pressure_bar, mole_fractions):
+       # Return one natural-log fugacity coefficient per gas species.
+       assert mole_fractions is None  # pure-component mode
+       return lnphi_pure
+
+   result = solve(
+       setup,
+       T=temperature,
+       P=pressure_bar,
+       b=element_vector,
+       lnphi_func=lnphi_func,
+   )
+
+The returned vector must be dimensionless, have shape ``(K,)``, and follow
+``setup.species`` order.  ``pressure_bar`` is the physical pressure in bar,
+independent of ``Pref``.  ExoGibbs adds the correction once to the standard
+gas source,
+
+.. math::
+
+   h_k^{\mathrm{eff}}(T,P)
+   = h_k^{\mathrm{ideal}}(T) + \ln \phi_k^{\mathrm{pure}}(T,P).
+
+Omitting ``lnphi_func`` preserves ideal-gas behavior.  The third callable
+argument reserves the composition-dependent interface; the current
+pure-component implementation always passes ``None``.  Mixture fugacity
+coefficients are not yet supported because their composition derivatives must
+be included in the equilibrium Jacobian rather than evaluated once and held
+fixed.  The gas solver's custom reverse-mode derivative includes the
+temperature and pressure dependence of a JAX-differentiable callback.
+
 Condensate Rainout
 ------------------
 

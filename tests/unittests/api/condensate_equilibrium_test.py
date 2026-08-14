@@ -102,6 +102,7 @@ def test_build_condensate_chemical_setup_validates_element_order() -> None:
 def test_one_layer_solver_forwards_initializer(monkeypatch) -> None:
     _gas, _condensate, setup = _setup_pair()
     initializer = object()
+    lnphi_func = lambda temperature, pressure_bar, mole_fractions: jnp.zeros(2)
     captured = {}
 
     def fake_profile(**kwargs):
@@ -116,10 +117,12 @@ def test_one_layer_solver_forwards_initializer(monkeypatch) -> None:
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         initializer=initializer,
+        lnphi_func=lnphi_func,
     )
 
     assert result == "layer"
     assert captured["initializer"] is initializer
+    assert captured["lnphi_func"] is lnphi_func
 
 
 def test_condensate_chemical_setup_rejects_element_order_mismatch() -> None:

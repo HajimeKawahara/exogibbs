@@ -97,6 +97,94 @@ def _prepared_real_support(bucket, row: int = 0) -> tuple[int, ...]:
     )
 
 
+def test_head_v2_prepared_buckets_apply_layer_fugacity_correction(
+    monkeypatch,
+) -> None:
+    setup = _fake_setup()
+    captured = {}
+    provider_calls = []
+
+    def lnphi_func(temperature, pressure_bar, mole_fractions):
+        provider_calls.append(
+            (float(temperature), float(pressure_bar), mole_fractions)
+        )
+        return jnp.asarray(
+            [float(temperature) / 1000.0, math.log(float(pressure_bar))],
+            dtype=jnp.float64,
+        )
+
+    def fake_prepare_fixed_support_v2_buckets(**kwargs):
+        captured.update(kwargs)
+        return ("prepared",)
+
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.condensate.fixed_support.batch."
+        "prepare_fixed_support_v2_buckets",
+        fake_prepare_fixed_support_v2_buckets,
+    )
+    states = tuple(
+        _lifecycle._HeadV2LayerState(
+            support_indices=(0,),
+            gas_ln_n=jnp.zeros((2,), dtype=jnp.float64),
+            condensate_log_amounts=jnp.zeros((1,), dtype=jnp.float64),
+            total_gas_log_amount=jnp.asarray(0.0, dtype=jnp.float64),
+            element_potential=jnp.zeros((2,), dtype=jnp.float64),
+        )
+        for _ in range(2)
+    )
+
+    buckets = _lifecycle._head_v2_prepared_buckets(
+        setup=setup,
+        temperatures=(800.0, 1200.0),
+        pressures=(1.0, 10.0),
+        b=jnp.asarray([1.0, 1.0], dtype=jnp.float64),
+        Pref=1.0,
+        states=states,
+        lnphi_func=lnphi_func,
+    )
+
+    assert buckets == ("prepared",)
+    assert provider_calls == [(800.0, 1.0, None), (1200.0, 10.0, None)]
+    np.testing.assert_allclose(
+        np.asarray(captured["hvector_by_layer"]),
+        [[0.8, 0.0], [1.2, math.log(10.0)]],
+    )
+
+
+def test_head_v2_element_potential_uses_fugacity_corrected_gamma() -> None:
+    setup = _fake_setup()
+    provider_calls = []
+
+    def lnphi_func(temperature, pressure_bar, mole_fractions):
+        provider_calls.append(
+            (float(temperature), float(pressure_bar), mole_fractions)
+        )
+        return jnp.asarray([0.25, -0.5], dtype=jnp.float64)
+
+    gas_amounts = jnp.asarray([0.4, 0.6], dtype=jnp.float64)
+    element_potential = _lifecycle._head_v2_best_residual_element_potential(
+        setup=setup,
+        T=900.0,
+        P=2.0,
+        Pref=1.0,
+        b=gas_amounts,
+        support_indices=(),
+        support_amounts=(),
+        gas_ln_n=jnp.log(gas_amounts),
+        total_gas_log_amount=jnp.asarray(0.0, dtype=jnp.float64),
+        epsilon=-10.0,
+        lnphi_func=lnphi_func,
+    )
+
+    assert provider_calls == [(900.0, 2.0, None)]
+    np.testing.assert_allclose(
+        np.asarray(element_potential),
+        np.log(np.asarray(gas_amounts))
+        + np.asarray([0.25, -0.5])
+        + math.log(2.0),
+    )
+
+
 def test_amount_gauge_scale_and_initializer_normalization() -> None:
     setup = SimpleNamespace(elements=("H", "O", "e-"))
     scale = _lifecycle._inventory_amount_gauge_scale(
@@ -1005,6 +1093,7 @@ def test_head_v2_rejects_hot_scan_method():
 def test_explicit_vmap_method_overrides_options_hot_scan(monkeypatch):
     setup = _fake_setup()
     expected = object()
+    lnphi_func = lambda temperature, pressure_bar, mole_fractions: jnp.zeros(2)
     calls = []
 
     def fake_run_head_v2_profile(**kwargs):
@@ -1026,10 +1115,12 @@ def test_explicit_vmap_method_overrides_options_hot_scan(monkeypatch):
         options=CondensateEquilibriumOptions(
             profile_method="scan_hot_from_bottom",
         ),
+        lnphi_func=lnphi_func,
     )
 
     assert result is expected
     assert len(calls) == 1
+    assert calls[0]["lnphi_func"] is lnphi_func
 
 
 def test_head_v2_rejects_empty_profile():

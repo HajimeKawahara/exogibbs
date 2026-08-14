@@ -61,6 +61,10 @@ from exogibbs.equilibrium.condensate.types import (
     HeadV2LayerState,
 )
 from exogibbs.equilibrium.gas.types import EquilibriumInit, ThermoState
+from exogibbs.thermo.fugacity import (
+    LogFugacityCoefficientFunction,
+    effective_gas_hvector,
+)
 
 
 _ExperimentalProfileFixedSupportBatchPlan = (
@@ -393,6 +397,7 @@ def _native_activity_expanded_profile_support_payload(
     activity_gas_ntot: Sequence[float] | Array | float | None = None,
     activity_gas_stationarity_source: Sequence[float] | Array | None = None,
     gas_equilibrium_init: EquilibriumInit | None = None,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> tuple[tuple[int, ...], tuple[float, ...], Mapping[str, Any]]:
     from exogibbs.equilibrium.gas.solve import equilibrium
     from exogibbs.equilibrium.gas.types import EquilibriumOptions
@@ -428,9 +433,14 @@ def _native_activity_expanded_profile_support_payload(
                     gas_ntot = jnp.sum(jnp.exp(candidate_ln_n))
                 else:
                     gas_ntot = jnp.asarray(activity_gas_ntot, dtype=jnp.float64)
-                gas_stationarity_source = setup.gas_setup.hvector_func(float(T)) + (
-                    _ln_normalized_pressure(P, Pref)
-                ) - jnp.log(jnp.clip(gas_ntot, 1.0e-300))
+                gas_stationarity_source = effective_gas_hvector(
+                    setup.gas_setup,
+                    float(T),
+                    float(P),
+                    lnphi_func,
+                ) + _ln_normalized_pressure(P, Pref) - jnp.log(
+                    jnp.clip(gas_ntot, 1.0e-300)
+                )
     if gas_ln_n_for_activity is None or gas_stationarity_source is None:
         activity_source = "gas_only_full_budget"
         gas_result = equilibrium(
@@ -442,11 +452,17 @@ def _native_activity_expanded_profile_support_payload(
             init=gas_equilibrium_init,
             options=EquilibriumOptions(),
             return_diagnostics=False,
+            lnphi_func=lnphi_func,
         )
         gas_ln_n_for_activity = jnp.asarray(gas_result.ln_n, dtype=jnp.float64)
-        gas_stationarity_source = setup.gas_setup.hvector_func(float(T)) + (
-            _ln_normalized_pressure(P, Pref)
-        ) - jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64))
+        gas_stationarity_source = effective_gas_hvector(
+            setup.gas_setup,
+            float(T),
+            float(P),
+            lnphi_func,
+        ) + _ln_normalized_pressure(P, Pref) - jnp.log(
+            jnp.asarray(gas_result.ntot, dtype=jnp.float64)
+        )
     element_potential = _least_squares_element_potential(
         formula_matrix=setup.formula_matrix,
         gas_ln_n=gas_ln_n_for_activity,
@@ -603,6 +619,7 @@ def _head_v2_best_residual_element_potential(
     gas_ln_n: Array,
     total_gas_log_amount: Array,
     epsilon: float,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> Array:
     """Return the validated global best-residual multiplier initializer."""
 
@@ -615,7 +632,13 @@ def _head_v2_best_residual_element_potential(
     r = jnp.log(jnp.asarray(support_amounts, dtype=jnp.float64))
     qtot = jnp.asarray(total_gas_log_amount, dtype=jnp.float64)
     gamma = jnp.asarray(
-        setup.gas_setup.hvector_func(float(T)), dtype=jnp.float64
+        effective_gas_hvector(
+            setup.gas_setup,
+            float(T),
+            float(P),
+            lnphi_func,
+        ),
+        dtype=jnp.float64,
     ) + _ln_normalized_pressure(P, Pref)
     hcond = jnp.asarray(
         setup.condensate_setup.hvector_func(float(T)), dtype=jnp.float64
@@ -701,6 +724,7 @@ def _head_v2_initial_state(
     support_amounts: Sequence[float],
     initial_guess: CondensateEquilibriumInit | None,
     first_epsilon: float,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> _HeadV2LayerState:
     """Build one v2 lifecycle state from gas equilibrium and support seeds."""
 
@@ -719,6 +743,7 @@ def _head_v2_initial_state(
             Pref=Pref,
             options=EquilibriumOptions(),
             return_diagnostics=False,
+            lnphi_func=lnphi_func,
         )
         q = jnp.asarray(gas_result.ln_n, dtype=jnp.float64)
         qtot = jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64))
@@ -749,6 +774,7 @@ def _head_v2_initial_state(
             gas_ln_n=q,
             total_gas_log_amount=qtot,
             epsilon=first_epsilon,
+            lnphi_func=lnphi_func,
         )
     else:
         element_potential = jnp.asarray(
@@ -780,6 +806,7 @@ def _head_v2_prepared_buckets(
     states: Sequence[_HeadV2LayerState],
     fixed_shape: Any | None = None,
     source_layer_indices: Sequence[int] | None = None,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> tuple[Any, ...]:
     """Prepare pending v2 lifecycle states with an optional fixed shape."""
 
@@ -810,10 +837,15 @@ def _head_v2_prepared_buckets(
         hvector_by_layer=jnp.stack(
             [
                 jnp.asarray(
-                    setup.gas_setup.hvector_func(float(temperature)),
+                    effective_gas_hvector(
+                        setup.gas_setup,
+                        float(temperature),
+                        float(pressure),
+                        lnphi_func,
+                    ),
                     dtype=jnp.float64,
                 )
-                for temperature in temperatures
+                for temperature, pressure in zip(temperatures, pressures)
             ]
         ),
         hvector_cond_by_layer=jnp.stack(
@@ -894,6 +926,7 @@ def _run_head_v2_profile(
     support_amounts_init: Sequence[float] | None,
     options: CondensateEquilibriumOptions,
     return_diagnostics: bool,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> CondensateEquilibriumProfileResult:
     """Run the production v2 route and its external support lifecycle."""
 
@@ -1041,6 +1074,7 @@ def _run_head_v2_profile(
             activity_gas_ntot=None,
             activity_gas_stationarity_source=None,
             gas_equilibrium_init=gas_equilibrium_init,
+            lnphi_func=lnphi_func,
         )
         base_amount_by_index = {
             int(index): float(amount)
@@ -1068,6 +1102,7 @@ def _run_head_v2_profile(
                 first_epsilon=(
                     policy.solver_config.continuation.epsilon_schedule[0]
                 ),
+                lnphi_func=lnphi_func,
             )
             continue
         pending[layer_index] = _head_v2_initial_state(
@@ -1080,6 +1115,7 @@ def _run_head_v2_profile(
             support_amounts=initial_amounts,
             initial_guess=initial_guess,
             first_epsilon=policy.solver_config.continuation.epsilon_schedule[0],
+            lnphi_func=lnphi_func,
         )
 
     def polish_layer_state(
@@ -1098,7 +1134,12 @@ def _run_head_v2_profile(
             condensate_formula_matrix_full=setup.formula_matrix_cond,
             target_inventory=b,
             gas_standard_source=(
-                setup.gas_setup.hvector_func(temperature)
+                effective_gas_hvector(
+                    setup.gas_setup,
+                    temperature,
+                    float(pressures[layer_index]),
+                    lnphi_func,
+                )
                 + _ln_normalized_pressure(
                     float(pressures[layer_index]), Pref
                 )
@@ -1141,7 +1182,12 @@ def _run_head_v2_profile(
                 caller_inventory, dtype=np.float64
             ),
             gas_standard_source=np.asarray(
-                setup.gas_setup.hvector_func(temperature)
+                effective_gas_hvector(
+                    setup.gas_setup,
+                    temperature,
+                    float(pressures[layer_index]),
+                    lnphi_func,
+                )
                 + _ln_normalized_pressure(
                     float(pressures[layer_index]), Pref
                 ),
@@ -1277,6 +1323,7 @@ def _run_head_v2_profile(
                 ),
                 fixed_shape=fixed_batch_shape,
                 source_layer_indices=source_indices,
+                lnphi_func=lnphi_func,
             ),
             formula_matrix=setup.formula_matrix,
             layer_count=len(source_indices),
@@ -1309,6 +1356,7 @@ def _run_head_v2_profile(
             states=round_states,
             fixed_shape=fixed_batch_shape,
             source_layer_indices=source_indices,
+            lnphi_func=lnphi_func,
         )
         hcond_full = jnp.stack(
             [
@@ -1671,6 +1719,7 @@ def _run_head_v2_profile(
                 init=gas_equilibrium_init,
                 options=EquilibriumOptions(),
                 return_diagnostics=False,
+                lnphi_func=lnphi_func,
             )
             result = _build_empty_support_gas_result(
                 setup=setup,
@@ -1958,6 +2007,7 @@ def _prepare_experimental_profile_fixed_support_batch_plan(
     support_amounts_init: Optional[Sequence[float]],
     max_iter: int,
     min_seed_amount: float,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> _ExperimentalProfileFixedSupportBatchPlan | None:
     n_layers = int(temperatures.shape[0])
     solver_inits = []
@@ -2023,18 +2073,34 @@ def _prepare_experimental_profile_fixed_support_batch_plan(
     )
 
     temperature_array = jnp.asarray(temperatures, dtype=jnp.float64)
-    hvector_by_layer = jnp.asarray(
-        setup.gas_setup.hvector_func(temperature_array),
-        dtype=jnp.float64,
-    )
-    if hvector_by_layer.ndim != 2 or hvector_by_layer.shape[0] != n_layers:
+    if lnphi_func is None:
+        hvector_by_layer = jnp.asarray(
+            setup.gas_setup.hvector_func(temperature_array),
+            dtype=jnp.float64,
+        )
+        if hvector_by_layer.ndim != 2 or hvector_by_layer.shape[0] != n_layers:
+            hvector_by_layer = jnp.stack(
+                [
+                    jnp.asarray(
+                        setup.gas_setup.hvector_func(float(temperature)),
+                        dtype=jnp.float64,
+                    )
+                    for temperature in temperatures
+                ]
+            )
+    else:
         hvector_by_layer = jnp.stack(
             [
                 jnp.asarray(
-                    setup.gas_setup.hvector_func(float(temperature)),
+                    effective_gas_hvector(
+                        setup.gas_setup,
+                        float(temperature),
+                        float(pressure),
+                        lnphi_func,
+                    ),
                     dtype=jnp.float64,
                 )
-                for temperature in temperatures
+                for temperature, pressure in zip(temperatures, pressures)
             ]
         )
     hvector_cond_by_layer = jnp.asarray(
@@ -2098,6 +2164,7 @@ def prepare_experimental_profile_fixed_support_batch_plan(
     initializer: Optional[CondensateEquilibriumInitializer] = None,
     max_iter: int = 100,
     min_seed_amount: float = 1.0e-300,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> ExperimentalCondensateProfileFixedSupportBatchPlan:
     """Prepare a reusable experimental fixed-support batch profile plan.
 
@@ -2140,6 +2207,7 @@ def prepare_experimental_profile_fixed_support_batch_plan(
         support_amounts_init=support_amounts_init,
         max_iter=int(max_iter),
         min_seed_amount=float(min_seed_amount),
+        lnphi_func=lnphi_func,
     )
     if plan is None:
         raise ValueError(

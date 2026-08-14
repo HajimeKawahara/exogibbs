@@ -281,6 +281,7 @@ def test_rainout_scans_bottom_to_top_and_returns_original_order(
         200.0: 0.1,
         100.0: 0.0,
     }
+    lnphi_func = lambda temperature, pressure_bar, mole_fractions: jnp.zeros(2)
     calls = []
 
     def fake_run_head_v2_profile(**kwargs):
@@ -304,6 +305,7 @@ def test_rainout_scans_bottom_to_top_and_returns_original_order(
                 "b": caller_budget,
                 "scale": abundance_scale,
                 "init": kwargs["explicit_inits"][0],
+                "lnphi_func": kwargs["lnphi_func"],
             }
         )
         return _one_layer_profile(
@@ -327,10 +329,12 @@ def test_rainout_scans_bottom_to_top_and_returns_original_order(
             return_diagnostics=True,
         ),
         return_diagnostics=True,
+        lnphi_func=lnphi_func,
     )
 
     assert [call["temperature"] for call in calls] == [300.0, 200.0, 100.0]
     assert [call["pressure"] for call in calls] == [100.0, 10.0, 1.0]
+    assert all(call["lnphi_func"] is lnphi_func for call in calls)
     np.testing.assert_allclose(calls[0]["b"], [0.6, 0.4, 0.0])
     np.testing.assert_allclose(calls[1]["b"], [0.5, 0.5, 0.0])
     np.testing.assert_allclose(calls[2]["b"], [4.0 / 9.0, 5.0 / 9.0, 0.0])
