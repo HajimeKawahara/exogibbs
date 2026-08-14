@@ -62,12 +62,12 @@ def setup(app: Sphinx) -> None:
 # -- Project information -----------------------------------------------------
 
 project = "ExoGibbs"
-copyright = "2025, ExoGibbs contributors"
+copyright = "2025-2026, ExoGibbs contributors"
 author = "ExoGibbs contributors"
 
 # The short and full versions, including alpha/beta/rc tags.
-version = "0.5"
-release = "0.5.0"
+version = "0.6"
+release = "0.6.0"
 
 
 # -- General configuration ---------------------------------------------------
