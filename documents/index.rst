@@ -30,6 +30,12 @@ Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: AUXILIARY:
+
+   solubility.rst
+
+.. toctree::
+   :maxdepth: 1
    :caption: EXAMPLES:
 
    visscher_2006_na2s_morley_2012_kcl
