@@ -3,7 +3,11 @@
 from importlib import import_module
 from typing import Final
 
-from .chemistry import ChemicalSetup, ThermoState
+from .chemistry import (
+    ChemicalSetup,
+    LogFugacityCoefficientFunction,
+    ThermoState,
+)
 
 
 _MODULE_EXPORTS: Final = {
@@ -107,6 +111,7 @@ _ATTRIBUTE_EXPORTS: Final = {
 
 __all__ = [
     "ChemicalSetup",
+    "LogFugacityCoefficientFunction",
     "ThermoState",
     "condensate",
     "condensate_equilibrium",

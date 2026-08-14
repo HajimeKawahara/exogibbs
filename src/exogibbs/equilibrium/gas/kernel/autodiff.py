@@ -43,6 +43,29 @@ def vjp_temperature(
 
 
 @jit
+def vjp_hvector(
+    gvector: jnp.ndarray,
+    nspecies: jnp.ndarray,
+    formula_matrix: jnp.ndarray,
+    alpha_vector: jnp.ndarray,
+    beta_vector: jnp.ndarray,
+    element_vector: jnp.ndarray,
+    beta_dot_b_element: float,
+) -> jnp.ndarray:
+    """Compute the vector-Jacobian product for an evaluated hvector."""
+
+    dqtot_dh = (
+        nspecies * (formula_matrix.T @ beta_vector - 1.0) / beta_dot_b_element
+    )
+    return (
+        dqtot_dh
+        * (jnp.sum(gvector) - jnp.vdot(alpha_vector, element_vector))
+        + nspecies * (formula_matrix.T @ alpha_vector)
+        - gvector
+    )
+
+
+@jit
 def vjp_pressure(
     gvector: jnp.ndarray,
     ntot: jnp.ndarray,

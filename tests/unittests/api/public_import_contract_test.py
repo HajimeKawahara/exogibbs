@@ -73,6 +73,7 @@ def test_canonical_modules_alias_existing_public_callables() -> None:
         import json
         import types
 
+        import exogibbs.api as api
         from exogibbs.api import condensate, gas
         from exogibbs.api.condensate_equilibrium import (
             CondensateEquilibriumOptions,
@@ -88,6 +89,11 @@ def test_canonical_modules_alias_existing_public_callables() -> None:
         print(json.dumps({
             "gas_module": isinstance(gas, types.ModuleType),
             "condensate_module": isinstance(condensate, types.ModuleType),
+            "lnphi_type_alias": (
+                api.LogFugacityCoefficientFunction
+                is gas.LogFugacityCoefficientFunction
+                is condensate.LogFugacityCoefficientFunction
+            ),
             "gas_solve_alias": gas.solve is equilibrium,
             "gas_profile_alias": gas.solve_profile is equilibrium_profile,
             "gas_options_alias": gas.EquilibriumOptions is EquilibriumOptions,

@@ -46,6 +46,12 @@ Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: OPTIONAL EXAMPLES:
+
+   examples/index
+
+.. toctree::
+   :maxdepth: 1
    :caption: VJP RETRIEVALS:
 
    ipynb/exojax_nuts_gas_no_grid

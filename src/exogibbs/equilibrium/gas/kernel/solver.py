@@ -1,25 +1,35 @@
 import math
 import time
+from functools import partial
+from typing import Any, Callable, Dict, Tuple, Union
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 from jax import custom_vjp
-from jax import jacrev
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
-from functools import partial
-from typing import Any, Tuple, Callable, Dict
 
 from exogibbs.equilibrium.gas.types import ThermoState
 from exogibbs.equilibrium.gas.kernel.equations import _A_diagn_At
 from exogibbs.equilibrium.gas.kernel.equations import _compute_gk
 from exogibbs.equilibrium.gas.kernel.autodiff import vjp_elements
+from exogibbs.equilibrium.gas.kernel.autodiff import vjp_hvector
 from exogibbs.equilibrium.gas.kernel.autodiff import vjp_pressure
-from exogibbs.equilibrium.gas.kernel.autodiff import vjp_temperature
 
 _CHO_EPS = 1.0e-18
+
+
+def _evaluate_hvector_source(
+    state: ThermoState,
+    hvector_source: Any,
+) -> jnp.ndarray:
+    """Evaluate a legacy callable source or accept an already evaluated vector."""
+
+    if callable(hvector_source):
+        return hvector_source(state.temperature)
+    return jnp.asarray(hvector_source)
 
 
 def build_minimize_gibbs_core_lnnk_output_source_trace(
@@ -445,7 +455,7 @@ def trace_minimize_gibbs_core_update_all_lnnk_new_source_components(
 ) -> dict[str, Any]:
     """Replay the core loop in Python and trace final ln_nk_new source terms."""
 
-    hvector = hvector_func(state.temperature)
+    hvector = _evaluate_hvector_source(state, hvector_func)
     gk = _compute_gk(
         state.temperature,
         ln_nk_init,
@@ -1022,7 +1032,7 @@ def profile_minimize_gibbs_iterations(
     apply_step = jax.jit(_apply_iteration_step)
     eval_state = jax.jit(_evaluate_iteration_state)
 
-    hvector = hvector_func(state.temperature)
+    hvector = _evaluate_hvector_source(state, hvector_func)
     _block(hvector)
 
     gk = _compute_gk(
@@ -1178,7 +1188,7 @@ def minimize_gibbs_core(
             - Final residual norm used in convergence checks.
     """
 
-    hvector = hvector_func(state.temperature)
+    hvector = _evaluate_hvector_source(state, hvector_func)
 
     gk = _compute_gk(
         state.temperature,
@@ -1264,7 +1274,7 @@ def _minimize_gibbs_solve_impl(
     ln_nk0: jnp.ndarray,
     ln_ntot0: float,
     formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
+    hvector: jnp.ndarray,
     epsilon_crit: float,
     max_iter: int,
 ) -> jnp.ndarray:
@@ -1273,7 +1283,7 @@ def _minimize_gibbs_solve_impl(
         ln_nk0,
         ln_ntot0,
         formula_matrix,
-        hvector_func,
+        hvector,
         epsilon_crit,
         max_iter,
     )
@@ -1282,13 +1292,13 @@ def _minimize_gibbs_solve_impl(
 
 # Keep the transformed solver at module scope so repeated calls reuse the same
 # Python callable identity instead of rebuilding a new custom_vjp closure.
-@partial(custom_vjp, nondiff_argnums=(3, 4, 5, 6))
+@partial(custom_vjp, nondiff_argnums=(3, 5, 6))
 def _minimize_gibbs_solve(
     state: ThermoState,
     ln_nk0: jnp.ndarray,
     ln_ntot0: float,
     formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
+    hvector: jnp.ndarray,
     epsilon_crit: float,
     max_iter: int,
 ) -> jnp.ndarray:
@@ -1297,7 +1307,7 @@ def _minimize_gibbs_solve(
         ln_nk0,
         ln_ntot0,
         formula_matrix,
-        hvector_func,
+        hvector,
         epsilon_crit,
         max_iter,
     )
@@ -1308,7 +1318,7 @@ def _minimize_gibbs_solve_fwd(
     ln_nk0: jnp.ndarray,
     ln_ntot0: float,
     formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
+    hvector: jnp.ndarray,
     epsilon_crit: float,
     max_iter: int,
 ):
@@ -1317,26 +1327,23 @@ def _minimize_gibbs_solve_fwd(
         ln_nk0,
         ln_ntot0,
         formula_matrix,
-        hvector_func,
+        hvector,
         epsilon_crit,
         max_iter,
     )
-    dfunc = jacrev(hvector_func)
-    hdot = dfunc(state.temperature)
-    residuals = (ln_nk, hdot, state.element_vector, ln_ntot)
+    residuals = (ln_nk, state.temperature, state.element_vector, ln_ntot)
     return ln_nk, residuals
 
 
 def _minimize_gibbs_solve_bwd(
     formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
     epsilon_crit: float,
     max_iter: int,
     res,
     g,
 ):
-    del hvector_func, epsilon_crit, max_iter
-    ln_nk, hdot, element_vector, ln_ntot = res
+    del epsilon_crit, max_iter
+    ln_nk, temperature, element_vector, ln_ntot = res
 
     nk = jnp.exp(ln_nk)
     ntot_result = jnp.exp(ln_ntot)
@@ -1347,20 +1354,25 @@ def _minimize_gibbs_solve_bwd(
     beta = cho_solve((c, lower), element_vector)
     beta_dot_b_element = jnp.vdot(beta, element_vector)
 
-    cot_T = vjp_temperature(
+    cot_hvector = vjp_hvector(
         g,
         nk,
         formula_matrix,
-        hdot,
         alpha,
         beta,
         element_vector,
         beta_dot_b_element,
     )
+    cot_T = jnp.zeros_like(temperature)
     cot_P = vjp_pressure(g, ntot_result, alpha, element_vector, beta_dot_b_element)
     cot_b = vjp_elements(g, alpha, beta, element_vector, beta_dot_b_element)
     # No gradients for initialization arguments.
-    return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b), None, None)
+    return (
+        ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b),
+        None,
+        None,
+        cot_hvector,
+    )
 
 
 _minimize_gibbs_solve.defvjp(_minimize_gibbs_solve_fwd, _minimize_gibbs_solve_bwd)
@@ -1371,7 +1383,7 @@ def minimize_gibbs(
     ln_nk_init: jnp.ndarray,
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
+    hvector_func: Union[Callable[[float], jnp.ndarray], jnp.ndarray],
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> jnp.ndarray:
@@ -1382,7 +1394,8 @@ def minimize_gibbs(
         ln_nk_init: Initial natural log number of species vector (n_species,).
         ln_ntot_init: Initial natural log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
-        hvector_func: Function that returns chemical potential over RT vector (n_species,).
+        hvector_func: Function returning, or an evaluated, chemical potential
+            over RT vector (n_species,).
         epsilon_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations allowed.
 
@@ -1392,12 +1405,13 @@ def minimize_gibbs(
     # Treat initial guesses as non-differentiable inputs
     ln_nk0 = stop_gradient(ln_nk_init)
     ln_ntot0 = stop_gradient(ln_ntot_init)
+    hvector = _evaluate_hvector_source(state, hvector_func)
     return _minimize_gibbs_solve(
         state,
         ln_nk0,
         ln_ntot0,
         formula_matrix,
-        hvector_func,
+        hvector,
         epsilon_crit,
         max_iter,
     )
@@ -1408,7 +1422,7 @@ def minimize_gibbs_with_diagnostics(
     ln_nk_init: jnp.ndarray,
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
+    hvector_func: Union[Callable[[float], jnp.ndarray], jnp.ndarray],
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> Tuple[jnp.ndarray, Dict[str, jnp.ndarray]]:

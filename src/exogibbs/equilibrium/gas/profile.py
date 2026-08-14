@@ -20,6 +20,7 @@ from exogibbs.equilibrium.gas.types import (
     EquilibriumOptions,
     EquilibriumResult,
 )
+from exogibbs.thermo.fugacity import LogFugacityCoefficientFunction
 from exogibbs.thermo.models import ChemicalSetup
 
 
@@ -30,7 +31,7 @@ ProfileMethod = Literal[
 ]
 
 _PROFILE_SCAN_BODY_CACHE: Dict[
-    Tuple[int, int, float, int, int, bool],
+    Tuple[int, int, float, int, int, int, bool],
     Callable,
 ] = {}
 
@@ -54,6 +55,7 @@ def _get_profile_scan_body(
     reference_pressure: float,
     options: EquilibriumOptions,
     initializer: Optional[EquilibriumInitializer],
+    lnphi_func: Optional[LogFugacityCoefficientFunction],
     return_diagnostics: bool,
 ) -> Callable:
     key = (
@@ -62,6 +64,7 @@ def _get_profile_scan_body(
         float(reference_pressure),
         id(options),
         id(initializer or DEFAULT_INITIALIZER),
+        id(lnphi_func),
         return_diagnostics,
     )
     cached = _PROFILE_SCAN_BODY_CACHE.get(key)
@@ -98,6 +101,7 @@ def _get_profile_scan_body(
                 init=solver_init,
                 options=options,
                 return_diagnostics=True,
+                lnphi_func=lnphi_func,
             )
             next_total = jnp.log(jnp.clip(result.ntot, 1.0e-300))
             return (result.ln_n, next_total), (result, diagnostics)
@@ -130,6 +134,7 @@ def _get_profile_scan_body(
                 init=solver_init,
                 options=options,
                 return_diagnostics=False,
+                lnphi_func=lnphi_func,
             )
             next_total = jnp.log(jnp.clip(result.ntot, 1.0e-300))
             return (result.ln_n, next_total), result
@@ -148,8 +153,12 @@ def equilibrium_profile(
     initializer: Optional[EquilibriumInitializer] = None,
     options: Optional[EquilibriumOptions] = None,
     return_diagnostics: bool = False,
+    lnphi_func: Optional[LogFugacityCoefficientFunction] = None,
 ) -> Union[EquilibriumResult, Tuple[EquilibriumResult, Mapping[str, Array]]]:
-    """Compute gas equilibrium along a one-dimensional profile."""
+    """Compute gas equilibrium along a one-dimensional profile.
+
+    ``lnphi_func`` follows the one-layer pure-component fugacity contract.
+    """
 
     temperatures = jnp.asarray(T)
     pressures = jnp.asarray(P)
@@ -184,6 +193,7 @@ def equilibrium_profile(
                     initializer=initializer,
                     options=active_options,
                     return_diagnostics=True,
+                    lnphi_func=lnphi_func,
                 ),
                 in_axes=(0, 0),
             )
@@ -198,6 +208,7 @@ def equilibrium_profile(
                 initializer=initializer,
                 options=active_options,
                 return_diagnostics=False,
+                lnphi_func=lnphi_func,
             ),
             in_axes=(0, 0),
         )
@@ -228,6 +239,7 @@ def equilibrium_profile(
         Pref,
         active_options,
         initializer,
+        lnphi_func,
         return_diagnostics,
     )
     if return_diagnostics:
