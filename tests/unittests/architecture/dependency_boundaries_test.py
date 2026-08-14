@@ -42,6 +42,7 @@ def test_internal_packages_do_not_import_public_api_modules() -> None:
         "equilibrium",
         "optimize",
         "presets",
+        "solubility",
         "thermo",
     ):
         observed |= _imports_under(SOURCE_ROOT / package, "exogibbs.api")
