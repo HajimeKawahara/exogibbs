@@ -50,6 +50,28 @@ def test_internal_packages_do_not_import_public_api_modules() -> None:
     assert observed == set()
 
 
+def test_stable_packages_do_not_import_experimental_modules() -> None:
+    observed = set()
+    for package in (
+        "api",
+        "condensates",
+        "equilibrium",
+        "io",
+        "math",
+        "optimize",
+        "presets",
+        "solubility",
+        "thermo",
+        "utils",
+    ):
+        observed |= _imports_under(
+            SOURCE_ROOT / package,
+            "exogibbs.experimental",
+        )
+
+    assert observed == set()
+
+
 def test_equilibrium_features_do_not_import_optimize_compatibility_paths() -> None:
     observed = _imports_under(
         SOURCE_ROOT / "equilibrium",

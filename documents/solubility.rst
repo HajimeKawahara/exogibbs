@@ -5,6 +5,10 @@ Magma--atmosphere solubility
 Gibbs-energy minimization solvers and provides empirical volatile-solubility
 laws for magma--atmosphere boundary calculations.
 
+The implementation lives in ``exogibbs.solubility.volatile`` so that the law
+collection can grow beyond MELTYQ.  The former
+``exogibbs.solubility.meltyq`` import remains as a compatibility facade.
+
 The initial implementation contains the six laws selected by MELTYQ (Ito &
 Changeat 2026):
 
@@ -32,6 +36,26 @@ Changeat 2026):
    * - ``n2_dasgupta2022``
      - N2 partial pressure and total melt pressure in GPa
      - Total elemental-N mass fraction
+
+Shared conventions
+------------------
+
+Each law preserves the driving quantity defined by its source: partial
+pressure and fugacity are not interchangeable.  See
+:ref:`fugacity-conventions` for the gas fugacity convention.  The
+generic dilute conversion in ``exogibbs.thermo.composition`` evaluates
+:math:`Y M_\mathrm{matrix}/M_\mathrm{species}`; the result is a
+solute-to-matrix mole ratio, not an exact normalized mole fraction.  The
+linear helper requires :math:`0\leq Y\leq1` and returns ``nan`` outside that
+mass-fraction domain.
+
+``ln_co_yoshioka2019`` and ``ln_n2_dasgupta2022`` in
+``exogibbs.solubility.volatile`` accept natural-log driving pressures and
+return natural-log mass fractions.  Their log-domain forms are numerically
+preferable when trace gas abundances would underflow in linear pressure units.
+
+``convert_pressure`` in ``exogibbs.utils.units`` performs unit scaling only,
+so callers retain responsibility for physical-domain validation.
 
 For example:
 
@@ -65,8 +89,12 @@ the MELTYQ appendix is inconsistent with it:
   et al. (2022), Equation 10.
 
 These differences are also recorded in ``MELTYQ_SOLUBILITY_METADATA``.  The
-N2 law takes :math:`\Delta\mathrm{IW}` directly; calculation of the IW buffer
-from absolute oxygen fugacity is deliberately outside this package.
+N2 law takes :math:`\Delta\mathrm{IW}` directly.  In
+``exogibbs.thermo.oxygen_fugacity``,
+``log10_oxygen_fugacity_iw_hirschmann2021`` returns the IW reference, while
+``delta_iw_hirschmann2021`` converts absolute oxygen fugacity in bar to
+:math:`\Delta\mathrm{IW}`.  See :ref:`magma-gas-iw` for its use by the
+experimental interface.
 
 References
 ----------
@@ -74,6 +102,7 @@ References
 * Ito, Y. & Changeat, Q. (2026), arXiv:2605.08752.
 * Seo, C., Ito, Y. & Fujii, Y. (2024), doi:10.3847/1538-4357/ad7461.
 * Hirschmann, M. M. et al. (2012), doi:10.1016/j.epsl.2012.06.031.
+* Hirschmann, M. M. (2021), doi:10.1016/j.gca.2021.08.039.
 * Lichtenberg, T. et al. (2021), doi:10.1029/2020JE006711.
 * Yoshioka, T. et al. (2019), doi:10.1016/j.gca.2019.06.007.
 * Ardia, P. et al. (2013), doi:10.1016/j.gca.2013.03.028.

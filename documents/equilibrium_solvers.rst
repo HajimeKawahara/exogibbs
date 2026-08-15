@@ -59,8 +59,28 @@ vector, the full condensate vector, the accepted active-support indices and
 names, status, route, and optional diagnostics.  Common dense arrays are also
 available in ``result.batched_arrays``.
 
+.. _fugacity-conventions:
+
 Pure-component non-ideal gas correction
 ---------------------------------------
+
+For gas species :math:`i`, partial pressure, fugacity, and chemical potential
+are related by
+
+.. math::
+
+   p_i = x_i P, \qquad
+   f_i = \phi_i p_i, \qquad
+   \mu_i = \mu_i^\circ(T) + RT \ln\!\left(\frac{f_i}{f^\circ}\right),
+   \quad f^\circ = 1\ \mathrm{bar}.
+
+The mechanical pressure closure is :math:`\sum_i p_i=P`; fugacities do not in
+general sum to :math:`P`.  The fugacity coefficient :math:`\phi_i` is
+dimensionless.  The API accepts its natural logarithm, :math:`\ln\phi_i`, so
+an ideal gas has :math:`\phi_i=1` and :math:`\ln\phi_i=0`.  The current
+non-ideal correction is limited to pure-component
+:math:`\phi_i^{\mathrm{pure}}(T,P)` values rather than mixture-dependent
+coefficients.
 
 Both solver modules accept an optional ``lnphi_func`` keyword:
 
@@ -79,10 +99,9 @@ Both solver modules accept an optional ``lnphi_func`` keyword:
        lnphi_func=lnphi_func,
    )
 
-The returned vector must be dimensionless, have shape ``(K,)``, and follow
-``setup.species`` order.  ``pressure_bar`` is the physical pressure in bar,
-independent of ``Pref``.  ExoGibbs adds the correction once to the standard
-gas source,
+The returned vector must have shape ``(K,)`` and follow ``setup.species``
+order.  ``pressure_bar`` is the physical pressure in bar, independent of
+``Pref``.  ExoGibbs adds the correction once to the standard gas source,
 
 .. math::
 

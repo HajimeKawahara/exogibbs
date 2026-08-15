@@ -9,6 +9,7 @@ import pytest
 
 import exogibbs.solubility as solubility
 import exogibbs.solubility.meltyq as meltyq
+import exogibbs.solubility.volatile as volatile
 from exogibbs.solubility import (
     MELTYQ_SOLUBILITY_METADATA,
     ch4_ardia2013,
@@ -17,6 +18,10 @@ from exogibbs.solubility import (
     h2_hirschmann2012,
     h2o_lichtenberg2021,
     n2_dasgupta2022,
+)
+from exogibbs.solubility.volatile import (
+    ln_co_yoshioka2019,
+    ln_n2_dasgupta2022,
 )
 
 
@@ -185,6 +190,94 @@ def test_fractional_power_derivative_is_singular_at_zero(evaluator) -> None:
     assert jnp.isinf(jax.grad(evaluator)(0.0))
 
 
+@pytest.mark.parametrize(
+    ("linear_evaluator", "ln_evaluator", "value"),
+    (
+        (co_yoshioka2019, ln_co_yoshioka2019, 0.01),
+        (
+            lambda pressure: n2_dasgupta2022(
+                pressure,
+                2000.0,
+                4.0,
+                -2.0,
+            ),
+            lambda ln_pressure: ln_n2_dasgupta2022(
+                ln_pressure,
+                2000.0,
+                4.0,
+                -2.0,
+            ),
+            0.1,
+        ),
+    ),
+)
+def test_ln_laws_match_linear_laws(
+    linear_evaluator,
+    ln_evaluator,
+    value: float,
+) -> None:
+    calculated = jnp.exp(ln_evaluator(jnp.log(value)))
+    expected = linear_evaluator(value)
+
+    np.testing.assert_allclose(calculated, expected, rtol=1.0e-6)
+
+
+@pytest.mark.parametrize(
+    "calculated",
+    (
+        ln_co_yoshioka2019(-jnp.inf),
+        ln_n2_dasgupta2022(-jnp.inf, 2000.0, 1.0, 0.0),
+    ),
+)
+def test_ln_laws_represent_zero_as_negative_infinity(
+    calculated: jnp.ndarray,
+) -> None:
+    assert jnp.isneginf(calculated)
+
+
+@pytest.mark.parametrize(
+    "calculated",
+    (
+        ln_co_yoshioka2019(jnp.inf),
+        ln_co_yoshioka2019(jnp.nan),
+        ln_n2_dasgupta2022(jnp.inf, 2000.0, 1.0, 0.0),
+        ln_n2_dasgupta2022(jnp.nan, 2000.0, 1.0, 0.0),
+        ln_n2_dasgupta2022(jnp.log(0.1), 0.0, 1.0, 0.0),
+    ),
+)
+def test_invalid_ln_law_inputs_return_nan(calculated: jnp.ndarray) -> None:
+    assert jnp.isnan(calculated)
+
+
+def test_ln_laws_support_jit_and_automatic_differentiation() -> None:
+    ln_co = jax.jit(ln_co_yoshioka2019)(-2.0)
+    d_ln_co = jax.grad(ln_co_yoshioka2019)(-2.0)
+    ln_n = jax.jit(ln_n2_dasgupta2022)(-2.0, 2000.0, 1.0, 0.0)
+    d_ln_n = jax.grad(
+        lambda ln_pressure: ln_n2_dasgupta2022(
+            ln_pressure,
+            2000.0,
+            1.0,
+            0.0,
+        )
+    )(-2.0)
+
+    assert jnp.isfinite(ln_co)
+    np.testing.assert_allclose(d_ln_co, 0.8, rtol=1.0e-6)
+    assert jnp.isfinite(ln_n)
+    assert 0.5 <= d_ln_n <= 1.0
+
+
+@pytest.mark.parametrize("ln_pressure", (-1000.0, 1000.0))
+def test_ln_laws_remain_finite_at_extreme_log_pressures(
+    ln_pressure: float,
+) -> None:
+    assert jnp.isfinite(ln_co_yoshioka2019(ln_pressure))
+    assert jnp.isfinite(
+        ln_n2_dasgupta2022(ln_pressure, 2000.0, 1.0, 0.0)
+    )
+
+
 def test_metadata_records_native_bases_and_provenance() -> None:
     expected_bases = {
         "h2_hirschmann2012": "mole_fraction",
@@ -235,6 +328,11 @@ def test_package_exports_are_explicit_and_unique() -> None:
 
     assert solubility.__all__ == expected_exports
     assert meltyq.__all__ == expected_exports
+
+
+def test_legacy_meltyq_module_reexports_general_volatile_laws() -> None:
+    assert meltyq.h2o_lichtenberg2021 is volatile.h2o_lichtenberg2021
+    assert solubility.h2o_lichtenberg2021 is volatile.h2o_lichtenberg2021
 
 
 def test_metadata_mapping_is_read_only() -> None:

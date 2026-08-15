@@ -1,6 +1,6 @@
 """Auxiliary volatile-solubility laws for magma-atmosphere boundaries."""
 
-from exogibbs.solubility.meltyq import (
+from exogibbs.solubility.volatile import (
     MELTYQ_SOLUBILITY_METADATA,
     SolubilityMetadata,
     ch4_ardia2013,
