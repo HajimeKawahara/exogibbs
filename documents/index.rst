@@ -33,6 +33,7 @@ Contents
    :caption: AUXILIARY:
 
    solubility.rst
+   magma_gas_interface.rst
 
 .. toctree::
    :maxdepth: 1

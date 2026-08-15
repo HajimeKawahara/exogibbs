@@ -114,5 +114,7 @@ def vjp_elements(
     eps = jnp.asarray(1e-20, dtype=beta_dot_b_element.dtype)
     denom = jnp.where(jnp.abs(beta_dot_b_element) < eps, eps, beta_dot_b_element)
     dqtot_db = beta_vector / denom
-    Xmatrix = jnp.eye(len(element_vector)) - jnp.outer(element_vector, dqtot_db)
+    Xmatrix = jnp.eye(
+        len(element_vector), dtype=element_vector.dtype
+    ) - jnp.outer(element_vector, dqtot_db)
     return jnp.sum(gvector) * dqtot_db + alpha_vector @ Xmatrix
