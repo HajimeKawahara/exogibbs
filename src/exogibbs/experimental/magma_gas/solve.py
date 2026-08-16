@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
 import math
 from numbers import Integral
 from typing import Callable, NamedTuple, Optional
@@ -66,6 +65,8 @@ class _InterfaceParameters(NamedTuple):
 
 class _InterfaceEvaluation(NamedTuple):
     element_abundances: jax.Array
+    gas_ln_n: jax.Array
+    gas_ntot: jax.Array
     gas_log_mole_fractions: jax.Array
     gas_mole_fractions: jax.Array
     log_partial_pressures_bar: jax.Array
@@ -238,23 +239,6 @@ def _evaluate_lnphi(
     return lnphi
 
 
-def _effective_equilibrium_options(
-    options: MagmaAtmosphereInterfaceOptions,
-    dtype: jnp.dtype,
-):
-    """Use an inner tolerance that is meaningful for the active dtype."""
-
-    roundoff_floor = 8.0 * float(jnp.finfo(dtype).eps)
-    epsilon_crit = max(
-        options.equilibrium_options.epsilon_crit,
-        roundoff_floor,
-    )
-    return replace(
-        options.equilibrium_options,
-        epsilon_crit=epsilon_crit,
-    )
-
-
 def _evaluate_interface(
     chemistry: PreparedMagmaGasChemistry,
     options: MagmaAtmosphereInterfaceOptions,
@@ -276,7 +260,7 @@ def _evaluate_interface(
         parameters.temperature_melt_k,
         parameters.pressure_melt_bar,
         element_abundances,
-        options=_effective_equilibrium_options(options, dtype),
+        options=options.equilibrium_options,
         lnphi_func=evaluated_lnphi_func,
     )
     gas_log_mole_fractions = gas_result.ln_n - logsumexp(gas_result.ln_n)
@@ -361,6 +345,8 @@ def _evaluate_interface(
     )
     return _InterfaceEvaluation(
         element_abundances=element_abundances,
+        gas_ln_n=gas_result.ln_n,
+        gas_ntot=gas_result.ntot,
         gas_log_mole_fractions=gas_log_mole_fractions,
         gas_mole_fractions=gas_mole_fractions,
         log_partial_pressures_bar=log_partial_pressures_bar,
@@ -398,7 +384,7 @@ def _inner_root_diagnostics(
         audit_parameters.temperature_melt_k,
         audit_parameters.pressure_melt_bar,
         element_abundances,
-        options=_effective_equilibrium_options(options, dtype),
+        options=options.equilibrium_options,
         return_diagnostics=True,
         lnphi_func=evaluated_lnphi_func,
     )
@@ -766,6 +752,8 @@ def solve_magma_atmosphere_interface(
     )
     return MagmaAtmosphereInterfaceState(
         element_abundances=evaluated.element_abundances,
+        gas_ln_n=evaluated.gas_ln_n,
+        gas_ntot=evaluated.gas_ntot,
         gas_log_mole_fractions=evaluated.gas_log_mole_fractions,
         gas_mole_fractions=evaluated.gas_mole_fractions,
         partial_pressures_bar=evaluated.partial_pressures_bar,

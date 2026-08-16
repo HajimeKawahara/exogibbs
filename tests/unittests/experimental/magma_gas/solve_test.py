@@ -200,6 +200,30 @@ def test_state_preserves_pressure_fugacity_and_melt_contracts(
     np.testing.assert_allclose(h2_he_fraction, 0.84, rtol=1.0e-10)
 
 
+def test_state_preserves_raw_gas_amount_contracts(
+    synthetic_case,
+    solved_state,
+):
+    gas_amounts = jnp.exp(solved_state.gas_ln_n)
+    np.testing.assert_allclose(
+        solved_state.gas_ntot,
+        jnp.sum(gas_amounts),
+        rtol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        solved_state.gas_log_mole_fractions,
+        solved_state.gas_ln_n - jnp.log(solved_state.gas_ntot),
+        rtol=0.0,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        synthetic_case.chemistry.setup.formula_matrix @ gas_amounts,
+        solved_state.element_abundances,
+        rtol=1.0e-10,
+        atol=1.0e-12,
+    )
+
+
 def test_nonideal_lnphi_is_used_end_to_end():
     lnphi_at_point = jnp.linspace(-0.08, 0.08, len(CANONICAL_SPECIES))
     hvector_temperature_slope = jnp.linspace(

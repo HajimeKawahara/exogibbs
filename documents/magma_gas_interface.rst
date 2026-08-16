@@ -267,6 +267,9 @@ Units and logarithm bases
      - Natural logarithm of a dimensionless fugacity coefficient.
    * - ``gas_log_mole_fractions`` and ``root_variables``
      - Natural logarithms.
+   * - ``gas_ln_n`` and ``gas_ntot``
+     - Raw gas solver amounts in the :math:`b_{\rm H}=1` gauge.  ``gas_ln_n``
+       contains natural logarithms; ``gas_ntot`` is linear.
    * - IW helper output and ``delta_iw``
      - Dimensionless base-10 logarithms; one unit is one decade.
    * - Empirical solubility-law pressures
@@ -297,6 +300,12 @@ Gas arrays use ``CANONICAL_SPECIES`` order and melt arrays use
    * - ``element_abundances``
      - Inferred ``(H, C, O, N, He)`` amounts in the :math:`b_{\rm H}=1`
        gauge.
+   * - ``gas_ln_n``
+     - Natural logarithms of the nine raw gas solver amounts in the
+       :math:`b_{\rm H}=1` gauge.
+   * - ``gas_ntot``
+     - Sum of the nine raw gas solver amounts in the same gauge.  This is not
+       a physical number density or mass density.
    * - ``gas_log_mole_fractions``
      - Natural logarithms of the nine gas mole fractions.
    * - ``gas_mole_fractions``

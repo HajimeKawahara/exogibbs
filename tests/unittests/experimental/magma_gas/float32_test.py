@@ -45,6 +45,8 @@ _FLOAT32_SMOKE = textwrap.dedent(
     assert bool(diagnostics.converged), diagnostics
     assert diagnostics.residual_norm <= diagnostics.root_tolerance
     assert diagnostics.inner_residual_norm <= diagnostics.inner_tolerance
+    expected_tolerance = 8.0 * jnp.finfo(jnp.float32).eps
+    assert diagnostics.inner_tolerance == expected_tolerance
     """
 )
 
