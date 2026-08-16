@@ -299,6 +299,170 @@ def test_equilibrium_profile_scan_hot_from_bottom_uses_previous_layer_init(monke
     assert jnp.all(diag["converged"])
 
 
+def test_equilibrium_profile_scan_hot_from_bottom_uses_explicit_seed_then_carry(monkeypatch):
+    K, N = 2, 4
+    A = jnp.eye(K, dtype=jnp.float32)
+    setup = FakeSetup(A)
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        return ln_nk0 + 1.0
+
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
+
+    T = jnp.linspace(1000.0, 1300.0, N)
+    P = jnp.linspace(0.1, 1.0, N)
+    b = jnp.ones((K,), dtype=jnp.float32)
+    seed = EquilibriumInit(
+        ln_nk=jnp.full((K,), 10.0, dtype=jnp.float32),
+        ln_ntot=jnp.asarray(jnp.log(K), dtype=jnp.float32),
+    )
+    out = eqmod.equilibrium_profile(
+        setup,
+        T,
+        P,
+        b,
+        init=seed,
+        options=EquilibriumOptions(method="scan_hot_from_bottom"),
+    )
+
+    expected = jnp.array([14.0, 13.0, 12.0, 11.0], dtype=jnp.float32)
+    assert jnp.allclose(out.ln_n, expected[:, None])
+
+
+def test_equilibrium_profile_vmap_cold_forwards_explicit_init(monkeypatch):
+    K, N = 2, 3
+    A = jnp.eye(K, dtype=jnp.float32)
+    setup = FakeSetup(A)
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        return ln_nk0
+
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
+
+    T = jnp.linspace(1000.0, 1200.0, N)
+    P = jnp.linspace(0.1, 1.0, N)
+    b = jnp.ones((K,), dtype=jnp.float32)
+    seed_ln_n = jnp.array([2.0, 3.0], dtype=jnp.float32)
+    seed = EquilibriumInit(
+        ln_nk=seed_ln_n,
+        ln_ntot=jnp.asarray(5.0, dtype=jnp.float32),
+    )
+    out = eqmod.equilibrium_profile(
+        setup,
+        T,
+        P,
+        b,
+        init=seed,
+        options=EquilibriumOptions(method="vmap_cold"),
+    )
+
+    assert jnp.allclose(out.ln_n, jnp.broadcast_to(seed_ln_n, (N, K)))
+
+
+def test_equilibrium_profile_custom_initializer_preserves_resolved_first_seed(
+    monkeypatch,
+):
+    K, N = 2, 3
+    setup = FakeSetup(jnp.eye(K, dtype=jnp.float32))
+
+    def stub_minimize_gibbs(state, ln_nk0, ln_ntot0, A_in, hfunc, **kwargs):
+        return ln_nk0 + 1.0
+
+    class ExplicitThenColdInitializer:
+        def __call__(self, request):
+            if request.user_init is not None:
+                return request.user_init
+            return EquilibriumInit(
+                ln_nk=jnp.zeros((K,), dtype=jnp.float32),
+                ln_ntot=jnp.asarray(jnp.log(K), dtype=jnp.float32),
+            )
+
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs",
+        stub_minimize_gibbs,
+        raising=True,
+    )
+
+    seed = EquilibriumInit(
+        ln_nk=jnp.full((K,), 10.0, dtype=jnp.float32),
+        ln_ntot=jnp.asarray(jnp.log(K), dtype=jnp.float32),
+    )
+    out = eqmod.equilibrium_profile(
+        setup,
+        T=jnp.linspace(1000.0, 1200.0, N),
+        P=jnp.linspace(0.1, 1.0, N),
+        b=jnp.ones((K,), dtype=jnp.float32),
+        init=seed,
+        initializer=ExplicitThenColdInitializer(),
+        options=EquilibriumOptions(method="scan_hot_from_top"),
+    )
+
+    expected = jnp.asarray([11.0, 1.0, 1.0], dtype=jnp.float32)
+    assert jnp.allclose(out.ln_n, expected[:, None])
+
+
+def test_equilibrium_profile_inherits_float32_tolerance_floor(monkeypatch):
+    K, N = 2, 3
+
+    class Float32Setup:
+        formula_matrix = jnp.eye(K, dtype=jnp.float32)
+
+        def hvector_func(self, temperature):
+            del temperature
+            return jnp.zeros((K,), dtype=jnp.float32)
+
+    def stub_minimize_gibbs_with_diagnostics(
+        state,
+        ln_nk0,
+        ln_ntot0,
+        formula_matrix,
+        hvector,
+        **kwargs,
+    ):
+        del state, ln_ntot0, formula_matrix, hvector
+        diagnostics = {
+            "n_iter": jnp.asarray(1, dtype=jnp.int32),
+            "converged": jnp.asarray(True),
+            "hit_max_iter": jnp.asarray(False),
+            "final_residual": jnp.asarray(0.0, dtype=jnp.float32),
+            "epsilon_crit": jnp.asarray(
+                kwargs["epsilon_crit"],
+                dtype=jnp.float32,
+            ),
+            "max_iter": jnp.asarray(kwargs["max_iter"], dtype=jnp.int32),
+        }
+        return jnp.zeros_like(ln_nk0), diagnostics
+
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs_with_diagnostics",
+        stub_minimize_gibbs_with_diagnostics,
+        raising=True,
+    )
+
+    _, diagnostics = eqmod.equilibrium_profile(
+        Float32Setup(),
+        T=jnp.linspace(1000.0, 1200.0, N, dtype=jnp.float32),
+        P=jnp.linspace(0.1, 1.0, N, dtype=jnp.float32),
+        b=jnp.ones((K,), dtype=jnp.float32),
+        options=EquilibriumOptions(
+            epsilon_crit=1.0e-11,
+            method="scan_hot_from_bottom",
+        ),
+        return_diagnostics=True,
+    )
+
+    expected = 8.0 * jnp.finfo(jnp.float32).eps
+    assert jnp.all(diagnostics["epsilon_crit"] == expected)
+
+
 def test_equilibrium_profile_scan_custom_initializer_receives_previous_solution(monkeypatch):
     E, K, N = 2, 2, 4
     A = jnp.array([[1, 0], [0, 1]], dtype=jnp.float32)
