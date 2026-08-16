@@ -588,6 +588,73 @@ def test_equilibrium_return_diagnostics(monkeypatch):
     assert int(diagnostics["n_iter"]) == 7
     assert int(diagnostics["max_iter"]) == 50
 
+
+@pytest.mark.parametrize("return_diagnostics", [False, True])
+@pytest.mark.parametrize(
+    "dtype,requested_tolerance,expected_tolerance",
+    [
+        (
+            jnp.float32,
+            1.0e-11,
+            8.0 * float(jnp.finfo(jnp.float32).eps),
+        ),
+        (jnp.float32, 1.0e-4, 1.0e-4),
+        (jnp.float64, 1.0e-11, 1.0e-11),
+    ],
+)
+def test_equilibrium_uses_dtype_resolvable_tolerance(
+    monkeypatch,
+    return_diagnostics,
+    dtype,
+    requested_tolerance,
+    expected_tolerance,
+):
+    class DtypedSetup:
+        def __init__(self):
+            self.formula_matrix = jnp.eye(2, dtype=dtype)
+
+        def hvector_func(self, temperature):
+            del temperature
+            return jnp.zeros((2,), dtype=dtype)
+
+    captured = {}
+
+    def stub_minimize_gibbs(
+        state,
+        ln_nk0,
+        ln_ntot0,
+        formula_matrix,
+        hvector,
+        **kwargs,
+    ):
+        del state, ln_ntot0, formula_matrix, hvector
+        captured["epsilon_crit"] = kwargs["epsilon_crit"]
+        result = jnp.zeros_like(ln_nk0)
+        if return_diagnostics:
+            return result, {}
+        return result
+
+    target = (
+        "exogibbs.equilibrium.gas.solve.minimize_gibbs_with_diagnostics"
+        if return_diagnostics
+        else "exogibbs.equilibrium.gas.solve.minimize_gibbs"
+    )
+    monkeypatch.setattr(target, stub_minimize_gibbs, raising=True)
+
+    output = eqmod.equilibrium(
+        DtypedSetup(),
+        T=jnp.asarray(1000.0, dtype=dtype),
+        P=jnp.asarray(1.0, dtype=dtype),
+        b=jnp.ones((2,), dtype=dtype),
+        options=EquilibriumOptions(epsilon_crit=requested_tolerance),
+        return_diagnostics=return_diagnostics,
+    )
+
+    if return_diagnostics:
+        output = output[0]
+    assert output.ln_n.dtype == dtype
+    assert captured["epsilon_crit"] == pytest.approx(expected_tolerance)
+
 if __name__ == "__main__":
     chemsetup = chemsetup()
     b_vec = chemsetup.element_vector_reference

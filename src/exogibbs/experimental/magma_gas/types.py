@@ -70,6 +70,8 @@ class MagmaAtmosphereInterfaceState(NamedTuple):
 
     Element abundances follow ``(H, C, O, N, He)`` order.  Gas arrays follow
     the canonical species order of the prepared chemistry.
+    ``gas_ln_n`` and ``gas_ntot`` use the interface's ``b_H = 1`` amount gauge;
+    they are numerical equilibrium amounts, not a physical number density.
     ``melt_volatile_mole_ratios`` follows ``MELTYQ_MELT_QUANTITIES``.  These
     values mix native mole-fraction outputs for H2 and CH4 with MELTYQ's
     dilute 60 g/mol matrix conversion for H2O, CO, CO2, and N.  The vector is
@@ -77,6 +79,8 @@ class MagmaAtmosphereInterfaceState(NamedTuple):
     """
 
     element_abundances: Array
+    gas_ln_n: Array
+    gas_ntot: Array
     gas_log_mole_fractions: Array
     gas_mole_fractions: Array
     partial_pressures_bar: Array

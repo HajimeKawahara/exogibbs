@@ -73,24 +73,46 @@ def _get_profile_scan_body(
 
     species_count = int(setup.formula_matrix.shape[1])
 
+    def resolve_scheduled_init(carry, temperature, pressure, use_seed):
+        ln_nk_previous, ln_ntot_previous = carry
+        scheduled_init = resolve_initial_guess(
+            initializer,
+            EquilibriumInitRequest(
+                setup=setup,
+                T=temperature,
+                P=pressure,
+                b=b,
+                K=species_count,
+                previous_solution=EquilibriumInit(
+                    ln_nk=ln_nk_previous,
+                    ln_ntot=ln_ntot_previous,
+                ),
+            ),
+        )
+        ln_nk_scheduled, ln_ntot_scheduled = prepare_init(
+            scheduled_init,
+            b,
+            species_count,
+        )
+        return EquilibriumInit(
+            ln_nk=jnp.where(use_seed, ln_nk_previous, ln_nk_scheduled),
+            ln_ntot=jnp.where(
+                use_seed,
+                ln_ntot_previous,
+                ln_ntot_scheduled,
+            ),
+        )
+
     if return_diagnostics:
 
         def scan_body(carry, tp_pair):
             ln_nk_previous, ln_ntot_previous = carry
-            temperature, pressure = tp_pair
-            solver_init = resolve_initial_guess(
-                initializer,
-                EquilibriumInitRequest(
-                    setup=setup,
-                    T=temperature,
-                    P=pressure,
-                    b=b,
-                    K=species_count,
-                    previous_solution=EquilibriumInit(
-                        ln_nk=ln_nk_previous,
-                        ln_ntot=ln_ntot_previous,
-                    ),
-                ),
+            temperature, pressure, use_seed = tp_pair
+            solver_init = resolve_scheduled_init(
+                carry,
+                temperature,
+                pressure,
+                use_seed,
             )
             result, diagnostics = equilibrium(
                 setup,
@@ -110,20 +132,12 @@ def _get_profile_scan_body(
 
         def scan_body(carry, tp_pair):
             ln_nk_previous, ln_ntot_previous = carry
-            temperature, pressure = tp_pair
-            solver_init = resolve_initial_guess(
-                initializer,
-                EquilibriumInitRequest(
-                    setup=setup,
-                    T=temperature,
-                    P=pressure,
-                    b=b,
-                    K=species_count,
-                    previous_solution=EquilibriumInit(
-                        ln_nk=ln_nk_previous,
-                        ln_ntot=ln_ntot_previous,
-                    ),
-                ),
+            temperature, pressure, use_seed = tp_pair
+            solver_init = resolve_scheduled_init(
+                carry,
+                temperature,
+                pressure,
+                use_seed,
             )
             result = equilibrium(
                 setup,
@@ -150,6 +164,7 @@ def equilibrium_profile(
     b: Array,
     *,
     Pref: float = 1.0,
+    init: Optional[EquilibriumInit] = None,
     initializer: Optional[EquilibriumInitializer] = None,
     options: Optional[EquilibriumOptions] = None,
     return_diagnostics: bool = False,
@@ -157,6 +172,11 @@ def equilibrium_profile(
 ) -> Union[EquilibriumResult, Tuple[EquilibriumResult, Mapping[str, Array]]]:
     """Compute gas equilibrium along a one-dimensional profile.
 
+    With the default initializer, ``init`` seeds the first scheduled scan
+    layer and later layers use the preceding solution.  In ``vmap_cold`` mode
+    the same explicit state initializes every independent layer.  A custom
+    initializer receives ``init`` as ``request.user_init`` and controls its
+    own precedence.
     ``lnphi_func`` follows the one-layer pure-component fugacity contract.
     """
 
@@ -190,6 +210,7 @@ def equilibrium_profile(
                     pressure,
                     b,
                     Pref=Pref,
+                    init=init,
                     initializer=initializer,
                     options=active_options,
                     return_diagnostics=True,
@@ -205,6 +226,7 @@ def equilibrium_profile(
                 pressure,
                 b,
                 Pref=Pref,
+                init=init,
                 initializer=initializer,
                 options=active_options,
                 return_diagnostics=False,
@@ -230,6 +252,7 @@ def equilibrium_profile(
             P=pressures_input[0],
             b=b,
             K=species_count,
+            user_init=init,
         ),
     )
     ln_nk_init, ln_ntot_init = prepare_init(first_init, b, species_count)
@@ -242,17 +265,18 @@ def equilibrium_profile(
         lnphi_func,
         return_diagnostics,
     )
+    use_seed = jnp.arange(temperatures_input.shape[0]) == 0
     if return_diagnostics:
         _, (result_sequence, diagnostic_sequence) = lax.scan(
             scan_body,
             (ln_nk_init, ln_ntot_init),
-            (temperatures_input, pressures_input),
+            (temperatures_input, pressures_input, use_seed),
         )
     else:
         _, result_sequence = lax.scan(
             scan_body,
             (ln_nk_init, ln_ntot_init),
-            (temperatures_input, pressures_input),
+            (temperatures_input, pressures_input, use_seed),
         )
         diagnostic_sequence = None
 

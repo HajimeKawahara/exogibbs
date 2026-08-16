@@ -33,6 +33,14 @@ For ``N`` layers and ``K`` gas species, ``result.ln_n``, ``result.n``, and
 One-layer :func:`exogibbs.api.gas.solve` returns the corresponding ``(K,)``
 arrays and scalar total.
 
+The optional ``init=EquilibriumInit(...)`` keyword supplies an explicit gas
+state.  With the default initializer, scan methods use it for the first
+scheduled layer and warm-start later layers from the preceding solution;
+``vmap_cold`` uses the same state for every independent layer.  A custom
+initializer receives the value as ``request.user_init`` and controls its own
+precedence.  The effective convergence tolerance is the larger of the
+requested ``epsilon_crit`` and eight machine epsilons in the solver dtype.
+
 Condensate Quick Start
 ----------------------
 

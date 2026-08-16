@@ -34,6 +34,15 @@ def ln_normalized_pressure(pressure: float, reference_pressure: float) -> Array:
     return jnp.log(pressure / reference_pressure)
 
 
+def _effective_equilibrium_tolerance(
+    requested: float,
+    dtype: jnp.dtype,
+) -> float:
+    """Return a convergence tolerance resolvable in the solver dtype."""
+
+    return max(requested, 8.0 * float(jnp.finfo(dtype).eps))
+
+
 def equilibrium(
     setup: ChemicalSetup,
     T: float,
@@ -88,6 +97,20 @@ def equilibrium(
         lnphi_func,
         mole_fractions=None,
     )
+    solver_dtype = jnp.result_type(
+        ln_nk_init,
+        ln_ntot_init,
+        formula_matrix,
+        hvector,
+        b,
+        state.temperature,
+        state.ln_normalized_pressure,
+        jnp.float32,
+    )
+    epsilon_crit = _effective_equilibrium_tolerance(
+        opts.epsilon_crit,
+        solver_dtype,
+    )
     if return_diagnostics:
         ln_n, diagnostics = minimize_gibbs_with_diagnostics(
             state,
@@ -95,7 +118,7 @@ def equilibrium(
             ln_ntot_init,
             formula_matrix,
             hvector,
-            epsilon_crit=opts.epsilon_crit,
+            epsilon_crit=epsilon_crit,
             max_iter=opts.max_iter,
         )
     else:
@@ -105,7 +128,7 @@ def equilibrium(
             ln_ntot_init,
             formula_matrix,
             hvector,
-            epsilon_crit=opts.epsilon_crit,
+            epsilon_crit=epsilon_crit,
             max_iter=opts.max_iter,
         )
         diagnostics = None
