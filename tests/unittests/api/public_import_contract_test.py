@@ -12,6 +12,28 @@ import textwrap
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 SOURCE_ROOT = REPOSITORY_ROOT / "src"
+GENERIC_MAGMA_GAS_EXPORTS = {
+    "MagmaGasConditions",
+    "MagmaGasDiagnostics",
+    "MagmaGasEquilibriumState",
+    "MagmaGasInit",
+    "MagmaGasModel",
+    "MagmaGasModelEvaluation",
+    "MagmaGasOptions",
+    "MagmaGasProblem",
+    "MagmaGasResult",
+    "solve",
+}
+MELTYQ_PRESET_EXPORTS = {
+    "MELTYQ_ELEMENTS",
+    "MELTYQ_MEAN_MELT_MOLAR_MASS_G_MOL",
+    "MELTYQ_MELT_QUANTITIES",
+    "MELTYQ_ROOT_RESIDUALS",
+    "MELTYQ_SPECIES",
+    "MeltyqMagmaGasInputs",
+    "MeltyqMagmaGasState",
+    "prepare_meltyq_problem",
+}
 
 
 def _run_import_script(script: str) -> dict:
@@ -42,11 +64,28 @@ def test_base_api_import_is_lazy_and_exports_are_deterministic() -> None:
                 "exogibbs.api.condensate_equilibrium" in sys.modules
             ),
             "gas_loaded": "exogibbs.api.equilibrium" in sys.modules,
+            "magma_gas_api_loaded": (
+                "exogibbs.api.magma_gas" in sys.modules
+            ),
+            "applications_loaded": any(
+                name == "exogibbs.applications"
+                or name.startswith("exogibbs.applications.")
+                for name in sys.modules
+            ),
+            "magma_gas_implementation_loaded": any(
+                name == "exogibbs.applications.magma_gas"
+                or name.startswith("exogibbs.applications.magma_gas.")
+                for name in sys.modules
+            ),
+            "magma_gas_preset_loaded": (
+                "exogibbs.presets.magma_gas" in sys.modules
+            ),
             "all_unique": len(api.__all__) == len(set(api.__all__)),
             "child_names": [
                 name for name in (
                     "gas",
                     "condensate",
+                    "magma_gas",
                     "equilibrium",
                     "condensate_equilibrium",
                 )
@@ -58,10 +97,15 @@ def test_base_api_import_is_lazy_and_exports_are_deterministic() -> None:
 
     assert not payload["condensate_loaded"]
     assert not payload["gas_loaded"]
+    assert not payload["magma_gas_api_loaded"]
+    assert not payload["applications_loaded"]
+    assert not payload["magma_gas_implementation_loaded"]
+    assert not payload["magma_gas_preset_loaded"]
     assert payload["all_unique"]
     assert payload["child_names"] == [
         "gas",
         "condensate",
+        "magma_gas",
         "equilibrium",
         "condensate_equilibrium",
     ]
@@ -112,6 +156,122 @@ def test_canonical_modules_alias_existing_public_callables() -> None:
     )
 
     assert all(payload.values())
+
+
+def test_magma_gas_api_exports_only_the_generic_engine() -> None:
+    payload = _run_import_script(
+        """
+        import json
+        import sys
+        import types
+
+        import exogibbs.api as api
+        import exogibbs.applications.magma_gas as implementation
+        from exogibbs.api import magma_gas
+
+        type_names = (
+            "MagmaGasConditions",
+            "MagmaGasDiagnostics",
+            "MagmaGasEquilibriumState",
+            "MagmaGasInit",
+            "MagmaGasModel",
+            "MagmaGasModelEvaluation",
+            "MagmaGasOptions",
+            "MagmaGasProblem",
+            "MagmaGasResult",
+        )
+
+        print(json.dumps({
+            "is_module": isinstance(magma_gas, types.ModuleType),
+            "umbrella_identity": api.magma_gas is magma_gas,
+            "solve_identity": magma_gas.solve is implementation.solve,
+            "type_identities": all(
+                getattr(magma_gas, name) is getattr(implementation, name)
+                for name in type_names
+            ),
+            "exports": sorted(magma_gas.__all__),
+            "meltyq_exports": sorted(
+                name for name in magma_gas.__all__
+                if "meltyq" in name.casefold()
+            ),
+            "has_profile": hasattr(magma_gas, "solve_profile"),
+            "has_legacy_solver": hasattr(
+                magma_gas,
+                "solve_magma_atmosphere_interface",
+            ),
+            "preset_loaded": (
+                "exogibbs.presets.magma_gas" in sys.modules
+            ),
+            "meltyq_model_loaded": (
+                "exogibbs.applications.magma_gas.models.meltyq" in sys.modules
+            ),
+            "other_application_loaded": any(
+                name.startswith("exogibbs.applications.")
+                and name != "exogibbs.applications.magma_gas"
+                and not name.startswith(
+                    "exogibbs.applications.magma_gas."
+                )
+                for name in sys.modules
+            ),
+            "experimental_loaded": any(
+                name == "exogibbs.experimental"
+                or name.startswith("exogibbs.experimental.")
+                for name in sys.modules
+            ),
+        }))
+        """
+    )
+
+    assert payload["is_module"]
+    assert payload["umbrella_identity"]
+    assert payload["solve_identity"]
+    assert payload["type_identities"]
+    assert set(payload["exports"]) == GENERIC_MAGMA_GAS_EXPORTS
+    assert payload["meltyq_exports"] == []
+    assert not payload["has_profile"]
+    assert not payload["has_legacy_solver"]
+    assert not payload["preset_loaded"]
+    assert not payload["meltyq_model_loaded"]
+    assert not payload["other_application_loaded"]
+    assert not payload["experimental_loaded"]
+
+
+def test_meltyq_preset_aliases_builtin_model_without_experimental_import() -> None:
+    payload = _run_import_script(
+        """
+        import importlib
+        import json
+        import sys
+
+        implementation = importlib.import_module(
+            "exogibbs.applications.magma_gas.models.meltyq"
+        )
+        preset = importlib.import_module("exogibbs.presets.magma_gas")
+
+        print(json.dumps({
+            "exports": sorted(preset.__all__),
+            "identities": all(
+                getattr(preset, name) is getattr(implementation, name)
+                for name in preset.__all__
+            ),
+            "experimental_loaded": any(
+                name == "exogibbs.experimental"
+                or name.startswith("exogibbs.experimental.")
+                for name in sys.modules
+            ),
+            "api_loaded": any(
+                name == "exogibbs.api"
+                or name.startswith("exogibbs.api.")
+                for name in sys.modules
+            ),
+        }))
+        """
+    )
+
+    assert set(payload["exports"]) == MELTYQ_PRESET_EXPORTS
+    assert payload["identities"]
+    assert not payload["experimental_loaded"]
+    assert not payload["api_loaded"]
 
 
 def test_colliding_umbrella_names_are_modules_for_every_import_order() -> None:
