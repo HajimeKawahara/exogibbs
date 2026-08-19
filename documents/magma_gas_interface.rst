@@ -1,16 +1,28 @@
-Experimental magma--gas interface
-=================================
+Magma--gas API and MELTYQ preset
+================================
 
-``exogibbs.experimental.magma_gas`` couples the auxiliary volatile-solubility
-laws to the gas equilibrium solver.  It is an opt-in experimental feature and
-is not part of the main ``exogibbs.api`` namespace.
+``exogibbs.api.magma_gas`` is the stable, model-neutral interface for coupling
+a magma boundary model to the gas equilibrium solver.  It is an application
+layer over ``exogibbs.equilibrium.gas``, not a third thermochemical-equilibrium
+engine.  ``exogibbs.presets.magma_gas`` provides MELTYQ as one built-in model;
+the generic API does not import or name that preset.
+
+The model contract has three operations: construct an initial root vector,
+map a root vector to gas elemental abundances, and evaluate a square scaled
+residual plus a model-specific JAX PyTree state.  The engine owns the damped
+outer root, inner gas solve, convergence diagnostics, gas pressure and
+fugacity state, and implicit reverse-mode derivative.  A model owns its root
+coordinates, boundary equations, melt physics, and model-specific outputs.
+
+The former ``exogibbs.experimental.magma_gas`` path remains a compatibility
+adapter.  New workflows should use the stable API and an explicit preset.
 
 The reusable pressure conversion, dilute composition conversion, and oxygen-
 fugacity buffer helpers live in ``exogibbs.utils.units``,
 ``exogibbs.thermo.composition``, and
-``exogibbs.thermo.oxygen_fugacity``, respectively.  Only the coupled solver
-and its fixed 60 g/mol MELTYQ melt-basis adapters are kept in the experimental
-package.
+``exogibbs.thermo.oxygen_fugacity``, respectively.  The fixed 60 g/mol basis,
+species reduction, and volatile-law combination belong to the MELTYQ preset,
+not to the generic engine.
 
 Chemistry preparation
 ---------------------
@@ -20,7 +32,7 @@ MELTYQ-equivalent mode reduces a source ``ChemicalSetup`` to five elements
 ``O2``, ``H2O``, ``CO``, ``CO2``, ``CH4``, ``N2``, and ``NH3``).  These nine
 species provide exactly four independent gas reactions.  Source catalogs with
 different species labels require an explicit canonical-to-source mapping.
-An optional source fugacity callback passed to ``prepare_meltyq_chemistry``
+An optional source fugacity callback passed to ``prepare_meltyq_problem``
 must implement ``lnphi_func(T, P_bar, None)`` and return natural-log pure-
 component coefficients in the full source-species order.  The preparation
 step selects and reorders the nine required entries.
@@ -153,7 +165,7 @@ elemental-C mass basis, and :math:`R_{\rm N}` is an atomic-N dilute mole
 ratio.  The latter is twice the corresponding :math:`\mathrm{N_2}`-equivalent
 molecular ratio.  The CO and N solubility constraints are evaluated directly
 in log space.  Here :math:`q_{\rm H_2}` is
-``options.h2_fraction_in_h_he``, whose default is 0.84.
+``model_inputs.h2_fraction_in_h_he``, whose default is 0.84.
 
 The input oxygen fugacity, CO ratio, N ratio, and H2 fraction within H2+He are
 constraints.  The element ratios are inferred.  Gas reaction equilibrium and
@@ -177,15 +189,16 @@ pressure overlap of the six solubility-law metadata ranges:
 
 .. code-block:: python
 
-   from exogibbs.experimental.magma_gas import (
-       CANONICAL_SPECIES,
+   from exogibbs.api import magma_gas
+   from exogibbs.presets.magma_gas import (
+       MELTYQ_SPECIES,
        MELTYQ_MELT_QUANTITIES,
-       prepare_meltyq_chemistry,
-       solve_magma_atmosphere_interface,
+       MeltyqMagmaGasInputs,
+       prepare_meltyq_problem,
    )
    from exogibbs.presets.ykb4 import chemsetup
 
-   chemistry = prepare_meltyq_chemistry(
+   problem = prepare_meltyq_problem(
        chemsetup(),
        species_map={
            "He": "He1",
@@ -196,33 +209,38 @@ pressure overlap of the six solubility-law metadata ranges:
            "NH3": "H3N1",
        },
    )
-   state = solve_magma_atmosphere_interface(
-       chemistry,
-       temperature_melt_k=1700.0,
-       pressure_melt_bar=7000.0,
-       oxygen_fugacity_bar=1.0e-10,
-       co_melt_mole_ratio=5.0e-5,
-       n_melt_mole_ratio=1.0e-4,
+   result = magma_gas.solve(
+       problem,
+       temperature_k=1700.0,
+       pressure_bar=7000.0,
+       model_inputs=MeltyqMagmaGasInputs(
+           oxygen_fugacity_bar=1.0e-10,
+           co_melt_mole_ratio=5.0e-5,
+           n_melt_mole_ratio=1.0e-4,
+       ),
    )
 
-   if not bool(state.diagnostics.converged):
+   if not bool(result.diagnostics.converged):
        raise RuntimeError("magma--gas interface did not converge")
 
    gas_by_species = dict(
-       zip(CANONICAL_SPECIES, map(float, state.gas_mole_fractions))
+       zip(MELTYQ_SPECIES, map(float, result.gas.equilibrium.x))
    )
    melt_by_quantity = dict(
-       zip(MELTYQ_MELT_QUANTITIES, map(float, state.melt_volatile_mole_ratios))
+       zip(
+           MELTYQ_MELT_QUANTITIES,
+           map(float, result.model_state.melt_volatile_mole_ratios),
+       )
    )
-   co_index = CANONICAL_SPECIES.index("CO")
+   co_index = MELTYQ_SPECIES.index("CO")
 
-   print("converged:", bool(state.diagnostics.converged))
-   print("delta IW:", f"{float(state.delta_iw):.3f}")
+   print("converged:", bool(result.diagnostics.converged))
+   print("delta IW:", f"{float(result.model_state.delta_iw):.3f}")
    print("gas H2O mole fraction:", f"{gas_by_species['H2O']:.3f}")
    print(
        "gas CO p/f (bar):",
-       f"{float(state.partial_pressures_bar[co_index]):.3g}",
-       f"{float(state.fugacities_bar[co_index]):.3g}",
+       f"{float(result.gas.partial_pressures_bar[co_index]):.3g}",
+       f"{float(result.gas.fugacities_bar[co_index]):.3g}",
    )
    print("melt CO dilute ratio:", f"{melt_by_quantity['CO']:.3g}")
    print("melt N dilute ratio:", f"{melt_by_quantity['N']:.3g}")
@@ -251,10 +269,10 @@ Units and logarithm bases
 
    * - Quantity
      - Convention
-   * - ``temperature_melt_k``
+   * - ``temperature_k``
      - Kelvin.
    * - Public total pressure, partial pressure, and fugacity
-     - Numerical values in bar.  ``pressure_melt_bar`` is also the fixed gas
+     - Numerical values in bar.  ``pressure_bar`` is also the fixed gas
        total pressure at the interface.
    * - ``oxygen_fugacity_bar``
      - Absolute molecular-O2 fugacity in bar, supplied as a positive linear
@@ -265,11 +283,11 @@ Units and logarithm bases
      - Dilute atomic-N ratio; twice the N2-equivalent molecular ratio.
    * - ``lnphi_func``
      - Natural logarithm of a dimensionless fugacity coefficient.
-   * - ``gas_log_mole_fractions`` and ``root_variables``
+   * - ``result.gas.log_mole_fractions`` and ``result.root_variables``
      - Natural logarithms.
-   * - ``gas_ln_n`` and ``gas_ntot``
-     - Raw gas solver amounts in the :math:`b_{\rm H}=1` gauge.  ``gas_ln_n``
-       contains natural logarithms; ``gas_ntot`` is linear.
+   * - ``result.gas.equilibrium.ln_n`` and ``ntot``
+     - Raw gas solver amounts in the :math:`b_{\rm H}=1` gauge.  ``ln_n``
+       contains natural logarithms; ``ntot`` is linear.
    * - IW helper output and ``delta_iw``
      - Dimensionless base-10 logarithms; one unit is one decade.
    * - Empirical solubility-law pressures
@@ -288,44 +306,40 @@ fugacity helper would shift :math:`\Delta{\rm IW}` by five decimal-log units.
 State and diagnostics
 ---------------------
 
-Gas arrays use ``CANONICAL_SPECIES`` order and melt arrays use
+Gas arrays use ``MELTYQ_SPECIES`` order and melt arrays use
 ``MELTYQ_MELT_QUANTITIES`` order.
 
-.. list-table:: ``MagmaAtmosphereInterfaceState``
+.. list-table:: ``MagmaGasResult`` with the MELTYQ preset
    :header-rows: 1
    :widths: 32 68
 
    * - Field
      - Meaning
-   * - ``element_abundances``
+   * - ``result.element_abundances``
      - Inferred ``(H, C, O, N, He)`` amounts in the :math:`b_{\rm H}=1`
        gauge.
-   * - ``gas_ln_n``
-     - Natural logarithms of the nine raw gas solver amounts in the
-       :math:`b_{\rm H}=1` gauge.
-   * - ``gas_ntot``
-     - Sum of the nine raw gas solver amounts in the same gauge.  This is not
-       a physical number density or mass density.
-   * - ``gas_log_mole_fractions``
+   * - ``result.gas.equilibrium``
+     - Generic ``EquilibriumResult`` containing raw ``ln_n``, ``n``, ``x``,
+       and ``ntot`` values.  Amounts use the :math:`b_{\rm H}=1` gauge and are
+       not a physical number density.
+   * - ``result.gas.log_mole_fractions``
      - Natural logarithms of the nine gas mole fractions.
-   * - ``gas_mole_fractions``
-     - Nine gas mole fractions, summing to one for a valid solve.
-   * - ``partial_pressures_bar``
+   * - ``result.gas.partial_pressures_bar``
      - :math:`p_s=x_sP`, in bar; these sum to the total pressure.
-   * - ``fugacities_bar``
+   * - ``result.gas.fugacities_bar``
      - :math:`f_s=\phi_s p_s`, in bar; these need not sum to the total
        pressure.
-   * - ``melt_volatile_mole_ratios``
+   * - ``result.model_state.melt_volatile_mole_ratios``
      - ``(H2, H2O, CO, CO2, CH4, N)`` outputs in the mixed native/converted
        bases described above; the vector is not a normalized composition.
-   * - ``delta_iw``
+   * - ``result.model_state.delta_iw``
      - Base-10 oxygen-fugacity offset from the Hirschmann IW reference.
-   * - ``root_variables``
+   * - ``result.root_variables``
      - Natural-log ``(C/H, O/H, N/H, He/H)`` ratios.
-   * - ``diagnostics``
+   * - ``result.diagnostics``
      - Nested outer-root and inner-equilibrium convergence information.
 
-.. list-table:: ``MagmaGasRootDiagnostics``
+.. list-table:: ``MagmaGasDiagnostics``
    :header-rows: 1
    :widths: 32 68
 
@@ -351,15 +365,15 @@ Gas arrays use ``CANONICAL_SPECIES`` order and melt arrays use
 Differentiation and batching
 ----------------------------
 
-The four-variable root uses a JAX damped Newton iteration.  Reverse-mode
+The MELTYQ four-variable root uses a JAX damped Newton iteration. Reverse-mode
 derivatives use an implicit 4-by-4 adjoint solve, so ``jax.grad`` and
 JIT-wrapped reverse-mode differentiation are supported.  Forward-mode JVP is
 not supported by the underlying gas-equilibrium solver.  If either the outer
 root or final inner audit fails, the implicit-root backward path returns
 ``nan`` parameter cotangents rather than silently differentiating an invalid
 state.  Diagnostic fields themselves are not part of the differentiation
-contract.  Always check ``state.diagnostics.converged`` before using either a
-state or its gradient.
+contract.  Always check ``result.diagnostics.converged`` before using either a
+result or its gradient.
 
 For a converged root :math:`\boldsymbol{r}(\boldsymbol{u},\theta)=0`, the local
 derivative is
@@ -377,14 +391,15 @@ the initial guess is not a differentiation target.
 Requested root and gas tolerances are bounded below by dtype-aware roundoff
 floors, allowing the documented solve to run with JAX's default float32
 precision as well as float64.  One call solves one scalar thermodynamic state.
-For a batch, keep the prepared chemistry and numerical options static and map
+For a batch, keep the prepared problem and numerical options static and map
 a scalar closure with ``jax.vmap``.
 
 Scientific scope and calibration
 --------------------------------
 
-This solver is a MELTYQ-equivalent boundary model, not a general magma
-thermodynamics model.  Its equilibrium prediction is conditional on the
+The generic engine can host other smooth square-residual magma models. The
+MELTYQ preset documented here is one boundary model, not a general magma
+thermodynamics model. Its equilibrium prediction is conditional on the
 reduced five-element, nine-gas-species network; omitted gases and all
 condensed phases cannot appear.  The fixed 60 g/mol melt matrix and default
 basaltic oxide composition in the N law are also model assumptions.

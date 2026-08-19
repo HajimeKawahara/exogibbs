@@ -94,7 +94,7 @@ N2 law takes :math:`\Delta\mathrm{IW}` directly.  In
 ``log10_oxygen_fugacity_iw_hirschmann2021`` returns the IW reference, while
 ``delta_iw_hirschmann2021`` converts absolute oxygen fugacity in bar to
 :math:`\Delta\mathrm{IW}`.  See :ref:`magma-gas-iw` for its use by the
-experimental interface.
+stable MELTYQ magma--gas preset.
 
 References
 ----------
