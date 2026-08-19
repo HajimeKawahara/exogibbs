@@ -4,8 +4,10 @@ Magma--gas API and MELTYQ preset
 ``exogibbs.api.magma_gas`` is the stable, model-neutral interface for coupling
 a magma boundary model to the gas equilibrium solver.  It is an application
 layer over ``exogibbs.equilibrium.gas``, not a third thermochemical-equilibrium
-engine.  ``exogibbs.presets.magma_gas`` provides MELTYQ as one built-in model;
-the generic API does not import or name that preset.
+engine.  The implementation is owned by
+``exogibbs.applications.magma_gas``; this implementation namespace is not the
+public import contract.  ``exogibbs.presets.magma_gas`` provides MELTYQ as one
+built-in model; the generic API does not import or name that preset.
 
 The model contract has three operations: construct an initial root vector,
 map a root vector to gas elemental abundances, and evaluate a square scaled

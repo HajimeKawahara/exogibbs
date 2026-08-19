@@ -9,7 +9,7 @@ import jax.numpy as jnp
 from jax import custom_vjp
 from jax.lax import stop_gradient
 
-from exogibbs.magma_gas.types import MagmaGasOptions
+from exogibbs.applications.magma_gas.types import MagmaGasOptions
 
 
 class _RootCarry(NamedTuple):

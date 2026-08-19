@@ -11,8 +11,8 @@ from exogibbs.experimental.magma_gas import (
     prepare_meltyq_chemistry,
     solve_magma_atmosphere_interface,
 )
-from exogibbs.magma_gas.models import meltyq as meltyq_implementation
-from exogibbs.magma_gas.models.meltyq.basis import (
+from exogibbs.applications.magma_gas.models import meltyq as meltyq_implementation
+from exogibbs.applications.magma_gas.models.meltyq.basis import (
     elemental_c_mass_fraction_to_mole_ratio,
     elemental_n_mass_fraction_to_mole_ratio,
 )

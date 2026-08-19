@@ -1,6 +1,6 @@
 """Stable built-in presets for the generic magma--gas API."""
 
-from exogibbs.magma_gas.models.meltyq import (
+from exogibbs.applications.magma_gas.models.meltyq import (
     MELTYQ_ELEMENTS,
     MELTYQ_MEAN_MELT_MOLAR_MASS_G_MOL,
     MELTYQ_MELT_QUANTITIES,

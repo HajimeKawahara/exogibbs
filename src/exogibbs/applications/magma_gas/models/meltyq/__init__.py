@@ -1,6 +1,6 @@
 """Built-in MELTYQ magma--gas model."""
 
-from exogibbs.magma_gas.models.meltyq.basis import (
+from exogibbs.applications.magma_gas.models.meltyq.basis import (
     MELTYQ_MEAN_MELT_MOLAR_MASS_G_MOL,
     co2_mass_fraction_to_mole_ratio,
     elemental_c_ln_mass_fraction_to_ln_mole_ratio,
@@ -9,11 +9,11 @@ from exogibbs.magma_gas.models.meltyq.basis import (
     elemental_n_mass_fraction_to_mole_ratio,
     h2o_mass_fraction_to_mole_ratio,
 )
-from exogibbs.magma_gas.models.meltyq.model import (
+from exogibbs.applications.magma_gas.models.meltyq.model import (
     MeltyqMagmaGasModel,
     prepare_meltyq_problem,
 )
-from exogibbs.magma_gas.models.meltyq.setup import (
+from exogibbs.applications.magma_gas.models.meltyq.setup import (
     CANONICAL_ELEMENTS,
     CANONICAL_SPECIES,
     MELTYQ_ELEMENTS,
@@ -22,7 +22,7 @@ from exogibbs.magma_gas.models.meltyq.setup import (
     PreparedMeltyqChemistry,
     prepare_meltyq_chemistry,
 )
-from exogibbs.magma_gas.models.meltyq.types import (
+from exogibbs.applications.magma_gas.models.meltyq.types import (
     MELTYQ_MELT_QUANTITIES,
     MELTYQ_ROOT_RESIDUALS,
     MagmaAtmosphereInterfaceInit,

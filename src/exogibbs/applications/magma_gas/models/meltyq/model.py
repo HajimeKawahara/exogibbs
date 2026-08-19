@@ -9,21 +9,21 @@ import jax
 import jax.numpy as jnp
 from jax.typing import ArrayLike
 
-from exogibbs.magma_gas.models.meltyq.basis import (
+from exogibbs.applications.magma_gas.models.meltyq.basis import (
     co2_mass_fraction_to_mole_ratio,
     elemental_c_ln_mass_fraction_to_ln_mole_ratio,
     elemental_n_ln_mass_fraction_to_ln_mole_ratio,
     h2o_mass_fraction_to_mole_ratio,
 )
-from exogibbs.magma_gas.models.meltyq.setup import (
+from exogibbs.applications.magma_gas.models.meltyq.setup import (
     MELTYQ_SPECIES,
     prepare_meltyq_chemistry,
 )
-from exogibbs.magma_gas.models.meltyq.types import (
+from exogibbs.applications.magma_gas.models.meltyq.types import (
     MeltyqMagmaGasInputs,
     MeltyqMagmaGasState,
 )
-from exogibbs.magma_gas.types import (
+from exogibbs.applications.magma_gas.types import (
     MagmaGasConditions,
     MagmaGasEquilibriumState,
     MagmaGasModelEvaluation,

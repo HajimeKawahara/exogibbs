@@ -14,11 +14,11 @@ from jax.typing import ArrayLike
 
 from exogibbs.equilibrium.gas.solve import equilibrium
 from exogibbs.equilibrium.gas.types import EquilibriumResult
-from exogibbs.magma_gas._root import (
+from exogibbs.applications.magma_gas._root import (
     InnerRootDiagnostics,
     make_implicit_root_solver,
 )
-from exogibbs.magma_gas.types import (
+from exogibbs.applications.magma_gas.types import (
     MagmaGasConditions,
     MagmaGasDiagnostics,
     MagmaGasEquilibriumState,

@@ -8,7 +8,7 @@ from typing import NamedTuple, Optional
 import jax
 
 from exogibbs.equilibrium.gas.types import EquilibriumOptions
-from exogibbs.magma_gas.types import MagmaGasDiagnostics
+from exogibbs.applications.magma_gas.types import MagmaGasDiagnostics
 
 
 Array = jax.Array

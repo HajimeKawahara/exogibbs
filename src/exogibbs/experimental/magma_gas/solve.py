@@ -8,16 +8,20 @@ from typing import Optional
 import jax.numpy as jnp
 from jax.typing import ArrayLike
 
-from exogibbs.magma_gas.models.meltyq.model import MeltyqMagmaGasModel
-from exogibbs.magma_gas.models.meltyq.setup import PreparedMagmaGasChemistry
-from exogibbs.magma_gas.models.meltyq.types import (
+from exogibbs.applications.magma_gas.models.meltyq.model import (
+    MeltyqMagmaGasModel,
+)
+from exogibbs.applications.magma_gas.models.meltyq.setup import (
+    PreparedMagmaGasChemistry,
+)
+from exogibbs.applications.magma_gas.models.meltyq.types import (
     MagmaAtmosphereInterfaceInit,
     MagmaAtmosphereInterfaceOptions,
     MagmaAtmosphereInterfaceState,
     MeltyqMagmaGasInputs,
 )
-from exogibbs.magma_gas.solve import solve
-from exogibbs.magma_gas.types import (
+from exogibbs.applications.magma_gas.solve import solve
+from exogibbs.applications.magma_gas.types import (
     MagmaGasInit,
     MagmaGasOptions,
     MagmaGasProblem,

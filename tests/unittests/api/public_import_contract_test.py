@@ -67,9 +67,14 @@ def test_base_api_import_is_lazy_and_exports_are_deterministic() -> None:
             "magma_gas_api_loaded": (
                 "exogibbs.api.magma_gas" in sys.modules
             ),
+            "applications_loaded": any(
+                name == "exogibbs.applications"
+                or name.startswith("exogibbs.applications.")
+                for name in sys.modules
+            ),
             "magma_gas_implementation_loaded": any(
-                name == "exogibbs.magma_gas"
-                or name.startswith("exogibbs.magma_gas.")
+                name == "exogibbs.applications.magma_gas"
+                or name.startswith("exogibbs.applications.magma_gas.")
                 for name in sys.modules
             ),
             "magma_gas_preset_loaded": (
@@ -93,6 +98,7 @@ def test_base_api_import_is_lazy_and_exports_are_deterministic() -> None:
     assert not payload["condensate_loaded"]
     assert not payload["gas_loaded"]
     assert not payload["magma_gas_api_loaded"]
+    assert not payload["applications_loaded"]
     assert not payload["magma_gas_implementation_loaded"]
     assert not payload["magma_gas_preset_loaded"]
     assert payload["all_unique"]
@@ -160,7 +166,7 @@ def test_magma_gas_api_exports_only_the_generic_engine() -> None:
         import types
 
         import exogibbs.api as api
-        import exogibbs.magma_gas as implementation
+        import exogibbs.applications.magma_gas as implementation
         from exogibbs.api import magma_gas
 
         type_names = (
@@ -197,7 +203,15 @@ def test_magma_gas_api_exports_only_the_generic_engine() -> None:
                 "exogibbs.presets.magma_gas" in sys.modules
             ),
             "meltyq_model_loaded": (
-                "exogibbs.magma_gas.models.meltyq" in sys.modules
+                "exogibbs.applications.magma_gas.models.meltyq" in sys.modules
+            ),
+            "other_application_loaded": any(
+                name.startswith("exogibbs.applications.")
+                and name != "exogibbs.applications.magma_gas"
+                and not name.startswith(
+                    "exogibbs.applications.magma_gas."
+                )
+                for name in sys.modules
             ),
             "experimental_loaded": any(
                 name == "exogibbs.experimental"
@@ -218,6 +232,7 @@ def test_magma_gas_api_exports_only_the_generic_engine() -> None:
     assert not payload["has_legacy_solver"]
     assert not payload["preset_loaded"]
     assert not payload["meltyq_model_loaded"]
+    assert not payload["other_application_loaded"]
     assert not payload["experimental_loaded"]
 
 
@@ -229,7 +244,7 @@ def test_meltyq_preset_aliases_builtin_model_without_experimental_import() -> No
         import sys
 
         implementation = importlib.import_module(
-            "exogibbs.magma_gas.models.meltyq"
+            "exogibbs.applications.magma_gas.models.meltyq"
         )
         preset = importlib.import_module("exogibbs.presets.magma_gas")
 
@@ -244,6 +259,11 @@ def test_meltyq_preset_aliases_builtin_model_without_experimental_import() -> No
                 or name.startswith("exogibbs.experimental.")
                 for name in sys.modules
             ),
+            "api_loaded": any(
+                name == "exogibbs.api"
+                or name.startswith("exogibbs.api.")
+                for name in sys.modules
+            ),
         }))
         """
     )
@@ -251,6 +271,7 @@ def test_meltyq_preset_aliases_builtin_model_without_experimental_import() -> No
     assert set(payload["exports"]) == MELTYQ_PRESET_EXPORTS
     assert payload["identities"]
     assert not payload["experimental_loaded"]
+    assert not payload["api_loaded"]
 
 
 def test_colliding_umbrella_names_are_modules_for_every_import_order() -> None:
