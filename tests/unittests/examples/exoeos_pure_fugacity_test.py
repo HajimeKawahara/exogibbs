@@ -24,14 +24,19 @@ def _load_example():
     return module
 
 
-def test_example_is_syntax_valid_and_uses_the_optional_public_hook() -> None:
+def test_example_is_syntax_valid_and_uses_the_exoeos_adapter() -> None:
     source = EXAMPLE_PATH.read_text(encoding="utf-8")
 
     compile(source, str(EXAMPLE_PATH), "exec")
-    assert "from exoeos import ZhangDuanEOS, state_tp" in source
+    assert "from exoeos import ZhangDuanEOS" in source
+    assert (
+        "from exogibbs.interop.exoeos import make_pure_lnphi_func" in source
+    )
     assert "except ImportError" in source
     assert "lnphi_func=lnphi_func" in source
-    assert "pressure_bar) * BAR_TO_PA" in source
+    assert "eos_by_species=eos_by_species" in source
+    assert "def make_pure_lnphi_func" not in source
+    assert "state_tp(" not in source
 
 
 def test_reduced_setup_matches_the_zhang_duan_species_order() -> None:

@@ -58,6 +58,7 @@ def test_base_api_import_is_lazy_and_exports_are_deterministic() -> None:
         import types
 
         import exogibbs.api as api
+        import exogibbs.interop
 
         print(json.dumps({
             "condensate_loaded": (
@@ -80,6 +81,7 @@ def test_base_api_import_is_lazy_and_exports_are_deterministic() -> None:
             "magma_gas_preset_loaded": (
                 "exogibbs.presets.magma_gas" in sys.modules
             ),
+            "exoeos_loaded": "exoeos" in sys.modules,
             "all_unique": len(api.__all__) == len(set(api.__all__)),
             "child_names": [
                 name for name in (
@@ -101,6 +103,7 @@ def test_base_api_import_is_lazy_and_exports_are_deterministic() -> None:
     assert not payload["applications_loaded"]
     assert not payload["magma_gas_implementation_loaded"]
     assert not payload["magma_gas_preset_loaded"]
+    assert not payload["exoeos_loaded"]
     assert payload["all_unique"]
     assert payload["child_names"] == [
         "gas",
