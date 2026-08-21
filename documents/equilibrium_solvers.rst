@@ -107,6 +107,28 @@ Both solver modules accept an optional ``lnphi_func`` keyword:
        lnphi_func=lnphi_func,
    )
 
+A current ExoEOS checkout can supply these pure-component values through the
+optional consumer-side adapter. For example, a setup containing the nine
+MELTYQ gas species can assign one-component Zhang--Duan models to the six
+supported species; He, N2, and NH3 omitted under the explicit ``"ideal"``
+policy receive zero correction.
+
+.. code-block:: python
+
+   from exoeos import ZhangDuanEOS
+   from exogibbs.interop.exoeos import make_pure_lnphi_func
+
+   nonideal_species = ("H2", "O2", "H2O", "CO", "CO2", "CH4")
+   lnphi_func = make_pure_lnphi_func(
+       source_species=setup.species,
+       eos_by_species={
+           name: ZhangDuanEOS.from_species((name,))
+           for name in nonideal_species
+       },
+       unspecified_species="ideal",
+       phase="vapor",
+   )
+
 The returned vector must have shape ``(K,)`` and follow ``setup.species``
 order.  ``pressure_bar`` is the physical pressure in bar, independent of
 ``Pref``.  ExoGibbs adds the correction once to the standard gas source,

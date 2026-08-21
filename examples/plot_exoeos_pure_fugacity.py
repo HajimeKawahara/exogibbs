@@ -29,6 +29,7 @@ from exogibbs.api.gas import (
     LogFugacityCoefficientFunction,
     solve,
 )
+from exogibbs.interop.exoeos import make_pure_lnphi_func
 
 
 config.update("jax_enable_x64", True)
@@ -46,7 +47,6 @@ FORMULA_MATRIX = jnp.asarray(
 ELEMENT_INVENTORY = jnp.asarray([1.0, 4.0, 2.0], dtype=jnp.float64)
 TEMPERATURE_K = 1500.0
 PRESSURES_BAR = jnp.geomspace(100.0, 5000.0, 6)
-BAR_TO_PA = 1.0e5
 
 _EXOEOS_INSTALL_HINT = (
     "Install a current ExoEOS checkout with "
@@ -54,10 +54,9 @@ _EXOEOS_INSTALL_HINT = (
 )
 
 try:
-    from exoeos import ZhangDuanEOS, state_tp
+    from exoeos import ZhangDuanEOS
 except ImportError as exc:
     ZhangDuanEOS = None
-    state_tp = None
     _EXOEOS_IMPORT_ERROR: Optional[ImportError] = exc
 else:
     _EXOEOS_IMPORT_ERROR = None
@@ -67,9 +66,9 @@ else:
 # Build a deliberately small ExoGibbs problem
 # --------------------------------------------
 #
-# Both the thermochemical vector and the EOS component arrays follow ``SPECIES``
-# order.  Keeping that mapping explicit is important because ExoEOS EOS objects
-# store numerical component arrays, not species labels.
+# The thermochemical vector follows ``SPECIES`` order. Later, ``eos_by_species``
+# explicitly labels each one-component EOS because ExoEOS models store numerical
+# component arrays rather than species names.
 
 
 def build_reduced_setup() -> ChemicalSetup:
@@ -96,40 +95,8 @@ def build_reduced_setup() -> ChemicalSetup:
 # Adapt the ExoEOS pure-component states
 # --------------------------------------
 #
-# ``state_tp`` evaluates one scalar state.  Mapping it over the pure-composition
-# basis evaluates every species at the same temperature and pressure.  At
-# ``x=e_i``, ``gres_RT = x @ lnphi`` is exactly ``ln(phi_i_pure)``, so the scalar
-# ``gres_RT`` field directly produces the desired vector without materializing
-# a matrix of all cross-component fugacity coefficients.
-
-
-def make_pure_lnphi_func(eos: Any) -> LogFugacityCoefficientFunction:
-    """Return an ExoGibbs-compatible pure-component ExoEOS callback."""
-
-    pure_compositions = jnp.eye(len(SPECIES), dtype=jnp.float64)
-
-    def lnphi_func(
-        temperature: Any,
-        pressure_bar: Any,
-        mole_fractions: Optional[jax.Array],
-    ) -> jax.Array:
-        if mole_fractions is not None:
-            raise ValueError(
-                "This example implements pure-component fugacity only; "
-                "mole_fractions must be None."
-            )
-        pressure_pa = jnp.asarray(pressure_bar) * BAR_TO_PA
-        return jax.vmap(
-            lambda pure_x: state_tp(
-                eos,
-                temperature,
-                pressure_pa,
-                pure_x,
-                phase="vapor",
-            ).gres_RT
-        )(pure_compositions)
-
-    return lnphi_func
+# Each mapping value is a one-component EOS. The adapter evaluates ``x=[1]``,
+# converts pressure from bar to Pa, and restores the source species order.
 
 
 def solve_pressure_profile(
@@ -170,8 +137,14 @@ def main() -> None:
         return
 
     setup = build_reduced_setup()
-    eos = ZhangDuanEOS.from_species(SPECIES)
-    lnphi_func = make_pure_lnphi_func(eos)
+    eos_by_species = {
+        species: ZhangDuanEOS.from_species((species,)) for species in SPECIES
+    }
+    lnphi_func = make_pure_lnphi_func(
+        source_species=setup.species,
+        eos_by_species=eos_by_species,
+        phase="vapor",
+    )
 
     ideal_x = solve_pressure_profile(setup, PRESSURES_BAR)
     nonideal_x = solve_pressure_profile(
