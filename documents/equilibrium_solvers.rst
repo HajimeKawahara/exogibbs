@@ -253,12 +253,20 @@ The experimental prepared fixed-support adapter remains a low-level interface;
 its caller owns both the input amount gauge and barrier schedule.
 
 Trace-gas initial amounts are regularized only for the zero-barrier optimizer,
-using their elemental capacities; the accepted equations remain floorless. In
-the exact refinement, gas stationarity analytically eliminates the
-per-species gas log amounts from the preferred nonlinear systems. Their size
-therefore depends on the number of elements and active condensates rather than
-the full gas catalog. Every reduced candidate is reconstructed in the full
-catalog and must pass the unchanged physical audit. For non-negative
+using their elemental capacities; the accepted equations remain floorless.
+For a strictly positive, non-negative-stoichiometry problem with a full-rank
+potential fit, the reduced solver uses this regularized gas--potential state
+only when the smallest nonzero element inventory is no greater than binary64
+machine epsilon times the largest. If that candidate does not pass the local
+physical KKT audit, the unregularized support-selected initializer is retried
+with initializer-relative variable scaling before any compatibility fallback.
+The fast attempt has a separate evaluation allowance so that it cannot consume
+the protected unregularized retry budget. In the exact refinement, gas stationarity
+analytically eliminates the per-species gas log amounts from the preferred
+nonlinear systems. Their size therefore depends on the number of elements and
+active condensates rather than the full gas catalog. Every reduced candidate
+is reconstructed in the full catalog and must pass the unchanged physical
+audit. For non-negative
 stoichiometry with exact-zero element rows, structurally impossible gases and
 phases are omitted and the absent-element potentials are reconstructed to
 close both gas and inactive-phase inequalities. The dense all-gas formulation

@@ -365,6 +365,104 @@ class TimingCollector:
             "cumulative_function_evaluations",
             report.get("function_evaluations"),
         )
+        portfolio = report.get(
+            "normalized_gas_reduced_initializer_portfolio", {}
+        )
+        if not isinstance(portfolio, Mapping):
+            portfolio = {}
+        closure_rounds = closure.get("rounds", ())
+        if not isinstance(closure_rounds, (tuple, list)):
+            closure_rounds = ()
+        selected_initializers = tuple(
+            round_report.get("selected_normalized_initializer")
+            for round_report in closure_rounds
+            if isinstance(round_report, Mapping)
+        )
+        regularized_attempt_count = sum(
+            int(
+                round_report.get(
+                    "regularized_normalized_initializer_attempt_count",
+                    bool(
+                        round_report.get(
+                            "regularized_normalized_initializer_attempted",
+                            False,
+                        )
+                    ),
+                )
+            )
+            for round_report in closure_rounds
+            if isinstance(round_report, Mapping)
+        )
+        regularized_function_evaluations = sum(
+            int(
+                round_report.get(
+                    "regularized_normalized_initializer_function_evaluations",
+                    0,
+                )
+            )
+            for round_report in closure_rounds
+            if isinstance(round_report, Mapping)
+        )
+        unregularized_attempt_count = sum(
+            int(
+                round_report.get(
+                    "unregularized_normalized_initializer_attempt_count",
+                    0,
+                )
+            )
+            for round_report in closure_rounds
+            if isinstance(round_report, Mapping)
+        )
+        unregularized_function_evaluations = sum(
+            int(
+                round_report.get(
+                    "unregularized_normalized_initializer_function_evaluations",
+                    0,
+                )
+            )
+            for round_report in closure_rounds
+            if isinstance(round_report, Mapping)
+        )
+        raw_retry_count = sum(
+            int(
+                round_report.get(
+                    "raw_normalized_initializer_retry_count",
+                    bool(
+                        round_report.get(
+                            "raw_normalized_initializer_retry_attempted",
+                            False,
+                        )
+                    ),
+                )
+            )
+            for round_report in closure_rounds
+            if isinstance(round_report, Mapping)
+        )
+        if not closure_rounds:
+            selected = portfolio.get("selected_initializer")
+            selected_initializers = (() if selected is None else (selected,))
+            regularized_attempt_count = int(
+                bool(portfolio.get("regularized_attempted", False))
+            )
+            regularized_function_evaluations = sum(
+                int(attempt.get("function_evaluations", 0))
+                for attempt in portfolio.get("attempts", ())
+                if attempt.get("initializer") == "capacity_regularized"
+            )
+            unregularized_attempt_count = int(
+                bool(portfolio.get("unregularized_attempted", False))
+            )
+            unregularized_function_evaluations = sum(
+                int(attempt.get("function_evaluations", 0))
+                for attempt in portfolio.get("attempts", ())
+                if attempt.get("initializer") == "unregularized"
+            )
+            raw_retry_count = int(
+                bool(portfolio.get("raw_retry_attempted", False))
+            )
+        initial_support = tuple(
+            int(index) for index in kwargs.get("support_indices", ())
+        )
         self.zero_barrier_calls.append(
             {
                 "phase": phase,
@@ -376,8 +474,12 @@ class TimingCollector:
                 "status": "pass",
                 "error": None,
                 "accepted": bool(result.accepted),
-                "initial_support_count": len(kwargs.get("support_indices", ())),
+                "initial_support_count": len(initial_support),
+                "initial_support_indices": initial_support,
                 "final_support_count": len(result.support_indices),
+                "final_support_indices": tuple(
+                    int(index) for index in result.support_indices
+                ),
                 "function_evaluations": (
                     None
                     if function_evaluations is None
@@ -389,6 +491,20 @@ class TimingCollector:
                     else int(closure["round_count"])
                 ),
                 "termination_reason": closure.get("termination_reason"),
+                "selected_normalized_initializers": selected_initializers,
+                "regularized_normalized_initializer_attempt_count": (
+                    regularized_attempt_count
+                ),
+                "regularized_normalized_initializer_function_evaluations": (
+                    regularized_function_evaluations
+                ),
+                "unregularized_normalized_initializer_attempt_count": (
+                    unregularized_attempt_count
+                ),
+                "unregularized_normalized_initializer_function_evaluations": (
+                    unregularized_function_evaluations
+                ),
+                "raw_normalized_initializer_retry_count": raw_retry_count,
             }
         )
         return result

@@ -98,6 +98,16 @@ gate. Its v2 denominator for a non-charge element row ``i`` is
 ``max(abs(b[i]), relative_floor * B)``, where ``B`` is the sum of positive
 non-charge targets. A non-finite amount scale or floor fails closed.
 
+When the support-selected initializer contains capacity-underflow trace gases,
+the zero-barrier reduced solve first tries the existing capacity-regularized
+gas and element-potential initializer for an eligible positive,
+non-negative network with a full-rank potential fit only when its smallest
+nonzero element inventory is no greater than binary64 machine epsilon times
+its largest. A failed local KKT audit retries the unregularized initializer
+with uncapped initializer-relative scaling. The fast attempt cannot consume
+the protected retry allowance, and neither route changes the final physical
+acceptance or active-set closure gates.
+
 A closed, finite terminal barrier state whose gas, budget, complementarity,
 and total-density residuals pass may also initialize this exact refinement
 even when finite-barrier condensate stationarity prevents the barrier solver

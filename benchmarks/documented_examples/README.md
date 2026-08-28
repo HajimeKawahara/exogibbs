@@ -10,7 +10,8 @@ The registered workloads are:
 - Visscher (2010) silicate phase competition;
 - Ito (2025) propagated rainout;
 - reduced Fe-FeS local equilibrium and rainout;
-- the full-catalog L-dwarf condensate and gas profiles.
+- the full-catalog L-dwarf condensate and gas profiles; and
+- a Rocky Raccoon-like positive trace-Mg rainout layer.
 
 `manifest.py` is deliberately explicit. The unit tests compare it with the
 documentation toctree, so adding a documentation example requires adding one
@@ -63,7 +64,7 @@ value-and-gradient, spectral likelihood, or NUTS-transition benchmark.
 
 ## Full benchmark matrix
 
-Run the complete GPU sequence (five documented workloads under both compiler
+Run the complete GPU sequence (six documented workloads under both compiler
 modes, followed by the two L-dwarf cold-plus-ten-warm runs) with:
 
 ```console
@@ -72,7 +73,7 @@ csh benchmarks/documented_examples/run_all_gpu.csh
 
 An optional output directory may be supplied as the only argument.
 
-The default command runs all five cases in separate CPU/GPU processes with
+The default command runs all six cases in separate CPU/GPU processes with
 both compiler modes:
 
 ```console
@@ -141,6 +142,11 @@ artifacts predate this breakdown and must be regenerated for budget analysis.
   SciPy/NumPy zero-barrier refinement. The optimization runs on the CPU even
   when PD-IPM uses a GPU, but this boundary can also include input transfer
   and device synchronization needed by the host call.
+- `zero_barrier.calls[].selected_normalized_initializers` and the adjacent
+  attempt, retry, and function-evaluation fields expose initializer routing.
+  Capacity regularization is a primary route only when the smallest nonzero
+  element inventory is at most binary64 machine epsilon times the largest;
+  other eligible states retain the unregularized route.
 - `solver_budget.pdipm_internal_orchestration_wall_seconds`: time inside the
   fixed-support batch wrapper outside its explicit compile, execute, and
   diagnostic timers, including batch preparation and result assembly.
