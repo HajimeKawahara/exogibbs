@@ -6,8 +6,14 @@ import ast
 from pathlib import Path
 import runpy
 
+import jax.numpy as jnp
 import numpy as np
 import pytest
+
+from exogibbs.api.condensate import (
+    CondensateEquilibriumOptions,
+    solve_profile as solve_condensate_profile,
+)
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
@@ -17,6 +23,32 @@ EXAMPLE_PATH = (
     / "comparisons"
     / "demo_rocky_raccoon_trace_mg.py"
 )
+BOUNDARY_CASES = {
+    "amount_gauge": (
+        1334.4049016146876,
+        6495.780683442079,
+        (
+            0.9997209426096871,
+            1.964558116000134e-14,
+            3.3774855697403563e-6,
+            6.7549711591333905e-6,
+            2.689249335620061e-4,
+            0.0,
+        ),
+    ),
+    "optimizer_limit": (
+        1561.8193557386803,
+        11290.04441816559,
+        (
+            0.9996545882751542,
+            6.928615382247818e-12,
+            2.5501542246828624e-5,
+            5.100309142229654e-5,
+            2.68907084246017e-4,
+            0.0,
+        ),
+    ),
+}
 
 
 @pytest.fixture(scope="module")
@@ -37,6 +69,25 @@ def solved(example, setup):
     profile = example["solve_trace_mg_profile"](setup)
     audit = example["audit_trace_mg_profile"](setup, profile)
     return profile, audit
+
+
+@pytest.fixture(scope="module")
+def boundary_profiles(setup):
+    profiles = {}
+    for name, (temperature, pressure, inventory) in BOUNDARY_CASES.items():
+        profiles[name] = solve_condensate_profile(
+            setup,
+            T=jnp.asarray([temperature], dtype=jnp.float64),
+            P=jnp.asarray([pressure], dtype=jnp.float64),
+            b=jnp.asarray(inventory, dtype=jnp.float64),
+            options=CondensateEquilibriumOptions(
+                rainout=True,
+                profile_method="scan_hot_from_bottom",
+                return_diagnostics=True,
+            ),
+            return_diagnostics=True,
+        )
+    return profiles
 
 
 def test_example_is_main_guarded_and_compiles() -> None:
@@ -96,3 +147,95 @@ def test_public_profile_resolves_positive_trace_magnesium(
     assert audit["gas_magnesium"] + audit[
         "condensed_magnesium"
     ] == pytest.approx(audit["target_magnesium"], rel=1.0e-10)
+
+
+@pytest.mark.parametrize("case_name", tuple(BOUNDARY_CASES))
+def test_public_profile_certifies_exact_rocky_boundary(
+    case_name,
+    boundary_profiles,
+) -> None:
+    profile = boundary_profiles[case_name]
+    layer = profile.layers[0]
+
+    assert profile.rainout
+    assert profile.method == "scan_hot_from_bottom"
+    assert layer.converged
+    assert layer.status == "converged"
+    assert np.all(np.isfinite(np.asarray(layer.gas_n)))
+    assert np.all(np.asarray(layer.gas_n) >= 0.0)
+    assert np.all(np.isfinite(np.asarray(layer.condensate_amounts)))
+    assert np.all(np.asarray(layer.condensate_amounts) >= 0.0)
+    assert np.sum(np.asarray(layer.gas_x)) == pytest.approx(1.0)
+    np.testing.assert_array_equal(
+        np.asarray(profile.rainout_abundance_scale),
+        [1.0],
+    )
+
+    rainout = layer.diagnostics["rainout"]
+    floorless = rainout["floorless_budget_certification"]
+    assert floorless["accepted"]
+    assert floorless["maximum_positive_relative_residual"] <= (
+        floorless["relative_tolerance"]
+    )
+    lifecycle = layer.diagnostics["fixed_support_v2"]
+    caller_audit = lifecycle["caller_gauge_zero_barrier_kkt"]
+    assert caller_audit["accepted"]
+    assert caller_audit["gas_stationarity_max_abs"] <= 1.0e-8
+    assert caller_audit["active_condensate_driving_max_abs"] <= 1.0e-8
+    assert caller_audit["inactive_condensate_violation_max_abs"] <= 1.0e-8
+    assert caller_audit["budget_scaled_max_abs"] <= 1.0e-8
+    assert caller_audit["total_density_scaled_abs"] <= 1.0e-8
+
+
+def test_public_amount_gauge_boundary_uses_exact_polish_rescue(
+    boundary_profiles,
+) -> None:
+    profile = boundary_profiles["amount_gauge"]
+    lifecycle = profile.layers[0].diagnostics["fixed_support_v2"]
+
+    assert lifecycle["outcome"] == "zero_barrier_active_support_rescued"
+    assert profile.diagnostics["layers"][0]["attempts"][-1][
+        "lifecycle_outcome"
+    ] == (
+        lifecycle["outcome"]
+    )
+    assert lifecycle["zero_barrier_active_support_polish"]["accepted"]
+
+
+def test_public_optimizer_limit_boundary_uses_physical_certificate(
+    boundary_profiles,
+) -> None:
+    lifecycle = boundary_profiles["optimizer_limit"].layers[0].diagnostics[
+        "fixed_support_v2"
+    ]
+    polish = lifecycle["zero_barrier_active_support_polish"]
+
+    assert polish["accepted"]
+    assert polish["polish_schema"] == (
+        "exogibbs_zero_barrier_active_support_polish_v2"
+    )
+    assert polish["exact_active_set_closure"]["schema"] == (
+        "exogibbs_zero_barrier_exact_active_set_closure_v2"
+    )
+    assert polish["optimizer_termination_eligible"]
+    assert polish["physical_root_certified"]
+    if polish["optimizer_success"]:
+        assert polish["acceptance_source"] == "optimizer_success"
+    else:
+        assert polish["optimizer_status"] == 0
+        assert polish["acceptance_source"] == (
+            "physical_kkt_after_optimizer_limit"
+        )
+    assert polish["gas_stationarity_max_abs"] <= (
+        polish["stationarity_tolerance"]
+    )
+    assert polish["active_condensate_driving_max_abs"] <= (
+        polish["stationarity_tolerance"]
+    )
+    assert polish["inactive_condensate_violation_max_abs"] <= (
+        polish["support_closure_tolerance"]
+    )
+    assert polish["budget_scaled_max_abs"] <= polish["budget_tolerance"]
+    assert polish["total_density_scaled_abs"] <= (
+        polish["total_density_tolerance"]
+    )

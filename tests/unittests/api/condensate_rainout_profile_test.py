@@ -340,8 +340,7 @@ def test_rainout_scans_bottom_to_top_and_returns_original_order(
     np.testing.assert_allclose(calls[2]["b"], [4.0 / 9.0, 5.0 / 9.0, 0.0])
     np.testing.assert_allclose(
         [call["scale"] for call in calls],
-        [3.0e8, 3.0e8, 3.0e8],
-        rtol=1.0e-14,
+        [1.0, 1.0, 1.0],
     )
 
     assert result.method == "scan_hot_from_bottom"
@@ -382,6 +381,10 @@ def test_rainout_scans_bottom_to_top_and_returns_original_order(
     np.testing.assert_allclose(
         np.asarray(result.batched_arrays["condensate_amounts"])[:, 0],
         [0.0, 0.1, 0.2],
+    )
+    np.testing.assert_array_equal(
+        np.asarray(result.rainout_abundance_scale),
+        [1.0, 1.0, 1.0],
     )
     # Propagation uses budget minus condensates, not the slightly imperfect
     # gas reconstruction at the top gas-only layer.
@@ -449,10 +452,10 @@ def test_rainout_initializer_receives_current_budget_previous_gas_and_index(
     assert [float(request.T) for request in requests] == [300.0, 200.0, 100.0]
     assert requests[0].user_init is bottom_user_init
     assert requests[0].previous_solution is None
+    assert solver_inits[0] is bottom_user_init
     np.testing.assert_allclose(
         np.exp(np.asarray(solver_inits[0].gas_ln_n)),
-        np.asarray([0.55, 0.45]) * 3.0e8,
-        rtol=1.0e-14,
+        np.asarray([0.55, 0.45]),
     )
     assert all(request.previous_solution is not None for request in requests[1:])
     assert requests[1].user_init is None
@@ -617,7 +620,7 @@ def test_rainout_initially_zero_element_cannot_change_other_abundances(
     assert warm_gas_by_temperature[200.0] is None
     top_warm_gas = warm_gas_by_temperature[100.0]
     assert top_warm_gas is not None
-    np.testing.assert_allclose(top_warm_gas[:2], [1.5e8, 1.5e8])
+    np.testing.assert_allclose(top_warm_gas[:2], [0.5, 0.5])
     assert 0.0 < top_warm_gas[2] < 1.0e-280
 
     raw_condensate_inventory = np.asarray(
@@ -843,13 +846,12 @@ def test_rainout_stops_before_upper_layers_after_nonconvergence(
     assert temperatures_seen == [300.0, 200.0, 200.0]
 
 
-def test_rainout_retries_cold_in_one_uniform_gauge_and_restores_caller_scale(
+def test_rainout_retries_cold_without_changing_the_caller_gauge(
     monkeypatch,
 ) -> None:
     setup = _fake_setup()
     scales_seen = []
     initial_gas_seen = []
-    maximum_scale = np.nextafter(3.0e8 / 0.60000001, 0.0)
 
     def fake_run_head_v2_profile(**kwargs):
         scale = float(np.asarray(kwargs["b"])[0] / 0.6)
@@ -858,7 +860,7 @@ def test_rainout_retries_cold_in_one_uniform_gauge_and_restores_caller_scale(
         initial_gas_seen.append(
             None if gas_ln_n is None else np.exp(np.asarray(gas_ln_n))
         )
-        if np.isclose(scale, maximum_scale) and gas_ln_n is not None:
+        if gas_ln_n is not None:
             raise ValueError("element_potential must contain only finite values.")
         return _one_layer_profile(np.asarray(kwargs["b"])[:2])
 
@@ -887,11 +889,11 @@ def test_rainout_retries_cold_in_one_uniform_gauge_and_restores_caller_scale(
 
     np.testing.assert_allclose(
         scales_seen,
-        [maximum_scale, maximum_scale],
+        [1.0, 1.0],
     )
     np.testing.assert_allclose(
         initial_gas_seen[0],
-        np.asarray([0.6, 1.0e-8]) * maximum_scale,
+        np.asarray([0.6, 1.0e-8]),
     )
     assert initial_gas_seen[1] is None
     np.testing.assert_allclose(np.asarray(result.layers[0].gas_n), [0.6, 1.0e-8])
@@ -899,7 +901,7 @@ def test_rainout_retries_cold_in_one_uniform_gauge_and_restores_caller_scale(
         np.asarray(result.layers[0].condensate_amounts), [0.0]
     )
     np.testing.assert_allclose(
-        np.asarray(result.rainout_abundance_scale), [maximum_scale]
+        np.asarray(result.rainout_abundance_scale), [1.0]
     )
     rainout_diagnostics = result.layers[0].diagnostics["rainout"]
     assert rainout_diagnostics["schema"] == (
@@ -916,18 +918,14 @@ def test_rainout_retries_cold_in_one_uniform_gauge_and_restores_caller_scale(
     )
 
 
-def test_rainout_extreme_trace_gauges_use_bounded_total_targets() -> None:
+def test_rainout_preserves_caller_gauge_below_maximum_total() -> None:
     scales = _rainout_gauge_scales(
         np.asarray([0.965, 1.0e-17, 0.035]),
         np.asarray([True, True, True]),
-        minimum_targets=(1.0e-3, 1.0e-4, 1.0e-5, 1.0e-6, 1.0e-7),
         maximum_total=1.0e9,
-        total_targets=(3.0e8, 1.0e8, 1.0e7, 1.0),
     )
 
-    assert scales[0] == np.nextafter(1.0e9, 0.0)
-    assert scales[1:] == (3.0e8, 1.0e8, 1.0e7, 1.0)
-    assert max(scales) <= 1.0e9
+    assert scales == (1.0,)
 
 
 def test_rainout_gauge_downscales_an_input_above_the_maximum_total() -> None:
@@ -935,14 +933,91 @@ def test_rainout_gauge_downscales_an_input_above_the_maximum_total() -> None:
     scales = _rainout_gauge_scales(
         inventory,
         np.asarray([True, True, False]),
-        minimum_targets=(1.0e-3,),
         maximum_total=1.0e9,
-        total_targets=(1.0e9, 1.0e8, 1.0),
     )
 
-    assert scales
-    assert all(scale * np.sum(inventory) <= 1.0e9 for scale in scales)
-    assert all(scale < 1.0 for scale in scales)
+    expected = np.nextafter(0.1, 0.0)
+    assert scales == (expected,)
+    assert scales[0] * np.sum(inventory) <= 1.0e9
+
+
+def test_rainout_applies_and_reverses_only_the_overflow_downscale(
+    monkeypatch,
+) -> None:
+    setup = _fake_setup()
+    inventory = np.asarray([6.0e9, 4.0e9, 0.0])
+    scale = np.nextafter(3.0e8 / np.sum(inventory), 0.0)
+    calls = []
+
+    def fake_run_head_v2_profile(**kwargs):
+        initial_guess = kwargs["explicit_inits"][0]
+        calls.append(kwargs)
+        if initial_guess.gas_ln_n is not None:
+            raise ValueError("element_potential must contain only finite values.")
+        scaled_inventory = np.asarray(kwargs["b"], dtype=np.float64)
+        condensate_amount = 1.0e9 * scale
+        gas_n = scaled_inventory[:2].copy()
+        gas_n[0] -= condensate_amount
+        return _one_layer_profile(
+            gas_n,
+            condensate_amount=condensate_amount,
+        )
+
+    monkeypatch.setattr(
+        _lifecycle,
+        "_run_head_v2_profile",
+        fake_run_head_v2_profile,
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([200.0]),
+        P=np.asarray([10.0]),
+        b=jnp.asarray(inventory, dtype=jnp.float64),
+        support_indices=(0,),
+        support_amounts_init=(1.0e9,),
+        init=(
+            CondensateEquilibriumInit(
+                gas_ln_n=jnp.log(
+                    jnp.asarray([5.0e9, 4.0e9], dtype=jnp.float64)
+                ),
+                gas_ntot=jnp.asarray(9.0e9, dtype=jnp.float64),
+                condensate_amounts=jnp.asarray([1.0e9], dtype=jnp.float64),
+                support_indices=(0,),
+                support_amounts=(1.0e9,),
+            ),
+        ),
+        options=CondensateEquilibriumOptions(rainout=True),
+    )
+
+    assert len(calls) == 2
+    for call in calls:
+        np.testing.assert_allclose(np.asarray(call["b"]), inventory * scale)
+        np.testing.assert_allclose(
+            call["support_amounts_init"],
+            np.asarray([1.0e9]) * scale,
+        )
+    warm_init = calls[0]["explicit_inits"][0]
+    np.testing.assert_allclose(
+        np.exp(np.asarray(warm_init.gas_ln_n)),
+        np.asarray([5.0e9, 4.0e9]) * scale,
+    )
+    np.testing.assert_allclose(
+        np.asarray(warm_init.condensate_amounts),
+        np.asarray([1.0e9]) * scale,
+    )
+    assert calls[1]["explicit_inits"][0].gas_ln_n is None
+    np.testing.assert_allclose(np.asarray(result.layers[0].gas_n), [5.0e9, 4.0e9])
+    np.testing.assert_allclose(
+        np.asarray(result.layers[0].condensate_amounts), [1.0e9]
+    )
+    np.testing.assert_array_equal(
+        np.asarray(result.element_inventory_target),
+        inventory[None, :],
+    )
+    np.testing.assert_allclose(
+        np.asarray(result.rainout_abundance_scale), [scale]
+    )
 
 
 def test_rainout_retries_cold_after_a_failed_warm_transition(

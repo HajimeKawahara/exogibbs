@@ -54,6 +54,13 @@ The current solution selects ``SiO2(s,l)`` and ``MgSiO3(s,l)``.  That exact
 support is reported for diagnosis but is not an acceptance condition: a
 future solver may find another physically equivalent active set.
 
+Provider unit regressions reuse this exact network at two neighboring
+deep-atmosphere boundaries. They require the rainout transport scale to remain
+one in the ordinary caller gauge, certify all final KKT blocks at ``1e-8``,
+and cover both an initializer-only finite-barrier rescue and a fully certified
+root found when the exact optimizer reaches its evaluation limit. These extra
+states are not added to the documented one-layer performance workload.
+
 Run the example
 ---------------
 

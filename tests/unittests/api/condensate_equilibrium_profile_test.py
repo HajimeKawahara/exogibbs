@@ -22,6 +22,9 @@ from exogibbs.equilibrium.condensate.fixed_support.types import (
 from exogibbs.equilibrium.condensate.fixed_support.zero_barrier import (
     _physical_zero_barrier_audit,
 )
+from exogibbs.equilibrium.condensate.policy import (
+    fixed_support_v2_production_policy,
+)
 
 
 def _fake_setup() -> CondensateChemicalSetup:
@@ -976,7 +979,7 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
                 dtype=jnp.int32,
             ),
             "final_kkt_norms": KKTComponentNorms(
-                zeros,
+                jnp.asarray([1.430511474609375e-6], dtype=jnp.float64),
                 jnp.asarray([1.676e-8], dtype=jnp.float64),
                 zeros,
                 zeros,
@@ -1066,6 +1069,7 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
     )
     lifecycle = result.layers[0].diagnostics["fixed_support_v2"]
     assert lifecycle["outcome"] == expected_outcome
+    assert result.diagnostics["layers"][0]["outcome"] == expected_outcome
     assert not lifecycle["fixed_support_converged"]
     assert lifecycle["terminal_status_name"] == "NORMAL_DUAL_STEP_FAILED"
     assert not lifecycle["independent_kkt_passed"]
@@ -1075,6 +1079,54 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
     assert initializer["role"] == "initializer_only"
     assert initializer["raw_noncondensate_kkt_passed"]
     assert initializer["rescue_attempted"] is raw_support_closed
+    assert lifecycle[
+        "zero_barrier_initializer_gas_stationarity_tolerance"
+    ] == pytest.approx(1.0e-5)
+
+
+def test_head_v2_zero_barrier_initializer_uses_bounded_gas_kkt_gate():
+    policy = fixed_support_v2_production_policy()
+    final_tolerances = policy.solver_config.normal
+    initializer_gas_tolerance = (
+        policy.zero_barrier_initializer_gas_stationarity_tolerance
+    )
+    kkt = {
+        "gas_stationarity": 1.430511474609375e-6,
+        "condensate_stationarity": 1.0,
+        "budget_scaled": 1.0e-9,
+        "complementarity": 1.0e-9,
+        "total_density_scaled": 1.0e-9,
+    }
+    arguments = {
+        "gas_stationarity_tolerance": initializer_gas_tolerance,
+        "budget_tolerance": final_tolerances.budget_tolerance,
+        "complementarity_tolerance": (
+            final_tolerances.complementarity_tolerance
+        ),
+        "total_density_tolerance": (
+            final_tolerances.total_density_tolerance
+        ),
+    }
+
+    assert final_tolerances.stationarity_tolerance == pytest.approx(1.0e-8)
+    assert initializer_gas_tolerance == pytest.approx(1.0e-5)
+    assert _lifecycle._head_v2_zero_barrier_initializer_kkt_passed(
+        kkt, **arguments
+    )
+    for name in (
+        "budget_scaled",
+        "complementarity",
+        "total_density_scaled",
+    ):
+        assert not _lifecycle._head_v2_zero_barrier_initializer_kkt_passed(
+            {**kkt, name: 1.0e-7}, **arguments
+        )
+    assert not _lifecycle._head_v2_zero_barrier_initializer_kkt_passed(
+        {**kkt, "gas_stationarity": 1.0e-4}, **arguments
+    )
+    assert not _lifecycle._head_v2_zero_barrier_initializer_kkt_passed(
+        {**kkt, "gas_stationarity": math.inf}, **arguments
+    )
 
 
 def test_head_v2_rejects_hot_scan_method():

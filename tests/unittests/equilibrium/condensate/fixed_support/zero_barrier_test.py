@@ -567,6 +567,110 @@ def test_zero_barrier_audit_rejects_negative_inactive_driving() -> None:
     assert audit["inactive_condensate_violation_max_abs"] == pytest.approx(0.1)
 
 
+@pytest.mark.parametrize(
+    ("optimizer_success", "optimizer_status", "accepted", "source"),
+    (
+        (True, 1, True, "optimizer_success"),
+        (False, 0, True, "physical_kkt_after_optimizer_limit"),
+        (False, -1, False, None),
+        (False, None, False, None),
+        (True, -1, False, None),
+    ),
+)
+def test_zero_barrier_audit_separates_physics_from_optimizer_termination(
+    optimizer_success: bool,
+    optimizer_status: int | None,
+    accepted: bool,
+    source: str | None,
+) -> None:
+    (
+        gas_formula,
+        condensate_formula,
+        expected_gas,
+        expected_condensates,
+        expected_potential,
+        gamma,
+        hcond,
+        target,
+    ) = _one_active_phase_problem()
+
+    audit = _physical_zero_barrier_audit(
+        gas_formula_matrix=gas_formula,
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=target,
+        gas_standard_source=gamma,
+        condensate_standard_source_full=hcond,
+        gas_log_amounts=np.log(expected_gas),
+        condensate_amounts=expected_condensates,
+        total_gas_log_amount=0.0,
+        element_potential=expected_potential,
+        support_indices=(0,),
+        condensate_valid_mask=np.ones(2, dtype=bool),
+        budget_scale=np.reciprocal(target),
+        optimizer_success=optimizer_success,
+        optimizer_status=optimizer_status,
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+    )
+
+    assert audit["physical_root_certified"]
+    assert audit["optimizer_termination_eligible"] is (source is not None)
+    assert audit["accepted"] is accepted
+    assert audit["acceptance_source"] == source
+
+
+@pytest.mark.parametrize("failure", ("nonfinite", "stationarity", "budget"))
+def test_optimizer_limit_acceptance_requires_full_physical_certificate(
+    failure: str,
+) -> None:
+    (
+        gas_formula,
+        condensate_formula,
+        expected_gas,
+        expected_condensates,
+        expected_potential,
+        gamma,
+        hcond,
+        target,
+    ) = _one_active_phase_problem()
+    gas_log_amounts = np.log(expected_gas)
+    condensate_amounts = expected_condensates.copy()
+    if failure == "nonfinite":
+        gas_log_amounts[0] = np.nan
+    elif failure == "stationarity":
+        gas_log_amounts[0] += 1.0e-4
+    else:
+        condensate_amounts[0] += 1.0e-4
+
+    audit = _physical_zero_barrier_audit(
+        gas_formula_matrix=gas_formula,
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=target,
+        gas_standard_source=gamma,
+        condensate_standard_source_full=hcond,
+        gas_log_amounts=gas_log_amounts,
+        condensate_amounts=condensate_amounts,
+        total_gas_log_amount=0.0,
+        element_potential=expected_potential,
+        support_indices=(0,),
+        condensate_valid_mask=np.ones(2, dtype=bool),
+        budget_scale=np.reciprocal(target),
+        optimizer_success=False,
+        optimizer_status=0,
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+    )
+
+    assert not audit["physical_root_certified"]
+    assert audit["optimizer_termination_eligible"]
+    assert not audit["accepted"]
+    assert audit["acceptance_source"] is None
+
+
 def test_zero_barrier_closure_only_failure_skips_deletion_fallback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -2408,6 +2512,71 @@ class _FailedOptimization:
         self.nfev = 1
         self.cost = 1.0
         self.optimality = 1.0
+
+
+def test_exact_physical_root_survives_optimizer_evaluation_limit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (
+        gas_formula,
+        condensate_formula,
+        expected_gas,
+        expected_condensates,
+        expected_potential,
+        gamma,
+        hcond,
+        target,
+    ) = _one_active_phase_problem()
+    original_solver = zero_barrier._least_squares_with_scipy_overflow_guard
+
+    def solver_at_limit(*args, **kwargs):
+        optimization = original_solver(*args, **kwargs)
+        optimization.success = False
+        optimization.status = 0
+        optimization.message = (
+            "The maximum number of function evaluations is exceeded."
+        )
+        return optimization
+
+    monkeypatch.setattr(
+        zero_barrier,
+        "_least_squares_with_scipy_overflow_guard",
+        solver_at_limit,
+    )
+    result = zero_barrier._polish_zero_barrier_support_once(
+        gas_formula_matrix=gas_formula,
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=target,
+        gas_standard_source=gamma,
+        condensate_standard_source_full=hcond,
+        gas_log_amounts_init=np.log(expected_gas),
+        condensate_amounts_init=expected_condensates,
+        total_gas_log_amount_init=0.0,
+        element_potential_init=expected_potential,
+        support_indices=(0,),
+        condensate_valid_mask=np.ones(2, dtype=bool),
+        max_function_evaluations=400,
+        reduce_initial_support=False,
+        use_zero_barrier_dual=False,
+        use_finite_barrier_homotopy=False,
+    )
+
+    assert result.accepted
+    assert result.support_indices == (0,)
+    assert not result.report["optimizer_success"]
+    assert result.report["optimizer_status"] == 0
+    assert result.report["optimizer_termination_eligible"]
+    assert result.report["physical_root_certified"]
+    assert result.report["acceptance_source"] == (
+        "physical_kkt_after_optimizer_limit"
+    )
+    attempt = result.report["normalized_gas_reduced_primary"][
+        "attempts"
+    ][0]
+    assert not attempt["drop_authorized_by_root"]
+    assert attempt["acceptance_source"] == (
+        "physical_kkt_after_optimizer_limit"
+    )
 
 
 def test_normalized_solver_does_not_drop_from_a_nonconverged_root(

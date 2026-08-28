@@ -1191,6 +1191,7 @@ def _physical_zero_barrier_audit(
     condensate_valid_mask: np.ndarray,
     budget_scale: np.ndarray,
     optimizer_success: bool,
+    optimizer_status: int | None = None,
     stationarity_tolerance: float,
     budget_tolerance: float,
     total_density_tolerance: float,
@@ -1273,9 +1274,8 @@ def _physical_zero_barrier_audit(
     positive_active_amounts = bool(
         not support or np.all(active_amounts > 0.0)
     )
-    accepted = bool(
+    physical_root_certified = bool(
         finite
-        and optimizer_success
         and positive_active_amounts
         and gas_stationarity_norm <= stationarity_tolerance
         and active_driving_norm <= stationarity_tolerance
@@ -1283,8 +1283,22 @@ def _physical_zero_barrier_audit(
         and budget_norm <= budget_tolerance
         and total_norm <= total_density_tolerance
     )
+    eligible_acceptance_source = _zero_barrier_acceptance_source(
+        optimizer_success=optimizer_success,
+        optimizer_status=optimizer_status,
+    )
+    accepted = bool(
+        physical_root_certified and eligible_acceptance_source is not None
+    )
     return {
         "accepted": accepted,
+        "acceptance_source": (
+            eligible_acceptance_source if accepted else None
+        ),
+        "optimizer_termination_eligible": (
+            eligible_acceptance_source is not None
+        ),
+        "physical_root_certified": physical_root_certified,
         "finite": finite,
         "positive_active_amounts": positive_active_amounts,
         "gas": gas,
@@ -1297,10 +1311,33 @@ def _physical_zero_barrier_audit(
     }
 
 
+def _zero_barrier_acceptance_source(
+    *,
+    optimizer_success: bool,
+    optimizer_status: int | None,
+) -> str | None:
+    """Classify optimizer termination that may carry a certified root.
+
+    SciPy status zero means that the function-evaluation limit was reached.
+    Such a candidate may still be accepted, but only after the independent
+    physical audit certifies every final KKT, positivity, and closure block.
+    Negative, missing, and otherwise inconsistent failure statuses fail closed.
+    """
+
+    if optimizer_status is not None and int(optimizer_status) < 0:
+        return None
+    if optimizer_success:
+        return "optimizer_success"
+    if optimizer_status == 0:
+        return "physical_kkt_after_optimizer_limit"
+    return None
+
+
 def _physical_audit_local_kkt_passed(
     audit: dict[str, Any],
     *,
     optimizer_success: bool,
+    optimizer_status: int | None = None,
     stationarity_tolerance: float,
     budget_tolerance: float,
     total_density_tolerance: float,
@@ -1309,7 +1346,11 @@ def _physical_audit_local_kkt_passed(
 
     return bool(
         audit["finite"]
-        and optimizer_success
+        and _zero_barrier_acceptance_source(
+            optimizer_success=optimizer_success,
+            optimizer_status=optimizer_status,
+        )
+        is not None
         and audit["positive_active_amounts"]
         and audit["gas_stationarity_max_abs"] <= stationarity_tolerance
         and audit["active_condensate_driving_max_abs"]
@@ -1578,6 +1619,7 @@ def _solve_normalized_gas_reduced_linear_support(
             condensate_valid_mask=condensate_valid_mask,
             budget_scale=budget_scale,
             optimizer_success=bool(optimization.success),
+            optimizer_status=int(optimization.status),
             stationarity_tolerance=stationarity_tolerance,
             budget_tolerance=budget_tolerance,
             total_density_tolerance=total_density_tolerance,
@@ -1602,6 +1644,10 @@ def _solve_normalized_gas_reduced_linear_support(
                 "reduced_variable_count": int(optimization.x.size),
                 "eliminated_gas_variable_count": gas_count,
                 "normalization_log_residual": normalization,
+                "physical_root_certified": audit[
+                    "physical_root_certified"
+                ],
+                "acceptance_source": audit["acceptance_source"],
                 "drop_authorized_by_root": drop_authorized_by_root,
                 "active_condensate_amounts": tuple(
                     float(value) for value in active_amounts.tolist()
@@ -2001,6 +2047,7 @@ def _solve_reduced_log_domain_active_support(
             condensate_valid_mask=condensate_valid_mask,
             budget_scale=budget_scale,
             optimizer_success=bool(optimization.success),
+            optimizer_status=int(optimization.status),
             stationarity_tolerance=stationarity_tolerance,
             budget_tolerance=budget_tolerance,
             total_density_tolerance=total_density_tolerance,
@@ -2034,6 +2081,8 @@ def _solve_reduced_log_domain_active_support(
             "active_phase_at_lower_bound": bool(at_lower_bound.size),
             "lower_bound_support_indices": lower_bound_support_indices,
             "physical_audit_accepted": bool(audit["accepted"]),
+            "physical_root_certified": audit["physical_root_certified"],
+            "acceptance_source": audit["acceptance_source"],
             "drop_authorized_by_root": drop_authorized_by_root,
             "physical_budget_scaled_max_abs": audit[
                 "budget_scaled_max_abs"
@@ -2220,6 +2269,7 @@ def _solve_structural_zero_reduced_log_domain_active_support(
         and _physical_audit_local_kkt_passed(
             candidate["audit"],
             optimizer_success=bool(candidate["optimizer_success"]),
+            optimizer_status=int(candidate["optimizer_status"]),
             stationarity_tolerance=stationarity_tolerance,
             budget_tolerance=budget_tolerance,
             total_density_tolerance=total_density_tolerance,
@@ -2372,6 +2422,7 @@ def _solve_structural_zero_reduced_log_domain_active_support(
         condensate_valid_mask=condensate_valid_mask,
         budget_scale=budget_scale,
         optimizer_success=bool(candidate["optimizer_success"]),
+        optimizer_status=int(candidate["optimizer_status"]),
         stationarity_tolerance=stationarity_tolerance,
         budget_tolerance=budget_tolerance,
         total_density_tolerance=total_density_tolerance,
@@ -3273,7 +3324,7 @@ def _polish_zero_barrier_support_once(
     )
     attempts: list[dict[str, Any]] = []
     last_optimizer_success = False
-    last_optimizer_status = 0
+    last_optimizer_status: int | None = None
     last_optimizer_message = "not run"
     last_nfev = 0
     selected_formulation = "capacity_scaled_linear_amounts"
@@ -3359,6 +3410,7 @@ def _polish_zero_barrier_support_once(
             and _physical_audit_local_kkt_passed(
                 candidate["audit"],
                 optimizer_success=bool(candidate["optimizer_success"]),
+                optimizer_status=int(candidate["optimizer_status"]),
                 stationarity_tolerance=stationarity_tolerance,
                 budget_tolerance=budget_tolerance,
                 total_density_tolerance=total_density_tolerance,
@@ -3780,7 +3832,7 @@ def _polish_zero_barrier_support_once(
         )
         if call_evaluation_limit <= 0:
             last_optimizer_success = False
-            last_optimizer_status = 0
+            last_optimizer_status = None
             last_optimizer_message = "function evaluation limit reached"
             last_nfev = 0
             attempts.append(
@@ -3812,7 +3864,7 @@ def _polish_zero_barrier_support_once(
                 function_evaluation_budget.consume(call_evaluation_limit)
                 conservative_evaluations = call_evaluation_limit
             last_optimizer_success = False
-            last_optimizer_status = 0
+            last_optimizer_status = None
             last_optimizer_message = f"{type(error).__name__}: {error}"
             last_nfev = conservative_evaluations
             attempts.append(
@@ -3852,6 +3904,7 @@ def _polish_zero_barrier_support_once(
             condensate_valid_mask=valid_mask,
             budget_scale=budget_scale,
             optimizer_success=last_optimizer_success,
+            optimizer_status=last_optimizer_status,
             stationarity_tolerance=stationarity_tolerance,
             budget_tolerance=budget_tolerance,
             total_density_tolerance=total_density_tolerance,
@@ -3873,6 +3926,12 @@ def _polish_zero_barrier_support_once(
                 "function_evaluations": last_nfev,
                 "cost": float(optimization.cost),
                 "optimality": float(optimization.optimality),
+                "physical_root_certified": candidate_audit[
+                    "physical_root_certified"
+                ],
+                "acceptance_source": candidate_audit[
+                    "acceptance_source"
+                ],
                 "drop_authorized_by_root": drop_authorized_by_root,
                 "active_condensate_amounts": tuple(
                     float(value) for value in active_amounts.tolist()
@@ -3923,6 +3982,7 @@ def _polish_zero_barrier_support_once(
         condensate_valid_mask=valid_mask,
         budget_scale=budget_scale,
         optimizer_success=last_optimizer_success,
+        optimizer_status=last_optimizer_status,
         stationarity_tolerance=stationarity_tolerance,
         budget_tolerance=budget_tolerance,
         total_density_tolerance=total_density_tolerance,
@@ -3931,6 +3991,7 @@ def _polish_zero_barrier_support_once(
     linear_local_kkt_passed = _physical_audit_local_kkt_passed(
         linear_audit,
         optimizer_success=last_optimizer_success,
+        optimizer_status=last_optimizer_status,
         stationarity_tolerance=stationarity_tolerance,
         budget_tolerance=budget_tolerance,
         total_density_tolerance=total_density_tolerance,
@@ -4029,6 +4090,7 @@ def _polish_zero_barrier_support_once(
         condensate_valid_mask=valid_mask,
         budget_scale=budget_scale,
         optimizer_success=last_optimizer_success,
+        optimizer_status=last_optimizer_status,
         stationarity_tolerance=stationarity_tolerance,
         budget_tolerance=budget_tolerance,
         total_density_tolerance=total_density_tolerance,
@@ -4048,7 +4110,7 @@ def _polish_zero_barrier_support_once(
     total_norm = float(audit["total_density_scaled_abs"])
     accepted = bool(audit["accepted"])
     report = {
-        "polish_schema": "exogibbs_zero_barrier_active_support_polish_v1",
+        "polish_schema": "exogibbs_zero_barrier_active_support_polish_v2",
         "attempted": True,
         "accepted": accepted,
         "initial_support_indices": support_initial,
@@ -4057,6 +4119,11 @@ def _polish_zero_barrier_support_once(
         "optimizer_success": last_optimizer_success,
         "optimizer_status": last_optimizer_status,
         "optimizer_message": last_optimizer_message,
+        "optimizer_termination_eligible": audit[
+            "optimizer_termination_eligible"
+        ],
+        "physical_root_certified": audit["physical_root_certified"],
+        "acceptance_source": audit["acceptance_source"],
         "function_evaluations": last_nfev,
         "finite": finite,
         "positive_active_amounts": positive_active_amounts,
@@ -4089,6 +4156,9 @@ def _polish_zero_barrier_support_once(
             key: linear_audit[key]
             for key in (
                 "accepted",
+                "acceptance_source",
+                "optimizer_termination_eligible",
+                "physical_root_certified",
                 "finite",
                 "positive_active_amounts",
                 "gas_stationarity_max_abs",
@@ -4112,6 +4182,9 @@ def _polish_zero_barrier_support_once(
             key: audit[key]
             for key in (
                 "accepted",
+                "acceptance_source",
+                "optimizer_termination_eligible",
+                "physical_root_certified",
                 "finite",
                 "positive_active_amounts",
                 "gas_stationarity_max_abs",
@@ -4154,7 +4227,9 @@ def _local_zero_barrier_kkt_failure_reasons(
     reasons = []
     if not report["finite"]:
         reasons.append("nonfinite_state")
-    if not report["optimizer_success"]:
+    if not report.get(
+        "optimizer_termination_eligible", report["optimizer_success"]
+    ):
         reasons.append("optimizer_failed")
     if not report["positive_active_amounts"]:
         reasons.append("nonpositive_active_amount")
@@ -4813,7 +4888,7 @@ def polish_zero_barrier_active_support(
             initial_finite_homotopy
         )
     final_report["exact_active_set_closure"] = {
-        "schema": "exogibbs_zero_barrier_exact_active_set_closure_v1",
+        "schema": "exogibbs_zero_barrier_exact_active_set_closure_v2",
         "attempted": True,
         "search_strategy": "bounded_depth_first",
         "addition_attempted": bool(added_support_indices),
