@@ -53,7 +53,7 @@ echo "== ExoGibbs documented GPU benchmarks =="
 echo "repository:   $cwd"
 echo "python:       $PYTHON_COMMAND"
 echo "output:       $OUTPUT_ROOT"
-echo "workloads:    five documented examples, then L-dwarf cold + warm 10"
+echo "workloads:    six documented examples, then L-dwarf cold + warm 10"
 echo "optimizations: default, then disable_most_optimizations"
 date
 
@@ -86,7 +86,7 @@ endif
 @ FAILURE_COUNT = 0
 
 echo ""
-echo "== [1/3] five documented examples: GPU, both compiler modes =="
+echo "== [1/3] six documented examples: GPU, both compiler modes =="
 date
 "$PYTHON_COMMAND" -m benchmarks.documented_examples.run \
   --platform gpu \

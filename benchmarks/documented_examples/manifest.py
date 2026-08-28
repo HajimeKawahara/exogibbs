@@ -123,6 +123,21 @@ CASES = (
         ),
         workload="run_fastchem4_l_dwarf",
     ),
+    DocumentedExampleCase(
+        case_id="rocky_raccoon_trace_mg",
+        document="rocky_raccoon_trace_mg",
+        description="Positive trace-Mg Rocky Raccoon-like rainout layer",
+        source_scripts=(
+            "examples/comparisons/demo_rocky_raccoon_trace_mg.py",
+        ),
+        full_output_layer_count=1,
+        output_rows_per_condition=1,
+        expected_phases=(
+            ("build_rocky_raccoon_trace_mg_setup", "setup"),
+            ("solve_rocky_raccoon_trace_mg", "solver"),
+        ),
+        workload="run_rocky_raccoon_trace_mg",
+    ),
 )
 
 CASES_BY_ID = {case.case_id: case for case in CASES}

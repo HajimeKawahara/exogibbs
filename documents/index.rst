@@ -44,6 +44,7 @@ Contents
    ito_2025_rainout_comparison
    fe_fes_rainout_demo
    comparison_example_lineage
+   rocky_raccoon_trace_mg
 
 .. toctree::
    :maxdepth: 1

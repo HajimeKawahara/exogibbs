@@ -1514,9 +1514,11 @@ def _solve_normalized_gas_reduced_linear_support(
                 }
             )
             break
-        variable_scale = np.clip(
-            np.maximum(np.abs(x0), 1.0), 1.0, 100.0
-        )
+        # Finite-barrier potentials can dwarf the other variables for trace
+        # elements.  Preserve their initializer-relative scale: capping it
+        # inflates the scaled trust radius and can send total gas into an
+        # underflow plateau.
+        variable_scale = np.maximum(np.abs(x0), 1.0)
         try:
             optimization = _least_squares_with_scipy_overflow_guard(
                 residual,
@@ -3188,7 +3190,76 @@ def _polish_zero_barrier_support_once(
         total_gas_log_amount=reduced_qtot_initial,
         element_potential=reduced_lambda_initial,
     )
+    (
+        regularized_primary_structure_eligible,
+        regularized_primary_structure_reason,
+    ) = _reduced_log_domain_eligibility(
+        gas_formula_matrix=ag,
+        condensate_formula_matrix_full=ac_full,
+        target_inventory=target,
+        support_indices=reduced_support,
+    )
+    regularized_primary_full_rank = bool(
+        initializer_regularization["element_potential_fit_rank"]
+        == element_count
+    )
+    minimum_inventory_fraction = (
+        float(np.min(positive_target) / inventory_scale)
+        if positive_target.size
+        else 1.0
+    )
+    binary64_relative_precision = float(np.finfo(np.float64).eps)
+    minimum_inventory_at_or_below_binary64_epsilon = bool(
+        minimum_inventory_fraction <= binary64_relative_precision
+    )
+    use_regularized_reduced_primary = bool(
+        regularized_primary_structure_eligible
+        and initializer_regularization["applied"]
+        and initializer_regularization["element_potential_recomputed"]
+        and regularized_primary_full_rank
+        and minimum_inventory_at_or_below_binary64_epsilon
+    )
+    if not regularized_primary_structure_eligible:
+        regularized_primary_skip_reason = (
+            f"ineligible_structure:{regularized_primary_structure_reason}"
+        )
+    elif not initializer_regularization["applied"]:
+        regularized_primary_skip_reason = "regularization_not_applied"
+    elif not initializer_regularization["element_potential_recomputed"]:
+        regularized_primary_skip_reason = "potential_not_recomputed"
+    elif not regularized_primary_full_rank:
+        regularized_primary_skip_reason = "potential_fit_not_full_rank"
+    elif not minimum_inventory_at_or_below_binary64_epsilon:
+        regularized_primary_skip_reason = (
+            "minimum_inventory_fraction_above_binary64_epsilon"
+        )
+    else:
+        regularized_primary_skip_reason = None
+    initializer_regularization["eligible_for_reduced_primary"] = (
+        use_regularized_reduced_primary
+    )
     initializer_regularization["applied_to_reduced_primary"] = False
+    initializer_regularization["reduced_primary_structure_eligible"] = (
+        regularized_primary_structure_eligible
+    )
+    initializer_regularization["reduced_primary_structure_reason"] = (
+        regularized_primary_structure_reason
+    )
+    initializer_regularization["reduced_primary_full_rank_fit"] = (
+        regularized_primary_full_rank
+    )
+    initializer_regularization[
+        "reduced_primary_minimum_inventory_fraction"
+    ] = minimum_inventory_fraction
+    initializer_regularization[
+        "reduced_primary_relative_precision_threshold"
+    ] = binary64_relative_precision
+    initializer_regularization[
+        "reduced_primary_minimum_inventory_at_or_below_binary64_epsilon"
+    ] = minimum_inventory_at_or_below_binary64_epsilon
+    initializer_regularization["reduced_primary_skip_reason"] = (
+        regularized_primary_skip_reason
+    )
     initializer_regularization[
         "applied_to_dense_compatibility_fallback"
     ] = True
@@ -3216,6 +3287,28 @@ def _polish_zero_barrier_support_once(
         "attempted": False,
         "accepted": False,
         "skip_reason": "structural_zero_reduced_solver_selected",
+    }
+    normalized_initializer_portfolio_report: dict[str, Any] = {
+        "schema": (
+            "exogibbs_zero_barrier_normalized_initializer_portfolio_v1"
+        ),
+        "regularized_initializer_eligible": (
+            use_regularized_reduced_primary
+        ),
+        "regularized_initializer_skip_reason": (
+            regularized_primary_skip_reason
+        ),
+        "attempted": False,
+        "regularized_attempted": False,
+        "regularized_budget_skipped": False,
+        "regularized_function_evaluation_limit": None,
+        "regularized_function_evaluations": 0,
+        "raw_function_evaluation_reserve": None,
+        "unregularized_attempted": False,
+        "raw_retry_attempted": False,
+        "selected_initializer": None,
+        "attempts": (),
+        "discarded_solve_reports": (),
     }
     structural_log_rescue_report: dict[str, Any] = {
         "schema": (
@@ -3290,31 +3383,182 @@ def _polish_zero_barrier_support_once(
             selected_formulation = structural_selected_formulation()
 
     if not reduced_primary_selected:
-        normalized_primary = _solve_normalized_gas_reduced_linear_support(
-            gas_formula_matrix=ag,
-            condensate_formula_matrix_full=ac_full,
-            target_inventory=target,
-            gas_standard_source=gamma,
-            condensate_standard_source_full=hcond_full,
-            gas_log_amounts_init=reduced_q_initial,
-            condensate_amounts_init=reduced_full_m,
-            total_gas_log_amount_init=reduced_qtot_initial,
-            element_potential_init=reduced_lambda_initial,
-            support_indices=reduced_support,
-            condensate_valid_mask=valid_mask,
-            budget_scale=budget_scale,
-            stationarity_tolerance=stationarity_tolerance,
-            budget_tolerance=budget_tolerance,
-            total_density_tolerance=total_density_tolerance,
-            support_closure_tolerance=support_closure_tolerance,
-            max_function_evaluations=max_function_evaluations,
-            function_evaluation_budget=function_evaluation_budget,
+        normalized_initializers = []
+        if use_regularized_reduced_primary:
+            normalized_initializers.append(
+                (
+                    "capacity_regularized",
+                    q_initial,
+                    qtot_initial,
+                    lambda_initial,
+                )
+            )
+        normalized_initializers.append(
+            (
+                "unregularized",
+                reduced_q_initial,
+                reduced_qtot_initial,
+                reduced_lambda_initial,
+            )
         )
-        normalized_primary_report = dict(normalized_primary["report"])
-        primary_candidate = normalized_primary["candidate"]
-        if candidate_has_local_kkt(primary_candidate):
-            reduced_primary_selected = True
-            selected_formulation = "normalized_gas_reduced_linear_amounts"
+        discarded_solve_reports = []
+        initializer_attempts = []
+        for (
+            initializer_name,
+            normalized_q_initial,
+            normalized_qtot_initial,
+            normalized_lambda_initial,
+        ) in normalized_initializers:
+            attempt_evaluation_budget = function_evaluation_budget
+            regularized_child_budget = None
+            if initializer_name == "capacity_regularized":
+                if function_evaluation_budget is None:
+                    raw_reserve = None
+                    regularized_limit = int(max_function_evaluations)
+                else:
+                    raw_reserve = min(
+                        int(max_function_evaluations),
+                        function_evaluation_budget.remaining,
+                    )
+                    regularized_limit = min(
+                        int(max_function_evaluations),
+                        max(
+                            function_evaluation_budget.remaining
+                            - raw_reserve,
+                            0,
+                        ),
+                    )
+                normalized_initializer_portfolio_report[
+                    "regularized_function_evaluation_limit"
+                ] = regularized_limit
+                normalized_initializer_portfolio_report[
+                    "raw_function_evaluation_reserve"
+                ] = raw_reserve
+                if regularized_limit <= 0:
+                    normalized_initializer_portfolio_report[
+                        "regularized_budget_skipped"
+                    ] = True
+                    continue
+                regularized_child_budget = _FunctionEvaluationBudget(
+                    regularized_limit
+                )
+                attempt_evaluation_budget = regularized_child_budget
+            try:
+                normalized_primary = (
+                    _solve_normalized_gas_reduced_linear_support(
+                        gas_formula_matrix=ag,
+                        condensate_formula_matrix_full=ac_full,
+                        target_inventory=target,
+                        gas_standard_source=gamma,
+                        condensate_standard_source_full=hcond_full,
+                        gas_log_amounts_init=normalized_q_initial,
+                        condensate_amounts_init=reduced_full_m,
+                        total_gas_log_amount_init=normalized_qtot_initial,
+                        element_potential_init=normalized_lambda_initial,
+                        support_indices=reduced_support,
+                        condensate_valid_mask=valid_mask,
+                        budget_scale=budget_scale,
+                        stationarity_tolerance=stationarity_tolerance,
+                        budget_tolerance=budget_tolerance,
+                        total_density_tolerance=total_density_tolerance,
+                        support_closure_tolerance=(
+                            support_closure_tolerance
+                        ),
+                        max_function_evaluations=max_function_evaluations,
+                        function_evaluation_budget=(
+                            attempt_evaluation_budget
+                        ),
+                    )
+                )
+            finally:
+                if regularized_child_budget is not None:
+                    regularized_evaluations = regularized_child_budget.used
+                    normalized_initializer_portfolio_report[
+                        "regularized_function_evaluations"
+                    ] = regularized_evaluations
+                    if function_evaluation_budget is not None:
+                        function_evaluation_budget.consume(
+                            regularized_evaluations
+                        )
+            attempt_report = dict(normalized_primary["report"])
+            attempt_report["initializer"] = initializer_name
+            attempt_candidate = normalized_primary["candidate"]
+            local_kkt_passed = candidate_has_local_kkt(attempt_candidate)
+            attempt_audit = (
+                attempt_candidate.get("audit", {})
+                if attempt_candidate is not None
+                else {}
+            )
+            initializer_attempt = {
+                "initializer": initializer_name,
+                "function_evaluations": sum(
+                    int(attempt.get("function_evaluations", 0))
+                    for attempt in attempt_report.get("attempts", ())
+                ),
+                "local_kkt_passed": local_kkt_passed,
+                "optimizer_success": (
+                    None
+                    if attempt_candidate is None
+                    else bool(attempt_candidate["optimizer_success"])
+                ),
+                "positive_active_amounts": attempt_audit.get(
+                    "positive_active_amounts"
+                ),
+                "gas_stationarity_max_abs": attempt_audit.get(
+                    "gas_stationarity_max_abs"
+                ),
+                "active_condensate_driving_max_abs": attempt_audit.get(
+                    "active_condensate_driving_max_abs"
+                ),
+                "budget_scaled_max_abs": attempt_audit.get(
+                    "budget_scaled_max_abs"
+                ),
+                "total_density_scaled_abs": attempt_audit.get(
+                    "total_density_scaled_abs"
+                ),
+                "selected": False,
+            }
+            initializer_attempts.append(initializer_attempt)
+            normalized_initializer_portfolio_report["attempted"] = True
+            if initializer_name == "capacity_regularized":
+                initializer_regularization[
+                    "applied_to_reduced_primary"
+                ] = True
+                normalized_initializer_portfolio_report[
+                    "regularized_attempted"
+                ] = True
+            else:
+                normalized_initializer_portfolio_report[
+                    "unregularized_attempted"
+                ] = True
+                normalized_initializer_portfolio_report[
+                    "raw_retry_attempted"
+                ] = bool(discarded_solve_reports)
+            normalized_primary_report = attempt_report
+            primary_candidate = attempt_candidate
+            if local_kkt_passed:
+                reduced_primary_selected = True
+                selected_formulation = (
+                    "normalized_gas_reduced_linear_amounts"
+                )
+                normalized_initializer_portfolio_report[
+                    "selected_initializer"
+                ] = initializer_name
+                initializer_attempt["selected"] = True
+                break
+            if initializer_name != normalized_initializers[-1][0]:
+                discarded_solve_reports.append(
+                    {
+                        "initializer": initializer_name,
+                        "solve": attempt_report,
+                    }
+                )
+        normalized_initializer_portfolio_report[
+            "attempts"
+        ] = tuple(initializer_attempts)
+        normalized_initializer_portfolio_report[
+            "discarded_solve_reports"
+        ] = tuple(discarded_solve_reports)
 
     support_initializer_applied = bool(
         dual_support["applied"] or finite_homotopy["applied"]
@@ -3390,6 +3634,9 @@ def _polish_zero_barrier_support_once(
             ),
             "selected_support_normalized_solve": (
                 normalized_primary_report
+            ),
+            "selected_support_normalized_initializer_portfolio": (
+                normalized_initializer_portfolio_report
             ),
             "selected_support_structural_zero_solve": (
                 structural_log_rescue_report
@@ -3832,6 +4079,9 @@ def _polish_zero_barrier_support_once(
         "basic_support_reduction": basic_support_reduction,
         "selected_numerical_formulation": selected_formulation,
         "normalized_gas_reduced_primary": normalized_primary_report,
+        "normalized_gas_reduced_initializer_portfolio": (
+            normalized_initializer_portfolio_report
+        ),
         "structural_zero_reduced_log_rescue": (
             structural_log_rescue_report
         ),
@@ -3922,10 +4172,73 @@ def _local_zero_barrier_kkt_failure_reasons(
     return tuple(reasons)
 
 
+def _zero_barrier_initializer_portfolio_summary(
+    report: dict[str, Any],
+) -> dict[str, int]:
+    """Summarize initializer attempts across nested support retries."""
+
+    summary = {
+        "regularized_attempt_count": 0,
+        "regularized_function_evaluations": 0,
+        "unregularized_attempt_count": 0,
+        "unregularized_function_evaluations": 0,
+        "raw_retry_count": 0,
+    }
+
+    def add_portfolio(portfolio: dict[str, Any]) -> None:
+        summary["regularized_attempt_count"] += int(
+            bool(portfolio.get("regularized_attempted", False))
+        )
+        summary["unregularized_attempt_count"] += int(
+            bool(portfolio.get("unregularized_attempted", False))
+        )
+        summary["raw_retry_count"] += int(
+            bool(portfolio.get("raw_retry_attempted", False))
+        )
+        for attempt in portfolio.get("attempts", ()):
+            initializer = attempt.get("initializer")
+            evaluations = int(attempt.get("function_evaluations", 0))
+            if initializer == "capacity_regularized":
+                summary["regularized_function_evaluations"] += evaluations
+            elif initializer == "unregularized":
+                summary["unregularized_function_evaluations"] += evaluations
+
+    def add_fallback(fallback: dict[str, Any]) -> None:
+        add_portfolio(
+            fallback.get(
+                "selected_support_normalized_initializer_portfolio", {}
+            )
+        )
+        nested = fallback.get("retry_initializer_diagnostics", {}).get(
+            "support_initializer_postselection_fallback"
+        )
+        if nested:
+            add_fallback(nested)
+
+    add_portfolio(
+        report.get("normalized_gas_reduced_initializer_portfolio", {})
+    )
+    fallback = report.get("support_initializer_postselection_fallback")
+    if fallback:
+        add_fallback(fallback)
+    return summary
+
+
 def _zero_barrier_report_function_evaluations(
     report: dict[str, Any],
 ) -> tuple[int, int]:
     """Return dense and gas-eliminated evaluation counts for one solve pass."""
+
+    def discarded_initializer_evaluations(
+        portfolio_report: dict[str, Any],
+    ) -> int:
+        return sum(
+            int(attempt.get("function_evaluations", 0))
+            for discarded in portfolio_report.get(
+                "discarded_solve_reports", ()
+            )
+            for attempt in discarded.get("solve", {}).get("attempts", ())
+        )
 
     linear = sum(
         int(attempt.get("function_evaluations", 0))
@@ -3936,6 +4249,11 @@ def _zero_barrier_report_function_evaluations(
         for attempt in report.get(
             "normalized_gas_reduced_primary", {}
         ).get("attempts", ())
+    )
+    reduced += discarded_initializer_evaluations(
+        report.get(
+            "normalized_gas_reduced_initializer_portfolio", {}
+        )
     )
     reduced += sum(
         int(round_report.get("function_evaluations", 0))
@@ -3965,6 +4283,11 @@ def _zero_barrier_report_function_evaluations(
             for attempt in fallback_report.get(
                 "selected_support_normalized_solve", {}
             ).get("attempts", ())
+        )
+        retry_reduced += discarded_initializer_evaluations(
+            fallback_report.get(
+                "selected_support_normalized_initializer_portfolio", {}
+            )
         )
         discarded_structural = fallback_report.get(
             "selected_support_structural_zero_solve", {}
@@ -4176,6 +4499,9 @@ def polish_zero_barrier_active_support(
             )
         linear_evaluations, reduced_evaluations = (
             _zero_barrier_report_function_evaluations(report)
+        )
+        initializer_portfolio_summary = (
+            _zero_barrier_initializer_portfolio_summary(report)
         )
         if linear_evaluations + reduced_evaluations != evaluations_in_round:
             raise RuntimeError(
@@ -4421,6 +4747,40 @@ def polish_zero_barrier_active_support(
                 "selected_numerical_formulation": report[
                     "selected_numerical_formulation"
                 ],
+                "selected_normalized_initializer": report.get(
+                    "normalized_gas_reduced_initializer_portfolio", {}
+                ).get("selected_initializer"),
+                "regularized_normalized_initializer_attempted": bool(
+                    initializer_portfolio_summary[
+                        "regularized_attempt_count"
+                    ]
+                ),
+                "raw_normalized_initializer_retry_attempted": bool(
+                    initializer_portfolio_summary["raw_retry_count"]
+                ),
+                "regularized_normalized_initializer_attempt_count": (
+                    initializer_portfolio_summary[
+                        "regularized_attempt_count"
+                    ]
+                ),
+                "regularized_normalized_initializer_function_evaluations": (
+                    initializer_portfolio_summary[
+                        "regularized_function_evaluations"
+                    ]
+                ),
+                "unregularized_normalized_initializer_attempt_count": (
+                    initializer_portfolio_summary[
+                        "unregularized_attempt_count"
+                    ]
+                ),
+                "unregularized_normalized_initializer_function_evaluations": (
+                    initializer_portfolio_summary[
+                        "unregularized_function_evaluations"
+                    ]
+                ),
+                "raw_normalized_initializer_retry_count": (
+                    initializer_portfolio_summary["raw_retry_count"]
+                ),
                 "linear_function_evaluations": linear_evaluations,
                 "reduced_function_evaluations": reduced_evaluations,
                 "function_evaluations": (

@@ -34,6 +34,10 @@ demonstrations:
   independent local equilibria and as a dependent bottom-to-top rainout scan.
   Retained iron forms FeS and removes H2S at low temperature; rainout depletes
   iron first, suppressing FeS and leaving H2S in the gas.
+- `demo_rocky_raccoon_trace_mg.py` solves one Rocky Raccoon-like deep layer
+  with a positive trace Mg inventory. It exercises the public condensate
+  profile route without neutral atomic reference gases or a free electron
+  species and audits the Mg split, element budget, and charge constraint.
 
 The historical entry points `comparison_with_fastchem.py`,
 `comparison_with_fastchem_extended.py`, and
@@ -99,6 +103,9 @@ python examples/comparisons/comparison_with_ito_2025_rainout.py \
   --input external_data/Ito_2025.xlsx
 
 python examples/comparisons/demo_fe_fes_rainout.py
+
+JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 \
+  python examples/comparisons/demo_rocky_raccoon_trace_mg.py
 
 python examples/comparisons/comparison_with_fastchem_initializer.py \
   --fastchem-executable /path/to/fastchem
