@@ -25,6 +25,9 @@ class FixedSupportV2ProductionPolicy:
     solver_config: FixedSupportV2Config
     budget_relative_floor: float = 1.0e-6
     support_closure_tolerance: float = 1.0e-8
+    # This bounded precondition only authorizes an exact zero-barrier solve.
+    # Final physical acceptance continues to use the solver's 1e-8 KKT gates.
+    zero_barrier_initializer_gas_stationarity_tolerance: float = 1.0e-5
     initial_support_topk: int = 8
     initial_support_limit: int = 16
     support_add_per_round: int = 8
@@ -38,62 +41,9 @@ class FixedSupportV2ProductionPolicy:
     max_cold_wall_seconds: float = 960.0
     max_warm_execution_seconds: float = 20.0
     max_warm_wall_seconds: float = 25.0
-    rainout_gauge_minimum_targets: tuple[float, ...] = (
-        1.0e-3,
-        1.0e-4,
-        1.0e-5,
-        1.0e-6,
-        1.0e-7,
-    )
     rainout_gauge_maximum_total: float = 3.0e8
-    rainout_gauge_total_targets: tuple[float, ...] = (
-        3.0e8,
-        2.0e8,
-        1.0e8,
-        7.0e7,
-        5.0e7,
-        3.0e7,
-        2.0e7,
-        1.0e7,
-        7.0e6,
-        5.0e6,
-        3.0e6,
-        2.0e6,
-        1.0e6,
-        7.0e5,
-        5.0e5,
-        3.0e5,
-        2.0e5,
-        1.0e5,
-        7.0e4,
-        5.0e4,
-        3.0e4,
-        2.0e4,
-        1.0e4,
-        7.0e3,
-        5.0e3,
-        3.0e3,
-        2.0e3,
-        1.0e3,
-        7.0e2,
-        5.0e2,
-        3.0e2,
-        2.0e2,
-        1.0e2,
-        7.0e1,
-        5.0e1,
-        3.0e1,
-        2.0e1,
-        1.0e1,
-        7.0,
-        5.0,
-        3.0,
-        2.0,
-        1.0,
-    )
     rainout_trace_capacity_relative_tolerance: float = 1.0e-18
     rainout_trace_condensate_stationarity_tolerance: float = 1.0e-5
-    rainout_trace_exact_retry_scales: int = 8
     rainout_allow_trace_capacity_acceptance: bool = False
     rainout_depletion_roundoff_multiplier: float = 64.0
 

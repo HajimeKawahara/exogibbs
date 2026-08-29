@@ -73,62 +73,30 @@ def _rainout_gauge_scales(
     inventory: np.ndarray,
     normalization_mask: np.ndarray,
     *,
-    minimum_targets: Sequence[float],
     maximum_total: float,
-    total_targets: Sequence[float],
 ) -> tuple[float, ...]:
-    """Return bounded scale candidates with the preferred value first.
+    """Return one overflow-safe transport scale without normal upscaling.
 
-    Rainout normalizes the total element inventory after every layer.  Using
-    the largest feasible total as the primary gauge therefore keeps the
-    working scale constant along the profile. The remaining values preserve
-    the historical scale policy for diagnostics and low-level tests;
-    production uses only the preferred value because every uniform scale is
-    normalized to the same canonical solver gauge.
+    The lifecycle owns conversion to the canonical amount gauge.  Rainout
+    therefore preserves the caller gauge unless its total exceeds the finite
+    transport cap, in which case it applies one uniform downscale.
     """
 
     active = inventory[normalization_mask]
-    positive = active[active > 0.0]
-    minimum = float(np.min(positive))
     total = float(np.sum(active))
     if not math.isfinite(maximum_total) or maximum_total <= 0.0:
         raise ValueError("maximum_total must be finite and positive.")
+    if total <= maximum_total:
+        return (1.0,)
     maximum_scale = maximum_total / total
     safe_maximum_scale = float(np.nextafter(maximum_scale, 0.0))
-    baseline_scale = min(1.0, safe_maximum_scale)
-    candidates = [safe_maximum_scale]
-    for target in total_targets:
-        candidate = float(target) / total
-        if total <= maximum_total:
-            candidate = max(1.0, candidate)
-        candidate = min(candidate, safe_maximum_scale)
-        candidates.append(candidate)
-    for target in minimum_targets:
-        candidate = float(target) / minimum
-        if total <= maximum_total:
-            candidate = max(1.0, candidate)
-        candidates.append(min(candidate, safe_maximum_scale))
-    candidates.append(baseline_scale)
-    candidates.sort(reverse=True)
-    unique: list[float] = []
-    for candidate in candidates:
-        if (
-            not math.isfinite(candidate)
-            or candidate <= 0.0
-            or candidate * total > maximum_total
-        ):
-            continue
-        if not any(
-            math.isclose(candidate, prior, rel_tol=1.0e-12, abs_tol=0.0)
-            for prior in unique
-        ):
-            unique.append(candidate)
-    if not unique:
-        fallback = maximum_total / (2.0 * total)
-        if not math.isfinite(fallback) or fallback <= 0.0:
-            raise ValueError("Unable to construct a bounded rainout gauge scale.")
-        unique.append(fallback)
-    return tuple(unique)
+    if (
+        not math.isfinite(safe_maximum_scale)
+        or safe_maximum_scale <= 0.0
+        or safe_maximum_scale * total > maximum_total
+    ):
+        raise ValueError("Unable to construct a bounded rainout gauge scale.")
+    return (safe_maximum_scale,)
 
 
 def _scale_initial_guess(
@@ -944,18 +912,11 @@ def run_rainout_profile(
                 previous_solution=previous_solution,
             ),
         )
-        candidate_scales = _rainout_gauge_scales(
+        scales = _rainout_gauge_scales(
             current_inventory,
             normalization_mask,
-            minimum_targets=policy.rainout_gauge_minimum_targets,
             maximum_total=policy.rainout_gauge_maximum_total,
-            total_targets=policy.rainout_gauge_total_targets,
         )
-        # The lifecycle normalizes every uniform caller scale to the same
-        # canonical inventory. Retrying lower scales therefore repeats the
-        # same numerical problem; only a warm-to-cold initializer retry is
-        # meaningful after amount-gauge normalization.
-        scales = candidate_scales[:1]
         attempts: list[Mapping[str, Any]] = []
         accepted_profile: CondensateEquilibriumProfileResult | None = None
         accepted_scale: float | None = None
@@ -970,8 +931,20 @@ def run_rainout_profile(
                 Mapping[str, Any],
             ]
         ] = []
-        trace_retry_scales = 0
         for abundance_scale in scales:
+            working_inventory = (
+                current_inventory
+                if abundance_scale == 1.0
+                else current_inventory * abundance_scale
+            )
+            working_support_amounts_init = (
+                support_amounts_init
+                if support_amounts_init is None or abundance_scale == 1.0
+                else tuple(
+                    float(value) * abundance_scale
+                    for value in support_amounts_init
+                )
+            )
             for initialization, attempt_guess in _initialization_attempts(
                 initial_guess
             ):
@@ -983,7 +956,7 @@ def run_rainout_profile(
                         ),
                         pressures=pressures[layer_index : layer_index + 1],
                         b=jnp.asarray(
-                            current_inventory * abundance_scale,
+                            working_inventory,
                             dtype=jnp.float64,
                         ),
                         Pref=Pref,
@@ -995,14 +968,7 @@ def run_rainout_profile(
                         ),
                         initializer=None,
                         support_indices=support_indices,
-                        support_amounts_init=(
-                            None
-                            if support_amounts_init is None
-                            else tuple(
-                                float(value) * abundance_scale
-                                for value in support_amounts_init
-                            )
-                        ),
+                        support_amounts_init=working_support_amounts_init,
                         options=options,
                         return_diagnostics=return_diagnostics,
                         lnphi_func=lnphi_func,
@@ -1123,10 +1089,6 @@ def run_rainout_profile(
                     )
             if accepted_profile is not None:
                 break
-            if trace_candidates:
-                trace_retry_scales += 1
-                if trace_retry_scales >= policy.rainout_trace_exact_retry_scales:
-                    break
         if accepted_profile is None and trace_candidates:
             (
                 _stationarity,

@@ -237,6 +237,11 @@ child searches are unwound and the next unblacklisted candidate from the
 nearest cached ancestor is tried within the search bounds.
 Acceptance requires one visited support to pass the full audit over every
 temperature-valid phase, and search exhaustion fails closed.
+An optimizer that reaches only its function-evaluation limit (SciPy status
+zero) may return an accepted state when that state independently passes every
+unchanged physical audit block. The diagnostic acceptance source is
+``physical_kkt_after_optimizer_limit``. Other failed terminations fail closed,
+and only optimizer success can authorize deleting a phase from the support.
 
 Before any condensate lifecycle solve, the positive non-charge element
 inventory is normalized to unit total. The continuation values
@@ -283,7 +288,10 @@ failure rather than an approximate trace-phase acceptance.
 A closed and finite barrier terminal state may also serve as an initializer
 for the zero-barrier refinement when its gas, budget, complementarity, and
 total-density residuals already pass. This handles the trace-phase case where
-the finite barrier biases only condensate stationarity. The raw failure remains
+the finite barrier biases only condensate stationarity. This initializer-only
+path uses a ``1e-5`` gas-stationarity bound while retaining the ordinary
+``1e-8`` bounds for budget, complementarity, and total density. It does not
+relax the final zero-barrier or caller-gauge KKT audit. The raw failure remains
 in diagnostics, and acceptance still depends exclusively on the complete
 zero-barrier physical gate.
 

@@ -878,7 +878,7 @@ def _head_v2_kkt_row(kkt_norms: Any, index: int) -> Mapping[str, float]:
 def _head_v2_zero_barrier_initializer_kkt_passed(
     kkt: Mapping[str, float],
     *,
-    stationarity_tolerance: float,
+    gas_stationarity_tolerance: float,
     budget_tolerance: float,
     complementarity_tolerance: float,
     total_density_tolerance: float,
@@ -892,7 +892,7 @@ def _head_v2_zero_barrier_initializer_kkt_passed(
     """
 
     required = (
-        ("gas_stationarity", stationarity_tolerance),
+        ("gas_stationarity", gas_stationarity_tolerance),
         ("budget_scaled", budget_tolerance),
         ("complementarity", complementarity_tolerance),
         ("total_density_scaled", total_density_tolerance),
@@ -1457,8 +1457,8 @@ def _run_head_v2_profile(
             zero_barrier_initializer_kkt_passed = (
                 _head_v2_zero_barrier_initializer_kkt_passed(
                     independent_kkt,
-                    stationarity_tolerance=(
-                        tolerances.stationarity_tolerance
+                    gas_stationarity_tolerance=(
+                        policy.zero_barrier_initializer_gas_stationarity_tolerance
                     ),
                     budget_tolerance=tolerances.budget_tolerance,
                     complementarity_tolerance=(
@@ -1491,6 +1491,9 @@ def _run_head_v2_profile(
                 "zero_barrier_initializer_kkt_passed": (
                     zero_barrier_initializer_kkt_passed
                 ),
+                "zero_barrier_initializer_gas_stationarity_tolerance": (
+                    policy.zero_barrier_initializer_gas_stationarity_tolerance
+                ),
                 "final_state_values_finite": final_state_values_finite,
             }
             records[source_index]["rounds"].append(round_record)
@@ -1506,6 +1509,9 @@ def _run_head_v2_profile(
                 "independent_kkt_passed": independent_kkt_passed,
                 "zero_barrier_initializer_kkt_passed": (
                     zero_barrier_initializer_kkt_passed
+                ),
+                "zero_barrier_initializer_gas_stationarity_tolerance": (
+                    policy.zero_barrier_initializer_gas_stationarity_tolerance
                 ),
                 "final_state_values_finite": final_state_values_finite,
             }
@@ -1782,6 +1788,11 @@ def _run_head_v2_profile(
                     "zero_barrier_initializer_kkt_passed": terminal_output[
                         "zero_barrier_initializer_kkt_passed"
                     ],
+                    "zero_barrier_initializer_gas_stationarity_tolerance": (
+                        terminal_output[
+                            "zero_barrier_initializer_gas_stationarity_tolerance"
+                        ]
+                    ),
                     "final_state_values_finite": terminal_output[
                         "final_state_values_finite"
                     ],
@@ -1923,8 +1934,14 @@ def _run_head_v2_profile(
                             lifecycle_summary["outcome"] = (
                                 "zero_barrier_active_support_rescued"
                             )
+                            records[layer_index]["outcome"] = (
+                                "zero_barrier_active_support_rescued"
+                            )
                 else:
                     lifecycle_summary["outcome"] = (
+                        "zero_barrier_active_support_polish_failed"
+                    )
+                    records[layer_index]["outcome"] = (
                         "zero_barrier_active_support_polish_failed"
                     )
             caller_gas_log_amounts = gas_log_amounts + log_amount_scale
