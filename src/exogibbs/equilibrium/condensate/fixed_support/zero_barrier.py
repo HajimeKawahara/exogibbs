@@ -1333,6 +1333,32 @@ def _zero_barrier_acceptance_source(
     return None
 
 
+def _zero_barrier_local_root_eligible(
+    *,
+    optimizer_success: bool,
+    optimizer_status: int | None,
+    terminal_root_accepted: bool,
+) -> bool:
+    """Return whether a root can terminate or advance support search.
+
+    Optimizer-converged local roots may seed a support transition.  A status
+    zero root is only eligible after the full physical audit accepts it as a
+    terminal root, so a function-limit candidate cannot add or delete phases.
+    """
+
+    source = _zero_barrier_acceptance_source(
+        optimizer_success=optimizer_success,
+        optimizer_status=optimizer_status,
+    )
+    return bool(
+        source == "optimizer_success"
+        or (
+            source == "physical_kkt_after_optimizer_limit"
+            and terminal_root_accepted
+        )
+    )
+
+
 def _physical_audit_local_kkt_passed(
     audit: dict[str, Any],
     *,
@@ -1342,15 +1368,15 @@ def _physical_audit_local_kkt_passed(
     budget_tolerance: float,
     total_density_tolerance: float,
 ) -> bool:
-    """Return whether all fixed-support blocks pass except closure."""
+    """Return whether a root can terminate or advance fixed-support search."""
 
     return bool(
         audit["finite"]
-        and _zero_barrier_acceptance_source(
+        and _zero_barrier_local_root_eligible(
             optimizer_success=optimizer_success,
             optimizer_status=optimizer_status,
+            terminal_root_accepted=bool(audit["accepted"]),
         )
-        is not None
         and audit["positive_active_amounts"]
         and audit["gas_stationarity_max_abs"] <= stationarity_tolerance
         and audit["active_condensate_driving_max_abs"]
@@ -4227,8 +4253,10 @@ def _local_zero_barrier_kkt_failure_reasons(
     reasons = []
     if not report["finite"]:
         reasons.append("nonfinite_state")
-    if not report.get(
-        "optimizer_termination_eligible", report["optimizer_success"]
+    if not _zero_barrier_local_root_eligible(
+        optimizer_success=bool(report["optimizer_success"]),
+        optimizer_status=report.get("optimizer_status"),
+        terminal_root_accepted=bool(report["accepted"]),
     ):
         reasons.append("optimizer_failed")
     if not report["positive_active_amounts"]:

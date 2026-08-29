@@ -671,6 +671,61 @@ def test_optimizer_limit_acceptance_requires_full_physical_certificate(
     assert audit["acceptance_source"] is None
 
 
+def test_optimizer_limit_local_root_cannot_seed_support_transition() -> None:
+    """Require optimizer convergence before changing condensate support."""
+
+    (
+        gas_formula,
+        condensate_formula,
+        expected_gas,
+        expected_condensates,
+        expected_potential,
+        gamma,
+        hcond,
+        target,
+    ) = _one_active_phase_problem()
+    hcond[1] = -0.3
+    audit = _physical_zero_barrier_audit(
+        gas_formula_matrix=gas_formula,
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=target,
+        gas_standard_source=gamma,
+        condensate_standard_source_full=hcond,
+        gas_log_amounts=np.log(expected_gas),
+        condensate_amounts=expected_condensates,
+        total_gas_log_amount=0.0,
+        element_potential=expected_potential,
+        support_indices=(0,),
+        condensate_valid_mask=np.ones(2, dtype=bool),
+        budget_scale=np.reciprocal(target),
+        optimizer_success=False,
+        optimizer_status=0,
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+    )
+
+    assert audit["optimizer_termination_eligible"]
+    assert not audit["physical_root_certified"]
+    assert not audit["accepted"]
+    assert not zero_barrier._physical_audit_local_kkt_passed(
+        audit,
+        optimizer_success=False,
+        optimizer_status=0,
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+    )
+    failure_reasons = zero_barrier._local_zero_barrier_kkt_failure_reasons(
+        audit | {"optimizer_success": False, "optimizer_status": 0},
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+    )
+    assert failure_reasons == ("optimizer_failed",)
+
+
 def test_zero_barrier_closure_only_failure_skips_deletion_fallback(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
