@@ -899,7 +899,7 @@ def test_basic_support_reduction_preserves_inventory_and_amount_gauge(
         )
     )
 
-    assert reduced_support == (2, 1)
+    assert reduced_support == (1, 2)
     np.testing.assert_allclose(
         reduced_amounts / amount_scale,
         np.asarray([0.0, 0.5, 0.4]),
@@ -913,6 +913,7 @@ def test_basic_support_reduction_preserves_inventory_and_amount_gauge(
         atol=1.0e-14 * amount_scale,
     )
     assert report["applied"]
+    assert report["role"] == "zero_barrier_exact_solve_initializer"
     assert report["initial_support_rank"] == 2
     assert report["final_support_rank"] == 2
     assert report["dropped_support_indices"] == (0,)

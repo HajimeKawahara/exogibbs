@@ -87,6 +87,35 @@ def _amount_gauge_fake_setup() -> CondensateChemicalSetup:
     )
 
 
+def _rank_deficient_initializer_fake_setup() -> CondensateChemicalSetup:
+    gas_setup = _fake_setup().gas_setup
+    gas_amounts = np.asarray([0.4, 0.3], dtype=np.float64)
+    gas_total = float(np.sum(gas_amounts))
+    element_potential = np.log(gas_amounts) - math.log(gas_total)
+    condensate_setup = ChemicalSetup(
+        formula_matrix=jnp.asarray(
+            [[1.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+            dtype=jnp.float64,
+        ),
+        hvector_func=lambda temperature: jnp.asarray(
+            [0.0, element_potential[0], element_potential[1]],
+            dtype=jnp.float64,
+        ),
+        elements=gas_setup.elements,
+        species=("H-high[s]", "H-low[s]", "O[s]"),
+        metadata={},
+    )
+    return CondensateChemicalSetup(
+        gas_setup=gas_setup,
+        condensate_setup=condensate_setup,
+        formula_matrix=gas_setup.formula_matrix,
+        formula_matrix_cond=condensate_setup.formula_matrix,
+        gas_species=gas_setup.species,
+        condensate_species=condensate_setup.species,
+        elements=gas_setup.elements,
+    )
+
+
 def _prepared_real_support(bucket, row: int = 0) -> tuple[int, ...]:
     indices = np.asarray(bucket.support_indices)
     mask = getattr(bucket, "condensate_slot_mask", None)
@@ -449,6 +478,146 @@ def test_head_v2_uses_one_canonical_amount_gauge_and_rescales_results(
     assert budget["absolute_floor"] == pytest.approx(
         1.0e-6 * amount_scale
     )
+
+
+def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
+    monkeypatch,
+) -> None:
+    setup = _rank_deficient_initializer_fake_setup()
+    captured = {}
+
+    monkeypatch.setattr(
+        _lifecycle,
+        "_native_activity_expanded_profile_support_payload",
+        lambda **kwargs: (
+            (2, 0, 1),
+            (0.1, 0.1, 0.1),
+            {"policy": "test_rank_deficient_activity_support"},
+        ),
+    )
+
+    def fake_run_fixed_support_profile(**kwargs):
+        bucket = kwargs["buckets"][0]
+        captured["support"] = _prepared_real_support(bucket)
+        slot_amounts = np.exp(np.asarray(bucket.ln_mk_init))
+        slot_mask = np.asarray(bucket.condensate_slot_mask, dtype=bool)
+        captured["amounts"] = tuple(slot_amounts[0, slot_mask[0]])
+        zeros = jnp.zeros((1,), dtype=jnp.float64)
+        return {
+            "backend": "cpu",
+            "compilation_seconds": 0.0,
+            "execution_seconds": 0.0,
+            "diagnostic_seconds": 0.0,
+            "gas_log_amounts": jnp.log(
+                jnp.asarray([[0.4, 0.3]], dtype=jnp.float64)
+            ),
+            "condensate_amounts": jnp.asarray(
+                [[0.0, 0.2, 0.1]], dtype=jnp.float64
+            ),
+            "total_gas_log_amount": jnp.log(
+                jnp.asarray([0.7], dtype=jnp.float64)
+            ),
+            "element_potential": jnp.asarray(
+                [
+                    [
+                        math.log(0.4) - math.log(0.7),
+                        math.log(0.3) - math.log(0.7),
+                    ]
+                ],
+                dtype=jnp.float64,
+            ),
+            "terminal_status": jnp.asarray(
+                [int(TerminalStatus.CONVERGED)], dtype=jnp.int32
+            ),
+            "final_kkt_norms": KKTComponentNorms(
+                zeros, zeros, zeros, zeros, zeros
+            ),
+            "final_state_values_finite": jnp.asarray([True]),
+            "fixed_support_converged": jnp.asarray([True]),
+            "support_closed": jnp.asarray([True]),
+            "support_expansion_mask": jnp.zeros((1, 3), dtype=bool),
+            "inactive_condensate_driving": jnp.zeros(
+                (1, 3), dtype=jnp.float64
+            ),
+        }
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.batch."
+            "run_fixed_support_profile"
+        ),
+        fake_run_fixed_support_profile,
+    )
+    monkeypatch.setattr(
+        _lifecycle,
+        "evaluate_profile_support_closure",
+        lambda result, **kwargs: result,
+    )
+
+    def fake_zero_barrier_polish(**kwargs):
+        return SimpleNamespace(
+            accepted=True,
+            gas_log_amounts=np.asarray(kwargs["gas_log_amounts_init"]),
+            condensate_amounts=np.asarray(kwargs["condensate_amounts_init"]),
+            total_gas_log_amount=float(kwargs["total_gas_log_amount_init"]),
+            element_potential=np.asarray(kwargs["element_potential_init"]),
+            support_indices=tuple(kwargs["support_indices"]),
+            report={"accepted": True, "polish_schema": "unit_test"},
+        )
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "polish_zero_barrier_active_support"
+        ),
+        fake_zero_barrier_polish,
+    )
+    element_potential = jnp.asarray(
+        [
+            math.log(0.4) - math.log(0.7),
+            math.log(0.3) - math.log(0.7),
+        ],
+        dtype=jnp.float64,
+    )
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=jnp.log(jnp.asarray([0.4, 0.3], dtype=jnp.float64)),
+        gas_ntot=jnp.asarray(0.7, dtype=jnp.float64),
+        support_indices=(2, 0, 1),
+        support_amounts=(0.1, 0.1, 0.1),
+        element_potential=element_potential,
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.6, 0.4], dtype=jnp.float64),
+        init=(initial,),
+        options=CondensateEquilibriumOptions(return_diagnostics=True),
+        return_diagnostics=True,
+    )
+
+    assert captured["support"] == (1, 2)
+    assert captured["amounts"] == pytest.approx((0.2, 0.1))
+    assert result.layers[0].converged
+    lifecycle = result.layers[0].diagnostics["fixed_support_v2"]
+    reduction = lifecycle["finite_barrier_initial_support_reduction"]
+    assert reduction["role"] == "finite_barrier_pdipm_initializer"
+    assert reduction["attempted"]
+    assert reduction["applied"]
+    assert reduction["input_support_rank"] == 2
+    assert reduction["output_support_rank"] == 2
+    assert reduction["output_dropped_support_indices"] == (0,)
+    assert reduction["output_scaled_inventory_residual_max_abs"] <= (
+        reduction["scaled_inventory_residual_tolerance"]
+    )
+    assert reduction["fallback_reason"] is None
+    assert lifecycle["initial_support_indices"] == (1, 2)
+    profile_record = result.diagnostics["layers"][0]
+    assert profile_record["initial_support_indices"] == (1, 2)
+    assert profile_record[
+        "finite_barrier_initial_support_reduction"
+    ] == reduction
 
 
 @pytest.mark.parametrize("early_internal_accepted", (False, True))
