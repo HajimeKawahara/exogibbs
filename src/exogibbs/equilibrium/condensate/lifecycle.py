@@ -6,7 +6,7 @@ expansion remain an API-level lifecycle outside that solver.
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import math
 from typing import Any, Mapping, Optional, Sequence
 
@@ -42,6 +42,7 @@ from exogibbs.equilibrium.condensate.support import (
     support_payload_from_condensate_init as _support_payload_from_condensate_init,
 )
 from exogibbs.equilibrium.condensate.support_geometry import (
+    finite_barrier_trace_capacity_report,
     reduce_initial_condensate_support_to_basic,
 )
 from exogibbs.equilibrium.condensate.types import (
@@ -74,6 +75,17 @@ _ExperimentalProfileFixedSupportBatchPlan = (
     ExperimentalCondensateProfileFixedSupportBatchPlan
 )
 _HeadV2LayerState = HeadV2LayerState
+
+
+@dataclass(frozen=True)
+class _ZeroBarrierInitializerPayload:
+    """Host arrays accepted for one bounded exact-polish attempt."""
+
+    support_indices: tuple[int, ...]
+    gas_log_amounts: np.ndarray
+    condensate_amounts: np.ndarray
+    total_gas_log_amount: float
+    element_potential: np.ndarray
 
 
 def build_condensate_equilibrium_result_from_solver_payload(
@@ -909,6 +921,139 @@ def _head_v2_zero_barrier_initializer_kkt_passed(
     )
 
 
+def _head_v2_pre_pdipm_zero_barrier_candidate(
+    *,
+    setup: CondensateChemicalSetup,
+    state: _HeadV2LayerState | None,
+    target_inventory: Array,
+    log_barrier: float,
+    valid_condensates: Sequence[bool] | None,
+    enabled: bool,
+    disabled_reason: str | None,
+) -> tuple[_ZeroBarrierInitializerPayload | None, dict[str, Any]]:
+    """Build a finite trace-capacity initializer without accepting it."""
+
+    support = (
+        ()
+        if state is None
+        else tuple(int(index) for index in state.support_indices)
+    )
+    report: dict[str, Any] = {
+        "schema": "exogibbs_pre_pdipm_zero_barrier_fallback_v1",
+        "eligible": False,
+        "attempted": False,
+        "internal_accepted": False,
+        "caller_gauge_accepted": False,
+        "accepted": False,
+        "skip_reason": disabled_reason,
+        "source_support_indices": support,
+        "source_state_values_finite": None,
+        "source_support_temperature_valid": None,
+        "trace_capacity": None,
+    }
+    if not enabled:
+        return None, report
+    if state is None:
+        report["skip_reason"] = "missing_source_state"
+        return None, report
+
+    support_valid = bool(
+        support
+        and len(set(support)) == len(support)
+        and all(
+            0 <= index < len(setup.condensate_species)
+            for index in support
+        )
+    )
+    if not support_valid:
+        report["skip_reason"] = "invalid_source_support"
+        return None, report
+
+    gas_log_amounts = np.asarray(
+        jax.device_get(state.gas_ln_n), dtype=np.float64
+    )
+    condensate_log_amounts = np.asarray(
+        jax.device_get(state.condensate_log_amounts), dtype=np.float64
+    )
+    total_gas_log_amount_array = np.asarray(
+        jax.device_get(state.total_gas_log_amount), dtype=np.float64
+    )
+    element_potential = np.asarray(
+        jax.device_get(state.element_potential), dtype=np.float64
+    )
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        support_amounts = np.exp(condensate_log_amounts)
+    shapes_valid = bool(
+        gas_log_amounts.shape == (len(setup.gas_species),)
+        and condensate_log_amounts.shape == (len(support),)
+        and total_gas_log_amount_array.shape == ()
+        and element_potential.shape == (len(setup.elements),)
+    )
+    state_values_finite = bool(
+        shapes_valid
+        and np.all(np.isfinite(gas_log_amounts))
+        and np.all(np.isfinite(condensate_log_amounts))
+        and np.isfinite(total_gas_log_amount_array)
+        and np.all(np.isfinite(element_potential))
+        and np.all(np.isfinite(support_amounts))
+        and np.all(support_amounts > 0.0)
+    )
+    report["source_state_values_finite"] = state_values_finite
+    if not state_values_finite:
+        report["skip_reason"] = "invalid_source_state"
+        return None, report
+
+    valid_mask = np.asarray(valid_condensates, dtype=bool)
+    support_temperature_valid = bool(
+        valid_mask.shape == (len(setup.condensate_species),)
+        and all(valid_mask[index] for index in support)
+    )
+    report["source_support_temperature_valid"] = support_temperature_valid
+    if not support_temperature_valid:
+        report["skip_reason"] = "temperature_invalid_source_support"
+        return None, report
+
+    condensate_formula = np.asarray(
+        setup.formula_matrix_cond, dtype=np.float64
+    )
+    joint_formula = np.concatenate(
+        [
+            np.asarray(setup.formula_matrix, dtype=np.float64),
+            condensate_formula,
+        ],
+        axis=1,
+    )
+    trace_capacity = finite_barrier_trace_capacity_report(
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=np.asarray(target_inventory, dtype=np.float64),
+        support_indices=support,
+        monotone_constraint_row_mask=np.all(joint_formula >= 0.0, axis=1),
+        log_barrier=log_barrier,
+    )
+    report["trace_capacity"] = trace_capacity
+    if not trace_capacity["capacity_geometry_valid"]:
+        report["skip_reason"] = "invalid_capacity_geometry"
+        return None, report
+    if not trace_capacity["trace_capacity_detected"]:
+        report["skip_reason"] = "capacity_not_below_initial_barrier"
+        return None, report
+
+    condensate_amounts = np.zeros(
+        len(setup.condensate_species), dtype=np.float64
+    )
+    condensate_amounts[np.asarray(support, dtype=np.int64)] = support_amounts
+    payload = _ZeroBarrierInitializerPayload(
+        support_indices=support,
+        gas_log_amounts=gas_log_amounts,
+        condensate_amounts=condensate_amounts,
+        total_gas_log_amount=float(total_gas_log_amount_array),
+        element_potential=element_potential,
+    )
+    report["eligible"] = True
+    report["skip_reason"] = None
+    return payload, report
+
+
 def _resolve_condensate_initial_guess(
     initializer: Optional[CondensateEquilibriumInitializer],
     request: CondensateEquilibriumInitRequest,
@@ -966,6 +1111,12 @@ def _run_head_v2_profile(
             float(value) / amount_scale for value in support_amounts_init
         )
     epsilon_schedule = policy.solver_config.continuation.epsilon_schedule
+    pre_pdipm_fallback_terminal_statuses = frozenset(
+        {
+            int(TerminalStatus.RESTORATION_MAX_ITER),
+            int(TerminalStatus.RESTORATION_LOCALLY_INFEASIBLE),
+        }
+    )
     amount_gauge = {
         "schema": "exogibbs_condensate_amount_gauge_v1",
         "scale_basis": "sum_positive_non_charge_element_inventory",
@@ -1163,6 +1314,15 @@ def _run_head_v2_profile(
             initial_guess=initial_guess,
             first_epsilon=policy.solver_config.continuation.epsilon_schedule[0],
             lnphi_func=lnphi_func,
+        )
+
+    def valid_condensates_for_layer(layer_index: int) -> np.ndarray:
+        temperature = float(temperatures[layer_index])
+        upper = condensate_temperature_validity_upper(setup)
+        return (
+            np.ones(len(setup.condensate_species), dtype=bool)
+            if upper is None
+            else temperature <= np.asarray(upper, dtype=np.float64)
         )
 
     def polish_layer_state(
@@ -1549,6 +1709,14 @@ def _run_head_v2_profile(
                 "local_index": local_index,
                 "round_index": round_index,
                 "support_indices": current.support_indices,
+                # Avoid retaining one extra device state for ordinary layers.
+                "pre_pdipm_state": (
+                    current
+                    if not converged[local_index]
+                    and terminal_code
+                    in pre_pdipm_fallback_terminal_statuses
+                    else None
+                ),
                 "fixed_support_converged": bool(converged[local_index]),
                 "support_closed": bool(closed[local_index]),
                 "terminal_status": terminal_code,
@@ -1861,16 +2029,74 @@ def _run_head_v2_profile(
                 and terminal_output["final_state_values_finite"]
             )
             early_exact = early_zero_barrier_results.get(layer_index)
+            terminal_initializer_eligible = bool(
+                support
+                and terminal_output["support_closed"]
+                and terminal_output[
+                    "zero_barrier_initializer_kkt_passed"
+                ]
+                and terminal_output["final_state_values_finite"]
+            )
+            pre_pdipm_state = terminal_output["pre_pdipm_state"]
+            restoration_failure = bool(
+                not terminal_output["fixed_support_converged"]
+                and terminal_output["terminal_status"]
+                in pre_pdipm_fallback_terminal_statuses
+            )
+            fallback_routing_candidate = bool(
+                early_exact is None
+                and not terminal_initializer_eligible
+                and restoration_failure
+            )
+            if early_exact is not None:
+                fallback_disabled_reason = (
+                    "accepted_early_exact_result_preferred"
+                )
+            elif terminal_initializer_eligible:
+                fallback_disabled_reason = (
+                    "terminal_state_initializer_preferred"
+                )
+            elif not fallback_routing_candidate:
+                fallback_disabled_reason = "terminal_status_not_eligible"
+            else:
+                fallback_disabled_reason = None
+            valid_mask = (
+                valid_condensates_for_layer(layer_index)
+                if fallback_routing_candidate
+                else None
+            )
+            (
+                pre_pdipm_payload,
+                pre_pdipm_fallback_report,
+            ) = _head_v2_pre_pdipm_zero_barrier_candidate(
+                setup=setup,
+                state=pre_pdipm_state,
+                target_inventory=b,
+                log_barrier=epsilon_schedule[0],
+                valid_condensates=valid_mask,
+                enabled=fallback_routing_candidate,
+                disabled_reason=fallback_disabled_reason,
+            )
+            pre_pdipm_fallback_report.update(
+                {
+                    "terminal_status": terminal_output["terminal_status"],
+                    "terminal_status_name": TerminalStatus(
+                        terminal_output["terminal_status"]
+                    ).name,
+                    "source_round_index": terminal_output["round_index"],
+                    "source_support_indices": tuple(
+                        terminal_output["support_indices"]
+                    ),
+                }
+            )
+            pre_pdipm_fallback_eligible = pre_pdipm_payload is not None
+            lifecycle_summary["pre_pdipm_zero_barrier_fallback"] = (
+                pre_pdipm_fallback_report
+            )
             exact_initializer_eligible = bool(
                 early_exact is not None
-                or (
-                    support
-                    and terminal_output["support_closed"]
-                    and terminal_output[
-                        "zero_barrier_initializer_kkt_passed"
-                    ]
-                    and terminal_output["final_state_values_finite"]
-                )
+                or terminal_initializer_eligible
+                or pre_pdipm_fallback_eligible
             )
             rescue_attempted = bool(
                 exact_initializer_eligible and not fixed_support_accepted
@@ -1880,6 +2106,11 @@ def _run_head_v2_profile(
                     early_zero_barrier_provenance[layer_index]
                 )
             else:
+                initializer_source = (
+                    "pre_pdipm_finite_support_state"
+                    if pre_pdipm_fallback_eligible
+                    else "fixed_support_terminal_state"
+                )
                 initializer_report = {
                     "schema": (
                         "exogibbs_zero_barrier_initializer_provenance_v1"
@@ -1887,12 +2118,14 @@ def _run_head_v2_profile(
                     "eligible": exact_initializer_eligible,
                     "attempted": exact_initializer_eligible,
                     "role": "initializer_only",
-                    "source": "fixed_support_terminal_state",
+                    "source": initializer_source,
                     "source_round_index": terminal_output["round_index"],
                     "lifecycle_terminal_round_index": terminal_output[
                         "round_index"
                     ],
-                    "selected_before_lifecycle_terminal_round": False,
+                    "selected_before_lifecycle_terminal_round": bool(
+                        pre_pdipm_fallback_eligible
+                    ),
                     "rescue_attempted": rescue_attempted,
                     "raw_fixed_support_converged": terminal_output[
                         "fixed_support_converged"
@@ -1921,24 +2154,47 @@ def _run_head_v2_profile(
             )
             accepted = False
             if exact_initializer_eligible:
-                temperature = float(temperatures[layer_index])
-                upper = condensate_temperature_validity_upper(setup)
-                valid_mask = (
-                    np.ones(len(setup.condensate_species), dtype=bool)
-                    if upper is None
-                    else temperature <= np.asarray(upper, dtype=np.float64)
-                )
+                if valid_mask is None:
+                    valid_mask = valid_condensates_for_layer(layer_index)
                 exact = early_exact
                 if exact is None:
+                    initializer_gas_log_amounts = gas_log_amounts
+                    initializer_full_amounts = full_amounts
+                    initializer_total_gas_log_amount = total_gas_log_amount
+                    initializer_element_potential = element_potential
+                    initializer_support = support
+                    if pre_pdipm_fallback_eligible:
+                        initializer_full_amounts = (
+                            pre_pdipm_payload.condensate_amounts
+                        )
+                        initializer_gas_log_amounts = (
+                            pre_pdipm_payload.gas_log_amounts
+                        )
+                        initializer_total_gas_log_amount = (
+                            pre_pdipm_payload.total_gas_log_amount
+                        )
+                        initializer_element_potential = (
+                            pre_pdipm_payload.element_potential
+                        )
+                        initializer_support = (
+                            pre_pdipm_payload.support_indices
+                        )
+                        pre_pdipm_fallback_report["attempted"] = True
                     exact = polish_layer_state(
                         layer_index=layer_index,
-                        gas_log_amounts=gas_log_amounts,
-                        condensate_amounts=full_amounts,
-                        total_gas_log_amount=total_gas_log_amount,
-                        element_potential=element_potential,
-                        support=support,
+                        gas_log_amounts=initializer_gas_log_amounts,
+                        condensate_amounts=initializer_full_amounts,
+                        total_gas_log_amount=(
+                            initializer_total_gas_log_amount
+                        ),
+                        element_potential=initializer_element_potential,
+                        support=initializer_support,
                         valid_condensates=valid_mask,
                     )
+                    if pre_pdipm_fallback_eligible:
+                        pre_pdipm_fallback_report["internal_accepted"] = bool(
+                            exact.accepted
+                        )
                 lifecycle_summary[
                     "zero_barrier_active_support_polish"
                 ] = exact.report
@@ -1957,6 +2213,11 @@ def _run_head_v2_profile(
                         caller_audit_summary(caller_audit)
                     )
                     accepted = bool(caller_audit["accepted"])
+                    if pre_pdipm_fallback_eligible:
+                        pre_pdipm_fallback_report[
+                            "caller_gauge_accepted"
+                        ] = accepted
+                        pre_pdipm_fallback_report["accepted"] = accepted
                     if not accepted:
                         lifecycle_summary["outcome"] = (
                             "caller_gauge_zero_barrier_kkt_failed"

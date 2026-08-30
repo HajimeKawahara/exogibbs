@@ -54,13 +54,17 @@ The current solution selects ``SiO2(s,l)`` and ``MgSiO3(s,l)``.  That exact
 support is reported for diagnosis but is not an acceptance condition: a
 future solver may find another physically equivalent active set.
 
-Provider unit regressions reuse this exact network at three neighboring
+Provider unit regressions reuse this exact network at four neighboring
 deep-atmosphere boundaries. They require the rainout transport scale to remain
 one in the ordinary caller gauge and certify all final KKT blocks at ``1e-8``.
 Together they cover an initializer-only finite-barrier rescue, a fully
 certified root found when the exact optimizer reaches its evaluation limit,
 and a rank-deficient four-phase initializer whose physical solution lies on a
-different two-phase basis.
+different two-phase basis. The fourth state has
+:math:`T=1173.1942732095774` K, :math:`P=4132.5213914599017` bar, and a
+normalized Mg inventory of :math:`7.5890\times10^{-17}`. Its finite-barrier
+solve fails at the trace-capacity boundary even after the initial support is
+reduced to a full-rank basis.
 
 The rank-deficient case is handled without a species-specific rule. ExoGibbs
 constructs a bounded, deterministic portfolio of nonnegative full-rank bases
@@ -70,6 +74,20 @@ A local root returns immediately to the outer inactive-phase closure; final
 acceptance still requires its complete audit. The search visits at most 32
 bases and shares the active-set function-evaluation budget. These extra states
 are not added to the documented one-layer performance workload.
+
+For the trace-capacity state, the lifecycle preserves the finite-barrier input
+before PDIPM changes it. If the established finite-barrier terminal-state route
+is unavailable, one bounded zero-barrier closure may use that preserved state
+as an initializer. The failed restoration state is retained for diagnostics
+but is not used as the exact-solver initializer. This fallback is selected by
+generic restoration-status and capacity-scale gates, not by a species name,
+temperature, or pressure.
+
+Diagnostics identify the initializer source as
+``pre_pdipm_finite_support_state`` and record the attempt separately in
+``pre_pdipm_zero_barrier_fallback``. It does not relax the zero-barrier
+equations, the catalog-wide inactive-phase closure, the caller-gauge audit, or
+any final ``1e-8`` KKT tolerance.
 
 Run the example
 ---------------

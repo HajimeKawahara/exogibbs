@@ -132,6 +132,15 @@ the exact path, and accepts only an audited zero-barrier result. Other failed
 v2 states are reported to the caller; none is retried with a retired solver.
 Operational rollback uses a previous release artifact.
 
+A narrow initializer-only fallback covers finite-barrier
+``RESTORATION_MAX_ITER`` and ``RESTORATION_LOCALLY_INFEASIBLE`` failures when
+the established terminal-state route is unavailable. If a phase's capacity
+from monotone non-negative conservation rows is at or below the first barrier
+amount, the preserved pre-PDIPM state may initialize the same bounded exact
+closure. Signed rows such as charge balance are excluded from the capacity
+test. The failed finite-barrier state remains in diagnostics, and both the
+ordinary internal and caller-gauge zero-barrier audits are still required.
+
 The public defaults are:
 
 .. code-block:: python

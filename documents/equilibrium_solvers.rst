@@ -301,6 +301,17 @@ relax the final zero-barrier or caller-gauge KKT audit. The raw failure remains
 in diagnostics, and acceptance still depends exclusively on the complete
 zero-barrier physical gate.
 
+That terminal-state route retains precedence. If it is unavailable after a
+``RESTORATION_MAX_ITER`` or ``RESTORATION_LOCALLY_INFEASIBLE`` failure, the
+lifecycle compares each support phase's elemental capacity with the first
+finite-barrier amount, using only conservation rows whose gas and condensate
+coefficients are all non-negative. Signed rows such as charge balance do not
+define an amount ceiling. A support with capacity at or below that barrier may
+instead initialize one bounded exact closure from the preserved pre-PDIPM
+state. The failed terminal state remains the reported finite-barrier result.
+This fallback does not relax the internal zero-barrier or caller-gauge KKT
+audit, and no exact candidate is accepted without both audits.
+
 ``result.element_inventory_target``, ``result.gas_element_inventory``,
 ``result.rainout_element_inventory_out``, and
 ``result.rainout_abundance_scale`` provide a dense audit trail in the original

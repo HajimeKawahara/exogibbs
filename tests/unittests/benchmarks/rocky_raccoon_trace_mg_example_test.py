@@ -24,6 +24,18 @@ EXAMPLE_PATH = (
     / "demo_rocky_raccoon_trace_mg.py"
 )
 BOUNDARY_CASES = {
+    "trace_capacity": (
+        1173.1942732095774,
+        4132.5213914599017,
+        (
+            0.9997295583246257,
+            7.589000706073114e-17,
+            5.0480806048163e-7,
+            1.0096161210834609e-6,
+            2.689272511893248e-4,
+            0.0,
+        ),
+    ),
     "rank_deficient_support": (
         1269.1589798706555,
         5643.1822694059156,
@@ -211,7 +223,44 @@ def test_public_amount_gauge_boundary_uses_exact_polish_rescue(
     ] == (
         lifecycle["outcome"]
     )
+    assert lifecycle["zero_barrier_initializer"]["source"] == (
+        "fixed_support_terminal_state"
+    )
+    fallback = lifecycle["pre_pdipm_zero_barrier_fallback"]
+    assert not fallback["eligible"]
+    assert not fallback["attempted"]
+    assert fallback["skip_reason"] == "terminal_state_initializer_preferred"
     assert lifecycle["zero_barrier_active_support_polish"]["accepted"]
+
+
+def test_public_trace_capacity_boundary_uses_pre_pdipm_initializer(
+    boundary_profiles,
+) -> None:
+    profile = boundary_profiles["trace_capacity"]
+    lifecycle = profile.layers[0].diagnostics["fixed_support_v2"]
+
+    assert lifecycle["outcome"] == "zero_barrier_active_support_rescued"
+    assert lifecycle["zero_barrier_initializer"]["source"] == (
+        "pre_pdipm_finite_support_state"
+    )
+    reduction = lifecycle["finite_barrier_initial_support_reduction"]
+    assert reduction["applied"]
+    assert reduction["initial_support_nullity"] == 2
+    assert reduction["output_support_indices"] == (1, 8)
+    assert reduction["output_support_nullity"] == 0
+    fallback = lifecycle["pre_pdipm_zero_barrier_fallback"]
+    assert fallback["eligible"]
+    assert fallback["attempted"]
+    assert fallback["internal_accepted"]
+    assert fallback["caller_gauge_accepted"]
+    assert fallback["accepted"]
+    assert fallback["trace_capacity"]["trace_capacity_detected"]
+    assert (
+        fallback["trace_capacity"]["minimum_capacity_to_barrier_ratio"]
+        < 1.0
+    )
+    assert lifecycle["zero_barrier_active_support_polish"]["accepted"]
+    assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
 
 
 def test_public_rank_deficient_boundary_selects_an_exact_basic_support(
