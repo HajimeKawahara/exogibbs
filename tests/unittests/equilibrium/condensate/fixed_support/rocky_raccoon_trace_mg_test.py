@@ -15,6 +15,10 @@ FIXTURE = (
     Path(__file__).with_name("data")
     / "rocky_raccoon_trace_mg_polish.npz"
 )
+RANK_DEFICIENT_FIXTURE = (
+    Path(__file__).with_name("data")
+    / "rocky_raccoon_rank_deficient_polish.npz"
+)
 
 
 def test_zero_barrier_polishes_positive_trace_mg_with_signed_charge() -> None:
@@ -151,3 +155,127 @@ def test_zero_barrier_polishes_positive_trace_mg_with_signed_charge() -> None:
     gas_mg = float(gas_formula[1] @ gas)
     assert 0.0 < condensed_mg <= target[1]
     assert 0.0 < gas_mg < target[1]
+
+
+def test_zero_barrier_selects_physical_basis_from_rank_deficient_support(
+) -> None:
+    """Resolve the lower-temperature Rocky boundary without a named phase rule.
+
+    The fixture captures provider-independent binary64 polish inputs at
+    T=1269.158980 K and P=5643.182269 bar.  Its four-phase initial support has
+    rank two.  The exact physical solution uses a full-rank basis selected by
+    either the initial LP reduction or the bounded alternative-basis search.
+    """
+
+    with np.load(RANK_DEFICIENT_FIXTURE) as stored:
+        gas_formula = stored["gas_formula_matrix"]
+        condensate_formula = stored[
+            "condensate_formula_matrix_full"
+        ]
+        target = stored["target_inventory"]
+        gas_standard = stored["gas_standard_source"]
+        condensate_standard = stored[
+            "condensate_standard_source_full"
+        ]
+        gas_log_amounts = stored["gas_log_amounts_init"]
+        condensate_amounts = stored["condensate_amounts_init"]
+        total_gas_log_amount = float(
+            stored["total_gas_log_amount_init"]
+        )
+        element_potential = stored["element_potential_init"]
+        support = tuple(
+            int(index) for index in stored["support_indices"]
+        )
+        valid_mask = stored["condensate_valid_mask"]
+
+    assert support == (1, 8, 7, 9)
+    assert np.linalg.matrix_rank(condensate_formula[:, support]) == 2
+    np.testing.assert_array_equal(
+        condensate_formula[:, 8],
+        condensate_formula[:, 1] + condensate_formula[:, 7],
+    )
+    np.testing.assert_array_equal(
+        condensate_formula[:, 9],
+        condensate_formula[:, 1] + 2.0 * condensate_formula[:, 7],
+    )
+
+    tolerance = 1.0e-8
+    result = polish_zero_barrier_active_support(
+        gas_formula_matrix=gas_formula,
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=target,
+        gas_standard_source=gas_standard,
+        condensate_standard_source_full=condensate_standard,
+        gas_log_amounts_init=gas_log_amounts,
+        condensate_amounts_init=condensate_amounts,
+        total_gas_log_amount_init=total_gas_log_amount,
+        element_potential_init=element_potential,
+        support_indices=support,
+        condensate_valid_mask=valid_mask,
+        stationarity_tolerance=tolerance,
+        budget_tolerance=tolerance,
+        total_density_tolerance=tolerance,
+        support_closure_tolerance=tolerance,
+        budget_relative_floor=1.0e-6,
+        max_function_evaluations=400,
+    )
+
+    assert result.accepted
+    assert set(result.support_indices).issubset(support)
+    assert np.linalg.matrix_rank(
+        condensate_formula[:, result.support_indices]
+    ) == len(result.support_indices)
+    reduction = result.report["basic_support_reduction"]
+    assert reduction["attempted"]
+    portfolio = result.report["alternative_basic_support_portfolio"]
+    closure = result.report["exact_active_set_closure"]
+    assert closure["termination_reason"] == "accepted"
+    if reduction["applied"]:
+        assert not portfolio["attempted"]
+    else:
+        assert portfolio["attempted"]
+        assert not portfolio["accepted"]
+        assert portfolio["local_kkt_selected"]
+        assert portfolio["solve_attempts"]
+        assert portfolio["solve_attempts"][0]["support_indices"] in (
+            portfolio["candidate_generation"]["feasible_support_indices"]
+        )
+        assert closure["round_count"] >= 2
+        assert closure["rounds"][0]["selected_numerical_formulation"] == (
+            "alternative_basic_support_normalized_gas_reduced_linear_amounts"
+        )
+        assert closure["rounds"][0]["alternative_basic_support_attempted"]
+        assert closure["rounds"][0]["action"] == "add_inactive_phase"
+        portfolio_evaluations = sum(
+            int(solve_attempt["function_evaluations"])
+            for candidate_attempt in portfolio["solve_attempts"]
+            for solve_attempt in candidate_attempt["solve"]["attempts"]
+        )
+        assert portfolio_evaluations < (
+            closure["cumulative_function_evaluations"]
+        )
+        assert portfolio_evaluations <= 400 * len(
+            portfolio["solve_attempts"]
+        )
+
+    gas = np.exp(result.gas_log_amounts)
+    reconstructed = (
+        gas_formula @ gas
+        + condensate_formula @ result.condensate_amounts
+    )
+    inventory_scale = float(np.max(np.abs(target[target != 0.0])))
+    zero_target_scale = max(
+        1.0e-6,
+        np.finfo(np.float64).eps * inventory_scale,
+        1.0e-300,
+    )
+    budget_scale = np.reciprocal(
+        np.where(target != 0.0, np.abs(target), zero_target_scale)
+    )
+    np.testing.assert_allclose(
+        budget_scale * (reconstructed - target),
+        0.0,
+        rtol=0.0,
+        atol=tolerance,
+    )
+    assert abs(reconstructed[-1]) <= 1.0e-14

@@ -223,10 +223,16 @@ original finite-barrier central state toward zero. It retains the deepest
 certified half-decade state when a later step loses its residual certificate,
 and selects a support only across a clear capacity-relative amount gap. A
 nonnegative linear program may then replace an eligible rank-deficient active
-support by a basic support while preserving ``A_cond @ m``. Failed initializer
-selection retains or retries the original support. These support selectors
-and reductions are initializers only; none can bypass the joint physical
-audit.
+support by a basic support while preserving ``A_cond @ m``. If its single LP
+vertex remains rank deficient or fails validation, a deterministic portfolio
+visits at most 32 full-rank bases connected by one-phase exchanges. Feasible
+bases preserve the same condensed inventory and use canonical catalog order.
+Each candidate uses the existing exact root and physical audit under the
+shared function-evaluation budget. The first local root advances the outer
+active-set closure, while only the complete audit can terminate it. Failed
+initializer selection retains or retries the original support. These support
+selectors and reductions are initializers only; none can bypass the joint
+physical audit.
 
 It adds the most negative temperature-valid inactive phase only when every
 other zero-barrier acceptance block passes. Locally valid states are cached.

@@ -54,12 +54,22 @@ The current solution selects ``SiO2(s,l)`` and ``MgSiO3(s,l)``.  That exact
 support is reported for diagnosis but is not an acceptance condition: a
 future solver may find another physically equivalent active set.
 
-Provider unit regressions reuse this exact network at two neighboring
+Provider unit regressions reuse this exact network at three neighboring
 deep-atmosphere boundaries. They require the rainout transport scale to remain
-one in the ordinary caller gauge, certify all final KKT blocks at ``1e-8``,
-and cover both an initializer-only finite-barrier rescue and a fully certified
-root found when the exact optimizer reaches its evaluation limit. These extra
-states are not added to the documented one-layer performance workload.
+one in the ordinary caller gauge and certify all final KKT blocks at ``1e-8``.
+Together they cover an initializer-only finite-barrier rescue, a fully
+certified root found when the exact optimizer reaches its evaluation limit,
+and a rank-deficient four-phase initializer whose physical solution lies on a
+different two-phase basis.
+
+The rank-deficient case is handled without a species-specific rule. ExoGibbs
+constructs a bounded, deterministic portfolio of nonnegative full-rank bases
+that preserve the initial condensed inventory, visits them in canonical
+catalog order, and selects a basis only through the existing exact KKT audit.
+A local root returns immediately to the outer inactive-phase closure; final
+acceptance still requires its complete audit. The search visits at most 32
+bases and shares the active-set function-evaluation budget. These extra states
+are not added to the documented one-layer performance workload.
 
 Run the example
 ---------------

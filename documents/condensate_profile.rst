@@ -46,10 +46,15 @@ step loses its residual certificate, and selects a support only across a clear
 capacity-relative amount gap. A further fallback may replace an eligible
 rank-deficient active support by a
 nonnegative basic support. Its bounded linear program preserves
-``A_cond @ m`` and minimizes the condensate Gibbs term. Failed initializer
-selection retains or retries the original support. All support selectors and
-reductions are initializers only, and the subsequent physical audit remains
-authoritative.
+``A_cond @ m`` and minimizes the condensate Gibbs term. If the LP vertex does
+not produce a valid full-rank basis, a deterministic one-phase-exchange
+portfolio visits at most 32 feasible bases in canonical catalog order. Every
+candidate reuses the exact solver and unchanged physical audit under the
+shared function-evaluation budget; the first local root continues outer
+active-set closure, but only the full audit can terminate it. Failed
+initializer selection retains or retries the original support. All support
+selectors and reductions are initializers only, and the subsequent physical
+audit remains authoritative.
 
 The host-side refinement uses a deterministic, bounded exact add/drop
 active-set search. After each converged joint root, phases with non-positive
