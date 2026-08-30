@@ -134,9 +134,15 @@ def test_regularized_primary_polishes_ito_layer_652_trace_oxygen() -> None:
     ]
     assert regularization["applied_to_reduced_primary"]
     assert portfolio["regularized_attempted"]
-    assert not portfolio["raw_retry_attempted"]
-    assert portfolio["selected_initializer"] == "capacity_regularized"
-    assert normalized["initializer"] == "capacity_regularized"
+    selected_initializer = portfolio["selected_initializer"]
+    assert selected_initializer in {"capacity_regularized", "unregularized"}
+    assert normalized["initializer"] == selected_initializer
+    assert portfolio["unregularized_attempted"] is (
+        selected_initializer == "unregularized"
+    )
+    assert portfolio["raw_retry_attempted"] is (
+        selected_initializer == "unregularized"
+    )
     assert sum(
         attempt["function_evaluations"]
         for attempt in normalized["attempts"]

@@ -37,6 +37,116 @@ def maximum_condensate_amount_scales(
     return np.asarray(scales, dtype=np.float64)
 
 
+def finite_barrier_trace_capacity_report(
+    *,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    support_indices: Sequence[int],
+    monotone_constraint_row_mask: Sequence[bool],
+    log_barrier: float,
+) -> dict[str, Any]:
+    """Report active-phase capacities below one finite barrier amount.
+
+    The comparison is diagnostic only.  It identifies supports containing a
+    phase whose conservative elemental capacity is no larger than the first
+    finite-barrier amount. Only caller-identified monotone constraint rows
+    bound a phase; signed rows such as charge balance must be excluded because
+    negative carriers can offset a positive phase coefficient. Callers remain
+    responsible for solver routing and physical acceptance.
+    """
+
+    formula = np.asarray(condensate_formula_matrix_full, dtype=np.float64)
+    target = np.asarray(target_inventory, dtype=np.float64)
+    support = tuple(int(index) for index in support_indices)
+    if formula.ndim != 2:
+        raise ValueError("condensate_formula_matrix_full must be two-dimensional.")
+    element_count, condensate_count = formula.shape
+    if target.shape != (element_count,):
+        raise ValueError("target_inventory must have one value per element.")
+    monotone_rows = np.asarray(monotone_constraint_row_mask, dtype=bool)
+    if monotone_rows.shape != (element_count,):
+        raise ValueError(
+            "monotone_constraint_row_mask must have one value per element."
+        )
+    if len(set(support)) != len(support) or any(
+        index < 0 or index >= condensate_count for index in support
+    ):
+        raise ValueError("support_indices must contain unique catalog indices.")
+    if not np.all(np.isfinite(formula)):
+        raise ValueError("condensate_formula_matrix_full must be finite.")
+    if not np.all(np.isfinite(target)):
+        raise ValueError("target_inventory must be finite.")
+    log_barrier_value = float(log_barrier)
+    if not np.isfinite(log_barrier_value):
+        raise ValueError("log_barrier must be finite.")
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        barrier_amount = float(np.exp(log_barrier_value))
+    if not np.isfinite(barrier_amount) or barrier_amount <= 0.0:
+        raise ValueError("log_barrier must produce a positive finite amount.")
+
+    canonical_support = tuple(sorted(support))
+    active = np.asarray(canonical_support, dtype=np.int64)
+    capacity_formula = formula[monotone_rows]
+    capacity_target = target[monotone_rows]
+    active_formula = capacity_formula[:, active]
+    negative_target_consumed = (capacity_target[:, None] < 0.0) & (
+        active_formula > 0.0
+    )
+    capacity_geometry_valid = bool(
+        np.all(capacity_formula >= 0.0)
+        and not np.any(negative_target_consumed)
+    )
+    capacities = maximum_condensate_amount_scales(
+        active_formula,
+        capacity_target,
+    )
+    ratios = capacities / barrier_amount
+    capacity_bounded = np.any(active_formula > 0.0, axis=0)
+    trace_mask = (
+        capacity_geometry_valid
+        & capacity_bounded
+        & (capacities <= barrier_amount)
+    )
+    trace_support = tuple(
+        index
+        for index, is_trace in zip(canonical_support, trace_mask.tolist())
+        if is_trace
+    )
+    bounded_ratios = ratios[capacity_bounded]
+    minimum_ratio = (
+        float(np.min(bounded_ratios)) if bounded_ratios.size else None
+    )
+    return {
+        "schema": "exogibbs_finite_barrier_trace_capacity_v1",
+        "support_indices": canonical_support,
+        "support_count": len(canonical_support),
+        "monotone_constraint_row_mask": tuple(
+            bool(value) for value in monotone_rows.tolist()
+        ),
+        "monotone_constraint_row_count": int(np.count_nonzero(monotone_rows)),
+        "capacity_geometry_valid": capacity_geometry_valid,
+        "finite_barrier_log_barrier": log_barrier_value,
+        "finite_barrier_amount": barrier_amount,
+        "support_phase_capacity_bounded": tuple(
+            bool(value) for value in capacity_bounded.tolist()
+        ),
+        "support_phase_maximum_amounts": tuple(
+            float(value) if bounded else None
+            for value, bounded in zip(
+                capacities.tolist(), capacity_bounded.tolist()
+            )
+        ),
+        "capacity_to_barrier_ratios": tuple(
+            float(value) if bounded else None
+            for value, bounded in zip(ratios.tolist(), capacity_bounded.tolist())
+        ),
+        "minimum_capacity_to_barrier_ratio": minimum_ratio,
+        "trace_capacity_support_indices": trace_support,
+        "trace_capacity_count": len(trace_support),
+        "trace_capacity_detected": bool(trace_support),
+    }
+
+
 def reduce_initial_condensate_support_to_basic(
     *,
     condensate_formula_matrix_full: np.ndarray,
@@ -315,6 +425,7 @@ def reduce_initial_condensate_support_to_basic(
 __all__ = (
     "BASIC_SUPPORT_LP_ITERATION_LIMIT",
     "BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR",
+    "finite_barrier_trace_capacity_report",
     "maximum_condensate_amount_scales",
     "reduce_initial_condensate_support_to_basic",
 )
