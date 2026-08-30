@@ -10,12 +10,20 @@ import numpy as np
 from scipy.optimize import least_squares, linprog, minimize
 from scipy.special import logsumexp
 
+from exogibbs.equilibrium.condensate.support_geometry import (
+    BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR as _BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR,
+)
+from exogibbs.equilibrium.condensate.support_geometry import (
+    maximum_condensate_amount_scales as _maximum_condensate_amount_scales,
+)
+from exogibbs.equilibrium.condensate.support_geometry import (
+    reduce_initial_condensate_support_to_basic,
+)
+
 
 _INITIALIZER_CAPACITY_FRACTION = float(np.sqrt(np.finfo(np.float64).eps))
 _REDUCED_SUPPORT_NODE_LIMIT = 32
 _ACTIVE_SET_CLOSURE_ROUND_LIMIT = 8
-_BASIC_SUPPORT_LP_ITERATION_LIMIT = 1000
-_BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR = 64.0 * np.finfo(np.float64).eps
 _FINITE_BARRIER_HOMOTOPY_CENTRALITY_TOLERANCE = 1.0e-4
 _FINITE_BARRIER_HOMOTOPY_RESIDUAL_TOLERANCE = 1.0e-8
 _FINITE_BARRIER_HOMOTOPY_MINIMUM_GAP_RATIO = 4.0
@@ -80,31 +88,6 @@ def _function_evaluation_call_limit(
     if budget is not None:
         call_limit = min(call_limit, budget.remaining)
     return max(call_limit, 0)
-
-
-def _maximum_condensate_amount_scales(
-    condensate_formula_matrix: np.ndarray,
-    target_inventory: np.ndarray,
-) -> np.ndarray:
-    """Return conservative per-phase amount scales from elemental capacity."""
-
-    target_scale = max(
-        float(np.max(np.abs(target_inventory), initial=0.0)),
-        1.0,
-    )
-    scales = []
-    for column in condensate_formula_matrix.T:
-        consuming = column > 0.0
-        if not np.any(consuming):
-            scales.append(target_scale)
-            continue
-        capacities = target_inventory[consuming] / column[consuming]
-        nonnegative = capacities[capacities >= 0.0]
-        if nonnegative.size == 0:
-            scales.append(target_scale)
-            continue
-        scales.append(max(float(np.min(nonnegative)), 1.0e-300 * target_scale))
-    return np.asarray(scales, dtype=np.float64)
 
 
 class _DualSupportOracleEvaluationLimit(RuntimeError):
@@ -980,200 +963,21 @@ def _reduce_initial_condensate_support_to_basic(
     budget_tolerance: float,
     enabled: bool,
 ) -> tuple[tuple[int, ...], np.ndarray, dict[str, Any]]:
-    """Return a nonnegative basic representation of initial condensates.
+    """Compatibility wrapper for the shared initializer geometry utility."""
 
-    The linear program preserves the finite-barrier condensate inventory and
-    minimizes its zero-barrier Gibbs term.  It is an initializer reduction;
-    the joint exact solve and independent physical audit remain authoritative.
-    """
-
-    support = tuple(int(index) for index in support_indices)
-    full_amounts = np.asarray(condensate_amounts, dtype=np.float64)
-    canonical_support = tuple(sorted(support))
-    active = np.asarray(canonical_support, dtype=np.int64)
-    ac = condensate_formula_matrix_full[:, active]
-    hcond = condensate_standard_source_full[active]
-    amounts_before = full_amounts[active]
-    amount_scales = _maximum_condensate_amount_scales(
-        ac, target_inventory
+    return reduce_initial_condensate_support_to_basic(
+        condensate_formula_matrix_full=condensate_formula_matrix_full,
+        condensate_standard_source_full=condensate_standard_source_full,
+        target_inventory=target_inventory,
+        condensate_amounts=condensate_amounts,
+        support_indices=support_indices,
+        budget_scale=budget_scale,
+        budget_tolerance=budget_tolerance,
+        enabled=enabled,
+        diagnostic_role="zero_barrier_exact_solve_initializer",
+        linear_program_solver=linprog,
+        disabled_reason="disabled_for_active_set_retry",
     )
-    scaled_matrix = (
-        budget_scale[:, None] * ac * amount_scales[None, :]
-    )
-    input_rank = int(np.linalg.matrix_rank(scaled_matrix))
-    base_report: dict[str, Any] = {
-        "schema": "exogibbs_zero_barrier_basic_support_reduction_v1",
-        "role": "initial_exact_solve_only",
-        "enabled": bool(enabled),
-        "attempted": False,
-        "applied": False,
-        "method": "scipy_linprog_highs_dual_simplex",
-        "initial_support_indices": support,
-        "canonical_support_indices": canonical_support,
-        "initial_support_count": len(support),
-        "initial_support_rank": input_rank,
-        "initial_support_nullity": len(support) - input_rank,
-        "relative_amount_floor": (
-            _BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR
-        ),
-        "iteration_limit": _BASIC_SUPPORT_LP_ITERATION_LIMIT,
-    }
-    if not enabled:
-        base_report["skip_reason"] = "disabled_for_active_set_retry"
-        return support, full_amounts.copy(), base_report
-    eligible = bool(
-        support
-        and len(support) > input_rank
-        and np.all(ac >= 0.0)
-        and np.all(np.any(ac > 0.0, axis=0))
-        and np.all(np.isfinite(amounts_before))
-        and np.all(amounts_before >= 0.0)
-        and np.all(np.isfinite(amount_scales))
-        and np.all(amount_scales > 0.0)
-    )
-    if not eligible:
-        base_report["skip_reason"] = "not_rank_reduction_eligible"
-        return support, full_amounts.copy(), base_report
-
-    burden = ac @ amounts_before
-    scaled_burden = budget_scale * burden
-    objective = hcond * amount_scales
-    objective_scale = max(
-        float(np.max(np.abs(objective), initial=0.0)),
-        1.0e-300,
-    )
-    base_report["attempted"] = True
-    try:
-        solution = linprog(
-            objective / objective_scale,
-            A_eq=scaled_matrix,
-            b_eq=scaled_burden,
-            bounds=(0.0, None),
-            method="highs-ds",
-            options={
-                "dual_feasibility_tolerance": 1.0e-10,
-                "maxiter": _BASIC_SUPPORT_LP_ITERATION_LIMIT,
-                "presolve": True,
-                "primal_feasibility_tolerance": 1.0e-10,
-            },
-        )
-    except (FloatingPointError, OverflowError, ValueError) as error:
-        base_report.update(
-            {
-                "solver_success": False,
-                "solver_status": -1,
-                "solver_message": str(error),
-                "solver_iterations": 0,
-                "failure_reason": "solver_exception",
-            }
-        )
-        return support, full_amounts.copy(), base_report
-
-    base_report.update(
-        {
-            "solver_success": bool(solution.success),
-            "solver_status": int(solution.status),
-            "solver_message": str(solution.message),
-            "solver_iterations": int(solution.nit),
-        }
-    )
-    if not solution.success:
-        base_report["failure_reason"] = "linear_program_failed"
-        return support, full_amounts.copy(), base_report
-
-    relative_amounts = np.asarray(solution.x, dtype=np.float64)
-    retained_mask = (
-        relative_amounts > _BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR
-    )
-    reduced_amounts = np.where(
-        retained_mask,
-        amount_scales * relative_amounts,
-        0.0,
-    )
-    amount_by_index = {
-        int(index): float(amount)
-        for index, amount in zip(active.tolist(), reduced_amounts.tolist())
-        if amount > 0.0
-    }
-    amount_scale_by_index = {
-        int(index): float(scale)
-        for index, scale in zip(active.tolist(), amount_scales.tolist())
-    }
-    reduced_support = tuple(
-        index for index in support if index in amount_by_index
-    )
-    reduced_full_amounts = np.zeros_like(full_amounts)
-    if reduced_support:
-        reduced_full_amounts[
-            np.asarray(reduced_support, dtype=np.int64)
-        ] = np.asarray(
-            [amount_by_index[index] for index in reduced_support],
-            dtype=np.float64,
-        )
-    reconstructed = (
-        condensate_formula_matrix_full[:, reduced_support]
-        @ reduced_full_amounts[np.asarray(reduced_support, dtype=np.int64)]
-        if reduced_support
-        else np.zeros_like(burden)
-    )
-    scaled_inventory_residual = budget_scale * (reconstructed - burden)
-    residual_norm = float(
-        np.max(np.abs(scaled_inventory_residual), initial=0.0)
-    )
-    residual_tolerance = min(0.1 * float(budget_tolerance), 1.0e-9)
-    reduced_scaled_matrix = (
-        budget_scale[:, None]
-        * condensate_formula_matrix_full[:, reduced_support]
-        * np.asarray(
-            [amount_scale_by_index[index] for index in reduced_support],
-            dtype=np.float64,
-        )[None, :]
-        if reduced_support
-        else np.zeros((target_inventory.size, 0), dtype=np.float64)
-    )
-    reduced_rank = (
-        int(np.linalg.matrix_rank(reduced_scaled_matrix))
-        if reduced_support
-        else 0
-    )
-    candidate_dropped = tuple(
-        index for index in support if index not in set(reduced_support)
-    )
-    valid = bool(
-        reduced_support
-        and len(reduced_support) < len(support)
-        and len(reduced_support) <= input_rank
-        and reduced_rank == len(reduced_support)
-        and np.all(np.isfinite(reduced_full_amounts))
-        and residual_norm <= residual_tolerance
-    )
-    base_report.update(
-        {
-            "applied": valid,
-            "candidate_support_indices": reduced_support,
-            "candidate_support_count": len(reduced_support),
-            "candidate_support_rank": reduced_rank,
-            "candidate_dropped_support_indices": candidate_dropped,
-            "objective_before": float(hcond @ amounts_before),
-            "objective_after": float(
-                hcond @ reduced_full_amounts[active]
-            ),
-            "scaled_inventory_residual_max_abs": residual_norm,
-            "scaled_inventory_residual_tolerance": residual_tolerance,
-        }
-    )
-    if not valid:
-        base_report["failure_reason"] = "postsolve_validation_failed"
-        return support, full_amounts.copy(), base_report
-    base_report.update(
-        {
-            "final_support_indices": reduced_support,
-            "final_support_count": len(reduced_support),
-            "final_support_rank": reduced_rank,
-            "dropped_support_indices": candidate_dropped,
-        }
-    )
-    return reduced_support, reduced_full_amounts, base_report
 
 
 def _build_alternative_basic_support_candidates(
@@ -3566,6 +3370,9 @@ def _polish_zero_barrier_support_once(
             )
         )
         basic_support_reduction["skip_reason"] = (
+            "zero_barrier_dual_support_selected"
+        )
+        basic_support_reduction["fallback_reason"] = (
             "zero_barrier_dual_support_selected"
         )
         basic_support_reduction["input_initializer"] = (

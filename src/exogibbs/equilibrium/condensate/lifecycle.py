@@ -41,6 +41,9 @@ from exogibbs.equilibrium.condensate.support import (
 from exogibbs.equilibrium.condensate.support import (
     support_payload_from_condensate_init as _support_payload_from_condensate_init,
 )
+from exogibbs.equilibrium.condensate.support_geometry import (
+    reduce_initial_condensate_support_to_basic,
+)
 from exogibbs.equilibrium.condensate.types import (
     CONDENSATE_HEAD_V2_ROUTE_NAME,
     CONDENSATE_HEAD_V2_ROUTE_VERSION,
@@ -976,6 +979,13 @@ def _run_head_v2_profile(
         "internal_gauge": "normalized_element_inventory",
         "public_result_gauge": "caller_element_inventory",
     }
+    finite_barrier_initializer_budget_scale = (
+        _canonical_budget_scale_for_caller_audit(
+            b,
+            amount_scale=1.0,
+            relative_floor=policy.budget_relative_floor,
+        )
+    )
     n_layers = int(temperatures.shape[0])
     fixed_batch_shape = FixedSupportV2BatchShape(
         support_capacity=max(
@@ -1084,9 +1094,46 @@ def _run_head_v2_profile(
             base_amount_by_index.get(int(index), float(amount))
             for index, amount in zip(initial_support, initial_amounts)
         )
+        initial_full_amounts = np.zeros(
+            len(setup.condensate_species), dtype=np.float64
+        )
+        if initial_support:
+            initial_full_amounts[
+                np.asarray(initial_support, dtype=np.int64)
+            ] = np.asarray(initial_amounts, dtype=np.float64)
+        (
+            initial_support,
+            initial_full_amounts,
+            finite_barrier_initial_support_reduction,
+        ) = reduce_initial_condensate_support_to_basic(
+            condensate_formula_matrix_full=np.asarray(
+                setup.formula_matrix_cond, dtype=np.float64
+            ),
+            condensate_standard_source_full=np.asarray(
+                setup.condensate_setup.hvector_func(
+                    float(temperatures[layer_index])
+                ),
+                dtype=np.float64,
+            ),
+            target_inventory=np.asarray(b, dtype=np.float64),
+            condensate_amounts=initial_full_amounts,
+            support_indices=initial_support,
+            budget_scale=finite_barrier_initializer_budget_scale,
+            budget_tolerance=(
+                policy.solver_config.normal.budget_tolerance
+            ),
+            enabled=True,
+            diagnostic_role="finite_barrier_pdipm_initializer",
+        )
+        initial_amounts = tuple(
+            float(initial_full_amounts[index]) for index in initial_support
+        )
         records[layer_index]["initial_support_indices"] = initial_support
         records[layer_index]["initial_support_count"] = len(initial_support)
         records[layer_index]["initial_support_selection"] = support_trace
+        records[layer_index][
+            "finite_barrier_initial_support_reduction"
+        ] = finite_barrier_initial_support_reduction
         if not initial_support:
             records[layer_index]["outcome"] = "gas_only_no_candidate"
             gas_only_layers.add(layer_index)
@@ -1710,6 +1757,15 @@ def _run_head_v2_profile(
             "backend": backend,
             "production_preset_promoted": True,
             "amount_gauge": amount_gauge,
+            "initial_support_indices": records[layer_index].get(
+                "initial_support_indices", ()
+            ),
+            "initial_support_count": records[layer_index].get(
+                "initial_support_count", 0
+            ),
+            "finite_barrier_initial_support_reduction": records[
+                layer_index
+            ].get("finite_barrier_initial_support_reduction", {}),
         }
         if layer_index in gas_only_layers:
             gas_equilibrium_init = _gas_init_from_condensate_init(
