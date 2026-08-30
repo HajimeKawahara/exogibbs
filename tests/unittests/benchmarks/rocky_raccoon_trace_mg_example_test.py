@@ -24,6 +24,18 @@ EXAMPLE_PATH = (
     / "demo_rocky_raccoon_trace_mg.py"
 )
 BOUNDARY_CASES = {
+    "rank_deficient_support": (
+        1269.1589798706555,
+        5643.1822694059156,
+        (
+            0.9997253184018701,
+            3.774168837574554e-15,
+            1.9184958230696084e-6,
+            3.83699164992498e-6,
+            2.689261106501034e-4,
+            0.0,
+        ),
+    ),
     "amount_gauge": (
         1334.4049016146876,
         6495.780683442079,
@@ -200,6 +212,36 @@ def test_public_amount_gauge_boundary_uses_exact_polish_rescue(
         lifecycle["outcome"]
     )
     assert lifecycle["zero_barrier_active_support_polish"]["accepted"]
+
+
+def test_public_rank_deficient_boundary_selects_an_exact_basic_support(
+    boundary_profiles,
+    setup,
+) -> None:
+    lifecycle = boundary_profiles[
+        "rank_deficient_support"
+    ].layers[0].diagnostics["fixed_support_v2"]
+    polish = lifecycle["zero_barrier_active_support_polish"]
+
+    assert lifecycle["outcome"] == "zero_barrier_active_support_rescued"
+    assert polish["accepted"]
+    reduction = polish["basic_support_reduction"]
+    assert reduction["initial_support_nullity"] == 2
+    portfolio = polish["alternative_basic_support_portfolio"]
+    selected_support = tuple(polish["final_support_indices"])
+    assert np.linalg.matrix_rank(
+        np.asarray(setup.formula_matrix_cond)[:, selected_support]
+    ) == len(selected_support)
+    closure = polish["exact_active_set_closure"]
+    if reduction["applied"]:
+        assert not portfolio["attempted"]
+    else:
+        assert portfolio["attempted"]
+        assert portfolio["local_kkt_selected"] or portfolio["accepted"]
+        assert closure["rounds"][0]["selected_numerical_formulation"] == (
+            "alternative_basic_support_normalized_gas_reduced_linear_amounts"
+        )
+    assert closure["termination_reason"] == "accepted"
 
 
 def test_public_optimizer_limit_boundary_uses_physical_certificate(

@@ -1176,6 +1176,211 @@ def _reduce_initial_condensate_support_to_basic(
     return reduced_support, reduced_full_amounts, base_report
 
 
+def _build_alternative_basic_support_candidates(
+    *,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    condensate_amounts: np.ndarray,
+    support_indices: Sequence[int],
+    budget_scale: np.ndarray,
+    budget_tolerance: float,
+) -> tuple[tuple[dict[str, Any], ...], dict[str, Any]]:
+    """Build a bounded portfolio of feasible bases for one inventory burden.
+
+    A rank-deficient condensate support can admit several nonnegative basic
+    representations.  The LP reduction above provides a useful starting
+    point, but one LP vertex is not sufficient to select the zero-barrier
+    active set.  This routine traverses the deterministic one-column-exchange
+    graph of full-rank bases and leaves physical selection to the exact solve.
+    """
+
+    support = tuple(int(index) for index in support_indices)
+    canonical_support = tuple(sorted(support))
+    active = np.asarray(canonical_support, dtype=np.int64)
+    ac = condensate_formula_matrix_full[:, active]
+    amounts = np.asarray(condensate_amounts, dtype=np.float64)
+    amount_scales = _maximum_condensate_amount_scales(ac, target_inventory)
+    scaled_matrix = budget_scale[:, None] * ac * amount_scales[None, :]
+    support_rank = int(np.linalg.matrix_rank(scaled_matrix))
+    report: dict[str, Any] = {
+        "schema": "exogibbs_zero_barrier_basic_support_candidates_v1",
+        "eligible": False,
+        "attempted": False,
+        "initial_support_indices": support,
+        "canonical_support_indices": canonical_support,
+        "initial_support_count": len(support),
+        "initial_support_rank": support_rank,
+        "initial_support_nullity": len(support) - support_rank,
+        "relative_amount_floor": _BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR,
+        "node_limit": _REDUCED_SUPPORT_NODE_LIMIT,
+        "visited_basis_indices": (),
+        "candidate_records": (),
+        "feasible_support_indices": (),
+        "candidate_count": 0,
+    }
+    amounts_on_support = amounts[active]
+    eligible = bool(
+        support_rank > 0
+        and len(support) > support_rank
+        and np.all(ac >= 0.0)
+        and np.all(np.any(ac > 0.0, axis=0))
+        and np.all(np.isfinite(amounts_on_support))
+        and np.all(amounts_on_support >= 0.0)
+        and np.all(np.isfinite(amount_scales))
+        and np.all(amount_scales > 0.0)
+    )
+    report["eligible"] = eligible
+    if not eligible:
+        report["skip_reason"] = "not_rank_deficient_support_eligible"
+        return (), report
+
+    burden = ac @ amounts_on_support
+    scaled_burden = budget_scale * burden
+    residual_tolerance = min(0.1 * float(budget_tolerance), 1.0e-9)
+    position_by_index = {
+        int(index): position
+        for position, index in enumerate(canonical_support)
+    }
+
+    def basis_rank(candidate_support: tuple[int, ...]) -> int:
+        positions = np.asarray(
+            [position_by_index[index] for index in candidate_support],
+            dtype=np.int64,
+        )
+        return int(np.linalg.matrix_rank(scaled_matrix[:, positions]))
+
+    seed: list[int] = []
+    seed_rank = 0
+    for index in canonical_support:
+        proposed = tuple(sorted((*seed, index)))
+        proposed_rank = basis_rank(proposed)
+        if proposed_rank > seed_rank:
+            seed = list(proposed)
+            seed_rank = proposed_rank
+        if seed_rank == support_rank:
+            break
+    seed_support = tuple(seed)
+    report["seed_support_indices"] = seed_support
+    if len(seed_support) != support_rank:
+        report["skip_reason"] = "full_rank_seed_not_found"
+        return (), report
+
+    report["attempted"] = True
+    queue = [seed_support]
+    discovered = {seed_support}
+    visited: list[tuple[int, ...]] = []
+    truncated = False
+    while queue and len(visited) < _REDUCED_SUPPORT_NODE_LIMIT:
+        basis = queue.pop(0)
+        visited.append(basis)
+        child_bases = set()
+        basis_set = set(basis)
+        for dropped_index in basis:
+            retained = basis_set - {dropped_index}
+            for added_index in canonical_support:
+                if added_index in basis_set:
+                    continue
+                child = tuple(sorted((*retained, added_index)))
+                if child in discovered or basis_rank(child) != support_rank:
+                    continue
+                child_bases.add(child)
+        for child in sorted(child_bases):
+            if len(discovered) >= _REDUCED_SUPPORT_NODE_LIMIT:
+                truncated = True
+                break
+            discovered.add(child)
+            queue.append(child)
+
+    candidates: list[dict[str, Any]] = []
+    candidate_records: list[dict[str, Any]] = []
+    for candidate_support in visited:
+        indices = np.asarray(candidate_support, dtype=np.int64)
+        positions = np.asarray(
+            [position_by_index[index] for index in candidate_support],
+            dtype=np.int64,
+        )
+        candidate_scales = amount_scales[positions]
+        candidate_matrix = scaled_matrix[:, positions]
+        try:
+            relative_amounts, _, candidate_rank, _ = np.linalg.lstsq(
+                candidate_matrix,
+                scaled_burden,
+                rcond=None,
+            )
+        except np.linalg.LinAlgError:
+            candidate_records.append(
+                {
+                    "support_indices": candidate_support,
+                    "eligible": False,
+                    "rejection_reason": "least_squares_failed",
+                }
+            )
+            continue
+        residual = candidate_matrix @ relative_amounts - scaled_burden
+        residual_norm = float(np.max(np.abs(residual), initial=0.0))
+        finite = bool(np.all(np.isfinite(relative_amounts)))
+        positive = bool(
+            finite
+            and np.all(
+                relative_amounts
+                > _BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR
+            )
+        )
+        feasible = bool(
+            int(candidate_rank) == support_rank
+            and positive
+            and residual_norm <= residual_tolerance
+        )
+        if int(candidate_rank) != support_rank:
+            rejection_reason = "rank_deficient_basis"
+        elif not finite:
+            rejection_reason = "nonfinite_amounts"
+        elif not positive:
+            rejection_reason = "nonpositive_amounts"
+        elif residual_norm > residual_tolerance:
+            rejection_reason = "inventory_residual"
+        else:
+            rejection_reason = None
+        candidate_amounts = np.zeros_like(amounts)
+        if finite:
+            candidate_amounts[indices] = candidate_scales * relative_amounts
+        candidate_records.append(
+            {
+                "support_indices": candidate_support,
+                "support_rank": int(candidate_rank),
+                "eligible": feasible,
+                "rejection_reason": rejection_reason,
+                "scaled_inventory_residual_max_abs": residual_norm,
+            }
+        )
+        if feasible:
+            candidates.append(
+                {
+                    "support_indices": candidate_support,
+                    "condensate_amounts": candidate_amounts,
+                }
+            )
+
+    candidates.sort(key=lambda candidate: tuple(candidate["support_indices"]))
+    report.update(
+        {
+            "visited_basis_indices": tuple(visited),
+            "visited_basis_count": len(visited),
+            "node_limit_reached": truncated,
+            "candidate_records": tuple(candidate_records),
+            "feasible_support_indices": tuple(
+                tuple(candidate["support_indices"])
+                for candidate in candidates
+            ),
+            "candidate_count": len(candidates),
+            "candidate_ordering": "canonical_support_indices",
+        }
+    )
+    if not candidates:
+        report["failure_reason"] = "no_feasible_basic_support"
+    return tuple(candidates), report
+
+
 def _physical_zero_barrier_audit(
     *,
     gas_formula_matrix: np.ndarray,
@@ -1731,6 +1936,167 @@ def _solve_normalized_gas_reduced_linear_support(
             "dropped_support_indices": tuple(dropped),
             "attempts": tuple(attempts),
         },
+    }
+
+
+def _solve_alternative_basic_support_portfolio(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    support_indices: Sequence[int],
+    condensate_valid_mask: np.ndarray,
+    budget_scale: np.ndarray,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+    support_closure_tolerance: float,
+    max_function_evaluations: int,
+    enabled: bool,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> dict[str, Any]:
+    """Try rank-deficient support bases under one hard work budget."""
+
+    report: dict[str, Any] = {
+        "schema": (
+            "exogibbs_zero_barrier_alternative_basic_support_portfolio_v1"
+        ),
+        "enabled": bool(enabled),
+        "eligible": False,
+        "attempted": False,
+        "accepted": False,
+        "local_kkt_selected": False,
+        "candidate_generation": None,
+        "solve_attempts": (),
+        "selected_support_indices": None,
+    }
+    if not enabled:
+        report["skip_reason"] = "disabled"
+        return {
+            "accepted": False,
+            "selected": False,
+            "candidate": None,
+            "report": report,
+        }
+
+    candidates, generation_report = (
+        _build_alternative_basic_support_candidates(
+            condensate_formula_matrix_full=(
+                condensate_formula_matrix_full
+            ),
+            target_inventory=target_inventory,
+            condensate_amounts=condensate_amounts_init,
+            support_indices=support_indices,
+            budget_scale=budget_scale,
+            budget_tolerance=budget_tolerance,
+        )
+    )
+    report["eligible"] = bool(generation_report["eligible"])
+    report["candidate_generation"] = generation_report
+    if not candidates:
+        report["skip_reason"] = generation_report.get(
+            "skip_reason",
+            generation_report.get(
+                "failure_reason", "no_feasible_basic_support"
+            ),
+        )
+        return {
+            "accepted": False,
+            "selected": False,
+            "candidate": None,
+            "report": report,
+        }
+
+    solve_attempts: list[dict[str, Any]] = []
+    selected_candidate: dict[str, Any] | None = None
+    report["attempted"] = True
+    for candidate in candidates:
+        if (
+            function_evaluation_budget is not None
+            and function_evaluation_budget.remaining <= 0
+        ):
+            report["stop_reason"] = "function_evaluation_limit_reached"
+            break
+        solve = _solve_normalized_gas_reduced_linear_support(
+            gas_formula_matrix=gas_formula_matrix,
+            condensate_formula_matrix_full=(
+                condensate_formula_matrix_full
+            ),
+            target_inventory=target_inventory,
+            gas_standard_source=gas_standard_source,
+            condensate_standard_source_full=(
+                condensate_standard_source_full
+            ),
+            gas_log_amounts_init=gas_log_amounts_init,
+            condensate_amounts_init=candidate["condensate_amounts"],
+            total_gas_log_amount_init=total_gas_log_amount_init,
+            element_potential_init=element_potential_init,
+            support_indices=candidate["support_indices"],
+            condensate_valid_mask=condensate_valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+        solved_candidate = solve["candidate"]
+        local_kkt_passed = bool(
+            solved_candidate is not None
+            and _physical_audit_local_kkt_passed(
+                solved_candidate["audit"],
+                optimizer_success=bool(
+                    solved_candidate["optimizer_success"]
+                ),
+                optimizer_status=int(solved_candidate["optimizer_status"]),
+                stationarity_tolerance=stationarity_tolerance,
+                budget_tolerance=budget_tolerance,
+                total_density_tolerance=total_density_tolerance,
+            )
+        )
+        solve_attempts.append(
+            {
+                "support_indices": tuple(candidate["support_indices"]),
+                "accepted": bool(solve["accepted"]),
+                "local_kkt_passed": local_kkt_passed,
+                "solve": solve["report"],
+            }
+        )
+        if solve["accepted"]:
+            selected_candidate = solved_candidate
+            report["accepted"] = True
+            report["selected_support_indices"] = tuple(
+                selected_candidate["support_indices"]
+            )
+            report["stop_reason"] = "physical_audit_accepted"
+            break
+        if local_kkt_passed:
+            selected_candidate = solved_candidate
+            report["local_kkt_selected"] = True
+            report["selected_support_indices"] = tuple(
+                selected_candidate["support_indices"]
+            )
+            report["stop_reason"] = (
+                "local_kkt_selected_for_active_set_closure"
+            )
+            break
+    else:
+        report["stop_reason"] = "all_candidates_rejected"
+
+    report["solve_attempts"] = tuple(solve_attempts)
+    report["solve_attempt_count"] = len(solve_attempts)
+    return {
+        "accepted": bool(report["accepted"]),
+        "selected": bool(selected_candidate is not None),
+        "candidate": selected_candidate,
+        "report": report,
     }
 
 
@@ -3387,6 +3753,12 @@ def _polish_zero_barrier_support_once(
         "attempts": (),
         "discarded_solve_reports": (),
     }
+    alternative_basic_support_enabled = bool(
+        reduce_initial_support
+        and basic_support_reduction.get("attempted", False)
+        and not basic_support_reduction.get("applied", False)
+        and basic_support_reduction.get("initial_support_nullity", 0) > 0
+    )
     structural_log_rescue_report: dict[str, Any] = {
         "schema": (
             "exogibbs_zero_barrier_structural_zero_log_rescue_v1"
@@ -3459,6 +3831,66 @@ def _polish_zero_barrier_support_once(
         if candidate_has_local_kkt(primary_candidate):
             reduced_primary_selected = True
             selected_formulation = structural_selected_formulation()
+
+    structural_support_full_rank = bool(
+        reduced_primary_selected
+        and primary_candidate is not None
+        and len(tuple(primary_candidate["support_indices"]))
+        == np.linalg.matrix_rank(
+            ac_full[:, tuple(primary_candidate["support_indices"])]
+        )
+    )
+    structural_terminal_accepted = bool(
+        reduced_primary_selected
+        and primary_candidate is not None
+        and primary_candidate["audit"]["accepted"]
+    )
+    alternative_basic_support_solve_enabled = bool(
+        alternative_basic_support_enabled
+        and not structural_support_full_rank
+        and not structural_terminal_accepted
+    )
+    alternative_basic_support = (
+        _solve_alternative_basic_support_portfolio(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts_init=reduced_q_initial,
+            condensate_amounts_init=reduced_full_m,
+            total_gas_log_amount_init=reduced_qtot_initial,
+            element_potential_init=reduced_lambda_initial,
+            support_indices=reduced_support,
+            condensate_valid_mask=valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            enabled=alternative_basic_support_solve_enabled,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+    )
+    alternative_basic_support_report = dict(
+        alternative_basic_support["report"]
+    )
+    if alternative_basic_support_enabled and (
+        structural_support_full_rank or structural_terminal_accepted
+    ):
+        alternative_basic_support_report["skip_reason"] = (
+            "structural_zero_certified_support_selected"
+        )
+    if alternative_basic_support["selected"]:
+        primary_candidate = alternative_basic_support["candidate"]
+        reduced_primary_selected = True
+        selected_formulation = (
+            "alternative_basic_support_normalized_gas_reduced_linear_amounts"
+        )
+        normalized_primary_report["skip_reason"] = (
+            "alternative_basic_support_selected"
+        )
 
     if not reduced_primary_selected:
         normalized_initializers = []
@@ -3715,6 +4147,9 @@ def _polish_zero_barrier_support_once(
             ),
             "selected_support_normalized_initializer_portfolio": (
                 normalized_initializer_portfolio_report
+            ),
+            "selected_support_alternative_basic_support_portfolio": (
+                alternative_basic_support_report
             ),
             "selected_support_structural_zero_solve": (
                 structural_log_rescue_report
@@ -4175,6 +4610,9 @@ def _polish_zero_barrier_support_once(
         "normalized_gas_reduced_initializer_portfolio": (
             normalized_initializer_portfolio_report
         ),
+        "alternative_basic_support_portfolio": (
+            alternative_basic_support_report
+        ),
         "structural_zero_reduced_log_rescue": (
             structural_log_rescue_report
         ),
@@ -4343,6 +4781,15 @@ def _zero_barrier_report_function_evaluations(
             for attempt in discarded.get("solve", {}).get("attempts", ())
         )
 
+    def alternative_support_evaluations(
+        portfolio_report: dict[str, Any],
+    ) -> int:
+        return sum(
+            int(attempt.get("function_evaluations", 0))
+            for candidate in portfolio_report.get("solve_attempts", ())
+            for attempt in candidate.get("solve", {}).get("attempts", ())
+        )
+
     linear = sum(
         int(attempt.get("function_evaluations", 0))
         for attempt in report.get("attempts", ())
@@ -4357,6 +4804,9 @@ def _zero_barrier_report_function_evaluations(
         report.get(
             "normalized_gas_reduced_initializer_portfolio", {}
         )
+    )
+    reduced += alternative_support_evaluations(
+        report.get("alternative_basic_support_portfolio", {})
     )
     reduced += sum(
         int(round_report.get("function_evaluations", 0))
@@ -4378,6 +4828,7 @@ def _zero_barrier_report_function_evaluations(
             int(attempt.get("function_evaluations", 0))
             for attempt in structural_solve.get("attempts", ())
         )
+
     def retry_initializer_evaluations(
         fallback_report: dict[str, Any],
     ) -> int:
@@ -4390,6 +4841,11 @@ def _zero_barrier_report_function_evaluations(
         retry_reduced += discarded_initializer_evaluations(
             fallback_report.get(
                 "selected_support_normalized_initializer_portfolio", {}
+            )
+        )
+        retry_reduced += alternative_support_evaluations(
+            fallback_report.get(
+                "selected_support_alternative_basic_support_portfolio", {}
             )
         )
         discarded_structural = fallback_report.get(
@@ -4558,6 +5014,7 @@ def polish_zero_barrier_active_support(
     termination_reason = "round_limit_reached"
     final_result: ZeroBarrierPolishResult | None = None
     initial_basic_support_reduction: dict[str, Any] | None = None
+    initial_alternative_basic_support: dict[str, Any] | None = None
     initial_dual_support_oracle: dict[str, Any] | None = None
     initial_finite_homotopy: dict[str, Any] | None = None
 
@@ -4581,6 +5038,15 @@ def polish_zero_barrier_active_support(
         ):
             initial_basic_support_reduction = dict(
                 report["basic_support_reduction"]
+            )
+        if (
+            initial_alternative_basic_support is None
+            and report.get(
+                "alternative_basic_support_portfolio", {}
+            ).get("enabled", False)
+        ):
+            initial_alternative_basic_support = dict(
+                report["alternative_basic_support_portfolio"]
             )
         if (
             initial_dual_support_oracle is None
@@ -4853,6 +5319,19 @@ def polish_zero_barrier_active_support(
                 "selected_normalized_initializer": report.get(
                     "normalized_gas_reduced_initializer_portfolio", {}
                 ).get("selected_initializer"),
+                "alternative_basic_support_attempted": bool(
+                    report.get(
+                        "alternative_basic_support_portfolio", {}
+                    ).get("attempted", False)
+                ),
+                "alternative_basic_support_selected": bool(
+                    report.get(
+                        "alternative_basic_support_portfolio", {}
+                    ).get("selected_support_indices")
+                ),
+                "alternative_basic_support_indices": report.get(
+                    "alternative_basic_support_portfolio", {}
+                ).get("selected_support_indices"),
                 "regularized_normalized_initializer_attempted": bool(
                     initializer_portfolio_summary[
                         "regularized_attempt_count"
@@ -4906,6 +5385,10 @@ def polish_zero_barrier_active_support(
     if initial_basic_support_reduction is not None:
         final_report["basic_support_reduction"] = (
             initial_basic_support_reduction
+        )
+    if initial_alternative_basic_support is not None:
+        final_report["alternative_basic_support_portfolio"] = (
+            initial_alternative_basic_support
         )
     if initial_dual_support_oracle is not None:
         final_report["zero_barrier_dual_support_oracle"] = (
