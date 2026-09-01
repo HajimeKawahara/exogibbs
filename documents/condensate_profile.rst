@@ -47,14 +47,51 @@ capacity-relative amount gap. A further fallback may replace an eligible
 rank-deficient active support by a
 nonnegative basic support. Its bounded linear program preserves
 ``A_cond @ m`` and minimizes the condensate Gibbs term. If the LP vertex does
-not produce a valid full-rank basis, a deterministic one-phase-exchange
-portfolio visits at most 32 feasible bases in canonical catalog order. Every
-candidate reuses the exact solver and unchanged physical audit under the
-shared function-evaluation budget; the first local root continues outer
-active-set closure, but only the full audit can terminate it. Failed
-initializer selection retains or retries the original support. All support
-selectors and reductions are initializers only, and the subsequent physical
-audit remains authoritative.
+not produce a valid full-rank basis or does not reach a local exact root, a
+deterministic one-phase-exchange portfolio visits the untried feasible bases,
+up to 32 bases in canonical catalog order. Every candidate reuses the exact
+solver and unchanged physical audit under the shared function-evaluation
+budget; the first local root continues outer active-set closure, but only the
+full audit can terminate it. If the initial LP fails, the builder state of the
+first canonical feasible alternative is retained as a possible support-release
+source. After an applied LP basis fails, the sign pattern of the first
+successfully terminated alternative-basis solve with mixed-sign active amounts
+may instead direct support release toward that basis. The nonphysical terminal
+amounts are never reused: release starts from the original nonnegative,
+builder-produced basis amounts, and a suggested face that repeats the failed LP
+basis is ignored. Failed initializer selection otherwise retains or retries the
+original support. All support selectors and reductions are initializers only,
+and the subsequent physical audit remains authoritative.
+
+If every burden-preserving basis misses a local root, a support-release
+initializer portfolio may visit proper faces :math:`F\subset B` of either the
+selected full-rank basis or, after an initial LP failure, the retained first
+canonical feasible alternative. The basic-support search fixes the initial
+condensed element inventory
+
+.. math::
+
+   d_c = A_{c,B}m_B.
+
+For a released face, retained amounts are copied and removed amounts are set
+to zero, so in general :math:`A_{c,F}m_F\ne d_c`. This relaxes only the
+initializer's condensed inventory partition. The exact solve still enforces
+
+.. math::
+
+   A_g n_g + A_{c,F}m_F = b.
+
+The portfolio traverses a bounded breadth-first one-phase-removal graph,
+including the gas-only face. Removal edges are ordered by conservative phase
+capacity and then catalog index; capacity is never an eligibility or
+acceptance threshold. Both the applied-LP and initial-LP-failure routes reserve
+up to two complete call allowances from a preceding alternative-basis
+portfolio: one for support release and one for the ordinary outer closure.
+When less work remains, all remaining work is preserved downstream and the
+search still fails closed. Released faces try the existing mixed
+positive-log/signed-linear formulation before the normalized-linear
+formulation. A local KKT root only initializes the unchanged outer inactive-
+support closure, and the full-catalog physical audit remains authoritative.
 
 The host-side refinement uses a deterministic, bounded exact add/drop
 active-set search. After each converged joint root, phases with non-positive
@@ -89,13 +126,22 @@ structurally impossible gases and phases are removed from the reduced solve
 and the absent-element potentials are reconstructed to satisfy both the gas
 floor and inactive-phase inequalities. The dense all-gas formulation remains
 a compatibility fallback when the reduced formulations do not pass a local
-KKT block. For an eligible strictly positive budget, a normalized log-domain
-fallback may also explore bounded leave-one-out support branches. Each branch
+KKT block. A normalized log-domain fallback may also explore bounded leave-
+one-out support branches. It uses log residuals for positive monotone element
+budgets and scaled linear residuals for signed rows such as zero charge
+balance. Exact-zero monotone rows remain on the structural-zero route. Each
+branch
 starts with the basic support and amounts when reduction was applied, or with
 the original closed support and amounts otherwise; its gas variables come
 from the capacity-regularized initializer. Phases pinned to the numerical
 amount floor are not accepted as active, and every candidate passes through
-the same physical audit. An ineligible or exhausted fallback fails closed.
+the same physical audit. After normalized-linear alternative bases are
+rejected, their existing ordered portfolio can reuse this mixed formulation
+when one full solver-call budget remains. The generic leave-one-out log-domain
+branch graph remains separate from the support-release face graph. The initial-
+LP-failure route may nevertheless reuse the same mixed formulation on released
+faces, before the normalized-linear formulation, within its protected release
+allowance. An ineligible or exhausted fallback fails closed.
 
 Each production lifecycle fixes one extensive amount scale from the sum of its
 positive non-charge element targets. It expresses the element target, initial
@@ -111,13 +157,28 @@ non-charge targets. A non-finite amount scale or floor fails closed.
 
 When the support-selected initializer contains capacity-underflow trace gases,
 the zero-barrier reduced solve first tries the existing capacity-regularized
-gas and element-potential initializer for an eligible positive,
-non-negative network with a full-rank potential fit only when its smallest
-nonzero element inventory is no greater than binary64 machine epsilon times
-its largest. A failed local KKT audit retries the unregularized initializer
-with uncapped initializer-relative scaling. The fast attempt cannot consume
-the protected retry allowance, and neither route changes the final physical
-acceptance or active-set closure gates.
+gas and element-potential initializer with a full-rank potential fit only when
+its smallest nonzero element inventory is no greater than binary64 machine
+epsilon times its largest. Its gas capacities use only formula rows whose
+coefficients are non-negative across the joint gas and condensate catalogs.
+A signed row such as charge balance is therefore not a capacity ceiling,
+although it remains in the normalized-linear budget equations.
+
+The first capacity-regularized solve uses initializer-relative variable
+scaling. Only when it ends at a finite, optimizer-unsuccessful status-0
+function-evaluation-limit state with positive active condensate amounts and
+without a local KKT certificate may one dimensionless-unit-scaled restart
+follow. That restart is seeded from the terminal gas logs, condensate amounts,
+total gas, element potentials, and support; it does not introduce a condensate
+reset or an alternative inventory partition. It remains
+inside the bounded regularized allowance and does not consume the protected
+unregularized reserve. An ineligible or unsuccessful regularized route can
+still fall through to the unregularized, initializer-relative attempt. Every
+candidate faces the unchanged full physical audit and outer active-set closure;
+the separate log-domain fallback keeps positive monotone budgets logarithmic
+while retaining signed conservation rows in scaled linear form. Closure-round
+diagnostics record the selected initializer and variable scaling together with
+the guarded unit-restart eligibility and attempt.
 
 A closed, finite terminal barrier state whose gas, budget, complementarity,
 and total-density residuals pass may also initialize this exact refinement
@@ -132,13 +193,29 @@ the exact path, and accepts only an audited zero-barrier result. Other failed
 v2 states are reported to the caller; none is retried with a retired solver.
 Operational rollback uses a previous release artifact.
 
-A narrow initializer-only fallback covers finite-barrier
-``RESTORATION_MAX_ITER`` and ``RESTORATION_LOCALLY_INFEASIBLE`` failures when
-the established terminal-state route is unavailable. If a phase's capacity
-from monotone non-negative conservation rows is at or below the first barrier
-amount, the preserved pre-PDIPM state may initialize the same bounded exact
-closure. Signed rows such as charge balance are excluded from the capacity
-test. The failed finite-barrier state remains in diagnostics, and both the
+A narrow initializer-only fallback covers the eligible finite-barrier failure
+classifications ``NORMAL_DUAL_STEP_FAILED``,
+``RESTORATION_LINE_SEARCH_FAILED``, ``RESTORATION_MAX_ITER``, and
+``RESTORATION_LOCALLY_INFEASIBLE`` when the established terminal-state route is
+unavailable. If a phase's capacity from monotone non-negative conservation
+rows is at or below the first barrier amount, the preserved pre-PDIPM state may
+initialize the same bounded exact closure. The monotone mask is computed over
+the joint gas and condensate formula matrices; signed rows such as charge
+balance do not impose an amount ceiling. Linear-solve, representation, and
+non-finite failures remain ineligible.
+
+PDIPM requires a full-rank initial support, so the lifecycle may first reduce a
+rank-deficient support to one basis. On the initial lifecycle round only, exact
+polishing can expand the selected terminal or pre-PDIPM initializer back to
+that candidate support envelope. The gas log amounts, condensate amounts,
+total-gas log amount, and element potentials remain unchanged; reintroduced
+phases therefore have exactly zero amount and the condensate burden is
+unchanged. Every envelope phase must still be valid. Existing zero-barrier
+support selection, including its bounded basic-support portfolio, then chooses
+the physical basis. The
+``zero_barrier_initializer["initial_support_envelope"]`` diagnostic records
+the source, envelope, and added supports together with the state-preservation
+guards. The failed finite-barrier state remains in diagnostics, and both the
 ordinary internal and caller-gauge zero-barrier audits are still required.
 
 The public defaults are:
@@ -250,9 +327,36 @@ the original profile caller gauge after any transport rescaling.
 The exact-zero-compatible gas amounts from the accepted state are also used as
 a gas-only warm start for the adjacent upper layer. Incompatible raw species
 remain in the public layer result but are replaced by a finite log-space floor
-in this warm start. If the warm state fails across a phase transition, the same
-abundance scale is retried once from a cold initializer.
+in this warm start. The initializer also records the accepted source problem
+as ``CondensateEquilibriumPoint(temperature, pressure, element_inventory)``.
+This provenance is not a physical state carried into the next layer.
 Condensates and active support are never carried upward as a warm state.
+
+If the direct warm solve fails and source provenance is available, the
+scheduler may try one bounded inventory bridge at the exact target temperature
+and pressure. For bridge fraction :math:`f=1/2`, rows that are positive at both
+endpoints use
+
+.. math::
+
+   b_j(f)=\exp\!\left[(1-f)\log b_{j,0}+f\log b_{j,1}\right],
+
+while a row with a zero endpoint is interpolated linearly. A bridge result may
+seed the exact target only after the ordinary lifecycle acceptance and the
+floorless budget certification pass for the bridge inventory itself. Only its
+gas state is used; its condensates, support, and proposed rainout inventory are
+discarded. The exact target is then solved and audited normally. This route is
+limited to two additional lifecycle calls and is skipped after a successful
+direct solve. If either stage fails, the exact target is retried once from the
+cold initializer at the same abundance scale.
+
+The bridge is a numerical preconditioner, not an interpolated atmospheric
+layer. Rainout subtraction and inventory propagation occur exactly once, after
+the exact target has passed every production gate. Diagnostics record the
+source and target inventories, both trial outcomes, and the termination reason
+under ``attempts[*].inventory_bridge``. Its ``inventory_gauge`` is the rainout
+lifecycle-caller gauge; the enclosing attempt records any overflow transport
+scale needed to recover the original profile-caller gauge.
 
 Only an accepted layer may supply the next inventory. If all available
 initialization attempts fail at a layer, ``solve_profile`` raises
@@ -381,10 +485,12 @@ When diagnostics are enabled, the profile report includes:
 ``result.layers[i].diagnostics["fixed_support_v2"]``
    Fixed-support terminal status, independent KKT result, support-closure
    result, lifecycle rounds, canonical ``amount_gauge``, zero-barrier dual,
-   homotopy, basic-support, and postselection-fallback initializer reports,
-   exact active-set closure traces (including simplex pivots, rejected
-   addition edges, and search limits), and the final lifecycle-caller-gauge
-   zero-barrier KKT audit when applicable.
+   homotopy, ``alternative_basic_support_portfolio`` and
+   ``support_release_portfolio`` initializer reports, exact active-set closure
+   traces (including simplex pivots, rejected addition edges, and search
+   limits), and the final lifecycle-caller-gauge zero-barrier KKT audit when
+   applicable. The saved initial support-release report records its source,
+   formulation order, protected work, and initializer-only outcome.
 
 ``result.diagnostics``
    Profile-level route, preset, backend, and separated compilation, execution,

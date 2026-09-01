@@ -19,6 +19,7 @@ from exogibbs.equilibrium.condensate.setup import CondensateChemicalSetup
 from exogibbs.equilibrium.condensate.types import (
     CondensateEquilibriumInit,
     CondensateEquilibriumInitRequest,
+    CondensateEquilibriumPoint,
 )
 from exogibbs.equilibrium.gas.grid.service import (
     EquilibriumGrid,
@@ -195,6 +196,11 @@ def test_grid_condensate_initializer_maps_linear_total_and_preserves_user_init(
         element_potential=jnp.arange(4.0),
         rho=jnp.asarray([0.3, 0.4]),
         barrier_epsilon=jnp.asarray(1.0e-4),
+        inventory_bridge_origin=CondensateEquilibriumPoint(
+            temperature=800.0,
+            pressure=0.2,
+            element_inventory=jnp.asarray([1.0, 0.1, 0.02, 0.0]),
+        ),
     )
     initializer = GridCondensateEquilibriumInitializer(
         grid=grid,
@@ -232,6 +238,7 @@ def test_grid_condensate_initializer_maps_linear_total_and_preserves_user_init(
         raw_condensates * amount_ratio,
     )
     assert result.support_indices == (0, 2)
+    assert result.inventory_bridge_origin is None
     assert jnp.allclose(
         result.support_amounts,
         jnp.asarray([0.2, 0.4]) * amount_ratio,

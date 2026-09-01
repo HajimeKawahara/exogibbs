@@ -40,3 +40,5 @@ def test_validated_v2_production_policy_matches_archived_gpu_configuration():
     assert policy.max_cold_wall_seconds == 960.0
     assert policy.max_warm_execution_seconds == 20.0
     assert policy.max_warm_wall_seconds == 25.0
+    assert policy.rainout_inventory_bridge.anchor_fractions == (0.5,)
+    assert policy.rainout_inventory_bridge.max_lifecycle_solves == 2

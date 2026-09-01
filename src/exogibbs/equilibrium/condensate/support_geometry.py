@@ -12,6 +12,31 @@ BASIC_SUPPORT_LP_ITERATION_LIMIT = 1000
 BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR = 64.0 * np.finfo(np.float64).eps
 
 
+def monotone_formula_row_mask(
+    *formula_matrices: np.ndarray,
+) -> np.ndarray:
+    """Return rows whose coefficients are nonnegative in every matrix."""
+
+    if not formula_matrices:
+        raise ValueError("At least one formula matrix is required.")
+    matrices = tuple(
+        np.asarray(matrix, dtype=np.float64) for matrix in formula_matrices
+    )
+    element_count = matrices[0].shape[0] if matrices[0].ndim == 2 else -1
+    if any(
+        matrix.ndim != 2 or matrix.shape[0] != element_count
+        for matrix in matrices
+    ):
+        raise ValueError(
+            "Formula matrices must be two-dimensional with equal row counts."
+        )
+    if any(not np.all(np.isfinite(matrix)) for matrix in matrices):
+        raise ValueError("Formula matrices must be finite.")
+    return np.logical_and.reduce(
+        tuple(np.all(matrix >= 0.0, axis=1) for matrix in matrices)
+    )
+
+
 def maximum_condensate_amount_scales(
     condensate_formula_matrix: np.ndarray,
     target_inventory: np.ndarray,
@@ -427,5 +452,6 @@ __all__ = (
     "BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR",
     "finite_barrier_trace_capacity_report",
     "maximum_condensate_amount_scales",
+    "monotone_formula_row_mask",
     "reduce_initial_condensate_support_to_basic",
 )

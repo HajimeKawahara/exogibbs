@@ -9,6 +9,9 @@ from exogibbs.equilibrium.condensate.fixed_support.types import (
     FixedSupportV2Config,
     SolverLimitConfig,
 )
+from exogibbs.equilibrium.condensate.inventory_bridge import (
+    InventoryBridgeConfig,
+)
 from exogibbs.equilibrium.condensate.types import (
     FIXED_SUPPORT_V2_VALIDATED_PRESET,
     HEAD_ROUTE_V2,
@@ -46,6 +49,7 @@ class FixedSupportV2ProductionPolicy:
     rainout_trace_condensate_stationarity_tolerance: float = 1.0e-5
     rainout_allow_trace_capacity_acceptance: bool = False
     rainout_depletion_roundoff_multiplier: float = 64.0
+    rainout_inventory_bridge: InventoryBridgeConfig = InventoryBridgeConfig()
 
 
 def fixed_support_v2_production_policy(

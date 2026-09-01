@@ -10,6 +10,7 @@ import pytest
 
 from exogibbs.equilibrium.condensate.support_geometry import (
     finite_barrier_trace_capacity_report,
+    monotone_formula_row_mask,
     reduce_initial_condensate_support_to_basic,
 )
 
@@ -24,6 +25,20 @@ _DIAGNOSTIC_FIELDS = {
     "output_scaled_inventory_residual_max_abs",
     "fallback_reason",
 }
+
+
+def test_monotone_formula_rows_use_the_joint_species_catalog() -> None:
+    gas_formula = np.asarray([[1.0, 0.0], [1.0, -1.0]])
+    condensate_formula = np.asarray([[2.0], [0.0]])
+
+    mask = monotone_formula_row_mask(gas_formula, condensate_formula)
+    sign_flipped = monotone_formula_row_mask(
+        gas_formula * np.asarray([[1.0], [-1.0]]),
+        condensate_formula * np.asarray([[1.0], [-1.0]]),
+    )
+
+    np.testing.assert_array_equal(mask, [True, False])
+    np.testing.assert_array_equal(sign_flipped, [True, False])
 
 
 def test_finite_barrier_report_detects_trace_phase_capacity() -> None:
