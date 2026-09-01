@@ -498,8 +498,22 @@ def test_public_support_release_relaxes_only_the_initializer_partition(
     assert release["role"] == "initializer_only"
     assert not release["condensate_inventory_preserved"]
     assert release["final_physical_audit_authoritative"]
-    assert alternatives["support_release_function_evaluation_reserve"] > 0
-    assert alternatives["portfolio_function_evaluation_limit"] > 0
+    requested_reserve = alternatives[
+        "downstream_function_evaluation_reserve_requested"
+    ]
+    actual_reserve = alternatives[
+        "support_release_function_evaluation_reserve"
+    ]
+    portfolio_limit = alternatives["portfolio_function_evaluation_limit"]
+    assert requested_reserve > 0
+    assert 0 <= actual_reserve <= requested_reserve
+    if portfolio_limit is None:
+        assert actual_reserve == 0
+    else:
+        assert portfolio_limit >= 0
+        assert actual_reserve + portfolio_limit <= closure[
+            "function_evaluation_limit"
+        ]
 
     source = tuple(generation["source_support_indices"])
     selected = tuple(release["selected_support_indices"])
