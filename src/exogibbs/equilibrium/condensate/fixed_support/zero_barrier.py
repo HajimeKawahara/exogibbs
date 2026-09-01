@@ -17,6 +17,9 @@ from exogibbs.equilibrium.condensate.support_geometry import (
     maximum_condensate_amount_scales as _maximum_condensate_amount_scales,
 )
 from exogibbs.equilibrium.condensate.support_geometry import (
+    monotone_formula_row_mask as _monotone_formula_row_mask,
+)
+from exogibbs.equilibrium.condensate.support_geometry import (
     reduce_initial_condensate_support_to_basic,
 )
 
@@ -76,6 +79,24 @@ class _FunctionEvaluationBudget:
         if evaluations < 0 or evaluations > self.remaining:
             raise RuntimeError("Invalid zero-barrier function-evaluation count.")
         self.used += evaluations
+
+
+def _partition_function_evaluation_budget(
+    budget: _FunctionEvaluationBudget | None,
+    downstream_reserve: int,
+) -> tuple[
+    _FunctionEvaluationBudget | None,
+    _FunctionEvaluationBudget | None,
+    int,
+]:
+    """Return a child budget while preserving requested downstream work."""
+
+    requested = max(0, int(downstream_reserve))
+    if budget is None or requested == 0:
+        return budget, None, 0
+    reserved = min(requested, budget.remaining)
+    child = _FunctionEvaluationBudget(budget.remaining - reserved)
+    return child, child, reserved
 
 
 def _function_evaluation_call_limit(
@@ -1422,6 +1443,20 @@ def _physical_audit_root_blocks_passed(
     )
 
 
+def _normalized_linear_variable_scale(
+    initial_values: np.ndarray,
+    strategy: str,
+) -> np.ndarray:
+    """Return a deterministic trust-region scale for normalized variables."""
+
+    values = np.asarray(initial_values, dtype=np.float64)
+    if strategy == "initializer_relative":
+        return np.maximum(np.abs(values), 1.0)
+    if strategy == "dimensionless_unit":
+        return np.ones_like(values)
+    raise ValueError(f"Unknown normalized variable scaling: {strategy!r}.")
+
+
 def _solve_normalized_gas_reduced_linear_support(
     *,
     gas_formula_matrix: np.ndarray,
@@ -1441,6 +1476,7 @@ def _solve_normalized_gas_reduced_linear_support(
     total_density_tolerance: float,
     support_closure_tolerance: float,
     max_function_evaluations: int,
+    variable_scaling: str = "initializer_relative",
     function_evaluation_budget: _FunctionEvaluationBudget | None = None,
 ) -> dict[str, Any]:
     """Solve a support after analytically eliminating gas log amounts.
@@ -1584,17 +1620,19 @@ def _solve_normalized_gas_reduced_linear_support(
             attempts.append(
                 {
                     "support_indices": current_support,
+                    "variable_scaling": variable_scaling,
                     "optimizer_success": False,
                     "function_evaluations": 0,
                     "failure_reason": "function_evaluation_limit_reached",
                 }
             )
             break
-        # Finite-barrier potentials can dwarf the other variables for trace
-        # elements.  Preserve their initializer-relative scale: capping it
-        # inflates the scaled trust radius and can send total gas into an
-        # underflow plateau.
-        variable_scale = np.maximum(np.abs(x0), 1.0)
+        # The default preserves very large finite-barrier potentials for trace
+        # elements.  A guarded restart may instead use the natural unit scale
+        # of these dimensionless variables after that first solve stalls.
+        variable_scale = _normalized_linear_variable_scale(
+            x0, variable_scaling
+        )
         try:
             optimization = _least_squares_with_scipy_overflow_guard(
                 residual,
@@ -1615,6 +1653,7 @@ def _solve_normalized_gas_reduced_linear_support(
             attempts.append(
                 {
                     "support_indices": current_support,
+                    "variable_scaling": variable_scaling,
                     "optimizer_success": False,
                     "function_evaluations": conservative_evaluations,
                     "function_evaluations_conservative": bool(
@@ -1670,6 +1709,7 @@ def _solve_normalized_gas_reduced_linear_support(
         attempts.append(
             {
                 "support_indices": current_support,
+                "variable_scaling": variable_scaling,
                 "optimizer_success": bool(optimization.success),
                 "optimizer_status": int(optimization.status),
                 "optimizer_message": str(optimization.message),
@@ -1737,13 +1777,14 @@ def _solve_normalized_gas_reduced_linear_support(
             "maximum_reduced_variable_count": (
                 element_count + 1 + len(tuple(support_indices))
             ),
+            "variable_scaling": variable_scaling,
             "dropped_support_indices": tuple(dropped),
             "attempts": tuple(attempts),
         },
     }
 
 
-def _solve_alternative_basic_support_portfolio(
+def _solve_log_domain_support_candidate_portfolio(
     *,
     gas_formula_matrix: np.ndarray,
     condensate_formula_matrix_full: np.ndarray,
@@ -1751,10 +1792,9 @@ def _solve_alternative_basic_support_portfolio(
     gas_standard_source: np.ndarray,
     condensate_standard_source_full: np.ndarray,
     gas_log_amounts_init: np.ndarray,
-    condensate_amounts_init: np.ndarray,
     total_gas_log_amount_init: float,
     element_potential_init: np.ndarray,
-    support_indices: Sequence[int],
+    candidates: Sequence[dict[str, Any]],
     condensate_valid_mask: np.ndarray,
     budget_scale: np.ndarray,
     stationarity_tolerance: float,
@@ -1762,70 +1802,231 @@ def _solve_alternative_basic_support_portfolio(
     total_density_tolerance: float,
     support_closure_tolerance: float,
     max_function_evaluations: int,
-    enabled: bool,
     function_evaluation_budget: _FunctionEvaluationBudget | None = None,
 ) -> dict[str, Any]:
-    """Try rank-deficient support bases under one hard work budget."""
+    """Try ordered supports with mixed log/linear budget residuals."""
 
-    report: dict[str, Any] = {
-        "schema": (
-            "exogibbs_zero_barrier_alternative_basic_support_portfolio_v1"
+    if (
+        function_evaluation_budget is not None
+        and function_evaluation_budget.remaining
+        < int(max_function_evaluations)
+    ):
+        return {
+            "accepted": False,
+            "selected": False,
+            "local_kkt_selected": False,
+            "candidate": None,
+            "initializer_regularization": None,
+            "solve_attempts": (),
+            "stop_reason": "insufficient_full_call_budget",
+            "fallback_reason": "insufficient_full_call_budget",
+        }
+
+    (
+        log_domain_q_initial,
+        log_domain_qtot_initial,
+        log_domain_lambda_initial,
+        initializer_regularization,
+    ) = _capacity_regularized_initializer(
+        gas_formula_matrix=gas_formula_matrix,
+        monotone_constraint_row_mask=_monotone_formula_row_mask(
+            gas_formula_matrix,
+            condensate_formula_matrix_full,
         ),
-        "enabled": bool(enabled),
-        "eligible": False,
-        "attempted": False,
-        "accepted": False,
-        "local_kkt_selected": False,
-        "candidate_generation": None,
-        "solve_attempts": (),
-        "selected_support_indices": None,
-    }
-    if not enabled:
-        report["skip_reason"] = "disabled"
-        return {
-            "accepted": False,
-            "selected": False,
-            "candidate": None,
-            "report": report,
-        }
-
-    candidates, generation_report = (
-        _build_alternative_basic_support_candidates(
-            condensate_formula_matrix_full=(
-                condensate_formula_matrix_full
-            ),
-            target_inventory=target_inventory,
-            condensate_amounts=condensate_amounts_init,
-            support_indices=support_indices,
-            budget_scale=budget_scale,
-            budget_tolerance=budget_tolerance,
-        )
+        target_inventory=target_inventory,
+        gas_standard_source=gas_standard_source,
+        gas_log_amounts=gas_log_amounts_init,
+        total_gas_log_amount=total_gas_log_amount_init,
+        element_potential=element_potential_init,
     )
-    report["eligible"] = bool(generation_report["eligible"])
-    report["candidate_generation"] = generation_report
-    if not candidates:
-        report["skip_reason"] = generation_report.get(
-            "skip_reason",
-            generation_report.get(
-                "failure_reason", "no_feasible_basic_support"
-            ),
-        )
-        return {
-            "accepted": False,
-            "selected": False,
-            "candidate": None,
-            "report": report,
-        }
-
     solve_attempts: list[dict[str, Any]] = []
     selected_candidate: dict[str, Any] | None = None
-    report["attempted"] = True
+    accepted = False
+    local_kkt_selected = False
+    stop_reason = "all_candidates_rejected"
     for candidate in candidates:
         if (
             function_evaluation_budget is not None
             and function_evaluation_budget.remaining <= 0
         ):
-            report["stop_reason"] = "function_evaluation_limit_reached"
+            stop_reason = "function_evaluation_limit_reached"
+            break
+        eligible, _reason = _reduced_log_domain_eligibility(
+            gas_formula_matrix=gas_formula_matrix,
+            condensate_formula_matrix_full=(
+                condensate_formula_matrix_full
+            ),
+            target_inventory=target_inventory,
+            support_indices=candidate["support_indices"],
+        )
+        if not eligible:
+            continue
+        solve = _solve_reduced_log_domain_active_support(
+            gas_formula_matrix=gas_formula_matrix,
+            condensate_formula_matrix_full=(
+                condensate_formula_matrix_full
+            ),
+            target_inventory=target_inventory,
+            gas_standard_source=gas_standard_source,
+            condensate_standard_source_full=(
+                condensate_standard_source_full
+            ),
+            gas_log_amounts_init=log_domain_q_initial,
+            condensate_amounts_init=candidate["condensate_amounts"],
+            total_gas_log_amount_init=log_domain_qtot_initial,
+            element_potential_init=log_domain_lambda_initial,
+            support_indices=candidate["support_indices"],
+            condensate_valid_mask=condensate_valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            allow_greedy_drop=False,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+        solved_candidate = solve["candidate"]
+        local_kkt_passed = bool(
+            solved_candidate is not None
+            and not solved_candidate.get(
+                "active_phase_at_lower_bound", False
+            )
+            and _physical_audit_local_kkt_passed(
+                solved_candidate["audit"],
+                optimizer_success=bool(
+                    solved_candidate["optimizer_success"]
+                ),
+                optimizer_status=int(solved_candidate["optimizer_status"]),
+                stationarity_tolerance=stationarity_tolerance,
+                budget_tolerance=budget_tolerance,
+                total_density_tolerance=total_density_tolerance,
+            )
+        )
+        solve_attempts.append(
+            {
+                "support_indices": tuple(candidate["support_indices"]),
+                "formulation": "reduced_log_domain",
+                "accepted": bool(solve["accepted"]),
+                "local_kkt_passed": local_kkt_passed,
+                "solve": solve["report"],
+            }
+        )
+        if solve["accepted"]:
+            selected_candidate = solved_candidate
+            accepted = True
+            stop_reason = "physical_audit_accepted"
+            break
+        if local_kkt_passed:
+            selected_candidate = solved_candidate
+            local_kkt_selected = True
+            stop_reason = "local_kkt_selected_for_active_set_closure"
+            break
+
+    return {
+        "accepted": accepted,
+        "selected": selected_candidate is not None,
+        "local_kkt_selected": local_kkt_selected,
+        "candidate": selected_candidate,
+        "initializer_regularization": initializer_regularization,
+        "solve_attempts": tuple(solve_attempts),
+        "stop_reason": stop_reason,
+        "fallback_reason": "attempted",
+    }
+
+
+def _solve_normalized_support_candidate_portfolio(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    candidates: Sequence[dict[str, Any]],
+    condensate_valid_mask: np.ndarray,
+    budget_scale: np.ndarray,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+    support_closure_tolerance: float,
+    max_function_evaluations: int,
+    enable_log_domain_fallback: bool = False,
+    prefer_log_domain: bool = False,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> dict[str, Any]:
+    """Solve ordered support candidates under one shared work budget."""
+
+    solve_attempts: list[dict[str, Any]] = []
+    selected_candidate: dict[str, Any] | None = None
+    accepted = False
+    local_kkt_selected = False
+    selected_formulation: str | None = None
+    log_domain_initializer_regularization: dict[str, Any] | None = None
+    log_domain_fallback_reason = "normalized_candidate_selected"
+    stop_reason = "all_candidates_rejected"
+
+    def apply_log_domain_result(result: dict[str, Any]) -> None:
+        nonlocal accepted
+        nonlocal local_kkt_selected
+        nonlocal log_domain_fallback_reason
+        nonlocal log_domain_initializer_regularization
+        nonlocal selected_candidate
+        nonlocal selected_formulation
+        nonlocal stop_reason
+
+        solve_attempts.extend(result["solve_attempts"])
+        log_domain_initializer_regularization = result[
+            "initializer_regularization"
+        ]
+        log_domain_fallback_reason = result["fallback_reason"]
+        if result["solve_attempts"] or result["selected"]:
+            stop_reason = result["stop_reason"]
+        if result["selected"]:
+            selected_candidate = result["candidate"]
+            selected_formulation = "reduced_log_domain"
+            accepted = bool(result["accepted"])
+            local_kkt_selected = bool(result["local_kkt_selected"])
+
+    def run_log_domain_candidates() -> dict[str, Any]:
+        return _solve_log_domain_support_candidate_portfolio(
+            gas_formula_matrix=gas_formula_matrix,
+            condensate_formula_matrix_full=(
+                condensate_formula_matrix_full
+            ),
+            target_inventory=target_inventory,
+            gas_standard_source=gas_standard_source,
+            condensate_standard_source_full=(
+                condensate_standard_source_full
+            ),
+            gas_log_amounts_init=gas_log_amounts_init,
+            total_gas_log_amount_init=total_gas_log_amount_init,
+            element_potential_init=element_potential_init,
+            candidates=candidates,
+            condensate_valid_mask=condensate_valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+
+    if enable_log_domain_fallback and prefer_log_domain:
+        apply_log_domain_result(run_log_domain_candidates())
+
+    normalized_candidates = (
+        () if selected_candidate is not None else candidates
+    )
+    for candidate in normalized_candidates:
+        if (
+            function_evaluation_budget is not None
+            and function_evaluation_budget.remaining <= 0
+        ):
+            stop_reason = "function_evaluation_limit_reached"
             break
         solve = _solve_normalized_gas_reduced_linear_support(
             gas_formula_matrix=gas_formula_matrix,
@@ -1868,6 +2069,9 @@ def _solve_alternative_basic_support_portfolio(
         solve_attempts.append(
             {
                 "support_indices": tuple(candidate["support_indices"]),
+                "formulation": (
+                    "normalized_gas_reduced_linear_amounts"
+                ),
                 "accepted": bool(solve["accepted"]),
                 "local_kkt_passed": local_kkt_passed,
                 "solve": solve["report"],
@@ -1875,31 +2079,398 @@ def _solve_alternative_basic_support_portfolio(
         )
         if solve["accepted"]:
             selected_candidate = solved_candidate
-            report["accepted"] = True
-            report["selected_support_indices"] = tuple(
-                selected_candidate["support_indices"]
+            selected_formulation = (
+                "normalized_gas_reduced_linear_amounts"
             )
-            report["stop_reason"] = "physical_audit_accepted"
+            accepted = True
+            stop_reason = "physical_audit_accepted"
             break
         if local_kkt_passed:
             selected_candidate = solved_candidate
-            report["local_kkt_selected"] = True
-            report["selected_support_indices"] = tuple(
-                selected_candidate["support_indices"]
+            selected_formulation = (
+                "normalized_gas_reduced_linear_amounts"
             )
-            report["stop_reason"] = (
-                "local_kkt_selected_for_active_set_closure"
-            )
+            local_kkt_selected = True
+            stop_reason = "local_kkt_selected_for_active_set_closure"
             break
-    else:
-        report["stop_reason"] = "all_candidates_rejected"
 
-    report["solve_attempts"] = tuple(solve_attempts)
-    report["solve_attempt_count"] = len(solve_attempts)
+    if (
+        selected_candidate is None
+        and enable_log_domain_fallback
+        and not prefer_log_domain
+    ):
+        apply_log_domain_result(run_log_domain_candidates())
+    elif selected_candidate is None and not enable_log_domain_fallback:
+        log_domain_fallback_reason = "disabled"
+
+    return {
+        "accepted": accepted,
+        "selected": selected_candidate is not None,
+        "local_kkt_selected": local_kkt_selected,
+        "candidate": selected_candidate,
+        "selected_support_indices": (
+            None
+            if selected_candidate is None
+            else tuple(selected_candidate["support_indices"])
+        ),
+        "selected_formulation": selected_formulation,
+        "log_domain_initializer_regularization": (
+            log_domain_initializer_regularization
+        ),
+        "log_domain_fallback_reason": log_domain_fallback_reason,
+        "solve_attempts": tuple(solve_attempts),
+        "solve_attempt_count": len(solve_attempts),
+        "stop_reason": stop_reason,
+    }
+
+
+def _select_optimizer_directed_support_release_source(
+    *,
+    candidates: Sequence[dict[str, Any]],
+    solve_attempts: Sequence[dict[str, Any]],
+) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+    """Select a feasible basis whose terminal root points to a proper face."""
+
+    candidate_by_support = {
+        tuple(int(index) for index in candidate["support_indices"]): candidate
+        for candidate in candidates
+    }
+    report: dict[str, Any] = {
+        "schema": (
+            "exogibbs_zero_barrier_optimizer_directed_support_release_v1"
+        ),
+        "attempted": False,
+        "selected": False,
+        "selected_attempt_index": None,
+        "selected_support_indices": None,
+        "nonpositive_support_indices": (),
+        "selection_rule": (
+            "first_optimizer_success_with_mixed_sign_active_amounts"
+        ),
+    }
+    for attempt_index, attempt in enumerate(solve_attempts):
+        if (
+            attempt.get("formulation")
+            != "normalized_gas_reduced_linear_amounts"
+            or bool(attempt.get("accepted", False))
+            or bool(attempt.get("local_kkt_passed", False))
+        ):
+            continue
+        support = tuple(
+            int(index) for index in attempt.get("support_indices", ())
+        )
+        source = candidate_by_support.get(support)
+        inner_attempts = attempt.get("solve", {}).get("attempts", ())
+        if source is None or not inner_attempts:
+            continue
+        report["attempted"] = True
+        terminal = inner_attempts[-1]
+        if not bool(terminal.get("optimizer_success", False)):
+            continue
+        active_amounts = np.asarray(
+            terminal.get("active_condensate_amounts", ()),
+            dtype=np.float64,
+        )
+        if (
+            active_amounts.shape != (len(support),)
+            or not np.all(np.isfinite(active_amounts))
+            or not np.any(active_amounts <= 0.0)
+            or not np.any(active_amounts > 0.0)
+        ):
+            continue
+        nonpositive = tuple(
+            support[position]
+            for position in np.flatnonzero(active_amounts <= 0.0)
+        )
+        selected = {
+            "support_indices": support,
+            "condensate_amounts": np.asarray(
+                source["condensate_amounts"], dtype=np.float64
+            ).copy(),
+        }
+        report.update(
+            {
+                "selected": True,
+                "selected_attempt_index": int(attempt_index),
+                "selected_support_indices": support,
+                "nonpositive_support_indices": nonpositive,
+            }
+        )
+        return selected, report
+    return None, report
+
+
+def _choose_support_release_source(
+    *,
+    default_support_indices: Sequence[int],
+    default_condensate_amounts: np.ndarray,
+    optimizer_directed_source: dict[str, Any] | None,
+    optimizer_directed_report: dict[str, Any] | None,
+    already_tried_supports: Sequence[Sequence[int]] = (),
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Choose a release basis without repeating its suggested proper face."""
+
+    default_source = {
+        "support_indices": tuple(
+            int(index) for index in default_support_indices
+        ),
+        "condensate_amounts": np.asarray(
+            default_condensate_amounts, dtype=np.float64
+        ).copy(),
+    }
+    report: dict[str, Any] = {
+        "schema": "exogibbs_zero_barrier_support_release_source_v1",
+        "selected_source": "selected_basic_support",
+        "selected_support_indices": default_source["support_indices"],
+        "suggested_face_support_indices": None,
+        "optimizer_directed_source_used": False,
+        "fallback_reason": "optimizer_directed_source_unavailable",
+    }
+    if optimizer_directed_source is None:
+        return default_source, report
+
+    directed_report = optimizer_directed_report or {}
+    directed_support = tuple(
+        int(index)
+        for index in optimizer_directed_source["support_indices"]
+    )
+    nonpositive = {
+        int(index)
+        for index in directed_report.get(
+            "nonpositive_support_indices", ()
+        )
+    }
+    suggested_face = tuple(
+        index for index in directed_support if index not in nonpositive
+    )
+    report["suggested_face_support_indices"] = suggested_face
+    tried = {
+        tuple(sorted(int(index) for index in support))
+        for support in already_tried_supports
+    }
+    if tuple(sorted(suggested_face)) in tried:
+        report["fallback_reason"] = "suggested_face_already_tried"
+        return default_source, report
+
+    selected = {
+        "support_indices": directed_support,
+        "condensate_amounts": np.asarray(
+            optimizer_directed_source["condensate_amounts"],
+            dtype=np.float64,
+        ).copy(),
+    }
+    report.update(
+        {
+            "selected_source": (
+                "optimizer_terminated_nonpositive_alternative_basis"
+            ),
+            "selected_support_indices": directed_support,
+            "optimizer_directed_source_used": True,
+            "fallback_reason": None,
+        }
+    )
+    return selected, report
+
+
+def _solve_alternative_basic_support_portfolio(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    support_indices: Sequence[int],
+    condensate_valid_mask: np.ndarray,
+    budget_scale: np.ndarray,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+    support_closure_tolerance: float,
+    max_function_evaluations: int,
+    enabled: bool,
+    excluded_supports: Sequence[Sequence[int]] = (),
+    downstream_function_evaluation_reserve: int = 0,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> dict[str, Any]:
+    """Try rank-deficient support bases under one hard work budget."""
+
+    report: dict[str, Any] = {
+        "schema": (
+            "exogibbs_zero_barrier_alternative_basic_support_portfolio_v1"
+        ),
+        "enabled": bool(enabled),
+        "eligible": False,
+        "attempted": False,
+        "accepted": False,
+        "local_kkt_selected": False,
+        "candidate_generation": None,
+        "solve_attempts": (),
+        "selected_support_indices": None,
+        "selected_formulation": None,
+        "log_domain_initializer_regularization": None,
+        "log_domain_fallback_reason": None,
+        "support_release_source_indices": None,
+        "optimizer_directed_support_release": None,
+        "downstream_function_evaluation_reserve_requested": int(
+            downstream_function_evaluation_reserve
+        ),
+        "downstream_function_evaluation_reserve": 0,
+        "portfolio_function_evaluation_limit": None,
+        "excluded_support_indices": tuple(
+            tuple(int(index) for index in support)
+            for support in excluded_supports
+        ),
+    }
+    if not enabled:
+        report["skip_reason"] = "disabled"
+        return {
+            "accepted": False,
+            "selected": False,
+            "candidate": None,
+            "support_release_source": None,
+            "optimizer_directed_support_release_source": None,
+            "report": report,
+        }
+
+    candidates, generation_report = (
+        _build_alternative_basic_support_candidates(
+            condensate_formula_matrix_full=(
+                condensate_formula_matrix_full
+            ),
+            target_inventory=target_inventory,
+            condensate_amounts=condensate_amounts_init,
+            support_indices=support_indices,
+            budget_scale=budget_scale,
+            budget_tolerance=budget_tolerance,
+        )
+    )
+    report["eligible"] = bool(generation_report["eligible"])
+    report["candidate_generation"] = generation_report
+    if not candidates:
+        report["skip_reason"] = generation_report.get(
+            "skip_reason",
+            generation_report.get(
+                "failure_reason", "no_feasible_basic_support"
+            ),
+        )
+        return {
+            "accepted": False,
+            "selected": False,
+            "candidate": None,
+            "support_release_source": None,
+            "optimizer_directed_support_release_source": None,
+            "report": report,
+        }
+    excluded = {
+        tuple(sorted(int(index) for index in support))
+        for support in excluded_supports
+    }
+    candidates = tuple(
+        candidate
+        for candidate in candidates
+        if tuple(candidate["support_indices"]) not in excluded
+    )
+    if not candidates:
+        report["skip_reason"] = "no_untried_feasible_basic_support"
+        return {
+            "accepted": False,
+            "selected": False,
+            "candidate": None,
+            "support_release_source": None,
+            "optimizer_directed_support_release_source": None,
+            "report": report,
+        }
+
+    release_source = {
+        "support_indices": tuple(candidates[0]["support_indices"]),
+        "condensate_amounts": np.asarray(
+            candidates[0]["condensate_amounts"], dtype=np.float64
+        ).copy(),
+    }
+    report["support_release_source_indices"] = release_source[
+        "support_indices"
+    ]
+
+    requested_reserve = max(
+        0, int(downstream_function_evaluation_reserve)
+    )
+    solve_budget, child_budget, reserved_evaluations = (
+        _partition_function_evaluation_budget(
+            function_evaluation_budget,
+            requested_reserve,
+        )
+    )
+    if child_budget is not None:
+        report["downstream_function_evaluation_reserve"] = (
+            reserved_evaluations
+        )
+        report["portfolio_function_evaluation_limit"] = child_budget.limit
+
+    try:
+        solved = _solve_normalized_support_candidate_portfolio(
+            gas_formula_matrix=gas_formula_matrix,
+            condensate_formula_matrix_full=(
+                condensate_formula_matrix_full
+            ),
+            target_inventory=target_inventory,
+            gas_standard_source=gas_standard_source,
+            condensate_standard_source_full=(
+                condensate_standard_source_full
+            ),
+            gas_log_amounts_init=gas_log_amounts_init,
+            total_gas_log_amount_init=total_gas_log_amount_init,
+            element_potential_init=element_potential_init,
+            candidates=candidates,
+            condensate_valid_mask=condensate_valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            enable_log_domain_fallback=True,
+            function_evaluation_budget=solve_budget,
+        )
+    finally:
+        if child_budget is not None:
+            function_evaluation_budget.consume(child_budget.used)
+    report["attempted"] = bool(solved["solve_attempt_count"])
+    report["accepted"] = solved["accepted"]
+    report["local_kkt_selected"] = solved["local_kkt_selected"]
+    report["selected_support_indices"] = solved[
+        "selected_support_indices"
+    ]
+    report["selected_formulation"] = solved["selected_formulation"]
+    report["log_domain_initializer_regularization"] = solved[
+        "log_domain_initializer_regularization"
+    ]
+    report["log_domain_fallback_reason"] = solved[
+        "log_domain_fallback_reason"
+    ]
+    report["stop_reason"] = solved["stop_reason"]
+    report["solve_attempts"] = solved["solve_attempts"]
+    report["solve_attempt_count"] = solved["solve_attempt_count"]
+    directed_release_source, directed_release_report = (
+        _select_optimizer_directed_support_release_source(
+            candidates=candidates,
+            solve_attempts=solved["solve_attempts"],
+        )
+    )
+    report["optimizer_directed_support_release"] = (
+        directed_release_report
+    )
     return {
         "accepted": bool(report["accepted"]),
-        "selected": bool(selected_candidate is not None),
-        "candidate": selected_candidate,
+        "selected": solved["selected"],
+        "candidate": solved["candidate"],
+        "support_release_source": release_source,
+        "optimizer_directed_support_release_source": (
+            directed_release_source
+        ),
         "report": report,
     }
 
@@ -1911,20 +2482,31 @@ def _reduced_log_domain_eligibility(
     target_inventory: np.ndarray,
     support_indices: Sequence[int],
 ) -> tuple[bool, str]:
-    """Return whether all budget rows admit a positive log formulation."""
+    """Return whether positive monotone rows admit a log formulation.
 
-    if np.any(target_inventory <= 0.0):
+    Signed conservation rows, such as charge balance, remain in scaled linear
+    form.  Only nonnegative rows with positive targets are represented in log
+    space.
+    """
+
+    monotone_rows = _monotone_formula_row_mask(
+        gas_formula_matrix,
+        condensate_formula_matrix_full,
+    )
+    if np.any(monotone_rows & (target_inventory <= 0.0)):
         return False, "nonpositive_target_row"
-    if np.any(gas_formula_matrix < 0.0) or np.any(
-        condensate_formula_matrix_full < 0.0
-    ):
-        return False, "signed_stoichiometry_row"
+    log_rows = monotone_rows & (target_inventory > 0.0)
+    if not np.any(log_rows):
+        return False, "no_positive_monotone_target_row"
     active = np.asarray(tuple(support_indices), dtype=np.int64)
     active_condensates = condensate_formula_matrix_full[:, active]
-    available = np.any(gas_formula_matrix > 0.0, axis=1)
+    available = np.any(gas_formula_matrix[log_rows] > 0.0, axis=1)
     if active.size:
-        available = available | np.any(active_condensates > 0.0, axis=1)
-        if np.any(~np.any(active_condensates > 0.0, axis=0)):
+        available = available | np.any(
+            active_condensates[log_rows] > 0.0,
+            axis=1,
+        )
+        if np.any(~np.any(active_condensates[log_rows] > 0.0, axis=0)):
             return False, "active_phase_without_positive_stoichiometry"
     if np.any(~available):
         return False, "positive_target_without_active_source"
@@ -1953,7 +2535,7 @@ def _solve_reduced_log_domain_active_support(
     allow_greedy_drop: bool = True,
     function_evaluation_budget: _FunctionEvaluationBudget | None = None,
 ) -> dict[str, Any]:
-    """Solve positive nonnegative-stoichiometry budgets in log space."""
+    """Solve monotone budgets in log space and signed budgets linearly."""
 
     ag = gas_formula_matrix
     ac_full = condensate_formula_matrix_full
@@ -1962,9 +2544,12 @@ def _solve_reduced_log_domain_active_support(
     hcond_full = condensate_standard_source_full
     element_count = ag.shape[0]
     condensate_count = ac_full.shape[1]
-    inventory_total = float(np.sum(target))
+    monotone_rows = _monotone_formula_row_mask(ag, ac_full)
+    log_rows = monotone_rows & (target > 0.0)
+    linear_rows = ~log_rows
+    inventory_total = float(np.sum(target[log_rows]))
     log_inventory_total = float(np.log(inventory_total))
-    log_beta = np.log(target) - log_inventory_total
+    log_beta = np.log(target[log_rows]) - log_inventory_total
     relative_amount_floor = max(
         64.0 * np.finfo(np.float64).eps,
         min(1.0e-2, 0.1 * max(float(budget_tolerance), 0.0)),
@@ -2006,7 +2591,7 @@ def _solve_reduced_log_domain_active_support(
         ac = ac_full[:, active]
         hcond = hcond_full[active]
         log_kappa_values = []
-        for column in ac.T:
+        for column in ac[log_rows].T:
             consuming = column > 0.0
             log_kappa_values.append(
                 float(
@@ -2047,21 +2632,38 @@ def _solve_reduced_log_domain_active_support(
             v = values[element_count + 1 :]
             return lambda_, y, v
 
-        log_gas_coefficients = np.full(ag.shape, -np.inf, dtype=np.float64)
-        positive_gas_coefficients = ag > 0.0
+        log_gas_formula = ag[log_rows]
+        log_condensate_formula = ac[log_rows]
+        linear_gas_formula = ag[linear_rows]
+        linear_condensate_formula = ac[linear_rows]
+        log_gas_coefficients = np.full(
+            log_gas_formula.shape,
+            -np.inf,
+            dtype=np.float64,
+        )
+        positive_gas_coefficients = log_gas_formula > 0.0
         log_gas_coefficients[positive_gas_coefficients] = np.log(
-            ag[positive_gas_coefficients]
+            log_gas_formula[positive_gas_coefficients]
         )
         log_condensate_coefficients = np.full(
-            ac.shape, -np.inf, dtype=np.float64
+            log_condensate_formula.shape,
+            -np.inf,
+            dtype=np.float64,
         )
-        positive_condensate_coefficients = ac > 0.0
+        positive_condensate_coefficients = log_condensate_formula > 0.0
         if active.size:
             log_condensate_coefficients[
                 positive_condensate_coefficients
             ] = (
-                np.log(ac[positive_condensate_coefficients])
-                + np.broadcast_to(log_kappa, ac.shape)[
+                np.log(
+                    log_condensate_formula[
+                        positive_condensate_coefficients
+                    ]
+                )
+                + np.broadcast_to(
+                    log_kappa,
+                    log_condensate_formula.shape,
+                )[
                     positive_condensate_coefficients
                 ]
             )
@@ -2088,26 +2690,39 @@ def _solve_reduced_log_domain_active_support(
         def residual(values: np.ndarray) -> np.ndarray:
             (
                 lambda_,
-                _y,
-                _v,
+                y,
+                v,
                 logits,
                 _gas_terms,
                 _condensate_terms,
                 log_budgets,
             ) = log_budget_state(values)
+            with np.errstate(
+                over="ignore",
+                under="ignore",
+                invalid="ignore",
+            ):
+                gas = np.exp(log_inventory_total + y + logits)
+                amounts = np.exp(log_inventory_total + log_kappa + v)
+                linear_budget_residual = budget_scale[linear_rows] * (
+                    linear_gas_formula @ gas
+                    + linear_condensate_formula @ amounts
+                    - target[linear_rows]
+                )
             return np.concatenate(
                 [
                     hcond - ac.T @ lambda_,
                     np.asarray([logsumexp(logits)], dtype=np.float64),
                     log_budgets - log_beta,
+                    linear_budget_residual,
                 ]
             )
 
         def jacobian(values: np.ndarray) -> np.ndarray:
             (
                 _lambda,
-                _y,
-                _v,
+                y,
+                v,
                 logits,
                 gas_terms,
                 condensate_terms,
@@ -2126,22 +2741,54 @@ def _solve_reduced_log_domain_active_support(
                 ag @ normalized_gas
             )
             budget_row_start = support_count + 1
+            log_budget_row_count = int(np.count_nonzero(log_rows))
             y_column = element_count
             v_column_start = element_count + 1
             gas_weights = np.exp(gas_terms - log_budgets[:, None])
             condensate_weights = np.exp(
                 condensate_terms - log_budgets[:, None]
             )
-            matrix[budget_row_start:, :element_count] = (
+            log_budget_rows = slice(
+                budget_row_start,
+                budget_row_start + log_budget_row_count,
+            )
+            matrix[log_budget_rows, :element_count] = (
                 gas_weights @ ag.T
             )
-            matrix[budget_row_start:, y_column] = np.sum(
+            matrix[log_budget_rows, y_column] = np.sum(
                 gas_weights, axis=1
             )
             if support_count:
                 matrix[
-                    budget_row_start:, v_column_start:
+                    log_budget_rows,
+                    v_column_start:,
                 ] = condensate_weights
+            if np.any(linear_rows):
+                linear_row_start = budget_row_start + log_budget_row_count
+                with np.errstate(
+                    over="ignore",
+                    under="ignore",
+                    invalid="ignore",
+                ):
+                    gas = np.exp(log_inventory_total + y + logits)
+                    amounts = np.exp(
+                        log_inventory_total + log_kappa + v
+                    )
+                weighted_linear_gas = linear_gas_formula * gas[None, :]
+                matrix[linear_row_start:, :element_count] = (
+                    budget_scale[linear_rows, None]
+                    * (weighted_linear_gas @ ag.T)
+                )
+                matrix[linear_row_start:, y_column] = (
+                    budget_scale[linear_rows]
+                    * (linear_gas_formula @ gas)
+                )
+                if support_count:
+                    matrix[linear_row_start:, v_column_start:] = (
+                        budget_scale[linear_rows, None]
+                        * linear_condensate_formula
+                        * amounts[None, :]
+                    )
             return matrix
 
         lower = np.concatenate(
@@ -2257,7 +2904,17 @@ def _solve_reduced_log_domain_active_support(
             total_density_tolerance=total_density_tolerance,
         )
         accepted = bool(audit["accepted"] and not at_lower_bound.size)
-        log_residual = residual(optimization.x)
+        solver_residual = residual(optimization.x)
+        budget_residual_start = len(current_support) + 1
+        log_budget_residual_count = int(np.count_nonzero(log_rows))
+        log_budget_residual = solver_residual[
+            budget_residual_start : (
+                budget_residual_start + log_budget_residual_count
+            )
+        ]
+        linear_budget_scaled_residual = solver_residual[
+            budget_residual_start + log_budget_residual_count :
+        ]
         with np.errstate(over="ignore", under="ignore", invalid="ignore"):
             relative_phase_amounts = np.exp(v)
         attempt = {
@@ -2269,7 +2926,15 @@ def _solve_reduced_log_domain_active_support(
             "cost": float(optimization.cost),
             "optimality": float(optimization.optimality),
             "log_domain_residual_max_abs": float(
-                np.max(np.abs(log_residual), initial=0.0)
+                np.max(np.abs(solver_residual), initial=0.0)
+            ),
+            "log_budget_residual_max_abs": float(
+                np.max(np.abs(log_budget_residual), initial=0.0)
+            ),
+            "linear_budget_scaled_residual_max_abs": float(
+                np.max(
+                    np.abs(linear_budget_scaled_residual), initial=0.0
+                )
             ),
             "relative_phase_amounts": tuple(
                 float(value) for value in relative_phase_amounts.tolist()
@@ -2323,11 +2988,21 @@ def _solve_reduced_log_domain_active_support(
         "accepted": accepted,
         "candidate": last_candidate,
         "report": {
-            "schema": "exogibbs_zero_barrier_reduced_log_domain_v1",
+            "schema": "exogibbs_zero_barrier_reduced_log_domain_v2",
             "eligible": True,
             "attempted": True,
             "accepted": accepted,
+            "budget_residual_formulation": (
+                "mixed_log_linear" if np.any(linear_rows) else "log"
+            ),
+            "log_inventory_normalization": inventory_total,
             "inventory_normalization": inventory_total,
+            "log_budget_rows": tuple(
+                int(index) for index in np.flatnonzero(log_rows).tolist()
+            ),
+            "linear_budget_rows": tuple(
+                int(index) for index in np.flatnonzero(linear_rows).tolist()
+            ),
             "relative_amount_floor": relative_amount_floor,
             "greedy_drop_enabled": bool(allow_greedy_drop),
             "dropped_support_indices": tuple(dropped),
@@ -2676,6 +3351,341 @@ def _solve_structural_zero_reduced_log_domain_active_support(
     }
 
 
+def _bounded_leave_one_out_supports(
+    support_indices: Sequence[int],
+    *,
+    max_support_nodes: int,
+    minimum_support_count: int = 0,
+    drop_priority: dict[int, tuple[float, int]] | None = None,
+) -> tuple[tuple[tuple[int, ...], ...], bool]:
+    """Enumerate a bounded breadth-first support face lattice."""
+
+    initial_support = tuple(int(index) for index in support_indices)
+    node_limit = int(max_support_nodes)
+    minimum_count = int(minimum_support_count)
+    if node_limit <= 0:
+        return (), bool(initial_support)
+    if minimum_count < 0:
+        raise ValueError("minimum_support_count must be non-negative.")
+
+    queue: list[tuple[int, ...]] = [initial_support]
+    queued = {initial_support}
+    visited: list[tuple[int, ...]] = []
+    while queue and len(visited) < node_limit:
+        support = queue.pop(0)
+        visited.append(support)
+        if len(support) <= minimum_count:
+            continue
+        positions = tuple(range(len(support)))
+        if drop_priority is not None:
+            positions = tuple(
+                sorted(
+                    positions,
+                    key=lambda position: drop_priority[support[position]],
+                )
+            )
+        for local_index in positions:
+            child = support[:local_index] + support[local_index + 1 :]
+            if child not in queued:
+                queue.append(child)
+                queued.add(child)
+    return tuple(visited), bool(queue)
+
+
+def _build_support_release_candidates(
+    *,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    condensate_amounts: np.ndarray,
+    support_indices: Sequence[int],
+    max_support_nodes: int = _REDUCED_SUPPORT_NODE_LIMIT,
+) -> tuple[tuple[dict[str, Any], ...], dict[str, Any]]:
+    """Build lower-dimensional support initializers without fixing burden."""
+
+    formula = np.asarray(
+        condensate_formula_matrix_full, dtype=np.float64
+    )
+    target = np.asarray(target_inventory, dtype=np.float64)
+    amounts = np.asarray(condensate_amounts, dtype=np.float64)
+    source_support = tuple(
+        sorted(int(index) for index in support_indices)
+    )
+    report: dict[str, Any] = {
+        "schema": "exogibbs_zero_barrier_support_release_candidates_v1",
+        "eligible": False,
+        "attempted": False,
+        "source_support_indices": source_support,
+        "source_support_count": len(source_support),
+        "candidate_ordering": (
+            "breadth_first_removed_maximum_amount_scale_then_catalog_index"
+        ),
+        "condensate_inventory_preserved": False,
+        "node_limit": int(max_support_nodes),
+        "node_limit_reached": False,
+        "candidate_records": (),
+        "candidate_count": 0,
+    }
+    if (
+        formula.ndim != 2
+        or target.shape != (formula.shape[0],)
+        or amounts.shape != (formula.shape[1],)
+        or len(source_support) < 1
+        or len(set(source_support)) != len(source_support)
+        or any(
+            index < 0 or index >= formula.shape[1]
+            for index in source_support
+        )
+    ):
+        report["skip_reason"] = "invalid_source_support"
+        return (), report
+    if (
+        not np.all(np.isfinite(formula))
+        or not np.all(np.isfinite(target))
+        or not np.all(np.isfinite(amounts))
+        or np.any(amounts < 0.0)
+    ):
+        report["skip_reason"] = "invalid_numerical_initializer"
+        return (), report
+    active = np.asarray(source_support, dtype=np.int64)
+    source_amounts = amounts[active]
+    maximum_amount_scales = _maximum_condensate_amount_scales(
+        formula[:, active],
+        target,
+    )
+    source_rank = int(np.linalg.matrix_rank(formula[:, active]))
+    report["source_support_rank"] = source_rank
+    if (
+        source_rank != len(source_support)
+        or not np.all(np.isfinite(source_amounts))
+        or not np.all(np.isfinite(maximum_amount_scales))
+        or np.any(maximum_amount_scales <= 0.0)
+    ):
+        report["skip_reason"] = "source_support_not_releasable"
+        return (), report
+
+    scale_by_index = {
+        int(index): float(scale)
+        for index, scale in zip(
+            active.tolist(), maximum_amount_scales.tolist()
+        )
+    }
+    drop_priority = {
+        index: (scale_by_index[index], index)
+        for index in source_support
+    }
+    support_nodes, node_limit_reached = (
+        _bounded_leave_one_out_supports(
+            source_support,
+            max_support_nodes=max_support_nodes,
+            minimum_support_count=0,
+            drop_priority=drop_priority,
+        )
+    )
+    candidates: list[dict[str, Any]] = []
+    candidate_records: list[dict[str, Any]] = []
+    source_set = set(source_support)
+    for support in support_nodes[1:]:
+        support_set = set(support)
+        removed = tuple(
+            index for index in source_support if index not in support_set
+        )
+        candidate_amounts = np.zeros_like(amounts)
+        if support:
+            retained = np.asarray(support, dtype=np.int64)
+            candidate_amounts[retained] = amounts[retained]
+        candidate_records.append(
+            {
+                "support_indices": support,
+                "removed_support_indices": removed,
+                "removed_maximum_amount_scales": tuple(
+                    scale_by_index[index] for index in removed
+                ),
+            }
+        )
+        if support_set.issubset(source_set):
+            candidates.append(
+                {
+                    "support_indices": support,
+                    "condensate_amounts": candidate_amounts,
+                }
+            )
+
+    report.update(
+        {
+            "eligible": bool(candidates),
+            "attempted": True,
+            "source_phase_maximum_amount_scales": tuple(
+                scale_by_index[index] for index in source_support
+            ),
+            "node_limit_reached": node_limit_reached,
+            "candidate_records": tuple(candidate_records),
+            "candidate_count": len(candidates),
+        }
+    )
+    if not candidates:
+        report["failure_reason"] = "no_proper_support_candidates"
+    return tuple(candidates), report
+
+
+def _solve_support_release_portfolio(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    support_indices: Sequence[int],
+    condensate_valid_mask: np.ndarray,
+    budget_scale: np.ndarray,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+    support_closure_tolerance: float,
+    max_function_evaluations: int,
+    enabled: bool,
+    enable_log_domain_fallback: bool = False,
+    prefer_log_domain: bool = False,
+    downstream_function_evaluation_reserve: int = 0,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> dict[str, Any]:
+    """Try proper faces of a failed basic support as exact initializers."""
+
+    report: dict[str, Any] = {
+        "schema": "exogibbs_zero_barrier_support_release_portfolio_v1",
+        "role": "initializer_only",
+        "trigger": "burden_preserving_support_local_roots_failed",
+        "source": None,
+        "source_support_indices": None,
+        "support_release_function_evaluation_limit": None,
+        "outer_closure_function_evaluation_reserve": None,
+        "downstream_function_evaluation_reserve_requested": int(
+            downstream_function_evaluation_reserve
+        ),
+        "downstream_function_evaluation_reserve": 0,
+        "portfolio_function_evaluation_limit": None,
+        "enabled": bool(enabled),
+        "eligible": False,
+        "attempted": False,
+        "accepted": False,
+        "local_kkt_selected": False,
+        "candidate_generation": None,
+        "solve_attempts": (),
+        "selected_support_indices": None,
+        "selected_formulation": None,
+        "log_domain_initializer_regularization": None,
+        "log_domain_fallback_reason": None,
+        "prefer_log_domain": bool(prefer_log_domain),
+        "condensate_inventory_preserved": False,
+        "final_physical_audit_authoritative": True,
+    }
+    if not enabled:
+        report["skip_reason"] = "disabled"
+        return {
+            "accepted": False,
+            "selected": False,
+            "candidate": None,
+            "report": report,
+        }
+
+    candidates, generation_report = _build_support_release_candidates(
+        condensate_formula_matrix_full=condensate_formula_matrix_full,
+        target_inventory=target_inventory,
+        condensate_amounts=condensate_amounts_init,
+        support_indices=support_indices,
+    )
+    report["eligible"] = bool(generation_report["eligible"])
+    report["candidate_generation"] = generation_report
+    if not candidates:
+        report["skip_reason"] = generation_report.get(
+            "skip_reason",
+            generation_report.get(
+                "failure_reason", "no_proper_support_candidates"
+            ),
+        )
+        return {
+            "accepted": False,
+            "selected": False,
+            "candidate": None,
+            "report": report,
+        }
+
+    solve_budget, child_budget, reserved_evaluations = (
+        _partition_function_evaluation_budget(
+            function_evaluation_budget,
+            downstream_function_evaluation_reserve,
+        )
+    )
+    if child_budget is not None:
+        report["downstream_function_evaluation_reserve"] = (
+            reserved_evaluations
+        )
+        report["portfolio_function_evaluation_limit"] = child_budget.limit
+        report["support_release_function_evaluation_limit"] = (
+            child_budget.limit
+        )
+    try:
+        solved = _solve_normalized_support_candidate_portfolio(
+            gas_formula_matrix=gas_formula_matrix,
+            condensate_formula_matrix_full=condensate_formula_matrix_full,
+            target_inventory=target_inventory,
+            gas_standard_source=gas_standard_source,
+            condensate_standard_source_full=(
+                condensate_standard_source_full
+            ),
+            gas_log_amounts_init=gas_log_amounts_init,
+            total_gas_log_amount_init=total_gas_log_amount_init,
+            element_potential_init=element_potential_init,
+            candidates=candidates,
+            condensate_valid_mask=condensate_valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            enable_log_domain_fallback=enable_log_domain_fallback,
+            prefer_log_domain=prefer_log_domain,
+            function_evaluation_budget=solve_budget,
+        )
+    finally:
+        if child_budget is not None:
+            function_evaluation_budget.consume(child_budget.used)
+    if child_budget is not None:
+        report["outer_closure_function_evaluation_reserve"] = (
+            function_evaluation_budget.remaining
+        )
+    report.update(
+        {
+            "attempted": bool(solved["solve_attempt_count"]),
+            "accepted": solved["accepted"],
+            "local_kkt_selected": solved["local_kkt_selected"],
+            "selected_support_indices": solved[
+                "selected_support_indices"
+            ],
+            "selected_formulation": solved["selected_formulation"],
+            "log_domain_initializer_regularization": solved[
+                "log_domain_initializer_regularization"
+            ],
+            "log_domain_fallback_reason": solved[
+                "log_domain_fallback_reason"
+            ],
+            "solve_attempts": solved["solve_attempts"],
+            "solve_attempt_count": solved["solve_attempt_count"],
+            "stop_reason": solved["stop_reason"],
+        }
+    )
+    return {
+        "accepted": solved["accepted"],
+        "selected": solved["selected"],
+        "candidate": solved["candidate"],
+        "report": report,
+    }
+
+
 def _solve_reduced_log_domain_support_branches(
     *,
     gas_formula_matrix: np.ndarray,
@@ -2709,24 +3719,23 @@ def _solve_reduced_log_domain_support_branches(
     """
 
     initial_support = tuple(int(index) for index in support_indices)
-    queue: list[tuple[int, ...]] = [initial_support]
-    queued = {initial_support}
-    visited: set[tuple[int, ...]] = set()
+    support_candidates, candidate_limit_reached = (
+        _bounded_leave_one_out_supports(
+            initial_support,
+            max_support_nodes=max_support_nodes,
+        )
+    )
     node_reports: list[dict[str, Any]] = []
     accepted_result: dict[str, Any] | None = None
 
     evaluation_limit_reached = False
-    while queue and len(visited) < int(max_support_nodes):
+    for support in support_candidates:
         if (
             function_evaluation_budget is not None
             and function_evaluation_budget.remaining <= 0
         ):
             evaluation_limit_reached = True
             break
-        support = queue.pop(0)
-        if support in visited:
-            continue
-        visited.add(support)
         result = _solve_reduced_log_domain_active_support(
             gas_formula_matrix=gas_formula_matrix,
             condensate_formula_matrix_full=(
@@ -2762,11 +3771,6 @@ def _solve_reduced_log_domain_support_branches(
         if result["accepted"]:
             accepted_result = result
             break
-        for local_index in range(len(support)):
-            child = support[:local_index] + support[local_index + 1 :]
-            if child not in visited and child not in queued:
-                queue.append(child)
-                queued.add(child)
 
     accepted = bool(accepted_result and accepted_result["accepted"])
     return {
@@ -2788,9 +3792,12 @@ def _solve_reduced_log_domain_support_branches(
                 else accepted_result["candidate"]["support_indices"]
             ),
             "node_limit": int(max_support_nodes),
-            "visited_node_count": len(visited),
+            "visited_node_count": len(node_reports),
             "node_limit_reached": bool(
-                queue and len(visited) >= int(max_support_nodes)
+                not accepted
+                and not evaluation_limit_reached
+                and len(node_reports) == len(support_candidates)
+                and candidate_limit_reached
             ),
             "function_evaluation_limit_reached": (
                 evaluation_limit_reached
@@ -2806,12 +3813,18 @@ def _solve_reduced_log_domain_support_branches(
 def _gas_elemental_capacities(
     gas_formula_matrix: np.ndarray,
     target_inventory: np.ndarray,
+    monotone_constraint_row_mask: np.ndarray,
 ) -> np.ndarray:
     """Return maximum gas amounts allowed by every consumed element."""
 
+    monotone_rows = np.asarray(monotone_constraint_row_mask, dtype=bool)
+    if monotone_rows.shape != (gas_formula_matrix.shape[0],):
+        raise ValueError(
+            "monotone_constraint_row_mask must have one value per element."
+        )
     capacities = np.zeros(gas_formula_matrix.shape[1], dtype=np.float64)
     for index, column in enumerate(gas_formula_matrix.T):
-        consuming = column > 0.0
+        consuming = monotone_rows & (column > 0.0)
         if not np.any(consuming):
             continue
         inventories = target_inventory[consuming]
@@ -3047,6 +4060,7 @@ def _pivot_rank_one_support_addition(
 def _capacity_regularized_initializer(
     *,
     gas_formula_matrix: np.ndarray,
+    monotone_constraint_row_mask: np.ndarray,
     target_inventory: np.ndarray,
     gas_standard_source: np.ndarray,
     gas_log_amounts: np.ndarray,
@@ -3069,6 +4083,7 @@ def _capacity_regularized_initializer(
     capacities = _gas_elemental_capacities(
         gas_formula_matrix,
         target_inventory,
+        monotone_constraint_row_mask,
     )
     with np.errstate(over="ignore", under="ignore", invalid="ignore"):
         amount_before = np.exp(q_before)
@@ -3150,6 +4165,12 @@ def _capacity_regularized_initializer(
         ),
         "applied": bool(np.any(regularized_mask)),
         "capacity_fraction": _INITIALIZER_CAPACITY_FRACTION,
+        "monotone_constraint_row_mask": tuple(
+            bool(value)
+            for value in np.asarray(
+                monotone_constraint_row_mask, dtype=bool
+            ).tolist()
+        ),
         "regularized_gas_count": int(np.count_nonzero(regularized_mask)),
         "regularized_gas_mask": tuple(
             bool(value) for value in regularized_mask.tolist()
@@ -3183,6 +4204,95 @@ def _capacity_regularized_initializer(
         ),
     }
     return q_after, qtot_after, lambda_after, report
+
+
+def _normalized_linear_domain_eligibility(
+    *,
+    gas_formula_matrix: np.ndarray,
+    target_inventory: np.ndarray,
+) -> tuple[bool, str]:
+    """Return whether the inventory admits a normalized-linear solve.
+
+    Unlike a positive log-budget formulation, the normalized-linear solver
+    accepts exact-zero targets and signed rows such as charge balance.
+    Numerical feasibility is determined by the solve and physical audit.
+    """
+
+    formula = np.asarray(gas_formula_matrix, dtype=np.float64)
+    target = np.asarray(target_inventory, dtype=np.float64)
+    if (
+        formula.ndim != 2
+        or target.shape != (formula.shape[0],)
+        or not np.all(np.isfinite(formula))
+        or not np.all(np.isfinite(target))
+        or np.any(target < 0.0)
+    ):
+        return False, "invalid_normalized_linear_structure"
+    if not np.any(target > 0.0):
+        return False, "no_positive_target_row"
+    return True, "eligible"
+
+
+def _self_reopening_dropped_support_indices(
+    *,
+    solve_report: dict[str, Any],
+    candidate: dict[str, Any] | None,
+    condensate_valid_mask: np.ndarray,
+    support_closure_tolerance: float,
+) -> tuple[int, ...]:
+    """Return dropped phases that the candidate immediately reopens.
+
+    Such a candidate is a valid local root for its reduced support, but it is
+    not a useful first choice when another initializer for the attempted
+    support remains available.  Final support closure remains authoritative.
+    """
+
+    if candidate is None:
+        return ()
+    dropped = tuple(
+        int(index)
+        for index in solve_report.get("dropped_support_indices", ())
+    )
+    audit = candidate.get("audit", {})
+    driving = np.asarray(audit.get("full_driving", ()), dtype=np.float64)
+    valid = np.asarray(condensate_valid_mask, dtype=bool)
+    if (
+        not dropped
+        or driving.ndim != 1
+        or valid.shape != driving.shape
+        or not np.all(np.isfinite(driving))
+        or any(index < 0 or index >= driving.size for index in dropped)
+    ):
+        return ()
+    tolerance = float(support_closure_tolerance)
+    return tuple(
+        index
+        for index in dropped
+        if valid[index] and driving[index] < -tolerance
+    )
+
+
+def _normalized_linear_unit_restart_eligibility(
+    *,
+    candidate: dict[str, Any] | None,
+    local_kkt_passed: bool,
+) -> tuple[bool, str]:
+    """Identify a finite evaluation-limit state eligible for one restart."""
+
+    if local_kkt_passed:
+        return False, "local_kkt_already_satisfied"
+    if candidate is None:
+        return False, "candidate_unavailable"
+    if bool(candidate.get("optimizer_success", False)):
+        return False, "optimizer_succeeded"
+    if candidate.get("optimizer_status") != 0:
+        return False, "not_function_evaluation_limit"
+    audit = candidate.get("audit")
+    if not isinstance(audit, dict) or not bool(audit.get("finite", False)):
+        return False, "terminal_candidate_not_finite"
+    if not bool(audit.get("positive_active_amounts", False)):
+        return False, "terminal_active_amounts_not_positive"
+    return True, "finite_function_evaluation_limit"
 
 
 def _polish_zero_barrier_support_once(
@@ -3348,6 +4458,8 @@ def _polish_zero_barrier_support_once(
         reduced_full_m = np.asarray(
             dual_support["condensate_amounts"], dtype=np.float64
         )
+        basic_support_input = reduced_support
+        basic_support_input_full_m = reduced_full_m
         reduced_q_initial = np.asarray(
             dual_support["gas_log_amounts"], dtype=np.float64
         )
@@ -3383,6 +4495,8 @@ def _polish_zero_barrier_support_once(
         homotopy_full_m = np.asarray(
             finite_homotopy["condensate_amounts"], dtype=np.float64
         )
+        basic_support_input = homotopy_support
+        basic_support_input_full_m = homotopy_full_m
         (
             reduced_support,
             reduced_full_m,
@@ -3410,6 +4524,8 @@ def _polish_zero_barrier_support_once(
             finite_homotopy["element_potential"], dtype=np.float64
         )
     else:
+        basic_support_input = support_initial
+        basic_support_input_full_m = full_m_initial
         (
             reduced_support,
             reduced_full_m,
@@ -3434,6 +4550,9 @@ def _polish_zero_barrier_support_once(
         initializer_regularization,
     ) = _capacity_regularized_initializer(
         gas_formula_matrix=ag,
+        monotone_constraint_row_mask=_monotone_formula_row_mask(
+            ag, ac_full
+        ),
         target_inventory=target,
         gas_standard_source=gamma,
         gas_log_amounts=reduced_q_initial,
@@ -3443,11 +4562,9 @@ def _polish_zero_barrier_support_once(
     (
         regularized_primary_structure_eligible,
         regularized_primary_structure_reason,
-    ) = _reduced_log_domain_eligibility(
+    ) = _normalized_linear_domain_eligibility(
         gas_formula_matrix=ag,
-        condensate_formula_matrix_full=ac_full,
         target_inventory=target,
-        support_indices=reduced_support,
     )
     regularized_primary_full_rank = bool(
         initializer_regularization["element_potential_fit_rank"]
@@ -3554,9 +4671,16 @@ def _polish_zero_barrier_support_once(
         "regularized_function_evaluation_limit": None,
         "regularized_function_evaluations": 0,
         "raw_function_evaluation_reserve": None,
+        "dimensionless_unit_restart_eligible": False,
+        "dimensionless_unit_restart_reason": "regularized_attempt_not_run",
+        "dimensionless_unit_restart_attempted": False,
+        "final_physical_audit_authoritative": True,
         "unregularized_attempted": False,
         "raw_retry_attempted": False,
+        "raw_retry_reason": None,
+        "deferred_initializer": None,
         "selected_initializer": None,
+        "selected_variable_scaling": None,
         "attempts": (),
         "discarded_solve_reports": (),
     }
@@ -3677,6 +4801,13 @@ def _polish_zero_barrier_support_once(
             support_closure_tolerance=support_closure_tolerance,
             max_function_evaluations=max_function_evaluations,
             enabled=alternative_basic_support_solve_enabled,
+            downstream_function_evaluation_reserve=(
+                2 * int(max_function_evaluations)
+                if alternative_basic_support_solve_enabled
+                and not dual_support["applied"]
+                and not finite_homotopy["applied"]
+                else 0
+            ),
             function_evaluation_budget=function_evaluation_budget,
         )
     )
@@ -3693,71 +4824,162 @@ def _polish_zero_barrier_support_once(
         primary_candidate = alternative_basic_support["candidate"]
         reduced_primary_selected = True
         selected_formulation = (
-            "alternative_basic_support_normalized_gas_reduced_linear_amounts"
+            "alternative_basic_support_"
+            f"{alternative_basic_support_report['selected_formulation']}"
         )
         normalized_primary_report["skip_reason"] = (
             "alternative_basic_support_selected"
         )
 
+    support_release: dict[str, Any] | None = None
+    release_source = alternative_basic_support.get(
+        "support_release_source"
+    )
+    early_release_budget_available = bool(
+        function_evaluation_budget is None
+        or function_evaluation_budget.remaining
+        >= 2 * int(max_function_evaluations)
+    )
+    failed_basic_support_release_enabled = bool(
+        alternative_basic_support_solve_enabled
+        and not alternative_basic_support["selected"]
+        and release_source is not None
+        and early_release_budget_available
+        and not dual_support["applied"]
+        and not finite_homotopy["applied"]
+    )
+    if failed_basic_support_release_enabled:
+        support_release = _solve_support_release_portfolio(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts_init=reduced_q_initial,
+            condensate_amounts_init=release_source[
+                "condensate_amounts"
+            ],
+            total_gas_log_amount_init=reduced_qtot_initial,
+            element_potential_init=reduced_lambda_initial,
+            support_indices=release_source["support_indices"],
+            condensate_valid_mask=valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            enabled=True,
+            enable_log_domain_fallback=True,
+            prefer_log_domain=True,
+            downstream_function_evaluation_reserve=(
+                int(max_function_evaluations)
+            ),
+            function_evaluation_budget=function_evaluation_budget,
+        )
+        early_release_report = dict(support_release["report"])
+        early_release_report.update(
+            {
+                "trigger": "failed_basic_support_alternatives_rejected",
+                "source": "first_alternative_basic_support_candidate",
+                "source_support_indices": tuple(
+                    release_source["support_indices"]
+                ),
+            }
+        )
+        support_release = {
+            **support_release,
+            "report": early_release_report,
+        }
+        if support_release["selected"]:
+            primary_candidate = support_release["candidate"]
+            reduced_primary_selected = True
+            selected_formulation = (
+                "support_release_"
+                f"{early_release_report['selected_formulation']}"
+            )
+
     if not reduced_primary_selected:
-        normalized_initializers = []
+        normalized_attempt_queue: list[dict[str, Any]] = []
         if use_regularized_reduced_primary:
-            normalized_initializers.append(
-                (
-                    "capacity_regularized",
-                    q_initial,
-                    qtot_initial,
-                    lambda_initial,
-                )
+            normalized_attempt_queue.append(
+                {
+                    "initializer": "capacity_regularized",
+                    "variable_scaling": "initializer_relative",
+                    "restart_from_terminal_state": False,
+                    "gas_log_amounts": q_initial,
+                    "total_gas_log_amount": qtot_initial,
+                    "element_potential": lambda_initial,
+                    "condensate_amounts": reduced_full_m,
+                    "support_indices": reduced_support,
+                }
             )
-        normalized_initializers.append(
-            (
-                "unregularized",
-                reduced_q_initial,
-                reduced_qtot_initial,
-                reduced_lambda_initial,
-            )
+        normalized_attempt_queue.append(
+            {
+                "initializer": "unregularized",
+                "variable_scaling": "initializer_relative",
+                "restart_from_terminal_state": False,
+                "gas_log_amounts": reduced_q_initial,
+                "total_gas_log_amount": reduced_qtot_initial,
+                "element_potential": reduced_lambda_initial,
+                "condensate_amounts": reduced_full_m,
+                "support_indices": reduced_support,
+            }
         )
         discarded_solve_reports = []
         initializer_attempts = []
-        for (
-            initializer_name,
-            normalized_q_initial,
-            normalized_qtot_initial,
-            normalized_lambda_initial,
-        ) in normalized_initializers:
+        regularized_evaluations = 0
+        if use_regularized_reduced_primary:
+            if function_evaluation_budget is None:
+                raw_reserve = None
+                regularized_limit = 2 * int(max_function_evaluations)
+            else:
+                raw_reserve = min(
+                    int(max_function_evaluations),
+                    function_evaluation_budget.remaining,
+                )
+                regularized_limit = min(
+                    2 * int(max_function_evaluations),
+                    max(
+                        function_evaluation_budget.remaining - raw_reserve,
+                        0,
+                    ),
+                )
+            normalized_initializer_portfolio_report[
+                "regularized_function_evaluation_limit"
+            ] = regularized_limit
+            normalized_initializer_portfolio_report[
+                "raw_function_evaluation_reserve"
+            ] = raw_reserve
+        else:
+            regularized_limit = 0
+        deferred_local_candidate: dict[str, Any] | None = None
+        deferred_solve_report: dict[str, Any] | None = None
+        deferred_initializer_name: str | None = None
+        deferred_variable_scaling: str | None = None
+        deferred_attempt_index: int | None = None
+        queue_index = 0
+        while queue_index < len(normalized_attempt_queue):
+            attempt_spec = normalized_attempt_queue[queue_index]
+            queue_index += 1
+            initializer_name = str(attempt_spec["initializer"])
+            variable_scaling = str(attempt_spec["variable_scaling"])
             attempt_evaluation_budget = function_evaluation_budget
             regularized_child_budget = None
             if initializer_name == "capacity_regularized":
-                if function_evaluation_budget is None:
-                    raw_reserve = None
-                    regularized_limit = int(max_function_evaluations)
-                else:
-                    raw_reserve = min(
-                        int(max_function_evaluations),
-                        function_evaluation_budget.remaining,
-                    )
-                    regularized_limit = min(
-                        int(max_function_evaluations),
-                        max(
-                            function_evaluation_budget.remaining
-                            - raw_reserve,
-                            0,
-                        ),
-                    )
-                normalized_initializer_portfolio_report[
-                    "regularized_function_evaluation_limit"
-                ] = regularized_limit
-                normalized_initializer_portfolio_report[
-                    "raw_function_evaluation_reserve"
-                ] = raw_reserve
-                if regularized_limit <= 0:
+                regularized_remaining = (
+                    regularized_limit - regularized_evaluations
+                )
+                if regularized_remaining <= 0:
                     normalized_initializer_portfolio_report[
                         "regularized_budget_skipped"
                     ] = True
                     continue
                 regularized_child_budget = _FunctionEvaluationBudget(
-                    regularized_limit
+                    min(
+                        int(max_function_evaluations),
+                        regularized_remaining,
+                    )
                 )
                 attempt_evaluation_budget = regularized_child_budget
             try:
@@ -3768,11 +4990,19 @@ def _polish_zero_barrier_support_once(
                         target_inventory=target,
                         gas_standard_source=gamma,
                         condensate_standard_source_full=hcond_full,
-                        gas_log_amounts_init=normalized_q_initial,
-                        condensate_amounts_init=reduced_full_m,
-                        total_gas_log_amount_init=normalized_qtot_initial,
-                        element_potential_init=normalized_lambda_initial,
-                        support_indices=reduced_support,
+                        gas_log_amounts_init=attempt_spec[
+                            "gas_log_amounts"
+                        ],
+                        condensate_amounts_init=attempt_spec[
+                            "condensate_amounts"
+                        ],
+                        total_gas_log_amount_init=attempt_spec[
+                            "total_gas_log_amount"
+                        ],
+                        element_potential_init=attempt_spec[
+                            "element_potential"
+                        ],
+                        support_indices=attempt_spec["support_indices"],
                         condensate_valid_mask=valid_mask,
                         budget_scale=budget_scale,
                         stationarity_tolerance=stationarity_tolerance,
@@ -3782,6 +5012,7 @@ def _polish_zero_barrier_support_once(
                             support_closure_tolerance
                         ),
                         max_function_evaluations=max_function_evaluations,
+                        variable_scaling=variable_scaling,
                         function_evaluation_budget=(
                             attempt_evaluation_budget
                         ),
@@ -3789,18 +5020,82 @@ def _polish_zero_barrier_support_once(
                 )
             finally:
                 if regularized_child_budget is not None:
-                    regularized_evaluations = regularized_child_budget.used
+                    evaluations_used = regularized_child_budget.used
+                    regularized_evaluations += evaluations_used
                     normalized_initializer_portfolio_report[
                         "regularized_function_evaluations"
                     ] = regularized_evaluations
                     if function_evaluation_budget is not None:
                         function_evaluation_budget.consume(
-                            regularized_evaluations
+                            evaluations_used
                         )
             attempt_report = dict(normalized_primary["report"])
             attempt_report["initializer"] = initializer_name
+            attempt_report["variable_scaling"] = variable_scaling
+            attempt_report["restart_from_terminal_state"] = bool(
+                attempt_spec["restart_from_terminal_state"]
+            )
             attempt_candidate = normalized_primary["candidate"]
             local_kkt_passed = candidate_has_local_kkt(attempt_candidate)
+            if (
+                initializer_name == "capacity_regularized"
+                and variable_scaling == "initializer_relative"
+            ):
+                (
+                    unit_restart_eligible,
+                    unit_restart_reason,
+                ) = _normalized_linear_unit_restart_eligibility(
+                    candidate=attempt_candidate,
+                    local_kkt_passed=local_kkt_passed,
+                )
+                normalized_initializer_portfolio_report[
+                    "dimensionless_unit_restart_eligible"
+                ] = unit_restart_eligible
+                normalized_initializer_portfolio_report[
+                    "dimensionless_unit_restart_reason"
+                ] = unit_restart_reason
+                if unit_restart_eligible and attempt_candidate is not None:
+                    normalized_attempt_queue.insert(
+                        queue_index,
+                        {
+                            "initializer": "capacity_regularized",
+                            "variable_scaling": "dimensionless_unit",
+                            "restart_from_terminal_state": True,
+                            "gas_log_amounts": np.asarray(
+                                attempt_candidate["gas_log_amounts"],
+                                dtype=np.float64,
+                            ).copy(),
+                            "total_gas_log_amount": float(
+                                attempt_candidate["total_gas_log_amount"]
+                            ),
+                            "element_potential": np.asarray(
+                                attempt_candidate["element_potential"],
+                                dtype=np.float64,
+                            ).copy(),
+                            "condensate_amounts": np.asarray(
+                                attempt_candidate["condensate_amounts"],
+                                dtype=np.float64,
+                            ).copy(),
+                            "support_indices": tuple(
+                                attempt_candidate["support_indices"]
+                            ),
+                        },
+                    )
+            self_reopening_drops = (
+                _self_reopening_dropped_support_indices(
+                    solve_report=attempt_report,
+                    candidate=attempt_candidate,
+                    condensate_valid_mask=valid_mask,
+                    support_closure_tolerance=(
+                        support_closure_tolerance
+                    ),
+                )
+            )
+            selection_deferred = bool(
+                local_kkt_passed
+                and self_reopening_drops
+                and initializer_name == "capacity_regularized"
+            )
             attempt_audit = (
                 attempt_candidate.get("audit", {})
                 if attempt_candidate is not None
@@ -3808,6 +5103,10 @@ def _polish_zero_barrier_support_once(
             )
             initializer_attempt = {
                 "initializer": initializer_name,
+                "variable_scaling": variable_scaling,
+                "restart_from_terminal_state": bool(
+                    attempt_spec["restart_from_terminal_state"]
+                ),
                 "function_evaluations": sum(
                     int(attempt.get("function_evaluations", 0))
                     for attempt in attempt_report.get("attempts", ())
@@ -3833,6 +5132,18 @@ def _polish_zero_barrier_support_once(
                 "total_density_scaled_abs": attempt_audit.get(
                     "total_density_scaled_abs"
                 ),
+                "dropped_support_indices": tuple(
+                    attempt_report.get("dropped_support_indices", ())
+                ),
+                "self_reopening_dropped_support_indices": (
+                    self_reopening_drops
+                ),
+                "selection_deferred": selection_deferred,
+                "selection_deferred_reason": (
+                    "self_reopening_support_drop"
+                    if selection_deferred
+                    else None
+                ),
                 "selected": False,
             }
             initializer_attempts.append(initializer_attempt)
@@ -3844,16 +5155,62 @@ def _polish_zero_barrier_support_once(
                 normalized_initializer_portfolio_report[
                     "regularized_attempted"
                 ] = True
+                if attempt_spec["restart_from_terminal_state"]:
+                    normalized_initializer_portfolio_report[
+                        "dimensionless_unit_restart_attempted"
+                    ] = True
             else:
                 normalized_initializer_portfolio_report[
                     "unregularized_attempted"
                 ] = True
                 normalized_initializer_portfolio_report[
                     "raw_retry_attempted"
-                ] = bool(discarded_solve_reports)
+                ] = bool(
+                    any(
+                        attempt["initializer"] == "capacity_regularized"
+                        for attempt in initializer_attempts[:-1]
+                    )
+                    or deferred_local_candidate is not None
+                )
+                if (
+                    normalized_initializer_portfolio_report[
+                        "raw_retry_attempted"
+                    ]
+                    and normalized_initializer_portfolio_report[
+                        "raw_retry_reason"
+                    ]
+                    is None
+                ):
+                    normalized_initializer_portfolio_report[
+                        "raw_retry_reason"
+                    ] = "regularized_initializer_failed"
             normalized_primary_report = attempt_report
             primary_candidate = attempt_candidate
+            if selection_deferred:
+                deferred_local_candidate = attempt_candidate
+                deferred_solve_report = attempt_report
+                deferred_initializer_name = initializer_name
+                deferred_variable_scaling = variable_scaling
+                deferred_attempt_index = len(initializer_attempts) - 1
+                normalized_initializer_portfolio_report[
+                    "raw_retry_reason"
+                ] = "self_reopening_support_drop"
+                normalized_initializer_portfolio_report[
+                    "deferred_initializer"
+                ] = initializer_name
+                continue
             if local_kkt_passed:
+                if deferred_solve_report is not None:
+                    discarded_solve_reports.append(
+                        {
+                            "initializer": deferred_initializer_name,
+                            "variable_scaling": deferred_variable_scaling,
+                            "discard_reason": (
+                                "self_reopening_support_drop"
+                            ),
+                            "solve": deferred_solve_report,
+                        }
+                    )
                 reduced_primary_selected = True
                 selected_formulation = (
                     "normalized_gas_reduced_linear_amounts"
@@ -3861,21 +5218,215 @@ def _polish_zero_barrier_support_once(
                 normalized_initializer_portfolio_report[
                     "selected_initializer"
                 ] = initializer_name
+                normalized_initializer_portfolio_report[
+                    "selected_variable_scaling"
+                ] = variable_scaling
                 initializer_attempt["selected"] = True
                 break
-            if initializer_name != normalized_initializers[-1][0]:
+            if initializer_name == "capacity_regularized":
                 discarded_solve_reports.append(
                     {
                         "initializer": initializer_name,
+                        "variable_scaling": variable_scaling,
                         "solve": attempt_report,
                     }
                 )
+        if (
+            not reduced_primary_selected
+            and deferred_local_candidate is not None
+            and deferred_solve_report is not None
+            and deferred_initializer_name is not None
+            and deferred_variable_scaling is not None
+            and deferred_attempt_index is not None
+        ):
+            if normalized_primary_report is not deferred_solve_report:
+                discarded_solve_reports.append(
+                    {
+                        "initializer": normalized_primary_report.get(
+                            "initializer"
+                        ),
+                        "variable_scaling": (
+                            normalized_primary_report.get("variable_scaling")
+                        ),
+                        "discard_reason": "raw_retry_failed",
+                        "solve": normalized_primary_report,
+                    }
+                )
+            primary_candidate = deferred_local_candidate
+            normalized_primary_report = deferred_solve_report
+            reduced_primary_selected = True
+            selected_formulation = (
+                "normalized_gas_reduced_linear_amounts"
+            )
+            normalized_initializer_portfolio_report[
+                "selected_initializer"
+            ] = deferred_initializer_name
+            normalized_initializer_portfolio_report[
+                "selected_variable_scaling"
+            ] = deferred_variable_scaling
+            initializer_attempts[deferred_attempt_index]["selected"] = True
+            initializer_attempts[deferred_attempt_index][
+                "selected_after_raw_retry_failure"
+            ] = True
         normalized_initializer_portfolio_report[
             "attempts"
         ] = tuple(initializer_attempts)
         normalized_initializer_portfolio_report[
             "discarded_solve_reports"
         ] = tuple(discarded_solve_reports)
+
+    support_release_base_enabled = bool(
+        reduce_initial_support
+        and basic_support_reduction.get("attempted", False)
+        and basic_support_reduction.get("applied", False)
+        and basic_support_reduction.get("initial_support_nullity", 0) > 0
+        and basic_support_reduction.get("output_support_nullity") == 0
+        and len(reduced_support) >= 1
+        and not dual_support["applied"]
+        and not finite_homotopy["applied"]
+        and not reduced_primary_selected
+    )
+    alternative_basic_support_postselection_enabled = bool(
+        reduce_initial_support
+        and basic_support_reduction.get("attempted", False)
+        and basic_support_reduction.get("applied", False)
+        and basic_support_reduction.get("initial_support_nullity", 0) > 0
+        and not reduced_primary_selected
+    )
+    if alternative_basic_support_postselection_enabled:
+        alternative_basic_support = (
+            _solve_alternative_basic_support_portfolio(
+                gas_formula_matrix=ag,
+                condensate_formula_matrix_full=ac_full,
+                target_inventory=target,
+                gas_standard_source=gamma,
+                condensate_standard_source_full=hcond_full,
+                gas_log_amounts_init=reduced_q_initial,
+                condensate_amounts_init=basic_support_input_full_m,
+                total_gas_log_amount_init=reduced_qtot_initial,
+                element_potential_init=reduced_lambda_initial,
+                support_indices=basic_support_input,
+                condensate_valid_mask=valid_mask,
+                budget_scale=budget_scale,
+                stationarity_tolerance=stationarity_tolerance,
+                budget_tolerance=budget_tolerance,
+                total_density_tolerance=total_density_tolerance,
+                support_closure_tolerance=support_closure_tolerance,
+                max_function_evaluations=max_function_evaluations,
+                enabled=True,
+                excluded_supports=(reduced_support,),
+                downstream_function_evaluation_reserve=(
+                    2 * int(max_function_evaluations)
+                    if support_release_base_enabled
+                    else 0
+                ),
+                function_evaluation_budget=function_evaluation_budget,
+            )
+        )
+        alternative_basic_support_report = dict(
+            alternative_basic_support["report"]
+        )
+        alternative_basic_support_report.update(
+            {
+                "support_release_function_evaluation_reserve": (
+                    alternative_basic_support_report[
+                        "downstream_function_evaluation_reserve"
+                    ]
+                ),
+            }
+        )
+        alternative_basic_support_report["trigger"] = (
+            "selected_basic_support_local_root_failed"
+        )
+        if alternative_basic_support["selected"]:
+            primary_candidate = alternative_basic_support["candidate"]
+            reduced_primary_selected = True
+            selected_formulation = (
+                "alternative_basic_support_"
+                f"{alternative_basic_support_report['selected_formulation']}"
+            )
+
+    support_release_enabled = bool(
+        support_release_base_enabled and not reduced_primary_selected
+    )
+    if support_release is None:
+        release_source, release_source_report = (
+            _choose_support_release_source(
+                default_support_indices=reduced_support,
+                default_condensate_amounts=reduced_full_m,
+                optimizer_directed_source=alternative_basic_support.get(
+                    "optimizer_directed_support_release_source"
+                ),
+                optimizer_directed_report=(
+                    alternative_basic_support_report.get(
+                        "optimizer_directed_support_release"
+                    )
+                ),
+                already_tried_supports=(reduced_support,),
+            )
+        )
+        release_source_name = release_source_report["selected_source"]
+        alternative_basic_support_report[
+            "support_release_source_selection"
+        ] = release_source_report
+        alternative_basic_support_report[
+            "selected_support_release_source_indices"
+        ] = tuple(release_source["support_indices"])
+        alternative_basic_support_report[
+            "selected_support_release_source"
+        ] = release_source_name
+        support_release = _solve_support_release_portfolio(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts_init=reduced_q_initial,
+            condensate_amounts_init=release_source[
+                "condensate_amounts"
+            ],
+            total_gas_log_amount_init=reduced_qtot_initial,
+            element_potential_init=reduced_lambda_initial,
+            support_indices=release_source["support_indices"],
+            condensate_valid_mask=valid_mask,
+            budget_scale=budget_scale,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            enabled=support_release_enabled,
+            enable_log_domain_fallback=True,
+            prefer_log_domain=True,
+            downstream_function_evaluation_reserve=(
+                int(max_function_evaluations)
+                if support_release_enabled
+                else 0
+            ),
+            function_evaluation_budget=function_evaluation_budget,
+        )
+        postselection_release_report = dict(support_release["report"])
+        postselection_release_report.update(
+            {
+                "trigger": "selected_basic_support_local_root_failed",
+                "source": release_source_name,
+                "source_support_indices": tuple(
+                    release_source["support_indices"]
+                ),
+            }
+        )
+        support_release = {
+            **support_release,
+            "report": postselection_release_report,
+        }
+    support_release_report = dict(support_release["report"])
+    if support_release["selected"]:
+        primary_candidate = support_release["candidate"]
+        reduced_primary_selected = True
+        selected_formulation = (
+            "support_release_"
+            f"{support_release_report['selected_formulation']}"
+        )
 
     support_initializer_applied = bool(
         dual_support["applied"] or finite_homotopy["applied"]
@@ -4420,6 +5971,7 @@ def _polish_zero_barrier_support_once(
         "alternative_basic_support_portfolio": (
             alternative_basic_support_report
         ),
+        "support_release_portfolio": support_release_report,
         "structural_zero_reduced_log_rescue": (
             structural_log_rescue_report
         ),
@@ -4534,16 +6086,27 @@ def _zero_barrier_initializer_portfolio_summary(
     }
 
     def add_portfolio(portfolio: dict[str, Any]) -> None:
-        summary["regularized_attempt_count"] += int(
-            bool(portfolio.get("regularized_attempted", False))
-        )
-        summary["unregularized_attempt_count"] += int(
-            bool(portfolio.get("unregularized_attempted", False))
-        )
+        attempts = tuple(portfolio.get("attempts", ()))
+        if attempts:
+            summary["regularized_attempt_count"] += sum(
+                attempt.get("initializer") == "capacity_regularized"
+                for attempt in attempts
+            )
+            summary["unregularized_attempt_count"] += sum(
+                attempt.get("initializer") == "unregularized"
+                for attempt in attempts
+            )
+        else:
+            summary["regularized_attempt_count"] += int(
+                bool(portfolio.get("regularized_attempted", False))
+            )
+            summary["unregularized_attempt_count"] += int(
+                bool(portfolio.get("unregularized_attempted", False))
+            )
         summary["raw_retry_count"] += int(
             bool(portfolio.get("raw_retry_attempted", False))
         )
-        for attempt in portfolio.get("attempts", ()):
+        for attempt in attempts:
             initializer = attempt.get("initializer")
             evaluations = int(attempt.get("function_evaluations", 0))
             if initializer == "capacity_regularized":
@@ -4614,6 +6177,9 @@ def _zero_barrier_report_function_evaluations(
     )
     reduced += alternative_support_evaluations(
         report.get("alternative_basic_support_portfolio", {})
+    )
+    reduced += alternative_support_evaluations(
+        report.get("support_release_portfolio", {})
     )
     reduced += sum(
         int(round_report.get("function_evaluations", 0))
@@ -4822,6 +6388,7 @@ def polish_zero_barrier_active_support(
     final_result: ZeroBarrierPolishResult | None = None
     initial_basic_support_reduction: dict[str, Any] | None = None
     initial_alternative_basic_support: dict[str, Any] | None = None
+    initial_support_release: dict[str, Any] | None = None
     initial_dual_support_oracle: dict[str, Any] | None = None
     initial_finite_homotopy: dict[str, Any] | None = None
 
@@ -4854,6 +6421,15 @@ def polish_zero_barrier_active_support(
         ):
             initial_alternative_basic_support = dict(
                 report["alternative_basic_support_portfolio"]
+            )
+        if (
+            initial_support_release is None
+            and report.get("support_release_portfolio", {}).get(
+                "enabled", False
+            )
+        ):
+            initial_support_release = dict(
+                report["support_release_portfolio"]
             )
         if (
             initial_dual_support_oracle is None
@@ -5095,6 +6671,9 @@ def polish_zero_barrier_active_support(
                             support_indices=next_support,
                         )
 
+        initializer_portfolio = report.get(
+            "normalized_gas_reduced_initializer_portfolio", {}
+        )
         round_reports.append(
             {
                 "round_index": round_index,
@@ -5123,9 +6702,34 @@ def polish_zero_barrier_active_support(
                 "selected_numerical_formulation": report[
                     "selected_numerical_formulation"
                 ],
-                "selected_normalized_initializer": report.get(
-                    "normalized_gas_reduced_initializer_portfolio", {}
-                ).get("selected_initializer"),
+                "selected_normalized_initializer": (
+                    initializer_portfolio.get("selected_initializer")
+                ),
+                "selected_normalized_variable_scaling": (
+                    initializer_portfolio.get(
+                        "selected_variable_scaling"
+                    )
+                ),
+                "normalized_dimensionless_unit_restart_eligible": bool(
+                    initializer_portfolio.get(
+                        "dimensionless_unit_restart_eligible", False
+                    )
+                ),
+                "normalized_dimensionless_unit_restart_reason": (
+                    initializer_portfolio.get(
+                        "dimensionless_unit_restart_reason"
+                    )
+                ),
+                "normalized_dimensionless_unit_restart_attempted": bool(
+                    initializer_portfolio.get(
+                        "dimensionless_unit_restart_attempted", False
+                    )
+                ),
+                "final_physical_audit_authoritative": bool(
+                    initializer_portfolio.get(
+                        "final_physical_audit_authoritative", True
+                    )
+                ),
                 "alternative_basic_support_attempted": bool(
                     report.get(
                         "alternative_basic_support_portfolio", {}
@@ -5134,10 +6738,23 @@ def polish_zero_barrier_active_support(
                 "alternative_basic_support_selected": bool(
                     report.get(
                         "alternative_basic_support_portfolio", {}
-                    ).get("selected_support_indices")
+                    ).get("selected_support_indices") is not None
                 ),
                 "alternative_basic_support_indices": report.get(
                     "alternative_basic_support_portfolio", {}
+                ).get("selected_support_indices"),
+                "support_release_attempted": bool(
+                    report.get(
+                        "support_release_portfolio", {}
+                    ).get("attempted", False)
+                ),
+                "support_release_selected": bool(
+                    report.get(
+                        "support_release_portfolio", {}
+                    ).get("selected_support_indices") is not None
+                ),
+                "support_release_indices": report.get(
+                    "support_release_portfolio", {}
                 ).get("selected_support_indices"),
                 "regularized_normalized_initializer_attempted": bool(
                     initializer_portfolio_summary[
@@ -5196,6 +6813,10 @@ def polish_zero_barrier_active_support(
     if initial_alternative_basic_support is not None:
         final_report["alternative_basic_support_portfolio"] = (
             initial_alternative_basic_support
+        )
+    if initial_support_release is not None:
+        final_report["support_release_portfolio"] = (
+            initial_support_release
         )
     if initial_dual_support_oracle is not None:
         final_report["zero_barrier_dual_support_oracle"] = (

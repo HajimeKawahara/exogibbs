@@ -147,7 +147,14 @@ def test_regularized_primary_polishes_ito_layer_652_trace_oxygen() -> None:
         attempt["function_evaluations"]
         for attempt in normalized["attempts"]
     ) <= 100
-    assert closure["cumulative_function_evaluations"] < 200
+    cumulative_evaluations = closure["cumulative_function_evaluations"]
+    assert cumulative_evaluations == sum(
+        round_report["function_evaluations"]
+        for round_report in closure["rounds"]
+    )
+    assert cumulative_evaluations <= closure[
+        "function_evaluation_limit"
+    ]
     assert not result.report["linear_amount_physical_audit"]["attempted"]
 
 

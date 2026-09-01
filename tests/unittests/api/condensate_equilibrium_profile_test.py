@@ -129,6 +129,119 @@ def _prepared_real_support(bucket, row: int = 0) -> tuple[int, ...]:
     )
 
 
+def _support_envelope_helper_inputs():
+    payload = _lifecycle._ZeroBarrierInitializerPayload(
+        support_indices=(1,),
+        gas_log_amounts=np.zeros(1, dtype=np.float64),
+        condensate_amounts=np.asarray([0.0, 2.0], dtype=np.float64),
+        total_gas_log_amount=0.0,
+        element_potential=np.zeros(1, dtype=np.float64),
+    )
+    reduction = {
+        "applied": True,
+        "initial_support_nullity": 1,
+        "initial_support_indices": (0, 1),
+        "output_support_indices": (1,),
+        "output_support_nullity": 0,
+    }
+    return payload, (0, 1), reduction
+
+
+def test_support_envelope_expands_support_and_preserves_state() -> None:
+    payload, envelope, reduction = _support_envelope_helper_inputs()
+
+    expanded, report = (
+        _lifecycle._expand_zero_barrier_initializer_support(
+            payload,
+            envelope,
+            source_round_index=0,
+            reduction=reduction,
+            valid_condensates=(True, True),
+        )
+    )
+
+    assert expanded is not None
+    assert expanded.support_indices == envelope
+    assert expanded.gas_log_amounts is payload.gas_log_amounts
+    assert expanded.condensate_amounts is payload.condensate_amounts
+    assert expanded.total_gas_log_amount == payload.total_gas_log_amount
+    assert expanded.element_potential is payload.element_potential
+    assert expanded.condensate_amounts[0] == 0.0
+    assert report["expanded"]
+    assert report["available"]
+    assert report["schema"] == (
+        "exogibbs_zero_barrier_initializer_support_envelope_v1"
+    )
+    assert report["initializer_state_preserved"]
+    assert report["added_support_amounts_zero"]
+    assert report["added_support_indices"] == (0,)
+    assert report["skip_reason"] is None
+
+
+@pytest.mark.parametrize(
+    (
+        "source_round_index",
+        "payload_support",
+        "payload_amounts",
+        "valid_condensates",
+        "expected_reason",
+    ),
+    (
+        (1, (1,), (0.0, 2.0), (True, True), "not_initial_lifecycle_round"),
+        (
+            0,
+            (1,),
+            (1.0, 2.0),
+            (True, True),
+            "initializer_amounts_outside_source_support",
+        ),
+        (
+            0,
+            (0,),
+            (2.0, 0.0),
+            (True, True),
+            "source_support_differs_from_reduced_basis",
+        ),
+        (
+            0,
+            (1,),
+            (0.0, 2.0),
+            (True, False),
+            "temperature_invalid_envelope_support",
+        ),
+    ),
+)
+def test_support_envelope_expansion_fails_closed(
+    source_round_index,
+    payload_support,
+    payload_amounts,
+    valid_condensates,
+    expected_reason,
+) -> None:
+    payload, envelope, reduction = _support_envelope_helper_inputs()
+    payload = _lifecycle._ZeroBarrierInitializerPayload(
+        support_indices=payload_support,
+        gas_log_amounts=payload.gas_log_amounts,
+        condensate_amounts=np.asarray(payload_amounts, dtype=np.float64),
+        total_gas_log_amount=payload.total_gas_log_amount,
+        element_potential=payload.element_potential,
+    )
+
+    expanded, report = (
+        _lifecycle._expand_zero_barrier_initializer_support(
+            payload,
+            envelope,
+            source_round_index=source_round_index,
+            reduction=reduction,
+            valid_condensates=valid_condensates,
+        )
+    )
+
+    assert expanded is payload
+    assert not report["expanded"]
+    assert report["skip_reason"] == expected_reason
+
+
 def test_head_v2_prepared_buckets_apply_layer_fugacity_correction(
     monkeypatch,
 ) -> None:
@@ -555,13 +668,24 @@ def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
     )
 
     def fake_zero_barrier_polish(**kwargs):
+        full_amounts = np.asarray(
+            kwargs["condensate_amounts_init"], dtype=np.float64
+        )
+        captured["polish_support"] = tuple(kwargs["support_indices"])
+        captured["polish_amounts"] = full_amounts.copy()
         return SimpleNamespace(
             accepted=True,
             gas_log_amounts=np.asarray(kwargs["gas_log_amounts_init"]),
-            condensate_amounts=np.asarray(kwargs["condensate_amounts_init"]),
+            condensate_amounts=full_amounts,
             total_gas_log_amount=float(kwargs["total_gas_log_amount_init"]),
             element_potential=np.asarray(kwargs["element_potential_init"]),
-            support_indices=tuple(kwargs["support_indices"]),
+            support_indices=tuple(
+                sorted(
+                    index
+                    for index in kwargs["support_indices"]
+                    if full_amounts[index] > 0.0
+                )
+            ),
             report={"accepted": True, "polish_schema": "unit_test"},
         )
 
@@ -599,6 +723,8 @@ def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
 
     assert captured["support"] == (1, 2)
     assert captured["amounts"] == pytest.approx((0.2, 0.1))
+    assert captured["polish_support"] == (2, 0, 1)
+    assert captured["polish_amounts"][0] == 0.0
     assert result.layers[0].converged
     lifecycle = result.layers[0].diagnostics["fixed_support_v2"]
     reduction = lifecycle["finite_barrier_initial_support_reduction"]
@@ -613,6 +739,12 @@ def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
     )
     assert reduction["fallback_reason"] is None
     assert lifecycle["initial_support_indices"] == (1, 2)
+    envelope = lifecycle["zero_barrier_initializer"][
+        "initial_support_envelope"
+    ]
+    assert envelope["expanded"]
+    assert envelope["initializer_state_preserved"]
+    assert envelope["added_support_amounts_zero"]
     profile_record = result.diagnostics["layers"][0]
     assert profile_record["initial_support_indices"] == (1, 2)
     assert profile_record[
@@ -1113,6 +1245,19 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
 ):
     setup = _amount_gauge_fake_setup()
     exact_calls = []
+    support_expansion_calls = []
+
+    expand_support = _lifecycle._expand_zero_barrier_initializer_support
+
+    def record_support_expansion(payload, *args, **kwargs):
+        support_expansion_calls.append(payload)
+        return expand_support(payload, *args, **kwargs)
+
+    monkeypatch.setattr(
+        _lifecycle,
+        "_expand_zero_barrier_initializer_support",
+        record_support_expansion,
+    )
 
     monkeypatch.setattr(
         _lifecycle,
@@ -1233,6 +1378,10 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
     )
 
     assert len(exact_calls) == expected_calls
+    assert len(support_expansion_calls) == expected_calls
+    if expected_calls:
+        assert support_expansion_calls[0] is not None
+        assert support_expansion_calls[0].support_indices == (0,)
     assert result.layers[0].converged is (
         raw_support_closed and exact_accepted
     )
@@ -1266,6 +1415,15 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
     (
         (
             1.0e-12,
+            TerminalStatus.NORMAL_DUAL_STEP_FAILED,
+            True,
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
+        ),
+        (
+            1.0e-12,
             TerminalStatus.RESTORATION_MAX_ITER,
             True,
             True,
@@ -1276,6 +1434,15 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
         (
             1.0e-12,
             TerminalStatus.RESTORATION_LOCALLY_INFEASIBLE,
+            True,
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
+        ),
+        (
+            1.0e-12,
+            TerminalStatus.RESTORATION_LINE_SEARCH_FAILED,
             True,
             True,
             1,
@@ -1308,6 +1475,42 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
             0,
             "fixed_support_failed",
             "capacity_not_below_initial_barrier",
+        ),
+        (
+            1.0e-12,
+            TerminalStatus.NORMAL_LINE_SEARCH_FAILED,
+            True,
+            True,
+            0,
+            "fixed_support_failed",
+            "terminal_status_not_eligible",
+        ),
+        (
+            1.0e-12,
+            TerminalStatus.RESTORATION_LINEAR_SOLVE_FAILED,
+            True,
+            True,
+            0,
+            "fixed_support_failed",
+            "terminal_status_not_eligible",
+        ),
+        (
+            1.0e-12,
+            TerminalStatus.RESTORATION_NONFINITE,
+            True,
+            True,
+            0,
+            "fixed_support_failed",
+            "terminal_status_not_eligible",
+        ),
+        (
+            1.0e-12,
+            TerminalStatus.RETURN_REPRESENTATION_FLOOR_FAILED,
+            True,
+            True,
+            0,
+            "fixed_support_failed",
+            "terminal_status_not_eligible",
         ),
         (
             1.0e-12,

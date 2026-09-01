@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import math
 from typing import Any, Mapping, Optional, Sequence
 
@@ -13,6 +13,11 @@ import numpy as np
 from exogibbs.equilibrium.condensate import lifecycle as _lifecycle
 from exogibbs.equilibrium.condensate.initialization import (
     resolve_condensate_initial_guess,
+)
+from exogibbs.equilibrium.condensate.inventory_bridge import (
+    interpolate_element_inventory,
+    validate_equilibrium_point,
+    validate_inventory_bridge_config,
 )
 from exogibbs.equilibrium.condensate.policy import (
     FixedSupportV2ProductionPolicy,
@@ -26,6 +31,7 @@ from exogibbs.equilibrium.condensate.types import (
     CondensateEquilibriumInitRequest,
     CondensateEquilibriumInitializer,
     CondensateEquilibriumOptions,
+    CondensateEquilibriumPoint,
     CondensateEquilibriumProfileResult,
     CondensateEquilibriumResult,
 )
@@ -142,6 +148,18 @@ def _scale_initial_guess(
                 dtype=jnp.float64,
             )
             + log_scale
+        ),
+        inventory_bridge_origin=(
+            None
+            if initial_guess.inventory_bridge_origin is None
+            else replace(
+                initial_guess.inventory_bridge_origin,
+                element_inventory=jnp.asarray(
+                    initial_guess.inventory_bridge_origin.element_inventory,
+                    dtype=jnp.float64,
+                )
+                * scale,
+            )
         ),
     )
 
@@ -841,6 +859,442 @@ def _gas_warm_start_for_next_layer(
     )
 
 
+def _gas_only_warm_start_for_inventory(
+    *,
+    setup: CondensateChemicalSetup,
+    gas_ln_n: Array,
+    inventory_target: np.ndarray,
+) -> CondensateEquilibriumInit:
+    """Regauge one finite gas composition to an element-inventory target."""
+
+    gas_log_amounts = np.asarray(jax.device_get(gas_ln_n), dtype=np.float64)
+    expected_shape = (len(setup.gas_species),)
+    if gas_log_amounts.shape != expected_shape:
+        raise ValueError(
+            "Rainout gas seed has the wrong shape: expected "
+            f"{expected_shape}, got {gas_log_amounts.shape}."
+        )
+    if not np.all(np.isfinite(gas_log_amounts)):
+        raise ValueError("Rainout gas seed must contain only finite values.")
+
+    inventory = np.asarray(inventory_target, dtype=np.float64)
+    gas_formula = np.asarray(setup.formula_matrix, dtype=np.float64)
+    physical = np.asarray(
+        tuple(
+            str(element).strip().lower() not in {"e-", "electron"}
+            for element in setup.elements
+        ),
+        dtype=bool,
+    )
+    depleted = physical & (inventory == 0.0)
+    shifted = gas_log_amounts - float(np.max(gas_log_amounts))
+    gas_amounts = np.exp(shifted)
+    if np.any(depleted):
+        incompatible = np.any(gas_formula[depleted, :] != 0.0, axis=0)
+        gas_amounts[incompatible] = 0.0
+
+    active = physical & (inventory > 0.0)
+    target_amount = float(np.sum(inventory[active]))
+    represented_amount = float(
+        np.sum((gas_formula @ gas_amounts)[active])
+    )
+    if (
+        not math.isfinite(target_amount)
+        or target_amount <= 0.0
+        or not math.isfinite(represented_amount)
+        or represented_amount <= 0.0
+    ):
+        raise ValueError(
+            "Rainout gas seed cannot be regauged to the bridge inventory."
+        )
+    gas_amounts *= target_amount / represented_amount
+    gas_total = float(np.sum(gas_amounts))
+    if not math.isfinite(gas_total) or gas_total <= 0.0:
+        raise ValueError("Rainout gas seed must have positive total amount.")
+    gas_floor = gas_total * 1.0e-300
+    gas_amounts = np.maximum(gas_amounts, gas_floor)
+    return CondensateEquilibriumInit(
+        gas_ln_n=jnp.log(jnp.asarray(gas_amounts, dtype=jnp.float64)),
+        gas_ntot=jnp.asarray(np.sum(gas_amounts), dtype=jnp.float64),
+    )
+
+
+@dataclass(frozen=True)
+class _RainoutCandidateAssessment:
+    attempt: Mapping[str, Any]
+    accepted_result: CondensateEquilibriumResult | None
+    depleted_projection: Mapping[str, Any] | None
+    floorless_budget: Mapping[str, Any] | None
+
+
+def _certify_rainout_candidate(
+    *,
+    setup: CondensateChemicalSetup,
+    candidate: CondensateEquilibriumResult,
+    initialization: str,
+    abundance_scale: float,
+    conserved_mask: np.ndarray,
+    inventory_target: np.ndarray,
+    relative_tolerance: float,
+) -> _RainoutCandidateAssessment:
+    """Apply the shared caller-gauge rainout gate to one solver candidate."""
+
+    attempt: dict[str, Any] = {
+        "abundance_scale": abundance_scale,
+        "initialization": initialization,
+        "converged": bool(candidate.converged),
+        "status": candidate.status,
+        "acceptance_tier": candidate.acceptance_tier,
+        "support_indices": tuple(
+            int(index)
+            for index in np.asarray(
+                jax.device_get(candidate.condensate_support_indices),
+                dtype=np.int64,
+            ).tolist()
+        ),
+        "support_names": tuple(candidate.condensate_support_names),
+    }
+    candidate_diagnostics = candidate.diagnostics or {}
+    lifecycle = candidate_diagnostics.get("fixed_support_v2", {})
+    if isinstance(lifecycle, Mapping):
+        attempt["lifecycle_outcome"] = lifecycle.get("outcome")
+    budget_gate = candidate_diagnostics.get(
+        "full_condensate_budget_residual_gate", {}
+    )
+    if isinstance(budget_gate, Mapping):
+        attempt["budget_gate_accepted"] = budget_gate.get("accepted")
+        attempt["budget_gate_max_abs_relative_residual"] = budget_gate.get(
+            "max_abs_relative_residual"
+        )
+    if not candidate.converged:
+        return _RainoutCandidateAssessment(attempt, None, None, None)
+
+    caller_candidate = _rescale_layer_result(candidate, abundance_scale)
+    caller_candidate, projection = _remove_depleted_element_species(
+        setup=setup,
+        result=caller_candidate,
+        conserved_mask=conserved_mask,
+        inventory_target=inventory_target,
+    )
+    floorless_budget = _floorless_budget_certification(
+        setup=setup,
+        result=caller_candidate,
+        conserved_mask=conserved_mask,
+        inventory_target=inventory_target,
+        relative_tolerance=relative_tolerance,
+    )
+    attempt["rainout_floorless_budget_accepted"] = floorless_budget[
+        "accepted"
+    ]
+    attempt[
+        "rainout_floorless_maximum_positive_relative_residual"
+    ] = floorless_budget["maximum_positive_relative_residual"]
+    attempt[
+        "rainout_zero_budget_maximum_absolute_reconstructed"
+    ] = floorless_budget["maximum_zero_absolute_reconstructed"]
+    attempt["rainout_floorless_relative_tolerance"] = floorless_budget[
+        "relative_tolerance"
+    ]
+    attempt["rainout_floorless_element_budget_target"] = floorless_budget[
+        "element_budget_target"
+    ]
+    attempt["rainout_floorless_element_budget_residual"] = floorless_budget[
+        "element_budget_residual"
+    ]
+    if not bool(floorless_budget["accepted"]):
+        return _RainoutCandidateAssessment(attempt, None, None, None)
+    return _RainoutCandidateAssessment(
+        attempt,
+        caller_candidate,
+        projection,
+        floorless_budget,
+    )
+
+
+def _run_rainout_solver_attempt(
+    *,
+    setup: CondensateChemicalSetup,
+    temperature: float,
+    pressure: float,
+    inventory: np.ndarray,
+    Pref: float,
+    initial_guess: CondensateEquilibriumInit,
+    support_indices: Optional[Sequence[int]],
+    support_amounts_init: Optional[Sequence[float]],
+    options: CondensateEquilibriumOptions,
+    return_diagnostics: bool,
+    lnphi_func: LogFugacityCoefficientFunction | None,
+) -> CondensateEquilibriumProfileResult:
+    """Run the existing lifecycle for exactly one rainout trial."""
+
+    return _lifecycle._run_head_v2_profile(
+        setup=setup,
+        temperatures=np.asarray([temperature], dtype=np.float64),
+        pressures=np.asarray([pressure], dtype=np.float64),
+        b=jnp.asarray(inventory, dtype=jnp.float64),
+        Pref=Pref,
+        explicit_inits=(initial_guess,),
+        initializer=None,
+        support_indices=support_indices,
+        support_amounts_init=support_amounts_init,
+        options=options,
+        return_diagnostics=return_diagnostics,
+        lnphi_func=lnphi_func,
+    )
+
+
+def _bridge_trial_error_report(
+    *,
+    fraction: float,
+    inventory: np.ndarray,
+    error: Exception,
+    stage: str = "lifecycle",
+) -> Mapping[str, Any]:
+    return {
+        "fraction": fraction,
+        "element_inventory": tuple(float(value) for value in inventory),
+        "converged": False,
+        "stage": stage,
+        "error": f"{type(error).__name__}: {error}",
+    }
+
+
+def _run_inventory_bridge(
+    *,
+    setup: CondensateChemicalSetup,
+    temperature: float,
+    pressure: float,
+    target_inventory: np.ndarray,
+    initial_guess: CondensateEquilibriumInit,
+    Pref: float,
+    support_indices: Optional[Sequence[int]],
+    support_amounts_init: Optional[Sequence[float]],
+    options: CondensateEquilibriumOptions,
+    return_diagnostics: bool,
+    lnphi_func: LogFugacityCoefficientFunction | None,
+    conserved_mask: np.ndarray,
+    policy: FixedSupportV2ProductionPolicy,
+) -> tuple[CondensateEquilibriumProfileResult | None, Mapping[str, Any]]:
+    """Try bounded inventory anchors at the exact target thermodynamics."""
+
+    origin = initial_guess.inventory_bridge_origin
+    report: dict[str, Any] = {
+        "schema": "exogibbs_condensate_inventory_bridge_v1",
+        "path": "target_thermodynamics_inventory_bridge",
+        "inventory_gauge": "rainout_lifecycle_caller_gauge",
+        "converged": False,
+        "maximum_lifecycle_solves": (
+            policy.rainout_inventory_bridge.max_lifecycle_solves
+        ),
+        "trials": (),
+    }
+    if origin is None:
+        report["termination_reason"] = "missing_origin"
+        return None, report
+    if initial_guess.gas_ln_n is None:
+        report["termination_reason"] = "missing_gas_seed"
+        return None, report
+    try:
+        validate_inventory_bridge_config(policy.rainout_inventory_bridge)
+        origin_inventory = validate_equilibrium_point(
+            origin,
+            expected_inventory_shape=target_inventory.shape,
+        )
+    except (TypeError, ValueError) as error:
+        report["termination_reason"] = "invalid_origin_or_policy"
+        report["error"] = f"{type(error).__name__}: {error}"
+        return None, report
+    report["origin"] = {
+        "temperature": float(origin.temperature),
+        "pressure": float(origin.pressure),
+        "element_inventory": tuple(float(value) for value in origin_inventory),
+    }
+    report["target"] = {
+        "temperature": temperature,
+        "pressure": pressure,
+        "element_inventory": tuple(float(value) for value in target_inventory),
+    }
+    if np.array_equal(origin_inventory, target_inventory):
+        report["termination_reason"] = "identical_inventories"
+        return None, report
+
+    trials: list[Mapping[str, Any]] = []
+    lifecycle_calls = 0
+    for fraction in policy.rainout_inventory_bridge.anchor_fractions:
+        if lifecycle_calls >= policy.rainout_inventory_bridge.max_lifecycle_solves:
+            break
+        bridge_inventory = interpolate_element_inventory(
+            origin_inventory,
+            target_inventory,
+            fraction,
+        )
+        try:
+            bridge_init = _gas_only_warm_start_for_inventory(
+                setup=setup,
+                gas_ln_n=initial_guess.gas_ln_n,
+                inventory_target=bridge_inventory,
+            )
+        except (TypeError, ValueError) as error:
+            trials.append(
+                _bridge_trial_error_report(
+                    fraction=fraction,
+                    inventory=bridge_inventory,
+                    error=error,
+                    stage="seed_preparation",
+                )
+            )
+            continue
+        try:
+            bridge_profile = _run_rainout_solver_attempt(
+                setup=setup,
+                temperature=temperature,
+                pressure=pressure,
+                inventory=bridge_inventory,
+                Pref=Pref,
+                initial_guess=bridge_init,
+                support_indices=support_indices,
+                support_amounts_init=support_amounts_init,
+                options=options,
+                return_diagnostics=return_diagnostics,
+                lnphi_func=lnphi_func,
+            )
+        except (FloatingPointError, OverflowError) as error:
+            lifecycle_calls += 1
+            trials.append(
+                _bridge_trial_error_report(
+                    fraction=fraction,
+                    inventory=bridge_inventory,
+                    error=error,
+                )
+            )
+            continue
+        except ValueError as error:
+            if not _is_retryable_numerical_value_error(error):
+                raise
+            lifecycle_calls += 1
+            trials.append(
+                _bridge_trial_error_report(
+                    fraction=fraction,
+                    inventory=bridge_inventory,
+                    error=error,
+                )
+            )
+            continue
+        lifecycle_calls += 1
+        bridge_assessment = _certify_rainout_candidate(
+            setup=setup,
+            candidate=bridge_profile.layers[0],
+            initialization="inventory_bridge_anchor",
+            abundance_scale=1.0,
+            conserved_mask=conserved_mask,
+            inventory_target=bridge_inventory,
+            relative_tolerance=(
+                options.full_condensate_budget_relative_tolerance
+            ),
+        )
+        bridge_trial = dict(bridge_assessment.attempt)
+        bridge_trial["fraction"] = fraction
+        bridge_trial["element_inventory"] = tuple(
+            float(value) for value in bridge_inventory
+        )
+        bridge_trial["accepted_as_gas_seed"] = bool(
+            bridge_assessment.accepted_result is not None
+        )
+        trials.append(bridge_trial)
+        if bridge_assessment.accepted_result is None:
+            continue
+        if lifecycle_calls >= policy.rainout_inventory_bridge.max_lifecycle_solves:
+            break
+
+        try:
+            target_init = _gas_only_warm_start_for_inventory(
+                setup=setup,
+                gas_ln_n=bridge_assessment.accepted_result.gas_ln_n,
+                inventory_target=target_inventory,
+            )
+        except (TypeError, ValueError) as error:
+            trials.append(
+                _bridge_trial_error_report(
+                    fraction=1.0,
+                    inventory=target_inventory,
+                    error=error,
+                    stage="seed_preparation",
+                )
+            )
+            continue
+        try:
+            target_profile = _run_rainout_solver_attempt(
+                setup=setup,
+                temperature=temperature,
+                pressure=pressure,
+                inventory=target_inventory,
+                Pref=Pref,
+                initial_guess=target_init,
+                support_indices=support_indices,
+                support_amounts_init=support_amounts_init,
+                options=options,
+                return_diagnostics=return_diagnostics,
+                lnphi_func=lnphi_func,
+            )
+        except (FloatingPointError, OverflowError) as error:
+            lifecycle_calls += 1
+            trials.append(
+                _bridge_trial_error_report(
+                    fraction=1.0,
+                    inventory=target_inventory,
+                    error=error,
+                )
+            )
+            continue
+        except ValueError as error:
+            if not _is_retryable_numerical_value_error(error):
+                raise
+            lifecycle_calls += 1
+            trials.append(
+                _bridge_trial_error_report(
+                    fraction=1.0,
+                    inventory=target_inventory,
+                    error=error,
+                )
+            )
+            continue
+        lifecycle_calls += 1
+        target_assessment = _certify_rainout_candidate(
+            setup=setup,
+            candidate=target_profile.layers[0],
+            initialization="inventory_bridge_target_retry",
+            abundance_scale=1.0,
+            conserved_mask=conserved_mask,
+            inventory_target=target_inventory,
+            relative_tolerance=(
+                options.full_condensate_budget_relative_tolerance
+            ),
+        )
+        target_trial = dict(target_assessment.attempt)
+        target_trial["fraction"] = 1.0
+        target_trial["element_inventory"] = tuple(
+            float(value) for value in target_inventory
+        )
+        target_trial["accepted_as_gas_seed"] = False
+        trials.append(target_trial)
+        if target_assessment.accepted_result is not None:
+            report["converged"] = True
+            report["termination_reason"] = "target_accepted"
+            report["lifecycle_solves"] = lifecycle_calls
+            report["trials"] = tuple(trials)
+            return target_profile, report
+
+    report["lifecycle_solves"] = lifecycle_calls
+    report["trials"] = tuple(trials)
+    if any(float(trial.get("fraction", -1.0)) == 1.0 for trial in trials):
+        report["termination_reason"] = "target_retry_rejected"
+    elif lifecycle_calls >= policy.rainout_inventory_bridge.max_lifecycle_solves:
+        report["termination_reason"] = "maximum_lifecycle_solves"
+    else:
+        report["termination_reason"] = "anchor_rejected"
+    return None, report
+
+
 def run_rainout_profile(
     *,
     setup: CondensateChemicalSetup,
@@ -948,25 +1402,19 @@ def run_rainout_profile(
             for initialization, attempt_guess in _initialization_attempts(
                 initial_guess
             ):
+                scaled_attempt_guess = _scale_initial_guess(
+                    attempt_guess,
+                    abundance_scale,
+                )
+                scaled_profile = None
                 try:
-                    scaled_profile = _lifecycle._run_head_v2_profile(
+                    scaled_profile = _run_rainout_solver_attempt(
                         setup=setup,
-                        temperatures=(
-                            temperatures[layer_index : layer_index + 1]
-                        ),
-                        pressures=pressures[layer_index : layer_index + 1],
-                        b=jnp.asarray(
-                            working_inventory,
-                            dtype=jnp.float64,
-                        ),
+                        temperature=float(temperatures[layer_index]),
+                        pressure=float(pressures[layer_index]),
+                        inventory=working_inventory,
                         Pref=Pref,
-                        explicit_inits=(
-                            _scale_initial_guess(
-                                attempt_guess,
-                                abundance_scale,
-                            ),
-                        ),
-                        initializer=None,
+                        initial_guess=scaled_attempt_guess,
                         support_indices=support_indices,
                         support_amounts_init=working_support_amounts_init,
                         options=options,
@@ -982,7 +1430,6 @@ def run_rainout_profile(
                             "error": f"{type(error).__name__}: {error}",
                         }
                     )
-                    continue
                 except ValueError as error:
                     if not _is_retryable_numerical_value_error(error):
                         raise
@@ -994,99 +1441,112 @@ def run_rainout_profile(
                             "error": f"{type(error).__name__}: {error}",
                         }
                     )
-                    continue
-                candidate = scaled_profile.layers[0]
-                attempt = {
-                    "abundance_scale": abundance_scale,
-                    "initialization": initialization,
-                    "converged": bool(candidate.converged),
-                    "status": candidate.status,
-                    "acceptance_tier": candidate.acceptance_tier,
-                }
-                candidate_diagnostics = candidate.diagnostics or {}
-                lifecycle = candidate_diagnostics.get(
-                    "fixed_support_v2", {}
-                )
-                if isinstance(lifecycle, Mapping):
-                    attempt["lifecycle_outcome"] = lifecycle.get("outcome")
-                budget_gate = candidate_diagnostics.get(
-                    "full_condensate_budget_residual_gate", {}
-                )
-                if isinstance(budget_gate, Mapping):
-                    attempt["budget_gate_accepted"] = budget_gate.get(
-                        "accepted"
-                    )
-                    attempt["budget_gate_max_abs_relative_residual"] = (
-                        budget_gate.get("max_abs_relative_residual")
-                    )
-                attempts.append(attempt)
-                if candidate.converged:
-                    caller_candidate = _rescale_layer_result(
-                        candidate, abundance_scale
-                    )
-                    caller_candidate, projection = (
-                        _remove_depleted_element_species(
-                            setup=setup,
-                            result=caller_candidate,
-                            conserved_mask=conserved_mask,
-                            inventory_target=current_inventory,
-                        )
-                    )
-                    floorless_budget = _floorless_budget_certification(
+                if scaled_profile is not None:
+                    candidate = scaled_profile.layers[0]
+                    assessment = _certify_rainout_candidate(
                         setup=setup,
-                        result=caller_candidate,
+                        candidate=candidate,
+                        initialization=initialization,
+                        abundance_scale=abundance_scale,
                         conserved_mask=conserved_mask,
                         inventory_target=current_inventory,
                         relative_tolerance=(
                             options.full_condensate_budget_relative_tolerance
                         ),
                     )
-                    attempt["rainout_floorless_budget_accepted"] = (
-                        floorless_budget["accepted"]
-                    )
-                    attempt[
-                        "rainout_floorless_maximum_positive_relative_residual"
-                    ] = floorless_budget[
-                        "maximum_positive_relative_residual"
-                    ]
-                    attempt[
-                        "rainout_zero_budget_maximum_absolute_reconstructed"
-                    ] = floorless_budget[
-                        "maximum_zero_absolute_reconstructed"
-                    ]
-                    attempt["rainout_floorless_relative_tolerance"] = (
-                        floorless_budget["relative_tolerance"]
-                    )
-                    attempt["rainout_floorless_element_budget_target"] = (
-                        floorless_budget["element_budget_target"]
-                    )
-                    attempt["rainout_floorless_element_budget_residual"] = (
-                        floorless_budget["element_budget_residual"]
-                    )
-                    if bool(floorless_budget["accepted"]):
+                    attempts.append(assessment.attempt)
+                    if assessment.accepted_result is not None:
                         accepted_profile = scaled_profile
                         accepted_scale = abundance_scale
-                        accepted_result = caller_candidate
-                        accepted_projection = projection
-                        accepted_floorless_budget = floorless_budget
+                        accepted_result = assessment.accepted_result
+                        accepted_projection = assessment.depleted_projection
+                        accepted_floorless_budget = assessment.floorless_budget
                         break
-                trace_report = _trace_capacity_acceptance_report(
-                    setup=setup,
-                    inventory=current_inventory,
-                    inventory_sum=inventory_sum,
-                    candidate=candidate,
-                    abundance_scale=abundance_scale,
-                    policy=policy,
-                )
-                if trace_report is not None:
-                    trace_candidates.append(
-                        (
-                            float(trace_report["condensate_stationarity"]),
-                            scaled_profile,
-                            abundance_scale,
-                            trace_report,
-                        )
+                    trace_report = _trace_capacity_acceptance_report(
+                        setup=setup,
+                        inventory=current_inventory,
+                        inventory_sum=inventory_sum,
+                        candidate=candidate,
+                        abundance_scale=abundance_scale,
+                        policy=policy,
                     )
+                    if trace_report is not None:
+                        trace_candidates.append(
+                            (
+                                float(
+                                    trace_report["condensate_stationarity"]
+                                ),
+                                scaled_profile,
+                                abundance_scale,
+                                trace_report,
+                            )
+                        )
+
+                if (
+                    initialization == "resolved"
+                    and scaled_attempt_guess.inventory_bridge_origin is not None
+                ):
+                    bridge_profile, bridge_report = _run_inventory_bridge(
+                        setup=setup,
+                        temperature=float(temperatures[layer_index]),
+                        pressure=float(pressures[layer_index]),
+                        target_inventory=np.asarray(
+                            working_inventory,
+                            dtype=np.float64,
+                        ),
+                        initial_guess=scaled_attempt_guess,
+                        Pref=Pref,
+                        support_indices=support_indices,
+                        support_amounts_init=working_support_amounts_init,
+                        options=options,
+                        return_diagnostics=return_diagnostics,
+                        lnphi_func=lnphi_func,
+                        conserved_mask=conserved_mask,
+                        policy=policy,
+                    )
+                    bridge_attempt: dict[str, Any] = {
+                        "abundance_scale": abundance_scale,
+                        "initialization": "inventory_bridge",
+                        "converged": False,
+                        "inventory_bridge": dict(bridge_report),
+                    }
+                    if bridge_profile is not None:
+                        bridge_assessment = _certify_rainout_candidate(
+                            setup=setup,
+                            candidate=bridge_profile.layers[0],
+                            initialization="inventory_bridge",
+                            abundance_scale=abundance_scale,
+                            conserved_mask=conserved_mask,
+                            inventory_target=current_inventory,
+                            relative_tolerance=(
+                                options.full_condensate_budget_relative_tolerance
+                            ),
+                        )
+                        bridge_attempt.update(bridge_assessment.attempt)
+                        bridge_attempt["initialization"] = "inventory_bridge"
+                        bridge_attempt["inventory_bridge"] = dict(
+                            bridge_report
+                        )
+                        bridge_attempt["converged"] = bool(
+                            bridge_assessment.accepted_result is not None
+                        )
+                        if bridge_assessment.accepted_result is not None:
+                            accepted_profile = bridge_profile
+                            accepted_result = bridge_assessment.accepted_result
+                            accepted_projection = (
+                                bridge_assessment.depleted_projection
+                            )
+                            accepted_floorless_budget = (
+                                bridge_assessment.floorless_budget
+                            )
+                    if (
+                        int(bridge_report.get("lifecycle_solves", 0)) > 0
+                        or bool(bridge_report.get("trials", ()))
+                    ):
+                        attempts.append(bridge_attempt)
+                    if accepted_profile is not None:
+                        accepted_scale = abundance_scale
+                        break
             if accepted_profile is not None:
                 break
         if accepted_profile is None and trace_candidates:
@@ -1286,10 +1746,20 @@ def run_rainout_profile(
             ),
         }
         current_inventory = propagation["next_inventory"]
-        previous_solution = _gas_warm_start_for_next_layer(
-            propagation["propagation_gas_amounts"],
-            inventory_sum=inventory_sum,
-            conservation_inventory_sum=propagation["conservation_sum"],
+        previous_solution = replace(
+            _gas_warm_start_for_next_layer(
+                propagation["propagation_gas_amounts"],
+                inventory_sum=inventory_sum,
+                conservation_inventory_sum=propagation["conservation_sum"],
+            ),
+            inventory_bridge_origin=CondensateEquilibriumPoint(
+                temperature=float(temperatures[layer_index]),
+                pressure=float(pressures[layer_index]),
+                element_inventory=jnp.asarray(
+                    target_by_layer[layer_index].copy(),
+                    dtype=jnp.float64,
+                ),
+            ),
         )
         previous_abundance_scale = accepted_scale
 

@@ -43,6 +43,7 @@ from exogibbs.equilibrium.condensate.support import (
 )
 from exogibbs.equilibrium.condensate.support_geometry import (
     finite_barrier_trace_capacity_report,
+    monotone_formula_row_mask,
     reduce_initial_condensate_support_to_basic,
 )
 from exogibbs.equilibrium.condensate.types import (
@@ -1016,18 +1017,14 @@ def _head_v2_pre_pdipm_zero_barrier_candidate(
     condensate_formula = np.asarray(
         setup.formula_matrix_cond, dtype=np.float64
     )
-    joint_formula = np.concatenate(
-        [
-            np.asarray(setup.formula_matrix, dtype=np.float64),
-            condensate_formula,
-        ],
-        axis=1,
-    )
     trace_capacity = finite_barrier_trace_capacity_report(
         condensate_formula_matrix_full=condensate_formula,
         target_inventory=np.asarray(target_inventory, dtype=np.float64),
         support_indices=support,
-        monotone_constraint_row_mask=np.all(joint_formula >= 0.0, axis=1),
+        monotone_constraint_row_mask=monotone_formula_row_mask(
+            np.asarray(setup.formula_matrix, dtype=np.float64),
+            condensate_formula,
+        ),
         log_barrier=log_barrier,
     )
     report["trace_capacity"] = trace_capacity
@@ -1052,6 +1049,130 @@ def _head_v2_pre_pdipm_zero_barrier_candidate(
     report["eligible"] = True
     report["skip_reason"] = None
     return payload, report
+
+
+def _expand_zero_barrier_initializer_support(
+    payload: _ZeroBarrierInitializerPayload | None,
+    envelope_support: Sequence[int] | None,
+    *,
+    source_round_index: int,
+    reduction: Mapping[str, Any],
+    valid_condensates: Sequence[bool] | None,
+) -> tuple[_ZeroBarrierInitializerPayload | None, dict[str, Any]]:
+    """Expand candidate support without changing the initializer state."""
+
+    report: dict[str, Any] = {
+        "schema": (
+            "exogibbs_zero_barrier_initializer_support_envelope_v1"
+        ),
+        "available": envelope_support is not None,
+        "expanded": False,
+        "source_support_indices": (
+            None if payload is None else payload.support_indices
+        ),
+        "envelope_support_indices": (
+            None
+            if envelope_support is None
+            else tuple(int(index) for index in envelope_support)
+        ),
+        "added_support_indices": (),
+        "initializer_state_preserved": False,
+        "added_support_amounts_zero": False,
+        "skip_reason": None,
+    }
+    if payload is None:
+        report["skip_reason"] = "initializer_not_available"
+        return payload, report
+    if envelope_support is None:
+        report["skip_reason"] = "no_rank_deficient_initial_support"
+        return payload, report
+    if source_round_index != 0:
+        report["skip_reason"] = "not_initial_lifecycle_round"
+        return payload, report
+    if not reduction.get("applied", False) or reduction.get(
+        "initial_support_nullity", 0
+    ) <= 0:
+        report["skip_reason"] = "rank_deficient_reduction_not_applied"
+        return payload, report
+    if reduction.get("output_support_nullity") != 0:
+        report["skip_reason"] = "reduced_basis_not_full_rank"
+        return payload, report
+
+    support = tuple(int(index) for index in envelope_support)
+    initial_support = tuple(
+        int(index)
+        for index in reduction.get("initial_support_indices", ())
+    )
+    selected_support = tuple(
+        int(index)
+        for index in reduction.get("output_support_indices", ())
+    )
+    if support != initial_support:
+        report["skip_reason"] = (
+            "envelope_support_differs_from_reduction_input"
+        )
+        return payload, report
+    selected_set = set(selected_support)
+    support_set = set(support)
+    if (
+        not selected_support
+        or len(selected_set) != len(selected_support)
+    ):
+        report["skip_reason"] = "invalid_reduced_basis"
+        return payload, report
+    if not selected_set.issubset(support_set):
+        report["skip_reason"] = "reduced_basis_outside_envelope_support"
+        return payload, report
+    if selected_set == support_set:
+        report["skip_reason"] = "envelope_does_not_expand_reduced_basis"
+        return payload, report
+    if payload.support_indices != selected_support:
+        report["skip_reason"] = (
+            "source_support_differs_from_reduced_basis"
+        )
+        return payload, report
+
+    amounts = np.asarray(payload.condensate_amounts, dtype=np.float64)
+    valid_mask = np.asarray(valid_condensates, dtype=bool)
+    if amounts.ndim != 1 or valid_mask.shape != amounts.shape:
+        report["skip_reason"] = "invalid_condensate_catalog_shape"
+        return payload, report
+    support_valid = bool(
+        support
+        and len(set(support)) == len(support)
+        and all(0 <= index < amounts.size for index in support)
+    )
+    source_mask = np.zeros(amounts.size, dtype=bool)
+    if support_valid:
+        source_mask[np.asarray(payload.support_indices, dtype=np.int64)] = True
+    if (
+        not support_valid
+        or not np.all(np.isfinite(amounts))
+        or np.any(amounts < 0.0)
+    ):
+        report["skip_reason"] = "invalid_initializer_amounts"
+        return payload, report
+    if np.any(amounts[~source_mask] != 0.0):
+        report["skip_reason"] = "initializer_amounts_outside_source_support"
+        return payload, report
+    if any(not valid_mask[index] for index in support):
+        report["skip_reason"] = "temperature_invalid_envelope_support"
+        return payload, report
+
+    added_support = tuple(
+        index for index in support if index not in selected_set
+    )
+    report["expanded"] = True
+    report["added_support_indices"] = added_support
+    report["initializer_state_preserved"] = True
+    report["added_support_amounts_zero"] = True
+    return (
+        replace(
+            payload,
+            support_indices=support,
+        ),
+        report,
+    )
 
 
 def _resolve_condensate_initial_guess(
@@ -1111,8 +1232,15 @@ def _run_head_v2_profile(
             float(value) / amount_scale for value in support_amounts_init
         )
     epsilon_schedule = policy.solver_config.continuation.epsilon_schedule
-    pre_pdipm_fallback_terminal_statuses = frozenset(
+    # These finite globalization stalls can arise when a trace phase cannot
+    # support the first barrier. NORMAL_DUAL_STEP_FAILED is the controller's
+    # finite low-constraint normal-direction/SOC stall; the raw normal-line
+    # failure remains excluded with linear, representation, and non-finite
+    # failures.
+    pre_pdipm_trace_capacity_stall_statuses = frozenset(
         {
+            int(TerminalStatus.NORMAL_DUAL_STEP_FAILED),
+            int(TerminalStatus.RESTORATION_LINE_SEARCH_FAILED),
             int(TerminalStatus.RESTORATION_MAX_ITER),
             int(TerminalStatus.RESTORATION_LOCALLY_INFEASIBLE),
         }
@@ -1151,6 +1279,7 @@ def _run_head_v2_profile(
     records: list[dict[str, Any]] = [
         {"layer_index": index, "rounds": []} for index in range(n_layers)
     ]
+    initial_support_envelopes: dict[int, tuple[int, ...]] = {}
     pending: dict[int, _HeadV2LayerState] = {}
     gas_only_states: dict[int, _HeadV2LayerState] = {}
     gas_only_layers: set[int] = set()
@@ -1252,6 +1381,7 @@ def _run_head_v2_profile(
             initial_full_amounts[
                 np.asarray(initial_support, dtype=np.int64)
             ] = np.asarray(initial_amounts, dtype=np.float64)
+        unreduced_support = tuple(int(index) for index in initial_support)
         (
             initial_support,
             initial_full_amounts,
@@ -1276,6 +1406,14 @@ def _run_head_v2_profile(
             enabled=True,
             diagnostic_role="finite_barrier_pdipm_initializer",
         )
+        if (
+            finite_barrier_initial_support_reduction.get("applied", False)
+            and finite_barrier_initial_support_reduction.get(
+                "initial_support_nullity", 0
+            )
+            > 0
+        ):
+            initial_support_envelopes[layer_index] = unreduced_support
         initial_amounts = tuple(
             float(initial_full_amounts[index]) for index in initial_support
         )
@@ -1714,7 +1852,7 @@ def _run_head_v2_profile(
                     current
                     if not converged[local_index]
                     and terminal_code
-                    in pre_pdipm_fallback_terminal_statuses
+                    in pre_pdipm_trace_capacity_stall_statuses
                     else None
                 ),
                 "fixed_support_converged": bool(converged[local_index]),
@@ -2038,15 +2176,15 @@ def _run_head_v2_profile(
                 and terminal_output["final_state_values_finite"]
             )
             pre_pdipm_state = terminal_output["pre_pdipm_state"]
-            restoration_failure = bool(
+            finite_barrier_stall = bool(
                 not terminal_output["fixed_support_converged"]
                 and terminal_output["terminal_status"]
-                in pre_pdipm_fallback_terminal_statuses
+                in pre_pdipm_trace_capacity_stall_statuses
             )
             fallback_routing_candidate = bool(
                 early_exact is None
                 and not terminal_initializer_eligible
-                and restoration_failure
+                and finite_barrier_stall
             )
             if early_exact is not None:
                 fallback_disabled_reason = (
@@ -2158,37 +2296,46 @@ def _run_head_v2_profile(
                     valid_mask = valid_condensates_for_layer(layer_index)
                 exact = early_exact
                 if exact is None:
-                    initializer_gas_log_amounts = gas_log_amounts
-                    initializer_full_amounts = full_amounts
-                    initializer_total_gas_log_amount = total_gas_log_amount
-                    initializer_element_potential = element_potential
-                    initializer_support = support
+                    initializer_payload = _ZeroBarrierInitializerPayload(
+                        support_indices=tuple(support),
+                        gas_log_amounts=gas_log_amounts,
+                        condensate_amounts=full_amounts,
+                        total_gas_log_amount=total_gas_log_amount,
+                        element_potential=element_potential,
+                    )
                     if pre_pdipm_fallback_eligible:
-                        initializer_full_amounts = (
-                            pre_pdipm_payload.condensate_amounts
-                        )
-                        initializer_gas_log_amounts = (
-                            pre_pdipm_payload.gas_log_amounts
-                        )
-                        initializer_total_gas_log_amount = (
-                            pre_pdipm_payload.total_gas_log_amount
-                        )
-                        initializer_element_potential = (
-                            pre_pdipm_payload.element_potential
-                        )
-                        initializer_support = (
-                            pre_pdipm_payload.support_indices
-                        )
+                        initializer_payload = pre_pdipm_payload
                         pre_pdipm_fallback_report["attempted"] = True
+                    initializer_payload, envelope_report = (
+                        _expand_zero_barrier_initializer_support(
+                            initializer_payload,
+                            initial_support_envelopes.get(layer_index),
+                            source_round_index=terminal_output[
+                                "round_index"
+                            ],
+                            reduction=records[layer_index].get(
+                                "finite_barrier_initial_support_reduction",
+                                {},
+                            ),
+                            valid_condensates=valid_mask,
+                        )
+                    )
+                    initializer_report["initial_support_envelope"] = (
+                        envelope_report
+                    )
                     exact = polish_layer_state(
                         layer_index=layer_index,
-                        gas_log_amounts=initializer_gas_log_amounts,
-                        condensate_amounts=initializer_full_amounts,
-                        total_gas_log_amount=(
-                            initializer_total_gas_log_amount
+                        gas_log_amounts=initializer_payload.gas_log_amounts,
+                        condensate_amounts=(
+                            initializer_payload.condensate_amounts
                         ),
-                        element_potential=initializer_element_potential,
-                        support=initializer_support,
+                        total_gas_log_amount=(
+                            initializer_payload.total_gas_log_amount
+                        ),
+                        element_potential=(
+                            initializer_payload.element_potential
+                        ),
+                        support=initializer_payload.support_indices,
                         valid_condensates=valid_mask,
                     )
                     if pre_pdipm_fallback_eligible:

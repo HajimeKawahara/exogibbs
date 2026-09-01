@@ -91,6 +91,19 @@ class AcceptedCondensateState:
 
 
 @dataclass(frozen=True)
+class CondensateEquilibriumPoint:
+    """Parameters of one accepted condensate-equilibrium problem.
+
+    ``temperature`` is in kelvin, ``pressure`` is in bar, and
+    ``element_inventory`` uses the caller's amount gauge.
+    """
+
+    temperature: float
+    pressure: float
+    element_inventory: Array
+
+
+@dataclass(frozen=True)
 class CondensateEquilibriumInit:
     """Optional caller-gauge initial guess for one condensate layer.
 
@@ -99,6 +112,9 @@ class CondensateEquilibriumInit:
     ``barrier_epsilon`` is ``log(nu)`` in the same gauge and shifts by
     ``log(s)`` when those amounts are uniformly scaled by ``s``.
     ``element_potential`` and ``rho`` are intensive and remain unchanged.
+    ``inventory_bridge_origin`` identifies the accepted problem that supplied
+    the gas seed.  Rainout profiles may use it for a bounded inventory-only
+    numerical bridge; it does not carry condensates or rainout state.
     """
 
     gas_ln_n: Optional[Array] = None
@@ -109,6 +125,7 @@ class CondensateEquilibriumInit:
     element_potential: Optional[Array] = None
     rho: Optional[Array] = None
     barrier_epsilon: Optional[Array] = None
+    inventory_bridge_origin: Optional[CondensateEquilibriumPoint] = None
 
 
 @dataclass(frozen=True)
@@ -191,6 +208,7 @@ __all__ = (
     "CondensateEquilibriumInitRequest",
     "CondensateEquilibriumInitializer",
     "CondensateEquilibriumOptions",
+    "CondensateEquilibriumPoint",
     "CondensateEquilibriumProfileResult",
     "CondensateEquilibriumResult",
     "CondensateFixedSupportV2Preset",

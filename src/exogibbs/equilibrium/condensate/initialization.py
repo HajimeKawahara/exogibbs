@@ -234,6 +234,7 @@ class GridCondensateEquilibriumInitializer:
             condensate_amounts=condensate_amounts,
             support_indices=support_indices,
             support_amounts=support_amounts,
+            inventory_bridge_origin=None,
         )
 
 
