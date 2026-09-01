@@ -34,6 +34,9 @@ LOWER_WARM_FIXTURE_PATH = (
 TRACE_MG_WARM_FIXTURE_PATH = (
     Path(__file__).with_name("rocky_raccoon_480_warm.npz")
 )
+TRACE_DEPLETION_WARM_FIXTURE_PATH = (
+    Path(__file__).with_name("rocky_raccoon_203_warm.npz")
+)
 BOUNDARY_CASES = {
     "backend_parity_step_378": (
         1188.1415292259892,
@@ -236,22 +239,32 @@ def boundary_profiles(setup):
     return profiles
 
 
+def _load_warm_state(path: Path) -> dict[str, np.ndarray]:
+    with np.load(path) as fixture:
+        return {
+            name: np.asarray(fixture[name]).copy()
+            for name in fixture.files
+        }
+
+
 @pytest.fixture(scope="module")
 def upper_warm_state():
-    with np.load(UPPER_WARM_FIXTURE_PATH) as fixture:
-        return {name: np.asarray(fixture[name]).copy() for name in fixture.files}
+    return _load_warm_state(UPPER_WARM_FIXTURE_PATH)
 
 
 @pytest.fixture(scope="module")
 def lower_warm_state():
-    with np.load(LOWER_WARM_FIXTURE_PATH) as fixture:
-        return {name: np.asarray(fixture[name]).copy() for name in fixture.files}
+    return _load_warm_state(LOWER_WARM_FIXTURE_PATH)
 
 
 @pytest.fixture(scope="module")
 def trace_mg_warm_state():
-    with np.load(TRACE_MG_WARM_FIXTURE_PATH) as fixture:
-        return {name: np.asarray(fixture[name]).copy() for name in fixture.files}
+    return _load_warm_state(TRACE_MG_WARM_FIXTURE_PATH)
+
+
+@pytest.fixture(scope="module")
+def trace_depletion_warm_state():
+    return _load_warm_state(TRACE_DEPLETION_WARM_FIXTURE_PATH)
 
 
 def test_example_is_main_guarded_and_compiles() -> None:
@@ -845,48 +858,63 @@ def test_public_failed_basic_support_boundary_releases_a_proper_face(
 
 
 def test_public_trace_depletion_uses_optimizer_directed_support_release(
-    boundary_profiles,
     setup,
+    trace_depletion_warm_state,
 ) -> None:
-    anchor = boundary_profiles[
+    expected_temperature, expected_pressure, expected_inventory = (
+        TRACE_DEPLETION_BOUNDARY
+    )
+    temperature = float(trace_depletion_warm_state["target_temperature"])
+    pressure = float(trace_depletion_warm_state["target_pressure"])
+    inventory = trace_depletion_warm_state["target_inventory"]
+    assert temperature == expected_temperature
+    assert pressure == expected_pressure
+    np.testing.assert_array_equal(inventory, expected_inventory)
+    parent_temperature, parent_pressure, parent_inventory = BOUNDARY_CASES[
         "failed_basic_support_release_step_774"
-    ].layers[0]
-    temperature, pressure, inventory = TRACE_DEPLETION_BOUNDARY
-    gas_amounts = np.asarray(anchor.gas_n, dtype=np.float64).copy()
-    formula = np.asarray(setup.formula_matrix, dtype=np.float64)
-    physical = np.asarray(
-        [
-            str(element).strip().lower() not in {"e-", "electron"}
-            for element in setup.elements
-        ],
-        dtype=bool,
+    ]
+    assert float(
+        trace_depletion_warm_state["parent_temperature"]
+    ) == parent_temperature
+    assert float(
+        trace_depletion_warm_state["parent_pressure"]
+    ) == parent_pressure
+    np.testing.assert_array_equal(
+        trace_depletion_warm_state["parent_inventory"],
+        np.asarray(parent_inventory, dtype=np.float64),
     )
-    active = physical & (inventory > 0.0)
-    gas_amounts *= float(np.sum(inventory[active])) / float(
-        np.sum((formula @ gas_amounts)[active])
-    )
-    gas_total = float(np.sum(gas_amounts))
-    gas_amounts = np.maximum(gas_amounts, gas_total * 1.0e-300)
     layer = solve_condensate_equilibrium(
         setup,
         T=temperature,
         P=pressure,
         b=jnp.asarray(inventory, dtype=jnp.float64),
         init=CondensateEquilibriumInit(
-            gas_ln_n=jnp.log(jnp.asarray(gas_amounts)),
-            gas_ntot=jnp.asarray(np.sum(gas_amounts)),
+            gas_ln_n=jnp.asarray(
+                trace_depletion_warm_state["warm_gas_ln_n"],
+                dtype=jnp.float64,
+            ),
+            gas_ntot=jnp.asarray(
+                trace_depletion_warm_state["warm_gas_ntot"],
+                dtype=jnp.float64,
+            ),
         ),
         options=CondensateEquilibriumOptions(return_diagnostics=True),
     )
 
-    assert layer.converged
+    lifecycle = layer.diagnostics.get("fixed_support_v2", {})
+    polish = lifecycle.get("zero_barrier_active_support_polish", {})
+    alternative = polish.get("alternative_basic_support_portfolio", {})
+    directed = alternative.get("optimizer_directed_support_release", {})
+    release = polish.get("support_release_portfolio", {})
+    closure = polish.get("exact_active_set_closure", {})
+    assert layer.converged, {
+        "status": layer.status,
+        "outcome": lifecycle.get("outcome"),
+        "directed_support": directed.get("selected_support_indices"),
+        "release_support": release.get("selected_support_indices"),
+        "closure_termination": closure.get("termination_reason"),
+    }
     assert tuple(layer.condensate_support_indices) == (1, 8)
-    lifecycle = layer.diagnostics["fixed_support_v2"]
-    polish = lifecycle["zero_barrier_active_support_polish"]
-    alternative = polish["alternative_basic_support_portfolio"]
-    directed = alternative["optimizer_directed_support_release"]
-    release = polish["support_release_portfolio"]
-    closure = polish["exact_active_set_closure"]
 
     assert directed["selected"]
     assert directed["selected_support_indices"] == (0, 1, 8)
