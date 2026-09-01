@@ -4,7 +4,7 @@
 ExoJAX NUTS with a graphite-only fixed-support VJP
 ==================================================
 
-This tutorial demonstrates the local condensate custom VJP used by
+This tutorial demonstrates the local condensate generated VJP used by
 ``examples/retrievals/exojax_nuts_condensate_fixed_support.py``. The
 atmosphere is carbon rich with C/O = 2. The declared chemistry model
 uses the full FastChem4 gas catalog but an explicit reduced condensate
@@ -131,7 +131,7 @@ Reverse-mode hybrid-profile check
 
 ``co_vmr_profile`` batches the frozen graphite-active layers through
 ``minimize_gibbs_fixed_support`` and batches the inactive layers through
-the gas custom VJP. This scalar check traverses both groups. The full
+the gas generated VJP. This scalar check traverses both groups. The full
 demo additionally checks an ExoJAX spectral loss when a CO database is
 supplied.
 
@@ -154,8 +154,9 @@ Reverse-mode NUTS
 -----------------
 
 The fixed-support and gas equilibrium solvers expose first-order custom
-VJPs. Forward-mode JVPs and higher-order derivatives are outside this
-contract, so the shared runner makes the NumPyro choice explicit.
+JVPs and generated VJPs. Forward-mode JVPs are supported; the shared
+runner selects reverse mode because NUTS differentiates a scalar log
+density. Higher-order derivatives remain outside the supported contract.
 
 .. code:: python
 

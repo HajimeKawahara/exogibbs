@@ -1,4 +1,4 @@
-"""Implicit reverse-mode sensitivities on a fixed condensate support.
+"""Implicit sensitivities on a fixed condensate support.
 
 The production condensate lifecycle discovers support on the host and then
 polishes accepted states at zero barrier.  Support discovery is discrete, so
@@ -12,7 +12,7 @@ from typing import Any, Callable, NamedTuple
 
 import jax
 import jax.numpy as jnp
-from jax import custom_vjp
+from jax import custom_jvp
 from jax.lax import stop_gradient
 
 from exogibbs.equilibrium.condensate.fixed_support.linear_solver import (
@@ -478,7 +478,7 @@ def _solve_zero_barrier_sources_impl(
     )
 
 
-@custom_vjp
+@custom_jvp
 def _solve_zero_barrier_sources(
     target_inventory,
     gas_source,
@@ -507,19 +507,35 @@ def _solve_zero_barrier_sources(
     )
 
 
-def _solve_zero_barrier_sources_fwd(
-    target_inventory,
-    gas_source,
-    condensate_standard_source,
-    gas_log_amounts_init,
-    condensate_amounts_init,
-    element_potential_init,
-    total_gas_log_amount_init,
-    gas_formula_matrix,
-    condensate_formula_matrix,
-    residual_crit,
-    max_iter,
-):
+@_solve_zero_barrier_sources.defjvp
+def _solve_zero_barrier_sources_jvp(primals, tangents):
+    (
+        target_inventory,
+        gas_source,
+        condensate_standard_source,
+        gas_log_amounts_init,
+        condensate_amounts_init,
+        element_potential_init,
+        total_gas_log_amount_init,
+        gas_formula_matrix,
+        condensate_formula_matrix,
+        residual_crit,
+        max_iter,
+    ) = primals
+    (
+        target_tangent,
+        gas_source_tangent,
+        condensate_source_tangent,
+        _gas_log_amounts_init_tangent,
+        _condensate_amounts_init_tangent,
+        _element_potential_init_tangent,
+        _total_gas_log_amount_init_tangent,
+        _gas_formula_matrix_tangent,
+        _condensate_formula_matrix_tangent,
+        _residual_crit_tangent,
+        _max_iter_tangent,
+    ) = tangents
+
     solved = _zero_barrier_solve_core(
         target_inventory,
         gas_source,
@@ -538,62 +554,64 @@ def _solve_zero_barrier_sources_fwd(
         gas_log_amounts=final.gas_log_amounts,
         condensate_amounts=final.condensate_amounts,
     )
-    tolerance = _effective_residual_tolerance(
-        residual_crit, solved.residual_norm.dtype
-    )
-    residuals = (
-        final.gas_log_amounts,
-        final.condensate_amounts,
-        final.total_gas_log_amount,
-        jnp.isfinite(solved.residual_norm)
-        & (solved.residual_norm <= tolerance),
-        gas_formula_matrix,
-        condensate_formula_matrix,
-    )
-    return result, residuals
 
-
-def _solve_zero_barrier_sources_bwd(
-    residuals,
-    cotangent,
-):
-    q, m, qtot, converged, ag, ac = residuals
-    source_cotangents = fixed_support_source_vjp(
-        cotangent.gas_log_amounts,
-        cotangent.condensate_amounts,
+    q = jnp.asarray(final.gas_log_amounts)
+    dtype = q.dtype
+    ag = jnp.asarray(gas_formula_matrix, dtype=dtype)
+    ac = jnp.asarray(condensate_formula_matrix, dtype=dtype)
+    gas_amounts = jnp.exp(q)
+    target_tangent = jnp.asarray(target_tangent, dtype=dtype)
+    gas_source_tangent = jnp.asarray(gas_source_tangent, dtype=dtype)
+    condensate_source_tangent = jnp.asarray(
+        condensate_source_tangent, dtype=dtype
+    )
+    matrix = _zero_barrier_reduced_matrix(
         q,
-        m,
-        qtot,
+        final.total_gas_log_amount,
         ag,
         ac,
     )
-
-    def require_converged(value):
-        value = jnp.asarray(value)
-        return jnp.where(converged, value, jnp.full_like(value, jnp.nan))
-
-    # Initialization, formula matrices, and support are not differentiated.
-    # A failed primal has no certified implicit root, so its source cotangents
-    # fail closed instead of reporting derivatives of an arbitrary iterate.
-    return (
-        require_converged(source_cotangents.target_inventory),
-        require_converged(source_cotangents.gas_source),
-        require_converged(source_cotangents.condensate_standard_source),
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
+    rhs = jnp.concatenate(
+        [
+            target_tangent + ag @ (gas_amounts * gas_source_tangent),
+            condensate_source_tangent,
+            jnp.dot(gas_amounts, gas_source_tangent).reshape((1,)),
+        ]
+    )
+    solution = solve_symmetric_reduced_system(
+        matrix, rhs, LinearSolverConfig()
+    )
+    element_count = ag.shape[0]
+    condensate_count = ac.shape[1]
+    element_potential_tangent = solution[:element_count]
+    condensate_tangent = solution[
+        element_count : element_count + condensate_count
+    ]
+    total_gas_log_amount_tangent = solution[-1]
+    gas_log_amounts_tangent = (
+        ag.T @ element_potential_tangent
+        + total_gas_log_amount_tangent
+        - gas_source_tangent
     )
 
-
-_solve_zero_barrier_sources.defvjp(
-    _solve_zero_barrier_sources_fwd,
-    _solve_zero_barrier_sources_bwd,
-)
+    tolerance = _effective_residual_tolerance(
+        residual_crit, solved.residual_norm.dtype
+    )
+    converged = jnp.isfinite(solved.residual_norm) & (
+        solved.residual_norm <= tolerance
+    )
+    # Multiplication by a NaN coefficient keeps failure propagation linear in
+    # the input tangents, so the automatically transposed VJP also fails closed.
+    finite_root = jnp.where(
+        converged,
+        jnp.asarray(1.0, dtype=dtype),
+        jnp.asarray(jnp.nan, dtype=dtype),
+    )
+    result_tangent = DifferentiableFixedSupportResult(
+        gas_log_amounts=finite_root * gas_log_amounts_tangent,
+        condensate_amounts=finite_root * condensate_tangent,
+    )
+    return result, result_tangent
 
 
 def _prepare_fixed_support_inputs(
@@ -715,10 +733,10 @@ def minimize_gibbs_fixed_support(
     order.  ``condensate_hvector_func`` must likewise return only that support
     in the same order; a full-catalog setup function should be sliced by the
     caller.  The support, formula matrices, and all initialization values are
-    non-differentiable.  Reverse-mode derivatives are provided with respect
-    to temperature, normalized log pressure, and target elemental inventory
-    via ``state``.  The host-side support lifecycle and rainout propagation
-    are not part of this local differentiability contract.
+    non-differentiable.  Forward- and reverse-mode derivatives are provided
+    with respect to temperature, normalized log pressure, and target elemental
+    inventory via ``state``.  The host-side support lifecycle and rainout
+    propagation are not part of this local differentiability contract.
 
     The convergence threshold is never set below ten machine epsilons for the
     numerical dtype.  Thus the default remains ``1e-10`` in float64 and is
@@ -762,8 +780,8 @@ def minimize_gibbs_fixed_support_with_diagnostics(
     """Run the zero-barrier kernel and return non-differentiable diagnostics.
 
     This audit entry point executes the same primal iteration but intentionally
-    bypasses the custom VJP.  Use :func:`minimize_gibbs_fixed_support` for
-    reverse-mode derivatives after this report certifies convergence.
+    bypasses the custom JVP.  Use :func:`minimize_gibbs_fixed_support` for
+    implicit derivatives after this report certifies convergence.
     """
 
     prepared = _prepare_fixed_support_inputs(

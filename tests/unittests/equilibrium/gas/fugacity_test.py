@@ -93,11 +93,16 @@ def test_jit_grad_includes_lnphi_temperature_and_pressure_derivatives():
     dln_dT, dln_dP = jax.jacrev(solve_ln_n, argnums=(0, 1))(
         temperature, pressure_bar
     )
+    forward_dln_dT, forward_dln_dP = jax.jacfwd(
+        solve_ln_n, argnums=(0, 1)
+    )(temperature, pressure_bar)
     delta = temperature_scale * temperature + pressure_scale * pressure_bar
     response = jnp.asarray([-1.0 - jnp.tanh(delta), 1.0 - jnp.tanh(delta)])
 
     np.testing.assert_allclose(dln_dT, response * temperature_scale, atol=2.0e-11)
     np.testing.assert_allclose(dln_dP, response * pressure_scale, atol=2.0e-11)
+    np.testing.assert_allclose(forward_dln_dT, dln_dT, atol=2.0e-11)
+    np.testing.assert_allclose(forward_dln_dP, dln_dP, atol=2.0e-11)
 
 
 def test_vmap_profile_propagates_layer_state_to_lnphi():

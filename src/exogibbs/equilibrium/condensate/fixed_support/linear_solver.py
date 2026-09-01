@@ -50,10 +50,11 @@ def solve_symmetric_reduced_system(
 ) -> Any:
     """Solve one symmetric reduced system with the canonical scaling policy.
 
-    Both the finite-barrier R-GIE direction and the zero-barrier implicit VJP
-    use symmetric, generally indefinite, reduced systems.  Keeping their Ruiz
-    equilibration and iterative-refinement policy in one helper prevents the
-    forward and adjoint paths from silently acquiring different numerics.
+    Both the finite-barrier R-GIE direction and the zero-barrier implicit
+    derivative use symmetric, generally indefinite, reduced systems.  Keeping
+    their Ruiz equilibration and iterative-refinement policy in one helper
+    prevents the forward and adjoint paths from silently acquiring different
+    numerics.
     """
 
     scaled_matrix, scaled_rhs, total_scale = _symmetric_ruiz_equilibration(

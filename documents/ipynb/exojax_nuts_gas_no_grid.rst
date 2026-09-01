@@ -4,7 +4,7 @@
 ExoJAX NUTS with the gas VJP: no grid initializer
 =================================================
 
-This tutorial demonstrates the gas-equilibrium custom VJP inside an
+This tutorial demonstrates the gas-equilibrium generated VJP inside an
 ExoJAX emission-spectrum retrieval. It is the no-grid baseline: every
 atmospheric layer uses the same uniform cold initialization. The full,
 executable source is ``examples/retrievals/exojax_nuts_gas_no_grid.py``;
@@ -89,8 +89,9 @@ corners for primal convergence.
 Reverse-mode NUTS
 -----------------
 
-The ExoGibbs gas solver provides a custom VJP, not a forward-mode JVP.
-The shared runner therefore selects reverse mode explicitly. Its
+The ExoGibbs gas solver provides an implicit custom JVP and an
+automatically transposed VJP. The shared runner selects reverse mode
+explicitly because NUTS differentiates a scalar log density. Its
 essential NumPyro construction is:
 
 .. code:: python
@@ -128,8 +129,8 @@ log_co_scale    0          -0.0000416 :math:`\pm` 0.0005270
 
 All three mock truth values lie inside their central 90% posterior
 intervals. This is deliberately a compact, one-chain demonstration of an
-end-to-end ExoJAX retrieval through the ExoGibbs custom VJP, rather than
-a precision convergence benchmark.
+end-to-end ExoJAX retrieval through the ExoGibbs generated VJP, rather
+than a precision convergence benchmark.
 
 Run the complete demo
 ---------------------

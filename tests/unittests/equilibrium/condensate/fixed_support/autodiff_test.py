@@ -1,4 +1,4 @@
-"""Regression tests for the fixed-support zero-barrier custom VJP."""
+"""Regression tests for fixed-support zero-barrier implicit autodiff."""
 
 from __future__ import annotations
 
@@ -247,7 +247,7 @@ def test_reduced_source_vjp_handles_nonsquare_gas_and_multiple_support():
     )
 
 
-def test_custom_vjp_matches_analytic_temperature_pressure_and_budget_derivatives():
+def test_reverse_mode_matches_analytic_temperature_pressure_and_budget_derivatives():
     _ag, _ac, target, _q0, _m0, _qtot0 = _fixture()
     gas_pressure_jacobian = jax.jacrev(
         lambda log_pressure: _solve(
@@ -288,7 +288,7 @@ def test_custom_vjp_matches_analytic_temperature_pressure_and_budget_derivatives
     )
 
 
-def test_custom_vjp_differentiates_the_complete_physical_result_pytree():
+def test_reverse_mode_differentiates_the_complete_physical_result_pytree():
     jacobian = jax.jacrev(lambda temperature: _solve(temperature=temperature))(
         2.0
     )
@@ -297,7 +297,7 @@ def test_custom_vjp_differentiates_the_complete_physical_result_pytree():
     assert jacobian.condensate_amounts == pytest.approx([1.0 / 15.0])
 
 
-def test_custom_vjp_stops_initialization_gradients_and_is_jittable():
+def test_implicit_autodiff_stops_initialization_gradients_and_is_jittable():
     ag, ac, target, q0, m0, qtot0 = _fixture()
 
     def loss(q_init, m_init, qtot_init, potential_init, gas_matrix, cond_matrix):
@@ -322,6 +322,14 @@ def test_custom_vjp_stops_initialization_gradients_and_is_jittable():
     gradients = jax.grad(loss, argnums=(0, 1, 2, 3, 4, 5))(
         q0, m0, qtot0, potential0, ag, ac
     )
+    _value, initialization_tangent = jax.jvp(
+        loss,
+        (q0, m0, qtot0, potential0, ag, ac),
+        tuple(
+            jnp.ones_like(value)
+            for value in (q0, m0, qtot0, potential0, ag, ac)
+        ),
+    )
     compiled = jax.jit(
         lambda temperature: _solve(
             temperature=temperature
@@ -334,6 +342,15 @@ def test_custom_vjp_stops_initialization_gradients_and_is_jittable():
             )
         )
     )(2.0)
+    compiled_jvp = jax.jit(
+        lambda temperature: jax.jvp(
+            lambda value: jnp.sum(
+                _solve(temperature=value).gas_log_amounts
+            ),
+            (temperature,),
+            (jnp.ones_like(temperature),),
+        )[1]
+    )(2.0)
     batched_gradients = jax.vmap(
         jax.grad(
             lambda temperature: jnp.sum(
@@ -341,14 +358,26 @@ def test_custom_vjp_stops_initialization_gradients_and_is_jittable():
             )
         )
     )(jnp.asarray([1.9, 2.0, 2.1]))
+    batched_jvps = jax.vmap(
+        lambda temperature: jax.jvp(
+            lambda value: jnp.sum(
+                _solve(temperature=value).gas_log_amounts
+            ),
+            (temperature,),
+            (jnp.ones_like(temperature),),
+        )[1]
+    )(jnp.asarray([1.9, 2.0, 2.1]))
 
     for gradient, value in zip(
         gradients, (q0, m0, qtot0, potential0, ag, ac)
     ):
         assert gradient == pytest.approx(jnp.zeros_like(value))
+    assert initialization_tangent == pytest.approx(0.0)
     assert jnp.all(jnp.isfinite(compiled))
     assert compiled_gradient == pytest.approx(-0.2)
+    assert compiled_jvp == pytest.approx(-0.2)
     assert jnp.all(jnp.isfinite(batched_gradients))
+    assert jnp.all(jnp.isfinite(batched_jvps))
 
 
 def test_public_solver_can_be_jitted_directly_with_dynamic_config_values():
@@ -375,15 +404,89 @@ def test_public_solver_can_be_jitted_directly_with_dynamic_config_values():
     assert result.condensate_amounts == pytest.approx([5.0 / 3.0])
 
 
-def test_fixed_support_forward_mode_is_explicitly_unsupported():
-    with pytest.raises(TypeError, match="forward-mode autodiff"):
-        jax.jvp(
-            lambda temperature: _solve(
-                temperature=temperature
-            ).gas_log_amounts,
-            (2.0,),
-            (1.0,),
+def test_fixed_support_jvp_matches_analytic_and_finite_difference():
+    _ag, _ac, target, _q0, _m0, _qtot0 = _fixture()
+    temperature_tangent = 0.7
+    pressure_tangent = -0.3
+    inventory_tangent = jnp.asarray([0.2, -0.4])
+
+    def solve_flat(temperature, log_pressure, inventory):
+        result = _solve(
+            temperature=temperature,
+            log_pressure=log_pressure,
+            target=inventory,
         )
+        return jnp.concatenate(
+            [result.gas_log_amounts, result.condensate_amounts]
+        )
+
+    primals = (2.0, 0.0, target)
+    tangents = (
+        temperature_tangent,
+        pressure_tangent,
+        inventory_tangent,
+    )
+    _result, tangent = jax.jvp(solve_flat, primals, tangents)
+    expected = jnp.concatenate(
+        [
+            temperature_tangent * jnp.asarray([-0.2, 0.0])
+            + pressure_tangent * jnp.asarray([-4.0 / 3.0, 0.0])
+            + jnp.asarray([[0.0, 1.0], [0.0, 1.0]])
+            @ inventory_tangent,
+            temperature_tangent * jnp.asarray([1.0 / 15.0])
+            + pressure_tangent * jnp.asarray([4.0 / 9.0])
+            + jnp.asarray([[1.0, -1.0 / 3.0]])
+            @ inventory_tangent,
+        ]
+    )
+    step = 1.0e-5
+    plus = solve_flat(
+        primals[0] + step * tangents[0],
+        primals[1] + step * tangents[1],
+        primals[2] + step * tangents[2],
+    )
+    minus = solve_flat(
+        primals[0] - step * tangents[0],
+        primals[1] - step * tangents[1],
+        primals[2] - step * tangents[2],
+    )
+    finite_difference = (plus - minus) / (2.0 * step)
+
+    assert tangent == pytest.approx(expected, rel=1.0e-10, abs=1.0e-11)
+    assert tangent == pytest.approx(
+        finite_difference, rel=1.0e-7, abs=1.0e-8
+    )
+
+
+def test_fixed_support_generated_vjp_satisfies_adjoint_identity():
+    _ag, _ac, target, _q0, _m0, _qtot0 = _fixture()
+    inputs = (2.0, 0.0, target)
+    direction = (0.4, -0.2, jnp.asarray([0.3, -0.1]))
+    output_cotangent = jnp.asarray([0.6, -0.2, 1.1])
+
+    def solve_flat(temperature, log_pressure, inventory):
+        result = _solve(
+            temperature=temperature,
+            log_pressure=log_pressure,
+            target=inventory,
+        )
+        return jnp.concatenate(
+            [result.gas_log_amounts, result.condensate_amounts]
+        )
+
+    _result, output_tangent = jax.jvp(
+        solve_flat, inputs, direction
+    )
+    _result, pullback = jax.vjp(solve_flat, *inputs)
+    input_cotangents = pullback(output_cotangent)
+    input_pairing = sum(
+        jnp.vdot(cotangent, tangent)
+        for cotangent, tangent in zip(input_cotangents, direction)
+    )
+
+    assert jnp.vdot(output_cotangent, output_tangent) == pytest.approx(
+        input_pairing, rel=1.0e-11, abs=1.0e-11
+    )
 
 
 def test_failed_zero_barrier_solve_returns_nonfinite_source_gradient():
@@ -413,8 +516,10 @@ def test_failed_zero_barrier_solve_returns_nonfinite_source_gradient():
         return jnp.sum(result.gas_log_amounts)
 
     _result, diagnostics = solve(2.0, diagnostics=True)
+    _value, tangent = jax.jvp(loss, (2.0,), (1.0,))
     assert not bool(diagnostics.converged)
     assert diagnostics.residual_norm > 1.0e-12
+    assert jnp.isnan(tangent)
     assert jnp.isnan(jax.grad(loss)(2.0))
 
 
