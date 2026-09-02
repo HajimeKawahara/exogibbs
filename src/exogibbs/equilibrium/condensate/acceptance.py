@@ -425,10 +425,25 @@ def accept_condensate_result_state(
             "fastchem4_trace_public_runtime_constructor_inputs_used": False,
         }
 
-    gas_n = jnp.exp(gas_ln_n_array)
-    gas_ntot = jnp.sum(gas_n)
-    relative_gas_n = jnp.exp(gas_ln_n_array - jnp.max(gas_ln_n_array))
-    gas_x = relative_gas_n / jnp.sum(relative_gas_n)
+    gas_ln_n_host = np.asarray(gas_ln_n_array, dtype=np.float64)
+    with np.errstate(
+        divide="ignore",
+        over="ignore",
+        under="ignore",
+        invalid="ignore",
+    ):
+        gas_n_host = np.exp(gas_ln_n_host)
+        gas_ntot_host = np.sum(gas_n_host, dtype=np.float64)
+        relative_gas_n_host = np.exp(
+            gas_ln_n_host - np.max(gas_ln_n_host)
+        )
+        gas_x_host = np.divide(
+            relative_gas_n_host,
+            np.sum(relative_gas_n_host, dtype=np.float64),
+        )
+    gas_n = jnp.asarray(gas_n_host, dtype=jnp.float64)
+    gas_ntot = jnp.asarray(gas_ntot_host, dtype=jnp.float64)
+    gas_x = jnp.asarray(gas_x_host, dtype=jnp.float64)
     (
         status,
         acceptance_tier,

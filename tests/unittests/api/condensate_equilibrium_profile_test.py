@@ -25,6 +25,9 @@ from exogibbs.equilibrium.condensate.fixed_support.zero_barrier import (
 from exogibbs.equilibrium.condensate.policy import (
     fixed_support_v2_production_policy,
 )
+from exogibbs.equilibrium.condensate.types import (
+    CONDENSATE_HEAD_V2_ROUTE_NAME,
+)
 
 
 def _fake_setup() -> CondensateChemicalSetup:
@@ -362,6 +365,96 @@ def test_amount_gauge_scale_and_initializer_normalization() -> None:
     )
     np.testing.assert_array_equal(normalized.rho, initial.rho)
     assert float(normalized.barrier_epsilon) == pytest.approx(-11.0)
+
+
+def test_host_linear_amount_gauge_transform_preserves_subnormal_values() -> None:
+    amount_scale = np.float64(1.0000000000000107)
+    caller_values = np.asarray(
+        [1.0, 9.108388204e-314], dtype=np.float64
+    )
+
+    canonical = _lifecycle._transform_linear_amount_gauge_on_host(
+        caller_values,
+        amount_scale,
+        to_canonical=True,
+    )
+    restored = _lifecycle._transform_linear_amount_gauge_on_host(
+        canonical,
+        amount_scale,
+        to_canonical=False,
+    )
+
+    expected_canonical = np.divide(caller_values, amount_scale)
+    expected_restored = np.multiply(expected_canonical, amount_scale)
+    np.testing.assert_array_equal(np.asarray(canonical), expected_canonical)
+    np.testing.assert_array_equal(np.asarray(restored), expected_restored)
+    assert float(canonical[1]) > 0.0
+    assert float(restored[1]) > 0.0
+
+
+def test_initializer_linear_gauge_normalization_preserves_subnormal_values(
+) -> None:
+    amount_scale = np.float64(1.0000000000000107)
+    trace_amount = np.float64(9.108388204e-314)
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=jnp.asarray([0.0], dtype=jnp.float64),
+        gas_ntot=jnp.asarray(trace_amount, dtype=jnp.float64),
+        condensate_amounts=jnp.asarray([trace_amount], dtype=jnp.float64),
+    )
+
+    normalized = _lifecycle._normalize_condensate_init_amount_gauge(
+        initial,
+        amount_scale,
+    )
+    expected = np.divide(trace_amount, amount_scale)
+
+    assert float(normalized.gas_ntot) == expected
+    assert float(normalized.condensate_amounts[0]) == expected
+    assert expected > 0.0
+
+
+def test_head_v2_canonical_inventory_preserves_subnormal_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    setup = _amount_gauge_fake_setup()
+    amount_scale = np.float64(1.0000000000000107)
+    caller_inventory = np.asarray(
+        [amount_scale, 9.108388204e-314], dtype=np.float64
+    )
+    captured = {}
+
+    class InventoryCaptured(RuntimeError):
+        pass
+
+    def capture_support_target(**kwargs):
+        captured["target"] = np.asarray(kwargs["b"], dtype=np.float64)
+        raise InventoryCaptured
+
+    monkeypatch.setattr(
+        _lifecycle,
+        "_native_activity_expanded_profile_support_payload",
+        capture_support_target,
+    )
+    initial = CondensateEquilibriumInit(
+        gas_ln_n=jnp.asarray(
+            [math.log(amount_scale), math.log(caller_inventory[1])],
+            dtype=jnp.float64,
+        ),
+        gas_ntot=jnp.asarray(amount_scale, dtype=jnp.float64),
+    )
+
+    with pytest.raises(InventoryCaptured):
+        condmod.condensate_equilibrium_profile(
+            setup,
+            T=np.asarray([1000.0]),
+            P=np.asarray([1.0]),
+            b=caller_inventory,
+            init=(initial,),
+        )
+
+    expected = np.divide(caller_inventory, np.sum(caller_inventory))
+    np.testing.assert_array_equal(captured["target"], expected)
+    assert captured["target"][1] > 0.0
 
 
 @pytest.mark.parametrize(
@@ -1406,6 +1499,8 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
     (
         "trace_inventory",
         "terminal_status",
+        "terminal_initializer_eligible",
+        "pre_pdipm_state_finite",
         "exact_accepted",
         "caller_accepted",
         "expected_exact_calls",
@@ -1416,6 +1511,8 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
         (
             1.0e-12,
             TerminalStatus.NORMAL_DUAL_STEP_FAILED,
+            False,
+            True,
             True,
             True,
             1,
@@ -1425,6 +1522,8 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
         (
             1.0e-12,
             TerminalStatus.RESTORATION_MAX_ITER,
+            False,
+            True,
             True,
             True,
             1,
@@ -1434,6 +1533,8 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
         (
             1.0e-12,
             TerminalStatus.RESTORATION_LOCALLY_INFEASIBLE,
+            False,
+            True,
             True,
             True,
             1,
@@ -1443,6 +1544,8 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
         (
             1.0e-12,
             TerminalStatus.RESTORATION_LINE_SEARCH_FAILED,
+            False,
+            True,
             True,
             True,
             1,
@@ -1453,6 +1556,8 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
             1.0e-12,
             TerminalStatus.RESTORATION_MAX_ITER,
             False,
+            True,
+            False,
             False,
             1,
             "zero_barrier_active_support_polish_failed",
@@ -1461,6 +1566,8 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
         (
             1.0e-12,
             TerminalStatus.RESTORATION_MAX_ITER,
+            False,
+            True,
             True,
             False,
             1,
@@ -1468,8 +1575,43 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
             None,
         ),
         (
+            1.0e-12,
+            TerminalStatus.RESTORATION_MAX_ITER,
+            True,
+            True,
+            True,
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
+        ),
+        (
+            1.0e-12,
+            TerminalStatus.RESTORATION_MAX_ITER,
+            True,
+            True,
+            False,
+            False,
+            1,
+            "zero_barrier_active_support_polish_failed",
+            None,
+        ),
+        (
             1.0,
             TerminalStatus.RESTORATION_MAX_ITER,
+            True,
+            True,
+            True,
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            "capacity_not_below_initial_barrier",
+        ),
+        (
+            1.0,
+            TerminalStatus.RESTORATION_MAX_ITER,
+            False,
+            True,
             True,
             True,
             0,
@@ -1479,47 +1621,79 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
         (
             1.0e-12,
             TerminalStatus.NORMAL_LINE_SEARCH_FAILED,
+            False,
             True,
             True,
-            0,
-            "fixed_support_failed",
-            "terminal_status_not_eligible",
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
         ),
         (
             1.0e-12,
             TerminalStatus.RESTORATION_LINEAR_SOLVE_FAILED,
+            False,
             True,
             True,
-            0,
-            "fixed_support_failed",
-            "terminal_status_not_eligible",
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
         ),
         (
             1.0e-12,
             TerminalStatus.RESTORATION_NONFINITE,
+            False,
             True,
             True,
-            0,
-            "fixed_support_failed",
-            "terminal_status_not_eligible",
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
         ),
         (
             1.0e-12,
             TerminalStatus.RETURN_REPRESENTATION_FLOOR_FAILED,
+            False,
             True,
             True,
-            0,
-            "fixed_support_failed",
-            "terminal_status_not_eligible",
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
         ),
         (
             1.0e-12,
             TerminalStatus.NORMAL_LINEAR_SOLVE_FAILED,
+            False,
+            True,
+            True,
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
+        ),
+        (
+            1.0,
+            TerminalStatus.NORMAL_LINEAR_SOLVE_FAILED,
+            False,
+            True,
             True,
             True,
             0,
             "fixed_support_failed",
-            "terminal_status_not_eligible",
+            "capacity_not_below_initial_barrier",
+        ),
+        (
+            1.0e-12,
+            TerminalStatus.NORMAL_LINEAR_SOLVE_FAILED,
+            False,
+            False,
+            True,
+            True,
+            0,
+            "fixed_support_failed",
+            "invalid_source_state",
         ),
     ),
 )
@@ -1527,6 +1701,8 @@ def test_head_v2_trace_capacity_fallback_uses_pre_pdipm_state(
     monkeypatch,
     trace_inventory,
     terminal_status,
+    terminal_initializer_eligible,
+    pre_pdipm_state_finite,
     exact_accepted,
     caller_accepted,
     expected_exact_calls,
@@ -1574,7 +1750,10 @@ def test_head_v2_trace_capacity_fallback_uses_pre_pdipm_state(
             "final_kkt_norms": KKTComponentNorms(
                 zeros,
                 jnp.asarray([1.0e8], dtype=jnp.float64),
-                jnp.asarray([1.0e-3], dtype=jnp.float64),
+                jnp.asarray(
+                    [0.0 if terminal_initializer_eligible else 1.0e-3],
+                    dtype=jnp.float64,
+                ),
                 zeros,
                 zeros,
             ),
@@ -1658,8 +1837,11 @@ def test_head_v2_trace_capacity_fallback_uses_pre_pdipm_state(
     )
     initial_gas_total = float(np.sum(initial_gas_amounts))
     initial_potential = np.asarray([-0.25, -0.75], dtype=np.float64)
+    initial_gas_log_amounts = jnp.log(jnp.asarray(initial_gas_amounts))
+    if not pre_pdipm_state_finite:
+        initial_gas_log_amounts = initial_gas_log_amounts.at[0].set(jnp.nan)
     initial = CondensateEquilibriumInit(
-        gas_ln_n=jnp.log(jnp.asarray(initial_gas_amounts)),
+        gas_ln_n=initial_gas_log_amounts,
         gas_ntot=jnp.asarray(initial_gas_total, dtype=jnp.float64),
         support_indices=(1,),
         support_amounts=(initial_support_amount,),
@@ -1692,9 +1874,17 @@ def test_head_v2_trace_capacity_fallback_uses_pre_pdipm_state(
     expected_full_amounts = np.asarray(
         [0.0, initial_support_amount / amount_scale], dtype=np.float64
     )
+    expected_pre_pdipm = bool(
+        expected_exact_calls and expected_skip_reason is None
+    )
     if expected_exact_calls:
         exact_call = exact_calls[0]
         assert exact_call["support_indices"] == (1,)
+        if not expected_pre_pdipm:
+            expected_q = np.log(np.asarray([0.2, 0.3]))
+            expected_qtot = math.log(0.5)
+            expected_full_amounts = np.asarray([0.0, 0.25])
+            initial_potential = np.asarray([-9.0, -8.0])
         np.testing.assert_allclose(
             exact_call["gas_log_amounts_init"], expected_q
         )
@@ -1722,37 +1912,36 @@ def test_head_v2_trace_capacity_fallback_uses_pre_pdipm_state(
     lifecycle = result.layers[0].diagnostics["fixed_support_v2"]
     assert lifecycle["outcome"] == expected_outcome
     assert lifecycle["terminal_status_name"] == terminal_status.name
-    assert not lifecycle["zero_barrier_initializer_kkt_passed"]
+    assert lifecycle["zero_barrier_initializer_kkt_passed"] is bool(
+        terminal_initializer_eligible
+    )
     initializer = lifecycle["zero_barrier_initializer"]
     expected_source = (
         "pre_pdipm_finite_support_state"
-        if expected_exact_calls
+        if expected_pre_pdipm
         else "fixed_support_terminal_state"
     )
     assert initializer["source"] == expected_source
     assert initializer["selected_before_lifecycle_terminal_round"] is bool(
-        expected_exact_calls
+        expected_pre_pdipm
     )
     fallback = lifecycle["pre_pdipm_zero_barrier_fallback"]
-    assert fallback["eligible"] is bool(expected_exact_calls)
-    assert fallback["attempted"] is bool(expected_exact_calls)
+    assert fallback["eligible"] is expected_pre_pdipm
+    assert fallback["attempted"] is expected_pre_pdipm
     assert fallback["skip_reason"] == expected_skip_reason
     assert fallback["internal_accepted"] is (
-        bool(expected_exact_calls) and exact_accepted
+        expected_pre_pdipm and exact_accepted
     )
     assert fallback["caller_gauge_accepted"] is (
-        bool(expected_exact_calls) and exact_accepted and caller_accepted
+        expected_pre_pdipm and exact_accepted and caller_accepted
     )
     assert fallback["accepted"] is (
-        bool(expected_exact_calls) and exact_accepted and caller_accepted
+        expected_pre_pdipm and exact_accepted and caller_accepted
     )
     assert fallback["source_support_indices"] == (1,)
-    if expected_skip_reason == "terminal_status_not_eligible":
-        assert fallback["trace_capacity"] is None
-    else:
-        assert fallback["trace_capacity"]["trace_capacity_detected"] is (
-            trace_inventory < 1.0
-        )
+    assert fallback["trace_capacity"]["trace_capacity_detected"] is (
+        trace_inventory < 1.0
+    )
 
 
 def test_disabled_pre_pdipm_fallback_does_not_materialize_device_state(
@@ -1775,8 +1964,7 @@ def test_disabled_pre_pdipm_fallback_does_not_materialize_device_state(
     payload, report = _lifecycle._head_v2_pre_pdipm_zero_barrier_candidate(
         setup=setup,
         state=state,
-        target_inventory=jnp.asarray([0.5, 0.5], dtype=jnp.float64),
-        log_barrier=-11.0,
+        trace_capacity_report=None,
         valid_condensates=None,
         enabled=False,
         disabled_reason="terminal_status_not_eligible",
@@ -1786,6 +1974,55 @@ def test_disabled_pre_pdipm_fallback_does_not_materialize_device_state(
     assert not report["eligible"]
     assert report["skip_reason"] == "terminal_status_not_eligible"
     assert report["trace_capacity"] is None
+
+
+@pytest.mark.parametrize(
+    ("report_support", "trace_detected", "expected_skip_reason"),
+    (
+        ((0,), False, "capacity_not_below_initial_barrier"),
+        ((1,), True, "invalid_trace_capacity_report"),
+    ),
+)
+def test_pre_pdipm_fallback_checks_trace_report_before_device_state(
+    monkeypatch,
+    report_support,
+    trace_detected,
+    expected_skip_reason,
+) -> None:
+    setup = _amount_gauge_fake_setup()
+    state = _lifecycle._HeadV2LayerState(
+        support_indices=(0,),
+        gas_ln_n=jnp.zeros((2,), dtype=jnp.float64),
+        condensate_log_amounts=jnp.zeros((1,), dtype=jnp.float64),
+        total_gas_log_amount=jnp.asarray(0.0, dtype=jnp.float64),
+        element_potential=jnp.zeros((2,), dtype=jnp.float64),
+    )
+    trace_capacity = {
+        "schema": "exogibbs_finite_barrier_trace_capacity_v1",
+        "support_indices": report_support,
+        "support_count": len(report_support),
+        "capacity_geometry_valid": True,
+        "trace_capacity_detected": trace_detected,
+    }
+
+    def fail_device_get(value):
+        pytest.fail("trace report rejection materialized device state")
+
+    monkeypatch.setattr(_lifecycle.jax, "device_get", fail_device_get)
+
+    payload, report = _lifecycle._head_v2_pre_pdipm_zero_barrier_candidate(
+        setup=setup,
+        state=state,
+        trace_capacity_report=trace_capacity,
+        valid_condensates=(True, True),
+        enabled=True,
+        disabled_reason=None,
+    )
+
+    assert payload is None
+    assert not report["eligible"]
+    assert report["skip_reason"] == expected_skip_reason
+    assert report["trace_capacity"] is trace_capacity
 
 
 def test_head_v2_zero_barrier_initializer_uses_bounded_gas_kkt_gate():
@@ -1891,6 +2128,52 @@ def test_head_v2_rejects_empty_profile():
         )
 
 
+def _install_head_v2_gas_only_stubs(
+    monkeypatch,
+    *,
+    gas_amounts,
+):
+    gas_amounts = jnp.asarray(gas_amounts, dtype=jnp.float64)
+    calls = {"gas": 0, "warmup": []}
+
+    def fake_gas_equilibrium(*args, **kwargs):
+        calls["gas"] += 1
+        return SimpleNamespace(
+            ln_n=jnp.log(gas_amounts),
+            ntot=jnp.sum(gas_amounts),
+        )
+
+    monkeypatch.setattr(
+        "exogibbs.equilibrium.gas.solve.equilibrium",
+        fake_gas_equilibrium,
+    )
+    monkeypatch.setattr(
+        _lifecycle,
+        "_native_activity_expanded_profile_support_payload",
+        lambda **kwargs: ((), (), {"policy": "test_empty_support"}),
+    )
+
+    def fake_run_fixed_support_profile(**kwargs):
+        calls["warmup"].append(kwargs)
+        return {
+            "compilation_seconds": 0.0,
+            "execution_seconds": 0.0,
+            "diagnostic_seconds": 0.0,
+            "diagnostic_compilation_seconds": 0.0,
+            "diagnostic_execution_seconds": 0.0,
+            "backend": "cpu",
+        }
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.batch."
+            "run_fixed_support_profile"
+        ),
+        fake_run_fixed_support_profile,
+    )
+    return calls
+
+
 def test_head_v2_empty_initial_support_uses_gas_only_outcome(
     monkeypatch,
 ):
@@ -1934,6 +2217,15 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
             as_dict=lambda: {},
         ),
     )
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "polish_zero_barrier_active_support"
+        ),
+        lambda **kwargs: pytest.fail(
+            "An accepted gas-only state must not run exact polish."
+        ),
+    )
 
     result = condmod.condensate_equilibrium_profile(
         setup,
@@ -1954,6 +2246,229 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
         "gas_only_no_candidate"
     )
     assert layer.diagnostics["fixed_support_v2"]["fixed_shape_warmup"]
+    lifecycle = layer.diagnostics["fixed_support_v2"]
+    assert lifecycle[
+        "gas_only_initial_caller_gauge_zero_barrier_kkt"
+    ]["accepted"]
+    assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
+    assert not lifecycle["zero_barrier_initializer"]["attempted"]
+
+
+def test_head_v2_empty_support_refines_favorable_gas_only_state(
+    monkeypatch,
+) -> None:
+    setup = _amount_gauge_fake_setup()
+    calls = _install_head_v2_gas_only_stubs(
+        monkeypatch,
+        gas_amounts=(0.6, 0.4),
+    )
+    polish_calls = []
+
+    def fake_zero_barrier_polish(**kwargs):
+        polish_calls.append(kwargs)
+        return SimpleNamespace(
+            accepted=True,
+            gas_log_amounts=np.log(
+                np.asarray([0.4, 0.4], dtype=np.float64)
+            ),
+            condensate_amounts=np.asarray([0.2, 0.0], dtype=np.float64),
+            total_gas_log_amount=math.log(0.8),
+            element_potential=np.log(
+                np.asarray([0.5, 0.5], dtype=np.float64)
+            ),
+            support_indices=(0,),
+            report={"accepted": True, "schema": "unit_test_polish"},
+        )
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "polish_zero_barrier_active_support"
+        ),
+        fake_zero_barrier_polish,
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.6, 0.4], dtype=jnp.float64),
+    )
+
+    layer = result.layers[0]
+    assert len(polish_calls) == 1
+    assert tuple(polish_calls[0]["support_indices"]) == ()
+    assert calls["gas"] == 2
+    assert len(calls["warmup"]) == 1
+    assert layer.converged
+    assert layer.selected_route == CONDENSATE_HEAD_V2_ROUTE_NAME
+    assert layer.condensate_support_names == ("H[s]",)
+    np.testing.assert_allclose(layer.gas_n, [0.4, 0.4])
+    np.testing.assert_allclose(layer.condensate_amounts, [0.2, 0.0])
+    lifecycle = layer.diagnostics["fixed_support_v2"]
+    assert not lifecycle[
+        "gas_only_initial_caller_gauge_zero_barrier_kkt"
+    ]["accepted"]
+    assert lifecycle[
+        "gas_only_initial_caller_gauge_zero_barrier_kkt"
+    ]["inactive_condensate_violation_max_abs"] > 0.0
+    assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
+    assert lifecycle["support_indices_after_polish"] == (0,)
+    assert lifecycle["outcome"] == "zero_barrier_empty_support_rescued"
+
+
+def test_head_v2_empty_support_refinement_preserves_gas_only_outcome(
+    monkeypatch,
+) -> None:
+    setup = _fake_setup()
+    _install_head_v2_gas_only_stubs(
+        monkeypatch,
+        gas_amounts=(0.4, 0.5),
+    )
+    polish_calls = []
+
+    def fake_zero_barrier_polish(**kwargs):
+        polish_calls.append(kwargs)
+        return SimpleNamespace(
+            accepted=True,
+            gas_log_amounts=np.log(
+                np.asarray([0.5, 0.5], dtype=np.float64)
+            ),
+            condensate_amounts=np.zeros(2, dtype=np.float64),
+            total_gas_log_amount=0.0,
+            element_potential=np.log(
+                np.asarray([0.5, 0.5], dtype=np.float64)
+            ),
+            support_indices=(),
+            report={"accepted": True, "schema": "unit_test_polish"},
+        )
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "polish_zero_barrier_active_support"
+        ),
+        fake_zero_barrier_polish,
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.5, 0.5], dtype=jnp.float64),
+    )
+
+    layer = result.layers[0]
+    assert len(polish_calls) == 1
+    assert layer.converged
+    assert layer.selected_route == "head_v2_gas_only_no_candidate"
+    assert layer.condensate_support_indices.size == 0
+    lifecycle = layer.diagnostics["fixed_support_v2"]
+    assert not lifecycle[
+        "gas_only_initial_caller_gauge_zero_barrier_kkt"
+    ]["accepted"]
+    assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
+    assert lifecycle["support_indices_after_polish"] == ()
+    assert lifecycle["outcome"] == "gas_only_no_candidate"
+
+
+def test_head_v2_empty_support_refinement_fails_closed(
+    monkeypatch,
+) -> None:
+    setup = _amount_gauge_fake_setup()
+    _install_head_v2_gas_only_stubs(
+        monkeypatch,
+        gas_amounts=(0.6, 0.4),
+    )
+    polish_calls = []
+
+    def fake_zero_barrier_polish(**kwargs):
+        polish_calls.append(kwargs)
+        return SimpleNamespace(
+            accepted=False,
+            report={"accepted": False, "schema": "unit_test_polish"},
+        )
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "polish_zero_barrier_active_support"
+        ),
+        fake_zero_barrier_polish,
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.6, 0.4], dtype=jnp.float64),
+    )
+
+    layer = result.layers[0]
+    assert len(polish_calls) == 1
+    assert not layer.converged
+    assert layer.selected_route == "head_v2_gas_only_no_candidate"
+    assert layer.condensate_support_indices.size == 0
+    lifecycle = layer.diagnostics["fixed_support_v2"]
+    assert lifecycle["zero_barrier_initializer"]["attempted"]
+    assert lifecycle["outcome"] == (
+        "zero_barrier_empty_support_polish_failed"
+    )
+
+
+def test_head_v2_empty_support_caller_audit_failure_fails_closed(
+    monkeypatch,
+) -> None:
+    setup = _amount_gauge_fake_setup()
+    _install_head_v2_gas_only_stubs(
+        monkeypatch,
+        gas_amounts=(0.6, 0.4),
+    )
+    polish_calls = []
+
+    def fake_zero_barrier_polish(**kwargs):
+        polish_calls.append(kwargs)
+        return SimpleNamespace(
+            accepted=True,
+            gas_log_amounts=np.log(
+                np.asarray([0.5, 0.4], dtype=np.float64)
+            ),
+            condensate_amounts=np.zeros(2, dtype=np.float64),
+            total_gas_log_amount=math.log(0.9),
+            element_potential=np.log(
+                np.asarray([0.5 / 0.9, 0.4 / 0.9], dtype=np.float64)
+            ),
+            support_indices=(),
+            report={"accepted": True, "schema": "unit_test_polish"},
+        )
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "polish_zero_barrier_active_support"
+        ),
+        fake_zero_barrier_polish,
+    )
+
+    result = condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([1000.0]),
+        P=np.asarray([1.0]),
+        b=jnp.asarray([0.6, 0.4], dtype=jnp.float64),
+    )
+
+    layer = result.layers[0]
+    assert len(polish_calls) == 1
+    assert not layer.converged
+    assert layer.condensate_support_indices.size == 0
+    lifecycle = layer.diagnostics["fixed_support_v2"]
+    assert not lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
+    assert lifecycle["caller_gauge_zero_barrier_kkt"][
+        "budget_scaled_max_abs"
+    ] > 0.0
+    assert lifecycle["outcome"] == (
+        "caller_gauge_zero_barrier_kkt_failed"
+    )
 
 
 def test_head_v2_empty_catalog_skips_unnecessary_fixed_shape_warmup(
