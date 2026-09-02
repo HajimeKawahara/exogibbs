@@ -1,4 +1,10 @@
-"""Implicit reverse-mode sensitivities for gas equilibrium."""
+"""Legacy gas-equilibrium VJP helpers retained for compatibility.
+
+The production solver defines one implicit custom JVP and obtains its VJP by
+automatic transposition.  These analytic component helpers remain available
+through :mod:`exogibbs.optimize.vjpgibbs` for downstream compatibility and
+reference comparisons.
+"""
 
 import jax.numpy as jnp
 from jax import jit

@@ -1,4 +1,5 @@
 import pytest
+import jax
 import jax.numpy as jnp
 from jax import config
 from jax import jacrev
@@ -137,6 +138,153 @@ def test_minimize_gibbs_pressure_gradient_h_system(h_system_setup):
     
     assert jnp.abs(diff_h) < 1e-11, f"H pressure gradient difference too large: {diff_h}"
     assert jnp.abs(diff_h2) < 1e-11, f"H2 pressure gradient difference too large: {diff_h2}"
+
+
+def test_minimize_gibbs_jvp_matches_analytic_h_system(h_system_setup):
+    """The implicit JVP combines temperature, pressure, and inventory tangents."""
+    setup = h_system_setup
+    temperature_tangent = 0.7
+    pressure_tangent = -0.3
+    inventory_tangent = jnp.asarray([0.2])
+
+    def solve(temperature, log_pressure, inventory):
+        return minimize_gibbs(
+            ThermoState(temperature, log_pressure, inventory),
+            setup["ln_nk"],
+            setup["ln_ntot"],
+            setup["formula_matrix"],
+            setup["hvector_func"],
+            epsilon_crit=setup["epsilon_crit"],
+            max_iter=setup["max_iter"],
+        )
+
+    _result, tangent = jax.jvp(
+        solve,
+        (
+            setup["temperature"],
+            setup["ln_normalized_pressure"],
+            setup["element_vector"],
+        ),
+        (temperature_tangent, pressure_tangent, inventory_tangent),
+    )
+
+    temperature_jacobian = jnp.asarray(
+        [
+            setup["hsystem"].ln_nH_dT(
+                jnp.asarray([setup["temperature"]]),
+                setup["ln_normalized_pressure"],
+            )[0],
+            setup["hsystem"].ln_nH2_dT(
+                jnp.asarray([setup["temperature"]]),
+                setup["ln_normalized_pressure"],
+            )[0],
+        ]
+    )
+    pressure_jacobian = jnp.asarray(
+        [
+            setup["hsystem"].ln_nH_dlogp(
+                jnp.asarray([setup["temperature"]]),
+                setup["ln_normalized_pressure"],
+            )[0],
+            setup["hsystem"].ln_nH2_dlogp(
+                jnp.asarray([setup["temperature"]]),
+                setup["ln_normalized_pressure"],
+            )[0],
+        ]
+    )
+    inventory_jacobian = jnp.asarray(
+        [
+            setup["hsystem"].ln_nH_dbH(setup["element_vector"][0]),
+            setup["hsystem"].ln_nH2_dbH(setup["element_vector"][0]),
+        ]
+    )
+    expected = (
+        temperature_tangent * temperature_jacobian
+        + pressure_tangent * pressure_jacobian
+        + inventory_tangent[0] * inventory_jacobian
+    )
+
+    assert tangent == pytest.approx(expected, rel=1.0e-10, abs=1.0e-11)
+
+
+def test_minimize_gibbs_jvp_is_jittable_vmappable_and_adjoint_consistent(
+    h_system_setup,
+):
+    setup = h_system_setup
+    inputs = jnp.asarray(
+        [
+            setup["temperature"],
+            setup["ln_normalized_pressure"],
+            setup["element_vector"][0],
+        ]
+    )
+
+    def solve(values):
+        return minimize_gibbs(
+            ThermoState(values[0], values[1], values[2:]),
+            setup["ln_nk"],
+            setup["ln_ntot"],
+            setup["formula_matrix"],
+            setup["hvector_func"],
+            epsilon_crit=setup["epsilon_crit"],
+            max_iter=setup["max_iter"],
+        )
+
+    directions = jnp.asarray(
+        [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.2, -0.4, 0.3]]
+    )
+    tangents = jax.jit(
+        jax.vmap(
+            lambda direction: jax.jvp(
+                solve, (inputs,), (direction,)
+            )[1]
+        )
+    )(directions)
+    direction = directions[-1]
+    output_cotangent = jnp.asarray([0.6, -1.1])
+    _result, output_tangent = jax.jvp(
+        solve, (inputs,), (direction,)
+    )
+    _result, pullback = jax.vjp(solve, inputs)
+    (input_cotangent,) = pullback(output_cotangent)
+
+    assert jnp.all(jnp.isfinite(tangents))
+    assert jnp.vdot(output_cotangent, output_tangent) == pytest.approx(
+        jnp.vdot(input_cotangent, direction),
+        rel=1.0e-11,
+        abs=1.0e-11,
+    )
+
+
+def test_minimize_gibbs_stops_initialization_derivatives(h_system_setup):
+    setup = h_system_setup
+
+    def solve(ln_nk_init, ln_ntot_init):
+        return minimize_gibbs(
+            setup["thermo_state"],
+            ln_nk_init,
+            ln_ntot_init,
+            setup["formula_matrix"],
+            setup["hvector_func"],
+            epsilon_crit=setup["epsilon_crit"],
+            max_iter=setup["max_iter"],
+        )
+
+    _result, tangent = jax.jvp(
+        solve,
+        (setup["ln_nk"], setup["ln_ntot"]),
+        (jnp.ones_like(setup["ln_nk"]), 1.0),
+    )
+    gradients = jax.grad(
+        lambda ln_nk_init, ln_ntot_init: jnp.sum(
+            solve(ln_nk_init, ln_ntot_init)
+        ),
+        argnums=(0, 1),
+    )(setup["ln_nk"], setup["ln_ntot"])
+
+    assert tangent == pytest.approx(jnp.zeros_like(tangent))
+    assert gradients[0] == pytest.approx(jnp.zeros_like(gradients[0]))
+    assert gradients[1] == pytest.approx(0.0)
 
 
 def test_minimize_gibbs_element_gradient_hco_system():

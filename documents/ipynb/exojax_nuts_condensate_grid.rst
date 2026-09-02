@@ -178,8 +178,8 @@ solver each layer uses.
 Reverse-mode check
 ------------------
 
-The gas and fixed-support custom VJPs stop gradients through all
-numerical initialization values, including the interpolated graphite
+The gas and fixed-support implicit derivatives stop gradients through
+all numerical initialization values, including the interpolated graphite
 amount. Grid values can depend on the sampled parameters in the forward
 pass, but posterior derivatives are implicit derivatives of the
 converged equilibrium state, not derivatives through the initializer.
@@ -206,12 +206,13 @@ support, and iteration checks.
 Reverse-mode NUTS
 -----------------
 
-Forward-mode differentiation is disabled because the equilibrium kernels
-expose first-order custom VJPs. The shared gas grid and all local
-fixed-support grids are constructed outside this sampler, and
-``grid_build_seconds`` is reported separately from sampling time. No
-speedup is assumed: a performance claim requires completed grid and
-non-grid runs with equivalent converged results on the same hardware.
+The equilibrium kernels support forward-mode JVPs and generated VJPs.
+This sampler selects reverse mode because it differentiates a scalar log
+density. The shared gas grid and all local fixed-support grids are
+constructed outside the sampler, and ``grid_build_seconds`` is reported
+separately from sampling time. No speedup is assumed: a performance
+claim requires completed grid and non-grid runs with equivalent
+converged results on the same hardware.
 
 .. code:: python
 

@@ -12,8 +12,8 @@ only algorithmic change in
 ``examples/retrievals/exojax_nuts_gas_grid.py`` is
 ``GridEquilibriumInitializer``.
 
-Initialization values have stopped gradients in the custom VJP. Once
-both primal solves converge, grid and no-grid spectra and posterior
+Initialization values have stopped gradients in the implicit derivative.
+Once both primal solves converge, grid and no-grid spectra and posterior
 derivatives should agree; the grid is intended to reduce primal
 iterations. The plain demo checks all eight prior corners and records
 grid bounds and the spectral-loss gradient in ``run_summary.json``.
@@ -161,8 +161,9 @@ benchmarks.
 Reverse-mode NUTS
 -----------------
 
-Forward-mode differentiation is intentionally disabled because ExoGibbs
-exposes custom VJPs for these equilibrium solves.
+ExoGibbs supports both forward-mode JVPs and generated VJPs for these
+equilibrium solves. This NUTS example selects reverse mode because it
+differentiates a scalar log density.
 
 .. code:: python
 

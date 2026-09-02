@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Tuple, Union
 import jax
 import jax.numpy as jnp
 import numpy as np
-from jax import custom_vjp
+from jax import custom_jvp
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
@@ -14,9 +14,6 @@ from jax.scipy.linalg import cho_solve
 from exogibbs.equilibrium.gas.types import ThermoState
 from exogibbs.equilibrium.gas.kernel.equations import _A_diagn_At
 from exogibbs.equilibrium.gas.kernel.equations import _compute_gk
-from exogibbs.equilibrium.gas.kernel.autodiff import vjp_elements
-from exogibbs.equilibrium.gas.kernel.autodiff import vjp_hvector
-from exogibbs.equilibrium.gas.kernel.autodiff import vjp_pressure
 
 _CHO_EPS = 1.0e-18
 
@@ -1291,8 +1288,8 @@ def _minimize_gibbs_solve_impl(
 
 
 # Keep the transformed solver at module scope so repeated calls reuse the same
-# Python callable identity instead of rebuilding a new custom_vjp closure.
-@partial(custom_vjp, nondiff_argnums=(3, 5, 6))
+# Python callable identity instead of rebuilding a new custom_jvp closure.
+@partial(custom_jvp, nondiff_argnums=(3, 5, 6))
 def _minimize_gibbs_solve(
     state: ThermoState,
     ln_nk0: jnp.ndarray,
@@ -1313,15 +1310,91 @@ def _minimize_gibbs_solve(
     )
 
 
-def _minimize_gibbs_solve_fwd(
-    state: ThermoState,
-    ln_nk0: jnp.ndarray,
-    ln_ntot0: float,
+def _solve_implicit_gibbs_tangent(
+    ln_nk: jnp.ndarray,
+    ln_ntot: float,
     formula_matrix: jnp.ndarray,
-    hvector: jnp.ndarray,
+    element_vector: jnp.ndarray,
+    element_vector_dot: jnp.ndarray,
+    ln_normalized_pressure_dot: float,
+    hvector_dot: jnp.ndarray,
+) -> jnp.ndarray:
+    """Solve the linearized equilibrium equations on the converged state.
+
+    The implicit tangent is obtained from the symmetric bordered system for
+    the element multipliers and ``ln(ntot)``. ``custom_linear_solve`` exposes
+    its transpose to reverse mode without differentiating the Gibbs iterations.
+    """
+
+    nk = jnp.exp(ln_nk)
+    ntot = jnp.exp(ln_ntot)
+    bmatrix = _A_diagn_At(nk, formula_matrix)
+
+    element_rhs = (
+        element_vector_dot
+        + formula_matrix @ (nk * hvector_dot)
+        + ln_normalized_pressure_dot * element_vector
+    )
+    total_rhs = (
+        jnp.vdot(nk, hvector_dot) + ln_normalized_pressure_dot * ntot
+    )
+    rhs = jnp.concatenate((element_rhs, total_rhs[None]))
+
+    def matvec(solution):
+        pi_dot = solution[:-1]
+        ln_ntot_dot = solution[-1]
+        return jnp.concatenate(
+            (
+                bmatrix @ pi_dot + element_vector * ln_ntot_dot,
+                jnp.vdot(element_vector, pi_dot)[None],
+            )
+        )
+
+    def solve_reduced(_, solve_rhs):
+        element_solve_rhs = solve_rhs[:-1]
+        total_solve_rhs = solve_rhs[-1]
+        c, lower = cho_factor(bmatrix)
+        solved = cho_solve(
+            (c, lower),
+            jnp.stack((element_solve_rhs, element_vector), axis=1),
+        )
+        binv_rhs = solved[:, 0]
+        beta = solved[:, 1]
+        beta_dot_b = jnp.vdot(beta, element_vector)
+        # The implicit-function contract requires this Schur complement to be
+        # nonzero. Keep the exact denominator so JVP and VJP remain transposes
+        # of one linear map; legacy VJP-only code clipped selected cotangents.
+        ln_ntot_dot = (
+            jnp.vdot(element_vector, binv_rhs) - total_solve_rhs
+        ) / beta_dot_b
+        pi_dot = binv_rhs - beta * ln_ntot_dot
+        return jnp.concatenate((pi_dot, ln_ntot_dot[None]))
+
+    solution_dot = jax.lax.custom_linear_solve(
+        matvec,
+        rhs,
+        solve_reduced,
+        symmetric=True,
+    )
+    pi_dot = solution_dot[:-1]
+    ln_ntot_dot = solution_dot[-1]
+    return (
+        formula_matrix.T @ pi_dot
+        + ln_ntot_dot
+        - hvector_dot
+        - ln_normalized_pressure_dot
+    )
+
+
+def _minimize_gibbs_solve_jvp(
+    formula_matrix: jnp.ndarray,
     epsilon_crit: float,
     max_iter: int,
+    primals,
+    tangents,
 ):
+    state, ln_nk0, ln_ntot0, hvector = primals
+    state_dot, _, _, hvector_dot = tangents
     ln_nk, ln_ntot, _, _ = minimize_gibbs_core(
         state,
         ln_nk0,
@@ -1331,51 +1404,19 @@ def _minimize_gibbs_solve_fwd(
         epsilon_crit,
         max_iter,
     )
-    residuals = (ln_nk, state.temperature, state.element_vector, ln_ntot)
-    return ln_nk, residuals
-
-
-def _minimize_gibbs_solve_bwd(
-    formula_matrix: jnp.ndarray,
-    epsilon_crit: float,
-    max_iter: int,
-    res,
-    g,
-):
-    del epsilon_crit, max_iter
-    ln_nk, temperature, element_vector, ln_ntot = res
-
-    nk = jnp.exp(ln_nk)
-    ntot_result = jnp.exp(ln_ntot)
-
-    Bmatrix = _A_diagn_At(nk, formula_matrix)
-    c, lower = cho_factor(Bmatrix)
-    alpha = cho_solve((c, lower), formula_matrix @ g)
-    beta = cho_solve((c, lower), element_vector)
-    beta_dot_b_element = jnp.vdot(beta, element_vector)
-
-    cot_hvector = vjp_hvector(
-        g,
-        nk,
+    ln_nk_dot = _solve_implicit_gibbs_tangent(
+        ln_nk,
+        ln_ntot,
         formula_matrix,
-        alpha,
-        beta,
-        element_vector,
-        beta_dot_b_element,
+        state.element_vector,
+        state_dot.element_vector,
+        state_dot.ln_normalized_pressure,
+        hvector_dot,
     )
-    cot_T = jnp.zeros_like(temperature)
-    cot_P = vjp_pressure(g, ntot_result, alpha, element_vector, beta_dot_b_element)
-    cot_b = vjp_elements(g, alpha, beta, element_vector, beta_dot_b_element)
-    # No gradients for initialization arguments.
-    return (
-        ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b),
-        None,
-        None,
-        cot_hvector,
-    )
+    return ln_nk, ln_nk_dot
 
 
-_minimize_gibbs_solve.defvjp(_minimize_gibbs_solve_fwd, _minimize_gibbs_solve_bwd)
+_minimize_gibbs_solve.defjvp(_minimize_gibbs_solve_jvp)
 
 
 def minimize_gibbs(
@@ -1401,6 +1442,11 @@ def minimize_gibbs(
 
     Returns:
         Final log number of species vector (n_species,).
+
+    Notes:
+        First-order forward and reverse derivatives use the implicit
+        equilibrium equations. Initial guesses, the formula matrix, and
+        numerical configuration are held fixed.
     """
     # Treat initial guesses as non-differentiable inputs
     ln_nk0 = stop_gradient(ln_nk_init)
