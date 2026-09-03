@@ -1,5 +1,6 @@
 import importlib
 import jax.numpy as jnp
+import pytest
 
 import exogibbs.api.equilibrium as eqmod
 from exogibbs.api.equilibrium import EquilibriumInit, EquilibriumOptions, GridEquilibriumInitializer
@@ -15,6 +16,18 @@ class FakeSetup:
     def hvector_func(self, T):
         K = self.formula_matrix.shape[1]
         return jnp.zeros((K,))
+
+
+def test_equilibrium_profile_rejects_empty_profile():
+    setup = FakeSetup(jnp.eye(2))
+
+    with pytest.raises(ValueError, match="at least one profile layer"):
+        eqmod.equilibrium_profile(
+            setup,
+            jnp.asarray([]),
+            jnp.asarray([]),
+            jnp.ones(2),
+        )
 
 
 def test_equilibrium_profile_shapes_and_values(monkeypatch):

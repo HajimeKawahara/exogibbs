@@ -117,12 +117,24 @@ def build_native_condensate_residual_bundle(
 ) -> NativeCondensateResidualBundle:
     """Build a default-off diagnostic native condensate residual bundle."""
 
-    if float(temperature) <= 0.0:
-        raise ValueError("temperature must be positive.")
-    if float(pressure) <= 0.0:
-        raise ValueError("pressure must be positive.")
-    if float(active_amount_floor) < 0.0:
-        raise ValueError("active_amount_floor must be non-negative.")
+    temperature_value = float(temperature)
+    pressure_value = float(pressure)
+    active_amount_floor_value = float(active_amount_floor)
+    ln_ntot_value = float(ln_ntot)
+    epsilon_or_nu_value = float(epsilon_or_nu)
+    if not math.isfinite(temperature_value) or temperature_value <= 0.0:
+        raise ValueError("temperature must be finite and positive.")
+    if not math.isfinite(pressure_value) or pressure_value <= 0.0:
+        raise ValueError("pressure must be finite and positive.")
+    if (
+        not math.isfinite(active_amount_floor_value)
+        or active_amount_floor_value < 0.0
+    ):
+        raise ValueError("active_amount_floor must be finite and non-negative.")
+    if not math.isfinite(ln_ntot_value):
+        raise ValueError("ln_ntot must be finite.")
+    if not math.isfinite(epsilon_or_nu_value):
+        raise ValueError("epsilon_or_nu must be finite.")
 
     provenance = validate_native_bundle_provenance(field_provenance)
     elements = tuple(str(item) for item in element_order)
@@ -143,12 +155,34 @@ def build_native_condensate_residual_bundle(
     hcond_array = _as_vector(hvector_cond, "hvector_cond", ncond)
     eta_array = _as_vector(eta, "eta", nelement)
 
-    nk = np.exp(ln_nk_array)
-    mk = np.exp(ln_mk_array)
-    ntot = float(math.exp(float(ln_ntot)))
-    gas_inventory = formula_gas @ nk
-    condensate_inventory = formula_cond @ mk
-    active_indices = tuple(int(index) for index, amount in enumerate(mk) if amount > active_amount_floor)
+    with np.errstate(over="ignore"):
+        nk = np.exp(ln_nk_array)
+        mk = np.exp(ln_mk_array)
+    if not np.all(np.isfinite(nk)):
+        raise ValueError("ln_nk must exponentiate to finite amounts.")
+    if not np.all(np.isfinite(mk)):
+        raise ValueError("ln_mk must exponentiate to finite amounts.")
+    try:
+        ntot = float(math.exp(ln_ntot_value))
+    except OverflowError as exc:
+        raise ValueError("ln_ntot must exponentiate to a finite amount.") from exc
+    with np.errstate(over="ignore", invalid="ignore"):
+        gas_inventory = formula_gas @ nk
+        condensate_inventory = formula_cond @ mk
+        total_inventory = gas_inventory + condensate_inventory
+    if not np.all(np.isfinite(gas_inventory)):
+        raise ValueError("formula_matrix and ln_nk produced a non-finite gas inventory.")
+    if not np.all(np.isfinite(condensate_inventory)):
+        raise ValueError(
+            "formula_matrix_cond and ln_mk produced a non-finite condensate inventory."
+        )
+    if not np.all(np.isfinite(total_inventory)):
+        raise ValueError("gas and condensate inventories produced a non-finite total inventory.")
+    active_indices = tuple(
+        int(index)
+        for index, amount in enumerate(mk)
+        if amount > active_amount_floor_value
+    )
     active_set = tuple(condensates[index] for index in active_indices)
 
     field_provenance_out = {
@@ -168,14 +202,14 @@ def build_native_condensate_residual_bundle(
         production_behavior_change=False,
         fastchem4_trace_values_used=False,
         fastchem4_public_values_used_as_constructor_inputs=False,
-        temperature=float(temperature),
-        pressure=float(pressure),
+        temperature=temperature_value,
+        pressure=pressure_value,
         element_order=elements,
         gas_species_order=gas_species,
         condensate_species_order=condensates,
         ln_nk=tuple(float(value) for value in ln_nk_array),
         ln_mk=tuple(float(value) for value in ln_mk_array),
-        ln_ntot=float(ln_ntot),
+        ln_ntot=ln_ntot_value,
         ntot=ntot,
         nk=tuple(float(value) for value in nk),
         condensate_amount=tuple(float(value) for value in mk),
@@ -184,12 +218,12 @@ def build_native_condensate_residual_bundle(
         gk=tuple(float(value) for value in gk_array),
         standard_potential_T=tuple(float(value) for value in hcond_array),
         eta=tuple(float(value) for value in eta_array),
-        epsilon_or_nu=float(epsilon_or_nu),
+        epsilon_or_nu=epsilon_or_nu_value,
         element_inventory_target=tuple(float(value) for value in target),
         gas_element_inventory=tuple(float(value) for value in gas_inventory),
         condensate_inventory=tuple(float(value) for value in condensate_inventory),
-        total_element_inventory=tuple(float(value) for value in gas_inventory + condensate_inventory),
-        active_amount_floor=float(active_amount_floor),
+        total_element_inventory=tuple(float(value) for value in total_inventory),
+        active_amount_floor=active_amount_floor_value,
         active_set=active_set,
         active_indices=active_indices,
         field_provenance=field_provenance_out,

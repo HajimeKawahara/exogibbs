@@ -376,10 +376,15 @@ def accept_condensate_result_state(
     """Apply named post-solve transforms and acceptance gates."""
 
     validate_condensate_chemical_setup(setup)
+    gas_ln_n_numpy = np.asarray(gas_ln_n, dtype=np.float64)
+    condensate_amounts_numpy = np.asarray(
+        condensate_amounts,
+        dtype=np.float64,
+    )
     gas_ln_n_array = jnp.asarray(gas_ln_n, dtype=jnp.float64)
     if (
-        gas_ln_n_array.ndim != 1
-        or gas_ln_n_array.shape[0] != len(setup.gas_species)
+        gas_ln_n_numpy.ndim != 1
+        or gas_ln_n_numpy.shape[0] != len(setup.gas_species)
     ):
         raise ValueError("gas_ln_n must have one value per gas species.")
     condensate_amounts_array = jnp.asarray(
@@ -387,8 +392,8 @@ def accept_condensate_result_state(
         dtype=jnp.float64,
     )
     if (
-        condensate_amounts_array.ndim != 1
-        or condensate_amounts_array.shape[0]
+        condensate_amounts_numpy.ndim != 1
+        or condensate_amounts_numpy.shape[0]
         != len(setup.condensate_species)
     ):
         raise ValueError(
@@ -403,9 +408,7 @@ def accept_condensate_result_state(
     )
     warning_messages: tuple[str, ...] = ()
     metadata: dict[str, Any] = dict(diagnostics or {})
-    has_positive_condensate = bool(
-        np.any(np.asarray(condensate_amounts_array, dtype=np.float64) > 0.0)
-    )
+    has_positive_condensate = bool(np.any(condensate_amounts_numpy > 0.0))
     if (
         enable_full_condensate_budget_residual_gate
         and element_inventory_target is not None
@@ -429,6 +432,32 @@ def accept_condensate_result_state(
     gas_ntot = jnp.sum(gas_n)
     relative_gas_n = jnp.exp(gas_ln_n_array - jnp.max(gas_ln_n_array))
     gas_x = relative_gas_n / jnp.sum(relative_gas_n)
+    gas_ln_n_output_numpy = np.asarray(gas_ln_n_array, dtype=np.float64)
+    gas_n_numpy = np.asarray(gas_n, dtype=np.float64)
+    condensate_amounts_output_numpy = np.asarray(
+        condensate_amounts_array,
+        dtype=np.float64,
+    )
+    gas_ntot_value = float(np.asarray(gas_ntot, dtype=np.float64))
+    physical_amount_state_accepted = bool(
+        np.all(np.isfinite(gas_ln_n_numpy))
+        and np.all(np.isfinite(gas_ln_n_output_numpy))
+        and np.all(np.isfinite(gas_n_numpy))
+        and np.isfinite(gas_ntot_value)
+        and gas_ntot_value > 0.0
+        and np.all(np.isfinite(condensate_amounts_numpy))
+        and np.all(condensate_amounts_numpy >= 0.0)
+        and np.all(np.isfinite(condensate_amounts_output_numpy))
+        and np.all(condensate_amounts_output_numpy >= 0.0)
+    )
+    if status == CONVERGED and not physical_amount_state_accepted:
+        metadata["pre_physical_amount_state_gate_status"] = status
+        status = NOT_CONVERGED
+        acceptance_tier = "physical_amount_state_failed"
+        warning_messages = tuple(warning_messages) + (
+            "Gas amounts must be finite with a positive finite total, and "
+            "condensate amounts must be finite and non-negative.",
+        )
     (
         status,
         acceptance_tier,

@@ -16,8 +16,8 @@ The comparison has a strict trust boundary:
 - The retired fixed-support v1 runtime is not imported or replayed.
 
 The formal reference supported by this benchmark is a standalone FastChem
-v4.0.3 build. The `pyfastchem` dependency currently used elsewhere in this
-repository is version 3.1.3 and is **not** a FastChem 4 oracle for this
+v4.0.3 build. The optional `pyfastchem` binding supports separate
+FastChem-backed grid workflows and is **not** a FastChem 4 oracle for this
 comparison.
 
 The release-facing interpretation of the recorded four-point result is in

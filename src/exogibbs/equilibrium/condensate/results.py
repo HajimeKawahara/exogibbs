@@ -22,13 +22,13 @@ from exogibbs.equilibrium.condensate.types import (
 )
 
 
-def full_condensate_amounts(
+def _full_condensate_amounts_numpy(
     *,
     support_indices: Sequence[int],
     support_amounts: Array,
     condensate_count: int,
-) -> Array:
-    """Expand active-support amounts into the full condensate catalog."""
+) -> np.ndarray:
+    """Expand active-support amounts into a host array."""
 
     indices = np.asarray(
         tuple(int(index) for index in support_indices),
@@ -50,7 +50,42 @@ def full_condensate_amounts(
     full = np.zeros((condensate_count,), dtype=amounts.dtype)
     if indices.size:
         full[indices] = amounts
-    return jnp.asarray(full)
+    return full
+
+
+def full_condensate_amounts(
+    *,
+    support_indices: Sequence[int],
+    support_amounts: Array,
+    condensate_count: int,
+) -> Array:
+    """Expand active-support amounts into the full condensate catalog."""
+
+    return jnp.asarray(
+        _full_condensate_amounts_numpy(
+            support_indices=support_indices,
+            support_amounts=support_amounts,
+            condensate_count=condensate_count,
+        )
+    )
+
+
+def _merge_external_condensate_amounts_numpy(
+    *,
+    condensate_amounts: Array,
+    external_condensate_amounts: Sequence[float] | Array | None,
+) -> np.ndarray:
+    """Add externally budgeted condensates in host precision."""
+
+    amounts = np.asarray(condensate_amounts, dtype=np.float64)
+    if external_condensate_amounts is None:
+        return amounts
+    external = np.asarray(external_condensate_amounts, dtype=np.float64)
+    if external.ndim != 1 or external.shape[0] != amounts.shape[0]:
+        raise ValueError(
+            "external_condensate_amounts must match condensate_count."
+        )
+    return amounts + external
 
 
 def merge_external_condensate_amounts(
@@ -60,15 +95,13 @@ def merge_external_condensate_amounts(
 ) -> Array:
     """Add externally budgeted condensates back to the public full vector."""
 
-    amounts = np.asarray(condensate_amounts, dtype=np.float64)
-    if external_condensate_amounts is None:
-        return jnp.asarray(amounts, dtype=jnp.float64)
-    external = np.asarray(external_condensate_amounts, dtype=np.float64)
-    if external.ndim != 1 or external.shape[0] != amounts.shape[0]:
-        raise ValueError(
-            "external_condensate_amounts must match condensate_count."
-        )
-    return jnp.asarray(amounts + external, dtype=jnp.float64)
+    return jnp.asarray(
+        _merge_external_condensate_amounts_numpy(
+            condensate_amounts=condensate_amounts,
+            external_condensate_amounts=external_condensate_amounts,
+        ),
+        dtype=jnp.float64,
+    )
 
 
 def build_condensate_equilibrium_result(

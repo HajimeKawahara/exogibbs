@@ -119,8 +119,8 @@ def contract_formula_matrix(formula_matrix, formula_matrix_cond):
     """
     try:
         formula_matrix_all = np.concatenate([formula_matrix, formula_matrix_cond], axis=1)
-    except ValueError:
-        raise ValueError("Incompatible shapes for concatenation.")
+    except ValueError as exc:
+        raise ValueError("Incompatible shapes for concatenation.") from exc
     rank_matrix = np.linalg.matrix_rank(formula_matrix_all)    
     nelements = formula_matrix_all.shape[0]
 
@@ -130,7 +130,9 @@ def contract_formula_matrix(formula_matrix, formula_matrix_cond):
         return formula_matrix, formula_matrix_cond, np.ones(nelements, dtype=bool)
     
     _, _, piv = qr(formula_matrix_all.T, pivoting=True)
-    indep_element_mask = np.sort(piv[:rank_matrix])
+    independent_indices = np.sort(piv[:rank_matrix])
+    indep_element_mask = np.zeros(nelements, dtype=bool)
+    indep_element_mask[independent_indices] = True
     formula_matrix_gas_eff = formula_matrix[indep_element_mask, :]
     formula_matrix_cond_eff = formula_matrix_cond[indep_element_mask, :]
     print("Contraction of the system performed.")

@@ -39,7 +39,8 @@ def chemsetup(
     """Build a ``ChemicalSetup`` from FastChem condensate data."""
 
     data_path = get_data_filepath(path)
-    text = open(data_path, "r", encoding="utf-8").read()
+    with open(data_path, "r", encoding="utf-8") as stream:
+        text = stream.read()
     entries = _parse_condensate_logk(text)
     species = [entry.name for entry in entries]
     components = {entry.name: dict(entry.components) for entry in entries}
@@ -52,6 +53,7 @@ def chemsetup(
     elements = list(gas.elements)
     element_vector_ref = gas.element_vector_reference
 
+    _validate_condensate_elements(entries, elements)
     formula_matrix = build_formula_matrix(components, elements)
     if not silent:
         _print_status(species, elements, species, preset_name="fastchem_cond")
@@ -68,6 +70,29 @@ def chemsetup(
     )
 
     return setup
+
+
+def _validate_condensate_elements(
+    entries: Sequence[_SpeciesEntry],
+    elements: Sequence[str],
+) -> None:
+    available = set(elements)
+    incompatible = [
+        (entry.name, sorted(set(entry.components) - available))
+        for entry in entries
+        if set(entry.components) - available
+    ]
+    if not incompatible:
+        return
+    missing = sorted({element for _, values in incompatible for element in values})
+    examples = ", ".join(
+        f"{name} ({'/'.join(values)})" for name, values in incompatible[:3]
+    )
+    raise ValueError(
+        "Condensate data are incompatible with gas_setup.elements; "
+        f"missing elements: {', '.join(missing)}. "
+        f"Affected species include: {examples}."
+    )
 
 
 def condensate_chemical_setup(

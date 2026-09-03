@@ -76,6 +76,18 @@ def test_example_is_main_guarded_and_compiles() -> None:
         )
     ]
     assert len(guarded_calls) == 1
+    main_source = ast.get_source_segment(
+        source,
+        next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "main"
+        ),
+    )
+    assert main_source is not None
+    assert main_source.index("unlink(missing_ok=True)") < main_source.index(
+        "build_reduced_setup("
+    )
 
 
 def test_literature_fits_reproduce_one_bar_reference_temperatures(demo) -> None:
@@ -237,6 +249,69 @@ def test_saturation_diagnostic_exposes_the_excluded_stable_phase(
     assert abs(log_saturation_b[temperature_index, forsterite_index]) < 1.0e-8
     assert abs(log_saturation_b[temperature_index, quartz_index]) < 1.0e-8
     assert log_saturation_b[temperature_index, enstatite_index] > 0.05
+
+
+def test_release_criteria_fail_closed(
+    demo,
+    setups,
+    solutions,
+    monkeypatch,
+) -> None:
+    validate = demo["_validate_release_criteria"]
+    validate(setups=setups, solutions=solutions)
+
+    original = validate.__globals__["log_saturation_ratios"]
+
+    def invalid_saturation(solution, setup):
+        values = original(solution, setup).copy()
+        if solution is solutions[demo["RUN_A"].key]:
+            temperature_index = list(solution.temperatures_k).index(1550.0)
+            quartz_index = setup.condensate_species.index(demo["QUARTZ"])
+            values[temperature_index, quartz_index] = 0.0
+        return values
+
+    monkeypatch.setitem(
+        validate.__globals__,
+        "log_saturation_ratios",
+        invalid_saturation,
+    )
+    with pytest.raises(RuntimeError, match="saturation criteria"):
+        validate(setups=setups, solutions=solutions)
+
+
+@pytest.mark.parametrize(
+    ("run_key", "phase"),
+    (
+        ("with_enstatite", "SiO2(s,l)"),
+        ("without_enstatite", "MgSiO3(s,l)"),
+    ),
+)
+def test_release_criteria_reject_nonfinite_inactive_saturation(
+    demo,
+    setups,
+    solutions,
+    monkeypatch,
+    run_key,
+    phase,
+) -> None:
+    validate = demo["_validate_release_criteria"]
+    original = validate.__globals__["log_saturation_ratios"]
+
+    def invalid_saturation(solution, setup):
+        values = original(solution, setup).copy()
+        if solution is solutions[run_key]:
+            temperature_index = list(solution.temperatures_k).index(1550.0)
+            phase_index = setup.condensate_species.index(phase)
+            values[temperature_index, phase_index] = np.nan
+        return values
+
+    monkeypatch.setitem(
+        validate.__globals__,
+        "log_saturation_ratios",
+        invalid_saturation,
+    )
+    with pytest.raises(RuntimeError, match="saturation criteria"):
+        validate(setups=setups, solutions=solutions)
 
 
 def test_both_runs_conserve_the_shared_element_inventory(

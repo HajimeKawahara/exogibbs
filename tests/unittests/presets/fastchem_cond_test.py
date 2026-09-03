@@ -20,7 +20,6 @@ def test_hvector_for_h2o():
     index_h2o_cond = cond_species.index('H2O(s,l)')  
 
     T1=273.16 
-    T2=647.10
     coeff_ice = np.array([1.1610444238898961e+05, -3.7180754189807614e+00, -9.9697686374472188e+00, -3.4870743183681364e-02, 5.8028334311999769e-05])
     coeff_water = np.array([  1.1592048349840334e+05, -1.2230111683190726e+01, 2.2781352565814203e+01, 4.4780347912393416e-02, -2.3737039228581724e-05])
 
@@ -88,6 +87,32 @@ def test_chemsetup_piecewise_segments():
 
 
 def test_condensate_chemsetup_uses_injected_gas_element_order():
+    from exogibbs.presets.fastchem import chemsetup as gas_chemsetup
+    from exogibbs.presets.fastchem_cond import chemsetup
+
+    base = gas_chemsetup(silent=True)
+    elements = tuple(reversed(base.elements))
+    gas_setup = ChemicalSetup(
+        formula_matrix=jnp.flip(base.formula_matrix, axis=0),
+        hvector_func=base.hvector_func,
+        elements=elements,
+        species=base.species,
+        element_vector_reference=jnp.flip(base.element_vector_reference),
+    )
+
+    condensate_setup = chemsetup(gas_setup=gas_setup, silent=True)
+
+    assert condensate_setup.elements == gas_setup.elements
+    species = list(condensate_setup.species)
+    water_index = species.index("H2O(s,l)")
+    assert condensate_setup.formula_matrix[elements.index("H"), water_index] == 2
+    assert condensate_setup.formula_matrix[elements.index("O"), water_index] == 1
+    assert condensate_setup.element_vector_reference is (
+        gas_setup.element_vector_reference
+    )
+
+
+def test_condensate_chemsetup_rejects_missing_gas_elements():
     from exogibbs.presets.fastchem_cond import chemsetup
 
     gas_setup = ChemicalSetup(
@@ -98,13 +123,8 @@ def test_condensate_chemsetup_uses_injected_gas_element_order():
         element_vector_reference=jnp.asarray([1.0, 1.0e-3]),
     )
 
-    condensate_setup = chemsetup(gas_setup=gas_setup, silent=True)
-
-    assert condensate_setup.elements == gas_setup.elements
-    assert condensate_setup.formula_matrix.shape[0] == 2
-    assert condensate_setup.element_vector_reference is (
-        gas_setup.element_vector_reference
-    )
+    with pytest.raises(ValueError, match="missing elements"):
+        chemsetup(gas_setup=gas_setup, silent=True)
 
 
 def test_corrected_species_default_elements_keyword_is_additive():

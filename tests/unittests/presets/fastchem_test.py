@@ -1,5 +1,54 @@
-from turtle import reset
+import builtins
+
 import pytest
+
+from exogibbs.presets import fastchem as fastchem_module
+from exogibbs.presets import fastchem_cond as fastchem_cond_module
+
+
+@pytest.mark.parametrize("preset_module", (fastchem_module, fastchem_cond_module))
+def test_fastchem_preset_closes_thermochemistry_file(monkeypatch, preset_module):
+    streams = []
+
+    def tracking_open(*args, **kwargs):
+        stream = builtins.open(*args, **kwargs)
+        streams.append(stream)
+        return stream
+
+    monkeypatch.setattr(preset_module, "open", tracking_open, raising=False)
+
+    preset_module.chemsetup(silent=True)
+
+    assert streams
+    assert all(stream.closed for stream in streams)
+
+
+def test_chemsetup_silent_suppresses_status_output(capsys):
+    fastchem_module.chemsetup(silent=True)
+
+    assert capsys.readouterr().out == ""
+
+
+def test_default_elements_metadata_ignores_custom_element_file():
+    setup = fastchem_module.chemsetup(
+        element_file="fastchem/element_abundances/asplund_2020_extended.dat",
+        silent=True,
+    )
+
+    assert (
+        setup.metadata["fastchem_element_file"]
+        == "fastchem/element_abundances/asplund_2020.dat"
+    )
+
+
+def test_species_derived_elements_metadata_has_no_abundance_file():
+    setup = fastchem_module.chemsetup(
+        species_defalt_elements=False,
+        silent=True,
+    )
+
+    assert setup.metadata["fastchem_element_file"] is None
+
 
 def test_chemsetup():
     from exogibbs.presets.fastchem import chemsetup

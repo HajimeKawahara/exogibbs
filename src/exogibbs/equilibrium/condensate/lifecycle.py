@@ -28,9 +28,9 @@ from exogibbs.equilibrium.condensate.setup import (
     validate_condensate_chemical_setup,
 )
 from exogibbs.equilibrium.condensate.results import (
+    _full_condensate_amounts_numpy,
+    _merge_external_condensate_amounts_numpy,
     build_condensate_equilibrium_result,
-    full_condensate_amounts,
-    merge_external_condensate_amounts,
 )
 from exogibbs.equilibrium.condensate.support import (
     evaluate_profile_support_closure,
@@ -111,18 +111,18 @@ def build_condensate_equilibrium_result_from_solver_payload(
 ) -> CondensateEquilibriumResult:
     """Accept a solver payload, then construct its public result."""
 
-    condensate_amounts = full_condensate_amounts(
+    condensate_amounts = _full_condensate_amounts_numpy(
         support_indices=support_indices,
-        support_amounts=jnp.asarray(support_amounts, dtype=jnp.float64),
+        support_amounts=np.asarray(support_amounts, dtype=np.float64),
         condensate_count=len(setup.condensate_species),
     )
-    condensate_amounts = merge_external_condensate_amounts(
+    condensate_amounts = _merge_external_condensate_amounts_numpy(
         condensate_amounts=condensate_amounts,
         external_condensate_amounts=external_condensate_amounts,
     )
     accepted_state = accept_condensate_result_state(
         setup=setup,
-        gas_ln_n=jnp.asarray(gas_ln_n, dtype=jnp.float64),
+        gas_ln_n=gas_ln_n,
         condensate_amounts=condensate_amounts,
         solver_success=solver_success,
         diagnostics=diagnostics,

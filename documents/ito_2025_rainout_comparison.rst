@@ -98,6 +98,9 @@ passed every declared rerun criterion:
    * - Converged ExoGibbs layers
      - 855 / 855
      - 855 / 855
+   * - Selected profile metrics finite
+     - yes
+     - all selected values finite
    * - Maximum ``|ln S|`` for supported positive ``SiO(s)``
      - ``1.42e-13``
      - ``1e-5``

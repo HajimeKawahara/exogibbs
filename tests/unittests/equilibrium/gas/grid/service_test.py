@@ -1,5 +1,9 @@
+import sys
+from types import SimpleNamespace
+
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 import xarray as xr
 
@@ -53,7 +57,7 @@ def test_equilibrium_grid_metadata_from_setup_captures_preset_and_settings():
     assert "target physical metal mass fraction" in metadata.composition_axis_definition
     assert metadata.exogibbs_epsilon_crit == 1.0e-15
     assert metadata.exogibbs_max_iter == 1000
-    assert metadata.verify_exogibbs_against_fastchem is True
+    assert metadata.verify_exogibbs_against_fastchem is False
     assert metadata.verification_abundance_floor is None
     assert metadata.verification_tolerance_percent is None
     assert metadata.verification_worst_temperature is None
@@ -415,14 +419,54 @@ def test_build_h_he_element_vector_from_log10_z_over_z_sun_matches_physical_targ
     assert not jnp.isclose(b[2], 0.01 * (10.0**0.5))
 
 
-def test_build_equilibrium_grid_exogibbs_path_returns_grid():
+def test_build_h_he_element_vector_is_jittable_in_metallicity():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01, 1.0e-8]),
+    )
+    build = jax.jit(
+        lambda metallicity: build_h_he_element_vector_from_log10_z_over_z_sun(
+            setup,
+            metallicity,
+        )
+    )
+
+    result = build(jnp.asarray(0.5))
+
+    assert result.shape == (4,)
+    assert jnp.all(jnp.isfinite(result))
+
+
+def test_build_h_he_element_vector_returns_nan_for_invalid_traced_metallicity():
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((4, 2)),
+        hvector_func=lambda T: jnp.asarray([T, T]),
+        elements=("H", "He", "O", "e-"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01, 1.0e-8]),
+    )
+    z_sun = eqgridmod.compute_reference_physical_metal_mass_fraction(setup)
+    invalid_metallicity = jnp.log10(1.0 / z_sun) + 0.1
+    build = jax.jit(
+        lambda metallicity: build_h_he_element_vector_from_log10_z_over_z_sun(
+            setup,
+            metallicity,
+        )
+    )
+
+    result = build(invalid_metallicity)
+
+    assert jnp.isnan(result[2])
+
+
+def test_build_equilibrium_grid_exogibbs_path_skips_verification_by_default():
     grid = build_equilibrium_grid(
         "ykb4",
         temperature_axis=jnp.asarray([500.0]),
         pressure_axis=jnp.asarray([1.0]),
         log10_z_over_z_sun_axis=jnp.asarray([0.0]),
         source="exogibbs",
-        verify_exogibbs_against_fastchem=False,
     )
 
     assert grid.temperature_axis.shape == (1,)
@@ -438,7 +482,7 @@ def test_build_equilibrium_grid_exogibbs_path_returns_grid():
     assert grid.metadata.verification_passed is None
 
 
-def test_build_equilibrium_grid_exogibbs_fastchem_preset_verifies_by_default(monkeypatch):
+def test_build_equilibrium_grid_exogibbs_fastchem_verification_is_opt_in(monkeypatch):
     calls = []
 
     def fake_verify(*args, **kwargs):
@@ -469,6 +513,7 @@ def test_build_equilibrium_grid_exogibbs_fastchem_preset_verifies_by_default(mon
         pressure_axis=jnp.asarray([1.0]),
         log10_z_over_z_sun_axis=jnp.asarray([0.0]),
         source="exogibbs",
+        verify_exogibbs_against_fastchem=True,
     )
 
     assert grid.metadata.source == "exogibbs"
@@ -572,6 +617,7 @@ def test_build_equilibrium_grid_verification_failure_reports_worst_point(monkeyp
             pressure_axis=jnp.asarray([0.1]),
             log10_z_over_z_sun_axis=jnp.asarray([-1.0]),
             source="exogibbs",
+            verify_exogibbs_against_fastchem=True,
         )
 
     message = str(excinfo.value)
@@ -606,6 +652,77 @@ def test_build_equilibrium_grid_fastchem_path_returns_grid():
     assert grid.metadata.verification_passed is None
 
 
+@pytest.mark.parametrize("density_scale", (1.0, 1.0e20))
+def test_fastchem_point_solver_normalizes_number_density_to_amount_gauge(
+    monkeypatch,
+    density_scale,
+):
+    class FakeFastChem:
+        def __init__(self, *_args):
+            self.species = {"H2": 0, "He1": 1, "O1": 2, "O2": 3}
+            self.elements = ("H", "He", "O")
+
+        def setVerboseLevel(self, _level):
+            return None
+
+        def getGasSpeciesIndex(self, species):
+            return self.species.get(species, -1)
+
+        def getElementNumber(self):
+            return len(self.elements)
+
+        def getElementSymbol(self, index):
+            return self.elements[index]
+
+        def setElementAbundances(self, _abundances):
+            return None
+
+        def calcDensities(self, _input_data, output_data):
+            output_data.number_densities = [
+                np.asarray([0.5, 0.1, 0.01, 1.0e-160]) * density_scale
+            ]
+            return 0
+
+    fake_pyfastchem = SimpleNamespace(
+        FastChem=FakeFastChem,
+        FastChemInput=SimpleNamespace,
+        FastChemOutput=SimpleNamespace,
+        FASTCHEM_SUCCESS=0,
+        FASTCHEM_UNKNOWN_SPECIES=-1,
+        FASTCHEM_MSG={0: "success"},
+    )
+    monkeypatch.setitem(sys.modules, "pyfastchem", fake_pyfastchem)
+    setup = ChemicalSetup(
+        formula_matrix=jnp.asarray(
+            [
+                [2.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0, 2.0],
+            ],
+            dtype=jnp.float32,
+        ),
+        hvector_func=lambda temperature: jnp.zeros(4),
+        elements=("H", "He", "O"),
+        species=("H2", "He1", "O1", "O2"),
+        element_vector_reference=jnp.asarray([1.0, 0.1, 0.01]),
+        metadata={
+            "source": "fastchem",
+            "fastchem_element_file": "fastchem/element_abundances/asplund_2020.dat",
+            "fastchem_logk_file": "fastchem/logK/logK.dat",
+        },
+    )
+
+    solve_point, _ = gridbuildmod._create_fastchem_point_solver(setup)
+    ln_n, n, x, ntot = solve_point(1000.0, 1.0, 0.0)
+
+    assert jnp.allclose(setup.formula_matrix @ n, setup.element_vector_reference)
+    assert jnp.allclose(ln_n[:-1], jnp.log(n[:-1]))
+    assert n[-1] == 0.0
+    assert jnp.isclose(ln_n[-1], np.log(1.0e-160))
+    assert jnp.isclose(ntot, jnp.sum(n))
+    assert jnp.allclose(x, n / ntot)
+
+
 def test_build_equilibrium_grid_fastchem_source_rejects_non_fastchem_preset():
     _skip_without_pyfastchem()
 
@@ -623,6 +740,20 @@ def test_build_equilibrium_grid_fastchem_source_rejects_non_fastchem_preset():
         raise AssertionError("Expected NotImplementedError for non-FastChem preset.")
 
 
+def test_fastchem_backend_missing_optional_extra_has_actionable_error(monkeypatch):
+    monkeypatch.setitem(sys.modules, "pyfastchem", None)
+    setup = ChemicalSetup(
+        formula_matrix=jnp.ones((1, 1)),
+        hvector_func=lambda temperature: jnp.asarray([temperature]),
+        elements=("H",),
+        species=("H1",),
+        metadata={"source": "fastchem"},
+    )
+
+    with pytest.raises(ImportError, match=r"exogibbs\[fastchem\]"):
+        gridbuildmod._create_fastchem_point_solver(setup)
+
+
 def test_build_equilibrium_grid_exogibbs_verification_rejects_non_fastchem_preset():
     try:
         build_equilibrium_grid(
@@ -631,6 +762,7 @@ def test_build_equilibrium_grid_exogibbs_verification_rejects_non_fastchem_prese
             pressure_axis=jnp.asarray([1.0]),
             log10_z_over_z_sun_axis=jnp.asarray([0.0]),
             source="exogibbs",
+            verify_exogibbs_against_fastchem=True,
         )
     except NotImplementedError as exc:
         assert "FastChem preset" in str(exc)
@@ -1053,7 +1185,8 @@ def test_interpolate_equilibrium_grid_forwards_interpax_options(monkeypatch):
     assert jnp.isclose(result.ntot, 123.0)
 
 
-def test_interpolate_equilibrium_grid_rejects_out_of_bounds_by_default():
+@pytest.mark.parametrize("method", ("linear", "nearest"))
+def test_interpolate_equilibrium_grid_rejects_out_of_bounds_by_default(method):
     grid = EquilibriumGrid(
         temperature_axis=jnp.asarray([1000.0, 2000.0]),
         pressure_axis=jnp.asarray([1.0, 10.0]),
@@ -1075,7 +1208,13 @@ def test_interpolate_equilibrium_grid_rejects_out_of_bounds_by_default():
     )
 
     try:
-        interpolate_equilibrium_grid(grid, 500.0, 5.0, 0.5)
+        interpolate_equilibrium_grid(
+            grid,
+            500.0,
+            5.0,
+            0.5,
+            options=EquilibriumGridInterpolationOptions(method=method),
+        )
     except ValueError as exc:
         assert "outside the stored equilibrium grid bounds" in str(exc)
     else:

@@ -475,8 +475,8 @@ def _exogibbs_profile_diagnostics(
         solution.sio_log_saturation_ratio, dtype=np.float64
     )
     sio_saturation = np.asarray(solution.sio_saturation_ratio, dtype=np.float64)
-    sio_support = np.asarray(solution.sio_support_active, dtype=bool)
-    sio_positive = np.asarray(solution.sio_condensate_positive, dtype=bool)
+    sio_support = np.asarray(solution.sio_support_active)
+    sio_positive = np.asarray(solution.sio_condensate_positive)
     for name, values in (
         ("sio_log_saturation_ratio", sio_log_saturation),
         ("sio_saturation_ratio", sio_saturation),
@@ -485,6 +485,8 @@ def _exogibbs_profile_diagnostics(
     ):
         if values.shape != (layer_count,):
             raise ValueError(f"Unexpected {name} profile shape.")
+    if sio_support.dtype.kind != "b" or sio_positive.dtype.kind != "b":
+        raise ValueError("SiO support diagnostics must be boolean.")
     if np.any(~np.isfinite(sio_log_saturation)) or np.any(~np.isfinite(sio_saturation)):
         raise ValueError("SiO saturation diagnostics must be finite.")
     sio_support_state = np.full(layer_count, "unsupported_zero", dtype="<U20")
@@ -929,14 +931,25 @@ def _maximum_profile_metric(
     layer_values = np.asarray(layers, dtype=np.int64)
     if metric.ndim not in {1, 2} or metric.shape[0] != layer_values.size:
         raise ValueError("Metric must have one row per profile layer.")
-    included = np.isfinite(metric)
+    selected = np.ones(metric.shape, dtype=bool)
     if mask is not None:
-        mask_values = np.asarray(mask, dtype=bool)
+        mask_values = np.asarray(mask)
         if mask_values.shape != metric.shape:
             raise ValueError("Metric mask must match the metric shape.")
-        included &= mask_values
+        if mask_values.dtype.kind != "b":
+            raise ValueError("Metric mask must be boolean.")
+        selected &= mask_values
+    nonfinite = selected & ~np.isfinite(metric)
+    included = selected & ~nonfinite
+    all_selected_values_finite = not np.any(nonfinite)
     if not np.any(included):
-        return {"value": None, "layer": None, "element": None}
+        return {
+            "value": None,
+            "layer": None,
+            "element": None,
+            "all_selected_values_finite": all_selected_values_finite,
+            "nonfinite_value_count": int(np.count_nonzero(nonfinite)),
+        }
     ranked = np.where(included, metric, -np.inf)
     flat_index = int(np.argmax(ranked))
     indices = np.unravel_index(flat_index, metric.shape)
@@ -945,6 +958,8 @@ def _maximum_profile_metric(
         "value": float(metric[indices]),
         "layer": int(layer_values[int(indices[0])]),
         "element": element,
+        "all_selected_values_finite": all_selected_values_finite,
+        "nonfinite_value_count": int(np.count_nonzero(nonfinite)),
     }
 
 
@@ -993,10 +1008,19 @@ def _stability_diagnostic_summary(
     """Build compact numerical-stability diagnostics and rerun criteria."""
 
     layers = target.layer
-    sio_support = np.asarray(diagnostics["sio_support_active"], dtype=bool)
-    sio_positive = np.asarray(
-        diagnostics["sio_condensate_positive"], dtype=bool
-    )
+    sio_support = np.asarray(diagnostics["sio_support_active"])
+    sio_positive = np.asarray(diagnostics["sio_condensate_positive"])
+    converged = np.asarray(solution.converged)
+    expected_boolean_shape = (layers.size,)
+    for name, values in (
+        ("sio_support_active", sio_support),
+        ("sio_condensate_positive", sio_positive),
+        ("converged", converged),
+    ):
+        if values.dtype.kind != "b" or values.shape != expected_boolean_shape:
+            raise ValueError(
+                f"{name} must be a boolean array with one entry per layer."
+            )
     active_log_saturation = np.abs(
         np.asarray(diagnostics["sio_log_saturation_ratio"], dtype=np.float64)
     )
@@ -1011,6 +1035,7 @@ def _stability_diagnostic_summary(
             "gas_vs_conservative_inventory_positive_relative_mismatch"
         ],
         layers,
+        mask=np.asarray(solution.element_inventory_target) > 0.0,
     )
     floor_scaled_maximum = _maximum_profile_metric(
         diagnostics["gas_vs_conservative_inventory_floor_scaled_mismatch"],
@@ -1043,23 +1068,44 @@ def _stability_diagnostic_summary(
         "rainout_trace_capacity_accepted"
     )
 
-    active_saturation_passed = (
-        active_saturation_maximum["value"] is None
-        or active_saturation_maximum["value"]
-        <= SIO_ACTIVE_LOG_SATURATION_TOLERANCE
+    active_saturation_passed = bool(
+        active_saturation_maximum["all_selected_values_finite"]
+        and (
+            active_saturation_maximum["value"] is None
+            or active_saturation_maximum["value"]
+            <= SIO_ACTIVE_LOG_SATURATION_TOLERANCE
+        )
     )
-    positive_relative_passed = (
-        positive_relative_maximum["value"] is None
-        or positive_relative_maximum["value"]
-        <= INVENTORY_RELATIVE_MISMATCH_TOLERANCE
+    positive_relative_passed = bool(
+        positive_relative_maximum["all_selected_values_finite"]
+        and (
+            positive_relative_maximum["value"] is None
+            or positive_relative_maximum["value"]
+            <= INVENTORY_RELATIVE_MISMATCH_TOLERANCE
+        )
     )
-    floor_scaled_passed = (
-        floor_scaled_maximum["value"] is None
-        or floor_scaled_maximum["value"]
-        <= INVENTORY_RELATIVE_MISMATCH_TOLERANCE
+    floor_scaled_passed = bool(
+        floor_scaled_maximum["all_selected_values_finite"]
+        and (
+            floor_scaled_maximum["value"] is None
+            or floor_scaled_maximum["value"]
+            <= INVENTORY_RELATIVE_MISMATCH_TOLERANCE
+        )
+    )
+    profile_metrics_are_finite = bool(
+        all(
+            summary["all_selected_values_finite"]
+            for summary in (
+                active_saturation_maximum,
+                positive_relative_maximum,
+                floor_scaled_maximum,
+                absolute_maximum,
+            )
+        )
     )
     checks = {
-        "all_layers_converged": bool(np.all(solution.converged)),
+        "all_layers_converged": bool(np.all(converged)),
+        "profile_metrics_are_finite": profile_metrics_are_finite,
         "positive_sio_condensate_has_solver_support": bool(
             np.all(~sio_positive | sio_support)
         ),
@@ -1467,11 +1513,53 @@ def _print_key_differences(payload: Mapping[str, Any]) -> None:
     )
 
 
+def _validate_release_criteria(payload: Mapping[str, Any]) -> None:
+    """Fail when the recorded rainout release criteria do not pass."""
+
+    layer_count = int(payload["profile"]["layer_count"])
+    count_checks = {
+        "all ExoGibbs layers converged": (
+            int(payload["exogibbs"]["converged_layers"]) == layer_count
+        ),
+        "all FastChem layers converged": (
+            int(payload["fastchem4"]["converged_layers"]) == layer_count
+        ),
+        "all FastChem layers conserved elements": (
+            int(payload["fastchem4"]["elements_conserved_layers"])
+            == layer_count
+        ),
+    }
+    stability = payload["exogibbs"]["stability_diagnostics"]
+    stability_checks = stability["rerun_pass_criteria"]["checks"]
+    failed = [name for name, passed in count_checks.items() if not passed]
+    for name, passed in stability_checks.items():
+        if type(passed) is not bool:
+            failed.append(f"{name} (non-boolean result)")
+        elif not passed:
+            failed.append(name)
+    overall_passed = stability["rerun_pass_criteria"]["overall_passed"]
+    if type(overall_passed) is not bool:
+        failed.append("overall rainout stability (non-boolean result)")
+    elif not overall_passed:
+        failed.append("overall rainout stability")
+    if failed:
+        raise RuntimeError(
+            "Ito rainout release criteria failed: " + ", ".join(failed)
+        )
+
+
 def main() -> None:
     args = _parse_args()
-    profile = load_ito_profile(args.input)
+    input_path = args.input.resolve(strict=True)
+    executable_path = args.fastchem_executable.resolve(strict=True)
+    if not executable_path.is_file() or not os.access(executable_path, os.X_OK):
+        raise ValueError(
+            f"FastChem executable is not an executable file: {executable_path}."
+        )
+    profile = load_ito_profile(input_path)
     target = _target_profile(profile, args.max_layers)
     layer1_abundance = reactive_element_abundances(profile.gas_fractions[0])
+    args.figure.unlink(missing_ok=True)
     print(
         f"Boundary: Ito Layer 1; solving Layers {target.layer[0]}--"
         f"{target.layer[-1]} ({target.layer.size} layers)",
@@ -1484,7 +1572,7 @@ def main() -> None:
     fastchem = solve_fastchem_rainout(
         target,
         layer1_abundance=layer1_abundance,
-        executable=args.fastchem_executable,
+        executable=executable_path,
     )
     arrays = _solution_archive(target, layer1_abundance, exogibbs, fastchem)
     args.archive.parent.mkdir(parents=True, exist_ok=True)
@@ -1492,13 +1580,14 @@ def main() -> None:
     _write_table(args.table, arrays, exogibbs, fastchem)
     payload = _write_summary(
         args.summary,
-        input_path=args.input,
-        executable=args.fastchem_executable,
+        input_path=input_path,
+        executable=executable_path,
         target=target,
         layer1_abundance=layer1_abundance,
         exogibbs=exogibbs,
         fastchem=fastchem,
     )
+    _validate_release_criteria(payload)
     figure = make_comparison_figure(target, exogibbs, fastchem)
     args.figure.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(args.figure, dpi=180)

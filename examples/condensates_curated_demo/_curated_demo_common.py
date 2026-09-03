@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import sys
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPOSITORY_ROOT))
@@ -217,6 +217,7 @@ def _auto_condensate_species(
 def plot_curated_family(
     *,
     family: str,
+    display_name: Optional[str] = None,
     preferred_gas_species: Sequence[str],
     preferred_condensates: Sequence[str],
     output_path: Path,
@@ -300,7 +301,7 @@ def plot_curated_family(
     ax_cond.set_xlabel("Condensate amount")
     ax_gas.set_ylabel("Pressure (bar)")
     suffix = f"\n{title_suffix}" if title_suffix else ""
-    ax_gas.set_title(f"{family}{suffix}")
+    ax_gas.set_title(f"{display_name or family}{suffix}")
     converged_count = sum(1 for result in results if result is not None and result.converged)
     ax_cond.set_title(
         f"Fixed-support v2 layers: {len(results)}, converged: {converged_count}, errors: {len(errors)}"

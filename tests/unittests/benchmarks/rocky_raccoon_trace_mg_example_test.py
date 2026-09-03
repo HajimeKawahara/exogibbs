@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import ast
+import json
 from pathlib import Path
 import runpy
+from types import SimpleNamespace
 
 import jax.numpy as jnp
 import numpy as np
@@ -326,6 +328,48 @@ def test_public_profile_resolves_positive_trace_magnesium(
     ] == pytest.approx(audit["target_magnesium"], rel=1.0e-10)
 
 
+def test_physical_audit_can_be_persisted(example, solved, tmp_path) -> None:
+    _, audit = solved
+    output_path = tmp_path / "trace_mg_audit.json"
+
+    example["write_audit"](output_path, audit)
+
+    stored = json.loads(output_path.read_text(encoding="utf-8"))
+    assert stored["accepted"]
+    assert stored["status"] == "converged"
+    assert stored["target_magnesium"] == audit["target_magnesium"]
+
+
+def test_main_invalidates_stale_audit_before_computation(
+    example,
+    monkeypatch,
+    tmp_path,
+) -> None:
+    output_path = tmp_path / "trace_mg_audit.json"
+    output_path.write_text("stale\n", encoding="utf-8")
+    main_globals = example["main"].__globals__
+
+    monkeypatch.setitem(
+        main_globals,
+        "_parse_args",
+        lambda: SimpleNamespace(output=output_path),
+    )
+
+    def fail_after_invalidation():
+        assert not output_path.exists()
+        raise RuntimeError("synthetic solve failure")
+
+    monkeypatch.setitem(
+        main_globals,
+        "build_reduced_setup",
+        fail_after_invalidation,
+    )
+
+    with pytest.raises(RuntimeError, match="synthetic solve failure"):
+        example["main"]()
+    assert not output_path.exists()
+
+
 @pytest.mark.parametrize("case_name", tuple(BOUNDARY_CASES))
 def test_public_profile_certifies_exact_rocky_boundary(
     case_name,
@@ -530,7 +574,11 @@ def test_public_support_release_relaxes_only_the_initializer_partition(
 
     source = tuple(generation["source_support_indices"])
     selected = tuple(release["selected_support_indices"])
-    assert source == tuple(reduction["output_support_indices"])
+    source_selection = alternatives["support_release_source_selection"]
+    assert source == tuple(source_selection["selected_support_indices"])
+    assert source == tuple(release["source_support_indices"])
+    if not source_selection["optimizer_directed_source_used"]:
+        assert source == tuple(reduction["output_support_indices"])
     assert generation["source_support_rank"] == len(source)
     assert set(selected) < set(source)
 

@@ -35,6 +35,25 @@ nk_result = res.x #mixing ratio
 - fastchem4: number of gas species: 422    elements: 28
 - fastchem4_cond: number of condensate species: 219
 
+## v0.7 release highlights
+
+Version 0.7 strengthens fail-closed condensate validation. Candidate solutions
+with non-finite gas amounts or non-finite or negative condensate amounts are
+rejected, and inactive-phase closure no longer accepts non-finite driving
+values. FastChem-backed grids now convert external physical number densities
+to the ExoGibbs element-inventory gauge before storing initialization amounts.
+FastChem-backed grids created before v0.7 store the old physical-density gauge
+and must be regenerated; they are not migrated automatically.
+
+The native ExoGibbs solvers and packaged FastChem-format thermochemistry no
+longer require `pyfastchem`. Install `exogibbs[fastchem]` only to generate grids
+with the FastChem backend or to explicitly verify an ExoGibbs grid against
+FastChem. FastChem verification is now opt-in.
+
+Release comparison examples now fail with a nonzero status when their declared
+numerical checks fail. Retrieval smoke runs also record sampler diagnostics and
+reject divergent, stuck, incomplete, or non-finite chains.
+
 ## v0.6 release highlights
 
 Version 0.6 strengthens condensate equilibrium with canonical amount-gauge

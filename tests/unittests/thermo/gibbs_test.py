@@ -1,8 +1,12 @@
+import pytest
+
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import load_JANAF_molecules
 from exogibbs.io.load_data import JANAF_NAME_KEY
 from exogibbs.thermo.gibbs import extract_and_pad_gibbs_data
+from exogibbs.thermo.gibbs import _coerce_to_float
 from exogibbs.thermo.gibbs import interpolate_hvector_all
+from exogibbs.thermo.gibbs import interpolate_hvector_one
 from exogibbs.thermo.gibbs import robust_temperature_range
 
 def _compute_table_gibbs_data():
@@ -24,6 +28,17 @@ def test_pad_gibbs_data():
     assert len(molecules) == 1
     assert T_table.shape == (1, 10)
     assert G_table.shape == (1, 10)
+
+
+def test_coerce_to_float_handles_mixed_numeric_and_infinity_strings():
+    import numpy as np
+
+    values = _coerce_to_float([1.0, "2.5", "INFINITE", "-INFINITE", "missing"])
+
+    assert values[:2] == pytest.approx([1.0, 2.5])
+    assert np.isposinf(values[2])
+    assert np.isneginf(values[3])
+    assert np.isnan(values[4])
 
 
 def test_interpolation_gibbs(fig=False):
@@ -56,6 +71,23 @@ def test_interpolation_gibbs(fig=False):
         plt.xlabel("T(K)")
         plt.ylabel("h-vector")
         plt.show()
+
+
+@pytest.mark.parametrize("method", ("linear", "nearest"))
+def test_interpolate_hvector_one_returns_nan_outside_temperature_grid(method):
+    import jax.numpy as jnp
+
+    temperature = jnp.asarray([100.0, 200.0])
+    chemical_potential = jnp.asarray([1.0, 2.0])
+
+    assert jnp.isnan(
+        interpolate_hvector_one(
+            50.0,
+            temperature,
+            chemical_potential,
+            method=method,
+        )
+    )
 
 
 def test_robust_temperature_range():

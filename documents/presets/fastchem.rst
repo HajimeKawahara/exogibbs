@@ -6,6 +6,13 @@ Overview
 The fastchem preset bundles a ready-to-use ChemicalSetup based on `FastChem <https://github.com/NewStrangeWorlds/FastChem>`_. 
 It exposes a device-friendly stoichiometric matrix and a
 JAX-differentiable h(T) functionality based on the logK coefficient from FastChem.
+The preset and native ExoGibbs solvers do not require the FastChem runtime. To
+generate a FastChem-backed equilibrium grid or explicitly verify an ExoGibbs
+grid against FastChem, install the optional binding:
+
+.. code-block:: bash
+
+   python -m pip install "exogibbs[fastchem]"
 
 Quick Start
 -----------

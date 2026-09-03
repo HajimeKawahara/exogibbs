@@ -22,9 +22,9 @@ Formal reference boundary
 -------------------------
 
 The formal external reference is a standalone FastChem v4.0.3 executable.
-The ``pyfastchem`` dependency used by other ExoGibbs workflows is currently
-version 3.1.3.  It must not be treated as the FastChem 4 oracle for this
-comparison.
+The optional ``pyfastchem`` binding supports separate FastChem-backed grid
+workflows.  It is not a core ExoGibbs dependency and must not be treated as
+the FastChem 4 oracle for this comparison.
 
 Build a clean FastChem checkout at tag ``v4.0.3`` (commit ``ae67cbd``).  For
 example:
