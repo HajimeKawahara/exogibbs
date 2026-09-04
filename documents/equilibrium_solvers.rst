@@ -208,10 +208,15 @@ The production preset disables the legacy
 is therefore never used as an upper-layer boundary. A positive-condensate
 state must pass a joint zero-barrier refinement of gas amounts, condensate
 amounts, total gas, and element potentials, including active stationarity and
-inactive-support closure. Gas-only budget repair is also not applied as a
-post-solve transformation; a state outside the budget gate is rejected and a
-cold initialization is tried once at the same scheduler abundance scale when
-a resolved warm or custom initializer was available.
+inactive-support closure. An empty candidate support is first solved as a
+gas-only state and audited in the caller's amount gauge. Every nonzero target
+row uses its floorless relative residual, while an exactly zero row retains
+the configured absolute scaling. If that audit fails, one bounded
+zero-barrier closure starts from the empty support and may select condensates.
+The result is accepted only after both the internal and caller-gauge audits;
+otherwise the attempt fails closed. This is an exact solve, not a post-solve
+gas-budget transformation. The rainout scheduler may subsequently try its
+existing cold initialization at the same abundance scale.
 
 When a finite-barrier round converges to a finite state and passes the
 independent KKT gate but its support remains open, the lifecycle makes one

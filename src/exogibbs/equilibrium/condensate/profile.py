@@ -12,6 +12,7 @@ import numpy as np
 
 from exogibbs.equilibrium.condensate import lifecycle as _lifecycle
 from exogibbs.equilibrium.condensate.initialization import (
+    regauge_gas_only_warm_start,
     resolve_condensate_initial_guess,
 )
 from exogibbs.equilibrium.condensate.inventory_bridge import (
@@ -123,17 +124,20 @@ def _scale_initial_guess(
         gas_ntot=(
             None
             if initial_guess.gas_ntot is None
-            else jnp.asarray(initial_guess.gas_ntot, dtype=jnp.float64)
-            * scale
+            else _lifecycle._transform_linear_amount_gauge_on_host(
+                initial_guess.gas_ntot,
+                scale,
+                to_canonical=False,
+            )
         ),
         condensate_amounts=(
             None
             if initial_guess.condensate_amounts is None
-            else jnp.asarray(
+            else _lifecycle._transform_linear_amount_gauge_on_host(
                 initial_guess.condensate_amounts,
-                dtype=jnp.float64,
+                scale,
+                to_canonical=False,
             )
-            * scale
         ),
         support_amounts=(
             None
@@ -154,11 +158,13 @@ def _scale_initial_guess(
             if initial_guess.inventory_bridge_origin is None
             else replace(
                 initial_guess.inventory_bridge_origin,
-                element_inventory=jnp.asarray(
-                    initial_guess.inventory_bridge_origin.element_inventory,
-                    dtype=jnp.float64,
-                )
-                * scale,
+                element_inventory=(
+                    _lifecycle._transform_linear_amount_gauge_on_host(
+                        initial_guess.inventory_bridge_origin.element_inventory,
+                        scale,
+                        to_canonical=False,
+                    )
+                ),
             )
         ),
     )
@@ -191,14 +197,25 @@ def _rescale_layer_result(
 ) -> CondensateEquilibriumResult:
     if scale == 1.0:
         return result
-    inverse_scale = 1.0 / scale
     return replace(
         result,
         gas_ln_n=jnp.asarray(result.gas_ln_n) - math.log(scale),
-        gas_n=jnp.asarray(result.gas_n) * inverse_scale,
-        gas_ntot=jnp.asarray(result.gas_ntot) * inverse_scale,
+        gas_n=_lifecycle._transform_linear_amount_gauge_on_host(
+            result.gas_n,
+            scale,
+            to_canonical=True,
+        ),
+        gas_ntot=_lifecycle._transform_linear_amount_gauge_on_host(
+            result.gas_ntot,
+            scale,
+            to_canonical=True,
+        ),
         condensate_amounts=(
-            jnp.asarray(result.condensate_amounts) * inverse_scale
+            _lifecycle._transform_linear_amount_gauge_on_host(
+                result.condensate_amounts,
+                scale,
+                to_canonical=True,
+            )
         ),
     )
 
@@ -809,7 +826,6 @@ def _conservation_rainout_inventory(
         )
     return {
         "gas_inventory": gas_inventory,
-        "propagation_gas_amounts": propagation_gas_amounts,
         "propagation_gas_inventory": propagation_gas_inventory,
         "raw_condensate_inventory": raw_condensate_inventory,
         "condensate_inventory": condensate_inventory,
@@ -832,91 +848,6 @@ def _conservation_rainout_inventory(
         "snap_error_bound": depletion_error_bound,
         "no_condensate_removal": no_condensate_removal,
     }
-
-
-def _gas_warm_start_for_next_layer(
-    gas_amounts: np.ndarray,
-    *,
-    inventory_sum: float,
-    conservation_inventory_sum: float,
-) -> CondensateEquilibriumInit:
-    """Build a finite warm start from the exact-zero-compatible gas state."""
-
-    normalization = inventory_sum / conservation_inventory_sum
-    gas_n = np.asarray(gas_amounts, dtype=np.float64)
-    scaled_gas_n = gas_n * normalization
-    scaled_gas_total = float(np.sum(scaled_gas_n))
-    if not math.isfinite(scaled_gas_total) or scaled_gas_total <= 0.0:
-        raise RuntimeError("Rainout gas warm start must have positive total amount.")
-    log_warm_floor = math.log(scaled_gas_total) + math.log(1.0e-300)
-    with np.errstate(divide="ignore"):
-        warm_gas_ln_n = np.maximum(np.log(scaled_gas_n), log_warm_floor)
-    warm_floor = 1.0e-300 * scaled_gas_total
-    warm_gas_n = np.maximum(scaled_gas_n, warm_floor)
-    return CondensateEquilibriumInit(
-        gas_ln_n=jnp.asarray(warm_gas_ln_n, dtype=jnp.float64),
-        gas_ntot=jnp.asarray(np.sum(warm_gas_n), dtype=jnp.float64),
-    )
-
-
-def _gas_only_warm_start_for_inventory(
-    *,
-    setup: CondensateChemicalSetup,
-    gas_ln_n: Array,
-    inventory_target: np.ndarray,
-) -> CondensateEquilibriumInit:
-    """Regauge one finite gas composition to an element-inventory target."""
-
-    gas_log_amounts = np.asarray(jax.device_get(gas_ln_n), dtype=np.float64)
-    expected_shape = (len(setup.gas_species),)
-    if gas_log_amounts.shape != expected_shape:
-        raise ValueError(
-            "Rainout gas seed has the wrong shape: expected "
-            f"{expected_shape}, got {gas_log_amounts.shape}."
-        )
-    if not np.all(np.isfinite(gas_log_amounts)):
-        raise ValueError("Rainout gas seed must contain only finite values.")
-
-    inventory = np.asarray(inventory_target, dtype=np.float64)
-    gas_formula = np.asarray(setup.formula_matrix, dtype=np.float64)
-    physical = np.asarray(
-        tuple(
-            str(element).strip().lower() not in {"e-", "electron"}
-            for element in setup.elements
-        ),
-        dtype=bool,
-    )
-    depleted = physical & (inventory == 0.0)
-    shifted = gas_log_amounts - float(np.max(gas_log_amounts))
-    gas_amounts = np.exp(shifted)
-    if np.any(depleted):
-        incompatible = np.any(gas_formula[depleted, :] != 0.0, axis=0)
-        gas_amounts[incompatible] = 0.0
-
-    active = physical & (inventory > 0.0)
-    target_amount = float(np.sum(inventory[active]))
-    represented_amount = float(
-        np.sum((gas_formula @ gas_amounts)[active])
-    )
-    if (
-        not math.isfinite(target_amount)
-        or target_amount <= 0.0
-        or not math.isfinite(represented_amount)
-        or represented_amount <= 0.0
-    ):
-        raise ValueError(
-            "Rainout gas seed cannot be regauged to the bridge inventory."
-        )
-    gas_amounts *= target_amount / represented_amount
-    gas_total = float(np.sum(gas_amounts))
-    if not math.isfinite(gas_total) or gas_total <= 0.0:
-        raise ValueError("Rainout gas seed must have positive total amount.")
-    gas_floor = gas_total * 1.0e-300
-    gas_amounts = np.maximum(gas_amounts, gas_floor)
-    return CondensateEquilibriumInit(
-        gas_ln_n=jnp.log(jnp.asarray(gas_amounts, dtype=jnp.float64)),
-        gas_ntot=jnp.asarray(np.sum(gas_amounts), dtype=jnp.float64),
-    )
 
 
 @dataclass(frozen=True)
@@ -1129,10 +1060,10 @@ def _run_inventory_bridge(
             fraction,
         )
         try:
-            bridge_init = _gas_only_warm_start_for_inventory(
-                setup=setup,
-                gas_ln_n=initial_guess.gas_ln_n,
-                inventory_target=bridge_inventory,
+            bridge_init = regauge_gas_only_warm_start(
+                setup,
+                initial_guess.gas_ln_n,
+                bridge_inventory,
             )
         except (TypeError, ValueError) as error:
             trials.append(
@@ -1207,10 +1138,10 @@ def _run_inventory_bridge(
             break
 
         try:
-            target_init = _gas_only_warm_start_for_inventory(
-                setup=setup,
-                gas_ln_n=bridge_assessment.accepted_result.gas_ln_n,
-                inventory_target=target_inventory,
+            target_init = regauge_gas_only_warm_start(
+                setup,
+                bridge_assessment.accepted_result.gas_ln_n,
+                target_inventory,
             )
         except (TypeError, ValueError) as error:
             trials.append(
@@ -1747,10 +1678,10 @@ def run_rainout_profile(
         }
         current_inventory = propagation["next_inventory"]
         previous_solution = replace(
-            _gas_warm_start_for_next_layer(
-                propagation["propagation_gas_amounts"],
-                inventory_sum=inventory_sum,
-                conservation_inventory_sum=propagation["conservation_sum"],
+            regauge_gas_only_warm_start(
+                setup,
+                result.gas_ln_n,
+                current_inventory,
             ),
             inventory_bridge_origin=CondensateEquilibriumPoint(
                 temperature=float(temperatures[layer_index]),

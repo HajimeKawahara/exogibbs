@@ -4,6 +4,7 @@ from exogibbs.equilibrium.condensate.initialization import (
     DefaultCondensateEquilibriumInitializer,
     FixedSupportCondensateEquilibriumGrid,
     GridCondensateEquilibriumInitializer,
+    regauge_gas_only_warm_start,
 )
 from exogibbs.equilibrium.condensate.setup import (
     CondensateChemicalSetup,
@@ -56,6 +57,7 @@ __all__ = (
     "GridCondensateEquilibriumInitializer",
     "LogFugacityCoefficientFunction",
     "build_condensate_chemical_setup",
+    "regauge_gas_only_warm_start",
     "solve",
     "solve_profile",
     "validate_condensate_chemical_setup",

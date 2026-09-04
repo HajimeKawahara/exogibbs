@@ -1,18 +1,22 @@
 """Condensate equilibrium initialization policies."""
 
 from dataclasses import replace
+import math
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from exogibbs.api.condensate import (
     FixedSupportCondensateEquilibriumGrid,
     GridCondensateEquilibriumInitializer,
+    regauge_gas_only_warm_start,
 )
 from exogibbs.api.condensate_equilibrium import (
     FixedSupportCondensateEquilibriumGrid as CompatibilityFixedSupportGrid,
     GridCondensateEquilibriumInitializer as CompatibilityGridInitializer,
+    regauge_gas_only_warm_start as compatibility_regauge_gas_only_warm_start,
 )
 from exogibbs.equilibrium.condensate import lifecycle as _lifecycle
 from exogibbs.equilibrium.condensate.setup import CondensateChemicalSetup
@@ -77,6 +81,237 @@ def _condensate_setup() -> CondensateChemicalSetup:
         condensate_species=condensate_species,
         elements=elements,
     )
+
+
+def _warm_start_setup() -> CondensateChemicalSetup:
+    elements = ("H", "C", "O", "e-")
+    gas_species = ("H", "C", "HO", "e-")
+    gas_formula_matrix = jnp.asarray(
+        [
+            [1.0, 0.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, -1.0],
+        ],
+        dtype=jnp.float64,
+    )
+    condensate_formula_matrix = jnp.asarray(
+        [[1.0], [0.0], [1.0], [0.0]],
+        dtype=jnp.float64,
+    )
+    gas_setup = ChemicalSetup(
+        formula_matrix=gas_formula_matrix,
+        hvector_func=lambda temperature: jnp.zeros((len(gas_species),)),
+        elements=elements,
+        species=gas_species,
+        metadata={"source": "test", "dataset": "gas"},
+    )
+    condensate_setup = ChemicalSetup(
+        formula_matrix=condensate_formula_matrix,
+        hvector_func=lambda temperature: jnp.zeros((1,)),
+        elements=elements,
+        species=("HO[s]",),
+        metadata={"source": "test", "dataset": "condensates"},
+    )
+    return CondensateChemicalSetup(
+        gas_setup=gas_setup,
+        condensate_setup=condensate_setup,
+        formula_matrix=gas_formula_matrix,
+        formula_matrix_cond=condensate_formula_matrix,
+        gas_species=gas_species,
+        condensate_species=("HO[s]",),
+        elements=elements,
+    )
+
+
+def test_gas_only_warm_start_preserves_finite_log_ratios_and_floors_absent():
+    setup = _warm_start_setup()
+    gas_log_amounts = np.asarray([-0.7, -721.0, -2.0, -np.inf])
+    inventory = np.asarray([0.8, 0.2, 0.0, 0.0])
+
+    initial = regauge_gas_only_warm_start(
+        setup,
+        jnp.asarray(gas_log_amounts),
+        jnp.asarray(inventory),
+    )
+
+    usable = np.asarray([True, True, False, False])
+    reference = float(np.max(gas_log_amounts[usable]))
+    relative = np.zeros_like(gas_log_amounts)
+    relative[usable] = np.exp(gas_log_amounts[usable] - reference)
+    represented = float(
+        np.sum((np.asarray(setup.formula_matrix) @ relative)[:2])
+    )
+    shift = math.log(np.sum(inventory[:2]) / represented) - reference
+    expected_usable = gas_log_amounts[usable] + shift
+    expected_total = float(np.sum(np.exp(expected_usable)))
+    relative_floor = math.log(expected_total * 1.0e-300)
+    represented_floor = float(
+        np.min(expected_usable) + math.log(np.finfo(np.float64).eps)
+    )
+    expected_floor = min(relative_floor, represented_floor)
+    result_logs = np.asarray(initial.gas_ln_n)
+
+    np.testing.assert_array_equal(result_logs[usable], expected_usable)
+    np.testing.assert_array_equal(result_logs[~usable], expected_floor)
+    assert float(initial.gas_ntot) == np.sum(np.exp(result_logs))
+    assert result_logs[1] < relative_floor
+    assert compatibility_regauge_gas_only_warm_start is (
+        regauge_gas_only_warm_start
+    )
+
+
+def test_gas_only_warm_start_is_source_and_target_gauge_covariant():
+    setup = _warm_start_setup()
+    gas_logs = jnp.asarray([-0.7, -721.0, -2.0, -np.inf])
+    inventory = jnp.asarray([0.8, 0.2, 0.0, 0.0])
+    target_scale = 1.0e-12
+
+    base = regauge_gas_only_warm_start(setup, gas_logs, inventory)
+    shifted_source = regauge_gas_only_warm_start(
+        setup,
+        gas_logs + 17.0,
+        inventory,
+    )
+    scaled_target = regauge_gas_only_warm_start(
+        setup,
+        gas_logs,
+        inventory * target_scale,
+    )
+
+    np.testing.assert_allclose(
+        shifted_source.gas_ln_n,
+        base.gas_ln_n,
+        rtol=0.0,
+        atol=1.0e-12,
+    )
+    np.testing.assert_allclose(
+        np.asarray(scaled_target.gas_ln_n) - math.log(target_scale),
+        base.gas_ln_n,
+        rtol=0.0,
+        atol=1.0e-12,
+    )
+    assert float(scaled_target.gas_ntot) == pytest.approx(
+        float(base.gas_ntot) * target_scale,
+        rel=1.0e-12,
+    )
+
+
+def test_gas_only_warm_start_avoids_large_source_gauge_cancellation():
+    setup = _warm_start_setup()
+    inventory = jnp.asarray([0.8, 0.2, 0.0, 0.0])
+    base_logs = jnp.asarray([0.0, -1.0, -np.inf, -np.inf])
+
+    base = regauge_gas_only_warm_start(setup, base_logs, inventory)
+    shifted = regauge_gas_only_warm_start(
+        setup,
+        base_logs + 1.0e15,
+        inventory,
+    )
+
+    np.testing.assert_array_equal(shifted.gas_ln_n, base.gas_ln_n)
+    assert float(shifted.gas_ntot) == float(base.gas_ntot)
+
+
+def test_gas_only_warm_start_requires_neither_atoms_nor_electron() -> None:
+    elements = ("H", "O")
+    gas_species = ("H2", "O2", "H2O")
+    gas_formula_matrix = jnp.asarray(
+        [[2.0, 0.0, 2.0], [0.0, 2.0, 1.0]],
+        dtype=jnp.float64,
+    )
+    condensate_formula_matrix = jnp.asarray(
+        [[2.0], [1.0]],
+        dtype=jnp.float64,
+    )
+    gas_setup = ChemicalSetup(
+        formula_matrix=gas_formula_matrix,
+        hvector_func=lambda temperature: jnp.zeros((len(gas_species),)),
+        elements=elements,
+        species=gas_species,
+        metadata={"source": "test", "dataset": "molecules_only"},
+    )
+    condensate_setup = ChemicalSetup(
+        formula_matrix=condensate_formula_matrix,
+        hvector_func=lambda temperature: jnp.zeros((1,)),
+        elements=elements,
+        species=("H2O[s]",),
+        metadata={"source": "test", "dataset": "condensates"},
+    )
+    setup = CondensateChemicalSetup(
+        gas_setup=gas_setup,
+        condensate_setup=condensate_setup,
+        formula_matrix=gas_formula_matrix,
+        formula_matrix_cond=condensate_formula_matrix,
+        gas_species=gas_species,
+        condensate_species=("H2O[s]",),
+        elements=elements,
+    )
+    source_logs = np.asarray([-2.0, -3.0, -5.0])
+
+    initial = regauge_gas_only_warm_start(
+        setup,
+        jnp.asarray(source_logs),
+        jnp.asarray([0.8, 0.2]),
+    )
+
+    result_logs = np.asarray(initial.gas_ln_n)
+    shifts = result_logs - source_logs
+    assert "e-" not in setup.elements
+    assert set(setup.gas_species).isdisjoint(setup.elements)
+    np.testing.assert_allclose(shifts, shifts[0], rtol=0.0, atol=1.0e-12)
+    assert float(initial.gas_ntot) == pytest.approx(
+        np.sum(np.exp(result_logs)),
+        rel=1.0e-15,
+    )
+
+
+@pytest.mark.parametrize(
+    ("gas_logs", "inventory", "message"),
+    (
+        ([0.0], [0.8, 0.2, 0.0, 0.0], "one value per gas species"),
+        ([np.nan, 0.0, 0.0, 0.0], [0.8, 0.2, 0.0, 0.0], "must not"),
+        ([np.inf, 0.0, 0.0, 0.0], [0.8, 0.2, 0.0, 0.0], "must not"),
+        ([0.0, 0.0, 0.0, 0.0], [0.8, 0.2, 0.0], "one value per element"),
+        (
+            [0.0, 0.0, 0.0, 0.0],
+            [0.8, -0.2, 0.0, 0.0],
+            "finite non-negative",
+        ),
+        (
+            [0.0, 0.0, 0.0, 0.0],
+            [0.8, np.nan, 0.0, 0.0],
+            "finite non-negative",
+        ),
+        (
+            [0.0, 0.0, 0.0, 0.0],
+            [0.8, np.inf, 0.0, 0.0],
+            "finite non-negative",
+        ),
+        ([0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], "positive"),
+        (
+            [-np.inf, -np.inf, -np.inf, -np.inf],
+            [0.8, 0.2, 0.0, 0.0],
+            "no finite species",
+        ),
+        (
+            [-np.inf, -np.inf, -np.inf, 0.0],
+            [0.8, 0.0, 0.0, 0.0],
+            "cannot be regauged",
+        ),
+    ),
+)
+def test_gas_only_warm_start_rejects_invalid_inputs(
+    gas_logs,
+    inventory,
+    message,
+):
+    with pytest.raises(ValueError, match=message):
+        regauge_gas_only_warm_start(
+            _warm_start_setup(),
+            jnp.asarray(gas_logs),
+            jnp.asarray(inventory),
+        )
 
 
 def _gas_grid(

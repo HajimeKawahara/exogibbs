@@ -12,6 +12,7 @@ from exogibbs.equilibrium.condensate.initialization import (
     DefaultCondensateEquilibriumInitializer,
     FixedSupportCondensateEquilibriumGrid,
     GridCondensateEquilibriumInitializer,
+    regauge_gas_only_warm_start,
 )
 from exogibbs.equilibrium.condensate.policy import (
     validate_condensate_options as _validate_options,
@@ -233,6 +234,7 @@ __all__ = (
     "condensate_equilibrium",
     "condensate_equilibrium_profile",
     "prepare_experimental_profile_fixed_support_batch_plan",
+    "regauge_gas_only_warm_start",
     "run_experimental_profile_fixed_support_v2_batch_plan",
     "solve",
     "solve_profile",

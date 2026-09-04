@@ -324,13 +324,18 @@ The enclosing rainout ``budget_audit_gauge`` names that same lifecycle-caller
 audit. Its ``floorless_budget_certification`` and the returned arrays refer to
 the original profile caller gauge after any transport rescaling.
 
-The exact-zero-compatible gas amounts from the accepted state are also used as
-a gas-only warm start for the adjacent upper layer. Incompatible raw species
-remain in the public layer result but are replaced by a finite log-space floor
-in this warm start. The initializer also records the accepted source problem
-as ``CondensateEquilibriumPoint(temperature, pressure, element_inventory)``.
+The accepted finite gas log amounts are also used as a gas-only warm start for
+the adjacent upper layer. The public
+``regauge_gas_only_warm_start(setup, gas_ln_n, element_inventory)`` helper
+applies one uniform log-space shift to every compatible finite species, so its
+finite log ratios are preserved in the new element-inventory amount gauge.
+Species that are absent or require an exactly depleted element receive a
+finite numerical floor. The helper uses the stoichiometric matrix directly and
+therefore requires neither atomic gas species nor an electron row. It returns
+no condensate amounts or active support. The rainout initializer separately
+records the accepted source problem as
+``CondensateEquilibriumPoint(temperature, pressure, element_inventory)``.
 This provenance is not a physical state carried into the next layer.
-Condensates and active support are never carried upward as a warm state.
 
 If the direct warm solve fails and source provenance is available, the
 scheduler may try one bounded inventory bridge at the exact target temperature

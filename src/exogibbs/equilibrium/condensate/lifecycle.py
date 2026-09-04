@@ -232,6 +232,31 @@ def _inventory_amount_gauge_scale(
     return scale
 
 
+def _transform_linear_amount_gauge_on_host(
+    values: Array,
+    amount_scale: float,
+    *,
+    to_canonical: bool,
+) -> Array:
+    """Transform concrete linear amounts without flushing subnormal values."""
+
+    if not math.isfinite(amount_scale) or amount_scale <= 0.0:
+        raise ValueError("amount_scale must be finite and positive.")
+    host_values = np.asarray(jax.device_get(values), dtype=np.float64)
+    with np.errstate(
+        divide="ignore",
+        over="ignore",
+        under="ignore",
+        invalid="ignore",
+    ):
+        transformed = (
+            np.divide(host_values, amount_scale)
+            if to_canonical
+            else np.multiply(host_values, amount_scale)
+        )
+    return jnp.asarray(transformed, dtype=jnp.float64)
+
+
 def _normalize_condensate_init_amount_gauge(
     init: CondensateEquilibriumInit | None,
     amount_scale: float,
@@ -253,13 +278,20 @@ def _normalize_condensate_init_amount_gauge(
         gas_ntot=(
             None
             if init.gas_ntot is None
-            else jnp.asarray(init.gas_ntot, dtype=jnp.float64) / amount_scale
+            else _transform_linear_amount_gauge_on_host(
+                init.gas_ntot,
+                amount_scale,
+                to_canonical=True,
+            )
         ),
         condensate_amounts=(
             None
             if init.condensate_amounts is None
-            else jnp.asarray(init.condensate_amounts, dtype=jnp.float64)
-            / amount_scale
+            else _transform_linear_amount_gauge_on_host(
+                init.condensate_amounts,
+                amount_scale,
+                to_canonical=True,
+            )
         ),
         support_amounts=(
             None
@@ -1225,7 +1257,11 @@ def _run_head_v2_profile(
     caller_inventory = jnp.asarray(b, dtype=jnp.float64)
     amount_scale = _inventory_amount_gauge_scale(setup, caller_inventory)
     log_amount_scale = math.log(amount_scale)
-    b = caller_inventory / amount_scale
+    b = _transform_linear_amount_gauge_on_host(
+        caller_inventory,
+        amount_scale,
+        to_canonical=True,
+    )
     caller_explicit_inits = tuple(explicit_inits)
     if support_amounts_init is not None:
         support_amounts_init = tuple(
@@ -1509,12 +1545,18 @@ def _run_head_v2_profile(
             budget_relative_floor=policy.budget_relative_floor,
         )
 
-    def audit_exact_in_caller_gauge(
+    def audit_state_in_caller_gauge(
         *,
         layer_index: int,
-        exact: Any,
+        gas_log_amounts: Array,
+        condensate_amounts: Array,
+        total_gas_log_amount: float,
+        element_potential: Array,
+        support_indices: Sequence[int],
         valid_condensates: Sequence[bool],
     ) -> dict[str, Any]:
+        """Audit one canonical state after restoring the caller amount gauge."""
+
         temperature = float(temperatures[layer_index])
         return _physical_zero_barrier_audit(
             gas_formula_matrix=np.asarray(
@@ -1543,20 +1585,26 @@ def _run_head_v2_profile(
                 dtype=np.float64,
             ),
             gas_log_amounts=(
-                np.asarray(exact.gas_log_amounts, dtype=np.float64)
+                np.asarray(gas_log_amounts, dtype=np.float64)
                 + log_amount_scale
             ),
-            condensate_amounts=(
-                np.asarray(exact.condensate_amounts, dtype=np.float64)
-                * amount_scale
+            condensate_amounts=np.asarray(
+                jax.device_get(
+                    _transform_linear_amount_gauge_on_host(
+                        condensate_amounts,
+                        amount_scale,
+                        to_canonical=False,
+                    )
+                ),
+                dtype=np.float64,
             ),
             total_gas_log_amount=(
-                float(exact.total_gas_log_amount) + log_amount_scale
+                float(total_gas_log_amount) + log_amount_scale
             ),
             element_potential=np.asarray(
-                exact.element_potential, dtype=np.float64
+                element_potential, dtype=np.float64
             ),
-            support_indices=exact.support_indices,
+            support_indices=support_indices,
             condensate_valid_mask=np.asarray(
                 valid_condensates, dtype=bool
             ),
@@ -1951,9 +1999,15 @@ def _run_head_v2_profile(
                     early_exact.accepted
                 )
                 if early_exact.accepted:
-                    early_caller_audit = audit_exact_in_caller_gauge(
+                    early_caller_audit = audit_state_in_caller_gauge(
                         layer_index=source_index,
-                        exact=early_exact,
+                        gas_log_amounts=early_exact.gas_log_amounts,
+                        condensate_amounts=early_exact.condensate_amounts,
+                        total_gas_log_amount=(
+                            early_exact.total_gas_log_amount
+                        ),
+                        element_potential=early_exact.element_potential,
+                        support_indices=early_exact.support_indices,
                         valid_condensates=np.asarray(
                             jax.device_get(valid_mask[local_index]),
                             dtype=bool,
@@ -2089,15 +2143,157 @@ def _run_head_v2_profile(
                 return_diagnostics=False,
                 lnphi_func=lnphi_func,
             )
-            result = _build_empty_support_gas_result(
-                setup=setup,
-                gas_ln_n=(
-                    jnp.asarray(gas_result.ln_n, dtype=jnp.float64)
-                    + log_amount_scale
+            gas_log_amounts = np.asarray(
+                jax.device_get(gas_result.ln_n), dtype=np.float64
+            )
+            total_gas_log_amount = float(
+                np.logaddexp.reduce(gas_log_amounts)
+            )
+            support: tuple[int, ...] = ()
+            full_amounts = np.zeros(
+                len(setup.condensate_species), dtype=np.float64
+            )
+            element_potential = np.asarray(
+                jax.device_get(
+                    _head_v2_best_residual_element_potential(
+                        setup=setup,
+                        T=float(temperatures[layer_index]),
+                        P=float(pressures[layer_index]),
+                        Pref=Pref,
+                        b=b,
+                        support_indices=(),
+                        support_amounts=(),
+                        gas_ln_n=gas_log_amounts,
+                        total_gas_log_amount=total_gas_log_amount,
+                        epsilon=(
+                            policy.solver_config.continuation.epsilon_schedule[
+                                0
+                            ]
+                        ),
+                        lnphi_func=lnphi_func,
+                    )
                 ),
+                dtype=np.float64,
+            )
+            valid_mask = valid_condensates_for_layer(layer_index)
+            raw_caller_audit = audit_state_in_caller_gauge(
+                layer_index=layer_index,
+                gas_log_amounts=gas_log_amounts,
+                condensate_amounts=full_amounts,
+                total_gas_log_amount=total_gas_log_amount,
+                element_potential=element_potential,
+                support_indices=support,
+                valid_condensates=valid_mask,
+            )
+            raw_caller_audit_summary = caller_audit_summary(
+                raw_caller_audit
+            )
+            lifecycle_summary[
+                "gas_only_initial_caller_gauge_zero_barrier_kkt"
+            ] = raw_caller_audit_summary
+            lifecycle_summary["caller_gauge_zero_barrier_kkt"] = (
+                raw_caller_audit_summary
+            )
+            accepted = bool(raw_caller_audit["accepted"])
+            lifecycle_summary["zero_barrier_initializer"] = {
+                "schema": "exogibbs_zero_barrier_initializer_provenance_v1",
+                "eligible": True,
+                "attempted": not accepted,
+                "role": "initializer_only",
+                "source": "gas_only_equilibrium_empty_support",
+                "source_support_indices": (),
+                "rescue_attempted": not accepted,
+                "raw_caller_gauge_accepted": accepted,
+            }
+            selected_route = "head_v2_gas_only_no_candidate"
+            if not accepted:
+                exact = polish_layer_state(
+                    layer_index=layer_index,
+                    gas_log_amounts=gas_log_amounts,
+                    condensate_amounts=full_amounts,
+                    total_gas_log_amount=total_gas_log_amount,
+                    element_potential=element_potential,
+                    support=support,
+                    valid_condensates=valid_mask,
+                )
+                lifecycle_summary[
+                    "zero_barrier_active_support_polish"
+                ] = exact.report
+                accepted = bool(exact.accepted)
+                if accepted:
+                    caller_audit = audit_state_in_caller_gauge(
+                        layer_index=layer_index,
+                        gas_log_amounts=exact.gas_log_amounts,
+                        condensate_amounts=exact.condensate_amounts,
+                        total_gas_log_amount=exact.total_gas_log_amount,
+                        element_potential=exact.element_potential,
+                        support_indices=exact.support_indices,
+                        valid_condensates=valid_mask,
+                    )
+                    lifecycle_summary[
+                        "caller_gauge_zero_barrier_kkt"
+                    ] = caller_audit_summary(caller_audit)
+                    accepted = bool(caller_audit["accepted"])
+                    if accepted:
+                        support = tuple(exact.support_indices)
+                        gas_log_amounts = np.asarray(
+                            exact.gas_log_amounts, dtype=np.float64
+                        )
+                        full_amounts = np.asarray(
+                            exact.condensate_amounts, dtype=np.float64
+                        )
+                        total_gas_log_amount = float(
+                            exact.total_gas_log_amount
+                        )
+                        element_potential = np.asarray(
+                            exact.element_potential, dtype=np.float64
+                        )
+                        lifecycle_summary[
+                            "support_indices_after_polish"
+                        ] = support
+                        if support:
+                            selected_route = CONDENSATE_HEAD_V2_ROUTE_NAME
+                            lifecycle_summary["outcome"] = (
+                                "zero_barrier_empty_support_rescued"
+                            )
+                            records[layer_index]["outcome"] = (
+                                "zero_barrier_empty_support_rescued"
+                            )
+                    else:
+                        lifecycle_summary["outcome"] = (
+                            "caller_gauge_zero_barrier_kkt_failed"
+                        )
+                        records[layer_index]["outcome"] = (
+                            "caller_gauge_zero_barrier_kkt_failed"
+                        )
+                else:
+                    lifecycle_summary["outcome"] = (
+                        "zero_barrier_empty_support_polish_failed"
+                    )
+                    records[layer_index]["outcome"] = (
+                        "zero_barrier_empty_support_polish_failed"
+                    )
+            caller_gas_log_amounts = (
+                jnp.asarray(gas_log_amounts, dtype=jnp.float64)
+                + log_amount_scale
+            )
+            caller_full_amounts = _transform_linear_amount_gauge_on_host(
+                full_amounts,
+                amount_scale,
+                to_canonical=False,
+            )
+            support_amounts = caller_full_amounts[
+                jnp.asarray(support, dtype=jnp.int32)
+            ]
+            result = build_condensate_equilibrium_result_from_solver_payload(
+                setup=setup,
+                gas_ln_n=caller_gas_log_amounts,
+                support_indices=support,
+                support_amounts=support_amounts,
+                selected_route=selected_route,
+                solver_success=accepted,
                 diagnostics={"fixed_support_v2": lifecycle_summary},
                 route=HEAD_ROUTE_V2,
-                selected_route="head_v2_gas_only_no_candidate",
                 head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
                 head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
                 element_inventory_target=caller_inventory,
@@ -2350,9 +2546,15 @@ def _run_head_v2_profile(
                     caller_audit = (
                         early_zero_barrier_caller_audits[layer_index]
                         if early_exact is not None
-                        else audit_exact_in_caller_gauge(
+                        else audit_state_in_caller_gauge(
                             layer_index=layer_index,
-                            exact=exact,
+                            gas_log_amounts=exact.gas_log_amounts,
+                            condensate_amounts=exact.condensate_amounts,
+                            total_gas_log_amount=(
+                                exact.total_gas_log_amount
+                            ),
+                            element_potential=exact.element_potential,
+                            support_indices=exact.support_indices,
                             valid_condensates=valid_mask,
                         )
                     )
@@ -2409,7 +2611,11 @@ def _run_head_v2_profile(
                         "zero_barrier_active_support_polish_failed"
                     )
             caller_gas_log_amounts = gas_log_amounts + log_amount_scale
-            caller_full_amounts = full_amounts * amount_scale
+            caller_full_amounts = _transform_linear_amount_gauge_on_host(
+                full_amounts,
+                amount_scale,
+                to_canonical=False,
+            )
             support_amounts = caller_full_amounts[
                 jnp.asarray(support, dtype=jnp.int32)
             ]
