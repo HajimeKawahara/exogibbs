@@ -1269,10 +1269,27 @@ def _physical_zero_barrier_audit(
         + condensate_formula_matrix_full @ amounts
         - target_inventory
     )
-    budget_residual_scaled = budget_scale * np.divide(
-        budget_residual,
-        budget_amount_scale,
+    nonzero_target = target_inventory != 0.0
+    budget_residual_scaled = np.empty_like(
+        budget_residual, dtype=np.float64
     )
+    with np.errstate(
+        divide="ignore",
+        over="ignore",
+        under="ignore",
+        invalid="ignore",
+    ):
+        budget_residual_scaled[nonzero_target] = np.divide(
+            budget_residual[nonzero_target],
+            np.abs(target_inventory[nonzero_target]),
+        )
+        budget_residual_scaled[~nonzero_target] = (
+            budget_scale[~nonzero_target]
+            * np.divide(
+                budget_residual[~nonzero_target],
+                budget_amount_scale,
+            )
+        )
     active_driving = full_driving[support_mask]
     active_amounts = amounts[support_mask]
     finite = bool(
@@ -4395,8 +4412,6 @@ def _polish_zero_barrier_support_once(
     finite_inputs = all(np.all(np.isfinite(value)) for value in numerical_inputs)
     if not expected_shapes or not support_valid or not finite_inputs:
         raise ValueError("Invalid zero-barrier active-support polish inputs.")
-    if not support_initial:
-        raise ValueError("Zero-barrier polish requires a non-empty support.")
     if any(
         tolerance < 0.0
         for tolerance in (
@@ -4786,12 +4801,18 @@ def _polish_zero_barrier_support_once(
             reduced_primary_selected = True
             selected_formulation = structural_selected_formulation()
 
+    structural_support = (
+        tuple(primary_candidate["support_indices"])
+        if reduced_primary_selected and primary_candidate is not None
+        else ()
+    )
     structural_support_full_rank = bool(
         reduced_primary_selected
         and primary_candidate is not None
-        and len(tuple(primary_candidate["support_indices"]))
-        == np.linalg.matrix_rank(
-            ac_full[:, tuple(primary_candidate["support_indices"])]
+        and (
+            not structural_support
+            or len(structural_support)
+            == np.linalg.matrix_rank(ac_full[:, structural_support])
         )
     )
     structural_terminal_accepted = bool(

@@ -150,6 +150,98 @@ def test_zero_barrier_polish_restores_all_physical_kkt_blocks() -> None:
     ]
 
 
+def test_zero_barrier_polish_accepts_a_bounded_empty_gas_only_support() -> None:
+    result = polish_zero_barrier_active_support(
+        gas_formula_matrix=np.ones((1, 1), dtype=np.float64),
+        condensate_formula_matrix_full=np.ones(
+            (1, 1), dtype=np.float64
+        ),
+        target_inventory=np.ones(1, dtype=np.float64),
+        gas_standard_source=np.zeros(1, dtype=np.float64),
+        condensate_standard_source_full=np.ones(1, dtype=np.float64),
+        gas_log_amounts_init=np.zeros(1, dtype=np.float64),
+        condensate_amounts_init=np.zeros(1, dtype=np.float64),
+        total_gas_log_amount_init=0.0,
+        element_potential_init=np.zeros(1, dtype=np.float64),
+        support_indices=(),
+        max_function_evaluations=100,
+    )
+
+    closure = result.report["exact_active_set_closure"]
+    assert result.accepted
+    assert result.support_indices == ()
+    np.testing.assert_allclose(np.exp(result.gas_log_amounts), [1.0])
+    assert closure["visited_supports"] == ((),)
+    assert closure["round_count"] == 1
+    assert closure["cumulative_function_evaluations"] <= closure[
+        "function_evaluation_limit"
+    ]
+    assert not result.report["zero_barrier_dual_support_oracle"]["applied"]
+    assert not result.report["finite_barrier_homotopy_initializer"][
+        "applied"
+    ]
+
+
+def test_empty_support_is_full_rank_for_a_structural_zero_problem() -> None:
+    result = polish_zero_barrier_active_support(
+        gas_formula_matrix=np.eye(2, dtype=np.float64),
+        condensate_formula_matrix_full=np.asarray(
+            [[1.0], [0.0]], dtype=np.float64
+        ),
+        target_inventory=np.asarray([1.0, 0.0], dtype=np.float64),
+        gas_standard_source=np.zeros(2, dtype=np.float64),
+        condensate_standard_source_full=np.ones(1, dtype=np.float64),
+        gas_log_amounts_init=np.asarray([0.0, -800.0], dtype=np.float64),
+        condensate_amounts_init=np.zeros(1, dtype=np.float64),
+        total_gas_log_amount_init=0.0,
+        element_potential_init=np.asarray([0.0, -800.0], dtype=np.float64),
+        support_indices=(),
+        max_function_evaluations=100,
+    )
+
+    assert result.accepted
+    assert result.support_indices == ()
+
+
+def test_zero_barrier_polish_discovers_support_from_empty_initial_support(
+) -> None:
+    (
+        gas_formula,
+        condensate_formula,
+        expected_gas,
+        expected_condensates,
+        expected_potential,
+        gamma,
+        hcond,
+        target,
+    ) = _one_active_phase_problem()
+
+    result = polish_zero_barrier_active_support(
+        gas_formula_matrix=gas_formula,
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=target,
+        gas_standard_source=gamma,
+        condensate_standard_source_full=hcond,
+        gas_log_amounts_init=np.log(expected_gas),
+        condensate_amounts_init=np.zeros_like(expected_condensates),
+        total_gas_log_amount_init=0.0,
+        element_potential_init=expected_potential,
+        support_indices=(),
+        budget_relative_floor=1.0e-12,
+    )
+
+    assert result.accepted
+    assert result.support_indices == (0,)
+    np.testing.assert_allclose(np.exp(result.gas_log_amounts), expected_gas)
+    np.testing.assert_allclose(
+        result.condensate_amounts, expected_condensates
+    )
+    assert result.report["zero_barrier_dual_support_oracle"]["applied"]
+    assert result.report["exact_active_set_closure"]["visited_supports"] == (
+        (),
+    )
+
+
 @pytest.mark.parametrize("amount_scale", (1.0e-12, 1.0, 1.0e8))
 def test_zero_barrier_dual_support_oracle_is_amount_gauge_covariant(
     amount_scale: float,
@@ -1167,6 +1259,181 @@ def test_zero_barrier_audit_rejects_negative_inactive_driving() -> None:
     assert not audit["accepted"]
     assert audit["active_condensate_driving_max_abs"] < 1.0e-10
     assert audit["inactive_condensate_violation_max_abs"] == pytest.approx(0.1)
+
+
+def test_zero_barrier_audit_uses_floorless_subnormal_relative_budget() -> None:
+    trace_target = np.float64(9.108388204e-314)
+    trace_residual = np.float64(4.397866503e-315)
+    gas_formula = np.eye(2, dtype=np.float64)
+    condensate_formula = np.asarray([[0.0], [1.0]], dtype=np.float64)
+    target = np.asarray([1.0, trace_target], dtype=np.float64)
+    gas = np.asarray([1.0, 0.5 * trace_target], dtype=np.float64)
+    total_gas_log_amount = float(np.log(np.sum(gas)))
+    gas_log_amounts = np.log(gas)
+    element_potential = gas_log_amounts - total_gas_log_amount
+    condensate_amounts = np.asarray(
+        [trace_target - gas[1] + trace_residual], dtype=np.float64
+    )
+
+    audit = _physical_zero_barrier_audit(
+        gas_formula_matrix=gas_formula,
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=target,
+        gas_standard_source=np.zeros(2, dtype=np.float64),
+        condensate_standard_source_full=np.asarray(
+            [element_potential[1]], dtype=np.float64
+        ),
+        gas_log_amounts=gas_log_amounts,
+        condensate_amounts=condensate_amounts,
+        total_gas_log_amount=total_gas_log_amount,
+        element_potential=element_potential,
+        support_indices=(0,),
+        condensate_valid_mask=np.asarray([True]),
+        budget_scale=np.reciprocal(np.maximum(target, 1.0e-300)),
+        optimizer_success=True,
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+    )
+
+    reconstructed = (
+        gas_formula @ gas + condensate_formula @ condensate_amounts
+    )
+    expected_relative_residual = abs(
+        (reconstructed[1] - trace_target) / trace_target
+    )
+    assert expected_relative_residual == pytest.approx(0.04828369635448629)
+    assert audit["budget_scaled_max_abs"] == pytest.approx(
+        expected_relative_residual
+    )
+    assert not audit["physical_root_certified"]
+    assert not audit["accepted"]
+
+
+@pytest.mark.parametrize("amount_scale", (1.0e-12, 1.0, 1.0e8))
+def test_zero_barrier_nonzero_budget_audit_is_caller_gauge_invariant(
+    amount_scale: float,
+) -> None:
+    canonical_target = np.asarray([1.0, 1.0e-300], dtype=np.float64)
+    target = amount_scale * canonical_target
+    gas = amount_scale * np.asarray([1.0, 0.5e-300], dtype=np.float64)
+    condensate_amounts = amount_scale * np.asarray(
+        [0.55e-300], dtype=np.float64
+    )
+    total_gas_log_amount = float(np.log(np.sum(gas)))
+    gas_log_amounts = np.log(gas)
+    element_potential = gas_log_amounts - total_gas_log_amount
+
+    audit = _physical_zero_barrier_audit(
+        gas_formula_matrix=np.eye(2, dtype=np.float64),
+        condensate_formula_matrix_full=np.asarray(
+            [[0.0], [1.0]], dtype=np.float64
+        ),
+        target_inventory=target,
+        gas_standard_source=np.zeros(2, dtype=np.float64),
+        condensate_standard_source_full=np.asarray(
+            [element_potential[1]], dtype=np.float64
+        ),
+        gas_log_amounts=gas_log_amounts,
+        condensate_amounts=condensate_amounts,
+        total_gas_log_amount=total_gas_log_amount,
+        element_potential=element_potential,
+        support_indices=(0,),
+        condensate_valid_mask=np.asarray([True]),
+        budget_scale=np.reciprocal(
+            np.maximum(canonical_target, 1.0e-300)
+        ),
+        optimizer_success=True,
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+        budget_residual_amount_scale=amount_scale,
+    )
+
+    assert audit["budget_scaled_max_abs"] == pytest.approx(0.05)
+    assert not audit["accepted"]
+
+
+def test_zero_barrier_audit_keeps_absolute_zero_row_scaling() -> None:
+    gas = np.asarray([1.0, 1.0e-12], dtype=np.float64)
+    total_gas_log_amount = float(np.log(np.sum(gas)))
+    gas_log_amounts = np.log(gas)
+    gas_standard_source = total_gas_log_amount - gas_log_amounts
+
+    audit = _physical_zero_barrier_audit(
+        gas_formula_matrix=np.eye(2, dtype=np.float64),
+        condensate_formula_matrix_full=np.empty((2, 0), dtype=np.float64),
+        target_inventory=np.asarray([1.0, 0.0], dtype=np.float64),
+        gas_standard_source=gas_standard_source,
+        condensate_standard_source_full=np.empty(0, dtype=np.float64),
+        gas_log_amounts=gas_log_amounts,
+        condensate_amounts=np.empty(0, dtype=np.float64),
+        total_gas_log_amount=total_gas_log_amount,
+        element_potential=np.zeros(2, dtype=np.float64),
+        support_indices=(),
+        condensate_valid_mask=np.empty(0, dtype=bool),
+        budget_scale=np.asarray([1.0, 1.0e6], dtype=np.float64),
+        optimizer_success=True,
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=2.0e-6,
+        total_density_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+    )
+
+    assert audit["budget_scaled_max_abs"] == pytest.approx(1.0e-6)
+    assert audit["accepted"]
+
+
+def test_subnormal_budget_failure_routes_to_existing_reduced_log_solver(
+) -> None:
+    trace_target = np.float64(9.108388204e-314)
+    trace_residual = np.float64(4.397866503e-315)
+    gas_formula = np.eye(2, dtype=np.float64)
+    condensate_formula = np.asarray([[0.0], [1.0]], dtype=np.float64)
+    target = np.asarray([1.0, trace_target], dtype=np.float64)
+    gas = np.asarray([1.0, 0.5 * trace_target], dtype=np.float64)
+    gas_log_amounts = np.log(gas)
+    total_gas_log_amount = float(np.log(np.sum(gas)))
+    element_potential = gas_log_amounts - total_gas_log_amount
+    initial_amounts = np.asarray(
+        [trace_target - gas[1] + trace_residual], dtype=np.float64
+    )
+    evaluation_budget = zero_barrier._FunctionEvaluationBudget(3200)
+
+    result = zero_barrier._polish_zero_barrier_support_once(
+        gas_formula_matrix=gas_formula,
+        condensate_formula_matrix_full=condensate_formula,
+        target_inventory=target,
+        gas_standard_source=np.zeros(2, dtype=np.float64),
+        condensate_standard_source_full=np.asarray(
+            [element_potential[1]], dtype=np.float64
+        ),
+        gas_log_amounts_init=gas_log_amounts,
+        condensate_amounts_init=initial_amounts,
+        total_gas_log_amount_init=total_gas_log_amount,
+        element_potential_init=element_potential,
+        support_indices=(0,),
+        condensate_valid_mask=np.asarray([True]),
+        max_function_evaluations=400,
+        function_evaluation_budget=evaluation_budget,
+        use_zero_barrier_dual=False,
+        use_finite_barrier_homotopy=False,
+    )
+
+    reconstructed = (
+        gas_formula @ np.exp(result.gas_log_amounts)
+        + condensate_formula @ result.condensate_amounts
+    )
+    assert result.accepted
+    assert result.support_indices == (0,)
+    assert result.report["selected_numerical_formulation"] == (
+        "reduced_log_domain_support_search"
+    )
+    assert result.report["reduced_log_domain_fallback"]["attempted"]
+    assert abs((reconstructed[1] - trace_target) / trace_target) <= 1.0e-8
+    assert evaluation_budget.used <= evaluation_budget.limit
 
 
 @pytest.mark.parametrize(

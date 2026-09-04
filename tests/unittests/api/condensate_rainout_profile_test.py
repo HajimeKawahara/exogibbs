@@ -263,6 +263,57 @@ def test_rainout_amount_scaling_shifts_barrier_epsilon() -> None:
     )
 
 
+def test_rainout_amount_scaling_preserves_subnormal_linear_values() -> None:
+    trace_amount = np.float64(9.108388204e-314)
+    scale = np.float64(0.5)
+    initial = CondensateEquilibriumInit(
+        gas_ntot=jnp.asarray(trace_amount, dtype=jnp.float64),
+        condensate_amounts=jnp.asarray(
+            [trace_amount], dtype=jnp.float64
+        ),
+        inventory_bridge_origin=CondensateEquilibriumPoint(
+            temperature=300.0,
+            pressure=100.0,
+            element_inventory=jnp.asarray(
+                [1.0, trace_amount, 0.0], dtype=jnp.float64
+            ),
+        ),
+    )
+
+    scaled = _scale_initial_guess(initial, scale)
+
+    expected = np.multiply(trace_amount, scale)
+    assert expected > 0.0
+    assert float(scaled.gas_ntot) == expected
+    assert float(scaled.condensate_amounts[0]) == expected
+    assert (
+        float(scaled.inventory_bridge_origin.element_inventory[1])
+        == expected
+    )
+
+
+def test_rainout_result_rescaling_preserves_subnormal_linear_values() -> None:
+    trace_amount = np.float64(9.108388204e-314)
+    scale = np.float64(2.0)
+    result = replace(
+        _layer_result([1.0]),
+        gas_ln_n=jnp.asarray([np.log(trace_amount)], dtype=jnp.float64),
+        gas_n=jnp.asarray([trace_amount], dtype=jnp.float64),
+        gas_ntot=jnp.asarray(trace_amount, dtype=jnp.float64),
+        condensate_amounts=jnp.asarray(
+            [trace_amount], dtype=jnp.float64
+        ),
+    )
+
+    rescaled = _profile._rescale_layer_result(result, scale)
+
+    expected = np.divide(trace_amount, scale)
+    assert expected > 0.0
+    assert float(rescaled.gas_n[0]) == expected
+    assert float(rescaled.gas_ntot) == expected
+    assert float(rescaled.condensate_amounts[0]) == expected
+
+
 def test_rainout_preserves_finite_subfloor_logs_in_the_next_layer_seed(
     monkeypatch,
 ) -> None:

@@ -124,17 +124,20 @@ def _scale_initial_guess(
         gas_ntot=(
             None
             if initial_guess.gas_ntot is None
-            else jnp.asarray(initial_guess.gas_ntot, dtype=jnp.float64)
-            * scale
+            else _lifecycle._transform_linear_amount_gauge_on_host(
+                initial_guess.gas_ntot,
+                scale,
+                to_canonical=False,
+            )
         ),
         condensate_amounts=(
             None
             if initial_guess.condensate_amounts is None
-            else jnp.asarray(
+            else _lifecycle._transform_linear_amount_gauge_on_host(
                 initial_guess.condensate_amounts,
-                dtype=jnp.float64,
+                scale,
+                to_canonical=False,
             )
-            * scale
         ),
         support_amounts=(
             None
@@ -155,11 +158,13 @@ def _scale_initial_guess(
             if initial_guess.inventory_bridge_origin is None
             else replace(
                 initial_guess.inventory_bridge_origin,
-                element_inventory=jnp.asarray(
-                    initial_guess.inventory_bridge_origin.element_inventory,
-                    dtype=jnp.float64,
-                )
-                * scale,
+                element_inventory=(
+                    _lifecycle._transform_linear_amount_gauge_on_host(
+                        initial_guess.inventory_bridge_origin.element_inventory,
+                        scale,
+                        to_canonical=False,
+                    )
+                ),
             )
         ),
     )
@@ -192,14 +197,25 @@ def _rescale_layer_result(
 ) -> CondensateEquilibriumResult:
     if scale == 1.0:
         return result
-    inverse_scale = 1.0 / scale
     return replace(
         result,
         gas_ln_n=jnp.asarray(result.gas_ln_n) - math.log(scale),
-        gas_n=jnp.asarray(result.gas_n) * inverse_scale,
-        gas_ntot=jnp.asarray(result.gas_ntot) * inverse_scale,
+        gas_n=_lifecycle._transform_linear_amount_gauge_on_host(
+            result.gas_n,
+            scale,
+            to_canonical=True,
+        ),
+        gas_ntot=_lifecycle._transform_linear_amount_gauge_on_host(
+            result.gas_ntot,
+            scale,
+            to_canonical=True,
+        ),
         condensate_amounts=(
-            jnp.asarray(result.condensate_amounts) * inverse_scale
+            _lifecycle._transform_linear_amount_gauge_on_host(
+                result.condensate_amounts,
+                scale,
+                to_canonical=True,
+            )
         ),
     )
 
