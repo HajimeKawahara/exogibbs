@@ -20,7 +20,6 @@ from exogibbs.equilibrium.condensate.policy import (
 from exogibbs.equilibrium.condensate.profile import (
     _accept_trace_capacity_candidate,
     _conservation_rainout_inventory,
-    _gas_warm_start_for_next_layer,
     _initialization_attempts,
     _rainout_gauge_scales,
     _scale_initial_guess,
@@ -264,22 +263,49 @@ def test_rainout_amount_scaling_shifts_barrier_epsilon() -> None:
     )
 
 
-def test_rainout_warm_start_floor_scales_with_inventory() -> None:
-    base = _gas_warm_start_for_next_layer(
-        np.asarray([1.0, 0.0]),
-        inventory_sum=1.0,
-        conservation_inventory_sum=1.0,
-    )
-    scaled = _gas_warm_start_for_next_layer(
-        np.asarray([1.0e-12, 0.0]),
-        inventory_sum=1.0e-12,
-        conservation_inventory_sum=1.0e-12,
+def test_rainout_preserves_finite_subfloor_logs_in_the_next_layer_seed(
+    monkeypatch,
+) -> None:
+    setup = _fake_setup()
+    accepted_logs = np.asarray([-0.7, -721.0])
+    solver_inits = []
+
+    def fake_run_head_v2_profile(**kwargs):
+        solver_inits.append(kwargs["explicit_inits"][0])
+        if len(solver_inits) == 1:
+            profile = _one_layer_profile(
+                (0.4, 0.4),
+                condensate_amount=0.2,
+            )
+            return replace(
+                profile,
+                layers=(
+                    replace(
+                        profile.layers[0],
+                        gas_ln_n=jnp.asarray(accepted_logs),
+                    ),
+                ),
+            )
+        return _one_layer_profile(np.asarray(kwargs["b"])[:2])
+
+    monkeypatch.setattr(
+        _lifecycle,
+        "_run_head_v2_profile",
+        fake_run_head_v2_profile,
     )
 
-    np.testing.assert_allclose(
-        np.asarray(scaled.gas_ln_n) - math.log(1.0e-12),
-        np.asarray(base.gas_ln_n),
-        rtol=1.0e-12,
+    condmod.condensate_equilibrium_profile(
+        setup,
+        T=np.asarray([100.0, 200.0]),
+        P=np.asarray([1.0, 10.0]),
+        b=jnp.asarray([0.6, 0.4, 0.0], dtype=jnp.float64),
+        options=CondensateEquilibriumOptions(rainout=True),
+    )
+
+    assert len(solver_inits) == 2
+    carried_logs = np.asarray(solver_inits[1].gas_ln_n)
+    assert carried_logs[1] - carried_logs[0] == pytest.approx(
+        accepted_logs[1] - accepted_logs[0]
     )
 
 
@@ -511,9 +537,14 @@ def test_rainout_depletion_snap_prevents_trace_element_resurrection(
 ) -> None:
     setup = _fake_setup()
     initial_h = 1.0e-20
+    warm_logs_by_temperature = {}
 
     def fake_run_head_v2_profile(**kwargs):
         temperature = float(kwargs["temperatures"][0])
+        initial_gas = kwargs["explicit_inits"][0].gas_ln_n
+        warm_logs_by_temperature[temperature] = (
+            None if initial_gas is None else np.asarray(initial_gas)
+        )
         scaled_budget = np.asarray(kwargs["b"], dtype=np.float64)
         scale = float(np.sum(scaled_budget))
         if temperature == 300.0:
@@ -552,6 +583,12 @@ def test_rainout_depletion_snap_prevents_trace_element_resurrection(
     assert outputs[2, 0] == 0.0
     np.testing.assert_array_equal(targets[:2, 0], [0.0, 0.0])
     np.testing.assert_array_equal(outputs[:2, 0], [0.0, 0.0])
+    assert warm_logs_by_temperature[300.0] is None
+    middle_warm_logs = warm_logs_by_temperature[200.0]
+    assert middle_warm_logs is not None
+    assert np.all(np.isfinite(middle_warm_logs))
+    assert middle_warm_logs[0] == pytest.approx(math.log(1.0e-300))
+    assert middle_warm_logs[1] == pytest.approx(0.0)
     assert np.all(raw_gas[:2, 0] > 0.0)
     propagation = result.layers[1].diagnostics["rainout"]["propagation"]
     assert propagation["ignored_gas_species_indices"] == (0,)
@@ -1100,6 +1137,8 @@ def test_rainout_inventory_bridge_accepts_only_the_exact_target(
     expected_midpoint = np.asarray(
         [math.sqrt(0.6 * 0.9), math.sqrt(0.4 * 0.1), 0.0]
     )
+    origin_gas_logs = np.asarray([math.log(0.6), -721.0])
+    anchor_gas_logs = np.asarray([-1.0, -722.0])
     calls = []
 
     def fake_run_head_v2_profile(**kwargs):
@@ -1110,9 +1149,18 @@ def test_rainout_inventory_bridge_accepts_only_the_exact_target(
             return _one_layer_profile(target_inventory[:2], converged=False)
         if len(calls) == 2:
             np.testing.assert_allclose(inventory, expected_midpoint)
-            return _one_layer_profile(
+            profile = _one_layer_profile(
                 (inventory[0] - 0.05, inventory[1]),
                 condensate_amount=0.05,
+            )
+            return replace(
+                profile,
+                layers=(
+                    replace(
+                        profile.layers[0],
+                        gas_ln_n=jnp.asarray(anchor_gas_logs),
+                    ),
+                ),
             )
         assert len(calls) == 3
         np.testing.assert_array_equal(inventory, target_inventory)
@@ -1147,8 +1195,8 @@ def test_rainout_inventory_bridge_accepts_only_the_exact_target(
         b=jnp.asarray(target_inventory),
         init=(
             CondensateEquilibriumInit(
-                gas_ln_n=jnp.log(jnp.asarray(origin_inventory[:2])),
-                gas_ntot=jnp.asarray(1.0),
+                gas_ln_n=jnp.asarray(origin_gas_logs),
+                gas_ntot=jnp.asarray(np.sum(np.exp(origin_gas_logs))),
                 inventory_bridge_origin=CondensateEquilibriumPoint(
                     temperature=300.0,
                     pressure=100.0,
@@ -1172,6 +1220,12 @@ def test_rainout_inventory_bridge_accepts_only_the_exact_target(
     assert [trial["fraction"] for trial in bridge["trials"]] == [0.5, 1.0]
     assert bridge["trials"][0]["accepted_as_gas_seed"]
     assert bridge["trials"][0]["rainout_floorless_budget_accepted"]
+    assert float(
+        calls[1][1].gas_ln_n[1] - calls[1][1].gas_ln_n[0]
+    ) == pytest.approx(origin_gas_logs[1] - origin_gas_logs[0])
+    assert float(
+        calls[2][1].gas_ln_n[1] - calls[2][1].gas_ln_n[0]
+    ) == pytest.approx(anchor_gas_logs[1] - anchor_gas_logs[0])
     np.testing.assert_array_equal(
         result.rainout_element_inventory_out[0],
         target_inventory,
