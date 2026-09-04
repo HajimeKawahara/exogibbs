@@ -104,9 +104,9 @@ def chemsetup(
             "dataset": "gas",
             "fastchem_logk_file": path,
             "fastchem_element_file": (
-                element_file
-                if element_file is not None
-                else "FastChem4/element_abundances/asplund_2021.dat"
+                "FastChem4/element_abundances/asplund_2021.dat"
+                if species_defalt_elements
+                else element_file
             ),
             "fastchem_species_default_elements": str(species_defalt_elements),
             "fastchem_logk_source_records": source_records_molecule,

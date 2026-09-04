@@ -136,6 +136,9 @@ policy receive zero correction.
        phase="vapor",
    )
 
+The runnable ``examples/plot_exoeos_pure_fugacity.py`` comparison writes its
+figure to ``results/exoeos/exoeos_pure_fugacity.png`` by default.
+
 The returned vector must have shape ``(K,)`` and follow ``setup.species``
 order.  ``pressure_bar`` is the physical pressure in bar, independent of
 ``Pref``.  ExoGibbs adds the correction once to the standard gas source,

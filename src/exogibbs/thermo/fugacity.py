@@ -40,7 +40,6 @@ def effective_gas_hvector(
 
     lnphi = jnp.asarray(
         lnphi_func(temperature, pressure_bar, mole_fractions),
-        dtype=ideal_hvector.dtype,
     )
     if lnphi.shape != expected_shape:
         raise ValueError(

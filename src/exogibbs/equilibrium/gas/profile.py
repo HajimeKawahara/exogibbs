@@ -186,6 +186,8 @@ def equilibrium_profile(
         raise ValueError("T and P must be 1D arrays of equal length.")
     if temperatures.shape[0] != pressures.shape[0]:
         raise ValueError("T and P must have the same length.")
+    if temperatures.shape[0] == 0:
+        raise ValueError("T and P must contain at least one profile layer.")
     if b.ndim != 1:
         raise ValueError("b must be a 1D array shared across layers.")
 

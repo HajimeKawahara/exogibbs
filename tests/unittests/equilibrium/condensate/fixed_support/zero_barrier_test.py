@@ -1732,17 +1732,26 @@ def test_support_release_candidates_order_and_transform_amounts(
         target_inventory=target,
         condensate_amounts=amounts,
         support_indices=(2, 0, 1),
-        max_support_nodes=4,
+        max_support_nodes=8,
     )
 
     assert report["eligible"]
     assert report["attempted"]
     assert not report["condensate_inventory_preserved"]
     assert report["source_support_indices"] == (0, 1, 2)
-    assert report["node_limit_reached"]
+    assert report["candidate_ordering"] == (
+        "removed_maximum_amount_scale_sum_then_support_indices"
+    )
+    assert not report["node_limit_reached"]
     assert tuple(
         candidate["support_indices"] for candidate in candidates
-    ) == ((0, 2), (0, 1), (1, 2))
+    ) == ((0, 2), (0, 1), (0,), (1, 2), (2,), (1,), ())
+    assert tuple(
+        record["support_indices"]
+        for record in report["candidate_records"]
+    ) == tuple(
+        candidate["support_indices"] for candidate in candidates
+    )
     for candidate in candidates:
         support = candidate["support_indices"]
         expected = np.zeros_like(amounts)
@@ -1758,6 +1767,21 @@ def test_support_release_candidates_order_and_transform_amounts(
         rtol=0.0,
         atol=0.0,
     )
+
+
+def test_support_release_candidate_order_preserves_trace_burdens() -> None:
+    target = np.asarray([1.0, 1.0e-80, 1.0e-90])
+    candidates, _report = zero_barrier._build_support_release_candidates(
+        condensate_formula_matrix_full=np.eye(3),
+        target_inventory=target,
+        condensate_amounts=0.5 * target,
+        support_indices=(0, 1, 2),
+        max_support_nodes=8,
+    )
+
+    assert tuple(
+        candidate["support_indices"] for candidate in candidates
+    ) == ((0, 1), (0, 2), (0,), (1, 2), (1,), (2,), ())
 
 
 def test_support_release_can_select_the_gas_only_face() -> None:

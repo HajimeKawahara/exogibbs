@@ -15,6 +15,8 @@ solutions isolates the pure-component fugacity correction.
 
 from __future__ import annotations
 
+import argparse
+from pathlib import Path
 from typing import Any, Optional
 
 import jax
@@ -47,6 +49,26 @@ FORMULA_MATRIX = jnp.asarray(
 ELEMENT_INVENTORY = jnp.asarray([1.0, 4.0, 2.0], dtype=jnp.float64)
 TEMPERATURE_K = 1500.0
 PRESSURES_BAR = jnp.geomspace(100.0, 5000.0, 6)
+
+
+def _repository_root() -> Path:
+    """Resolve the checkout root in scripts and Sphinx-Gallery alike."""
+
+    source_path = globals().get("__file__")
+    return (
+        Path.cwd().resolve()
+        if source_path is None
+        else Path(source_path).resolve().parents[1]
+    )
+
+
+REPOSITORY_ROOT = _repository_root()
+DEFAULT_FIGURE = (
+    REPOSITORY_ROOT
+    / "results"
+    / "exoeos"
+    / "exoeos_pure_fugacity.png"
+)
 
 _EXOEOS_INSTALL_HINT = (
     "Install a current ExoEOS checkout with "
@@ -128,9 +150,29 @@ def solve_pressure_profile(
 # -----------------------------------------
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Compare ideal and ExoEOS pure-fugacity gas equilibrium."
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_FIGURE,
+        help="Output PNG path.",
+    )
+    parser.add_argument(
+        "--show",
+        action="store_true",
+        help="Display the figure after writing it.",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
     """Run the optional ExoEOS comparison and draw the gallery figure."""
 
+    args = _parse_args()
+    args.output.unlink(missing_ok=True)
     if _EXOEOS_IMPORT_ERROR is not None:
         print(f"Skipping the ExoEOS fugacity example. {_EXOEOS_INSTALL_HINT}")
         print(f"Original import error: {_EXOEOS_IMPORT_ERROR}")
@@ -211,7 +253,12 @@ def main() -> None:
     axes[1].set_title("Zhang-Duan pure-component correction")
     axes[1].legend(fontsize=8, ncol=2)
     figure.tight_layout()
-    plt.show()
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    figure.savefig(args.output, dpi=180, bbox_inches="tight")
+    print(f"figure: {args.output}")
+    if args.show:
+        plt.show()
+    plt.close(figure)
 
 
 if __name__ == "__main__":

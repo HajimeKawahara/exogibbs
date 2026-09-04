@@ -47,9 +47,17 @@ benchmarks/vjp_retrieval/run_exojax_nuts_gpu.csh \
   condensate_grid /data/exojax/CO/12C-16O/Li2015 --quick
 ```
 
-The quick configuration is only an end-to-end smoke test. Its five warmup
-steps are too few for scientific inference; in particular, short gas-case
-runs can consist entirely of divergent transitions.
+The gas quick profile uses at most 100 warmup steps, 100 samples, and tree
+depth 8; the less expensive condensate smoke profile retains caps of 5 warmup
+steps, 10 samples, and tree depth 4. Neither replaces the production
+configuration.
+Every sampling run records acceptance and trajectory diagnostics and exits
+nonzero if any transition diverges, a parameter is completely stuck, or the
+saved samples are incomplete or non-finite. ESS and R-hat are intentionally
+not reported for these single-chain demo runs.
+`run_status.json` lists the artifacts belonging to the current invocation and
+uses `started`, `preflight_complete`, `complete`, or `failed` state; known
+artifacts from an earlier invocation are invalidated at startup.
 
 The condensate cases demonstrate the fixed-support VJP mechanics only. They
 do not claim equilibrium or support closure against the other FastChem4

@@ -68,6 +68,9 @@ DEFAULT_FIGURE = (
 )
 
 PRESSURE_BAR = 1.0
+FASTCHEM_GAS_AGREEMENT_TOLERANCE_DEX = 1.0e-3
+KCL_VAPOR_PRESSURE_RELATIVE_TOLERANCE = 3.0e-2
+NA2S_SULFUR_FRACTION_RELATIVE_TOLERANCE = 2.0e-2
 DEFAULT_TEMPERATURES_K = np.unique(
     np.concatenate(
         (
@@ -687,6 +690,96 @@ def _maximum_key_gas_difference(
     return float(np.max(np.abs(np.log10(left_values / right_values))))
 
 
+def _temperature_index(solution: DemoSolution, temperature_k: float) -> int:
+    matches = np.flatnonzero(solution.temperatures_k == temperature_k)
+    if matches.size != 1:
+        raise RuntimeError(
+            f"The release profile must contain {temperature_k:g} K exactly."
+        )
+    return int(matches[0])
+
+
+def _validate_release_criteria(
+    *,
+    setups: dict[str, CondensateChemicalSetup],
+    exogibbs: dict[str, DemoSolution],
+    fastchem4: dict[str, DemoSolution] | None,
+) -> None:
+    """Require the literature and optional cross-code checks to pass."""
+
+    kcl_setup = setups[KCL_CASE.label]
+    kcl_solution = exogibbs[KCL_CASE.label]
+    kcl_index = _temperature_index(kcl_solution, 750.0)
+    kcl_gas_index = kcl_setup.gas_species.index("Cl1K1")
+    calculated_kcl_pressure = (
+        kcl_solution.gas_x[kcl_index, kcl_gas_index] * PRESSURE_BAR
+    )
+    reference_kcl_pressure = float(kcl_saturation_pressure([750.0])[0])
+    if not np.isclose(
+        calculated_kcl_pressure,
+        reference_kcl_pressure,
+        rtol=KCL_VAPOR_PRESSURE_RELATIVE_TOLERANCE,
+        atol=0.0,
+    ):
+        raise RuntimeError(
+            "The cold KCl gas does not follow the Morley vapor-pressure fit: "
+            f"calculated={calculated_kcl_pressure:.6g} bar, "
+            f"reference={reference_kcl_pressure:.6g} bar."
+        )
+
+    na2s_setup = setups[NA2S_CASE.label]
+    na2s_solution = exogibbs[NA2S_CASE.label]
+    na2s_index = _temperature_index(na2s_solution, 700.0)
+    fractions = condensed_element_fractions(na2s_solution, na2s_setup)
+    sodium_fraction = float(fractions["Na in Na2S"][na2s_index])
+    sulfur_fraction = float(fractions["S in Na2S"][na2s_index])
+    expected_sulfur_fraction = 10.0 ** (6.37 - 7.26) / 2.0
+    if sodium_fraction <= 0.99 or sulfur_fraction >= 0.07 or not np.isclose(
+        sulfur_fraction,
+        expected_sulfur_fraction,
+        rtol=NA2S_SULFUR_FRACTION_RELATIVE_TOLERANCE,
+        atol=0.0,
+    ):
+        raise RuntimeError(
+            "The cold Na2S solution is not sodium-limited as expected: "
+            f"Na fraction={sodium_fraction:.6g}, "
+            f"S fraction={sulfur_fraction:.6g}."
+        )
+
+    if fastchem4 is None:
+        return
+    for case in BENCHMARK_CASES:
+        exogibbs_solution = exogibbs[case.label]
+        fastchem_solution = fastchem4[case.label]
+        exogibbs_bracket = condensation_bracket(
+            exogibbs_solution.temperatures_k,
+            exogibbs_solution.condensate_amounts[:, 0],
+        )
+        fastchem_bracket = condensation_bracket(
+            fastchem_solution.temperatures_k,
+            fastchem_solution.condensate_amounts[:, 0],
+        )
+        gas_difference = _maximum_key_gas_difference(
+            exogibbs_solution,
+            fastchem_solution,
+            setups[case.label],
+        )
+        if exogibbs_bracket != fastchem_bracket:
+            raise RuntimeError(
+                f"{case.label} ExoGibbs/FastChem phase brackets differ: "
+                f"{exogibbs_bracket} versus {fastchem_bracket}."
+            )
+        if (
+            not np.isfinite(gas_difference)
+            or gas_difference > FASTCHEM_GAS_AGREEMENT_TOLERANCE_DEX
+        ):
+            raise RuntimeError(
+                f"{case.label} ExoGibbs/FastChem gas difference is "
+                f"{gas_difference:.6g} dex; limit "
+                f"{FASTCHEM_GAS_AGREEMENT_TOLERANCE_DEX:.1e} dex."
+            )
+
+
 def print_summary(
     *,
     setups: dict[str, CondensateChemicalSetup],
@@ -742,6 +835,21 @@ def print_summary(
                 f"{case.label} ExoGibbs-FastChem 4 maximum condensate-"
                 f"amount difference: {condensate_difference:.3e}"
             )
+    cross_code = (
+        ""
+        if fastchem4 is None
+        else (
+            "; matching FastChem phase brackets and gas <= "
+            f"{FASTCHEM_GAS_AGREEMENT_TOLERANCE_DEX:.1e} dex"
+        )
+    )
+    print(
+        "Release gate: passed "
+        f"(KCl vapor pressure <= "
+        f"{KCL_VAPOR_PRESSURE_RELATIVE_TOLERANCE:.0%}; "
+        f"Na2S sulfur-fraction error <= "
+        f"{NA2S_SULFUR_FRACTION_RELATIVE_TOLERANCE:.0%}{cross_code})"
+    )
 
 
 def _parse_args() -> argparse.Namespace:
@@ -773,6 +881,17 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = _parse_args()
+    fastchem_executable = None
+    if args.fastchem_executable is not None:
+        fastchem_executable = args.fastchem_executable.resolve(strict=True)
+        if not fastchem_executable.is_file() or not os.access(
+            fastchem_executable, os.X_OK
+        ):
+            raise ValueError(
+                "FastChem executable is not an executable file: "
+                f"{fastchem_executable}."
+            )
+    args.figure.unlink(missing_ok=True)
     setups = {
         case.label: build_reduced_setup(case) for case in BENCHMARK_CASES
     }
@@ -784,16 +903,21 @@ def main() -> None:
         for case in BENCHMARK_CASES
     }
     fastchem4 = None
-    if args.fastchem_executable is not None:
+    if fastchem_executable is not None:
         fastchem4 = {
             case.label: solve_fastchem4(
-                args.fastchem_executable,
+                fastchem_executable,
                 case,
                 setups[case.label],
                 DEFAULT_TEMPERATURES_K,
             )
             for case in BENCHMARK_CASES
         }
+    _validate_release_criteria(
+        setups=setups,
+        exogibbs=exogibbs,
+        fastchem4=fastchem4,
+    )
     print_summary(setups=setups, exogibbs=exogibbs, fastchem4=fastchem4)
 
     figure = make_figure(

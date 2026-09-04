@@ -30,7 +30,9 @@ fixed-support residual of :math:`2.274\times10^{-13}`, and a maximum
 scaled element-budget residual of :math:`1.159\times10^{-13}`. The
 completed reference GPU run below exercises the normal 500-warmup,
 1000-sample configuration; ``--quick`` remains an end-to-end smoke mode
-only.
+only. Sampling runs record the effective configuration and sampler
+diagnostics and reject divergent, completely stuck, incomplete, or
+non-finite chains.
 
 Discover, freeze, and certify support
 -------------------------------------

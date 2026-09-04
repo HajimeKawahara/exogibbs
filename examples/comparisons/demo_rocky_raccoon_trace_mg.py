@@ -8,6 +8,7 @@ species are balanced by the zero-inventory ``e-`` stoichiometric constraint.
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 import sys
@@ -37,6 +38,12 @@ config.update("jax_enable_x64", True)
 
 TEMPERATURE_K = 1433.7645951014717
 PRESSURE_BAR = 8796.093022208004
+DEFAULT_OUTPUT = (
+    REPOSITORY_ROOT
+    / "results"
+    / "rocky_raccoon_trace_mg"
+    / "trace_mg_audit.json"
+)
 ELEMENTS = ("H", "Mg", "Si", "O", "C", "e-")
 ELEMENT_INVENTORY = np.asarray(
     [
@@ -373,13 +380,40 @@ def audit_trace_mg_profile(
     }
 
 
+def write_audit(output_path: Path, audit: dict[str, object]) -> None:
+    """Write one physical audit as deterministic JSON."""
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(audit, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Audit one Rocky Raccoon-like positive trace-Mg layer."
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=DEFAULT_OUTPUT,
+        help="Output JSON path.",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = _parse_args()
+    args.output.unlink(missing_ok=True)
     setup = build_reduced_setup()
     profile = solve_trace_mg_profile(setup)
     audit = audit_trace_mg_profile(setup, profile)
     print(json.dumps(audit, indent=2, sort_keys=True))
     if not audit["accepted"]:
         raise RuntimeError("The positive-trace Mg physical audit failed.")
+    write_audit(args.output, audit)
+    print(f"audit: {args.output}")
 
 
 if __name__ == "__main__":

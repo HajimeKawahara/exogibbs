@@ -1,6 +1,7 @@
 """Regression tests for the reduced KCl and Na2S comparison demo."""
 
 import ast
+from dataclasses import replace
 from pathlib import Path
 import runpy
 from types import SimpleNamespace
@@ -68,6 +69,20 @@ def test_example_is_main_guarded_and_offers_independent_fastchem4() -> None:
         )
     ]
     assert len(guarded_calls) == 1
+    main_source = ast.get_source_segment(
+        source,
+        next(
+            node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name == "main"
+        ),
+    )
+    assert main_source is not None
+    resolve_index = main_source.index("resolve(strict=True)")
+    invalidate_index = main_source.index("unlink(missing_ok=True)")
+    solve_index = main_source.index("build_reduced_setup(")
+    assert resolve_index < invalidate_index < solve_index
+    assert main_source.index("os.access(") < invalidate_index
 
 
 def test_literature_fits_reproduce_one_bar_reference_temperatures(demo) -> None:
@@ -224,6 +239,43 @@ def test_production_solver_brackets_both_literature_transitions(
     assert na2s_bracket[0] <= float(
         demo["na2s_condensation_temperature"](1.0)
     ) <= na2s_bracket[1]
+
+
+def test_release_criteria_fail_closed(demo, setups, solutions) -> None:
+    demo["_validate_release_criteria"](
+        setups=setups,
+        exogibbs=solutions,
+        fastchem4=None,
+    )
+
+    kcl = solutions[demo["KCL_CASE"].label]
+    changed_gas = kcl.gas_x.copy()
+    temperature_index = list(kcl.temperatures_k).index(750.0)
+    species_index = setups[demo["KCL_CASE"].label].gas_species.index("Cl1K1")
+    changed_gas[temperature_index, species_index] *= 2.0
+    invalid_literature = {
+        **solutions,
+        demo["KCL_CASE"].label: replace(kcl, gas_x=changed_gas),
+    }
+    with pytest.raises(RuntimeError, match="vapor-pressure fit"):
+        demo["_validate_release_criteria"](
+            setups=setups,
+            exogibbs=invalid_literature,
+            fastchem4=None,
+        )
+
+    changed_gas = kcl.gas_x.copy()
+    changed_gas[:, species_index] *= 1.01
+    invalid_fastchem = {
+        **solutions,
+        demo["KCL_CASE"].label: replace(kcl, gas_x=changed_gas),
+    }
+    with pytest.raises(RuntimeError, match="gas difference"):
+        demo["_validate_release_criteria"](
+            setups=setups,
+            exogibbs=solutions,
+            fastchem4=invalid_fastchem,
+        )
 
 
 def test_cold_kcl_gas_follows_saturation_vapor_pressure(

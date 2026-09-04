@@ -57,11 +57,14 @@ from _exojax_nuts_common import (  # noqa: E402
     add_common_cli_arguments,
     build_spectral_context,
     co_emission_flux,
+    initialize_run_output,
     make_mock_observation,
+    require_local_co_database,
     resolve_demo_shape,
     resolve_run_settings,
     run_reverse_mode_nuts,
     write_run_outputs,
+    write_run_status,
 )
 from exogibbs.api.gas import (  # noqa: E402
     EquilibriumInitRequest,
@@ -1098,8 +1101,8 @@ def preflight_graphite_plan(
         baseline_maximum_active_fixed_support_iterations = None
         baseline_converged = None
         co_vmr_absolute_difference = None
-        grid_primal_equivalent = True
-        fixed_iterations_not_greater = True
+        grid_primal_equivalent = None
+        fixed_iterations_not_greater = None
         if plan.grid_initializer is not None:
             (
                 baseline_gas_q,
@@ -1264,8 +1267,8 @@ def preflight_graphite_plan(
             and active_amount_min > MIN_ACTIVE_GRAPHITE_AMOUNT
             and inactive_margin_min > MIN_INACTIVE_DRIVING_MARGIN
             and temperature_valid
-            and grid_primal_equivalent
-            and fixed_iterations_not_greater
+            and grid_primal_equivalent is not False
+            and fixed_iterations_not_greater is not False
         )
         corner_rows.append(
             {
@@ -1572,11 +1575,21 @@ def run_condensate_demo(
     args = parser.parse_args(argv)
     settings = resolve_run_settings(args)
     nlayer, nu_points = resolve_demo_shape(args)
+    if not np.isfinite(args.relative_noise) or args.relative_noise <= 0.0:
+        raise ValueError("--relative-noise must be positive.")
+    co_database = None
+    if not args.preflight_only or args.co_database is not None:
+        co_database = require_local_co_database(args.co_database)
+    initialize_run_output(
+        args.output_dir,
+        case_name=case_name,
+        preflight_only=args.preflight_only,
+    )
 
     context = None
-    if not args.preflight_only or args.co_database is not None:
+    if co_database is not None:
         context = build_spectral_context(
-            args.co_database,
+            co_database,
             nlayer=nlayer,
             nu_points=nu_points,
         )
@@ -1603,16 +1616,26 @@ def run_condensate_demo(
         )
     preflight = preflight_graphite_plan(plan, case_name=case_name)
     preflight["plan"] = _json_ready_plan_metadata(plan)
-    if args.relative_noise <= 0.0:
-        raise ValueError("--relative-noise must be positive.")
     if context is None:
         preflight_path = _preflight_output_path(
             args.output_dir,
             case_name=case_name,
         )
         preflight_path.write_text(
-            json.dumps(preflight, indent=2, sort_keys=True) + "\n",
+            json.dumps(
+                preflight,
+                indent=2,
+                sort_keys=True,
+                allow_nan=False,
+            )
+            + "\n",
             encoding="utf-8",
+        )
+        write_run_status(
+            args.output_dir,
+            case_name=case_name,
+            preflight_only=True,
+            state="preflight_complete",
         )
         _print_preflight_summary(preflight, preflight_path)
         return
@@ -1666,8 +1689,20 @@ def run_condensate_demo(
         case_name=case_name,
     )
     preflight_path.write_text(
-        json.dumps(preflight, indent=2, sort_keys=True) + "\n",
+        json.dumps(
+            preflight,
+            indent=2,
+            sort_keys=True,
+            allow_nan=False,
+        )
+        + "\n",
         encoding="utf-8",
+    )
+    write_run_status(
+        args.output_dir,
+        case_name=case_name,
+        preflight_only=args.preflight_only,
+        state="preflight_complete",
     )
     _print_preflight_summary(preflight, preflight_path)
     if args.preflight_only:
@@ -1677,6 +1712,7 @@ def run_condensate_demo(
             context=context,
             observation=observation,
             metadata={"preflight": preflight},
+            settings=settings,
         )
         return
 
@@ -1697,6 +1733,7 @@ def run_condensate_demo(
                 "rainout are outside AD."
             ),
         },
+        settings=settings,
     )
     print(f"{case_name}: completed; outputs: {args.output_dir}")
 

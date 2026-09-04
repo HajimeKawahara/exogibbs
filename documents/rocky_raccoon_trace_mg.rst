@@ -236,8 +236,9 @@ liner from the repository root:
 
    JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python examples/comparisons/demo_rocky_raccoon_trace_mg.py
 
-The script prints a JSON physical audit.  No ExoExamples checkout, external
-FastChem executable, network access, plot, or output file is required.
+The script prints a JSON physical audit and writes the same payload to
+``results/rocky_raccoon_trace_mg/trace_mg_audit.json``.  No ExoExamples
+checkout, external FastChem executable, network access, or plot is required.
 
 Responsibility boundary
 -----------------------

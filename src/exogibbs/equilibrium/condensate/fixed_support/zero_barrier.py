@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import warnings
 from dataclasses import dataclass
+from fractions import Fraction
 from typing import Any, Sequence
 
 import numpy as np
@@ -3417,7 +3418,7 @@ def _build_support_release_candidates(
         "source_support_indices": source_support,
         "source_support_count": len(source_support),
         "candidate_ordering": (
-            "breadth_first_removed_maximum_amount_scale_then_catalog_index"
+            "removed_maximum_amount_scale_sum_then_support_indices"
         ),
         "condensate_inventory_preserved": False,
         "node_limit": int(max_support_nodes),
@@ -3509,6 +3510,28 @@ def _build_support_release_candidates(
                     "condensate_amounts": candidate_amounts,
                 }
             )
+
+    ordered_candidates = sorted(
+        zip(candidates, candidate_records),
+        key=lambda item: (
+            # Preserve trace burdens that would round away beside a
+            # dominant phase in a binary floating-point sum.
+            sum(
+                (
+                    Fraction(scale)
+                    for scale in item[1][
+                        "removed_maximum_amount_scales"
+                    ]
+                ),
+                Fraction(),
+            ),
+            item[0]["support_indices"],
+        ),
+    )
+    candidates = [candidate for candidate, _record in ordered_candidates]
+    candidate_records = [
+        record for _candidate, record in ordered_candidates
+    ]
 
     report.update(
         {

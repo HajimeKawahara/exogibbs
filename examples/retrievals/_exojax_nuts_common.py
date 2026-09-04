@@ -36,6 +36,18 @@ PRESSURE_BOTTOM_BAR = 10.0
 REFERENCE_PRESSURE_BAR = 1.0
 TEMPERATURE_RANGE_K = (700.0, 1500.0)
 DEFAULT_RELATIVE_NOISE = 2.0e-3
+DEFAULT_QUICK_NUM_WARMUP = 5
+DEFAULT_QUICK_NUM_SAMPLES = 10
+DEFAULT_QUICK_MAX_TREE_DEPTH = 4
+GAS_QUICK_NUM_WARMUP = 100
+GAS_QUICK_NUM_SAMPLES = 100
+GAS_QUICK_MAX_TREE_DEPTH = 8
+RUN_STATUS_FILENAME = "run_status.json"
+_SHARED_OUTPUT_FILENAMES = (
+    "mock_spectrum.npz",
+    "posterior_samples.npz",
+    "run_summary.json",
+)
 
 
 @dataclass(frozen=True)
@@ -69,6 +81,7 @@ class RunSettings:
     seed: int
     progress_bar: bool
     max_tree_depth: int
+    quick: bool
 
 
 def require_local_co_database(
@@ -253,7 +266,7 @@ def add_common_cli_arguments(
     parser.add_argument(
         "--quick",
         action="store_true",
-        help="Use at most 5 warmup, 10 samples, 8 layers, and 256 grid points.",
+        help="Use the demo's bounded quick profile with 8 layers and 256 points.",
     )
     parser.add_argument(
         "--preflight-only",
@@ -267,16 +280,28 @@ def add_common_cli_arguments(
     )
 
 
-def resolve_run_settings(args: argparse.Namespace) -> RunSettings:
+def resolve_run_settings(
+    args: argparse.Namespace,
+    *,
+    quick_num_warmup: int = DEFAULT_QUICK_NUM_WARMUP,
+    quick_num_samples: int = DEFAULT_QUICK_NUM_SAMPLES,
+    quick_max_tree_depth: int = DEFAULT_QUICK_MAX_TREE_DEPTH,
+) -> RunSettings:
     """Validate sampling arguments and apply the quick upper bounds."""
 
     for name in ("num_warmup", "num_samples", "max_tree_depth"):
         if int(getattr(args, name)) <= 0:
             raise ValueError(f"--{name.replace('_', '-')} must be positive.")
+    if int(args.num_samples) < 2:
+        raise ValueError("--num-samples must be at least two.")
+    if min(quick_num_warmup, quick_num_samples, quick_max_tree_depth) <= 0:
+        raise ValueError("Quick-profile limits must be positive.")
+    if quick_num_samples < 2:
+        raise ValueError("The quick-profile sample limit must be at least two.")
     if args.quick:
-        num_warmup = min(int(args.num_warmup), 5)
-        num_samples = min(int(args.num_samples), 10)
-        max_tree_depth = min(int(args.max_tree_depth), 4)
+        num_warmup = min(int(args.num_warmup), quick_num_warmup)
+        num_samples = min(int(args.num_samples), quick_num_samples)
+        max_tree_depth = min(int(args.max_tree_depth), quick_max_tree_depth)
     else:
         num_warmup = int(args.num_warmup)
         num_samples = int(args.num_samples)
@@ -287,6 +312,7 @@ def resolve_run_settings(args: argparse.Namespace) -> RunSettings:
         seed=int(args.seed),
         progress_bar=not bool(args.no_progress_bar),
         max_tree_depth=max_tree_depth,
+        quick=bool(args.quick),
     )
 
 
@@ -328,7 +354,14 @@ def run_reverse_mode_nuts(
         progress_bar=settings.progress_bar,
     )
     started = time.perf_counter()
-    mcmc.run(jax.random.PRNGKey(settings.seed))
+    mcmc.run(
+        jax.random.PRNGKey(settings.seed),
+        extra_fields=(
+            "accept_prob",
+            "num_steps",
+            "adapt_state.step_size",
+        ),
+    )
     jax.block_until_ready(mcmc.get_samples())
     setattr(mcmc, "exogibbs_elapsed_seconds", time.perf_counter() - started)
     return mcmc
@@ -349,6 +382,235 @@ def _json_ready(value: Any) -> Any:
     return array.tolist()
 
 
+def _preflight_filename(case_name: str) -> str:
+    """Return the exact case-local preflight filename."""
+
+    if not case_name or Path(case_name).name != case_name:
+        raise ValueError("case_name must be a non-empty filename component.")
+    return f"{case_name}_preflight.json"
+
+
+def _write_strict_json(path: Path, value: Mapping[str, Any]) -> None:
+    """Write standard JSON without NaN or Infinity tokens."""
+
+    text = json.dumps(
+        value,
+        indent=2,
+        sort_keys=True,
+        allow_nan=False,
+    )
+    path.write_text(text + "\n", encoding="utf-8")
+
+
+def write_run_status(
+    output_dir: Union[str, Path],
+    *,
+    case_name: str,
+    preflight_only: bool,
+    state: str,
+) -> None:
+    """Write a compact manifest for the current retrieval invocation."""
+
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    artifact_names = (*_SHARED_OUTPUT_FILENAMES, _preflight_filename(case_name))
+    _write_strict_json(
+        output / RUN_STATUS_FILENAME,
+        {
+            "schema": "exogibbs_retrieval_run_status_v1",
+            "case_name": case_name,
+            "mode": "preflight" if preflight_only else "sampling",
+            "state": state,
+            "artifacts": {
+                name: (output / name).is_file() for name in artifact_names
+            },
+        },
+    )
+
+
+def initialize_run_output(
+    output_dir: Union[str, Path],
+    *,
+    case_name: str,
+    preflight_only: bool,
+) -> Path:
+    """Remove only known stale artifacts and mark a new invocation started."""
+
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    artifact_names = (*_SHARED_OUTPUT_FILENAMES, _preflight_filename(case_name))
+    for name in artifact_names:
+        try:
+            (output / name).unlink()
+        except FileNotFoundError:
+            pass
+    write_run_status(
+        output,
+        case_name=case_name,
+        preflight_only=preflight_only,
+        state="started",
+    )
+    return output
+
+
+def _run_config(settings: RunSettings) -> dict[str, Any]:
+    """Return the effective single-chain NUTS configuration."""
+
+    return {
+        "num_warmup": settings.num_warmup,
+        "num_samples": settings.num_samples,
+        "num_chains": 1,
+        "max_tree_depth": settings.max_tree_depth,
+        "seed": settings.seed,
+        "quick": settings.quick,
+    }
+
+
+def _finite_float_or_none(value: Any) -> Optional[float]:
+    """Return a finite JSON-safe float, or None otherwise."""
+
+    result = float(value)
+    return result if np.isfinite(result) else None
+
+
+def _posterior_statistics(values: np.ndarray) -> dict[str, Optional[float]]:
+    """Return finite posterior statistics without non-standard JSON values."""
+
+    if not values.size or not np.all(np.isfinite(values)):
+        return {
+            "mean": None,
+            "standard_deviation": None,
+            "q05": None,
+            "q50": None,
+            "q95": None,
+        }
+    return {
+        "mean": float(np.mean(values)),
+        "standard_deviation": float(np.std(values)),
+        "q05": float(np.quantile(values, 0.05)),
+        "q50": float(np.quantile(values, 0.50)),
+        "q95": float(np.quantile(values, 0.95)),
+    }
+
+
+def _sampling_diagnostics(
+    mcmc: Any,
+    samples: Mapping[str, np.ndarray],
+    settings: RunSettings,
+) -> dict[str, Any]:
+    """Summarize diagnostics needed to reject an unusable demo chain."""
+
+    sample_counts = {values.shape[0] for values in samples.values()}
+    sample_count = sample_counts.pop() if len(sample_counts) == 1 else 0
+    all_samples_finite = bool(
+        samples and all(np.all(np.isfinite(values)) for values in samples.values())
+    )
+    parameters_with_variation = {
+        name: bool(values.shape[0] > 1 and np.any(values[1:] != values[0]))
+        for name, values in samples.items()
+    }
+    all_parameters_vary = bool(
+        parameters_with_variation and all(parameters_with_variation.values())
+    )
+    extra_fields = {
+        name: np.asarray(jax.device_get(values))
+        for name, values in mcmc.get_extra_fields().items()
+    }
+    sampler_field_names = (
+        "accept_prob",
+        "num_steps",
+        "adapt_state.step_size",
+    )
+    sampler_statistics_available = all(
+        name in extra_fields and extra_fields[name].shape == (sample_count,)
+        for name in sampler_field_names
+    )
+    sampler_statistics = (
+        [extra_fields[name] for name in sampler_field_names]
+        if sampler_statistics_available
+        else []
+    )
+    sampler_statistics_finite = bool(
+        sampler_statistics
+        and all(np.all(np.isfinite(values)) for values in sampler_statistics)
+    )
+    divergent = extra_fields.get("diverging")
+    divergence_diagnostics_available = bool(
+        divergent is not None
+        and divergent.dtype == np.bool_
+        and divergent.shape == (sample_count,)
+    )
+    divergence_count = (
+        int(np.sum(divergent)) if divergence_diagnostics_available else None
+    )
+    diagnostics: dict[str, Any] = {
+        "sample_count": sample_count,
+        "sample_count_matches_config": sample_count == settings.num_samples,
+        "all_samples_finite": all_samples_finite,
+        "parameters_with_variation": parameters_with_variation,
+        "all_parameters_vary": all_parameters_vary,
+        "sampler_statistics_available": sampler_statistics_available,
+        "sampler_statistics_finite": sampler_statistics_finite,
+        "divergence_diagnostics_available": divergence_diagnostics_available,
+        "divergences": divergence_count,
+        "divergence_fraction": (
+            float(divergence_count / sample_count)
+            if divergence_count is not None and sample_count
+            else None
+        ),
+        "effective_sample_size": None,
+        "r_hat": None,
+        "convergence_diagnostics_note": (
+            "ESS and R-hat are not reported for this single-chain demo."
+        ),
+    }
+    accept_probability = extra_fields.get("accept_prob")
+    if accept_probability is not None and accept_probability.size:
+        diagnostics.update(
+            {
+                "mean_accept_probability": _finite_float_or_none(
+                    np.mean(accept_probability)
+                ),
+                "minimum_accept_probability": _finite_float_or_none(
+                    np.min(accept_probability)
+                ),
+            }
+        )
+    num_steps = extra_fields.get("num_steps")
+    if num_steps is not None and num_steps.size:
+        diagnostics.update(
+            {
+                "mean_num_steps": _finite_float_or_none(np.mean(num_steps)),
+                "maximum_num_steps": (
+                    int(np.max(num_steps))
+                    if np.all(np.isfinite(num_steps))
+                    else None
+                ),
+            }
+        )
+    step_size = extra_fields.get("adapt_state.step_size")
+    if step_size is not None and step_size.size:
+        diagnostics["step_size"] = _finite_float_or_none(
+            np.ravel(step_size)[-1]
+        )
+    failure_reasons = []
+    if not diagnostics["sample_count_matches_config"]:
+        failure_reasons.append("saved sample count does not match the run config")
+    if not all_samples_finite:
+        failure_reasons.append("posterior samples are not finite")
+    if not all_parameters_vary:
+        failure_reasons.append("one or more posterior parameters did not vary")
+    if not sampler_statistics_finite:
+        failure_reasons.append("sampler statistics are missing or non-finite")
+    if not divergence_diagnostics_available:
+        failure_reasons.append("divergence diagnostics are unavailable")
+    elif divergence_count:
+        failure_reasons.append(f"{divergence_count} divergent transition(s)")
+    diagnostics["failure_reasons"] = failure_reasons
+    diagnostics["passed"] = not failure_reasons
+    return diagnostics
+
+
 def write_run_outputs(
     output_dir: Union[str, Path],
     *,
@@ -357,6 +619,7 @@ def write_run_outputs(
     observation: MockObservation,
     mcmc: Any = None,
     metadata: Optional[Mapping[str, Any]] = None,
+    settings: Optional[RunSettings] = None,
 ) -> None:
     """Write deterministic inputs, posterior samples, and a compact summary."""
 
@@ -379,39 +642,63 @@ def write_run_outputs(
         "nu_points": int(np.asarray(context.nu_grid).shape[0]),
         "metadata": _json_ready(metadata or {}),
     }
+    if settings is not None:
+        summary["run_config"] = _run_config(settings)
     if mcmc is not None:
+        if settings is None:
+            raise ValueError("settings are required when writing MCMC outputs.")
         samples = {
             name: np.asarray(jax.device_get(values))
             for name, values in mcmc.get_samples().items()
         }
         np.savez_compressed(output / "posterior_samples.npz", **samples)
-        extra_fields = mcmc.get_extra_fields()
-        divergent = np.asarray(
-            jax.device_get(extra_fields.get("diverging", np.asarray([])))
-        )
+        sampling_diagnostics = _sampling_diagnostics(mcmc, samples, settings)
         summary.update(
             {
                 "elapsed_seconds": float(
                     getattr(mcmc, "exogibbs_elapsed_seconds", np.nan)
                 ),
-                "divergences": int(np.sum(divergent)),
+                "divergences": sampling_diagnostics["divergences"],
+                "sampling_diagnostics": sampling_diagnostics,
                 "posterior": {
-                    name: {
-                        "mean": float(np.mean(values)),
-                        "standard_deviation": float(np.std(values)),
-                        "q05": float(np.quantile(values, 0.05)),
-                        "q50": float(np.quantile(values, 0.50)),
-                        "q95": float(np.quantile(values, 0.95)),
-                    }
+                    name: _posterior_statistics(values)
                     for name, values in samples.items()
                 },
             }
         )
-    with (output / "run_summary.json").open(
-        "w", encoding="utf-8", newline="\n"
-    ) as stream:
-        json.dump(summary, stream, indent=2, sort_keys=True)
-        stream.write("\n")
+        summary["elapsed_seconds"] = _finite_float_or_none(
+            summary["elapsed_seconds"]
+        )
+    try:
+        _write_strict_json(output / "run_summary.json", summary)
+    except (TypeError, ValueError):
+        write_run_status(
+            output,
+            case_name=case_name,
+            preflight_only=mcmc is None,
+            state="failed",
+        )
+        raise
+    sampling_failed = bool(
+        mcmc is not None and not summary["sampling_diagnostics"]["passed"]
+    )
+    write_run_status(
+        output,
+        case_name=case_name,
+        preflight_only=mcmc is None,
+        state=(
+            "failed"
+            if sampling_failed
+            else "preflight_complete" if mcmc is None else "complete"
+        ),
+    )
+    if sampling_failed:
+        diagnostics = summary["sampling_diagnostics"]
+        raise RuntimeError(
+            "NUTS sampling diagnostics failed: "
+            f"{'; '.join(diagnostics['failure_reasons'])}. Outputs were "
+            f"written to {output}."
+        )
 
 
 def _gas_prior_corners() -> tuple[tuple[float, float, float], ...]:
@@ -455,10 +742,23 @@ def run_gas_demo(
         default=DEFAULT_RELATIVE_NOISE,
     )
     args = parser.parse_args(argv)
-    settings = resolve_run_settings(args)
+    settings = resolve_run_settings(
+        args,
+        quick_num_warmup=GAS_QUICK_NUM_WARMUP,
+        quick_num_samples=GAS_QUICK_NUM_SAMPLES,
+        quick_max_tree_depth=GAS_QUICK_MAX_TREE_DEPTH,
+    )
     nlayer, nu_points = resolve_demo_shape(args)
+    co_database = require_local_co_database(args.co_database)
+    if not np.isfinite(args.relative_noise) or args.relative_noise <= 0.0:
+        raise ValueError("--relative-noise must be positive.")
+    initialize_run_output(
+        args.output_dir,
+        case_name=case_name,
+        preflight_only=args.preflight_only,
+    )
     context = build_spectral_context(
-        args.co_database,
+        co_database,
         nlayer=nlayer,
         nu_points=nu_points,
     )
@@ -615,6 +915,7 @@ def run_gas_demo(
             context=context,
             observation=observation,
             metadata={"preflight": preflight},
+            settings=settings,
         )
         print(f"{case_name}: preflight passed; outputs: {args.output_dir}")
         return 0
@@ -645,6 +946,7 @@ def run_gas_demo(
         observation=observation,
         mcmc=mcmc,
         metadata={"preflight": preflight},
+        settings=settings,
     )
     print(f"{case_name}: completed; outputs: {args.output_dir}")
     return 0
@@ -660,6 +962,7 @@ __all__ = (
     "add_common_cli_arguments",
     "build_spectral_context",
     "co_emission_flux",
+    "initialize_run_output",
     "make_mock_observation",
     "require_local_co_database",
     "resolve_demo_shape",
@@ -667,4 +970,5 @@ __all__ = (
     "run_gas_demo",
     "run_reverse_mode_nuts",
     "write_run_outputs",
+    "write_run_status",
 )

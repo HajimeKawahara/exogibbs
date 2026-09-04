@@ -15,8 +15,12 @@ The deterministic mock truth is :math:`T_0=1160` K, :math:`\alpha=0.03`,
 and ``log_co_scale=0``. Carbon and oxygen are scaled together, so C/O
 remains fixed. The normal defaults use 24 layers, 1024 spectral points,
 500 warmup steps, and 1000 samples. Use ``--quick`` before submitting
-the production GPU job. Its five warmup steps make it an end-to-end
-smoke test, not an inference-quality chain.
+the production GPU job. The gas quick profile uses at most 100 warmup
+steps, 100 samples, and tree depth 8; it checks sampler adaptation but
+is not an inference-quality chain. Sampling runs record the effective
+configuration and sampler diagnostics and fail if a transition diverges,
+a parameter is completely stuck, or samples are incomplete or
+non-finite.
 
 The equilibrium call used by the forward model
 ----------------------------------------------

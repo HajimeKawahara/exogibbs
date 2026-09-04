@@ -127,6 +127,7 @@ def _run_profile(
     *,
     condensate_valid_mask=None,
     include_terminal_diagnostics=True,
+    support_closure_tolerance=1.0e-8,
 ):
     fixed_support_result = run_fixed_support_profile(
         buckets=(_bucket(),),
@@ -144,6 +145,7 @@ def _run_profile(
             [[0.5, inactive_source], [0.5, inactive_source]]
         ),
         condensate_valid_mask=condensate_valid_mask,
+        support_closure_tolerance=support_closure_tolerance,
     )
 
 
@@ -474,6 +476,23 @@ def test_support_expansion_is_reported_separately_from_solver_convergence():
     assert not jnp.any(result["support_expansion_mask"][:, 0])
 
 
+def test_support_closure_rejects_nonfinite_inactive_driving():
+    result = _run_profile(float("nan"))
+
+    assert jnp.all(result["fixed_support_converged"])
+    assert jnp.all(jnp.isnan(result["inactive_condensate_driving"][:, 1]))
+    assert not jnp.any(result["support_closed"])
+    assert not jnp.any(result["converged_with_support_closure"])
+    assert jnp.all(result["support_expansion_mask"][:, 1])
+    assert not jnp.any(result["support_expansion_mask"][:, 0])
+
+
+@pytest.mark.parametrize("tolerance", (-1.0, float("nan"), float("inf")))
+def test_support_closure_rejects_invalid_tolerance(tolerance):
+    with pytest.raises(ValueError, match="finite and non-negative"):
+        _run_profile(-1.0, support_closure_tolerance=tolerance)
+
+
 def test_prepared_profile_can_skip_terminal_diagnostic_compilation():
     result = _run_profile(
         2.0,
@@ -491,9 +510,12 @@ def test_prepared_profile_can_skip_terminal_diagnostic_compilation():
     assert result["bucket_reports"][0]["last_return_diagnostics"] is None
 
 
-def test_support_closure_ignores_temperature_invalid_condensates():
+@pytest.mark.parametrize("inactive_source", (-1.0, float("nan")))
+def test_support_closure_ignores_temperature_invalid_condensates(
+    inactive_source,
+):
     result = _run_profile(
-        -1.0,
+        inactive_source,
         condensate_valid_mask=jnp.asarray(
             [[True, False], [True, False]]
         ),

@@ -214,9 +214,12 @@ downloaded.
 
 
 The CUDA-only production wrapper uses 500 warmup steps, 1000 samples,
-seed 0, and writes to ``results/vjp_retrieval/gas_grid/``. The
-five-warmup ``--quick`` mode is only an end-to-end smoke test, not an
-inference-quality chain.
+seed 0, and writes to ``results/vjp_retrieval/gas_grid/``. The gas
+``--quick`` profile uses at most 100 warmup steps, 100 samples, and tree
+depth 8; it checks sampler adaptation but is not an inference-quality
+chain. Sampling runs record the effective configuration and sampler
+diagnostics and fail if a transition diverges, a parameter is completely
+stuck, or samples are incomplete or non-finite.
 
 .. code:: tcsh
 

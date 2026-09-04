@@ -46,3 +46,21 @@ def test_effective_gas_hvector_rejects_wrong_lnphi_shape() -> None:
             10.0,
             lambda temperature, pressure_bar, mole_fractions: jnp.zeros(1),
         )
+
+
+def test_effective_gas_hvector_promotes_integer_ideal_values() -> None:
+    setup = ChemicalSetup(
+        formula_matrix=jnp.asarray([[1, 1]]),
+        hvector_func=lambda temperature: jnp.asarray([0, 1]),
+    )
+
+    result = effective_gas_hvector(
+        setup,
+        3.0,
+        10.0,
+        lambda temperature, pressure_bar, mole_fractions: jnp.asarray(
+            [0.25, 0.5]
+        ),
+    )
+
+    assert jnp.allclose(result, jnp.asarray([0.25, 1.5]))

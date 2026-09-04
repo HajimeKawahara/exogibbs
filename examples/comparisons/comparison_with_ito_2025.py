@@ -1564,10 +1564,51 @@ def _print_summary(state: Mapping[str, np.ndarray]) -> None:
             )
 
 
+def _validate_requested_solvers(
+    state: Mapping[str, np.ndarray],
+    solver: str,
+) -> None:
+    """Fail when any requested layer is incomplete or unconverged."""
+
+    layers = np.asarray(state["layers"])
+    if layers.ndim != 1 or layers.size == 0:
+        raise RuntimeError(
+            "Ito comparison release criteria failed: invalid layer array"
+        )
+    requested = ("exogibbs", "fastchem") if solver == "both" else (solver,)
+    failures = []
+    for name in requested:
+        done = np.asarray(state[f"{name}_done"])
+        converged = np.asarray(state[f"{name}_converged"])
+        if (
+            done.dtype.kind != "b"
+            or converged.dtype.kind != "b"
+            or done.shape != layers.shape
+            or converged.shape != layers.shape
+        ):
+            failures.append(f"{name}: invalid completion arrays")
+            continue
+        incomplete = np.flatnonzero(~done)
+        unconverged = np.flatnonzero(done & ~converged)
+        if incomplete.size or unconverged.size:
+            failures.append(
+                f"{name}: incomplete rows={incomplete.tolist()}, "
+                f"unconverged rows={unconverged.tolist()}"
+            )
+    if failures:
+        raise RuntimeError(
+            "Ito comparison release criteria failed: " + "; ".join(failures)
+        )
+
+
 def main() -> None:
     args = _parse_args()
     input_path = args.input.resolve(strict=True)
     executable_path = args.fastchem_executable.resolve(strict=True)
+    if not executable_path.is_file() or not os.access(executable_path, os.X_OK):
+        raise ValueError(
+            f"FastChem executable is not an executable file: {executable_path}."
+        )
     profile = load_ito_profile(input_path)
     target_indices = _target_indices(
         profile,
@@ -1593,6 +1634,7 @@ def main() -> None:
         print(f"resuming checkpoint: {args.checkpoint}", flush=True)
     else:
         state = expected
+    args.figure.unlink(missing_ok=True)
     _run_calculations(args, profile, state)
     _write_table(args.table, state)
     _write_summary(
@@ -1606,6 +1648,7 @@ def main() -> None:
         gas_logk_sha256=gas_logk_sha256,
         condensate_logk_sha256=condensate_logk_sha256,
     )
+    _validate_requested_solvers(state, args.solver)
     figure = make_comparison_figure(state)
     args.figure.parent.mkdir(parents=True, exist_ok=True)
     figure.savefig(args.figure, dpi=220, bbox_inches="tight")
@@ -1613,6 +1656,10 @@ def main() -> None:
         plt.show()
     plt.close(figure)
     _print_summary(state)
+    print(
+        "  release gate: requested solver layers complete and converged "
+        f"({args.solver})"
+    )
     print(f"figure: {args.figure}")
     print(f"table: {args.table}")
     print(f"summary: {args.summary}")

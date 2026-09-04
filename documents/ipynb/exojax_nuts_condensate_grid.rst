@@ -293,7 +293,10 @@ The CUDA-only launcher first runs the spectral preflight, then requests
    benchmarks/vjp_retrieval/run_exojax_nuts_gpu.csh \
      condensate_grid /path/to/CO/12C-16O/Li2015
 
-The five-warmup ``--quick`` mode is only an end-to-end smoke test. No
+The ``--quick`` mode caps the run at 5 warmup steps, 10 samples, and
+tree depth 4 and is only an end-to-end smoke test. Sampling runs record
+the effective configuration and sampler diagnostics and reject
+divergent, completely stuck, incomplete, or non-finite chains. No
 performance gain is claimed without completed grid and non-grid runs on
 the same hardware. Compare solver iterations and NUTS time separately,
 keep ``grid_build_seconds`` outside the sampling time, require agreement

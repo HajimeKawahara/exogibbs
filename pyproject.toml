@@ -31,11 +31,13 @@ dependencies = [
   "tqdm",
   "pandas",
   "xarray",
-  "pyfastchem",
   "thermochem",
 ]
 
 [project.optional-dependencies]
+fastchem = [
+  "pyfastchem",
+]
 docs = [
   "matplotlib ==3.9.1",
   "sphinx ==7.4.7",

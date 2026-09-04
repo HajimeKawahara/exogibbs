@@ -8,6 +8,7 @@ from exogibbs.equilibrium.gas.kernel.equations import (
     compute_ln_normalized_pressure,
 )
 from exogibbs.equilibrium.gas.kernel.solver import (
+    _cea_lambda,
     minimize_gibbs,
     minimize_gibbs_core,
     solve_gibbs_iteration_equations,
@@ -16,6 +17,20 @@ from exogibbs.equilibrium.gas.types import ThermoState
 from exogibbs.test.analytic_hsystem import HSystem
 from exogibbs.test.analytic_hcosystem import HCOSystem
 from exogibbs.test.analytic_hcosystem import derivative_dlnnCO_db
+
+
+def test_cea_lambda_preserves_step_cap_for_large_direction():
+    delta_ln_n = jnp.asarray([1.0e12, -2.0e11])
+    delta_ln_ntot = jnp.asarray(0.0)
+
+    step_size = _cea_lambda(
+        delta_ln_n,
+        delta_ln_ntot,
+        jnp.zeros_like(delta_ln_n),
+        jnp.asarray(0.0),
+    )
+
+    assert step_size * jnp.max(jnp.abs(delta_ln_n)) <= 2.0
 
 
 @pytest.fixture
