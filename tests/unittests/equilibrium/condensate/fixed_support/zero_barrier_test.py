@@ -1685,6 +1685,8 @@ def _mock_polish_result(
             "dropped_support_indices": (),
             "optimizer_success": True,
             "finite": True,
+            "support_consistent": True,
+            "nonnegative_condensate_amounts": True,
             "positive_active_amounts": True,
             "gas_stationarity_max_abs": 0.0,
             "active_condensate_driving_max_abs": 0.0,
@@ -2500,6 +2502,8 @@ def _run_mock_alternative_portfolio(
             "audit": {
                 "accepted": accepted,
                 "finite": True,
+                "support_consistent": True,
+                "nonnegative_condensate_amounts": True,
                 "positive_active_amounts": local_kkt,
                 "gas_stationarity_max_abs": 0.0,
                 "active_condensate_driving_max_abs": 0.0,
@@ -2582,8 +2586,10 @@ def test_alternative_basic_support_skips_an_already_tried_basis(
     assert budget.used == 1
 
 
+@pytest.mark.parametrize("failure_kind", ("budget", "self_reopening"))
 def test_alternative_basic_support_retries_after_selected_basis_fails(
     monkeypatch: pytest.MonkeyPatch,
+    failure_kind: str,
 ) -> None:
     class BasicSolution:
         success = True
@@ -2629,7 +2635,11 @@ def test_alternative_basic_support_retries_after_selected_basis_fails(
         if not accepted:
             audit = dict(audit)
             audit["accepted"] = False
-            audit["budget_scaled_max_abs"] = 1.0
+            if failure_kind == "budget":
+                audit["budget_scaled_max_abs"] = 1.0
+            else:
+                audit["full_driving"] = np.asarray([0.0, -1.0])
+                audit["inactive_condensate_violation_max_abs"] = 1.0
         candidate = {
             "accepted": accepted,
             "gas_log_amounts": np.log(np.asarray([0.5])),
@@ -2689,6 +2699,8 @@ def test_alternative_basic_support_retries_after_selected_basis_fails(
     portfolio = result.report["alternative_basic_support_portfolio"]
     assert portfolio["trigger"] == (
         "selected_basic_support_local_root_failed"
+        if failure_kind == "budget"
+        else "selected_basic_support_self_reopens_dropped_phase"
     )
     assert portfolio["excluded_support_indices"] == ((0,),)
     assert portfolio["selected_support_indices"] == (1,)
@@ -2979,8 +2991,10 @@ def test_zero_barrier_active_set_stops_on_repeated_support(
     assert closure["blacklisted_addition_edges"] == (((0,), 1),)
 
 
+@pytest.mark.parametrize("child_budget_residual", (0.0, 1.0e-3))
 def test_zero_barrier_active_set_tries_next_phase_after_rejected_addition(
     monkeypatch: pytest.MonkeyPatch,
+    child_budget_residual: float,
 ) -> None:
     calls = []
     results = (
@@ -2991,8 +3005,9 @@ def test_zero_barrier_active_set_tries_next_phase_after_rejected_addition(
         ),
         _mock_polish_result(
             accepted=False,
-            support_indices=(0,),
+            support_indices=(0, 1) if child_budget_residual else (0,),
             full_driving=(0.0, -2.0, -1.0),
+            budget_scaled_max_abs=child_budget_residual,
         ),
         _mock_polish_result(
             accepted=True,

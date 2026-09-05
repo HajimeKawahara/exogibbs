@@ -251,6 +251,11 @@ def test_gpu_sequence_runs_only_exogibbs_benchmarks() -> None:
     assert script.stat().st_mode & 0o111
     assert "benchmarks.documented_examples.run" in text
     assert "benchmarks.documented_examples.ldwarf_repeated" in text
+    assert "rocky_raccoon_boundary_corpus_test.py" in text
+    assert "foreach COMPILE_LIGHT ( false true )" in text
+    assert text.index("warm-boundary correctness gate") < text.index(
+        '"$PYTHON_COMMAND" -m benchmarks.documented_examples.run'
+    )
     assert text.count("--evaluations 10") == 2
     assert "--optimization default" in text
     assert "--optimization disable_most_optimizations" in text

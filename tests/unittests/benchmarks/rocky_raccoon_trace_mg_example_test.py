@@ -202,6 +202,56 @@ TRACE_DEPLETION_BOUNDARY = (
 )
 
 
+def _assert_caller_physical_kkt(lifecycle) -> None:
+    audit = lifecycle["caller_gauge_zero_barrier_kkt"]
+    assert audit["accepted"]
+    assert audit["finite"]
+    assert audit["support_consistent"]
+    assert audit["nonnegative_condensate_amounts"]
+    assert audit["positive_active_amounts"]
+    for key in (
+        "gas_stationarity_max_abs",
+        "active_condensate_driving_max_abs",
+        "inactive_condensate_violation_max_abs",
+        "budget_scaled_max_abs",
+        "total_density_scaled_abs",
+    ):
+        assert audit[key] <= 1.0e-8
+
+
+def _assert_trace_geometry_initializer(lifecycle) -> None:
+    assert lifecycle["zero_barrier_initializer"]["source"] == (
+        "pre_pdipm_finite_support_state"
+    )
+    fallback = lifecycle["pre_pdipm_zero_barrier_fallback"]
+    assert fallback["eligible"]
+    assert fallback["attempted"]
+    assert fallback["accepted"]
+    assert fallback["internal_accepted"]
+    assert fallback["caller_gauge_accepted"]
+    assert fallback["trace_capacity"]["capacity_geometry_valid"]
+    assert fallback["trace_capacity"]["trace_capacity_detected"]
+    assert fallback["trace_capacity"]["minimum_capacity_to_barrier_ratio"] < 1.0
+    _assert_caller_physical_kkt(lifecycle)
+
+
+def _assert_closed_support_work(polish) -> None:
+    closure = polish["exact_active_set_closure"]
+    assert closure["accepted"]
+    assert closure["termination_reason"] == "accepted"
+    assert closure["rounds"][-1]["accepted"]
+    assert set(closure["final_support_indices"]).issubset(
+        set(closure["initial_support_indices"])
+        | set(closure["added_support_indices"])
+    )
+    assert closure["cumulative_function_evaluations"] == sum(
+        row["function_evaluations"] for row in closure["rounds"]
+    )
+    assert closure["cumulative_function_evaluations"] <= closure[
+        "function_evaluation_limit"
+    ]
+
+
 @pytest.fixture(scope="module")
 def example():
     return runpy.run_path(
@@ -399,13 +449,7 @@ def test_public_profile_certifies_exact_rocky_boundary(
         floorless["relative_tolerance"]
     )
     lifecycle = layer.diagnostics["fixed_support_v2"]
-    caller_audit = lifecycle["caller_gauge_zero_barrier_kkt"]
-    assert caller_audit["accepted"]
-    assert caller_audit["gas_stationarity_max_abs"] <= 1.0e-8
-    assert caller_audit["active_condensate_driving_max_abs"] <= 1.0e-8
-    assert caller_audit["inactive_condensate_violation_max_abs"] <= 1.0e-8
-    assert caller_audit["budget_scaled_max_abs"] <= 1.0e-8
-    assert caller_audit["total_density_scaled_abs"] <= 1.0e-8
+    _assert_caller_physical_kkt(lifecycle)
 
 
 def test_public_amount_gauge_boundary_uses_exact_polish_rescue(
@@ -420,13 +464,7 @@ def test_public_amount_gauge_boundary_uses_exact_polish_rescue(
     ] == (
         lifecycle["outcome"]
     )
-    assert lifecycle["zero_barrier_initializer"]["source"] == (
-        "fixed_support_terminal_state"
-    )
-    fallback = lifecycle["pre_pdipm_zero_barrier_fallback"]
-    assert not fallback["eligible"]
-    assert not fallback["attempted"]
-    assert fallback["skip_reason"] == "terminal_state_initializer_preferred"
+    _assert_trace_geometry_initializer(lifecycle)
     assert lifecycle["zero_barrier_active_support_polish"]["accepted"]
 
 
@@ -503,7 +541,7 @@ def test_pre_pdipm_initializer_expands_the_initial_support_envelope(
     assert polish["basic_support_reduction"]["initial_support_nullity"] > 0
 
 
-def test_terminal_initializer_expands_the_initial_support_envelope(
+def test_trace_geometry_initializer_expands_the_initial_support_envelope(
     boundary_profiles,
 ) -> None:
     lifecycle = boundary_profiles[
@@ -513,14 +551,11 @@ def test_terminal_initializer_expands_the_initial_support_envelope(
     envelope = initializer["initial_support_envelope"]
 
     assert lifecycle["outcome"] == "zero_barrier_active_support_rescued"
-    assert initializer["source"] == "fixed_support_terminal_state"
+    _assert_trace_geometry_initializer(lifecycle)
     assert envelope["expanded"]
     assert envelope["initializer_state_preserved"]
     assert envelope["added_support_amounts_zero"]
     assert envelope["added_support_indices"]
-    fallback = lifecycle["pre_pdipm_zero_barrier_fallback"]
-    assert not fallback["eligible"]
-    assert fallback["skip_reason"] == "terminal_state_initializer_preferred"
     polish = lifecycle["zero_barrier_active_support_polish"]
     assert polish["accepted"]
     assert polish["basic_support_reduction"][
@@ -643,7 +678,8 @@ def test_public_warm_boundary_uses_signed_zero_regularized_portfolio(
     assert closure["accepted"]
     assert closure["termination_reason"] == "accepted"
     assert tuple(closure["final_support_indices"]) == (1, 8)
-    assert 8 in closure["added_support_indices"]
+    _assert_trace_geometry_initializer(lifecycle)
+    _assert_closed_support_work(polish)
     assert closure["cumulative_function_evaluations"] <= closure[
         "function_evaluation_limit"
     ]
@@ -704,31 +740,9 @@ def test_public_warm_boundary_ignores_signed_rows_for_gas_capacity(
         True,
         False,
     )
-    assert not rounds[0][
-        "normalized_dimensionless_unit_restart_eligible"
-    ]
-    assert rounds[0]["normalized_dimensionless_unit_restart_reason"] == (
-        "local_kkt_already_satisfied"
-    )
-    assert not rounds[0][
-        "normalized_dimensionless_unit_restart_attempted"
-    ]
+    _assert_trace_geometry_initializer(lifecycle)
+    _assert_closed_support_work(polish)
     assert rounds[0]["final_physical_audit_authoritative"]
-    assert rounds[0]["selected_normalized_initializer"] == (
-        "capacity_regularized"
-    )
-    assert rounds[0]["selected_normalized_variable_scaling"] == (
-        "initializer_relative"
-    )
-    assert rounds[0][
-        "regularized_normalized_initializer_attempt_count"
-    ] == 1
-    assert rounds[0]["action"] == "add_inactive_phase"
-    assert rounds[0]["added_support_index"] == 8
-    pivot = rounds[0]["rank_one_simplex_pivot"]
-    assert pivot["applied"]
-    assert pivot["leaving_support_index"] == 9
-    assert tuple(pivot["candidate_support_indices"]) == (1, 8)
     assert rounds[-1]["accepted"]
     assert closure["cumulative_function_evaluations"] == sum(
         round_report["function_evaluations"] for round_report in rounds
@@ -739,7 +753,7 @@ def test_public_warm_boundary_ignores_signed_rows_for_gas_capacity(
     assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
 
 
-def test_public_trace_mg_boundary_restarts_stalled_normalized_solve(
+def test_public_trace_mg_warm_boundary_closes_from_trace_geometry(
     setup,
     trace_mg_warm_state,
 ) -> None:
@@ -772,19 +786,8 @@ def test_public_trace_mg_boundary_restarts_stalled_normalized_solve(
     assert closure["accepted"]
     assert closure["termination_reason"] == "accepted"
     assert tuple(closure["final_support_indices"]) == (1, 8)
-    assert rounds[0]["normalized_dimensionless_unit_restart_eligible"]
-    assert rounds[0]["normalized_dimensionless_unit_restart_attempted"]
-    assert rounds[0]["selected_normalized_initializer"] == (
-        "capacity_regularized"
-    )
-    assert rounds[0]["selected_normalized_variable_scaling"] == (
-        "dimensionless_unit"
-    )
-    assert rounds[0][
-        "regularized_normalized_initializer_attempt_count"
-    ] == 2
-    assert rounds[0]["action"] == "add_inactive_phase"
-    assert rounds[0]["added_support_index"] == 8
+    _assert_trace_geometry_initializer(lifecycle)
+    _assert_closed_support_work(polish)
     assert rounds[-1]["accepted"]
     assert closure["cumulative_function_evaluations"] <= closure[
         "function_evaluation_limit"
@@ -822,33 +825,23 @@ def test_public_rank_deficient_boundary_selects_an_exact_basic_support(
     assert closure["termination_reason"] == "accepted"
 
 
-def test_public_mixed_charge_budget_boundary_uses_log_fallback(
+def test_public_mixed_charge_budget_boundary_preserves_signed_constraint(
     boundary_profiles,
 ) -> None:
     layer = boundary_profiles["mixed_charge_budget_step_702"].layers[0]
     lifecycle = layer.diagnostics["fixed_support_v2"]
     polish = lifecycle["zero_barrier_active_support_polish"]
-    alternative = polish["alternative_basic_support_portfolio"]
 
     assert layer.converged
     assert tuple(layer.condensate_support_indices) == (1, 8)
-    assert polish["selected_numerical_formulation"] == (
-        "alternative_basic_support_reduced_log_domain"
+    assert polish["initializer_regularization"]["monotone_constraint_row_mask"] == (
+        True, True, True, True, True, False,
     )
-    assert alternative["accepted"]
-    assert alternative["selected_support_indices"] == (1, 8)
-    assert alternative["selected_formulation"] == "reduced_log_domain"
-    selected = next(
-        attempt
-        for attempt in alternative["solve_attempts"]
-        if attempt["accepted"]
-    )
-    assert selected["solve"]["log_budget_rows"] == (0, 1, 2, 3, 4)
-    assert selected["solve"]["linear_budget_rows"] == (5,)
-    assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
+    _assert_closed_support_work(polish)
+    _assert_trace_geometry_initializer(lifecycle)
 
 
-def test_public_failed_basic_support_boundary_releases_a_proper_face(
+def test_public_trace_partition_boundary_closes_with_feasible_support(
     boundary_profiles,
 ) -> None:
     layer = boundary_profiles[
@@ -856,53 +849,14 @@ def test_public_failed_basic_support_boundary_releases_a_proper_face(
     ].layers[0]
     lifecycle = layer.diagnostics["fixed_support_v2"]
     polish = lifecycle["zero_barrier_active_support_polish"]
-    alternative = polish["alternative_basic_support_portfolio"]
-    release = polish["support_release_portfolio"]
-    closure = polish["exact_active_set_closure"]
 
     assert layer.converged
     assert tuple(layer.condensate_support_indices) == (1, 8)
-    assert not alternative["accepted"]
-    assert alternative["support_release_source_indices"] == (1, 4)
-    assert alternative["support_release_source_indices"] == tuple(
-        alternative["candidate_generation"]["feasible_support_indices"][0]
-    )
-    assert release["trigger"] == "failed_basic_support_alternatives_rejected"
-    assert release["source"] == "first_alternative_basic_support_candidate"
-    assert release["source_support_indices"] == (1, 4)
-    assert release["prefer_log_domain"]
-    assert release["role"] == "initializer_only"
-    assert release["final_physical_audit_authoritative"]
-    assert not release["accepted"]
-    assert release["local_kkt_selected"]
-    assert release["selected_support_indices"] == (1,)
-    assert release["selected_formulation"] == "reduced_log_domain"
-    release_limit = release["support_release_function_evaluation_limit"]
-    assert alternative["downstream_function_evaluation_reserve"] == (
-        2 * release_limit
-    )
-    assert (
-        alternative["portfolio_function_evaluation_limit"]
-        + alternative["downstream_function_evaluation_reserve"]
-        == closure["function_evaluation_limit"]
-    )
-    assert release["outer_closure_function_evaluation_reserve"] >= (
-        release_limit
-    )
-    assert closure["accepted"]
-    assert closure["termination_reason"] == "accepted"
-    assert closure["added_support_indices"] == (8,)
-    assert closure["final_support_indices"] == (1, 8)
-    assert closure["cumulative_function_evaluations"] <= closure[
-        "function_evaluation_limit"
-    ]
-    assert closure["rounds"][0]["selected_numerical_formulation"] == (
-        "support_release_reduced_log_domain"
-    )
-    assert closure["rounds"][0]["action"] == "add_inactive_phase"
-    assert closure["rounds"][0]["added_support_index"] == 8
-    assert closure["rounds"][-1]["accepted"]
-    assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
+    assert polish["accepted"]
+    assert polish["support_consistent"]
+    assert polish["nonnegative_condensate_amounts"]
+    _assert_closed_support_work(polish)
+    _assert_trace_geometry_initializer(lifecycle)
 
 
 def test_public_trace_depletion_uses_optimizer_directed_support_release(

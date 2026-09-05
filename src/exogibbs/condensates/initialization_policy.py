@@ -9,9 +9,12 @@ presets/defaults.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from fractions import Fraction
+import math
 from typing import Any, Mapping, Sequence
 
 import numpy as np
+from scipy.special import logsumexp
 
 from exogibbs.condensates.native_bundle import validate_native_bundle_provenance
 
@@ -82,6 +85,95 @@ def _column_capacity(column: np.ndarray, budget: np.ndarray) -> float:
     return float(np.min(positive_budget / column[positive]))
 
 
+def _exact_seed_burden(formula_row: np.ndarray, amounts: np.ndarray) -> Fraction:
+    """Contract one concrete budget row without range or cancellation loss."""
+
+    return sum(
+        (
+            Fraction.from_float(float(coefficient))
+            * Fraction.from_float(float(amount))
+            for coefficient, amount in zip(formula_row, amounts)
+        ),
+        Fraction(),
+    )
+
+
+def _round_seeds_within_budget(
+    formula: np.ndarray,
+    amounts: np.ndarray,
+    target: np.ndarray,
+    seed_fraction: float,
+) -> np.ndarray:
+    """Enforce exact positive-row quotas after floating-point seed scaling."""
+
+    rows = np.flatnonzero(target > 0.0)
+    fraction = Fraction.from_float(seed_fraction)
+    quotas = tuple(
+        fraction * Fraction.from_float(float(target[row])) for row in rows
+    )
+    scale = Fraction(1)
+    for row, quota in zip(rows, quotas):
+        burden = _exact_seed_burden(formula[row], amounts)
+        if burden > quota:
+            scale = min(scale, quota / burden)
+    if scale == 1:
+        return amounts
+
+    rounded = amounts.copy()
+    for index, amount in enumerate(amounts):
+        exact = Fraction.from_float(float(amount)) * scale
+        value = float(exact)
+        if Fraction.from_float(value) > exact:
+            value = np.nextafter(value, 0.0)
+        rounded[index] = value
+    # Downward amount rounding is conservative for physical nonnegative rows.
+    # Check signed positive-target rows as well instead of assuming that rule.
+    if any(
+        _exact_seed_burden(formula[row], rounded) > quota
+        for row, quota in zip(rows, quotas)
+    ):
+        raise ValueError("The seed amounts cannot be rounded within the element budgets.")
+    return rounded
+
+
+def _seed_budget_log_fractions(
+    formula: np.ndarray,
+    amounts: np.ndarray,
+    target: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Return signed budget burdens relative to each row in log magnitude.
+
+    Neither ``A / b`` nor ``A @ n`` must be representable on its own. Signed
+    accumulation retains charge-row cancellation; a nonzero burden on an
+    exactly zero target is an infinite fraction, not a floored inventory.
+    """
+
+    with np.errstate(divide="ignore"):
+        terms = np.log(np.abs(formula)) + np.log(amounts)[None, :]
+        log_burden, sign = logsumexp(
+            terms, b=np.sign(formula), axis=1, return_sign=True
+        )
+    # Neither logarithms nor rounded linear products preserve exact signed
+    # cancellation. Contract signed rows exactly before taking logarithms.
+    signed_rows = np.any(formula > 0.0, axis=1) & np.any(formula < 0.0, axis=1)
+    for row in np.flatnonzero(signed_rows):
+        exact = _exact_seed_burden(formula[row], amounts)
+        sign[row] = (exact > 0) - (exact < 0)
+        log_burden[row] = (
+            math.log(abs(exact.numerator)) - math.log(exact.denominator)
+            if exact
+            else -np.inf
+        )
+    with np.errstate(divide="ignore"):
+        log_fraction = np.full(target.shape, -np.inf, dtype=np.float64)
+        nonzero = target != 0.0
+        log_fraction[nonzero] = (
+            log_burden[nonzero] - np.log(np.abs(target[nonzero]))
+        )
+    log_fraction[~nonzero & (sign != 0.0)] = np.inf
+    return log_fraction, sign
+
+
 def recommend_budget_preserving_seed_amounts(
     *,
     formula_matrix_cond: Sequence[Sequence[float]],
@@ -140,18 +232,28 @@ def recommend_budget_preserving_seed_amounts(
         recommended.append(float(bounded))
     recommended_array = np.asarray(recommended, dtype=np.float64)
     if bool(preserve_budget_fraction):
-        positive_target = target > 0.0
-        relative_burden = (
-            ac[positive_target][:, np.asarray(support, dtype=np.int64)]
-            / target[positive_target, None]
-        ) @ recommended_array
-        if not np.all(np.isfinite(relative_burden)):
-            raise ValueError("Seed burden calculation produced a non-finite value.")
-        if np.any(relative_burden > 0.0):
-            fraction = float(np.max(relative_burden))
-            scale = min(1.0, seed_fraction_value / fraction)
-            recommended_array = recommended_array * scale
-            recommended = tuple(float(value) for value in recommended_array.tolist())
+        support_formula = ac[:, np.asarray(support, dtype=np.int64)]
+        log_fraction, sign = _seed_budget_log_fractions(
+            support_formula,
+            recommended_array,
+            target,
+        )
+        consuming_rows = (target > 0.0) & (sign > 0.0)
+        maximum_log_fraction = float(
+            np.max(log_fraction[consuming_rows], initial=-np.inf)
+        )
+        log_scale = min(0.0, np.log(seed_fraction_value) - maximum_log_fraction)
+        if log_scale < 0.0:
+            scale = math.exp(log_scale)
+            recommended_array = (
+                recommended_array * scale
+                if scale > 0.0
+                else np.exp(np.log(recommended_array) + log_scale)
+            )
+        recommended_array = _round_seeds_within_budget(
+            support_formula, recommended_array, target, seed_fraction_value
+        )
+        recommended = tuple(float(value) for value in recommended_array.tolist())
     if np.any(~np.isfinite(recommended_array)) or np.any(recommended_array <= 0.0):
         raise ValueError("The requested support cannot receive finite positive seed amounts.")
 
@@ -200,14 +302,16 @@ def compute_seed_budget_fraction(
         raise ValueError("seed_amounts length must match support_indices length.")
     if np.any(amounts < 0.0):
         raise ValueError("seed_amounts must be non-negative.")
-    positive = np.abs(target) > 0.0
     support_array = np.asarray(support, dtype=np.int64)
-    zero_budget_burden = ac[~positive][:, support_array] @ amounts
-    if np.any(np.abs(zero_budget_burden) > 0.0):
+    if ac.shape[0] != target.shape[0]:
+        raise ValueError("formula_matrix_cond rows must match element_inventory_target length.")
+    log_fraction, sign = _seed_budget_log_fractions(
+        ac[:, support_array], amounts, target
+    )
+    positive = np.abs(target) > 0.0
+    if np.any(sign[~positive] != 0.0):
         return float("inf")
     if not np.any(positive):
         raise ValueError("element_inventory_target must contain a nonzero budget.")
-    relative_burden = (
-        ac[positive][:, support_array] / np.abs(target[positive, None])
-    ) @ amounts
-    return float(np.max(np.abs(relative_burden)))
+    with np.errstate(over="ignore"):
+        return float(np.exp(np.max(log_fraction[positive])))

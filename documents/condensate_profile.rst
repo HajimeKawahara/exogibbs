@@ -49,7 +49,9 @@ nonnegative basic support. Its bounded linear program preserves
 ``A_cond @ m`` and minimizes the condensate Gibbs term. If the LP vertex does
 not produce a valid full-rank basis or does not reach a local exact root, a
 deterministic one-phase-exchange portfolio visits the untried feasible bases,
-up to 32 bases in canonical catalog order. Every candidate reuses the exact
+up to 32 bases in canonical catalog order. An already occupied, feasible
+positive proper face is retained ahead of the full-rank bases, even when its
+rank is smaller than the original support's rank. Every candidate reuses the exact
 solver and unchanged physical audit under the shared function-evaluation
 budget; the first local root continues outer active-set closure, but only the
 full audit can terminate it. If the initial LP fails, the builder state of the
@@ -62,6 +64,9 @@ builder-produced basis amounts, and a suggested face that repeats the failed LP
 basis is ignored. Failed initializer selection otherwise retains or retries the
 original support. All support selectors and reductions are initializers only,
 and the subsequent physical audit remains authoritative.
+If a local root immediately favors a phase dropped by the basis reduction,
+the alternative portfolio remains available; only a fully certified alternative
+replaces that root.
 
 If every burden-preserving basis misses a local root, a support-release
 initializer portfolio may visit proper faces :math:`F\subset B` of either the
@@ -81,7 +86,9 @@ initializer's condensed inventory partition. The exact solve still enforces
 
    A_g n_g + A_{c,F}m_F = b.
 
-The portfolio traverses a bounded breadth-first one-phase-removal graph,
+Support release also applies when an originally full-rank support reaches a
+zero-amount boundary; rank deficiency is not a prerequisite for a phase to
+disappear. The portfolio traverses a bounded one-phase-removal graph,
 including the gas-only face. Removal edges are ordered by conservative phase
 capacity and then catalog index; capacity is never an eligibility or
 acceptance threshold. Both the applied-LP and initial-LP-failure routes reserve
@@ -121,10 +128,12 @@ preferred exact formulations eliminate the per-species gas log amounts using
 gas stationarity, so their nonlinear dimension depends on the element and
 active-phase counts rather than the full gas catalog. They reconstruct every
 gas amount before applying the unchanged full physical audit. For a
-non-negative-stoichiometry inventory with exact-zero element rows,
+system with exact-zero monotone element rows,
 structurally impossible gases and phases are removed from the reduced solve
 and the absent-element potentials are reconstructed to satisfy both the gas
-floor and inactive-phase inequalities. The dense all-gas formulation remains
+floor and inactive-phase inequalities. Signed rows, including zero charge
+balance, are retained rather than mistaken for depleted elemental rows.
+The dense all-gas formulation remains
 a compatibility fallback when the reduced formulations do not pass a local
 KKT block. A normalized log-domain fallback may also explore bounded leave-
 one-out support branches. It uses log residuals for positive monotone element
@@ -193,16 +202,25 @@ the exact path, and accepts only an audited zero-barrier result. Other failed
 v2 states are reported to the caller; none is retried with a retired solver.
 Operational rollback uses a previous release artifact.
 
-A narrow initializer-only fallback covers the eligible finite-barrier failure
-classifications ``NORMAL_DUAL_STEP_FAILED``,
-``RESTORATION_LINE_SEARCH_FAILED``, ``RESTORATION_MAX_ITER``, and
-``RESTORATION_LOCALLY_INFEASIBLE`` when the established terminal-state route is
-unavailable. If a phase's capacity from monotone non-negative conservation
-rows is at or below the first barrier amount, the preserved pre-PDIPM state may
-initialize the same bounded exact closure. The monotone mask is computed over
-the joint gas and condensate formula matrices; signed rows such as charge
-balance do not impose an amount ceiling. Linear-solve, representation, and
-non-finite failures remain ineligible.
+Initializer retention is based on constraint geometry, not a whitelist of
+finite-barrier termination codes. If a phase's capacity from monotone
+non-negative conservation rows is at or below the first barrier amount, an
+unconverged solve retains its pre-PDIPM state. That state is preferred over the
+terminal initializer when it has finite values, positive support amounts, and
+temperature-valid phases. The monotone mask is computed over the joint gas and
+condensate formula matrices; signed rows such as charge balance do not impose
+an amount ceiling. This avoids using backend-dependent cancellation in a
+large finite-barrier chemical potential to decide whether exact closure can
+even be attempted. An invalid preserved state is still rejected. Neither that
+state nor the failed terminal state is accepted as an equilibrium.
+
+Exact closure uses one bounded support search. A failed child solve rejects
+that numerical addition edge and permits other additions from a cached local
+KKT root; it is not evidence that every adjacent support is infeasible. The
+final independent audit checks nonnegative amounts across the full condensate
+catalog, zero amounts outside the declared support, temperature validity, all
+stationarity blocks, and elemental conservation. Work exhaustion still fails
+closed, and no physical tolerance is relaxed.
 
 PDIPM requires a full-rank initial support, so the lifecycle may first reduce a
 rank-deficient support to one basis. On the initial lifecycle round only, exact
@@ -297,6 +315,15 @@ carried upward. ``A_gas n_gas`` is recorded separately as a conservation
 cross-check; its finite solver residual never changes a gas-only layer's
 propagated inventory.
 
+Normalization combines floating-point mantissas and exponents rather than
+forming a potentially overflowing multiplier or an underflowing trace
+fraction. Every positive survivor must remain finite and positive. Diagnostics
+retain ``log_normalization``; ``normalization`` is ``None`` only when the
+multiplier itself is not representable, even though the normalized inventory
+is. Seed construction and seed-budget reporting similarly share logarithmic
+budget fractions, avoiding intermediate overflow at either end of the
+inventory range without imposing a trace-inventory floor.
+
 Every positive target row is certified using a floorless relative budget
 residual before it may be propagated. An exactly zero target is handled in the
 reduced propagation state: species that require that element remain visible in
@@ -368,6 +395,9 @@ initialization attempts fail at a layer, ``solve_profile`` raises
 ``RuntimeError`` and does not evaluate any dependent upper layers. This
 fail-closed behavior prevents an unaccepted numerical state from becoming a
 physical rainout boundary.
+Failed-attempt diagnostics retain the independent KKT residuals and available
+exact-refinement residuals and thresholds. The public, floored budget gate alone
+does not establish chemical equilibrium.
 
 The legacy ``"rainout_trace_capacity_accepted"`` escape hatch remains an
 internal policy field for diagnostic compatibility but is disabled in the
