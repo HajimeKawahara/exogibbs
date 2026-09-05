@@ -53,7 +53,7 @@ echo "== ExoGibbs documented GPU benchmarks =="
 echo "repository:   $cwd"
 echo "python:       $PYTHON_COMMAND"
 echo "output:       $OUTPUT_ROOT"
-echo "workloads:    six documented examples, then L-dwarf cold + warm 10"
+echo "workloads:    boundary corpus, six documented examples, L-dwarf cold + warm 10"
 echo "optimizations: default, then disable_most_optimizations"
 date
 
@@ -86,7 +86,27 @@ endif
 @ FAILURE_COUNT = 0
 
 echo ""
-echo "== [1/3] six documented examples: GPU, both compiler modes =="
+echo "== [1/4] warm-boundary correctness gate: GPU, both compiler modes =="
+"$PYTHON_COMMAND" -c 'import hashlib, json, sys; from pathlib import Path; from benchmarks.documented_examples.worker import _revision, _tree_fingerprint; root = Path.cwd(); manifest = root / "tests/unittests/benchmarks/data/rocky_raccoon_boundary_corpus/manifest.json"; print(json.dumps({"python_executable": sys.executable, "revision": _revision(root), "source": _tree_fingerprint(root / "src"), "test_source": _tree_fingerprint(root / "tests/unittests/benchmarks"), "boundary_manifest_sha256": hashlib.sha256(manifest.read_bytes()).hexdigest()}, indent=2, sort_keys=True))' > "$OUTPUT_ROOT/boundary_provenance.json"
+if ( $status != 0 ) exit 1
+foreach COMPILE_LIGHT ( false true )
+  env \
+    JAX_PLATFORMS=cuda \
+    JAX_PLATFORM_NAME=cuda \
+    JAX_ENABLE_X64=1 \
+    JAX_DISABLE_MOST_OPTIMIZATIONS=$COMPILE_LIGHT \
+    "$PYTHON_COMMAND" -m pytest -p no:cacheprovider -q \
+    tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py \
+    --junitxml="$OUTPUT_ROOT/boundary_compile_light_${COMPILE_LIGHT}.xml" \
+    >& "$OUTPUT_ROOT/boundary_compile_light_${COMPILE_LIGHT}.log"
+  if ( $status != 0 ) then
+    echo "ERROR: warm-boundary gate failed; see $OUTPUT_ROOT/boundary_compile_light_${COMPILE_LIGHT}.log"
+    exit 1
+  endif
+end
+
+echo ""
+echo "== [2/4] six documented examples: GPU, both compiler modes =="
 date
 "$PYTHON_COMMAND" -m benchmarks.documented_examples.run \
   --platform gpu \
@@ -101,7 +121,7 @@ if ( $DOCUMENTED_RC != 0 ) then
 endif
 
 echo ""
-echo "== [2/3] L-dwarf cold + warm 10: default compiler =="
+echo "== [3/4] L-dwarf cold + warm 10: default compiler =="
 date
 "$PYTHON_COMMAND" -m benchmarks.documented_examples.ldwarf_repeated \
   --platform gpu \
@@ -115,7 +135,7 @@ if ( $LDWARF_DEFAULT_RC != 0 ) then
 endif
 
 echo ""
-echo "== [3/3] L-dwarf cold + warm 10: compile-light =="
+echo "== [4/4] L-dwarf cold + warm 10: compile-light =="
 date
 "$PYTHON_COMMAND" -m benchmarks.documented_examples.ldwarf_repeated \
   --platform gpu \

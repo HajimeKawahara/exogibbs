@@ -987,6 +987,8 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
             return {
                 "accepted": False,
                 "finite": True,
+                "support_consistent": True,
+                "nonnegative_condensate_amounts": True,
                 "positive_active_amounts": True,
                 "gas_stationarity_max_abs": 0.0,
                 "active_condensate_driving_max_abs": 0.0,
@@ -1266,6 +1268,8 @@ def test_head_v2_discards_exact_candidate_rejected_in_caller_gauge(
         return {
             "accepted": False,
             "finite": True,
+            "support_consistent": True,
+            "nonnegative_condensate_amounts": True,
             "positive_active_amounts": True,
             "gas_stationarity_max_abs": 0.0,
             "active_condensate_driving_max_abs": 0.0,
@@ -1574,45 +1578,54 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
             TerminalStatus.NORMAL_LINE_SEARCH_FAILED,
             True,
             True,
-            0,
-            "fixed_support_failed",
-            "terminal_status_not_eligible",
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
         ),
         (
             1.0e-12,
             TerminalStatus.RESTORATION_LINEAR_SOLVE_FAILED,
             True,
             True,
-            0,
-            "fixed_support_failed",
-            "terminal_status_not_eligible",
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
         ),
         (
             1.0e-12,
             TerminalStatus.RESTORATION_NONFINITE,
             True,
             True,
-            0,
-            "fixed_support_failed",
-            "terminal_status_not_eligible",
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
         ),
         (
             1.0e-12,
             TerminalStatus.RETURN_REPRESENTATION_FLOOR_FAILED,
             True,
             True,
-            0,
-            "fixed_support_failed",
-            "terminal_status_not_eligible",
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
         ),
         (
             1.0e-12,
             TerminalStatus.NORMAL_LINEAR_SOLVE_FAILED,
             True,
             True,
-            0,
-            "fixed_support_failed",
-            "terminal_status_not_eligible",
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
+        ),
+        (
+            1.0e-12,
+            TerminalStatus.NORMAL_MAX_ITER,
+            True,
+            True,
+            1,
+            "zero_barrier_active_support_rescued",
+            None,
         ),
     ),
 )
@@ -1731,6 +1744,8 @@ def test_head_v2_trace_capacity_fallback_uses_pre_pdipm_state(
         return {
             "accepted": caller_accepted,
             "finite": True,
+            "support_consistent": True,
+            "nonnegative_condensate_amounts": True,
             "positive_active_amounts": True,
             "gas_stationarity_max_abs": 0.0,
             "active_condensate_driving_max_abs": 0.0,
@@ -1840,12 +1855,9 @@ def test_head_v2_trace_capacity_fallback_uses_pre_pdipm_state(
         bool(expected_exact_calls) and exact_accepted and caller_accepted
     )
     assert fallback["source_support_indices"] == (1,)
-    if expected_skip_reason == "terminal_status_not_eligible":
-        assert fallback["trace_capacity"] is None
-    else:
-        assert fallback["trace_capacity"]["trace_capacity_detected"] is (
-            trace_inventory < 1.0
-        )
+    assert fallback["trace_capacity"]["trace_capacity_detected"] is (
+        trace_inventory < 1.0
+    )
 
 
 def test_disabled_pre_pdipm_fallback_does_not_materialize_device_state(
@@ -1868,17 +1880,57 @@ def test_disabled_pre_pdipm_fallback_does_not_materialize_device_state(
     payload, report = _lifecycle._head_v2_pre_pdipm_zero_barrier_candidate(
         setup=setup,
         state=state,
-        target_inventory=jnp.asarray([0.5, 0.5], dtype=jnp.float64),
-        log_barrier=-11.0,
+        trace_capacity_report={},
         valid_condensates=None,
         enabled=False,
-        disabled_reason="terminal_status_not_eligible",
+        disabled_reason="finite_barrier_converged",
     )
 
     assert payload is None
     assert not report["eligible"]
-    assert report["skip_reason"] == "terminal_status_not_eligible"
-    assert report["trace_capacity"] is None
+    assert report["skip_reason"] == "finite_barrier_converged"
+    assert report["trace_capacity"] == {}
+
+
+@pytest.mark.parametrize(
+    ("state_finite", "temperature_valid", "expected_reason"),
+    (
+        (False, True, "invalid_source_state"),
+        (True, False, "temperature_invalid_source_support"),
+        (True, True, None),
+    ),
+)
+def test_trace_capacity_initializer_still_requires_valid_source(
+    state_finite, temperature_valid, expected_reason,
+):
+    setup = _amount_gauge_fake_setup()
+    state = _lifecycle._HeadV2LayerState(
+        support_indices=(1,),
+        gas_ln_n=np.asarray([0.0, -30.0 if state_finite else np.nan]),
+        condensate_log_amounts=np.asarray([-30.0]),
+        total_gas_log_amount=np.asarray(0.0),
+        element_potential=np.zeros(2),
+    )
+    capacity = _lifecycle.finite_barrier_trace_capacity_report(
+        condensate_formula_matrix_full=setup.formula_matrix_cond,
+        target_inventory=np.asarray([1.0, 1.0e-12]),
+        support_indices=(1,),
+        monotone_constraint_row_mask=_lifecycle.monotone_formula_row_mask(
+            setup.formula_matrix, setup.formula_matrix_cond,
+        ),
+        log_barrier=-11.0,
+    )
+    payload, report = _lifecycle._head_v2_pre_pdipm_zero_barrier_candidate(
+        setup=setup,
+        state=state,
+        trace_capacity_report=capacity,
+        valid_condensates=(True, temperature_valid),
+        enabled=True,
+        disabled_reason=None,
+    )
+    assert (payload is not None) is (expected_reason is None)
+    assert report["skip_reason"] == expected_reason
+    assert not report["accepted"]
 
 
 def test_head_v2_zero_barrier_initializer_uses_bounded_gas_kkt_gate():

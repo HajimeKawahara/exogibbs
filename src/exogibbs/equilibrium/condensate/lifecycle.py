@@ -958,8 +958,7 @@ def _head_v2_pre_pdipm_zero_barrier_candidate(
     *,
     setup: CondensateChemicalSetup,
     state: _HeadV2LayerState | None,
-    target_inventory: Array,
-    log_barrier: float,
+    trace_capacity_report: Mapping[str, Any],
     valid_condensates: Sequence[bool] | None,
     enabled: bool,
     disabled_reason: str | None,
@@ -982,9 +981,15 @@ def _head_v2_pre_pdipm_zero_barrier_candidate(
         "source_support_indices": support,
         "source_state_values_finite": None,
         "source_support_temperature_valid": None,
-        "trace_capacity": None,
+        "trace_capacity": dict(trace_capacity_report),
     }
     if not enabled:
+        return None, report
+    if not trace_capacity_report["capacity_geometry_valid"]:
+        report["skip_reason"] = "invalid_capacity_geometry"
+        return None, report
+    if not trace_capacity_report["trace_capacity_detected"]:
+        report["skip_reason"] = "capacity_not_below_initial_barrier"
         return None, report
     if state is None:
         report["skip_reason"] = "missing_source_state"
@@ -1046,25 +1051,8 @@ def _head_v2_pre_pdipm_zero_barrier_candidate(
         report["skip_reason"] = "temperature_invalid_source_support"
         return None, report
 
-    condensate_formula = np.asarray(
-        setup.formula_matrix_cond, dtype=np.float64
-    )
-    trace_capacity = finite_barrier_trace_capacity_report(
-        condensate_formula_matrix_full=condensate_formula,
-        target_inventory=np.asarray(target_inventory, dtype=np.float64),
-        support_indices=support,
-        monotone_constraint_row_mask=monotone_formula_row_mask(
-            np.asarray(setup.formula_matrix, dtype=np.float64),
-            condensate_formula,
-        ),
-        log_barrier=log_barrier,
-    )
-    report["trace_capacity"] = trace_capacity
-    if not trace_capacity["capacity_geometry_valid"]:
-        report["skip_reason"] = "invalid_capacity_geometry"
-        return None, report
-    if not trace_capacity["trace_capacity_detected"]:
-        report["skip_reason"] = "capacity_not_below_initial_barrier"
+    if tuple(sorted(support)) != tuple(trace_capacity_report["support_indices"]):
+        report["skip_reason"] = "source_support_geometry_mismatch"
         return None, report
 
     condensate_amounts = np.zeros(
@@ -1268,18 +1256,13 @@ def _run_head_v2_profile(
             float(value) / amount_scale for value in support_amounts_init
         )
     epsilon_schedule = policy.solver_config.continuation.epsilon_schedule
-    # These finite globalization stalls can arise when a trace phase cannot
-    # support the first barrier. NORMAL_DUAL_STEP_FAILED is the controller's
-    # finite low-constraint normal-direction/SOC stall; the raw normal-line
-    # failure remains excluded with linear, representation, and non-finite
-    # failures.
-    pre_pdipm_trace_capacity_stall_statuses = frozenset(
-        {
-            int(TerminalStatus.NORMAL_DUAL_STEP_FAILED),
-            int(TerminalStatus.RESTORATION_LINE_SEARCH_FAILED),
-            int(TerminalStatus.RESTORATION_MAX_ITER),
-            int(TerminalStatus.RESTORATION_LOCALLY_INFEASIBLE),
-        }
+    normalized_inventory_host = np.asarray(b, dtype=np.float64)
+    condensate_formula_host = np.asarray(
+        setup.formula_matrix_cond, dtype=np.float64
+    )
+    trace_capacity_monotone_rows = monotone_formula_row_mask(
+        np.asarray(setup.formula_matrix, dtype=np.float64),
+        condensate_formula_host,
     )
     amount_gauge = {
         "schema": "exogibbs_condensate_amount_gauge_v1",
@@ -1631,6 +1614,8 @@ def _run_head_v2_profile(
             for key in (
                 "accepted",
                 "finite",
+                "support_consistent",
+                "nonnegative_condensate_amounts",
                 "positive_active_amounts",
                 "gas_stationarity_max_abs",
                 "active_condensate_driving_max_abs",
@@ -1638,6 +1623,7 @@ def _run_head_v2_profile(
                 "budget_scaled_max_abs",
                 "total_density_scaled_abs",
             )
+            if key in audit
         }
 
     last_outputs: dict[int, dict[str, Any]] = {}
@@ -1734,6 +1720,16 @@ def _run_head_v2_profile(
             break
         source_indices = tuple(sorted(pending))
         round_states = tuple(pending[index] for index in source_indices)
+        trace_capacity_by_source = {
+            source_index: finite_barrier_trace_capacity_report(
+                condensate_formula_matrix_full=condensate_formula_host,
+                target_inventory=normalized_inventory_host,
+                support_indices=pending[source_index].support_indices,
+                monotone_constraint_row_mask=trace_capacity_monotone_rows,
+                log_barrier=epsilon_schedule[0],
+            )
+            for source_index in source_indices
+        }
         round_temperatures = tuple(
             float(temperatures[index]) for index in source_indices
         )
@@ -1813,6 +1809,7 @@ def _run_head_v2_profile(
         next_pending: dict[int, _HeadV2LayerState] = {}
         for local_index, source_index in enumerate(source_indices):
             current = pending[source_index]
+            trace_capacity = trace_capacity_by_source[source_index]
             candidate_indices = np.flatnonzero(expansion[local_index])
             ordered = tuple(
                 int(index)
@@ -1888,21 +1885,25 @@ def _run_head_v2_profile(
                     policy.zero_barrier_initializer_gas_stationarity_tolerance
                 ),
                 "final_state_values_finite": final_state_values_finite,
+                "pre_pdipm_trace_capacity": trace_capacity,
             }
             records[source_index]["rounds"].append(round_record)
+            retain_pre_pdipm_state = bool(
+                not converged[local_index]
+                and trace_capacity["capacity_geometry_valid"]
+                and trace_capacity["trace_capacity_detected"]
+            )
             last_outputs[source_index] = {
                 "raw": raw,
                 "local_index": local_index,
                 "round_index": round_index,
                 "support_indices": current.support_indices,
-                # Avoid retaining one extra device state for ordinary layers.
+                # Trace geometry, not a backend-dependent termination code,
+                # determines whether to retain an exact-solve initializer.
                 "pre_pdipm_state": (
-                    current
-                    if not converged[local_index]
-                    and terminal_code
-                    in pre_pdipm_trace_capacity_stall_statuses
-                    else None
+                    current if retain_pre_pdipm_state else None
                 ),
+                "pre_pdipm_trace_capacity": trace_capacity,
                 "fixed_support_converged": bool(converged[local_index]),
                 "support_closed": bool(closed[local_index]),
                 "terminal_status": terminal_code,
@@ -2372,26 +2373,16 @@ def _run_head_v2_profile(
                 and terminal_output["final_state_values_finite"]
             )
             pre_pdipm_state = terminal_output["pre_pdipm_state"]
-            finite_barrier_stall = bool(
-                not terminal_output["fixed_support_converged"]
-                and terminal_output["terminal_status"]
-                in pre_pdipm_trace_capacity_stall_statuses
-            )
             fallback_routing_candidate = bool(
                 early_exact is None
-                and not terminal_initializer_eligible
-                and finite_barrier_stall
+                and not terminal_output["fixed_support_converged"]
             )
             if early_exact is not None:
                 fallback_disabled_reason = (
                     "accepted_early_exact_result_preferred"
                 )
-            elif terminal_initializer_eligible:
-                fallback_disabled_reason = (
-                    "terminal_state_initializer_preferred"
-                )
             elif not fallback_routing_candidate:
-                fallback_disabled_reason = "terminal_status_not_eligible"
+                fallback_disabled_reason = "finite_barrier_converged"
             else:
                 fallback_disabled_reason = None
             valid_mask = (
@@ -2405,8 +2396,9 @@ def _run_head_v2_profile(
             ) = _head_v2_pre_pdipm_zero_barrier_candidate(
                 setup=setup,
                 state=pre_pdipm_state,
-                target_inventory=b,
-                log_barrier=epsilon_schedule[0],
+                trace_capacity_report=terminal_output[
+                    "pre_pdipm_trace_capacity"
+                ],
                 valid_condensates=valid_mask,
                 enabled=fallback_routing_candidate,
                 disabled_reason=fallback_disabled_reason,

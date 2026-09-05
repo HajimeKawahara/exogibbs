@@ -187,9 +187,12 @@ def _subset_hvector(
     return hvector
 
 
-def build_reduced_setup() -> CondensateChemicalSetup:
+def build_reduced_setup(
+    *, condensate_species: Sequence[str] = CONDENSATE_SPECIES,
+) -> CondensateChemicalSetup:
     """Build the explicit H/Mg/Si/O/C/charge Rocky-like network."""
 
+    condensate_species = tuple(condensate_species)
     full = condensate_chemical_setup(
         gas_path="FastChem4/logK/logK.dat",
         silent=True,
@@ -205,7 +208,7 @@ def build_reduced_setup() -> CondensateChemicalSetup:
         label="gas species",
     )
     condensate_indices = _ordered_indices(
-        CONDENSATE_SPECIES,
+        condensate_species,
         full.condensate_species,
         label="condensate species",
     )
@@ -275,7 +278,7 @@ def build_reduced_setup() -> CondensateChemicalSetup:
             condensate_indices,
         ),
         elements=ELEMENTS,
-        species=CONDENSATE_SPECIES,
+        species=condensate_species,
         metadata=condensate_metadata,
         temperature_validity_upper=None,
     )

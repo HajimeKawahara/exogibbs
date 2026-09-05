@@ -1,0 +1,57 @@
+{
+  "schema": "exogibbs.rocky_raccoon_boundary_corpus@1",
+  "source_repository": "ExoExamples",
+  "source_directory": "tests/rocky_raccoon/data",
+  "validity_mode": "paper_extrapolated",
+  "cases": [
+    {
+      "id": "default_column_step_1076_warm_parent",
+      "fixture": "default_column_step_1076_warm_parent.npz",
+      "sha256": "5b971c4f35c02b80390466f8a5b95e79d48011b64a74ad262bc490327adc79f6",
+      "source_snapshot_sha256": "889e80d5b2d0a47e795d1e0b29be2225e1af4fc3a69dbfa682f7e0cc6a38a79d",
+      "include_sio": false
+    },
+    {
+      "id": "default_column_step_1077_convective_warm_parent",
+      "fixture": "default_column_step_1077_convective_warm_parent.npz",
+      "sha256": "dc026260c895a33a3f64801f1d38c96f54b0dee3153f9e317c26fd5cec207163",
+      "source_snapshot_sha256": "cde0a592c5468393b357809ab71c2a7ebfdb1b5438915c83a1b802167905e692",
+      "include_sio": false
+    },
+    {
+      "id": "default_column_step_1186_convective_warm_parent",
+      "fixture": "default_column_step_1186_convective_warm_parent.npz",
+      "sha256": "24c017328b99882ac3b7edb96fbc8e3ea17476780033a2d3c8109f7de754a39c",
+      "source_snapshot_sha256": "0b2f9439610d8743abf0e40ca49d9561e6be31518e829e649bafcef082e064f6",
+      "include_sio": false
+    },
+    {
+      "id": "default_column_step_1342_nonconvective_warm_parent",
+      "fixture": "default_column_step_1342_nonconvective_warm_parent.npz",
+      "sha256": "09206f20e4a651fec9dd97c5b2f4838e87da3a204e70c2a5a96558715f52088b",
+      "source_snapshot_sha256": "8135fc9ca65a5a8028ab05d6fabce01baf5dc4f3563dafed2c8456673e3314d1",
+      "include_sio": false
+    },
+    {
+      "id": "default_column_step_1372_convective_warm_parent",
+      "fixture": "default_column_step_1372_convective_warm_parent.npz",
+      "sha256": "2c3f4420c4731a75b91fedeb9064151666bb34d50a0a14d55255bb6e5b6fcb91",
+      "source_snapshot_sha256": "046420b5bd8e83465a7e27b7da71ba0cfb7c46565feb62a76e18d3a10dced64c",
+      "include_sio": false
+    },
+    {
+      "id": "default_column_step_1383_convective_warm_parent",
+      "fixture": "default_column_step_1383_convective_warm_parent.npz",
+      "sha256": "0b3f6c190e60427733955f0032373a24044605bb4dc71a03fcb505cb011ce835",
+      "source_snapshot_sha256": "dce9771690ed7f0585447703d953b1979fccb75b7b19bb958f13aded9270c239",
+      "include_sio": false
+    },
+    {
+      "id": "oxygen_poor_sio_step_1805_convective_warm_parent",
+      "fixture": "oxygen_poor_sio_step_1805_convective_warm_parent.npz",
+      "sha256": "17014036d7c215e83cf0aefe5ad9b99f1f7ba756bcf2b9ffa396d59f97cf4ce3",
+      "source_snapshot_sha256": "c670ffa77f651ad780e5a1942fb7131173a87d6fd70768643d879aa4ed2cb046",
+      "include_sio": true
+    }
+  ]
+}

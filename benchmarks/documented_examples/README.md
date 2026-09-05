@@ -64,14 +64,21 @@ value-and-gradient, spectral likelihood, or NUTS-transition benchmark.
 
 ## Full benchmark matrix
 
-Run the complete GPU sequence (six documented workloads under both compiler
-modes, followed by the two L-dwarf cold-plus-ten-warm runs) with:
+Run the complete GPU sequence (the warm-boundary correctness gate and six
+documented workloads under both compiler modes, followed by the two L-dwarf
+cold-plus-ten-warm runs) with:
 
 ```console
 csh benchmarks/documented_examples/run_all_gpu.csh
 ```
 
 An optional output directory may be supplied as the only argument.
+The boundary gate replays seven saved difficult states, including SiO-on, via
+the public API. It stops the sequence before the longer benchmarks if either
+compiler mode fails. Its logs, JUnit reports, and source provenance are saved
+under the output root. The fixture manifest pins each snapshot's source and
+digest; the same test module runs in CPU CI. This does not run a full Rocky
+atmospheric column or every script in the repository.
 
 The default command runs all six cases in separate CPU/GPU processes with
 both compiler modes:

@@ -810,6 +810,7 @@ def _conservation_rainout_inventory(
         conservation_inventory[~normalization_mask] = 0.0
         conservation_sum = inventory_sum
         normalization = 1.0
+        log_normalization = 0.0
     else:
         conservation_sum = float(
             np.sum(conservation_inventory[normalization_mask])
@@ -818,12 +819,32 @@ def _conservation_rainout_inventory(
             raise RuntimeError(
                 "Rainout cannot normalize an empty gas element inventory."
             )
-        normalization = inventory_sum / conservation_sum
+        log_normalization = math.log(inventory_sum) - math.log(conservation_sum)
+        normalization_value = inventory_sum / conservation_sum
+        normalization = (
+            normalization_value
+            if math.isfinite(normalization_value)
+            else None
+        )
         next_inventory = np.zeros_like(conservation_inventory)
         surviving = normalization_mask & (conservation_inventory > 0.0)
-        next_inventory[surviving] = (
-            conservation_inventory[surviving] * normalization
+        # Scale mantissas before combining exponents: forming the multiplier
+        # can overflow, while forming fractions first can erase trace rows.
+        mantissa, exponent = np.frexp(conservation_inventory[surviving])
+        total_mantissa, total_exponent = math.frexp(inventory_sum)
+        remainder_mantissa, remainder_exponent = math.frexp(conservation_sum)
+        next_inventory[surviving] = np.ldexp(
+            mantissa * total_mantissa / remainder_mantissa,
+            exponent + total_exponent - remainder_exponent,
         )
+        if (
+            not np.all(np.isfinite(next_inventory))
+            or np.any(next_inventory[surviving] <= 0.0)
+        ):
+            raise RuntimeError(
+                "Rainout normalization cannot represent every positive "
+                "surviving element inventory."
+            )
     return {
         "gas_inventory": gas_inventory,
         "propagation_gas_inventory": propagation_gas_inventory,
@@ -832,7 +853,8 @@ def _conservation_rainout_inventory(
         "conservation_inventory": conservation_inventory,
         "next_inventory": next_inventory,
         "conservation_sum": float(conservation_sum),
-        "normalization": float(normalization),
+        "normalization": normalization,
+        "log_normalization": float(log_normalization),
         "crosscheck_residual": reconstruction_error,
         "propagation_crosscheck_residual": propagation_crosscheck_error,
         "ignored_gas_species_indices": tuple(
@@ -889,6 +911,32 @@ def _certify_rainout_candidate(
     lifecycle = candidate_diagnostics.get("fixed_support_v2", {})
     if isinstance(lifecycle, Mapping):
         attempt["lifecycle_outcome"] = lifecycle.get("outcome")
+        for key in ("independent_kkt", "caller_gauge_zero_barrier_kkt"):
+            if isinstance(lifecycle.get(key), Mapping):
+                attempt[key] = dict(lifecycle[key])
+        polish = lifecycle.get("zero_barrier_active_support_polish")
+        if isinstance(polish, Mapping):
+            attempt["zero_barrier_active_support_polish"] = {
+                key: polish[key]
+                for key in (
+                    "accepted",
+                    "finite",
+                    "positive_active_amounts",
+                    "optimizer_status",
+                    "optimizer_message",
+                    "selected_numerical_formulation",
+                    "gas_stationarity_max_abs",
+                    "active_condensate_driving_max_abs",
+                    "inactive_condensate_violation_max_abs",
+                    "budget_scaled_max_abs",
+                    "total_density_scaled_abs",
+                    "stationarity_tolerance",
+                    "budget_tolerance",
+                    "total_density_tolerance",
+                    "support_closure_tolerance",
+                )
+                if key in polish
+            }
     budget_gate = candidate_diagnostics.get(
         "full_condensate_budget_residual_gate", {}
     )
@@ -1598,6 +1646,7 @@ def run_rainout_profile(
                 "no_condensate_removal"
             ],
             "normalization": propagation["normalization"],
+            "log_normalization": propagation["log_normalization"],
             "conservation_inventory_sum": propagation[
                 "conservation_sum"
             ],
