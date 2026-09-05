@@ -123,7 +123,70 @@ def test_structural_zero_keeps_signed_conservation_rows(charge: float) -> None:
     assert result.element_potential[2] == pytest.approx(0.4)
 
 
-def test_full_rank_boundary_can_release_a_phase() -> None:
+@pytest.mark.parametrize(
+    "controlled_boundary", (False, True), ids=("numerical", "controlled_boundary")
+)
+def test_full_rank_boundary_can_release_a_phase(
+    monkeypatch: pytest.MonkeyPatch, controlled_boundary: bool,
+) -> None:
+    boundary_calls = []
+    if controlled_boundary:
+        real_solve = zero_barrier._solve_normalized_gas_reduced_linear_support
+
+        def stop_at_full_rank_boundary(**kwargs):
+            if tuple(kwargs["support_indices"]) != (0, 1):
+                return real_solve(**kwargs)
+            # Fix only the optimizer outcome at this seam. The real release
+            # search, face solves, and physical certificate remain in use.
+            boundary_calls.append(tuple(kwargs["support_indices"]))
+            kwargs["function_evaluation_budget"].consume(1)
+            state = {
+                "gas_log_amounts": np.log(np.asarray([0.5, 1.0])),
+                "condensate_amounts": np.asarray([0.5, 0.0]),
+                "total_gas_log_amount": float(np.log(1.5)),
+                "element_potential": np.zeros(2),
+                "support_indices": (0, 1),
+                "optimizer_success": True,
+                "optimizer_status": 1,
+            }
+            audit = zero_barrier._physical_zero_barrier_audit(
+                **state,
+                **{
+                    key: kwargs[key]
+                    for key in (
+                        "gas_formula_matrix", "condensate_formula_matrix_full",
+                        "target_inventory", "gas_standard_source",
+                        "condensate_standard_source_full", "condensate_valid_mask",
+                        "budget_scale", "stationarity_tolerance",
+                        "budget_tolerance", "total_density_tolerance",
+                        "support_closure_tolerance",
+                    )
+                },
+            )
+            assert audit["finite"]
+            assert not audit["positive_active_amounts"]
+            assert not audit["accepted"]
+            return {
+                "accepted": False,
+                "candidate": state | {
+                    "accepted": False,
+                    "optimizer_message": "Controlled full-rank boundary",
+                    "function_evaluations": 1,
+                    "active_phase_at_lower_bound": True,
+                    "audit": audit,
+                },
+                "report": {
+                    "attempted": True,
+                    "accepted": False,
+                    "attempts": ({"function_evaluations": 1},),
+                },
+            }
+
+        monkeypatch.setattr(
+            zero_barrier, "_solve_normalized_gas_reduced_linear_support",
+            stop_at_full_rank_boundary,
+        )
+
     budget = zero_barrier._FunctionEvaluationBudget(800)
     result = zero_barrier._polish_zero_barrier_support_once(
         gas_formula_matrix=np.eye(2),
@@ -143,14 +206,22 @@ def test_full_rank_boundary_can_release_a_phase() -> None:
     )
     assert result.accepted
     assert result.support_indices == (0,)
+    np.testing.assert_allclose(
+        np.exp(result.gas_log_amounts), [0.5, 1.0], rtol=1.0e-8, atol=0.0
+    )
+    np.testing.assert_allclose(
+        result.condensate_amounts, [0.5, 0.0], rtol=1.0e-8, atol=0.0
+    )
     assert result.report["support_consistent"]
     assert result.report["nonnegative_condensate_amounts"]
     assert result.report["selected_physical_audit"]["support_consistent"]
     assert result.report["selected_physical_audit"]["nonnegative_condensate_amounts"]
     assert result.report["basic_support_reduction"]["initial_support_nullity"] == 0
-    release = result.report["support_release_portfolio"]
-    assert release["attempted"]
-    assert release["trigger"] == "full_rank_support_boundary_reached"
+    if controlled_boundary:
+        assert boundary_calls
+        release = result.report["support_release_portfolio"]
+        assert release["attempted"]
+        assert release["trigger"] == "full_rank_support_boundary_reached"
     assert budget.used <= budget.limit
 
 
