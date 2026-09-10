@@ -1,0 +1,179 @@
+Metal--silicate reference thermochemistry
+=========================================
+
+The first metal--silicate deliverable fixes the component basis, standard
+thermochemistry, and local amount convention before introducing an equilibrium
+solver. ``examples/metal_silicate/reference.py`` audits a frozen source record
+using NumPy only. Ordinary use and tests need neither ExoEOS nor GCE.
+
+Reference selection
+-------------------
+
+The numerical source is ``Young_2023_Version`` in
+`GCE commit 31558873d8da460c3cd11986b574cb347621b43d
+<https://github.com/ExoInteriors/GlobalChemicalEquilibrium_Release/tree/31558873d8da460c3cd11986b574cb347621b43d/Young_2023_Version>`_,
+associated with Young et al. (2023),
+`Earth shaped by primordial H2 atmospheres
+<https://doi.org/10.1038/s41586-023-05823-0>`_. The JSON record stores source
+paths and SHA256 hashes, coefficient provenance, and the original elemental
+amounts. Coefficients are audited against this pinned implementation; their
+experimental calibrations are not independently established here.
+
+All 25 components and 18 independent reactions of that version are retained.
+The component suffix identifies its phase, so ``Fe_metal`` and ``Fe_gas``
+are separate species.
+
+.. list-table:: Component order within each phase
+   :header-rows: 1
+   :widths: 15 85
+
+   * - Phase
+     - Components
+   * - Silicate
+     - MgO, SiO2, MgSiO3, FeO, FeSiO3, Na2O, Na2SiO3, H2, H2O, CO, CO2
+   * - Metal
+     - Fe, Si, O, H
+   * - Gas
+     - H2, CO, CO2, CH4, O2, H2O, Fe, Mg, SiO, Na
+
+The element order is ``(Si, Mg, O, Fe, H, Na, C)``. The Mg-bearing host
+explicitly includes MgO, SiO2, and MgSiO3; the first record is not reduced
+to Fe/Si oxides. The more general GCE network and an unused ``initial.dat``
+entry include SiH4, which is absent from this version's actual equations.
+
+The formula matrix :math:`A` has shape :math:`(7,25)` and rank 7. Rows of
+:math:`\nu`, shape :math:`(18,25)`, use negative reactants and positive products.
+They satisfy :math:`A\nu^T=0` and have rank 18. Reaction R3 is
+:math:`\tfrac12\mathrm{Si}_{metal}+\mathrm{O}_{metal}
+\rightarrow\tfrac12\mathrm{SiO}_{2,silicate}`: the reference follows the
+actual source residual, whose direction differs from a comment in the source
+Gibbs script.
+
+Two frozen cases evaluate all reactions at one temperature, respectively
+2350 K and 3000 K, with 1 bar standards. They are **thermochemistry checks**,
+not equilibrium compositions or measured activities. The original source
+uses 3000 K for R1, R3, R4, and R6, and 2350 K for the other reactions.
+That two-temperature prescription is recorded but is not interpreted as
+minimization of one isothermal Gibbs potential.
+
+Consistent standard states
+--------------------------
+
+The source uses :math:`R=8.314462618153` J/(mol K), the rounded
+``log10_to_ln=2.302585093``, and :math:`P^\circ=1` bar. Its ``GRT`` output
+is :math:`\Delta_r G^\circ/(RT)`, despite an output-file header saying J/mol.
+Thus
+
+.. math::
+
+   \ln K_r=-\frac{\Delta_r G^\circ}{RT}
+          =-\sum_i\nu_{ri}\frac{\mu_i^\circ}{RT}.
+
+For 16 components, the record freezes the source's selected Shomate branch
+and independently captured standard potential. The audit evaluates the
+enthalpy in kJ/mol, converts it to J/mol, and subtracts :math:`T S^\circ`
+with entropy in J/(mol K). This convention uses formation enthalpy at the
+reference temperature and absolute entropy. It must not be mixed directly
+with FastChem's atomic-reference ``h=-ln(K)`` or formation-Gibbs tables.
+
+The other nine standards are reconstructed from the chosen reaction fits:
+Na2SiO3 and FeSiO3 from R0/R5; dissolved H2, H2O, CO, and CO2 from R14--R17;
+metal Si/O from the selected exchange fits; and metal H from the Okuchi fit.
+In particular, the source's unused standalone Na2SiO3/FeSiO3 potentials
+cannot replace these reaction-consistent standards. No missing potential is
+filled with an assumed zero. The full reconstruction reproduces all 18
+source reaction free energies at both temperatures.
+
+A common elemental reference change
+:math:`\boldsymbol\mu^\circ\mapsto\boldsymbol\mu^\circ+A^T\boldsymbol c`
+cancels from every balanced reaction. A phase-specific standard-state change
+instead requires a compensating activity conversion.
+
+ExoEOS standard-state mapping
+-----------------------------
+
+The record also pins the two ternary conversion fixtures from
+`ExoEOS commit 39176c423e9e7783dd956e1abe75c9b610a81864
+<https://github.com/HajimeKawahara/exoeos/blob/39176c423e9e7783dd956e1abe75c9b610a81864/documents/fe_si_o_reference.rst>`_,
+model ``ma2001_fe_si_o_young2023_printed_v1``. Its component order is
+``(Fe, Si, O)``. For the completed model, define
+
+.. math::
+
+   \boldsymbol h(T)&=\left(0,5.76\frac{1873}{T},4.29-\frac{33000}{T}\right),\\
+   \boldsymbol\mu^{\circ,formal}&=\boldsymbol\mu^{\circ,source}+RT\boldsymbol h,\\
+   \ln\boldsymbol\gamma^{formal}&=\ln\boldsymbol\gamma^{source}-\boldsymbol h.
+
+The chemical potential
+:math:`\mu_i=\mu_i^\circ+RT(\ln x_i+\ln\gamma_i)` is unchanged when both
+transformations are applied. These formal symmetric endmembers are not
+calibrated pure Si/O liquids. The fixture checks this conversion only; it
+does not supply a runtime activity model or adapter.
+
+The ExoEOS model restores the Fe solvent contribution and selects Young's
+printed oxygen coefficient, whereas the pinned GCE implementation uses
+``gamma_Fe=1`` and the author-code oxygen variant. They are distinct physical
+models. Also, a ternary ExoEOS model cannot provide the four-component GCE
+alloy's H activity. Original-model reproduction and completed-model
+verification must remain separately identified in subsequent work.
+
+Local amount and pressure contract
+----------------------------------
+
+For each phase :math:`\alpha`, :math:`N_\alpha` is mol of its declared
+components, and :math:`n_{\alpha i}=N_\alpha x_{\alpha i}`. Silicate and gas
+components count formula units; metal components count atoms. Elemental
+amounts are mol of atoms:
+
+.. math::
+
+   \boldsymbol b_\alpha=A_\alpha\boldsymbol n_\alpha,
+   \qquad \boldsymbol b=\sum_\alpha\boldsymbol b_\alpha.
+
+``phase_element_amounts`` exposes these contributions independently, including
+trace elements and exact zeros. Normalized compositions alone do not determine
+the physical phase amounts. ``original_element_amounts_mol`` can be supplied
+as a local parcel budget; the stored planet mass is provenance only.
+The declared local closure conserves finite oxygen and does not also impose
+an external oxygen buffer. Existing buffered-H/MELTYQ calculations retain
+their separate meaning.
+
+Temperature and pressure are supplied independently in K and bar.
+ExoInventory owns planetary pressure and global reservoir exchange.
+A later ExoEOS adapter will convert bar to Pa once and obtain only
+``ln(gamma)`` from ``solution_state(...).lngamma``.
+
+For an ordinary ideal gas, the pressure contribution to reaction R is
+:math:`\Delta\nu_{gas}\ln(P/P^\circ)`. The source H2 dissolution residual R14
+instead uses :math:`-\ln(10^4/P^\circ)` with pressures in bar. This additional
+prescription is recorded explicitly and is not silently included in the
+standard potentials or implemented as a general pressure law in this audit.
+
+Reproduction and scope
+----------------------
+
+Run from the ExoGibbs repository root:
+
+.. code-block:: console
+
+   python examples/metal_silicate/reference.py
+   python -m pytest tests/unittests/examples/metal_silicate_reference_test.py
+
+To check the frozen values against an already available source checkout:
+
+.. code-block:: console
+
+   python examples/metal_silicate/extract_reference.py --gce-checkout /path/to/GCE --check
+
+The optional extractor verifies the three source hashes before evaluating the
+Gibbs script in a temporary directory. It does not download anything or run
+GCE's equilibrium solver. Ordinary tests use the committed JSON only.
+The source comparison tolerance is ``rtol=atol=5e-12``; comparisons using
+the exact ``ln(10)`` allow ``atol=1e-9`` for the source's rounded conversion.
+These tolerances describe numerical reproduction, not experimental error.
+
+The current cases use formal liquid standards: for example, the source lists
+3105--5000 K for its MgO liquid coefficients, so both cases extrapolate that
+endmember fit. Neither a stable liquid assemblage nor a calibrated joint
+T/P/composition domain has been established. A physical equilibrium benchmark,
+runtime activities, H exchange, and phase selection remain later deliverables.

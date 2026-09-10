@@ -34,6 +34,7 @@ Contents
 
    solubility.rst
    magma_gas_interface.rst
+   metal_silicate_reference.rst
 
 .. toctree::
    :maxdepth: 1
