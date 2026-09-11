@@ -36,6 +36,7 @@ Contents
    magma_gas_interface.rst
    metal_silicate_reference.rst
    subneptune_hydrogen.rst
+   subneptune_melts.rst
 
 .. toctree::
    :maxdepth: 1

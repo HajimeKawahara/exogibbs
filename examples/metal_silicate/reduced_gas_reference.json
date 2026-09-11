@@ -1,0 +1,137 @@
+{
+  "model_id": "burcat_thermochem_0_9_0_reduced_gas_v1",
+  "source": {
+    "package": "thermochem 0.9.0",
+    "database": "BURCAT_THR.xml",
+    "sha256": "7dd9500738d6681cbbff3138be9381f51589df9ee3bfd0a8c15e88c04a29b0b0",
+    "reference": "Burcat and Ruscic, Third Millennium Ideal Gas and Condensed Phase Thermochemical Database",
+    "reference_temperature_k": 298.15,
+    "standard_pressure_bar": 1.0,
+    "convention": "NASA7 formation enthalpy and absolute entropy; nominal 1 bar standard",
+    "gas_constant_J_mol_K": 8.314472
+  },
+  "species": {
+    "H": {
+      "source_label": "H",
+      "formula": {
+        "H": 1
+      },
+      "low": [
+        2.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        25473.66,
+        -0.44668285
+      ],
+      "high": [
+        2.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        25473.66,
+        -0.44668285
+      ],
+      "implementation_temperature_domain_k": [
+        200.0,
+        6000.0
+      ],
+      "switch_temperature_k": 1000.0,
+      "mu0_J_mol_2350K": -109787.51113895525
+    },
+    "He": {
+      "source_label": "He REF ELEMENT",
+      "formula": {
+        "He": 1
+      },
+      "low": [
+        2.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -745.375,
+        0.928723974
+      ],
+      "high": [
+        2.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -745.375,
+        0.928723974
+      ],
+      "implementation_temperature_domain_k": [
+        200.0,
+        6000.0
+      ],
+      "switch_temperature_k": 1000.0,
+      "mu0_J_mol_2350K": -354659.03010135406
+    },
+    "OH": {
+      "source_label": "OH HYDROXYL RADI",
+      "formula": {
+        "O": 1,
+        "H": 1
+      },
+      "low": [
+        3.99198424,
+        -0.00240106655,
+        4.61664033e-06,
+        -3.87916306e-09,
+        1.36319502e-12,
+        3368.89836,
+        -0.103998477
+      ],
+      "high": [
+        2.83853033,
+        0.00110741289,
+        -2.94000209e-07,
+        4.20698729e-11,
+        -2.4228989e-15,
+        3697.80808,
+        5.84494652
+      ],
+      "implementation_temperature_domain_k": [
+        200.0,
+        6000.0
+      ],
+      "switch_temperature_k": 1000.0,
+      "mu0_J_mol_2350K": -479456.9697293227
+    },
+    "SiH4": {
+      "source_label": "SiH4",
+      "formula": {
+        "Si": 1,
+        "H": 4
+      },
+      "low": [
+        1.5922639,
+        0.012841093,
+        -1.9456278e-06,
+        -4.3106372e-09,
+        1.987488e-12,
+        3105.5942,
+        11.8336025
+      ],
+      "high": [
+        4.2092038,
+        0.0090822628,
+        -3.7905396e-06,
+        7.1369888e-10,
+        -5.0046286e-14,
+        2134.4627,
+        -2.72768704
+      ],
+      "implementation_temperature_domain_k": [
+        200.0,
+        6000.0
+      ],
+      "switch_temperature_k": 1000.0,
+      "mu0_J_mol_2350K": -639037.1773655167
+    }
+  }
+}
