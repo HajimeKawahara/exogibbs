@@ -1,5 +1,5 @@
 Finite sulfur and empirical FeS saturation
-=========================================
+============================================
 
 ``examples/metal_silicate/sulfide.py`` adds an example-local finite sulfur
 calculation. It leaves the audited dry and GCE source calculations unchanged.
@@ -9,7 +9,7 @@ equation closure and branch handling, not an experimental partition law,
 liquid stability, or a calibrated sub-Neptune prediction.
 
 Declared components and exchange
--------------------------------
+----------------------------------
 
 The finite element order is Mg, Si, Fe, O, H, S. The fixed phases contain:
 
@@ -51,10 +51,12 @@ calibrated temperature dependence, pressure work, or alloy interactions.
 1873 K is a numerical reference, not evidence for the declared liquids.
 
 Saturation convention and phase branches
-----------------------------------------
+------------------------------------------
 
-``saturation(T_K, P_bar, amounts_mol)`` is evaluated at each trial and again
-at the final composition. It returns ``SCSS(ppm_s, sulfur_state, mass_basis,
+``saturation(T_K, P_bar, amounts_mol)`` is evaluated at each present-branch
+trial and again at the final composition. For the absent branch it is called
+only at the final composition, after closing partition and element equations.
+It returns ``SCSS(ppm_s, sulfur_state, mass_basis,
 calibration_id, phase_state)``. A real calibration must supply a justified
 pure-FeS solid/liquid identity, source, composition domain and uncertainty.
 The control declares ``phase_state="conditional"``. An Fe-Ni-Cu sulfide liquid
@@ -99,13 +101,30 @@ outside that numerical range raise an explicit error. Positive trace S
 budgets, including the ``1e-50`` mol regression control, remain finite and
 are never replaced by a concentration floor or silently removed.
 
+Callbacks must raise ``SulfideDomainError`` for a declared calibration-domain
+rejection. An existing callback that uses a generic ``ValueError`` must
+translate only its known domain rejection to this explicit exception;
+malformed calibration/input errors must remain distinguishable. Each such
+failure, ``FloatingPointError``, ``OverflowError`` or ``numpy.linalg.LinAlgError``
+is retained as an unaccepted branch/start result, and the other attempts
+continue. Nonfinite active partition residuals are numerical failures;
+incorrect callback shapes, ordinary ``ValueError`` and programming errors
+propagate. This policy also applies to the final SCSS admissibility check.
+
+Every result includes its zero-based ``start_index``. A failed attempt records
+``failure_reason`` with the exception type/message, its last attempted amounts
+and the corresponding element balance. Its ``scss``, ``reaction_residual``
+and ``saturation_log_ratio`` are ``None`` because chemical acceptance could
+not be evaluated. ``solver_success`` still records whether the optimizer
+converged before a final evaluation failed; ``accepted`` remains false.
+
 Empirical SCSS does not supply a common Gibbs energy. Accepted roots are
 therefore not ranked by Gibbs energy, and no global equilibrium or physical
 hysteresis is inferred. Metal absence and host solids are not candidate
 branches of this sulfur control.
 
 Reproduction and continuation
-----------------------------
+-------------------------------
 
 Run the offline reference and its regression tests with::
 
@@ -123,7 +142,10 @@ the next point, and keeps the original initial compositions as independent
 starts. Continuation order never selects a preferred root. Tests cover
 forward/backward phase disappearance, exact-zero S, multiple starts,
 amount scaling, independent Fe/S accounting, and equivalent sulfide/total
-and dry/hydrous SCSS conversions. An unavailable accepted root remains a
+and dry/hydrous SCSS conversions. Domain/numerical failure regressions retain
+an independently valid present root after a failed absent branch or initial
+start, including continuation and recovery after a budget where all attempts
+fail. An unavailable accepted root remains a
 numerical failure, not evidence for physical hysteresis.
 
 Physical integration still requires a selected unsaturated partition

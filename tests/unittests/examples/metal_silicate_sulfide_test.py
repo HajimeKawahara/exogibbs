@@ -1,6 +1,7 @@
 """Finite sulfur closure and empirical phase-branch regression controls."""
 
 import importlib.util
+import json
 from pathlib import Path
 import sys
 
@@ -152,3 +153,110 @@ def test_invalid_scss_metadata_is_rejected(field, value):
     kwargs[field] = value
     with pytest.raises(ValueError):
         SULFIDE.SCSS(**kwargs)
+
+
+def test_final_absent_domain_failure_preserves_valid_present_root_and_continuation():
+    budgets, known, partition, saturation = SULFIDE.analytic_control()
+    known_feo = known[5] / known[3:10].sum()
+    absent_calls = []
+
+    def bounded_saturation(temperature, pressure, amounts):
+        if amounts[-1] == 0:
+            absent_calls.append(amounts.copy())
+            # SCSS must not reject an intermediate absent iteration.
+            np.testing.assert_allclose(SULFIDE.FORMULA @ amounts, budgets, rtol=1e-9)
+        if abs(amounts[5] / amounts[3:10].sum() - known_feo) > 1e-4:
+            raise SULFIDE.SulfideDomainError("Outside explicit FeO composition domain")
+        return saturation(temperature, pressure, amounts)
+
+    assert SULFIDE.evaluate(known, budgets, 1873, 1, partition, bounded_saturation, branch="present").accepted
+    sequence = SULFIDE.continue_sulfur(
+        [budgets[-1], budgets[-1]], budgets, 1873, 1, partition,
+        bounded_saturation, initial_amounts=(known,),
+    )
+    for states in sequence:
+        for state in states:
+            if state.branch == "absent":
+                assert not state.accepted
+                assert state.solver_success  # Convergence does not imply admissibility.
+                assert state.failure_reason == "SulfideDomainError: Outside explicit FeO composition domain"
+                assert state.scss is state.reaction_residual is state.saturation_log_ratio is None
+                json.dumps({"failure_reason": state.failure_reason, "saturation_log_ratio": state.saturation_log_ratio}, allow_nan=False)
+            else:
+                assert state.accepted
+                assert state.failure_reason is None
+                np.testing.assert_allclose(state.component_amounts_mol, known, rtol=1e-9, atol=1e-12)
+    assert len(absent_calls) == sum(state.branch == "absent" for states in sequence for state in states)
+
+
+@pytest.mark.parametrize("failure", [
+    SULFIDE.SulfideDomainError, FloatingPointError, OverflowError, np.linalg.LinAlgError,
+])
+def test_declared_domain_or_numerical_failure_preserves_later_starts(failure):
+    budgets, known, partition, saturation = SULFIDE.analytic_control()
+
+    def bounded_partition(temperature, pressure, amounts):
+        if amounts[5] < 0.3:
+            raise failure("Invalid FeO trial")
+        return partition(temperature, pressure, amounts)
+
+    states = SULFIDE.solve_branches(
+        1873, 1, budgets, bounded_partition, saturation,
+        initial_amounts=(known * 0.4, known),
+    )
+    assert [(state.start_index, state.branch) for state in states] == [
+        (0, "absent"), (0, "present"), (1, "absent"), (1, "present"),
+    ]
+    for state in states[:2]:
+        assert not state.accepted and not state.solver_success
+        assert state.failure_reason == f"{failure.__name__}: Invalid FeO trial"
+    assert states[-1].accepted
+    np.testing.assert_allclose(states[-1].component_amounts_mol, known, rtol=1e-9, atol=1e-12)
+
+
+def test_continuation_advances_after_every_attempt_fails():
+    budgets, known, partition, saturation = SULFIDE.analytic_control()
+
+    def sulfur_partition(temperature, pressure, amounts):
+        if np.all(amounts[SULFIDE.FORMULA[-1] > 0] == 0):
+            raise SULFIDE.SulfideDomainError("This calibration requires sulfur")
+        return partition(temperature, pressure, amounts)
+
+    failed, recovered = SULFIDE.continue_sulfur(
+        [0.0, budgets[-1]], budgets, 1873, 1, sulfur_partition,
+        saturation, initial_amounts=(known,),
+    )
+    assert len(failed) == 1 and not failed[0].accepted
+    assert failed[0].failure_reason == "SulfideDomainError: This calibration requires sulfur"
+    assert any(state.accepted and state.branch == "present" for state in recovered)
+
+
+@pytest.mark.parametrize("failure", [ValueError, TypeError, RuntimeError])
+def test_undeclared_callback_errors_propagate(failure):
+    budgets, known, partition, _ = SULFIDE.analytic_control()
+
+    def broken_saturation(temperature, pressure, amounts):
+        raise failure("Malformed calibration")
+
+    with pytest.raises(failure, match="Malformed calibration"):
+        SULFIDE.solve_branches(1873, 1, budgets, partition, broken_saturation, initial_amounts=(known,))
+
+
+def test_malformed_partition_residual_shape_propagates():
+    budgets, known, _, saturation = SULFIDE.analytic_control()
+    with pytest.raises(ValueError, match="seven residuals"):
+        SULFIDE.solve_branches(1873, 1, budgets, lambda t, p, n: np.zeros(6), saturation, initial_amounts=(known,))
+
+
+def test_nonfinite_partition_attempt_is_retained():
+    budgets, known, partition, saturation = SULFIDE.analytic_control()
+
+    def numerical_partition(temperature, pressure, amounts):
+        return np.full(7, np.nan) if amounts[5] < 0.3 else partition(temperature, pressure, amounts)
+
+    states = SULFIDE.solve_branches(
+        1873, 1, budgets, numerical_partition, saturation,
+        initial_amounts=(known * 0.4, known),
+    )
+    assert states[0].failure_reason == "FloatingPointError: Partition callback returned nonfinite active residuals."
+    assert states[-1].accepted

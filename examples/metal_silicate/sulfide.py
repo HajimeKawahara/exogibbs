@@ -1,4 +1,5 @@
-"""Finite sulfur partition with explicit empirical FeS saturation branches.
+"""Finite sulfur partition and empirical sulfide appearance
+=============================================================
 
 This example has a fixed component/reaction set. The runnable ideal control
 tests numerical closure only; its SCSS is synthetic, not a calibration.
@@ -82,16 +83,22 @@ PartitionFunction = Callable[[float, float, np.ndarray], np.ndarray]
 SaturationFunction = Callable[[float, float, np.ndarray], SCSS]
 
 
+class SulfideDomainError(ValueError):
+    """Declare that a trial lies outside a property callback's valid domain."""
+
+
 @dataclass(frozen=True)
 class SulfideResult:
     branch: str
     component_amounts_mol: np.ndarray
     element_residual: np.ndarray
-    reaction_residual: np.ndarray
-    saturation_log_ratio: float
-    scss: SCSS
+    reaction_residual: Optional[np.ndarray]
+    saturation_log_ratio: Optional[float]
+    scss: Optional[SCSS]
     accepted: bool
     solver_success: bool
+    start_index: int = 0
+    failure_reason: Optional[str] = None
 
 
 def melt_sulfur_ppm(amounts: np.ndarray, *, sulfur_state: str, mass_basis: str) -> float:
@@ -137,6 +144,21 @@ def _support(budgets: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     return np.flatnonzero(supported), np.flatnonzero(budgets > 0), reactions
 
 
+def _exchange_balance(
+    amounts, budgets, elements, selected, temperature_k, pressure_bar, partition_residual,
+):
+    reactions = np.asarray(partition_residual(temperature_k, pressure_bar, amounts))
+    if reactions.shape != (len(REACTION_IDS),):
+        raise ValueError("Partition callback must return seven residuals.")
+    if not np.all(np.isfinite(reactions[selected])):
+        raise FloatingPointError("Partition callback returned nonfinite active residuals.")
+    balance = FORMULA @ amounts - budgets
+    balance[elements] /= budgets[elements]
+    if not np.all(np.isfinite(balance)):
+        raise FloatingPointError("Element balance returned nonfinite residuals.")
+    return balance, reactions[selected]
+
+
 def evaluate(
     amounts: np.ndarray, budgets: np.ndarray, temperature_k: float, pressure_bar: float,
     partition_residual: PartitionFunction, saturation: SaturationFunction, *, branch: str,
@@ -156,20 +178,18 @@ def evaluate(
     indices, elements, selected = _support(budgets)
     if amounts.shape != (len(SPECIES),) or not np.all(np.isfinite(amounts)):
         raise ValueError("Amounts must be finite and use SPECIES order.")
-    reactions = np.asarray(partition_residual(temperature_k, pressure_bar, amounts))
-    if reactions.shape != (len(REACTION_IDS),) or not np.all(np.isfinite(reactions[selected])):
-        raise ValueError("Partition callback must return seven residuals, finite on active reactions.")
+    balance, reactions = _exchange_balance(
+        amounts, budgets, elements, selected, temperature_k, pressure_bar, partition_residual,
+    )
     scss = saturation(temperature_k, pressure_bar, amounts)
     concentration = melt_sulfur_ppm(amounts, sulfur_state=scss.sulfur_state, mass_basis=scss.mass_basis)
     ratio = float(np.log(concentration / scss.ppm_s)) if concentration > 0 else -np.inf
-    balance = FORMULA @ amounts - budgets
-    balance[elements] /= budgets[elements]
     zero_support = np.all(FORMULA[budgets == 0] == 0, axis=0)
     valid = np.all(amounts >= 0) and np.all(amounts[~zero_support] == 0)
     valid = valid and np.all(amounts[indices] > 0)
     phase_ok = amounts[-1] == 0 and ratio <= 1e-8 if branch == "absent" else amounts[-1] > 0 and abs(ratio) < 1e-8
-    accepted = valid and phase_ok and np.max(np.abs(balance)) < 1e-9 and np.max(np.abs(reactions[selected])) < 1e-8
-    return SulfideResult(branch, amounts.copy(), balance, reactions[selected], ratio, scss, bool(accepted), False)
+    accepted = valid and phase_ok and np.max(np.abs(balance)) < 1e-9 and np.max(np.abs(reactions)) < 1e-8
+    return SulfideResult(branch, amounts.copy(), balance, reactions, ratio, scss, bool(accepted), False)
 
 
 def solve_branches(
@@ -184,6 +204,11 @@ def solve_branches(
     instead of being disguised by a positive floor. Absent FeS is exactly
     zero. Acceptance uses a fresh callback evaluation, not optimizer status;
     no Gibbs-energy ordering or physical hysteresis is inferred.
+
+    Callbacks declare composition-domain failures with ``SulfideDomainError``.
+    Such failures and floating-point/linear-algebra failures are retained with
+    the last attempted amounts and ``failure_reason``; other errors propagate.
+    Failed attempts have no SCSS or chemical residual evaluation.
     """
     if not np.all(np.isfinite([temperature_k, pressure_bar])) or min(temperature_k, pressure_bar) <= 0:
         raise ValueError("Temperature in K and pressure in bar must be finite and positive.")
@@ -197,7 +222,7 @@ def solve_branches(
     if not starts:
         raise ValueError("Supply at least one initial composition.")
     results = []
-    for start in starts:
+    for start_index, start in enumerate(starts):
         start = np.asarray(start, dtype=np.float64)
         if start.shape != default.shape or not np.all(np.isfinite(start)) or np.any(start < 0):
             raise ValueError("Initial amounts must be finite, nonnegative, and use SPECIES order.")
@@ -214,9 +239,18 @@ def solve_branches(
                 return amounts
 
             def residual(root):
-                state = evaluate(unpack(root), budgets, temperature_k, pressure_bar, partition_residual, saturation, branch=branch)
-                values = np.concatenate((state.element_residual[elements], state.reaction_residual))
-                return np.append(values, state.saturation_log_ratio) if present else values
+                nonlocal last_amounts
+                last_amounts = unpack(root)
+                if present:
+                    state = evaluate(last_amounts, budgets, temperature_k, pressure_bar, partition_residual, saturation, branch=branch)
+                    values = np.concatenate((state.element_residual[elements], state.reaction_residual, [state.saturation_log_ratio]))
+                    if not np.all(np.isfinite(values)):
+                        raise FloatingPointError("Present branch returned nonfinite residuals.")
+                    return values
+                balance, reactions = _exchange_balance(
+                    last_amounts, budgets, elements, selected, temperature_k, pressure_bar, partition_residual,
+                )
+                return np.concatenate((balance[elements], reactions))
 
             guess = np.log(positive_start / scale)
             lower = np.full(len(indices), -650.0)
@@ -227,9 +261,22 @@ def solve_branches(
                 guess = np.append(guess, start[-1] / scale)
                 lower = np.append(lower, -np.inf)
                 upper = np.append(upper, np.inf)
-            root = least_squares(residual, guess, bounds=(lower, upper), xtol=1e-13, ftol=1e-13, gtol=1e-13, max_nfev=1000)
-            state = evaluate(unpack(root.x), budgets, temperature_k, pressure_bar, partition_residual, saturation, branch=branch)
-            results.append(SulfideResult(**{**state.__dict__, "solver_success": bool(root.success)}))
+            last_amounts = unpack(guess)
+            solver_success = False
+            try:
+                root = least_squares(residual, guess, bounds=(lower, upper), xtol=1e-13, ftol=1e-13, gtol=1e-13, max_nfev=1000)
+                solver_success = bool(root.success)
+                last_amounts = unpack(root.x)
+                state = evaluate(last_amounts, budgets, temperature_k, pressure_bar, partition_residual, saturation, branch=branch)
+            except (SulfideDomainError, FloatingPointError, OverflowError, np.linalg.LinAlgError) as error:
+                balance = FORMULA @ last_amounts - budgets
+                balance[elements] /= budgets[elements]
+                results.append(SulfideResult(
+                    branch, last_amounts.copy(), balance, None, None, None,
+                    False, solver_success, start_index, f"{type(error).__name__}: {error}",
+                ))
+                continue
+            results.append(SulfideResult(**{**state.__dict__, "solver_success": bool(root.success), "start_index": start_index}))
     return tuple(results)
 
 
@@ -313,9 +360,11 @@ if __name__ == "__main__":
         },
         "states": [{
             "branch": state.branch, "accepted": state.accepted,
+            "start_index": state.start_index, "failure_reason": state.failure_reason,
+            "solver_success": state.solver_success,
             "amounts_mol": state.component_amounts_mol.tolist(),
             "max_relative_element_residual": float(np.max(np.abs(state.element_residual))),
-            "max_reaction_residual": float(np.max(np.abs(state.reaction_residual))),
+            "max_reaction_residual": None if state.reaction_residual is None else float(np.max(np.abs(state.reaction_residual))),
             "saturation_log_ratio": state.saturation_log_ratio,
         } for state in _states],
     }, indent=2, allow_nan=False))
