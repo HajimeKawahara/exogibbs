@@ -35,6 +35,7 @@ Contents
    solubility.rst
    magma_gas_interface.rst
    metal_silicate_reference.rst
+   subneptune_hydrogen.rst
 
 .. toctree::
    :maxdepth: 1
