@@ -21,6 +21,20 @@ from hydrogen import ideal_host_h2_dilution
 
 COMMON_R = 8.31446261815324
 PROVIDER_MODEL_ID = "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1"
+PROVIDER_MODEL_IDS = {
+    1: PROVIDER_MODEL_ID,
+    4: "alphamelts_2_3_2_rhyolite_melts_1_2_0_supplied_liquid_v1",
+}
+
+
+def _provider_model_id(evaluator: Any, calculation_mode: int) -> str:
+    if type(calculation_mode) is not int or calculation_mode not in PROVIDER_MODEL_IDS:
+        raise ValueError("calculation_mode must be 1 or 4; carbon requires mode 4.")
+    expected = PROVIDER_MODEL_IDS[calculation_mode]
+    declared = getattr(evaluator, "MODEL_IDS", {1: getattr(evaluator, "MODEL_ID", None)})
+    if declared.get(calculation_mode) != expected:
+        raise ValueError("The provider does not declare the selected MELTS model.")
+    return expected
 
 
 def load_melts_evaluator(checkout: Path) -> Any:
@@ -43,6 +57,7 @@ def make_melts_h2_phase(
     *, runtime: Path,
     python_executable: str,
     common_r: float = COMMON_R,
+    calculation_mode: int = 1,
 ) -> Callable[[float, float, np.ndarray], PhaseState]:
     """Return full potentials in selected host order followed by dissolved H2.
 
@@ -51,8 +66,12 @@ def make_melts_h2_phase(
     H2O is retained without adding another H2O-solubility equation. No arbitrary
     phase-specific standard offset is applied to make an equilibrium fit.
     Cross-phase standard alignment and calibration must be assessed separately.
+    Explicit mode 4 selects rhyolite-MELTS 1.2.0 with an independent CO2
+    component. Its internal CaCO3 species is not another component amount.
+    The default mode 1 retains the original provider calling convention.
     """
     names = tuple(host_components)
+    model_id = _provider_model_id(evaluator, calculation_mode)
     if not jax.config.x64_enabled:
         raise RuntimeError("MELTS coupling requires JAX_ENABLE_X64=1 for the residual tolerances.")
     if not names or len(set(names)) != len(names) or not set(names) <= set(evaluator.COMPONENTS):
@@ -60,6 +79,7 @@ def make_melts_h2_phase(
     if not np.isfinite(common_r) or common_r <= 0:
         raise ValueError("The common gas constant must be positive and finite.")
     indices = np.array([evaluator.COMPONENTS.index(name) for name in names])
+    mode_arguments = {} if calculation_mode == 1 else {"calculation_mode": calculation_mode}
 
     def evaluate(temperature: float, pressure: float, amounts: np.ndarray) -> PhaseState:
         n = np.asarray(amounts, dtype=float)
@@ -69,13 +89,18 @@ def make_melts_h2_phase(
         host[indices] = n[:-1]
         result = evaluator.evaluate_liquid(
             temperature, pressure * 1e5, host, runtime=runtime,
-            common_R=common_r, python_executable=python_executable,
+            common_R=common_r, python_executable=python_executable, **mode_arguments,
         )
         if (result["status"] != "ok_supplied_liquid_properties"
-                or result["model_id"] != PROVIDER_MODEL_ID
+                or result["model_id"] != model_id
                 or tuple(result["component_order"]) != tuple(evaluator.COMPONENTS)
                 or result["phase_policy"]["oxygen_buffer"] != "None"):
             raise ValueError("Unexpected provider model, component basis, or imposed oxygen buffer.")
+        if calculation_mode == 4:
+            backend = result.get("provenance", {}).get("backend", {})
+            if (backend.get("calculation_mode") != 4
+                    or backend.get("model") != "rhyolite-MELTS 1.2.0"):
+                raise ValueError("The provider returned a different MELTS calculation mode.")
         if (result["T_K"] != temperature or result["P_Pa"] != pressure * 1e5
                 or result["basis"]["common_R_J_mol_K"] != common_r):
             raise ValueError("The provider returned different conditions or a different common R.")
@@ -98,22 +123,29 @@ def make_melts_h2_phase(
     return evaluate
 
 
-def provider_ledger(evaluator: Any, host_components: Sequence[str]) -> dict[str, Any]:
+def provider_ledger(
+    evaluator: Any, host_components: Sequence[str], *, calculation_mode: int = 1,
+) -> dict[str, Any]:
     """Record the actual provider file and complete finite host basis."""
+    model_id = _provider_model_id(evaluator, calculation_mode)
     path = Path(evaluator.__file__).resolve()
     indices = [evaluator.COMPONENTS.index(name) for name in host_components]
     elements = list(evaluator.ELEMENTS)
     hydrogen = [2 if element == "H" else 0 for element in elements]
+    backend = dict(evaluator.REFERENCE["backend"])
+    if calculation_mode == 4:
+        backend.update(model="rhyolite-MELTS 1.2.0", calculation_mode=4)
     return {
-        "model_id": PROVIDER_MODEL_ID,
+        "model_id": model_id,
+        "calculation_mode": calculation_mode,
         "evaluator_path": str(path),
         "evaluator_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        "backend": evaluator.REFERENCE["backend"],
+        "backend": backend,
         "reference_sha256": hashlib.sha256(evaluator.REFERENCE_PATH.read_bytes()).hexdigest(),
         "component_order": list(host_components) + ["H2_dissolved"],
         "element_order": elements,
         "formula_matrix_component_rows": evaluator.FORMULA_MATRIX[indices].tolist() + [hydrogen],
-        "amount_basis": "mol of named MELTS endmember; mol of molecular dissolved H2",
+        "amount_basis": "mol of named independent MELTS component; mol of molecular dissolved H2",
         "standard_convention": "full MELTS potentials at T/P; absolute dissolved H2 standard supplied separately",
         "reference_pressure_bar": 1.0,
         "energy_units": "G/(common_R*T), mu/(common_R*T)",
