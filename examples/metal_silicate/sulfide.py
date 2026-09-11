@@ -1,4 +1,5 @@
-"""Finite sulfur partition with explicit empirical FeS saturation branches.
+"""Finite sulfur partition and empirical sulfide appearance
+=============================================================
 
 This example has a fixed component/reaction set. The runnable ideal control
 tests numerical closure only; its SCSS is synthetic, not a calibration.

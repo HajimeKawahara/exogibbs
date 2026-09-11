@@ -1,0 +1,41 @@
+{
+  "implementation_commits": {
+    "G1": "94ce94eb63f42aa0e995378a3e6099b51742e431",
+    "G2": "a86d80fab64d5d887fdb23257ea5c7ac9dfa480d",
+    "S_C_source": "68d5f5270d8fdc63cdb8533c6be06cf7371103ec",
+    "S1_branches": "a7ed41560c225da6f7eec4ef23544bf96206c1d8"
+  },
+  "exoeos_commit": "0c85dfe28353bf70d7d687e49689e74db556c4b0",
+  "doc_ExoGibbs_commit": "74713412cf52adb1e125785b01b20f7906f290df",
+  "tests": {
+    "existing_suite_command": "PYTHONPATH=src:/home/kawahara/exoeos/src JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 pytest tests/unittests -q",
+    "existing_suite_result": "1223 passed, 1 skipped, 24 warnings in 1232.96s",
+    "new_tests_result": "70 passed in 25.16s",
+    "new_test_files": [
+      "metal_silicate_hydrogen_test.py",
+      "metal_silicate_full_potential_test.py",
+      "metal_silicate_melts_coupled_test.py",
+      "metal_silicate_sulfur_source_test.py",
+      "metal_silicate_sulfide_test.py"
+    ],
+    "skip_reason": "setuptools-scm generated version module is unavailable in isolated checkout",
+    "collection_note": "The existing suite was collected before the new files were created; all added regressions were then run together."
+  },
+  "documentation": {
+    "command": "./update_doc.sh -D sphinx_gallery_conf.plot_gallery=0",
+    "result": "build succeeded, 86 warnings",
+    "new_page_warnings": 0,
+    "japanese_latex": "Structural checks and a math/command-only pdflatex check passed. Full Japanese PDF not built: XeLaTeX and required packages are unavailable."
+  },
+  "file_sha256": {
+    "README_ja.md": "ad624ebfa341b4ef015f789dd1ab477e53c9c7e826015888968742f1645b7a36",
+    "hydrogen.json": "6d9393989bd14cabb45160b672b03a4e76064f247af412ae579d047b10e7bccb",
+    "melts_absent.json": "7b41db1b715dca909f1198e0a5610692958c1e0d53373657901a8b2441226d4c",
+    "melts_present.json": "af9d859d31f0547777b5afc1038b8bd76e30dbb84f074278eb011398f8035d4d",
+    "pytest_added.log": "0847f73b086cfa52c5210dac989a5ef7da6e614c65ed55e28fb65eb028c436a9",
+    "pytest_existing.log": "ae341871f7cd06c878dde9f37429046f59451e048bc8ed04aff7968db0def0b4",
+    "sulfide.json": "40625f801b72816177526859c1daf55e64310380355bc42c75e5f45e83d9a681",
+    "sulfur_carbon_source.json": "d58c96f042dfcf6f1605dad92fe6728dafd3f1f4881e22c68c75e98e714c54d4",
+    "verify.py": "dbbbf6b9b1c35a0719484387453cbf7dc264e3db290f1ce9e15159aa52e732a8"
+  }
+}

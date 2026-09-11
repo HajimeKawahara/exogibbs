@@ -1,5 +1,5 @@
 Finite sulfur and empirical FeS saturation
-=========================================
+============================================
 
 ``examples/metal_silicate/sulfide.py`` adds an example-local finite sulfur
 calculation. It leaves the audited dry and GCE source calculations unchanged.
@@ -9,7 +9,7 @@ equation closure and branch handling, not an experimental partition law,
 liquid stability, or a calibrated sub-Neptune prediction.
 
 Declared components and exchange
--------------------------------
+----------------------------------
 
 The finite element order is Mg, Si, Fe, O, H, S. The fixed phases contain:
 
@@ -51,7 +51,7 @@ calibrated temperature dependence, pressure work, or alloy interactions.
 1873 K is a numerical reference, not evidence for the declared liquids.
 
 Saturation convention and phase branches
-----------------------------------------
+------------------------------------------
 
 ``saturation(T_K, P_bar, amounts_mol)`` is evaluated at each trial and again
 at the final composition. It returns ``SCSS(ppm_s, sulfur_state, mass_basis,
@@ -105,7 +105,7 @@ hysteresis is inferred. Metal absence and host solids are not candidate
 branches of this sulfur control.
 
 Reproduction and continuation
-----------------------------
+-------------------------------
 
 Run the offline reference and its regression tests with::
 

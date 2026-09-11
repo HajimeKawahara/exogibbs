@@ -1,4 +1,5 @@
-"""Common hydrogen standards and a conditional finite-inventory control.
+"""Common hydrogen standards and finite inventories
+=====================================================
 
 The named older solubility law is a sensitivity model. The revised 2025
 experimental tables are not vendored, so no replacement calibration is fitted.

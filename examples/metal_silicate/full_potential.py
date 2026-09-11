@@ -1,4 +1,5 @@
-"""Host-side local roots using complete phase chemical potentials.
+"""Local roots using complete phase chemical potentials
+=========================================================
 
 Callbacks evaluate the current amounts and include standards and all mixing.
 This optional example path has no JAX derivative or global stability claim.

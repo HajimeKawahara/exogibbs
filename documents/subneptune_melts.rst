@@ -1,5 +1,5 @@
 Finite external MELTS--metal--gas controls
-=========================================
+============================================
 
 ``examples/metal_silicate/run_melts_reference.py`` connects the optional
 supplied-composition MELTS evaluator to a finite local ExoGibbs solve. Its
@@ -12,7 +12,7 @@ are unchanged. ``ChemicalSetup`` and the existing application API are also
 unchanged; the host numerical solve and full-phase callbacks are example-local.
 
 Basis and common potentials
----------------------------
+-----------------------------
 
 The host retains every positive endmember in the first saved ExoEOS MELTS
 liquid composition. Mg, Al, Ca, Na, K, Ti, Cr and P budgets are preserved,
@@ -54,7 +54,7 @@ calibration, gas-species convergence, and alloy pressure response remain
 acceptance requirements for a physical prediction.
 
 Local solve and phase branches
-------------------------------
+--------------------------------
 
 ``full_potential.py`` reuses ``local.build_problem`` for static phase and
 exact-zero element support. A phase callback receives T in K, P in bar and
@@ -89,7 +89,7 @@ No global Gibbs minimum, liquid stability, or derivative through a phase
 change is promised.
 
 Reproduce with the separately installed runtime
------------------------------------------------
+-------------------------------------------------
 
 Use ExoEOS commit ``0c85dfe`` or a compatible supplied-composition evaluator,
 and its hash-pinned alphaMELTS 2.3.2 / rhyolite-MELTS 1.0.2 runtime. The
