@@ -327,6 +327,49 @@ endmember basis, not a callable JAX activity model; they are not substituted
 for these source standards. Likewise, its hydrogen-bearing silicate EOS
 does not supply this network's solution chemical potentials.
 
+Finite hydrogen exchange through the magma--gas service
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``gas_exchange.py`` solves the same full 25-component source model through
+the existing ``MagmaGasProblem`` service. Its inner gas equilibrium uses the
+ten gas species, seven gas element abundances, and the compatible source
+``mu0/(RT)`` standards. It handles gas-only reactions R7, R8, R9.
+
+The outer root has 22 coordinates: 15 logarithmic condensed component
+amounts, six gas elemental ratios relative to oxygen, and one logarithmic
+physical gas amount. Its 22 residuals comprise seven finite elemental
+balances and 15 remaining reactions. Oxygen is a normalization anchor for
+the inner gas input and a conserved finite inventory in the outer problem;
+it is not an external oxygen buffer. The physical gas amount multiplies
+the gas mole fractions before computing the parcel's elemental totals.
+
+The returned ``model_state`` includes full component amounts, per-phase
+amounts and atomic contributions, all 18 reaction residuals, and seven
+relative elemental residuals. Use these physical amounts for reservoir
+accounting; the gas service's normalized ``element_abundances`` are numerical
+inputs and do not specify parcel size. Inner and outer convergence flags
+remain available in ``diagnostics``. The command-line acceptance gate checks
+both convergence and the independent elemental/reaction tolerances.
+
+All seven budgets must remain positive in this full-source example; exact
+zero support uses a separately constructed reduced problem such as the dry
+example. Temperature and H inventory may vary on a nearby smooth branch.
+Tests compare perturbed initial roots against both independent reference
+cases, vary finite H, scale all budgets, check implicit T/H derivatives,
+and preserve NaN gradients when either nested solve fails.
+
+.. code-block:: console
+
+   JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python examples/metal_silicate/gas_exchange.py --case source_full_2350
+   JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python examples/metal_silicate/gas_exchange.py --case source_full_3000
+
+This path retains the source's four-component Fe-Si-O-H activities, including
+its explicit unit H coefficient, and its R14 pressure prescription. It does
+not extend the ternary ExoEOS model to H. Gas and silicate mixing remain
+ideal, phases are declared, and finite local oxygen conservation replaces
+no existing buffered-H/MELTYQ behavior. Mixture gas EOS, nonideal hydrous
+silicate activities, and phase selection require separate physical models.
+
 The current cases use formal liquid standards: for example, the source lists
 3105--5000 K for its MgO liquid coefficients, so both cases extrapolate that
 endmember fit. Neither a stable liquid assemblage nor a calibrated joint
