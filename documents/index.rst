@@ -37,6 +37,7 @@ Contents
    metal_silicate_reference.rst
    subneptune_hydrogen.rst
    subneptune_melts.rst
+   subneptune_sulfur.rst
 
 .. toctree::
    :maxdepth: 1
