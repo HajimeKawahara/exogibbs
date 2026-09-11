@@ -70,11 +70,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Checkout merged ExoEOS provider
+      - name: Checkout pinned ExoEOS provider
         uses: actions/checkout@v4
         with:
           repository: HajimeKawahara/exoeos
-          ref: 0c85dfe28353bf70d7d687e49689e74db556c4b0
+          ref: 2bd26088836d9d4a008feee02e0944e1a2890583
           path: providers/exoeos
           fetch-depth: 0
 
@@ -103,7 +103,7 @@ jobs:
           provider = root / "providers/exoeos"
           assert subprocess.check_output(
               ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,
-          ).strip() == "0c85dfe28353bf70d7d687e49689e74db556c4b0"
+          ).strip() == "2bd26088836d9d4a008feee02e0944e1a2890583"
           for module, source in ((exogibbs, root), (exoeos, provider)):
               actual = Path(module.__file__).resolve()
               expected = source / "src" / module.__name__ / "__init__.py"
