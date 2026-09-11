@@ -28,7 +28,7 @@
     "japanese_latex": "Structural checks and a math/command-only pdflatex check passed. Full Japanese PDF not built: XeLaTeX and required packages are unavailable."
   },
   "file_sha256": {
-    "README_ja.md": "ad624ebfa341b4ef015f789dd1ab477e53c9c7e826015888968742f1645b7a36",
+    "README_ja.md": "11668bdcc50297880dcf68a55d0723f2f3b08dc9521de2d61a84baab85dc8102",
     "hydrogen.json": "6d9393989bd14cabb45160b672b03a4e76064f247af412ae579d047b10e7bccb",
     "melts_absent.json": "7b41db1b715dca909f1198e0a5610692958c1e0d53373657901a8b2441226d4c",
     "melts_present.json": "af9d859d31f0547777b5afc1038b8bd76e30dbb84f074278eb011398f8035d4d",
@@ -36,6 +36,6 @@
     "pytest_existing.log": "ae341871f7cd06c878dde9f37429046f59451e048bc8ed04aff7968db0def0b4",
     "sulfide.json": "40625f801b72816177526859c1daf55e64310380355bc42c75e5f45e83d9a681",
     "sulfur_carbon_source.json": "d58c96f042dfcf6f1605dad92fe6728dafd3f1f4881e22c68c75e98e714c54d4",
-    "verify.py": "dbbbf6b9b1c35a0719484387453cbf7dc264e3db290f1ce9e15159aa52e732a8"
+    "verify.py": "123f0f637944b36a8a45ae8d9deb4cc77e70ccd7beff3c00fc37dcbe3c9e3708"
   }
 }

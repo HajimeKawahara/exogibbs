@@ -13,10 +13,12 @@
 
 `receipt.json` は出力のSHA256、実行時のコードcommit、検証条件を保持します。
 各JSONにも入力、成分基底、実際のimport先、物理モデルの制限を記録しています。
-成分量から元素収支を再計算する検証は、リポジトリのルートで次を実行します。
+成分量から元素収支とH・S/C原式・SCSSの化学残差を再計算する検証は、
+リポジトリのルートで次を実行します。不受理SCSS枝も再判定します。
 
 ```sh
-python results/subneptune_taxonomy/20260911/verify.py
+PYTHONPATH=src JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu \
+  python results/subneptune_taxonomy/20260911/verify.py
 ```
 
 再計算用の環境は `PYTHONPATH=src:/path/to/exoeos/src`、
@@ -45,3 +47,17 @@ MELTS連成は旧H2則などの適用域外を含む条件付きモデルであ�
 分配校正、S+Cの共通自由エネルギー、graphite/carbide・metal N/nitrideの制約、
 Nを省略する定量的上限、ガス種の収束です。未取得の係数を一律倍率で補っていません。
 ExoInventoryの惑星圧力・総量閉包、ExoJAXの不透明度/RCEは今回の変更に含みません。
+
+## 監査後の再検証
+
+元の5つの数値JSONは変更せず、検証器を強化しました。上の標準実行は
+外部providerを要求せず、MELTSの化学再計算は `not_run` と明示します。
+実MELTSの再評価には `--exoeos-checkout`、`--runtime`、`--worker-python`
+を追加します。コマンド例は `documents/subneptune_melts.rst` に記載しています。
+監査修正後の検証記録は隣の `20260911_audit_fix/` に保存します。
+
+実物性で保存量を再評価すると、金属ありの組成を金属なしの根へ挿入した値は
+試験合金1 molあたり `D/(RT)=-2.89230`、同一予算での
+`(G_present-G_absent)/(RT)=-0.225361` です。金属なしの根は今回のformalな
+モデルでも不安定であり、金属相を抑制した診断用の根と解釈します。
+この結果だけでは金属ありの根の全競合相に対する安定性や実験校正を証明しません。

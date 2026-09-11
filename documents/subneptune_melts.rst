@@ -116,8 +116,15 @@ The real-backend present reference converged with maximum elemental residual
 0.0350556 mol gas. The same-budget metal-absent root had approximately
 0.770049 mol host and 0.128315 mol gas, with every metal component exactly
 zero; elemental and reaction residuals were below 4.5e-16 and 1.8e-14.
-These values validate equation closure only. Neither branch's phase stability
-follows from comparing these successful local residuals.
+Fresh evaluation of these archived amounts gives reaction residuals below
+1.4e-14 (present) and 1.8e-14 (absent). Inserting the present root's alloy
+composition into the absent root gives :math:`D/(RT)=-2.89230` per mole
+of trial alloy; the same-budget difference is
+:math:`(G_{present}-G_{absent})/(RT)=-0.225361`. This negative insertion
+trial disproves alloy absence within the formal model. The metal-absent
+root is an unstable phase-suppressed diagnostic, not a second stable state.
+The trial does not establish the present root's stability against every
+competing composition or phase, or experimental exchange calibration.
 
 Offline tests independently cover finite H/He/Mg/Si/Fe/O closure, amount
 rescaling, exact phase removal, ideal-solution insertion minimization,
@@ -125,3 +132,37 @@ rejection of failed roots, fresh final evaluation, common-R conversion,
 background-element conservation, and malformed external responses. They
 do not substitute for the optional real-backend command or its remaining
 physical acceptance gates.
+
+Revalidate archived amounts
+-----------------------------
+
+The dated verifier recomputes hydrogen, source S/N and Carbon, and analytic
+SCSS chemistry from the archived component amounts. It also recomputes
+rejected SCSS branch admissibility and requires agreement with the saved
+acceptance flags. Hashes and saved residual fields alone are insufficient:
+an element-conserving reaction displacement must fail chemical acceptance.
+The original numerical JSON files remain unchanged.
+
+.. code-block:: console
+
+   PYTHONPATH=src JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu \
+     python results/subneptune_taxonomy/20260911/verify.py
+
+This default explicitly reports MELTS chemistry as ``not_run``. To replace
+its balance-only checks with fresh supplied-composition provider potentials,
+including the insertion trial and Gibbs comparison above, run:
+
+.. code-block:: console
+
+   PYTHONPATH=src:/path/to/exoeos/src JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu \
+     python results/subneptune_taxonomy/20260911/verify.py \
+       --exoeos-checkout /path/to/exoeos \
+       --runtime /path/to/alphamelts-py-2.3.2-ubuntu_22_04-x86_64 \
+       --worker-python /path/to/melts-python \
+       --output /tmp/revalidated_archive.json
+
+CI covers every PR base, including stacked feature branches. A separate job
+pins ExoEOS commit ``0c85dfe28353bf70d7d687e49689e74db556c4b0``, asserts the
+actual import paths and native hydrogen model, and rejects any skipped
+provider integration test. It does not install the external MELTS runtime;
+the explicit replay above supplies that separate evidence.
