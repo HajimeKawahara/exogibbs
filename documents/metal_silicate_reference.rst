@@ -117,6 +117,43 @@ models. Also, a ternary ExoEOS model cannot provide the four-component GCE
 alloy's H activity. Original-model reproduction and completed-model
 verification must remain separately identified in subsequent work.
 
+Optional solution activity adapter
+----------------------------------
+
+``exogibbs.interop.exoeos.make_solution_lngamma_func`` now connects a
+homogeneous ExoEOS solution to a callback ``lngamma(T_K, P_bar, x_phase)``.
+ExoEOS is imported only when the factory is called and is not a required
+ExoGibbs dependency. For example, with a current ExoEOS checkout:
+
+.. code-block:: python
+
+   from exoeos import IdealSolution
+   from exogibbs.interop.exoeos import make_solution_lngamma_func
+
+   lngamma = make_solution_lngamma_func(
+       source_components=("Fe", "Si", "O"),
+       model=IdealSolution(),
+       model_components=("Fe", "Si", "O"),
+   )
+   # T in K, P in bar, normalized fractions in consumer order.
+   values = lngamma(3000.0, 1.0, [0.9, 0.08, 0.02])
+
+Models with ``components`` supply their own static component order; an
+explicit ``model_components`` must agree with that declaration. Input
+fractions and returned coefficients are permuted between that order and
+``source_components``. Component sets must match exactly. The adapter
+requires ``activity_basis="mole_fraction"`` and
+``standard_state_convention="symmetric"``; it rejects missing components
+instead of assigning them ideal activities.
+
+The callback converts bar to Pa once and returns only
+``solution_state(...).lngamma``. It adds neither ideal mixing nor standard
+potentials; the caller must apply the documented standard-state conversion.
+JIT, batching with ``jax.vmap``, and derivatives through T, P, and composition
+are preserved. Shape checks apply while tracing. Normalization, positivity,
+and the provider's physical domain remain caller obligations; compositions
+are not clipped or renormalized.
+
 Local amount and pressure contract
 ----------------------------------
 
@@ -140,7 +177,7 @@ their separate meaning.
 
 Temperature and pressure are supplied independently in K and bar.
 ExoInventory owns planetary pressure and global reservoir exchange.
-A later ExoEOS adapter will convert bar to Pa once and obtain only
+The optional ExoEOS adapter converts bar to Pa once and obtains only
 ``ln(gamma)`` from ``solution_state(...).lngamma``.
 
 For an ordinary ideal gas, the pressure contribution to reaction R is

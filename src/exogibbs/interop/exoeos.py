@@ -1,8 +1,8 @@
-"""Adapt pure-component ExoEOS states to the ExoGibbs fugacity port."""
+"""Optional ExoEOS adapters for gas fugacity and solution activities."""
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any, Callable, Mapping, Optional, Sequence
 
 import jax.numpy as jnp
 
@@ -24,18 +24,20 @@ def _load_state_tp() -> Any:
     return state_tp
 
 
-def _validate_species(source_species: Sequence[str]) -> tuple[str, ...]:
+def _validate_species(
+    source_species: Sequence[str], *, label: str = "source_species",
+) -> tuple[str, ...]:
     if source_species is None or isinstance(source_species, (str, bytes)):
-        raise ValueError("source_species must be a sequence of species names.")
+        raise ValueError(f"{label} must be a sequence of species names.")
     species = tuple(source_species)
     if not species:
-        raise ValueError("source_species must contain at least one species.")
+        raise ValueError(f"{label} must contain at least one species.")
     if not all(isinstance(name, str) and name for name in species):
-        raise ValueError("source_species must contain non-empty species names.")
+        raise ValueError(f"{label} must contain non-empty species names.")
     if len(set(species)) != len(species):
         duplicates = sorted({name for name in species if species.count(name) > 1})
         raise ValueError(
-            f"source_species names must be unique; duplicates: {duplicates}."
+            f"{label} names must be unique; duplicates: {duplicates}."
         )
     return species
 
@@ -156,4 +158,88 @@ def make_pure_lnphi_func(
     return lnphi_func
 
 
-__all__ = ["make_pure_lnphi_func"]
+def make_solution_lngamma_func(
+    *,
+    source_components: Sequence[str],
+    model: Any,
+    model_components: Optional[Sequence[str]] = None,
+) -> Callable[[Any, Any, jnp.ndarray], jnp.ndarray]:
+    """Adapt one homogeneous ExoEOS solution to ``lngamma(T_K, P_bar, x)``.
+
+    Input fractions and output natural-log coefficients follow
+    ``source_components``. Model order is read from ``model.components``;
+    models without labels, such as ``IdealSolution``, require explicit
+    ``model_components``. Component sets must match exactly. The model must
+    declare ``activity_basis='mole_fraction'`` and
+    ``standard_state_convention='symmetric'``.
+
+    The callback converts bar to Pa once, and returns only ``ln(gamma)``:
+    ideal mixing, standard potentials, and gas pressure terms are excluded.
+    It preserves JAX tracing. Callers must supply normalized nonnegative
+    fractions and enforce the provider's physical domain before tracing;
+    this adapter checks shapes without clipping or normalizing compositions.
+    """
+    components = _validate_species(source_components, label="source_components")
+    declared = getattr(model, "components", None)
+    if model_components is None:
+        if declared is None:
+            raise ValueError(
+                "model_components is required when model.components is absent."
+            )
+        model_components = declared
+    provider_components = _validate_species(model_components, label="model_components")
+    if declared is not None and tuple(declared) != provider_components:
+        raise ValueError("model_components must agree with model.components in order.")
+    if set(components) != set(provider_components):
+        raise ValueError("source_components and model_components must have identical sets.")
+    if getattr(model, "activity_basis", None) != "mole_fraction":
+        raise ValueError("The solution model must declare activity_basis='mole_fraction'.")
+    if getattr(model, "standard_state_convention", None) != "symmetric":
+        raise ValueError(
+            "The solution model must declare standard_state_convention='symmetric'."
+        )
+    if not callable(getattr(model, "gex_RT", None)):
+        raise ValueError("The solution model must implement gex_RT(T, P, x).")
+    try:
+        from exoeos import solution_state
+    except ImportError as exc:
+        raise ImportError(
+            "make_solution_lngamma_func requires ExoEOS with the solution_state API."
+        ) from exc
+
+    to_provider = jnp.asarray([components.index(name) for name in provider_components])
+    to_consumer = jnp.asarray([provider_components.index(name) for name in components])
+    expected_shape = (len(components),)
+
+    def lngamma_func(
+        temperature: Any, pressure_bar: Any, mole_fractions: jnp.ndarray,
+    ) -> jnp.ndarray:
+        if mole_fractions is None:
+            raise ValueError("Solution activities require phase mole_fractions, not None.")
+        temperature_array = jnp.asarray(temperature)
+        pressure_array = jnp.asarray(pressure_bar)
+        composition = jnp.asarray(mole_fractions)
+        if temperature_array.ndim != 0 or pressure_array.ndim != 0:
+            raise ValueError(
+                "Temperature and pressure must be scalars; use jax.vmap for batches."
+            )
+        if composition.shape != expected_shape:
+            raise ValueError(f"mole_fractions must have shape {expected_shape}.")
+        dtype = jnp.result_type(temperature_array, pressure_array, composition, jnp.float32)
+        state = solution_state(
+            model,
+            temperature_array.astype(dtype),
+            pressure_array.astype(dtype) * jnp.asarray(_BAR_TO_PA, dtype=dtype),
+            composition.astype(dtype)[to_provider],
+        )
+        values = jnp.asarray(state.lngamma)
+        if values.shape != expected_shape:
+            raise ValueError(
+                f"ExoEOS lngamma must have shape {expected_shape}; got {values.shape}."
+            )
+        return values[to_consumer]
+
+    return lngamma_func
+
+
+__all__ = ["make_pure_lnphi_func", "make_solution_lngamma_func"]
