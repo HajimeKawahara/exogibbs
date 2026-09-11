@@ -1,4 +1,5 @@
-"""Conditional finite MELTS--metal--gas reference with explicit provider paths.
+"""Conditional finite MELTS--metal--gas reference
+===================================================
 
 Run with --help. The liquid-only branch is a mechanism comparison, pending
 cross-phase standard calibration and final-composition competing-phase checks.

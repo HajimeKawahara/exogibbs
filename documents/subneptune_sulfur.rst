@@ -1,5 +1,5 @@
 Full sulfur, nitrogen and carbon source controls
-===============================================
+==================================================
 
 ``examples/metal_silicate/sulfur_source.py`` reproduces two separately pinned
 GCE networks at fixed local temperature and pressure. The sulfur/nitrogen
@@ -14,7 +14,7 @@ energy, or a planetary pressure closure. They preserve the audited Young
 ``source_full`` and ``completed_dry`` controls as separate model records.
 
 Offline execution and acceptance
--------------------------------
+----------------------------------
 
 Run the four frozen local cases, with JAX double precision enabled::
 
@@ -52,7 +52,7 @@ not vendored or required at runtime. The ordinary example uses only the
 committed numerical fixture, JAX, NumPy and SciPy.
 
 Conventions preserved for audit
-------------------------------
+---------------------------------
 
 * Gas and silicate components count formula-unit moles, while metal
   components count atomic moles. ``FeO15_silicate`` means FeO1.5, including
@@ -81,7 +81,7 @@ Conventions preserved for audit
   solubility API with a molecular-N2 interpretation.
 
 Physical integration gates
---------------------------
+----------------------------
 
 No SCSS law or sulfide phase is supplied by these source controls. SCSS
 cannot replace finite unsaturated S partition. A later empirical saturation

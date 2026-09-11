@@ -1,4 +1,5 @@
-"""Optional full MELTS host potentials with a reduced dissolved H2 component.
+"""Full MELTS host potentials and reduced dissolved hydrogen
+==============================================================
 
 This consumer owns basis selection and local chemistry. The provider remains
 an optional, explicitly selected source checkout and evaluates properties only.
