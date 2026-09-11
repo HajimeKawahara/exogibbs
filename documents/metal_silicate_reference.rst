@@ -189,6 +189,44 @@ standard potentials or implemented as a general pressure law in this audit.
 Reproduction and scope
 ----------------------
 
+Fixed-phase numerical solve
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``examples/metal_silicate/local.py`` supplies a small example-level
+``build_problem`` / ``solve`` interface. It reuses the existing magma--gas
+implicit root solver for a direct square mass-action system; there is no
+nested gas solve in this path. Standard potentials, phase activities, and
+any empirical reaction offsets are explicit callbacks in K/bar.
+
+The unknowns are ``log(n_i / sum(b))`` for active components. The residual
+contains logarithmic elemental balances and an independent reaction basis.
+Mole fractions are formed within each phase with ``logsumexp``. The factory
+removes components containing exact-zero-budget elements and checks the
+rank of the remaining element matrix. Surviving source reactions are kept;
+balanced null-space reactions complete a reduced basis when necessary.
+No artificial trace material is introduced.
+
+``LocalResult`` returns component and phase amounts in mol, mole fractions,
+phase-by-element atomic amounts, relative elemental residuals, independent
+reaction residuals, and the root solver's diagnostics. Excluded components
+and elements remain exact zeros in the original record's output basis.
+The positive element support and selected phases are fixed before tracing.
+Uniformly scaling all budgets scales phase amounts without changing the
+equilibrium compositions.
+
+Supply positive initial component amounts near the intended phase branch;
+the default seed is a numerical convenience and does not select a basin.
+The solver does not compare phases or test stability against absent phases.
+JIT and implicit reverse derivatives apply on a smooth converged branch;
+failed solves retain their residuals and return NaN implicit derivatives.
+Convergence alone is insufficient: inspect elemental and reaction residuals
+independently. Targeted tests include analytic ideal/nonideal controls,
+temperature and composition derivatives, elemental reference changes,
+exact zeros, trace carbon, amount scaling, and failure diagnostics.
+
+Reference audit commands
+~~~~~~~~~~~~~~~~~~~~~~~~
+
 Run from the ExoGibbs repository root:
 
 .. code-block:: console
