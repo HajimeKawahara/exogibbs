@@ -1,10 +1,11 @@
 Metal--silicate reference thermochemistry
 =========================================
 
-The first metal--silicate deliverable fixes the component basis, standard
-thermochemistry, and local amount convention before introducing an equilibrium
-solver. ``examples/metal_silicate/reference.py`` audits a frozen source record
-using NumPy only. Ordinary use and tests need neither ExoEOS nor GCE.
+The metal--silicate examples fix the component basis, standard thermochemistry,
+and local amount convention, then solve a declared local phase assemblage.
+``examples/metal_silicate/reference.py`` audits the frozen thermochemistry
+using NumPy only. Source-model examples and tests need neither ExoEOS nor GCE;
+the completed ternary-metal example uses the optional ExoEOS provider.
 
 Reference selection
 -------------------
@@ -115,7 +116,7 @@ printed oxygen coefficient, whereas the pinned GCE implementation uses
 ``gamma_Fe=1`` and the author-code oxygen variant. They are distinct physical
 models. Also, a ternary ExoEOS model cannot provide the four-component GCE
 alloy's H activity. Original-model reproduction and completed-model
-verification must remain separately identified in subsequent work.
+verification are separately identified below.
 
 Optional solution activity adapter
 ----------------------------------
@@ -247,8 +248,88 @@ The source comparison tolerance is ``rtol=atol=5e-12``; comparisons using
 the exact ``ln(10)`` allow ``atol=1e-9`` for the source's rounded conversion.
 These tolerances describe numerical reproduction, not experimental error.
 
+Independent local equilibrium references
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``equilibrium_reference.json`` adds independent NumPy/SciPy solutions from
+``generate_equilibrium_reference.py``. It first preserves all 25 source
+components at 2350 K and 3000 K, then records the smaller dry model at the
+same temperatures. All cases use a locally supplied pressure of 1 bar and
+the recorded elemental budgets. They replace the source's two temperatures
+with one isothermal condition and omit its planetary pressure law.
+
+The full-source model retains its author-code Si/O metal coefficients,
+``gamma_Fe=gamma_H=1``, and ideal silicate/gas mixing. ``source.py`` evaluates
+the chosen Shomate coefficient branches in JAX and reconstructs all standards.
+Temperature differentiation is local to those fixed branches. R14 alone
+receives the explicit residual offset ``ln(P_bar / 1e4)``; this empirical
+mass-action prescription is not presented as a common Gibbs minimum.
+
+The dry model contains silicate MgO, SiO2, MgSiO3, FeO, FeSiO3 and metal
+Fe, Si, O. Its H, Na, C budgets are exactly zero, and gas is excluded by
+the declared phase assemblage. Its four reactions are R1, R2, R3, R5.
+``native.py`` connects ExoEOS ``MaFeSiOLiquid`` from
+`commit 9c62197d3a7c1aa882e246c9de3fbc4102410d81
+<https://github.com/HajimeKawahara/exoeos/tree/9c62197d3a7c1aa882e246c9de3fbc4102410d81>`_.
+It obtains activities and ``standard_state_shift_RT`` from the same model
+instance. Adding that shift to the source standards preserves the completed
+model's chemical potentials. Independent analytic partial derivatives of
+the excess energy generate the reference without importing ExoEOS or JAX.
+
+.. list-table:: Independent reference phase amounts (mol of declared components)
+   :header-rows: 1
+
+   * - Model
+     - T (K)
+     - Silicate
+     - Metal
+     - Gas
+   * - Full source
+     - 2350
+     - 226.80445923
+     - 201.29911591
+     - 26.94491093
+   * - Full source
+     - 3000
+     - 204.54046576
+     - 296.31023037
+     - 119.77285916
+   * - Completed dry
+     - 2350
+     - 236.13126613
+     - 179.90174448
+     - Excluded
+   * - Completed dry
+     - 3000
+     - 253.84091261
+     - 180.51961433
+     - Excluded
+
+Run with float64 enabled. A local ExoEOS checkout may be supplied through
+``PYTHONPATH=/path/to/exoeos/src`` for the dry case:
+
+.. code-block:: console
+
+   JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python examples/metal_silicate/native.py --case source_full_2350
+   JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python examples/metal_silicate/native.py --case completed_dry_2350
+   python examples/metal_silicate/generate_equilibrium_reference.py --output /tmp/equilibrium_reference.json
+
+Acceptance requires root convergence, per-element relative residuals at
+most ``1e-9`` and independent reaction residuals at most ``1e-8``. The
+amount comparison tolerance is ``rtol=1e-8``. Native-provider tests are
+optional when ExoEOS is unavailable; the frozen reference and source tests
+remain offline. Verification also covers JIT, implicit reverse derivatives,
+ideal controls, amount scaling, and common elemental reference shifts.
+
+The silicate approximation in the dry example remains ideal. ExoEOS's
+MELTS reference data are external reference states with a different
+endmember basis, not a callable JAX activity model; they are not substituted
+for these source standards. Likewise, its hydrogen-bearing silicate EOS
+does not supply this network's solution chemical potentials.
+
 The current cases use formal liquid standards: for example, the source lists
 3105--5000 K for its MgO liquid coefficients, so both cases extrapolate that
 endmember fit. Neither a stable liquid assemblage nor a calibrated joint
-T/P/composition domain has been established. A physical equilibrium benchmark,
-runtime activities, H exchange, and phase selection remain later deliverables.
+T/P/composition domain has been established. A jointly calibrated liquid
+equilibrium benchmark and phase selection remain outside these fixed-phase
+numerical references.
