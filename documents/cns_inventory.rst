@@ -1,5 +1,5 @@
 Finite C, S and N on the source hosts
-===================================
+=====================================
 
 ``examples/metal_silicate/cns_inventory.py`` varies finite local atom budgets
 using the pinned GCE Carbon and S/N models described in
@@ -46,7 +46,7 @@ local composition and mean molar mass unchanged and scales absolute amounts
 and masses by the same factor.
 
 Physical scope and provider handoff
-----------------------------------
+-----------------------------------
 
 These are conditional source-host mechanisms. The Carbon and S/N source
 hosts and standards differ: setting S=N=0 in the latter does not recover the
