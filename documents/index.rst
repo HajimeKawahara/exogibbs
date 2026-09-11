@@ -38,6 +38,7 @@ Contents
    subneptune_hydrogen.rst
    subneptune_melts.rst
    subneptune_sulfur.rst
+   subneptune_sulfide.rst
 
 .. toctree::
    :maxdepth: 1
