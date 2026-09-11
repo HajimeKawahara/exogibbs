@@ -124,7 +124,7 @@ jobs:
             tests/unittests/interop
           )
           # The next stacked PR adds these offline full-potential contracts.
-          for name in full_potential melts_coupled; do
+          for name in full_potential melts_coupled melts_archive; do
             coupled=tests/unittests/examples/metal_silicate_${name}_test.py
             if [[ -f "$coupled" ]]; then tests+=("$coupled"); fi
           done

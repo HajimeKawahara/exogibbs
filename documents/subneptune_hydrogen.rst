@@ -1,5 +1,5 @@
 Common hydrogen standards and host dilution
-==========================================
+=============================================
 
 ``examples/metal_silicate/hydrogen.py`` introduces a separate conditional
 model, ``source_host_ma_fe_si_o_h_hirschmann2012_pressure_control_v1``. It
@@ -9,7 +9,7 @@ and the source's ideal silicate host. The archived ``source_full``,
 This control is not a calibrated melt/metal/gas benchmark or a phase search.
 
 Pressure and common species standards
--------------------------------------
+---------------------------------------
 
 The named older sensitivity law is
 
@@ -54,7 +54,7 @@ unavailable until the actual host, concentration basis, gas EOS, and tables
 are supplied. The compatibility solubility function is unchanged.
 
 Adding molecular H2 to an already mixed host
---------------------------------------------
+----------------------------------------------
 
 ``ideal_host_h2_dilution(host_gibbs_rt, host_mu_rt, host_amounts, h2_amount,
 h2_standard_rt)`` returns ``(gibbs_rt, host_mu_rt, h2_mu_rt)``. All potentials
