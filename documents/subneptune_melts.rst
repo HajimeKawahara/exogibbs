@@ -53,6 +53,41 @@ one chosen composition. Independent exchange data, revised host-specific H2
 calibration, gas-species convergence, and alloy pressure response remain
 acceptance requirements for a physical prediction.
 
+Explicit carbon property mode
+-----------------------------
+
+ExoEOS commit ``2bd26088836d9d4a008feee02e0944e1a2890583`` adds a separate
+rhyolite-MELTS 1.2.0 carbon property model. Select it explicitly with
+``make_melts_h2_phase(..., calculation_mode=4)`` and record the same selection
+with ``provider_ledger(..., calculation_mode=4)``. The callback and ledger
+check the declared model against its known identifier. The default remains
+mode 1, including compatibility with the original evaluator's call signature;
+``run_melts_reference.py`` continues to use its existing zero-C model.
+
+Mode 4 retains 19 independent provider components. The selected ``co2``
+amount is mol CO2, contributing one C and two O atoms per component mole.
+The provider handles the internal ``casio3 + co2 = caco3 + sio2`` reaction;
+its dependent CaCO3 species is not another ExoGibbs component or reservoir.
+ExoGibbs uses the independent full potentials and adds only the existing H2
+dilution. It does not add the reported activity coefficients or an empirical
+carbon dissolution equation to those potentials.
+
+Exact-zero C must be compared on reduced support within mode 4, without
+requiring agreement with the different mode 1 model. A direct callback can
+retain zero CO2, whose endpoint potential is unavailable. For a local solve,
+rebuild its selected host component order after ``local.build_problem``
+removes components containing zero-budget elements. Exact-zero added H2
+recovers the host Gibbs energy and has an insertion potential of minus
+infinity; remove its component when it is outside the declared local support.
+
+The provider's saved carbon controls cover 1473.15/1673.15 K and 50/500 MPa,
+with independent component derivatives and amount scaling. These are numerical
+property checks, not calibration of the 2350 K experiment. Positive SO3 is
+unsupported and N is absent from this provider. Carbon exchange-standard
+alignment, metal C/N/S, reduced dissolved CO/CH4, graphite/carbides, and
+sulfide or nitride phase chemistry remain separate physical inputs. This
+callback selection alone does not close finite planetary C/N/S inventories.
+
 Local solve and phase branches
 --------------------------------
 
@@ -162,7 +197,9 @@ including the insertion trial and Gibbs comparison above, run:
        --output /tmp/revalidated_archive.json
 
 CI covers every PR base, including stacked feature branches. A separate job
-pins ExoEOS commit ``0c85dfe28353bf70d7d687e49689e74db556c4b0``, asserts the
+pins ExoEOS commit ``2bd26088836d9d4a008feee02e0944e1a2890583``, asserts the
 actual import paths and native hydrogen model, and rejects any skipped
-provider integration test. It does not install the external MELTS runtime;
-the explicit replay above supplies that separate evidence.
+provider integration test. The carbon contract test checks the real provider's
+model declaration, independent CO2 formula, and exact-zero reference. CI does
+not install the external MELTS runtime; the explicit replay above supplies
+that separate evidence for the original model.

@@ -53,6 +53,7 @@ def replay_control(replay_modules, monkeypatch, tmp_path):
     reference_path = tmp_path / "recorded_host.json"
     reference_path.write_text(json.dumps({"backend": {"model": "recorded_host_control"}}))
     evaluator = SimpleNamespace(
+        MODEL_ID=ledger["model_id"],
         __file__=str(provider_path), COMPONENTS=ledger["component_order"][:-1],
         ELEMENTS=ledger["element_order"],
         FORMULA_MATRIX=np.asarray(ledger["formula_matrix_component_rows"][:-1]),
