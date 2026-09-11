@@ -1,0 +1,60 @@
+{
+  "provider_commit": "0c85dfe28353bf70d7d687e49689e74db556c4b0",
+  "jobs": [
+    {
+      "pr": 185,
+      "job_id": 103156974699,
+      "lines": [
+        "2026-09-11T05:21:54.9258662Z ============================= 60 passed in 36.24s ==============================",
+        "2026-09-11T05:21:56.1114561Z Provider integration: 60 tests, zero skips."
+      ],
+      "head_commit": "87f1ee4e84005de1021d9b67661559b07da504f4",
+      "status": "success",
+      "job_url": "https://github.com/HajimeKawahara/exogibbs/actions/runs/34565602173/job/103156974699"
+    },
+    {
+      "pr": 186,
+      "job_id": 103156973602,
+      "lines": [
+        "2026-09-11T05:21:51.7227845Z ============================= 84 passed in 33.22s ==============================",
+        "2026-09-11T05:21:53.0731057Z Provider integration: 84 tests, zero skips."
+      ],
+      "head_commit": "5f7f60d953b3f851868c2152380b4d9d6a9e9e20",
+      "status": "success",
+      "job_url": "https://github.com/HajimeKawahara/exogibbs/actions/runs/34565601726/job/103156973602"
+    },
+    {
+      "pr": 187,
+      "job_id": 103156970121,
+      "lines": [
+        "2026-09-11T05:21:45.7540284Z ============================= 84 passed in 23.28s ==============================",
+        "2026-09-11T05:21:46.5979942Z Provider integration: 84 tests, zero skips."
+      ],
+      "head_commit": "7b37d8666779c84b62b1dcba65e06c081a6b37ed",
+      "status": "success",
+      "job_url": "https://github.com/HajimeKawahara/exogibbs/actions/runs/34565600790/job/103156970121"
+    },
+    {
+      "pr": 188,
+      "job_id": 103156972013,
+      "lines": [
+        "2026-09-11T05:21:48.7118024Z ============================= 84 passed in 22.98s ==============================",
+        "2026-09-11T05:21:49.5585777Z Provider integration: 84 tests, zero skips."
+      ],
+      "head_commit": "6d3b34eaa200cfd76e035c2cf14ad95cd9ed293d",
+      "status": "success",
+      "job_url": "https://github.com/HajimeKawahara/exogibbs/actions/runs/34565601264/job/103156972013"
+    },
+    {
+      "pr": 189,
+      "job_id": 103157124845,
+      "lines": [
+        "2026-09-11T05:22:43.9704646Z ============================= 88 passed in 28.39s ==============================",
+        "2026-09-11T05:22:45.2521600Z Provider integration: 88 tests, zero skips."
+      ],
+      "head_commit": "925f2358c02ebf29d3c947bcb529b2653278f7ba",
+      "status": "success",
+      "job_url": "https://github.com/HajimeKawahara/exogibbs/actions/runs/34565653460/job/103157124845"
+    }
+  ]
+}
