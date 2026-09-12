@@ -90,6 +90,65 @@ S=N=0 it is distinct from the separately pinned Carbon model. These controls
 retain the source calibration limitations and do not provide MELTS coupling,
 sulfide saturation, or a bound on missing metal N and nitrides.
 
+Ideal, gas-only helium extension
+---------------------------------
+
+``build_helium_network`` derives an optional He-bearing model from the S/N
+network. It appends ``He`` to the nine-element order and ``He_gas`` to the
+37-component order, while retaining the same 28 reactions. He has no reaction
+or condensed component; its full inventory remains in the gas. The gas mole
+fractions include He, so reactive activities use
+``n_i / (n_reactive_gas + n_He) * P_bar / 1 bar``. Here ``P_bar`` is the
+total pressure including He. Adding He at fixed total pressure therefore
+changes the chemical partition through dilution.
+
+For example, prescribe an illustrative atomic He/H ratio of 0.1 at the first
+frozen temperature and 10000 bar, keeping the non-He budgets fixed::
+
+    import numpy as np
+    from examples.metal_silicate.sulfur_source import (
+        build_helium_network, load_reference, solve_reduced_source,
+    )
+
+    network = build_helium_network(
+        load_reference()["networks"]["sulfur_nitrogen"],
+    )
+    budget = np.asarray(network["element_amounts_mol"]).copy()
+    budget[network["elements"].index("He")] = (
+        0.1 * budget[network["elements"].index("H")]
+    )
+    result = solve_reduced_source(
+        network, network["cases"][0], element_amounts_mol=budget,
+        pressure_bar=10000.0,
+    )
+
+Budgets and returned amounts are in mol, with the original orders followed
+by He. The default He budget is exactly zero; no abundance ratio is assumed.
+``solve_reduced_source`` permits any combination of exact-zero C/N/S/He.
+``solve_source`` still requires every supplied budget to be positive.
+For default initial amounts, the projected source root scales with the
+requested non-He atom total, then the He amount is set to its budget.
+Explicit initial amounts must follow the full 38-component order and the
+declared zero support; they are used unchanged.
+
+The builder leaves the source fixture and input network unchanged. Derived
+cases contain thermochemical inputs and initial guesses, without copying
+saved source results or probes as He solutions. Derived model IDs and the
+``ideal-He extension of source equations`` evidence label distinguish these
+calculations; ``source_model_id`` and ``source_case_id`` identify their origins.
+
+Regression controls recover the original roots at He=0, conserve gas-only He,
+and verify exact-zero support and uniform amount scaling. A separate analytic
+dilution check starts from a source root at pressure ``P0`` with gas amount
+``n_gas0``. Adding ``n_He`` while setting
+``P = P0 * (1 + n_He / n_gas0)`` preserves every reactive partial pressure and
+therefore the original non-He amounts in this frozen source model.
+
+This extension assumes ideal He with no dissolution in silicate or metal.
+It does not provide He solubility, nonideal gas fugacity, thermal properties,
+or a planetary mass/pressure closure. The original calibration and fixed-phase
+limitations continue to apply.
+
 Conventions preserved for audit
 ---------------------------------
 
