@@ -51,6 +51,43 @@ the unmodified GPL-3.0 source in a temporary directory; that source code is
 not vendored or required at runtime. The ordinary example uses only the
 committed numerical fixture, JAX, NumPy and SciPy.
 
+Exact-zero C/N/S source branches
+--------------------------------
+
+``solve_source`` retains its strictly positive budget contract.
+``solve_reduced_source`` is the explicit entry point for zero C in the Carbon
+network, or any exact-zero combination of C, N and S in the sulfur/nitrogen
+network. Si, Mg, O, Fe, H and Na remain positive, as do gas, silicate and metal
+phase totals. A disappearing whole phase requires a different model branch.
+
+For example, select the original S/N host with C=N=0 and finite S::
+
+    network = load_reference()["networks"]["sulfur_nitrogen"]
+    budget = np.asarray(network["element_amounts_mol"]).copy()
+    budget[[network["elements"].index(element) for element in ("C", "N")]] = 0
+    result = solve_reduced_source(
+        network, network["cases"][0], element_amounts_mol=budget,
+    )
+
+Components containing absent elements and reactions involving those components
+are removed before evaluating logarithms. No small abundance replaces zero.
+Amounts retain the full source order with excluded components exactly zero.
+``active_species``, ``active_elements``, ``zero_budget_elements`` and the
+zero-based ``active_reaction_indices`` describe the selected support;
+``reaction_residual`` follows those active source rows. Elemental residuals
+retain the full element order and are exactly zero for absent elements.
+At zero budgets the default initial composition projects the saved converged
+source composition onto the active support.
+An explicitly supplied initial composition must be positive on that support
+and exactly zero elsewhere.
+
+All seven C/N/S absence combinations, Carbon C=0, unchanged positive source
+results, and amount-scale invariance are regression controls. The reduced
+S/N model preserves its own host components and reaction corrections; even at
+S=N=0 it is distinct from the separately pinned Carbon model. These controls
+retain the source calibration limitations and do not provide MELTS coupling,
+sulfide saturation, or a bound on missing metal N and nitrides.
+
 Conventions preserved for audit
 ---------------------------------
 
