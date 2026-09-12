@@ -77,9 +77,11 @@ zero-based ``active_reaction_indices`` describe the selected support;
 ``reaction_residual`` follows those active source rows. Elemental residuals
 retain the full element order and are exactly zero for absent elements.
 At zero budgets the default initial composition projects the saved converged
-source composition onto the active support.
+source composition onto the active support. Default initial amounts scale
+with the ratio of requested to reference atom totals on that support, so
+uniformly rescaling the budgets does not change the normalized initial guess.
 An explicitly supplied initial composition must be positive on that support
-and exactly zero elsewhere.
+and exactly zero elsewhere; its absolute amounts are used unchanged.
 
 All seven C/N/S absence combinations, Carbon C=0, unchanged positive source
 results, and amount-scale invariance are regression controls. The reduced

@@ -147,9 +147,9 @@ def solve_reduced_source(
     source rows. Zero-budget element residuals are exactly zero.
 
     At zero budgets the default seed projects the saved converged source
-    composition onto this support. An explicit seed must be positive on
-    active components and exactly zero elsewhere. This
-    branch retains the frozen source standards and does not select absent
+    composition onto this support and follows the requested atom amount scale.
+    An explicit seed must be positive on active components and exactly zero
+    elsewhere. This branch retains the frozen source standards and does not select absent
     phases or identify the reduced S/N model with the separate Carbon model.
     """
     return _solve_source(network, case, element_amounts_mol,
@@ -185,6 +185,9 @@ def _solve_source(
             # the saved positive source root supplies a nearby host seed.
             initial = np.asarray(case["component_amounts_mol"], dtype=np.float64)
         initial = np.where(supported, initial, 0.0)
+        # Preserve the reference seed on this support when only its atom scale changes.
+        reference_budget = np.asarray(network["element_amounts_mol"], dtype=np.float64)
+        initial *= budget.sum() / reference_budget[element_indices].sum()
     if (initial.shape != (len(species),) or not np.all(np.isfinite(initial))
             or np.any(initial[supported] <= 0) or np.any(initial[~supported] != 0)):
         if reduced:

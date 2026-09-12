@@ -92,6 +92,25 @@ def test_reduced_chemistry_is_invariant_to_amount_scale(name, absent, scale):
                                expected, rtol=2e-8, atol=0)
 
 
+@pytest.mark.parametrize("name,absent", [
+    ("carbon", ()), ("carbon", ("C",)),
+    ("sulfur_nitrogen", ()), ("sulfur_nitrogen", ("C", "N")),
+])
+@pytest.mark.parametrize("scale", [1e-6, 1e20])
+def test_default_reduced_seed_follows_absolute_inventory_scale(name, absent, scale):
+    network, case, budget = reduced_inputs(name, absent)
+    reference = SOURCE.solve_reduced_source(network, case, element_amounts_mol=budget)
+    scaled = SOURCE.solve_reduced_source(network, case, element_amounts_mol=budget * scale)
+
+    assert scaled["accepted"]
+    amounts = np.asarray(scaled["component_amounts_mol"])
+    np.testing.assert_allclose(amounts / scale, reference["component_amounts_mol"],
+                               rtol=2e-8, atol=0)
+    _, formula, _ = SOURCE.component_matrices(network)
+    np.testing.assert_allclose(formula @ amounts, budget * scale, rtol=1e-9, atol=0)
+    np.testing.assert_allclose(scaled["reaction_residual"], 0.0, atol=1e-8)
+
+
 @pytest.mark.parametrize("element,value", [("C", -1), ("N", np.nan), ("S", np.inf), ("O", 0), ("Fe", 0)])
 def test_reduced_source_rejects_invalid_or_absent_background_budget(element, value):
     network, case, budget = reduced_inputs("sulfur_nitrogen", ("C",))
