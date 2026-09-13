@@ -8,6 +8,7 @@ an integrable alloy free energy, or provide empirical partition calibration.
 
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 from pathlib import Path
 from typing import Any, Callable
@@ -25,6 +26,34 @@ REFERENCE_PATH = Path(__file__).with_name("sulfur_reference.json")
 def load_reference(path: Path = REFERENCE_PATH) -> dict[str, Any]:
     """Load the full, separately identified S/N and S-free carbon networks."""
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def build_helium_network(network: dict[str, Any]) -> dict[str, Any]:
+    """Extend the pinned S/N host with ideal, gas-only He and a zero He budget.
+
+    Element and component orders append ``He`` and ``He_gas``. The 28 source
+    reactions are unchanged; He dilutes all reactive gas mole fractions.
+    Derived cases contain inputs only, seeded from the saved source roots.
+    They are not additional source-reference solutions or calibration data.
+    """
+    if network["version"] != "Sulfur_Nitrogen_Version" or "He" in network["elements"]:
+        raise ValueError("He extension requires the unextended sulfur/nitrogen source network.")
+    derived = deepcopy(network)
+    derived["source_model_id"] = network["model_id"]
+    derived["model_id"] = network["model_id"] + "_ideal_he"
+    derived["evidence_level"] = "ideal-He extension of source equations"
+    derived["elements"].append("He")
+    derived["phases"]["gas"].append("He_gas")
+    derived["component_formulas"]["He_gas"] = {"He": 1}
+    derived["element_amounts_mol"].append(0.0)
+    derived["cases"] = [
+        {"id": case["id"] + "_ideal_he", "source_case_id": case["id"],
+         "T_K": case["T_K"], "P_bar": case["P_bar"],
+         "source_delta_g_over_rt": deepcopy(case["source_delta_g_over_rt"]),
+         "initial_component_amounts_mol": [*case["component_amounts_mol"], 0.0]}
+        for case in network["cases"]
+    ]
+    return derived
 
 
 def component_matrices(network: dict[str, Any]) -> tuple[tuple[str, ...], np.ndarray, np.ndarray]:
@@ -122,7 +151,7 @@ def solve_source(
 ) -> dict[str, Any]:
     """Solve the full positive source assemblage and audit absolute balances.
 
-    All nine (S/N) or seven (Carbon) budgets must be positive. Exact zero
+    All supplied budgets must be positive. Exact zero
     inventories require a separately declared branch and are rejected here;
     no trace floor substitutes for absent elements or phases. The frozen
     thermochemistry only supports ``case['T_K']``. Pressure is local and in
@@ -140,6 +169,7 @@ def solve_reduced_source(
 ) -> dict[str, Any]:
     """Solve the source host with explicitly permitted exact-zero C/N/S budgets.
 
+    The ``build_helium_network`` extension also permits exact-zero He.
     Other elements and all three phase totals remain positive. Components
     containing absent elements and reactions involving those components are
     removed before evaluating logarithms. Returned amounts retain the full
@@ -148,6 +178,8 @@ def solve_reduced_source(
 
     At zero budgets the default seed projects the saved converged source
     composition onto this support and follows the requested atom amount scale.
+    For the He extension, only non-He atoms set this scale; the He seed equals
+    its requested budget. Pressure includes He and is the total gas pressure.
     An explicit seed must be positive on active components and exactly zero
     elsewhere. This branch retains the frozen source standards and does not select absent
     phases or identify the reduced S/N model with the separate Carbon model.
@@ -167,11 +199,14 @@ def _solve_source(
                          if initial_component_amounts_mol is None
                          else initial_component_amounts_mol, dtype=np.float64)
     pressure = float(case["P_bar"] if pressure_bar is None else pressure_bar)
+    helium = "He" in network["elements"]
     if reduced:
-        background = np.asarray([element not in ("C", "N", "S") for element in network["elements"]])
+        optional = ("C", "N", "S", "He") if helium else ("C", "N", "S")
+        background = np.asarray([element not in optional for element in network["elements"]])
         if (budget.shape != (len(network["elements"]),) or not np.all(np.isfinite(budget))
                 or np.any(budget < 0) or np.any(budget[background] <= 0)):
-            raise ValueError("Reduced source budgets require finite nonnegative C/N/S and positive background elements.")
+            raise ValueError(f"Reduced source budgets require finite nonnegative {'/'.join(optional)} "
+                             "and positive background elements.")
     elif (budget.shape != (len(network["elements"]),) or not np.all(np.isfinite(budget))
           or np.any(budget <= 0)):
         raise ValueError("The full source network requires finite, strictly positive element budgets.")
@@ -179,15 +214,19 @@ def _solve_source(
     component_indices = np.flatnonzero(supported)
     element_indices = np.flatnonzero(budget > 0)
     reaction_indices = np.flatnonzero(np.all(reactions[:, ~supported] == 0, axis=1))
-    if reduced and initial_component_amounts_mol is None:
+    if (reduced or helium) and initial_component_amounts_mol is None:
         if not np.all(supported):
             # Removing C/N can make the original unequilibrated start stall;
             # the saved positive source root supplies a nearby host seed.
-            initial = np.asarray(case["component_amounts_mol"], dtype=np.float64)
+            initial = np.asarray(case.get("component_amounts_mol",
+                                          case["initial_component_amounts_mol"]), dtype=np.float64)
         initial = np.where(supported, initial, 0.0)
         # Preserve the reference seed on this support when only its atom scale changes.
         reference_budget = np.asarray(network["element_amounts_mol"], dtype=np.float64)
-        initial *= budget.sum() / reference_budget[element_indices].sum()
+        scaled_elements = [i for i in element_indices if network["elements"][i] != "He"]
+        initial *= budget[scaled_elements].sum() / reference_budget[scaled_elements].sum()
+        if helium:
+            initial[species.index("He_gas")] = budget[network["elements"].index("He")]
     if (initial.shape != (len(species),) or not np.all(np.isfinite(initial))
             or np.any(initial[supported] <= 0) or np.any(initial[~supported] != 0)):
         if reduced:
@@ -237,7 +276,8 @@ def _solve_source(
                 and np.max(np.abs(balance)) < 1e-9)
     if not accepted:
         raise RuntimeError(f"Source root failed independent acceptance: {root.message}")
-    result = {"model_id": network["model_id"], "evidence_level": "source reproduction",
+    result = {"model_id": network["model_id"],
+            "evidence_level": network.get("evidence_level", "source reproduction"),
             "T_K": case["T_K"], "P_bar": pressure,
             "species": list(species), "elements": network["elements"],
             "component_amounts_mol": amounts.tolist(),
@@ -250,13 +290,16 @@ def _solve_source(
             "phase_stability": "Not assessed; fixed positive source assemblage."}
     if reduced:
         result.update({
-            "support_policy": "exact_zero_cns",
+            "support_policy": "exact_zero_cns_he" if helium else "exact_zero_cns",
             "active_species": list(active_species),
             "active_elements": [network["elements"][i] for i in element_indices],
             "active_reaction_indices": reaction_indices.tolist(),
             "zero_budget_elements": [element for element, amount in zip(network["elements"], budget)
                                      if amount == 0],
         })
+    if helium:
+        result["source_model_id"] = network["source_model_id"]
+        result["source_case_id"] = case["source_case_id"]
     return result
 
 
