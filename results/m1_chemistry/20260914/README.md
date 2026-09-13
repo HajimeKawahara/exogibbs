@@ -16,17 +16,29 @@ spectral error gate is closed here.
 | Expanded gases + pure condensates | 1400 | 0.1 | 0.00592593153 | 0.044662327 |
 
 All five local controls pass the independent element/mass and KKT audits.
+Here `accepted` means that a local solution satisfies its own model's numerical
+equilibrium conditions; it does not establish source/upper model compatibility.
 The maximum per-element relative residual is `4.00e-11`. At 2350 K the upper
 model's gas-only source-reaction residuals are approximately `-0.001333` (R9)
 and `-0.02679` (R18), distinct from its near-zero own-model stationarity error.
 This difference is retained, without adjusting the source standards.
 
-SiO(s) appears at the boundary; the cooler condensed parcel contains Fe(s,l),
-MgSiO3(s,l) and Na2Si2O5(s,l). A small total cloud mass fraction does not imply
-small depletion of each rock-forming element. These results do not accept the
-boundary for a retained atmosphere. The next physical gate is to evaluate this
-recondensation and model difference over Inventory's actual trial conditions,
-then assess their impact against the intended spectral signal.
+At the tested 2350 K / 100 bar boundary, the shared nine-gas H2O/H2 ratio differs
+from the source by only `-0.00009383%`, while the SiH4 partial pressure differs
+by `-2.77%`. Expanding to 35 gases changes H2O/H2 by `-0.707%` relative to the
+source. The close shared-gas water ratio does not establish identical reaction
+conditions.
+
+Adding condensates produces SiO(s) at that same boundary and transfers
+**15.94% of the source gas's Si atoms** into condensate, even though the cloud
+is only **0.3115% of the gas+cloud mass**. The cooler condensed parcel contains
+Fe(s,l), MgSiO3(s,l) and Na2Si2O5(s,l).
+
+**No acceptable source-to-upper boundary has been established by this run.**
+Whether an approximate connection is adequate, or the thermochemical model
+must be corrected, remains undecided. The next physical gate is to evaluate
+the recondensation and reaction-condition differences over Inventory's actual
+trial conditions, then assess their impact against the intended spectral signal.
 
 On this CPU run, source evaluation took about 1.3 s, the first condensed solve
 about 45 s (including compilation), and the subsequent cooler condensed solve
