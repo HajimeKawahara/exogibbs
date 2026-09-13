@@ -48,3 +48,11 @@ The molecular and condensate coefficients are packaged FastChem4 data; the
 source retains its separately identified frozen GCE reaction model. The
 original temperature upper bounds are enforced, with no new joint calibration
 claim. See `examples/metal_silicate/m1_chemistry.md` for the full amount contract.
+
+Validation: `pytest.log` records the complete unit suite: **1412 passed,
+1 skipped, 24 warnings in 1310.77 s**. The skipped SCM-version test requires
+the generated version module, which is absent in this isolated worktree.
+The warnings originate from SciPy calculations in the existing Rocky trace-Mg
+tests. The 17 new regressions pass. `./update_doc.sh` also succeeded (110 Sphinx
+warnings); it generated no warning attributed to this example or its new
+reference-document section.
