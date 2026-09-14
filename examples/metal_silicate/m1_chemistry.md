@@ -71,6 +71,62 @@ validity, or a jointly calibrated source/upper model. The source remains frozen
 at 2350 K. A change to standards, calibration, or phase potentials requires a
 separate physical-model change and validation.
 
+## Approximate source-to-upper boundary
+
+`BOUNDARY_CONTRACT` names the approximation
+`m1_fixed_source_retained_parcel_v1`. At the same temperature and total pressure
+in bar, transfer the source gas's **absolute atom moles** to upper gas plus
+retained cloud. Keep the source silicate and metal fixed; the upper pure
+condensates have no contact with those deep phases. No material is rained out.
+Atom moles are authoritative; each consumer recomputes kg and mol/kg with its
+own atomic-mass table. This conversion does not align thermochemical standards.
+
+Call `audit_boundary(network, case, source, setup, report)` with results from
+`SOURCE.solve_reduced_source` and `solve_parcel`. The helper requires identical
+source/upper T/P and recounts actual source and upper component arrays. Its
+`contract_met` requires the unchanged local element/mass and chemical audits;
+`local_accepted` records the original solve acceptance flags. Neither field
+certifies a common equilibrium or accepts M1-A. `run_diagnostic` adds this
+comparison only to parcels at the source T/P; its exit status continues to
+describe local solves and audits.
+
+Gas partial pressures and species amounts may change across this boundary.
+Source reaction equilibrium after that change, enthalpy, entropy and energy
+balance are unconstrained. With the deep composition fixed, the helper reports
+all active source reaction residuals before and after substituting upper gas
+partial pressures: `delta residual / RT = nu_gas @ delta(log p)`. It also
+records each affected reaction index, each shared gas's log-pressure change,
+and each element's fraction transferred to cloud. Reaction indices are
+zero-based positions in the pinned source network. These discrepancies are
+separate from the upper solver's own chemical residuals.
+
+At the two saved low-O/Si inputs (`oxygen_factor=0.9`, 2350 K), the approximation
+has substantial effects:
+
+| Pressure [bar] | Source gas Si condensed | Source gas O condensed | Maximum source reaction change [/RT] |
+| --- | --- | --- | --- |
+| 20.4283423324 | 55.7638% | 43.4043% | 0.8265633 |
+| 54.1552394888 | 66.1532% | 46.4195% | 1.0969342 |
+
+The source gas reactions at indices 9 and 18 retain residuals of approximately
+-0.00133258 and -0.02678859 /RT. The vendored
+`tests/unittests/examples/data/m1_boundary_cases.json` contains the original
+absolute inputs and source/data provenance; the regression tests recompute
+both source and upper equilibria offline. These diagnostics quantify this
+local approximation; they do not estimate a retained column's energy or
+opacity error. Inventory must separately choose an acceptable input domain
+and assess those column effects before accepting M1-A.
+
+Save a fresh evaluation of both absolute inputs with source/data hashes:
+
+```bash
+JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu JAX_ENABLE_X64=1 PYTHONPATH=src \
+python examples/metal_silicate/m1_boundary_validation.py \
+    --output results/m1_boundary_contract/validation.json
+```
+
+Choose a new output path for every run; existing records are never overwritten.
+
 ## Scope and records
 
 This is the chemical diagnostic part of M1-A. It supplies a local callback and
@@ -90,5 +146,6 @@ Run the focused regression tests with:
 
 ```bash
 JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu JAX_ENABLE_X64=1 PYTHONPATH=src \
-python -m pytest tests/unittests/examples/m1_chemistry_test.py
+python -m pytest tests/unittests/examples/m1_chemistry_test.py \
+    tests/unittests/examples/m1_boundary_contract_test.py
 ```

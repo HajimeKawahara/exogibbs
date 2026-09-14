@@ -65,6 +65,17 @@ CONDENSATE_SPECIES = (
 )
 ELEMENT_TOLERANCE = 1.0e-9
 CHEMICAL_TOLERANCE = 1.0e-8
+BOUNDARY_CONTRACT = {
+    "id": "m1_fixed_source_retained_parcel_v1",
+    "kind": "approximate",
+    "continuous": ["temperature_K", "total_pressure_bar", "element_amounts_mol"],
+    "amount_basis": "Source gas atom moles equal upper gas plus retained cloud atom moles; no rainout.",
+    "mass_basis": "Atom moles are authoritative; each consumer recomputes kg with its own atomic masses.",
+    "contact_phases": "Source silicate and metal stay fixed; upper pure condensates do not contact them.",
+    "unconstrained": ["gas_partial_pressures", "species_amounts", "source_reaction_equilibrium",
+                      "enthalpy", "entropy", "energy_balance"],
+    "acceptance": "Local audits and transfer closure do not certify common equilibrium or accept M1-A.",
+}
 
 
 def subset_setup(setup: ChemicalSetup, species: Sequence[str]) -> ChemicalSetup:
@@ -273,6 +284,83 @@ def shared_reaction_comparison(network: dict, case: dict, report: dict) -> dict[
     return {"source_reaction_indices": rows.tolist(), "source_reaction_residual": residual.tolist()}
 
 
+def audit_boundary(
+    network: dict, case: dict, source: dict,
+    setup: ChemicalSetup | CondensateChemicalSetup, report: dict,
+) -> dict[str, Any]:
+    """Audit the approximate boundary at common T/P with frozen deep phases.
+
+    Use a source result from ``SOURCE.solve_reduced_source`` and a parcel
+    result from ``solve_parcel``. Recount actual component arrays; saved parcel
+    summaries and acceptance flags cannot establish atom or chemical closure.
+    Source reaction shifts are model discrepancies, not upper KKT residuals.
+    """
+    if source["T_K"] != case["T_K"] or report["T_K"] != source["T_K"] or report["P_bar"] != source["P_bar"]:
+        raise ValueError("A boundary comparison requires the same source and upper temperature and pressure.")
+    species, formula, reactions = SOURCE.component_matrices(network)
+    if tuple(source["species"]) != species or source["elements"] != network["elements"]:
+        raise ValueError("Source component and element orders must match the network.")
+    condensed = isinstance(setup, CondensateChemicalSetup)
+    gas_setup = setup.gas_setup if condensed else setup
+    if gas_setup.elements != ELEMENTS or tuple(report["gas_species"]) != gas_setup.species:
+        raise ValueError("Boundary gas species and element orders must match the setup.")
+    if condensed and tuple(report["condensate_species"]) != setup.condensate_species:
+        raise ValueError("Boundary condensate species must match the setup.")
+    if not condensed and (report["condensate_species"] or report["condensate_amounts_mol"]):
+        raise ValueError("A gas-only boundary cannot include condensates.")
+    budget = source_gas_inventory(network, source)
+    audited = audit_parcel(
+        gas_setup, report["T_K"], report["P_bar"], budget, report["gas_amounts_mol"],
+        condensate_setup=setup.condensate_setup if condensed else None,
+        condensate_amounts=report["condensate_amounts_mol"] if condensed else None,
+    )
+    amounts = np.asarray(source["component_amounts_mol"], dtype=float)
+    source_budget = np.asarray(source["element_amounts_mol"], dtype=float)
+    supported = np.all(formula[source_budget == 0] == 0, axis=0)
+    if np.any(~np.isfinite(amounts)) or np.any(amounts[supported] <= 0) or np.any(amounts[~supported] != 0):
+        raise ValueError("Source amounts must be positive on active components and exactly zero elsewhere.")
+    active = np.flatnonzero(np.all(reactions[:, ~supported] == 0, axis=1))
+    fractions = amounts.copy()
+    for phase in network["phases"].values():
+        columns = [species.index(name) for name in phase]
+        fractions[columns] /= amounts[columns].sum()
+    chemistry = SOURCE._make_reaction_residual(network, case, np.flatnonzero(supported), active)
+    original = np.asarray(chemistry(np.log(fractions[supported]), source["P_bar"]))
+    source_balance = formula @ amounts - source_budget
+    source_balance[source_budget > 0] /= source_budget[source_budget > 0]
+    columns = [species.index(name) for name in SHARED_SOURCE_SPECIES]
+    upper_columns = [gas_setup.species.index(name) for name in SHARED_GAS_SPECIES]
+    upper_x = np.asarray(audited["gas_mole_fractions"])[upper_columns]
+    delta_log_p = np.log(upper_x) - np.log(fractions[columns])
+    shifts = reactions[np.ix_(active, columns)] @ delta_log_p
+    replaced = original + shifts
+    local_accepted = bool(source["accepted"] and report["accepted"])
+    return {
+        "contract": BOUNDARY_CONTRACT.copy(),
+        "contract_met": bool(local_accepted and report["solver_converged"] and audited["accepted"]
+                             and np.max(np.abs(original)) < CHEMICAL_TOLERANCE
+                             and np.max(np.abs(source_balance)) < ELEMENT_TOLERANCE),
+        "local_accepted": local_accepted,
+        "common_equilibrium_certified": False, "m1_a_accepted": False,
+        "T_K": report["T_K"], "P_bar": report["P_bar"], "elements": list(ELEMENTS),
+        "source_gas_element_amounts_mol": budget.tolist(),
+        "relative_element_residual": audited["relative_element_residual"],
+        "relative_mass_residual": audited["relative_mass_residual"],
+        "cloud_element_fraction": (np.asarray(audited["cloud_element_amounts_mol"]) / budget).tolist(),
+        "cloud_mass_fraction": 1.0 - audited["gas_mass_fraction"],
+        "shared_gas_species": list(SHARED_GAS_SPECIES),
+        "delta_log_partial_pressure": delta_log_p.tolist(),
+        "source_reaction_indices": active.tolist(),
+        "source_elements": list(network["elements"]),
+        "source_relative_element_residual": source_balance.tolist(),
+        "source_reaction_residual_rt": original.tolist(),
+        "delta_source_reaction_residual_rt": shifts.tolist(),
+        "fixed_deep_source_reaction_residual_rt": replaced.tolist(),
+        "max_abs_delta_source_reaction_residual_rt": float(np.max(np.abs(shifts))),
+        "unmet_source_reaction_indices": active[np.abs(replaced) >= CHEMICAL_TOLERANCE].tolist(),
+    }
+
+
 def provenance() -> dict[str, Any]:
     """Record actual imports, local git state, and source/data hashes offline."""
     root = Path(__file__).resolve().parents[2]
@@ -321,6 +409,7 @@ def run_diagnostic(
                    "elements": network["elements"], "element_amounts_mol": budget.tolist(),
                    "upper_points_T_K_P_bar": [list(point) for point in points]},
         "source": None, "parcels": [], "failures": [],
+        "boundary_contract": BOUNDARY_CONTRACT.copy(),
         "atomic_molar_masses_kg_per_mol": {e: element_mass[e] * 1.0e-3 for e in network["elements"]},
     }
     started = time.perf_counter()
@@ -367,6 +456,8 @@ def run_diagnostic(
             report["stage"] = stage
             if temperature == 2350.0:
                 report["source_comparison"] = shared_reaction_comparison(network, case, report)
+            if temperature == source["T_K"] and pressure == source["P_bar"]:
+                report["boundary_comparison"] = audit_boundary(network, case, source, setup, report)
             record["parcels"].append(report)
             if not report["accepted"]:
                 record["failures"].append({"stage": stage, "T_K": temperature, "P_bar": pressure,
