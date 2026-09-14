@@ -396,3 +396,11 @@ actual imports, source/data hashes, and failed points. These are local
 diagnostics: ExoInventory still owns the retained column and global pressure
 closure. See the :download:`amount contract and scope
 <../examples/metal_silicate/m1_chemistry.md>` for usage and acceptance details.
+
+At the same bottom temperature and total pressure, ``audit_boundary`` audits
+an approximate transfer of source gas atom moles into upper gas plus retained
+cloud. It records each element's condensed fraction and all active source
+reaction residuals after replacing gas partial pressures with the deep phases
+fixed. Its conservation contract does not certify common equilibrium or
+M1-A acceptance; spectral effects and the coupled input domain remain to be
+assessed.
