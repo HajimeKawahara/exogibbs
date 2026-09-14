@@ -138,10 +138,11 @@ def _select_support_with_zero_barrier_dual(
 
     Structural zero rows and the species that consume them are removed.  On
     the remaining physical gas branch, the dual maximizes the target-weighted
-    element potential subject to gas normalization and nonnegative driving
-    for every temperature-valid condensate.  The selected tight constraints
-    are only an initializer: an independent exact solve and full physical
-    audit remain authoritative.
+    element potential subject to a gas partition sum at most one and
+    nonnegative driving for every temperature-valid condensate. The gas
+    boundary must be active at the returned initializer. Selected tight
+    constraints only initialize an independent exact solve; its full physical
+    audit remains authoritative.
     """
 
     ag_full = np.asarray(gas_formula_matrix, dtype=np.float64)
@@ -275,6 +276,27 @@ def _select_support_with_zero_barrier_dual(
         }
     )
 
+    # Negative entries were excluded above. With nonempty species, lowering
+    # every potential by t lowers each gas logit by at least t * min(sum(A)).
+    # The same direction makes every condensate inequality feasible.
+    gas_atoms, condensate_atoms = ag.sum(axis=0), ac.sum(axis=0)
+    initial_shift = 0.0
+    if np.all(gas_atoms > 0.0) and np.all(condensate_atoms > 0.0):
+        initial_shift = max(
+            0.0,
+            float(logsumexp(ag.T @ lambda_reference - gamma) / np.min(gas_atoms)),
+            float(np.max((ac.T @ lambda_reference - hcond) / condensate_atoms)),
+        )
+        if initial_shift > feasibility_tolerance:
+            lambda_reference = lambda_reference - initial_shift
+    # Normalize the linear constraint rows in optimizer coordinates. Physical
+    # feasibility and support selection below retain their original RT units.
+    driving_derivative = -ac.T * coordinate_scale[None, :]
+    driving_scale = np.max(np.abs(driving_derivative), axis=1)
+    driving_scale = np.where(driving_scale > 0.0, driving_scale, 1.0)
+    base_report["initial_feasibility_potential_shift"] = initial_shift
+    base_report["condensate_constraint_scaling"] = "unit_infinity_norm_jacobian_rows"
+
     cached_values: np.ndarray | None = None
     cached_state: tuple[
         np.ndarray, float, np.ndarray, np.ndarray
@@ -326,11 +348,11 @@ def _select_support_with_zero_barrier_dual(
         return -(state(values)[2] * coordinate_scale)
 
     def driving_constraint(values: np.ndarray) -> np.ndarray:
-        return state(values)[3]
+        return state(values)[3] / driving_scale
 
     def driving_jacobian(values: np.ndarray) -> np.ndarray:
         del values
-        return -ac.T * coordinate_scale[None, :]
+        return driving_derivative / driving_scale[:, None]
 
     try:
         optimization = minimize(
@@ -339,7 +361,11 @@ def _select_support_with_zero_barrier_dual(
             jac=objective_jacobian,
             constraints=(
                 {
-                    "type": "eq",
+                    # The ideal-gas dual is finite throughout this convex
+                    # sublevel set. Equality would restrict optimization to
+                    # its curved boundary even far from a feasible start.
+                    # The final audit below still requires gas normalization.
+                    "type": "ineq",
                     "fun": normalization_constraint,
                     "jac": normalization_jacobian,
                 },

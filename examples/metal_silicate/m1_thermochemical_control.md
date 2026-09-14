@@ -74,6 +74,15 @@ reported as `retained_cloud`, not assigned to the silicate reservoir. The
 finite source total is the sum of silicate, metal, gas, and retained cloud.
 An optional `initial_control` supplies a previous accepted local root to start
 a neighboring pressure calculation; it imposes no equilibrium constraints.
+When the old parcel develops a different cloud support at the requested
+pressure, or its initializer-only solve fails, the original source reactions
+provide a new seed instead. The full catalog is still used for every accepted
+state. Finite logarithmic amount bounds `[-650, 10]`, matching the source
+solver's numerical domain, prevent overflowing or underflowing trial amounts.
+The existing least-squares solver uses its bounded dogleg method (`dogbox`);
+the reflective method stalled at a cloud transition in the low-O control.
+These are solver safeguards; accepted states must satisfy the same finite
+budgets and chemical residuals without a trace-element floor.
 
 The returned arrays retain the full original source component order for deep
 amounts, with exact zeros in all gas and absent-C/N/S slots. The additional
@@ -110,3 +119,9 @@ Run the focused regressions with the existing local environment:
 JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 PYTHONPATH=src:$PYTHONPATH \
 python -m pytest -q tests/unittests/examples/m1_thermochemical_control_test.py
 ```
+
+The pressure-step regression starts from a vendored accepted local 10 bar
+source and evaluates 16, 25, 16.3, and 16.3 bar in sequence. The final pressure
+is a nearby test probe, not a planetary root claimed by this provider. This
+covers large forward/reverse pressure changes and a fresh repeated solve.
+The source archive hash and original provider commit accompany the seed.

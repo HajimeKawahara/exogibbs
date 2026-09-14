@@ -197,6 +197,22 @@ def solve_control(
         raise ValueError("pressure_bar must be finite and positive.")
     if initial_source is not None and initial_control is not None:
         raise ValueError("Supply only one initial source or control result.")
+    initialization = "previous_control" if initial_control is not None else "source_reactions"
+    if initial_control is not None and initial_control["P_bar"] != pressure_bar:
+        # A pressure jump can create transient cloud phases in an old parcel.
+        # Keep that phase search in the provider and choose a nearby source seed.
+        guess_atoms = (np.asarray(initial_control["atmosphere_element_amounts_mol"])
+                       * budget.sum() / np.sum(initial_control["element_amounts_mol"]))
+        try:
+            probe = CHEMISTRY.solve_parcel(upper, 2350.0, pressure_bar, guess_atoms)
+            old_cloud = np.asarray(initial_control["bottom_parcel"]["condensate_amounts_mol"]) > 0
+            new_cloud = np.asarray(probe["condensate_amounts_mol"]) > 0
+            changed = not probe["accepted"] or not np.array_equal(old_cloud, new_cloud)
+        except (ValueError, RuntimeError):
+            changed = True
+        if changed:
+            initial_control = None
+            initialization = "source_after_changed_or_failed_warm_parcel"
     source = None if initial_control is not None else initial_source or CHEMISTRY.SOURCE.solve_reduced_source(
         network, control["case"], element_amounts_mol=budget, pressure_bar=pressure_bar,
     )
@@ -259,6 +275,7 @@ def solve_control(
 
     # Cloud-bearing atom coordinates can differ greatly in chemical sensitivity.
     root = least_squares(lambda x: evaluate(x)[0], initial, diff_step=1e-5, x_scale="jac",
+                         bounds=(-650.0, 10.0), method="dogbox",
                          xtol=1e-11, ftol=1e-11, gtol=1e-11, max_nfev=max_nfev)
     cached.clear()
     residual, amounts, atmosphere, parcel = evaluate(root.x)
@@ -288,6 +305,7 @@ def solve_control(
         "source_formula_matrix": formula.tolist(),
         "source_phase_species": {p: network["phases"][p] for p in ("silicate", "metal")},
         "parcel_evaluations": calls, "outer_nfev": root.nfev,
+        "initialization": initialization,
         "elapsed_seconds": time.perf_counter() - started,
         "common_gas_contact_equilibrium": True,
         "global_phase_stability_certified": False,

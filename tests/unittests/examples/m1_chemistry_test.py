@@ -278,10 +278,16 @@ def _assert_native_parcel_accepted(report, condensate_expected):
 
 
 @pytest.mark.parametrize("pressure_factor, amount_scale", [(0.99, 1.), (1.01, 1.), (1., 1e20)])
+@pytest.mark.parametrize("case_id", [
+    "coupled_32_layer_18_1000K",
+    "fixed_oxygen_0p9_128_layer_63_1000K",
+    "fixed_oxygen_1p1_128_layer_86_1000K",
+    "contact_oxygen_0p9_128_layer_1_1000K",
+])
 def test_native_retained_column_parcel_pressure_and_amount_gauge(
-    retained_parcel_setup, pressure_factor, amount_scale,
+    retained_parcel_setup, pressure_factor, amount_scale, case_id,
 ):
-    case = next(case for case in PARCELS["cases"] if case["id"] == "coupled_32_layer_18_1000K")
+    case = next(case for case in PARCELS["cases"] if case["id"] == case_id)
     budget = np.asarray(case["element_amounts_mol"])
     report = M1.solve_parcel(
         retained_parcel_setup, case["temperature_k"], case["pressure_bar"] * pressure_factor,

@@ -295,6 +295,32 @@ def test_zero_barrier_dual_support_oracle_is_amount_gauge_covariant(
     assert evaluation_budget.used == report["function_evaluations"]
 
 
+def test_convex_dual_interior_optimum_cannot_certify_a_present_gas_phase() -> None:
+    result = zero_barrier._select_support_with_zero_barrier_dual(
+        gas_formula_matrix=np.eye(2),
+        condensate_formula_matrix_full=np.eye(2),
+        target_inventory=np.ones(2),
+        gas_standard_source=np.zeros(2),
+        condensate_standard_source_full=np.full(2, -2.0),
+        gas_log_amounts_init=np.log(np.full(2, 0.5)),
+        condensate_amounts_init=np.zeros(2),
+        total_gas_log_amount_init=0.0,
+        element_potential_init=np.zeros(2),
+        condensate_valid_mask=np.ones(2, dtype=bool),
+        stationarity_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+        max_function_evaluations=200,
+        enabled=True,
+    )
+    report = result["report"]
+    # Both elements prefer their pure solids. The valid dual optimum has
+    # sum(exp(lambda)) = 2 exp(-2) < 1 and cannot initialize a gas-present root.
+    assert report["optimizer_success"]
+    assert report["gas_normalization_log_residual"] == pytest.approx(np.log(2.0) - 2.0)
+    assert not result["applied"]
+    assert report["failure_reason"] == "dual_feasibility_failed"
+
+
 def test_zero_barrier_dual_support_oracle_excludes_structural_zero_phases(
 ) -> None:
     result = zero_barrier._select_support_with_zero_barrier_dual(

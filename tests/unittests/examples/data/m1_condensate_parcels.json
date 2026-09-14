@@ -117,6 +117,57 @@
         0.7220122409456399
       ],
       "condensate_expected": true
+    },
+    {
+      "id": "fixed_oxygen_0p9_128_layer_63_1000K",
+      "source": "ExoInventory examples/retained_rock_atmosphere/validation/20260915_fixed_source_o0p9_128/trial_006.json, layers[-1].parcel.report",
+      "provider_base_commit": "30958e3",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.011553213204515854,
+      "element_amounts_mol": [
+        523.3652623623981,
+        52.362513559128246,
+        4.5578440900124075,
+        2.709324705465963,
+        3.5627561208706755,
+        0.16065220211742096,
+        0.6550218670811186
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "fixed_oxygen_1p1_128_layer_86_1000K",
+      "source": "ExoInventory examples/retained_rock_atmosphere/validation/20260915_fixed_source_o1p1_128/trial_002.json, layers[-1].parcel.report",
+      "provider_base_commit": "30958e3",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.18787269355355615,
+      "element_amounts_mol": [
+        579.3250502216691,
+        57.96039336272197,
+        8.944241196402688,
+        0.2228962499463854,
+        0.411332567094489,
+        0.14017332344292227,
+        0.7025429500712047
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "contact_oxygen_0p9_128_layer_1_1000K",
+      "source": "ExoInventory examples/retained_rock_atmosphere/validation/20260915_contact_control_o0p9_128/trial_000.json, layers[-1].parcel.report",
+      "provider_base_commit": "30958e3",
+      "temperature_k": 1000.0,
+      "pressure_bar": 1.0588778540140687e-05,
+      "element_amounts_mol": [
+        222.08521234378333,
+        22.21919270713018,
+        18.248496617178144,
+        7.052149079655412,
+        7.610455357160987,
+        0.06656918102917801,
+        0.27778205740319256
+      ],
+      "condensate_expected": true
     }
   ]
 }

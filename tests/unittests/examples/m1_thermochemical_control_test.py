@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 import importlib.util
+import json
 from pathlib import Path
 
 import jax.numpy as jnp
@@ -101,3 +102,22 @@ def test_control_preserves_absolute_amount_scale(upper):
                                    pressure_bar=16.224, initial_control=report)
     for key in ("deep_component_amounts_mol", "atmosphere_element_amounts_mol"):
         np.testing.assert_allclose(np.asarray(scaled[key]) / 1e20, report[key], rtol=1e-8, atol=0)
+
+
+def test_large_pressure_steps_then_neighboring_and_fresh_roots(upper):
+    saved = json.loads(Path(__file__).with_name("data").joinpath("m1_contact_pressure_seed.json").read_text())
+    initial = saved["seed"]
+    network, case, _ = CONTROL.CHEMISTRY.source_inputs()
+    budget = np.asarray(initial["element_amounts_mol"])
+    results = []
+    for pressure in saved["pressure_probes_bar"]:
+        result = CONTROL.solve_control(network, case, upper, element_amounts_mol=budget,
+                                        pressure_bar=pressure, initial_control=initial)
+        assert result["accepted"]
+        assert max(np.abs(result["reaction_residual"])) < 1e-8
+        assert max(np.abs(result["relative_element_residual"])) < 1e-9
+        results.append(result)
+        initial = result
+    # Repeating a local pressure solve must reproduce all physical amounts.
+    for key in ("deep_component_amounts_mol", "atmosphere_element_amounts_mol"):
+        np.testing.assert_allclose(results[-1][key], results[-2][key], rtol=1e-8, atol=0)
