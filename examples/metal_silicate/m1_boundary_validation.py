@@ -1,4 +1,8 @@
-"""Reevaluate the vendored low-O boundary inputs without overwriting records."""
+"""Approximate source boundary validation
+======================================
+
+Reevaluate the vendored low-O boundary inputs without overwriting records.
+"""
 
 from __future__ import annotations
 
