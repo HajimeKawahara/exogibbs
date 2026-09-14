@@ -308,3 +308,35 @@ def test_native_retained_column_parcel_pressure_and_amount_gauge(
                 np.asarray(report[field]) / amount_scale, reference[field], rtol=1e-8, atol=1e-15,
             )
         assert report["gas_mass_fraction"] == pytest.approx(reference["gas_mass_fraction"], rel=1e-9)
+
+
+@pytest.mark.parametrize("case", [
+    case for case in PARCELS["cases"]
+    if case.get("provider_base_commit") == "e529f546e9039e0d35399cb811d25715efae1439"
+], ids=lambda case: case["id"])
+@pytest.mark.parametrize("perturbation", [
+    "temperature_ulp_up", "temperature_ulp_down",
+    "pressure_ulp_up", "pressure_ulp_down",
+    "pressure_relative_up", "pressure_relative_down",
+    "inventory_ulp_up", "inventory_ulp_down", "oxygen_relative", "amount_scale",
+])
+def test_native_retained_parcel_dual_termination_neighborhood(
+    retained_parcel_setup, case, perturbation,
+):
+    temperature, pressure = case["temperature_k"], case["pressure_bar"]
+    budget = np.asarray(case["element_amounts_mol"])
+    direction = np.inf if perturbation.endswith("up") else -np.inf
+    if perturbation.startswith("temperature"):
+        temperature = np.nextafter(temperature, direction)
+    elif perturbation.startswith("pressure_ulp"):
+        pressure = np.nextafter(pressure, direction)
+    elif perturbation.startswith("pressure_relative"):
+        pressure *= 1.0 + (1.0e-12 if direction > 0.0 else -1.0e-12)
+    elif perturbation.startswith("inventory"):
+        budget = np.nextafter(budget, direction)
+    elif perturbation == "oxygen_relative":
+        budget[M1.ELEMENTS.index("O")] *= 1.0 + 1.0e-12
+    else:
+        budget *= 1.0e20
+    report = M1.solve_parcel(retained_parcel_setup, temperature, pressure, budget)
+    _assert_native_parcel_accepted(report, True)

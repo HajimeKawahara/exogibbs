@@ -168,6 +168,125 @@
         0.27778205740319256
       ],
       "condensate_expected": true
+    },
+    {
+      "id": "fixed_oxygen_0p9_128_ulp_layer_40_1000K",
+      "source": "ExoInventory validation/20260915_verified_fixed_source_o0p9_128/trial_003.json",
+      "provider_base_commit": "e529f546e9039e0d35399cb811d25715efae1439",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.0008218224915649389,
+      "element_amounts_mol": [
+        511.0186932254921,
+        51.1250479877052,
+        4.867175124874268,
+        2.875168885963627,
+        3.826772156264381,
+        0.18489863286097885,
+        0.6397829820240433
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "top_1microbar_256_layer_173_1000K",
+      "source": "ExoInventory validation/20260915_lowp_top1_256/trial_001.json",
+      "provider_base_commit": "e529f546e9039e0d35399cb811d25715efae1439",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.1515538182810672,
+      "element_amounts_mol": [
+        578.7333808381281,
+        57.897709996557595,
+        5.0082173827737115,
+        1.0048925356114036,
+        1.836522145914422,
+        0.2178755483536779,
+        0.7220122409456399
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "top_0p1microbar_256_layer_129_1000K",
+      "source": "ExoInventory validation/20260915_lowp_top0p1_256/trial_001.json",
+      "provider_base_commit": "e529f546e9039e0d35399cb811d25715efae1439",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.0041324395870614376,
+      "element_amounts_mol": [
+        578.7333808381281,
+        57.897709996557595,
+        5.0082173827737115,
+        1.0048925356114036,
+        1.836522145914422,
+        0.2178755483536779,
+        0.7220122409456399
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "top_0p01microbar_256_layer_192_1000K",
+      "source": "ExoInventory validation/20260915_lowp_top0p01_256/trial_001.json",
+      "provider_base_commit": "e529f546e9039e0d35399cb811d25715efae1439",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.1371402210744653,
+      "element_amounts_mol": [
+        578.7333808381281,
+        57.897709996557595,
+        5.0082173827737115,
+        1.0048925356114036,
+        1.836522145914422,
+        0.2178755483536779,
+        0.7220122409456399
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "top_0p001microbar_256_layer_182_1000K",
+      "source": "ExoInventory validation/20260915_lowp_top0p001_256/trial_001.json",
+      "provider_base_commit": "e529f546e9039e0d35399cb811d25715efae1439",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.03355067526255343,
+      "element_amounts_mol": [
+        578.7333808381281,
+        57.897709996557595,
+        5.0082173827737115,
+        1.0048925356114036,
+        1.836522145914422,
+        0.2178755483536779,
+        0.7220122409456399
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "fixed_oxygen_1p1_128_layer_79_1000K",
+      "source": "ExoInventory validation/20260915_verified_fixed_source_o1p1_128/trial_001.json",
+      "provider_base_commit": "e529f546e9039e0d35399cb811d25715efae1439",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.06384043389174779,
+      "element_amounts_mol": [
+        567.880714640963,
+        56.80945577581276,
+        9.171528079051226,
+        0.3355224446255357,
+        0.6104234662160474,
+        0.2152584311735967,
+        0.7018599120016156
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "gas_standard_oxygen_1_128_layer_54_1000K",
+      "source": "ExoInventory validation/20260915_verified_gas_standard_control_o1p0_128/trial_005.json",
+      "provider_base_commit": "e529f546e9039e0d35399cb811d25715efae1439",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.0039456892456146055,
+      "element_amounts_mol": [
+        579.68215299399,
+        57.99283519689588,
+        4.9803806547519915,
+        0.9944632830157967,
+        1.8188772995401443,
+        0.21487207334157768,
+        0.7231004083774256
+      ],
+      "condensate_expected": true
     }
   ]
 }

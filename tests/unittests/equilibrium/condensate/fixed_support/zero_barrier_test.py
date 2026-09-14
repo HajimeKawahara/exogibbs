@@ -321,6 +321,83 @@ def test_convex_dual_interior_optimum_cannot_certify_a_present_gas_phase() -> No
     assert report["failure_reason"] == "dual_feasibility_failed"
 
 
+@pytest.fixture
+def dual_boundary_problem():
+    return dict(
+        gas_formula_matrix=np.eye(2),
+        condensate_formula_matrix_full=np.eye(2),
+        target_inventory=np.ones(2),
+        gas_standard_source=np.full(2, np.log(2.0)),
+        condensate_standard_source_full=np.asarray([0.0, 1.0]),
+        gas_log_amounts_init=np.log(np.full(2, 0.5)),
+        condensate_amounts_init=np.asarray([0.5, 0.0]),
+        total_gas_log_amount_init=0.0,
+        element_potential_init=np.zeros(2),
+        condensate_valid_mask=np.ones(2, dtype=bool),
+        stationarity_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+        max_function_evaluations=20,
+        enabled=True,
+    )
+
+
+@pytest.mark.parametrize("endpoint, applied", [
+    ([5.0e-10, 5.0e-10], True),
+    ([5.0e-10, -5.0e-10], False),
+    ([1.0, 1.0], False),
+])
+def test_dual_failed_optimizer_keeps_strict_physical_initializer_gates(
+    monkeypatch, dual_boundary_problem, endpoint, applied,
+):
+    monkeypatch.setattr(zero_barrier, "minimize", lambda *args, **kwargs:
+        zero_barrier.OptimizeResult(
+            x=np.asarray(endpoint), success=False, status=8,
+            message="Positive directional derivative for linesearch", nit=2,
+        ))
+    result = zero_barrier._select_support_with_zero_barrier_dual(**dual_boundary_problem)
+    report = result["report"]
+    assert result["applied"] == applied
+    assert not report["optimizer_success"]
+    assert report["optimizer_status"] == 8
+    assert report["feasibility_tolerance"] == 1.0e-10
+    if applied:
+        assert report["dual_feasibility_passed"]
+        assert report["support_structure_passed"]
+        assert report["boundary_normalization_potential_shift"] == pytest.approx(5.0e-10)
+        assert abs(report["gas_normalization_log_residual"]) < 1.0e-14
+        assert report["minimum_condensate_driving"] >= -1.0e-10
+    else:
+        assert report["failure_reason"] == "dual_feasibility_failed"
+
+
+@pytest.mark.parametrize("budget_limit, applied", [(2, False), (3, True)])
+def test_dual_major_iterate_recovery_preserves_function_budget(
+    monkeypatch, dual_boundary_problem, budget_limit, applied,
+):
+    def interrupted_optimizer(objective, values, **kwargs):
+        endpoint = np.full(2, 5.0e-10)
+        objective(values)
+        objective(endpoint)
+        kwargs["callback"](endpoint)
+        objective(endpoint)  # The oracle interrupts before a third evaluation.
+        pytest.fail("The optimizer exceeded its evaluation limit.")
+
+    monkeypatch.setattr(zero_barrier, "_DUAL_SUPPORT_ORACLE_ITERATION_LIMIT", 2)
+    monkeypatch.setattr(zero_barrier, "minimize", interrupted_optimizer)
+    budget = zero_barrier._FunctionEvaluationBudget(budget_limit)
+    result = zero_barrier._select_support_with_zero_barrier_dual(
+        **dual_boundary_problem, function_evaluation_budget=budget,
+    )
+    report = result["report"]
+    assert result["applied"] == applied
+    assert not report["optimizer_success"]
+    assert report["optimizer_status"] == -2
+    assert report["function_evaluation_limit_reached"]
+    assert report["optimizer_function_evaluations"] == 2
+    assert report["boundary_normalization_evaluations"] == budget_limit - 2
+    assert report["function_evaluations"] == budget.used == budget_limit
+
+
 def test_zero_barrier_dual_support_oracle_excludes_structural_zero_phases(
 ) -> None:
     result = zero_barrier._select_support_with_zero_barrier_dual(
@@ -427,7 +504,7 @@ def test_zero_barrier_dual_constraint_jacobians_match_finite_difference(
     checked = False
 
     def checking_minimize(
-        objective, values, *, jac, constraints, method, options
+        objective, values, *, jac, constraints, method, options, callback
     ):
         nonlocal checked
         probe = np.asarray([0.1, -0.2], dtype=np.float64)
@@ -459,6 +536,7 @@ def test_zero_barrier_dual_constraint_jacobians_match_finite_difference(
             constraints=constraints,
             method=method,
             options=options,
+            callback=callback,
         )
 
     monkeypatch.setattr(zero_barrier, "minimize", checking_minimize)
