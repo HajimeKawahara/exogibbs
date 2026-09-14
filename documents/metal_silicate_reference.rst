@@ -376,3 +376,23 @@ endmember fit. Neither a stable liquid assemblage nor a calibrated joint
 T/P/composition domain has been established. A jointly calibrated liquid
 equilibrium benchmark and phase selection remain outside these fixed-phase
 numerical references.
+
+Milestone 1 source-to-upper chemistry
+------------------------------------
+
+``examples/metal_silicate/m1_chemistry.py`` compares the existing 2350 K
+S/N source with ideal gas-only and gas/pure-condensate equilibrium from
+packaged FastChem4 data. It retains H/He/O/Mg/Si/Fe/Na with exact-zero C/N/S,
+and separates a shared nine-gas control, 35 neutral gases, and 26 condensate
+candidates with their original temperature upper bounds.
+
+.. code-block:: console
+
+   JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 PYTHONPATH=src python examples/metal_silicate/m1_chemistry.py --pressure-bar 100 --point 1400 0.1 --output results/m1_chemistry/central.json
+
+The JSON report records source/upper model differences, independent atom/mass
+and phase-condition audits, gas/cloud amounts on the caller's mol basis,
+actual imports, source/data hashes, and failed points. These are local
+diagnostics: ExoInventory still owns the retained column and global pressure
+closure. See the :download:`amount contract and scope
+<../examples/metal_silicate/m1_chemistry.md>` for usage and acceptance details.
