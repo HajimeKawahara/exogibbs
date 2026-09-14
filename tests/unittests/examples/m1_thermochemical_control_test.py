@@ -121,3 +121,61 @@ def test_large_pressure_steps_then_neighboring_and_fresh_roots(upper):
     # Repeating a local pressure solve must reproduce all physical amounts.
     for key in ("deep_component_amounts_mol", "atmosphere_element_amounts_mol"):
         np.testing.assert_allclose(results[-1][key], results[-2][key], rtol=1e-8, atol=0)
+
+
+@pytest.fixture
+def low_oxygen_pressure_seed():
+    path = Path(__file__).with_name("data") / "m1_contact_inventory_seed.json"
+    return json.loads(path.read_text())["seed"]
+
+
+@pytest.mark.parametrize("pressure,warm", [(80., True), (80., False), (60., True)])
+def test_pressure_steps_keep_nested_parcels_within_finite_supply(
+    upper, low_oxygen_pressure_seed, monkeypatch, pressure, warm,
+):
+    seed = low_oxygen_pressure_seed
+    network, case, _ = CONTROL.CHEMISTRY.source_inputs(0.9)
+    budget = np.asarray(seed["element_amounts_mol"])
+    rows = [network["elements"].index(e) for e in CONTROL.CHEMISTRY.ELEMENTS]
+    original_parcel = CONTROL.CHEMISTRY.solve_parcel
+
+    def checked_parcel(setup, temperature, pressure_bar, atoms):
+        assert np.max(np.asarray(atoms) / budget[rows]) <= 1. + 64. * np.finfo(float).eps
+        return original_parcel(setup, temperature, pressure_bar, atoms)
+
+    monkeypatch.setattr(CONTROL.CHEMISTRY, "solve_parcel", checked_parcel)
+    report = CONTROL.solve_control(
+        network, case, upper, element_amounts_mol=budget, pressure_bar=pressure,
+        initial_control=seed if warm else None,
+    )
+    assert report["accepted"] and CONTROL.audit_control(network, case, upper, report)["accepted"]
+    helium = CONTROL.CHEMISTRY.ELEMENTS.index("He")
+    assert report["atmosphere_element_amounts_mol"][helium] / budget[rows[helium]] == pytest.approx(1., abs=1e-14)
+
+
+@pytest.mark.parametrize("phase", ["deep", "atmosphere"])
+def test_control_rejects_seed_above_finite_capacity(upper, low_oxygen_pressure_seed, phase):
+    seed = low_oxygen_pressure_seed
+    network, case, _ = CONTROL.CHEMISTRY.source_inputs(0.9)
+    budget = np.asarray(seed["element_amounts_mol"])
+    if phase == "deep":
+        index = seed["deep_source_species"].index("Fe_metal")
+        seed["deep_component_amounts_mol"][index] = 2. * budget[network["elements"].index("Fe")]
+    else:
+        index = CONTROL.CHEMISTRY.ELEMENTS.index("He")
+        seed["atmosphere_element_amounts_mol"][index] = 2. * budget[network["elements"].index("He")]
+    with pytest.raises(ValueError, match="finite elemental capacities"):
+        CONTROL.solve_control(network, case, upper, element_amounts_mol=budget,
+                              pressure_bar=seed["P_bar"], initial_control=seed)
+
+
+def test_control_allows_roundoff_at_helium_capacity(upper, low_oxygen_pressure_seed):
+    seed = low_oxygen_pressure_seed
+    network, case, _ = CONTROL.CHEMISTRY.source_inputs(0.9)
+    budget = np.asarray(seed["element_amounts_mol"])
+    helium = CONTROL.CHEMISTRY.ELEMENTS.index("He")
+    capacity = budget[network["elements"].index("He")]
+    seed["atmosphere_element_amounts_mol"][helium] = np.nextafter(capacity, np.inf)
+    report = CONTROL.solve_control(network, case, upper, element_amounts_mol=budget,
+                                   pressure_bar=seed["P_bar"], initial_control=seed)
+    assert CONTROL.audit_control(network, case, upper, report)["accepted"]

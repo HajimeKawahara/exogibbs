@@ -244,6 +244,19 @@ def solve_control(
             or np.any(initial_atmosphere <= 0)):
         raise ValueError("Initial deep and atmospheric amounts must be finite and positive.")
     initial = np.log(np.r_[initial_deep, initial_atmosphere] / scale)
+    # Every component and atmospheric element is bounded by its finite supply.
+    # These necessary bounds keep trial parcels inside the inventory domain;
+    # the coupled residual still enforces the sum across all reservoirs.
+    deep_formula = formula[element_rows][:, deep]
+    deep_capacity = np.min(np.divide(
+        budget[element_rows, None], deep_formula,
+        out=np.full_like(deep_formula, np.inf, dtype=float), where=deep_formula > 0,
+    ), axis=0)
+    upper_bounds = np.log(np.r_[deep_capacity, budget[element_rows]] / scale)
+    roundoff = 64.0 * np.finfo(float).eps * np.maximum(1.0, np.abs(upper_bounds))
+    if np.any(initial > upper_bounds + roundoff):
+        raise ValueError("Initial amounts exceed their finite elemental capacities.")
+    initial = np.minimum(initial, upper_bounds)
     calls = 0
     cached = {}
     started = time.perf_counter()
@@ -275,7 +288,7 @@ def solve_control(
 
     # Cloud-bearing atom coordinates can differ greatly in chemical sensitivity.
     root = least_squares(lambda x: evaluate(x)[0], initial, diff_step=1e-5, x_scale="jac",
-                         bounds=(-650.0, 10.0), method="dogbox",
+                         bounds=(-650.0, upper_bounds), method="dogbox",
                          xtol=1e-11, ftol=1e-11, gtol=1e-11, max_nfev=max_nfev)
     cached.clear()
     residual, amounts, atmosphere, parcel = evaluate(root.x)

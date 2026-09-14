@@ -77,8 +77,13 @@ a neighboring pressure calculation; it imposes no equilibrium constraints.
 When the old parcel develops a different cloud support at the requested
 pressure, or its initializer-only solve fails, the original source reactions
 provide a new seed instead. The full catalog is still used for every accepted
-state. Finite logarithmic amount bounds `[-650, 10]`, matching the source
-solver's numerical domain, prevent overflowing or underflowing trial amounts.
+state. Every atmospheric element is bounded above by its finite global supply
+`b_e`; each deep component is bounded by `min(b_e / A_ei)` over the elements
+that it consumes. These are necessary inventory constraints; the coupled
+residual still checks the sum across all reservoirs. The logarithmic lower
+bound remains `-650`, matching the source solver's numerical domain. Only
+roundoff outside an initial upper bound is clipped; a seed that exceeds a
+capacity by more than roundoff is rejected.
 The existing least-squares solver uses its bounded dogleg method (`dogbox`);
 the reflective method stalled at a cloud transition in the low-O control.
 These are solver safeguards; accepted states must satisfy the same finite
@@ -125,3 +130,9 @@ source and evaluates 16, 25, 16.3, and 16.3 bar in sequence. The final pressure
 is a nearby test probe, not a planetary root claimed by this provider. This
 covers large forward/reverse pressure changes and a fresh repeated solve.
 The source archive hash and original provider commit accompany the seed.
+An additional low-O 40 bar seed tests warm and cold 80 bar solves and a 60 bar
+step, requiring every nested parcel to remain within the finite elemental
+supplies. The former unconstrained first step at 80 bar proposed atmospheric
+Si at about 126.6 times the global Si inventory and failed the inner chemical
+audit. The bounds prevent that infeasible trial without changing chemical
+tolerances, candidate phases, or the source and upper thermochemical data.
