@@ -390,6 +390,13 @@ candidates with their original temperature upper bounds.
 
    JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 PYTHONPATH=src python examples/metal_silicate/m1_chemistry.py --pressure-bar 100 --point 1400 0.1 --output results/m1_chemistry/central.json
 
+For an empty condensate support, the final native gas solve uses a tighter
+stopping criterion before the existing conservation and all-candidate phase
+audits. This resolves the 2350 K parcel failures at 17.992400049670717 and
+51.982571403397 bar without relaxing the ``1e-9`` element/mass or ``1e-8``
+chemical acceptance tolerances. Numerical convergence does not establish
+source-to-upper thermochemical compatibility.
+
 The JSON report records source/upper model differences, independent atom/mass
 and phase-condition audits, gas/cloud amounts on the caller's mol basis,
 actual imports, source/data hashes, and failed points. These are local

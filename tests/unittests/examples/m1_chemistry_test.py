@@ -3,6 +3,7 @@
 from copy import deepcopy
 from dataclasses import replace
 import importlib.util
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,6 +19,10 @@ PATH = Path(__file__).resolve().parents[3] / "examples" / "metal_silicate" / "m1
 SPEC = importlib.util.spec_from_file_location("m1_chemistry", PATH)
 M1 = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(M1)
+
+PARCELS = json.loads(
+    Path(__file__).with_name("data").joinpath("m1_condensate_parcels.json").read_text()
+)
 
 
 def test_named_subset_preserves_atom_order_standards_and_temperature_bounds():
@@ -238,3 +243,31 @@ def test_real_shared_gas_has_separate_source_and_upper_model_residuals():
         np.asarray(upper.gas_setup.formula_matrix) @ expanded["gas_amounts_mol"],
         gas_budget, rtol=1e-9, atol=0.,
     )
+
+
+@pytest.fixture(scope="module")
+def retained_parcel_setup():
+    assert tuple(PARCELS["elements"]) == M1.ELEMENTS
+    return M1.build_setups()[1]
+
+
+@pytest.mark.parametrize("case", PARCELS["cases"], ids=lambda case: case["id"])
+def test_native_condensate_accepts_saved_retained_parcels(retained_parcel_setup, case):
+    report = M1.solve_parcel(
+        retained_parcel_setup, case["temperature_k"], case["pressure_bar"],
+        np.asarray(case["element_amounts_mol"]),
+    )
+
+    assert report["solver_status"] == "converged"
+    assert report["solver_converged"]
+    assert report["accepted"]
+    assert np.max(np.abs(report["relative_element_residual"])) < 1e-9
+    assert abs(report["relative_mass_residual"]) < 1e-9
+    assert report["gas_stationarity_max_abs"] < 1e-8
+    assert report["present_condensate_residual_max_abs"] < 1e-8
+    assert report["absent_condensate_violation_max_abs"] < 1e-8
+    cloud = np.asarray(report["condensate_amounts_mol"])
+    eligible = np.asarray(report["condensate_temperature_eligible"])
+    assert np.all(cloud >= 0.)
+    assert not np.any((cloud > 0.) & ~eligible)
+    assert bool(np.any(cloud > 0.)) == case["condensate_expected"]

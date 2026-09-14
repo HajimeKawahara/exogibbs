@@ -2140,7 +2140,9 @@ def _run_head_v2_profile(
                 jnp.asarray(b, dtype=jnp.float64),
                 Pref=Pref,
                 init=gas_equilibrium_init,
-                options=EquilibriumOptions(),
+                # Absolute gas residuals must resolve trace-element budgets
+                # before the independent KKT and caller-relative gates.
+                options=EquilibriumOptions(epsilon_crit=1.0e-14),
                 return_diagnostics=False,
                 lnphi_func=lnphi_func,
             )

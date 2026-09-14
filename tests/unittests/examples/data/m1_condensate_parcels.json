@@ -1,0 +1,105 @@
+{
+  "source": "ExoInventory validation/20260914_connection (2026-09-14)",
+  "provider_base_commit": "7ba9e0ea2e0a923c33e79d02685c2629829cf124",
+  "elements": [
+    "H",
+    "He",
+    "O",
+    "Mg",
+    "Si",
+    "Fe",
+    "Na"
+  ],
+  "cases": [
+    {
+      "id": "oxygen_1_mass_1e+21_expanded_condensed_2350K",
+      "temperature_k": 2350.0,
+      "pressure_bar": 17.992400049670717,
+      "element_amounts_mol": [
+        7.764416437446839e+22,
+        7.767907315697639e+21,
+        6.395290395286703e+20,
+        1.2317375113694673e+20,
+        2.2630463706745425e+20,
+        2.5939443823217738e+19,
+        9.67601942869975e+19
+      ],
+      "condensate_expected": false
+    },
+    {
+      "id": "oxygen_1.1_mass_3e+21_expanded_condensed_2350K",
+      "temperature_k": 2350.0,
+      "pressure_bar": 51.982571403397,
+      "element_amounts_mol": [
+        2.266114777188136e+23,
+        2.2677540004918075e+22,
+        3.3391368411390647e+21,
+        4.271598101951609e+19,
+        7.980035646402524e+19,
+        2.6252566562041786e+19,
+        2.5105647858728003e+20
+      ],
+      "condensate_expected": false
+    },
+    {
+      "id": "oxygen_0.9_mass_1e+21_expanded_condensed_2350K",
+      "temperature_k": 2350.0,
+      "pressure_bar": 20.42834233241181,
+      "element_amounts_mol": [
+        7.984316851877472e+22,
+        7.988488890571062e+21,
+        6.602814669317564e+20,
+        3.936158159366002e+20,
+        5.139368144268865e+20,
+        2.233798203389667e+19,
+        9.990490542501187e+19
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "oxygen_0.9_mass_3e+21_expanded_condensed_2350K",
+      "temperature_k": 2350.0,
+      "pressure_bar": 54.15523948877404,
+      "element_amounts_mol": [
+        2.394354716276082e+23,
+        2.3965466671713194e+22,
+        1.0762066530035548e+21,
+        6.278211625162268e+20,
+        7.551704600237463e+20,
+        2.4189506064274428e+19,
+        2.972911956061372e+20
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "oxygen_1_mass_1e+21_upper_condensed_1482.75K",
+      "temperature_k": 1482.7497595284542,
+      "pressure_bar": 1.7992400049670718,
+      "element_amounts_mol": [
+        7.764416437446839e+22,
+        7.767907315697639e+21,
+        6.395290395286703e+20,
+        1.2317375113694673e+20,
+        2.2630463706745425e+20,
+        2.5939443823217738e+19,
+        9.67601942869975e+19
+      ],
+      "condensate_expected": true
+    },
+    {
+      "id": "oxygen_1_mass_1e+21_upper_condensed_1000K",
+      "temperature_k": 1000.0,
+      "pressure_bar": 1e-05,
+      "element_amounts_mol": [
+        7.764416437446839e+22,
+        7.767907315697639e+21,
+        6.395290395286703e+20,
+        1.2317375113694673e+20,
+        2.2630463706745425e+20,
+        2.5939443823217738e+19,
+        9.67601942869975e+19
+      ],
+      "condensate_expected": true
+    }
+  ]
+}
