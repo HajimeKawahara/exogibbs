@@ -371,7 +371,8 @@ def provenance() -> dict[str, Any]:
                                 capture_output=True, check=False)
         return result.stdout.strip() if result.returncode == 0 else None
 
-    paths = [Path(__file__).resolve(), Path(SOURCE.__file__).resolve(), SOURCE.REFERENCE_PATH,
+    paths = [Path(__file__).resolve(), Path(SOURCE.__file__).resolve(),
+             Path(SOURCE._ACTIVITIES.__file__).resolve(), SOURCE.REFERENCE_PATH,
              Path(get_data_filepath("FastChem4/logK/logK_wo_ions.dat")),
              Path(get_data_filepath("FastChem4/logK/logK_condensates.dat"))]
     digest = hashlib.sha256()

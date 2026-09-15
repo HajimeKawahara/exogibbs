@@ -9,6 +9,7 @@ an integrable alloy free energy, or provide empirical partition calibration.
 from __future__ import annotations
 
 from copy import deepcopy
+import importlib.util
 import json
 from pathlib import Path
 from typing import Any, Callable
@@ -18,6 +19,13 @@ import jax.numpy as jnp
 from jax.scipy.special import logsumexp
 import numpy as np
 from scipy.optimize import least_squares
+
+
+_SPEC = importlib.util.spec_from_file_location(
+    "_sulfur_source_activities", Path(__file__).with_name("source.py"),
+)
+_ACTIVITIES = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(_ACTIVITIES)
 
 
 REFERENCE_PATH = Path(__file__).with_name("sulfur_reference.json")
@@ -105,22 +113,7 @@ def _make_reaction_residual(
             raise ValueError("Expected the selected source component vector and scalar pressure_bar.")
         x = jnp.exp(ln_x)
         si, oxygen = x[indices["Si_metal"]], x[indices["O_metal"]]
-        inverse_si, inverse_o = 1 / (1 - si), 1 / (1 - oxygen)
-        cross = -5.0 * 1873.0 / temperature
-        ln_si = (
-            -6.65 * 1873.0 / temperature
-            - 12.41 * 1873.0 / temperature * jnp.log1p(-si)
-            - cross * (oxygen + jnp.log1p(-oxygen) - oxygen * inverse_si)
-            + cross * oxygen**2 * si
-            * (inverse_si + inverse_o + si * inverse_si**2 / 2 - 1)
-        )
-        ln_o = (
-            4.29 - 16500.0 / temperature
-            + 1873.0 / temperature * jnp.log1p(-oxygen)
-            - cross * (si + jnp.log1p(-si) - si * inverse_o)
-            + cross * si**2 * oxygen
-            * (inverse_o + inverse_si + oxygen * inverse_o**2 / 2 - 1)
-        )
+        ln_si, ln_o = _ACTIVITIES.source_solute_ln_gamma(temperature, si, oxygen)
         ln_c = -2.303 * 19.5 * jnp.log1p(-oxygen)
         potentials = (ln_x.at[gas].add(jnp.log(pressure))
                       .at[indices["Si_metal"]].add(ln_si)

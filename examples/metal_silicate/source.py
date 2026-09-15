@@ -126,7 +126,22 @@ def source_metal_ln_gamma(
     composition = jnp.asarray(mole_fractions)
     if temperature.ndim != 0 or composition.shape != (4,):
         raise ValueError("Expected scalar temperature_k and shape (4,) in Fe, Si, O, H order.")
-    si, oxygen = composition[1], composition[2]
+    ln_gamma_si, ln_gamma_o = source_solute_ln_gamma(temperature, composition[1], composition[2])
+    zero = jnp.zeros_like(ln_gamma_si)
+    return jnp.stack((zero, ln_gamma_si, ln_gamma_o, zero))
+
+
+def source_solute_ln_gamma(
+    temperature_k: ArrayLike, silicon_fraction: ArrayLike, oxygen_fraction: ArrayLike,
+) -> tuple[jax.Array, jax.Array]:
+    """Return the shared GCE Si/O coefficients using full-metal fractions.
+
+    Young, sulfur/nitrogen and carbon sources use the same Si/O equations.
+    Additional metal components dilute these fractions without renormalizing
+    the Fe/Si/O subset. Network-specific C/S corrections remain separate.
+    """
+    temperature = jnp.asarray(temperature_k)
+    si, oxygen = jnp.asarray(silicon_fraction), jnp.asarray(oxygen_fraction)
     inverse_si = 1 / (1 - si)
     inverse_o = 1 / (1 - oxygen)
     cross = -5.0 * 1873.0 / temperature
@@ -144,8 +159,7 @@ def source_metal_ln_gamma(
         + cross * si**2 * oxygen
         * (inverse_o + inverse_si + oxygen * inverse_o**2 / 2 - 1)
     )
-    zero = jnp.zeros_like(ln_gamma_si)
-    return jnp.stack((zero, ln_gamma_si, ln_gamma_o, zero))
+    return ln_gamma_si, ln_gamma_o
 
 
 def source_reaction_offsets(

@@ -103,55 +103,28 @@ def _get_profile_scan_body(
             ),
         )
 
-    if return_diagnostics:
-
-        def scan_body(carry, tp_pair):
-            ln_nk_previous, ln_ntot_previous = carry
-            temperature, pressure, use_seed = tp_pair
-            solver_init = resolve_scheduled_init(
-                carry,
-                temperature,
-                pressure,
-                use_seed,
-            )
-            result, diagnostics = equilibrium(
-                setup,
-                temperature,
-                pressure,
-                b,
-                Pref=reference_pressure,
-                init=solver_init,
-                options=options,
-                return_diagnostics=True,
-                lnphi_func=lnphi_func,
-            )
-            next_total = jnp.log(jnp.clip(result.ntot, 1.0e-300))
-            return (result.ln_n, next_total), (result, diagnostics)
-
-    else:
-
-        def scan_body(carry, tp_pair):
-            ln_nk_previous, ln_ntot_previous = carry
-            temperature, pressure, use_seed = tp_pair
-            solver_init = resolve_scheduled_init(
-                carry,
-                temperature,
-                pressure,
-                use_seed,
-            )
-            result = equilibrium(
-                setup,
-                temperature,
-                pressure,
-                b,
-                Pref=reference_pressure,
-                init=solver_init,
-                options=options,
-                return_diagnostics=False,
-                lnphi_func=lnphi_func,
-            )
-            next_total = jnp.log(jnp.clip(result.ntot, 1.0e-300))
-            return (result.ln_n, next_total), result
+    def scan_body(carry, tp_pair):
+        temperature, pressure, use_seed = tp_pair
+        solver_init = resolve_scheduled_init(
+            carry,
+            temperature,
+            pressure,
+            use_seed,
+        )
+        output = equilibrium(
+            setup,
+            temperature,
+            pressure,
+            b,
+            Pref=reference_pressure,
+            init=solver_init,
+            options=options,
+            return_diagnostics=return_diagnostics,
+            lnphi_func=lnphi_func,
+        )
+        result = output[0] if return_diagnostics else output
+        next_total = jnp.log(jnp.clip(result.ntot, 1.0e-300))
+        return (result.ln_n, next_total), output
 
     _PROFILE_SCAN_BODY_CACHE[key] = scan_body
     return scan_body
@@ -204,23 +177,6 @@ def equilibrium_profile(
         )
 
     if method == "vmap_cold":
-        if return_diagnostics:
-            layer_function = jax.vmap(
-                lambda temperature, pressure: equilibrium(
-                    setup,
-                    temperature,
-                    pressure,
-                    b,
-                    Pref=Pref,
-                    init=init,
-                    initializer=initializer,
-                    options=active_options,
-                    return_diagnostics=True,
-                    lnphi_func=lnphi_func,
-                ),
-                in_axes=(0, 0),
-            )
-            return layer_function(temperatures, pressures)
         layer_function = jax.vmap(
             lambda temperature, pressure: equilibrium(
                 setup,
@@ -231,7 +187,7 @@ def equilibrium_profile(
                 init=init,
                 initializer=initializer,
                 options=active_options,
-                return_diagnostics=False,
+                return_diagnostics=return_diagnostics,
                 lnphi_func=lnphi_func,
             ),
             in_axes=(0, 0),

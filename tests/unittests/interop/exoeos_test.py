@@ -123,6 +123,28 @@ def test_all_ideal_callback_returns_zeros_and_rejects_mixture_mode() -> None:
         lnphi_func(1000.0, 1.0, jnp.ones(3) / 3.0)
 
 
+@pytest.mark.parametrize("all_ideal", [False, True])
+@pytest.mark.parametrize(
+    "temperature, pressure_bar",
+    [(jnp.asarray([1000.0, 1500.0]), 1.0), (1000.0, jnp.asarray([1.0, 2.0]))],
+)
+def test_rejects_nonscalar_states_before_provider_evaluation(
+    monkeypatch, all_ideal, temperature, pressure_bar,
+) -> None:
+    def state_tp(*args, **kwargs):
+        raise AssertionError("Invalid scalar states must not reach ExoEOS.")
+
+    _install_fake_exoeos(monkeypatch, state_tp)
+    lnphi_func = make_pure_lnphi_func(
+        source_species=("H2",),
+        eos_by_species={} if all_ideal else {"H2": _FakeEOS(0.0)},
+        unspecified_species="ideal",
+    )
+
+    with pytest.raises(ValueError, match="must be scalars; use jax.vmap"):
+        jax.jit(lambda T, P: lnphi_func(T, P, None))(temperature, pressure_bar)
+
+
 def test_validates_species_mapping_and_component_count() -> None:
     with pytest.raises(ValueError, match="must be unique"):
         make_pure_lnphi_func(

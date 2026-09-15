@@ -14,6 +14,7 @@ from exogibbs.equilibrium.condensate.setup import (
     build_condensate_chemical_setup,
 )
 from exogibbs.io.load_data import get_data_filepath
+from exogibbs.presets._condensate import validate_condensate_elements
 from exogibbs.presets.fastchem import chemsetup as _base_chemsetup
 from exogibbs.presets.fastchem import _print_status
 from exogibbs.thermo.stoichiometry import build_formula_matrix
@@ -53,7 +54,9 @@ def chemsetup(
     elements = list(gas.elements)
     element_vector_ref = gas.element_vector_reference
 
-    _validate_condensate_elements(entries, elements)
+    validate_condensate_elements(
+        ((entry.name, entry.components) for entry in entries), elements,
+    )
     formula_matrix = build_formula_matrix(components, elements)
     if not silent:
         _print_status(species, elements, species, preset_name="fastchem_cond")
@@ -70,29 +73,6 @@ def chemsetup(
     )
 
     return setup
-
-
-def _validate_condensate_elements(
-    entries: Sequence[_SpeciesEntry],
-    elements: Sequence[str],
-) -> None:
-    available = set(elements)
-    incompatible = [
-        (entry.name, sorted(set(entry.components) - available))
-        for entry in entries
-        if set(entry.components) - available
-    ]
-    if not incompatible:
-        return
-    missing = sorted({element for _, values in incompatible for element in values})
-    examples = ", ".join(
-        f"{name} ({'/'.join(values)})" for name, values in incompatible[:3]
-    )
-    raise ValueError(
-        "Condensate data are incompatible with gas_setup.elements; "
-        f"missing elements: {', '.join(missing)}. "
-        f"Affected species include: {examples}."
-    )
 
 
 def condensate_chemical_setup(

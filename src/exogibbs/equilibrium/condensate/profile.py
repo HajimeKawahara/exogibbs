@@ -11,6 +11,10 @@ import jax.numpy as jnp
 import numpy as np
 
 from exogibbs.equilibrium.condensate import lifecycle as _lifecycle
+from exogibbs.equilibrium.condensate.amount_gauge import (
+    transform_condensate_init_amount_gauge,
+    transform_linear_amount_gauge_on_host,
+)
 from exogibbs.equilibrium.condensate.initialization import (
     regauge_gas_only_warm_start,
     resolve_condensate_initial_guess,
@@ -110,63 +114,8 @@ def _scale_initial_guess(
     initial_guess: CondensateEquilibriumInit,
     scale: float,
 ) -> CondensateEquilibriumInit:
-    if scale == 1.0:
-        return initial_guess
-    log_scale = math.log(scale)
-    return replace(
-        initial_guess,
-        gas_ln_n=(
-            None
-            if initial_guess.gas_ln_n is None
-            else jnp.asarray(initial_guess.gas_ln_n, dtype=jnp.float64)
-            + log_scale
-        ),
-        gas_ntot=(
-            None
-            if initial_guess.gas_ntot is None
-            else _lifecycle._transform_linear_amount_gauge_on_host(
-                initial_guess.gas_ntot,
-                scale,
-                to_canonical=False,
-            )
-        ),
-        condensate_amounts=(
-            None
-            if initial_guess.condensate_amounts is None
-            else _lifecycle._transform_linear_amount_gauge_on_host(
-                initial_guess.condensate_amounts,
-                scale,
-                to_canonical=False,
-            )
-        ),
-        support_amounts=(
-            None
-            if initial_guess.support_amounts is None
-            else tuple(float(value) * scale for value in initial_guess.support_amounts)
-        ),
-        barrier_epsilon=(
-            None
-            if initial_guess.barrier_epsilon is None
-            else jnp.asarray(
-                initial_guess.barrier_epsilon,
-                dtype=jnp.float64,
-            )
-            + log_scale
-        ),
-        inventory_bridge_origin=(
-            None
-            if initial_guess.inventory_bridge_origin is None
-            else replace(
-                initial_guess.inventory_bridge_origin,
-                element_inventory=(
-                    _lifecycle._transform_linear_amount_gauge_on_host(
-                        initial_guess.inventory_bridge_origin.element_inventory,
-                        scale,
-                        to_canonical=False,
-                    )
-                ),
-            )
-        ),
+    return transform_condensate_init_amount_gauge(
+        initial_guess, scale, to_canonical=False
     )
 
 
@@ -200,18 +149,18 @@ def _rescale_layer_result(
     return replace(
         result,
         gas_ln_n=jnp.asarray(result.gas_ln_n) - math.log(scale),
-        gas_n=_lifecycle._transform_linear_amount_gauge_on_host(
+        gas_n=transform_linear_amount_gauge_on_host(
             result.gas_n,
             scale,
             to_canonical=True,
         ),
-        gas_ntot=_lifecycle._transform_linear_amount_gauge_on_host(
+        gas_ntot=transform_linear_amount_gauge_on_host(
             result.gas_ntot,
             scale,
             to_canonical=True,
         ),
         condensate_amounts=(
-            _lifecycle._transform_linear_amount_gauge_on_host(
+            transform_linear_amount_gauge_on_host(
                 result.condensate_amounts,
                 scale,
                 to_canonical=True,
@@ -574,6 +523,21 @@ def _remove_depleted_element_species(
     }
 
 
+def _rainout_phase_inventories(
+    formula_matrix: Array,
+    amounts: Array,
+    depleted_rows: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Contract raw and propagation amounts using the same depleted-species mask."""
+
+    formula = np.asarray(formula_matrix, dtype=np.float64)
+    raw_amounts = np.asarray(jax.device_get(amounts), dtype=np.float64)
+    incompatible = np.any(formula[depleted_rows, :] != 0.0, axis=0)
+    propagation_amounts = raw_amounts.copy()
+    propagation_amounts[incompatible] = 0.0
+    return formula @ raw_amounts, formula @ propagation_amounts, incompatible
+
+
 def _floorless_budget_certification(
     *,
     setup: CondensateChemicalSetup,
@@ -584,36 +548,12 @@ def _floorless_budget_certification(
 ) -> Mapping[str, Any]:
     """Certify every propagated budget row without an absolute floor."""
 
-    gas_inventory = np.asarray(setup.formula_matrix, dtype=np.float64) @ np.asarray(
-        jax.device_get(result.gas_n), dtype=np.float64
-    )
-    gas_formula = np.asarray(setup.formula_matrix, dtype=np.float64)
-    condensate_formula = np.asarray(
-        setup.formula_matrix_cond, dtype=np.float64
-    )
-    gas_amounts = np.asarray(jax.device_get(result.gas_n), dtype=np.float64)
-    condensate_amounts = np.asarray(
-        jax.device_get(result.condensate_amounts), dtype=np.float64
-    )
-    raw_condensate_inventory = condensate_formula @ condensate_amounts
     depleted_rows = conserved_mask & (inventory_target == 0.0)
-    incompatible_gas = (
-        np.any(gas_formula[depleted_rows, :] != 0.0, axis=0)
-        if np.any(depleted_rows)
-        else np.zeros(gas_formula.shape[1], dtype=bool)
+    gas_inventory, certified_gas_inventory, _ = _rainout_phase_inventories(
+        setup.formula_matrix, result.gas_n, depleted_rows
     )
-    incompatible_condensates = (
-        np.any(condensate_formula[depleted_rows, :] != 0.0, axis=0)
-        if np.any(depleted_rows)
-        else np.zeros(condensate_formula.shape[1], dtype=bool)
-    )
-    certified_gas_amounts = gas_amounts.copy()
-    certified_gas_amounts[incompatible_gas] = 0.0
-    certified_condensate_amounts = condensate_amounts.copy()
-    certified_condensate_amounts[incompatible_condensates] = 0.0
-    certified_gas_inventory = gas_formula @ certified_gas_amounts
-    condensate_inventory = (
-        condensate_formula @ certified_condensate_amounts
+    raw_condensate_inventory, condensate_inventory, _ = _rainout_phase_inventories(
+        setup.formula_matrix_cond, result.condensate_amounts, depleted_rows
     )
     reconstructed = certified_gas_inventory + condensate_inventory
     finite = bool(
@@ -723,34 +663,16 @@ def _conservation_rainout_inventory(
 ) -> Mapping[str, Any]:
     """Subtract condensates from the input budget and normalize the remainder."""
 
-    gas_formula = np.asarray(setup.formula_matrix, dtype=np.float64)
-    condensate_formula = np.asarray(
-        setup.formula_matrix_cond, dtype=np.float64
-    )
-    gas_amounts = np.asarray(jax.device_get(result.gas_n), dtype=np.float64)
-    condensate_amounts = np.asarray(
-        jax.device_get(result.condensate_amounts), dtype=np.float64
-    )
-    gas_inventory = gas_formula @ gas_amounts
-    raw_condensate_inventory = condensate_formula @ condensate_amounts
     depleted_rows = conserved_mask & (inventory_target == 0.0)
-    incompatible_gas = (
-        np.any(gas_formula[depleted_rows, :] != 0.0, axis=0)
-        if np.any(depleted_rows)
-        else np.zeros(gas_formula.shape[1], dtype=bool)
+    gas_inventory, propagation_gas_inventory, incompatible_gas = (
+        _rainout_phase_inventories(
+            setup.formula_matrix, result.gas_n, depleted_rows
+        )
     )
-    incompatible_condensates = (
-        np.any(condensate_formula[depleted_rows, :] != 0.0, axis=0)
-        if np.any(depleted_rows)
-        else np.zeros(condensate_formula.shape[1], dtype=bool)
-    )
-    propagation_gas_amounts = gas_amounts.copy()
-    propagation_gas_amounts[incompatible_gas] = 0.0
-    propagation_condensate_amounts = condensate_amounts.copy()
-    propagation_condensate_amounts[incompatible_condensates] = 0.0
-    propagation_gas_inventory = gas_formula @ propagation_gas_amounts
-    condensate_inventory = (
-        condensate_formula @ propagation_condensate_amounts
+    raw_condensate_inventory, condensate_inventory, incompatible_condensates = (
+        _rainout_phase_inventories(
+            setup.formula_matrix_cond, result.condensate_amounts, depleted_rows
+        )
     )
     if not np.all(np.isfinite(gas_inventory)):
         raise RuntimeError("Rainout gas element inventory is not finite.")

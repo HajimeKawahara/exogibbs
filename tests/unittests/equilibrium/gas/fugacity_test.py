@@ -105,7 +105,11 @@ def test_jit_grad_includes_lnphi_temperature_and_pressure_derivatives():
     np.testing.assert_allclose(forward_dln_dP, dln_dP, atol=2.0e-11)
 
 
-def test_vmap_profile_propagates_layer_state_to_lnphi():
+@pytest.mark.parametrize(
+    "method", ("vmap_cold", "scan_hot_from_top", "scan_hot_from_bottom"),
+)
+@pytest.mark.parametrize("return_diagnostics", (False, True))
+def test_profile_propagates_layer_state_to_lnphi(method, return_diagnostics):
     setup = _setup()
     temperatures = jnp.asarray([300.0, 500.0, 700.0])
     pressures = jnp.asarray([1.0, 2.0, 4.0])
@@ -115,7 +119,7 @@ def test_vmap_profile_propagates_layer_state_to_lnphi():
         delta = 1.0e-3 * temperature + 0.1 * pressure_bar
         return jnp.asarray([delta, -delta])
 
-    result = equilibrium_profile(
+    output = equilibrium_profile(
         setup,
         temperatures,
         pressures,
@@ -123,10 +127,16 @@ def test_vmap_profile_propagates_layer_state_to_lnphi():
         options=EquilibriumOptions(
             epsilon_crit=1.0e-12,
             max_iter=200,
-            method="vmap_cold",
+            method=method,
         ),
         lnphi_func=lnphi_func,
+        return_diagnostics=return_diagnostics,
     )
+    if return_diagnostics:
+        result, diagnostics = output
+        assert np.all(diagnostics["converged"])
+    else:
+        result = output
     delta = 1.0e-3 * temperatures + 0.1 * pressures
     expected = jax.vmap(_expected_mole_fractions)(delta)
 
