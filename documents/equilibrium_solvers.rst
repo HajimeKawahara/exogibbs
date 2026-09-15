@@ -120,6 +120,9 @@ MELTYQ gas species can assign one-component Zhang--Duan models to the six
 supported species; He, N2, and NH3 omitted under the explicit ``"ideal"``
 policy receive zero correction.
 
+Both ExoEOS adapters require scalar temperature and pressure inputs. Use
+``jax.vmap`` to evaluate batches; passing arrays directly raises ``ValueError``.
+
 .. code-block:: python
 
    from exoeos import ZhangDuanEOS

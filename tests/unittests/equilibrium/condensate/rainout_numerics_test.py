@@ -12,6 +12,46 @@ from exogibbs.equilibrium.condensate.profile import (
 )
 
 
+def test_rainout_certification_and_propagation_share_depleted_species_inventory():
+    setup = SimpleNamespace(
+        elements=("A", "B", "e-"),
+        formula_matrix=np.asarray([[1., 0., 0.], [1., 1., 0.], [0., 1., -1.]]),
+        formula_matrix_cond=np.asarray([[1., 0.], [1., 1.], [0., 0.]]),
+    )
+    result = SimpleNamespace(
+        gas_n=np.asarray([0.01, 0.75, 0.75]),
+        condensate_amounts=np.asarray([0.1, 0.25]),
+    )
+    target = np.asarray([0.0, 1.0, 0.0])
+    conserved = np.asarray([True, True, False])
+
+    certificate = _floorless_budget_certification(
+        setup=setup, result=result, conserved_mask=conserved,
+        inventory_target=target, relative_tolerance=1.0e-3,
+    )
+    propagation = _conservation_rainout_inventory(
+        setup=setup, result=result, conserved_mask=conserved,
+        normalization_mask=target > 0.0, inventory_target=target,
+        inventory_sum=1.0, roundoff_multiplier=64.0,
+    )
+
+    assert certificate["accepted"]
+    for certified_name, propagated_name, expected in (
+        ("raw_solver_gas_element_inventory", "gas_inventory", [0.01, 0.76, 0.]),
+        ("gas_element_inventory", "propagation_gas_inventory", [0., 0.75, 0.]),
+        ("raw_solver_condensate_element_inventory", "raw_condensate_inventory",
+         [0.1, 0.35, 0.]),
+        ("condensate_element_inventory", "condensate_inventory", [0., 0.25, 0.]),
+    ):
+        np.testing.assert_array_equal(
+            certificate[certified_name], propagation[propagated_name]
+        )
+        np.testing.assert_allclose(propagation[propagated_name], expected)
+    assert propagation["ignored_gas_species_indices"] == (0,)
+    assert propagation["ignored_condensate_species_indices"] == (0,)
+    np.testing.assert_array_equal(propagation["next_inventory"], target)
+
+
 @pytest.mark.parametrize(
     ("target", "gas", "condensate", "expected"),
     (

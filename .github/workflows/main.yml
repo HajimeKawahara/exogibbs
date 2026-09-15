@@ -121,13 +121,11 @@ jobs:
           tests=(
             tests/unittests/examples/metal_silicate_hydrogen_test.py
             tests/unittests/examples/metal_silicate_native_test.py
+            tests/unittests/examples/metal_silicate_full_potential_test.py
+            tests/unittests/examples/metal_silicate_melts_coupled_test.py
+            tests/unittests/examples/metal_silicate_melts_archive_test.py
             tests/unittests/interop
           )
-          # The next stacked PR adds these offline full-potential contracts.
-          for name in full_potential melts_coupled melts_archive; do
-            coupled=tests/unittests/examples/metal_silicate_${name}_test.py
-            if [[ -f "$coupled" ]]; then tests+=("$coupled"); fi
-          done
           python -m pytest "${tests[@]}" --junitxml=results/provider.xml
           python - <<'PY'
           from xml.etree import ElementTree

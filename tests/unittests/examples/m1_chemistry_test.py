@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from dataclasses import replace
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -23,6 +24,12 @@ SPEC.loader.exec_module(M1)
 PARCELS = json.loads(
     Path(__file__).with_name("data").joinpath("m1_condensate_parcels.json").read_text()
 )
+
+
+def test_provenance_records_shared_source_activity_implementation():
+    recorded = {Path(item["path"]): item["sha256"] for item in M1.provenance()["files"]}
+    activity_path = PATH.with_name("source.py")
+    assert recorded[activity_path] == hashlib.sha256(activity_path.read_bytes()).hexdigest()
 
 
 def test_named_subset_preserves_atom_order_standards_and_temperature_bounds():

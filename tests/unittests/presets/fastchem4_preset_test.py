@@ -94,6 +94,28 @@ def test_fastchem4_preserves_duplicate_condensate_slots() -> None:
     assert setup.formula_matrix_cond.shape[1] == len(setup.condensate_species)
 
 
+def test_fastchem4_checks_elements_in_every_duplicate_slot(tmp_path, monkeypatch) -> None:
+    data = tmp_path / "condensates.dat"
+    data.write_text(
+        "X(s) : X 1\ns\n1000\n0 0 0 0 0\n"
+        "X(s) : H 1\ns\n1000\n0 0 0 0 0\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(fastchem4_cond_module, "get_data_filepath", lambda path: data)
+    gas_setup = ChemicalSetup(
+        formula_matrix=jnp.ones((1, 1)),
+        hvector_func=lambda temperature: jnp.zeros((1,)),
+        elements=("H",),
+        species=("H",),
+        element_vector_reference=jnp.ones((1,)),
+    )
+
+    with pytest.raises(ValueError, match="missing elements: X"):
+        fastchem4_cond_module.chemsetup(
+            path=str(data), gas_setup=gas_setup, silent=True,
+        )
+
+
 def test_fastchem4_hvectors_are_finite_for_representative_temperature() -> None:
     setup = condensate_chemical_setup(silent=True)
 

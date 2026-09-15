@@ -14,6 +14,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
+from exogibbs.equilibrium.condensate.amount_gauge import (
+    transform_condensate_init_amount_gauge,
+    transform_linear_amount_gauge_on_host as _transform_linear_amount_gauge_on_host,
+)
 from exogibbs.equilibrium.condensate.initialization import (
     resolve_condensate_initial_guess,
 )
@@ -232,78 +236,14 @@ def _inventory_amount_gauge_scale(
     return scale
 
 
-def _transform_linear_amount_gauge_on_host(
-    values: Array,
-    amount_scale: float,
-    *,
-    to_canonical: bool,
-) -> Array:
-    """Transform concrete linear amounts without flushing subnormal values."""
-
-    if not math.isfinite(amount_scale) or amount_scale <= 0.0:
-        raise ValueError("amount_scale must be finite and positive.")
-    host_values = np.asarray(jax.device_get(values), dtype=np.float64)
-    with np.errstate(
-        divide="ignore",
-        over="ignore",
-        under="ignore",
-        invalid="ignore",
-    ):
-        transformed = (
-            np.divide(host_values, amount_scale)
-            if to_canonical
-            else np.multiply(host_values, amount_scale)
-        )
-    return jnp.asarray(transformed, dtype=jnp.float64)
-
-
 def _normalize_condensate_init_amount_gauge(
     init: CondensateEquilibriumInit | None,
     amount_scale: float,
 ) -> CondensateEquilibriumInit | None:
     """Convert one caller-gauge initializer to the canonical amount gauge."""
 
-    if not math.isfinite(amount_scale) or amount_scale <= 0.0:
-        raise ValueError("amount_scale must be finite and positive.")
-    if init is None or amount_scale == 1.0:
-        return init
-    log_scale = math.log(amount_scale)
-    return replace(
-        init,
-        gas_ln_n=(
-            None
-            if init.gas_ln_n is None
-            else jnp.asarray(init.gas_ln_n, dtype=jnp.float64) - log_scale
-        ),
-        gas_ntot=(
-            None
-            if init.gas_ntot is None
-            else _transform_linear_amount_gauge_on_host(
-                init.gas_ntot,
-                amount_scale,
-                to_canonical=True,
-            )
-        ),
-        condensate_amounts=(
-            None
-            if init.condensate_amounts is None
-            else _transform_linear_amount_gauge_on_host(
-                init.condensate_amounts,
-                amount_scale,
-                to_canonical=True,
-            )
-        ),
-        support_amounts=(
-            None
-            if init.support_amounts is None
-            else tuple(float(value) / amount_scale for value in init.support_amounts)
-        ),
-        barrier_epsilon=(
-            None
-            if init.barrier_epsilon is None
-            else jnp.asarray(init.barrier_epsilon, dtype=jnp.float64)
-            - log_scale
-        ),
+    return transform_condensate_init_amount_gauge(
+        init, amount_scale, to_canonical=True
     )
 
 

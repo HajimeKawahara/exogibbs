@@ -7,9 +7,9 @@ from typing import Any, Callable, Mapping, Optional, Sequence
 import jax.numpy as jnp
 
 from exogibbs.thermo.fugacity import LogFugacityCoefficientFunction
+from exogibbs.utils.units import convert_pressure
 
 
-_BAR_TO_PA = 1.0e5
 _UNSPECIFIED_SPECIES_POLICIES = ("error", "ideal")
 
 
@@ -42,6 +42,27 @@ def _validate_species(
     return species
 
 
+def _state_inputs(
+    temperature: Any,
+    pressure_bar: Any,
+    *dtype_values: jnp.ndarray,
+) -> tuple[jnp.ndarray, jnp.ndarray]:
+    """Normalize scalar provider inputs and convert pressure to Pa."""
+
+    temperature_array = jnp.asarray(temperature)
+    pressure_array = jnp.asarray(pressure_bar)
+    if temperature_array.ndim != 0 or pressure_array.ndim != 0:
+        raise ValueError(
+            "Temperature and pressure must be scalars; use jax.vmap for batches."
+        )
+    dtype = jnp.result_type(
+        temperature_array, pressure_array, *dtype_values, jnp.float32,
+    )
+    return temperature_array.astype(dtype), convert_pressure(
+        pressure_array.astype(dtype), from_unit="bar", to_unit="Pa",
+    )
+
+
 def make_pure_lnphi_func(
     *,
     source_species: Sequence[str],
@@ -57,6 +78,7 @@ def make_pure_lnphi_func(
     species. ExoGibbs pressure in bar is converted to Pa before each ExoEOS
     state evaluation. ExoEOS retains ownership of state dtype promotion and
     does not expose species labels, so model identity is a caller contract.
+    Temperature and pressure must be scalars; use ``jax.vmap`` for batches.
     """
 
     species = _validate_species(source_species)
@@ -119,18 +141,8 @@ def make_pure_lnphi_func(
                 "mole_fractions must be None."
             )
 
-        temperature_array = jnp.asarray(temperature)
-        pressure_bar_array = jnp.asarray(pressure_bar)
-        dtype = jnp.result_type(
-            temperature_array,
-            pressure_bar_array,
-            jnp.float32,
-        )
-        temperature_array = temperature_array.astype(dtype)
-        pressure_pa = pressure_bar_array.astype(dtype) * jnp.asarray(
-            _BAR_TO_PA,
-            dtype=dtype,
-        )
+        temperature_array, pressure_pa = _state_inputs(temperature, pressure_bar)
+        dtype = temperature_array.dtype
         pure_composition = jnp.ones((1,), dtype=dtype)
         ideal_lnphi = jnp.zeros((), dtype=dtype)
 
@@ -216,21 +228,17 @@ def make_solution_lngamma_func(
     ) -> jnp.ndarray:
         if mole_fractions is None:
             raise ValueError("Solution activities require phase mole_fractions, not None.")
-        temperature_array = jnp.asarray(temperature)
-        pressure_array = jnp.asarray(pressure_bar)
         composition = jnp.asarray(mole_fractions)
-        if temperature_array.ndim != 0 or pressure_array.ndim != 0:
-            raise ValueError(
-                "Temperature and pressure must be scalars; use jax.vmap for batches."
-            )
+        temperature_array, pressure_pa = _state_inputs(
+            temperature, pressure_bar, composition,
+        )
         if composition.shape != expected_shape:
             raise ValueError(f"mole_fractions must have shape {expected_shape}.")
-        dtype = jnp.result_type(temperature_array, pressure_array, composition, jnp.float32)
         state = solution_state(
             model,
-            temperature_array.astype(dtype),
-            pressure_array.astype(dtype) * jnp.asarray(_BAR_TO_PA, dtype=dtype),
-            composition.astype(dtype)[to_provider],
+            temperature_array,
+            pressure_pa,
+            composition.astype(temperature_array.dtype)[to_provider],
         )
         values = jnp.asarray(state.lngamma)
         if values.shape != expected_shape:
