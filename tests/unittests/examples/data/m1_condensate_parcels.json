@@ -100,6 +100,23 @@
         9.67601942869975e+19
       ],
       "condensate_expected": true
+    },
+    {
+      "id": "coupled_32_layer_18_1000K",
+      "source": "ExoInventory examples/retained_rock_atmosphere/validation/20260914_coupled_32/trial_001.json, layers[-1].parcel.report",
+      "provider_base_commit": "8d1be67d05a87218874f370db1a64372b2871286",
+      "temperature_k": 1000.0,
+      "pressure_bar": 0.024916008487012205,
+      "element_amounts_mol": [
+        578.7333808381281,
+        57.897709996557595,
+        5.0082173827737115,
+        1.0048925356114036,
+        1.836522145914422,
+        0.2178755483536779,
+        0.7220122409456399
+      ],
+      "condensate_expected": true
     }
   ]
 }

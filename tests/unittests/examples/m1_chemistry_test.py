@@ -258,6 +258,10 @@ def test_native_condensate_accepts_saved_retained_parcels(retained_parcel_setup,
         np.asarray(case["element_amounts_mol"]),
     )
 
+    _assert_native_parcel_accepted(report, case["condensate_expected"])
+
+
+def _assert_native_parcel_accepted(report, condensate_expected):
     assert report["solver_status"] == "converged"
     assert report["solver_converged"]
     assert report["accepted"]
@@ -270,4 +274,31 @@ def test_native_condensate_accepts_saved_retained_parcels(retained_parcel_setup,
     eligible = np.asarray(report["condensate_temperature_eligible"])
     assert np.all(cloud >= 0.)
     assert not np.any((cloud > 0.) & ~eligible)
-    assert bool(np.any(cloud > 0.)) == case["condensate_expected"]
+    assert bool(np.any(cloud > 0.)) == condensate_expected
+
+
+@pytest.mark.parametrize("pressure_factor, amount_scale", [(0.99, 1.), (1.01, 1.), (1., 1e20)])
+def test_native_retained_column_parcel_pressure_and_amount_gauge(
+    retained_parcel_setup, pressure_factor, amount_scale,
+):
+    case = next(case for case in PARCELS["cases"] if case["id"] == "coupled_32_layer_18_1000K")
+    budget = np.asarray(case["element_amounts_mol"])
+    report = M1.solve_parcel(
+        retained_parcel_setup, case["temperature_k"], case["pressure_bar"] * pressure_factor,
+        budget * amount_scale,
+    )
+    _assert_native_parcel_accepted(report, True)
+    np.testing.assert_allclose(
+        np.asarray(report["gas_element_amounts_mol"]) + report["cloud_element_amounts_mol"],
+        budget * amount_scale, rtol=1e-9, atol=0.,
+    )
+    if amount_scale != 1.:
+        reference = M1.solve_parcel(
+            retained_parcel_setup, case["temperature_k"], case["pressure_bar"], budget,
+        )
+        _assert_native_parcel_accepted(reference, True)
+        for field in ("gas_amounts_mol", "condensate_amounts_mol"):
+            np.testing.assert_allclose(
+                np.asarray(report[field]) / amount_scale, reference[field], rtol=1e-8, atol=1e-15,
+            )
+        assert report["gas_mass_fraction"] == pytest.approx(reference["gas_mass_fraction"], rel=1e-9)

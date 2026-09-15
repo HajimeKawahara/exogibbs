@@ -686,8 +686,20 @@ def test_head_v2_uses_one_canonical_amount_gauge_and_rescales_results(
     )
 
 
+@pytest.mark.parametrize(
+    ("finite_barrier_failed", "exact_accepted", "invalid_exact_budget"),
+    (
+        (False, True, False),
+        (True, True, False),
+        (True, False, False),
+        (True, True, True),
+    ),
+)
 def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
     monkeypatch,
+    finite_barrier_failed,
+    exact_accepted,
+    invalid_exact_budget,
 ) -> None:
     setup = _rank_deficient_initializer_fake_setup()
     captured = {}
@@ -709,19 +721,23 @@ def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
         slot_mask = np.asarray(bucket.condensate_slot_mask, dtype=bool)
         captured["amounts"] = tuple(slot_amounts[0, slot_mask[0]])
         zeros = jnp.zeros((1,), dtype=jnp.float64)
+        gas_amounts = [0.2, 0.1] if finite_barrier_failed else [0.4, 0.3]
+        condensate_amounts = (
+            [0.0, 0.25, 0.15] if finite_barrier_failed else [0.0, 0.2, 0.1]
+        )
         return {
             "backend": "cpu",
             "compilation_seconds": 0.0,
             "execution_seconds": 0.0,
             "diagnostic_seconds": 0.0,
             "gas_log_amounts": jnp.log(
-                jnp.asarray([[0.4, 0.3]], dtype=jnp.float64)
+                jnp.asarray([gas_amounts], dtype=jnp.float64)
             ),
             "condensate_amounts": jnp.asarray(
-                [[0.0, 0.2, 0.1]], dtype=jnp.float64
+                [condensate_amounts], dtype=jnp.float64
             ),
             "total_gas_log_amount": jnp.log(
-                jnp.asarray([0.7], dtype=jnp.float64)
+                jnp.asarray([sum(gas_amounts)], dtype=jnp.float64)
             ),
             "element_potential": jnp.asarray(
                 [
@@ -733,14 +749,16 @@ def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
                 dtype=jnp.float64,
             ),
             "terminal_status": jnp.asarray(
-                [int(TerminalStatus.CONVERGED)], dtype=jnp.int32
+                [int(TerminalStatus.RESTORATION_MAX_ITER
+                     if finite_barrier_failed else TerminalStatus.CONVERGED)],
+                dtype=jnp.int32,
             ),
             "final_kkt_norms": KKTComponentNorms(
-                zeros, zeros, zeros, zeros, zeros
+                zeros, zeros, zeros + float(finite_barrier_failed), zeros, zeros
             ),
             "final_state_values_finite": jnp.asarray([True]),
-            "fixed_support_converged": jnp.asarray([True]),
-            "support_closed": jnp.asarray([True]),
+            "fixed_support_converged": jnp.asarray([not finite_barrier_failed]),
+            "support_closed": jnp.asarray([not finite_barrier_failed]),
             "support_expansion_mask": jnp.zeros((1, 3), dtype=bool),
             "inactive_condensate_driving": jnp.zeros(
                 (1, 3), dtype=jnp.float64
@@ -766,9 +784,15 @@ def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
         )
         captured["polish_support"] = tuple(kwargs["support_indices"])
         captured["polish_amounts"] = full_amounts.copy()
+        captured["polish_gas"] = np.exp(
+            np.asarray(kwargs["gas_log_amounts_init"])
+        )
+        gas_log_amounts = np.asarray(kwargs["gas_log_amounts_init"])
+        if invalid_exact_budget:
+            gas_log_amounts = np.log(np.exp(gas_log_amounts) + 0.1)
         return SimpleNamespace(
-            accepted=True,
-            gas_log_amounts=np.asarray(kwargs["gas_log_amounts_init"]),
+            accepted=exact_accepted,
+            gas_log_amounts=gas_log_amounts,
             condensate_amounts=full_amounts,
             total_gas_log_amount=float(kwargs["total_gas_log_amount_init"]),
             element_potential=np.asarray(kwargs["element_potential_init"]),
@@ -779,7 +803,7 @@ def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
                     if full_amounts[index] > 0.0
                 )
             ),
-            report={"accepted": True, "polish_schema": "unit_test"},
+            report={"accepted": exact_accepted, "polish_schema": "unit_test"},
         )
 
     monkeypatch.setattr(
@@ -818,8 +842,36 @@ def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
     assert captured["amounts"] == pytest.approx((0.2, 0.1))
     assert captured["polish_support"] == (2, 0, 1)
     assert captured["polish_amounts"][0] == 0.0
-    assert result.layers[0].converged
+    np.testing.assert_allclose(captured["polish_gas"], [0.4, 0.3])
+    np.testing.assert_allclose(captured["polish_amounts"], [0.0, 0.2, 0.1])
+    expected_accepted = exact_accepted and not invalid_exact_budget
+    assert result.layers[0].converged is expected_accepted
     lifecycle = result.layers[0].diagnostics["fixed_support_v2"]
+    fallback = lifecycle["pre_pdipm_zero_barrier_fallback"]
+    assert fallback["rank_reduced_initial_support"]
+    assert not fallback["trace_capacity"]["trace_capacity_detected"]
+    assert fallback["attempted"] is finite_barrier_failed
+    assert fallback["accepted"] is (finite_barrier_failed and expected_accepted)
+    if finite_barrier_failed:
+        assert lifecycle["zero_barrier_initializer"]["source"] == (
+            "pre_pdipm_finite_support_state"
+        )
+        assert not lifecycle["fixed_support_converged"]
+        if not exact_accepted:
+            assert lifecycle["outcome"] == "zero_barrier_active_support_polish_failed"
+            assert "caller_gauge_zero_barrier_kkt" not in lifecycle
+        elif invalid_exact_budget:
+            audit = lifecycle["caller_gauge_zero_barrier_kkt"]
+            assert not audit["accepted"]
+            assert audit["budget_scaled_max_abs"] > 0.1
+            assert lifecycle["outcome"] == "caller_gauge_zero_barrier_kkt_failed"
+        else:
+            assert lifecycle["outcome"] == "zero_barrier_active_support_rescued"
+        if not expected_accepted:
+            np.testing.assert_allclose(result.layers[0].gas_n, [0.2, 0.1])
+            np.testing.assert_allclose(
+                result.layers[0].condensate_amounts, [0.0, 0.25, 0.15]
+            )
     reduction = lifecycle["finite_barrier_initial_support_reduction"]
     assert reduction["role"] == "finite_barrier_pdipm_initializer"
     assert reduction["attempted"]
@@ -1900,8 +1952,10 @@ def test_disabled_pre_pdipm_fallback_does_not_materialize_device_state(
         (True, True, None),
     ),
 )
-def test_trace_capacity_initializer_still_requires_valid_source(
+@pytest.mark.parametrize("rank_reduced_initial_support", (False, True))
+def test_pre_pdipm_initializer_still_requires_valid_source(
     state_finite, temperature_valid, expected_reason,
+    rank_reduced_initial_support,
 ):
     setup = _amount_gauge_fake_setup()
     state = _lifecycle._HeadV2LayerState(
@@ -1913,7 +1967,9 @@ def test_trace_capacity_initializer_still_requires_valid_source(
     )
     capacity = _lifecycle.finite_barrier_trace_capacity_report(
         condensate_formula_matrix_full=setup.formula_matrix_cond,
-        target_inventory=np.asarray([1.0, 1.0e-12]),
+        target_inventory=np.asarray(
+            [1.0, 1.0 if rank_reduced_initial_support else 1.0e-12]
+        ),
         support_indices=(1,),
         monotone_constraint_row_mask=_lifecycle.monotone_formula_row_mask(
             setup.formula_matrix, setup.formula_matrix_cond,
@@ -1927,10 +1983,14 @@ def test_trace_capacity_initializer_still_requires_valid_source(
         valid_condensates=(True, temperature_valid),
         enabled=True,
         disabled_reason=None,
+        rank_reduced_initial_support=rank_reduced_initial_support,
     )
     assert (payload is not None) is (expected_reason is None)
     assert report["skip_reason"] == expected_reason
     assert not report["accepted"]
+    assert capacity["trace_capacity_detected"] is (
+        not rank_reduced_initial_support
+    )
 
 
 def test_head_v2_zero_barrier_initializer_uses_bounded_gas_kkt_gate():

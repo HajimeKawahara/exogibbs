@@ -962,8 +962,14 @@ def _head_v2_pre_pdipm_zero_barrier_candidate(
     valid_condensates: Sequence[bool] | None,
     enabled: bool,
     disabled_reason: str | None,
+    rank_reduced_initial_support: bool = False,
 ) -> tuple[_ZeroBarrierInitializerPayload | None, dict[str, Any]]:
-    """Build a finite trace-capacity initializer without accepting it."""
+    """Recover a finite initializer after a qualified finite-barrier failure.
+
+    Trace capacity and initial rank reduction can make the finite-barrier
+    route unreliable. Neither condition authorizes physical acceptance: the
+    recovered state only initializes the catalog-wide zero-barrier solve.
+    """
 
     support = (
         ()
@@ -982,13 +988,15 @@ def _head_v2_pre_pdipm_zero_barrier_candidate(
         "source_state_values_finite": None,
         "source_support_temperature_valid": None,
         "trace_capacity": dict(trace_capacity_report),
+        "rank_reduced_initial_support": rank_reduced_initial_support,
     }
     if not enabled:
         return None, report
     if not trace_capacity_report["capacity_geometry_valid"]:
         report["skip_reason"] = "invalid_capacity_geometry"
         return None, report
-    if not trace_capacity_report["trace_capacity_detected"]:
+    if not (trace_capacity_report["trace_capacity_detected"]
+            or rank_reduced_initial_support):
         report["skip_reason"] = "capacity_not_below_initial_barrier"
         return None, report
     if state is None:
@@ -1888,22 +1896,31 @@ def _run_head_v2_profile(
                 "pre_pdipm_trace_capacity": trace_capacity,
             }
             records[source_index]["rounds"].append(round_record)
+            # A basic subset of dependent initial phases is an initializer,
+            # not a thermodynamic support decision. If its first PDIPM solve
+            # fails, preserve the pre-solve state for exact catalog closure.
+            rank_reduced_initial_support = bool(
+                round_index == 0
+                and source_index in initial_support_envelopes
+            )
             retain_pre_pdipm_state = bool(
                 not converged[local_index]
                 and trace_capacity["capacity_geometry_valid"]
-                and trace_capacity["trace_capacity_detected"]
+                and (trace_capacity["trace_capacity_detected"]
+                     or rank_reduced_initial_support)
             )
             last_outputs[source_index] = {
                 "raw": raw,
                 "local_index": local_index,
                 "round_index": round_index,
                 "support_indices": current.support_indices,
-                # Trace geometry, not a backend-dependent termination code,
-                # determines whether to retain an exact-solve initializer.
+                # Initial support geometry, not a backend-dependent terminal
+                # code, determines whether to retain an exact initializer.
                 "pre_pdipm_state": (
                     current if retain_pre_pdipm_state else None
                 ),
                 "pre_pdipm_trace_capacity": trace_capacity,
+                "rank_reduced_initial_support": rank_reduced_initial_support,
                 "fixed_support_converged": bool(converged[local_index]),
                 "support_closed": bool(closed[local_index]),
                 "terminal_status": terminal_code,
@@ -2404,6 +2421,9 @@ def _run_head_v2_profile(
                 valid_condensates=valid_mask,
                 enabled=fallback_routing_candidate,
                 disabled_reason=fallback_disabled_reason,
+                rank_reduced_initial_support=terminal_output[
+                    "rank_reduced_initial_support"
+                ],
             )
             pre_pdipm_fallback_report.update(
                 {
