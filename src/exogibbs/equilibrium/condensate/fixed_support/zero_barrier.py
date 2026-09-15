@@ -8,7 +8,7 @@ from fractions import Fraction
 from typing import Any, Sequence
 
 import numpy as np
-from scipy.optimize import least_squares, linprog, minimize
+from scipy.optimize import OptimizeResult, least_squares, linprog, minimize
 from scipy.special import logsumexp
 
 from exogibbs.equilibrium.condensate.support_geometry import (
@@ -138,10 +138,11 @@ def _select_support_with_zero_barrier_dual(
 
     Structural zero rows and the species that consume them are removed.  On
     the remaining physical gas branch, the dual maximizes the target-weighted
-    element potential subject to gas normalization and nonnegative driving
-    for every temperature-valid condensate.  The selected tight constraints
-    are only an initializer: an independent exact solve and full physical
-    audit remain authoritative.
+    element potential subject to a gas partition sum at most one and
+    nonnegative driving for every temperature-valid condensate. The gas
+    boundary must be active at the returned initializer. Selected tight
+    constraints only initialize an independent exact solve; its full physical
+    audit remains authoritative.
     """
 
     ag_full = np.asarray(gas_formula_matrix, dtype=np.float64)
@@ -275,6 +276,27 @@ def _select_support_with_zero_barrier_dual(
         }
     )
 
+    # Negative entries were excluded above. With nonempty species, lowering
+    # every potential by t lowers each gas logit by at least t * min(sum(A)).
+    # The same direction makes every condensate inequality feasible.
+    gas_atoms, condensate_atoms = ag.sum(axis=0), ac.sum(axis=0)
+    initial_shift = 0.0
+    if np.all(gas_atoms > 0.0) and np.all(condensate_atoms > 0.0):
+        initial_shift = max(
+            0.0,
+            float(logsumexp(ag.T @ lambda_reference - gamma) / np.min(gas_atoms)),
+            float(np.max((ac.T @ lambda_reference - hcond) / condensate_atoms)),
+        )
+        if initial_shift > feasibility_tolerance:
+            lambda_reference = lambda_reference - initial_shift
+    # Normalize the linear constraint rows in optimizer coordinates. Physical
+    # feasibility and support selection below retain their original RT units.
+    driving_derivative = -ac.T * coordinate_scale[None, :]
+    driving_scale = np.max(np.abs(driving_derivative), axis=1)
+    driving_scale = np.where(driving_scale > 0.0, driving_scale, 1.0)
+    base_report["initial_feasibility_potential_shift"] = initial_shift
+    base_report["condensate_constraint_scaling"] = "unit_infinity_norm_jacobian_rows"
+
     cached_values: np.ndarray | None = None
     cached_state: tuple[
         np.ndarray, float, np.ndarray, np.ndarray
@@ -307,6 +329,14 @@ def _select_support_with_zero_barrier_dual(
         base_report["skip_reason"] = "function_evaluation_limit_reached"
         return failed("function_evaluation_limit_reached")
     objective_evaluations = 0
+    major_iterations = 0
+    last_major_values: np.ndarray | None = None
+
+    def remember_major_iteration(values: np.ndarray) -> None:
+        nonlocal major_iterations, last_major_values
+        major_iterations += 1
+        if np.all(np.isfinite(values)):
+            last_major_values = np.asarray(values, dtype=np.float64).copy()
 
     def objective(values: np.ndarray) -> float:
         nonlocal objective_evaluations
@@ -326,11 +356,11 @@ def _select_support_with_zero_barrier_dual(
         return -(state(values)[2] * coordinate_scale)
 
     def driving_constraint(values: np.ndarray) -> np.ndarray:
-        return state(values)[3]
+        return state(values)[3] / driving_scale
 
     def driving_jacobian(values: np.ndarray) -> np.ndarray:
         del values
-        return -ac.T * coordinate_scale[None, :]
+        return driving_derivative / driving_scale[:, None]
 
     try:
         optimization = minimize(
@@ -339,7 +369,11 @@ def _select_support_with_zero_barrier_dual(
             jac=objective_jacobian,
             constraints=(
                 {
-                    "type": "eq",
+                    # The ideal-gas dual is finite throughout this convex
+                    # sublevel set. Equality would restrict optimization to
+                    # its curved boundary even far from a feasible start.
+                    # The final audit below still requires gas normalization.
+                    "type": "ineq",
                     "fun": normalization_constraint,
                     "jac": normalization_jacobian,
                 },
@@ -350,6 +384,7 @@ def _select_support_with_zero_barrier_dual(
                 },
             ),
             method="SLSQP",
+            callback=remember_major_iteration,
             options={
                 "disp": False,
                 "ftol": 1.0e-12,
@@ -357,16 +392,19 @@ def _select_support_with_zero_barrier_dual(
             },
         )
     except _DualSupportOracleEvaluationLimit:
-        if function_evaluation_budget is not None:
-            function_evaluation_budget.consume(evaluation_limit)
-        base_report.update(
-            {
-                "function_evaluations": evaluation_limit,
-                "function_evaluations_conservative": True,
-                "skip_reason": "function_evaluation_limit_reached",
-            }
+        if last_major_values is None:
+            if function_evaluation_budget is not None:
+                function_evaluation_budget.consume(objective_evaluations)
+            base_report["function_evaluations"] = objective_evaluations
+            return failed("function_evaluation_limit_reached")
+        # A finite major iterate can still propose an initializer. Retain the
+        # interrupted status; the same feasibility and rank gates apply below.
+        optimization = OptimizeResult(
+            x=last_major_values, success=False, status=-2,
+            message="Function evaluation limit reached; retained final finite major iterate.",
+            nit=major_iterations,
         )
-        return failed("function_evaluation_limit_reached")
+        base_report["function_evaluation_limit_reached"] = True
     except (FloatingPointError, OverflowError, ValueError) as error:
         if function_evaluation_budget is not None:
             function_evaluation_budget.consume(evaluation_limit)
@@ -385,7 +423,42 @@ def _select_support_with_zero_barrier_dual(
 
     if function_evaluation_budget is not None:
         function_evaluation_budget.consume(objective_evaluations)
-    potential, normalization, _mean_formula, driving = state(optimization.x)
+    potential, normalization, mean_formula, driving = state(optimization.x)
+    normalization_before = normalization
+    minimum_driving_before = float(np.min(driving))
+    boundary_shift = 0.0
+    boundary_evaluations = 0
+    # Near the gas boundary, a common potential shift has the strictly
+    # positive derivative sum(A_g @ fractions). Normalize this initializer,
+    # without claiming optimizer convergence or changing its feasibility gate.
+    if (
+        abs(normalization) <= selection_tolerance
+        and minimum_driving_before >= -selection_tolerance
+        and np.all(gas_atoms > 0.0)
+    ):
+        correction_limit = min(4, _function_evaluation_call_limit(
+            max_function_evaluations - objective_evaluations,
+            function_evaluation_budget,
+        ))
+        for _ in range(correction_limit):
+            if abs(normalization) <= 64.0 * np.finfo(np.float64).eps:
+                break
+            derivative = float(np.sum(mean_formula))
+            if not np.isfinite(derivative) or derivative <= 0.0:
+                break
+            shift = normalization / derivative
+            candidate = potential - shift
+            if not np.all(np.isfinite(candidate)):
+                break
+            potential = candidate
+            boundary_shift += shift
+            logits = ag.T @ potential - gamma
+            normalization = float(logsumexp(logits))
+            mean_formula = ag @ np.exp(logits - normalization)
+            driving = hcond - ac.T @ potential
+            boundary_evaluations += 1
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(boundary_evaluations)
     finite_solution = bool(
         np.all(np.isfinite(optimization.x))
         and np.all(np.isfinite(potential))
@@ -419,7 +492,12 @@ def _select_support_with_zero_barrier_dual(
             "optimizer_status": int(optimization.status),
             "optimizer_message": str(optimization.message),
             "optimizer_iterations": int(optimization.nit),
-            "function_evaluations": int(objective_evaluations),
+            "optimizer_function_evaluations": int(objective_evaluations),
+            "function_evaluations": int(objective_evaluations + boundary_evaluations),
+            "boundary_normalization_evaluations": boundary_evaluations,
+            "boundary_normalization_potential_shift": boundary_shift,
+            "gas_normalization_before_correction": normalization_before,
+            "minimum_condensate_driving_before_correction": minimum_driving_before,
             "gas_normalization_log_residual": normalization,
             "minimum_condensate_driving": float(np.min(driving)),
             "selected_support_indices": selected_support,
@@ -434,8 +512,8 @@ def _select_support_with_zero_barrier_dual(
             "support_structure_passed": support_valid,
         }
     )
-    if not optimization.success:
-        return failed("optimizer_failed")
+    # This oracle selects an initializer, not an accepted physical state.
+    # Exact active-set refinement and its full KKT audit remain mandatory.
     if not feasible:
         return failed("dual_feasibility_failed")
     if not support_valid:
