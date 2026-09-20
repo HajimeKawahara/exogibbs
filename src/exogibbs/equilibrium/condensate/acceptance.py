@@ -18,6 +18,7 @@ from exogibbs.equilibrium.condensate.types import (
     NOT_CONVERGED,
     AcceptedCondensateState,
     Array,
+    PhysicalKKTValidation,
 )
 
 
@@ -372,6 +373,7 @@ def accept_condensate_result_state(
     full_condensate_budget_relative_floor: float = (
         DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR
     ),
+    physical_validation: PhysicalKKTValidation | None = None,
 ) -> AcceptedCondensateState:
     """Apply named post-solve transforms and acceptance gates."""
 
@@ -491,15 +493,21 @@ def accept_condensate_result_state(
         relative_floor=full_condensate_budget_relative_floor,
     )
     if has_positive_condensate and status == CONVERGED:
-        lifecycle = metadata.get("fixed_support_v2", {})
-        exact_audit = (
-            lifecycle.get("zero_barrier_active_support_polish")
-            if isinstance(lifecycle, Mapping)
-            else None
-        )
-        if not isinstance(exact_audit, Mapping) or not bool(
-            exact_audit.get("accepted", False)
-        ):
+        if physical_validation is None:
+            # Historical payload builders supplied only the internal audit.
+            # Production always passes the explicit two-stage validation.
+            lifecycle = metadata.get("fixed_support_v2", {})
+            exact_audit = (
+                lifecycle.get("zero_barrier_active_support_polish")
+                if isinstance(lifecycle, Mapping)
+                else None
+            )
+            physical_kkt_accepted = isinstance(exact_audit, Mapping) and bool(
+                exact_audit.get("accepted", False)
+            )
+        else:
+            physical_kkt_accepted = physical_validation.accepted
+        if not physical_kkt_accepted:
             metadata["pre_physical_condensate_kkt_audit_status"] = status
             status = NOT_CONVERGED
             acceptance_tier = "physical_condensate_kkt_audit_failed"

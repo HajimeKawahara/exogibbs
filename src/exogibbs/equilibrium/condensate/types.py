@@ -76,6 +76,20 @@ class CondensateEquilibriumResult:
 
 
 @dataclass(frozen=True)
+class PhysicalKKTValidation:
+    """Immutable acceptance decisions, separate from diagnostic reports."""
+
+    internal_accepted: bool
+    caller_gauge_accepted: bool
+
+    @property
+    def accepted(self) -> bool:
+        """Require both the exact solve and caller-gauge physical audit."""
+
+        return self.internal_accepted and self.caller_gauge_accepted
+
+
+@dataclass(frozen=True)
 class AcceptedCondensateState:
     """Numerical state after all configured post-solve acceptance steps."""
 

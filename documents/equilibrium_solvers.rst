@@ -74,6 +74,31 @@ vector, the full condensate vector, the accepted active-support indices and
 names, status, route, and optional diagnostics.  Common dense arrays are also
 available in ``result.batched_arrays``.
 
+Condensate acceptance stages
+----------------------------
+
+The production lifecycle separates finite-barrier convergence from physical
+acceptance. A fixed-support PD-IPM result is an initializer for the exact
+zero-barrier solve; it does not by itself certify a positive-condensate result.
+Early open-support refinement, terminal-state refinement, eligible pre-PD-IPM
+recovery, and empty-support recovery use one exact-refinement entry point.
+Each accepted exact candidate is independently audited after restoring the
+caller's amount gauge. An early certified result is reused without repeating
+that audit.
+
+The internal and caller-gauge decisions are carried in an immutable
+``PhysicalKKTValidation`` value. Production result acceptance uses this value;
+diagnostic dictionaries describe the calculation rather than authorize it.
+Historical payload helpers still accept their existing diagnostic-only input
+when no explicit validation is supplied. The final amount and full-inventory
+gates remain active in either case. A gas-only candidate that already passes
+its caller-gauge audit does not require an exact refinement.
+
+The finite-barrier residual scaling and the physical trace-inventory audit
+serve different purposes. In the physical audit, each nonzero elemental
+inventory is checked relative to its own value. Refactoring the acceptance
+stages does not replace that check with the finite-barrier inventory floor.
+
 .. _fugacity-conventions:
 
 Pure-component non-ideal gas correction

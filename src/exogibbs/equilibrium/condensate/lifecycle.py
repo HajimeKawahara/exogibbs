@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 import math
-from typing import Any, Mapping, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence
 
 import jax
 import jax.numpy as jnp
@@ -68,12 +68,19 @@ from exogibbs.equilibrium.condensate.types import (
     CondensateProfileNativeActivitySupportPolicy,
     ExperimentalCondensateProfileFixedSupportBatchPlan,
     HeadV2LayerState,
+    PhysicalKKTValidation,
 )
 from exogibbs.equilibrium.gas.types import EquilibriumInit, ThermoState
 from exogibbs.thermo.fugacity import (
     LogFugacityCoefficientFunction,
     effective_gas_hvector,
 )
+
+
+if TYPE_CHECKING:
+    from exogibbs.equilibrium.condensate.fixed_support.zero_barrier import (
+        ZeroBarrierPolishResult,
+    )
 
 
 _ExperimentalProfileFixedSupportBatchPlan = (
@@ -91,6 +98,15 @@ class _ZeroBarrierInitializerPayload:
     condensate_amounts: np.ndarray
     total_gas_log_amount: float
     element_potential: np.ndarray
+
+
+@dataclass(frozen=True)
+class _ExactRefinement:
+    """One exact candidate and its independently certified acceptance."""
+
+    result: ZeroBarrierPolishResult
+    caller_audit: Mapping[str, Any] | None
+    validation: PhysicalKKTValidation
 
 
 def build_condensate_equilibrium_result_from_solver_payload(
@@ -112,6 +128,7 @@ def build_condensate_equilibrium_result_from_solver_payload(
     full_condensate_budget_relative_floor: float = (
         DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR
     ),
+    physical_validation: PhysicalKKTValidation | None = None,
 ) -> CondensateEquilibriumResult:
     """Accept a solver payload, then construct its public result."""
 
@@ -140,6 +157,7 @@ def build_condensate_equilibrium_result_from_solver_payload(
         full_condensate_budget_relative_floor=(
             full_condensate_budget_relative_floor
         ),
+        physical_validation=physical_validation,
     )
     return build_condensate_equilibrium_result(
         setup=setup,
@@ -1430,18 +1448,16 @@ def _run_head_v2_profile(
             else temperature <= np.asarray(upper, dtype=np.float64)
         )
 
-    def polish_layer_state(
+    def refine_layer_state(
         *,
         layer_index: int,
-        gas_log_amounts: Array,
-        condensate_amounts: Array,
-        total_gas_log_amount: float,
-        element_potential: Array,
-        support: Sequence[int],
+        initializer: _ZeroBarrierInitializerPayload,
         valid_condensates: Sequence[bool],
-    ) -> Any:
+    ) -> _ExactRefinement:
+        """Solve one eligible initializer and certify the same caller state."""
+
         temperature = float(temperatures[layer_index])
-        return polish_zero_barrier_active_support(
+        exact = polish_zero_barrier_active_support(
             gas_formula_matrix=setup.formula_matrix,
             condensate_formula_matrix_full=setup.formula_matrix_cond,
             target_inventory=b,
@@ -1459,11 +1475,11 @@ def _run_head_v2_profile(
             condensate_standard_source_full=(
                 setup.condensate_setup.hvector_func(temperature)
             ),
-            gas_log_amounts_init=gas_log_amounts,
-            condensate_amounts_init=condensate_amounts,
-            total_gas_log_amount_init=total_gas_log_amount,
-            element_potential_init=element_potential,
-            support_indices=support,
+            gas_log_amounts_init=initializer.gas_log_amounts,
+            condensate_amounts_init=initializer.condensate_amounts,
+            total_gas_log_amount_init=initializer.total_gas_log_amount,
+            element_potential_init=initializer.element_potential,
+            support_indices=initializer.support_indices,
             condensate_valid_mask=valid_condensates,
             stationarity_tolerance=(
                 policy.solver_config.normal.stationarity_tolerance
@@ -1474,6 +1490,32 @@ def _run_head_v2_profile(
             ),
             support_closure_tolerance=policy.support_closure_tolerance,
             budget_relative_floor=policy.budget_relative_floor,
+        )
+        internal_accepted = bool(exact.accepted)
+        caller_audit = (
+            audit_state_in_caller_gauge(
+                layer_index=layer_index,
+                gas_log_amounts=exact.gas_log_amounts,
+                condensate_amounts=exact.condensate_amounts,
+                total_gas_log_amount=exact.total_gas_log_amount,
+                element_potential=exact.element_potential,
+                support_indices=exact.support_indices,
+                valid_condensates=valid_condensates,
+            )
+            if internal_accepted
+            else None
+        )
+        return _ExactRefinement(
+            result=exact,
+            caller_audit=caller_audit,
+            validation=PhysicalKKTValidation(
+                internal_accepted=internal_accepted,
+                caller_gauge_accepted=(
+                    bool(caller_audit["accepted"])
+                    if caller_audit is not None
+                    else False
+                ),
+            ),
         )
 
     def audit_state_in_caller_gauge(
@@ -1575,8 +1617,7 @@ def _run_head_v2_profile(
         }
 
     last_outputs: dict[int, dict[str, Any]] = {}
-    early_zero_barrier_results: dict[int, Any] = {}
-    early_zero_barrier_caller_audits: dict[int, dict[str, Any]] = {}
+    early_zero_barrier_results: dict[int, _ExactRefinement] = {}
     early_zero_barrier_provenance: dict[int, dict[str, Any]] = {}
     early_zero_barrier_attempted: set[int] = set()
     compilation_seconds = 0.0
@@ -1898,33 +1939,36 @@ def _run_head_v2_profile(
                     ),
                     dtype=np.float64,
                 )
-                early_exact = polish_layer_state(
+                early_refinement = refine_layer_state(
                     layer_index=source_index,
-                    gas_log_amounts=np.asarray(
-                        jax.device_get(
-                            raw["gas_log_amounts"][local_index]
-                        ),
-                        dtype=np.float64,
-                    ),
-                    condensate_amounts=full_amounts,
-                    total_gas_log_amount=float(
-                        np.asarray(
+                    initializer=_ZeroBarrierInitializerPayload(
+                        support_indices=current.support_indices,
+                        gas_log_amounts=np.asarray(
                             jax.device_get(
-                                raw["total_gas_log_amount"][local_index]
-                            )
-                        )
-                    ),
-                    element_potential=np.asarray(
-                        jax.device_get(
-                            raw["element_potential"][local_index]
+                                raw["gas_log_amounts"][local_index]
+                            ),
+                            dtype=np.float64,
                         ),
-                        dtype=np.float64,
+                        condensate_amounts=full_amounts,
+                        total_gas_log_amount=float(
+                            np.asarray(
+                                jax.device_get(
+                                    raw["total_gas_log_amount"][local_index]
+                                )
+                            )
+                        ),
+                        element_potential=np.asarray(
+                            jax.device_get(
+                                raw["element_potential"][local_index]
+                            ),
+                            dtype=np.float64,
+                        ),
                     ),
-                    support=current.support_indices,
                     valid_condensates=np.asarray(
                         jax.device_get(valid_mask[local_index]), dtype=bool
                     ),
                 )
+                early_exact = early_refinement.result
                 provenance = {
                     "schema": (
                         "exogibbs_zero_barrier_initializer_provenance_v1"
@@ -1956,28 +2000,13 @@ def _run_head_v2_profile(
                 round_record["early_zero_barrier_internal_accepted"] = bool(
                     early_exact.accepted
                 )
-                if early_exact.accepted:
-                    early_caller_audit = audit_state_in_caller_gauge(
-                        layer_index=source_index,
-                        gas_log_amounts=early_exact.gas_log_amounts,
-                        condensate_amounts=early_exact.condensate_amounts,
-                        total_gas_log_amount=(
-                            early_exact.total_gas_log_amount
-                        ),
-                        element_potential=early_exact.element_potential,
-                        support_indices=early_exact.support_indices,
-                        valid_condensates=np.asarray(
-                            jax.device_get(valid_mask[local_index]),
-                            dtype=bool,
-                        ),
-                    )
+                if early_refinement.validation.internal_accepted:
                     round_record[
                         "early_caller_gauge_zero_barrier_kkt"
-                    ] = caller_audit_summary(early_caller_audit)
-                    if early_caller_audit["accepted"]:
-                        early_zero_barrier_results[source_index] = early_exact
-                        early_zero_barrier_caller_audits[source_index] = (
-                            early_caller_audit
+                    ] = caller_audit_summary(early_refinement.caller_audit)
+                    if early_refinement.validation.accepted:
+                        early_zero_barrier_results[source_index] = (
+                            early_refinement
                         )
                         early_zero_barrier_provenance[source_index] = (
                             provenance
@@ -2055,6 +2084,7 @@ def _run_head_v2_profile(
 
     layer_results: list[CondensateEquilibriumResult] = []
     for layer_index in range(n_layers):
+        physical_validation = PhysicalKKTValidation(False, False)
         lifecycle_summary = {
             "schema": "exogibbs_head_v2_fixed_support_lifecycle_v1",
             "preset": policy.name,
@@ -2167,33 +2197,27 @@ def _run_head_v2_profile(
             }
             selected_route = "head_v2_gas_only_no_candidate"
             if not accepted:
-                exact = polish_layer_state(
+                refinement = refine_layer_state(
                     layer_index=layer_index,
-                    gas_log_amounts=gas_log_amounts,
-                    condensate_amounts=full_amounts,
-                    total_gas_log_amount=total_gas_log_amount,
-                    element_potential=element_potential,
-                    support=support,
+                    initializer=_ZeroBarrierInitializerPayload(
+                        support_indices=tuple(support),
+                        gas_log_amounts=gas_log_amounts,
+                        condensate_amounts=full_amounts,
+                        total_gas_log_amount=total_gas_log_amount,
+                        element_potential=element_potential,
+                    ),
                     valid_condensates=valid_mask,
                 )
+                exact = refinement.result
+                physical_validation = refinement.validation
                 lifecycle_summary[
                     "zero_barrier_active_support_polish"
                 ] = exact.report
-                accepted = bool(exact.accepted)
-                if accepted:
-                    caller_audit = audit_state_in_caller_gauge(
-                        layer_index=layer_index,
-                        gas_log_amounts=exact.gas_log_amounts,
-                        condensate_amounts=exact.condensate_amounts,
-                        total_gas_log_amount=exact.total_gas_log_amount,
-                        element_potential=exact.element_potential,
-                        support_indices=exact.support_indices,
-                        valid_condensates=valid_mask,
-                    )
+                accepted = physical_validation.accepted
+                if physical_validation.internal_accepted:
                     lifecycle_summary[
                         "caller_gauge_zero_barrier_kkt"
-                    ] = caller_audit_summary(caller_audit)
-                    accepted = bool(caller_audit["accepted"])
+                    ] = caller_audit_summary(refinement.caller_audit)
                     if accepted:
                         support = tuple(exact.support_indices)
                         gas_log_amounts = np.asarray(
@@ -2252,6 +2276,7 @@ def _run_head_v2_profile(
                 support_amounts=support_amounts,
                 selected_route=selected_route,
                 solver_success=accepted,
+                physical_validation=physical_validation,
                 diagnostics={"fixed_support_v2": lifecycle_summary},
                 route=HEAD_ROUTE_V2,
                 head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
@@ -2322,7 +2347,10 @@ def _run_head_v2_profile(
                 and terminal_output["independent_kkt_passed"]
                 and terminal_output["final_state_values_finite"]
             )
-            early_exact = early_zero_barrier_results.get(layer_index)
+            early_refinement = early_zero_barrier_results.get(layer_index)
+            early_exact = (
+                early_refinement.result if early_refinement is not None else None
+            )
             terminal_initializer_eligible = bool(
                 support
                 and terminal_output["support_closed"]
@@ -2444,8 +2472,8 @@ def _run_head_v2_profile(
             if exact_initializer_eligible:
                 if valid_mask is None:
                     valid_mask = valid_condensates_for_layer(layer_index)
-                exact = early_exact
-                if exact is None:
+                refinement = early_refinement
+                if refinement is None:
                     initializer_payload = _ZeroBarrierInitializerPayload(
                         support_indices=tuple(support),
                         gas_log_amounts=gas_log_amounts,
@@ -2473,49 +2501,25 @@ def _run_head_v2_profile(
                     initializer_report["initial_support_envelope"] = (
                         envelope_report
                     )
-                    exact = polish_layer_state(
+                    refinement = refine_layer_state(
                         layer_index=layer_index,
-                        gas_log_amounts=initializer_payload.gas_log_amounts,
-                        condensate_amounts=(
-                            initializer_payload.condensate_amounts
-                        ),
-                        total_gas_log_amount=(
-                            initializer_payload.total_gas_log_amount
-                        ),
-                        element_potential=(
-                            initializer_payload.element_potential
-                        ),
-                        support=initializer_payload.support_indices,
+                        initializer=initializer_payload,
                         valid_condensates=valid_mask,
                     )
                     if pre_pdipm_fallback_eligible:
-                        pre_pdipm_fallback_report["internal_accepted"] = bool(
-                            exact.accepted
+                        pre_pdipm_fallback_report["internal_accepted"] = (
+                            refinement.validation.internal_accepted
                         )
+                exact = refinement.result
+                physical_validation = refinement.validation
                 lifecycle_summary[
                     "zero_barrier_active_support_polish"
                 ] = exact.report
-                accepted = bool(exact.accepted)
-                if accepted:
-                    caller_audit = (
-                        early_zero_barrier_caller_audits[layer_index]
-                        if early_exact is not None
-                        else audit_state_in_caller_gauge(
-                            layer_index=layer_index,
-                            gas_log_amounts=exact.gas_log_amounts,
-                            condensate_amounts=exact.condensate_amounts,
-                            total_gas_log_amount=(
-                                exact.total_gas_log_amount
-                            ),
-                            element_potential=exact.element_potential,
-                            support_indices=exact.support_indices,
-                            valid_condensates=valid_mask,
-                        )
-                    )
+                accepted = physical_validation.accepted
+                if physical_validation.internal_accepted:
                     lifecycle_summary["caller_gauge_zero_barrier_kkt"] = (
-                        caller_audit_summary(caller_audit)
+                        caller_audit_summary(refinement.caller_audit)
                     )
-                    accepted = bool(caller_audit["accepted"])
                     if pre_pdipm_fallback_eligible:
                         pre_pdipm_fallback_report[
                             "caller_gauge_accepted"
@@ -2580,6 +2584,7 @@ def _run_head_v2_profile(
                 support_amounts=support_amounts,
                 selected_route=CONDENSATE_HEAD_V2_ROUTE_NAME,
                 solver_success=accepted,
+                physical_validation=physical_validation,
                 route=HEAD_ROUTE_V2,
                 head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
                 head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
