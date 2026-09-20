@@ -2157,6 +2157,72 @@ def test_support_release_candidate_order_preserves_trace_burdens() -> None:
     ) == ((0, 1), (0, 2), (0,), (1, 2), (1,), (2,), ())
 
 
+@pytest.mark.parametrize("preferred_support", ((1, 2), (0, 1, 2)))
+def test_support_release_prioritizes_only_an_existing_initializer(
+    monkeypatch: pytest.MonkeyPatch, preferred_support: tuple[int, ...],
+) -> None:
+    target = np.asarray([1.0, 1.0e-9, 1.0e-3])
+    amounts = 0.5 * target
+    calls = []
+
+    def failed_solve(**kwargs):
+        calls.append(kwargs)
+        return {"accepted": False, "candidate": None, "report": {}}
+
+    monkeypatch.setattr(
+        zero_barrier, "_solve_normalized_gas_reduced_linear_support", failed_solve,
+    )
+    original_candidates, original_report = (
+        zero_barrier._build_support_release_candidates(
+            condensate_formula_matrix_full=np.eye(3),
+            target_inventory=target,
+            condensate_amounts=amounts,
+            support_indices=(0, 1, 2),
+        )
+    )
+    result = zero_barrier._solve_support_release_portfolio(
+        gas_formula_matrix=np.eye(3),
+        condensate_formula_matrix_full=np.eye(3),
+        target_inventory=target,
+        gas_standard_source=np.zeros(3),
+        condensate_standard_source_full=np.zeros(3),
+        gas_log_amounts_init=np.log(0.5 * target),
+        condensate_amounts_init=amounts,
+        total_gas_log_amount_init=float(np.log(np.sum(0.5 * target))),
+        element_potential_init=np.zeros(3),
+        support_indices=(0, 1, 2),
+        condensate_valid_mask=np.ones(3, dtype=bool),
+        budget_scale=1.0 / target,
+        stationarity_tolerance=1.0e-8,
+        budget_tolerance=1.0e-8,
+        total_density_tolerance=1.0e-8,
+        support_closure_tolerance=1.0e-8,
+        max_function_evaluations=100,
+        enabled=True,
+        preferred_support_indices=preferred_support,
+    )
+
+    original = tuple(candidate["support_indices"] for candidate in original_candidates)
+    expected = (
+        (preferred_support,) + tuple(support for support in original if support != preferred_support)
+        if preferred_support in original else original
+    )
+    assert tuple(call["support_indices"] for call in calls) == expected
+    assert not result["accepted"]
+    generation = result["report"]["candidate_generation"]
+    assert tuple(record["support_indices"] for record in generation["candidate_records"]) == expected
+    assert generation["candidate_count"] == original_report["candidate_count"]
+    assert generation["candidate_ordering"].startswith(
+        "optimizer_directed_face_then_" if preferred_support in original
+        else "removed_maximum_amount_scale_sum_"
+    )
+    for call in calls:
+        expected_amounts = np.zeros_like(amounts)
+        active = np.asarray(call["support_indices"], dtype=np.int64)
+        expected_amounts[active] = amounts[active]
+        np.testing.assert_array_equal(call["condensate_amounts_init"], expected_amounts)
+
+
 def test_support_release_can_select_the_gas_only_face() -> None:
     result = zero_barrier._solve_support_release_portfolio(
         gas_formula_matrix=np.ones((1, 1), dtype=np.float64),
@@ -3247,6 +3313,37 @@ def test_zero_barrier_active_set_does_not_retry_local_budget_failure(
     assert closure["rounds"][0]["local_kkt_failure_reasons"] == (
         "element_budget",
     )
+
+
+def test_zero_barrier_closure_can_add_more_than_eight_stable_phases(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _disable_dual_support_oracle(monkeypatch)
+    # Nine independently condensing elements share one inert gas inventory.
+    # Their exact equilibrium gas fractions are 1/20; the inert fraction is
+    # 11/20, giving gas amounts 1/11 and condensed amounts 10/11.
+    result = polish_zero_barrier_active_support(
+        gas_formula_matrix=np.eye(10),
+        condensate_formula_matrix_full=np.eye(10)[:, :9],
+        target_inventory=np.ones(10),
+        gas_standard_source=np.zeros(10),
+        condensate_standard_source_full=np.full(9, -np.log(20.0)),
+        gas_log_amounts_init=np.zeros(10),
+        condensate_amounts_init=np.zeros(9),
+        total_gas_log_amount_init=float(np.log(10.0)),
+        element_potential_init=np.full(10, -np.log(10.0)),
+        support_indices=(),
+    )
+
+    closure = result.report["exact_active_set_closure"]
+    assert result.accepted
+    assert result.support_indices == tuple(range(9))
+    assert closure["round_count"] == 10
+    assert closure["cumulative_function_evaluations"] < 400
+    assert closure["function_evaluation_limit"] == 3200
+    np.testing.assert_allclose(result.condensate_amounts, 10.0 / 11.0, rtol=1.0e-8)
+    np.testing.assert_allclose(np.exp(result.gas_log_amounts)[:9], 1.0 / 11.0, rtol=1.0e-8)
+    assert np.exp(result.gas_log_amounts[-1]) == pytest.approx(1.0)
 
 
 def test_zero_barrier_active_set_enforces_cumulative_evaluation_limit(

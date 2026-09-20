@@ -27,7 +27,7 @@ from exogibbs.equilibrium.condensate.support_geometry import (
 
 _INITIALIZER_CAPACITY_FRACTION = float(np.sqrt(np.finfo(np.float64).eps))
 _REDUCED_SUPPORT_NODE_LIMIT = 32
-_ACTIVE_SET_CLOSURE_ROUND_LIMIT = 8
+_ACTIVE_SET_CLOSURE_WORK_MULTIPLIER = 8
 _FINITE_BARRIER_HOMOTOPY_CENTRALITY_TOLERANCE = 1.0e-4
 _FINITE_BARRIER_HOMOTOPY_RESIDUAL_TOLERANCE = 1.0e-8
 _FINITE_BARRIER_HOMOTOPY_MINIMUM_GAP_RATIO = 4.0
@@ -3754,6 +3754,7 @@ def _solve_support_release_portfolio(
     prefer_log_domain: bool = False,
     downstream_function_evaluation_reserve: int = 0,
     function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+    preferred_support_indices: Sequence[int] | None = None,
 ) -> dict[str, Any]:
     """Try proper faces of a failed basic support as exact initializers."""
 
@@ -3800,6 +3801,27 @@ def _solve_support_release_portfolio(
         condensate_amounts=condensate_amounts_init,
         support_indices=support_indices,
     )
+    # A successful signed solve may identify a useful face even when its
+    # cancellation-dominated amounts fail the physical audit. Prefer that
+    # existing initializer, never the uncertified terminal amounts.
+    if preferred_support_indices is not None:
+        preferred = frozenset(preferred_support_indices)
+        ordered = sorted(
+            zip(candidates, generation_report["candidate_records"]),
+            key=lambda item: frozenset(item[0]["support_indices"]) != preferred,
+        )
+        candidates = tuple(candidate for candidate, _ in ordered)
+        generation_report["candidate_records"] = tuple(
+            record for _, record in ordered
+        )
+        if candidates and frozenset(candidates[0]["support_indices"]) == preferred:
+            generation_report["candidate_ordering"] = (
+                "optimizer_directed_face_then_"
+                + generation_report["candidate_ordering"]
+            )
+        generation_report["preferred_support_indices"] = tuple(
+            preferred_support_indices
+        )
     report["eligible"] = bool(generation_report["eligible"])
     report["candidate_generation"] = generation_report
     if not candidates:
@@ -5499,9 +5521,12 @@ def _polish_zero_barrier_support_once(
         if rank_reduced_support and reduced_primary_selected
         else ()
     )
+    # Match the release builder's formula-rank test independently of whether
+    # the initializer underwent basic-support reduction on this closure round.
     full_rank_boundary_reached = bool(
-        basic_support_reduction.get("initial_support_nullity") == 0
-        and basic_support_reduction.get("output_support_nullity") == 0
+        reduced_support
+        and np.linalg.matrix_rank(ac_full[:, reduced_support])
+        == len(reduced_support)
         and primary_candidate is not None
         and tuple(primary_candidate["support_indices"]) == tuple(reduced_support)
         and primary_candidate["audit"]["finite"]
@@ -5511,12 +5536,14 @@ def _polish_zero_barrier_support_once(
         )
     )
     support_release_base_enabled = bool(
-        reduce_initial_support
-        and len(reduced_support) >= 1
+        len(reduced_support) >= 1
         and not dual_support["applied"]
         and not finite_homotopy["applied"]
         and not reduced_primary_selected
-        and (rank_reduced_support or full_rank_boundary_reached)
+        and (
+            (reduce_initial_support and rank_reduced_support)
+            or full_rank_boundary_reached
+        )
     )
     alternative_basic_support_postselection_enabled = bool(
         reduce_initial_support
@@ -5595,22 +5622,50 @@ def _polish_zero_barrier_support_once(
         support_release_base_enabled and not reduced_primary_selected
     )
     if support_release is None:
+        directed_source = alternative_basic_support.get(
+            "optimizer_directed_support_release_source"
+        )
+        directed_report = alternative_basic_support_report.get(
+            "optimizer_directed_support_release"
+        )
+        primary_direction = False
+        if directed_source is None and full_rank_boundary_reached:
+            directed_source, directed_report = (
+                _select_optimizer_directed_support_release_source(
+                    candidates=(
+                        {
+                            "support_indices": reduced_support,
+                            "condensate_amounts": reduced_full_m,
+                        },
+                    ),
+                    solve_attempts=(
+                        {
+                            "support_indices": reduced_support,
+                            "formulation": "normalized_gas_reduced_linear_amounts",
+                            "accepted": False,
+                            "local_kkt_passed": False,
+                            "solve": normalized_primary_report,
+                        },
+                    ),
+                )
+            )
+            primary_direction = directed_source is not None
         release_source, release_source_report = (
             _choose_support_release_source(
                 default_support_indices=reduced_support,
                 default_condensate_amounts=reduced_full_m,
-                optimizer_directed_source=alternative_basic_support.get(
-                    "optimizer_directed_support_release_source"
-                ),
-                optimizer_directed_report=(
-                    alternative_basic_support_report.get(
-                        "optimizer_directed_support_release"
-                    )
-                ),
+                optimizer_directed_source=directed_source,
+                optimizer_directed_report=directed_report,
                 already_tried_supports=(reduced_support,),
             )
         )
         release_source_name = release_source_report["selected_source"]
+        if (
+            primary_direction
+            and release_source_report["optimizer_directed_source_used"]
+        ):
+            release_source_name = "optimizer_terminated_nonpositive_primary_support"
+            release_source_report["selected_source"] = release_source_name
         alternative_basic_support_report[
             "support_release_source_selection"
         ] = release_source_report
@@ -5649,6 +5704,11 @@ def _polish_zero_barrier_support_once(
                 else 0
             ),
             function_evaluation_budget=function_evaluation_budget,
+            preferred_support_indices=(
+                release_source_report["suggested_face_support_indices"]
+                if release_source_report["optimizer_directed_source_used"]
+                else None
+            ),
         )
         postselection_release_report = dict(support_release["report"])
         postselection_release_report.update(
@@ -6619,11 +6679,13 @@ def polish_zero_barrier_active_support(
             closure_zero_target_scale,
         )
     )
-    round_limit = _ACTIVE_SET_CLOSURE_ROUND_LIMIT
     evaluation_limit = (
         max(1, int(max_function_evaluations))
-        * _ACTIVE_SET_CLOSURE_ROUND_LIMIT
+        * _ACTIVE_SET_CLOSURE_WORK_MULTIPLIER
     )
+    # Closure is bounded by actual work rather than an independent eight-phase
+    # cutoff. This also bounds administrative rounds that consume no evaluations.
+    round_limit = evaluation_limit
     evaluation_budget = _FunctionEvaluationBudget(evaluation_limit)
     current_arguments["function_evaluation_budget"] = evaluation_budget
     visited_inputs: list[tuple[int, ...]] = []
