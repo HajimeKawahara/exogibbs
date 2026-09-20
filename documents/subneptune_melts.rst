@@ -162,7 +162,22 @@ including the insertion trial and Gibbs comparison above, run:
        --output /tmp/revalidated_archive.json
 
 CI covers every PR base, including stacked feature branches. A separate job
-pins ExoEOS commit ``0c85dfe28353bf70d7d687e49689e74db556c4b0``, asserts the
+pins ExoEOS commit ``a081339ec85476add0a83512eca6d4a5c5e7ef14``, asserts the
 actual import paths and native hydrogen model, and rejects any skipped
 provider integration test. It does not install the external MELTS runtime;
 the explicit replay above supplies that separate evidence.
+
+M2 common Gibbs minimization
+----------------------------
+
+:doc:`examples/metal_silicate/common_gibbs` adds direct minimization of the
+extensive common scalar under absolute element constraints. Its fresh final
+audit checks element balance, chemical stationarity, extensive scaling, and
+independent energy derivatives. Numerical acceptance does not establish
+global phase stability or material calibration.
+
+:doc:`examples/metal_silicate/run_bse_common_gibbs` consumes the pinned
+13-element BSE inventory and the separately installed native provider.
+The :download:`common-G validation notes
+<../examples/metal_silicate/COMMON_GIBBS.md>` give reproduction commands,
+the native result, retained failed attempts, and the pending M2-A/B evidence.
