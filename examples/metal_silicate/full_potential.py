@@ -10,9 +10,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Mapping, Optional
 
+import jax
+import jax.numpy as jnp
+from jax.scipy.special import xlogy as jax_xlogy
 import numpy as np
 from scipy.optimize import least_squares
-from scipy.special import logsumexp
+from scipy.special import logsumexp, xlogy
 
 from local import LocalProblem, _budgets
 
@@ -52,11 +55,39 @@ def ideal_phase(
         raise ValueError("The standard pressure must be positive and finite.")
 
     def evaluate(temperature: float, pressure: float, amounts: np.ndarray) -> PhaseState:
-        mu = np.asarray(standard_potentials_rt(temperature, pressure)) + np.log(amounts / amounts.sum())
+        n = np.asarray(amounts, dtype=float)
+        standard = np.asarray(standard_potentials_rt(temperature, pressure), dtype=float)
+        if (n.ndim != 1 or not n.size or standard.shape != n.shape
+                or np.any(n < 0) or not np.all(np.isfinite(n))
+                or not np.all(np.isfinite(standard))):
+            raise ValueError("Ideal phase amounts and standards must be finite matching vectors.")
+        if not all(np.isfinite(v) and v > 0 for v in (temperature, pressure)):
+            raise ValueError("Temperature and pressure must be positive and finite.")
         if gas:
-            mu = mu + np.log(pressure / standard_pressure_bar)
-        return PhaseState(mu, float(amounts @ mu))
+            standard = standard + np.log(pressure / standard_pressure_bar)
+        total = n.sum()
+        if total == 0:
+            return PhaseState(np.full_like(n, np.nan), 0.)
+        fractions = n / total
+        with np.errstate(divide="ignore"):
+            mu = standard + np.log(fractions)
+        return PhaseState(mu, float(n @ standard + np.sum(xlogy(n, fractions))))
 
+    def scalar(n, standard):
+        total = jnp.sum(n)
+        return jnp.dot(n, standard) + jnp.sum(jax_xlogy(n, n)) - jax_xlogy(total, total)
+
+    differentiate = jax.jit(jax.value_and_grad(scalar, argnums=0))
+
+    def energy_value_and_grad_rt(temperature, pressure, amounts):
+        standard = jnp.asarray(standard_potentials_rt(temperature, pressure))
+        if gas:
+            standard = standard + jnp.log(pressure / standard_pressure_bar)
+        return differentiate(jnp.asarray(amounts), standard)
+
+    # This independent scalar derivative remains resolvable for trace ideal
+    # components whose changes in the total energy are below float64 precision.
+    evaluate.energy_value_and_grad_rt = energy_value_and_grad_rt
     return evaluate
 
 

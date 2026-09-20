@@ -70,11 +70,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Checkout merged ExoEOS provider
+      - name: Checkout pinned ExoEOS provider
         uses: actions/checkout@v4
         with:
           repository: HajimeKawahara/exoeos
-          ref: 0c85dfe28353bf70d7d687e49689e74db556c4b0
+          ref: a081339ec85476add0a83512eca6d4a5c5e7ef14
           path: providers/exoeos
           fetch-depth: 0
 
@@ -98,18 +98,20 @@ jobs:
           import exoeos
           import exogibbs
           from exoeos.ma_fe_si_o_h import MaFeSiOHLiquid
+          from exoeos.solution_gibbs import total_solution_state
 
           root = Path.cwd()
           provider = root / "providers/exoeos"
           assert subprocess.check_output(
               ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,
-          ).strip() == "0c85dfe28353bf70d7d687e49689e74db556c4b0"
+          ).strip() == "a081339ec85476add0a83512eca6d4a5c5e7ef14"
           for module, source in ((exogibbs, root), (exoeos, provider)):
               actual = Path(module.__file__).resolve()
               expected = source / "src" / module.__name__ / "__init__.py"
               print(f"{module.__name__}: {actual}")
               assert actual == expected.resolve(), (actual, expected)
           assert exoeos.MaFeSiOHLiquid is MaFeSiOHLiquid
+          assert exoeos.total_solution_state is total_solution_state
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
           ).resolve()
@@ -122,6 +124,7 @@ jobs:
             tests/unittests/examples/metal_silicate_hydrogen_test.py
             tests/unittests/examples/metal_silicate_native_test.py
             tests/unittests/examples/metal_silicate_full_potential_test.py
+            tests/unittests/examples/metal_silicate_common_gibbs_test.py
             tests/unittests/examples/metal_silicate_melts_coupled_test.py
             tests/unittests/examples/metal_silicate_melts_archive_test.py
             tests/unittests/interop

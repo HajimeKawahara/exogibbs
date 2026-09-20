@@ -1,0 +1,710 @@
+{
+  "model_id": "bse_melts_ma_fe_si_o_h_common_gibbs_conditional_v1",
+  "evidence_level": "conditional_numerical_mechanism_only",
+  "numerical_execution": {
+    "native_melt_calls": 30,
+    "last_failed_melt_state": {
+      "temperature_K": 2173.15,
+      "pressure_bar": 1.0,
+      "component_order": [
+        "sio2_melts",
+        "tio2_melts",
+        "al2o3_melts",
+        "fe2o3_melts",
+        "mgcr2o4_melts",
+        "fe2sio4_melts",
+        "mg2sio4_melts",
+        "casio3_melts",
+        "na2sio3_melts",
+        "kalsio4_melts",
+        "ca3(po4)2_melts",
+        "h2o_melts",
+        "H2_dissolved"
+      ],
+      "component_amounts_mol": [
+        1408402624770.5862,
+        2.520628775422806e+21,
+        4.340342640229757e+22,
+        0.0,
+        2.5303974724204684e+21,
+        9658607650781.812,
+        7.946571952040568e+22,
+        6.295911134649269e+22,
+        3245177501206.9316,
+        6.166932731890982e+20,
+        1.481747934906241e+20,
+        0.0,
+        18858878641257.066
+      ],
+      "native_scaled_component_amounts_mol": [
+        1.4084026247705863e-12,
+        0.0025206287754228063,
+        0.04340342640229758,
+        0.0,
+        0.002530397472420469,
+        9.658607650781813e-12,
+        0.07946571952040568,
+        0.0629591113464927,
+        3.245177501206932e-12,
+        0.0006166932731890983,
+        0.0001481747934906241,
+        0.0,
+        1.885887864125707e-11
+      ]
+    }
+  },
+  "scientific_acceptance": {
+    "M2_A": "pending",
+    "M2_B": "pending"
+  },
+  "input": {
+    "path": "/home/kawahara/exoinventory/examples/subneptune_taxonomy/finite_melt/validation/20260920_bse_input/baseline_inventory.json",
+    "sha256": "8809953c6d105b716193a7c52abf13553f16bd51e61f393a81e724f28e094849",
+    "source_provenance": {
+      "input_sha256": "2f9cf8567cadc78180071821f9b63bd0c0627828ca5513b701f8277a58103d87",
+      "source_sha256": "83853d5837051bae6ff966e4c4b058d8479fcf4d6134bb7e7979b3eb75830cbd",
+      "builder_sha256": "09e5f2e4325d4d695b37eb67e9f5c25832651349ad6a9c132a719aa431ab865f"
+    },
+    "dry_rock_mass_kg": 1e+23,
+    "native_amount_scale": 1.0000000000000001e-24,
+    "element_amounts_mol": [
+      2.765799320714748e+24,
+      9.393188077599715e+23,
+      7.50110399560859e+23,
+      1.1222164664397966e+23,
+      8.742354607778429e+22,
+      6.34036357269645e+22,
+      1.163488354656573e+22,
+      6.166932731890957e+20,
+      2.520628775422783e+21,
+      5.060794944841094e+21,
+      2.9634958698121776e+20,
+      1e+24,
+      1e+23
+    ],
+    "elements": [
+      "O",
+      "Mg",
+      "Si",
+      "Fe",
+      "Al",
+      "Ca",
+      "Na",
+      "K",
+      "Ti",
+      "Cr",
+      "P",
+      "H",
+      "He"
+    ]
+  },
+  "host_ledger": {
+    "model_id": "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1",
+    "evaluator_path": "/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py",
+    "evaluator_sha256": "bc9e3afa8184a63ada9e1241ef867d7246a6994cd6d5204577c8ca78524c69fd",
+    "backend": {
+      "model": "rhyolite-MELTS 1.0.2",
+      "calculation_mode": 1,
+      "version_string": "2.3.2 (Jul 21 2026 17:06:24)",
+      "release": "v2.3.2",
+      "source_commit": "9b92b1e0e6d1538a0f498572d6c6651d5d3aca7e",
+      "source_url": "https://github.com/magmasource/alphaMELTS/tree/9b92b1e0e6d1538a0f498572d6c6651d5d3aca7e",
+      "archive_url": "https://github.com/magmasource/alphaMELTS/releases/download/v2.3.2/alphamelts-py-2.3.2-ubuntu_22_04-x86_64.zip",
+      "archive_sha256": "97ec2cdb53cae69822a41b5639d8b93edf95b2c361bc15e64e53b192ea9e1425",
+      "runtime_sha256": {
+        "meltsdynamic.py": "c9b12a82ee2d8dfc317af33e571e441158e0d4422af5bcdc11cf2197dbb71ce8",
+        "meltsengine.py": "05a41c1f842e6359fd44541638cb34389258a7539c47e5f205090434f6082af9",
+        "meltsstatus.py": "4869341cdd18e8eac01a4fe612e14bc350ea0f8ecdec7fa498a7f0e8e65e99ee",
+        "libalphamelts.so": "c218ef6f7ba5aef4b0760f3176530d1335457d6e2716823a1d0de3a5d13301e5",
+        "libgsl.so.28": "62dcb82585a2970edf2054e8e7c7df1a1aa4c307c936e7ff95b1331a4ababb2e",
+        "libgslcblas.so.0": "bb1d1273d2596ff756cbc881bc8a51837ed9cfbfa59ed55309ae42e3d9496948"
+      },
+      "license": "AGPL-3.0; backend is not redistributed",
+      "build_provenance": "Release binary pinned by hash; thermodynamic C build commit is not independently established."
+    },
+    "reference_sha256": "71ab9f583dde7629e561babd7a9575606e0777d9588a28b163406701ea4ec334",
+    "component_order": [
+      "sio2",
+      "tio2",
+      "al2o3",
+      "fe2o3",
+      "mgcr2o4",
+      "fe2sio4",
+      "mg2sio4",
+      "casio3",
+      "na2sio3",
+      "kalsio4",
+      "ca3(po4)2",
+      "h2o",
+      "H2_dissolved"
+    ],
+    "element_order": [
+      "Al",
+      "C",
+      "Ca",
+      "Cl",
+      "Co",
+      "Cr",
+      "F",
+      "Fe",
+      "H",
+      "K",
+      "Mg",
+      "Mn",
+      "Na",
+      "Ni",
+      "O",
+      "P",
+      "S",
+      "Si",
+      "Ti"
+    ],
+    "formula_matrix_component_rows": [
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      [
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        3.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        3.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        4.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        4.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        4.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        3.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        3.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        4.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        3.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        8.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    "amount_basis": "mol of named MELTS endmember; mol of molecular dissolved H2",
+    "standard_convention": "full MELTS potentials at T/P; absolute dissolved H2 standard supplied separately",
+    "reference_pressure_bar": 1.0,
+    "energy_units": "G/(common_R*T), mu/(common_R*T)",
+    "mathematical_domain": "positive host total, nonnegative H2; provider must accept the supplied composition",
+    "calibration_domain": "not established for the coupled reduced host/alloy/gas model",
+    "stable_phase_evidence": "not supplied by a liquid property callback",
+    "extrapolation_policy": "conditional mechanism only until common standards and competing phases are validated"
+  },
+  "standards": {
+    "source_temperature_branch_K": 2350.0,
+    "evaluation_temperature_K": 2173.15,
+    "policy": "Fixed source branch extrapolation; common R conversion, native alloy shifts, and one H2 solubility pressure term. Cross-phase alignment is unverified."
+  },
+  "missing_acceptance": [
+    "aligned MELTS/alloy/gas/upper-atmosphere standards",
+    "revised host-specific H2 calibration",
+    "alloy H interactions and pressure response",
+    "BSE liquid stability and omitted transfer bounds",
+    "global nonconvex phase stability"
+  ],
+  "provenance": {
+    "exogibbs": {
+      "source_root": "/tmp/exoinventory-m2-20260920/exogibbs",
+      "commit": "e63f828637ae7da51510d6eb06b46400e155208b",
+      "changed_tracked_file_sha256": {
+        "examples/metal_silicate/run_bse_common_gibbs.py": "a9322ae137d2a1c3b5d0cbf4305e90ba43f3406afb9a6829276cf1070c38f233"
+      }
+    },
+    "exoeos": {
+      "source_root": "/tmp/exoinventory-m2-20260920/exoeos",
+      "commit": "f0694c06c026574a07511a6612ef135b1ab24fc5",
+      "changed_tracked_file_sha256": {}
+    },
+    "jax_version": "0.4.30",
+    "numpy_version": "1.26.4",
+    "file_sha256": {
+      "run_bse_common_gibbs.py": "a9322ae137d2a1c3b5d0cbf4305e90ba43f3406afb9a6829276cf1070c38f233",
+      "common_gibbs.py": "1aa9514d8bed3f2b2ea1ead009285aeb94625aba3841cc2ce3156f1bc257717e",
+      "full_potential.py": "67f5832519979ec1d14c16199fbefaef5ccba8b38604373506ad451c3c61155f",
+      "melts_coupled.py": "3c5623622d4423fb5b00624a0f45e7a712044a1422346c34b0c3e5ecf84c1770",
+      "hydrogen.py": "0fae4fb8a81df8b6fdfe0aa82d72e290e2beb199938b515cccb251d561d5eef3",
+      "source.py": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e",
+      "reference.json": "0c7146ab1c5935daae25f4371a34847e1469dfc637b02afe3f5984d4aeb22092",
+      "reduced_gas_reference.json": "0aa9b23cf1d85b9db6b877c5c360bd4420985e595ee9f9c7735dfe91347dc234"
+    }
+  },
+  "temperature_K": 2173.15,
+  "pressure_bar": 1.0,
+  "record": {
+    "elements": [
+      "O",
+      "Mg",
+      "Si",
+      "Fe",
+      "Al",
+      "Ca",
+      "Na",
+      "K",
+      "Ti",
+      "Cr",
+      "P",
+      "H",
+      "He"
+    ],
+    "phases": {
+      "silicate": [
+        "sio2_melts",
+        "tio2_melts",
+        "al2o3_melts",
+        "fe2o3_melts",
+        "mgcr2o4_melts",
+        "fe2sio4_melts",
+        "mg2sio4_melts",
+        "casio3_melts",
+        "na2sio3_melts",
+        "kalsio4_melts",
+        "ca3(po4)2_melts",
+        "h2o_melts",
+        "H2_dissolved"
+      ],
+      "metal": [
+        "Fe_metal",
+        "Si_metal",
+        "O_metal",
+        "H_metal"
+      ],
+      "gas": [
+        "H2_gas",
+        "O2_gas",
+        "H2O_gas",
+        "Fe_gas",
+        "Mg_gas",
+        "SiO_gas",
+        "Na_gas",
+        "H_gas",
+        "He_gas",
+        "OH_gas",
+        "SiH4_gas"
+      ]
+    },
+    "component_formulas": {
+      "sio2_melts": {
+        "O": 2.0,
+        "Si": 1.0
+      },
+      "tio2_melts": {
+        "O": 2.0,
+        "Ti": 1.0
+      },
+      "al2o3_melts": {
+        "Al": 2.0,
+        "O": 3.0
+      },
+      "fe2o3_melts": {
+        "Fe": 2.0,
+        "O": 3.0
+      },
+      "mgcr2o4_melts": {
+        "Cr": 2.0,
+        "Mg": 1.0,
+        "O": 4.0
+      },
+      "fe2sio4_melts": {
+        "Fe": 2.0,
+        "O": 4.0,
+        "Si": 1.0
+      },
+      "mg2sio4_melts": {
+        "Mg": 2.0,
+        "O": 4.0,
+        "Si": 1.0
+      },
+      "casio3_melts": {
+        "Ca": 1.0,
+        "O": 3.0,
+        "Si": 1.0
+      },
+      "na2sio3_melts": {
+        "Na": 2.0,
+        "O": 3.0,
+        "Si": 1.0
+      },
+      "kalsio4_melts": {
+        "Al": 1.0,
+        "K": 1.0,
+        "O": 4.0,
+        "Si": 1.0
+      },
+      "ca3(po4)2_melts": {
+        "Ca": 3.0,
+        "O": 8.0,
+        "P": 2.0
+      },
+      "h2o_melts": {
+        "H": 2.0,
+        "O": 1.0
+      },
+      "H2_dissolved": {
+        "H": 2
+      },
+      "Fe_metal": {
+        "Fe": 1
+      },
+      "Si_metal": {
+        "Si": 1
+      },
+      "O_metal": {
+        "O": 1
+      },
+      "H_metal": {
+        "H": 1
+      },
+      "H2_gas": {
+        "H": 2
+      },
+      "O2_gas": {
+        "O": 2
+      },
+      "H2O_gas": {
+        "H": 2,
+        "O": 1
+      },
+      "Fe_gas": {
+        "Fe": 1
+      },
+      "Mg_gas": {
+        "Mg": 1
+      },
+      "SiO_gas": {
+        "Si": 1,
+        "O": 1
+      },
+      "Na_gas": {
+        "Na": 1
+      },
+      "H_gas": {
+        "H": 1
+      },
+      "He_gas": {
+        "He": 1
+      },
+      "OH_gas": {
+        "O": 1,
+        "H": 1
+      },
+      "SiH4_gas": {
+        "Si": 1,
+        "H": 4
+      }
+    },
+    "reactions": []
+  },
+  "active_phases": [
+    "silicate",
+    "gas"
+  ],
+  "canonical_initial_component_amounts_mol": [
+    1.5621212470212917e+23,
+    2.520628775422783e+21,
+    4.34034264022976e+22,
+    0.0,
+    2.530397472420547e+21,
+    5.611082332198983e+22,
+    4.6839420514377545e+23,
+    6.295911134649267e+22,
+    5.817441773282865e+21,
+    6.166932731890957e+20,
+    1.4817479349060888e+20,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    5e+23,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1e+23,
+    0.0,
+    0.0
+  ],
+  "solver": {
+    "name": "constrained_scalar_gibbs",
+    "maxiter": 100
+  },
+  "command": [
+    "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+    "examples/metal_silicate/run_bse_common_gibbs.py",
+    "--inventory",
+    "/home/kawahara/exoinventory/examples/subneptune_taxonomy/finite_melt/validation/20260920_bse_input/baseline_inventory.json",
+    "--exoeos-checkout",
+    "/tmp/exoinventory-m2-20260920/exoeos",
+    "--runtime",
+    "/tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64",
+    "--python",
+    "/tmp/exoeos-pr3-env/bin/python",
+    "--maxiter",
+    "100",
+    "--metal-absent",
+    "--output",
+    "results/m2_common_gibbs/20260920_bse_conditional/metal_absent.json"
+  ],
+  "result": {
+    "accepted": false,
+    "error_type": "RuntimeError",
+    "error": "\nalphaMELTS for Python version 2.3.2 (Jul 21 2026 17:06:24)\nSetting calculation mode to rhyolite-MELTS 1.0.2\n\nMELTS call calcPhaseProperties failed. Cleaning up...\nMELTS:calculationFailed. MELTS library has been reloaded and initialized. Please check stderr (console or terminal) for failure details.\nCAUTION: Liquid component SiO2 has negative mole fraction.\nProcessed line... log fo2 path: none Caught SIGABRT: usually caused by an abort() or assert()\nProcessed line... log fo2 path: none Traceback (most recent call last):\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 361, in <module>\n    main()\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 352, in main\n    result = _worker(args.runtime.resolve(), request) if args.worker else evaluate_liquid(\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 145, in _worker\n    mass, gibbs = float(engine.mass[\"liquid\"]), float(engine.g[\"liquid\"])\nTypeError: 'NoneType' object is not subscriptable\n"
+  }
+}
