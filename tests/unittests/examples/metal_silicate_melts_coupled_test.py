@@ -17,7 +17,7 @@ DIRECTORY = Path(__file__).resolve().parents[3] / "examples" / "metal_silicate"
 
 
 def _load_examples():
-    names = ("local", "reference", "source", "hydrogen", "full_potential", "melts_coupled", "run_melts_reference")
+    names = ("local", "reference", "source", "hydrogen", "full_potential", "melts_coupled", "run_melts_reference", "common_gibbs", "run_bse_common_gibbs")
     previous = {name: sys.modules.get(name) for name in names}
     previous_path = sys.path[:]
     try:
@@ -34,7 +34,7 @@ def _load_examples():
                 sys.modules[name] = module
 
 
-LOCAL, _, _, _, FULL, MELTS, RUNNER = _load_examples()
+LOCAL, _, _, _, FULL, MELTS, RUNNER, ENERGY, BSE = _load_examples()
 FORMULAS = {
     "sio2": {"Si": 1, "O": 2}, "mg2sio4": {"Mg": 2, "Si": 1, "O": 4},
     "al2o3": {"Al": 2, "O": 3}, "casio3": {"Ca": 1, "Si": 1, "O": 3},
@@ -149,7 +149,8 @@ def test_invalid_host_inputs_fail_before_provider(tmp_path, invalid):
     assert not calls
 
 
-def test_finite_background_elements_survive_ledger_and_coupled_h2_exchange(tmp_path):
+@pytest.mark.parametrize("solver", ["local-root", "scalar-gibbs"])
+def test_finite_background_elements_survive_ledger_and_coupled_h2_exchange(tmp_path, solver):
     evaluator, calls = fake_evaluator(tmp_path)
     ledger = MELTS.provider_ledger(evaluator, HOST_NAMES)
     assert ledger["evaluator_sha256"] == hashlib.sha256(Path(evaluator.__file__).read_bytes()).hexdigest()
@@ -171,9 +172,14 @@ def test_finite_background_elements_survive_ledger_and_coupled_h2_exchange(tmp_p
     standard = np.log(.04 / .05) - np.log(.02 / (host.sum() + .02))
     melt = MELTS.make_melts_h2_phase(evaluator, HOST_NAMES, lambda t, p: standard,
                                     runtime=tmp_path, python_executable="python")
-    result = FULL.solve_full_potentials(problem, 1873., 1., budgets,
-                                        {"silicate": melt, "gas": FULL.ideal_phase(lambda t, p: np.zeros(2), gas=True)},
-                                        initial_component_amounts_mol=expected * np.linspace(.8, 1.2, 8))
+    callbacks = {"silicate": melt, "gas": FULL.ideal_phase(lambda t, p: np.zeros(2), gas=True)}
+    if solver == "local-root":
+        result = FULL.solve_full_potentials(
+            problem, 1873., 1., budgets, callbacks,
+            initial_component_amounts_mol=expected * np.linspace(.8, 1.2, 8),
+        )
+    else:
+        result = ENERGY.minimize_gibbs(problem, 1873., 1., budgets, callbacks)
     assert result.accepted
     np.testing.assert_allclose(result.component_amounts_mol, expected, atol=1e-11, rtol=1e-9)
     np.testing.assert_allclose(formula @ result.component_amounts_mol, budgets, atol=1e-12)
@@ -197,3 +203,34 @@ def test_reduced_gas_common_r_standards_match_independent_pinned_energies():
     for temperature in (200., 6000., np.nan):
         with pytest.raises(ValueError, match="200 < T < 6000"):
             RUNNER.reduced_gas_standards_rt(temperature)
+
+
+def test_bse_builder_preserves_absolute_atoms_and_initially_zero_reaction_channels(tmp_path):
+    eos = pytest.importorskip("exoeos")
+    if not hasattr(eos, "total_solution_state"):
+        pytest.skip("Requires the ExoEOS common total-energy provider.")
+    root = Path(eos.__file__).resolve().parents[2]
+    ledger_path = root / "examples" / "m2_material" / "bse_inventory.json"
+    if not ledger_path.is_file():
+        pytest.skip("Requires the explicitly selected ExoEOS BSE fixture checkout.")
+    record, budget, callbacks, initial, metadata = BSE.build_bse_problem(
+        ledger_path, root, tmp_path, sys.executable,
+    )
+    names = [name for values in record["phases"].values() for name in values]
+    formula = np.array([[record["component_formulas"][name].get(e, 0) for name in names]
+                        for e in record["elements"]])
+    np.testing.assert_allclose(formula @ initial, budget, rtol=1e-12, atol=0)
+    assert len(budget) == 13
+    assert initial[names.index("H2_gas")] == budget[record["elements"].index("H")] / 2
+    assert initial[names.index("He_gas")] == budget[record["elements"].index("He")]
+    assert all(initial[names.index(name)] == 0 for name in record["phases"]["metal"])
+    assert initial[names.index("h2o_melts")] == initial[names.index("fe2o3_melts")] == 0
+    assert initial[names.index("H2_dissolved")] == 0
+    assert set(callbacks) == {"silicate", "metal", "gas"}
+    assert metadata["scientific_acceptance"] == {"M2_A": "pending", "M2_B": "pending"}
+    assert metadata["input"]["sha256"] == hashlib.sha256(ledger_path.read_bytes()).hexdigest()
+    # Reducing the static phase support never changes the prescribed budget.
+    absent = LOCAL.build_problem(record, budget, lambda t, p: np.zeros(len(names)),
+                                 phases=("silicate", "gas"))
+    assert set(absent.elements) == set(record["elements"])
+    assert all(name not in absent.species for name in record["phases"]["metal"])
