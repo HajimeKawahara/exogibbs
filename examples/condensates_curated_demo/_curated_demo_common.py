@@ -15,8 +15,8 @@ from typing import Any, Optional, Sequence
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPOSITORY_ROOT))
 
-os.environ["JAX_PLATFORMS"] = "cpu"
-os.environ["JAX_PLATFORM_NAME"] = "cpu"
+os.environ.setdefault("JAX_PLATFORMS", "cpu")
+os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
 os.environ.setdefault("JAX_ENABLE_X64", "1")
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/exogibbs_matplotlib")
 

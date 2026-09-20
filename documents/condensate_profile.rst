@@ -87,8 +87,12 @@ initializer's condensed inventory partition. The exact solve still enforces
    A_g n_g + A_{c,F}m_F = b.
 
 Support release also applies when an originally full-rank support reaches a
-zero-amount boundary; rank deficiency is not a prerequisite for a phase to
-disappear. The portfolio traverses a bounded one-phase-removal graph,
+zero-amount boundary, including later active-set additions where initial
+basis reduction is disabled. A successfully terminated mixed-sign root may
+prioritize its suggested face within the existing candidate set, even when
+that root fails the physical budget audit. Only the original nonnegative
+initializer amounts are retained; the face is solved and audited independently.
+The portfolio traverses a bounded one-phase-removal graph,
 including the gas-only face. Removal edges are ordered by conservative phase
 capacity and then catalog index; capacity is never an eligibility or
 acceptance threshold. Both the applied-LP and initial-LP-failure routes reserve
@@ -111,6 +115,10 @@ states are cached. If an
 addition returns to any visited state, that edge is rejected; exhausted child
 searches are unwound and the next unblacklisted candidate from the nearest
 cached ancestor is tried within the search bounds.
+All rounds share the existing function-evaluation budget (eight times the
+per-call allowance, or 3200 evaluations by default); there is no separate
+eight-round cutoff. The same limit also bounds zero-evaluation administrative
+rounds, while cycle and backtracking guards remain in force.
 
 A state is accepted only when one support passes finiteness, active-amount
 positivity, gas and active-phase stationarity, element budget, total density,
