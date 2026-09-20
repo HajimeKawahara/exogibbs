@@ -5,8 +5,8 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-os.environ["JAX_PLATFORMS"] = "cpu"
-os.environ["JAX_PLATFORM_NAME"] = "cpu"
+os.environ.setdefault("JAX_PLATFORMS", "cpu")
+os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
 os.environ.setdefault("JAX_ENABLE_X64", "1")
 os.environ.setdefault("MPLCONFIGDIR", "/tmp/exogibbs_matplotlib")
 
@@ -14,6 +14,8 @@ from jax import config
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
+
+from _curated_demo_common import curated_output_path
 
 from exogibbs.api.condensate import (
     CondensateEquilibriumOptions,
@@ -68,12 +70,7 @@ def _series(rows, setup, species: str) -> np.ndarray:
 
 def _plot_profile(rows, setup) -> Path:
     pressures = np.asarray([row[0] for row in rows], dtype=float)
-    output_path = (
-        Path(__file__).resolve().parents[2]
-        / "results"
-        / "condensates_curated_demo"
-        / Path(__file__).with_suffix(".png").name
-    )
+    output_path = curated_output_path(__file__)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig, ax = plt.subplots(1, 1, figsize=(6.0, 5.0))
     for species in GAS_SPECIES:
