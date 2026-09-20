@@ -10,6 +10,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Mapping, Optional
 
+import jax
+import jax.numpy as jnp
+from jax.scipy.special import xlogy as jax_xlogy
 import numpy as np
 from scipy.optimize import least_squares
 from scipy.special import logsumexp, xlogy
@@ -70,6 +73,21 @@ def ideal_phase(
             mu = standard + np.log(fractions)
         return PhaseState(mu, float(n @ standard + np.sum(xlogy(n, fractions))))
 
+    def scalar(n, standard):
+        total = jnp.sum(n)
+        return jnp.dot(n, standard) + jnp.sum(jax_xlogy(n, n)) - jax_xlogy(total, total)
+
+    differentiate = jax.jit(jax.value_and_grad(scalar, argnums=0))
+
+    def energy_value_and_grad_rt(temperature, pressure, amounts):
+        standard = jnp.asarray(standard_potentials_rt(temperature, pressure))
+        if gas:
+            standard = standard + jnp.log(pressure / standard_pressure_bar)
+        return differentiate(jnp.asarray(amounts), standard)
+
+    # This independent scalar derivative remains resolvable for trace ideal
+    # components whose changes in the total energy are below float64 precision.
+    evaluate.energy_value_and_grad_rt = energy_value_and_grad_rt
     return evaluate
 
 

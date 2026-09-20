@@ -17,7 +17,7 @@ from typing import Any
 import jax
 import numpy as np
 
-from common_gibbs import minimize_gibbs
+from common_gibbs import PhaseEvaluationError, minimize_gibbs
 from full_potential import PhaseState, ideal_phase
 from hydrogen import _checkout_provenance, dissolved_h2_standard_rt, hirschmann2012_ln_solubility
 from local import build_problem
@@ -43,7 +43,7 @@ def build_bse_problem(
     extensive energy is converted back to the full physical mol basis.
     """
     import exoeos
-    from exoeos import MaFeSiOHLiquid, total_solution_state
+    from exoeos import MaFeSiOHLiquid, total_solution_gibbs_RT, total_solution_state
 
     checkout = Path(exoeos_checkout).resolve()
     if Path(exoeos.__file__).resolve().parent != checkout / "src" / "exoeos":
@@ -118,8 +118,19 @@ def build_bse_problem(
     h2_standard = float(dissolved_h2_standard_rt(standards["H2_gas"], hirschmann2012_ln_solubility(pressure_bar)))
     scaled_melt = make_melts_h2_phase(evaluator, host_names, lambda t, p: h2_standard,
                                       runtime=runtime, python_executable=python_executable)
+    execution = {"native_melt_calls": 0, "last_failed_melt_state": None}
     def melt(t, p, n):
-        state = scaled_melt(t, p, amount_scale * n)
+        execution["native_melt_calls"] += 1
+        try:
+            state = scaled_melt(t, p, amount_scale * n)
+        except (ValueError, RuntimeError, FloatingPointError) as error:
+            execution["last_failed_melt_state"] = {
+                "temperature_K": t, "pressure_bar": p,
+                "component_order": melt_names,
+                "component_amounts_mol": np.asarray(n).tolist(),
+                "native_scaled_component_amounts_mol": (amount_scale * n).tolist(),
+            }
+            raise PhaseEvaluationError(str(error)) from error
         return PhaseState(state.mu_rt, state.gibbs_rt / amount_scale)
     model = MaFeSiOHLiquid()
     full_metal_names = source["phases"]["metal"]
@@ -132,15 +143,23 @@ def build_bse_problem(
         expanded = np.zeros(4)
         expanded[metal_indices] = n
         if expanded.sum() > 0:
-            model.validate_state(t, p * 1e5, expanded / expanded.sum())
+            try:
+                model.validate_state(t, p * 1e5, expanded / expanded.sum())
+            except ValueError as error:
+                raise PhaseEvaluationError(str(error)) from error
         state = metal_evaluator(expanded)
         return PhaseState(np.asarray(state.mu_RT)[metal_indices], float(state.gibbs_RT))
+    if len(metal_indices) == 4:
+        alloy_derivative = jax.jit(jax.value_and_grad(
+            lambda n: total_solution_gibbs_RT(model, temperature_k, pressure_bar * 1e5, n, metal_standard)))
+        alloy.energy_value_and_grad_rt = lambda t, p, n: alloy_derivative(n)
     gas_standard = np.array([standards[name] for name in gas_names])
     callbacks = {"silicate": melt, "metal": alloy,
                  "gas": ideal_phase(lambda t, p: gas_standard, gas=True)}
     metadata = {
         "model_id": "bse_melts_ma_fe_si_o_h_common_gibbs_conditional_v1",
         "evidence_level": "conditional_numerical_mechanism_only",
+        "numerical_execution": execution,
         "scientific_acceptance": {"M2_A": "pending", "M2_B": "pending"},
         "input": {"path": str(input_path), "sha256": hashlib.sha256(input_path.read_bytes()).hexdigest(),
                   "source_provenance": inventory["provenance"], "dry_rock_mass_kg": inventory["dry_rock_mass_kg"],

@@ -18,6 +18,10 @@ from full_potential import PhaseCallback
 from local import LocalProblem, _budgets
 
 
+class PhaseEvaluationError(ValueError):
+    """A provider cannot evaluate a trial; this is not a thermodynamic value."""
+
+
 @dataclass(frozen=True)
 class GibbsMinimumResult:
     """Fresh local audits; arrays retain the original component/element basis."""
@@ -141,7 +145,13 @@ def minimize_gibbs(
         return float(gibbs), mu
 
     def objective(x):
-        return evaluate(scale * x)[0] / scale
+        try:
+            return evaluate(scale * x)[0] / scale
+        except PhaseEvaluationError:
+            # A provider may reject a trial near its represented domain edge.
+            # Only the line search can reject it: initial/final states and
+            # independent audits must still have actual property evaluations.
+            return np.inf
 
     def gradient(x):
         energy, mu = evaluate(scale * x)
@@ -154,7 +164,7 @@ def minimize_gibbs(
             mu[index] = (objective(displaced) - energy / scale) / step
         return mu
 
-    initial_energy = objective(initial) * scale
+    initial_energy = evaluate(scale * initial)[0]
     row_matrix = formula / normalized_budget[:, None]
     optimization = minimize(
         objective, initial, jac=gradient, method="SLSQP",
@@ -174,13 +184,16 @@ def minimize_gibbs(
             candidate[reachable] = np.exp(log_amounts)
             _, mu = evaluate(scale * candidate)
             return np.r_[row_matrix @ candidate - 1., reaction @ mu[reachable]]
-        refined = least_squares(residual, np.log(final[reachable]),
-                                xtol=1e-14, ftol=1e-14, gtol=1e-14, max_nfev=maxiter)
-        candidate = np.zeros_like(final)
-        candidate[reachable] = np.exp(refined.x)
-        if (np.max(np.abs(residual(refined.x)), initial=0.) < 1e-8
-                and objective(candidate) <= objective(final) + 1e-12):
-            final = candidate
+        try:
+            refined = least_squares(residual, np.log(final[reachable]),
+                                    xtol=1e-14, ftol=1e-14, gtol=1e-14, max_nfev=maxiter)
+            candidate = np.zeros_like(final)
+            candidate[reachable] = np.exp(refined.x)
+            if (np.max(np.abs(residual(refined.x)), initial=0.) < 1e-8
+                    and objective(candidate) <= objective(final) + 1e-12):
+                final = candidate
+        except PhaseEvaluationError:
+            pass  # Keep the actual scalar minimum; its final audits still run.
 
     amounts = scale * final
     energy, mu = evaluate(amounts)
@@ -202,22 +215,46 @@ def minimize_gibbs(
     if any(amounts[section].sum() == 0 for section in problem.phase_slices):
         reasons.append("a declared phase disappeared; evaluate a separate phase candidate")
 
-    # Audit the derivative of the supplied scalar itself, not Euler closure
-    # alone. Refining a symmetric stencil separates truncation from mismatch.
+    # Differentiate an independent scalar where the callback supplies one.
+    # Otherwise use each phase's own energy, avoiding cancellation against
+    # unrelated phases, and adapt the stencil before Richardson extrapolation.
     derivative_error = 0.0
-    for index in np.flatnonzero(present):
-        estimates = []
-        for fraction in (2e-4, 1e-4):
-            step = amounts[index] * fraction
-            delta = np.zeros_like(amounts)
-            delta[index] = step
-            estimates.append((evaluate(amounts + delta)[0] - evaluate(amounts - delta)[0]) / (2 * step))
-        extrapolated = (4 * estimates[1] - estimates[0]) / 3
-        # A trace species may have no numerically resolvable energy difference.
-        cancellation = 20 * np.finfo(float).eps * max(abs(energy), scale) / (amounts[index] * 1e-4)
-        if cancellation > 5e-6:
-            reasons.append("scalar derivative of a trace component is numerically unresolved")
-        derivative_error = max(derivative_error, abs(extrapolated - mu[index]))
+    for phase, section in zip(problem.phases, problem.phase_slices):
+        callback = phase_callbacks[phase]
+        phase_amounts = amounts[section]
+        phase_present = phase_amounts > 0
+        phase_energy = float(callback(temperature_k, pressure_bar, phase_amounts).gibbs_rt)
+        differentiator = getattr(callback, "energy_value_and_grad_rt", None)
+        if differentiator is not None:
+            independent_energy, independent_mu = differentiator(temperature_k, pressure_bar, phase_amounts)
+            independent_mu = np.asarray(independent_mu, dtype=float)
+            if (independent_mu.shape != phase_amounts.shape
+                    or not np.all(np.isfinite(independent_mu[phase_present]))
+                    or not np.isfinite(independent_energy)
+                    or not np.isclose(independent_energy, phase_energy, rtol=5e-9, atol=1e-10 * scale)):
+                reasons.append("independent phase scalar is inconsistent or unavailable")
+                derivative_error = np.inf
+            else:
+                derivative_error = max(derivative_error, np.max(np.abs(
+                    independent_mu[phase_present] - mu[section][phase_present]), initial=0.))
+            continue
+        for index in np.flatnonzero(phase_present):
+            magnitude = max(abs(phase_energy), phase_amounts.sum())
+            fraction = np.clip(20 * np.finfo(float).eps * magnitude
+                               / (phase_amounts[index] * 5e-7), 1e-4, .02)
+            estimates = []
+            for relative_step in (2 * fraction, fraction):
+                step = phase_amounts[index] * relative_step
+                delta = np.zeros_like(phase_amounts)
+                delta[index] = step
+                plus = callback(temperature_k, pressure_bar, phase_amounts + delta).gibbs_rt
+                minus = callback(temperature_k, pressure_bar, phase_amounts - delta).gibbs_rt
+                estimates.append((plus - minus) / (2 * step))
+            extrapolated = (4 * estimates[1] - estimates[0]) / 3
+            cancellation = 20 * np.finfo(float).eps * magnitude / (phase_amounts[index] * fraction)
+            if cancellation > 5e-6:
+                reasons.append("scalar derivative of a trace component is numerically unresolved")
+            derivative_error = max(derivative_error, abs(extrapolated - mu[section][index]))
     if derivative_error >= 5e-6:
         reasons.append("scalar energy derivative disagrees with the supplied potentials")
     scaled_energy, scaled_mu = evaluate(1.7 * amounts)

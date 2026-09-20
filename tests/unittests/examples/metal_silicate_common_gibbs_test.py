@@ -230,3 +230,41 @@ def test_equality_forced_zero_is_preserved_and_rank_deficiency_is_unresolved():
     np.testing.assert_array_equal(np.asarray(problem.full_formula_matrix) @ result.component_amounts_mol, budget)
     assert not result.accepted
     assert "present components do not identify all elemental potentials" in result.audit_reasons
+
+
+def test_provider_rejected_trial_is_retried_without_altering_the_energy():
+    problem, budget, callbacks = reference()
+    original = callbacks["silicate"]
+    rejected = []
+    def limited(t, p, n):
+        if n[1] / n[0] < 1e-6:
+            rejected.append(n.copy())
+            raise ENERGY.PhaseEvaluationError("The provider cannot evaluate this endpoint trial.")
+        return original(t, p, n)
+    callbacks["silicate"] = limited
+    result = ENERGY.minimize_gibbs(problem, 2000., 1., budget, callbacks)
+    assert result.accepted, result.audit_reasons
+    np.testing.assert_allclose(result.component_amounts_mol, solve_reference().component_amounts_mol, atol=1e-9)
+    assert rejected
+    # The endpoint energy itself still follows the unaltered scalar.
+    assert result.gibbs_rt == pytest.approx(solve_reference().gibbs_rt)
+
+
+def test_ideal_scalar_ad_resolves_trace_derivative_and_detects_bad_potentials():
+    callback = FULL.ideal_phase(lambda t, p: np.array([2., -1.]), gas=True)
+    n = np.array([1., 1e-20])
+    energy, gradient = callback.energy_value_and_grad_rt(2000., 3., n)
+    state = callback(2000., 3., n)
+    np.testing.assert_allclose(energy, state.gibbs_rt, atol=1e-14)
+    np.testing.assert_allclose(gradient, state.mu_rt, atol=1e-14)
+    record = {"elements": ["A"], "phases": {"gas": ["a", "b"]},
+              "component_formulas": {"a": {"A": 1}, "b": {"A": 1}}, "reactions": []}
+    problem = LOCAL.build_problem(record, np.array([1.]), lambda t, p: np.zeros(2), phases=("gas",))
+    def corrupt(t, p, n):
+        state = callback(t, p, n)
+        error = .01 * np.array([n[1], -n[0]]) / n.sum()
+        return FULL.PhaseState(state.mu_rt + error, state.gibbs_rt)
+    corrupt.energy_value_and_grad_rt = callback.energy_value_and_grad_rt
+    result = ENERGY.minimize_gibbs(problem, 2000., 3., np.array([1.]), {"gas": corrupt}, maxiter=30)
+    assert not result.accepted
+    assert "scalar energy derivative disagrees with the supplied potentials" in result.audit_reasons

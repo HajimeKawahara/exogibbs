@@ -14,10 +14,20 @@ Exact-zero element budgets retain the original static reduced support, and
 an equality-forced zero component is not replaced by a positive floor.
 Rank-deficient elemental potentials are reported as unresolved.
 
-SLSQP first minimizes the supplied scalar. For a converged interior case,
+SLSQP first minimizes the supplied scalar. An explicit `PhaseEvaluationError`
+from a provider makes an unavailable line-search trial cost infinity, so
+another trial can be attempted without changing any amount or energy law.
+Initial/final states and independent audits still require actual properties;
+other provider contract violations remain errors. For a converged interior case,
 stationarity refinement is allowed only without an energy increase. The
 returned state is evaluated again, with independent atom and KKT audits,
-step-refined scalar-energy derivatives and an extensivity check. Acceptance
+scalar-energy derivatives and an extensivity check. Ideal phases expose an
+independent JAX scalar through the optional callback attribute
+`energy_value_and_grad_rt(T, P, n)`; its value and derivative must agree with
+the full-potential callback. BSE alloy callbacks use the ExoEOS total scalar
+in the same way. Other providers use phase-local, adaptive-step Richardson
+finite differences. The independent AD path remains usable when a trace
+component's energy increment is smaller than the total energy's precision. Acceptance
 requires relative atom error below `1e-9`, dimensionless KKT error below
 `1e-8`, derivative agreement below `5e-6`, and extensivity error below `5e-9`.
 A trace-component derivative that cannot be resolved in float64 is recorded
@@ -108,3 +118,38 @@ host-specific H2 calibration, alloy H interactions and pressure response,
 liquid stability, omitted transfer bounds and upper-atmosphere alignment
 remain missing. A numerical result cannot certify M2-A or M2-B. Both gates
 remain pending even if a conditional local energy calculation converges.
+
+## Recorded native BSE trial
+
+The [2026-09-20 native report](../../results/m2_common_gibbs/20260920_bse_conditional/attempt_02_trace_derivatives.json)
+uses the full absolute stage-1 BSE inventory, `T=2173.15 K`, `P=1 bar`, and
+an explicitly constrained metal-free branch. It reached scalar convergence
+and stationarity refinement after 524 native melt evaluations:
+
+| Check | Recorded value |
+| --- | ---: |
+| Initial `G/(RT)` | `-9.51053011563905e25 mol` |
+| Final `G/(RT)` | `-1.153430723340075e26 mol` |
+| Maximum relative element residual | `8.88e-16` |
+| Maximum reaction residual | `7.11e-15` |
+| Maximum component KKT residual | `3.41e-13` |
+| Extensivity error | `8.83e-15` |
+| Numerical acceptance | **Unresolved** |
+
+The unresolved audit is the scalar finite-difference derivative of trace
+components: their tiny energy increments cannot be resolved against the
+full extensive energy in float64. The largest reported derivative mismatch
+is `1.09` in RT units. This numerical limitation is separate from all the
+physical M2-A/M2-B gaps above; it is not evidence of phase absence or a
+validated BSE result.
+
+The [initial failed attempt](../../results/m2_common_gibbs/20260920_bse_conditional/attempt_01_native_endpoint.json)
+is retained with its thirtieth trial composition. Native MELTS rejected
+near-zero SiO2/Fe2SiO4/Na2SiO3 components even though the supplied amounts
+were nonnegative. The [endpoint property probes](../../results/m2_common_gibbs/20260920_bse_conditional/endpoint_property_probe.json)
+record the response to tiny silica increments on that sample: the original
+native failure changed to a returned-endmember consistency failure. Those
+probes change only diagnostic samples; no such increment is inserted into
+the optimizer's fixed atomic inventory. The successful retry rejects
+unavailable trial states and preserves all final component amounts and
+failed-state metadata in the report.
