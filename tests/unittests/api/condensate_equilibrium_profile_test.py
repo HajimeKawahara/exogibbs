@@ -1112,12 +1112,27 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
     assert result.diagnostics["route"] == "head_v2"
 
 
+@pytest.mark.parametrize("reported_accepted", [False, True])
 def test_head_v2_closes_open_support_before_finite_support_expansion(
     monkeypatch,
+    reported_accepted,
 ):
     setup = _amount_gauge_fake_setup()
     fixed_support_calls = []
     exact_calls = []
+    caller_audits = []
+
+    def record_caller_audit(**kwargs):
+        caller_audits.append(kwargs)
+        return _physical_zero_barrier_audit(**kwargs)
+
+    monkeypatch.setattr(
+        (
+            "exogibbs.equilibrium.condensate.fixed_support.zero_barrier."
+            "_physical_zero_barrier_audit"
+        ),
+        record_caller_audit,
+    )
 
     monkeypatch.setattr(
         _lifecycle,
@@ -1192,7 +1207,7 @@ def test_head_v2_closes_open_support_before_finite_support_expansion(
             ),
             element_potential=np.asarray(kwargs["element_potential_init"]),
             support_indices=tuple(kwargs["support_indices"]),
-            report={"accepted": True, "polish_schema": "unit_test"},
+            report={"accepted": reported_accepted, "polish_schema": "unit_test"},
         )
 
     monkeypatch.setattr(
@@ -1227,6 +1242,7 @@ def test_head_v2_closes_open_support_before_finite_support_expansion(
 
     assert len(fixed_support_calls) == 1
     assert len(exact_calls) == 1
+    assert len(caller_audits) == 1
     assert tuple(exact_calls[0]["support_indices"]) == (0,)
     assert result.layers[0].converged
     lifecycle = result.layers[0].diagnostics["fixed_support_v2"]
@@ -1236,6 +1252,9 @@ def test_head_v2_closes_open_support_before_finite_support_expansion(
     )
     assert lifecycle["rounds"][0]["early_zero_barrier_accepted"]
     assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
+    assert lifecycle["zero_barrier_active_support_polish"]["accepted"] is (
+        reported_accepted
+    )
 
 
 def test_head_v2_discards_exact_candidate_rejected_in_caller_gauge(

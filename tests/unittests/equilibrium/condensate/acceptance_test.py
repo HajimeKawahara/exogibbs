@@ -7,6 +7,7 @@ import subprocess
 import sys
 
 import jax.numpy as jnp
+import pytest
 
 from exogibbs.api.chemistry import ChemicalSetup
 from exogibbs.equilibrium.condensate.acceptance import (
@@ -15,6 +16,7 @@ from exogibbs.equilibrium.condensate.acceptance import (
 from exogibbs.equilibrium.condensate.setup import (
     build_condensate_chemical_setup,
 )
+from exogibbs.equilibrium.condensate.types import PhysicalKKTValidation
 
 
 def _setup():
@@ -69,6 +71,55 @@ def test_acceptance_rejects_negative_condensate_when_budget_closes() -> None:
     ]["accepted"]
     assert state.status == "not_converged"
     assert state.acceptance_tier == "physical_amount_state_failed"
+
+
+@pytest.mark.parametrize("internal_accepted, caller_accepted", [
+    (False, False), (False, True), (True, False), (True, True),
+])
+def test_explicit_physical_validation_controls_positive_condensate_acceptance(
+    internal_accepted: bool,
+    caller_accepted: bool,
+) -> None:
+    validation = PhysicalKKTValidation(internal_accepted, caller_accepted)
+    # A conflicting report must not override the immutable solver decision.
+    diagnostics = {
+        "fixed_support_v2": {
+            "zero_barrier_active_support_polish": {
+                "accepted": not validation.accepted,
+            },
+        },
+    }
+    state = accept_condensate_result_state(
+        setup=_setup(),
+        gas_ln_n=jnp.zeros(2),
+        condensate_amounts=jnp.ones(1),
+        solver_success=True,
+        diagnostics=diagnostics,
+        element_inventory_target=jnp.asarray([3.0, 2.0]),
+        enable_full_condensate_budget_residual_gate=True,
+        full_condensate_budget_relative_tolerance=1.0e-3,
+        physical_validation=validation,
+    )
+
+    assert (state.status == "converged") == validation.accepted
+    if not validation.accepted:
+        assert state.acceptance_tier == "physical_condensate_kkt_audit_failed"
+
+
+def test_explicit_physical_validation_does_not_require_diagnostic_reports() -> None:
+    state = accept_condensate_result_state(
+        setup=_setup(),
+        gas_ln_n=jnp.zeros(2),
+        condensate_amounts=jnp.ones(1),
+        solver_success=True,
+        diagnostics=None,
+        element_inventory_target=jnp.asarray([3.0, 2.0]),
+        enable_full_condensate_budget_residual_gate=True,
+        full_condensate_budget_relative_tolerance=1.0e-3,
+        physical_validation=PhysicalKKTValidation(True, True),
+    )
+
+    assert state.status == "converged"
 
 
 def test_acceptance_checks_negative_condensate_before_float32_cast() -> None:
