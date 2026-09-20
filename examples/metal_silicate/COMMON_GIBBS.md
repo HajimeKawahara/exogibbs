@@ -121,7 +121,7 @@ remain pending even if a conditional local energy calculation converges.
 
 ## Recorded native BSE trial
 
-The [2026-09-20 native report](../../results/m2_common_gibbs/20260920_bse_conditional/metal_absent_independent_derivatives.json)
+The [2026-09-20 native report](../../results/m2_common_gibbs/20260920_bse_conditional/metal_absent_final_source.json)
 uses the full absolute stage-1 BSE inventory, `T=2173.15 K`, `P=1 bar`, and
 an explicitly constrained metal-free branch. It reached scalar convergence,
 stationarity refinement and independent numerical acceptance after 481
@@ -160,3 +160,9 @@ finite-difference energy increments of trace gas components in float64.
 The final independent scalar AD audit resolves those ideal-gas derivatives;
 phase-local adaptive differences validate the native MELTS/H2 callback.
 No numerical tolerance was loosened to accept the final calculation.
+
+The final source-pinned replay uses the committed runner and preserves all
+nine recorded source-file digests. Its numerical acceptance, 481 native
+calls, final amounts and derivative error reproduce the preceding
+[independent-derivative run](../../results/m2_common_gibbs/20260920_bse_conditional/metal_absent_independent_derivatives.json).
+Both receipts remain available with their actual execution provenance.
