@@ -404,7 +404,12 @@ def _native_activity_expanded_profile_support_payload(
     activity_gas_stationarity_source: Sequence[float] | Array | None = None,
     gas_equilibrium_init: EquilibriumInit | None = None,
     lnphi_func: LogFugacityCoefficientFunction | None = None,
-) -> tuple[tuple[int, ...], tuple[float, ...], Mapping[str, Any]]:
+) -> tuple[
+    tuple[int, ...],
+    tuple[float, ...],
+    Mapping[str, Any],
+    EquilibriumInit | None,
+]:
     from exogibbs.equilibrium.gas.solve import equilibrium
     from exogibbs.equilibrium.gas.types import EquilibriumOptions
     from exogibbs.condensates.support_selection_policy import (
@@ -415,6 +420,7 @@ def _native_activity_expanded_profile_support_payload(
     activity_source = str(activity_source_requested)
     gas_ln_n_for_activity = None
     gas_stationarity_source = None
+    gas_equilibrium_seed = None
     if activity_source == "initializer_gas" and activity_gas_ln_n is not None:
         candidate_ln_n = jnp.asarray(activity_gas_ln_n, dtype=jnp.float64)
         if (
@@ -461,6 +467,10 @@ def _native_activity_expanded_profile_support_payload(
             lnphi_func=lnphi_func,
         )
         gas_ln_n_for_activity = jnp.asarray(gas_result.ln_n, dtype=jnp.float64)
+        gas_equilibrium_seed = EquilibriumInit(
+            ln_nk=gas_ln_n_for_activity,
+            ln_ntot=jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64)),
+        )
         gas_stationarity_source = effective_gas_hvector(
             setup.gas_setup,
             float(T),
@@ -610,7 +620,7 @@ def _native_activity_expanded_profile_support_payload(
         ),
         "selection_report": report.as_dict(),
     }
-    return seeded_support, seeded_amounts, trace
+    return seeded_support, seeded_amounts, trace, gas_equilibrium_seed
 
 
 def _head_v2_best_residual_element_potential(
@@ -730,6 +740,7 @@ def _head_v2_initial_state(
     support_amounts: Sequence[float],
     initial_guess: CondensateEquilibriumInit | None,
     first_epsilon: float,
+    gas_equilibrium_seed: EquilibriumInit | None = None,
     lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> _HeadV2LayerState:
     """Build one v2 lifecycle state from gas equilibrium and support seeds."""
@@ -740,7 +751,11 @@ def _head_v2_initial_state(
     support = tuple(int(index) for index in support_indices)
     amounts = jnp.asarray(support_amounts, dtype=jnp.float64)
     candidate_q = None if initial_guess is None else initial_guess.gas_ln_n
-    if candidate_q is None:
+    if candidate_q is None and gas_equilibrium_seed is not None:
+        # Activity selection already solved this cold full-budget gas problem.
+        q = jnp.asarray(gas_equilibrium_seed.ln_nk, dtype=jnp.float64)
+        qtot = jnp.asarray(gas_equilibrium_seed.ln_ntot, dtype=jnp.float64)
+    elif candidate_q is None:
         gas_result = equilibrium(
             setup.gas_setup,
             float(T),
@@ -1329,6 +1344,7 @@ def _run_head_v2_profile(
             initial_support,
             initial_amounts,
             support_trace,
+            gas_equilibrium_seed,
         ) = _native_activity_expanded_profile_support_payload(
             setup=setup,
             T=float(temperatures[layer_index]),
@@ -1423,6 +1439,7 @@ def _run_head_v2_profile(
                 first_epsilon=(
                     policy.solver_config.continuation.epsilon_schedule[0]
                 ),
+                gas_equilibrium_seed=gas_equilibrium_seed,
                 lnphi_func=lnphi_func,
             )
             continue
@@ -1436,6 +1453,7 @@ def _run_head_v2_profile(
             support_amounts=initial_amounts,
             initial_guess=initial_guess,
             first_epsilon=policy.solver_config.continuation.epsilon_schedule[0],
+            gas_equilibrium_seed=gas_equilibrium_seed,
             lnphi_func=lnphi_func,
         )
 

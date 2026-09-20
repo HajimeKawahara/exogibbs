@@ -1,5 +1,103 @@
 # Documented example benchmarks
 
+## Execute the documented examples
+
+The acceptance runner executes **60 fresh jobs** from the current English
+manual and an explicitly selected Japanese manual checkout. It is separate
+from `run_all_gpu.csh`, which measures six solver workloads and compiler modes.
+
+```console
+csh benchmarks/documented_examples/run_documented_acceptance_gpu.csh \
+  --fastchem-executable /path/to/fastchem \
+  --fastchem-source-root /path/to/FastChem-v4.0.3 \
+  --co-database /path/to/CO/12C-16O/Li2015 \
+  --gce-checkout /path/to/GlobalChemicalEquilibrium_Release \
+  --exoeos-source /path/to/exoeos/src \
+  --melts-runtime /path/to/alphamelts-py-2.3.2-ubuntu_22_04-x86_64 \
+  --melts-python /path/to/native-worker/python \
+  --bse-inventory /path/to/baseline_inventory.json \
+  --japanese-docs /path/to/doc_ExoGibbs
+```
+
+The csh wrapper preserves all arguments, supports paths containing spaces, and
+returns the Python runner's exit status. Scheduler copies can set
+`EXOGIBBS_REPOSITORY_ROOT`; `EXOGIBBS_PYTHON` selects the Python executable.
+The wrapper requires GPU execution. For an explicit CPU run use
+`python -m benchmarks.documented_examples.run_all --platform cpu` with the
+same resource options.
+
+| Category | Jobs | Execution and acceptance |
+| --- | ---: | --- |
+| Comparisons | 14 | All comparison programs, both FastChem4 profiles, both full 855-layer Ito comparisons, and the optional Visscher/Morley FastChem comparison. The programs' scientific gates must pass. The pinned FastChem production CLI additionally runs all four documented temperature points, requires its clean reference checkout and byte-identical thermochemical inputs, and must report `comparison_completed=true`. |
+| Curated condensate demos | 10 | Run each actual plotting program and independently audit every layer, inventory, and generated figure. Internally caught numerical failures still fail the job. |
+| ExoEOS pure fugacity | 1 | Execute the gallery example with independent element and chemical stationarity checks. Missing optional ExoEOS is a failure. |
+| Metal/silicate examples | 21 | Reference audit/extraction/generation, all four native cases, both gas-exchange cases, hydrogen and dry control, sulfur source/extraction, sulfide, CNS inventory scans, M1 chemistry/boundary, both native MELTS branches, native BSE common Gibbs, and archive revalidation with fresh MELTS potentials. |
+| Retrieval tutorials | 4 | Actual NUTS, including preflight, **500 warmup steps and 1000 samples** by default. Require completed sampling, posterior diagnostics, and finite posterior arrays with the requested sample count. |
+| Inline examples | 10 | Eleven complete code blocks from the actual RST/TeX sources: gas presets, condensate/profile/rainout, solubility, stable magma-gas, ideal activity adapter, and the Japanese legacy magma-gas example. Each source block is hashed. |
+
+Three historical FastChem script aliases share canonical jobs. The archived
+`results/subneptune_taxonomy/20260911/verify.py` wrapper shares the explicit
+`revalidate_archive.py` job. Archive revalidation recomputes properties at
+saved amounts; the two MELTS jobs independently rerun the equilibrium roots.
+Intentional rejected candidate phases in the sulfide example remain scientific
+outputs; the example's accepted-branch gate must pass.
+
+The scope is executable scientific examples, rather than development commands
+such as pytest, documentation builds, or performance measurements. The
+scientific `benchmarks.fastchem4.run_production_comparison` CLI is included;
+its Python module command maps to the same executable source file. Helper modules and API fragments with undefined inputs are not
+standalone examples. The four published retrieval notebooks use their canonical
+Python programs because their guarded notebook cells alone do not run NUTS.
+Two unlinked exploratory notebooks are outside the manual. Use `./update_doc.sh`
+separately for documentation generation.
+
+The coverage report discovers public example entry points and script commands
+and `python -m benchmarks...` commands in `documents/`, the metal/silicate
+guides, and `doc_ExoGibbs/ja/`. An uncovered
+or missing documented example prevents full acceptance. The default Japanese
+path is `doc_ExoGibbs`; initialize the submodule or use `--japanese-docs` to
+select an existing local checkout. Its actual commit and contents are recorded,
+so an external/manual checkout is not confused with the superproject gitlink.
+The CNS example and its regression tests are restored unchanged from local
+commit `8338be3`, matching the Japanese manual's finite-inventory commands.
+
+Every job starts in a new process with float64 enabled. GPU requests disable CPU
+fallback and verify the actual JAX backend. NumPy/SciPy reference calculations
+and native MELTS workers still use their own CPU implementations. Imported
+ExoGibbs/ExoEOS paths must match the selected source trees. Inputs must already
+exist: the runner downloads nothing. Native MELTS needs the shared library and
+a working separate Python environment; BSE needs the exported absolute inventory.
+The Ito workbook defaults to `external_data/Ito_2025.xlsx` (`--ito-input`).
+
+Resource options also accept `EXOGIBBS_FASTCHEM_EXECUTABLE`, `EXOGIBBS_FASTCHEM_SOURCE_ROOT`,
+`EXOJAX_CO_DATABASE`, `EXOGIBBS_GCE_CHECKOUT`, `EXOGIBBS_ITO_INPUT`,
+`EXOGIBBS_EXOEOS_SOURCE`, `EXOGIBBS_MELTS_RUNTIME`, `EXOGIBBS_MELTS_PYTHON`,
+`EXOGIBBS_BSE_INVENTORY`, and `EXOGIBBS_JAPANESE_DOCS`.
+
+Outputs use a new directory under `results/all_documented_examples/`; an
+explicit `--output-directory` must not exist. Each executed job retains
+`run.log`, `worker.json`, and its scientific artifacts. `summary.json` records
+commands, coverage, actual source/provider/manual commits and content hashes,
+input hashes, timestamps, and every failure. Missing inputs are `UNAVAILABLE`;
+missing/skipped native chemistry, invalid artifacts, numerical failure, and a
+missing worker report all fail acceptance. Remaining jobs continue and the
+runner exits nonzero if any job or coverage check fails. Previous PASS records
+and Ito checkpoints are never reused.
+
+Inspect coverage and commands without importing JAX or executing examples:
+
+```console
+python -m benchmarks.documented_examples.run_all --dry-run \
+  --japanese-docs /path/to/doc_ExoGibbs
+```
+
+Repeat `--case CASE_ID` for targeted fresh reruns. Such a run reports
+`full_acceptance=false`. The explicit development option `--retrieval-quick`
+still runs NUTS, but can only produce `SMOKE_PASS`, never full acceptance.
+A final acceptance record requires all jobs, full NUTS, and complete coverage.
+
+## Measure the six documented solver workloads
+
 This suite measures the ExoGibbs solver workloads behind every entry in the
 `EXAMPLES` toctree in `documents/index.rst`. It is a performance regression
 surface, not a replacement for the scientific comparisons in those examples.

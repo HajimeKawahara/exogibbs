@@ -521,7 +521,7 @@ def test_head_v2_uses_one_canonical_amount_gauge_and_rescales_results(
     def fake_support_payload(**kwargs):
         captured["support_target"] = np.asarray(kwargs["b"])
         captured["gas_init"] = kwargs["gas_equilibrium_init"]
-        return (0,), (0.2,), {"policy": "test_canonical_support"}
+        return (0,), (0.2,), {"policy": "test_canonical_support"}, None
 
     monkeypatch.setattr(
         _lifecycle,
@@ -711,6 +711,7 @@ def test_head_v2_reduces_rank_deficient_finite_barrier_initializer(
             (2, 0, 1),
             (0.1, 0.1, 0.1),
             {"policy": "test_rank_deficient_activity_support"},
+            None,
         ),
     )
 
@@ -913,6 +914,7 @@ def test_head_v2_profile_expands_support_outside_solver_until_closed(
             (0,),
             (0.2,),
             {"policy": "test_initial_support"},
+            None,
         ),
     )
 
@@ -1141,6 +1143,7 @@ def test_head_v2_closes_open_support_before_finite_support_expansion(
             (0,),
             (0.2,),
             {"policy": "test_initial_support"},
+            None,
         ),
     )
 
@@ -1268,6 +1271,7 @@ def test_head_v2_discards_exact_candidate_rejected_in_caller_gauge(
             (0,),
             (0.2,),
             {"policy": "test_initial_support"},
+            None,
         ),
     )
 
@@ -1434,6 +1438,7 @@ def test_head_v2_failed_closed_state_only_initializes_exact_polish(
             (0,),
             (0.2,),
             {"policy": "test_initial_support"},
+            None,
         ),
     )
 
@@ -1722,6 +1727,7 @@ def test_head_v2_trace_capacity_fallback_uses_pre_pdipm_state(
             (1,),
             (initial_support_amount,),
             {"policy": "test_trace_support"},
+            None,
         ),
     )
 
@@ -2137,7 +2143,7 @@ def _install_head_v2_gas_only_stubs(
     monkeypatch.setattr(
         _lifecycle,
         "_native_activity_expanded_profile_support_payload",
-        lambda **kwargs: ((), (), {"policy": "test_empty_support"}),
+        lambda **kwargs: ((), (), {"policy": "test_empty_support"}, None),
     )
 
     def fake_run_fixed_support_profile(**kwargs):
@@ -2167,13 +2173,18 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
     setup = _fake_setup()
     gas_ln_n = jnp.log(jnp.asarray([0.5, 0.5], dtype=jnp.float64))
     warmup_calls = []
+    gas_tolerances = []
+
+    def fake_gas_equilibrium(*args, **kwargs):
+        gas_tolerances.append(kwargs["options"].epsilon_crit)
+        return SimpleNamespace(
+            ln_n=gas_ln_n,
+            ntot=jnp.asarray(1.0, dtype=jnp.float64),
+        )
 
     monkeypatch.setattr(
         "exogibbs.equilibrium.gas.solve.equilibrium",
-        lambda *args, **kwargs: SimpleNamespace(
-            ln_n=gas_ln_n,
-            ntot=jnp.asarray(1.0, dtype=jnp.float64),
-        ),
+        fake_gas_equilibrium,
     )
 
     def fake_run_fixed_support_profile(**kwargs):
@@ -2225,6 +2236,7 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
     assert layer.converged
     assert layer.selected_route == "head_v2_gas_only_no_candidate"
     assert layer.condensate_support_indices.size == 0
+    assert gas_tolerances == [1.0e-10, 1.0e-14]
     assert len(warmup_calls) == 1
     warmup_bucket = warmup_calls[0]["buckets"][0]
     assert warmup_bucket.support_indices.shape == (1, 2)
@@ -2601,6 +2613,7 @@ def test_head_v2_real_solver_is_amount_gauge_covariant(monkeypatch):
             (0,),
             (0.2,),
             {"policy": "test_deterministic_support"},
+            None,
         ),
     )
 
