@@ -1,0 +1,321 @@
+"""Mixed-metal insertion minima and explicit phase selection
+=========================================================
+
+Global certificates require supplied global curvature bounds for the actual
+phase scalars on their declared domains. Numerical searches alone never
+certify absence or a nonconvex assemblage's stability.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Mapping, Optional
+
+import numpy as np
+from scipy.optimize import least_squares, minimize
+
+from common_gibbs import GibbsMinimumResult, minimize_gibbs
+from full_potential import PhaseCallback, PhaseState
+from local import _budgets, build_problem
+
+
+@dataclass(frozen=True)
+class InsertionMinimum:
+    """Insertion energy per component mole, divided by the common RT."""
+
+    composition: np.ndarray
+    upper_bound_rt: float
+    lower_bound_rt: Optional[float]
+    uncertainty_rt: Optional[float]
+    minimum_certified: bool
+    reason: str
+
+
+def _linear_minimum(cost, lower, upper):
+    """Exactly solve the linear box-simplex subproblem up to roundoff."""
+    result = lower.copy()
+    remaining = 1 - result.sum()
+    for index in np.argsort(cost):
+        amount = min(remaining, upper[index] - result[index])
+        result[index] += amount
+        remaining -= amount
+    if abs(remaining) > 1e-12:
+        raise ValueError("The composition domain does not intersect the simplex.")
+    return result
+
+
+def minimize_insertion(
+    phase: PhaseCallback, temperature_k: float, pressure_bar: float,
+    formula: np.ndarray, elemental_potentials_rt: np.ndarray,
+    lower: np.ndarray, upper: np.ndarray, *,
+    curvature_lower_bound_rt: Optional[float] = None,
+    tolerance: float = 1e-8, maxiter: int = 1000,
+) -> InsertionMinimum:
+    """Search a mixed phase and bound its minimum over a box in the simplex.
+
+    ``curvature_lower_bound_rt`` must bound the Hessian of this exact molar
+    phase scalar globally after eliminating one composition coordinate.
+    Standards and elemental potentials add linear terms only. Nonnegative
+    bounds give a convex supporting plane. Negative bounds give a conservative
+    quadratic remainder using the enclosing box diameter. Without a bound,
+    a negative trial can reject absence but cannot certify a global minimum.
+
+    All callback evaluations use one mole of phase in the supplied component
+    order. Fixed-zero components may have undefined insertion derivatives;
+    free-zero components with singular derivatives yield an unresolved bound.
+    """
+    values = tuple(map(np.asarray, (formula, elemental_potentials_rt, lower, upper)))
+    if not all(np.isrealobj(value) for value in values):
+        raise ValueError("Formula, potentials, and composition bounds must be real.")
+    atoms, potentials, lo, hi = (value.astype(float) for value in values)
+    if (lo.ndim != 1 or not lo.size or hi.shape != lo.shape
+            or potentials.ndim != 1 or atoms.shape != (potentials.size, lo.size)
+            or not all(np.all(np.isfinite(value)) for value in (atoms, potentials, lo, hi))
+            or np.any(atoms < 0) or np.any(lo < 0) or np.any(hi > 1) or np.any(lo > hi)
+            or lo.sum() > 1 or hi.sum() < 1
+            or not all(np.isfinite(v) and v > 0 for v in (temperature_k, pressure_bar, tolerance))):
+        raise ValueError("Supply finite potentials and a feasible nonnegative composition domain.")
+    if curvature_lower_bound_rt is not None and not np.isfinite(curvature_lower_bound_rt):
+        raise ValueError("A supplied global curvature bound must be finite.")
+    if not isinstance(maxiter, int) or maxiter < 1:
+        raise ValueError("maxiter must be a positive integer.")
+    linear = atoms.T @ potentials
+    free = hi > lo
+
+    def evaluate(x):
+        state = phase(temperature_k, pressure_bar, x)
+        mu = np.asarray(state.mu_rt, dtype=float)
+        present = x > 0
+        if (mu.shape != x.shape or not np.isfinite(state.gibbs_rt)
+                or not np.all(np.isfinite(mu[present]))
+                or not np.isclose(x[present] @ mu[present], state.gibbs_rt,
+                                  rtol=5e-9, atol=1e-10)):
+            raise ValueError("The insertion callback must return a finite extensive G and its full potentials.")
+        return float(state.gibbs_rt - linear @ x), mu - linear
+
+    def derivative(x):
+        value, gradient = evaluate(x)
+        gradient[~free] = 0.
+        # Only trial derivatives use one-sided differences at singular zero
+        # components. The final certificate uses the actual full potentials.
+        for index in np.flatnonzero(~np.isfinite(gradient)):
+            trial = x.copy()
+            step = 1e-7
+            trial[index] += step
+            gradient[index] = (evaluate(trial)[0] - value) / step
+        return gradient
+
+    width = hi - lo
+    center = lo + (1 - lo.sum()) * width / width.sum() if np.any(free) else lo.copy()
+    # Different starts can find an instability but do not establish stability.
+    seeds = [center]
+    for index in np.flatnonzero(free):
+        cost = np.zeros(lo.size)
+        cost[index] = -1
+        vertex = _linear_minimum(cost, lo, hi)
+        seeds.append(.5 * center + .5 * vertex)
+    candidates = [(evaluate(center)[0], center)]
+    if np.any(free):
+        for seed in seeds:
+            result = minimize(lambda x: evaluate(x)[0], seed, jac=derivative, method="SLSQP",
+                              bounds=list(zip(lo, hi)),
+                              constraints={"type": "eq", "fun": lambda x: x.sum() - 1,
+                                           "jac": lambda x: np.ones_like(x)},
+                              options={"ftol": min(1e-13, tolerance * .001), "maxiter": maxiter})
+            x = np.asarray(result.x)
+            if (np.all(x >= lo) and np.all(x <= hi) and abs(x.sum() - 1) < 1e-12):
+                candidates.append((evaluate(x)[0], x))
+    upper_value, x = min(candidates, key=lambda item: item[0])
+    # Energy differences lose sensitivity before trace-component chemical
+    # potentials do. Refine the free composition KKT equations in log amounts;
+    # the global bound below, not this root, establishes minimum acceptance.
+    interior = free & (x > lo + 1e-10 * width) & (x < hi - 1e-10 * width)
+    if np.any(interior) and np.all(x[interior] > 0):
+        fixed = x.copy()
+        fixed[free & ~interior & (x <= lo + 1e-10 * width)] = lo[free & ~interior & (x <= lo + 1e-10 * width)]
+        fixed[free & ~interior & (x >= hi - 1e-10 * width)] = hi[free & ~interior & (x >= hi - 1e-10 * width)]
+
+        def stationarity(log_values):
+            point = fixed.copy()
+            point[interior] = np.exp(log_values)
+            gradient = evaluate(point)[1][interior]
+            return np.r_[np.log(point.sum()), gradient[1:] - gradient[0]]
+
+        lower_logs = np.full(interior.sum(), -np.inf)
+        positive_lower = lo[interior] > 0
+        lower_logs[positive_lower] = np.log(lo[interior][positive_lower])
+        root = least_squares(stationarity, np.log(x[interior]),
+                             bounds=(lower_logs, np.log(hi[interior])),
+                             ftol=1e-14, xtol=1e-14, gtol=1e-14, max_nfev=maxiter)
+        refined = fixed.copy()
+        refined[interior] = np.exp(root.x)
+        cost = evaluate(refined)[0]
+        allowance = 128 * np.finfo(float).eps * (1 + abs(upper_value))
+        if abs(refined.sum() - 1) <= 1e-12 and cost <= upper_value + allowance:
+            x = refined
+    upper_value, gradient = evaluate(x)  # Fresh provider evaluation.
+    if curvature_lower_bound_rt is None:
+        return InsertionMinimum(x, upper_value, None, None, False, "No global curvature bound supplied.")
+    if not np.all(np.isfinite(gradient[free])):
+        return InsertionMinimum(x, upper_value, None, None, False, "A free endpoint has a singular potential.")
+    gradient = np.where(free, gradient, 0.)
+    vertex = _linear_minimum(gradient, lo, hi)
+    radius_squared = np.sum(np.maximum((lo - x)**2, (hi - x)**2))
+    roundoff = 128 * np.finfo(float).eps * (1 + abs(upper_value) + np.linalg.norm(gradient, 1))
+    lower_value = (upper_value + gradient @ (vertex - x)
+                   + .5 * min(0., curvature_lower_bound_rt) * radius_squared - roundoff)
+    gap = max(0., upper_value - lower_value)
+    certified = bool(gap <= tolerance)
+    reason = "Global supporting bound closes the minimum." if certified else "Global minimum uncertainty exceeds tolerance."
+    return InsertionMinimum(x, upper_value, float(lower_value), float(gap), certified, reason)
+
+
+@dataclass(frozen=True)
+class MetalSelection:
+    """Numerical phase selection within the declared scalar model and domain."""
+
+    status: str
+    result: Optional[GibbsMinimumResult]
+    insertion: Optional[InsertionMinimum]
+    metal_amount_mol: float
+    metal_composition: Optional[np.ndarray]
+    reasons: tuple[str, ...]
+
+
+def select_metal_phase(
+    record: dict, element_amounts_mol: np.ndarray,
+    temperature_k: float, pressure_bar: float, callbacks: Mapping[str, PhaseCallback],
+    metal_lower: np.ndarray, metal_upper: np.ndarray, *,
+    convex_phase_bounds: Optional[Mapping[str, float]] = None,
+    maxiter: int = 1000, tolerance: float = 1e-8,
+) -> MetalSelection:
+    """Evaluate metal-free and metal-bearing branches without a metal floor.
+
+    Callbacks follow each phase's complete record order. Components containing
+    exactly absent elements are removed before any logarithmic solve. The
+    optional bounds are proven global molar curvature lower bounds, not sampled
+    Hessians. Certifying the whole assemblage requires nonnegative bounds for
+    every included phase on its declared domain. Missing/nonconvex host evidence
+    always returns ``unresolved`` even if the metal insertion test passes.
+
+    Present candidates outside the supplied metal composition box or at an
+    unsupported zero-phase boundary remain unresolved. Material calibration
+    and the liquid-versus-crystal catalog are separate from this model's status.
+    """
+    if "metal" not in record["phases"] or set(callbacks) != set(record["phases"]):
+        raise ValueError("Supply the metal phase and exactly one callback per declared phase.")
+    budget = _budgets(element_amounts_mol, len(record["elements"]))
+    phases = tuple(record["phases"])
+    names = tuple(name for phase in phases for name in record["phases"][phase])
+    bounds = dict(convex_phase_bounds or {})
+    if (set(bounds) - set(phases)
+            or any(not np.isrealobj(value) or not np.isfinite(value) for value in bounds.values())):
+        raise ValueError("Curvature evidence must name declared phases and contain finite bounds.")
+    elements = record["elements"]
+    metal_names = record["phases"]["metal"]
+    metal_formula = np.array([[record["component_formulas"][name].get(e, 0)
+                               for name in metal_names] for e in elements], dtype=float)
+    if not np.isrealobj(metal_lower) or not np.isrealobj(metal_upper):
+        raise ValueError("Metal composition bounds must be real.")
+    lo, hi = np.asarray(metal_lower, dtype=float), np.asarray(metal_upper, dtype=float).copy()
+    if (lo.shape != (len(metal_names),) or hi.shape != lo.shape
+            or not np.all(np.isfinite(lo)) or not np.all(np.isfinite(hi))
+            or np.any(lo < 0) or np.any(hi > 1) or np.any(lo > hi)
+            or lo.sum() > 1 or hi.sum() < 1
+            or not all(np.isfinite(v) and v > 0 for v in (temperature_k, pressure_bar, tolerance))
+            or not isinstance(maxiter, int) or maxiter < 1):
+        raise ValueError("Supply positive conditions and feasible bounds in the full metal component order.")
+
+    def solve(selected):
+        problem = build_problem(record, budget, lambda t, p: np.zeros(len(names)), phases=selected)
+        restricted = {}
+        for phase, section in zip(problem.phases, problem.phase_slices):
+            positions = np.array([record["phases"][phase].index(name) for name in problem.species[section]])
+
+            def evaluate(t, p, n, phase=phase, positions=positions):
+                full = np.zeros(len(record["phases"][phase]))
+                full[positions] = n
+                state = callbacks[phase](t, p, full)
+                return PhaseState(np.asarray(state.mu_rt)[positions], state.gibbs_rt)
+
+            derivative_provider = getattr(callbacks[phase], "energy_value_and_grad_rt", None)
+            if derivative_provider is not None:
+                def energy_gradient(t, p, n, phase=phase, positions=positions,
+                                    provider=derivative_provider):
+                    full = np.zeros(len(record["phases"][phase]))
+                    full[positions] = n
+                    energy, gradient = provider(t, p, full)
+                    return energy, np.asarray(gradient)[positions]
+
+                evaluate.energy_value_and_grad_rt = energy_gradient
+            restricted[phase] = evaluate
+        return minimize_gibbs(problem, temperature_k, pressure_bar, budget, restricted, maxiter=maxiter)
+
+    failures = (ValueError, RuntimeError, FloatingPointError, np.linalg.LinAlgError)
+    try:
+        absent = solve(tuple(phase for phase in phases if phase != "metal"))
+    except failures as error:
+        return MetalSelection("unresolved", None, None, 0., None,
+                              (f"Metal-free branch unavailable: {type(error).__name__}: {error}",))
+    if not absent.accepted:
+        return MetalSelection("unresolved", absent, None, 0., None, ("Metal-free local minimization failed.", *absent.audit_reasons))
+    unsupported = np.any(metal_formula[budget == 0] != 0, axis=0)
+    hi[unsupported] = 0.
+    host_certified = all(bounds.get(phase, -np.inf) >= 0 for phase in phases if phase != "metal")
+    if np.any(lo > hi) or hi.sum() < 1:
+        reasons = () if host_certified else ("Host global stability is not established.",)
+        return MetalSelection("metal_absent" if not reasons else "unresolved", absent, None, 0., None,
+                              reasons + ("The metal domain is excluded by exact-zero element budgets.",))
+
+    def insertion(result):
+        return minimize_insertion(callbacks["metal"], temperature_k, pressure_bar,
+                                  metal_formula, result.elemental_potentials_rt, lo, hi,
+                                  curvature_lower_bound_rt=bounds.get("metal"), tolerance=tolerance,
+                                  maxiter=maxiter)
+
+    try:
+        trial = insertion(absent)
+    except failures as error:
+        return MetalSelection("unresolved", absent, None, 0., None,
+                              (f"Metal insertion unavailable: {type(error).__name__}: {error}",))
+    if trial.minimum_certified and trial.lower_bound_rt >= -tolerance:
+        reasons = () if host_certified else ("Host global stability is not established.",)
+        return MetalSelection("metal_absent" if not reasons else "unresolved", absent, trial, 0., None, reasons)
+    if trial.upper_bound_rt >= -tolerance:
+        return MetalSelection("unresolved", absent, trial, 0., None, (trial.reason,))
+    try:
+        present = solve(phases)
+    except failures as error:
+        return MetalSelection("unresolved", absent, trial, 0., None,
+                              (f"Metal-bearing branch unavailable: {type(error).__name__}: {error}",))
+    amounts = present.component_amounts_mol[[names.index(name) for name in metal_names]]
+    total = float(amounts.sum())
+    reasons = list(present.audit_reasons)
+    if not present.accepted:
+        reasons.append("Metal-bearing local minimization failed.")
+    if total <= 0:
+        return MetalSelection("unresolved", present, None, total, None,
+                              tuple(reasons + ["No positive metal candidate was obtained."]))
+    composition = amounts / total
+    if np.any(composition < lo) or np.any(composition > hi):
+        return MetalSelection("unresolved", present, None, total, composition,
+                              tuple(reasons + ["The metal candidate lies outside the declared composition domain."]))
+    try:
+        trial = insertion(present)
+    except failures as error:
+        return MetalSelection("unresolved", present, None, total, composition,
+                              tuple(reasons + [f"Metal insertion unavailable: {type(error).__name__}: {error}"]))
+    if not trial.minimum_certified or max(abs(trial.upper_bound_rt), abs(trial.lower_bound_rt or 0.)) > tolerance:
+        reasons.append("The present metal does not attain a certified zero insertion minimum.")
+    candidate = callbacks["metal"](temperature_k, pressure_bar, composition)
+    actual_cost = candidate.gibbs_rt - present.elemental_potentials_rt @ metal_formula @ composition
+    if abs(actual_cost - trial.upper_bound_rt) > tolerance:
+        reasons.append("The present metal composition is not the minimizing incipient composition.")
+    if abs(total / budget.sum() * trial.upper_bound_rt) > tolerance:
+        reasons.append("Metal amount and insertion energy violate complementarity.")
+    if present.gibbs_rt > absent.gibbs_rt + tolerance * budget.sum():
+        reasons.append("Allowing metal raised the minimum energy.")
+    if not host_certified:
+        reasons.append("Host global stability is not established.")
+    return MetalSelection("metal_present" if not reasons else "unresolved", present, trial,
+                          total, composition, tuple(reasons))

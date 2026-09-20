@@ -99,6 +99,7 @@ jobs:
           import exogibbs
           from exoeos.ma_fe_si_o_h import MaFeSiOHLiquid
           from exoeos.solution_gibbs import total_solution_state
+          from exoeos.ma_interval import ma_alloy_curvature_lower_bound
 
           root = Path.cwd()
           provider = root / "providers/exoeos"
@@ -112,6 +113,7 @@ jobs:
               assert actual == expected.resolve(), (actual, expected)
           assert exoeos.MaFeSiOHLiquid is MaFeSiOHLiquid
           assert exoeos.total_solution_state is total_solution_state
+          assert callable(ma_alloy_curvature_lower_bound)
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
           ).resolve()
@@ -125,6 +127,7 @@ jobs:
             tests/unittests/examples/metal_silicate_native_test.py
             tests/unittests/examples/metal_silicate_full_potential_test.py
             tests/unittests/examples/metal_silicate_common_gibbs_test.py
+            tests/unittests/examples/metal_silicate_phase_selection_test.py
             tests/unittests/examples/metal_silicate_melts_coupled_test.py
             tests/unittests/examples/metal_silicate_melts_archive_test.py
             tests/unittests/interop
