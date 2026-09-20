@@ -11,6 +11,13 @@ import subprocess
 from typing import Any, Sequence
 
 
+def _is_generated_document(path: Path, root: Path) -> bool:
+    """Identify Sphinx outputs configured by documents/conf.py."""
+    parts = path.relative_to(root).parts
+    return (len(parts) > 1 and parts[0] == "documents"
+            and parts[1] in {"_build", "examples", "exogibbs", "backreferences", "sg_execution_times.rst"})
+
+
 def covered_scripts(jobs: Sequence[Any], aliases: dict[str, str], root: Path) -> set[str]:
     """Resolve audited wrappers to the original public example entry points."""
     scripts = {job.script for job in jobs} | set(aliases)
@@ -30,7 +37,8 @@ def coverage_report(root: Path, japanese_docs: Path, jobs: Sequence[Any], aliase
         if any(isinstance(node, ast.If) and "__main__" in ast.unparse(node.test)
                for node in ast.parse(path.read_text()).body):
             public.add(str(path.relative_to(root)))
-    documents = sorted((root / "documents").rglob("*.rst"))
+    documents = sorted(path for path in (root / "documents").rglob("*.rst")
+                       if not _is_generated_document(path, root))
     documents += sorted((root / "examples/metal_silicate").glob("*.md"))
     documents += sorted((japanese_docs / "ja").glob("*.tex"))
     commands = []
@@ -85,7 +93,8 @@ def provenance(root: Path, resources: dict[str, str]) -> dict:
             if source_root.is_dir():
                 paths.extend(path for path in source_root.rglob("*")
                              if path.is_file() and path.suffix in suffixes
-                             and not {".git", "__pycache__"}.intersection(path.parts))
+                             and not {".git", "__pycache__"}.intersection(path.parts)
+                             and (label != "exogibbs" or not _is_generated_document(path, directory)))
         status = _git(directory, "status", "--porcelain") if directory.is_dir() else ""
         records[label] = {"path": str(directory), "commit": _git(directory, "rev-parse", "HEAD") if directory.is_dir() else None,
                           "dirty": bool(status), "status_sha256": hashlib.sha256(status.encode()).hexdigest(),
