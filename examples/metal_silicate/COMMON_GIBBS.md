@@ -121,10 +121,11 @@ remain pending even if a conditional local energy calculation converges.
 
 ## Recorded native BSE trial
 
-The [2026-09-20 native report](../../results/m2_common_gibbs/20260920_bse_conditional/attempt_02_trace_derivatives.json)
+The [2026-09-20 native report](../../results/m2_common_gibbs/20260920_bse_conditional/metal_absent_independent_derivatives.json)
 uses the full absolute stage-1 BSE inventory, `T=2173.15 K`, `P=1 bar`, and
-an explicitly constrained metal-free branch. It reached scalar convergence
-and stationarity refinement after 524 native melt evaluations:
+an explicitly constrained metal-free branch. It reached scalar convergence,
+stationarity refinement and independent numerical acceptance after 481
+native melt evaluations:
 
 | Check | Recorded value |
 | --- | ---: |
@@ -133,15 +134,15 @@ and stationarity refinement after 524 native melt evaluations:
 | Maximum relative element residual | `8.88e-16` |
 | Maximum reaction residual | `7.11e-15` |
 | Maximum component KKT residual | `3.41e-13` |
+| Independent derivative error, in RT units | `7.89e-8` |
 | Extensivity error | `8.83e-15` |
-| Numerical acceptance | **Unresolved** |
+| Numerical acceptance | **Passed local audits** |
+| Scientific M2-A / M2-B | **Pending** |
 
-The unresolved audit is the scalar finite-difference derivative of trace
-components: their tiny energy increments cannot be resolved against the
-full extensive energy in float64. The largest reported derivative mismatch
-is `1.09` in RT units. This numerical limitation is separate from all the
-physical M2-A/M2-B gaps above; it is not evidence of phase absence or a
-validated BSE result.
+This establishes conditional scalar minimization and local equation audits
+under the declared callbacks. It does not establish global stability of the
+nonconvex MELTS model, metal absence, cross-phase standard alignment, or the
+scientific M2 gates.
 
 The [initial failed attempt](../../results/m2_common_gibbs/20260920_bse_conditional/attempt_01_native_endpoint.json)
 is retained with its thirtieth trial composition. Native MELTS rejected
@@ -150,6 +151,12 @@ were nonnegative. The [endpoint property probes](../../results/m2_common_gibbs/2
 record the response to tiny silica increments on that sample: the original
 native failure changed to a returned-endmember consistency failure. Those
 probes change only diagnostic samples; no such increment is inserted into
-the optimizer's fixed atomic inventory. The successful retry rejects
-unavailable trial states and preserves all final component amounts and
-failed-state metadata in the report.
+the optimizer's fixed atomic inventory. Unavailable trial states are now
+rejected by the line search, with the failed state retained in the report.
+
+A [second retained attempt](../../results/m2_common_gibbs/20260920_bse_conditional/attempt_02_trace_derivatives.json)
+reached the same scalar value and KKT state but could not resolve the global
+finite-difference energy increments of trace gas components in float64.
+The final independent scalar AD audit resolves those ideal-gas derivatives;
+phase-local adaptive differences validate the native MELTS/H2 callback.
+No numerical tolerance was loosened to accept the final calculation.
