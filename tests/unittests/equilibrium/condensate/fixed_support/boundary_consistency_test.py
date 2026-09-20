@@ -126,8 +126,10 @@ def test_structural_zero_keeps_signed_conservation_rows(charge: float) -> None:
 @pytest.mark.parametrize(
     "controlled_boundary", (False, True), ids=("numerical", "controlled_boundary")
 )
+@pytest.mark.parametrize("reduce_initial_support", (False, True))
 def test_full_rank_boundary_can_release_a_phase(
     monkeypatch: pytest.MonkeyPatch, controlled_boundary: bool,
+    reduce_initial_support: bool,
 ) -> None:
     boundary_calls = []
     if controlled_boundary:
@@ -142,7 +144,7 @@ def test_full_rank_boundary_can_release_a_phase(
             kwargs["function_evaluation_budget"].consume(1)
             state = {
                 "gas_log_amounts": np.log(np.asarray([0.5, 1.0])),
-                "condensate_amounts": np.asarray([0.5, 0.0]),
+                "condensate_amounts": np.asarray([0.5, -0.25]),
                 "total_gas_log_amount": float(np.log(1.5)),
                 "element_potential": np.zeros(2),
                 "support_indices": (0, 1),
@@ -165,6 +167,7 @@ def test_full_rank_boundary_can_release_a_phase(
             )
             assert audit["finite"]
             assert not audit["positive_active_amounts"]
+            assert audit["budget_scaled_max_abs"] > kwargs["budget_tolerance"]
             assert not audit["accepted"]
             return {
                 "accepted": False,
@@ -178,7 +181,11 @@ def test_full_rank_boundary_can_release_a_phase(
                 "report": {
                     "attempted": True,
                     "accepted": False,
-                    "attempts": ({"function_evaluations": 1},),
+                    "attempts": ({
+                        "function_evaluations": 1,
+                        "optimizer_success": True,
+                        "active_condensate_amounts": (0.5, -0.25),
+                    },),
                 },
             }
 
@@ -203,6 +210,7 @@ def test_full_rank_boundary_can_release_a_phase(
         function_evaluation_budget=budget,
         use_zero_barrier_dual=False,
         use_finite_barrier_homotopy=False,
+        reduce_initial_support=reduce_initial_support,
     )
     assert result.accepted
     assert result.support_indices == (0,)
@@ -222,6 +230,10 @@ def test_full_rank_boundary_can_release_a_phase(
         release = result.report["support_release_portfolio"]
         assert release["attempted"]
         assert release["trigger"] == "full_rank_support_boundary_reached"
+        assert release["source"] == (
+            "optimizer_terminated_nonpositive_primary_support"
+        )
+        assert release["candidate_generation"]["preferred_support_indices"] == (0,)
     assert budget.used <= budget.limit
 
 
