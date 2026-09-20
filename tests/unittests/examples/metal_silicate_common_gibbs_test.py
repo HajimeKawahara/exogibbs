@@ -268,3 +268,22 @@ def test_ideal_scalar_ad_resolves_trace_derivative_and_detects_bad_potentials():
     result = ENERGY.minimize_gibbs(problem, 2000., 3., np.array([1.]), {"gas": corrupt}, maxiter=30)
     assert not result.accepted
     assert "scalar energy derivative disagrees with the supplied potentials" in result.audit_reasons
+
+
+@pytest.mark.parametrize("unavailable", [np.nan, np.inf, -np.inf])
+def test_nonfinite_energy_at_derivative_probe_cannot_be_accepted(unavailable):
+    record = {"elements": ["A", "B"], "phases": {"solid": ["a", "b"]},
+              "component_formulas": {"a": {"A": 1}, "b": {"B": 1}}, "reactions": []}
+    budget = np.ones(2)
+    problem = LOCAL.build_problem(record, budget, lambda t, p: np.zeros(2), phases=("solid",))
+    ideal = FULL.ideal_phase(lambda t, p: np.zeros(2))
+    def incomplete(t, p, n):
+        state = ideal(t, p, n)
+        # The inventory and scaled states are valid. Only the independent
+        # coordinate probes lack a scalar value; do not expose the ideal AD.
+        energy = state.gibbs_rt if n[0] == n[1] else unavailable
+        return FULL.PhaseState(state.mu_rt, energy)
+    result = ENERGY.minimize_gibbs(problem, 2000., 1., budget, {"solid": incomplete}, polish=False)
+    assert not result.accepted
+    assert np.isinf(result.derivative_error_rt)
+    assert "scalar derivative is unavailable at a finite-difference point" in result.audit_reasons

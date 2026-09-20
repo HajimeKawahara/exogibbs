@@ -1,4 +1,5 @@
 """Conditional common-energy minimization from an exported absolute BSE ledger.
+============================================================================
 
 The external MELTS runtime and ExoEOS checkout must be selected explicitly.
 This does not calibrate cross-phase standards or establish BSE liquid stability.

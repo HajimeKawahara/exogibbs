@@ -162,7 +162,12 @@ phase-local adaptive differences validate the native MELTS/H2 callback.
 No numerical tolerance was loosened to accept the final calculation.
 
 The final source-pinned replay uses the committed runner and preserves all
-nine recorded source-file digests. Its numerical acceptance, 481 native
+eight recorded source-file digests. Its numerical acceptance, 481 native
 calls, final amounts and derivative error reproduce the preceding
 [independent-derivative run](../../results/m2_common_gibbs/20260920_bse_conditional/metal_absent_independent_derivatives.json).
 Both receipts remain available with their actual execution provenance.
+
+Subsequent validation hardening rejects nonfinite finite-difference energies
+and extrapolations explicitly. This failure-only audit correction and the
+gallery docstring titles do not change the finite native evaluations saved
+in these receipts; their recorded source revision remains unchanged.

@@ -1,4 +1,5 @@
 """Constrained scalar Gibbs minimization on an explicitly declared phase branch.
+=============================================================================
 
 This example consumes the same absolute full-potential callbacks as the legacy
 local root. Numerical acceptance establishes local first-order conditions,
@@ -249,8 +250,19 @@ def minimize_gibbs(
                 delta[index] = step
                 plus = callback(temperature_k, pressure_bar, phase_amounts + delta).gibbs_rt
                 minus = callback(temperature_k, pressure_bar, phase_amounts - delta).gibbs_rt
+                if not np.isfinite(plus) or not np.isfinite(minus):
+                    estimates.append(np.nan)
+                    break
                 estimates.append((plus - minus) / (2 * step))
+            if len(estimates) != 2 or not np.all(np.isfinite(estimates)):
+                derivative_error = np.inf
+                reasons.append("scalar derivative is unavailable at a finite-difference point")
+                continue
             extrapolated = (4 * estimates[1] - estimates[0]) / 3
+            if not np.isfinite(extrapolated):
+                derivative_error = np.inf
+                reasons.append("scalar derivative extrapolation is nonfinite")
+                continue
             cancellation = 20 * np.finfo(float).eps * magnitude / (phase_amounts[index] * fraction)
             if cancellation > 5e-6:
                 reasons.append("scalar derivative of a trace component is numerically unresolved")
