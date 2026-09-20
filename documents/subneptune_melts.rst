@@ -181,3 +181,18 @@ global phase stability or material calibration.
 The :download:`common-G validation notes
 <../examples/metal_silicate/COMMON_GIBBS.md>` give reproduction commands,
 the native result, retained failed attempts, and the pending M2-A/B evidence.
+
+M2 mixed-metal phase selection
+------------------------------
+
+:doc:`examples/metal_silicate/phase_selection` evaluates separate metal-free
+and metal-bearing branches. It searches the mixed alloy composition and
+records a global lower/upper insertion bound when a provider supplies the
+required curvature evidence. Missing phase stability evidence returns an
+unresolved result; an accepted absent phase has exactly zero amount.
+
+The :download:`phase-selection validation notes
+<../examples/metal_silicate/m2_phase_selection.md>` describe the manufactured
+reference, the restricted mathematical alloy domain, and reproduction with
+:doc:`examples/metal_silicate/run_metal_selection`. The actual Ma mixing
+control does not establish a calibrated BSE metal boundary.

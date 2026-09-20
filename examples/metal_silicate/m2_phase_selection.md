@@ -1,0 +1,144 @@
+# Mixed-metal phase selection controls
+
+`phase_selection.py` selects a metal-free or metal-bearing branch of the
+common extensive Gibbs energy. It returns `metal_present`, `metal_absent`,
+or `unresolved`, together with phase amounts and the minimizing incipient
+alloy composition. This example verifies those numerical mechanisms using
+the actual ExoEOS Ma Fe-Si-O-H excess scalar and explicitly synthetic
+standards. **M2-A and M2-B scientific acceptance remain pending.**
+
+The local scalar minimization contract is documented in
+[`common_gibbs.py`](common_gibbs.py). The material equations, calibration
+gaps, BSE input audit and conservative alloy curvature bound are documented
+in ExoEOS's `documents/m2_material_contract.rst` on its accompanying provider
+branch. Neither numerical phase selection nor the restricted alloy domain
+supplies missing H interactions, pressure dependence, liquid stability or
+common experimental reaction standards.
+
+## Interface and evidence
+
+`select_metal_phase(record, element_amounts_mol, temperature_k, pressure_bar,
+callbacks, metal_lower, metal_upper, *, convex_phase_bounds=None, maxiter=1000,
+tolerance=1e-8)` uses the same `PhaseState(mu_rt, gibbs_rt)` callbacks as
+the common-energy solver. Inputs are K, bar and mol of named components;
+`gibbs_rt = G/(RT)` is extensive and has units of mol. The insertion cost
+per component mole divided by RT is dimensionless. ExoEOS receives the
+pressure converted from bar to Pa once in the material callback.
+
+The metal bounds follow the complete component order in the record.
+`convex_phase_bounds` supplies proven global molar curvature lower bounds
+for the exact phase scalars on their declared composition domains. It is
+evidence supplied by the material provider or an analytic model, not an
+invitation to label a numerically sampled Hessian as a global bound.
+
+`minimize_insertion` searches the mixed-alloy composition and records an
+upper bound, lower bound, their gap, the candidate composition and the
+minimum-certification reason. Its certificate uses a supporting plane
+and a globally valid curvature bound. Numerical starts help find favorable
+alloys but cannot certify absence. `select_metal_phase` requires a certified
+minimum within the stated tolerance and nonnegative curvature evidence for
+every included phase before it accepts the complete assemblage. Missing
+host evidence remains `unresolved`, even if the alloy minimum is certified.
+
+The whole-metal zero branch has exactly zero amount and does not normalize
+an empty phase. Its incipient composition comes from the separate insertion
+search. Unsupported provider endpoints and an optimized alloy outside the
+declared domain also remain unresolved. A negative insertion trial can
+reject the metal-free branch without establishing an accepted metal-bearing
+solution. Stability is always relative to the declared phase catalog.
+
+## Four-point reference
+
+[`run_metal_selection.py`](run_metal_selection.py) constructs ideal host
+and gas phases plus the actual Ma alloy mixing model at **2173.15 K and
+1 bar**. The alloy domain is `Fe >= 0.86`, `Si <= 0.08`, `O <= 0.02`,
+`H <= 0.04`, with nonnegative fractions summing to one. ExoEOS's interval
+calculation gives a global curvature lower bound of about **7.95567654**
+after eliminating Fe. The ideal host and gas have analytic nonnegative
+curvature. This domain is a mathematical control, not an experimental
+calibration box or a bound on every possible physical alloy.
+
+The unshifted coexistence reference has 0.2 mol of alloy with atomic
+fractions `(0.945, 0.025, 0.01, 0.02)`. Host and gas standards are set to
+`-ln(x_reference)`, and alloy standards to
+`-ln(x_reference) - ln(gamma_reference)`. These are standards in the Ma
+formal convention, supplied directly without an additional source shift.
+At the reference amounts every full component potential and every
+elemental potential is zero. Convexity then supplies a common supporting
+plane. The record includes all reference amounts, standards and atom
+formulas, allowing independent reconstruction of this manufactured solution.
+
+A common offset is added to all four alloy standard potentials while
+the absolute element budget stays fixed. The saved
+[`reference_20260920.json`](../../results/m2_phase_selection/reference_20260920.json)
+contains:
+
+| Alloy standard offset / RT | Selection | Alloy amount (mol) | Minimum insertion cost / RT |
+| --- | --- | --- | --- |
+| 0 | `metal_present` | 0.2000000000 | approximately 0 |
+| 0.1 | `metal_present` | 0.1943541873 | approximately 0 |
+| 4.62 | `unresolved` | metal-free reference only | -0.00671802590847 |
+| 4.63 | `metal_absent` | exactly 0 | +0.00328197409153 |
+
+The zero-offset solution reproduces the independent component amounts
+to a maximum relative error below `4e-15`. Independent reconstruction of
+all atom budgets has maximum relative error below `1.3e-15` across the
+four points. The insertion lower/upper gaps are below `9e-14`.
+Saved records include both present-alloy and incipient compositions,
+phase energies, fresh chemical potentials, local derivative audits,
+complementarity diagnostics, primitive inputs and source hashes.
+JSON result phase rows always follow the explicit full `phase_order`,
+including an exactly zero metal row on a metal-free branch. They are
+reconstructed from the complete component vector before serialization.
+
+At offsets 4.62 and 4.63 the incipient alloy is approximately
+`(0.9197921548, 0.08, 2.27466689e-6, 2.05570532e-4)`; Si reaches its
+declared upper bound. At 4.62 a negative insertion cost rejects metal
+absence, but the present-branch solve encounters an unavailable endpoint
+potential. Its zero metal amount belongs to the retained metal-free
+reference and is **not** an accepted absence result. The adjacent offsets
+bracket an insertion sign change, not an accepted coexistence boundary.
+These offsets do not represent a physical hydrogen series or a BSE result.
+
+## Reproduction and optional BSE attempt
+
+Use matching provider branches with ExoEOS's solution-energy and interval
+bound helpers, and a Python environment containing the project dependencies.
+Run from the ExoGibbs source root, replacing the checkout path:
+
+```sh
+JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu JAX_ENABLE_X64=1 \
+PYTHONPATH=/path/to/exoeos/src:src \
+python examples/metal_silicate/run_metal_selection.py \
+  --exoeos-checkout /path/to/exoeos \
+  --output /tmp/metal-selection-reference.json
+```
+
+The output must not exist; previous records are preserved. The reference
+does not require MELTS. The JSON includes both checkout commits and hashes
+of every material/solver source used by this path, including uncommitted
+new modules, plus JAX/NumPy/SciPy versions and the numerical acceptance
+summary. Archived machine paths record the executed environment; the
+command above describes reproduction with an independent checkout.
+
+The optional `--bse-inventory` route consumes the stage-1 exported ledger
+through [`build_bse_problem`](run_bse_common_gibbs.py) and requires the pinned
+external MELTS runtime and its Python environment:
+
+```sh
+JAX_PLATFORMS=cpu JAX_PLATFORM_NAME=cpu JAX_ENABLE_X64=1 \
+PYTHONPATH=/path/to/exoeos/src:src \
+python examples/metal_silicate/run_metal_selection.py \
+  --exoeos-checkout /path/to/exoeos \
+  --bse-inventory /path/to/exoeos/examples/m2_material/bse_inventory.json \
+  --runtime /path/to/alphamelts-py-2.3.2-ubuntu_22_04-x86_64 \
+  --python /path/to/melts-env/bin/python \
+  --output /tmp/bse-metal-selection-attempt.json
+```
+
+This route intentionally supplies no global MELTS-liquid curvature evidence.
+It must remain `unresolved`; the runner rejects an accidental stable-phase
+claim. BSE standards retain their documented extrapolation and calibration
+limits, and exact BSE liquid stability has not been established. Native
+backend failure is preserved in the returned diagnostics. This optional
+command is separate from the archived four-point mathematical reference.
