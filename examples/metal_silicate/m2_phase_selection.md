@@ -205,3 +205,14 @@ claim. BSE standards retain their documented extrapolation and calibration
 limits, and exact BSE liquid stability has not been established. Native
 backend failure is preserved in the returned diagnostics. This optional
 command is separate from the archived four-point mathematical reference.
+
+The [2026-09-22 native BSE receipt](../../results/m2_phase_selection/20260922/README.md)
+does obtain an accepted constrained local minimum at 2173.15 K and 1 bar.
+Its alloy amount is approximately `3.6196087923e22 mol`, with atomic fractions
+`(Fe, Si, O, H) = (0.9817036259, 0.0002355798, 0.0170067570, 0.0010540374)`.
+The alloy lies inside the declared domain, so all domain multipliers are
+zero at this particular point. Its certified insertion minimum is consistent
+with zero within `1e-8`. The only phase-selection reason remains
+`Host global stability is not established.` This supports a conditional
+local BSE connection; it establishes neither global liquid stability nor
+calibrated physical metal formation.

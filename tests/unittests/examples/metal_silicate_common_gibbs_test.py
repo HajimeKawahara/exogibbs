@@ -328,7 +328,11 @@ def test_composition_bound_forces_exact_zero_without_evaluating_its_potential():
     record = {"elements": ["A"], "phases": {"metal": ["a", "b"]},
               "component_formulas": {"a": {"A": 1}, "b": {"A": 1}}, "reactions": []}
     problem = LOCAL.build_problem(record, np.ones(1), lambda t, p: np.zeros(2), phases=("metal",))
-    callback = FULL.ideal_phase(lambda t, p: np.zeros(2))
+    ideal = FULL.ideal_phase(lambda t, p: np.zeros(2))
+    def callback(t, p, n):
+        assert n[1] == 0., "A fixed-zero component must never be perturbed."
+        return ideal(t, p, n)
+    callback.energy_value_and_grad_rt = ideal.energy_value_and_grad_rt
     result = ENERGY.minimize_gibbs(problem, 2000., 1., np.ones(1), {"metal": callback},
                                   phase_composition_bounds={"metal": (np.zeros(2), np.array([1., 0.]))})
     assert result.accepted, result.audit_reasons

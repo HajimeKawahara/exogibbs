@@ -216,7 +216,8 @@ def minimize_gibbs(
                 mu[section] = np.asarray(state.mu_rt)
         # Only the search direction uses finite one-sided secants where the
         # true derivative is singular. The scalar energy never uses a floor.
-        for index in np.flatnonzero(~np.isfinite(mu)):
+        mu[~reachable] = 0.
+        for index in np.flatnonzero(reachable & ~np.isfinite(mu)):
             displaced = x.copy()
             step = 1e-8 * max(1., x.sum())
             displaced[index] += step
