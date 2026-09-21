@@ -164,6 +164,19 @@ def artifact_errors(job: Any, directory: Path, *, retrieval_quick: bool) -> list
             if any(case.get("selection", {}).get("metal_amount_mol") != 0.
                    for case in cases if case.get("selection", {}).get("status") == "metal_absent"):
                 errors.append("An accepted absent metal phase must have exactly zero amount.")
+        elif job.name == "metal_standards_audit":
+            report = json.loads((directory / "standards_audit.json").read_text())
+            comparisons = report.get("gas_standard_comparisons", ())
+            if (report.get("numerical_audit_completed") is not True
+                    or [item.get("temperature_K") for item in comparisons] != [2173.15, 2350.]
+                    or any(item.get("independent_reaction_rank") != 4 for item in comparisons)):
+                errors.append("Independent gas-standard audits are incomplete.")
+            native = report.get("native_standard_comparison") or {}
+            if native.get("native_evaluations") != 1 or not native.get("standard_comparisons"):
+                errors.append("Fresh native MELTS standards were not evaluated.")
+            if (report.get("scientific_acceptance") != {"M2_A": "pending", "M2_B": "pending"}
+                    or native.get("cross_phase_standards_accepted") is not False):
+                errors.append("The diagnostic audit cannot establish calibrated common standards.")
         elif job.name == "metal_archive_revalidation":
             report = json.loads((directory / "revalidated.json").read_text())
             for name in ("melts_present", "melts_absent"):

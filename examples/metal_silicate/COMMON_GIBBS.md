@@ -119,6 +119,10 @@ liquid stability, omitted transfer bounds and upper-atmosphere alignment
 remain missing. A numerical result cannot certify M2-A or M2-B. Both gates
 remain pending even if a conditional local energy calculation converges.
 
+The [independent standard and hydrogen-basis audit](m2_standards_audit.md)
+quantifies the disagreement with the M1 gas table and distinguishes reversible
+concentration conversions from an experimental H2 calibration.
+
 ## Recorded native BSE trial
 
 The [2026-09-20 native report](../../results/m2_common_gibbs/20260920_bse_conditional/metal_absent_final_source.json)

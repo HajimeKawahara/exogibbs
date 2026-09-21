@@ -74,7 +74,8 @@ def test_standard_pressure_conversion_and_revised_data_gate():
     liquid_mu0 = H.dissolved_h2_standard_rt(-5.0, np.log(coefficient), standard_pressure_bar=reference_pressure)
     residual = liquid_mu0 + 5.0 + np.log(coefficient * fugacity) - np.log(fugacity / reference_pressure)
     np.testing.assert_allclose(residual, 0, atol=1e-15)
-    assert H.H2_CALIBRATION["revised_candidate"]["status"].startswith("missing_")
+    assert H.H2_CALIBRATION["revised_candidate"]["status"] == "host_specific_calibration_and_mole_basis_unestablished"
+    assert H.H2_CALIBRATION["denominator_status"].startswith("unverified_")
     for invalid in (-1., np.nan, np.inf):
         assert np.isnan(H.hirschmann2012_ln_solubility(invalid))
     with pytest.raises(ValueError, match="standard_pressure"):

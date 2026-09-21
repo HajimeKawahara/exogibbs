@@ -31,6 +31,28 @@ from source import make_source_standard_potentials_rt
 ELEMENTS = ("O", "Mg", "Si", "Fe", "Al", "Ca", "Na", "K", "Ti", "Cr", "P", "H", "He")
 
 
+def source_standards_rt(temperature_k: float, pressure_bar: float = 1.) -> tuple[dict, dict]:
+    """Return the recorded source/Burcat standards and formulas on common R.
+
+    The 2350 K Shomate branch remains fixed. This helper does not align
+    these data with MELTS or the M1 upper atmosphere.
+    """
+    source = load_reference()
+    source_names = [name for values in source["phases"].values() for name in values]
+    # The selected source branch is deliberately fixed and recorded. It is a
+    # formal extrapolation at 2173.15 K, not a newly aligned MELTS standard.
+    standard = np.asarray(make_source_standard_potentials_rt(source, source["cases"][0])(temperature_k, pressure_bar))
+    standard = standard * source["source"]["gas_constant_J_mol_K"] / COMMON_R
+    standards = dict(zip(source_names, standard))
+    formulas = dict(source["component_formulas"])
+    extra_record = json.loads(Path(__file__).with_name("reduced_gas_reference.json").read_text())
+    extra = reduced_gas_standards_rt(temperature_k)
+    for name, value in extra.items():
+        standards[name + "_gas"] = value
+        formulas[name + "_gas"] = extra_record["species"][name]["formula"]
+    return standards, formulas
+
+
 def build_bse_problem(
     inventory_path: Path, exoeos_checkout: Path, runtime: Path, python_executable: str,
     *, temperature_k: float = 2173.15, pressure_bar: float = 1.,
@@ -82,18 +104,8 @@ def build_bse_problem(
                     if all(value == 0 or name in allowed_elements for name, value in zip(evaluator.ELEMENTS, formula))]
     host_names = [evaluator.COMPONENTS[i] for i in host_indices]
     source = load_reference()
-    source_names = [name for values in source["phases"].values() for name in values]
-    # The selected source branch is deliberately fixed and recorded. It is a
-    # formal extrapolation at 2173.15 K, not a newly aligned MELTS standard.
-    standard = np.asarray(make_source_standard_potentials_rt(source, source["cases"][0])(temperature_k, pressure_bar))
-    standard = standard * source["source"]["gas_constant_J_mol_K"] / COMMON_R
-    standards = dict(zip(source_names, standard))
-    formulas = dict(source["component_formulas"])
-    extra_record = json.loads(Path(__file__).with_name("reduced_gas_reference.json").read_text())
+    standards, formulas = source_standards_rt(temperature_k, pressure_bar)
     extra = reduced_gas_standards_rt(temperature_k)
-    for name, value in extra.items():
-        standards[name + "_gas"] = value
-        formulas[name + "_gas"] = extra_record["species"][name]["formula"]
     gas_names = [name for name in source["phases"]["gas"] + [n + "_gas" for n in extra]
                  if set(formulas[name]) <= allowed_elements]
     metal_names = [name for name in source["phases"]["metal"] if set(formulas[name]) <= allowed_elements]

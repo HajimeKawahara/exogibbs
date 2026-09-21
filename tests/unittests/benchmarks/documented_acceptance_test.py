@@ -92,10 +92,36 @@ def test_japanese_block_extraction_preserves_actual_code(tmp_path):
 def test_native_jobs_require_all_external_resources():
     jobs = {job.name: job for job in run_all.build_jobs()}
     required = {"exoeos", "exoeos_checkout", "melts_runtime", "melts_python"}
-    for name in ("metal_common_gibbs", "metal_melts_present", "metal_melts_absent", "metal_archive_revalidation"):
+    for name in ("metal_common_gibbs", "metal_melts_present", "metal_melts_absent", "metal_archive_revalidation", "metal_standards_audit"):
         assert required <= set(jobs[name].resources)
         assert run_all.resource_errors(jobs[name], {})
     assert "bse_inventory" in jobs["metal_common_gibbs"].resources
+    assert "bse_inventory" in jobs["metal_standards_audit"].resources
+
+
+@pytest.mark.parametrize("failure", ["temperature", "reaction", "native", "calibration"])
+def test_standards_diagnostic_requires_fresh_evidence_and_retains_scientific_gates(tmp_path, failure):
+    job = run_all.Job("metal_standards_audit", "m2_standards_audit.py")
+    report = {"numerical_audit_completed": True,
+              "gas_standard_comparisons": [{"temperature_K": value, "independent_reaction_rank": 4}
+                                           for value in (2173.15, 2350.)],
+              "native_standard_comparison": {"native_evaluations": 1,
+                                              "standard_comparisons": [{"native_mu0_rt": -1.}],
+                                              "cross_phase_standards_accepted": False},
+              "scientific_acceptance": {"M2_A": "pending", "M2_B": "pending"}}
+    path = tmp_path / "standards_audit.json"
+    path.write_text(json.dumps(report))
+    assert not acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
+    if failure == "temperature":
+        report["gas_standard_comparisons"].pop()
+    elif failure == "reaction":
+        report["gas_standard_comparisons"][0]["independent_reaction_rank"] = 3
+    elif failure == "native":
+        report["native_standard_comparison"]["native_evaluations"] = 0
+    else:
+        report["scientific_acceptance"]["M2_A"] = "accepted"
+    path.write_text(json.dumps(report))
+    assert acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
 
 
 def test_quick_or_partial_run_cannot_claim_full_acceptance(tmp_path, monkeypatch):
