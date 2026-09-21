@@ -41,6 +41,26 @@ def test_archive_balance_only_is_not_fresh_native_acceptance(tmp_path):
     assert not acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
 
 
+@pytest.mark.parametrize("failure", ["summary", "missing_case", "unresolved", "metal_floor"])
+def test_metal_reference_successful_exit_cannot_hide_failed_controls(tmp_path, failure):
+    job = run_all.Job("metal_phase_selection", "run_metal_selection.py")
+    source = run_all.ROOT / "results/m2_phase_selection/reference_20260920.json"
+    report = json.loads(source.read_text())
+    path = tmp_path / "reference.json"
+    path.write_text(json.dumps(report))
+    assert not acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
+    if failure == "summary":
+        report["numerical_reference_acceptance"]["unshifted_coexistence_recovered"] = False
+    elif failure == "missing_case":
+        report["cases"].pop(1)
+    elif failure == "unresolved":
+        report["cases"][2]["selection"]["status"] = "metal_absent"
+    else:
+        report["cases"][3]["selection"]["metal_amount_mol"] = 1e-30
+    path.write_text(json.dumps(report))
+    assert acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
+
+
 def test_coverage_detects_new_public_and_unavailable_japanese_commands(tmp_path):
     example = tmp_path / "examples/new.py"
     example.parent.mkdir()

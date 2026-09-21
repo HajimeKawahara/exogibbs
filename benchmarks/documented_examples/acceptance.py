@@ -148,6 +148,22 @@ def artifact_errors(job: Any, directory: Path, *, retrieval_quick: bool) -> list
                     or not np.all(np.isfinite(samples[name])) for name in samples.files
                 ):
                     errors.append("Posterior samples are incomplete or nonfinite.")
+        elif job.name == "metal_phase_selection":
+            report = json.loads((directory / "reference.json").read_text())
+            accepted = report.get("numerical_reference_acceptance", {})
+            if any(accepted.get(name) is not True for name in (
+                "unshifted_coexistence_recovered", "both_metal_presence_and_absence_certified",
+            )):
+                errors.append("Mixed-metal numerical reference acceptance did not pass.")
+            cases = report.get("cases", ())
+            actual = [(case.get("metal_standard_shift_rt"), case.get("selection", {}).get("status"))
+                      for case in cases]
+            if actual != [(0., "metal_present"), (.1, "metal_present"),
+                          (4.62, "unresolved"), (4.63, "metal_absent")]:
+                errors.append("The documented four-point metal-selection reference is incomplete or changed.")
+            if any(case.get("selection", {}).get("metal_amount_mol") != 0.
+                   for case in cases if case.get("selection", {}).get("status") == "metal_absent"):
+                errors.append("An accepted absent metal phase must have exactly zero amount.")
         elif job.name == "metal_archive_revalidation":
             report = json.loads((directory / "revalidated.json").read_text())
             for name in ("melts_present", "melts_absent"):
