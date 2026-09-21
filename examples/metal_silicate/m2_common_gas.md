@@ -72,3 +72,11 @@ amounts, independently audited parcels, contact residuals, and preserved
 failure diagnostics. `metal_m2_contact` registers this full native run in the
 documented-example harness; a successful exit without the evidence fails
 artifact acceptance.
+
+The [2026-09-22 native validation](../../results/m2_contact/20260922/README.md)
+passes the same-catalog contact at `3.91e-14` maximum log partial-pressure
+residual. Expanding to 35 gases gives `0.01294`; including the 26-entry
+retained-condensate catalog gives `1.29279`. Only the pure Fe condensate is
+present at this point. All three local parcel audits pass.
+The archived clean source/provider revisions, full component amounts,
+registered-job evidence, and earlier iteration-limit failure are retained.
