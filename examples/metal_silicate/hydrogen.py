@@ -34,7 +34,8 @@ MODEL_ID = "source_host_ma_fe_si_o_h_hirschmann2012_pressure_control_v1"
 H2_CALIBRATION = {
     "model_id": "hirschmann2012_seo2024_mole_fraction_sensitivity",
     "equation": "x_H2 = (f_H2 / bar) exp(-11.403 - 0.76 P_melt/GPa)",
-    "concentration_basis": "H2 molecular mole fraction in the full liquid component basis",
+    "concentration_basis": "Model-assumed H2 molecular mole fraction in the full liquid endmember basis; experimental denominator conversion is unverified",
+    "denominator_status": "unverified_experimental_to_MELTS_endmember_conversion",
     "fugacity_basis": "H2 fugacity in bar, not total fluid pressure",
     "pressure_basis": "total melt pressure in GPa; pressure correction occurs once in mu0_H2",
     "experimental_doi": "10.1016/j.epsl.2012.06.031",
@@ -43,9 +44,12 @@ H2_CALIBRATION = {
     "calibration_total_pressure_gpa": [0.7, 3.0],
     "revised_candidate": {
         "doi": "10.1007/s00410-025-02272-y",
-        "status": "missing_tabulated_data_and_host_specific_fugacity_calibration",
+        "status": "host_specific_calibration_and_mole_basis_unestablished",
+        "open_tables_url": "https://epub.uni-bayreuth.de/id/eprint/8940/1/s00410-025-02272-y.pdf",
+        "reported_concentration": "H2 ppm by weight (micrograms per gram of glass); Table 2",
+        "reported_host_basis": "Fe-free experimental compositions; not a BSE calibration",
         "direct_hosts": "Fe-free synthetic basalt and andesite; direct experiments through 1673.15 K",
-        "policy": "No universal factor-of-ten rescaling; old/new empirical comparison remains unavailable.",
+        "policy": "Published data are not adopted as a BSE calibration; no universal factor-of-ten rescaling or joint valid domain is established.",
     },
 }
 
