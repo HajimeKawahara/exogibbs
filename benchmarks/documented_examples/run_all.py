@@ -169,6 +169,13 @@ def build_jobs() -> tuple[Job, ...]:
         native_resources + ("bse_inventory",), ("standards_audit.json",),
     ))
     jobs.append(Job(
+        "metal_m2_contact", metal + "run_m2_contact.py",
+        ("--inventory", "{bse_inventory}", "--exoeos-checkout", "{exoeos_checkout}",
+         "--runtime", "{melts_runtime}", "--python", "{melts_python}",
+         "--output", "{output}/contact.json"),
+        native_resources + ("bse_inventory",), ("contact.json",),
+    ))
+    jobs.append(Job(
         "metal_archive_revalidation", metal + "revalidate_archive.py",
         ("--archive", str(ROOT / "results/subneptune_taxonomy/20260911"),
          "--exoeos-checkout", "{exoeos_checkout}", "--runtime", "{melts_runtime}",

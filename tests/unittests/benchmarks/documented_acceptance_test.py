@@ -92,11 +92,38 @@ def test_japanese_block_extraction_preserves_actual_code(tmp_path):
 def test_native_jobs_require_all_external_resources():
     jobs = {job.name: job for job in run_all.build_jobs()}
     required = {"exoeos", "exoeos_checkout", "melts_runtime", "melts_python"}
-    for name in ("metal_common_gibbs", "metal_melts_present", "metal_melts_absent", "metal_archive_revalidation", "metal_standards_audit"):
+    for name in ("metal_common_gibbs", "metal_melts_present", "metal_melts_absent", "metal_archive_revalidation", "metal_standards_audit", "metal_m2_contact"):
         assert required <= set(jobs[name].resources)
         assert run_all.resource_errors(jobs[name], {})
     assert "bse_inventory" in jobs["metal_common_gibbs"].resources
     assert "bse_inventory" in jobs["metal_standards_audit"].resources
+    assert "bse_inventory" in jobs["metal_m2_contact"].resources
+
+
+@pytest.mark.parametrize("failure", ["native", "matched", "catalog", "calibration"])
+def test_contact_requires_fresh_native_matched_control_and_all_catalog_diagnostics(tmp_path, failure):
+    job = run_all.Job("metal_m2_contact", "run_m2_contact.py")
+    report = {"numerical_diagnostics_completed": True, "shared_contact_accepted": True,
+              "source_result": {"accepted": True},
+              "source_metadata": {"numerical_execution": {"native_melt_calls": 2}},
+              "common_standards": {"accepted": True}, "source_gas_audit": {"accepted": True},
+              "catalogs": [{"catalog": name, "parcel": {"accepted": True},
+                            "contact": {"accepted": name == "shared_gas"}}
+                           for name in ("shared_gas", "expanded_gas", "expanded_condensed")],
+              "scientific_acceptance": {"M2_A": "pending", "M2_B": "pending", "M2_C": "pending"}}
+    path = tmp_path / "contact.json"
+    path.write_text(json.dumps(report))
+    assert not acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
+    if failure == "native":
+        report["source_metadata"]["numerical_execution"]["native_melt_calls"] = 0
+    elif failure == "matched":
+        report["catalogs"][0]["contact"]["accepted"] = False
+    elif failure == "catalog":
+        report["catalogs"].pop()
+    else:
+        report["scientific_acceptance"]["M2_A"] = "accepted"
+    path.write_text(json.dumps(report))
+    assert acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
 
 
 @pytest.mark.parametrize("failure", ["temperature", "reaction", "native", "calibration"])

@@ -164,6 +164,22 @@ def artifact_errors(job: Any, directory: Path, *, retrieval_quick: bool) -> list
             if any(case.get("selection", {}).get("metal_amount_mol") != 0.
                    for case in cases if case.get("selection", {}).get("status") == "metal_absent"):
                 errors.append("An accepted absent metal phase must have exactly zero amount.")
+        elif job.name == "metal_m2_contact":
+            report = json.loads((directory / "contact.json").read_text())
+            if (report.get("numerical_diagnostics_completed") is not True
+                    or report.get("shared_contact_accepted") is not True
+                    or report.get("source_result", {}).get("accepted") is not True
+                    or report.get("source_metadata", {}).get("numerical_execution", {}).get("native_melt_calls", 0) < 1):
+                errors.append("Fresh native common-gas contact control did not pass.")
+            catalogs = report.get("catalogs", ())
+            if ([item.get("catalog") for item in catalogs] != ["shared_gas", "expanded_gas", "expanded_condensed"]
+                    or any(item.get("parcel", {}).get("accepted") is not True for item in catalogs)
+                    or report.get("common_standards", {}).get("accepted") is not True
+                    or report.get("source_gas_audit", {}).get("accepted") is not True
+                    or not catalogs or catalogs[0].get("contact", {}).get("accepted") is not True):
+                errors.append("Matched-gas acceptance and expanded-catalog diagnostics are incomplete.")
+            if report.get("scientific_acceptance") != {"M2_A": "pending", "M2_B": "pending", "M2_C": "pending"}:
+                errors.append("The contact control does not establish material or global acceptance.")
         elif job.name == "metal_standards_audit":
             report = json.loads((directory / "standards_audit.json").read_text())
             comparisons = report.get("gas_standard_comparisons", ())
