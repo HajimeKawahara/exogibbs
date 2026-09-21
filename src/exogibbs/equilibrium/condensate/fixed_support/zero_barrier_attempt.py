@@ -39,3 +39,18 @@ class FixedSupportAttempt:
     amount_scales: np.ndarray | None = None
     phase_coordinates: np.ndarray | None = None
     lower_bound_support_indices: tuple[int, ...] = ()
+
+
+@dataclass(frozen=True)
+class NumericalRestart:
+    """Initial values and scaling for a specified ordered support.
+
+    A restart cannot infer another support from diagnostics. If a preceding
+    controller dropped a phase, its returned support must be supplied explicitly.
+    """
+
+    initializer: str
+    variable_scaling: str
+    restart_from_terminal_state: bool
+    support_indices: tuple[int, ...]
+    state: FixedSupportState

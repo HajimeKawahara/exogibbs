@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import warnings
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from fractions import Fraction
 from typing import Any, Sequence
 
@@ -12,11 +12,13 @@ from scipy.optimize import OptimizeResult, least_squares, linprog, minimize
 from scipy.special import logsumexp
 
 from exogibbs.equilibrium.condensate.fixed_support.zero_barrier_contracts import (
+    SupportInitializationStage,
     ZeroBarrierAudit,
 )
 from exogibbs.equilibrium.condensate.fixed_support.zero_barrier_attempt import (
     FixedSupportAttempt,
     FixedSupportState,
+    NumericalRestart,
 )
 
 from exogibbs.equilibrium.condensate.support_geometry import (
@@ -4950,7 +4952,84 @@ def _solve_dense_support_once(
     )
 
 
+@dataclass(frozen=True)
+class _SupportInitializationRetry:
+    """Request another support proposal stage using the original input state."""
+
+    next_stage: SupportInitializationStage
+    dual_report: dict[str, Any]
+    homotopy_report: dict[str, Any]
+    fallback_report: dict[str, Any]
+
+
+def _record_support_initialization_retry(
+    result: ZeroBarrierPolishResult,
+    retry: _SupportInitializationRetry,
+) -> ZeroBarrierPolishResult:
+    """Preserve nested diagnostic history without routing through that history."""
+
+    report = dict(result.report)
+    initializer_diagnostics = {
+        "schema": "exogibbs_zero_barrier_retry_initializer_diagnostics_v1",
+        "zero_barrier_dual_support_oracle": report.get(
+            "zero_barrier_dual_support_oracle"
+        ),
+        "finite_barrier_homotopy_initializer": report.get(
+            "finite_barrier_homotopy_initializer"
+        ),
+        "support_initializer_postselection_fallback": report.get(
+            "support_initializer_postselection_fallback"
+        ),
+    }
+    report["zero_barrier_dual_support_oracle"] = retry.dual_report
+    report["finite_barrier_homotopy_initializer"] = retry.homotopy_report
+    report["support_initializer_postselection_fallback"] = {
+        **retry.fallback_report,
+        "retry_accepted": bool(result.accepted),
+        "retry_support_indices": tuple(result.support_indices),
+        "retry_selected_numerical_formulation": report.get(
+            "selected_numerical_formulation"
+        ),
+        "retry_initializer_diagnostics": initializer_diagnostics,
+    }
+    return replace(result, report=report)
+
+
 def _polish_zero_barrier_support_once(
+    *,
+    use_zero_barrier_dual: bool = True,
+    use_finite_barrier_homotopy: bool = True,
+    **kwargs: Any,
+) -> ZeroBarrierPolishResult:
+    """Run the support-initializer stages without recursive solver re-entry.
+
+    The two legacy flags are interpreted only at this compatibility boundary.
+    Failed dual proposals advance to homotopy, failed homotopy proposals to the
+    original state. All stages share the original inputs and evaluation budget.
+    Coordinate restarts and support-drop controllers run inside each stage.
+    """
+
+    stage = {
+        (True, True): SupportInitializationStage.DUAL_THEN_HOMOTOPY,
+        (True, False): SupportInitializationStage.DUAL_ONLY,
+        (False, True): SupportInitializationStage.HOMOTOPY,
+        (False, False): SupportInitializationStage.ORIGINAL,
+    }[(bool(use_zero_barrier_dual), bool(use_finite_barrier_homotopy))]
+    retries: list[_SupportInitializationRetry] = []
+    for _stage_index in range(3):
+        outcome = _run_zero_barrier_support_stage(
+            initialization_stage=stage, **kwargs
+        )
+        if isinstance(outcome, ZeroBarrierPolishResult):
+            for retry in reversed(retries):
+                outcome = _record_support_initialization_retry(outcome, retry)
+            return outcome
+        retries.append(outcome)
+        stage = outcome.next_stage
+    raise RuntimeError("Zero-barrier support initialization exceeded its stages.")
+
+
+def _run_zero_barrier_support_stage(
     *,
     gas_formula_matrix: Any,
     condensate_formula_matrix_full: Any,
@@ -4971,9 +5050,10 @@ def _polish_zero_barrier_support_once(
     max_function_evaluations: int = 400,
     function_evaluation_budget: _FunctionEvaluationBudget | None = None,
     reduce_initial_support: bool = True,
-    use_zero_barrier_dual: bool = True,
-    use_finite_barrier_homotopy: bool = True,
-) -> ZeroBarrierPolishResult:
+    initialization_stage: SupportInitializationStage = (
+        SupportInitializationStage.DUAL_THEN_HOMOTOPY
+    ),
+) -> ZeroBarrierPolishResult | _SupportInitializationRetry:
     """Run one exact zero-barrier solve/drop and reduced-support search.
 
     The primary solve analytically eliminates gas log amounts and solves for
@@ -5081,7 +5161,7 @@ def _polish_zero_barrier_support_once(
         stationarity_tolerance=stationarity_tolerance,
         support_closure_tolerance=support_closure_tolerance,
         max_function_evaluations=max_function_evaluations,
-        enabled=bool(reduce_initial_support and use_zero_barrier_dual),
+        enabled=bool(reduce_initial_support and initialization_stage.uses_dual),
         function_evaluation_budget=function_evaluation_budget,
     )
     dual_support_report = dict(dual_support["report"])
@@ -5100,7 +5180,7 @@ def _polish_zero_barrier_support_once(
         max_function_evaluations=max_function_evaluations,
         enabled=bool(
             reduce_initial_support
-            and use_finite_barrier_homotopy
+            and initialization_stage.uses_homotopy
             and not dual_support["applied"]
         ),
         function_evaluation_budget=function_evaluation_budget,
@@ -5556,31 +5636,30 @@ def _polish_zero_barrier_support_once(
             )
 
     if not reduced_primary_selected:
-        normalized_attempt_queue: list[dict[str, Any]] = []
+        normalized_attempt_queue: list[NumericalRestart] = []
         if use_regularized_reduced_primary:
             normalized_attempt_queue.append(
-                {
-                    "initializer": "capacity_regularized",
-                    "variable_scaling": "initializer_relative",
-                    "restart_from_terminal_state": False,
-                    "gas_log_amounts": q_initial,
-                    "total_gas_log_amount": qtot_initial,
-                    "element_potential": lambda_initial,
-                    "condensate_amounts": reduced_full_m,
-                    "support_indices": reduced_support,
-                }
+                NumericalRestart(
+                    initializer="capacity_regularized",
+                    variable_scaling="initializer_relative",
+                    restart_from_terminal_state=False,
+                    support_indices=reduced_support,
+                    state=FixedSupportState(
+                        q_initial, reduced_full_m, qtot_initial, lambda_initial,
+                    ),
+                )
             )
         normalized_attempt_queue.append(
-            {
-                "initializer": "unregularized",
-                "variable_scaling": "initializer_relative",
-                "restart_from_terminal_state": False,
-                "gas_log_amounts": reduced_q_initial,
-                "total_gas_log_amount": reduced_qtot_initial,
-                "element_potential": reduced_lambda_initial,
-                "condensate_amounts": reduced_full_m,
-                "support_indices": reduced_support,
-            }
+            NumericalRestart(
+                initializer="unregularized",
+                variable_scaling="initializer_relative",
+                restart_from_terminal_state=False,
+                support_indices=reduced_support,
+                state=FixedSupportState(
+                    reduced_q_initial, reduced_full_m,
+                    reduced_qtot_initial, reduced_lambda_initial,
+                ),
+            )
         )
         discarded_solve_reports = []
         initializer_attempts = []
@@ -5618,8 +5697,8 @@ def _polish_zero_barrier_support_once(
         while queue_index < len(normalized_attempt_queue):
             attempt_spec = normalized_attempt_queue[queue_index]
             queue_index += 1
-            initializer_name = str(attempt_spec["initializer"])
-            variable_scaling = str(attempt_spec["variable_scaling"])
+            initializer_name = str(attempt_spec.initializer)
+            variable_scaling = str(attempt_spec.variable_scaling)
             attempt_evaluation_budget = function_evaluation_budget
             regularized_child_budget = None
             if initializer_name == "capacity_regularized":
@@ -5646,19 +5725,11 @@ def _polish_zero_barrier_support_once(
                         target_inventory=target,
                         gas_standard_source=gamma,
                         condensate_standard_source_full=hcond_full,
-                        gas_log_amounts_init=attempt_spec[
-                            "gas_log_amounts"
-                        ],
-                        condensate_amounts_init=attempt_spec[
-                            "condensate_amounts"
-                        ],
-                        total_gas_log_amount_init=attempt_spec[
-                            "total_gas_log_amount"
-                        ],
-                        element_potential_init=attempt_spec[
-                            "element_potential"
-                        ],
-                        support_indices=attempt_spec["support_indices"],
+                        gas_log_amounts_init=attempt_spec.state.gas_log_amounts,
+                        condensate_amounts_init=attempt_spec.state.condensate_amounts,
+                        total_gas_log_amount_init=attempt_spec.state.total_gas_log_amount,
+                        element_potential_init=attempt_spec.state.element_potential,
+                        support_indices=attempt_spec.support_indices,
                         condensate_valid_mask=valid_mask,
                         budget_scale=budget_scale,
                         stationarity_tolerance=stationarity_tolerance,
@@ -5689,7 +5760,7 @@ def _polish_zero_barrier_support_once(
             attempt_report["initializer"] = initializer_name
             attempt_report["variable_scaling"] = variable_scaling
             attempt_report["restart_from_terminal_state"] = bool(
-                attempt_spec["restart_from_terminal_state"]
+                attempt_spec.restart_from_terminal_state
             )
             attempt_candidate = normalized_primary["candidate"]
             local_kkt_passed = candidate_has_local_kkt(attempt_candidate)
@@ -5713,29 +5784,31 @@ def _polish_zero_barrier_support_once(
                 if unit_restart_eligible and attempt_candidate is not None:
                     normalized_attempt_queue.insert(
                         queue_index,
-                        {
-                            "initializer": "capacity_regularized",
-                            "variable_scaling": "dimensionless_unit",
-                            "restart_from_terminal_state": True,
-                            "gas_log_amounts": np.asarray(
-                                attempt_candidate["gas_log_amounts"],
-                                dtype=np.float64,
-                            ).copy(),
-                            "total_gas_log_amount": float(
-                                attempt_candidate["total_gas_log_amount"]
-                            ),
-                            "element_potential": np.asarray(
-                                attempt_candidate["element_potential"],
-                                dtype=np.float64,
-                            ).copy(),
-                            "condensate_amounts": np.asarray(
-                                attempt_candidate["condensate_amounts"],
-                                dtype=np.float64,
-                            ).copy(),
-                            "support_indices": tuple(
+                        NumericalRestart(
+                            initializer="capacity_regularized",
+                            variable_scaling="dimensionless_unit",
+                            restart_from_terminal_state=True,
+                            support_indices=tuple(
                                 attempt_candidate["support_indices"]
                             ),
-                        },
+                            state=FixedSupportState(
+                                gas_log_amounts=np.asarray(
+                                    attempt_candidate["gas_log_amounts"],
+                                    dtype=np.float64,
+                                ).copy(),
+                                total_gas_log_amount=float(
+                                    attempt_candidate["total_gas_log_amount"]
+                                ),
+                                element_potential=np.asarray(
+                                    attempt_candidate["element_potential"],
+                                    dtype=np.float64,
+                                ).copy(),
+                                condensate_amounts=np.asarray(
+                                    attempt_candidate["condensate_amounts"],
+                                    dtype=np.float64,
+                                ).copy(),
+                            ),
+                        ),
                     )
             self_reopening_drops = (
                 _self_reopening_dropped_support_indices(
@@ -5761,7 +5834,7 @@ def _polish_zero_barrier_support_once(
                 "initializer": initializer_name,
                 "variable_scaling": variable_scaling,
                 "restart_from_terminal_state": bool(
-                    attempt_spec["restart_from_terminal_state"]
+                    attempt_spec.restart_from_terminal_state
                 ),
                 "function_evaluations": sum(
                     int(attempt.get("function_evaluations", 0))
@@ -5811,7 +5884,7 @@ def _polish_zero_barrier_support_once(
                 normalized_initializer_portfolio_report[
                     "regularized_attempted"
                 ] = True
-                if attempt_spec["restart_from_terminal_state"]:
+                if attempt_spec.restart_from_terminal_state:
                     normalized_initializer_portfolio_report[
                         "dimensionless_unit_restart_attempted"
                     ] = True
@@ -6176,97 +6249,42 @@ def _polish_zero_barrier_support_once(
             if function_evaluation_budget is None
             else function_evaluation_budget.remaining
         )
-        retry_result = _polish_zero_barrier_support_once(
-            gas_formula_matrix=gas_formula_matrix,
-            condensate_formula_matrix_full=(
-                condensate_formula_matrix_full
+        return _SupportInitializationRetry(
+            next_stage=(
+                SupportInitializationStage.ORIGINAL
+                if finite_homotopy["applied"]
+                else SupportInitializationStage.HOMOTOPY
             ),
-            target_inventory=target_inventory,
-            gas_standard_source=gas_standard_source,
-            condensate_standard_source_full=(
-                condensate_standard_source_full
-            ),
-            gas_log_amounts_init=gas_log_amounts_init,
-            condensate_amounts_init=condensate_amounts_init,
-            total_gas_log_amount_init=total_gas_log_amount_init,
-            element_potential_init=element_potential_init,
-            support_indices=support_indices,
-            condensate_valid_mask=condensate_valid_mask,
-            stationarity_tolerance=stationarity_tolerance,
-            budget_tolerance=budget_tolerance,
-            total_density_tolerance=total_density_tolerance,
-            support_closure_tolerance=support_closure_tolerance,
-            budget_relative_floor=budget_relative_floor,
-            max_function_evaluations=max_function_evaluations,
-            function_evaluation_budget=function_evaluation_budget,
-            reduce_initial_support=reduce_initial_support,
-            use_zero_barrier_dual=False,
-            use_finite_barrier_homotopy=not finite_homotopy["applied"],
-        )
-        retry_report = dict(retry_result.report)
-        retry_initializer_diagnostics = {
-            "schema": (
-                "exogibbs_zero_barrier_retry_initializer_diagnostics_v1"
-            ),
-            "zero_barrier_dual_support_oracle": retry_report.get(
-                "zero_barrier_dual_support_oracle"
-            ),
-            "finite_barrier_homotopy_initializer": retry_report.get(
-                "finite_barrier_homotopy_initializer"
-            ),
-            "support_initializer_postselection_fallback": retry_report.get(
-                "support_initializer_postselection_fallback"
-            ),
-        }
-        retry_report["zero_barrier_dual_support_oracle"] = (
-            dual_support_report
-        )
-        retry_report["finite_barrier_homotopy_initializer"] = (
-            finite_homotopy_report
-        )
-        retry_report["support_initializer_postselection_fallback"] = {
-            "schema": (
-                "exogibbs_zero_barrier_support_initializer_fallback_v1"
-            ),
-            "attempted": True,
-            "reason": "selected_support_local_root_failed",
-            "selected_support_indices": reduced_support,
-            "selected_support_source": (
-                "zero_barrier_dual_support"
-                if dual_support["applied"]
-                else "finite_barrier_homotopy"
-            ),
-            "remaining_function_evaluations_before_retry": (
-                remaining_before_retry
-            ),
-            "selected_support_normalized_solve": (
-                normalized_primary_report
-            ),
-            "selected_support_normalized_initializer_portfolio": (
-                normalized_initializer_portfolio_report
-            ),
-            "selected_support_alternative_basic_support_portfolio": (
-                alternative_basic_support_report
-            ),
-            "selected_support_structural_zero_solve": (
-                structural_log_rescue_report
-            ),
-            "retry_accepted": bool(retry_result.accepted),
-            "retry_support_indices": tuple(retry_result.support_indices),
-            "retry_selected_numerical_formulation": retry_report.get(
-                "selected_numerical_formulation"
-            ),
-            "retry_initializer_diagnostics": retry_initializer_diagnostics,
-        }
-        return ZeroBarrierPolishResult(
-            accepted=retry_result.accepted,
-            gas_log_amounts=retry_result.gas_log_amounts,
-            condensate_amounts=retry_result.condensate_amounts,
-            total_gas_log_amount=retry_result.total_gas_log_amount,
-            element_potential=retry_result.element_potential,
-            support_indices=retry_result.support_indices,
-            report=retry_report,
-            audit=retry_result.audit,
+            dual_report=dual_support_report,
+            homotopy_report=finite_homotopy_report,
+            fallback_report={
+                "schema": (
+                    "exogibbs_zero_barrier_support_initializer_fallback_v1"
+                ),
+                "attempted": True,
+                "reason": "selected_support_local_root_failed",
+                "selected_support_indices": reduced_support,
+                "selected_support_source": (
+                    "zero_barrier_dual_support"
+                    if dual_support["applied"]
+                    else "finite_barrier_homotopy"
+                ),
+                "remaining_function_evaluations_before_retry": (
+                    remaining_before_retry
+                ),
+                "selected_support_normalized_solve": (
+                    normalized_primary_report
+                ),
+                "selected_support_normalized_initializer_portfolio": (
+                    normalized_initializer_portfolio_report
+                ),
+                "selected_support_alternative_basic_support_portfolio": (
+                    alternative_basic_support_report
+                ),
+                "selected_support_structural_zero_solve": (
+                    structural_log_rescue_report
+                ),
+            },
         )
 
     if reduced_primary_selected and primary_candidate is not None:
