@@ -3,9 +3,27 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any
 
 import numpy as np
+
+
+class SupportInitializationStage(Enum):
+    """Support proposal stages, separate from numerical coordinate retries."""
+
+    DUAL_THEN_HOMOTOPY = "dual_then_homotopy"
+    DUAL_ONLY = "dual_only"
+    HOMOTOPY = "homotopy"
+    ORIGINAL = "original"
+
+    @property
+    def uses_dual(self) -> bool:
+        return self in (self.DUAL_THEN_HOMOTOPY, self.DUAL_ONLY)
+
+    @property
+    def uses_homotopy(self) -> bool:
+        return self in (self.DUAL_THEN_HOMOTOPY, self.HOMOTOPY)
 
 
 @dataclass(frozen=True)

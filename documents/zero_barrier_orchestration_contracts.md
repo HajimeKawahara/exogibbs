@@ -47,11 +47,13 @@ solver outcomes. Layer assessment decides whether an outcome is eligible for the
 existing closure or refinement path. The handoff carries the selected state and
 support without declaring physical acceptance.
 
-Finite-barrier initialization permits a nonnegative condensate state under its
-existing KKT and convergence rules. The terminal zero-barrier result requires
-strictly positive active amounts and all-phase closure. Their budgets and
-acceptance decisions remain separate. Accepted internal results still undergo
-the existing caller-gauge audit before public result construction.
+Finite-barrier solves represent active amounts by logarithms and keep them
+positive; inactive entries of the full vector are zero. Exact linear-coordinate
+attempts may return signed amounts, but an accepted zero-barrier result requires
+strictly positive active amounts and all-phase closure. Finite-barrier initializer
+eligibility, evaluation budgets, and exact acceptance remain separate. Accepted
+internal results still undergo the existing caller-gauge audit before public
+result construction.
 
 ## Compatibility and validation
 

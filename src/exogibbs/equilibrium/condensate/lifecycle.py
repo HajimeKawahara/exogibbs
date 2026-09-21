@@ -81,6 +81,9 @@ if TYPE_CHECKING:
     from exogibbs.equilibrium.condensate.fixed_support.zero_barrier import (
         ZeroBarrierPolishResult,
     )
+    from exogibbs.equilibrium.condensate.policy import (
+        FixedSupportV2ProductionPolicy,
+    )
 
 
 _ExperimentalProfileFixedSupportBatchPlan = (
@@ -107,6 +110,99 @@ class _ExactRefinement:
     result: ZeroBarrierPolishResult
     caller_audit: Mapping[str, Any] | None
     validation: PhysicalKKTValidation
+
+
+@dataclass(frozen=True)
+class _FiniteBarrierAssessment:
+    """Finite-barrier decisions; none certifies physical acceptance."""
+
+    terminal_status: int
+    fixed_support_converged: bool
+    support_closed: bool
+    independent_kkt: Mapping[str, float]
+    independent_kkt_passed: bool
+    zero_barrier_initializer_kkt_passed: bool
+    zero_barrier_initializer_gas_stationarity_tolerance: float
+    final_state_values_finite: bool
+
+    @property
+    def fixed_support_accepted(self) -> bool:
+        return bool(
+            self.fixed_support_converged
+            and self.support_closed
+            and self.independent_kkt_passed
+            and self.final_state_values_finite
+        )
+
+    @property
+    def terminal_initializer_eligible(self) -> bool:
+        """Authorize exact refinement even with finite-barrier phase bias."""
+
+        return bool(
+            self.support_closed
+            and self.zero_barrier_initializer_kkt_passed
+            and self.final_state_values_finite
+        )
+
+    @property
+    def early_initializer_eligible(self) -> bool:
+        return bool(
+            self.fixed_support_converged
+            and self.independent_kkt_passed
+            and self.final_state_values_finite
+            and not self.support_closed
+        )
+
+    @property
+    def terminal_outcome(self) -> str | None:
+        """Preserve finite-barrier stop precedence before support expansion."""
+
+        if not self.fixed_support_converged:
+            return "fixed_support_failed"
+        if not self.independent_kkt_passed:
+            return "independent_kkt_failed"
+        if not self.final_state_values_finite:
+            return "nonfinite_final_state"
+        if self.support_closed:
+            return "closed"
+        return None
+
+    def diagnostics(self) -> dict[str, Any]:
+        """Serialize decisions without making diagnostics control routing."""
+
+        from exogibbs.equilibrium.condensate.fixed_support.types import (
+            TerminalStatus,
+        )
+
+        return {
+            "terminal_status": self.terminal_status,
+            "terminal_status_name": TerminalStatus(self.terminal_status).name,
+            "fixed_support_converged": self.fixed_support_converged,
+            "support_closed": self.support_closed,
+            "independent_kkt": self.independent_kkt,
+            "independent_kkt_passed": self.independent_kkt_passed,
+            "zero_barrier_initializer_kkt_passed": (
+                self.zero_barrier_initializer_kkt_passed
+            ),
+            "zero_barrier_initializer_gas_stationarity_tolerance": (
+                self.zero_barrier_initializer_gas_stationarity_tolerance
+            ),
+            "final_state_values_finite": self.final_state_values_finite,
+        }
+
+
+@dataclass(frozen=True)
+class _FiniteBarrierLayerResult:
+    """One assessed state and the original state eligible for fallback."""
+
+    raw: Mapping[str, Any]
+    local_index: int
+    support_indices: tuple[int, ...]
+    assessment: _FiniteBarrierAssessment
+    round_index: int
+    pre_pdipm_state: _HeadV2LayerState | None
+    pre_pdipm_trace_capacity: Mapping[str, Any]
+    rank_reduced_initial_support: bool
 
 
 def build_condensate_equilibrium_result_from_solver_payload(
@@ -896,6 +992,152 @@ def _head_v2_kkt_row(kkt_norms: Any, index: int) -> Mapping[str, float]:
     }
 
 
+def _run_finite_barrier_batch(
+    *,
+    setup: CondensateChemicalSetup,
+    temperatures: Sequence[float],
+    pressures: Sequence[float],
+    b: Array,
+    Pref: float,
+    states: Sequence[_HeadV2LayerState],
+    fixed_shape: Any,
+    source_layer_indices: Sequence[int],
+    policy: FixedSupportV2ProductionPolicy,
+    return_diagnostics: bool,
+    lnphi_func: LogFugacityCoefficientFunction | None,
+) -> tuple[Mapping[str, Any], Array]:
+    """Solve supplied supports and measure closure without changing them."""
+
+    from exogibbs.equilibrium.condensate.fixed_support.batch import (
+        run_fixed_support_profile,
+    )
+
+    buckets = _head_v2_prepared_buckets(
+        setup=setup,
+        temperatures=temperatures,
+        pressures=pressures,
+        b=b,
+        Pref=Pref,
+        states=states,
+        fixed_shape=fixed_shape,
+        source_layer_indices=source_layer_indices,
+        lnphi_func=lnphi_func,
+    )
+    hcond_full = jnp.stack(
+        [
+            jnp.asarray(
+                setup.condensate_setup.hvector_func(temperature),
+                dtype=jnp.float64,
+            )
+            for temperature in temperatures
+        ]
+    )
+    validity_upper = condensate_temperature_validity_upper(setup)
+    if validity_upper is None:
+        valid_mask = jnp.ones(
+            (len(states), len(setup.condensate_species)), dtype=bool
+        )
+    else:
+        upper = jnp.asarray(validity_upper, dtype=jnp.float64)
+        if upper.shape != (len(setup.condensate_species),):
+            raise ValueError(
+                "temperature_validity_upper must have one value per "
+                "condensate."
+            )
+        valid_mask = (
+            jnp.asarray(temperatures, dtype=jnp.float64)[:, None]
+            <= upper[None, :]
+        )
+    raw = run_fixed_support_profile(
+        buckets=buckets,
+        formula_matrix=setup.formula_matrix,
+        layer_count=len(states),
+        condensate_count=len(setup.condensate_species),
+        config=policy.solver_config,
+        budget_relative_floor=policy.budget_relative_floor,
+        include_terminal_diagnostics=return_diagnostics,
+    )
+    return evaluate_profile_support_closure(
+        raw,
+        formula_matrix=setup.formula_matrix,
+        formula_matrix_cond_full=setup.formula_matrix_cond,
+        condensate_standard_source_full=hcond_full,
+        condensate_valid_mask=valid_mask,
+        budget_relative_floor=policy.budget_relative_floor,
+        support_closure_tolerance=policy.support_closure_tolerance,
+    ), valid_mask
+
+
+def _assess_finite_barrier_layer(
+    raw: Mapping[str, Any],
+    index: int,
+    *,
+    terminal_status: int,
+    fixed_support_converged: bool,
+    support_closed: bool,
+    policy: FixedSupportV2ProductionPolicy,
+) -> _FiniteBarrierAssessment:
+    """Read a solver row once and distinguish convergence from eligibility."""
+
+    independent_kkt = _head_v2_kkt_row(raw["final_kkt_norms"], index)
+    tolerances = policy.solver_config.normal
+    return _FiniteBarrierAssessment(
+        terminal_status=terminal_status,
+        fixed_support_converged=fixed_support_converged,
+        support_closed=support_closed,
+        independent_kkt=independent_kkt,
+        independent_kkt_passed=_head_v2_kkt_passed(
+            independent_kkt,
+            stationarity_tolerance=tolerances.stationarity_tolerance,
+            budget_tolerance=tolerances.budget_tolerance,
+            complementarity_tolerance=tolerances.complementarity_tolerance,
+            total_density_tolerance=tolerances.total_density_tolerance,
+        ),
+        zero_barrier_initializer_kkt_passed=(
+            _head_v2_zero_barrier_initializer_kkt_passed(
+                independent_kkt,
+                gas_stationarity_tolerance=(
+                    policy.zero_barrier_initializer_gas_stationarity_tolerance
+                ),
+                budget_tolerance=tolerances.budget_tolerance,
+                complementarity_tolerance=tolerances.complementarity_tolerance,
+                total_density_tolerance=tolerances.total_density_tolerance,
+            )
+        ),
+        zero_barrier_initializer_gas_stationarity_tolerance=(
+            policy.zero_barrier_initializer_gas_stationarity_tolerance
+        ),
+        final_state_values_finite=bool(
+            np.asarray(jax.device_get(raw["final_state_values_finite"][index]))
+        ),
+    )
+
+
+def _finite_barrier_initializer_payload(
+    raw: Mapping[str, Any],
+    index: int,
+    *,
+    support_indices: tuple[int, ...],
+) -> _ZeroBarrierInitializerPayload:
+    """Cross from positive finite-barrier amounts to exact linear amounts."""
+
+    return _ZeroBarrierInitializerPayload(
+        support_indices=support_indices,
+        gas_log_amounts=np.asarray(
+            jax.device_get(raw["gas_log_amounts"][index]), dtype=np.float64
+        ),
+        condensate_amounts=np.asarray(
+            jax.device_get(raw["condensate_amounts"][index]), dtype=np.float64
+        ),
+        total_gas_log_amount=float(
+            np.asarray(jax.device_get(raw["total_gas_log_amount"][index]))
+        ),
+        element_potential=np.asarray(
+            jax.device_get(raw["element_potential"][index]), dtype=np.float64
+        ),
+    )
+
+
 def _head_v2_zero_barrier_initializer_kkt_passed(
     kkt: Mapping[str, float],
     *,
@@ -1634,7 +1876,7 @@ def _run_head_v2_profile(
             if key in audit
         }
 
-    last_outputs: dict[int, dict[str, Any]] = {}
+    last_outputs: dict[int, _FiniteBarrierLayerResult] = {}
     early_zero_barrier_results: dict[int, _ExactRefinement] = {}
     early_zero_barrier_provenance: dict[int, dict[str, Any]] = {}
     early_zero_barrier_attempted: set[int] = set()
@@ -1743,7 +1985,7 @@ def _run_head_v2_profile(
         round_pressures = tuple(
             float(pressures[index]) for index in source_indices
         )
-        buckets = _head_v2_prepared_buckets(
+        raw, valid_mask = _run_finite_barrier_batch(
             setup=setup,
             temperatures=round_temperatures,
             pressures=round_pressures,
@@ -1752,51 +1994,9 @@ def _run_head_v2_profile(
             states=round_states,
             fixed_shape=fixed_batch_shape,
             source_layer_indices=source_indices,
+            policy=policy,
+            return_diagnostics=return_diagnostics,
             lnphi_func=lnphi_func,
-        )
-        hcond_full = jnp.stack(
-            [
-                jnp.asarray(
-                    setup.condensate_setup.hvector_func(temperature),
-                    dtype=jnp.float64,
-                )
-                for temperature in round_temperatures
-            ]
-        )
-        validity_upper = condensate_temperature_validity_upper(setup)
-        if validity_upper is None:
-            valid_mask = jnp.ones(
-                (len(source_indices), len(setup.condensate_species)),
-                dtype=bool,
-            )
-        else:
-            upper = jnp.asarray(validity_upper, dtype=jnp.float64)
-            if upper.shape != (len(setup.condensate_species),):
-                raise ValueError(
-                    "temperature_validity_upper must have one value per "
-                    "condensate."
-                )
-            valid_mask = (
-                jnp.asarray(round_temperatures, dtype=jnp.float64)[:, None]
-                <= upper[None, :]
-            )
-        raw = run_fixed_support_profile(
-            buckets=buckets,
-            formula_matrix=setup.formula_matrix,
-            layer_count=len(source_indices),
-            condensate_count=len(setup.condensate_species),
-            config=policy.solver_config,
-            budget_relative_floor=policy.budget_relative_floor,
-            include_terminal_diagnostics=return_diagnostics,
-        )
-        raw = evaluate_profile_support_closure(
-            raw,
-            formula_matrix=setup.formula_matrix,
-            formula_matrix_cond_full=setup.formula_matrix_cond,
-            condensate_standard_source_full=hcond_full,
-            condensate_valid_mask=valid_mask,
-            budget_relative_floor=policy.budget_relative_floor,
-            support_closure_tolerance=policy.support_closure_tolerance,
         )
         accumulate_solver_timing(raw)
         converged = np.asarray(
@@ -1835,63 +2035,22 @@ def _run_head_v2_profile(
             expanded_support = tuple(
                 dict.fromkeys((*current.support_indices, *additions))
             )
-            terminal_code = int(terminal[local_index])
-            independent_kkt = _head_v2_kkt_row(
-                raw["final_kkt_norms"], local_index
+            assessment = _assess_finite_barrier_layer(
+                raw,
+                local_index,
+                terminal_status=int(terminal[local_index]),
+                fixed_support_converged=bool(converged[local_index]),
+                support_closed=bool(closed[local_index]),
+                policy=policy,
             )
-            tolerances = policy.solver_config.normal
-            independent_kkt_passed = _head_v2_kkt_passed(
-                independent_kkt,
-                stationarity_tolerance=tolerances.stationarity_tolerance,
-                budget_tolerance=tolerances.budget_tolerance,
-                complementarity_tolerance=(
-                    tolerances.complementarity_tolerance
-                ),
-                total_density_tolerance=(
-                    tolerances.total_density_tolerance
-                ),
-            )
-            zero_barrier_initializer_kkt_passed = (
-                _head_v2_zero_barrier_initializer_kkt_passed(
-                    independent_kkt,
-                    gas_stationarity_tolerance=(
-                        policy.zero_barrier_initializer_gas_stationarity_tolerance
-                    ),
-                    budget_tolerance=tolerances.budget_tolerance,
-                    complementarity_tolerance=(
-                        tolerances.complementarity_tolerance
-                    ),
-                    total_density_tolerance=(
-                        tolerances.total_density_tolerance
-                    ),
-                )
-            )
-            final_state_values_finite = bool(
-                np.asarray(
-                    jax.device_get(
-                        raw["final_state_values_finite"][local_index]
-                    )
-                )
-            )
+            terminal_code = assessment.terminal_status
             round_record = {
                 "round_index": round_index,
                 "support_indices": current.support_indices,
                 "support_count": len(current.support_indices),
-                "fixed_support_converged": bool(converged[local_index]),
-                "support_closed": bool(closed[local_index]),
-                "terminal_status": terminal_code,
-                "terminal_status_name": TerminalStatus(terminal_code).name,
+                **assessment.diagnostics(),
                 "positive_inactive_count": int(candidate_indices.size),
                 "added_support_indices": additions,
-                "independent_kkt": independent_kkt,
-                "independent_kkt_passed": independent_kkt_passed,
-                "zero_barrier_initializer_kkt_passed": (
-                    zero_barrier_initializer_kkt_passed
-                ),
-                "zero_barrier_initializer_gas_stationarity_tolerance": (
-                    policy.zero_barrier_initializer_gas_stationarity_tolerance
-                ),
-                "final_state_values_finite": final_state_values_finite,
                 "pre_pdipm_trace_capacity": trace_capacity,
             }
             records[source_index]["rounds"].append(round_record)
@@ -1903,42 +2062,26 @@ def _run_head_v2_profile(
                 and source_index in initial_support_envelopes
             )
             retain_pre_pdipm_state = bool(
-                not converged[local_index]
+                not assessment.fixed_support_converged
                 and trace_capacity["capacity_geometry_valid"]
                 and (trace_capacity["trace_capacity_detected"]
                      or rank_reduced_initial_support)
             )
-            last_outputs[source_index] = {
-                "raw": raw,
-                "local_index": local_index,
-                "round_index": round_index,
-                "support_indices": current.support_indices,
-                # Initial support geometry, not a backend-dependent terminal
-                # code, determines whether to retain an exact initializer.
-                "pre_pdipm_state": (
-                    current if retain_pre_pdipm_state else None
-                ),
-                "pre_pdipm_trace_capacity": trace_capacity,
-                "rank_reduced_initial_support": rank_reduced_initial_support,
-                "fixed_support_converged": bool(converged[local_index]),
-                "support_closed": bool(closed[local_index]),
-                "terminal_status": terminal_code,
-                "independent_kkt": independent_kkt,
-                "independent_kkt_passed": independent_kkt_passed,
-                "zero_barrier_initializer_kkt_passed": (
-                    zero_barrier_initializer_kkt_passed
-                ),
-                "zero_barrier_initializer_gas_stationarity_tolerance": (
-                    policy.zero_barrier_initializer_gas_stationarity_tolerance
-                ),
-                "final_state_values_finite": final_state_values_finite,
-            }
+            terminal_layer = _FiniteBarrierLayerResult(
+                raw=raw,
+                local_index=local_index,
+                support_indices=current.support_indices,
+                assessment=assessment,
+                round_index=round_index,
+                # Initial geometry determines whether to retain a fallback.
+                pre_pdipm_state=(current if retain_pre_pdipm_state else None),
+                pre_pdipm_trace_capacity=trace_capacity,
+                rank_reduced_initial_support=rank_reduced_initial_support,
+            )
+            last_outputs[source_index] = terminal_layer
             early_exact_eligible = bool(
                 current.support_indices
-                and converged[local_index]
-                and independent_kkt_passed
-                and final_state_values_finite
-                and not closed[local_index]
+                and assessment.early_initializer_eligible
                 and source_index not in early_zero_barrier_attempted
             )
             round_record["early_zero_barrier_eligible"] = (
@@ -1951,36 +2094,12 @@ def _run_head_v2_profile(
                 # closure once before changing that support. Its independent
                 # physical audit remains the only acceptance authority.
                 early_zero_barrier_attempted.add(source_index)
-                full_amounts = np.asarray(
-                    jax.device_get(
-                        raw["condensate_amounts"][local_index]
-                    ),
-                    dtype=np.float64,
-                )
                 early_refinement = refine_layer_state(
                     layer_index=source_index,
-                    initializer=_ZeroBarrierInitializerPayload(
+                    initializer=_finite_barrier_initializer_payload(
+                        raw,
+                        local_index,
                         support_indices=current.support_indices,
-                        gas_log_amounts=np.asarray(
-                            jax.device_get(
-                                raw["gas_log_amounts"][local_index]
-                            ),
-                            dtype=np.float64,
-                        ),
-                        condensate_amounts=full_amounts,
-                        total_gas_log_amount=float(
-                            np.asarray(
-                                jax.device_get(
-                                    raw["total_gas_log_amount"][local_index]
-                                )
-                            )
-                        ),
-                        element_potential=np.asarray(
-                            jax.device_get(
-                                raw["element_potential"][local_index]
-                            ),
-                            dtype=np.float64,
-                        ),
                     ),
                     valid_condensates=np.asarray(
                         jax.device_get(valid_mask[local_index]), dtype=bool
@@ -2003,7 +2122,7 @@ def _run_head_v2_profile(
                     "raw_support_closed": False,
                     "raw_independent_kkt_passed": True,
                     "raw_noncondensate_kkt_passed": (
-                        zero_barrier_initializer_kkt_passed
+                        assessment.zero_barrier_initializer_kkt_passed
                     ),
                     "raw_final_state_values_finite": True,
                     "raw_terminal_status": terminal_code,
@@ -2042,17 +2161,8 @@ def _run_head_v2_profile(
                         )
                         continue
                 round_record["early_zero_barrier_accepted"] = False
-            if not converged[local_index]:
-                records[source_index]["outcome"] = "fixed_support_failed"
-                continue
-            if not independent_kkt_passed:
-                records[source_index]["outcome"] = "independent_kkt_failed"
-                continue
-            if not final_state_values_finite:
-                records[source_index]["outcome"] = "nonfinite_final_state"
-                continue
-            if closed[local_index]:
-                records[source_index]["outcome"] = "closed"
+            if assessment.terminal_outcome is not None:
+                records[source_index]["outcome"] = assessment.terminal_outcome
                 continue
             if not additions:
                 records[source_index]["outcome"] = (
@@ -2312,9 +2422,10 @@ def _run_head_v2_profile(
             )
         else:
             terminal_output = last_outputs[layer_index]
-            raw = terminal_output["raw"]
-            local_index = int(terminal_output["local_index"])
-            support = terminal_output["support_indices"]
+            assessment = terminal_output.assessment
+            raw = terminal_output.raw
+            local_index = terminal_output.local_index
+            support = terminal_output.support_indices
             full_amounts = jnp.asarray(
                 raw["condensate_amounts"][local_index], dtype=jnp.float64
             )
@@ -2323,64 +2434,25 @@ def _run_head_v2_profile(
             )
             total_gas_log_amount = float(
                 np.asarray(
-                    jax.device_get(
-                        raw["total_gas_log_amount"][local_index]
-                    )
+                    jax.device_get(raw["total_gas_log_amount"][local_index])
                 )
             )
             element_potential = np.asarray(
                 jax.device_get(raw["element_potential"][local_index]),
                 dtype=np.float64,
             )
-            lifecycle_summary.update(
-                {
-                    "terminal_status": terminal_output["terminal_status"],
-                    "terminal_status_name": TerminalStatus(
-                        terminal_output["terminal_status"]
-                    ).name,
-                    "fixed_support_converged": terminal_output[
-                        "fixed_support_converged"
-                    ],
-                    "support_closed": terminal_output["support_closed"],
-                    "independent_kkt": terminal_output["independent_kkt"],
-                    "independent_kkt_passed": terminal_output[
-                        "independent_kkt_passed"
-                    ],
-                    "zero_barrier_initializer_kkt_passed": terminal_output[
-                        "zero_barrier_initializer_kkt_passed"
-                    ],
-                    "zero_barrier_initializer_gas_stationarity_tolerance": (
-                        terminal_output[
-                            "zero_barrier_initializer_gas_stationarity_tolerance"
-                        ]
-                    ),
-                    "final_state_values_finite": terminal_output[
-                        "final_state_values_finite"
-                    ],
-                }
-            )
-            fixed_support_accepted = bool(
-                terminal_output["fixed_support_converged"]
-                and terminal_output["support_closed"]
-                and terminal_output["independent_kkt_passed"]
-                and terminal_output["final_state_values_finite"]
-            )
+            lifecycle_summary.update(assessment.diagnostics())
+            fixed_support_accepted = assessment.fixed_support_accepted
             early_refinement = early_zero_barrier_results.get(layer_index)
             early_exact = (
                 early_refinement.result if early_refinement is not None else None
             )
             terminal_initializer_eligible = bool(
-                support
-                and terminal_output["support_closed"]
-                and terminal_output[
-                    "zero_barrier_initializer_kkt_passed"
-                ]
-                and terminal_output["final_state_values_finite"]
+                support and assessment.terminal_initializer_eligible
             )
-            pre_pdipm_state = terminal_output["pre_pdipm_state"]
+            pre_pdipm_state = terminal_output.pre_pdipm_state
             fallback_routing_candidate = bool(
-                early_exact is None
-                and not terminal_output["fixed_support_converged"]
+                early_exact is None and not assessment.fixed_support_converged
             )
             if early_exact is not None:
                 fallback_disabled_reason = (
@@ -2401,25 +2473,23 @@ def _run_head_v2_profile(
             ) = _head_v2_pre_pdipm_zero_barrier_candidate(
                 setup=setup,
                 state=pre_pdipm_state,
-                trace_capacity_report=terminal_output[
-                    "pre_pdipm_trace_capacity"
-                ],
+                trace_capacity_report=terminal_output.pre_pdipm_trace_capacity,
                 valid_condensates=valid_mask,
                 enabled=fallback_routing_candidate,
                 disabled_reason=fallback_disabled_reason,
-                rank_reduced_initial_support=terminal_output[
-                    "rank_reduced_initial_support"
-                ],
+                rank_reduced_initial_support=(
+                    terminal_output.rank_reduced_initial_support
+                ),
             )
             pre_pdipm_fallback_report.update(
                 {
-                    "terminal_status": terminal_output["terminal_status"],
+                    "terminal_status": assessment.terminal_status,
                     "terminal_status_name": TerminalStatus(
-                        terminal_output["terminal_status"]
+                        assessment.terminal_status
                     ).name,
-                    "source_round_index": terminal_output["round_index"],
+                    "source_round_index": terminal_output.round_index,
                     "source_support_indices": tuple(
-                        terminal_output["support_indices"]
+                        terminal_output.support_indices
                     ),
                 }
             )
@@ -2453,34 +2523,30 @@ def _run_head_v2_profile(
                     "attempted": exact_initializer_eligible,
                     "role": "initializer_only",
                     "source": initializer_source,
-                    "source_round_index": terminal_output["round_index"],
-                    "lifecycle_terminal_round_index": terminal_output[
-                        "round_index"
-                    ],
+                    "source_round_index": terminal_output.round_index,
+                    "lifecycle_terminal_round_index": (
+                        terminal_output.round_index
+                    ),
                     "selected_before_lifecycle_terminal_round": bool(
                         pre_pdipm_fallback_eligible
                     ),
                     "rescue_attempted": rescue_attempted,
-                    "raw_fixed_support_converged": terminal_output[
-                        "fixed_support_converged"
-                    ],
-                    "raw_support_closed": terminal_output[
-                        "support_closed"
-                    ],
-                    "raw_independent_kkt_passed": terminal_output[
-                        "independent_kkt_passed"
-                    ],
-                    "raw_noncondensate_kkt_passed": terminal_output[
-                        "zero_barrier_initializer_kkt_passed"
-                    ],
-                    "raw_final_state_values_finite": terminal_output[
-                        "final_state_values_finite"
-                    ],
-                    "raw_terminal_status": terminal_output[
-                        "terminal_status"
-                    ],
+                    "raw_fixed_support_converged": (
+                        assessment.fixed_support_converged
+                    ),
+                    "raw_support_closed": assessment.support_closed,
+                    "raw_independent_kkt_passed": (
+                        assessment.independent_kkt_passed
+                    ),
+                    "raw_noncondensate_kkt_passed": (
+                        assessment.zero_barrier_initializer_kkt_passed
+                    ),
+                    "raw_final_state_values_finite": (
+                        assessment.final_state_values_finite
+                    ),
+                    "raw_terminal_status": assessment.terminal_status,
                     "raw_terminal_status_name": TerminalStatus(
-                        terminal_output["terminal_status"]
+                        assessment.terminal_status
                     ).name,
                 }
             lifecycle_summary["zero_barrier_initializer"] = (
@@ -2506,9 +2572,7 @@ def _run_head_v2_profile(
                         _expand_zero_barrier_initializer_support(
                             initializer_payload,
                             initial_support_envelopes.get(layer_index),
-                            source_round_index=terminal_output[
-                                "round_index"
-                            ],
+                            source_round_index=terminal_output.round_index,
                             reduction=records[layer_index].get(
                                 "finite_barrier_initial_support_reduction",
                                 {},
