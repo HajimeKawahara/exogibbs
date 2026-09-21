@@ -101,3 +101,10 @@ The BSE calculation still evaluates the fixed 2350 K source branch at
 2173.15 K; the source MgO liquid fit lists 3105--5000 K. There is no common
 calibrated material domain. M2-A/B remain pending and archived conditional
 results retain their original meaning.
+
+The [2026-09-21 audit](../../results/m2_standards/20260921/audit.json) was
+executed from source commit `621d1b5` with no tracked changes. It includes one
+fresh native dry-BSE evaluation, both gas comparisons, provider provenance,
+and reversible mass-fraction checks. The documented-example harness also ran
+this job successfully with complete entry-point coverage. This single-job run
+does not constitute acceptance of all 62 documented jobs.
