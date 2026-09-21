@@ -33,7 +33,7 @@ source branch and its extrapolation limits remain explicit.
 
 Upper parcels retain the original FastChem gauge for both gas and pure
 condensates. Conserved equilibrium is invariant to the common elemental
-shift: its energy change is the constant `b.T c`. Comparisons of absolute
+shift: its change in `G/(RT)` is the constant `b.T c`. Comparisons of absolute
 cross-boundary chemical potentials must include that gauge; comparing raw
 absolute values would be incorrect.
 
