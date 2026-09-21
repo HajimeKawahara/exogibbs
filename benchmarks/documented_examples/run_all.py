@@ -162,6 +162,13 @@ def build_jobs() -> tuple[Job, ...]:
         ("exoeos", "exoeos_checkout"), ("reference.json",),
     ))
     jobs.append(Job(
+        "metal_bse_phase_selection", metal + "run_metal_selection.py",
+        ("--exoeos-checkout", "{exoeos_checkout}", "--bse-inventory", "{bse_inventory}",
+         "--runtime", "{melts_runtime}", "--python", "{melts_python}",
+         "--gas-model", "m1_shared", "--output", "{output}/selection.json"),
+        native_resources + ("bse_inventory",), ("selection.json",),
+    ))
+    jobs.append(Job(
         "metal_standards_audit", metal + "m2_standards_audit.py",
         ("--inventory", "{bse_inventory}", "--exoeos-checkout", "{exoeos_checkout}",
          "--runtime", "{melts_runtime}", "--python", "{melts_python}",

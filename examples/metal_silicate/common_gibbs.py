@@ -13,7 +13,7 @@ from typing import Mapping, Optional
 
 import numpy as np
 from scipy.linalg import null_space
-from scipy.optimize import least_squares, linprog, minimize
+from scipy.optimize import least_squares, linprog, lsq_linear, minimize, minimize_scalar
 
 from full_potential import PhaseCallback
 from local import LocalProblem, _budgets
@@ -41,9 +41,12 @@ class GibbsMinimumResult:
     derivative_error_rt: float
     extensivity_error: float
     initial_gibbs_rt: float
+    constrained_kkt_residual_rt: np.ndarray
+    composition_constraints: tuple[dict, ...]
 
 
-def _feasible_start(formula: np.ndarray, budget: np.ndarray) -> np.ndarray:
+def _feasible_start(formula: np.ndarray, budget: np.ndarray,
+                    domain: Optional[np.ndarray] = None) -> np.ndarray:
     """Find a relative-interior inventory without adding any atoms or floors."""
     # Row scaling retains trace budgets, while component limits make the
     # max-min interior search insensitive to their absolute scales.
@@ -52,9 +55,12 @@ def _feasible_start(formula: np.ndarray, budget: np.ndarray) -> np.ndarray:
         raise ValueError("Every component must contain a budgeted element.")
     matrix = formula * limits / budget[:, None]
     size = formula.shape[1]
+    inequalities = np.empty((0, size)) if domain is None else -domain * limits
     interior = linprog(
-        np.r_[np.zeros(size), -1.], A_ub=np.c_[-np.eye(size), np.ones(size)],
-        b_ub=np.zeros(size), A_eq=np.c_[matrix, np.zeros(len(budget))],
+        np.r_[np.zeros(size), -1.],
+        A_ub=np.vstack((np.c_[-np.eye(size), np.ones(size)],
+                        np.c_[inequalities, np.zeros(len(inequalities))])),
+        b_ub=np.zeros(size + len(inequalities)), A_eq=np.c_[matrix, np.zeros(len(budget))],
         b_eq=np.ones(len(budget)), bounds=[(0, None)] * (size + 1), method="highs",
     )
     if not interior.success:
@@ -68,6 +74,8 @@ def _feasible_start(formula: np.ndarray, budget: np.ndarray) -> np.ndarray:
         objective = np.zeros(size)
         objective[index] = -1.
         result = linprog(objective, A_eq=matrix, b_eq=np.ones(len(budget)),
+                         A_ub=inequalities if len(inequalities) else None,
+                         b_ub=np.zeros(len(inequalities)) if len(inequalities) else None,
                          bounds=(0, None), method="highs")
         if not result.success:
             raise ValueError("Could not resolve the feasible component support.")
@@ -75,10 +83,43 @@ def _feasible_start(formula: np.ndarray, budget: np.ndarray) -> np.ndarray:
     return limits * np.mean(points, axis=0)
 
 
+def _composition_constraints(problem, bounds):
+    """Build C n >= 0 in the active component order, with no phase floor."""
+    bounds = dict(bounds or {})
+    if set(bounds) - set(problem.phases):
+        raise ValueError("Composition bounds must name active phases.")
+    rows, labels, sections = [], [], []
+    for phase, section in zip(problem.phases, problem.phase_slices):
+        if phase not in bounds:
+            continue
+        values = tuple(map(np.asarray, bounds[phase]))
+        if len(values) != 2 or not all(np.isrealobj(value) for value in values):
+            raise ValueError("Supply real lower and upper phase composition bounds.")
+        lo, hi = (value.astype(float) for value in values)
+        size = section.stop - section.start
+        if (lo.shape != (size,) or hi.shape != lo.shape
+                or not np.all(np.isfinite(lo)) or not np.all(np.isfinite(hi))
+                or np.any(lo < 0) or np.any(hi > 1) or np.any(lo > hi)
+                or lo.sum() > 1 or hi.sum() < 1):
+            raise ValueError("Supply feasible composition bounds in active phase component order.")
+        for offset, name in enumerate(problem.species[section]):
+            for kind, value in (("lower", lo[offset]), ("upper", hi[offset])):
+                if (kind == "lower" and value == 0) or (kind == "upper" and value == 1):
+                    continue
+                row = np.zeros(len(problem.species))
+                row[section] = -value if kind == "lower" else value
+                row[section.start + offset] += 1 if kind == "lower" else -1
+                rows.append(row)
+                labels.append({"phase": phase, "component": name, "bound": kind, "value": float(value)})
+                sections.append(section)
+    return np.asarray(rows).reshape((-1, len(problem.species))), labels, sections
+
+
 def minimize_gibbs(
     problem: LocalProblem, temperature_k: float, pressure_bar: float,
     element_amounts_mol: np.ndarray, phase_callbacks: Mapping[str, PhaseCallback],
     *, initial_component_amounts_mol: Optional[np.ndarray] = None,
+    phase_composition_bounds: Optional[Mapping[str, tuple[np.ndarray, np.ndarray]]] = None,
     maxiter: int = 1000, polish: bool = True,
 ) -> GibbsMinimumResult:
     """Minimize extensive G/(RT) with nonnegative amounts and exact atom budgets.
@@ -88,6 +129,11 @@ def minimize_gibbs(
     singular endpoint chemical potentials are allowed during minimization.
     No ideal term, gas pressure term, or reaction offset is added here.
     Complete phase disappearance belongs to a separate phase candidate.
+
+    Optional composition bounds follow each active phase's component order.
+    They impose homogeneous inequalities ``C n >= 0`` and allow exact phase
+    disappearance. Boundary multipliers enter the constrained KKT audit;
+    raw reaction and reduced-potential diagnostics remain unmodified.
 
     SLSQP minimizes the scalar energy in inventory-normalized amount variables.
     An optional stationarity refinement may improve an interior minimum only
@@ -112,7 +158,10 @@ def minimize_gibbs(
     formula = np.asarray(problem.formula_matrix)
     scale = budgets.sum()
     normalized_budget = budgets[positive] / scale
-    feasible = _feasible_start(formula, normalized_budget)
+    domain, domain_labels, domain_sections = _composition_constraints(problem, phase_composition_bounds)
+    feasible = _feasible_start(formula, normalized_budget, domain)
+    if any(feasible[section].sum() == 0 for section in problem.phase_slices):
+        raise ValueError("A declared phase is unreachable; evaluate the separate absent branch.")
     if initial_component_amounts_mol is None:
         initial = feasible
     else:
@@ -125,6 +174,8 @@ def minimize_gibbs(
         initial = supplied[indices] / scale
         if not np.allclose(formula @ initial, normalized_budget, rtol=1e-9, atol=0):
             raise ValueError("Initial amounts must obey the declared absolute element inventory.")
+        if np.any(domain @ initial < -1e-13 * initial.sum()):
+            raise ValueError("Initial amounts must obey the declared phase composition bounds.")
     reachable = feasible > 0
 
     def evaluate(amounts):
@@ -156,6 +207,13 @@ def minimize_gibbs(
 
     def gradient(x):
         energy, mu = evaluate(scale * x)
+        for phase, section in zip(problem.phases, problem.phase_slices):
+            if x[section].sum() == 0 and feasible[section].sum() > 0:
+                # A vanished phase has no unique composition derivative. Use
+                # a feasible interior direction only for the scalar search;
+                # final acceptance still requires a separate absent branch.
+                state = phase_callbacks[phase](temperature_k, pressure_bar, scale * feasible[section])
+                mu[section] = np.asarray(state.mu_rt)
         # Only the search direction uses finite one-sided secants where the
         # true derivative is singular. The scalar energy never uses a floor.
         for index in np.flatnonzero(~np.isfinite(mu)):
@@ -167,30 +225,55 @@ def minimize_gibbs(
 
     initial_energy = evaluate(scale * initial)[0]
     row_matrix = formula / normalized_budget[:, None]
-    optimization = minimize(
-        objective, initial, jac=gradient, method="SLSQP",
-        bounds=[(0., None) if exists else (0., 0.) for exists in reachable],
-        constraints={"type": "eq", "fun": lambda x: row_matrix @ x - 1.,
-                     "jac": lambda x: row_matrix},
-        options={"ftol": 1e-14, "maxiter": maxiter},
-    )
+    constraints = [{"type": "eq", "fun": lambda x: row_matrix @ x - 1.,
+                    "jac": lambda x: row_matrix}]
+    if len(domain):
+        domain_scale = np.array([max(initial[section].sum(), feasible[section].sum())
+                                 for section in domain_sections])
+        search_domain = domain / domain_scale[:, None]
+        constraints.append({"type": "ineq", "fun": lambda x: search_domain @ x,
+                            "jac": lambda x: search_domain})
+    def scalar_solve(start):
+        return minimize(objective, start, jac=gradient, method="SLSQP",
+                        bounds=[(0., None) if exists else (0., 0.) for exists in reachable],
+                        constraints=constraints, options={"ftol": 1e-14, "maxiter": maxiter})
+
+    optimization = scalar_solve(initial)
+    if len(domain) and any(optimization.x[section].sum() < 1e-12 * initial[section].sum()
+                           for section in domain_sections):
+        # A linearized step can collapse a complete ideal solution and lose
+        # its composition. Re-enter on the existing atom-conserving segment
+        # by scalar energy minimization; no positive amount bound is added.
+        direction = optimization.x - initial
+        line = minimize_scalar(lambda fraction: objective(initial + fraction * direction),
+                               bounds=(0., 1.), method="bounded", options={"xatol": 1e-12})
+        seed = initial + line.x * direction
+        if line.success and objective(seed) < objective(optimization.x):
+            optimization = scalar_solve(seed)
     final = optimization.x
     # Scalar minimization comes first. Refinement is not used to replace a
     # failed/incomplete minimization and cannot increase the returned energy.
     if polish and optimization.success and np.all(final[reachable] > 0):
         active_formula = formula[:, reachable]
-        reaction = null_space(active_formula).T
+        relative_slack = np.array([value / final[section].sum() if final[section].sum() else np.inf
+                                  for value, section in zip(domain @ final, domain_sections)])
+        active_domain = domain[relative_slack < 1e-8]
+        tangent = np.vstack((active_formula, active_domain[:, reachable]))
+        reaction = null_space(tangent).T
         def residual(log_amounts):
             candidate = np.zeros_like(final)
             candidate[reachable] = np.exp(log_amounts)
             _, mu = evaluate(scale * candidate)
-            return np.r_[row_matrix @ candidate - 1., reaction @ mu[reachable]]
+            return np.r_[row_matrix @ candidate - 1., active_domain @ candidate,
+                         reaction @ mu[reachable]]
         try:
             refined = least_squares(residual, np.log(final[reachable]),
                                     xtol=1e-14, ftol=1e-14, gtol=1e-14, max_nfev=maxiter)
             candidate = np.zeros_like(final)
             candidate[reachable] = np.exp(refined.x)
             if (np.max(np.abs(residual(refined.x)), initial=0.) < 1e-8
+                    and all(value >= -1e-12 * candidate[section].sum()
+                            for value, section in zip(domain @ candidate, domain_sections))
                     and objective(candidate) <= objective(final) + 1e-12):
                 final = candidate
         except PhaseEvaluationError:
@@ -205,13 +288,31 @@ def minimize_gibbs(
     if np.linalg.matrix_rank(formula[:, present]) < len(normalized_budget):
         reasons.append("present components do not identify all elemental potentials")
     elemental = np.zeros(len(budgets))
-    elemental[positive] = np.linalg.lstsq(formula[:, present].T, mu[present], rcond=None)[0]
+    relative_slack = np.array([value / amounts[section].sum() if amounts[section].sum() else np.inf
+                              for value, section in zip(domain @ amounts, domain_sections)])
+    active_domain = relative_slack < 1e-8
+    multipliers = np.zeros(len(domain))
+    if np.any(active_domain):
+        system = np.c_[formula[:, present].T, domain[active_domain][:, present].T]
+        dual = lsq_linear(system, mu[present],
+                          bounds=(np.r_[np.full(len(normalized_budget), -np.inf),
+                                         np.zeros(active_domain.sum())], np.inf),
+                          tol=1e-14, max_iter=maxiter)
+        elemental[positive] = dual.x[:len(normalized_budget)]
+        multipliers[active_domain] = dual.x[len(normalized_budget):]
+    else:
+        elemental[positive] = np.linalg.lstsq(formula[:, present].T, mu[present], rcond=None)[0]
     reduced = mu - formula.T @ elemental[positive]
+    constrained = reduced - domain.T @ multipliers
     reaction = null_space(formula[:, present]).T @ mu[present]
-    if np.max(np.abs(reduced[present]), initial=0.) >= 1e-8:
+    if np.max(np.abs(constrained[present]), initial=0.) >= 1e-8:
         reasons.append("present-component KKT residual exceeds tolerance")
+    if np.any(relative_slack < -1e-10):
+        reasons.append("phase composition lies outside the declared domain")
+    if np.max(np.abs(multipliers * relative_slack), initial=0.) >= 1e-8:
+        reasons.append("composition-bound complementarity exceeds tolerance")
     absent_reachable = reachable & ~present
-    if np.any(~np.isfinite(reduced[absent_reachable])) or np.any(reduced[absent_reachable] < -1e-8):
+    if np.any(~np.isfinite(constrained[absent_reachable])) or np.any(constrained[absent_reachable] < -1e-8):
         reasons.append("zero-component insertion is unresolved or favorable")
     if any(amounts[section].sum() == 0 for section in problem.phase_slices):
         reasons.append("a declared phase disappeared; evaluate a separate phase candidate")
@@ -288,8 +389,13 @@ def minimize_gibbs(
     phase_elements = np.array([full_formula[:, indices[s]] @ amounts[s] for s in problem.phase_slices])
     full_reduced = np.full(len(problem.full_species), np.nan)
     full_reduced[indices] = reduced
+    full_constrained = np.full(len(problem.full_species), np.nan)
+    full_constrained[indices] = constrained
+    constraint_report = tuple({**label, "fraction_slack": float(slack), "multiplier_rt": float(multiplier)}
+                              for label, slack, multiplier in zip(domain_labels, relative_slack, multipliers))
     return GibbsMinimumResult(
         full_amounts, phase_amounts, phase_elements, element_residual, reaction,
         elemental, energy, not reasons, str(optimization.message), full_reduced,
         tuple(dict.fromkeys(reasons)), derivative_error, extensivity_error, initial_energy,
+        full_constrained, constraint_report,
     )

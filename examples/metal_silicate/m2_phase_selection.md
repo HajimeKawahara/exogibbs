@@ -47,7 +47,64 @@ declared domain also remain unresolved. A negative insertion trial can
 reject the metal-free branch without establishing an accepted metal-bearing
 solution. Stability is always relative to the declared phase catalog.
 
-## Four-point reference
+## Composition-constrained update (2026-09-22)
+
+Present-metal minimization now receives the same composition box as the
+insertion search. `minimize_gibbs(..., phase_composition_bounds={"metal":
+(lower, upper)})` uses the active phase component order. The bounds are
+homogeneous linear inequalities in amounts:
+
+```text
+n_i - lower_i * sum(n_metal) >= 0
+upper_i * sum(n_metal) - n_i >= 0
+```
+
+They enter the feasible-start linear program, scalar minimization and final
+audit. They impose no positive metal amount: the separate absent branch has
+exactly zero metal. Exact-zero element support and fixed-zero composition
+bounds also retain exact zeros. No returned composition is clipped or
+normalized into the domain.
+
+At an active composition boundary, the correct stationarity condition is
+`mu - A.T @ lambda - C.T @ eta = 0`, with `C @ n >= 0`, `eta >= 0`, and
+complementarity. The elemental potentials remain the physical element
+duals. The result adds `constrained_kkt_residual_rt` and
+`composition_constraints` (phase, component, bound, fraction slack and
+dimensionless multiplier). Existing `reaction_residual` and
+`reduced_potentials_rt` retain their unconstrained definitions and generally
+do not vanish at an active domain boundary. They must not be substituted
+for the constrained KKT residual there.
+
+An energy-decreasing metal-bearing start is constructed from the accepted
+absent state and the minimizing incipient composition. An atom-conserving
+linear program limits host/gas changes relative to each actual component
+amount before backtracking on the true energy. These restrictions apply
+only to the initial guess; the equilibrium solve uses the original atom
+inventory and declared composition domain. Failed attempts remain in
+`local_attempts`. If a scalar step collapses an entire phase, minimizing
+energy along its existing feasible segment provides a new start without
+introducing an amount floor. Stationarity refinement preserves active
+composition faces and is accepted only within the domain and without
+increasing energy.
+
+The new [four-point receipt](../../results/m2_phase_selection/reference_20260922.json)
+uses the same synthetic standards and real Ma excess model as the archived
+reference below. Offsets 0 and 0.1 still recover metal-bearing equilibria;
+4.63 still has exactly zero metal. At 4.62 the constrained solve now accepts
+`metal_present`, with metal amount approximately `0.000828981121 mol` and
+composition `(0.9197906523, 0.08, 2.30152577e-6, 2.07046167e-4)`.
+The Si upper bound has a nonnegative multiplier and the corrected KKT
+conditions pass. This is a new restricted-domain numerical result, not a
+reclassification of the earlier failed solve or a physical BSE boundary.
+
+Independent tests eliminate the amounts in a two-element ideal host/alloy
+model and minimize its one-variable energy. Its known boundary solution has
+metal amount 0.2 mol, composition `(0.9, 0.1)` and multiplier 2. Elemental
+gauge changes and scales from `1e-9` to `1e24` retain the same composition
+and multiplier. Additional controls check exact zeros, constrained phase
+selection and preservation of unresolved host stability.
+
+## Archived four-point reference (2026-09-20)
 
 [`run_metal_selection.py`](run_metal_selection.py) constructs ideal host
 and gas phases plus the actual Ma alloy mixing model at **2173.15 K and
@@ -135,6 +192,12 @@ python examples/metal_silicate/run_metal_selection.py \
   --python /path/to/melts-env/bin/python \
   --output /tmp/bse-metal-selection-attempt.json
 ```
+
+The BSE route now defaults to `--gas-model m1_shared`, using the continuous
+common gas reactions from [the contact control](m2_common_gas.md).
+`--gas-model source` explicitly selects the historical source gas laws.
+The newly selected gas laws do not align the melt and alloy standards or
+calibrate their material properties.
 
 This route intentionally supplies no global MELTS-liquid curvature evidence.
 It must remain `unresolved`; the runner rejects an accidental stable-phase

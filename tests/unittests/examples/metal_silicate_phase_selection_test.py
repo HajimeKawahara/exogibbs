@@ -196,3 +196,29 @@ def test_real_ma_alloy_uses_the_provider_curvature_bound_and_full_composition():
     assert curvature > 0 and result.minimum_certified, result
     assert result.lower_bound_rt <= .2 <= result.upper_bound_rt + 1e-12
     np.testing.assert_allclose(result.composition, target, rtol=2e-6)
+
+
+def test_present_phase_obeys_the_same_domain_as_its_insertion_certificate():
+    record, budget, callbacks, _ = _ideal_assemblage()
+    lower, upper = np.array([.86, 0., 0., 0.]), np.array([1., .08, .02, .04])
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks, lower, upper,
+                                      convex_phase_bounds={phase: 0. for phase in callbacks})
+    assert result.status == "metal_present", result.reasons
+    assert result.result.accepted and result.insertion.minimum_certified
+    assert result.metal_composition[-1] == pytest.approx(.04, abs=1e-10)
+    assert np.all(result.metal_composition >= lower - 1e-12)
+    assert np.all(result.metal_composition <= upper + 1e-12)
+    assert np.max(np.abs(result.result.constrained_kkt_residual_rt)) < 1e-8
+    assert np.max(np.abs(result.result.reduced_potentials_rt)) > .1
+    assert result.local_attempts and result.local_attempts[-1]["result"].accepted
+    assert any(item["multiplier_rt"] > .1 for item in result.result.composition_constraints)
+
+
+def test_bounded_present_phase_keeps_host_stability_unresolved():
+    record, budget, callbacks, _ = _ideal_assemblage()
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                      np.array([.86, 0., 0., 0.]), np.array([1., .08, .02, .04]),
+                                      convex_phase_bounds={"metal": 0., "gas": 0.})
+    assert result.result.accepted and result.insertion.minimum_certified
+    assert result.status == "unresolved"
+    assert result.reasons == ("Host global stability is not established.",)

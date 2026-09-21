@@ -8,7 +8,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import pytest
-from scipy.optimize import minimize
+from scipy.optimize import minimize, minimize_scalar
 from scipy.special import xlogy
 
 
@@ -287,3 +287,77 @@ def test_nonfinite_energy_at_derivative_probe_cannot_be_accepted(unavailable):
     assert not result.accepted
     assert np.isinf(result.derivative_error_rt)
     assert "scalar derivative is unavailable at a finite-difference point" in result.audit_reasons
+
+
+@pytest.mark.parametrize("scale", [1e-9, 1., 1e24])
+def test_composition_boundary_matches_independent_scalar_and_positive_dual(scale):
+    record = {"elements": ["A", "B", "C"], "phases": {"host": ["Ah", "Bh"], "metal": ["Am", "Bm"]},
+              "component_formulas": {"Ah": {"A": 1}, "Bh": {"B": 1}, "Am": {"A": 1}, "Bm": {"B": 1}},
+              "reactions": []}
+    budget = scale * np.array([1., 1., 0.])
+    problem = LOCAL.build_problem(record, budget, lambda t, p: np.zeros(4), phases=("host", "metal"))
+    x = np.array([.9, .1])
+    host_standard = -np.log(np.array([.82, .98]) / 1.8)
+    metal_standard = np.array([.2, -1.8]) - np.log(x)
+    gauge = np.array([.7, -.4])
+    callbacks = {"host": FULL.ideal_phase(lambda t, p: host_standard + gauge),
+                 "metal": FULL.ideal_phase(lambda t, p: metal_standard + gauge)}
+    result = ENERGY.minimize_gibbs(problem, 2000., 1., budget, callbacks,
+                                  phase_composition_bounds={"metal": (np.zeros(2), np.array([1., .1]))})
+    assert result.accepted, result.audit_reasons
+
+    def independent(total):
+        metal = total * x
+        host = 1 - metal
+        return (host @ host_standard + np.sum(xlogy(host, host / host.sum()))
+                + metal @ metal_standard + np.sum(xlogy(metal, x)))
+
+    minimum = minimize_scalar(independent, bounds=(0., 1 / .9), method="bounded",
+                              options={"xatol": 1e-13})
+    expected = np.r_[1 - minimum.x * x, minimum.x * x]
+    np.testing.assert_allclose(result.component_amounts_mol / scale, expected, atol=5e-8, rtol=0)
+    np.testing.assert_allclose(result.elemental_potentials_rt, np.r_[gauge, 0.], atol=1e-8)
+    assert np.max(np.abs(result.reduced_potentials_rt)) > 1
+    assert np.max(np.abs(result.constrained_kkt_residual_rt)) < 1e-8
+    assert result.composition_constraints[0]["multiplier_rt"] == pytest.approx(2., abs=1e-8)
+    assert abs(result.composition_constraints[0]["fraction_slack"]) < 1e-12
+    assert result.gibbs_rt / scale == pytest.approx(minimum.fun + gauge.sum(), abs=1e-12)
+
+
+def test_composition_bound_forces_exact_zero_without_evaluating_its_potential():
+    record = {"elements": ["A"], "phases": {"metal": ["a", "b"]},
+              "component_formulas": {"a": {"A": 1}, "b": {"A": 1}}, "reactions": []}
+    problem = LOCAL.build_problem(record, np.ones(1), lambda t, p: np.zeros(2), phases=("metal",))
+    callback = FULL.ideal_phase(lambda t, p: np.zeros(2))
+    result = ENERGY.minimize_gibbs(problem, 2000., 1., np.ones(1), {"metal": callback},
+                                  phase_composition_bounds={"metal": (np.zeros(2), np.array([1., 0.]))})
+    assert result.accepted, result.audit_reasons
+    np.testing.assert_array_equal(result.component_amounts_mol, [1., 0.])
+
+
+def test_composition_domain_validates_inputs_and_initial_amounts():
+    problem, budget, callbacks = reference()
+    with pytest.raises(ValueError, match="active phases"):
+        ENERGY.minimize_gibbs(problem, 2000., 1., budget, callbacks,
+                              phase_composition_bounds={"metal": (np.zeros(2), np.ones(2))})
+    for limits in (([-1., 0.], [1., 1.]), ([.9, .2], [1., 1.]), ([0., 0.], [.2, .2])):
+        with pytest.raises(ValueError, match="feasible composition bounds"):
+            ENERGY.minimize_gibbs(problem, 2000., 1., budget, callbacks,
+                                  phase_composition_bounds={"silicate": limits})
+    result = solve_reference()
+    with pytest.raises(ValueError, match="phase composition bounds"):
+        ENERGY.minimize_gibbs(problem, 2000., 1., budget, callbacks,
+                              initial_component_amounts_mol=result.component_amounts_mol,
+                              phase_composition_bounds={"silicate": ([0., 0.], [1., 0.])})
+
+
+def test_atom_equalities_can_exclude_an_entire_supported_phase_without_a_floor():
+    record = {"elements": ["A", "B"], "phases": {"host": ["AB"], "metal": ["a", "b"]},
+              "component_formulas": {"AB": {"A": 1, "B": 1}, "a": {"A": 1}, "b": {"A": 1}},
+              "reactions": []}
+    problem = LOCAL.build_problem(record, np.ones(2), lambda t, p: np.zeros(3), phases=("host", "metal"))
+    with pytest.raises(ValueError, match="declared phase is unreachable"):
+        ENERGY.minimize_gibbs(problem, 2000., 1., np.ones(2),
+                              {"host": FULL.ideal_phase(lambda t, p: np.zeros(1)),
+                               "metal": FULL.ideal_phase(lambda t, p: np.zeros(2))},
+                              phase_composition_bounds={"metal": ([.86, 0.], [1., .14])})
