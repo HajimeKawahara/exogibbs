@@ -11,6 +11,14 @@ import numpy as np
 from scipy.optimize import OptimizeResult, least_squares, linprog, minimize
 from scipy.special import logsumexp
 
+from exogibbs.equilibrium.condensate.fixed_support.zero_barrier_contracts import (
+    ZeroBarrierAudit,
+)
+from exogibbs.equilibrium.condensate.fixed_support.zero_barrier_attempt import (
+    FixedSupportAttempt,
+    FixedSupportState,
+)
+
 from exogibbs.equilibrium.condensate.support_geometry import (
     BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR as _BASIC_SUPPORT_RELATIVE_AMOUNT_FLOOR,
 )
@@ -62,6 +70,7 @@ class ZeroBarrierPolishResult:
     element_potential: np.ndarray
     support_indices: tuple[int, ...]
     report: dict[str, Any]
+    audit: ZeroBarrierAudit | None = None
 
 
 @dataclass
@@ -1337,7 +1346,7 @@ def _build_alternative_basic_support_candidates(
     return tuple(candidates), report
 
 
-def _physical_zero_barrier_audit(
+def _audit_zero_barrier_state(
     *,
     gas_formula_matrix: np.ndarray,
     condensate_formula_matrix_full: np.ndarray,
@@ -1358,7 +1367,7 @@ def _physical_zero_barrier_audit(
     total_density_tolerance: float,
     support_closure_tolerance: float,
     budget_residual_amount_scale: float = 1.0,
-) -> dict[str, Any]:
+) -> ZeroBarrierAudit:
     """Audit one candidate independently of its numerical formulation."""
 
     budget_amount_scale = float(budget_residual_amount_scale)
@@ -1480,7 +1489,7 @@ def _physical_zero_barrier_audit(
     accepted = bool(
         physical_root_certified and eligible_acceptance_source is not None
     )
-    return {
+    report = {
         "accepted": accepted,
         "acceptance_source": (
             eligible_acceptance_source if accepted else None
@@ -1501,6 +1510,32 @@ def _physical_zero_barrier_audit(
         "budget_scaled_max_abs": budget_norm,
         "total_density_scaled_abs": total_norm,
     }
+
+    return ZeroBarrierAudit(
+        accepted=accepted,
+        local_kkt_failure_reasons=_local_zero_barrier_kkt_failure_reasons(
+            dict(report, optimizer_success=optimizer_success,
+                 optimizer_status=optimizer_status),
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+        ),
+        root_blocks_passed=_physical_audit_root_blocks_passed(
+            report,
+            optimizer_success=optimizer_success,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+        ),
+        full_driving=full_driving.copy(),
+        _diagnostics=report,
+    )
+
+
+def _physical_zero_barrier_audit(**kwargs: Any) -> dict[str, Any]:
+    """Export the historical dictionary interface for physical audit callers."""
+
+    return _audit_zero_barrier_state(**kwargs).to_report()
 
 
 def _zero_barrier_acceptance_source(
@@ -1552,7 +1587,7 @@ def _zero_barrier_local_root_eligible(
 
 
 def _physical_audit_local_kkt_passed(
-    audit: dict[str, Any],
+    audit: ZeroBarrierAudit | dict[str, Any],
     *,
     optimizer_success: bool,
     optimizer_status: int | None = None,
@@ -1562,6 +1597,8 @@ def _physical_audit_local_kkt_passed(
 ) -> bool:
     """Return whether a root can terminate or advance fixed-support search."""
 
+    if isinstance(audit, ZeroBarrierAudit):
+        return audit.local_kkt_passed
     return bool(
         audit["finite"]
         and audit["support_consistent"]
@@ -1622,6 +1659,249 @@ def _normalized_linear_variable_scale(
     raise ValueError(f"Unknown normalized variable scaling: {strategy!r}.")
 
 
+def _solve_normalized_support_once(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    support_indices: Sequence[int],
+    budget_scale: np.ndarray,
+    max_function_evaluations: int,
+    variable_scaling: str = "initializer_relative",
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> FixedSupportAttempt:
+    """Solve the requested support once in normalized linear coordinates."""
+
+    ag = gas_formula_matrix
+    ac_full = condensate_formula_matrix_full
+    target = target_inventory
+    gamma = gas_standard_source
+    hcond_full = condensate_standard_source_full
+    element_count, gas_count = ag.shape
+    condensate_count = ac_full.shape[1]
+    current_support = tuple(int(index) for index in support_indices)
+    current_qtot = float(total_gas_log_amount_init)
+    current_lambda = np.asarray(
+        element_potential_init, dtype=np.float64
+    ).copy()
+    current_full_m = np.asarray(
+        condensate_amounts_init, dtype=np.float64
+    ).copy()
+
+    active = np.asarray(current_support, dtype=np.int64)
+    ac = ac_full[:, active]
+    hcond = hcond_full[active]
+    amount_scales = _maximum_condensate_amount_scales(ac, target)
+    active_initial = np.maximum(
+        current_full_m[active], 1.0e-300 * amount_scales
+    )
+    relative_initial = active_initial / amount_scales
+    x0 = np.concatenate(
+        [current_lambda, [current_qtot], relative_initial]
+    )
+
+    def unpack(values: np.ndarray):
+        lambda_ = values[:element_count]
+        qtot = values[element_count]
+        relative_amounts = values[element_count + 1 :]
+        return lambda_, qtot, amount_scales * relative_amounts
+
+    def gas_state(values: np.ndarray):
+        lambda_, qtot, amounts = unpack(values)
+        logits = ag.T @ lambda_ - gamma
+        normalization = float(logsumexp(logits))
+        log_fractions = logits - normalization
+        fractions = np.exp(log_fractions)
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            gas = np.exp(qtot + log_fractions)
+        return (
+            lambda_,
+            qtot,
+            amounts,
+            logits,
+            normalization,
+            log_fractions,
+            fractions,
+            gas,
+        )
+
+    def residual(values: np.ndarray) -> np.ndarray:
+        (
+            lambda_,
+            _qtot,
+            amounts,
+            _logits,
+            normalization,
+            _log_fractions,
+            _fractions,
+            gas,
+        ) = gas_state(values)
+        # Trust-region trial points may overflow before being rejected.
+        # Preserve the non-finite residual for the optimizer and final
+        # physical audit, but do not leak a benign NumPy warning.
+        with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+            budget_residual = budget_scale * (
+                ag @ gas + ac @ amounts - target
+            )
+        return np.concatenate(
+            [
+                hcond - ac.T @ lambda_,
+                np.asarray([normalization], dtype=np.float64),
+                budget_residual,
+            ]
+        )
+
+    def jacobian(values: np.ndarray) -> np.ndarray:
+        (
+            _lambda,
+            _qtot,
+            _amounts,
+            _logits,
+            _normalization,
+            _log_fractions,
+            fractions,
+            gas,
+        ) = gas_state(values)
+        support_count = len(current_support)
+        variable_count = element_count + 1 + support_count
+        matrix = np.zeros(
+            (variable_count, variable_count), dtype=np.float64
+        )
+        if support_count:
+            matrix[:support_count, :element_count] = -ac.T
+        normalization_row = support_count
+        mean_formula = ag @ fractions
+        matrix[normalization_row, :element_count] = mean_formula
+        budget_row_start = support_count + 1
+        gas_inventory = ag @ gas
+        gas_covariance = (
+            ag @ (gas[:, None] * ag.T)
+            - gas_inventory[:, None] * mean_formula[None, :]
+        )
+        matrix[budget_row_start:, :element_count] = (
+            budget_scale[:, None] * gas_covariance
+        )
+        matrix[budget_row_start:, element_count] = (
+            budget_scale * gas_inventory
+        )
+        if support_count:
+            matrix[budget_row_start:, element_count + 1 :] = (
+                budget_scale[:, None]
+                * ac
+                * amount_scales[None, :]
+            )
+        return matrix
+
+    call_evaluation_limit = _function_evaluation_call_limit(
+        max_function_evaluations,
+        function_evaluation_budget,
+    )
+    if call_evaluation_limit <= 0:
+        return FixedSupportAttempt(
+            support_indices=current_support,
+            state=None,
+            optimizer_success=False,
+            optimizer_status=None,
+            optimizer_message="function evaluation limit reached",
+            function_evaluations=0,
+            report={
+                "support_indices": current_support,
+                "variable_scaling": variable_scaling,
+                "optimizer_success": False,
+                "function_evaluations": 0,
+                "failure_reason": "function_evaluation_limit_reached",
+            },
+        )
+    # The default preserves very large finite-barrier potentials for trace
+    # elements.  A guarded restart may instead use the natural unit scale
+    # of these dimensionless variables after that first solve stalls.
+    variable_scale = _normalized_linear_variable_scale(
+        x0, variable_scaling
+    )
+    try:
+        optimization = _least_squares_with_scipy_overflow_guard(
+            residual,
+            x0,
+            jac=jacobian,
+            method="trf",
+            x_scale=variable_scale,
+            ftol=1.0e-13,
+            xtol=1.0e-13,
+            gtol=1.0e-13,
+            max_nfev=call_evaluation_limit,
+        )
+    except (FloatingPointError, OverflowError, ValueError) as error:
+        conservative_evaluations = 0
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(call_evaluation_limit)
+            conservative_evaluations = call_evaluation_limit
+        return FixedSupportAttempt(
+            support_indices=current_support,
+            state=None,
+            optimizer_success=False,
+            optimizer_status=None,
+            optimizer_message=f"{type(error).__name__}: {error}",
+            function_evaluations=conservative_evaluations,
+            report={
+                "support_indices": current_support,
+                "variable_scaling": variable_scaling,
+                "optimizer_success": False,
+                "function_evaluations": conservative_evaluations,
+                "function_evaluations_conservative": bool(
+                    function_evaluation_budget is not None
+                ),
+                "failure_reason": f"{type(error).__name__}: {error}",
+            },
+        )
+    if function_evaluation_budget is not None:
+        function_evaluation_budget.consume(int(optimization.nfev))
+    (
+        lambda_,
+        qtot,
+        active_amounts,
+        _logits,
+        normalization,
+        log_fractions,
+        _fractions,
+        _gas,
+    ) = gas_state(optimization.x)
+    q = qtot + log_fractions
+    full_m = np.zeros(condensate_count, dtype=np.float64)
+    if active.size:
+        full_m[active] = active_amounts
+    return FixedSupportAttempt(
+        support_indices=current_support,
+        state=FixedSupportState(q, full_m, float(qtot), lambda_),
+        optimizer_success=bool(optimization.success),
+        optimizer_status=int(optimization.status),
+        optimizer_message=str(optimization.message),
+        function_evaluations=int(optimization.nfev),
+        amount_scales=amount_scales,
+        report={
+            "support_indices": current_support,
+            "variable_scaling": variable_scaling,
+            "optimizer_success": bool(optimization.success),
+            "optimizer_status": int(optimization.status),
+            "optimizer_message": str(optimization.message),
+            "function_evaluations": int(optimization.nfev),
+            "cost": float(optimization.cost),
+            "optimality": float(optimization.optimality),
+            "reduced_variable_count": int(optimization.x.size),
+            "eliminated_gas_variable_count": gas_count,
+            "normalization_log_residual": normalization,
+            "active_condensate_amounts": tuple(
+                float(value) for value in active_amounts.tolist()
+            ),
+        },
+    )
+
+
 def _solve_normalized_gas_reduced_linear_support(
     *,
     gas_formula_matrix: np.ndarray,
@@ -1644,7 +1924,7 @@ def _solve_normalized_gas_reduced_linear_support(
     variable_scaling: str = "initializer_relative",
     function_evaluation_budget: _FunctionEvaluationBudget | None = None,
 ) -> dict[str, Any]:
-    """Solve a support after analytically eliminating gas log amounts.
+    """Control normalized attempts and audit-authorized support drops.
 
     Gas stationarity gives gas fractions from element potentials.  The
     remaining unknowns are element potentials, total gas, and capacity-scaled
@@ -1673,178 +1953,33 @@ def _solve_normalized_gas_reduced_linear_support(
     last_candidate: dict[str, Any] | None = None
 
     for _drop_round in range(len(current_support) + 1):
+        attempt = _solve_normalized_support_once(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts_init=gas_log_amounts_init,
+            condensate_amounts_init=current_full_m,
+            total_gas_log_amount_init=current_qtot,
+            element_potential_init=current_lambda,
+            support_indices=current_support,
+            budget_scale=budget_scale,
+            max_function_evaluations=max_function_evaluations,
+            variable_scaling=variable_scaling,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+        if attempt.state is None:
+            attempts.append(attempt.report)
+            break
         active = np.asarray(current_support, dtype=np.int64)
-        ac = ac_full[:, active]
-        hcond = hcond_full[active]
-        amount_scales = _maximum_condensate_amount_scales(ac, target)
-        active_initial = np.maximum(
-            current_full_m[active], 1.0e-300 * amount_scales
-        )
-        relative_initial = active_initial / amount_scales
-        x0 = np.concatenate(
-            [current_lambda, [current_qtot], relative_initial]
-        )
-
-        def unpack(values: np.ndarray):
-            lambda_ = values[:element_count]
-            qtot = values[element_count]
-            relative_amounts = values[element_count + 1 :]
-            return lambda_, qtot, amount_scales * relative_amounts
-
-        def gas_state(values: np.ndarray):
-            lambda_, qtot, amounts = unpack(values)
-            logits = ag.T @ lambda_ - gamma
-            normalization = float(logsumexp(logits))
-            log_fractions = logits - normalization
-            fractions = np.exp(log_fractions)
-            with np.errstate(over="ignore", under="ignore", invalid="ignore"):
-                gas = np.exp(qtot + log_fractions)
-            return (
-                lambda_,
-                qtot,
-                amounts,
-                logits,
-                normalization,
-                log_fractions,
-                fractions,
-                gas,
-            )
-
-        def residual(values: np.ndarray) -> np.ndarray:
-            (
-                lambda_,
-                _qtot,
-                amounts,
-                _logits,
-                normalization,
-                _log_fractions,
-                _fractions,
-                gas,
-            ) = gas_state(values)
-            # Trust-region trial points may overflow before being rejected.
-            # Preserve the non-finite residual for the optimizer and final
-            # physical audit, but do not leak a benign NumPy warning.
-            with np.errstate(over="ignore", under="ignore", invalid="ignore"):
-                budget_residual = budget_scale * (
-                    ag @ gas + ac @ amounts - target
-                )
-            return np.concatenate(
-                [
-                    hcond - ac.T @ lambda_,
-                    np.asarray([normalization], dtype=np.float64),
-                    budget_residual,
-                ]
-            )
-
-        def jacobian(values: np.ndarray) -> np.ndarray:
-            (
-                _lambda,
-                _qtot,
-                _amounts,
-                _logits,
-                _normalization,
-                _log_fractions,
-                fractions,
-                gas,
-            ) = gas_state(values)
-            support_count = len(current_support)
-            variable_count = element_count + 1 + support_count
-            matrix = np.zeros(
-                (variable_count, variable_count), dtype=np.float64
-            )
-            if support_count:
-                matrix[:support_count, :element_count] = -ac.T
-            normalization_row = support_count
-            mean_formula = ag @ fractions
-            matrix[normalization_row, :element_count] = mean_formula
-            budget_row_start = support_count + 1
-            gas_inventory = ag @ gas
-            gas_covariance = (
-                ag @ (gas[:, None] * ag.T)
-                - gas_inventory[:, None] * mean_formula[None, :]
-            )
-            matrix[budget_row_start:, :element_count] = (
-                budget_scale[:, None] * gas_covariance
-            )
-            matrix[budget_row_start:, element_count] = (
-                budget_scale * gas_inventory
-            )
-            if support_count:
-                matrix[budget_row_start:, element_count + 1 :] = (
-                    budget_scale[:, None]
-                    * ac
-                    * amount_scales[None, :]
-                )
-            return matrix
-
-        call_evaluation_limit = _function_evaluation_call_limit(
-            max_function_evaluations,
-            function_evaluation_budget,
-        )
-        if call_evaluation_limit <= 0:
-            attempts.append(
-                {
-                    "support_indices": current_support,
-                    "variable_scaling": variable_scaling,
-                    "optimizer_success": False,
-                    "function_evaluations": 0,
-                    "failure_reason": "function_evaluation_limit_reached",
-                }
-            )
-            break
-        # The default preserves very large finite-barrier potentials for trace
-        # elements.  A guarded restart may instead use the natural unit scale
-        # of these dimensionless variables after that first solve stalls.
-        variable_scale = _normalized_linear_variable_scale(
-            x0, variable_scaling
-        )
-        try:
-            optimization = _least_squares_with_scipy_overflow_guard(
-                residual,
-                x0,
-                jac=jacobian,
-                method="trf",
-                x_scale=variable_scale,
-                ftol=1.0e-13,
-                xtol=1.0e-13,
-                gtol=1.0e-13,
-                max_nfev=call_evaluation_limit,
-            )
-        except (FloatingPointError, OverflowError, ValueError) as error:
-            conservative_evaluations = 0
-            if function_evaluation_budget is not None:
-                function_evaluation_budget.consume(call_evaluation_limit)
-                conservative_evaluations = call_evaluation_limit
-            attempts.append(
-                {
-                    "support_indices": current_support,
-                    "variable_scaling": variable_scaling,
-                    "optimizer_success": False,
-                    "function_evaluations": conservative_evaluations,
-                    "function_evaluations_conservative": bool(
-                        function_evaluation_budget is not None
-                    ),
-                    "failure_reason": f"{type(error).__name__}: {error}",
-                }
-            )
-            break
-        if function_evaluation_budget is not None:
-            function_evaluation_budget.consume(int(optimization.nfev))
-        (
-            lambda_,
-            qtot,
-            active_amounts,
-            _logits,
-            normalization,
-            log_fractions,
-            _fractions,
-            _gas,
-        ) = gas_state(optimization.x)
-        q = qtot + log_fractions
-        full_m = np.zeros(condensate_count, dtype=np.float64)
-        if active.size:
-            full_m[active] = active_amounts
-        audit = _physical_zero_barrier_audit(
+        q = attempt.state.gas_log_amounts
+        full_m = attempt.state.condensate_amounts
+        qtot = attempt.state.total_gas_log_amount
+        lambda_ = attempt.state.element_potential
+        active_amounts = full_m[active]
+        amount_scales = attempt.amount_scales
+        assessment = _audit_zero_barrier_state(
             gas_formula_matrix=ag,
             condensate_formula_matrix_full=ac_full,
             target_inventory=target,
@@ -1857,43 +1992,24 @@ def _solve_normalized_gas_reduced_linear_support(
             support_indices=current_support,
             condensate_valid_mask=condensate_valid_mask,
             budget_scale=budget_scale,
-            optimizer_success=bool(optimization.success),
-            optimizer_status=int(optimization.status),
+            optimizer_success=attempt.optimizer_success,
+            optimizer_status=attempt.optimizer_status,
             stationarity_tolerance=stationarity_tolerance,
             budget_tolerance=budget_tolerance,
             total_density_tolerance=total_density_tolerance,
             support_closure_tolerance=support_closure_tolerance,
         )
-        drop_authorized_by_root = _physical_audit_root_blocks_passed(
-            audit,
-            optimizer_success=bool(optimization.success),
-            stationarity_tolerance=stationarity_tolerance,
-            budget_tolerance=budget_tolerance,
-            total_density_tolerance=total_density_tolerance,
-        )
-        attempts.append(
+        audit = assessment.to_report()
+        drop_authorized_by_root = assessment.root_blocks_passed
+        attempt_report = dict(attempt.report)
+        attempt_report.update(
             {
-                "support_indices": current_support,
-                "variable_scaling": variable_scaling,
-                "optimizer_success": bool(optimization.success),
-                "optimizer_status": int(optimization.status),
-                "optimizer_message": str(optimization.message),
-                "function_evaluations": int(optimization.nfev),
-                "cost": float(optimization.cost),
-                "optimality": float(optimization.optimality),
-                "reduced_variable_count": int(optimization.x.size),
-                "eliminated_gas_variable_count": gas_count,
-                "normalization_log_residual": normalization,
-                "physical_root_certified": audit[
-                    "physical_root_certified"
-                ],
+                "physical_root_certified": audit["physical_root_certified"],
                 "acceptance_source": audit["acceptance_source"],
                 "drop_authorized_by_root": drop_authorized_by_root,
-                "active_condensate_amounts": tuple(
-                    float(value) for value in active_amounts.tolist()
-                ),
             }
         )
+        attempts.append(attempt_report)
         last_candidate = {
             "accepted": bool(audit["accepted"]),
             "gas_log_amounts": q,
@@ -1901,11 +2017,12 @@ def _solve_normalized_gas_reduced_linear_support(
             "total_gas_log_amount": float(qtot),
             "element_potential": lambda_,
             "support_indices": current_support,
-            "optimizer_success": bool(optimization.success),
-            "optimizer_status": int(optimization.status),
-            "optimizer_message": str(optimization.message),
-            "function_evaluations": int(optimization.nfev),
+            "optimizer_success": attempt.optimizer_success,
+            "optimizer_status": attempt.optimizer_status,
+            "optimizer_message": attempt.optimizer_message,
+            "function_evaluations": attempt.function_evaluations,
             "audit": audit,
+            "assessment": assessment,
         }
         nonpositive = np.flatnonzero(active_amounts <= 0.0)
         if not nonpositive.size:
@@ -2058,7 +2175,7 @@ def _solve_log_domain_support_candidate_portfolio(
                 "active_phase_at_lower_bound", False
             )
             and _physical_audit_local_kkt_passed(
-                solved_candidate["audit"],
+                solved_candidate.get("assessment", solved_candidate["audit"]),
                 optimizer_success=bool(
                     solved_candidate["optimizer_success"]
                 ),
@@ -2221,7 +2338,7 @@ def _solve_normalized_support_candidate_portfolio(
         local_kkt_passed = bool(
             solved_candidate is not None
             and _physical_audit_local_kkt_passed(
-                solved_candidate["audit"],
+                solved_candidate.get("assessment", solved_candidate["audit"]),
                 optimizer_success=bool(
                     solved_candidate["optimizer_success"]
                 ),
@@ -2678,7 +2795,7 @@ def _reduced_log_domain_eligibility(
     return True, "eligible"
 
 
-def _solve_reduced_log_domain_active_support(
+def _solve_log_support_once(
     *,
     gas_formula_matrix: np.ndarray,
     condensate_formula_matrix_full: np.ndarray,
@@ -2690,17 +2807,12 @@ def _solve_reduced_log_domain_active_support(
     total_gas_log_amount_init: float,
     element_potential_init: np.ndarray,
     support_indices: Sequence[int],
-    condensate_valid_mask: np.ndarray,
     budget_scale: np.ndarray,
-    stationarity_tolerance: float,
     budget_tolerance: float,
-    total_density_tolerance: float,
-    support_closure_tolerance: float,
     max_function_evaluations: int,
-    allow_greedy_drop: bool = True,
     function_evaluation_budget: _FunctionEvaluationBudget | None = None,
-) -> dict[str, Any]:
-    """Solve monotone budgets in log space and signed budgets linearly."""
+) -> FixedSupportAttempt:
+    """Solve the requested support once in mixed log and linear coordinates."""
 
     ag = gas_formula_matrix
     ac_full = condensate_formula_matrix_full
@@ -2732,357 +2844,349 @@ def _solve_reduced_log_domain_active_support(
     current_full_m = np.asarray(
         condensate_amounts_init, dtype=np.float64
     ).copy()
-    dropped: list[int] = []
-    attempts: list[dict[str, Any]] = []
-    last_candidate: dict[str, Any] | None = None
 
-    for _drop_round in range(len(current_support) + 1):
-        eligible, reason = _reduced_log_domain_eligibility(
-            gas_formula_matrix=ag,
-            condensate_formula_matrix_full=ac_full,
-            target_inventory=target,
+    eligible, reason = _reduced_log_domain_eligibility(
+        gas_formula_matrix=ag,
+        condensate_formula_matrix_full=ac_full,
+        target_inventory=target,
+        support_indices=current_support,
+    )
+    if not eligible:
+        return FixedSupportAttempt(
             support_indices=current_support,
+            state=None,
+            optimizer_success=False,
+            optimizer_status=None,
+            optimizer_message=reason,
+            function_evaluations=0,
+            report={
+                "support_indices": current_support,
+                "optimizer_success": False,
+                "failure_reason": reason,
+            },
         )
-        if not eligible:
-            attempts.append(
-                {
-                    "support_indices": current_support,
-                    "optimizer_success": False,
-                    "failure_reason": reason,
-                }
-            )
-            break
-        active = np.asarray(current_support, dtype=np.int64)
-        ac = ac_full[:, active]
-        hcond = hcond_full[active]
-        log_kappa_values = []
-        for column in ac[log_rows].T:
-            consuming = column > 0.0
-            log_kappa_values.append(
-                float(
-                    np.min(
-                        log_beta[consuming] - np.log(column[consuming])
-                    )
+    active = np.asarray(current_support, dtype=np.int64)
+    ac = ac_full[:, active]
+    hcond = hcond_full[active]
+    log_kappa_values = []
+    for column in ac[log_rows].T:
+        consuming = column > 0.0
+        log_kappa_values.append(
+            float(
+                np.min(
+                    log_beta[consuming] - np.log(column[consuming])
                 )
             )
-        log_kappa = np.asarray(log_kappa_values, dtype=np.float64)
-        if active.size:
-            active_initial = current_full_m[active]
-            log_relative_initial = np.full(
-                active.shape,
-                log_relative_amount_floor,
-                dtype=np.float64,
-            )
-            positive_initial = active_initial > 0.0
-            log_relative_initial[positive_initial] = (
-                np.log(active_initial[positive_initial])
-                - log_inventory_total
-                - log_kappa[positive_initial]
-            )
-            log_relative_initial = np.clip(
-                log_relative_initial,
-                log_relative_amount_floor,
-                0.0,
-            )
-        else:
-            log_relative_initial = np.empty((0,), dtype=np.float64)
-        y_initial = current_qtot - log_inventory_total
-        x0 = np.concatenate(
-            [current_lambda, [y_initial], log_relative_initial]
         )
-
-        def unpack(values: np.ndarray):
-            lambda_ = values[:element_count]
-            y = values[element_count]
-            v = values[element_count + 1 :]
-            return lambda_, y, v
-
-        log_gas_formula = ag[log_rows]
-        log_condensate_formula = ac[log_rows]
-        linear_gas_formula = ag[linear_rows]
-        linear_condensate_formula = ac[linear_rows]
-        log_gas_coefficients = np.full(
-            log_gas_formula.shape,
-            -np.inf,
+    log_kappa = np.asarray(log_kappa_values, dtype=np.float64)
+    if active.size:
+        active_initial = current_full_m[active]
+        log_relative_initial = np.full(
+            active.shape,
+            log_relative_amount_floor,
             dtype=np.float64,
         )
-        positive_gas_coefficients = log_gas_formula > 0.0
-        log_gas_coefficients[positive_gas_coefficients] = np.log(
-            log_gas_formula[positive_gas_coefficients]
+        positive_initial = active_initial > 0.0
+        log_relative_initial[positive_initial] = (
+            np.log(active_initial[positive_initial])
+            - log_inventory_total
+            - log_kappa[positive_initial]
         )
-        log_condensate_coefficients = np.full(
-            log_condensate_formula.shape,
-            -np.inf,
-            dtype=np.float64,
+        log_relative_initial = np.clip(
+            log_relative_initial,
+            log_relative_amount_floor,
+            0.0,
         )
-        positive_condensate_coefficients = log_condensate_formula > 0.0
-        if active.size:
-            log_condensate_coefficients[
-                positive_condensate_coefficients
-            ] = (
-                np.log(
-                    log_condensate_formula[
-                        positive_condensate_coefficients
-                    ]
-                )
-                + np.broadcast_to(
-                    log_kappa,
-                    log_condensate_formula.shape,
-                )[
+    else:
+        log_relative_initial = np.empty((0,), dtype=np.float64)
+    y_initial = current_qtot - log_inventory_total
+    x0 = np.concatenate(
+        [current_lambda, [y_initial], log_relative_initial]
+    )
+
+    def unpack(values: np.ndarray):
+        lambda_ = values[:element_count]
+        y = values[element_count]
+        v = values[element_count + 1 :]
+        return lambda_, y, v
+
+    log_gas_formula = ag[log_rows]
+    log_condensate_formula = ac[log_rows]
+    linear_gas_formula = ag[linear_rows]
+    linear_condensate_formula = ac[linear_rows]
+    log_gas_coefficients = np.full(
+        log_gas_formula.shape,
+        -np.inf,
+        dtype=np.float64,
+    )
+    positive_gas_coefficients = log_gas_formula > 0.0
+    log_gas_coefficients[positive_gas_coefficients] = np.log(
+        log_gas_formula[positive_gas_coefficients]
+    )
+    log_condensate_coefficients = np.full(
+        log_condensate_formula.shape,
+        -np.inf,
+        dtype=np.float64,
+    )
+    positive_condensate_coefficients = log_condensate_formula > 0.0
+    if active.size:
+        log_condensate_coefficients[
+            positive_condensate_coefficients
+        ] = (
+            np.log(
+                log_condensate_formula[
                     positive_condensate_coefficients
                 ]
             )
+            + np.broadcast_to(
+                log_kappa,
+                log_condensate_formula.shape,
+            )[
+                positive_condensate_coefficients
+            ]
+        )
 
-        def log_budget_state(values: np.ndarray):
-            lambda_, y, v = unpack(values)
-            logits = ag.T @ lambda_ - gamma
-            gas_terms = log_gas_coefficients + logits[None, :] + y
-            condensate_terms = log_condensate_coefficients + v[None, :]
-            all_terms = np.concatenate(
-                [gas_terms, condensate_terms], axis=1
-            )
-            log_budgets = logsumexp(all_terms, axis=1)
-            return (
-                lambda_,
-                y,
-                v,
-                logits,
-                gas_terms,
-                condensate_terms,
-                log_budgets,
-            )
+    def log_budget_state(values: np.ndarray):
+        lambda_, y, v = unpack(values)
+        logits = ag.T @ lambda_ - gamma
+        gas_terms = log_gas_coefficients + logits[None, :] + y
+        condensate_terms = log_condensate_coefficients + v[None, :]
+        all_terms = np.concatenate(
+            [gas_terms, condensate_terms], axis=1
+        )
+        log_budgets = logsumexp(all_terms, axis=1)
+        return (
+            lambda_,
+            y,
+            v,
+            logits,
+            gas_terms,
+            condensate_terms,
+            log_budgets,
+        )
 
-        def residual(values: np.ndarray) -> np.ndarray:
-            (
-                lambda_,
-                y,
-                v,
-                logits,
-                _gas_terms,
-                _condensate_terms,
-                log_budgets,
-            ) = log_budget_state(values)
+    def residual(values: np.ndarray) -> np.ndarray:
+        (
+            lambda_,
+            y,
+            v,
+            logits,
+            _gas_terms,
+            _condensate_terms,
+            log_budgets,
+        ) = log_budget_state(values)
+        with np.errstate(
+            over="ignore",
+            under="ignore",
+            invalid="ignore",
+        ):
+            gas = np.exp(log_inventory_total + y + logits)
+            amounts = np.exp(log_inventory_total + log_kappa + v)
+            linear_budget_residual = budget_scale[linear_rows] * (
+                linear_gas_formula @ gas
+                + linear_condensate_formula @ amounts
+                - target[linear_rows]
+            )
+        return np.concatenate(
+            [
+                hcond - ac.T @ lambda_,
+                np.asarray([logsumexp(logits)], dtype=np.float64),
+                log_budgets - log_beta,
+                linear_budget_residual,
+            ]
+        )
+
+    def jacobian(values: np.ndarray) -> np.ndarray:
+        (
+            _lambda,
+            y,
+            v,
+            logits,
+            gas_terms,
+            condensate_terms,
+            log_budgets,
+        ) = log_budget_state(values)
+        support_count = len(current_support)
+        variable_count = element_count + 1 + support_count
+        matrix = np.zeros(
+            (variable_count, variable_count), dtype=np.float64
+        )
+        if support_count:
+            matrix[:support_count, :element_count] = -ac.T
+        normalization_row = support_count
+        normalized_gas = np.exp(logits - logsumexp(logits))
+        matrix[normalization_row, :element_count] = (
+            ag @ normalized_gas
+        )
+        budget_row_start = support_count + 1
+        log_budget_row_count = int(np.count_nonzero(log_rows))
+        y_column = element_count
+        v_column_start = element_count + 1
+        gas_weights = np.exp(gas_terms - log_budgets[:, None])
+        condensate_weights = np.exp(
+            condensate_terms - log_budgets[:, None]
+        )
+        log_budget_rows = slice(
+            budget_row_start,
+            budget_row_start + log_budget_row_count,
+        )
+        matrix[log_budget_rows, :element_count] = (
+            gas_weights @ ag.T
+        )
+        matrix[log_budget_rows, y_column] = np.sum(
+            gas_weights, axis=1
+        )
+        if support_count:
+            matrix[
+                log_budget_rows,
+                v_column_start:,
+            ] = condensate_weights
+        if np.any(linear_rows):
+            linear_row_start = budget_row_start + log_budget_row_count
             with np.errstate(
                 over="ignore",
                 under="ignore",
                 invalid="ignore",
             ):
                 gas = np.exp(log_inventory_total + y + logits)
-                amounts = np.exp(log_inventory_total + log_kappa + v)
-                linear_budget_residual = budget_scale[linear_rows] * (
-                    linear_gas_formula @ gas
-                    + linear_condensate_formula @ amounts
-                    - target[linear_rows]
+                amounts = np.exp(
+                    log_inventory_total + log_kappa + v
                 )
-            return np.concatenate(
-                [
-                    hcond - ac.T @ lambda_,
-                    np.asarray([logsumexp(logits)], dtype=np.float64),
-                    log_budgets - log_beta,
-                    linear_budget_residual,
-                ]
+            weighted_linear_gas = linear_gas_formula * gas[None, :]
+            matrix[linear_row_start:, :element_count] = (
+                budget_scale[linear_rows, None]
+                * (weighted_linear_gas @ ag.T)
             )
-
-        def jacobian(values: np.ndarray) -> np.ndarray:
-            (
-                _lambda,
-                y,
-                v,
-                logits,
-                gas_terms,
-                condensate_terms,
-                log_budgets,
-            ) = log_budget_state(values)
-            support_count = len(current_support)
-            variable_count = element_count + 1 + support_count
-            matrix = np.zeros(
-                (variable_count, variable_count), dtype=np.float64
+            matrix[linear_row_start:, y_column] = (
+                budget_scale[linear_rows]
+                * (linear_gas_formula @ gas)
             )
             if support_count:
-                matrix[:support_count, :element_count] = -ac.T
-            normalization_row = support_count
-            normalized_gas = np.exp(logits - logsumexp(logits))
-            matrix[normalization_row, :element_count] = (
-                ag @ normalized_gas
-            )
-            budget_row_start = support_count + 1
-            log_budget_row_count = int(np.count_nonzero(log_rows))
-            y_column = element_count
-            v_column_start = element_count + 1
-            gas_weights = np.exp(gas_terms - log_budgets[:, None])
-            condensate_weights = np.exp(
-                condensate_terms - log_budgets[:, None]
-            )
-            log_budget_rows = slice(
-                budget_row_start,
-                budget_row_start + log_budget_row_count,
-            )
-            matrix[log_budget_rows, :element_count] = (
-                gas_weights @ ag.T
-            )
-            matrix[log_budget_rows, y_column] = np.sum(
-                gas_weights, axis=1
-            )
-            if support_count:
-                matrix[
-                    log_budget_rows,
-                    v_column_start:,
-                ] = condensate_weights
-            if np.any(linear_rows):
-                linear_row_start = budget_row_start + log_budget_row_count
-                with np.errstate(
-                    over="ignore",
-                    under="ignore",
-                    invalid="ignore",
-                ):
-                    gas = np.exp(log_inventory_total + y + logits)
-                    amounts = np.exp(
-                        log_inventory_total + log_kappa + v
-                    )
-                weighted_linear_gas = linear_gas_formula * gas[None, :]
-                matrix[linear_row_start:, :element_count] = (
+                matrix[linear_row_start:, v_column_start:] = (
                     budget_scale[linear_rows, None]
-                    * (weighted_linear_gas @ ag.T)
+                    * linear_condensate_formula
+                    * amounts[None, :]
                 )
-                matrix[linear_row_start:, y_column] = (
-                    budget_scale[linear_rows]
-                    * (linear_gas_formula @ gas)
-                )
-                if support_count:
-                    matrix[linear_row_start:, v_column_start:] = (
-                        budget_scale[linear_rows, None]
-                        * linear_condensate_formula
-                        * amounts[None, :]
-                    )
-            return matrix
+        return matrix
 
-        lower = np.concatenate(
-            [
-                np.full(element_count + 1, -np.inf, dtype=np.float64),
-                np.full(
-                    len(current_support),
-                    log_relative_amount_floor,
-                    dtype=np.float64,
-                ),
-            ]
-        )
-        upper = np.concatenate(
-            [
-                np.full(element_count + 1, np.inf, dtype=np.float64),
-                # Capacity normalizes v but is not an optimizer constraint.
-                # A hard upper bound creates projected-gradient false
-                # convergence when a phase consumes nearly all its capacity;
-                # the independent physical budget audit remains the gate.
-                np.full(len(current_support), np.inf, dtype=np.float64),
-            ]
-        )
-        variable_scale = np.clip(np.maximum(np.abs(x0), 1.0), 1.0, 100.0)
-        call_evaluation_limit = _function_evaluation_call_limit(
-            max_function_evaluations,
-            function_evaluation_budget,
-        )
-        if call_evaluation_limit <= 0:
-            attempts.append(
-                {
-                    "support_indices": current_support,
-                    "optimizer_success": False,
-                    "function_evaluations": 0,
-                    "failure_reason": "function_evaluation_limit_reached",
-                }
-            )
-            break
-        try:
-            optimization = _least_squares_with_scipy_overflow_guard(
-                residual,
-                x0,
-                jac=jacobian,
-                bounds=(lower, upper),
-                method="trf",
-                x_scale=variable_scale,
-                ftol=1.0e-13,
-                xtol=1.0e-13,
-                gtol=1.0e-13,
-                max_nfev=call_evaluation_limit,
-            )
-        except (FloatingPointError, OverflowError, ValueError) as error:
-            conservative_evaluations = 0
-            if function_evaluation_budget is not None:
-                function_evaluation_budget.consume(call_evaluation_limit)
-                conservative_evaluations = call_evaluation_limit
-            attempts.append(
-                {
-                    "support_indices": current_support,
-                    "optimizer_success": False,
-                    "function_evaluations": conservative_evaluations,
-                    "function_evaluations_conservative": bool(
-                        function_evaluation_budget is not None
-                    ),
-                    "failure_reason": f"{type(error).__name__}: {error}",
-                }
-            )
-            break
-        if function_evaluation_budget is not None:
-            function_evaluation_budget.consume(int(optimization.nfev))
-        lambda_, y, v = unpack(optimization.x)
-        logits = ag.T @ lambda_ - gamma
-        qtot = log_inventory_total + y
-        q = qtot + logits
-        full_m = np.zeros(condensate_count, dtype=np.float64)
-        if active.size:
-            log_active_amounts = (
-                log_inventory_total + log_kappa + v
-            )
-            with np.errstate(over="ignore", under="ignore", invalid="ignore"):
-                full_m[active] = np.exp(log_active_amounts)
-        at_lower_bound = np.flatnonzero(
-            v <= log_relative_amount_floor + lower_bound_tolerance
-        )
-        lower_bound_support_indices = tuple(
-            current_support[int(local_index)]
-            for local_index in at_lower_bound
-        )
-        audit = _physical_zero_barrier_audit(
-            gas_formula_matrix=ag,
-            condensate_formula_matrix_full=ac_full,
-            target_inventory=target,
-            gas_standard_source=gamma,
-            condensate_standard_source_full=hcond_full,
-            gas_log_amounts=q,
-            condensate_amounts=full_m,
-            total_gas_log_amount=qtot,
-            element_potential=lambda_,
+    lower = np.concatenate(
+        [
+            np.full(element_count + 1, -np.inf, dtype=np.float64),
+            np.full(
+                len(current_support),
+                log_relative_amount_floor,
+                dtype=np.float64,
+            ),
+        ]
+    )
+    upper = np.concatenate(
+        [
+            np.full(element_count + 1, np.inf, dtype=np.float64),
+            # Capacity normalizes v but is not an optimizer constraint.
+            # A hard upper bound creates projected-gradient false
+            # convergence when a phase consumes nearly all its capacity;
+            # the independent physical budget audit remains the gate.
+            np.full(len(current_support), np.inf, dtype=np.float64),
+        ]
+    )
+    variable_scale = np.clip(np.maximum(np.abs(x0), 1.0), 1.0, 100.0)
+    call_evaluation_limit = _function_evaluation_call_limit(
+        max_function_evaluations,
+        function_evaluation_budget,
+    )
+    if call_evaluation_limit <= 0:
+        return FixedSupportAttempt(
             support_indices=current_support,
-            condensate_valid_mask=condensate_valid_mask,
-            budget_scale=budget_scale,
-            optimizer_success=bool(optimization.success),
-            optimizer_status=int(optimization.status),
-            stationarity_tolerance=stationarity_tolerance,
-            budget_tolerance=budget_tolerance,
-            total_density_tolerance=total_density_tolerance,
-            support_closure_tolerance=support_closure_tolerance,
+            state=None,
+            optimizer_success=False,
+            optimizer_status=None,
+            optimizer_message="function evaluation limit reached",
+            function_evaluations=0,
+            report={
+                "support_indices": current_support,
+                "optimizer_success": False,
+                "function_evaluations": 0,
+                "failure_reason": "function_evaluation_limit_reached",
+            },
         )
-        drop_authorized_by_root = _physical_audit_root_blocks_passed(
-            audit,
-            optimizer_success=bool(optimization.success),
-            stationarity_tolerance=stationarity_tolerance,
-            budget_tolerance=budget_tolerance,
-            total_density_tolerance=total_density_tolerance,
+    try:
+        optimization = _least_squares_with_scipy_overflow_guard(
+            residual,
+            x0,
+            jac=jacobian,
+            bounds=(lower, upper),
+            method="trf",
+            x_scale=variable_scale,
+            ftol=1.0e-13,
+            xtol=1.0e-13,
+            gtol=1.0e-13,
+            max_nfev=call_evaluation_limit,
         )
-        accepted = bool(audit["accepted"] and not at_lower_bound.size)
-        solver_residual = residual(optimization.x)
-        budget_residual_start = len(current_support) + 1
-        log_budget_residual_count = int(np.count_nonzero(log_rows))
-        log_budget_residual = solver_residual[
-            budget_residual_start : (
-                budget_residual_start + log_budget_residual_count
-            )
-        ]
-        linear_budget_scaled_residual = solver_residual[
-            budget_residual_start + log_budget_residual_count :
-        ]
+    except (FloatingPointError, OverflowError, ValueError) as error:
+        conservative_evaluations = 0
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(call_evaluation_limit)
+            conservative_evaluations = call_evaluation_limit
+        return FixedSupportAttempt(
+            support_indices=current_support,
+            state=None,
+            optimizer_success=False,
+            optimizer_status=None,
+            optimizer_message=f"{type(error).__name__}: {error}",
+            function_evaluations=conservative_evaluations,
+            report={
+                "support_indices": current_support,
+                "optimizer_success": False,
+                "function_evaluations": conservative_evaluations,
+                "function_evaluations_conservative": bool(
+                    function_evaluation_budget is not None
+                ),
+                "failure_reason": f"{type(error).__name__}: {error}",
+            },
+        )
+    if function_evaluation_budget is not None:
+        function_evaluation_budget.consume(int(optimization.nfev))
+    lambda_, y, v = unpack(optimization.x)
+    logits = ag.T @ lambda_ - gamma
+    qtot = log_inventory_total + y
+    q = qtot + logits
+    full_m = np.zeros(condensate_count, dtype=np.float64)
+    if active.size:
+        log_active_amounts = (
+            log_inventory_total + log_kappa + v
+        )
         with np.errstate(over="ignore", under="ignore", invalid="ignore"):
-            relative_phase_amounts = np.exp(v)
-        attempt = {
+            full_m[active] = np.exp(log_active_amounts)
+    at_lower_bound = np.flatnonzero(
+        v <= log_relative_amount_floor + lower_bound_tolerance
+    )
+    lower_bound_support_indices = tuple(
+        current_support[int(local_index)]
+        for local_index in at_lower_bound
+    )
+    solver_residual = residual(optimization.x)
+    budget_residual_start = len(current_support) + 1
+    log_budget_residual_count = int(np.count_nonzero(log_rows))
+    log_budget_residual = solver_residual[
+        budget_residual_start : (
+            budget_residual_start + log_budget_residual_count
+        )
+    ]
+    linear_budget_scaled_residual = solver_residual[
+        budget_residual_start + log_budget_residual_count :
+    ]
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        relative_phase_amounts = np.exp(v)
+    return FixedSupportAttempt(
+        support_indices=current_support,
+        state=FixedSupportState(q, full_m, float(qtot), lambda_),
+        optimizer_success=bool(optimization.success),
+        optimizer_status=int(optimization.status),
+        optimizer_message=str(optimization.message),
+        function_evaluations=int(optimization.nfev),
+        phase_coordinates=v,
+        lower_bound_support_indices=lower_bound_support_indices,
+        report={
             "support_indices": current_support,
             "optimizer_success": bool(optimization.success),
             "optimizer_status": int(optimization.status),
@@ -3097,24 +3201,134 @@ def _solve_reduced_log_domain_active_support(
                 np.max(np.abs(log_budget_residual), initial=0.0)
             ),
             "linear_budget_scaled_residual_max_abs": float(
-                np.max(
-                    np.abs(linear_budget_scaled_residual), initial=0.0
-                )
+                np.max(np.abs(linear_budget_scaled_residual), initial=0.0)
             ),
             "relative_phase_amounts": tuple(
                 float(value) for value in relative_phase_amounts.tolist()
             ),
             "active_phase_at_lower_bound": bool(at_lower_bound.size),
             "lower_bound_support_indices": lower_bound_support_indices,
-            "physical_audit_accepted": bool(audit["accepted"]),
-            "physical_root_certified": audit["physical_root_certified"],
-            "acceptance_source": audit["acceptance_source"],
-            "drop_authorized_by_root": drop_authorized_by_root,
-            "physical_budget_scaled_max_abs": audit[
-                "budget_scaled_max_abs"
+        },
+    )
+
+
+def _solve_reduced_log_domain_active_support(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    support_indices: Sequence[int],
+    condensate_valid_mask: np.ndarray,
+    budget_scale: np.ndarray,
+    stationarity_tolerance: float,
+    budget_tolerance: float,
+    total_density_tolerance: float,
+    support_closure_tolerance: float,
+    max_function_evaluations: int,
+    allow_greedy_drop: bool = True,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> dict[str, Any]:
+    """Control log-domain attempts and audit-authorized support drops."""
+
+    ag = gas_formula_matrix
+    ac_full = condensate_formula_matrix_full
+    target = target_inventory
+    gamma = gas_standard_source
+    hcond_full = condensate_standard_source_full
+    monotone_rows = _monotone_formula_row_mask(ag, ac_full)
+    log_rows = monotone_rows & (target > 0.0)
+    linear_rows = ~log_rows
+    inventory_total = float(np.sum(target[log_rows]))
+    relative_amount_floor = max(
+        64.0 * np.finfo(np.float64).eps,
+        min(1.0e-2, 0.1 * max(float(budget_tolerance), 0.0)),
+    )
+    current_support = tuple(int(index) for index in support_indices)
+    current_qtot = float(total_gas_log_amount_init)
+    current_lambda = np.asarray(
+        element_potential_init, dtype=np.float64
+    ).copy()
+    current_full_m = np.asarray(
+        condensate_amounts_init, dtype=np.float64
+    ).copy()
+    dropped: list[int] = []
+    attempts: list[dict[str, Any]] = []
+    last_candidate: dict[str, Any] | None = None
+
+    for _drop_round in range(len(current_support) + 1):
+        attempt = _solve_log_support_once(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts_init=gas_log_amounts_init,
+            condensate_amounts_init=current_full_m,
+            total_gas_log_amount_init=current_qtot,
+            element_potential_init=current_lambda,
+            support_indices=current_support,
+            budget_scale=budget_scale,
+            budget_tolerance=budget_tolerance,
+            max_function_evaluations=max_function_evaluations,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+        if attempt.state is None:
+            attempts.append(attempt.report)
+            break
+        q = attempt.state.gas_log_amounts
+        full_m = attempt.state.condensate_amounts
+        qtot = attempt.state.total_gas_log_amount
+        lambda_ = attempt.state.element_potential
+        v = attempt.phase_coordinates
+        lower_bound_support_indices = attempt.lower_bound_support_indices
+        at_lower_bound = np.asarray(
+            [
+                index
+                for index, phase in enumerate(current_support)
+                if phase in lower_bound_support_indices
             ],
-        }
-        attempts.append(attempt)
+            dtype=np.int64,
+        )
+        assessment = _audit_zero_barrier_state(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts=q,
+            condensate_amounts=full_m,
+            total_gas_log_amount=qtot,
+            element_potential=lambda_,
+            support_indices=current_support,
+            condensate_valid_mask=condensate_valid_mask,
+            budget_scale=budget_scale,
+            optimizer_success=attempt.optimizer_success,
+            optimizer_status=attempt.optimizer_status,
+            stationarity_tolerance=stationarity_tolerance,
+            budget_tolerance=budget_tolerance,
+            total_density_tolerance=total_density_tolerance,
+            support_closure_tolerance=support_closure_tolerance,
+        )
+        audit = assessment.to_report()
+        drop_authorized_by_root = assessment.root_blocks_passed
+        accepted = bool(audit["accepted"] and not at_lower_bound.size)
+        attempt_report = dict(attempt.report)
+        attempt_report.update(
+            {
+                "physical_audit_accepted": bool(audit["accepted"]),
+                "physical_root_certified": audit["physical_root_certified"],
+                "acceptance_source": audit["acceptance_source"],
+                "drop_authorized_by_root": drop_authorized_by_root,
+                "physical_budget_scaled_max_abs": audit["budget_scaled_max_abs"],
+            }
+        )
+        attempts.append(attempt_report)
         last_candidate = {
             "accepted": accepted,
             "gas_log_amounts": q,
@@ -3122,13 +3336,14 @@ def _solve_reduced_log_domain_active_support(
             "total_gas_log_amount": float(qtot),
             "element_potential": lambda_,
             "support_indices": current_support,
-            "optimizer_success": bool(optimization.success),
-            "optimizer_status": int(optimization.status),
-            "optimizer_message": str(optimization.message),
-            "function_evaluations": int(optimization.nfev),
+            "optimizer_success": attempt.optimizer_success,
+            "optimizer_status": attempt.optimizer_status,
+            "optimizer_message": attempt.optimizer_message,
+            "function_evaluations": attempt.function_evaluations,
             "active_phase_at_lower_bound": bool(at_lower_bound.size),
             "lower_bound_support_indices": lower_bound_support_indices,
             "audit": audit,
+            "assessment": assessment,
         }
         if accepted:
             break
@@ -3315,7 +3530,7 @@ def _solve_structural_zero_reduced_log_domain_active_support(
     normalized_local_kkt_passed = bool(
         candidate is not None
         and _physical_audit_local_kkt_passed(
-            candidate["audit"],
+            candidate.get("assessment", candidate["audit"]),
             optimizer_success=bool(candidate["optimizer_success"]),
             optimizer_status=int(candidate["optimizer_status"]),
             stationarity_tolerance=stationarity_tolerance,
@@ -3458,7 +3673,7 @@ def _solve_structural_zero_reduced_log_domain_active_support(
         full_lambda[structural_zero_rows] = zero_potential
 
     full_q = qtot + ag.T @ full_lambda - gamma
-    audit = _physical_zero_barrier_audit(
+    assessment = _audit_zero_barrier_state(
         gas_formula_matrix=ag,
         condensate_formula_matrix_full=ac_full,
         target_inventory=target,
@@ -3478,6 +3693,7 @@ def _solve_structural_zero_reduced_log_domain_active_support(
         total_density_tolerance=total_density_tolerance,
         support_closure_tolerance=support_closure_tolerance,
     )
+    audit = assessment.to_report()
     active_phase_at_lower_bound = bool(
         candidate.get("active_phase_at_lower_bound", False)
     )
@@ -3523,6 +3739,7 @@ def _solve_structural_zero_reduced_log_domain_active_support(
             "element_potential": full_lambda,
             "support_indices": full_support,
             "audit": audit,
+            "assessment": assessment,
         }
     )
     return {
@@ -4520,6 +4737,219 @@ def _normalized_linear_unit_restart_eligibility(
     return True, "finite_function_evaluation_limit"
 
 
+def _solve_dense_support_once(
+    *,
+    gas_formula_matrix: np.ndarray,
+    condensate_formula_matrix_full: np.ndarray,
+    target_inventory: np.ndarray,
+    gas_standard_source: np.ndarray,
+    condensate_standard_source_full: np.ndarray,
+    gas_log_amounts_init: np.ndarray,
+    condensate_amounts_init: np.ndarray,
+    total_gas_log_amount_init: float,
+    element_potential_init: np.ndarray,
+    support_indices: Sequence[int],
+    budget_scale: np.ndarray,
+    max_function_evaluations: int,
+    function_evaluation_budget: _FunctionEvaluationBudget | None = None,
+) -> FixedSupportAttempt:
+    """Solve the requested support once in joint gas and phase coordinates."""
+
+    ag = gas_formula_matrix
+    ac_full = condensate_formula_matrix_full
+    target = target_inventory
+    gamma = gas_standard_source
+    hcond_full = condensate_standard_source_full
+    element_count, gas_count = ag.shape
+    condensate_count = ac_full.shape[1]
+    current_support = tuple(int(index) for index in support_indices)
+    current_q = np.asarray(gas_log_amounts_init, dtype=np.float64).copy()
+    current_qtot = float(total_gas_log_amount_init)
+    current_lambda = np.asarray(element_potential_init, dtype=np.float64).copy()
+    current_full_m = np.asarray(condensate_amounts_init, dtype=np.float64).copy()
+
+    active = np.asarray(current_support, dtype=np.int64)
+    ac = ac_full[:, active]
+    hcond = hcond_full[active]
+    amount_scales = _maximum_condensate_amount_scales(ac, target)
+    m_initial = np.maximum(current_full_m[active], 1.0e-300 * amount_scales)
+    u_initial = m_initial / amount_scales
+    x0 = np.concatenate(
+        [current_q, u_initial, [current_qtot], current_lambda]
+    )
+
+    def unpack(values: np.ndarray):
+        q = values[:gas_count]
+        u_start = gas_count
+        u = values[u_start : u_start + len(current_support)]
+        qtot = values[u_start + len(current_support)]
+        lambda_ = values[u_start + len(current_support) + 1 :]
+        return q, amount_scales * u, qtot, lambda_
+
+    def residual(values: np.ndarray) -> np.ndarray:
+        q, amounts, qtot, lambda_ = unpack(values)
+        with np.errstate(
+            over="ignore",
+            under="ignore",
+            invalid="ignore",
+        ):
+            gas = np.exp(q)
+            gas_fractions = np.exp(q - qtot)
+            result = np.concatenate(
+                [
+                    q + gamma - qtot - ag.T @ lambda_,
+                    hcond - ac.T @ lambda_,
+                    budget_scale * (
+                        ag @ gas + ac @ amounts - target
+                    ),
+                    np.asarray(
+                        [np.sum(gas_fractions) - 1.0],
+                        dtype=np.float64,
+                    ),
+                ]
+            )
+        return result
+
+    def jacobian(values: np.ndarray) -> np.ndarray:
+        q, _amounts, qtot, _lambda = unpack(values)
+        with np.errstate(
+            over="ignore",
+            under="ignore",
+            invalid="ignore",
+        ):
+            gas = np.exp(q)
+            gas_fractions = np.exp(q - qtot)
+        support_count = len(current_support)
+        variable_count = gas_count + support_count + 1 + element_count
+        matrix = np.zeros((variable_count, variable_count), dtype=np.float64)
+        gas_rows = slice(0, gas_count)
+        cond_rows = slice(gas_count, gas_count + support_count)
+        budget_rows = slice(
+            gas_count + support_count,
+            gas_count + support_count + element_count,
+        )
+        total_row = variable_count - 1
+        u_columns = slice(gas_count, gas_count + support_count)
+        qtot_column = gas_count + support_count
+        lambda_columns = slice(qtot_column + 1, variable_count)
+        matrix[gas_rows, :gas_count] = np.eye(gas_count)
+        matrix[gas_rows, qtot_column] = -1.0
+        matrix[gas_rows, lambda_columns] = -ag.T
+        matrix[cond_rows, lambda_columns] = -ac.T
+        with np.errstate(
+            over="ignore",
+            under="ignore",
+            invalid="ignore",
+        ):
+            matrix[budget_rows, :gas_count] = (
+                budget_scale[:, None] * ag * gas[None, :]
+            )
+            matrix[budget_rows, u_columns] = (
+                budget_scale[:, None]
+                * ac
+                * amount_scales[None, :]
+            )
+            matrix[total_row, :gas_count] = gas_fractions
+            matrix[total_row, qtot_column] = -np.sum(gas_fractions)
+        return matrix
+
+    call_evaluation_limit = _function_evaluation_call_limit(
+        max_function_evaluations,
+        function_evaluation_budget,
+    )
+    if call_evaluation_limit <= 0:
+        last_optimizer_success = False
+        last_optimizer_status = None
+        last_optimizer_message = "function evaluation limit reached"
+        last_nfev = 0
+        return FixedSupportAttempt(
+            support_indices=current_support,
+            state=None,
+            optimizer_success=False,
+            optimizer_status=last_optimizer_status,
+            optimizer_message=last_optimizer_message,
+            function_evaluations=last_nfev,
+            report={
+                "support_indices": current_support,
+                "optimizer_success": False,
+                "optimizer_status": last_optimizer_status,
+                "optimizer_message": last_optimizer_message,
+                "function_evaluations": 0,
+                "failure_reason": "function_evaluation_limit_reached",
+            },
+        )
+    try:
+        optimization = _least_squares_with_scipy_overflow_guard(
+            residual,
+            x0,
+            jac=jacobian,
+            method="trf",
+            x_scale="jac",
+            ftol=1.0e-13,
+            xtol=1.0e-13,
+            gtol=1.0e-13,
+            max_nfev=call_evaluation_limit,
+        )
+    except (FloatingPointError, OverflowError, ValueError) as error:
+        conservative_evaluations = 0
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(call_evaluation_limit)
+            conservative_evaluations = call_evaluation_limit
+        last_optimizer_success = False
+        last_optimizer_status = None
+        last_optimizer_message = f"{type(error).__name__}: {error}"
+        last_nfev = conservative_evaluations
+        return FixedSupportAttempt(
+            support_indices=current_support,
+            state=None,
+            optimizer_success=False,
+            optimizer_status=last_optimizer_status,
+            optimizer_message=last_optimizer_message,
+            function_evaluations=last_nfev,
+            report={
+                "support_indices": current_support,
+                "optimizer_success": False,
+                "optimizer_status": last_optimizer_status,
+                "optimizer_message": last_optimizer_message,
+                "function_evaluations": last_nfev,
+                "function_evaluations_conservative": bool(
+                    function_evaluation_budget is not None
+                ),
+                "failure_reason": "linear_amount_solver_exception",
+            },
+        )
+    if function_evaluation_budget is not None:
+        function_evaluation_budget.consume(int(optimization.nfev))
+    q, active_amounts, qtot, lambda_ = unpack(optimization.x)
+    last_optimizer_success = bool(optimization.success)
+    last_optimizer_status = int(optimization.status)
+    last_optimizer_message = str(optimization.message)
+    last_nfev = int(optimization.nfev)
+    candidate_full_m = np.zeros(condensate_count, dtype=np.float64)
+    candidate_full_m[active] = active_amounts
+    return FixedSupportAttempt(
+        support_indices=current_support,
+        state=FixedSupportState(q, candidate_full_m, float(qtot), lambda_),
+        optimizer_success=last_optimizer_success,
+        optimizer_status=last_optimizer_status,
+        optimizer_message=last_optimizer_message,
+        function_evaluations=last_nfev,
+        amount_scales=amount_scales,
+        report={
+            "support_indices": current_support,
+            "optimizer_success": last_optimizer_success,
+            "optimizer_status": last_optimizer_status,
+            "optimizer_message": last_optimizer_message,
+            "function_evaluations": last_nfev,
+            "cost": float(optimization.cost),
+            "optimality": float(optimization.optimality),
+            "active_condensate_amounts": tuple(
+                float(value) for value in active_amounts.tolist()
+            ),
+        },
+    )
+
+
 def _polish_zero_barrier_support_once(
     *,
     gas_formula_matrix: Any,
@@ -4957,7 +5387,7 @@ def _polish_zero_barrier_support_once(
             candidate is not None
             and not candidate.get("active_phase_at_lower_bound", False)
             and _physical_audit_local_kkt_passed(
-                candidate["audit"],
+                candidate.get("assessment", candidate["audit"]),
                 optimizer_success=bool(candidate["optimizer_success"]),
                 optimizer_status=int(candidate["optimizer_status"]),
                 stationarity_tolerance=stationarity_tolerance,
@@ -5836,6 +6266,7 @@ def _polish_zero_barrier_support_once(
             element_potential=retry_result.element_potential,
             support_indices=retry_result.support_indices,
             report=retry_report,
+            audit=retry_result.audit,
         )
 
     if reduced_primary_selected and primary_candidate is not None:
@@ -5869,156 +6300,36 @@ def _polish_zero_barrier_support_once(
     )
     for _drop_round in range(dense_drop_rounds):
         dense_solver_attempted = True
+        attempt = _solve_dense_support_once(
+            gas_formula_matrix=ag,
+            condensate_formula_matrix_full=ac_full,
+            target_inventory=target,
+            gas_standard_source=gamma,
+            condensate_standard_source_full=hcond_full,
+            gas_log_amounts_init=current_q,
+            condensate_amounts_init=current_full_m,
+            total_gas_log_amount_init=current_qtot,
+            element_potential_init=current_lambda,
+            support_indices=current_support,
+            budget_scale=budget_scale,
+            max_function_evaluations=max_function_evaluations,
+            function_evaluation_budget=function_evaluation_budget,
+        )
+        last_optimizer_success = attempt.optimizer_success
+        last_optimizer_status = attempt.optimizer_status
+        last_optimizer_message = attempt.optimizer_message
+        last_nfev = attempt.function_evaluations
+        if attempt.state is None:
+            attempts.append(attempt.report)
+            break
         active = np.asarray(current_support, dtype=np.int64)
-        ac = ac_full[:, active]
-        hcond = hcond_full[active]
-        amount_scales = _maximum_condensate_amount_scales(ac, target)
-        m_initial = np.maximum(current_full_m[active], 1.0e-300 * amount_scales)
-        u_initial = m_initial / amount_scales
-        x0 = np.concatenate(
-            [current_q, u_initial, [current_qtot], current_lambda]
-        )
-
-        def unpack(values: np.ndarray):
-            q = values[:gas_count]
-            u_start = gas_count
-            u = values[u_start : u_start + len(current_support)]
-            qtot = values[u_start + len(current_support)]
-            lambda_ = values[u_start + len(current_support) + 1 :]
-            return q, amount_scales * u, qtot, lambda_
-
-        def residual(values: np.ndarray) -> np.ndarray:
-            q, amounts, qtot, lambda_ = unpack(values)
-            with np.errstate(
-                over="ignore",
-                under="ignore",
-                invalid="ignore",
-            ):
-                gas = np.exp(q)
-                gas_fractions = np.exp(q - qtot)
-                result = np.concatenate(
-                    [
-                        q + gamma - qtot - ag.T @ lambda_,
-                        hcond - ac.T @ lambda_,
-                        budget_scale * (
-                            ag @ gas + ac @ amounts - target
-                        ),
-                        np.asarray(
-                            [np.sum(gas_fractions) - 1.0],
-                            dtype=np.float64,
-                        ),
-                    ]
-                )
-            return result
-
-        def jacobian(values: np.ndarray) -> np.ndarray:
-            q, _amounts, qtot, _lambda = unpack(values)
-            with np.errstate(
-                over="ignore",
-                under="ignore",
-                invalid="ignore",
-            ):
-                gas = np.exp(q)
-                gas_fractions = np.exp(q - qtot)
-            support_count = len(current_support)
-            variable_count = gas_count + support_count + 1 + element_count
-            matrix = np.zeros((variable_count, variable_count), dtype=np.float64)
-            gas_rows = slice(0, gas_count)
-            cond_rows = slice(gas_count, gas_count + support_count)
-            budget_rows = slice(
-                gas_count + support_count,
-                gas_count + support_count + element_count,
-            )
-            total_row = variable_count - 1
-            u_columns = slice(gas_count, gas_count + support_count)
-            qtot_column = gas_count + support_count
-            lambda_columns = slice(qtot_column + 1, variable_count)
-            matrix[gas_rows, :gas_count] = np.eye(gas_count)
-            matrix[gas_rows, qtot_column] = -1.0
-            matrix[gas_rows, lambda_columns] = -ag.T
-            matrix[cond_rows, lambda_columns] = -ac.T
-            with np.errstate(
-                over="ignore",
-                under="ignore",
-                invalid="ignore",
-            ):
-                matrix[budget_rows, :gas_count] = (
-                    budget_scale[:, None] * ag * gas[None, :]
-                )
-                matrix[budget_rows, u_columns] = (
-                    budget_scale[:, None]
-                    * ac
-                    * amount_scales[None, :]
-                )
-                matrix[total_row, :gas_count] = gas_fractions
-                matrix[total_row, qtot_column] = -np.sum(gas_fractions)
-            return matrix
-
-        call_evaluation_limit = _function_evaluation_call_limit(
-            max_function_evaluations,
-            function_evaluation_budget,
-        )
-        if call_evaluation_limit <= 0:
-            last_optimizer_success = False
-            last_optimizer_status = None
-            last_optimizer_message = "function evaluation limit reached"
-            last_nfev = 0
-            attempts.append(
-                {
-                    "support_indices": current_support,
-                    "optimizer_success": False,
-                    "optimizer_status": last_optimizer_status,
-                    "optimizer_message": last_optimizer_message,
-                    "function_evaluations": 0,
-                    "failure_reason": "function_evaluation_limit_reached",
-                }
-            )
-            break
-        try:
-            optimization = _least_squares_with_scipy_overflow_guard(
-                residual,
-                x0,
-                jac=jacobian,
-                method="trf",
-                x_scale="jac",
-                ftol=1.0e-13,
-                xtol=1.0e-13,
-                gtol=1.0e-13,
-                max_nfev=call_evaluation_limit,
-            )
-        except (FloatingPointError, OverflowError, ValueError) as error:
-            conservative_evaluations = 0
-            if function_evaluation_budget is not None:
-                function_evaluation_budget.consume(call_evaluation_limit)
-                conservative_evaluations = call_evaluation_limit
-            last_optimizer_success = False
-            last_optimizer_status = None
-            last_optimizer_message = f"{type(error).__name__}: {error}"
-            last_nfev = conservative_evaluations
-            attempts.append(
-                {
-                    "support_indices": current_support,
-                    "optimizer_success": False,
-                    "optimizer_status": last_optimizer_status,
-                    "optimizer_message": last_optimizer_message,
-                    "function_evaluations": last_nfev,
-                    "function_evaluations_conservative": bool(
-                        function_evaluation_budget is not None
-                    ),
-                    "failure_reason": "linear_amount_solver_exception",
-                }
-            )
-            break
-        if function_evaluation_budget is not None:
-            function_evaluation_budget.consume(int(optimization.nfev))
-        q, active_amounts, qtot, lambda_ = unpack(optimization.x)
-        last_optimizer_success = bool(optimization.success)
-        last_optimizer_status = int(optimization.status)
-        last_optimizer_message = str(optimization.message)
-        last_nfev = int(optimization.nfev)
-        candidate_full_m = np.zeros(condensate_count, dtype=np.float64)
-        candidate_full_m[active] = active_amounts
-        candidate_audit = _physical_zero_barrier_audit(
+        q = attempt.state.gas_log_amounts
+        candidate_full_m = attempt.state.condensate_amounts
+        qtot = attempt.state.total_gas_log_amount
+        lambda_ = attempt.state.element_potential
+        active_amounts = candidate_full_m[active]
+        amount_scales = attempt.amount_scales
+        candidate_assessment = _audit_zero_barrier_state(
             gas_formula_matrix=ag,
             condensate_formula_matrix_full=ac_full,
             target_inventory=target,
@@ -6038,34 +6349,17 @@ def _polish_zero_barrier_support_once(
             total_density_tolerance=total_density_tolerance,
             support_closure_tolerance=support_closure_tolerance,
         )
-        drop_authorized_by_root = _physical_audit_root_blocks_passed(
-            candidate_audit,
-            optimizer_success=last_optimizer_success,
-            stationarity_tolerance=stationarity_tolerance,
-            budget_tolerance=budget_tolerance,
-            total_density_tolerance=total_density_tolerance,
-        )
-        attempts.append(
+        candidate_audit = candidate_assessment.to_report()
+        drop_authorized_by_root = candidate_assessment.root_blocks_passed
+        attempt_report = dict(attempt.report)
+        attempt_report.update(
             {
-                "support_indices": current_support,
-                "optimizer_success": last_optimizer_success,
-                "optimizer_status": last_optimizer_status,
-                "optimizer_message": last_optimizer_message,
-                "function_evaluations": last_nfev,
-                "cost": float(optimization.cost),
-                "optimality": float(optimization.optimality),
-                "physical_root_certified": candidate_audit[
-                    "physical_root_certified"
-                ],
-                "acceptance_source": candidate_audit[
-                    "acceptance_source"
-                ],
+                "physical_root_certified": candidate_audit["physical_root_certified"],
+                "acceptance_source": candidate_audit["acceptance_source"],
                 "drop_authorized_by_root": drop_authorized_by_root,
-                "active_condensate_amounts": tuple(
-                    float(value) for value in active_amounts.tolist()
-                ),
             }
         )
+        attempts.append(attempt_report)
         nonpositive = np.flatnonzero(active_amounts <= 0.0)
         if nonpositive.size:
             current_q = q
@@ -6204,7 +6498,7 @@ def _polish_zero_barrier_support_once(
             ]
             selected_formulation = "reduced_log_domain_support_search"
 
-    audit = _physical_zero_barrier_audit(
+    assessment = _audit_zero_barrier_state(
         gas_formula_matrix=ag,
         condensate_formula_matrix_full=ac_full,
         target_inventory=target,
@@ -6224,6 +6518,7 @@ def _polish_zero_barrier_support_once(
         total_density_tolerance=total_density_tolerance,
         support_closure_tolerance=support_closure_tolerance,
     )
+    audit = assessment.to_report()
     full_driving = audit["full_driving"]
     finite = bool(audit["finite"])
     positive_active_amounts = bool(audit["positive_active_amounts"])
@@ -6350,6 +6645,7 @@ def _polish_zero_barrier_support_once(
         element_potential=np.asarray(current_lambda, dtype=np.float64),
         support_indices=current_support,
         report=report,
+        audit=assessment,
     )
 
 
@@ -6783,11 +7079,15 @@ def polish_zero_barrier_active_support(
             )
         cumulative_linear_evaluations += linear_evaluations
         cumulative_reduced_evaluations += reduced_evaluations
-        failure_reasons = _local_zero_barrier_kkt_failure_reasons(
-            report,
-            stationarity_tolerance=stationarity_tolerance,
-            budget_tolerance=budget_tolerance,
-            total_density_tolerance=total_density_tolerance,
+        failure_reasons = (
+            result.audit.local_kkt_failure_reasons
+            if result.audit is not None
+            else _local_zero_barrier_kkt_failure_reasons(
+                report,
+                stationarity_tolerance=stationarity_tolerance,
+                budget_tolerance=budget_tolerance,
+                total_density_tolerance=total_density_tolerance,
+            )
         )
         output_key = tuple(sorted(output_support))
         added_index: int | None = None
@@ -6853,7 +7153,9 @@ def polish_zero_barrier_active_support(
                     base_result = node_results[base_key]
                     base_support = tuple(base_result.support_indices)
                     base_driving = np.asarray(
-                        base_result.report["full_condensate_driving"],
+                        (base_result.audit.full_driving
+                         if base_result.audit is not None
+                         else base_result.report["full_condensate_driving"]),
                         dtype=np.float64,
                     )
                     active_mask = np.zeros(condensate_count, dtype=bool)
@@ -7197,6 +7499,7 @@ def polish_zero_barrier_active_support(
         element_potential=final_result.element_potential,
         support_indices=final_support,
         report=final_report,
+        audit=final_result.audit,
     )
 
 
