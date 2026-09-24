@@ -1,0 +1,1 @@
+JAX backend: cpu; devices: ['TFRT_CPU_0']
