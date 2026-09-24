@@ -13,13 +13,13 @@ from exogibbs.thermo.models import ChemicalSetup
 
 
 DIRECTORY = Path(__file__).resolve().parents[3] / "examples" / "metal_silicate"
-NAMES = ("local", "full_potential", "common_gibbs", "m1_chemistry", "m2_atmosphere")
+NAMES = ("local", "full_potential", "common_gibbs", "m1_chemistry", "m2_atmosphere", "phase_selection")
 previous = {name: sys.modules.get(name) for name in NAMES}
 sys.path.insert(0, str(DIRECTORY))
 try:
     for name in NAMES:
         sys.modules.pop(name, None)
-    LOCAL, FULL, ENERGY, M1, ATM = [importlib.import_module(name) for name in NAMES]
+    LOCAL, FULL, ENERGY, M1, ATM, PHASE = [importlib.import_module(name) for name in NAMES]
 finally:
     sys.path.pop(0)
     for name, module in previous.items():
@@ -160,6 +160,25 @@ def test_fastchem_hydrogen_helium_only_restores_full_catalog_exact_zeros(fastche
     np.testing.assert_array_equal(np.array(report["gas_amounts_mol"])[forbidden], 0.)
     np.testing.assert_array_equal(report["condensate_amounts_mol"], np.zeros(26))
     np.testing.assert_allclose(report["gas_element_amounts_mol"], [2., .1, 0., 0., 0., 0., 0.], atol=1e-10)
+
+    # A zero *global* He budget also removes the carrier from build_problem.
+    # The shared wrapper must restore all seven native callback coordinates.
+    b = np.array([2., 0., 0., 0., 0., 0., 0.])
+    names = [element + "_atmosphere_atom" for element in fastchem_setup.elements]
+    record = {"elements": list(fastchem_setup.elements), "phases": {"atmosphere": names},
+              "component_formulas": {name: {element: 1.} for name, element in zip(names, fastchem_setup.elements)},
+              "reactions": []}
+    problem = LOCAL.build_problem(record, b, lambda t, p: np.zeros(7), phases=("atmosphere",))
+    assert problem.species == (names[0],)
+    restricted = PHASE.restrict_phase_callbacks(record, problem, {"atmosphere": phase})["atmosphere"]
+    state = restricted(2000., 1., [2.])
+    report = phase.parcel(2000., 1., b)
+    assert report["accepted"]
+    assert state.mu_rt.shape == (1,)
+    assert np.isfinite(state.mu_rt[0])
+    assert state.gibbs_rt == report["gibbs_rt"]
+    np.testing.assert_allclose(report["gas_element_amounts_mol"], b, atol=1e-10)
+    assert report["gas_amounts_mol"][fastchem_setup.gas_species.index("He1")] == 0.
 
 
 def test_nested_solver_failure_is_not_a_thermodynamic_value(analytic_setup, monkeypatch):
