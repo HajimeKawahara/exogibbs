@@ -62,3 +62,12 @@ The archived assessment is reproducible with
 [`run_m2_host_stability.py`](../../../examples/metal_silicate/run_m2_host_stability.py)
 and a source JSON input; see the
 [assessment contract](../../../examples/metal_silicate/m2_host_stability.md).
+
+## Complete validation
+
+[validation.json](validation.json) records all 1821 collected unit tests on
+`b814b38`: 1820 passed and one existing generated-version-module skip.
+The suite used eight disjoint file shards and the pinned ExoEOS `4e3983a`.
+The documentation build succeeds with 127 existing API/gallery warnings
+(including repeated warnings for the pre-existing M1 gallery title); neither
+new host-assessment page has a warning.
