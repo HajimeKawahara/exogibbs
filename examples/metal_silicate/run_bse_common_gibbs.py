@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict
+from functools import lru_cache
 import hashlib
 import json
 from pathlib import Path
@@ -22,6 +23,8 @@ from common_gibbs import PhaseEvaluationError, minimize_gibbs
 from full_potential import PhaseState, ideal_phase
 from hydrogen import _checkout_provenance, dissolved_h2_standard_rt, hirschmann2012_ln_solubility
 from local import build_problem
+from m1_chemistry import provenance as gas_provenance
+from m2_common_gas import REFERENCE_ANCHORS, SHARED_SPECIES, anchored_standards_rt, build_common_gas_setup
 from melts_coupled import COMMON_R, load_melts_evaluator, make_melts_h2_phase, provider_ledger
 from reference import load_reference
 from run_melts_reference import reduced_gas_standards_rt
@@ -55,7 +58,7 @@ def source_standards_rt(temperature_k: float, pressure_bar: float = 1.) -> tuple
 
 def build_bse_problem(
     inventory_path: Path, exoeos_checkout: Path, runtime: Path, python_executable: str,
-    *, temperature_k: float = 2173.15, pressure_bar: float = 1.,
+    *, temperature_k: float = 2173.15, pressure_bar: float = 1., gas_model: str = "source",
 ) -> tuple[dict, np.ndarray, dict, np.ndarray, dict]:
     """Return record, absolute budgets, callbacks, initial ledger and metadata.
 
@@ -65,6 +68,8 @@ def build_bse_problem(
     MELTS is evaluated at a fixed 100 g dry-rock amount scale, then its
     extensive energy is converted back to the full physical mol basis.
     """
+    if gas_model not in {"source", "m1_shared"}:
+        raise ValueError("gas_model must be source or m1_shared.")
     import exoeos
     from exoeos import MaFeSiOHLiquid, total_solution_gibbs_RT, total_solution_state
 
@@ -108,6 +113,20 @@ def build_bse_problem(
     extra = reduced_gas_standards_rt(temperature_k)
     gas_names = [name for name in source["phases"]["gas"] + [n + "_gas" for n in extra]
                  if set(formulas[name]) <= allowed_elements]
+    common_setup = None
+    if gas_model == "m1_shared":
+        common_setup = build_common_gas_setup()
+        common_names = [name + "_gas" for name in SHARED_SPECIES]
+        gas_columns = [common_names.index(name) for name in gas_names]
+
+        @lru_cache(maxsize=8)
+        def gas_standards(t, p):
+            reference, _ = source_standards_rt(t, p)
+            values, _ = anchored_standards_rt(common_setup, t, reference)
+            return values[gas_columns]
+    else:
+        gas_standard = np.array([standards[name] for name in gas_names])
+        gas_standards = lambda t, p: gas_standard
     metal_names = [name for name in source["phases"]["metal"] if set(formulas[name]) <= allowed_elements]
     melt_names = [name + "_melts" for name in host_names]
     for index, name in zip(host_indices, melt_names):
@@ -128,8 +147,10 @@ def build_bse_problem(
         raise ValueError("Canonical initial components add or omit atoms from the input ledger.")
     record = {"elements": list(ELEMENTS), "phases": phases,
               "component_formulas": {name: formulas[name] for name in names}, "reactions": []}
-    h2_standard = float(dissolved_h2_standard_rt(standards["H2_gas"], hirschmann2012_ln_solubility(pressure_bar)))
-    scaled_melt = make_melts_h2_phase(evaluator, host_names, lambda t, p: h2_standard,
+    def h2_standard(t, p):
+        return float(dissolved_h2_standard_rt(gas_standards(t, p)[gas_names.index("H2_gas")],
+                                             hirschmann2012_ln_solubility(p)))
+    scaled_melt = make_melts_h2_phase(evaluator, host_names, h2_standard,
                                       runtime=runtime, python_executable=python_executable)
     execution = {"native_melt_calls": 0, "last_failed_melt_state": None}
     def melt(t, p, n):
@@ -166,9 +187,8 @@ def build_bse_problem(
         alloy_derivative = jax.jit(jax.value_and_grad(
             lambda n: total_solution_gibbs_RT(model, temperature_k, pressure_bar * 1e5, n, metal_standard)))
         alloy.energy_value_and_grad_rt = lambda t, p, n: alloy_derivative(n)
-    gas_standard = np.array([standards[name] for name in gas_names])
     callbacks = {"silicate": melt, "metal": alloy,
-                 "gas": ideal_phase(lambda t, p: gas_standard, gas=True)}
+                 "gas": ideal_phase(gas_standards, gas=True)}
     metadata = {
         "model_id": "bse_melts_ma_fe_si_o_h_common_gibbs_conditional_v1",
         "evidence_level": "conditional_numerical_mechanism_only",
@@ -180,6 +200,7 @@ def build_bse_problem(
         "host_ledger": provider_ledger(evaluator, host_names),
         "standards": {"source_temperature_branch_K": source["cases"][0]["T_K"],
                       "evaluation_temperature_K": temperature_k,
+                      "gas_model": gas_model,
                       "policy": "Fixed source branch extrapolation; common R conversion, native alloy shifts, and one H2 solubility pressure term. Cross-phase alignment is unverified."},
         "missing_acceptance": ["aligned MELTS/alloy/gas/upper-atmosphere standards", "revised host-specific H2 calibration",
                                "alloy H interactions and pressure response", "BSE liquid stability and omitted transfer bounds",
@@ -189,6 +210,18 @@ def build_bse_problem(
                        "file_sha256": {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
                                        for name in ("run_bse_common_gibbs.py", "common_gibbs.py", "full_potential.py", "melts_coupled.py", "hydrogen.py", "source.py", "reference.json", "reduced_gas_reference.json")}},
     }
+    if common_setup is not None:
+        _, gauge = anchored_standards_rt(common_setup, temperature_k, standards)
+        metadata["model_id"] = "bse_melts_ma_fe_si_o_h_m1_gas_conditional_v1"
+        metadata["standards"]["common_gas"] = {
+            "reaction_model": "Packaged FastChem4 M1 gas; continuous temperature evaluation",
+            "pressure_standard_bar": 1., "reference_anchors": list(REFERENCE_ANCHORS),
+            "elements": list(common_setup.elements), "element_gauge_rt": gauge.tolist(),
+            "policy": "Keep existing lower anchor energies, adopt common gas reactions; no cross-phase calibration.",
+            "provenance": gas_provenance(),
+        }
+        metadata["provenance"]["file_sha256"]["m2_common_gas.py"] = hashlib.sha256(
+            Path(__file__).with_name("m2_common_gas.py").read_bytes()).hexdigest()
     return record, budget, callbacks, initial, metadata
 
 
@@ -215,11 +248,13 @@ def main() -> None:
     parser.add_argument("--pressure", type=float, default=1.)
     parser.add_argument("--maxiter", type=int, default=1000)
     parser.add_argument("--metal-absent", action="store_true")
+    parser.add_argument("--gas-model", choices=("source", "m1_shared"), default="source")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     record, budget, callbacks, initial, metadata = build_bse_problem(
         args.inventory, args.exoeos_checkout, args.runtime, args.python,
         temperature_k=args.temperature, pressure_bar=args.pressure,
+        gas_model=args.gas_model,
     )
     phases = ("silicate", "gas") if args.metal_absent else tuple(record["phases"])
     problem = build_problem(record, budget, lambda t, p: np.zeros(initial.size), phases=phases)

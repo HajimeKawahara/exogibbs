@@ -1,0 +1,950 @@
+{
+  "model_id": "m2_common_gas_contact_control_v1",
+  "command": [
+    "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+    "examples/metal_silicate/run_m2_contact.py",
+    "--inventory",
+    "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos/examples/m2_material/bse_inventory.json",
+    "--exoeos-checkout",
+    "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos",
+    "--runtime",
+    "/tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64",
+    "--python",
+    "/tmp/exoeos-pr3-env/bin/python",
+    "--maxiter",
+    "100",
+    "--output",
+    "/tmp/exoinventory-m2-contact-material-phase-20260922/contact_trial.json"
+  ],
+  "temperature_K": 2173.15,
+  "pressure_bar": 1.0,
+  "metal_status": "suppressed_for_contact_control",
+  "scientific_acceptance": {
+    "M2_A": "pending",
+    "M2_B": "pending",
+    "M2_C": "pending"
+  },
+  "numerical_diagnostics_completed": false,
+  "source_metadata": {
+    "model_id": "bse_melts_ma_fe_si_o_h_m1_gas_conditional_v1",
+    "evidence_level": "conditional_numerical_mechanism_only",
+    "numerical_execution": {
+      "native_melt_calls": 430,
+      "last_failed_melt_state": {
+        "temperature_K": 2173.15,
+        "pressure_bar": 1.0,
+        "component_order": [
+          "sio2_melts",
+          "tio2_melts",
+          "al2o3_melts",
+          "fe2o3_melts",
+          "mgcr2o4_melts",
+          "fe2sio4_melts",
+          "mg2sio4_melts",
+          "casio3_melts",
+          "na2sio3_melts",
+          "kalsio4_melts",
+          "ca3(po4)2_melts",
+          "h2o_melts",
+          "H2_dissolved"
+        ],
+        "component_amounts_mol": [
+          4.3534709816825665e+23,
+          2.5206287754226853e+21,
+          4.340342640229762e+22,
+          5.611082332367601e+22,
+          2.5303974724205166e+21,
+          50711002029.52916,
+          2590747816887.07,
+          6.295911134649279e+22,
+          870537602170.9369,
+          6.166932731890906e+20,
+          1.4817479349062405e+20,
+          1251864591525.4211,
+          0.0
+        ],
+        "native_scaled_component_amounts_mol": [
+          0.4353470981682567,
+          0.0025206287754226857,
+          0.04340342640229763,
+          0.056110823323676014,
+          0.002530397472420517,
+          5.071100202952917e-14,
+          2.59074781688707e-12,
+          0.06295911134649279,
+          8.70537602170937e-13,
+          0.0006166932731890907,
+          0.00014817479349062406,
+          1.2518645915254212e-12,
+          0.0
+        ]
+      }
+    },
+    "scientific_acceptance": {
+      "M2_A": "pending",
+      "M2_B": "pending"
+    },
+    "input": {
+      "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos/examples/m2_material/bse_inventory.json",
+      "sha256": "8809953c6d105b716193a7c52abf13553f16bd51e61f393a81e724f28e094849",
+      "source_provenance": {
+        "input_sha256": "2f9cf8567cadc78180071821f9b63bd0c0627828ca5513b701f8277a58103d87",
+        "source_sha256": "83853d5837051bae6ff966e4c4b058d8479fcf4d6134bb7e7979b3eb75830cbd",
+        "builder_sha256": "09e5f2e4325d4d695b37eb67e9f5c25832651349ad6a9c132a719aa431ab865f"
+      },
+      "dry_rock_mass_kg": 1e+23,
+      "native_amount_scale": 1.0000000000000001e-24,
+      "element_amounts_mol": [
+        2.765799320714748e+24,
+        9.393188077599715e+23,
+        7.50110399560859e+23,
+        1.1222164664397966e+23,
+        8.742354607778429e+22,
+        6.34036357269645e+22,
+        1.163488354656573e+22,
+        6.166932731890957e+20,
+        2.520628775422783e+21,
+        5.060794944841094e+21,
+        2.9634958698121776e+20,
+        1e+24,
+        1e+23
+      ],
+      "elements": [
+        "O",
+        "Mg",
+        "Si",
+        "Fe",
+        "Al",
+        "Ca",
+        "Na",
+        "K",
+        "Ti",
+        "Cr",
+        "P",
+        "H",
+        "He"
+      ]
+    },
+    "host_ledger": {
+      "model_id": "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1",
+      "evaluator_path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos/examples/melts_liquid_evaluator.py",
+      "evaluator_sha256": "bc9e3afa8184a63ada9e1241ef867d7246a6994cd6d5204577c8ca78524c69fd",
+      "backend": {
+        "model": "rhyolite-MELTS 1.0.2",
+        "calculation_mode": 1,
+        "version_string": "2.3.2 (Jul 21 2026 17:06:24)",
+        "release": "v2.3.2",
+        "source_commit": "9b92b1e0e6d1538a0f498572d6c6651d5d3aca7e",
+        "source_url": "https://github.com/magmasource/alphaMELTS/tree/9b92b1e0e6d1538a0f498572d6c6651d5d3aca7e",
+        "archive_url": "https://github.com/magmasource/alphaMELTS/releases/download/v2.3.2/alphamelts-py-2.3.2-ubuntu_22_04-x86_64.zip",
+        "archive_sha256": "97ec2cdb53cae69822a41b5639d8b93edf95b2c361bc15e64e53b192ea9e1425",
+        "runtime_sha256": {
+          "meltsdynamic.py": "c9b12a82ee2d8dfc317af33e571e441158e0d4422af5bcdc11cf2197dbb71ce8",
+          "meltsengine.py": "05a41c1f842e6359fd44541638cb34389258a7539c47e5f205090434f6082af9",
+          "meltsstatus.py": "4869341cdd18e8eac01a4fe612e14bc350ea0f8ecdec7fa498a7f0e8e65e99ee",
+          "libalphamelts.so": "c218ef6f7ba5aef4b0760f3176530d1335457d6e2716823a1d0de3a5d13301e5",
+          "libgsl.so.28": "62dcb82585a2970edf2054e8e7c7df1a1aa4c307c936e7ff95b1331a4ababb2e",
+          "libgslcblas.so.0": "bb1d1273d2596ff756cbc881bc8a51837ed9cfbfa59ed55309ae42e3d9496948"
+        },
+        "license": "AGPL-3.0; backend is not redistributed",
+        "build_provenance": "Release binary pinned by hash; thermodynamic C build commit is not independently established."
+      },
+      "reference_sha256": "71ab9f583dde7629e561babd7a9575606e0777d9588a28b163406701ea4ec334",
+      "component_order": [
+        "sio2",
+        "tio2",
+        "al2o3",
+        "fe2o3",
+        "mgcr2o4",
+        "fe2sio4",
+        "mg2sio4",
+        "casio3",
+        "na2sio3",
+        "kalsio4",
+        "ca3(po4)2",
+        "h2o",
+        "H2_dissolved"
+      ],
+      "element_order": [
+        "Al",
+        "C",
+        "Ca",
+        "Cl",
+        "Co",
+        "Cr",
+        "F",
+        "Fe",
+        "H",
+        "K",
+        "Mg",
+        "Mn",
+        "Na",
+        "Ni",
+        "O",
+        "P",
+        "S",
+        "Si",
+        "Ti"
+      ],
+      "formula_matrix_component_rows": [
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ],
+        [
+          2.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          3.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          3.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          4.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          4.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0,
+          4.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          3.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          0.0,
+          3.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          4.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          3.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          8.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          2.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "amount_basis": "mol of named MELTS endmember; mol of molecular dissolved H2",
+      "standard_convention": "full MELTS potentials at T/P; absolute dissolved H2 standard supplied separately",
+      "reference_pressure_bar": 1.0,
+      "energy_units": "G/(common_R*T), mu/(common_R*T)",
+      "mathematical_domain": "positive host total, nonnegative H2; provider must accept the supplied composition",
+      "calibration_domain": "not established for the coupled reduced host/alloy/gas model",
+      "stable_phase_evidence": "not supplied by a liquid property callback",
+      "extrapolation_policy": "conditional mechanism only until common standards and competing phases are validated"
+    },
+    "standards": {
+      "source_temperature_branch_K": 2350.0,
+      "evaluation_temperature_K": 2173.15,
+      "gas_model": "m1_shared",
+      "policy": "Fixed source branch extrapolation; common R conversion, native alloy shifts, and one H2 solubility pressure term. Cross-phase alignment is unverified.",
+      "common_gas": {
+        "reaction_model": "Packaged FastChem4 M1 gas; continuous temperature evaluation",
+        "pressure_standard_bar": 1.0,
+        "reference_anchors": [
+          "H",
+          "He",
+          "O2",
+          "Mg",
+          "SiO",
+          "Fe",
+          "Na"
+        ],
+        "elements": [
+          "H",
+          "He",
+          "O",
+          "Mg",
+          "Si",
+          "Fe",
+          "Na"
+        ],
+        "element_gauge_rt": [
+          -4.541156769990245,
+          -17.981569671633338,
+          -8.447040806194867,
+          -12.545856175800804,
+          1.8153736403492466,
+          -1.9681779289064742,
+          -15.353074494571606
+        ],
+        "policy": "Keep existing lower anchor energies, adopt common gas reactions; no cross-phase calibration.",
+        "provenance": {
+          "example_git_commit": "e67df48aae0332e13713855bc6720902ae67cbb8",
+          "example_git_status": "M examples/metal_silicate/m2_standards_audit.py\n M examples/metal_silicate/run_bse_common_gibbs.py\n?? examples/metal_silicate/m2_common_gas.py\n?? examples/metal_silicate/run_m2_contact.py",
+          "provider_git_commit": "e67df48aae0332e13713855bc6720902ae67cbb8",
+          "provider_git_status": "M ../../examples/metal_silicate/m2_standards_audit.py\n M ../../examples/metal_silicate/run_bse_common_gibbs.py\n?? ../../examples/metal_silicate/m2_common_gas.py\n?? ../../examples/metal_silicate/run_m2_contact.py",
+          "exogibbs_import_path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/src/exogibbs",
+          "package_python_sha256": "ddb7bd99772181fbe11620524546bf6597412f672ce784e1afad1ec407e6cdc6",
+          "jax_version": "0.4.30",
+          "numpy_version": "1.26.4",
+          "jax_backend": "cpu",
+          "x64_enabled": true,
+          "files": [
+            {
+              "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/m1_chemistry.py",
+              "sha256": "9dd1e179cdc087fd37aeec9f96b732abaa8f7e1976d345134f0a710ef1ea5e56"
+            },
+            {
+              "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/sulfur_source.py",
+              "sha256": "a798c87bbe9cb838117785cbb3f66bfd5cbca9189e881e6af53c905ed57fb58f"
+            },
+            {
+              "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/source.py",
+              "sha256": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e"
+            },
+            {
+              "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/sulfur_reference.json",
+              "sha256": "7dc71a2312a8b00f6cd94e7064f087b5c7bb500bf16d8941396605daabf9441e"
+            },
+            {
+              "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat",
+              "sha256": "3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606"
+            },
+            {
+              "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/src/exogibbs/data/FastChem4/logK/logK_condensates.dat",
+              "sha256": "566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467"
+            }
+          ]
+        }
+      }
+    },
+    "missing_acceptance": [
+      "aligned MELTS/alloy/gas/upper-atmosphere standards",
+      "revised host-specific H2 calibration",
+      "alloy H interactions and pressure response",
+      "BSE liquid stability and omitted transfer bounds",
+      "global nonconvex phase stability"
+    ],
+    "provenance": {
+      "exogibbs": {
+        "source_root": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs",
+        "commit": "e67df48aae0332e13713855bc6720902ae67cbb8",
+        "changed_tracked_file_sha256": {
+          "examples/metal_silicate/m2_standards_audit.py": "61c84ef8cbf3e8451fded277bb092e1249627bc610895a0d779875877468002b",
+          "examples/metal_silicate/run_bse_common_gibbs.py": "78c9fc9c508c58a1216ec9158dcd07dd961a6304a9577dee674badb5213c3e53"
+        }
+      },
+      "exoeos": {
+        "source_root": "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos",
+        "commit": "d32d9c1000bc85c873fdfd20bb83ef418e52558e",
+        "changed_tracked_file_sha256": {}
+      },
+      "jax_version": "0.4.30",
+      "numpy_version": "1.26.4",
+      "file_sha256": {
+        "run_bse_common_gibbs.py": "78c9fc9c508c58a1216ec9158dcd07dd961a6304a9577dee674badb5213c3e53",
+        "common_gibbs.py": "81ce3846b3df92b94c36068bb055873d17b45fab9e2d4f521ba4bbbea66c74d3",
+        "full_potential.py": "0d312a1a5ac0fdae0479d0e85e09bc35a88f59952a36895b703ac35513b8bc19",
+        "melts_coupled.py": "3c5623622d4423fb5b00624a0f45e7a712044a1422346c34b0c3e5ecf84c1770",
+        "hydrogen.py": "8c6aaa6303583e1a7048b93db07a8edfea036321bc5c266425950821961887f3",
+        "source.py": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e",
+        "reference.json": "0c7146ab1c5935daae25f4371a34847e1469dfc637b02afe3f5984d4aeb22092",
+        "reduced_gas_reference.json": "0aa9b23cf1d85b9db6b877c5c360bd4420985e595ee9f9c7735dfe91347dc234",
+        "m2_common_gas.py": "c0b4349c242d3c52d84253a47c9919e3627d02bdb9036a182d79c14450c12bad",
+        "run_m2_contact.py": "a0674731a1324c8bcd0e6e5b76d4a41716624ac71f94413e0492772cdc9fc5b9"
+      }
+    }
+  },
+  "record": {
+    "elements": [
+      "O",
+      "Mg",
+      "Si",
+      "Fe",
+      "Al",
+      "Ca",
+      "Na",
+      "K",
+      "Ti",
+      "Cr",
+      "P",
+      "H",
+      "He"
+    ],
+    "phases": {
+      "silicate": [
+        "sio2_melts",
+        "tio2_melts",
+        "al2o3_melts",
+        "fe2o3_melts",
+        "mgcr2o4_melts",
+        "fe2sio4_melts",
+        "mg2sio4_melts",
+        "casio3_melts",
+        "na2sio3_melts",
+        "kalsio4_melts",
+        "ca3(po4)2_melts",
+        "h2o_melts",
+        "H2_dissolved"
+      ],
+      "metal": [
+        "Fe_metal",
+        "Si_metal",
+        "O_metal",
+        "H_metal"
+      ],
+      "gas": [
+        "H2_gas",
+        "O2_gas",
+        "H2O_gas",
+        "Fe_gas",
+        "Mg_gas",
+        "SiO_gas",
+        "Na_gas",
+        "H_gas",
+        "He_gas",
+        "OH_gas",
+        "SiH4_gas"
+      ]
+    },
+    "component_formulas": {
+      "sio2_melts": {
+        "O": 2.0,
+        "Si": 1.0
+      },
+      "tio2_melts": {
+        "O": 2.0,
+        "Ti": 1.0
+      },
+      "al2o3_melts": {
+        "Al": 2.0,
+        "O": 3.0
+      },
+      "fe2o3_melts": {
+        "Fe": 2.0,
+        "O": 3.0
+      },
+      "mgcr2o4_melts": {
+        "Cr": 2.0,
+        "Mg": 1.0,
+        "O": 4.0
+      },
+      "fe2sio4_melts": {
+        "Fe": 2.0,
+        "O": 4.0,
+        "Si": 1.0
+      },
+      "mg2sio4_melts": {
+        "Mg": 2.0,
+        "O": 4.0,
+        "Si": 1.0
+      },
+      "casio3_melts": {
+        "Ca": 1.0,
+        "O": 3.0,
+        "Si": 1.0
+      },
+      "na2sio3_melts": {
+        "Na": 2.0,
+        "O": 3.0,
+        "Si": 1.0
+      },
+      "kalsio4_melts": {
+        "Al": 1.0,
+        "K": 1.0,
+        "O": 4.0,
+        "Si": 1.0
+      },
+      "ca3(po4)2_melts": {
+        "Ca": 3.0,
+        "O": 8.0,
+        "P": 2.0
+      },
+      "h2o_melts": {
+        "H": 2.0,
+        "O": 1.0
+      },
+      "H2_dissolved": {
+        "H": 2
+      },
+      "Fe_metal": {
+        "Fe": 1
+      },
+      "Si_metal": {
+        "Si": 1
+      },
+      "O_metal": {
+        "O": 1
+      },
+      "H_metal": {
+        "H": 1
+      },
+      "H2_gas": {
+        "H": 2
+      },
+      "O2_gas": {
+        "O": 2
+      },
+      "H2O_gas": {
+        "H": 2,
+        "O": 1
+      },
+      "Fe_gas": {
+        "Fe": 1
+      },
+      "Mg_gas": {
+        "Mg": 1
+      },
+      "SiO_gas": {
+        "Si": 1,
+        "O": 1
+      },
+      "Na_gas": {
+        "Na": 1
+      },
+      "H_gas": {
+        "H": 1
+      },
+      "He_gas": {
+        "He": 1
+      },
+      "OH_gas": {
+        "O": 1,
+        "H": 1
+      },
+      "SiH4_gas": {
+        "Si": 1,
+        "H": 4
+      }
+    },
+    "reactions": []
+  },
+  "element_amounts_mol": [
+    2.765799320714748e+24,
+    9.393188077599715e+23,
+    7.50110399560859e+23,
+    1.1222164664397966e+23,
+    8.742354607778429e+22,
+    6.34036357269645e+22,
+    1.163488354656573e+22,
+    6.166932731890957e+20,
+    2.520628775422783e+21,
+    5.060794944841094e+21,
+    2.9634958698121776e+20,
+    1e+24,
+    1e+23
+  ],
+  "canonical_initial_component_amounts_mol": [
+    1.5621212470212917e+23,
+    2.520628775422783e+21,
+    4.34034264022976e+22,
+    0.0,
+    2.530397472420547e+21,
+    5.611082332198983e+22,
+    4.6839420514377545e+23,
+    6.295911134649267e+22,
+    5.817441773282865e+21,
+    6.166932731890957e+20,
+    1.4817479349060888e+20,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    5e+23,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    1e+23,
+    0.0,
+    0.0
+  ],
+  "source_result": {
+    "component_amounts_mol": [
+      1.5774038542283413e+23,
+      2.5206287754227823e+21,
+      4.340342640229759e+22,
+      2.101330281165532e+19,
+      2.530397472420547e+21,
+      5.357041070405905e+22,
+      4.678842165439227e+23,
+      6.295911134649268e+22,
+      2.539797331734466e+21,
+      6.166932731890957e+20,
+      1.481747934906089e+20,
+      4.471584644678447e+20,
+      6.80726271250232e+18,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      4.8455898870984044e+23,
+      463.62401624721076,
+      1.3661096809827431e+22,
+      5.03879863023821e+21,
+      1.0199771997057154e+21,
+      4.799769795308078e+21,
+      6.555288883096799e+21,
+      2.6448851566959463e+21,
+      1.0000000000000001e+23,
+      6.951776331723505e+18,
+      1.5143318943708478e+16
+    ],
+    "phase_amounts_mol": [
+      7.943882210958555e+23,
+      6.182857721043632e+23
+    ],
+    "phase_element_amounts_mol": [
+      [
+        2.747331502333281e+24,
+        9.382988305602659e+23,
+        7.45310614622232e+23,
+        1.0718284801374142e+23,
+        8.742354607778427e+22,
+        6.340363572696451e+22,
+        5.079594663468932e+21,
+        6.166932731890957e+20,
+        2.5206287754227823e+21,
+        5.060794944841094e+21,
+        2.963495869812178e+20,
+        9.07931454360694e+20,
+        0.0
+      ],
+      [
+        1.8467818381467233e+22,
+        1.0199771997057154e+21,
+        4.799784938627022e+21,
+        5.03879863023821e+21,
+        0.0,
+        0.0,
+        6.555288883096799e+21,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        9.990920685456392e+23,
+        1.0000000000000001e+23
+      ]
+    ],
+    "element_residual": [
+      2.220446049250313e-16,
+      2.220446049250313e-16,
+      0.0,
+      -3.3306690738754696e-16,
+      -2.220446049250313e-16,
+      2.220446049250313e-16,
+      2.220446049250313e-16,
+      0.0,
+      -2.220446049250313e-16,
+      0.0,
+      2.220446049250313e-16,
+      -1.1102230246251565e-16,
+      2.220446049250313e-16
+    ],
+    "reaction_residual": [
+      -2.165098655951633,
+      -18.569878718917945,
+      2.358406181875048,
+      -6.150750984941146,
+      -5.551627239369774,
+      -2.219268224519652,
+      -2.872318283774148,
+      -1.082359236867895,
+      2.185648542607005,
+      3.0557868630619924,
+      -5.133764703024333
+    ],
+    "elemental_potentials_rt": [
+      -29.816924246197377,
+      -14.236796705026524,
+      -7.9875740918024825,
+      -0.9790783269559515,
+      -14.257518601002202,
+      -22.107639227143952,
+      -17.092104213774004,
+      -19.523938295280175,
+      -14.27730157395269,
+      -1.1658234727873964,
+      -0.16024634178774022,
+      -9.44086172120214,
+      -19.803350250630697
+    ],
+    "gibbs_rt": -1.1534442389332198e+26,
+    "accepted": false,
+    "solver_message": "Iteration limit reached",
+    "reduced_potentials_rt": [
+      2.2467118494728595,
+      7.105427357601002e-14,
+      8.526512829121202e-14,
+      2.7058383389355782,
+      8.526512829121202e-14,
+      0.19360300120609963,
+      2.358114980971635,
+      1.1368683772161603e-13,
+      1.4038244294453648,
+      1.1368683772161603e-13,
+      2.8421709430404007e-13,
+      4.192626849255397,
+      -1.1301664057201606,
+      null,
+      null,
+      null,
+      null,
+      -1.1096165190647902,
+      -18.071481354703216,
+      3.663087000869261,
+      -5.798882680282857,
+      -4.716229961943078,
+      -2.5747616871285857,
+      -2.8076488588906017,
+      -0.5546181684244722,
+      0.0,
+      3.8327266136127633,
+      -3.6274925739669186
+    ],
+    "audit_reasons": [
+      "scalar minimizer did not converge",
+      "present-component KKT residual exceeds tolerance"
+    ],
+    "derivative_error_rt": 7.301319016050911e-08,
+    "extensivity_error": 2.94256122386024e-15,
+    "initial_gibbs_rt": -9.509241154560545e+25
+  },
+  "failure": {
+    "error_type": "ValueError",
+    "error": "The fresh source must independently preserve its positive atomic ledger."
+  }
+}

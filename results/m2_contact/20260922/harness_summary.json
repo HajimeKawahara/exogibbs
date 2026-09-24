@@ -1,0 +1,499 @@
+{
+  "status": "PASS",
+  "platform": "cpu",
+  "retrieval_quick": false,
+  "aliases": {
+    "examples/comparisons/comparison_with_fastchem.py": "fastchem4_gas",
+    "examples/comparisons/comparison_with_fastchem_extended.py": "fastchem4_gas",
+    "examples/comparisons/comparison_with_fastchem_cond.py": "fastchem4_validation",
+    "results/subneptune_taxonomy/20260911/verify.py": "metal_archive_revalidation"
+  },
+  "jobs": [
+    {
+      "name": "metal_m2_contact",
+      "status": "PASS",
+      "command": [
+        "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+        "-m",
+        "benchmarks.documented_examples.run_all",
+        "--platform",
+        "cpu",
+        "--worker-report",
+        "/tmp/exoinventory-m2-contact-material-phase-20260922/contact_harness/metal_m2_contact/worker.json",
+        "--worker",
+        "examples/metal_silicate/run_m2_contact.py",
+        "--inventory",
+        "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos-contact-validation/examples/m2_material/bse_inventory.json",
+        "--exoeos-checkout",
+        "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos-contact-validation",
+        "--runtime",
+        "/tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64",
+        "--python",
+        "/tmp/exoeos-pr3-env/bin/python",
+        "--output",
+        "/tmp/exoinventory-m2-contact-material-phase-20260922/contact_harness/metal_m2_contact/contact.json"
+      ],
+      "log": "/tmp/exoinventory-m2-contact-material-phase-20260922/contact_harness/metal_m2_contact/run.log",
+      "exit_code": 0,
+      "worker": {
+        "status": "PASS",
+        "requested_platform": "cpu",
+        "backend": "cpu",
+        "devices": [
+          "TFRT_CPU_0"
+        ],
+        "exogibbs_source": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/src/exogibbs",
+        "jax_version": "0.4.30",
+        "float64": true,
+        "exoeos_source": "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos-contact-validation/src/exoeos/__init__.py",
+        "numerical_environment": {
+          "JAX_PLATFORMS": "cpu",
+          "JAX_ENABLE_X64": "1",
+          "JAX_DISABLE_MOST_OPTIMIZATIONS": null,
+          "XLA_FLAGS": null
+        },
+        "elapsed_seconds": 208.7838897984475,
+        "exit_code": 0
+      },
+      "missing_artifacts": [],
+      "artifact_errors": []
+    }
+  ],
+  "provenance": {
+    "exogibbs": {
+      "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs",
+      "commit": "0f42c8c9a66de5f42ca5ef8a61e1ff02ee0a409d",
+      "dirty": false,
+      "status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file_count": 334,
+      "sha256": "8e97debcadcf0e7e0cde5102eddfb78698e77896c1106b43e6e389cb6ca3a9c9"
+    },
+    "japanese_docs": {
+      "path": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs",
+      "commit": "9f68c4d4fcbb804edb5a3884d8b70be1ca997b73",
+      "dirty": false,
+      "status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file_count": 13,
+      "sha256": "c4b5dbd036bd68bdbb459c3f8015c9ce26c8f316c5705f44618ea51af350115d"
+    },
+    "exoeos": {
+      "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos-contact-validation",
+      "commit": "d32d9c1000bc85c873fdfd20bb83ef418e52558e",
+      "dirty": false,
+      "status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file_count": 62,
+      "sha256": "629c507673d9055094c3c2846cd4bd67decdd872b53c24e7be148c40c1ca2c6d"
+    },
+    "resources": {
+      "fastchem": {
+        "path": "",
+        "exists": false
+      },
+      "co": {
+        "path": "",
+        "exists": false
+      },
+      "fastchem_source": {
+        "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/FastChem",
+        "exists": false
+      },
+      "gce": {
+        "path": "",
+        "exists": false
+      },
+      "ito": {
+        "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/external_data/Ito_2025.xlsx",
+        "exists": true,
+        "size_bytes": 115333,
+        "sha256": "5029bd874e813d3cd43407d551a2b693c4d0e52a8b0ab2f7f94a907b21e44bb1"
+      },
+      "exoeos": {
+        "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos-contact-validation/src",
+        "exists": true,
+        "commit": "d32d9c1000bc85c873fdfd20bb83ef418e52558e"
+      },
+      "exoeos_checkout": {
+        "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos-contact-validation",
+        "exists": true,
+        "commit": "d32d9c1000bc85c873fdfd20bb83ef418e52558e"
+      },
+      "melts_runtime": {
+        "path": "/tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64",
+        "exists": true,
+        "commit": null,
+        "contents": {
+          "file_count": 7,
+          "sha256": "09db16396194d536684b172f2279ab290fffd812d7b2e64f14309b372c33d686"
+        }
+      },
+      "melts_python": {
+        "path": "/tmp/exoeos-pr3-env/bin/python",
+        "exists": true,
+        "size_bytes": 16248240,
+        "sha256": "8229191f7bc3f285b5cf4c9ba0f3c105bf4c08c5aa94ed27ea25ba877ac3a631"
+      },
+      "bse_inventory": {
+        "path": "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos-contact-validation/examples/m2_material/bse_inventory.json",
+        "exists": true,
+        "size_bytes": 2747,
+        "sha256": "8809953c6d105b716193a7c52abf13553f16bd51e61f393a81e724f28e094849"
+      },
+      "japanese_docs": {
+        "path": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs",
+        "exists": true,
+        "commit": "9f68c4d4fcbb804edb5a3884d8b70be1ca997b73"
+      }
+    }
+  },
+  "coverage": {
+    "public_scripts": [
+      "examples/comparisons/comparison_with_fastchem.py",
+      "examples/comparisons/comparison_with_fastchem4_condensates.py",
+      "examples/comparisons/comparison_with_fastchem4_gas.py",
+      "examples/comparisons/comparison_with_fastchem_cond.py",
+      "examples/comparisons/comparison_with_fastchem_extended.py",
+      "examples/comparisons/comparison_with_fastchem_initializer.py",
+      "examples/comparisons/comparison_with_hcosystem.py",
+      "examples/comparisons/comparison_with_hsystem.py",
+      "examples/comparisons/comparison_with_ito_2025.py",
+      "examples/comparisons/comparison_with_ito_2025_rainout.py",
+      "examples/comparisons/comparison_with_visscher_2006_na2s_morley_2012_kcl.py",
+      "examples/comparisons/comparison_with_visscher_2010_forsterite_enstatite.py",
+      "examples/comparisons/comparison_with_ykcode.py",
+      "examples/comparisons/demo_fe_fes_rainout.py",
+      "examples/comparisons/demo_rocky_raccoon_trace_mg.py",
+      "examples/condensates_curated_demo/demo_carbon_rich_cas_mgs_aln_window.py",
+      "examples/condensates_curated_demo/demo_carbon_rich_graphite_window.py",
+      "examples/condensates_curated_demo/demo_complex_heavy_element_or_boron_titanium_zirconium_case.py",
+      "examples/condensates_curated_demo/demo_lowt_strong_condensation_budget_stress.py",
+      "examples/condensates_curated_demo/demo_near_phase_boundary_support_sensitivity.py",
+      "examples/condensates_curated_demo/demo_sio_s_condensate_window.py",
+      "examples/condensates_curated_demo/demo_solar_highT_no_condensate_gas_regression.py",
+      "examples/condensates_curated_demo/demo_solar_metal_sulfide_or_fe_ni_s_region.py",
+      "examples/condensates_curated_demo/demo_solar_silicate_first_condensation.py",
+      "examples/condensates_curated_demo/demo_solar_water_condensation.py",
+      "examples/metal_silicate/cns_inventory.py",
+      "examples/metal_silicate/extract_reference.py",
+      "examples/metal_silicate/extract_sulfur_reference.py",
+      "examples/metal_silicate/gas_exchange.py",
+      "examples/metal_silicate/generate_equilibrium_reference.py",
+      "examples/metal_silicate/hydrogen.py",
+      "examples/metal_silicate/m1_boundary_validation.py",
+      "examples/metal_silicate/m1_chemistry.py",
+      "examples/metal_silicate/m2_standards_audit.py",
+      "examples/metal_silicate/native.py",
+      "examples/metal_silicate/reference.py",
+      "examples/metal_silicate/revalidate_archive.py",
+      "examples/metal_silicate/run_bse_common_gibbs.py",
+      "examples/metal_silicate/run_m2_contact.py",
+      "examples/metal_silicate/run_melts_reference.py",
+      "examples/metal_silicate/run_metal_selection.py",
+      "examples/metal_silicate/sulfide.py",
+      "examples/metal_silicate/sulfur_source.py",
+      "examples/plot_exoeos_pure_fugacity.py",
+      "examples/retrievals/exojax_nuts_condensate_fixed_support.py",
+      "examples/retrievals/exojax_nuts_condensate_grid.py",
+      "examples/retrievals/exojax_nuts_gas_grid.py",
+      "examples/retrievals/exojax_nuts_gas_no_grid.py"
+    ],
+    "documented_commands": [
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/cns_inventory.rst",
+        "script": "examples/metal_silicate/cns_inventory.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/comparison_example_lineage.rst",
+        "script": "examples/comparisons/comparison_with_fastchem4_condensates.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/comparison_example_lineage.rst",
+        "script": "examples/comparisons/comparison_with_fastchem_initializer.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/comparison_example_lineage.rst",
+        "script": "examples/comparisons/comparison_with_hsystem.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/comparison_example_lineage.rst",
+        "script": "examples/comparisons/comparison_with_hcosystem.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/comparison_example_lineage.rst",
+        "script": "examples/comparisons/comparison_with_ykcode.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/fastchem4_production_comparison.rst",
+        "module": "benchmarks.fastchem4.run_production_comparison",
+        "script": "benchmarks/fastchem4/run_production_comparison.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/fastchem4_production_comparison.rst",
+        "module": "benchmarks.fastchem4.run_production_comparison",
+        "script": "benchmarks/fastchem4/run_production_comparison.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/metal_silicate_reference.rst",
+        "script": "examples/metal_silicate/reference.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/metal_silicate_reference.rst",
+        "script": "examples/metal_silicate/extract_reference.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/metal_silicate_reference.rst",
+        "script": "examples/metal_silicate/native.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/metal_silicate_reference.rst",
+        "script": "examples/metal_silicate/native.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/metal_silicate_reference.rst",
+        "script": "examples/metal_silicate/generate_equilibrium_reference.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/metal_silicate_reference.rst",
+        "script": "examples/metal_silicate/gas_exchange.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/metal_silicate_reference.rst",
+        "script": "examples/metal_silicate/gas_exchange.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/metal_silicate_reference.rst",
+        "script": "examples/metal_silicate/m1_chemistry.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/rocky_raccoon_trace_mg.rst",
+        "script": "examples/comparisons/demo_rocky_raccoon_trace_mg.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/subneptune_hydrogen.rst",
+        "script": "examples/metal_silicate/hydrogen.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/subneptune_hydrogen.rst",
+        "script": "examples/metal_silicate/hydrogen.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/subneptune_melts.rst",
+        "script": "examples/metal_silicate/run_melts_reference.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/subneptune_melts.rst",
+        "script": "results/subneptune_taxonomy/20260911/verify.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/subneptune_melts.rst",
+        "script": "results/subneptune_taxonomy/20260911/verify.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/subneptune_sulfide.rst",
+        "script": "examples/metal_silicate/sulfide.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/subneptune_sulfur.rst",
+        "script": "examples/metal_silicate/sulfur_source.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/subneptune_sulfur.rst",
+        "script": "examples/metal_silicate/extract_sulfur_reference.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/v0_4_fastchem4_validation_demo.rst",
+        "script": "examples/comparisons/comparison_with_fastchem4_gas.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/v0_4_fastchem4_validation_demo.rst",
+        "script": "examples/comparisons/comparison_with_fastchem4_condensates.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/v0_4_fastchem4_validation_demo.rst",
+        "script": "examples/comparisons/comparison_with_fastchem4_condensates.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/documents/v0_4_fastchem4_validation_demo.rst",
+        "module": "benchmarks.fastchem4.run_production_comparison",
+        "script": "benchmarks/fastchem4/run_production_comparison.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/COMMON_GIBBS.md",
+        "script": "examples/metal_silicate/run_bse_common_gibbs.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/m1_chemistry.md",
+        "script": "examples/metal_silicate/m1_chemistry.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/m1_chemistry.md",
+        "script": "examples/metal_silicate/m1_boundary_validation.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/m2_common_gas.md",
+        "script": "examples/metal_silicate/run_m2_contact.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/m2_phase_selection.md",
+        "script": "examples/metal_silicate/run_metal_selection.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/m2_phase_selection.md",
+        "script": "examples/metal_silicate/run_metal_selection.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs/examples/metal_silicate/m2_standards_audit.md",
+        "script": "examples/metal_silicate/m2_standards_audit.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/reference.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/extract_reference.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/native.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/native.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/gas_exchange.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/generate_equilibrium_reference.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/hydrogen.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/sulfur_source.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/sulfide.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/run_melts_reference.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/cns_inventory.py",
+        "covered": true,
+        "exists": true
+      },
+      {
+        "document": "/tmp/exoinventory-m2-material-column-20260921/doc_ExoGibbs/ja/metal_silicate_reference.tex",
+        "script": "examples/metal_silicate/m1_chemistry.py",
+        "covered": true,
+        "exists": true
+      }
+    ],
+    "errors": [],
+    "accepted": true
+  },
+  "full_selection": false,
+  "full_acceptance": false,
+  "created_at_utc": "2026-09-21T22:52:06.599688+00:00",
+  "finished_at_utc": "2026-09-21T22:55:37.843321+00:00"
+}

@@ -182,6 +182,21 @@ The :download:`common-G validation notes
 <../examples/metal_silicate/COMMON_GIBBS.md>` give reproduction commands,
 the native result, retained failed attempts, and the pending M2-A/B evidence.
 
+M2 common gas contact
+---------------------
+
+The opt-in ``gas_model="m1_shared"`` branch uses the same temperature-dependent
+FastChem4 gas reactions as the upper atmosphere. Seven existing lower
+reference anchors supply a common elemental gauge; raw atomic-zero gas
+energies are not substituted into only one phase.
+
+:doc:`examples/metal_silicate/run_m2_contact` independently tests fresh native
+BSE contact with the same eleven gases, then diagnoses the changes caused
+by 35 gases and 26 retained condensates. Metal is explicitly suppressed in
+this control. The :download:`common-gas contract and reproduction notes
+<../examples/metal_silicate/m2_common_gas.md>` distinguish numerical contact,
+catalog changes, and the still pending material and phase acceptance gates.
+
 M2 mixed-metal phase selection
 ------------------------------
 

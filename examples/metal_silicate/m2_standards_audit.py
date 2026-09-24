@@ -19,10 +19,9 @@ from hydrogen import H2_CALIBRATION, _checkout_provenance
 from melts_coupled import COMMON_R, load_melts_evaluator
 from m1_chemistry import build_setups, provenance as upper_provenance
 from run_bse_common_gibbs import json_value, source_standards_rt
+from m2_common_gas import SHARED_SPECIES, UPPER_SPECIES
 
 
-SHARED_SPECIES = ("H2", "O2", "H2O", "Fe", "Mg", "SiO", "Na", "H", "He", "OH", "SiH4")
-UPPER_SPECIES = ("H2", "O2", "H2O1", "Fe1", "Mg1", "O1Si1", "Na1", "H1", "He1", "H1O1", "H4Si1")
 REACTIONS = {
     "H2 -> 2 H": {"H2": -1, "H": 2},
     "H2 + 0.5 O2 -> H2O": {"H2": -1, "O2": -.5, "H2O": 1},
