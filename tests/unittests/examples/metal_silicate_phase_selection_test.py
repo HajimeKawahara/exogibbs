@@ -66,6 +66,47 @@ def test_numerical_composition_search_without_global_evidence_remains_unresolved
     assert not uncertain.minimum_certified and uncertain.uncertainty_rt > 1e-8
 
 
+def test_restricted_callback_restores_zero_helium_and_preserves_scalar_gradient():
+    record = {"elements": ["H", "He", "O"], "phases": {"atmosphere": ["H_a", "He_a", "O_a"]},
+              "component_formulas": {"H_a": {"H": 1}, "He_a": {"He": 1}, "O_a": {"O": 1}},
+              "reactions": []}
+    budget = np.array([2., 0., 1.])
+    problem = LOCAL.build_problem(record, budget, lambda t, p: np.zeros(3), phases=("atmosphere",))
+    seen = []
+    def callback(t, p, n):
+        seen.append(n.copy())
+        return FULL.PhaseState(np.array([3., -np.inf, 5.]), float(n @ [3., 0., 5.]))
+    def scalar_gradient(t, p, n):
+        seen.append(n.copy())
+        return float(n @ [3., 0., 5.]), np.array([3., -np.inf, 5.])
+    callback.energy_value_and_grad_rt = scalar_gradient
+    restricted = PHASE.restrict_phase_callbacks(record, problem, {"atmosphere": callback})["atmosphere"]
+    state = restricted(2000., 1., [2., 1.])
+    np.testing.assert_array_equal(state.mu_rt, [3., 5.])
+    assert state.gibbs_rt == 11.
+    energy, gradient = restricted.energy_value_and_grad_rt(2000., 1., [2., 1.])
+    assert energy == 11.
+    np.testing.assert_array_equal(gradient, [3., 5.])
+    for full in seen:
+        np.testing.assert_array_equal(full, budget)
+
+
+@pytest.mark.parametrize("status,reasons,certified,expected", [
+    ("metal_present", [], True, True),
+    ("metal_absent", [], True, True),
+    ("unresolved", ["Host global stability is not established."], True, True),
+    ("unresolved", ["Metal-bearing branch unavailable; see local attempts."], True, False),
+    ("unresolved", ["Host global stability is not established."], False, False),
+])
+def test_local_selection_gate_distinguishes_global_host_evidence_from_failed_metal_search(
+        status, reasons, certified, expected):
+    selection = {"status": status, "reasons": reasons, "result": {"accepted": True},
+                 "insertion": {"minimum_certified": certified}}
+    assert PHASE.local_metal_selection_accepted(selection) is expected
+    selection["result"]["accepted"] = False
+    assert not PHASE.local_metal_selection_accepted(selection)
+
+
 def _ideal_assemblage(metal_offset=0.):
     phases = {"silicate": ["SiO2_l", "FeO_l", "H2O_l", "H2_l"],
               "metal": ["Fe_m", "Si_m", "O_m", "H_m"],

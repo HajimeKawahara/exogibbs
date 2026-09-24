@@ -19,6 +19,52 @@ from full_potential import PhaseCallback, PhaseState
 from local import _budgets, build_problem
 
 
+def restrict_phase_callbacks(record, problem, callbacks):
+    """Embed active amounts into each provider's complete component order.
+
+    ``build_problem`` removes components containing exact-zero global elements.
+    Providers still receive their declared vectors, with zeros in those slots;
+    the returned potentials and optional scalar gradients follow active order.
+    """
+    restricted = {}
+    for phase, section in zip(problem.phases, problem.phase_slices):
+        positions = np.array([record["phases"][phase].index(name) for name in problem.species[section]])
+
+        def evaluate(t, p, n, phase=phase, positions=positions):
+            full = np.zeros(len(record["phases"][phase]))
+            full[positions] = n
+            state = callbacks[phase](t, p, full)
+            return PhaseState(np.asarray(state.mu_rt)[positions], state.gibbs_rt)
+
+        derivative_provider = getattr(callbacks[phase], "energy_value_and_grad_rt", None)
+        if derivative_provider is not None:
+            def energy_gradient(t, p, n, phase=phase, positions=positions,
+                                provider=derivative_provider):
+                full = np.zeros(len(record["phases"][phase]))
+                full[positions] = n
+                energy, gradient = provider(t, p, full)
+                return energy, np.asarray(gradient)[positions]
+
+            evaluate.energy_value_and_grad_rt = energy_gradient
+        restricted[phase] = evaluate
+    return restricted
+
+
+def local_metal_selection_accepted(selection: dict) -> bool:
+    """Separate a completed local metal test from missing global host evidence.
+
+    An accepted absent-branch result alone is insufficient after favorable
+    insertion if the metal-bearing solve failed. This gate consumes a saved
+    selection mapping and does not establish material or global acceptance.
+    """
+    result, insertion = selection.get("result") or {}, selection.get("insertion") or {}
+    reasons = tuple(selection.get("reasons", ()))
+    status = selection.get("status")
+    return bool(result.get("accepted") is True and insertion.get("minimum_certified") is True
+                and ((status in ("metal_present", "metal_absent") and not reasons)
+                     or (status == "unresolved" and reasons == ("Host global stability is not established.",))))
+
+
 @dataclass(frozen=True)
 class InsertionMinimum:
     """Insertion energy per component mole, divided by the common RT."""
@@ -276,30 +322,12 @@ def select_metal_phase(
 
     def solve(selected, initial=None):
         problem = build_problem(record, budget, lambda t, p: np.zeros(len(names)), phases=selected)
-        restricted = {}
+        restricted = restrict_phase_callbacks(record, problem, callbacks)
         composition_bounds = {}
         for phase, section in zip(problem.phases, problem.phase_slices):
             positions = np.array([record["phases"][phase].index(name) for name in problem.species[section]])
             if phase == "metal":
                 composition_bounds[phase] = (lo[positions], hi[positions])
-
-            def evaluate(t, p, n, phase=phase, positions=positions):
-                full = np.zeros(len(record["phases"][phase]))
-                full[positions] = n
-                state = callbacks[phase](t, p, full)
-                return PhaseState(np.asarray(state.mu_rt)[positions], state.gibbs_rt)
-
-            derivative_provider = getattr(callbacks[phase], "energy_value_and_grad_rt", None)
-            if derivative_provider is not None:
-                def energy_gradient(t, p, n, phase=phase, positions=positions,
-                                    provider=derivative_provider):
-                    full = np.zeros(len(record["phases"][phase]))
-                    full[positions] = n
-                    energy, gradient = provider(t, p, full)
-                    return energy, np.asarray(gradient)[positions]
-
-                evaluate.energy_value_and_grad_rt = energy_gradient
-            restricted[phase] = evaluate
         return minimize_gibbs(problem, temperature_k, pressure_bar, budget, restricted, maxiter=maxiter,
                               initial_component_amounts_mol=initial,
                               phase_composition_bounds=composition_bounds)
