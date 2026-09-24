@@ -24,7 +24,7 @@ from full_potential import PhaseState, ideal_phase
 from hydrogen import _checkout_provenance, dissolved_h2_standard_rt, hirschmann2012_ln_solubility
 from local import build_problem
 from m1_chemistry import provenance as gas_provenance
-from m2_common_gas import REFERENCE_ANCHORS, SHARED_SPECIES, anchored_standards_rt, build_common_gas_setup
+from m2_common_gas import REFERENCE_ANCHORS, anchored_standards_rt, build_common_gas_setup, source_gas_names
 from melts_coupled import COMMON_R, load_melts_evaluator, make_melts_h2_phase, provider_ledger
 from reference import load_reference
 from run_melts_reference import reduced_gas_standards_rt
@@ -68,8 +68,8 @@ def build_bse_problem(
     MELTS is evaluated at a fixed 100 g dry-rock amount scale, then its
     extensive energy is converted back to the full physical mol basis.
     """
-    if gas_model not in {"source", "m1_shared"}:
-        raise ValueError("gas_model must be source or m1_shared.")
+    if gas_model not in {"source", "m1_shared", "m1_expanded"}:
+        raise ValueError("gas_model must be source, m1_shared, or m1_expanded.")
     import exoeos
     from exoeos import MaFeSiOHLiquid, total_solution_gibbs_RT, total_solution_state
 
@@ -114,9 +114,15 @@ def build_bse_problem(
     gas_names = [name for name in source["phases"]["gas"] + [n + "_gas" for n in extra]
                  if set(formulas[name]) <= allowed_elements]
     common_setup = None
-    if gas_model == "m1_shared":
-        common_setup = build_common_gas_setup()
-        common_names = [name + "_gas" for name in SHARED_SPECIES]
+    if gas_model in {"m1_shared", "m1_expanded"}:
+        common_setup = build_common_gas_setup(expanded=gas_model == "m1_expanded")
+        common_names = list(source_gas_names(common_setup))
+        if gas_model == "m1_expanded":
+            gas_names = common_names
+            for column, name in enumerate(gas_names):
+                formulas[name] = {element: float(common_setup.formula_matrix[row, column])
+                                 for row, element in enumerate(common_setup.elements)
+                                 if common_setup.formula_matrix[row, column]}
         gas_columns = [common_names.index(name) for name in gas_names]
 
         @lru_cache(maxsize=8)
@@ -147,6 +153,9 @@ def build_bse_problem(
         raise ValueError("Canonical initial components add or omit atoms from the input ledger.")
     record = {"elements": list(ELEMENTS), "phases": phases,
               "component_formulas": {name: formulas[name] for name in names}, "reactions": []}
+    if common_setup is not None:
+        record["gas_species_aliases"] = {name: common_setup.species[common_names.index(name)]
+                                         for name in gas_names}
     def h2_standard(t, p):
         return float(dissolved_h2_standard_rt(gas_standards(t, p)[gas_names.index("H2_gas")],
                                              hirschmann2012_ln_solubility(p)))
@@ -217,6 +226,7 @@ def build_bse_problem(
             "reaction_model": "Packaged FastChem4 M1 gas; continuous temperature evaluation",
             "pressure_standard_bar": 1., "reference_anchors": list(REFERENCE_ANCHORS),
             "elements": list(common_setup.elements), "element_gauge_rt": gauge.tolist(),
+            "species": list(common_setup.species),
             "policy": "Keep existing lower anchor energies, adopt common gas reactions; no cross-phase calibration.",
             "provenance": gas_provenance(),
         }
@@ -248,7 +258,7 @@ def main() -> None:
     parser.add_argument("--pressure", type=float, default=1.)
     parser.add_argument("--maxiter", type=int, default=1000)
     parser.add_argument("--metal-absent", action="store_true")
-    parser.add_argument("--gas-model", choices=("source", "m1_shared"), default="source")
+    parser.add_argument("--gas-model", choices=("source", "m1_shared", "m1_expanded"), default="source")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     record, budget, callbacks, initial, metadata = build_bse_problem(
