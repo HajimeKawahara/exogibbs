@@ -1,4 +1,5 @@
-"""A retained gas/cloud Gibbs envelope in atmospheric atom coordinates.
+"""Retained gas/cloud Gibbs energy in atmospheric atom coordinates
+===============================================================
 
 The existing parcel solver owns species equilibrium and condensate selection.
 The callback owns no reservoir ledger: each call supplies absolute atom moles,

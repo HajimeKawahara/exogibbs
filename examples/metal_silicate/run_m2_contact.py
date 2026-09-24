@@ -20,6 +20,7 @@ import numpy as np
 
 from common_gibbs import minimize_gibbs
 from local import build_problem
+from phase_selection import local_metal_selection_accepted, restrict_phase_callbacks
 from m1_chemistry import audit_parcel, build_setups, solve_parcel
 from m2_atmosphere import audit_atmosphere, make_atmosphere_phase
 from m2_common_gas import build_common_gas_setup, source_gas_names
@@ -237,14 +238,14 @@ def main():
             selection = select_metal_phase(record, budget, args.temperature, args.pressure, callbacks,
                 METAL_LOWER, METAL_UPPER, convex_phase_bounds={"metal": curvature}, maxiter=args.maxiter)
             report["metal_selection"] = asdict(selection)
-            if selection.result is None:
-                raise ValueError("Metal selection did not return an accepted local state.")
+            if not local_metal_selection_accepted(report["metal_selection"]):
+                raise ValueError("Metal selection did not establish the locally selected phase branch.")
             result = selection.result
         else:
             phases = tuple(phase for phase in record["phases"] if phase != "metal")
             problem = build_problem(record, budget, lambda t, p: np.zeros(len(initial)), phases=phases)
             result = minimize_gibbs(problem, args.temperature, args.pressure, budget,
-                                    {name: callbacks[name] for name in problem.phases}, maxiter=args.maxiter)
+                                    restrict_phase_callbacks(record, problem, callbacks), maxiter=args.maxiter)
         report["source_result"] = asdict(result)
         if args.gas_model == "m1_retained":
             report["source_internal_record"] = record

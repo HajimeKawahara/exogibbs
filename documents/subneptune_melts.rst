@@ -225,7 +225,7 @@ requires this separation between local numerical closure and scientific
 acceptance.
 
 Expanded retained-atmosphere contact
------------------------------------
+------------------------------------
 
 The ``--gas-model m1_retained`` mode of
 :doc:`examples/metal_silicate/run_m2_contact` couples the finite BSE allocation

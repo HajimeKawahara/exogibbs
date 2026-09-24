@@ -11,7 +11,7 @@ import pytest
 DIRECTORY = Path(__file__).resolve().parents[3] / "examples" / "metal_silicate"
 NAMES = ("local", "reference", "source", "hydrogen", "full_potential", "common_gibbs",
          "melts_coupled", "run_melts_reference", "run_bse_common_gibbs", "m1_chemistry",
-         "m2_common_gas", "m2_standards_audit", "run_m2_contact")
+         "m2_common_gas", "m2_standards_audit", "phase_selection", "run_m2_contact", "m2_atmosphere")
 previous = {name: sys.modules.get(name) for name in NAMES}
 sys.path.insert(0, str(DIRECTORY))
 try:

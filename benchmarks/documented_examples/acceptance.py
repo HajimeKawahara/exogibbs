@@ -231,7 +231,10 @@ def artifact_errors(job: Any, directory: Path, *, retrieval_quick: bool) -> list
                     or len(report.get("record", {}).get("retained_condensate_components", {})) != 26):
                 errors.append("Finite retained-atmosphere contact requires all gases, clouds and fresh source audits.")
             if (report.get("scientific_acceptance") != {"M2_A": "pending", "M2_B": "pending", "M2_C": "pending"}
-                    or (job.name.endswith("select") and report.get("metal_selection", {}).get("status") != "unresolved")):
+                    or (job.name.endswith("select") and (
+                        report.get("metal_selection", {}).get("status") != "unresolved"
+                        or report.get("metal_selection", {}).get("reasons") != ["Host global stability is not established."]
+                        or report.get("metal_selection", {}).get("insertion", {}).get("minimum_certified") is not True))):
                 errors.append("Local expanded contact cannot establish missing material or global host stability.")
         elif job.name == "metal_m2_contact":
             report = json.loads((directory / "contact.json").read_text())

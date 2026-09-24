@@ -1,4 +1,6 @@
-"""Finite BSE coupled to a locally minimized retained gas/cloud atmosphere."""
+"""Finite BSE with a retained gas/cloud atmosphere
+===============================================
+"""
 
 from __future__ import annotations
 
