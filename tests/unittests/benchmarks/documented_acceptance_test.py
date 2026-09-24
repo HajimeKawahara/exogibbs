@@ -44,7 +44,7 @@ def test_archive_balance_only_is_not_fresh_native_acceptance(tmp_path):
 @pytest.mark.parametrize("failure", ["summary", "missing_case", "unresolved", "metal_floor"])
 def test_metal_reference_successful_exit_cannot_hide_failed_controls(tmp_path, failure):
     job = run_all.Job("metal_phase_selection", "run_metal_selection.py")
-    source = run_all.ROOT / "results/m2_phase_selection/reference_20260920.json"
+    source = run_all.ROOT / "results/m2_phase_selection/reference_20260922.json"
     report = json.loads(source.read_text())
     path = tmp_path / "reference.json"
     path.write_text(json.dumps(report))
@@ -92,12 +92,42 @@ def test_japanese_block_extraction_preserves_actual_code(tmp_path):
 def test_native_jobs_require_all_external_resources():
     jobs = {job.name: job for job in run_all.build_jobs()}
     required = {"exoeos", "exoeos_checkout", "melts_runtime", "melts_python"}
-    for name in ("metal_common_gibbs", "metal_melts_present", "metal_melts_absent", "metal_archive_revalidation", "metal_standards_audit", "metal_m2_contact"):
+    for name in ("metal_common_gibbs", "metal_melts_present", "metal_melts_absent", "metal_archive_revalidation", "metal_standards_audit", "metal_m2_contact", "metal_bse_phase_selection"):
         assert required <= set(jobs[name].resources)
         assert run_all.resource_errors(jobs[name], {})
     assert "bse_inventory" in jobs["metal_common_gibbs"].resources
     assert "bse_inventory" in jobs["metal_standards_audit"].resources
     assert "bse_inventory" in jobs["metal_m2_contact"].resources
+    assert "bse_inventory" in jobs["metal_bse_phase_selection"].resources
+
+
+@pytest.mark.parametrize("failure", ["domain", "kkt", "native", "global"])
+def test_bse_numerical_acceptance_keeps_global_stability_separate(tmp_path, failure):
+    report = {"metal_domain": {"lower": [.86, 0.], "upper": [1., .14]},
+              "scientific_acceptance": {"M2_A": "pending", "M2_B": "pending"},
+              "cases": [{"selection": {
+                  "status": "unresolved", "reasons": ["Host global stability is not established."],
+                  "metal_amount_mol": 1., "metal_composition": [.9, .1],
+                  "insertion": {"minimum_certified": True},
+                  "result": {"accepted": True, "component_amounts_mol": [.9, .1],
+                             "constrained_kkt_residual_rt": [0., 0.]}},
+                  "metadata": {"numerical_execution": {"native_melt_calls": 1}},
+                  "independent_audit": {"maximum_element_error": 0.}}]}
+    job = run_all.Job("metal_bse_phase_selection", "run_metal_selection.py")
+    path = tmp_path / "selection.json"
+    path.write_text(json.dumps(report))
+    assert not acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
+    case = report["cases"][0]
+    if failure == "domain":
+        case["selection"]["metal_composition"] = [.1, .9]
+    elif failure == "kkt":
+        case["selection"]["result"]["constrained_kkt_residual_rt"] = [0., 1e-3]
+    elif failure == "native":
+        case["metadata"]["numerical_execution"]["native_melt_calls"] = 0
+    else:
+        case["selection"]["status"] = "metal_present"
+    path.write_text(json.dumps(report))
+    assert acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
 
 
 @pytest.mark.parametrize("failure", ["native", "matched", "catalog", "calibration"])

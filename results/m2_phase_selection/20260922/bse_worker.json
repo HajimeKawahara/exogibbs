@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "requested_platform": "cpu",
+  "backend": "cpu",
+  "devices": [
+    "TFRT_CPU_0"
+  ],
+  "exogibbs_source": "/tmp/exoinventory-m2-contact-material-phase-20260922/exogibbs-phase/src/exogibbs",
+  "jax_version": "0.4.30",
+  "float64": true,
+  "exoeos_source": "/tmp/exoinventory-m2-contact-material-phase-20260922/exoeos/src/exoeos/__init__.py",
+  "numerical_environment": {
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "JAX_DISABLE_MOST_OPTIMIZATIONS": null,
+    "XLA_FLAGS": null
+  },
+  "elapsed_seconds": 264.94743793830276,
+  "exit_code": 0
+}

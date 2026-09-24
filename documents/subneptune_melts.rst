@@ -206,8 +206,20 @@ records a global lower/upper insertion bound when a provider supplies the
 required curvature evidence. Missing phase stability evidence returns an
 unresolved result; an accepted absent phase has exactly zero amount.
 
+The present branch enforces the same homogeneous composition inequalities
+as the insertion search. Its local audit includes nonnegative active-boundary
+multipliers and constrained KKT residuals, while retaining the raw reaction
+and reduced-potential diagnostics. Energy-decreasing atom-conserving starts
+and separate exact-zero branches avoid imposing a metal amount floor.
+
 The :download:`phase-selection validation notes
 <../examples/metal_silicate/m2_phase_selection.md>` describe the manufactured
 reference, the restricted mathematical alloy domain, and reproduction with
 :doc:`examples/metal_silicate/run_metal_selection`. The actual Ma mixing
 control does not establish a calibrated BSE metal boundary.
+The fresh BSE control also obtains a locally accepted metal-bearing minimum
+within the declared alloy domain using native MELTS and common M1 gas
+reactions. Its global phase-selection status remains unresolved because
+global MELTS-host stability evidence is not supplied. The native benchmark
+requires this separation between local numerical closure and scientific
+acceptance.

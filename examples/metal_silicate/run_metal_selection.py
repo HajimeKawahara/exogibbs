@@ -148,6 +148,7 @@ def main():
     parser.add_argument("--runtime", type=Path)
     parser.add_argument("--python")
     parser.add_argument("--maxiter", type=int, default=1000)
+    parser.add_argument("--gas-model", choices=("source", "m1_shared"), default="m1_shared")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists():
@@ -174,14 +175,15 @@ def main():
     if args.bse_inventory:
         record, budget, callbacks, initial, metadata = build_bse_problem(
             args.bse_inventory, checkout, args.runtime, args.python,
-            temperature_k=TEMPERATURE_K, pressure_bar=PRESSURE_BAR)
+            temperature_k=TEMPERATURE_K, pressure_bar=PRESSURE_BAR, gas_model=args.gas_model)
         selection = select_metal_phase(record, budget, TEMPERATURE_K, PRESSURE_BAR, callbacks,
                                        METAL_LOWER, METAL_UPPER,
                                        convex_phase_bounds={"metal": curvature, "gas": 0.}, maxiter=args.maxiter)
         report["model_id"] = "m2_bse_phase_selection_conditional_v1"
         report["cases"].append({"record": record, "element_amounts_mol": budget,
                                 "canonical_initial_amounts_mol": initial, "metadata": metadata,
-                                "selection": selection_record(record, selection)})
+                                "selection": selection_record(record, selection),
+                                "independent_audit": independent_audit(record, budget, selection, callbacks)})
         if selection.status != "unresolved":
             raise ValueError("BSE cannot be certified without a global liquid stability bound.")
     else:
