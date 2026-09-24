@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: HajimeKawahara/exoeos
-          ref: f380500d1e81b8aa51b31dd56eff186cf1e54256
+          ref: 4e3983a832a15f91fbad6d5e6f874a27a0bc7011
           path: providers/exoeos
           fetch-depth: 0
 
@@ -105,7 +105,7 @@ jobs:
           provider = root / "providers/exoeos"
           assert subprocess.check_output(
               ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,
-          ).strip() == "f380500d1e81b8aa51b31dd56eff186cf1e54256"
+          ).strip() == "4e3983a832a15f91fbad6d5e6f874a27a0bc7011"
           for module, source in ((exogibbs, root), (exoeos, provider)):
               actual = Path(module.__file__).resolve()
               expected = source / "src" / module.__name__ / "__init__.py"
@@ -129,6 +129,7 @@ jobs:
             tests/unittests/examples/metal_silicate_common_gibbs_test.py
             tests/unittests/examples/metal_silicate_common_gas_test.py
             tests/unittests/examples/m2_atmosphere_test.py
+            tests/unittests/examples/m2_host_stability_test.py
             tests/unittests/examples/metal_silicate_expanded_contact_test.py
             tests/unittests/examples/metal_silicate_phase_selection_test.py
             tests/unittests/examples/metal_silicate_melts_coupled_test.py

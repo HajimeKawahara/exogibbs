@@ -1,0 +1,31 @@
+{
+  "scope": "New native property evaluations of unchanged saved coupled hosts and separately prescribed dry composition controls. The finite source and planetary column were not re-equilibrated.",
+  "exogibbs_execution_commit": "5aec2ef",
+  "exoeos_execution_commit": "4e3983a832a15f91fbad6d5e6f874a27a0bc7011",
+  "provider_tracked_worktree_clean": true,
+  "native_candidate_count": 33,
+  "native_mineral_candidate_count": 30,
+  "other_native_candidates": [
+    "water",
+    "alloy-solid",
+    "alloy-liquid"
+  ],
+  "one_sided_difference_scope": "Olivine only; finite energy decrease/increase, not global phase stability.",
+  "preparation_environment": "Generator scripts preserve the executed absolute paths and exact code; adjust paths in a new copy for another checkout. The preparation harness imports the Inventory-owned builder; the chemistry provider does not.",
+  "file_sha256": {
+    "assessments/contact.json": "46ae97da799d11b6028cc27f1b3d14c0ce1a906bad89ce013f6450762d243c74",
+    "assessments/dry_mgsi_0.8_2173.15.json": "c69e0a0782f4d81705fd21825584db9225244120d45f3eac808906150d9ebda0",
+    "assessments/dry_mgsi_1.2_2173.15.json": "6f02ac5571ca8ce3d773aaafd400ad2213c6d6bc3190164e1f1e31ee339f4bf1",
+    "assessments/dry_mgsi_1_1873.15.json": "ccc4cb9f8be4caa71183cdb7933d217b25407c93997528c121c67610ae1f7f3b",
+    "assessments/dry_mgsi_1_2173.15.json": "8c65d6d39f66970abaa4970299e9ff14d96350dcdb716ccba43c2d9b16c3f6f8",
+    "assessments/metal_select.json": "c2aabff4807094c3dd5df1f9fee50da9abb7126de2de8e8d8b792f9ae683d3a5",
+    "finite_trials.json": "ebee0bc1677125bf369624743963dc5b24617d2635bc15737cecb26dd7376b5a",
+    "inputs/dry_mgsi_0.8_2173.15.json": "6ad231f2f56a2b7ff2547b485b6f488a81eee0599b99f1a161d868025c455e82",
+    "inputs/dry_mgsi_1.2_2173.15.json": "6d7cd06e18fbf1d3fcf19935b1aee642c5141fee0e2d02c3732841812e6f1b09",
+    "inputs/dry_mgsi_1_1873.15.json": "64d95bf0eb15090d2ba7ed6183573f35edc7015ad97714b2d34e49891289f1d4",
+    "inputs/dry_mgsi_1_2173.15.json": "a16d1900c2b3004cc79e2ac2b30b5d59381d934f7f663322b7f3ec02cdb12936",
+    "prepare_dry_controls.py": "c87ce1aabe47c8934de0539b3e861956f3b9c69ca27b68aeb94c7c22163d8dd5",
+    "run_controls.py": "721869ba62e88171a20a0c493b974ac22999cd3263d88a25e2d796bc18007603",
+    "validate_finite_trials.py": "a825b6eb44fb8a83095eebf29e96bc105ca1af7a6157b24698ec95e1bb02932a"
+  }
+}
