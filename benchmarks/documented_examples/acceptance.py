@@ -205,6 +205,34 @@ def artifact_errors(job: Any, directory: Path, *, retrieval_quick: bool) -> list
                         or selection.get("reasons") != ["Host global stability is not established."]
                         or report.get("scientific_acceptance") != {"M2_A": "pending", "M2_B": "pending"}):
                     errors.append("Local BSE closure cannot establish missing global host stability or calibration.")
+        elif job.name in {"metal_m2_retained_suppressed", "metal_m2_retained_select"}:
+            import numpy as np
+
+            report = json.loads((directory / "contact.json").read_text())
+            catalogs = report.get("catalogs", ())
+            contact = catalogs[0].get("expanded_contact", {}) if len(catalogs) == 1 else {}
+            gas = contact.get("gas_contact", {})
+            residual = np.asarray(gas.get("log_pressure_residual", ()), dtype=float)
+            cloud = np.asarray(contact.get("cloud_element_relative_residual", ()), dtype=float)
+            if (report.get("numerical_diagnostics_completed") is not True
+                    or report.get("matched_catalog") != "expanded_condensed"
+                    or report.get("source_result", {}).get("accepted") is not True
+                    or report.get("source_internal_result", {}).get("accepted") is not True
+                    or report.get("source_metadata", {}).get("numerical_execution", {}).get("native_melt_calls", 0) < 1
+                    or contact.get("accepted") is not True
+                    or contact.get("common_standards", {}).get("accepted") is not True
+                    or contact.get("source_atmosphere_audit", {}).get("accepted") is not True
+                    or contact.get("upper_atmosphere_audit", {}).get("accepted") is not True
+                    or gas.get("accepted") is not True
+                    or residual.shape != (35,) or not np.all(np.isfinite(residual))
+                    or np.max(np.abs(residual), initial=0.) >= 1e-8
+                    or cloud.shape != (7,) or not np.all(np.isfinite(cloud))
+                    or np.max(np.abs(cloud), initial=0.) >= 1e-9
+                    or len(report.get("record", {}).get("retained_condensate_components", {})) != 26):
+                errors.append("Finite retained-atmosphere contact requires all gases, clouds and fresh source audits.")
+            if (report.get("scientific_acceptance") != {"M2_A": "pending", "M2_B": "pending", "M2_C": "pending"}
+                    or (job.name.endswith("select") and report.get("metal_selection", {}).get("status") != "unresolved")):
+                errors.append("Local expanded contact cannot establish missing material or global host stability.")
         elif job.name == "metal_m2_contact":
             report = json.loads((directory / "contact.json").read_text())
             if (report.get("numerical_diagnostics_completed") is not True

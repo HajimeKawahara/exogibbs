@@ -223,3 +223,19 @@ reactions. Its global phase-selection status remains unresolved because
 global MELTS-host stability evidence is not supplied. The native benchmark
 requires this separation between local numerical closure and scientific
 acceptance.
+
+Expanded retained-atmosphere contact
+-----------------------------------
+
+The ``--gas-model m1_retained`` mode of
+:doc:`examples/metal_silicate/run_m2_contact` couples the finite BSE allocation
+to the same 35 gases and 26 retained condensates as the upper atmosphere.
+The existing parcel solver minimizes the atmospheric Gibbs energy at each
+trial atomic allocation; the outer solve uses its elemental potentials.
+Primitive gas/cloud amounts, a common reference for all eligible standards,
+and every gas partial pressure are independently audited at contact.
+The metal-suppressed and constrained metal-selection controls are registered
+as separate native jobs. Local closure does not certify the unresolved
+material calibration, global host stability or planetary pressure closure.
+See the `full retained-atmosphere contract
+<../examples/metal_silicate/m2_common_gas.md#full-retained-atmosphere-contact>`_.

@@ -182,6 +182,15 @@ def build_jobs() -> tuple[Job, ...]:
          "--output", "{output}/contact.json"),
         native_resources + ("bse_inventory",), ("contact.json",),
     ))
+    for metal_mode in ("suppressed", "select"):
+        jobs.append(Job(
+            "metal_m2_retained_" + metal_mode, metal + "run_m2_contact.py",
+            ("--inventory", "{bse_inventory}", "--exoeos-checkout", "{exoeos_checkout}",
+             "--runtime", "{melts_runtime}", "--python", "{melts_python}",
+             "--gas-model", "m1_retained", "--metal-mode", metal_mode,
+             "--output", "{output}/contact.json"),
+            native_resources + ("bse_inventory",), ("contact.json",),
+        ))
     jobs.append(Job(
         "metal_archive_revalidation", metal + "revalidate_archive.py",
         ("--archive", str(ROOT / "results/subneptune_taxonomy/20260911"),
