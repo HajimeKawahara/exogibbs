@@ -11,7 +11,7 @@ import pytest
 DIRECTORY = Path(__file__).resolve().parents[3] / "examples" / "metal_silicate"
 NAMES = ("local", "reference", "source", "hydrogen", "full_potential", "common_gibbs",
          "melts_coupled", "run_melts_reference", "run_bse_common_gibbs", "m1_chemistry",
-         "m2_common_gas", "m2_standards_audit", "run_m2_contact")
+         "m2_common_gas", "m2_standards_audit", "phase_selection", "run_m2_contact", "m2_atmosphere")
 previous = {name: sys.modules.get(name) for name in NAMES}
 sys.path.insert(0, str(DIRECTORY))
 try:
@@ -52,14 +52,15 @@ def test_water_reaction_matches_independent_janaf_coefficients_and_preserves_anc
     assert np.max(np.abs(values - setup.hvector_func(temperature))) > 1.
 
 
-def test_common_callback_varies_continuously_in_temperature_and_keeps_pressure_once(tmp_path):
+@pytest.mark.parametrize("gas_model", ["m1_shared", "m1_expanded"])
+def test_common_callback_varies_continuously_in_temperature_and_keeps_pressure_once(tmp_path, gas_model):
     eos = pytest.importorskip("exoeos")
     checkout = Path(eos.__file__).resolve().parents[2]
     path = checkout / "examples/m2_material/bse_inventory.json"
     if not path.exists():
         pytest.skip("Requires the explicitly selected ExoEOS BSE checkout.")
     record, _, callbacks, _, metadata = BSE.build_bse_problem(
-        path, checkout, tmp_path, sys.executable, gas_model="m1_shared",
+        path, checkout, tmp_path, sys.executable, gas_model=gas_model,
     )
     n = np.linspace(.1, 1., len(record["phases"]["gas"]))
     center = callbacks["gas"](2173.15, 1., n)
@@ -72,10 +73,13 @@ def test_common_callback_varies_continuously_in_temperature_and_keeps_pressure_o
     assert pressured.gibbs_rt - center.gibbs_rt == pytest.approx(n.sum() * np.log(13.), abs=1e-12)
     assert metadata["standards"]["common_gas"]["pressure_standard_bar"] == 1.
     assert metadata["scientific_acceptance"] == {"M2_A": "pending", "M2_B": "pending"}
+    assert len(record["phases"]["gas"]) == (35 if gas_model == "m1_expanded" else 11)
+    assert set(record["gas_species_aliases"]) == set(record["phases"]["gas"])
 
 
-def test_common_element_reference_does_not_change_conserved_parcel_equilibrium():
-    setup = COMMON.build_common_gas_setup()
+@pytest.mark.parametrize("expanded", [False, True])
+def test_common_element_reference_does_not_change_conserved_parcel_equilibrium(expanded):
+    setup = COMMON.build_common_gas_setup(expanded=expanded)
     b = np.array([1., .1, .3, .02, .01, .01, .01])
     reference, _ = BSE.source_standards_rt(2173.15)
     values, gauge = COMMON.anchored_standards_rt(setup, 2173.15, reference)
@@ -89,6 +93,33 @@ def test_common_element_reference_does_not_change_conserved_parcel_equilibrium()
     np.testing.assert_allclose(original["gas_amounts_mol"], shifted["gas_amounts_mol"], rtol=1e-11)
     amount = np.asarray(original["gas_amounts_mol"])
     assert amount @ (values - setup.hvector_func(2173.15)) == pytest.approx(b @ gauge, abs=1e-13)
+
+
+@pytest.mark.parametrize("scale", [1.e-12, 1.e24])
+def test_expanded_contact_audits_every_gas_on_absolute_amount_basis(scale):
+    setup = COMMON.build_common_gas_setup(expanded=True)
+    b = scale * np.array([1., .1, .3, .02, .01, .01, .01])
+    native = M1.solve_parcel(setup, 2173.15, 1., b)
+    names = COMMON.source_gas_names(setup)
+    record = {"elements": list(setup.elements), "phases": {"gas": list(names)},
+              "gas_species_aliases": dict(zip(names, setup.species)),
+              "component_formulas": {name: {element: float(setup.formula_matrix[row, column])
+                  for row, element in enumerate(setup.elements)} for column, name in enumerate(names)}}
+    callbacks = {"gas": FULL.ideal_phase(lambda t, p: setup.hvector_func(t), gas=True)}
+    source = {"accepted": True, "component_amounts_mol": native["gas_amounts_mol"]}
+    report = CONTACT.diagnose_contact(record, b, source, callbacks, 2173.15, 1.)
+    assert report["matched_catalog"] == "expanded_gas"
+    assert report["matched_contact_accepted"] and report["numerical_diagnostics_completed"]
+    expanded = next(item for item in report["catalogs"] if item["catalog"] == "expanded_gas")
+    assert expanded["contact"]["accepted"]
+    assert tuple(expanded["contact"]["species"]) == setup.species
+    assert len(report["common_standards"]["nongauge_residual_rt"]) == 35
+    np.testing.assert_allclose(setup.formula_matrix @ np.asarray(native["gas_amounts_mol"]), b, rtol=1e-12)
+    # An omitted newly introduced species must invalidate the catalog, even
+    # when all eleven historical partial pressures would agree.
+    record["gas_species_aliases"].pop("Fe1H1_gas")
+    with pytest.raises(ValueError, match="every component"):
+        CONTACT.diagnose_contact(record, b, source, callbacks, 2173.15, 1.)
 
 
 def test_contact_recounts_source_and_distinguishes_catalog_change():

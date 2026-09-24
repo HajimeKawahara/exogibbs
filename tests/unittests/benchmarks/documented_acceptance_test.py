@@ -194,3 +194,39 @@ def test_quick_or_partial_run_cannot_claim_full_acceptance(tmp_path, monkeypatch
                                 resources={}, environment={}, platform="gpu",
                                 retrieval_quick=quick, full_selection=full) == 0
         assert json.loads((output / "summary.json").read_text())["full_acceptance"] is False
+
+
+@pytest.mark.parametrize("failure", ["gas", "cloud", "internal", "native", "calibration", "branch", "insertion"])
+def test_retained_contact_artifact_requires_full_catalog_residuals(tmp_path, failure):
+    job = run_all.Job("metal_m2_retained_select", "run_m2_contact.py")
+    contact = {"accepted": True, "common_standards": {"accepted": True},
+               "source_atmosphere_audit": {"accepted": True}, "upper_atmosphere_audit": {"accepted": True},
+               "gas_contact": {"accepted": True, "log_pressure_residual": [0.] * 35},
+               "cloud_element_relative_residual": [0.] * 7}
+    report = {"numerical_diagnostics_completed": True, "matched_catalog": "expanded_condensed",
+              "source_result": {"accepted": True}, "source_internal_result": {"accepted": True},
+              "source_metadata": {"numerical_execution": {"native_melt_calls": 1}},
+              "record": {"retained_condensate_components": {str(i): str(i) for i in range(26)}},
+              "catalogs": [{"expanded_contact": contact}],
+              "metal_selection": {"status": "unresolved", "reasons": ["Host global stability is not established."],
+                                  "insertion": {"minimum_certified": True}},
+              "scientific_acceptance": {"M2_A": "pending", "M2_B": "pending", "M2_C": "pending"}}
+    path = tmp_path / "contact.json"
+    path.write_text(json.dumps(report))
+    assert not acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)
+    if failure == "gas":
+        contact["gas_contact"]["log_pressure_residual"][-1] = 1e-3
+    elif failure == "cloud":
+        contact["cloud_element_relative_residual"][-1] = 1e-3
+    elif failure == "internal":
+        report["source_internal_result"]["accepted"] = False
+    elif failure == "native":
+        report["source_metadata"]["numerical_execution"]["native_melt_calls"] = 0
+    elif failure == "branch":
+        report["metal_selection"]["reasons"] = ["Metal-bearing branch unavailable; see local attempts."]
+    elif failure == "insertion":
+        report["metal_selection"]["insertion"]["minimum_certified"] = False
+    else:
+        report["scientific_acceptance"]["M2_A"] = "accepted"
+    path.write_text(json.dumps(report))
+    assert acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)

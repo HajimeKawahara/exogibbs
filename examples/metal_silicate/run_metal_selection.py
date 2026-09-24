@@ -148,7 +148,7 @@ def main():
     parser.add_argument("--runtime", type=Path)
     parser.add_argument("--python")
     parser.add_argument("--maxiter", type=int, default=1000)
-    parser.add_argument("--gas-model", choices=("source", "m1_shared"), default="m1_shared")
+    parser.add_argument("--gas-model", choices=("source", "m1_shared", "m1_expanded"), default="m1_shared")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists():
