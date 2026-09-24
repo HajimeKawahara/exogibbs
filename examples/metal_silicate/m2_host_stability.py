@@ -1,5 +1,5 @@
 """Competing native MELTS phases at an unchanged supplied host composition.
-=======================================================================
+========================================================================
 
 This is a one-sided insertion assessment, not a phase-selection solver or
 a certificate of a global minimum. Native properties belong to ExoEOS.

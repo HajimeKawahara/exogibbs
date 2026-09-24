@@ -1,5 +1,5 @@
 """Assess native competing phases of an archived, unchanged M2 source host.
-======================================================================
+========================================================================
 
 This command never resolves the finite source or edits the input archive.
 """

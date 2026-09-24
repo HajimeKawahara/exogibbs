@@ -192,6 +192,11 @@ def build_jobs() -> tuple[Job, ...]:
             native_resources + ("bse_inventory",), ("contact.json",),
         ))
     jobs.append(Job(
+        "metal_m2_host_stability", metal + "run_m2_host_stability.py",
+        native_arguments + ("--source-json", str(ROOT / "results/m2_expanded_contact/20260924/contact.json")),
+        native_resources, ("equilibrium.json",),
+    ))
+    jobs.append(Job(
         "metal_archive_revalidation", metal + "revalidate_archive.py",
         ("--archive", str(ROOT / "results/subneptune_taxonomy/20260911"),
          "--exoeos-checkout", "{exoeos_checkout}", "--runtime", "{melts_runtime}",
