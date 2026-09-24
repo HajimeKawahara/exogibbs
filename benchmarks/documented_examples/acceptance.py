@@ -159,11 +159,52 @@ def artifact_errors(job: Any, directory: Path, *, retrieval_quick: bool) -> list
             actual = [(case.get("metal_standard_shift_rt"), case.get("selection", {}).get("status"))
                       for case in cases]
             if actual != [(0., "metal_present"), (.1, "metal_present"),
-                          (4.62, "unresolved"), (4.63, "metal_absent")]:
+                          (4.62, "metal_present"), (4.63, "metal_absent")]:
                 errors.append("The documented four-point metal-selection reference is incomplete or changed.")
             if any(case.get("selection", {}).get("metal_amount_mol") != 0.
                    for case in cases if case.get("selection", {}).get("status") == "metal_absent"):
                 errors.append("An accepted absent metal phase must have exactly zero amount.")
+            for case in cases:
+                selection = case.get("selection", {})
+                if selection.get("status") != "metal_present":
+                    continue
+                result = selection.get("result", {})
+                if result.get("accepted") is not True or not result.get("composition_constraints"):
+                    errors.append("Present-metal controls require fresh constrained KKT audits.")
+        elif job.name == "metal_bse_phase_selection":
+            import numpy as np
+
+            report = json.loads((directory / "selection.json").read_text())
+            cases = report.get("cases", ())
+            if len(cases) != 1:
+                errors.append("The fresh BSE phase-selection control is incomplete.")
+            else:
+                case = cases[0]
+                selection = case.get("selection", {})
+                result = selection.get("result") or {}
+                insertion = selection.get("insertion") or {}
+                composition = np.asarray(selection.get("metal_composition"), dtype=float)
+                lower = np.asarray(report.get("metal_domain", {}).get("lower", ()))
+                upper = np.asarray(report.get("metal_domain", {}).get("upper", ()))
+                amounts = np.asarray(result.get("component_amounts_mol", ()))
+                residual = np.asarray(result.get("constrained_kkt_residual_rt", ()), dtype=float)
+                if (result.get("accepted") is not True or insertion.get("minimum_certified") is not True
+                        or selection.get("metal_amount_mol", 0.) <= 0
+                        or lower.ndim != 1 or not lower.size or upper.shape != lower.shape
+                        or composition.shape != lower.shape or not np.all(np.isfinite(composition))
+                        or abs(composition.sum() - 1.) >= 1e-10
+                        or np.any(composition < lower - 1e-10) or np.any(composition > upper + 1e-10)
+                        or residual.shape != amounts.shape or not amounts.size
+                        or not np.all(np.isfinite(residual[amounts > 0]))
+                        or np.max(np.abs(residual[amounts > 0]), initial=0.) >= 1e-8):
+                    errors.append("The constrained BSE local minimum did not pass numerical acceptance.")
+                if (case.get("metadata", {}).get("numerical_execution", {}).get("native_melt_calls", 0) < 1
+                        or case.get("independent_audit", {}).get("maximum_element_error", float("inf")) >= 1e-9):
+                    errors.append("The BSE control requires fresh native evaluations and independent atom reconstruction.")
+                if (selection.get("status") != "unresolved"
+                        or selection.get("reasons") != ["Host global stability is not established."]
+                        or report.get("scientific_acceptance") != {"M2_A": "pending", "M2_B": "pending"}):
+                    errors.append("Local BSE closure cannot establish missing global host stability or calibration.")
         elif job.name == "metal_m2_contact":
             report = json.loads((directory / "contact.json").read_text())
             if (report.get("numerical_diagnostics_completed") is not True

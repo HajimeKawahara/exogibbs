@@ -2,7 +2,7 @@
 
 ## Execute the documented examples
 
-The acceptance runner executes **62 fresh jobs** from the current English
+The acceptance runner executes **64 fresh jobs** from the current English
 manual and an explicitly selected Japanese manual checkout. It is separate
 from `run_all_gpu.csh`, which measures six solver workloads and compiler modes.
 
@@ -31,7 +31,7 @@ same resource options.
 | Comparisons | 14 | All comparison programs, both FastChem4 profiles, both full 855-layer Ito comparisons, and the optional Visscher/Morley FastChem comparison. The programs' scientific gates must pass. The pinned FastChem production CLI additionally runs all four documented temperature points, requires its clean reference checkout and byte-identical thermochemical inputs, and must report `comparison_completed=true`. |
 | Curated condensate demos | 10 | Run each actual plotting program and independently audit every layer, inventory, and generated figure. Internally caught numerical failures still fail the job. |
 | ExoEOS pure fugacity | 1 | Execute the gallery example with independent element and chemical stationarity checks. Missing optional ExoEOS is a failure. |
-| Metal/silicate examples | 23 | Reference audit/extraction/generation, all four native cases, both gas-exchange cases, hydrogen and dry control, sulfur source/extraction, sulfide, CNS inventory scans, M1 chemistry/boundary, both native MELTS branches, native BSE common Gibbs, the four-point mixed-metal selection control, independent standard/concentration audit, and archive revalidation with fresh MELTS potentials. |
+| Metal/silicate examples | 25 | Reference audit/extraction/generation, all four native cases, both gas-exchange cases, hydrogen and dry control, sulfur source/extraction, sulfide, CNS inventory scans, M1 chemistry/boundary, both native MELTS branches, native BSE common Gibbs, the four-point mixed-metal selection control, constrained native BSE phase selection, common-gas contact, independent standard/concentration audit, and archive revalidation with fresh MELTS potentials. |
 | Retrieval tutorials | 4 | Actual NUTS, including preflight, **500 warmup steps and 1000 samples** by default. Require completed sampling, posterior diagnostics, and finite posterior arrays with the requested sample count. |
 | Inline examples | 10 | Eleven complete code blocks from the actual RST/TeX sources: gas presets, condensate/profile/rainout, solubility, stable magma-gas, ideal activity adapter, and the Japanese legacy magma-gas example. Each source block is hashed. |
 
@@ -42,9 +42,13 @@ saved amounts; the two MELTS jobs independently rerun the equilibrium roots.
 Intentional rejected candidate phases in the sulfide example remain scientific
 outputs; the example's accepted-branch gate must pass.
 The mixed-metal control requires its numerical acceptance flags and the documented
-present/present/unresolved/absent sequence, including exactly zero absent metal.
+present/present/present/absent sequence, including exactly zero absent metal.
 It uses synthetic standards and needs ExoEOS but no MELTS runtime; it does not
 establish a calibrated BSE phase boundary.
+The native BSE phase-selection job independently requires a locally accepted
+minimum within the same alloy domain, fresh native MELTS calls and an atom
+audit. Missing global host stability must remain the explicit unresolved
+reason. This numerical acceptance does not pass the M2-A/B scientific gates.
 The standard/concentration audit requires both temperature comparisons, four
 independent balanced gas reactions, and fresh native MELTS standards. Its
 completion records the unresolved material differences and preserves pending
