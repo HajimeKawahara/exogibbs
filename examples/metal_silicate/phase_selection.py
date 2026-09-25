@@ -8,7 +8,7 @@ certify absence or a nonconvex assemblage's stability.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Mapping, Optional
 
 import numpy as np
@@ -63,6 +63,22 @@ def local_metal_selection_accepted(selection: dict) -> bool:
     return bool(result.get("accepted") is True and insertion.get("minimum_certified") is True
                 and ((status in ("metal_present", "metal_absent") and not reasons)
                      or (status == "unresolved" and reasons == ("Host global stability is not established.",))))
+
+
+def local_metal_status(selection: dict) -> str:
+    """Classify an accepted local branch without changing its global status.
+
+    This is relative to the declared alloy composition domain. A failed
+    metal-bearing solve never turns the retained zero-metal reference into
+    accepted absence. Existing saved selections need no new diagnostic fields.
+    """
+    amount = selection.get("metal_amount_mol")
+    if (not local_metal_selection_accepted(selection)
+            or isinstance(amount, (bool, np.bool_))
+            or not isinstance(amount, (int, float, np.integer, np.floating))
+            or not np.isfinite(amount) or amount < 0):
+        return "unresolved"
+    return "metal_absent" if amount == 0 else "metal_present"
 
 
 @dataclass(frozen=True)
@@ -227,6 +243,29 @@ class MetalSelection:
     metal_composition: Optional[np.ndarray]
     reasons: tuple[str, ...]
     local_attempts: tuple[dict, ...] = ()
+    metal_free_result: Optional[GibbsMinimumResult] = None
+    metal_free_insertion: Optional[InsertionMinimum] = None
+    metal_composition_domain: Optional[dict] = None
+
+
+def _domain_position(components, composition, lower, upper, unsupported):
+    """Record domain contact separately from exact-zero inventory support."""
+    if composition is None:
+        return None
+    composition = np.asarray(composition)
+    lower_slack, upper_slack = composition - lower, upper - composition
+    active = []
+    for index, component in enumerate(components):
+        for bound, slack, imposed in (("lower", lower_slack[index], lower[index] > 0),
+                                      ("upper", upper_slack[index], upper[index] < 1)):
+            if slack <= 1e-8:
+                kind = ("exact_zero_budget" if unsupported[index] else
+                        "composition_box" if imposed else "simplex_boundary")
+                active.append({"component": component, "bound": bound,
+                               "fraction_slack": float(slack), "kind": kind})
+    return {"composition": composition.copy(), "lower_fraction_slack": lower_slack,
+            "upper_fraction_slack": upper_slack, "active_bounds": tuple(active),
+            "composition_box_contact": any(row["kind"] == "composition_box" for row in active)}
 
 
 def _insertion_seed(record, budget, absent, composition, callbacks, temperature, pressure, fraction):
@@ -295,6 +334,11 @@ def select_metal_phase(
     Present candidates obey the same homogeneous composition inequalities
     used in insertion. Unsupported zero-phase boundaries remain unresolved. Material calibration
     and the liquid-versus-crystal catalog are separate from this model's status.
+
+    ``metal_free_result`` and ``metal_free_insertion`` preserve the absent
+    branch and its phase-generation cost, including after a metal-bearing
+    solve. ``insertion`` retains its existing selected-state meaning: it is
+    approximately zero at coexistence, not the absent-branch boundary cost.
     """
     if "metal" not in record["phases"] or set(callbacks) != set(record["phases"]):
         raise ValueError("Supply the metal phase and exactly one callback per declared phase.")
@@ -320,6 +364,31 @@ def select_metal_phase(
             or not isinstance(maxiter, int) or maxiter < 1):
         raise ValueError("Supply positive conditions and feasible bounds in the full metal component order.")
 
+    declared_upper = hi.copy()
+    unsupported = np.any(metal_formula[budget == 0] != 0, axis=0)
+    absent, metal_free_trial = None, None
+
+    def finish(*args):
+        selected = MetalSelection(*args)
+        effective_upper = np.where(unsupported, 0., declared_upper)
+        domain = {
+            "component_order": tuple(metal_names), "lower_atomic_fractions": lo.copy(),
+            "upper_atomic_fractions": declared_upper.copy(),
+            "effective_upper_atomic_fractions": effective_upper,
+            "zero_budget_components": tuple(name for name, excluded in zip(metal_names, unsupported) if excluded),
+            "contact_tolerance": 1e-8,
+            "metal_free_incipient": _domain_position(
+                metal_names, None if metal_free_trial is None else metal_free_trial.composition,
+                lo, effective_upper, unsupported),
+            "selected_metal": _domain_position(metal_names, selected.metal_composition,
+                                                lo, effective_upper, unsupported),
+            "selected_composition_constraints": (() if selected.result is None else tuple(
+                row for row in selected.result.composition_constraints if row["phase"] == "metal")),
+            "interpretation": "Composition-box contact is a model restriction, not a physical phase boundary or a calibration certificate.",
+        }
+        return replace(selected, metal_free_result=absent, metal_free_insertion=metal_free_trial,
+                       metal_composition_domain=domain)
+
     def solve(selected, initial=None):
         problem = build_problem(record, budget, lambda t, p: np.zeros(len(names)), phases=selected)
         restricted = restrict_phase_callbacks(record, problem, callbacks)
@@ -336,16 +405,15 @@ def select_metal_phase(
     try:
         absent = solve(tuple(phase for phase in phases if phase != "metal"))
     except failures as error:
-        return MetalSelection("unresolved", None, None, 0., None,
+        return finish("unresolved", None, None, 0., None,
                               (f"Metal-free branch unavailable: {type(error).__name__}: {error}",))
     if not absent.accepted:
-        return MetalSelection("unresolved", absent, None, 0., None, ("Metal-free local minimization failed.", *absent.audit_reasons))
-    unsupported = np.any(metal_formula[budget == 0] != 0, axis=0)
+        return finish("unresolved", absent, None, 0., None, ("Metal-free local minimization failed.", *absent.audit_reasons))
     hi[unsupported] = 0.
     host_certified = all(bounds.get(phase, -np.inf) >= 0 for phase in phases if phase != "metal")
     if np.any(lo > hi) or hi.sum() < 1:
         reasons = () if host_certified else ("Host global stability is not established.",)
-        return MetalSelection("metal_absent" if not reasons else "unresolved", absent, None, 0., None,
+        return finish("metal_absent" if not reasons else "unresolved", absent, None, 0., None,
                               reasons + ("The metal domain is excluded by exact-zero element budgets.",))
 
     def insertion(result):
@@ -355,15 +423,15 @@ def select_metal_phase(
                                   maxiter=maxiter)
 
     try:
-        trial = insertion(absent)
+        trial = metal_free_trial = insertion(absent)
     except failures as error:
-        return MetalSelection("unresolved", absent, None, 0., None,
+        return finish("unresolved", absent, None, 0., None,
                               (f"Metal insertion unavailable: {type(error).__name__}: {error}",))
     if trial.minimum_certified and trial.lower_bound_rt >= -tolerance:
         reasons = () if host_certified else ("Host global stability is not established.",)
-        return MetalSelection("metal_absent" if not reasons else "unresolved", absent, trial, 0., None, reasons)
+        return finish("metal_absent" if not reasons else "unresolved", absent, trial, 0., None, reasons)
     if trial.upper_bound_rt >= -tolerance:
-        return MetalSelection("unresolved", absent, trial, 0., None, (trial.reason,))
+        return finish("unresolved", absent, trial, 0., None, (trial.reason,))
     attempts, candidates = [], []
     for fraction in (.01, .1):
         try:
@@ -377,7 +445,7 @@ def select_metal_phase(
         except failures as error:
             attempts.append({"insertion_fraction": fraction, "error": f"{type(error).__name__}: {error}"})
     if not candidates:
-        return MetalSelection("unresolved", absent, trial, 0., None,
+        return finish("unresolved", absent, trial, 0., None,
                               ("Metal-bearing branch unavailable; see local attempts.",), tuple(attempts))
     present = min(candidates, key=lambda result: (not result.accepted, result.gibbs_rt))
     amounts = present.component_amounts_mol[[names.index(name) for name in metal_names]]
@@ -386,16 +454,16 @@ def select_metal_phase(
     if not present.accepted:
         reasons.append("Metal-bearing local minimization failed.")
     if total <= 0:
-        return MetalSelection("unresolved", present, None, total, None,
+        return finish("unresolved", present, None, total, None,
                               tuple(reasons + ["No positive metal candidate was obtained."]), tuple(attempts))
     composition = amounts / total
     if np.any(composition < lo - 1e-10) or np.any(composition > hi + 1e-10):
-        return MetalSelection("unresolved", present, None, total, composition,
+        return finish("unresolved", present, None, total, composition,
                               tuple(reasons + ["The metal candidate lies outside the declared composition domain."]), tuple(attempts))
     try:
         trial = insertion(present)
     except failures as error:
-        return MetalSelection("unresolved", present, None, total, composition,
+        return finish("unresolved", present, None, total, composition,
                               tuple(reasons + [f"Metal insertion unavailable: {type(error).__name__}: {error}"]), tuple(attempts))
     if not trial.minimum_certified or max(abs(trial.upper_bound_rt), abs(trial.lower_bound_rt or 0.)) > tolerance:
         reasons.append("The present metal does not attain a certified zero insertion minimum.")
@@ -409,5 +477,5 @@ def select_metal_phase(
         reasons.append("Allowing metal raised the minimum energy.")
     if not host_certified:
         reasons.append("Host global stability is not established.")
-    return MetalSelection("metal_present" if not reasons else "unresolved", present, trial,
+    return finish("metal_present" if not reasons else "unresolved", present, trial,
                           total, composition, tuple(reasons), tuple(attempts))

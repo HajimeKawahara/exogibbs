@@ -47,6 +47,46 @@ declared domain also remain unresolved. A negative insertion trial can
 reject the metal-free branch without establishing an accepted metal-bearing
 solution. Stability is always relative to the declared phase catalog.
 
+## Diagnostics for inventory series
+
+Every selection now preserves `metal_free_result`, the separately solved
+zero-metal state, and `metal_free_insertion`, the minimizing incipient-alloy
+cost evaluated against that state's elemental potentials. The fields remain
+available after a successful metal-bearing solve or a failed attempt to obtain
+one. If the absent state or insertion could not be evaluated, the corresponding
+field is `None`. `dataclasses.asdict` includes both fields in saved reports.
+
+The existing `result` and `insertion` retain their selected-state meaning.
+For an accepted metal-bearing state, `insertion` tests coexistence and is
+approximately zero. It must not be used as the sign-changing metal-generation
+cost along a hydrogen or Mg/Si series. Use `metal_free_insertion` for that
+diagnostic: a negative upper bound supplies a favorable insertion into the
+absent state, while a certified nonnegative lower bound excludes favorable
+insertion within the declared alloy domain, subject to the recorded numerical
+tolerance. A favorable insertion followed by a failed metal-bearing solve
+still remains unresolved, even though the retained reference has zero metal.
+
+`local_metal_status(saved_selection)` returns `metal_present`, `metal_absent`,
+or `unresolved` after applying the existing `local_metal_selection_accepted`
+gate and checking the exact returned metal amount. It also accepts older
+reports without the new diagnostic fields. This local classification does not
+change `selection.status`: missing global host evidence still leaves that
+status unresolved, and no experimental phase boundary is certified.
+
+`metal_composition_domain` records the declared bounds, the effective upper
+bounds after exact-zero element support is removed, and the incipient and
+selected compositions' fraction slacks. `active_bounds` distinguishes
+`composition_box` restrictions from `exact_zero_budget` constraints and natural
+`simplex_boundary` contacts, using the recorded `contact_tolerance`. The
+`composition_box_contact` flag identifies a restriction that can affect a
+series response or apparent transition. Existing selected-state metal
+constraint slacks and KKT multipliers are copied into
+`selected_composition_constraints`; no uncomputed incipient multipliers are
+invented. A composition-box contact is not a physical phase boundary or an
+experimental calibration limit. Extending the box requires new valid curvature
+evidence and separate material justification; compositions are never clipped
+to make a series point pass.
+
 ## Composition-constrained update (2026-09-22)
 
 Present-metal minimization now receives the same composition box as the

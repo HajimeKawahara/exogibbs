@@ -1,6 +1,7 @@
 """Mixed-alloy minimum certificates and exact metal phase disappearance."""
 
 import importlib
+from dataclasses import asdict
 from pathlib import Path
 import sys
 
@@ -138,6 +139,12 @@ def test_certified_mixed_metal_presence_and_absolute_amount_scaling(scale):
                                       convex_phase_bounds={phase: 0. for phase in callbacks})
     assert result.status == "metal_present", result.reasons
     assert result.insertion.minimum_certified
+    assert result.metal_free_result.accepted
+    assert result.metal_free_insertion.minimum_certified
+    assert result.metal_free_insertion.upper_bound_rt < -1e-3
+    assert abs(result.insertion.upper_bound_rt) < 1e-8
+    np.testing.assert_array_equal(result.metal_free_result.component_amounts_mol[4:8], 0.)
+    assert PHASE.local_metal_status(asdict(result)) == "metal_present"
     assert result.metal_amount_mol / scale == pytest.approx(target[4:8].sum(), rel=1e-6)
     np.testing.assert_allclose(result.result.component_amounts_mol / scale, target, rtol=1e-6)
     assert result.result.element_residual[-1] == 0.
@@ -153,6 +160,9 @@ def test_certified_metal_absence_is_exact_zero_and_keeps_an_incipient_compositio
     np.testing.assert_array_equal(result.result.component_amounts_mol[4:8], 0.)
     assert result.insertion.minimum_certified and result.insertion.lower_bound_rt > 0
     assert result.insertion.composition.sum() == pytest.approx(1.)
+    assert result.metal_free_result is result.result
+    assert result.metal_free_insertion is result.insertion
+    assert PHASE.local_metal_status(asdict(result)) == "metal_absent"
 
 
 def test_melt_global_stability_cannot_be_inferred_from_local_closure_and_metal_test():
@@ -162,6 +172,7 @@ def test_melt_global_stability_cannot_be_inferred_from_local_closure_and_metal_t
     assert result.result.accepted and result.insertion.minimum_certified
     assert result.status == "unresolved"
     assert "Host global stability is not established." in result.reasons
+    assert PHASE.local_metal_status(asdict(result)) == "metal_absent"
 
 
 def test_exact_zero_hydrogen_removes_alloy_hydrogen_without_using_its_dual_potential():
@@ -173,6 +184,14 @@ def test_exact_zero_hydrogen_removes_alloy_hydrogen_without_using_its_dual_poten
     assert result.status == "metal_absent", result.reasons
     assert result.insertion.composition[-1] == 0.
     assert result.result.element_residual[0] == 0.
+    domain = result.metal_composition_domain
+    assert domain["zero_budget_components"] == ("H_m",)
+    assert domain["upper_atomic_fractions"][-1] == 1.
+    assert domain["effective_upper_atomic_fractions"][-1] == 0.
+    assert not domain["metal_free_incipient"]["composition_box_contact"]
+    contacts = [row for row in domain["metal_free_incipient"]["active_bounds"] if row["component"] == "H_m"]
+    assert len(contacts) == 2
+    assert all(row["kind"] == "exact_zero_budget" for row in contacts)
 
 
 def test_provider_domain_failure_is_unresolved_not_a_phase_boundary():
@@ -253,6 +272,13 @@ def test_present_phase_obeys_the_same_domain_as_its_insertion_certificate():
     assert np.max(np.abs(result.result.reduced_potentials_rt)) > .1
     assert result.local_attempts and result.local_attempts[-1]["result"].accepted
     assert any(item["multiplier_rt"] > .1 for item in result.result.composition_constraints)
+    domain = result.metal_composition_domain
+    assert domain["selected_metal"]["composition_box_contact"]
+    np.testing.assert_allclose(domain["selected_metal"]["lower_fraction_slack"], result.metal_composition - lower)
+    np.testing.assert_allclose(domain["selected_metal"]["upper_fraction_slack"], upper - result.metal_composition)
+    assert any(row["component"] == "H_m" and row["bound"] == "upper"
+               and row["kind"] == "composition_box" for row in domain["selected_metal"]["active_bounds"])
+    assert domain["selected_composition_constraints"] == result.result.composition_constraints
 
 
 def test_bounded_present_phase_keeps_host_stability_unresolved():
@@ -263,3 +289,36 @@ def test_bounded_present_phase_keeps_host_stability_unresolved():
     assert result.result.accepted and result.insertion.minimum_certified
     assert result.status == "unresolved"
     assert result.reasons == ("Host global stability is not established.",)
+    assert PHASE.local_metal_status(asdict(result)) == "metal_present"
+
+
+def test_failed_present_branch_retains_negative_metal_free_insertion_without_claiming_absence(monkeypatch):
+    record, budget, callbacks, _ = _ideal_assemblage()
+
+    def unavailable(*args):
+        raise RuntimeError("Metal-bearing seed is unavailable.")
+
+    monkeypatch.setattr(PHASE, "_insertion_seed", unavailable)
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                      np.zeros(4), np.ones(4),
+                                      convex_phase_bounds={phase: 0. for phase in callbacks})
+    assert result.status == "unresolved"
+    assert result.metal_free_result.accepted
+    assert result.metal_free_insertion.upper_bound_rt < -1e-3
+    assert result.metal_free_insertion.minimum_certified
+    assert result.metal_amount_mol == 0.
+    assert PHASE.local_metal_status(asdict(result)) == "unresolved"
+    assert len(result.local_attempts) == 2
+
+
+@pytest.mark.parametrize("amount,expected", [(0., "metal_absent"), (1., "metal_present"),
+                                            (None, "unresolved"), (True, "unresolved"),
+                                            ("1", "unresolved"), (float("nan"), "unresolved"),
+                                            (float("inf"), "unresolved"), (-1., "unresolved")])
+def test_local_status_uses_legacy_selection_gate_and_finite_amount(amount, expected):
+    selection = {"status": "unresolved", "reasons": ["Host global stability is not established."],
+                 "result": {"accepted": True}, "insertion": {"minimum_certified": True},
+                 "metal_amount_mol": amount}
+    assert PHASE.local_metal_status(selection) == expected
+    selection["reasons"] = ["Metal-bearing branch unavailable; see local attempts."]
+    assert PHASE.local_metal_status(selection) == "unresolved"
