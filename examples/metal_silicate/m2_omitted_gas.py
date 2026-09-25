@@ -108,7 +108,11 @@ def screen_source(source, *, mole_fraction_target=1e-8, additional_atomic_refere
                            if formula[row, index]}
     # Metal activity coefficients are not inferred from gas thermochemistry.
     amounts = np.asarray(source["source_result"]["component_amounts_mol"])
-    record = source["source_record"]
+    # The provider contact archive uses `record`; planetary closures preserve
+    # the same public phase record under `source_record`.
+    record = source.get("source_record", source.get("record"))
+    if not isinstance(record, dict):
+        raise ValueError("Require the preserved public source phase record.")
     names = [name for group in record["phases"].values() for name in group]
     metal_amount = float(sum(amounts[names.index(name)] for name in record["phases"]["metal"]))
     metal = [{"element": element, "elemental_potential_rt": float(lam[elements.index(element)]),

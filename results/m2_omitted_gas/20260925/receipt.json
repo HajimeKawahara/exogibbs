@@ -1,0 +1,72 @@
+{
+  "assessment": "Preserved accepted local source states; no native solve or new planetary closure.",
+  "executed_commit": "5aa76008b7ef316897c878014ea19be062e0f782",
+  "package_python": "/tmp/exoinventory-m2-series-preflight-20260925/exogibbs/src",
+  "environment": {
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "cases": [
+    {
+      "case": "h1e22",
+      "source_url": "https://github.com/HajimeKawahara/exoinventory/blob/d2126ae163470ed0bff4b853426ae207b839bf9f/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_hydrogen_pilot/native_h_recovery/case_000/closure/closure.json",
+      "source_sha256": "b7a6e23840d83f2d5df0840267e00f22a1114c06d630104cf6ef94dedc93cd6a",
+      "result_file": "omitted_gas_h1e22.json",
+      "result_sha256": "2e6d2e6962d273aeb52dbc095ca370295cd8a83c484b3e51282558beb27b4dd0",
+      "temperature_K": 2173.15,
+      "pressure_bar": 59.82480116758995,
+      "gas_candidates": 41,
+      "missing_atomic_references": [
+        "Al",
+        "Ca",
+        "K",
+        "Ti",
+        "Cr",
+        "P"
+      ],
+      "accepted_omission_bound": false
+    },
+    {
+      "case": "h1e24",
+      "source_url": "https://github.com/HajimeKawahara/exoinventory/blob/d2126ae163470ed0bff4b853426ae207b839bf9f/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_hydrogen_pilot/native_h_pilot/case_001/closure/closure.json",
+      "source_sha256": "6b1bdd16ec83f5eeb4f29fe57d55f8f8c37d7167e4f7858525203cc342460940",
+      "result_file": "omitted_gas_h1e24.json",
+      "result_sha256": "16a8da54916c5cdb38c27415e35c2f8a0c18c1b65a9ce88346b6c430e19b58ea",
+      "temperature_K": 2173.15,
+      "pressure_bar": 267.20283416157343,
+      "gas_candidates": 41,
+      "missing_atomic_references": [
+        "Al",
+        "Ca",
+        "K",
+        "Ti",
+        "Cr",
+        "P"
+      ],
+      "accepted_omission_bound": false
+    },
+    {
+      "case": "h2e24",
+      "source_url": "https://github.com/HajimeKawahara/exoinventory/blob/d2126ae163470ed0bff4b853426ae207b839bf9f/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_hydrogen_pilot/native_h_pilot/case_002/closure/closure.json",
+      "source_sha256": "4e7353f2926dec27934f81085a345b0009547f29abba0a383268a85fe8fdd846",
+      "result_file": "omitted_gas_h2e24.json",
+      "result_sha256": "d4f121449bbe5b97a77e6238ce189713f4c845af46f84aa2d435581c1d5396c7",
+      "temperature_K": 2173.15,
+      "pressure_bar": 432.2984712379783,
+      "gas_candidates": 41,
+      "missing_atomic_references": [
+        "Al",
+        "Ca",
+        "K",
+        "Ti",
+        "Cr",
+        "P"
+      ],
+      "accepted_omission_bound": false
+    }
+  ],
+  "all_exit_codes": 0,
+  "scientific_acceptance": "pending"
+}

@@ -2,6 +2,8 @@
 
 import importlib.util
 from pathlib import Path
+import sys
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -53,3 +55,28 @@ def test_log_estimate_survives_overflow_without_clipping_to_a_physical_fraction(
 def test_nonfinite_reference_is_not_an_unknown_reference(gauge):
     with pytest.raises(ValueError):
         screen.trace_gas_requirements([[1.]], [0.], [0.], gauge, 1., mole_fraction_target=.01)
+
+
+@pytest.mark.parametrize("record_key", ["record", "source_record"])
+def test_provider_contact_and_planetary_source_records_are_screened(monkeypatch, record_key):
+    from exogibbs.presets import fastchem4_cond
+
+    elements = ["H", "He", "O", "Mg", "Si", "Fe", "Na", *screen.OMITTED_ELEMENTS]
+    formula = np.zeros((len(elements), 1))
+    formula[elements.index("Al"), 0] = 1.
+    catalog = SimpleNamespace(elements=elements, species=["Al1"], formula_matrix=formula,
+                              hvector_func=lambda temperature: np.zeros(1))
+    monkeypatch.setattr(fastchem4_cond, "condensate_chemical_setup",
+                        lambda **kwargs: SimpleNamespace(gas_setup=catalog))
+    monkeypatch.setitem(sys.modules, "m1_chemistry", SimpleNamespace(provenance=lambda: {}))
+    source = {"temperature_K": 2173.15, "pressure_bar": 200.,
+              "source_internal_record": {"elements": elements},
+              "source_internal_result": {"accepted": True, "elemental_potentials_rt": [0.] * len(elements)},
+              "source_metadata": {"standards": {"evaluation_temperature_K": 2173.15,
+                  "common_gas": {"elements": elements[:7], "element_gauge_rt": [0.] * 7}}},
+              record_key: {"phases": {"metal": ["Fe_metal"]}},
+              "source_result": {"component_amounts_mol": [1.]}}
+    result = screen.screen_source(source)
+    assert result["gas_candidates"][0]["species"] == "Al1"
+    assert result["gas_candidates"][0]["status"] == "missing_atomic_reference"
+    assert not result["accepted_omission_bound"]
