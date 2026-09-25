@@ -14,8 +14,10 @@ evaluates each available incipient composition with `calcPhaseProperties`
 and checks its returned mass and oxide amounts against the requested 100 g
 basis. Signed oxide amounts are retained: native Fe metal is represented by
 a combination of FeO and negative Fe2O3. A failed candidate round trip is
-unresolved; a backend failure aborts the worker so later phases cannot use
-potentially corrupted state. No equilibrium or liquidus search is called.
+unresolved; a native candidate failure is saved and later candidates are
+marked unevaluated so they cannot use potentially corrupted state. A failed
+liquid or saturation calculation still aborts the worker. No equilibrium or
+liquidus search is called.
 
 The [MELTS manual](https://melts.ofm-research.org/Manual/UnixManHtml/Solid-Composition.html)
 defines a smaller native affinity as closer to saturation. Its
