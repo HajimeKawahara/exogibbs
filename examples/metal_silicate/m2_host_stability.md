@@ -62,6 +62,43 @@ They are alternative constitutive models, not a substitution for the selected
 Ma Fe-Si-O-H alloy or the common atmospheric gas/cloud catalog. The native
 33-phase catalog is distinct from the atmospheric 26 condensate candidates.
 
+## Optional composition and liquid-splitting searches
+
+`m2_stability_search.py` adds bounded searches for negative counterexamples.
+An updated ExoEOS evaluator supplies native endmember oxide bases and direct
+`calcMolarProperties` energies. This bypasses inverse oxide conversions that
+can change hornblende or orthoamphibole amounts; the original conversion
+failure remains in the property receipt. Kalsilite stays in the catalog:
+its incipient estimate can be unavailable even when interior compositions
+have finite native energies.
+
+`search_competing_solutions` searches the nonnegative native endmember
+simplex. Every composition uses the same insertion calculation and ideal-H2
+dilution correction above. This simplex is an explicit search subset, not an
+empirically calibrated domain or necessarily the full native solution domain.
+`search_liquid_splitting` partitions every positive parent component, including
+molecular H2, into two finite daughter liquids. Daughter component amounts
+sum to the parent; exact-zero parent components stay zero. The same native
+energy and ideal-H2 scalar are evaluated for each daughter. Any identical
+linear H2 standard, including a declared sensitivity offset, cancels in the
+parent-minus-daughters comparison. Native H2O is not replaced or double counted.
+
+Both searches save evaluated points, failures, optimizer messages, the budget,
+and a fresh best-point evaluation. A negative feasible witness rejects this
+particular supplied host under the declared formal model. Nonnegative points
+remain `unresolved`, with `lower_bound_rt=None` and no minimum certificate.
+Neither a successful optimizer nor exhausted starts establish absence.
+Liquid splits search daughter fractions from 0.001 to 0.999; these are search
+bounds, not a trace floor in the source model. Unsearched endpoints, additional
+liquids, native domains outside the simplex, and model calibration remain open.
+
+Append `--search-solutions hornblende orthoamphibole kalsilite` and/or
+`--search-liquid-splitting` to the command below. `--search-evaluations 60`
+limits objective calls per search, followed by one fresh final evaluation.
+No search runs by default. These postprocessing trials retain fixed source
+T/P; they are not a new planetary closure or a comparison of Gibbs energies
+at different bottom pressures.
+
 Run a new assessment of either a provider contact archive or an Inventory
 column archive with the matching optional ExoEOS checkout:
 

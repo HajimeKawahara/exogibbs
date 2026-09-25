@@ -14,17 +14,19 @@ from full_potential import PhaseState, ideal_phase
 from m1_chemistry import build_setups
 from m2_atmosphere import make_atmosphere_phase
 from m2_common_gas import anchored_standards_rt, source_gas_names
+from m2_scenarios import apply_standard_offsets, metal_selection_domain, normalize_scenario
 from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 
 
 def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_executable,
-                               *, temperature_k=2173.15, pressure_bar=1.):
+                               *, temperature_k=2173.15, pressure_bar=1., scenario=None):
     """Return the finite source using seven internal atmosphere atom carriers.
 
     The atmosphere callback minimizes all 35 gases and 26 retained pure
     condensates at its current finite atomic allocation. Its seven amounts
     are bookkeeping coordinates, never atomic gases or extra matter.
     """
+    normalized = normalize_scenario(scenario)
     record, budget, callbacks, initial, metadata = build_bse_problem(
         inventory_path, exoeos_checkout, runtime, python_executable,
         temperature_k=temperature_k, pressure_bar=pressure_bar, gas_model="m1_expanded")
@@ -50,6 +52,11 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     record["atmosphere_element_order"] = list(setup.gas_setup.elements)
     callbacks.pop("gas")
     callbacks["atmosphere"] = atmosphere
+    if scenario is not None:
+        callbacks = apply_standard_offsets(record, callbacks, normalized)
+        metadata["provider_scenario"] = normalized
+        metadata["provider_scenario_interpretation"] = (
+            "Declared model sensitivity only; offsets and alloy bounds are not calibrated uncertainties.")
     metadata["model_id"] = "bse_melts_ma_retained_atmosphere_conditional_v1"
     metadata["standards"]["gas_model"] = "m1_retained"
     metadata["atmosphere"] = {
@@ -60,7 +67,7 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     }
     metadata["provenance"]["file_sha256"].update({name: hashlib.sha256(
         Path(__file__).with_name(name).read_bytes()).hexdigest()
-        for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py")})
+        for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py", "m2_scenarios.py")})
     return record, budget, callbacks, initial, metadata
 
 

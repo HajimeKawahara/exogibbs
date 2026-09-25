@@ -320,7 +320,7 @@ def select_metal_phase(
     temperature_k: float, pressure_bar: float, callbacks: Mapping[str, PhaseCallback],
     metal_lower: np.ndarray, metal_upper: np.ndarray, *,
     convex_phase_bounds: Optional[Mapping[str, float]] = None,
-    maxiter: int = 1000, tolerance: float = 1e-8,
+    maxiter: int = 1000, tolerance: float = 1e-8, allow_metal: bool = True,
 ) -> MetalSelection:
     """Evaluate metal-free and metal-bearing branches without a metal floor.
 
@@ -339,7 +339,12 @@ def select_metal_phase(
     branch and its phase-generation cost, including after a metal-bearing
     solve. ``insertion`` retains its existing selected-state meaning: it is
     approximately zero at coexistence, not the absent-branch boundary cost.
+    ``allow_metal=False`` returns that constrained absent branch without a
+    present-phase solve. A favorable insertion keeps its status unresolved;
+    numerical acceptance of the constrained state does not establish absence.
     """
+    if type(allow_metal) is not bool:
+        raise ValueError("allow_metal must be a boolean.")
     if "metal" not in record["phases"] or set(callbacks) != set(record["phases"]):
         raise ValueError("Supply the metal phase and exactly one callback per declared phase.")
     budget = _budgets(element_amounts_mol, len(record["elements"]))
@@ -432,6 +437,9 @@ def select_metal_phase(
         return finish("metal_absent" if not reasons else "unresolved", absent, trial, 0., None, reasons)
     if trial.upper_bound_rt >= -tolerance:
         return finish("unresolved", absent, trial, 0., None, (trial.reason,))
+    if not allow_metal:
+        return finish("unresolved", absent, trial, 0., None,
+                      ("The constrained metal-free branch has a favorable metal insertion.",))
     attempts, candidates = [], []
     for fraction in (.01, .1):
         try:
