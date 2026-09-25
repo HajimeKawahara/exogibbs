@@ -311,6 +311,41 @@ def test_failed_present_branch_retains_negative_metal_free_insertion_without_cla
     assert len(result.local_attempts) == 2
 
 
+def test_constrained_absent_branch_keeps_instability_without_attempting_present_solve(monkeypatch):
+    record, budget, callbacks, _ = _ideal_assemblage()
+    def forbidden(*args, **kwargs):
+        pytest.fail("A constrained absent evaluation must not seed a present solve.")
+    monkeypatch.setattr(PHASE, "_insertion_seed", forbidden)
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                      np.zeros(4), np.ones(4), allow_metal=False,
+                                      convex_phase_bounds={phase: 0. for phase in callbacks})
+    assert result.result is result.metal_free_result and result.result.accepted
+    assert result.insertion is result.metal_free_insertion
+    assert result.insertion.upper_bound_rt < -1e-3
+    assert result.insertion.minimum_certified
+    assert not result.local_attempts
+    assert result.status == "unresolved" and PHASE.local_metal_status(asdict(result)) == "unresolved"
+    assert "favorable metal insertion" in result.reasons[0]
+    np.testing.assert_array_equal(result.result.component_amounts_mol[4:8], 0.)
+
+
+def test_constrained_absent_branch_still_accepts_certified_local_absence():
+    record, budget, callbacks, _ = _ideal_assemblage(metal_offset=10.)
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                      np.zeros(4), np.ones(4), allow_metal=False,
+                                      convex_phase_bounds={phase: 0. for phase in callbacks})
+    assert result.status == "metal_absent"
+    assert result.insertion.lower_bound_rt > 0
+
+
+@pytest.mark.parametrize("value", [0, 1, None, "false", np.bool_(False)])
+def test_metal_permission_requires_an_explicit_boolean(value):
+    record, budget, callbacks, _ = _ideal_assemblage()
+    with pytest.raises(ValueError, match="allow_metal"):
+        PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                np.zeros(4), np.ones(4), allow_metal=value)
+
+
 @pytest.mark.parametrize("amount,expected", [(0., "metal_absent"), (1., "metal_present"),
                                             (None, "unresolved"), (True, "unresolved"),
                                             ("1", "unresolved"), (float("nan"), "unresolved"),

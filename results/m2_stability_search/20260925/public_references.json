@@ -1,0 +1,87 @@
+{
+  "scope": "Archive references only. Original raw execution provenance is unchanged; equivalent public files do not replace recorded execution commits.",
+  "inputs": [
+    {
+      "id": "candidate_native_properties",
+      "repository": "exoeos",
+      "commit": "147931fc382af060d2601fc279a1d65ce73afcee",
+      "path": "examples/m2_candidate_basis/native_supplied_host.json",
+      "sha256": "305729369617f7a4dd4693b22fd63f4936e2b2cb940b62e07ce3e5859cb3ed44",
+      "url": "https://github.com/HajimeKawahara/exoeos/blob/147931fc382af060d2601fc279a1d65ce73afcee/examples/m2_candidate_basis/native_supplied_host.json"
+    },
+    {
+      "id": "candidate_dissolved_h2_source",
+      "repository": "exoinventory",
+      "commit": "15e28809f5bab7e1f20d1b35bdc05f7cea5d836e",
+      "path": "examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_hydrogen_pilot/native_h_pilot/case_002/physical_root_000.json",
+      "sha256": "3acd22df518064c8ae0572acef88fb8e5bc91fea7e76a48fe076e3c3ca2c3d09",
+      "url": "https://github.com/HajimeKawahara/exoinventory/blob/15e28809f5bab7e1f20d1b35bdc05f7cea5d836e/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_hydrogen_pilot/native_h_pilot/case_002/physical_root_000.json"
+    },
+    {
+      "id": "two_liquid_physical_assessment",
+      "repository": "exoinventory",
+      "commit": "06077dd4d401bd611d69ae308c2c26254f4ff3d8",
+      "path": "examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_readiness/physical/physical_reactions_h1e24.json",
+      "sha256": "1f07dca4af7d1aa7599e3165f4a2a0ef94cc41ba37a363a3e72ba6f1685995bf",
+      "url": "https://github.com/HajimeKawahara/exoinventory/blob/06077dd4d401bd611d69ae308c2c26254f4ff3d8/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_readiness/physical/physical_reactions_h1e24.json"
+    }
+  ],
+  "two_liquid_source_file_equivalence": [
+    {
+      "repository": "exogibbs",
+      "executed_integration_commit": "6329226e82f8e888f85dda33e61b661a6c281d90",
+      "equivalent_public_commit": "9ca7c47e61cb9664328dff81588b7d8a0368b783",
+      "path": "examples/metal_silicate/m2_stability_search.py",
+      "sha256": "b88e3dac42854ae0d59ea34b3b0a74602d597cd8c0f0fcea81be9fe87209558d",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/9ca7c47e61cb9664328dff81588b7d8a0368b783/examples/metal_silicate/m2_stability_search.py"
+    },
+    {
+      "repository": "exogibbs",
+      "executed_integration_commit": "6329226e82f8e888f85dda33e61b661a6c281d90",
+      "equivalent_public_commit": "9ca7c47e61cb9664328dff81588b7d8a0368b783",
+      "path": "examples/metal_silicate/m2_host_stability.py",
+      "sha256": "888149cb3ced64bd705c2504aa8cc76a41f449aa6e3ad673556309453c42c356",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/9ca7c47e61cb9664328dff81588b7d8a0368b783/examples/metal_silicate/m2_host_stability.py"
+    },
+    {
+      "repository": "exogibbs",
+      "executed_integration_commit": "6329226e82f8e888f85dda33e61b661a6c281d90",
+      "equivalent_public_commit": "9ca7c47e61cb9664328dff81588b7d8a0368b783",
+      "path": "examples/metal_silicate/melts_coupled.py",
+      "sha256": "3c5623622d4423fb5b00624a0f45e7a712044a1422346c34b0c3e5ecf84c1770",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/9ca7c47e61cb9664328dff81588b7d8a0368b783/examples/metal_silicate/melts_coupled.py"
+    },
+    {
+      "repository": "exogibbs",
+      "executed_integration_commit": "6329226e82f8e888f85dda33e61b661a6c281d90",
+      "equivalent_public_commit": "9ca7c47e61cb9664328dff81588b7d8a0368b783",
+      "path": "examples/metal_silicate/hydrogen.py",
+      "sha256": "8c6aaa6303583e1a7048b93db07a8edfea036321bc5c266425950821961887f3",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/9ca7c47e61cb9664328dff81588b7d8a0368b783/examples/metal_silicate/hydrogen.py"
+    },
+    {
+      "repository": "exogibbs",
+      "executed_integration_commit": "6329226e82f8e888f85dda33e61b661a6c281d90",
+      "equivalent_public_commit": "9ca7c47e61cb9664328dff81588b7d8a0368b783",
+      "path": "examples/metal_silicate/full_potential.py",
+      "sha256": "0d312a1a5ac0fdae0479d0e85e09bc35a88f59952a36895b703ac35513b8bc19",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/9ca7c47e61cb9664328dff81588b7d8a0368b783/examples/metal_silicate/full_potential.py"
+    },
+    {
+      "repository": "exoeos",
+      "executed_integration_commit": "04c950d0047a142a242a58b4733a9cd9261f3287",
+      "equivalent_public_commit": "b3411863e9ad18f809a3dd57244ac55b62b5bfa1",
+      "path": "examples/melts_liquid_evaluator.py",
+      "sha256": "802a3a95d6d9aff373780fbb06eb67392ba22f2b9c0b45f9c0e0b473ae695718",
+      "url": "https://github.com/HajimeKawahara/exoeos/blob/b3411863e9ad18f809a3dd57244ac55b62b5bfa1/examples/melts_liquid_evaluator.py"
+    },
+    {
+      "repository": "exoeos",
+      "executed_integration_commit": "04c950d0047a142a242a58b4733a9cd9261f3287",
+      "equivalent_public_commit": "b3411863e9ad18f809a3dd57244ac55b62b5bfa1",
+      "path": "tests/reference/melts_silicate_v1.json",
+      "sha256": "71ab9f583dde7629e561babd7a9575606e0777d9588a28b163406701ea4ec334",
+      "url": "https://github.com/HajimeKawahara/exoeos/blob/b3411863e9ad18f809a3dd57244ac55b62b5bfa1/tests/reference/melts_silicate_v1.json"
+    }
+  ]
+}

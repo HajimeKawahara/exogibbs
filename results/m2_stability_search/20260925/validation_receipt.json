@@ -1,0 +1,49 @@
+{
+  "scope": "Archive byte preservation, published-input blob comparison, and independent primitive two-liquid recount only. No model evaluation or global stability certification.",
+  "copied_file_sha256": {
+    "native_candidate_search_smoke.json": "2eaa9997308a6a8129561a17e1ed9784370b86a9f43adc212323cdee1b47b56f",
+    "native_candidate_search_smoke_receipt.json": "be32e9130552aa91f88edfa00b18c0d14816818ec3b9992599687da2db040cff",
+    "native_two_liquid_search_smoke.json": "f23b408544d4cc6c085d228e492c16387b87bb02af2f8093aae1486b0f3226b7",
+    "check_native_search.py": "9b626deb31767dd6886589d3bc85e1cb1244b4917c1ea0514cce4dc12ee873cc",
+    "check_native_two_liquids.py": "1da8b147ad790a9d3f52eb4bbfe2908c989f79231c434ef74d533dab8c13b4be"
+  },
+  "byte_preservation_passed": true,
+  "public_input_blobs_sha256_verified": true,
+  "source_equivalence_verified": true,
+  "candidate_results": [
+    {
+      "phase": "hornblende",
+      "status": "unresolved",
+      "finite_objective_evaluations": 9,
+      "failed_evaluations": 0,
+      "best_objective_rt_per_mol_atoms": 0.5684496831462087
+    },
+    {
+      "phase": "orthoamphibole",
+      "status": "unresolved",
+      "finite_objective_evaluations": 9,
+      "failed_evaluations": 0,
+      "best_objective_rt_per_mol_atoms": 0.462657534082505
+    },
+    {
+      "phase": "kalsilite",
+      "status": "unresolved",
+      "finite_objective_evaluations": 9,
+      "failed_evaluations": 0,
+      "best_objective_rt_per_mol_atoms": 0.5980603349736671
+    }
+  ],
+  "two_liquid_recount": {
+    "passed": true,
+    "max_component_balance_error_mol": 5.551115123125783e-17,
+    "max_augmented_gibbs_error_rt": 0.0,
+    "max_delta_gibbs_error_rt": 0.0,
+    "max_objective_error_rt_per_mol_atoms": 0.0,
+    "max_fraction_distance_from_half": 0.2530486264731735,
+    "finite_objective_evaluations": 31,
+    "failed_evaluations": 0,
+    "best_objective_rt_per_mol_atoms": -3.0396838536656483e-15
+  },
+  "model_sources_changed": false,
+  "native_model_reexecuted_for_archive": false
+}
