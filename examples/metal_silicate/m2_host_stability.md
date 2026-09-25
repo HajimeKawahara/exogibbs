@@ -66,6 +66,11 @@ Ma Fe-Si-O-H alloy or the common atmospheric gas/cloud catalog. The native
 
 ## Optional composition and liquid-splitting searches
 
+The [2026-09-25 bounded native search receipts](../../results/m2_stability_search/20260925/README.md)
+preserve three solid-composition searches and one two-liquid search at saved
+closed hosts. No resolved negative witness was found within their small
+budgets; all global stability statuses remain unresolved.
+
 `m2_stability_search.py` adds bounded searches for negative counterexamples.
 An updated ExoEOS evaluator supplies native endmember oxide bases and direct
 `calcMolarProperties` energies. This bypasses inverse oxide conversions that

@@ -1,0 +1,14 @@
+{
+  "algorithm": "sha256",
+  "scope": "Every archived file except this manifest. Raw results, receipts and executed scripts are preserved unchanged.",
+  "files": {
+    "README.md": "ce5d328dc27674764d311013cdd57b044e5d8ac817ab7d88bd70b29e93f60211",
+    "check_native_search.py": "9b626deb31767dd6886589d3bc85e1cb1244b4917c1ea0514cce4dc12ee873cc",
+    "check_native_two_liquids.py": "1da8b147ad790a9d3f52eb4bbfe2908c989f79231c434ef74d533dab8c13b4be",
+    "native_candidate_search_smoke.json": "2eaa9997308a6a8129561a17e1ed9784370b86a9f43adc212323cdee1b47b56f",
+    "native_candidate_search_smoke_receipt.json": "be32e9130552aa91f88edfa00b18c0d14816818ec3b9992599687da2db040cff",
+    "native_two_liquid_search_smoke.json": "f23b408544d4cc6c085d228e492c16387b87bb02af2f8093aae1486b0f3226b7",
+    "public_references.json": "4276e1ff6fc412501e16ebd5a4beb41d0be0791a719f2c495caeab59f64f96d5",
+    "validation_receipt.json": "a413fa3a0f6edf2a4e9af8f6bc6cb8ae0a33c55687cde564cc0a8b580bc29f08"
+  }
+}

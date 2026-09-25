@@ -1,0 +1,73 @@
+{
+  "scope": "Companion input/provenance receipt for the preserved earlier bounded candidate search; no rerun and no global minimum claim.",
+  "result": {
+    "path": "native_candidate_search_smoke.json",
+    "sha256": "2eaa9997308a6a8129561a17e1ed9784370b86a9f43adc212323cdee1b47b56f"
+  },
+  "input": {
+    "native_property_record": "/tmp/exoinventory-m2-readiness-20260925/candidate_basis_native_check.json",
+    "sha256": "305729369617f7a4dd4693b22fd63f4936e2b2cb940b62e07ce3e5859cb3ed44",
+    "original_physical_assessment": "/tmp/exoinventory-m2-series-preflight-20260925/exoinventory/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_hydrogen_pilot/native_h_pilot/case_002/physical_root_000.json",
+    "original_sha256": "3acd22df518064c8ae0572acef88fb8e5bc91fea7e76a48fe076e3c3ca2c3d09",
+    "temperature_K": 2173.15,
+    "pressure_Pa": 43229847.12379783,
+    "component_order": [
+      "sio2",
+      "tio2",
+      "al2o3",
+      "fe2o3",
+      "mgcr2o4",
+      "fe2sio4",
+      "mnsi0.5o2",
+      "mg2sio4",
+      "nisi0.5o2",
+      "cosi0.5o2",
+      "casio3",
+      "na2sio3",
+      "kalsio4",
+      "ca3(po4)2",
+      "co2",
+      "so3",
+      "cl2o-1",
+      "f2o-1",
+      "h2o"
+    ],
+    "native_component_moles": [
+      0.1926524678324649,
+      0.0025206287754227816,
+      0.04340342640229763,
+      1.1200545125898102e-05,
+      0.002530397472420548,
+      0.019649290363127046,
+      0.0,
+      0.46839137396918545,
+      0.0,
+      0.0,
+      0.0629591113464927,
+      0.005799158771943088,
+      0.0006166932731890962,
+      0.00014817479349060893,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.011523466412320238
+    ],
+    "native_dissolved_h2_moles": 0.003235107424640256,
+    "max_evaluations_per_phase": 8,
+    "phases": [
+      "hornblende",
+      "orthoamphibole",
+      "kalsilite"
+    ]
+  },
+  "equivalent_source_files_in_commits": {
+    "exogibbs_search": "f3df59b",
+    "exoeos_evaluator": "147931f"
+  },
+  "interpretation": "Executed file hashes match these committed files; this does not rewrite the original recorded checkout/dirty-source provenance.",
+  "orchestration": {
+    "path": "check_native_search.py",
+    "sha256": "9b626deb31767dd6886589d3bc85e1cb1244b4917c1ea0514cce4dc12ee873cc"
+  }
+}
