@@ -197,6 +197,12 @@ def build_jobs() -> tuple[Job, ...]:
         native_resources, ("equilibrium.json",),
     ))
     jobs.append(Job(
+        "metal_m2_omitted_gas", metal + "run_m2_omitted_gas.py",
+        ("--source", str(ROOT / "results/m2_expanded_contact/20260924/contact.json"),
+         "--mole-fraction-target", "1e-8", "--output", "{output}/screen.json"),
+        artifacts=("screen.json",),
+    ))
+    jobs.append(Job(
         "metal_archive_revalidation", metal + "revalidate_archive.py",
         ("--archive", str(ROOT / "results/subneptune_taxonomy/20260911"),
          "--exoeos-checkout", "{exoeos_checkout}", "--runtime", "{melts_runtime}",
