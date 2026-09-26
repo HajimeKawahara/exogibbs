@@ -7,6 +7,19 @@ along with four independent, atom-balanced gas reactions. Changing the
 elemental reference cannot change those reactions. No molecular or phase
 offset is fitted to force agreement.
 
+`extract_formal_reduction_standards(source, evaluator=..., runtime=...,
+python_executable=...)` extracts reduction-audit inputs from a saved accepted
+retained BSE source at its actual T/P. One fresh native call uses the unchanged
+host component amounts and returns the SiO2 and Fe2SiO4 pure-endmember
+standards. Fe/Si metal standards use exactly the source builder's standards
+plus its Ma atomic-ideal convention shifts. H2/H2O gas standards come from
+the saved atmosphere parcel in its common elemental gauge. A missing native
+endpoint is rejected without adding a trace component. The helper returns
+all six standards, their conventions, native inputs, and provenance;
+`physical_calibration_accepted` remains false. An independent EOS reaction
+audit can consume these values without the Inventory consumer rebuilding
+chemical standards or treating a formal reaction sum as experimental evidence.
+
 At 2173.15 K the lower-minus-upper reaction-energy differences are:
 
 | Reaction | Difference in Delta G / RT |
