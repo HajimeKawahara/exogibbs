@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 
 import jax
+import jax.numpy as jnp
 import numpy as np
 
 from full_potential import PhaseState
@@ -39,7 +40,7 @@ def add_phosphorus_metal(record, initial, callbacks, metadata, setup, gauge,
     Defaults explicitly select a source-published conditional continuation;
     alternative gas references and measurement shifts remain separate runs.
     """
-    from exoeos import total_solution_gibbs_RT, total_solution_state
+    from exoeos import total_gex_RT, total_solution_state
 
     options = {} if options is None else dict(options)
     if set(options) - {"gas_reference", "temperature_policy", "standard_shift_kcal_mol"}:
@@ -74,8 +75,7 @@ def add_phosphorus_metal(record, initial, callbacks, metadata, setup, gauge,
     names.append("P_metal")
     record["component_formulas"]["P_metal"] = {"P": 1.}
     evaluate = jax.jit(lambda n: total_solution_state(model, temperature_k, pressure_bar * 1e5, n, standards))
-    derivative = jax.jit(jax.value_and_grad(
-        lambda n: total_solution_gibbs_RT(model, temperature_k, pressure_bar * 1e5, n, standards)))
+    derivatives = {}
 
     def alloy(t, p, n):
         if t != temperature_k or p != pressure_bar:
@@ -89,7 +89,26 @@ def add_phosphorus_metal(record, initial, callbacks, metadata, setup, gauge,
     def energy_value_and_grad_rt(t, p, n):
         if t != temperature_k or p != pressure_bar:
             raise ValueError("Rebuild the phosphorus callback after changing T/P.")
-        return derivative(n)
+        n = np.asarray(n)
+        support = tuple(np.flatnonzero(n > 0))
+        if not support:
+            return 0., np.full(len(names), np.nan)
+        if support not in derivatives:
+            indices = np.asarray(support)
+
+            def scalar(active):
+                full = jnp.zeros(len(names), dtype=active.dtype).at[indices].set(active)
+                # Differentiate only present amounts; absent entropy terms
+                # vanish and have no finite derivative into their component.
+                ideal = jnp.sum(active * jnp.log(active / jnp.sum(active)))
+                return (jnp.dot(full, standards) + ideal +
+                        total_gex_RT(model, temperature_k, pressure_bar * 1e5, full))
+
+            derivatives[support] = jax.jit(jax.value_and_grad(scalar))
+        energy, active_gradient = derivatives[support](n[list(support)])
+        gradient = np.full(len(names), -np.inf)
+        gradient[list(support)] = np.asarray(active_gradient)
+        return energy, gradient
 
     alloy.energy_value_and_grad_rt = energy_value_and_grad_rt
     callbacks["metal"] = alloy
