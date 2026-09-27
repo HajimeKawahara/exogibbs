@@ -106,6 +106,19 @@ standards and dissolved H2 must agree; both records remain hashed. The alloy
 interval bound is independently reproduced. Every read input is checked
 again for changes before the output is written.
 
+Post-hoc proof code can differ from the executed source's construction and
+selection wrappers. The runner verifies **every** recorded source-recipe hash
+against its original git blob. Only `melts_coupled.py`, `m2_expanded_source.py`,
+`m2_scenarios.py` and `phase_selection.py` may differ in the current checkout;
+all other recorded files, including the thermochemical replay and gas data,
+must remain byte-identical. Source-building control flow is not rerun. Saved
+scenario values/domains, constitutive coefficients, standards and the exact
+primitive energy are bound separately. Original blob hashes and current proof
+hashes are both retained. The standalone four-component alloy runner offers
+this same policy only with `--allow-historical-builders`; its default remains
+strict byte equality. Missing commits, changed historical blobs or modified
+replayed standards fail closed.
+
 ```bash
 PYTHONPATH="$GIBBS_CHECKOUT/src:$EOS_CHECKOUT/src" \
 JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \

@@ -92,7 +92,8 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     read(row["physical_audit"]["path"], row["physical_audit"]["sha256"])
     report, audit, state, scenario, _, _ = saved_inputs(Path(row["source"]["path"]), Path(row["physical_audit"]["path"]), allow_extended=True)
     source = state["source"]
-    files.update(verified_recipe(source, eos_checkout))
+    recipe_receipt = {}
+    files.update(verified_recipe(source, eos_checkout,allow_historical_builders=True,receipt=recipe_receipt))
     elements = source["source_internal_record"]["elements"]
     budget = list(map(Fraction, source["source_metadata"]["input"]["element_amounts_mol"]))
     if elements != report["inventory"]["elements"] or list(map(Fraction, report["inventory"]["total_element_amounts_mol"])) != budget:
@@ -349,6 +350,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
         result["declared_model_gap_accepted"] and numerical_prerequisites and metal_condition)
     result.update(schema="m2_declared_finite_source_common_plane_gap_v1", case=row["case"],
                   source=row["source"], physical_audit=row["physical_audit"],
+                  source_recipe_verification=recipe_receipt,
                   temperature_K=temperature, pressure_bar=pressure, exact_primal_repair=repair,
                   solution_provider=solution_provider_receipt,
                   phase_bounds=[{**{k: v for k, v in item.items() if k not in ("bound", "minimum_atoms")},
