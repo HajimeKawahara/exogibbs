@@ -1,6 +1,7 @@
 """Global mineral bounds must cover site domains and preserve missing evidence."""
 
 import importlib
+import copy
 from pathlib import Path
 import sys
 
@@ -157,3 +158,55 @@ def test_curvature_anchor_stays_inside_an_exact_singleton_box():
     result = SOLID._curvature_relaxation(terms, [], box, [],
                                         [[(SOLID._I(1), [0])]], [[[]]])
     assert result <= point
+
+
+def water_case():
+    model,standards,host=case()
+    names=['Fe','Ni','h2o']
+    host.update(model_id='dry_melts_thompson2025_water_equivalent_v1',component_order=names,
+                component_moles=[1.,1.,.1],mu_RT=[.4,-.2,.7],gibbs_RT=.27,
+                oxide_order=['Fe','Ni','H2O'],oxide_molar_masses_g_mol=[1.,1.,18.])
+    host['basis'].update(component_oxide_matrix=np.eye(3).tolist(),
+        component_element_matrix=[[1.,0.,0.,0.],[0.,1.,0.,0.],[0.,0.,1.,2.]],
+        element_order=['Fe','Ni','O','H'])
+    dry={'model_id':'melts_v102_published_mixing_native_standard_states_v1',
+         'T_K':1.,'P_Pa':1e5,'component_order':names,'component_moles':[1.,1.,0.],
+         'basis':copy.deepcopy(host['basis']),'mu0_J_mol':[0.,0.,None],
+         'mixing_expression':{'fixture':'declared'}}
+    host['water_reconstruction']={'dry_properties':dry,'native_water_amount_used_mol':0.,
+        'gas_H2O_standard_RT':2.,'gas_standard_pressure_Pa':1e5,
+        'expression':{'schema':'dry_melts_water_equivalent_expression_v1','component_order':names,'water_index':2}}
+    model.update(oxide_order=host['oxide_order'],endmember_oxide_moles=[[1.,0.,0.],[0.,1.,0.]])
+    standards['native_endmember_oxide_mass_g_per_mol']=[[1.,0.],[0.,1.],[0.,0.]]
+    return model,standards,host
+
+
+def test_reconstructed_water_uses_its_actual_reference_and_rebases_without_helium_twice():
+    model,standards,host=water_case()
+    h2=.2
+    proof=SOLID.certify_solid_insertion(model,standards,host,h2)
+    assert proof['host_potential_reference']['helium_host_correction_applied'] is False
+    common=importlib.import_module('m2_common_plane')
+    lower,_,_=common.solution_common_plane(proof,host,h2,{'Fe':0.,'Ni':0.,'O':0.,'H':0.})
+    # He is deliberately absent from this reference. Rebasing cancels exactly
+    # the bare-water/H2 reference; no He host shift belongs in this conversion.
+    assert lower.lo <= SOLID.Decimal.from_float(3.-np.log(2.))
+    altered=copy.deepcopy(proof)
+    altered['host_potential_reference']['helium_host_correction_applied']=True
+    with pytest.raises(ValueError,match='bare-host reference'):
+        common.solution_common_plane(altered,host,h2,{'Fe':0.,'Ni':0.,'O':0.,'H':0.})
+    host['water_reconstruction']['dry_properties']['P_Pa']=2e5
+    with pytest.raises(ValueError,match='matching dry declaration'):
+        SOLID.certify_solid_insertion(model,standards,host,h2)
+
+
+@pytest.mark.parametrize('field',['mu_RT','gibbs_RT','component_moles'])
+def test_fresh_water_receipt_cannot_hide_changed_potentials_energy_or_amounts(field):
+    _,_,host=water_case()
+    runner=importlib.import_module('run_m2_solid_global')
+    runner.require_fresh_host(host,copy.deepcopy(host))
+    changed=copy.deepcopy(host)
+    if isinstance(changed[field],list):changed[field][0]+=.01
+    else:changed[field]+=.01
+    with pytest.raises(ValueError,match='freshly evaluated host'):
+        runner.require_fresh_host(host,changed)
