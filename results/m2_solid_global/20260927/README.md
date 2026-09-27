@@ -6,6 +6,11 @@ It has a separately reclosed root, fresh native standards and complete new
 20-phase/liquid proofs; all strict lower bounds remain positive/zero.
 The earlier root and final-code replay below remain unchanged historical
 records, not relabeled final-consumer executions.
+The [combined evidence table](matched_consumer_published_m1/README.md#combined-evidence-at-this-root)
+also distinguishes the source alloy's verified hard domain, the 13 pure-phase
+evaluations and the gas/cloud numerical KKT checks from empirical and
+omitted-channel requirements. The original physical audit predates this
+combination; its generic remaining requirements and source status are preserved.
 
 This archive keeps the complete raw solid and second-liquid proof partitions
 for the accepted 35-gas central BSE source at **2173.15 K and
