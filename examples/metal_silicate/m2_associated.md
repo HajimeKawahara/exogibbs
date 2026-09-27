@@ -35,3 +35,23 @@ new primary-data continuation is a declared hybrid, not a calibrated
 reproduction of every measured subsystem. Finite-response runs and physical
 error assessment remain separate from numerical acceptance. K transfer remains
 omitted and no inventory-only coupled-error bound is asserted.
+
+## Explicit finite K sensitivity
+
+`metal_model="associated_k"` requires a finite
+`potassium_standard_offset_rt`. Other metal modes reject that argument. The
+nineteenth component is `K_metal`, with one K atom per species. Its standard is
+the actual source `K1` gas standard plus the explicitly supplied offset; no
+empirical value is inferred. `phosphorus_options` continues to configure only
+the P reference.
+
+The EOS perspective scalar dilutes the eighteen-species host and mixes finite
+K ideally. The selected domain adds `x_K<=0.02`; the returned matched curvature
+bound is about 0.3443 at 2173.15 K. `associated_metal` describes all nineteen
+species, and `potassium_metal` records the actual gas standard, offset and
+uncalibrated sensitivity scope. All eleven alloy elements must be reconstructed
+from the species formulas before any mass-percent material comparison.
+
+The existing finite source solver controls K uptake and compensating changes
+in the other reservoirs. Standard scans remain conditional finite responses;
+they do not establish a universal coupled-error bound or physical acceptance.
