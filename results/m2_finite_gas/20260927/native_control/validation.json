@@ -1,0 +1,22 @@
+{
+  "provider_source_head": "0dbb9a69f96101680a807c7642200dbadca58e41",
+  "eos_head": "44b977847ea7ed1e16377907722277a3e75bc9d7",
+  "full_suite": {
+    "reproduction_command": "PYTHONPATH=src:/tmp/stage2-candidate-eos-20260927/src JAX_ENABLE_X64=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 taskset -c 36-39 /home/kawahara/anaconda3/envs/myenv39/bin/python -m pytest tests/unittests -q -rs",
+    "passed": 1884,
+    "skipped": 1,
+    "warnings": 24,
+    "elapsed_seconds": 1934.01,
+    "skip_reason": "SCM generated version module unavailable in checkout",
+    "raw_log": "full_pytest.log"
+  },
+  "documentation": {
+    "command": "./update_doc.sh",
+    "exit_code": 0,
+    "warnings": 301,
+    "changed_m2_source_warnings": 0,
+    "raw_log": "docs_build.log"
+  },
+  "scientific_acceptance": null,
+  "scope": "Software validation and incomplete native attempt; no accepted native source or planetary result."
+}
