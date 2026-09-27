@@ -64,3 +64,7 @@ The documented-example harness registers `metal_m2_alloy_insertion_bound`.
 Pass its explicit `--m2-closure` and `--m2-physical-audit` inputs when selecting
 this case. It requires fresh proof output tied to those exact bytes, while
 allowing a finite negative bound without claiming strict nonnegativity.
+
+The [finite-source common-plane gap](m2_common_plane.md) combines this unchanged
+bound with all other declared phase domains and exact atom feasibility. Its
+tolerance-based acceptance leaves this original fixed-plane strict flag intact.

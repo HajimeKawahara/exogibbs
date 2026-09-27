@@ -69,6 +69,9 @@ class _I:
         return _I(min(self._op(a, b, "/", ROUND_FLOOR) for a, b in pairs),
                   max(self._op(a, b, "/", ROUND_CEILING) for a, b in pairs))
 
+    def __rtruediv__(self, other):
+        return _I(other) / self
+
     def log(self):
         if self.lo <= 0:
             raise ArithmeticError("A logarithm needs a positive interval.")

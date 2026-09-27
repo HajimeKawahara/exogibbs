@@ -217,6 +217,12 @@ def build_jobs() -> tuple[Job, ...]:
         ("exoeos", "exoeos_checkout", "m2_closure", "m2_physical_audit"), ("alloy_bound.json",),
     ))
     jobs.append(Job(
+        "metal_m2_common_plane", metal + "run_m2_common_plane.py",
+        ("--evidence-binding", "{m2_evidence_binding}", "--alloy-bound", "{m2_alloy_bound}",
+         "--exoeos-checkout", "{exoeos_checkout}", "--output", "{output}/common_plane.json"),
+        ("exoeos", "exoeos_checkout", "m2_evidence_binding", "m2_alloy_bound"), ("common_plane.json",),
+    ))
+    jobs.append(Job(
         "metal_m2_omitted_gas", metal + "run_m2_omitted_gas.py",
         ("--source", str(ROOT / "results/m2_expanded_contact/20260924/contact.json"),
          "--mole-fraction-target", "1e-8", "--output", "{output}/screen.json"),
@@ -262,9 +268,9 @@ def resource_errors(job: Job, values: dict[str, str]) -> list[str]:
         path = Path(value)
         if name in {"fastchem", "melts_python"} and (not path.is_file() or not os.access(path, os.X_OK)):
             errors.append(f"{name} executable is unavailable: {path}")
-        elif name in {"ito", "bse_inventory", "m2_closure", "m2_physical_audit"} and not path.is_file():
+        elif name in {"ito", "bse_inventory", "m2_closure", "m2_physical_audit", "m2_evidence_binding", "m2_alloy_bound"} and not path.is_file():
             errors.append(f"{name} file is unavailable: {path}")
-        elif name not in {"fastchem", "melts_python", "ito", "bse_inventory", "m2_closure", "m2_physical_audit"} and not path.is_dir():
+        elif name not in {"fastchem", "melts_python", "ito", "bse_inventory", "m2_closure", "m2_physical_audit", "m2_evidence_binding", "m2_alloy_bound"} and not path.is_dir():
             errors.append(f"{name} directory is unavailable: {path}")
         elif name == "exoeos" and not (path / "exoeos/__init__.py").is_file():
             errors.append(f"ExoEOS source is unavailable: {path}")
@@ -422,6 +428,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--bse-inventory", default=os.environ.get("EXOGIBBS_BSE_INVENTORY"))
     parser.add_argument("--m2-closure", help="Accepted saved pressure root for the supplementary alloy bound.")
     parser.add_argument("--m2-physical-audit", help="Physical audit bound to the exact saved pressure root.")
+    parser.add_argument("--m2-evidence-binding", help="Verified single-root phase evidence binding for the common-plane gap.")
+    parser.add_argument("--m2-alloy-bound", help="Saved fixed-element-plane alloy interval bound.")
     parser.add_argument("--japanese-docs", type=Path, default=os.environ.get("EXOGIBBS_JAPANESE_DOCS", ROOT / "doc_ExoGibbs"))
     parser.add_argument("--output-directory", type=Path)
     parser.add_argument("--case", action="append")
@@ -453,6 +461,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                                      ("exoeos_checkout", args.exoeos_source.resolve().parent),
                                      ("melts_runtime", args.melts_runtime), ("melts_python", args.melts_python),
                                      ("m2_closure", args.m2_closure), ("m2_physical_audit", args.m2_physical_audit),
+                                     ("m2_evidence_binding", args.m2_evidence_binding), ("m2_alloy_bound", args.m2_alloy_bound),
                                      ("bse_inventory", args.bse_inventory), ("japanese_docs", args.japanese_docs))}
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     output = (args.output_directory or ROOT / "results/all_documented_examples" / f"{stamp}_{os.getpid()}").resolve()

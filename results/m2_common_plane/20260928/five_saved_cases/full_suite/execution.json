@@ -1,0 +1,33 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "40",
+    "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-rs",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "/tmp/stage2-common-plane-test-tmp-20260928",
+    "tests/unittests"
+  ],
+  "environment_overrides": {
+    "PYTHONPATH": "/tmp/stage2-common-plane-gibbs-20260928/src:/tmp/stage2-alloy-insertion-eos-20260927/src",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu"
+  },
+  "cwd": "/tmp/stage2-common-plane-gibbs-20260928",
+  "started_utc": "2026-09-27T21:09:02.997401+00:00",
+  "finished_utc": "2026-09-27T21:45:13.921191+00:00",
+  "elapsed_seconds": 2170.923795780167,
+  "exit_code": 0,
+  "commit": "aa12f3c9378dd48763d1fe1d4e5ba8d2e75763f8",
+  "commit_after": "aa12f3c9378dd48763d1fe1d4e5ba8d2e75763f8",
+  "stdout_sha256": "05e4286c07cf27d77ac66734eef9ada23051e7025660de89b890e533d4085cda"
+}
