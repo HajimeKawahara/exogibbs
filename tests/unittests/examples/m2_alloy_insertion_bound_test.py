@@ -105,4 +105,36 @@ def test_declared_oxygen_and_hydrogen_offsets_survive_input_binding(tmp_path):
     source["source_metadata"]["provider_scenario"] = RUNNER.normalize_scenario(values)
     source["provider_scenario_sha256"] = "saved-scenario"
     result = RUNNER.saved_inputs(*save(tmp_path, report, audit))
-    assert result[3]["standard_offsets_rt"] == {"O_metal": 1.63, "H_metal": -.44, "H2_dissolved": 0.}
+    assert result[3]["standard_offsets_rt"] == {"O_metal": 1.63, "H_metal": -.44, "H2_dissolved": 0., "h2o_melts": 0.}
+
+
+def test_extended_source_requires_its_explicit_basis_and_original_domain(tmp_path):
+    report,audit,_,source=records()
+    record=source['source_internal_record']
+    record['elements'].append('P')
+    record['phases']['metal'].append('P_metal')
+    record['component_formulas']['P_metal']={'P':1.}
+    result=source['source_internal_result']
+    result['elemental_potentials_rt'].append(-2.)
+    result['component_amounts_mol'].append(.001)
+    composition=(np.asarray(result['component_amounts_mol'])/sum(result['component_amounts_mol'])).tolist()
+    selection=source['metal_selection']
+    selection['metal_composition']=composition
+    selection['metal_amount_mol']=sum(result['component_amounts_mol'])
+    domain=selection['metal_composition_domain']
+    domain['component_order'].append('P_metal')
+    domain['selected_metal']['composition']=composition
+    domain['lower_atomic_fractions'].append(0.)
+    domain['upper_atomic_fractions'].append(.02)
+    domain['effective_upper_atomic_fractions'].append(.02)
+    source['source_metadata'].update(metal_model='phosphorus',phosphorus_metal={
+        'component_order':['Fe','Si','O','H','P'],
+        'lower_atomic_fractions':domain['lower_atomic_fractions'][:],
+        'upper_atomic_fractions':domain['upper_atomic_fractions'][:]})
+    paths=save(tmp_path,report,audit)
+    with pytest.raises(ValueError,match='explicitly selected'):
+        RUNNER.saved_inputs(*paths)
+    np.testing.assert_array_equal(RUNNER.saved_inputs(*paths,allow_extended=True)[4],[-10.,-7.,-8.,1.,-2.])
+    domain['lower_atomic_fractions'][0]=.84
+    with pytest.raises(ValueError,match='domain must agree'):
+        RUNNER.saved_inputs(*save(tmp_path,report,audit),allow_extended=True)
