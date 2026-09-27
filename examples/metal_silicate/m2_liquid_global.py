@@ -69,6 +69,9 @@ class _I:
         return _I(min(self._op(a, b, "/", ROUND_FLOOR) for a, b in pairs),
                   max(self._op(a, b, "/", ROUND_CEILING) for a, b in pairs))
 
+    def __rtruediv__(self, other):
+        return _I(other) / self
+
     def log(self):
         if self.lo <= 0:
             raise ArithmeticError("A logarithm needs a positive interval.")
@@ -205,6 +208,7 @@ def certify_liquid_tangent_plane(parameters, component_moles, *, tolerance_rt=1e
     if n == 1:
         return {"status": "certified_single_composition", "lower_bound_rt": 0.,
                 "formal_mixing_bound_certified": True, "active_component_indices": active.tolist(),
+                "bound_within_requested_tolerance": True,
                 "complete_element_supported_provider_domain": complete_domain,
                 "excluded_components": excluded,
                 "native_binary_error_bound_certified": False, "nodes_evaluated": 0, "proof_leaves": []}
@@ -320,10 +324,14 @@ def certify_liquid_tangent_plane(parameters, component_moles, *, tolerance_rt=1e
             assess(lo, hi)
     frontier = [row[-1] for row in heap]
     lower_bound = None if unavailable else min([0.] + [row["lower_bound_rt"] for row in leaves + frontier if "lower_bound_rt" in row])
+    within_tolerance = not heap and not unavailable
+    certified = within_tolerance and lower_bound is not None and lower_bound >= 0
     return {"assessment_id": "m2_regular_liquid_global_tangent_plane_v1",
             "status": "unresolved_evaluation_domain" if unavailable else
-                      "formal_mixing_bound_certified" if not heap else "unresolved_node_budget",
-            "formal_mixing_bound_certified": not heap and not unavailable, "native_binary_error_bound_certified": False,
+                      "formal_mixing_bound_certified" if certified else
+                      "within_tolerance_only" if within_tolerance else "unresolved_node_budget",
+            "formal_mixing_bound_certified": certified, "bound_within_requested_tolerance": within_tolerance,
+            "native_binary_error_bound_certified": False,
             "lower_bound_rt": lower_bound, "tolerance_rt": tolerance_rt, "max_nodes": max_nodes,
             "nodes_evaluated": count, "best_trial": best,
             "active_component_indices": active.tolist(), "component_moles": amounts.tolist(),
@@ -333,6 +341,29 @@ def certify_liquid_tangent_plane(parameters, component_moles, *, tolerance_rt=1e
             "verification": "50-digit outward Decimal intervals; interval LDL positive-definiteness; exact box/simplex affine minimization; closed entropy boundary.",
             "scope": "The declared quadratic-plus-ideal mixing expression on the whole nonnegative parent-support simplex. Native build equality and empirical validity are independent requirements.",
             "search_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+
+
+def require_saved_liquid_expression(saved, evaluated):
+    """Reject a changed constitutive declaration before certifying a saved source."""
+    if saved["model_id"] != evaluated["model_id"]:
+        raise ValueError("The reevaluated liquid model differs from the saved source.")
+    if saved["model_id"] == "melts_v102_published_mixing_native_standard_states_v1":
+        if not saved.get("mixing_expression") or saved["mixing_expression"] != evaluated.get("mixing_expression"):
+            raise ValueError("The reevaluated mixing expression differs from the saved source declaration.")
+        if saved["mu0_J_mol"] != evaluated["mu0_J_mol"]:
+            raise ValueError("The reevaluated pure standards differ from the saved source.")
+    elif saved["model_id"] == "dry_melts_thompson2025_water_equivalent_v1":
+        left, right = saved["water_reconstruction"], evaluated["water_reconstruction"]
+        for key in ("expression", "gas_H2O_standard_RT", "gas_standard_pressure_Pa", "native_water_amount_used_mol"):
+            if left[key] != right[key]:
+                raise ValueError("The reevaluated water expression or gas standard differs from the saved source.")
+        if left.get("standard_offset_rt", 0.) != right.get("standard_offset_rt", 0.):
+            raise ValueError("The reevaluated external water standard shift differs from the saved source.")
+        require_saved_liquid_expression(left["dry_properties"], right["dry_properties"])
+    elif saved["model_id"] != "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1":
+        raise ValueError("Unknown saved liquid constitutive model.")
+    elif saved["provenance"]["backend"]["runtime_sha256"] != evaluated["provenance"]["backend"]["runtime_sha256"]:
+        raise ValueError("The reevaluated native runtime differs from the saved source.")
 
 
 def assess_liquid_global_tangent_plane(properties, dissolved_h2_moles, *, mixing_model,

@@ -1,0 +1,38 @@
+[
+  {
+    "case": "gas76_cond26",
+    "source_kind": "fixed_pressure_connection",
+    "temperature_K": 2173.15,
+    "pressure_bar": 250,
+    "source_sha256": "7ccb55f29e22a46e9520a61c3285fd871c69473f2ee08951ac350a0ee6a205e5",
+    "gibbs_commit": "d7e44371cee1ce8cdda0e2f86b76798909b20032",
+    "eos_commit": "113ae4d306aea81c86f78267b1d9074030bda3f1",
+    "solid_exit_code": 0,
+    "liquid_exit_code": 0,
+    "accepted_solution_models": 20,
+    "minimum_reported_lower_bound_rt_per_formula_unit": 0.001680913718177476,
+    "solid_elapsed_seconds": 252.16390585899353,
+    "liquid_lower_bound_rt": 0.0,
+    "liquid_nodes": 4673,
+    "liquid_elapsed_seconds": 154.89203000068665,
+    "is_new_global_pressure_root": false
+  },
+  {
+    "case": "gas76_cond67",
+    "source_kind": "fixed_pressure_connection",
+    "temperature_K": 2173.15,
+    "pressure_bar": 250,
+    "source_sha256": "f924b193eb3ad111f9bc34a2669cf02fb5346103d427b78edc2ad5302fa05018",
+    "gibbs_commit": "d7e44371cee1ce8cdda0e2f86b76798909b20032",
+    "eos_commit": "113ae4d306aea81c86f78267b1d9074030bda3f1",
+    "solid_exit_code": 0,
+    "liquid_exit_code": 0,
+    "accepted_solution_models": 20,
+    "minimum_reported_lower_bound_rt_per_formula_unit": 0.0016809137181774763,
+    "solid_elapsed_seconds": 251.52565789222717,
+    "liquid_lower_bound_rt": 0.0,
+    "liquid_nodes": 4681,
+    "liquid_elapsed_seconds": 155.22545623779297,
+    "is_new_global_pressure_root": false
+  }
+]

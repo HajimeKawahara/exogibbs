@@ -1,0 +1,17 @@
+{
+  "fresh_solids_exit_code": 0,
+  "fresh_liquid_exit_code": 0,
+  "strict_offline_replay_exit_code": 0,
+  "strict_offline_elapsed_seconds": 397.3242099285126,
+  "strict_exact_nonnegative": true,
+  "fresh_published_source_sha256": "a9ef8ac88ab48863978bf00483ea3cc269e9c0fa7ca7395197825e0c278793cf",
+  "strict_replay_gibbs_commit": "2f960493a3c36afc57e9cf93f25a84c78f2e1b41",
+  "strict_replay_provider_commit": "05155344aac453b23d643c1bc8867c11d089d236",
+  "fresh_native_calls_during_strict_replay": 0,
+  "final_focused_tests": {
+    "passed": 56,
+    "failed": 0,
+    "elapsed_seconds": 1.26
+  },
+  "earlier_strict_test_attempts_preserved": true
+}

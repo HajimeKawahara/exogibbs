@@ -1,0 +1,778 @@
+{
+  "assessment_id": "declared_solid_site_global_insertion_v1",
+  "phase": "olivine",
+  "formal_global_insertion_bound_accepted": true,
+  "bound_within_requested_tolerance": true,
+  "lower_bound_rt_per_formula_unit": 0.0015623486626745332,
+  "node_count": 9,
+  "leaf_count": 5,
+  "unresolved_box_count": 0,
+  "max_nodes": 100000,
+  "tolerance_rt": 1e-08,
+  "parameters": {
+    "phase": "olivine",
+    "expression_id": "magma_published_olivine_v1",
+    "source_file": "olivine.c",
+    "source_sha256": "872fa74c5c7601dccdb41560c70a996af558917ff1e82589e277dd459a93a080",
+    "coordinate_order": [
+      "v0",
+      "v1",
+      "v2"
+    ],
+    "coordinate_bounds": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "endmember_names": [
+      "fayalite",
+      "monticellite",
+      "forsterite"
+    ],
+    "native_endmember_indices": [
+      1,
+      4,
+      5
+    ],
+    "endmember_polynomials": [
+      [
+        [
+          0.5,
+          [
+            1,
+            0,
+            0
+          ]
+        ],
+        [
+          0.5,
+          [
+            0,
+            1,
+            0
+          ]
+        ]
+      ],
+      [
+        [
+          1.0,
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      ],
+      [
+        [
+          -0.5,
+          [
+            1,
+            0,
+            0
+          ]
+        ],
+        [
+          -0.5,
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        [
+          -1.0,
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        [
+          1.0,
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      ]
+    ],
+    "entropy_sites": [
+      {
+        "polynomial": [
+          [
+            1.0,
+            [
+              1,
+              0,
+              0
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      },
+      {
+        "polynomial": [
+          [
+            -1.0,
+            [
+              1,
+              0,
+              0
+            ]
+          ],
+          [
+            1.0,
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      },
+      {
+        "polynomial": [
+          [
+            1.0,
+            [
+              0,
+              1,
+              0
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      },
+      {
+        "polynomial": [
+          [
+            1.0,
+            [
+              0,
+              0,
+              1
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      },
+      {
+        "polynomial": [
+          [
+            -1.0,
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          [
+            -1.0,
+            [
+              0,
+              0,
+              1
+            ]
+          ],
+          [
+            1.0,
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      }
+    ],
+    "nonnegative_polynomials": [
+      [
+        [
+          -1.0,
+          [
+            0,
+            1,
+            0
+          ]
+        ],
+        [
+          -1.0,
+          [
+            0,
+            0,
+            1
+          ]
+        ],
+        [
+          1.0,
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      ]
+    ],
+    "required_absent_elements": [
+      "Mn",
+      "Ni",
+      "Co"
+    ],
+    "boundary_policy": "Continuous 0 log 0 site entropy; no endpoint derivatives are supplied.",
+    "barrier": null,
+    "endmember_oxide_moles": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "polynomial_rt": [
+      [
+        1.9145489927516623,
+        [
+          0,
+          0,
+          1
+        ]
+      ],
+      [
+        -1.9145489927516623,
+        [
+          0,
+          0,
+          2
+        ]
+      ],
+      [
+        0.5618592964116815,
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      [
+        -0.9833742585667853,
+        [
+          0,
+          1,
+          1
+        ]
+      ],
+      [
+        -0.28087439976156026,
+        [
+          0,
+          2,
+          0
+        ]
+      ],
+      [
+        0.5618592964116815,
+        [
+          1,
+          0,
+          0
+        ]
+      ],
+      [
+        -0.5438722658850791,
+        [
+          1,
+          0,
+          1
+        ]
+      ],
+      [
+        -0.5619697933002424,
+        [
+          1,
+          1,
+          0
+        ]
+      ],
+      [
+        -0.28087439976156026,
+        [
+          2,
+          0,
+          0
+        ]
+      ]
+    ],
+    "T_K": 2173.15,
+    "P_Pa": 26720283.416027583,
+    "native_entropy_R_J_mol_K": 8.3143,
+    "common_R_J_mol_K": 8.31446261815324,
+    "oxide_order": [
+      "sio2",
+      "tio2",
+      "al2o3",
+      "fe2o3",
+      "cr2o3",
+      "feo",
+      "mno",
+      "mgo",
+      "nio",
+      "coo",
+      "cao",
+      "na2o",
+      "k2o",
+      "p2o5",
+      "h2o",
+      "co2",
+      "so3",
+      "cl2o-1",
+      "f2o-1"
+    ],
+    "schema": "magma_site_mixing_polynomials_v1",
+    "parameter_sha256": "abf8e929122bba24d81d3505310dea95f6f6f65f8655e4b804171341b057d808",
+    "source_commit": "705a0fb315e5054d18275a580562f6121c8e458c",
+    "source_url": "https://github.com/magmasource/MAGMA",
+    "native_binary_uniform_error_bound": null,
+    "empirical_calibration_domain_established": false
+  },
+  "native_standard_states": {
+    "phase": "olivine",
+    "native_endmember_oxide_mass_g_per_mol": [
+      [
+        60.08430000000368,
+        60.084299999996965,
+        60.08429999999537,
+        60.08429999999261,
+        60.0842999999972,
+        60.08429999999109
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        143.6928000000199,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        141.8748000000047,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        40.30440000000027,
+        80.60879999999833
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        149.4187999999971,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        149.8651999999987,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        56.079400000000604,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "composition_basis_method": "Native unit endmembers through calcMolarProperties.",
+    "status": "ok_candidate_standard_states",
+    "native_property_model_id": "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1",
+    "T_K": 2173.15,
+    "P_Pa": 26720283.416027583,
+    "mu0_J_mol": [
+      -2464658.0695862034,
+      -2218829.4533199165,
+      -2164160.573407618,
+      -2063128.9919020399,
+      -2871367.0621808264,
+      -2757909.5610375605
+    ],
+    "standard": "Native pure endmember reference at supplied T/P; ordering and mixing corrections are separate.",
+    "probe": {
+      "requested_native_fractions": [
+        0.16666666666666666,
+        0.16666666666666666,
+        0.16666666666666666,
+        0.16666666666666666,
+        0.16666666666666666,
+        0.16666666666666666
+      ],
+      "oxide_mass_g": [
+        60.08429999999615,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        23.948800000003317,
+        23.645800000000783,
+        20.152199999999766,
+        24.90313333333285,
+        24.977533333333117,
+        9.346566666666767,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "returned_native_fractions": [
+        0.16666666666666854,
+        0.16666666666668611,
+        0.1666666666666616,
+        0.1666666666666598,
+        0.16666666666666483,
+        0.16666666666665922
+      ]
+    },
+    "method": "calcEndMemberProperties(candidate, positive_probe_oxide_mass_g)",
+    "native_binary_sha256": "c218ef6f7ba5aef4b0760f3176530d1335457d6e2716823a1d0de3a5d13301e5"
+  },
+  "standard_insertion_cost_intervals_rt": [
+    [
+      "6.67159858351525334788427804474532548326513098500",
+      "6.67159858351525334788427804474532548326513098503"
+    ],
+    [
+      "4.57807377793854304633631904326291039655960339111",
+      "4.57807377793854304633631904326291039655960339116"
+    ],
+    [
+      "0.65284657974658739350355541417912335197812535244",
+      "0.65284657974658739350355541417912335197812535247"
+    ]
+  ],
+  "host_reactions_exact": [
+    [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "-1/2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1/2",
+      "0",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ]
+  ],
+  "pure_reference_intervals_rt": {},
+  "pure_reference_proofs": {},
+  "element_support_restrictions": [],
+  "required_absent_elements_verified": [
+    "Mn",
+    "Ni",
+    "Co"
+  ],
+  "leaves": [
+    {
+      "lower": [
+        0.5,
+        0.0,
+        0.0
+      ],
+      "upper": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "lower_bound_rt": "0.3797619913410521471713772408795641137296265398659"
+    },
+    {
+      "lower": [
+        0.0,
+        0.5,
+        0.0
+      ],
+      "upper": [
+        0.5,
+        1.0,
+        0.5
+      ],
+      "lower_bound_rt": "1.0674926509048175548727075862234677923413495830559"
+    },
+    {
+      "lower": [
+        0.0,
+        0.0,
+        0.5
+      ],
+      "upper": [
+        0.5,
+        0.5,
+        1.0
+      ],
+      "lower_bound_rt": "1.7135349993771136496008980400889044538530497634550"
+    },
+    {
+      "lower": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "upper": [
+        0.25,
+        0.5,
+        0.5
+      ],
+      "lower_bound_rt": "0.0015623486626745332715553136532250027541245165024"
+    },
+    {
+      "lower": [
+        0.25,
+        0.0,
+        0.0
+      ],
+      "upper": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "lower_bound_rt": "0.41084672515942140354852117058850505778201330756467"
+    }
+  ],
+  "excluded_boxes": [],
+  "unresolved_boxes": [],
+  "native_binary_error_bound_certified": false,
+  "global_empirical_stability_certified": false,
+  "interpretation": "The declared site expression is bounded over every admitted composition and ordering coordinate. Pure standards are fixed numerical inputs. Native build identity, standard-state uncertainty, source-alloy stability and empirical applicability are separate requirements."
+}

@@ -1,0 +1,589 @@
+{
+  "assessment_id": "declared_solid_site_global_insertion_v1",
+  "phase": "plagioclase",
+  "formal_global_insertion_bound_accepted": true,
+  "bound_within_requested_tolerance": true,
+  "lower_bound_rt_per_formula_unit": 1.93193589131545,
+  "node_count": 1,
+  "leaf_count": 1,
+  "unresolved_box_count": 0,
+  "max_nodes": 100000,
+  "tolerance_rt": 1e-08,
+  "parameters": {
+    "phase": "plagioclase",
+    "expression_id": "alphamelts_2_3_2_pinned_binary_plagioclase_v1",
+    "source_file": "libalphamelts.so:gmixPlg",
+    "source_sha256": "c218ef6f7ba5aef4b0760f3176530d1335457d6e2716823a1d0de3a5d13301e5",
+    "source_kind": "pinned_native_binary_instruction_transcription",
+    "source_symbol_sha256": "ea8e10b7d7ac9a5b8bb75473a91450ef92cdb188c21cbabc547bedce2d9997f3",
+    "source_disassembly_audit": "plagioclase_instruction_audit.json",
+    "coordinate_order": [
+      "v0",
+      "v1"
+    ],
+    "coordinate_bounds": [
+      [
+        0,
+        1
+      ],
+      [
+        0,
+        1
+      ]
+    ],
+    "endmember_names": [
+      "albite",
+      "anorthite",
+      "sanidine"
+    ],
+    "native_endmember_indices": [
+      0,
+      1,
+      2
+    ],
+    "endmember_polynomials": [
+      [
+        [
+          1.0,
+          [
+            1,
+            0
+          ]
+        ]
+      ],
+      [
+        [
+          1.0,
+          [
+            0,
+            1
+          ]
+        ]
+      ],
+      [
+        [
+          -1.0,
+          [
+            1,
+            0
+          ]
+        ],
+        [
+          -1.0,
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          1.0,
+          [
+            0,
+            0
+          ]
+        ]
+      ]
+    ],
+    "endmember_oxide_moles": [
+      [
+        3.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        2.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        3.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "entropy_sites": [
+      {
+        "polynomial": [
+          [
+            1.0,
+            [
+              1,
+              0
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      },
+      {
+        "polynomial": [
+          [
+            1.0,
+            [
+              0,
+              1
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      },
+      {
+        "polynomial": [
+          [
+            -1.0,
+            [
+              1,
+              0
+            ]
+          ],
+          [
+            -1.0,
+            [
+              0,
+              1
+            ]
+          ],
+          [
+            1.0,
+            [
+              0,
+              0
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      }
+    ],
+    "nonnegative_polynomials": [
+      [
+        [
+          -1.0,
+          [
+            1,
+            0
+          ]
+        ],
+        [
+          -1.0,
+          [
+            0,
+            1
+          ]
+        ],
+        [
+          1.0,
+          [
+            0,
+            0
+          ]
+        ]
+      ]
+    ],
+    "required_absent_elements": [],
+    "barrier": null,
+    "boundary_policy": "Continuous 0 log 0 entropy on the closed simplex; native endpoint clamping is excluded from this real-arithmetic declaration.",
+    "native_binary_uniform_error_bound": null,
+    "empirical_calibration_domain_established": false,
+    "parameter_domain": {
+      "T_K": {
+        "lower": 0,
+        "lower_inclusive": false,
+        "upper": null
+      },
+      "P_bar": {
+        "lower": 0,
+        "lower_inclusive": false,
+        "upper": null
+      }
+    },
+    "provenance_scope": "The declared equation is recovered from gmixPlg in exactly the pinned alphaMELTS 2.3.2 Ubuntu binary SHA. It is not asserted to be the published MAGMA feldspar.c equation, or equivalent to every native build. Sparse coefficients retain the audited binary64 constants; arithmetic/log/clamp uniform error is separate.",
+    "polynomial_rt": [
+      [
+        0.35812978982224225,
+        [
+          0,
+          1
+        ]
+      ],
+      [
+        -0.3566019861764058,
+        [
+          0,
+          2
+        ]
+      ],
+      [
+        -0.0015278036458364309,
+        [
+          0,
+          3
+        ]
+      ],
+      [
+        -1.5916827613260556,
+        [
+          1,
+          0
+        ]
+      ],
+      [
+        1.9376484488279315,
+        [
+          1,
+          1
+        ]
+      ],
+      [
+        -0.267071804376732,
+        [
+          1,
+          2
+        ]
+      ],
+      [
+        1.589711496834128,
+        [
+          2,
+          0
+        ]
+      ],
+      [
+        -0.7021242128321901,
+        [
+          2,
+          1
+        ]
+      ],
+      [
+        0.0019712644919278152,
+        [
+          3,
+          0
+        ]
+      ]
+    ],
+    "T_K": 2173.15,
+    "P_Pa": 26720283.416027673,
+    "native_entropy_R_J_mol_K": 8.3143,
+    "common_R_J_mol_K": 8.31446261815324,
+    "oxide_order": [
+      "sio2",
+      "tio2",
+      "al2o3",
+      "fe2o3",
+      "cr2o3",
+      "feo",
+      "mno",
+      "mgo",
+      "nio",
+      "coo",
+      "cao",
+      "na2o",
+      "k2o",
+      "p2o5",
+      "h2o",
+      "co2",
+      "so3",
+      "cl2o-1",
+      "f2o-1"
+    ],
+    "schema": "magma_site_mixing_polynomials_v1",
+    "parameter_sha256": "abf8e929122bba24d81d3505310dea95f6f6f65f8655e4b804171341b057d808",
+    "source_commit": null,
+    "source_url": "https://github.com/magmasource/alphaMELTS"
+  },
+  "native_standard_states": {
+    "phase": "plagioclase",
+    "native_endmember_oxide_mass_g_per_mol": [
+      [
+        180.25289999999495,
+        120.16859999999791,
+        180.25289999999492
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        50.98063999999772,
+        101.96127999999986,
+        50.98063999999768
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        56.07940000000286,
+        0.0
+      ],
+      [
+        30.98946999998321,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        47.101699999978116
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "composition_basis_method": "Native unit endmembers through calcMolarProperties.",
+    "status": "ok_candidate_standard_states",
+    "native_property_model_id": "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1",
+    "T_K": 2173.15,
+    "P_Pa": 26720283.416027673,
+    "mu0_J_mol": [
+      -5078013.723564384,
+      -5354098.484804327,
+      -5106987.877450623
+    ],
+    "standard": "Native pure endmember reference at supplied T/P; ordering and mixing corrections are separate.",
+    "probe": {
+      "requested_native_fractions": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "oxide_mass_g": [
+        160.22479999999592,
+        0.0,
+        67.97418666666508,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        18.693133333334288,
+        10.329823333327736,
+        15.700566666659372,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "returned_native_fractions": [
+        0.3333333333332589,
+        0.3333333333334565,
+        0.33333333333328463
+      ]
+    },
+    "method": "calcEndMemberProperties(candidate, positive_probe_oxide_mass_g)",
+    "native_binary_sha256": "c218ef6f7ba5aef4b0760f3176530d1335457d6e2716823a1d0de3a5d13301e5"
+  },
+  "standard_insertion_cost_intervals_rt": [
+    [
+      "5.954561197711873012531536367981343672326316562730",
+      "5.954561197711873012531536367981343672326316562780"
+    ],
+    [
+      "6.50839220792556090039840833567784765961926144948",
+      "6.50839220792556090039840833567784765961926144954"
+    ],
+    [
+      "9.07847078841956211037539510733739163644485410851",
+      "9.07847078841956211037539510733739163644485410855"
+    ]
+  ],
+  "host_reactions_exact": [
+    [
+      "5/2",
+      "0",
+      "1/2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1/2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "1",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    [
+      "2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0"
+    ]
+  ],
+  "pure_reference_intervals_rt": {},
+  "pure_reference_proofs": {},
+  "element_support_restrictions": [],
+  "required_absent_elements_verified": [],
+  "leaves": [
+    {
+      "lower": [
+        0.0,
+        0.0
+      ],
+      "upper": [
+        1.0,
+        1.0
+      ],
+      "lower_bound_rt": "1.9319358913154502782878737740165720053700593946101"
+    }
+  ],
+  "excluded_boxes": [],
+  "unresolved_boxes": [],
+  "native_binary_error_bound_certified": false,
+  "global_empirical_stability_certified": false,
+  "interpretation": "The declared site expression is bounded over every admitted composition and ordering coordinate. Pure standards are fixed numerical inputs. Native build identity, standard-state uncertainty, source-alloy stability and empirical applicability are separate requirements."
+}

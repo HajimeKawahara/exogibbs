@@ -51,6 +51,14 @@ def test_a_nonconvex_regular_liquid_cannot_receive_a_certificate():
     assert result["unresolved_boxes"]
 
 
+def test_a_negative_distance_within_tolerance_is_not_a_formal_certificate():
+    result = global_liquid.certify_liquid_tangent_plane(parameters(2.0001), [1., 1.], max_nodes=1001)
+    assert result["bound_within_requested_tolerance"]
+    assert -1e-8 <= result["lower_bound_rt"] < 0
+    assert not result["formal_mixing_bound_certified"]
+    assert result["status"] == "within_tolerance_only"
+
+
 def test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision():
     # The binary regular solution is nonconvex near x=1/2, but a sufficiently
     # dilute parent lies below the common tangent everywhere.
@@ -106,3 +114,13 @@ def test_declared_solver_model_must_use_identical_coefficients_for_its_bound():
     properties["mixing_expression"] = parameters(3.)
     with pytest.raises(ValueError, match="identical mixing coefficients"):
         global_liquid.assess_liquid_global_tangent_plane(properties, 8., mixing_model=model)
+
+
+def test_saved_source_declaration_and_pure_standards_must_survive_reevaluation():
+    saved = {"model_id": "melts_v102_published_mixing_native_standard_states_v1",
+             "mixing_expression": parameters(), "mu0_J_mol": [1., 2.]}
+    global_liquid.require_saved_liquid_expression(saved, dict(saved))
+    with pytest.raises(ValueError, match="mixing expression"):
+        global_liquid.require_saved_liquid_expression(saved, {**saved, "mixing_expression": parameters(1.)})
+    with pytest.raises(ValueError, match="pure standards"):
+        global_liquid.require_saved_liquid_expression(saved, {**saved, "mu0_J_mol": [1., 3.]})

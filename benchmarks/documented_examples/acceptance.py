@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import subprocess
@@ -265,6 +266,36 @@ def artifact_errors(job: Any, directory: Path, *, retrieval_quick: bool) -> list
             if (report.get("scientific_acceptance") != {"M2_A": "pending", "M2_B": "pending"}
                     or native.get("cross_phase_standards_accepted") is not False):
                 errors.append("The diagnostic audit cannot establish calibrated common standards.")
+        elif job.name == "metal_m2_alloy_insertion_bound":
+            report = json.loads((directory / "alloy_bound.json").read_text())
+            bound = report.get("insertion_lower_bound_rt_per_mol_atoms", float("nan"))
+            if (report.get("completed") is not True or type(bound) not in (int, float) or not math.isfinite(bound)
+                    or report.get("strict_nonnegative_bound") is not (bound >= 0)
+                    or report.get("empirical_material_certified") is not False):
+                errors.append("The fixed-plane alloy bound is incomplete or overclaims acceptance.")
+            for name in ("source", "physical_audit"):
+                record = report.get(name, {})
+                path = Path(record.get("path", ""))
+                if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != record.get("sha256"):
+                    errors.append("The alloy bound is not tied to its exact " + name + " input.")
+        elif job.name == "metal_m2_common_plane":
+            report = json.loads((directory / "common_plane.json").read_text())
+            if (report.get("schema") != "m2_declared_finite_source_common_plane_gap_v1"
+                    or report.get("declared_finite_source_numerically_accepted") is not True
+                    or report.get("empirical_material_certified") is not False
+                    or report.get("original_negative_bounds_preserved") is not True
+                    or report.get("exact_primal_repair", {}).get("exactly_feasible") is not True):
+                errors.append("The declared finite-source primal/dual certificate is incomplete or overclaims acceptance.")
+        elif job.name == "metal_m2_water_global":
+            from decimal import Decimal
+            report = json.loads((directory / "water_bound.json").read_text())
+            lower = Decimal(report["lower_bound_rt_per_dry_component"])
+            if (report.get("complete_simplex_coverage") is not True
+                    or report.get("bound_within_requested_tolerance") is not True
+                    or report.get("formal_nonnegative_common_plane_certified") is not (lower >= 0)
+                    or report.get("empirical_material_certified") is not False
+                    or report.get("binding", {}).get("complete_element_supported_provider_domain") is not True):
+                errors.append("The reconstructed-water global bound is incomplete or overclaims acceptance.")
         elif job.name == "metal_archive_revalidation":
             report = json.loads((directory / "revalidated.json").read_text())
             for name in ("melts_present", "melts_absent"):

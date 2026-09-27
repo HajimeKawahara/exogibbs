@@ -1,0 +1,40 @@
+{
+  "command": [
+    "examples/metal_silicate/run_m2_liquid_global.py",
+    "--saved-physical-audit",
+    "/tmp/stage2-column-audit-results-20260927/matched_m1_physical.json",
+    "--exoeos-checkout",
+    "/tmp/stage2-solid-eos-20260927",
+    "--runtime",
+    "/tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64",
+    "--python",
+    "/tmp/exoeos-pr3-env/bin/python",
+    "--output-directory",
+    "/tmp/stage2-liquid-matched-m1-frozen"
+  ],
+  "source_path": "/tmp/stage2-column-audit-results-20260927/matched_m1_physical.json",
+  "source_sha256": "1a590ea1128dea2397da942b463da9f01d6676e721489708dae4c6c9195a5ac9",
+  "gibbs_commit": "1af5821e3c7b8abcf0e8ebdc985ad1440d600021",
+  "exoeos_commit": "113ae4d306aea81c86f78267b1d9074030bda3f1",
+  "source_hashes": {
+    "examples/metal_silicate/run_m2_liquid_global.py": "08a60d2e015ccb0f9560a52fa2ffea45665b44301d249dcf880aace9373c4cd8",
+    "examples/metal_silicate/m2_liquid_global.py": "1698ee5784054a5d0590ba7ca3678ecc7327ed09b56e3368fd906945731050a0"
+  },
+  "mixing_provider_sha256": "10a87425f56e924b01d0767e4aac019f76ac0e14d6ada7df0e0e23f1c9f14a0b",
+  "max_nodes": 20000,
+  "new_pressure_root": false,
+  "fresh_native_properties": true,
+  "selected_liquid_model": "published",
+  "native_comparisons_are_separate_controls": true,
+  "completed": true,
+  "elapsed_seconds": 151.46947383880615,
+  "status": "formal_mixing_bound_certified",
+  "lower_bound_rt": 0.0,
+  "formal_two_liquid_bound_accepted": true,
+  "nodes_evaluated": 4719,
+  "native_compatibility_checks": 14,
+  "native_evaluation_failures": 1,
+  "maximum_native_potential_difference_rt": 3.1850184711856855e-09,
+  "native_binary_error_bound_certified": false,
+  "global_empirical_stability_certified": false
+}
