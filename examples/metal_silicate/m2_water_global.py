@@ -256,6 +256,18 @@ def hessian_lower_enclosure(model: dict, lower, upper) -> list:
     return hessian
 
 
+def _simplex_tangent_hessian(hessian, pivot):
+    """Enclose B.T H B for columns e_i-e_pivot on sum(x)=1.
+
+    The ideal diagonal already minorizes its actual value. Congruence
+    preserves that positive-semidefinite remainder. No curvature in the
+    infeasible normal direction is required for a simplex supporting plane.
+    """
+    indices = [i for i in range(len(hessian)) if i != pivot]
+    return [[hessian[i][j]-hessian[i][pivot]-hessian[pivot][j]+hessian[pivot][pivot]
+             for j in indices] for i in indices]
+
+
 def _exact_anchor(candidate, lower, upper):
     """Restore sum=1 exactly and fall back to a rational interior center."""
     candidate = list(map(Fraction, map(float, candidate)))
@@ -324,12 +336,15 @@ def certify_water_common_plane(parameters: dict, reference_amounts: list, *, tol
             return
         if np.any(lower >= upper) or np.any(upper <= 0):
             raise ArithmeticError("Degenerate box requires an explicit boundary proof.")
-        hessian = hessian_lower_enclosure(model, lower, upper)
+        pivot = int(np.argmax(upper))
+        hessian = _simplex_tangent_hessian(hessian_lower_enclosure(model, lower, upper), pivot)
         if _positive_definite(hessian):
             rho = 0.
         else:
-            # Interval row sums, not the ordinary Decimal context, determine
-            # the safe curvature shift.
+            # Interval row sums determine the shift on the tangent basis.
+            # The actual ambient alphaBB diagonal contributes rho*B.T*B;
+            # B.T*B = I + 11.T >= I, so verifying H_tangent + rho*I is
+            # conservative for that actual minorant.
             required = max((sum((_I(max(v.lo.copy_abs(), v.hi.copy_abs())) for j, v in enumerate(row) if i != j), _I(0))
                             -row[i]).hi for i, row in enumerate(hessian))
             rho = _outward_float(max(Decimal(0), required)+Decimal('1e-20'), False)
@@ -364,13 +379,12 @@ def certify_water_common_plane(parameters: dict, reference_amounts: list, *, tol
         adjusted = value+sum((g*(_I(float(x))-_I(x)) for g, x in zip(gradient, point)), _I(0))
         bound = _affine_simplex_lower(adjusted, gradient, list(map(float, point)), lower, upper)
         row = {"status": "verified_convex_minorant", "lower": lower.tolist(), "upper": upper.tolist(),
-               "rho": rho, "anchor_exact": [str(v) for v in point], "lower_bound_rt": str(bound)}
+               "rho": rho, "simplex_tangent_pivot": pivot,
+               "anchor_exact": [str(v) for v in point], "lower_bound_rt": str(bound)}
         if bound >= Decimal.from_float(tolerance_rt).copy_negate():
             leaves.append(row)
         else:
             heapq.heappush(heap, (bound, counter, lower, upper, row))
-        if progress_callback is not None and counter % 100 == 0:
-            progress_callback(counter, dict(best))
     assess_box(np.zeros(n), np.ones(n))
     while heap and counter+2 <= max_nodes:
         if best["water_capacity_satisfied"] and Decimal(best["value_upper_rt"]) < Decimal.from_float(tolerance_rt).copy_negate():
@@ -384,6 +398,10 @@ def certify_water_common_plane(parameters: dict, reference_amounts: list, *, tol
         left[axis], right[axis] = mid, mid
         assess_box(lo.copy(), left)
         assess_box(right, hi.copy())
+        if progress_callback is not None and counter % 100 == 1:
+            complete_lower = min([row["lower_bound_rt"] for row in leaves if "lower_bound_rt" in row]
+                                 + [entry[-1]["lower_bound_rt"] for entry in heap], key=Decimal)
+            progress_callback(counter, {**best, "global_lower_bound_rt": complete_lower})
     remaining = [entry[-1] for entry in heap]
     lower = min(Decimal(row["lower_bound_rt"]) for row in leaves+remaining if "lower_bound_rt" in row)
     snapshot = {key: [interval_json(_I(v)) for v in value] if key == "dry_standard_costs_rt" else

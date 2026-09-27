@@ -76,3 +76,13 @@ or a Gibbs minimum of the nonisothermal planet.
 host, including its saved water standard shift, while acquiring native
 competing-phase standards from the native provider. The two providers and
 the unchanged water gas anchor are preserved explicitly in the receipts.
+
+Curvature is verified on the composition simplex: with columns
+`B_i = e_i - e_pivot`, interval LDL checks `B.T H B`. The infeasible normal
+direction need not be convex. The smooth Hessian enclosure plus an ideal
+positive diagonal lower bound remains a valid lower bound after congruence.
+For an alphaBB shift, `B.T B = I + 11.T >= I`, so verifying the more
+conservative tangent matrix plus `rho I` suffices for the actual ambient
+`rho I` perturbation. This changes neither the composition domain nor the
+provider scalar. Progress lower bounds are emitted only after both closed
+child boxes have replaced their parent, preserving full simplex coverage.
