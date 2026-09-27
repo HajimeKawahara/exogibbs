@@ -197,3 +197,25 @@ their standard energies equal. Native endpoint energies can include internal
 ordering and pressure terms absent from FastChem's pure-condensate standard.
 Their differences must be recorded separately; this larger conditional
 catalog does not establish a calibrated BSE phase boundary.
+
+## Optional conserved numerical initialization
+
+`build_expanded_bse_problem(..., initialization="canonical")` exposes a
+metal-free starting vector as
+`metadata["numerical_initialization"]["initial_component_amounts_mol"]`.
+It mixes 0.9999 of the canonical dry-melt plus H/He inventory with 0.0001 of
+the metal-free feasible LP interior. Both endpoints conserve the same atoms,
+so the mixture also preserves all thirteen budgets, exact-zero global
+elements and exactly zero initial metal. The returned canonical ledger stays
+unchanged. The default `initialization="lp"` keeps the original solver start.
+
+Pass the optional vector as `initial_component_amounts_mol` to
+`select_metal_phase` (or to the suppressed-branch `minimize_gibbs`). It seeds
+only the initial metal-free solve; the existing insertion procedure generates
+metal-bearing starts. `run_m2_contact.py --initialization canonical` wires
+both paths. This is a numerical starting point, not an atom floor, phase
+constraint, added reservoir, thermodynamic change or looser acceptance gate.
+The original scalar-energy, derivative, extensivity, conservation and KKT
+audits still decide acceptance. A different initial state can find a different
+local branch in a nonconvex model, so initialization is recorded and must be
+kept distinct from material or gas-catalog changes in paired comparisons.
