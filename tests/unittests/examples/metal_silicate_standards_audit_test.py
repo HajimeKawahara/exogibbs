@@ -85,7 +85,8 @@ def test_invalid_mass_fraction_is_not_clipped(fraction):
         AUDIT.h2_mass_fraction_to_amount(fraction, .1, .8, .00201588)
 
 
-def test_saved_reduction_standards_use_actual_pressure_host_and_source_conventions(monkeypatch):
+@pytest.mark.parametrize("liquid_model", ["native", "published"])
+def test_saved_reduction_standards_use_actual_pressure_host_and_source_conventions(monkeypatch, liquid_model):
     eos = pytest.importorskip("exoeos")
     components, elements = ["sio2", "fe2sio4"], ["Si", "Fe", "O"]
     formulas = np.array([[1., 0., 2.], [1., 2., 4.]])
@@ -98,20 +99,31 @@ def test_saved_reduction_standards_use_actual_pressure_host_and_source_conventio
               "source_metadata": {"model_id": "bse_melts_ma_retained_atmosphere_conditional_v1"},
               "source_atmosphere_parcel": {"accepted": True, "T_K": 2173.15, "P_bar": 60.,
                                           "gas_species": ["H2O1", "H2"], "gas_standard_potentials_rt": [-9., -1.]}}
+    source["liquid_model"] = liquid_model
+    identity = AUDIT.PROVIDER_MODEL_ID if liquid_model == "native" else AUDIT.PUBLISHED_MODEL_ID
+    receipt = {"T_K": 2173.15, "P_Pa": 6e6, "common_R_J_mol_K": AUDIT.COMMON_R,
+               "native_properties": {"model_id": AUDIT.PROVIDER_MODEL_ID, "T_K": 2173.15,
+                   "P_Pa": 6e6, "component_order": components, "mu0_RT": [-5., -7.]}}
+    import hashlib, json
+    identifier = hashlib.sha256(json.dumps(receipt, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    receipt["sha256_without_this_field"] = identifier
     calls = []
 
     def evaluate(t, p, n, **kwargs):
         calls.append((t, p, n.copy()))
-        return {"model_id": AUDIT.PROVIDER_MODEL_ID, "status": "ok_supplied_liquid_properties",
+        return {"model_id": identity, "status": "ok_supplied_liquid_properties",
                 "T_K": t, "P_Pa": p, "component_order": components,
                 "returned_component_moles": n.tolist(), "mu0_RT": [-5., -7.],
+                "provenance": {"native_standard_state_receipt_sha256": identifier},
                 "basis": {"common_R_J_mol_K": AUDIT.COMMON_R},
                 "phase_policy": {"oxygen_buffer": "None", "equilibrated": False}}
 
     provider = SimpleNamespace(__file__=str(Path(eos.__file__).resolve().parents[2] / "examples/melts_liquid_evaluator.py"),
-        COMPONENTS=components, ELEMENTS=elements, FORMULA_MATRIX=formulas, evaluate_liquid=evaluate)
+        MODEL_ID=identity, standard_state_receipts=[receipt], COMPONENTS=components, ELEMENTS=elements, FORMULA_MATRIX=formulas, evaluate_liquid=evaluate)
     result = AUDIT.extract_formal_reduction_standards(source, evaluator=provider, runtime=None,
                                                       python_executable=None, amount_scale=.1)
+    assert result["liquid_model"] == liquid_model
+    assert result["liquid_model_id"] == identity
     assert calls[0][:2] == (2173.15, 6e6)
     np.testing.assert_allclose(calls[0][2], [.3, .2])
     assert result["standards_rt"]["sio2_liquid"] == -5.
@@ -123,6 +135,16 @@ def test_saved_reduction_standards_use_actual_pressure_host_and_source_conventio
         expected = original[name + "_metal"] + model.standard_state_shift_RT(2173.15)[list(model.components).index(name)]
         assert result["standards_rt"][name + "_metal"] == pytest.approx(float(expected))
     assert not result["physical_calibration_accepted"]
+    if liquid_model == "published":
+        provider.standard_state_receipts = []
+        with pytest.raises(ValueError, match="explicit native"):
+            AUDIT.extract_formal_reduction_standards(source, evaluator=provider, runtime=None,
+                                                     python_executable=None, amount_scale=.1)
+        provider.standard_state_receipts = [receipt]
+        receipt["native_properties"]["mu0_RT"][0] += 1.
+        with pytest.raises(ValueError, match="reference receipt"):
+            AUDIT.extract_formal_reduction_standards(source, evaluator=provider, runtime=None,
+                                                     python_executable=None, amount_scale=.1)
     source["source_atmosphere_parcel"]["P_bar"] = 1.
     with pytest.raises(ValueError, match="unchanged"):
         AUDIT.extract_formal_reduction_standards(source, evaluator=provider, runtime=None,

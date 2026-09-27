@@ -26,6 +26,21 @@ PROVIDER_MODEL_ID = "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1"
 PUBLISHED_MODEL_ID = "melts_v102_published_mixing_native_standard_states_v1"
 
 
+def saved_liquid_model(source: dict) -> str:
+    """Read consistent explicit model declarations, defaulting legacy records to native."""
+    metadata = source.get("source_metadata", {})
+    ledger = metadata.get("host_ledger", {})
+    declarations = [item["liquid_model"] for item in
+                    (source, source.get("arguments", {}), metadata, ledger)
+                    if "liquid_model" in item]
+    model = declarations[0] if declarations else "native"
+    identities = {"native": PROVIDER_MODEL_ID, "published": PUBLISHED_MODEL_ID}
+    if (not isinstance(model, str) or model not in identities or any(value != model for value in declarations)
+            or ledger.get("model_id", identities[model]) != identities[model]):
+        raise ValueError("The saved liquid model declarations are unknown or inconsistent.")
+    return model
+
+
 def load_melts_evaluator(checkout: Path, *, liquid_model="native", runtime=None,
                          python_executable=None) -> Any:
     """Load the supplied-composition evaluator from an explicit ExoEOS checkout."""
