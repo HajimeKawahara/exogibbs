@@ -76,3 +76,52 @@ def test_changed_source_binding_cannot_be_certified(monkeypatch, change):
     change(report, audit, source)
     with pytest.raises(ValueError):
         runner.saved_water_problem(report, audit, "source-digest")
+
+
+def water_trial_scenario():
+    # Preserve the raw-versus-normalized shape of the accepted 250 bar pilot.
+    raw = {"standard_offsets_rt": {"O_metal": 1.6320817196241961,
+                                   "H_metal": -0.4445191104224264}}
+    normalized = runner.normalize_scenario(raw)
+    del normalized["standard_offsets_rt"]["h2o_melts"]
+    return raw, normalized
+
+
+def test_original_water_trial_scenario_accepts_only_default_normalization(monkeypatch):
+    report, audit, source = fixture(monkeypatch)
+    raw, normalized = water_trial_scenario()
+    report["provider_scenario"] = {"values": raw, "sha256": "original-scenario-bytes"}
+    source["provider_scenario_sha256"] = "original-scenario-bytes"
+    source["source_metadata"]["provider_scenario"] = normalized
+    runner.saved_water_problem(report, audit, "source-digest")
+    assert report["provider_scenario"]["values"] == raw
+    assert source["source_metadata"]["provider_scenario"] == normalized
+
+
+@pytest.mark.parametrize("change", [
+    lambda s: s.update(provider_scenario_sha256="changed-bytes"),
+    lambda s: s["source_metadata"]["provider_scenario"]["standard_offsets_rt"].update(h2o_melts=1.),
+    lambda s: s["source_metadata"]["provider_scenario"]["standard_offsets_rt"].update(H2_dissolved=1.),
+    lambda s: s["source_metadata"]["provider_scenario"]["metal_bounds"]["upper"].__setitem__(1, .07),
+])
+def test_normalization_preserves_scenario_bytes_and_nondefault_values(monkeypatch, change):
+    report, audit, source = fixture(monkeypatch)
+    raw, normalized = water_trial_scenario()
+    report["provider_scenario"] = {"values": raw, "sha256": "original-scenario-bytes"}
+    source["provider_scenario_sha256"] = "original-scenario-bytes"
+    source["source_metadata"]["provider_scenario"] = normalized
+    change(source)
+    with pytest.raises(ValueError, match="scenario"):
+        runner.saved_water_problem(report, audit, "source-digest")
+
+
+@pytest.mark.parametrize("flag", ["pressure_closure_performed", "global_closure_numerically_accepted"])
+def test_fixed_pressure_trial_cannot_pass_the_final_root_gate(monkeypatch, flag):
+    report, audit, source = fixture(monkeypatch)
+    raw, normalized = water_trial_scenario()
+    report["provider_scenario"] = {"values": raw, "sha256": "original-scenario-bytes"}
+    source["provider_scenario_sha256"] = "original-scenario-bytes"
+    source["source_metadata"]["provider_scenario"] = normalized
+    report["runs"][0]["roots"][0][flag] = False
+    with pytest.raises(ValueError, match="unaccepted pressure trial"):
+        runner.saved_water_problem(report, audit, "source-digest")

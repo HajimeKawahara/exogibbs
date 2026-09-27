@@ -11,11 +11,22 @@ import numpy as np
 
 from m2_common_plane import _I
 from m2_host_standards import source_hydrogen_standard_receipt
+from m2_scenarios import normalize_scenario
 from m2_water_global import certify_water_common_plane, parameters_from_saved_water
 
 
 def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def saved_scenario_values(scenario, source):
+    """Bind original scenario bytes and compare explicitly normalized values."""
+    values = normalize_scenario(None if scenario is None else scenario["values"])
+    expected_sha = None if scenario is None else scenario["sha256"]
+    if (values != normalize_scenario(source["source_metadata"].get("provider_scenario"))
+            or expected_sha != source.get("provider_scenario_sha256")):
+        raise ValueError("The root and executed source name different scenario values or bytes.")
+    return values
 
 
 def saved_water_problem(report: dict, audit: dict, closure_sha256: str, *, exoeos_checkout=None) -> tuple:
@@ -34,13 +45,7 @@ def saved_water_problem(report: dict, audit: dict, closure_sha256: str, *, exoeo
         raise ValueError("An unaccepted pressure trial cannot supply a final-root proof.")
     source = state["source"]
     metadata = source["source_metadata"]
-    scenario = report["provider_scenario"]
-    if scenario is not None:
-        if (scenario["values"] != metadata.get("provider_scenario")
-                or scenario["sha256"] != source.get("provider_scenario_sha256")):
-            raise ValueError("The root and executed source name different scenario values or bytes.")
-    elif any((metadata.get("provider_scenario") or {}).get("standard_offsets_rt", {}).values()):
-        raise ValueError("A nonzero source standard shift has no root scenario binding.")
+    scenario = saved_scenario_values(report["provider_scenario"], source)
     for owner in ("exogibbs", "exoeos"):
         origin = metadata["provenance"][owner]
         if origin["commit"] != report["checkouts"][owner]["head"] or origin["changed_tracked_file_sha256"]:
@@ -107,7 +112,7 @@ def saved_water_problem(report: dict, audit: dict, closure_sha256: str, *, exoeo
     hydrogen = source_hydrogen_standard_receipt(source)
     if audit["dissolved_hydrogen_standard_receipt"] != hydrogen:
         raise ValueError("The saved and replayed hydrogen standard receipts differ.")
-    offsets = (metadata.get("provider_scenario") or {}).get("standard_offsets_rt", {})
+    offsets = scenario["standard_offsets_rt"]
     plane, inventory = dict(zip(elements, potentials)), dict(zip(elements, budget))
     for element in properties["basis"]["element_order"]:
         # These elements are absent from the declared finite source inventory.
@@ -135,7 +140,7 @@ def main():
     parser.add_argument("--exoeos-checkout", type=Path, help="Required for the declared dissolved-He scalar.")
     args = parser.parse_args()
     files = {str(path.resolve()): sha256(path) for path in (args.saved_closure, args.saved_physical_audit)}
-    for name in ("run_m2_water_global.py", "m2_water_global.py", "m2_common_plane.py", "m2_liquid_global.py", "m2_host_standards.py", "m2_helium_global.py", "m2_helium.py"):
+    for name in ("run_m2_water_global.py", "m2_water_global.py", "m2_common_plane.py", "m2_liquid_global.py", "m2_host_standards.py", "m2_helium_global.py", "m2_helium.py", "m2_scenarios.py"):
         path = Path(__file__).with_name(name)
         files[str(path.resolve())] = sha256(path)
     report, audit = [json.loads(path.read_text()) for path in (args.saved_closure, args.saved_physical_audit)]
