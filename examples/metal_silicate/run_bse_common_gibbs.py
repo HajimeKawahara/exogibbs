@@ -25,7 +25,8 @@ from hydrogen import _checkout_provenance, dissolved_h2_standard_rt, hirschmann2
 from local import build_problem
 from m1_chemistry import provenance as gas_provenance
 from m2_common_gas import REFERENCE_ANCHORS, anchored_standards_rt, build_common_gas_setup, source_gas_names
-from melts_coupled import COMMON_R, load_melts_evaluator, make_melts_h2_phase, provider_ledger
+from melts_coupled import (COMMON_R, load_melts_evaluator, make_melts_h2_phase,
+                           provider_ledger, reconstruct_water_evaluator)
 from reference import load_reference
 from run_melts_reference import reduced_gas_standards_rt
 from source import make_source_standard_potentials_rt
@@ -89,7 +90,7 @@ def build_bse_problem(
             or np.any(budget < 0) or not np.all(np.isfinite(rock)) or np.any(rock < 0)
             or not np.array_equal(budget[:11], rock[:11]) or np.any(rock[11:] != 0)):
         raise ValueError("Dry rock and independent H/He inventories are inconsistent.")
-    evaluator = load_melts_evaluator(checkout, liquid_model=liquid_model, runtime=runtime,
+    evaluator = load_melts_evaluator(checkout, liquid_model=("published" if liquid_model == "published_water" else liquid_model), runtime=runtime,
                                      python_executable=python_executable)
     oxide = dict(zip(inventory["oxide_order"], inventory["oxide_amounts_mol"]))
     if len(oxide) != len(inventory["oxide_order"]) or set(k.lower() for k in oxide) - set(evaluator.OXIDES):
@@ -161,6 +162,11 @@ def build_bse_problem(
     def h2_standard(t, p):
         return float(dissolved_h2_standard_rt(gas_standards(t, p)[gas_names.index("H2_gas")],
                                              hirschmann2012_ln_solubility(p)))
+    if liquid_model == "published_water":
+        # The EOS provider replaces hydrated MELTS by one dry-host/water G.
+        # Its gas anchor must use this exact gas catalog and element gauge.
+        evaluator = reconstruct_water_evaluator(
+            checkout, evaluator, lambda t, p_pa: float(gas_standards(t, p_pa/1e5)[gas_names.index("H2O_gas")]))
     scaled_melt = make_melts_h2_phase(evaluator, host_names, h2_standard,
                                       runtime=runtime, python_executable=python_executable)
     execution = {"native_melt_calls": 0, "last_failed_melt_state": None}
@@ -267,7 +273,7 @@ def main() -> None:
     parser.add_argument("--maxiter", type=int, default=1000)
     parser.add_argument("--metal-absent", action="store_true")
     parser.add_argument("--gas-model", choices=("source", "m1_shared", "m1_expanded"), default="source")
-    parser.add_argument("--liquid-model", choices=("native", "published"), default="native")
+    parser.add_argument("--liquid-model", choices=("native", "published", "published_water"), default="native")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     record, budget, callbacks, initial, metadata = build_bse_problem(
