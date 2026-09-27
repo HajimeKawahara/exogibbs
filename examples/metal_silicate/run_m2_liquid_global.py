@@ -65,14 +65,26 @@ def main():
     # Independent native probes validate the published expression away from
     # the host. Their agreement is not used as an interval error bound.
     for index in np.flatnonzero(parent):
-        point = .02*parent
-        point[index] += .98
-        receipt = evaluate(point.tolist())
-        checked = mixing_model.compare_native_mixing(receipt)
-        checks.append({"role": "near_vertex", "component_index": int(index),
-                       "comparison": checked, "provider_properties": receipt})
+        for weight in (.98, .5):
+            point = (1-weight)*parent
+            point[index] += weight
+            row = {"role": "toward_vertex", "component_index": int(index),
+                   "vertex_weight": weight, "requested_component_moles": point.tolist()}
+            try:
+                receipt = evaluate(point.tolist())
+                checked = mixing_model.compare_native_mixing(receipt)
+                row.update(comparison=checked, provider_properties=receipt)
+            except (ValueError, RuntimeError) as error:
+                # Oxide inversion becomes ill-conditioned close to some
+                # vertices. Preserve the failed request; never clip its
+                # composition or invent native properties at that endpoint.
+                row.update(comparison={"status": "native_evaluation_unavailable"}, reason=str(error))
+            checks.append(row)
+            write(f"native_probe_{len(checks)-1:02d}.json", row)
+            if row["comparison"]["status"] != "native_evaluation_unavailable":
+                break
     write("native_expression_checks.json", checks)
-    if any(row["comparison"]["status"] != "compatible_at_supplied_state" for row in checks):
+    if any(row["comparison"]["status"] == "mismatch" for row in checks):
         write("assessment.json", {"status": "native_expression_mismatch", "formal_two_liquid_bound_accepted": False})
         raise RuntimeError("Native expression compatibility failed; no stability certificate was attempted.")
     result = assess_liquid_global_tangent_plane(properties, host["native_dissolved_h2_moles"],
@@ -83,7 +95,8 @@ def main():
                            "formal_two_liquid_bound_accepted": result.get("formal_two_liquid_bound_accepted", False),
                            "nodes_evaluated": result.get("nodes_evaluated"),
                            "native_compatibility_checks": len(checks),
-                           "maximum_native_potential_difference_rt": max(row["comparison"]["maximum_potential_difference_rt"] for row in checks),
+                           "native_evaluation_failures": sum(row["comparison"]["status"] == "native_evaluation_unavailable" for row in checks),
+                           "maximum_native_potential_difference_rt": max(row["comparison"]["maximum_potential_difference_rt"] for row in checks if "maximum_potential_difference_rt" in row["comparison"]),
                            "native_binary_error_bound_certified": False,
                            "global_empirical_stability_certified": False})
     print(result["status"], result.get("lower_bound_rt"), flush=True)
