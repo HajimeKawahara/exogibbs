@@ -89,3 +89,8 @@ empirical applicability, native-binary equivalence, a larger alloy domain,
 a metal-free boundary, omitted transport, or a Gibbs minimum for the
 nonisothermal planet. Those scientific and numerical questions retain their
 own evidence and acceptance conditions.
+
+The [five saved-case assessment](../../results/m2_common_plane/20260928/five_saved_cases/README.md)
+archives the original executions: all five normalized gap upper bounds are
+between `1.08e-13` and `1.50e-13`, below the `1e-9` design tolerance. Each
+case retains its original strict-sign and empirical-material flags.
