@@ -131,7 +131,8 @@ def main():
     report, audit = [json.loads(path.read_text()) for path in (args.saved_closure, args.saved_physical_audit)]
     parameters, reference, binding = saved_water_problem(report, audit, files[str(args.saved_closure.resolve())])
     started = time.monotonic()
-    result = certify_water_common_plane(parameters, reference, tolerance_rt=args.tolerance_rt, max_nodes=args.max_nodes)
+    result = certify_water_common_plane(parameters, reference, tolerance_rt=args.tolerance_rt, max_nodes=args.max_nodes,
+        progress_callback=lambda nodes, best: print(json.dumps({"nodes_evaluated": nodes, "best_trial": best}), flush=True))
     if any(sha256(Path(path)) != digest for path, digest in files.items()):
         raise ValueError("An input or proof source changed during verification.")
     result.update(binding=binding, command=sys.argv, elapsed_seconds=time.monotonic()-started,

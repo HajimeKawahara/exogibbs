@@ -91,6 +91,7 @@ class InsertionMinimum:
     uncertainty_rt: Optional[float]
     minimum_certified: bool
     reason: str
+    global_certificate: Optional[dict] = None
 
 
 def _linear_minimum(cost, lower, upper):
@@ -322,12 +323,17 @@ def select_metal_phase(
     convex_phase_bounds: Optional[Mapping[str, float]] = None,
     initial_component_amounts_mol: Optional[np.ndarray] = None,
     maxiter: int = 1000, tolerance: float = 1e-8, allow_metal: bool = True,
+    metal_insertion_minimizer=None,
 ) -> MetalSelection:
     """Evaluate metal-free and metal-bearing branches without a metal floor.
 
     An optional full-record initial ledger seeds only the metal-free solve;
     it must conserve every atom and contain exactly zero metal. Subsequent
     insertion seeds and all equilibrium/phase-selection audits are unchanged.
+    An optional ``metal_insertion_minimizer`` supplies a provider-bound global
+    insertion certificate for a nonconvex alloy. It receives the actual T/P,
+    formula, elemental plane and effective domain. Existing local acceptance,
+    complementarity and host-evidence gates still apply.
 
     Callbacks follow each phase's complete record order. Components containing
     exactly absent elements are removed before any logarithmic solve. The
@@ -433,6 +439,26 @@ def select_metal_phase(
                               reasons + ("The metal domain is excluded by exact-zero element budgets.",))
 
     def insertion(result):
+        if metal_insertion_minimizer is not None:
+            trial = metal_insertion_minimizer(temperature_k, pressure_bar, metal_formula,
+                                             result.elemental_potentials_rt, lo, hi,
+                                             tolerance=tolerance, maxiter=maxiter)
+            if (not isinstance(trial, InsertionMinimum)
+                    or np.asarray(trial.composition).shape != lo.shape
+                    or not np.all(np.isfinite(trial.composition))
+                    or np.any(trial.composition < lo) or np.any(trial.composition > hi)
+                    or abs(np.sum(trial.composition)-1) > 1e-12
+                    or not np.isfinite(trial.upper_bound_rt)
+                    or (trial.minimum_certified and
+                        (trial.lower_bound_rt is None or trial.uncertainty_rt is None
+                         or not np.isfinite(trial.lower_bound_rt)
+                         or not np.isfinite(trial.uncertainty_rt)
+                         or trial.lower_bound_rt > trial.upper_bound_rt
+                         or trial.upper_bound_rt-trial.lower_bound_rt > tolerance
+                         or trial.uncertainty_rt < trial.upper_bound_rt-trial.lower_bound_rt-1e-14
+                         or trial.uncertainty_rt > tolerance or trial.uncertainty_rt < 0))):
+                raise ValueError("The supplied insertion minimizer returned an invalid certificate.")
+            return trial
         return minimize_insertion(callbacks["metal"], temperature_k, pressure_bar,
                                   metal_formula, result.elemental_potentials_rt, lo, hi,
                                   curvature_lower_bound_rt=bounds.get("metal"), tolerance=tolerance,
