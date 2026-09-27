@@ -177,6 +177,11 @@ def build_bse_problem(
             }
             raise PhaseEvaluationError(str(error)) from error
         return PhaseState(state.mu_rt, state.gibbs_rt / amount_scale)
+    if hasattr(scaled_melt, "energy_value_and_grad_rt"):
+        def melt_gradient(t, p, n):
+            energy, gradient = scaled_melt.energy_value_and_grad_rt(t, p, amount_scale * n)
+            return energy / amount_scale, gradient
+        melt.energy_value_and_grad_rt = melt_gradient
     model = MaFeSiOHLiquid()
     full_metal_names = source["phases"]["metal"]
     metal_indices = np.array([full_metal_names.index(name) for name in metal_names])

@@ -131,3 +131,14 @@ source solve, its primitive expansion, native calls and complete contact
 audit. Both retain pending M2-A/B/C: local contact does not establish a
 calibrated BSE material domain, global MELTS phase stability or a planetary
 pressure/inventory closure.
+
+## Independent published-liquid derivative audit
+
+When the selected EOS evaluator exposes an independent scalar derivative,
+the MELTS/H2 callback forwards it in the selected host basis and adds an
+independently differentiated host/H2 dilution scalar. The BSE wrapper preserves
+the derivative under its physical-to-native amount scaling. This permits the
+existing scalar audit to resolve trace phosphate left in the liquid after
+finite P vaporization. The native evaluator keeps its existing audit path.
+No finite-difference tolerance, equilibrium condition, or acceptance gate is
+relaxed.
