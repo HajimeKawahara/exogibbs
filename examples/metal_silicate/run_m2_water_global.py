@@ -120,7 +120,7 @@ def saved_water_problem(report: dict, audit: dict, closure_sha256: str, *, exoeo
         water_standard_offset_rt=offsets.get("h2o_melts", 0.))
     if has_helium:
         from m2_helium_global import add_saved_helium
-        parameters, binding = add_saved_helium(parameters,binding,source,host,exoeos_checkout)
+        parameters, binding = add_saved_helium(parameters,binding,source,host,exoeos_checkout,inventory=report['inventory'])
     return parameters, reference, {**binding, "dissolved_hydrogen_standard_receipt": hydrogen,
                                   "source_selection": selector, "source_provider_checkouts": report["checkouts"]}
 

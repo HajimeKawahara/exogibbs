@@ -225,8 +225,8 @@ def build_jobs() -> tuple[Job, ...]:
     jobs.append(Job(
         "metal_m2_water_global", metal + "run_m2_water_global.py",
         ("--saved-closure", "{m2_closure}", "--saved-physical-audit", "{m2_physical_audit}",
-         "--output", "{output}/water_bound.json"),
-        ("exoeos", "m2_closure", "m2_physical_audit"), ("water_bound.json",),
+         "--exoeos-checkout", "{exoeos_checkout}", "--output", "{output}/water_bound.json"),
+        ("exoeos", "exoeos_checkout", "m2_closure", "m2_physical_audit"), ("water_bound.json",),
     ))
     jobs.append(Job(
         "metal_m2_omitted_gas", metal + "run_m2_omitted_gas.py",

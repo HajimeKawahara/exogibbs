@@ -10,7 +10,7 @@ import numpy as np
 from m2_common_plane import _I, _dot, _exp, interval_json
 
 
-def add_saved_helium(parameters, binding, source, host, exoeos_checkout):
+def add_saved_helium(parameters, binding, source, host, exoeos_checkout, *, inventory):
     """Bind the EOS-owned He scalar and eliminate all nonnegative He amounts."""
     from m2_helium import reconstruct_helium_model
 
@@ -60,6 +60,16 @@ def add_saved_helium(parameters, binding, source, host, exoeos_checkout):
     masses = receipt['dry_host_molar_masses_kg']
     if len(masses) != len(selected)-1 or any(not np.isfinite(v) or v < 0 for v in masses):
         raise ValueError('The He dry-mass vector must cover the original host components.')
+    atomic = np.asarray(inventory['atomic_masses_kg_mol'],dtype=float)
+    if (inventory['elements'] != record['elements'] or atomic.shape != (len(record['elements']),)
+            or np.any(~np.isfinite(atomic)) or np.any(atomic <= 0)):
+        raise ValueError('Require the complete finite inventory atomic-mass basis.')
+    atomic_by_element = dict(zip(record['elements'],atomic.tolist()))
+    expected = [0. if name in ('h2o_melts','H2_dissolved') else
+                sum(atomic_by_element[element]*count for element,count in record['component_formulas'][name].items())
+                for name in selected[:-1]]
+    if expected != masses:
+        raise ValueError('The He dry masses differ from the actual inventory and source formulas.')
     mass_by_name = dict(zip(selected[:-1], masses))
     if any(mass_by_name.get(name, 0.) != 0. for name in ('h2o_melts','H2_dissolved')):
         raise ValueError('The declared He host mass must exclude water and molecular H2.')
@@ -79,6 +89,8 @@ def add_saved_helium(parameters, binding, source, host, exoeos_checkout):
     prepared['dry_standard_costs_rt'] = [_I(cost)-shift for cost,shift in zip(parameters['dry_standard_costs_rt'],reduction)]
     declared = {**binding,'helium_elimination':{
         'receipt':receipt,'dry_masses_kg_mol':projected,
+        'inventory_atomic_masses_kg_mol':atomic.tolist(),
+        'dry_mass_recipe_replayed_from_inventory':True,
         'dry_cost_reduction_rt':[interval_json(value) for value in reduction],
         'minimum_helium_moles_per_kg_dry':interval_json(rate),
         'scope':'All nonnegative He amounts in the declared trace scalar. The original host/H2 denominator is unchanged; empirical finite-concentration accuracy is not inferred.'}}
