@@ -60,3 +60,35 @@ def test_domain_override_preserves_defaults_and_returns_independent_arrays():
 def test_invalid_scenarios_are_rejected(scenario):
     with pytest.raises(ValueError):
         SCENARIOS.normalize_scenario(scenario)
+
+
+def test_measured_oxygen_standard_offset_preserves_energy_derivative_and_curvature():
+    record = {"phases": {"metal": ["Fe_metal", "Si_metal", "O_metal", "H_metal"]}}
+    original = FULL.ideal_phase(lambda t, p: np.array([-2., -3., -5., -7.]))
+    original.energy_value_and_grad_rt = lambda t, p, n: (original(t, p, n).gibbs_rt,
+                                                        original(t, p, n).mu_rt)
+    # Example input from the ExoEOS Sakao standard reconstruction at 2173.15 K.
+    # This is a conditional standard scenario, not a calibrated BSE uncertainty.
+    offset = 1.6318386164676255
+    changed = SCENARIOS.apply_standard_offsets(record, {"metal": original},
+        {"standard_offsets_rt": {"O_metal": offset}})["metal"]
+    n = np.array([.96, .005, .015, .02])
+    old, new = original(2173.15, 267.2, n), changed(2173.15, 267.2, n)
+    np.testing.assert_allclose(new.mu_rt-old.mu_rt, [0., 0., offset, 0.], atol=2e-15)
+    assert new.gibbs_rt-old.gibbs_rt == pytest.approx(n[2]*offset)
+    assert new.gibbs_rt == pytest.approx(n @ new.mu_rt)
+    energy, gradient = changed.energy_value_and_grad_rt(2173.15, 267.2, n)
+    assert energy == pytest.approx(new.gibbs_rt)
+    np.testing.assert_allclose(gradient, new.mu_rt)
+    for i in range(4):
+        step = np.eye(4)[i]*1e-6
+        derivative = (changed(2173.15, 267.2, n+step).gibbs_rt
+                      -changed(2173.15, 267.2, n-step).gibbs_rt)/2e-6
+        assert derivative == pytest.approx(new.mu_rt[i], abs=2e-8)
+        curvature_old = (original(2173.15, 267.2, n+step).mu_rt
+                         -original(2173.15, 267.2, n-step).mu_rt)/2e-6
+        curvature_new = (changed(2173.15, 267.2, n+step).mu_rt
+                         -changed(2173.15, 267.2, n-step).mu_rt)/2e-6
+        np.testing.assert_allclose(curvature_new, curvature_old, atol=2e-9)
+    assert changed(2173.15, 267.2, 3*n).gibbs_rt == pytest.approx(3*new.gibbs_rt)
+    assert SCENARIOS.normalize_scenario()["standard_offsets_rt"]["O_metal"] == 0.

@@ -1,0 +1,101 @@
+{
+  "scope": "Three independent fresh-process comparisons with return_diagnostics=True. The new provider only removes the unused gas-only fixed-shape warmup. Original pre-change raw benchmarks are reused. No source minimization or global closure is performed. Times are single samples on CPU36 with compilation cache disabled; end-to-end speedup is not established.",
+  "comparisons": [
+    {
+      "gas_model": "janaf",
+      "temperature_k": 2173.15,
+      "pressure_bar": 250.0,
+      "active_condensates": 0,
+      "all_parcel_fields_equal": true,
+      "independent_ad_gibbs_equal": true,
+      "independent_ad_mu_equal": true,
+      "primitive_status_equal": true,
+      "old_cold_seconds": 46.20046094432473,
+      "new_cold_seconds": 2.0493212826550007,
+      "old_peak_rss_mib": 1001.74609375,
+      "new_peak_rss_mib": 391.375,
+      "source_heads": [
+        "7cf41f1374469239bdcd2255c8e2676d3c9c61c9",
+        "f2a87cea3cd93729c88e146409e7ea0e0238ca54"
+      ],
+      "input_sha256": [
+        "1c1f7a1c4aeb135d61db8a0be5cc1ed31828fd45417e3f4c380996fc756758f4",
+        "1c1f7a1c4aeb135d61db8a0be5cc1ed31828fd45417e3f4c380996fc756758f4"
+      ],
+      "raw": [
+        {
+          "path": "/tmp/stage2-parcel-diagnostics-benchmark/janaf_true.json",
+          "sha256": "d26e1fe0681ebe220fc21c507dd75b63f64d7861422041966c04e16b46a24f4a"
+        },
+        {
+          "path": "/tmp/stage2-gas-only-warmup-benchmark/janaf_true.json",
+          "sha256": "f6d7be980f91d82acbcf8f1dca78688c937868d7e7a88d79ec2a67b950851acb"
+        }
+      ]
+    },
+    {
+      "gas_model": "janaf_condensed",
+      "temperature_k": 2173.15,
+      "pressure_bar": 250.0,
+      "active_condensates": 0,
+      "all_parcel_fields_equal": true,
+      "independent_ad_gibbs_equal": true,
+      "independent_ad_mu_equal": true,
+      "primitive_status_equal": true,
+      "old_cold_seconds": 47.974155800417066,
+      "new_cold_seconds": 1.9859109446406364,
+      "old_peak_rss_mib": 999.94921875,
+      "new_peak_rss_mib": 391.0,
+      "source_heads": [
+        "7cf41f1374469239bdcd2255c8e2676d3c9c61c9",
+        "f2a87cea3cd93729c88e146409e7ea0e0238ca54"
+      ],
+      "input_sha256": [
+        "5c76d408e2ebcd92c175293e2a0a7437dcc53e4195b8a507494d7d77012bf96e",
+        "5c76d408e2ebcd92c175293e2a0a7437dcc53e4195b8a507494d7d77012bf96e"
+      ],
+      "raw": [
+        {
+          "path": "/tmp/stage2-parcel-diagnostics-benchmark/janaf_condensed_true.json",
+          "sha256": "fe105b96ed3c415a9c4967c5269e7e0eddf0b3287aed8c6b759a880c506cd425"
+        },
+        {
+          "path": "/tmp/stage2-gas-only-warmup-benchmark/janaf_condensed_true.json",
+          "sha256": "9355b5c7701968ebc9c6e9345b1541389c532b9b2d323d5d1683e7115621d0e3"
+        }
+      ]
+    },
+    {
+      "gas_model": "janaf_condensed",
+      "temperature_k": 1000.0,
+      "pressure_bar": 250.0,
+      "active_condensates": 8,
+      "all_parcel_fields_equal": true,
+      "independent_ad_gibbs_equal": true,
+      "independent_ad_mu_equal": true,
+      "primitive_status_equal": true,
+      "old_cold_seconds": 48.96655963733792,
+      "new_cold_seconds": 48.862133506685495,
+      "old_peak_rss_mib": 1020.56640625,
+      "new_peak_rss_mib": 1020.19140625,
+      "source_heads": [
+        "7cf41f1374469239bdcd2255c8e2676d3c9c61c9",
+        "f2a87cea3cd93729c88e146409e7ea0e0238ca54"
+      ],
+      "input_sha256": [
+        "5c76d408e2ebcd92c175293e2a0a7437dcc53e4195b8a507494d7d77012bf96e",
+        "5c76d408e2ebcd92c175293e2a0a7437dcc53e4195b8a507494d7d77012bf96e"
+      ],
+      "raw": [
+        {
+          "path": "/tmp/stage2-parcel-diagnostics-benchmark-cloud1000/janaf_condensed_true.json",
+          "sha256": "826b6414d90f7b3d661e272530a4bd0d411a68f7127ef60200f81001b3941e3b"
+        },
+        {
+          "path": "/tmp/stage2-gas-only-warmup-benchmark-cloud1000/janaf_condensed_true.json",
+          "sha256": "eca75f409d8988197e569b8bbccf360c2d0037b3cb34ee771c3bdf8b2df8f9ed"
+        }
+      ]
+    }
+  ]
+}

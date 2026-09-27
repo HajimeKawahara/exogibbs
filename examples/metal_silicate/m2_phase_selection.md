@@ -269,7 +269,7 @@ metal-allowed closure is a separate solve. Local energies at different closure
 pressures cannot be ranked as a global phase comparison.
 
 `build_expanded_bse_problem(..., scenario=...)` accepts a provider-owned JSON
-mapping with optional `standard_offsets_rt` (`H2_dissolved`, `H_metal`) and
+mapping with optional `standard_offsets_rt` (`H2_dissolved`, `H_metal`, `O_metal`) and
 `metal_bounds` (`lower`, `upper`, four atomic fractions in Fe, Si, O, H order).
 Unknown keys, booleans, nonfinite values and infeasible Fe-rich boxes are
 rejected. Each standard shift adds the identical linear term to extensive
@@ -286,3 +286,22 @@ Fe-Si-O-H law nor establishes a physical metal appearance boundary. The
 existing contact/slack/multiplier diagnostics distinguish a chosen domain
 boundary from exact-zero elemental support and retain the unresolved global
 host-stability gate.
+
+An `O_metal` offset also permits a measured low-pressure oxygen standard
+scenario supplied by ExoEOS. Its `oxygen_standard_scenario` example converts
+Sakao and Sano (1959, DOI `10.2320/jinstmet1952.23.11_671`) or Matoba and
+Kuwana (1965, DOI `10.2355/tetsutohagane1955.51.2_163`) from Henry mass-percent
+oxygen to the actual alloy convention, using supplied H2/H2O gas standards
+and the infinite-dilution O activity coefficient. Pass only the returned
+`standard_offsets_rt` mapping into this scenario. The offset is constant
+at the declared source temperature; recompute it if that temperature changes.
+The linear standard term leaves alloy curvature unchanged. A source/global
+closure with this alternative standard is a new conditional calculation;
+it does not certify high-pressure, high-temperature Fe-Si-O-H material
+applicability or replace archived baseline results.
+
+For a saved accepted pressure root, the supplementary
+[alloy insertion bound](m2_alloy_insertion_bound.md) evaluates a rigorous
+outward lower bound against the fixed numerical elemental potential. This
+quantifies rounding uncertainty separately from the exact self-tangent
+convexity result, retaining negative bounds and the original selection status.

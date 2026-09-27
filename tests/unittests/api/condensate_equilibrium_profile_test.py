@@ -2167,8 +2167,9 @@ def _install_head_v2_gas_only_stubs(
     return calls
 
 
+@pytest.mark.parametrize("return_diagnostics", [False, True])
 def test_head_v2_empty_initial_support_uses_gas_only_outcome(
-    monkeypatch,
+    monkeypatch, return_diagnostics,
 ):
     setup = _fake_setup()
     gas_ln_n = jnp.log(jnp.asarray([0.5, 0.5], dtype=jnp.float64))
@@ -2230,6 +2231,7 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
         T=np.asarray([1000.0]),
         P=np.asarray([1.0]),
         b=jnp.asarray([0.5, 0.5], dtype=jnp.float64),
+        return_diagnostics=return_diagnostics,
     )
 
     layer = result.layers[0]
@@ -2237,14 +2239,16 @@ def test_head_v2_empty_initial_support_uses_gas_only_outcome(
     assert layer.selected_route == "head_v2_gas_only_no_candidate"
     assert layer.condensate_support_indices.size == 0
     assert gas_tolerances == [1.0e-10, 1.0e-14]
-    assert len(warmup_calls) == 1
-    warmup_bucket = warmup_calls[0]["buckets"][0]
-    assert warmup_bucket.support_indices.shape == (1, 2)
-    assert not np.any(np.asarray(warmup_bucket.condensate_slot_mask))
+    assert not warmup_calls
+    if return_diagnostics:
+        for name in ("compilation_seconds", "execution_seconds", "diagnostic_seconds"):
+            assert result.diagnostics[name] == 0.0
+    else:
+        assert result.diagnostics is None
     assert layer.diagnostics["fixed_support_v2"]["outcome"] == (
         "gas_only_no_candidate"
     )
-    assert layer.diagnostics["fixed_support_v2"]["fixed_shape_warmup"]
+    assert not layer.diagnostics["fixed_support_v2"]["fixed_shape_warmup"]
     lifecycle = layer.diagnostics["fixed_support_v2"]
     assert lifecycle[
         "gas_only_initial_caller_gauge_zero_barrier_kkt"
@@ -2298,7 +2302,7 @@ def test_head_v2_empty_support_refines_favorable_gas_only_state(
     assert len(polish_calls) == 1
     assert tuple(polish_calls[0]["support_indices"]) == ()
     assert calls["gas"] == 2
-    assert len(calls["warmup"]) == 1
+    assert not calls["warmup"]
     assert layer.converged
     assert layer.selected_route == CONDENSATE_HEAD_V2_ROUTE_NAME
     assert layer.condensate_support_names == ("H[s]",)
