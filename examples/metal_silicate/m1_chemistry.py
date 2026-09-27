@@ -78,14 +78,15 @@ BOUNDARY_CONTRACT = {
 }
 
 
-def subset_setup(setup: ChemicalSetup, species: Sequence[str]) -> ChemicalSetup:
-    """Select named species and seven element rows without changing standards."""
+def subset_setup(setup: ChemicalSetup, species: Sequence[str], *, elements=ELEMENTS) -> ChemicalSetup:
+    """Select named species and element rows without changing standards."""
+    elements = tuple(elements)
     names = tuple(species)
     if len(set(names)) != len(names):
         raise ValueError("Species must be unique.")
     columns = [setup.species.index(name) for name in names]
-    rows = [setup.elements.index(element) for element in ELEMENTS]
-    excluded = [i for i, element in enumerate(setup.elements) if element not in ELEMENTS]
+    rows = [setup.elements.index(element) for element in elements]
+    excluded = [i for i, element in enumerate(setup.elements) if element not in elements]
     matrix = np.asarray(setup.formula_matrix)
     if np.any(matrix[np.ix_(excluded, columns)] != 0):
         raise ValueError("Selected species contain an excluded element or charge.")
@@ -101,7 +102,7 @@ def subset_setup(setup: ChemicalSetup, species: Sequence[str]) -> ChemicalSetup:
         metadata["temperature_validity_upper"] = upper
     return ChemicalSetup(
         formula_matrix=jnp.asarray(matrix[np.ix_(rows, columns)]),
-        hvector_func=hvector, elements=ELEMENTS, species=names,
+        hvector_func=hvector, elements=elements, species=names,
         temperature_validity_upper=upper, metadata=metadata,
     )
 
