@@ -251,3 +251,13 @@ parcel solver and absent-phase KKT audit continue to select condensate
 support. Exact-zero elements retain their excluded support and unavailable
 one-sided derivatives. Tests include trace fractions below finite-difference
 resolution and deliberately corrupted potentials and scalar energies.
+# Independent published-liquid derivative audit
+
+When the selected EOS evaluator exposes an independent scalar derivative,
+the MELTS/H2 callback forwards it in the selected host basis and adds an
+independently differentiated host/H2 dilution scalar. The BSE wrapper preserves
+the derivative under its physical-to-native amount scaling. This permits the
+existing scalar audit to resolve trace phosphate left in the liquid after
+finite P vaporization. The native evaluator keeps its existing audit path.
+No finite-difference tolerance, equilibrium condition, or acceptance gate is
+relaxed.
