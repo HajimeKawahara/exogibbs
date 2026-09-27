@@ -80,6 +80,24 @@ atom column enters the plane, exact budget repair and atom normalization.
 This extension does not certify a zero-metal branch or uncalibrated material
 properties.
 
+With reconstructed water and an explicit dry-host He scalar, the lower bound
+also eliminates every nonnegative dissolved-He amount analytically:
+`min_nHe (G_He/RT - lambda_He*nHe) = -M_dry*a*exp(lambda_He-muHe0)`.
+This is linear in the declared dry-host masses and only changes the dry
+component costs. The provider receipt, actual retained-gas standard/gauge,
+primitive He amount and independent host correction must all match. Water
+and H2 have zero He-host mass, and the original H2 denominator is unchanged.
+The feasible upper bound explicitly reverses that elimination and evaluates
+the unreduced scalar at its exact atom-repaired He amount. A minimized He
+energy must never be used as a feasible upper bound. Other liquid models with
+He currently fail closed in this runner.
+
+`--alloy-tolerance-rt` (default `1e-10`) and `--alloy-max-nodes` (default
+`20000`) control fresh extended-alloy bounds. The stricter search target helps
+resolve the `1e-9` common-plane energy gate; neither option changes that gate
+or the chemical acceptance tolerance. A finite budget that does not resolve
+the bound remains explicitly unaccepted.
+
 The runner requires an accepted final pressure root bound to a fresh physical
 audit and the original phase-proof inputs. Exact mathematical input equality
 permits previously recorded proof reuse. Runtime receipt hashes may differ

@@ -8,6 +8,16 @@ define the complete dry-component simplex. A component can be excluded only
 by the declared unsupported provider domain or a zero total elemental
 inventory; a zero parent amount alone never justifies exclusion.
 
+For a source with dissolved He, supply `--exoeos-checkout` as well. The saved
+trace scalar contributes the exact analytic term
+`-M_dry*a*exp(lambda_He-muHe0)` after minimizing its nonnegative He amount.
+Its masses and capacity come from the independently replayed provider receipt,
+not the water mass-ratio convention. This linear term leaves the water/H2
+elimination, Hessian and original oxygen-capacity constraint unchanged.
+The complete receipt and interval cost reductions are retained in the bound.
+Actual finite-primal energies undo the He minimization before evaluating the
+primitive He amount. No empirical wet-BSE He calibration is inferred.
+
 At fixed dry amounts, write `N=sum(n_dry)`,
 `S=sum(W_i n_i)/W_water`, and `log C=log_a+(w.n)/(T k.n)` using the
 **actual binary64 coefficients supplied by ExoEOS**. Let `q_H2` be the

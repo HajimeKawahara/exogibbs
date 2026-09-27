@@ -38,7 +38,7 @@ def water_common_plane(parameters, binding, proof):
         'water_standard_offset_rt':binding['external_h2o_melts_standard_offset_rt']}
 
 
-def water_primal_energy(parameters, binding, properties, plane, amounts, dissolved_h2):
+def water_primal_energy(parameters, binding, properties, plane, amounts, dissolved_h2, dissolved_he=0):
     """Enclose G of the exact finite, atom-repaired wet-host composition."""
     values = [Fraction(v) for v in amounts]
     h2 = Fraction(dissolved_h2)
@@ -48,7 +48,9 @@ def water_primal_energy(parameters, binding, properties, plane, amounts, dissolv
     if (len(values) != len(properties['component_order']) or h2 < 0 or any(v < 0 for v in values)
             or any(v for i,v in enumerate(values) if i not in [*active,water])):
         raise ValueError('The feasible primal uses an unsupported water-host component.')
-    insertion = water_insertion_value(parameters, [values[i] for i in active], values[water], h2)
+    from m2_helium_global import undo_helium_elimination
+    original, helium_energy = undo_helium_elimination(parameters,binding,[values[i] for i in active],dissolved_he)
+    insertion = water_insertion_value(original, [values[i] for i in active], values[water], h2)
     basis = properties['basis']
     columns = basis['component_element_matrix']
     elements = basis['element_order']
@@ -57,4 +59,4 @@ def water_primal_energy(parameters, binding, properties, plane, amounts, dissolv
     work = sum((_I(n)*sum((_I(Fraction(c))*_I(float(plane.get(e,0.)))
                 for e,c in zip(elements,col)),_I(0)) for n,col in zip(values,columns)),_I(0))
     work += _I(2*h2)*_I(float(plane['H']))
-    return insertion+work
+    return insertion+work+helium_energy
