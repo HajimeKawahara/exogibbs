@@ -299,3 +299,9 @@ The linear standard term leaves alloy curvature unchanged. A source/global
 closure with this alternative standard is a new conditional calculation;
 it does not certify high-pressure, high-temperature Fe-Si-O-H material
 applicability or replace archived baseline results.
+
+For a saved accepted pressure root, the supplementary
+[alloy insertion bound](m2_alloy_insertion_bound.md) evaluates a rigorous
+outward lower bound against the fixed numerical elemental potential. This
+quantifies rounding uncertainty separately from the exact self-tangent
+convexity result, retaining negative bounds and the original selection status.

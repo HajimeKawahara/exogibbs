@@ -1,0 +1,643 @@
+Pinned ExoEOS integration (no skips)	Set up job	﻿2026-09-27T04:30:00.8855537Z Current runner version: '2.337.0'
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8884903Z ##[group]Runner Image Provisioner
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8885982Z Hosted Compute Agent
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8886578Z Version: 20260828.587
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8887246Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8888110Z Build Date: 2026-08-28T16:44:25Z
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8888794Z Worker ID: {84fca29d-2a81-4ba0-ae57-3d974c830deb}
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8889576Z Azure Region: northcentralus
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8890202Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8891760Z ##[group]Operating System
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8892518Z Ubuntu
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8893386Z 24.04.5
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8894046Z LTS
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8894596Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8895202Z ##[group]Runner Image
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8895916Z Image: ubuntu-24.04
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8896494Z Version: 20260920.314.1
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8897621Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260920.314/images/ubuntu/Ubuntu2404-Readme.md
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8899471Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260920.314
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8900557Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8901885Z ##[group]GITHUB_TOKEN Permissions
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8904520Z Checks: write
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8905321Z Contents: read
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8905990Z Metadata: read
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8906577Z PullRequests: write
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8907157Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8909499Z Secret source: Actions
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8910536Z Cache mode: write
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.8911364Z Prepare workflow directory
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.9499798Z Prepare all required actions
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:00.9579293Z Getting action download info
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:01.2157723Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:01.3091705Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:01.4036887Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+Pinned ExoEOS integration (no skips)	Set up job	2026-09-27T04:30:01.6170136Z Complete job name: Pinned ExoEOS integration (no skips)
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	﻿2026-09-27T04:30:01.7029625Z ##[group]Run actions/checkout@v4
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7030575Z with:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7031019Z   fetch-depth: 0
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7031514Z   repository: HajimeKawahara/exogibbs
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7035616Z   token: ***
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7036065Z   ssh-strict: true
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7036507Z   ssh-user: git
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7036953Z   persist-credentials: true
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7037450Z   clean: true
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7037898Z   sparse-checkout-cone-mode: true
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7038430Z   fetch-tags: false
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7038876Z   show-progress: true
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7039317Z   lfs: false
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7039735Z   submodules: false
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7040183Z   set-safe-directory: true
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7040689Z   allow-unsafe-pr-checkout: false
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7041449Z env:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7041896Z   JAX_PLATFORMS: cpu
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7042354Z   JAX_ENABLE_X64: 1
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.7042785Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8130986Z Syncing repository: HajimeKawahara/exogibbs
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8134421Z ##[group]Getting Git version info
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8135676Z Working directory is '/home/runner/work/exogibbs/exogibbs'
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8137447Z [command]/usr/bin/git version
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8181968Z git version 2.55.0
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8215833Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8231835Z Temporarily overriding HOME='/home/runner/work/_temp/eae3c332-e696-4c83-9874-b4a3c94fade4' before making global git config changes
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8233815Z Adding repository directory to the temporary git global config as a safe directory
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8235719Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/exogibbs/exogibbs
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8298863Z Deleting the contents of '/home/runner/work/exogibbs/exogibbs'
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8303419Z ##[group]Initializing the repository
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8308524Z [command]/usr/bin/git init /home/runner/work/exogibbs/exogibbs
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8412440Z hint: Using 'master' as the name for the initial branch. This default branch name
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8436050Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8437844Z hint: to use in all of your new repositories, which will suppress this warning,
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8439429Z hint: call:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8440300Z hint:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8441391Z hint: 	git config --global init.defaultBranch <name>
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8442685Z hint:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8444278Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8449561Z hint: 'development'. The just-created branch can be renamed via this command:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8451124Z hint:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8452088Z hint: 	git branch -m <name>
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8453396Z hint:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8454755Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8456740Z Initialized empty Git repository in /home/runner/work/exogibbs/exogibbs/.git/
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8460147Z [command]/usr/bin/git remote add origin https://github.com/HajimeKawahara/exogibbs
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8489509Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8490961Z ##[group]Disabling automatic garbage collection
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8495628Z [command]/usr/bin/git config --local gc.auto 0
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8564964Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8566340Z ##[group]Setting up auth
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8567536Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.8591775Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.9067023Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.9157972Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.9456407Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.9497996Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.9761403Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.9855649Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.9857020Z ##[group]Fetching the repository
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:01.9859168Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +a16258a937287312917dd087b5391ca318b03340:refs/remotes/pull/231/merge
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7867949Z From https://github.com/HajimeKawahara/exogibbs
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7869709Z  * [new branch]      develop                                  -> origin/develop
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7871388Z  * [new branch]      docs/cns-reference                       -> origin/docs/cns-reference
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7873492Z  * [new branch]      docs/subneptune-validation               -> origin/docs/subneptune-validation
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7875485Z  * [new branch]      examples/restore-documented-cns          -> origin/examples/restore-documented-cns
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7877581Z  * [new branch]      feat/cns-foundation                      -> origin/feat/cns-foundation
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7878908Z  * [new branch]      feat/cns-he-source                       -> origin/feat/cns-he-source
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7880224Z  * [new branch]      feat/cns-melts-carbon                    -> origin/feat/cns-melts-carbon
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7881576Z  * [new branch]      feat/cns-reduced-source                  -> origin/feat/cns-reduced-source
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7883819Z  * [new branch]      feat/cns-source-scans                    -> origin/feat/cns-source-scans
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7885770Z  * [new branch]      feat/finite-hydrogen-gas-exchange        -> origin/feat/finite-hydrogen-gas-exchange
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7887436Z  * [new branch]      feat/fixed-phase-local-equilibrium       -> origin/feat/fixed-phase-local-equilibrium
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7888757Z  * [new branch]      feat/m1-boundary-contract                -> origin/feat/m1-boundary-contract
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7889975Z  * [new branch]      feat/m1-chemistry-connection             -> origin/feat/m1-chemistry-connection
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7891242Z  * [new branch]      feat/m2-common-gas-contact               -> origin/feat/m2-common-gas-contact
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7892569Z  * [new branch]      feat/m2-common-gibbs                     -> origin/feat/m2-common-gibbs
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7894351Z  * [new branch]      feat/m2-common-reference-transfer        -> origin/feat/m2-common-reference-transfer
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7895761Z  * [new branch]      feat/m2-constrained-metal-selection      -> origin/feat/m2-constrained-metal-selection
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7897064Z  * [new branch]      feat/m2-expanded-contact                 -> origin/feat/m2-expanded-contact
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7898369Z  * [new branch]      feat/m2-finite-background-condensates    -> origin/feat/m2-finite-background-condensates
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7899709Z  * [new branch]      feat/m2-finite-background-gas            -> origin/feat/m2-finite-background-gas
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7900929Z  * [new branch]      feat/m2-global-stability                 -> origin/feat/m2-global-stability
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7902095Z  * [new branch]      feat/m2-host-stability                   -> origin/feat/m2-host-stability
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7903431Z  * [new branch]      feat/m2-host-stability-search            -> origin/feat/m2-host-stability-search
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7904798Z  * [new branch]      feat/m2-incipient-metal-diagnostics      -> origin/feat/m2-incipient-metal-diagnostics
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7906085Z  * [new branch]      feat/m2-local-convexity                  -> origin/feat/m2-local-convexity
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7907496Z  * [new branch]      feat/m2-metal-selection                  -> origin/feat/m2-metal-selection
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7908671Z  * [new branch]      feat/m2-omitted-gas-screen               -> origin/feat/m2-omitted-gas-screen
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7909958Z  * [new branch]      feat/m2-oxygen-standard-scenario         -> origin/feat/m2-oxygen-standard-scenario
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7911377Z  * [new branch]      feat/m2-physical-integration             -> origin/feat/m2-physical-integration
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7912818Z  * [new branch]      feat/m2-standards-hydrogen-audit         -> origin/feat/m2-standards-hydrogen-audit
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7914440Z  * [new branch]      feat/metal-silicate-reference            -> origin/feat/metal-silicate-reference
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7915837Z  * [new branch]      feat/native-metal-equilibrium-reference  -> origin/feat/native-metal-equilibrium-reference
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7917250Z  * [new branch]      feat/solution-activity-adapter           -> origin/feat/solution-activity-adapter
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7918570Z  * [new branch]      feat/subneptune-finite-sulfide           -> origin/feat/subneptune-finite-sulfide
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7919889Z  * [new branch]      feat/subneptune-hydrogen-closure         -> origin/feat/subneptune-hydrogen-closure
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7921195Z  * [new branch]      feat/subneptune-melts-coupling           -> origin/feat/subneptune-melts-coupling
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7922551Z  * [new branch]      feat/subneptune-sulfur-carbon-source     -> origin/feat/subneptune-sulfur-carbon-source
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7924022Z  * [new branch]      fix/cns-default-seed-scale               -> origin/fix/cns-default-seed-scale
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7925603Z  * [new branch]      fix/m1-contact-inventory-bounds          -> origin/fix/m1-contact-inventory-bounds
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7927215Z  * [new branch]      fix/m1-retained-column-convergence       -> origin/fix/m1-retained-column-convergence
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7928659Z  * [new branch]      fix/m1-zero-condensate                   -> origin/fix/m1-zero-condensate
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7930079Z  * [new branch]      fix/m2-atmosphere-scalar-gradient        -> origin/fix/m2-atmosphere-scalar-gradient
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7931436Z  * [new branch]      fix/m2-metal-selection-develop           -> origin/fix/m2-metal-selection-develop
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7932728Z  * [new branch]      fix/m2-published-liquid-audit            -> origin/fix/m2-published-liquid-audit
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7934436Z  * [new branch]      fix/m2-selected-host-stability           -> origin/fix/m2-selected-host-stability
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7936106Z  * [new branch]      fix/optimizer-support-search             -> origin/fix/optimizer-support-search
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7938218Z  * [new branch]      integrate/m2-metal-selection-develop     -> origin/integrate/m2-metal-selection-develop
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7939733Z  * [new branch]      integrate/optimizer-stack-develop        -> origin/integrate/optimizer-stack-develop
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7941202Z  * [new branch]      integrate/support-contracts-develop      -> origin/integrate/support-contracts-develop
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7943523Z  * [new branch]      integration/m2-readiness-develop         -> origin/integration/m2-readiness-develop
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7945877Z  * [new branch]      log_domain_rainout_warm_start            -> origin/log_domain_rainout_warm_start
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7947866Z  * [new branch]      main                                     -> origin/main
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7949456Z  * [new branch]      perf/m2-canonical-interior-seed          -> origin/perf/m2-canonical-interior-seed
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7951424Z  * [new branch]      perf/m2-warm-atmosphere                  -> origin/perf/m2-warm-atmosphere
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7952709Z  * [new branch]      refactor/exact-attempt-contracts         -> origin/refactor/exact-attempt-contracts
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7954573Z  * [new branch]      refactor/explicit-support-initialization -> origin/refactor/explicit-support-initialization
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7956527Z  * [new branch]      refactor/finite-barrier-lifecycle-contracts -> origin/refactor/finite-barrier-lifecycle-contracts
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7958023Z  * [new branch]      refactor/optimizer-exact-contract        -> origin/refactor/optimizer-exact-contract
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7959317Z  * [new branch]      refactor/optimizer-gas-seed              -> origin/refactor/optimizer-gas-seed
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7960556Z  * [new branch]      refactor/post-v06-audit                  -> origin/refactor/post-v06-audit
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7961866Z  * [new branch]      test/optimizer-documented-acceptance     -> origin/test/optimizer-documented-acceptance
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7963368Z  * [new branch]      validation/m2-saved-source-seed          -> origin/validation/m2-saved-source-seed
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7964420Z  * [new tag]         v0.1.0                                   -> v0.1.0
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7965224Z  * [new tag]         v0.2.0                                   -> v0.2.0
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7966030Z  * [new tag]         v0.2.1                                   -> v0.2.1
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7966850Z  * [new tag]         v0.2.2                                   -> v0.2.2
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7967661Z  * [new tag]         v0.2.3                                   -> v0.2.3
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7968461Z  * [new tag]         v0.2.4                                   -> v0.2.4
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7969257Z  * [new tag]         v0.3.0                                   -> v0.3.0
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7970049Z  * [new tag]         v0.3.1                                   -> v0.3.1
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7970850Z  * [new tag]         v0.3.2                                   -> v0.3.2
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7971651Z  * [new tag]         v0.3.3                                   -> v0.3.3
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7972448Z  * [new tag]         v0.3.4                                   -> v0.3.4
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7973789Z  * [new tag]         v0.3.5                                   -> v0.3.5
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7974632Z  * [new tag]         v0.3.6                                   -> v0.3.6
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7975435Z  * [new tag]         v0.3.7                                   -> v0.3.7
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7976229Z  * [new tag]         v0.3.8                                   -> v0.3.8
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7977020Z  * [new tag]         v0.3.9                                   -> v0.3.9
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7977814Z  * [new tag]         v0.4.0                                   -> v0.4.0
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7978610Z  * [new tag]         v0.5.0                                   -> v0.5.0
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7979390Z  * [new tag]         v0.6.0                                   -> v0.6.0
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7980282Z  * [new ref]         a16258a937287312917dd087b5391ca318b03340 -> pull/231/merge
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7982330Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7983365Z ##[group]Determining the checkout info
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7984349Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7984935Z [command]/usr/bin/git sparse-checkout disable
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.7986690Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.8024801Z ##[group]Checking out the ref
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:03.8025762Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/231/merge
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0772132Z Note: switching to 'refs/remotes/pull/231/merge'.
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0784132Z 
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0785043Z You are in 'detached HEAD' state. You can look around, make experimental
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0786574Z changes and commit them, and you can discard any commits you make in this
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0788032Z state without impacting any branches by switching back to a branch.
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0788874Z 
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0789447Z If you want to create a new branch to retain commits you create, you may
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0790794Z do so (now or later) by using -c with the switch command. Example:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0791706Z 
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0792078Z   git switch -c <new-branch-name>
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0792671Z 
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0793648Z Or undo this operation with:
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0794224Z 
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0794546Z   git switch -
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0794954Z 
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0795744Z Turn off this advice by setting config variable advice.detachedHead to false
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0796793Z 
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0798045Z HEAD is now at a16258a Merge 90afae96efdb4a9597a0edb58325ef7d56b6ae41 into b6608a5a08409fcae4deaf61eae7934dd099529d
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0803181Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0853422Z [command]/usr/bin/git log -1 --format=%H
+Pinned ExoEOS integration (no skips)	Checkout ExoGibbs	2026-09-27T04:30:04.0881139Z a16258a937287312917dd087b5391ca318b03340
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	﻿2026-09-27T04:30:04.1330930Z ##[group]Run actions/checkout@v4
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1332195Z with:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1333448Z   repository: HajimeKawahara/exoeos
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1334818Z   ref: f3c30deb4bc9502fdec0fa6abc1b3f00df4f800e
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1336219Z   path: providers/exoeos
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1337281Z   fetch-depth: 0
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1347180Z   token: ***
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1348125Z   ssh-strict: true
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1349121Z   ssh-user: git
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1350128Z   persist-credentials: true
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1351201Z   clean: true
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1352181Z   sparse-checkout-cone-mode: true
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1353465Z   fetch-tags: false
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1354448Z   show-progress: true
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1355426Z   lfs: false
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1356313Z   submodules: false
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1357334Z   set-safe-directory: true
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1358454Z   allow-unsafe-pr-checkout: false
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1359603Z env:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1360461Z   JAX_PLATFORMS: cpu
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1361477Z   JAX_ENABLE_X64: 1
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.1362412Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2324969Z Syncing repository: HajimeKawahara/exoeos
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2333925Z ##[group]Getting Git version info
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2345808Z Working directory is '/home/runner/work/exogibbs/exogibbs/providers/exoeos'
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2389538Z [command]/usr/bin/git version
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2437153Z git version 2.55.0
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2464356Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2479463Z Temporarily overriding HOME='/home/runner/work/_temp/ed349b3a-632e-486c-a5d6-bed9d76aafca' before making global git config changes
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2484880Z Adding repository directory to the temporary git global config as a safe directory
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2489541Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/exogibbs/exogibbs/providers/exoeos
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2530886Z ##[group]Initializing the repository
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2536120Z [command]/usr/bin/git init /home/runner/work/exogibbs/exogibbs/providers/exoeos
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2590213Z hint: Using 'master' as the name for the initial branch. This default branch name
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2594987Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2598930Z hint: to use in all of your new repositories, which will suppress this warning,
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2602036Z hint: call:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2604041Z hint:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2606209Z hint: 	git config --global init.defaultBranch <name>
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2608777Z hint:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2611755Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2615961Z hint: 'development'. The just-created branch can be renamed via this command:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2618938Z hint:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2620564Z hint: 	git branch -m <name>
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2622434Z hint:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2625167Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2655287Z Initialized empty Git repository in /home/runner/work/exogibbs/exogibbs/providers/exoeos/.git/
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2666916Z [command]/usr/bin/git remote add origin https://github.com/HajimeKawahara/exoeos
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2673532Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2676387Z ##[group]Disabling automatic garbage collection
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2678991Z [command]/usr/bin/git config --local gc.auto 0
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2698064Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2700775Z ##[group]Setting up auth
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2706114Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.2749253Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.3021544Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.3077232Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.3360590Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.3413639Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.3684096Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.3728416Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.3731265Z ##[group]Fetching the repository
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:04.3741616Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0894898Z From https://github.com/HajimeKawahara/exoeos
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0896442Z  * [new branch]      chabrier_debras         -> origin/chabrier_debras
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0897780Z  * [new branch]      check_bugs              -> origin/check_bugs
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0898974Z  * [new branch]      composite_density_provider -> origin/composite_density_provider
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0900535Z  * [new branch]      dl_CD                   -> origin/dl_CD
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0901893Z  * [new branch]      feat/cns-gas-properties -> origin/feat/cns-gas-properties
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0903567Z  * [new branch]      feat/fe-si-o-h-control  -> origin/feat/fe-si-o-h-control
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0905081Z  * [new branch]      feat/fe-si-o-liquid     -> origin/feat/fe-si-o-liquid
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0906533Z  * [new branch]      feat/fe-si-o-reference  -> origin/feat/fe-si-o-reference
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0907984Z  * [new branch]      feat/m2-candidate-basis -> origin/feat/m2-candidate-basis
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0909621Z  * [new branch]      feat/m2-hydrogen-standard-scenario -> origin/feat/m2-hydrogen-standard-scenario
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0911454Z  * [new branch]      feat/m2-liquid-mixing-expression -> origin/feat/m2-liquid-mixing-expression
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0913440Z  * [new branch]      feat/m2-magnesium-transfer-reference -> origin/feat/m2-magnesium-transfer-reference
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0915400Z  * [new branch]      feat/m2-material-calibration-domain -> origin/feat/m2-material-calibration-domain
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0916910Z  * [new branch]      feat/m2-material-contract -> origin/feat/m2-material-contract
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0917966Z  * [new branch]      feat/m2-material-domain -> origin/feat/m2-material-domain
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0919139Z  * [new branch]      feat/m2-material-domain-audit -> origin/feat/m2-material-domain-audit
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0920343Z  * [new branch]      feat/m2-material-prescription -> origin/feat/m2-material-prescription
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0921564Z  * [new branch]      feat/m2-material-transfer-standards -> origin/feat/m2-material-transfer-standards
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0922876Z  * [new branch]      feat/m2-native-candidate-coordinates -> origin/feat/m2-native-candidate-coordinates
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0924399Z  * [new branch]      feat/m2-reaction-calibration -> origin/feat/m2-reaction-calibration
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0925764Z  * [new branch]      feat/melts-carbon-provider -> origin/feat/melts-carbon-provider
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0926877Z  * [new branch]      feat/melts-liquid-evaluator -> origin/feat/melts-liquid-evaluator
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0927972Z  * [new branch]      feat/melts-silicate-reference -> origin/feat/melts-silicate-reference
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0929197Z  * [new branch]      fix/m2-published-liquid-derivatives -> origin/fix/m2-published-liquid-derivatives
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0930244Z  * [new branch]      learn_PREOS             -> origin/learn_PREOS
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0931033Z  * [new branch]      learn_zhang_duan        -> origin/learn_zhang_duan
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0931763Z  * [new branch]      main                    -> origin/main
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0932428Z  * [new branch]      marcum                  -> origin/marcum
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0933711Z  * [new branch]      mass_density            -> origin/mass_density
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0934650Z  * [new branch]      validation/m2-combined-materials -> origin/validation/m2-combined-materials
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0935573Z  * [new tag]         v0.1.0                  -> v0.1.0
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0937922Z [command]/usr/bin/git rev-parse --verify --quiet f3c30deb4bc9502fdec0fa6abc1b3f00df4f800e^{object}
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0949823Z f3c30deb4bc9502fdec0fa6abc1b3f00df4f800e
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0954802Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0955489Z ##[group]Determining the checkout info
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0956801Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.0962849Z [command]/usr/bin/git sparse-checkout disable
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1015721Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1082852Z ##[group]Checking out the ref
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1087881Z [command]/usr/bin/git checkout --progress --force f3c30deb4bc9502fdec0fa6abc1b3f00df4f800e
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1333668Z Note: switching to 'f3c30deb4bc9502fdec0fa6abc1b3f00df4f800e'.
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1334193Z 
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1334521Z You are in 'detached HEAD' state. You can look around, make experimental
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1335610Z changes and commit them, and you can discard any commits you make in this
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1336396Z state without impacting any branches by switching back to a branch.
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1337152Z 
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1337592Z If you want to create a new branch to retain commits you create, you may
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1338709Z do so (now or later) by using -c with the switch command. Example:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1339434Z 
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1339715Z   git switch -c <new-branch-name>
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1340230Z 
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1340513Z Or undo this operation with:
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1341026Z 
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1341295Z   git switch -
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1341615Z 
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1342181Z Turn off this advice by setting config variable advice.detachedHead to false
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1343418Z 
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1343941Z HEAD is now at f3c30de examples: expose independent published-liquid scalar derivatives
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1346731Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1390776Z [command]/usr/bin/git log -1 --format=%H
+Pinned ExoEOS integration (no skips)	Checkout pinned ExoEOS provider	2026-09-27T04:30:05.1422308Z f3c30deb4bc9502fdec0fa6abc1b3f00df4f800e
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	﻿2026-09-27T04:30:05.1674892Z ##[group]Run actions/setup-python@v5
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1675211Z with:
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1675412Z   python-version: 3.11
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1675645Z   check-latest: false
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1678085Z   token: ***
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1678300Z   update-environment: true
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1678545Z   allow-prereleases: false
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1678776Z   freethreaded: false
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1678986Z env:
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1679169Z   JAX_PLATFORMS: cpu
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1679393Z   JAX_ENABLE_X64: 1
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.1679596Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.3119337Z ##[group]Installed versions
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.3209207Z (node:2370) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.3210363Z (Use `node --trace-deprecation ...` to show where the warning was created)
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.3211518Z Successfully set up CPython (3.11.16)
+Pinned ExoEOS integration (no skips)	Set up Python 3.11	2026-09-27T04:30:05.3212415Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	﻿2026-09-27T04:30:05.3410965Z ##[group]Run python -m pip install -e . -e ./providers/exoeos \
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3411837Z ^[[36;1mpython -m pip install -e . -e ./providers/exoeos \^[[0m
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3412568Z ^[[36;1m  'jax[cpu]==0.4.30' 'numpy==1.26.4' 'scipy==1.13.1' 'pytest==8.3.5'^[[0m
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3749306Z shell: /usr/bin/bash -e {0}
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3749679Z env:
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3749929Z   JAX_PLATFORMS: cpu
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3750195Z   JAX_ENABLE_X64: 1
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3776106Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3776940Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3777638Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3778283Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3778968Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3779718Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:05.3780355Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:06.0946702Z Obtaining file:///home/runner/work/exogibbs/exogibbs
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:06.0964871Z   Installing build dependencies: started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:06.9105438Z   Installing build dependencies: finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:06.9111567Z   Checking if build backend supports build_editable: started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:07.2893514Z   Checking if build backend supports build_editable: finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:07.2902710Z   Getting requirements to build editable: started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:08.5254556Z   Getting requirements to build editable: finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:08.5265404Z   Preparing editable metadata (pyproject.toml): started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:09.0289698Z   Preparing editable metadata (pyproject.toml): finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:09.0321847Z Obtaining file:///home/runner/work/exogibbs/exogibbs/providers/exoeos
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:09.0339516Z   Installing build dependencies: started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:10.0945129Z   Installing build dependencies: finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:10.0954099Z   Checking if build backend supports build_editable: started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:10.3749224Z   Checking if build backend supports build_editable: finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:10.3757716Z   Getting requirements to build editable: started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:10.8144241Z   Getting requirements to build editable: finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:10.8153508Z   Preparing editable metadata (pyproject.toml): started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.0630859Z   Preparing editable metadata (pyproject.toml): finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.1357183Z Collecting jax==0.4.30 (from jax[cpu]==0.4.30)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.1846085Z   Downloading jax-0.4.30-py3-none-any.whl.metadata (22 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.4020155Z Collecting numpy==1.26.4
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.4064996Z   Downloading numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (61 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.5406762Z Collecting scipy==1.13.1
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.5455862Z   Downloading scipy-1.13.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (60 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.5804738Z Collecting pytest==8.3.5
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.5846492Z   Downloading pytest-8.3.5-py3-none-any.whl.metadata (7.6 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.6150616Z Collecting tqdm (from exogibbs==0.5.1.dev228+ga16258a93)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.6191623Z   Downloading tqdm-4.70.1-py3-none-any.whl.metadata (57 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.7499407Z Collecting pandas (from exogibbs==0.5.1.dev228+ga16258a93)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.7544349Z   Downloading pandas-3.0.6-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (79 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.7987625Z Collecting xarray (from exogibbs==0.5.1.dev228+ga16258a93)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.8030022Z   Downloading xarray-2026.7.0-py3-none-any.whl.metadata (12 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.8174046Z Collecting thermochem (from exogibbs==0.5.1.dev228+ga16258a93)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.8225510Z   Downloading thermochem-0.9.0-py2.py3-none-any.whl.metadata (3.3 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.8697636Z Collecting jaxlib<=0.4.30,>=0.4.27 (from jax==0.4.30->jax[cpu]==0.4.30)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.8754071Z   Downloading jaxlib-0.4.30-cp311-cp311-manylinux2014_x86_64.whl.metadata (1.0 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9024297Z Collecting ml-dtypes>=0.2.0 (from jax==0.4.30->jax[cpu]==0.4.30)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9064707Z   Downloading ml_dtypes-0.6.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (8.8 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9193410Z Collecting opt-einsum (from jax==0.4.30->jax[cpu]==0.4.30)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9231931Z   Downloading opt_einsum-3.4.0-py3-none-any.whl.metadata (6.3 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9369752Z Collecting iniconfig (from pytest==8.3.5)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9407419Z   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9520280Z Collecting packaging (from pytest==8.3.5)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9535312Z   Using cached packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9667827Z Collecting pluggy<2,>=1.5 (from pytest==8.3.5)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9706170Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9777963Z INFO: pip is looking at multiple versions of ml-dtypes to determine which version is compatible with other requirements. This could take a while.
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9783665Z Collecting ml-dtypes>=0.2.0 (from jax==0.4.30->jax[cpu]==0.4.30)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9823784Z   Downloading ml_dtypes-0.5.4-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (8.9 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:11.9986096Z Collecting python-dateutil>=2.8.2 (from pandas->exogibbs==0.5.1.dev228+ga16258a93)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.0023677Z   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.0151611Z Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas->exogibbs==0.5.1.dev228+ga16258a93)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.0189031Z   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.0331659Z Downloading jax-0.4.30-py3-none-any.whl (2.0 MB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.0499325Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 160.3 MB/s  0:00:00
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.0537760Z Downloading numpy-1.26.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (18.3 MB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.1150578Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18.3/18.3 MB 306.7 MB/s  0:00:00
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.1221722Z Downloading scipy-1.13.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (38.6 MB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.2755654Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 38.6/38.6 MB 255.0 MB/s  0:00:00
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.2797489Z Downloading pytest-8.3.5-py3-none-any.whl (343 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.2896091Z Downloading jaxlib-0.4.30-cp311-cp311-manylinux2014_x86_64.whl (79.6 MB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.6435646Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 79.6/79.6 MB 226.1 MB/s  0:00:00
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.6477106Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.6570939Z Downloading ml_dtypes-0.5.4-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (5.0 MB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.6793812Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.0/5.0 MB 246.2 MB/s  0:00:00
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.6832155Z Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.6887537Z Downloading opt_einsum-3.4.0-py3-none-any.whl (71 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.6921744Z Using cached packaging-26.3-py3-none-any.whl (129 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.6961537Z Downloading pandas-3.0.6-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (11.1 MB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.7360098Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.1/11.1 MB 295.0 MB/s  0:00:00
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.7401412Z Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.7466641Z Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.7530785Z Downloading thermochem-0.9.0-py2.py3-none-any.whl (420 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.7603567Z Downloading tqdm-4.70.1-py3-none-any.whl (80 kB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.7663814Z Downloading xarray-2026.7.0-py3-none-any.whl (1.4 MB)
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.7744408Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 215.5 MB/s  0:00:00
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.9815469Z Building wheels for collected packages: exogibbs, exoeos
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:12.9824113Z   Building editable for exogibbs (pyproject.toml): started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:13.6748625Z   Building editable for exogibbs (pyproject.toml): finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:13.6757606Z   Created wheel for exogibbs: filename=exogibbs-0.5.1.dev228+ga16258a93-0.editable-py3-none-any.whl size=16130 sha256=933e589aa946a50aa284fd68d7714fe88be576234e0d1f59e7bbcaa264f7c5ef
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:13.6760513Z   Stored in directory: /tmp/pip-ephem-wheel-cache-t14wcovn/wheels/11/cf/87/1e2d95fbbe059ae472e006ab9c7668d0e08bbf79bf9b32682a
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:13.6789291Z   Building editable for exoeos (pyproject.toml): started
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:13.9844325Z   Building editable for exoeos (pyproject.toml): finished with status 'done'
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:13.9850507Z   Created wheel for exoeos: filename=exoeos-0.1.1.dev75+gf3c30deb4-0.editable-py3-none-any.whl size=22469 sha256=10b59a8313a8b95a9e3eb8187c3677f543569e6ff416a0ce7240293ed5212cc6
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:13.9853276Z   Stored in directory: /tmp/pip-ephem-wheel-cache-t14wcovn/wheels/f8/dc/52/3f45643157f23f0b25be98942157b44cae4b68f553761ae7ff
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:13.9877822Z Successfully built exogibbs exoeos
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:14.0655030Z Installing collected packages: tqdm, six, pluggy, packaging, opt-einsum, numpy, iniconfig, scipy, python-dateutil, pytest, ml-dtypes, pandas, jaxlib, xarray, thermochem, jax, exogibbs, exoeos
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:27.5686382Z 
+Pinned ExoEOS integration (no skips)	Install packages and integration dependencies	2026-09-27T04:30:27.5701829Z Successfully installed exoeos-0.1.1.dev75+gf3c30deb4 exogibbs-0.5.1.dev228+ga16258a93 iniconfig-2.3.0 jax-0.4.30 jaxlib-0.4.30 ml-dtypes-0.5.4 numpy-1.26.4 opt-einsum-3.4.0 packaging-26.3 pandas-3.0.6 pluggy-1.6.0 pytest-8.3.5 python-dateutil-2.9.0.post0 scipy-1.13.1 six-1.17.0 thermochem-0.9.0 tqdm-4.70.1 xarray-2026.7.0
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	﻿2026-09-27T04:30:27.8002449Z ##[group]Run python - <<'PY'
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8002813Z ^[[36;1mpython - <<'PY'^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8003403Z ^[[36;1mimport inspect^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8003680Z ^[[36;1mfrom pathlib import Path^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8003950Z ^[[36;1mimport subprocess^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8004176Z ^[[36;1m^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8004361Z ^[[36;1mimport exoeos^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8004580Z ^[[36;1mimport exogibbs^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8004852Z ^[[36;1mfrom exoeos.ma_fe_si_o_h import MaFeSiOHLiquid^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8005246Z ^[[36;1mfrom exoeos.solution_gibbs import total_solution_state^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8005675Z ^[[36;1mfrom exoeos.ma_interval import ma_alloy_curvature_lower_bound^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8006020Z ^[[36;1m^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8006218Z ^[[36;1mroot = Path.cwd()^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8006487Z ^[[36;1mprovider = root / "providers/exoeos"^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8006818Z ^[[36;1massert subprocess.check_output(^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8007172Z ^[[36;1m    ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8007629Z ^[[36;1m).strip() == "f3c30deb4bc9502fdec0fa6abc1b3f00df4f800e"^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8008051Z ^[[36;1mfor module, source in ((exogibbs, root), (exoeos, provider)):^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8008457Z ^[[36;1m    actual = Path(module.__file__).resolve()^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8008842Z ^[[36;1m    expected = source / "src" / module.__name__ / "__init__.py"^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8009236Z ^[[36;1m    print(f"{module.__name__}: {actual}")^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8009601Z ^[[36;1m    assert actual == expected.resolve(), (actual, expected)^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8010008Z ^[[36;1massert exoeos.MaFeSiOHLiquid is MaFeSiOHLiquid^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8010414Z ^[[36;1massert exoeos.total_solution_state is total_solution_state^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8010806Z ^[[36;1massert callable(ma_alloy_curvature_lower_bound)^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8011239Z ^[[36;1massert (provider / "examples/melts_liquid_mixing.py").is_file()^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8011698Z ^[[36;1massert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8012090Z ^[[36;1m    provider / "src/exoeos/ma_fe_si_o_h.py"^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8012380Z ^[[36;1m).resolve()^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8012583Z ^[[36;1mPY^[[0m
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8081711Z shell: /usr/bin/bash -e {0}
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8081990Z env:
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8082191Z   JAX_PLATFORMS: cpu
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8082422Z   JAX_ENABLE_X64: 1
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8082709Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8083368Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8083804Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8084187Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8084577Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8084986Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:27.8085316Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:28.3616130Z exogibbs: /home/runner/work/exogibbs/exogibbs/src/exogibbs/__init__.py
+Pinned ExoEOS integration (no skips)	Assert provider API and actual import paths	2026-09-27T04:30:28.3617221Z exoeos: /home/runner/work/exogibbs/exogibbs/providers/exoeos/src/exoeos/__init__.py
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	﻿2026-09-27T04:30:28.4670591Z ##[group]Run mkdir -p results
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4670968Z ^[[36;1mmkdir -p results^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4671207Z ^[[36;1mtests=(^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4671521Z ^[[36;1m  tests/unittests/examples/metal_silicate_hydrogen_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4671983Z ^[[36;1m  tests/unittests/examples/metal_silicate_native_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4672444Z ^[[36;1m  tests/unittests/examples/metal_silicate_full_potential_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4672921Z ^[[36;1m  tests/unittests/examples/metal_silicate_common_gibbs_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4673715Z ^[[36;1m  tests/unittests/examples/metal_silicate_common_gas_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4674352Z ^[[36;1m  tests/unittests/examples/m2_atmosphere_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4674716Z ^[[36;1m  tests/unittests/examples/m2_finite_gas_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4675085Z ^[[36;1m  tests/unittests/examples/m2_host_stability_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4675502Z ^[[36;1m  tests/unittests/examples/m2_liquid_global_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4675965Z ^[[36;1m  tests/unittests/examples/metal_silicate_expanded_contact_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4676444Z ^[[36;1m  tests/unittests/examples/metal_silicate_phase_selection_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4676907Z ^[[36;1m  tests/unittests/examples/metal_silicate_melts_coupled_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4677360Z ^[[36;1m  tests/unittests/examples/metal_silicate_melts_archive_test.py^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4677730Z ^[[36;1m  tests/unittests/interop^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4677972Z ^[[36;1m)^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4678262Z ^[[36;1mpython -m pytest "${tests[@]}" --junitxml=results/provider.xml^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4678624Z ^[[36;1mpython - <<'PY'^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4678877Z ^[[36;1mfrom xml.etree import ElementTree^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4679138Z ^[[36;1m^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4679394Z ^[[36;1mreport = ElementTree.parse("results/provider.xml")^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4679747Z ^[[36;1mcases = report.findall(".//testcase")^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4680068Z ^[[36;1mskipped = report.findall(".//skipped")^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4680453Z ^[[36;1massert cases, "Provider integration collected no tests."^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4680928Z ^[[36;1massert not skipped, f"Provider integration skipped {len(skipped)} tests."^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4681431Z ^[[36;1mprint(f"Provider integration: {len(cases)} tests, zero skips.")^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4681791Z ^[[36;1mPY^[[0m
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4746151Z shell: /usr/bin/bash -e {0}
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4746410Z env:
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4746604Z   JAX_PLATFORMS: cpu
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4746824Z   JAX_ENABLE_X64: 1
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4747108Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4747566Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4747994Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4748404Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4748792Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4749182Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:28.4749509Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:30.6342533Z ============================= test session starts ==============================
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:30.6343704Z platform linux -- Python 3.11.16, pytest-8.3.5, pluggy-1.6.0
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:30.6344240Z rootdir: /home/runner/work/exogibbs/exogibbs
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:30.6344800Z configfile: pyproject.toml
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:30.6345331Z collected 242 items
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:30.6345629Z 
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:30:48.4740094Z tests/unittests/examples/metal_silicate_hydrogen_test.py ...........     [  4%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:31:04.5995579Z tests/unittests/examples/metal_silicate_native_test.py ........          [  7%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:31:04.7412540Z tests/unittests/examples/metal_silicate_full_potential_test.py .......   [ 10%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:31:06.6612931Z tests/unittests/examples/metal_silicate_common_gibbs_test.py ........... [ 15%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:31:07.4460977Z ............                                                             [ 20%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:31:55.9566190Z tests/unittests/examples/metal_silicate_common_gas_test.py ...........   [ 24%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:32:41.3724326Z tests/unittests/examples/m2_atmosphere_test.py .................         [ 31%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:18.7895280Z tests/unittests/examples/m2_finite_gas_test.py ..............            [ 37%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:18.9037806Z tests/unittests/examples/m2_host_stability_test.py ..................... [ 46%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:18.9043162Z                                                                          [ 46%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:19.0837733Z tests/unittests/examples/m2_liquid_global_test.py ...........            [ 50%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:20.6354092Z tests/unittests/examples/metal_silicate_expanded_contact_test.py ...     [ 52%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:20.7208608Z tests/unittests/examples/metal_silicate_phase_selection_test.py ........ [ 55%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:24.1668749Z .................................                                        [ 69%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:24.2660573Z tests/unittests/examples/metal_silicate_melts_coupled_test.py .......... [ 73%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:25.6624607Z ................                                                         [ 79%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:25.9824113Z tests/unittests/examples/metal_silicate_melts_archive_test.py ....       [ 81%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:26.8083378Z tests/unittests/interop/exoeos_solution_test.py ........................ [ 91%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:26.8340605Z ..........                                                               [ 95%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4302532Z tests/unittests/interop/exoeos_test.py ...........                       [100%]
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4304562Z 
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4305375Z =============================== warnings summary ===============================
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4307381Z tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4309897Z tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4313342Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4314929Z     fx = wrapped_fun(x)
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4315185Z 
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4315814Z tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4317082Z tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4318373Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4319349Z     g = append(wrapped_grad(x), 0.0)
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4319556Z 
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4319810Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4320474Z - generated xml file: /home/runner/work/exogibbs/exogibbs/results/provider.xml -
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:27.4321062Z ================= 242 passed, 4 warnings in 238.56s (0:03:58) ==================
+Pinned ExoEOS integration (no skips)	Run offline provider connections and require zero skips	2026-09-27T04:34:36.5365053Z Provider integration: 242 tests, zero skips.
+Pinned ExoEOS integration (no skips)	Upload provider integration results	﻿2026-09-27T04:34:36.5458324Z ##[group]Run actions/upload-artifact@v4
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5458659Z with:
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5458889Z   name: Pinned ExoEOS Integration Results
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5459205Z   path: results/provider.xml
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5459478Z   if-no-files-found: warn
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5459749Z   compression-level: 6
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5459984Z   overwrite: false
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5460218Z   include-hidden-files: false
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5460478Z env:
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5460676Z   JAX_PLATFORMS: cpu
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5460903Z   JAX_ENABLE_X64: 1
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5461199Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5461678Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5462153Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5462576Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5463289Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5463898Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.5464259Z ##[endgroup]
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.7163847Z (node:3325) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.7165609Z (Use `node --trace-deprecation ...` to show where the warning was created)
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.7210976Z With the provided path, there will be 1 file uploaded
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.7217512Z Artifact name is valid!
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.7233574Z Root directory input is valid!
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:36.9829836Z Beginning upload of artifact content to blob storage
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:37.0037611Z (node:3325) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:37.1206508Z Uploaded bytes 5554
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:37.1566717Z Finished uploading artifact content to blob storage!
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:37.1568740Z SHA256 digest of uploaded artifact zip is 10c4f4c11c0c21190b57d7d974c803572ded6c1c5ed17db41fb860731eeb83b7
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:37.1570651Z Finalizing artifact upload
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:37.3480384Z Artifact Pinned ExoEOS Integration Results.zip successfully finalized. Artifact ID 10923621928
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:37.3482678Z Artifact Pinned ExoEOS Integration Results has been successfully uploaded! Final size is 5554 bytes. Artifact ID is 10923621928
+Pinned ExoEOS integration (no skips)	Upload provider integration results	2026-09-27T04:34:37.3486538Z Artifact download URL: https://github.com/HajimeKawahara/exogibbs/actions/runs/36294474447/artifacts/10923621928
+Pinned ExoEOS integration (no skips)	Post Set up Python 3.11	﻿2026-09-27T04:34:37.3668848Z Post job cleanup.
+Pinned ExoEOS integration (no skips)	Post Set up Python 3.11	2026-09-27T04:34:37.4908087Z (node:3337) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+Pinned ExoEOS integration (no skips)	Post Set up Python 3.11	2026-09-27T04:34:37.4910754Z (Use `node --trace-deprecation ...` to show where the warning was created)
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	﻿2026-09-27T04:34:37.5086454Z Post job cleanup.
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6158645Z [command]/usr/bin/git version
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6214402Z git version 2.55.0
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6285743Z Temporarily overriding HOME='/home/runner/work/_temp/0240f732-bc3d-400e-b4b1-483cbce0b581' before making global git config changes
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6287415Z Adding repository directory to the temporary git global config as a safe directory
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6292522Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/exogibbs/exogibbs/providers/exoeos
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6342281Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6391945Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6656078Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6689148Z http.https://github.com/.extraheader
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6704065Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.6741656Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.7081600Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pinned ExoEOS integration (no skips)	Post Checkout pinned ExoEOS provider	2026-09-27T04:34:37.7122916Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	﻿2026-09-27T04:34:37.7645943Z Post job cleanup.
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.8553793Z [command]/usr/bin/git version
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.8573647Z git version 2.55.0
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.8704439Z Temporarily overriding HOME='/home/runner/work/_temp/8df834a8-2ef7-491e-9025-10b3579fe5dc' before making global git config changes
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.8734522Z Adding repository directory to the temporary git global config as a safe directory
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.8735735Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/exogibbs/exogibbs
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.8815177Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.8817543Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.8960394Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.8991164Z http.https://github.com/.extraheader
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.9002892Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.9044233Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.9318540Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Pinned ExoEOS integration (no skips)	Post Checkout ExoGibbs	2026-09-27T04:34:37.9356417Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Pinned ExoEOS integration (no skips)	Complete job	﻿2026-09-27T04:34:37.9848820Z Cleaning up orphan processes
+Pinned ExoEOS integration (no skips)	Complete job	2026-09-27T04:34:38.0182031Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
