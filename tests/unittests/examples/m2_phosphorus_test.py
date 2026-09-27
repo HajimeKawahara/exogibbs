@@ -78,3 +78,20 @@ def test_unsupported_models_options_and_four_component_bounds_fail(eos_checkout,
         build(eos_checkout, tmp_path, phosphorus_options={"assume_error_bound": True})
     with pytest.raises(ValueError, match="finite number"):
         build(eos_checkout, tmp_path, phosphorus_options={"standard_shift_kcal_mol": True})
+
+
+def test_zero_phosphorus_retains_independent_scalar_audit_on_present_support(eos_checkout, tmp_path):
+    extended = build(eos_checkout, tmp_path)
+    base = SOURCE.build_expanded_bse_problem(
+        eos_checkout / "examples/m2_material/bse_inventory.json", eos_checkout,
+        tmp_path, sys.executable, gas_model="janaf_condensed", initialization="canonical")
+    n = np.array([.95, .003, .007, .04, 0.])
+    state = extended[2]["metal"](2173.15, 1., n)
+    old = base[2]["metal"](2173.15, 1., n[:4])
+    energy, gradient = extended[2]["metal"].energy_value_and_grad_rt(2173.15, 1., n)
+    assert energy == pytest.approx(state.gibbs_rt, abs=1e-12)
+    assert energy == pytest.approx(old.gibbs_rt, abs=1e-12)
+    np.testing.assert_allclose(gradient[:4], state.mu_rt[:4], atol=1e-12, rtol=0)
+    np.testing.assert_allclose(gradient[:4], old.mu_rt, atol=1e-12, rtol=0)
+    assert np.isneginf(gradient[4])
+    assert n[:4] @ gradient[:4] == pytest.approx(energy, abs=1e-12)
