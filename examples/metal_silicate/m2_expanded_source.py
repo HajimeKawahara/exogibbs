@@ -11,7 +11,9 @@ from pathlib import Path
 
 import numpy as np
 
+from common_gibbs import _feasible_start
 from full_potential import PhaseState, ideal_phase
+from local import build_problem
 from m1_chemistry import build_setups
 from m2_atmosphere import make_atmosphere_phase
 from m2_common_gas import anchored_standards_rt, source_gas_names
@@ -22,14 +24,19 @@ from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 
 
 def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_executable,
-                               *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1"):
+                               *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1",
+                               initialization="lp"):
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
     gases on six additional atomic references, retaining 26 condensates.
     ``janaf_condensed`` adds all 41 neutral background-element condensates.
     Carrier amounts are conserved coordinates, never added atomic gases.
+    ``initialization='canonical'`` exposes a conserved metal-free starting
+    vector in metadata. The returned canonical ledger remains unchanged.
     """
+    if initialization not in ("lp", "canonical"):
+        raise ValueError("initialization must be lp or canonical.")
     normalized = normalize_scenario(scenario)
     setup = build_atmosphere_setup(gas_model)
     record, budget, callbacks, initial, metadata = build_bse_problem(
@@ -56,6 +63,13 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     record.pop("gas_species_aliases")
     record["atmosphere_element_order"] = list(setup.gas_setup.elements)
     record["atmosphere_gas_model"] = gas_model
+    metadata["numerical_initialization"] = {
+        "strategy": initialization,
+        "canonical_interior_fraction": 1e-4 if initialization == "canonical" else None,
+        "initial_component_amounts_mol": (canonical_interior_seed(record, budget, initial).tolist()
+                                           if initialization == "canonical" else None),
+        "scope": "Numerical metal-free starting point only; no atom floor, new phase constraint, thermodynamic change, or relaxed acceptance tolerance.",
+    }
     callbacks.pop("gas")
     callbacks["atmosphere"] = atmosphere
     if scenario is not None:
@@ -88,7 +102,7 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     metadata["provenance"]["file_sha256"].update({name: hashlib.sha256(
         Path(__file__).with_name(name).read_bytes()).hexdigest()
         for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py", "m2_scenarios.py",
-                     "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py")})
+                     "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py", "phase_selection.py")})
     metadata["provenance"]["file_sha256"]["data/janaf_atomic.json"] = hashlib.sha256(DATA_PATH.read_bytes()).hexdigest()
     if gas_model in ("janaf", "janaf_condensed"):
         metadata["standards"]["janaf_atomic_reference"] = atomic_standard_audit(temperature_k)
@@ -97,6 +111,63 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         metadata["standards"]["common_gas"]["reaction_model"] = (
             "Packaged FastChem4 76 neutral gases on thirteen elements; continuous temperature evaluation")
     return record, budget, callbacks, initial, metadata
+
+
+def canonical_interior_seed(record, budget, canonical, *, interior_fraction=1e-4):
+    """Mix a feasible canonical ledger with 1e-4 of its metal-free LP interior.
+
+    The fraction selects a starting point, not a lower amount bound. Exact-zero
+    global elements remain absent, and all outer equilibrium audits are kept.
+    """
+    if (isinstance(interior_fraction, bool) or not np.isfinite(interior_fraction)
+            or not 0 < interior_fraction <= 1):
+        raise ValueError("The interior fraction must be finite and in (0, 1].")
+    canonical = np.asarray(canonical, dtype=float)
+    budget = np.asarray(budget, dtype=float)
+    phases = tuple(phase for phase in record["phases"] if phase != "metal")
+    problem = build_problem(record, budget, lambda t, p: np.zeros(len(canonical)), phases=phases)
+    active = problem.species_indices
+    excluded = np.ones(len(problem.full_species), dtype=bool)
+    excluded[active] = False
+    if (canonical.shape != excluded.shape or np.any(~np.isfinite(canonical))
+            or np.any(canonical < 0) or np.any(canonical[excluded] != 0)
+            or not np.allclose(np.asarray(problem.full_formula_matrix) @ canonical,
+                               budget, rtol=1e-12, atol=0)):
+        raise ValueError("The canonical seed must preserve the metal-free elemental ledger exactly.")
+    scale = float(budget.sum())
+    interior = scale * _feasible_start(np.asarray(problem.formula_matrix),
+                                       budget[problem.element_indices] / scale)
+    seed = np.zeros_like(canonical)
+    seed[active] = (1. - interior_fraction) * canonical[active] + interior_fraction * interior
+    return seed
+
+
+def conserved_source_seed(prior_record, prior_amounts, record, budget, *, interior_fraction=1e-4):
+    """Map a metal-free source into a larger catalog as a numerical seed.
+
+    The caller must require an accepted prior result. This helper validates
+    every component formula and the identical finite elemental budget; it
+    neither evaluates a new equilibrium nor reuses prior chemical potentials.
+    """
+    if prior_record["elements"] != record["elements"]:
+        raise ValueError("The prior and target elemental orders must match.")
+    prior_names = [(phase, name) for phase, names in prior_record["phases"].items() for name in names]
+    names = [(phase, name) for phase, values in record["phases"].items() for name in values]
+    prior_amounts = np.asarray(prior_amounts, dtype=float)
+    if (prior_amounts.shape != (len(prior_names),) or np.any(~np.isfinite(prior_amounts))
+            or np.any(prior_amounts < 0)):
+        raise ValueError("Prior component amounts must be finite and nonnegative.")
+    mapped = np.zeros(len(names))
+    for i, pair in enumerate(prior_names):
+        if pair not in names:
+            raise ValueError("The target lacks a prior component: " + str(pair))
+        formula = prior_record["component_formulas"][pair[1]]
+        target_formula = record["component_formulas"][pair[1]]
+        if any(formula.get(e, 0.) != target_formula.get(e, 0.)
+               for e in set(formula) | set(target_formula)):
+            raise ValueError("The prior and target component formulas differ: " + str(pair))
+        mapped[names.index(pair)] = prior_amounts[i]
+    return canonical_interior_seed(record, budget, mapped, interior_fraction=interior_fraction)
 
 
 def unpack_expanded_source(record, result, callbacks, temperature_k, pressure_bar):
