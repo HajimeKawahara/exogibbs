@@ -263,3 +263,11 @@ def test_tangent_shift_has_the_ambient_alphabb_positive_remainder():
                for i,row in enumerate(hessian)]
     tangent = M._simplex_tangent_hessian(shifted, 2)
     assert [[float(v.lo) for v in row] for row in tangent] == [[6.,3.,3.],[3.,6.,3.],[3.,3.,6.]]
+
+
+def test_negative_normal_curvature_does_not_add_an_alphabb_penalty():
+    p = parameters()
+    p['quadratic_matrix_rt'] = [[-20., -20.], [-20., -20.]]
+    result = M.certify_water_common_plane(p, [1., 1.], max_nodes=1)
+    rows = result['proof_leaves']+result['unresolved_boxes']
+    assert len(rows) == 1 and rows[0]['rho'] == 0.
