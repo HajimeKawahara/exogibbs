@@ -1,0 +1,26 @@
+{
+  "source_00_finite_difference_failed.json": {
+    "original_path": "/tmp/stage2-published-closure-h1e24-janaf-16/trial_0000.json",
+    "sha256": "320765a409b1dc2b3f8e1c92fb5034e9c867af1aafd3347d43d884ea1b75f8e5",
+    "bytes": 115964,
+    "bytes_preserved_unchanged": true
+  },
+  "source_01_atmosphere_ad_failed.json": {
+    "original_path": "/tmp/stage2-replayed-source-h1e24-janaf/result.json",
+    "sha256": "2867d012c0b5ae71286181d7f8ec62fc6658c0e6498be727aec9c522840dd6ea",
+    "bytes": 94949,
+    "bytes_preserved_unchanged": true
+  },
+  "source_02_atmosphere_liquid_ad_accepted.json": {
+    "original_path": "/tmp/stage2-replayed-source-h1e24-janaf-liquid-audit/result.json",
+    "sha256": "0313a3316afb63c84efc2c6f818b1f87c5c41cf8343fcac85eca5a6a4cd387e8",
+    "bytes": 94996,
+    "bytes_preserved_unchanged": true
+  },
+  "replay_source_liquid_audit.py": {
+    "original_path": "/tmp/stage2-replay-source-liquid-audit.py",
+    "sha256": "06476f79bf6bb9611b4b637bf6b7ec575c77d561ae27a9989b19787b4e1e1868",
+    "bytes": 3937,
+    "bytes_preserved_unchanged": true
+  }
+}

@@ -142,3 +142,122 @@ existing scalar audit to resolve trace phosphate left in the liquid after
 finite P vaporization. The native evaluator keeps its existing audit path.
 No finite-difference tolerance, equilibrium condition, or acceptance gate is
 relaxed.
+## Finite background-element gases
+
+`build_expanded_bse_problem(..., gas_model="janaf")` adds all 41 neutral
+Al/Ca/K/Ti/Cr/P gas species from the packaged FastChem table to the 35-gas
+model. The default `gas_model="m1"` preserves the original catalog. The
+opt-in source minimizes the actual gas/cloud energy over **thirteen finite
+atmospheric atom allocations**, together with MELTS and the optional FeSiOH
+alloy. P atoms transferred into P2, PH2, PH3 or other gases are removed from
+the finite silicate inventory by the same thirteen conservation constraints.
+Frozen source potentials and trace-demand additions are not equilibrium states.
+
+The seven inherited source anchors remain exactly unchanged. Six additional
+atomic energies use the pinned [JANAF convention](m2_omitted_gas.md), evaluated
+only at source temperatures between 2100 and 2400 K. All 76 gases share the
+same elemental gauge; the existing 26 condensates retain their original
+standards. This is a conditional extension of the same material model, not a
+new calibration of gas/MELTS/alloy reaction energies.
+
+Consumers obtain the matching setup from `callbacks["atmosphere"].setup`.
+`unpack_expanded_source` restores all primitive species; `audit_expanded_contact`
+checks all 76 partial pressures, condensate KKT and thirteen-element transfer.
+Ordered catalog/formula and source-reference hashes are stored in atmosphere
+metadata, alongside model-file and thermochemical-data provenance.
+
+An isolated upper parcel uses that same setup with raw FastChem reactions
+**re-evaluated at each layer's own temperature and pressure**. At fixed atom
+budget `b`, adding an elemental gauge changes every feasible state's energy
+by the same `q(T).T b`. It therefore cannot change gas/cloud partitioning.
+The upper calculation needs no JANAF extrapolation below 2100 K and does not
+freeze source chemical potentials. Its raw absolute Gibbs energy must not be
+compared with a melt on the source reference. Gauge invariance and finite P
+conservation are tested at both 1000 K and 2173.15 K.
+
+Run this finite contact with `--gas-model janaf_retained --metal-mode select`
+in `run_m2_contact.py`. It retains the same **26** condensate candidates:
+Al/Ca/K/Ti/Cr/P condensation and Mg/background-element alloy components remain
+outside the catalog. A fresh comparison with `m1` measures this finite gas
+extension within the declared model; it does not bound all omitted pathways,
+establish global host stability, or close planetary pressure by itself.
+
+## Retained background-element condensates
+
+The separate `gas_model="janaf_condensed"` model keeps the same 76 gases and
+adds all 41 neutral Al/Ca/K/Ti/Cr/P condensates in the packaged FastChem table,
+for **67** retained candidates. It uses the same thirteen finite carrier
+coordinates and atomic references; every condensate obeys its own tabulated
+temperature eligibility. Examples include Mg3P2O8(s,l) (upper validity
+4500 K), H3PO4(s,l) (1000 K), and PH3(s,l) (185.56 K); the last cannot enter
+the 1000--2173 K column. The source and upper must use the same selected mode.
+
+This finite gas/cloud calculation consumes the conserved atmospheric element
+allocation directly. It does not first add a cloud to a fixed gas inventory.
+All cloud atom totals, mass and phase KKT are audited, including the added
+candidates. For fixed T/P and atmospheric atoms the larger cloud catalog
+cannot raise the equilibrium Gibbs minimum; representative tests verify this
+and finite element conservation at 1000 K and 2173.15 K.
+
+Run the extended source with `--gas-model janaf_condensed_retained`. The
+unchanged FeSiOH alloy still omits Mg and the six background elements.
+FastChem pure condensates and native MELTS candidates are independent
+thermochemical models. In particular, equal elemental formulas do not make
+their standard energies equal. Native endpoint energies can include internal
+ordering and pressure terms absent from FastChem's pure-condensate standard.
+Their differences must be recorded separately; this larger conditional
+catalog does not establish a calibrated BSE phase boundary.
+
+## Optional conserved numerical initialization
+
+`build_expanded_bse_problem(..., initialization="canonical")` exposes a
+metal-free starting vector as
+`metadata["numerical_initialization"]["initial_component_amounts_mol"]`.
+It mixes 0.9999 of the canonical dry-melt plus H/He inventory with 0.0001 of
+the metal-free feasible LP interior. Both endpoints conserve the same atoms,
+so the mixture also preserves all thirteen budgets, exact-zero global
+elements and exactly zero initial metal. The returned canonical ledger stays
+unchanged. The default `initialization="lp"` keeps the original solver start.
+
+Pass the optional vector as `initial_component_amounts_mol` to
+`select_metal_phase` (or to the suppressed-branch `minimize_gibbs`). It seeds
+only the initial metal-free solve; the existing insertion procedure generates
+metal-bearing starts. `run_m2_contact.py --initialization canonical` wires
+both paths. This is a numerical starting point, not an atom floor, phase
+constraint, added reservoir, thermodynamic change or looser acceptance gate.
+The original scalar-energy, derivative, extensivity, conservation and KKT
+audits still decide acceptance. A different initial state can find a different
+local branch in a nonconvex model, so initialization is recorded and must be
+kept distinct from material or gas-catalog changes in paired comparisons.
+
+`conserved_source_seed(prior_record, prior_amounts, record, budget,
+interior_fraction=1e-4)` can instead map an accepted, saved metal-free source
+to an expanded catalog before the same conservative LP mixture. The caller
+must check the prior result's acceptance and pin its provenance. The helper
+requires identical element order, component formulas, phases and total
+element budgets, and zero metal. Additional target components start at zero
+before mixing. Reusing numerical amounts from a different gas catalog or
+liquid model does not transport its chemical potentials or acceptance: the
+new model must be independently minimized and audited from the supplied
+`initial_component_amounts_mol`.
+
+## Independent scalar derivatives for trace atmospheric atoms
+
+Finite differences of the total atmospheric Gibbs energy can lose the
+contribution of a trace carrier below floating-point resolution. The
+atmosphere callback therefore supplies `energy_value_and_grad_rt` to the
+existing independent derivative audit. It differentiates the explicit
+primitive ideal-gas and pure-condensate scalar with JAX AD, including the
+same pressure and reference terms. It then solves
+`A_active.T @ lambda = dG_primitive/dn_active` on the accepted gas/cloud
+support. Full column rank and a stationarity residual below `1e-8 RT`
+are required. The envelope theorem gives `dG_min/db = lambda`.
+
+This path reuses primitive equilibrium amounts, but never the callback's
+chemical potentials or its saved elemental dual. The outer audit still
+compares the independently reconstructed scalar and gradient with the
+callback, using the unchanged `5e-6 RT` derivative tolerance. The complete
+parcel solver and absent-phase KKT audit continue to select condensate
+support. Exact-zero elements retain their excluded support and unavailable
+one-sided derivatives. Tests include trace fractions below finite-difference
+resolution and deliberately corrupted potentials and scalar energies.

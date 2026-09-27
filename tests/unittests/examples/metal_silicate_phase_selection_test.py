@@ -165,6 +165,36 @@ def test_certified_metal_absence_is_exact_zero_and_keeps_an_incipient_compositio
     assert PHASE.local_metal_status(asdict(result)) == "metal_absent"
 
 
+def test_supplied_metal_free_start_keeps_the_analytic_finite_equilibrium():
+    record, budget, callbacks, target = _ideal_assemblage()
+    problem = LOCAL.build_problem(record, budget, lambda t, p: np.zeros(len(target)),
+                                  phases=("silicate", "gas"))
+    active = problem.species_indices
+    matrix = np.asarray(problem.formula_matrix)
+    base = COMMON._feasible_start(matrix, budget[problem.element_indices])
+    direction = COMMON.null_space(matrix)[:, 0]
+    nonzero = direction != 0
+    distance = .2 * np.min(base[nonzero] / np.abs(direction[nonzero]))
+    seed = np.zeros_like(target)
+    seed[active] = base + distance * direction
+    result = PHASE.select_metal_phase(
+        record, budget, 2000., 1., callbacks, np.zeros(4), np.ones(4),
+        convex_phase_bounds={phase: 0. for phase in callbacks},
+        initial_component_amounts_mol=seed)
+    assert result.status == "metal_present", result.reasons
+    assert result.result.accepted and result.metal_free_result.accepted
+    np.testing.assert_allclose(result.result.component_amounts_mol, target, rtol=1e-6)
+    assert result.result.derivative_error_rt < 5e-6
+    assert result.result.extensivity_error < 5e-9
+    assert np.max(np.abs(result.result.element_residual)) < 1e-9
+    invalid = PHASE.select_metal_phase(
+        record, budget, 2000., 1., callbacks, np.zeros(4), np.ones(4),
+        convex_phase_bounds={phase: 0. for phase in callbacks},
+        initial_component_amounts_mol=seed * 1.001)
+    assert invalid.status == "unresolved" and invalid.result is None
+    assert "element inventory" in " ".join(invalid.reasons)
+
+
 def test_melt_global_stability_cannot_be_inferred_from_local_closure_and_metal_test():
     record, budget, callbacks, _ = _ideal_assemblage(metal_offset=10.)
     result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,

@@ -1,0 +1,9 @@
+{
+  "helper_source_head": "c83bb99e20b313c167eefdd7761e4e7458aa4d49",
+  "saved_seed_sha256": "5eb6572a259ea94000e5655cdef09b789b687b43a05dc1d2794502d15b9738cb",
+  "mapped_reference_sha256": "92d06b75347d12e602d217dd284ab3c8452791fbca48433dd2b7f9650ef0d181",
+  "public_helper_matches_independent_mapping_bitwise": true,
+  "maximum_relative_element_residual": 8.881784197001252e-16,
+  "new_native_evaluations": 0,
+  "new_equilibrium_solve_performed": false
+}

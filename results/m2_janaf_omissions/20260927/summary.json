@@ -1,0 +1,29 @@
+[
+  {
+    "case": "h1e22",
+    "pressure_bar": 59.82480116758995,
+    "sum_omitted_mole_fractions": 0.006177715800649684,
+    "P_demand_over_local_source_P": 3.9223250449162332,
+    "trace_screen_passed": false,
+    "path": "h1e22.json",
+    "sha256": "b6ebd4b1765603d9864c9833591f84aa0c28ae7c69052b5121f672db7ae1e03a"
+  },
+  {
+    "case": "h1e24",
+    "pressure_bar": 267.20283416157343,
+    "sum_omitted_mole_fractions": 0.00932865335224721,
+    "P_demand_over_local_source_P": 28.9307599662509,
+    "trace_screen_passed": false,
+    "path": "h1e24.json",
+    "sha256": "57070fb43b14833f3c242318f78f66abd54713406625aeb4516759211803f33c"
+  },
+  {
+    "case": "h2e24",
+    "pressure_bar": 432.2984712379783,
+    "sum_omitted_mole_fractions": 0.0215624938524893,
+    "P_demand_over_local_source_P": 125.41384405859667,
+    "trace_screen_passed": false,
+    "path": "h2e24.json",
+    "sha256": "954d3acec57726e38bd3d1aa62bb27b978243bcd4c4299b794ce93d08d5798fd"
+  }
+]

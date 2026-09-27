@@ -14,7 +14,9 @@ def main():
     parser.add_argument("--layers", type=int)
     parser.add_argument("--root-index", type=int, default=0)
     parser.add_argument("--mole-fraction-target", type=float, required=True)
-    parser.add_argument("--atomic-references", type=Path)
+    references_group = parser.add_mutually_exclusive_group()
+    references_group.add_argument("--atomic-references", type=Path)
+    references_group.add_argument("--janaf-atomic-references", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists():
@@ -33,8 +35,12 @@ def main():
     else:
         source = document
     references = None if args.atomic_references is None else json.loads(args.atomic_references.read_bytes())
-    report = screen_source(source, mole_fraction_target=args.mole_fraction_target,
-                           additional_atomic_references=references)
+    if args.janaf_atomic_references:
+        from m2_janaf import screen_source_janaf
+        report = screen_source_janaf(source, mole_fraction_target=args.mole_fraction_target)
+    else:
+        report = screen_source(source, mole_fraction_target=args.mole_fraction_target,
+                               additional_atomic_references=references)
     report["saved_source"] = {"path": str(args.source.resolve()), "sha256": hashlib.sha256(raw).hexdigest(),
                               "layers": args.layers, "root_index": args.root_index}
     if args.atomic_references is not None:

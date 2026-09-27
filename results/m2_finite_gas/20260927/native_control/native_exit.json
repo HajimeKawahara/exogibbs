@@ -1,0 +1,21 @@
+{
+  "status": "terminated_without_result",
+  "exit_code": 137,
+  "termination_observed_utc": "2026-09-27T03:08:53.487864+00:00",
+  "solver_acceptance": null,
+  "source_head": "0dbb9a69f96101680a807c7642200dbadca58e41",
+  "eos_head": "44b977847ea7ed1e16377907722277a3e75bc9d7",
+  "temperature_K": 2173.15,
+  "pressure_bar": 267.20283416157343,
+  "gas_model": "janaf_retained",
+  "initialization": "default LP",
+  "cause": "Forced process termination; no thermodynamic or convergence decision was produced. High aggregate memory use had been observed; the exact kill origin is not established.",
+  "input_file": "/tmp/stage2-finite-inventory-20260927/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_hydrogen_pilot/native_h_pilot/case_001/closure/inventory.json",
+  "output_file": "/tmp/stage2-finite-source-h1e24/contact.json",
+  "output_created": false,
+  "raw_stdout_stderr_file": "contact.log",
+  "shell_exit_message": "Killed (exit 137) while running run_m2_contact.py. No source JSON produced.",
+  "rerun_started": false,
+  "input_sha256": "7294c2d507cf55f60b918a0f2ab6344c8bc8e101c2787855525d5ea9a735c6d7",
+  "archive_input_file": "inventory.json"
+}
