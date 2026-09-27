@@ -1,0 +1,88 @@
+........................................................................ [  3%]
+........................................................................ [  7%]
+..........................s............................................. [ 11%]
+.........F.............................................................. [ 15%]
+........................................................................ [ 19%]
+........................................................................ [ 23%]
+........................................................................ [ 26%]
+........................................................................ [ 30%]
+........................................................................ [ 34%]
+........................................................................ [ 38%]
+........................................................................ [ 42%]
+........................................................................ [ 46%]
+........................................................................ [ 49%]
+........................................................................ [ 53%]
+........................................................................ [ 57%]
+........................................................................ [ 61%]
+........................................................................ [ 65%]
+........................................................................ [ 69%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 80%]
+........................................................................ [ 84%]
+........................................................................ [ 88%]
+........................................................................ [ 92%]
+........................................................................ [ 95%]
+........................................................................ [ 99%]
+......                                                                   [100%]
+=================================== FAILURES ===================================
+____ test_every_public_script_and_all_expensive_configurations_are_covered _____
+
+    def test_every_public_script_and_all_expensive_configurations_are_covered():
+        jobs = run_all.build_jobs()
+        assert len({job.name for job in jobs}) == len(jobs)
+        public = {
+            str(path.relative_to(run_all.ROOT))
+            for path in (run_all.ROOT / "examples").rglob("*.py")
+            if any(isinstance(node, ast.If) and "__main__" in ast.unparse(node.test)
+                   for node in ast.parse(path.read_text()).body)
+        }
+        covered = {job.script for job in jobs} | set(run_all.ALIASES)
+        curated = [job for job in jobs if job.script.endswith("check_curated.py")]
+        covered.update(str(Path(job.arguments[job.arguments.index("--script") + 1]).relative_to(run_all.ROOT))
+                       for job in curated)
+        assert any(job.script.endswith("check_exoeos.py") for job in jobs)
+        covered.add("examples/plot_exoeos_pure_fugacity.py")
+>       assert public <= covered, f"Unexecuted entry points: {public - covered}"
+E       AssertionError: Unexecuted entry points: {'examples/metal_silicate/run_m2_liquid_global.py'}
+E       assert {'examples/co...izer.py', ...} <= {'benchmarks/...ates.py', ...}
+E         
+E         Extra items in the left set:
+E         'examples/metal_silicate/run_m2_liquid_global.py'
+
+tests/unittests/benchmarks/documented_all_examples_test.py:34: AssertionError
+=============================== warnings summary ===============================
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:115: RuntimeWarning: overflow encountered in power
+    phi_prime = -np.sum(suf ** 2 / denom**3) / p_norm
+
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:154: RuntimeWarning: divide by zero encountered in scalar divide
+    ratio = phi / phi_prime
+
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    fx = wrapped_fun(x)
+
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    g = append(wrapped_grad(x), 0.0)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/unittests/api/version_test.py:12: setuptools-scm generated version module is unavailable
+1 failed, 1876 passed, 1 skipped, 28 warnings in 1898.97s (0:31:38)
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+

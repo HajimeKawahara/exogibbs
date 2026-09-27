@@ -1,0 +1,14 @@
+....................................                                     [100%]
+=============================== warnings summary ===============================
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    fx = wrapped_fun(x)
+
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    g = append(wrapped_grad(x), 0.0)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+36 passed, 4 warnings in 2.90s

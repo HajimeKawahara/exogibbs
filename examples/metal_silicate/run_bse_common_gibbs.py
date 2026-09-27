@@ -59,6 +59,7 @@ def source_standards_rt(temperature_k: float, pressure_bar: float = 1.) -> tuple
 def build_bse_problem(
     inventory_path: Path, exoeos_checkout: Path, runtime: Path, python_executable: str,
     *, temperature_k: float = 2173.15, pressure_bar: float = 1., gas_model: str = "source",
+    liquid_model: str = "native",
 ) -> tuple[dict, np.ndarray, dict, np.ndarray, dict]:
     """Return record, absolute budgets, callbacks, initial ledger and metadata.
 
@@ -88,7 +89,8 @@ def build_bse_problem(
             or np.any(budget < 0) or not np.all(np.isfinite(rock)) or np.any(rock < 0)
             or not np.array_equal(budget[:11], rock[:11]) or np.any(rock[11:] != 0)):
         raise ValueError("Dry rock and independent H/He inventories are inconsistent.")
-    evaluator = load_melts_evaluator(checkout)
+    evaluator = load_melts_evaluator(checkout, liquid_model=liquid_model, runtime=runtime,
+                                     python_executable=python_executable)
     oxide = dict(zip(inventory["oxide_order"], inventory["oxide_amounts_mol"]))
     if len(oxide) != len(inventory["oxide_order"]) or set(k.lower() for k in oxide) - set(evaluator.OXIDES):
         raise ValueError("Oxide ledger contains duplicate or unsupported oxide names.")
@@ -175,6 +177,11 @@ def build_bse_problem(
             }
             raise PhaseEvaluationError(str(error)) from error
         return PhaseState(state.mu_rt, state.gibbs_rt / amount_scale)
+    if hasattr(scaled_melt, "energy_value_and_grad_rt"):
+        def melt_gradient(t, p, n):
+            energy, gradient = scaled_melt.energy_value_and_grad_rt(t, p, amount_scale * n)
+            return energy / amount_scale, gradient
+        melt.energy_value_and_grad_rt = melt_gradient
     model = MaFeSiOHLiquid()
     full_metal_names = source["phases"]["metal"]
     metal_indices = np.array([full_metal_names.index(name) for name in metal_names])
@@ -207,6 +214,7 @@ def build_bse_problem(
                   "source_provenance": inventory["provenance"], "dry_rock_mass_kg": inventory["dry_rock_mass_kg"],
                   "native_amount_scale": amount_scale, "element_amounts_mol": budget.tolist(), "elements": list(ELEMENTS)},
         "host_ledger": provider_ledger(evaluator, host_names),
+        "liquid_model": liquid_model,
         "standards": {"source_temperature_branch_K": source["cases"][0]["T_K"],
                       "evaluation_temperature_K": temperature_k,
                       "gas_model": gas_model,
@@ -259,12 +267,14 @@ def main() -> None:
     parser.add_argument("--maxiter", type=int, default=1000)
     parser.add_argument("--metal-absent", action="store_true")
     parser.add_argument("--gas-model", choices=("source", "m1_shared", "m1_expanded"), default="source")
+    parser.add_argument("--liquid-model", choices=("native", "published"), default="native")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     record, budget, callbacks, initial, metadata = build_bse_problem(
         args.inventory, args.exoeos_checkout, args.runtime, args.python,
         temperature_k=args.temperature, pressure_bar=args.pressure,
         gas_model=args.gas_model,
+        liquid_model=args.liquid_model,
     )
     phases = ("silicate", "gas") if args.metal_absent else tuple(record["phases"])
     problem = build_problem(record, budget, lambda t, p: np.zeros(initial.size), phases=phases)

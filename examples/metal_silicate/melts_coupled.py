@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 import jax
+import jax.numpy as jnp
+from jax.scipy.special import xlogy
 import numpy as np
 
 from full_potential import PhaseState
@@ -21,9 +23,11 @@ from hydrogen import ideal_host_h2_dilution
 
 COMMON_R = 8.31446261815324
 PROVIDER_MODEL_ID = "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1"
+PUBLISHED_MODEL_ID = "melts_v102_published_mixing_native_standard_states_v1"
 
 
-def load_melts_evaluator(checkout: Path) -> Any:
+def load_melts_evaluator(checkout: Path, *, liquid_model="native", runtime=None,
+                         python_executable=None) -> Any:
     """Load the supplied-composition evaluator from an explicit ExoEOS checkout."""
     path = Path(checkout).resolve() / "examples" / "melts_liquid_evaluator.py"
     spec = importlib.util.spec_from_file_location("_exogibbs_melts_property_provider", path)
@@ -33,7 +37,18 @@ def load_melts_evaluator(checkout: Path) -> Any:
     spec.loader.exec_module(module)
     if Path(module.__file__).resolve() != path or module.MODEL_ID != PROVIDER_MODEL_ID:
         raise ValueError("The supplied checkout does not provide the declared MELTS model.")
-    return module
+    if liquid_model == "native":
+        return module
+    if liquid_model != "published" or runtime is None or python_executable is None:
+        raise ValueError("Select native or published; the published model requires a native standard runtime and Python.")
+    mixing_path = path.with_name("melts_liquid_mixing.py")
+    mixing_spec = importlib.util.spec_from_file_location("_exogibbs_melts_mixing_provider", mixing_path)
+    mixing = importlib.util.module_from_spec(mixing_spec)
+    mixing_spec.loader.exec_module(mixing)
+    if mixing.PUBLISHED_MODEL_ID != PUBLISHED_MODEL_ID:
+        raise ValueError("The published provider has an unexpected model identity.")
+    return mixing.make_published_liquid_evaluator(module, runtime=runtime,
+                                                 python_executable=python_executable)
 
 
 def make_melts_h2_phase(
@@ -53,6 +68,9 @@ def make_melts_h2_phase(
     Cross-phase standard alignment and calibration must be assessed separately.
     """
     names = tuple(host_components)
+    selected_model = getattr(evaluator, "MODEL_ID", PROVIDER_MODEL_ID)
+    if selected_model not in {PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID}:
+        raise ValueError("Unsupported supplied-liquid model identity.")
     if not jax.config.x64_enabled:
         raise RuntimeError("MELTS coupling requires JAX_ENABLE_X64=1 for the residual tolerances.")
     if not names or len(set(names)) != len(names) or not set(names) <= set(evaluator.COMPONENTS):
@@ -72,7 +90,7 @@ def make_melts_h2_phase(
             common_R=common_r, python_executable=python_executable,
         )
         if (result["status"] != "ok_supplied_liquid_properties"
-                or result["model_id"] != PROVIDER_MODEL_ID
+                or result["model_id"] != selected_model
                 or tuple(result["component_order"]) != tuple(evaluator.COMPONENTS)
                 or result["phase_policy"]["oxygen_buffer"] != "None"):
             raise ValueError("Unexpected provider model, component basis, or imposed oxygen buffer.")
@@ -95,6 +113,35 @@ def make_melts_h2_phase(
             float(diluted.gibbs_rt),
         )
 
+    independent_host = getattr(evaluator, "energy_value_and_grad_rt", None)
+    if independent_host is not None:
+        @jax.jit
+        def dilution_scalar(n, standard):
+            host, hydrogen = jnp.sum(n[:-1]), n[-1]
+            total = host + hydrogen
+            return (hydrogen * standard + xlogy(host, host/total)
+                    + xlogy(hydrogen, jnp.where(hydrogen > 0, hydrogen/total, 1.)))
+
+        dilution_gradient = jax.jit(jax.value_and_grad(dilution_scalar))
+
+        def energy_value_and_grad_rt(temperature, pressure, amounts):
+            n = np.asarray(amounts, dtype=float)
+            if (n.shape != (len(names)+1,) or not np.all(np.isfinite(n))
+                    or np.any(n < 0) or n[:-1].sum() <= 0):
+                raise ValueError("Supply finite nonnegative host/H2 amounts with a positive host.")
+            host = np.zeros(len(evaluator.COMPONENTS))
+            host[indices] = n[:-1]
+            energy, gradient = independent_host(
+                temperature, pressure*1e5, host, runtime=runtime,
+                common_R=common_r, python_executable=python_executable)
+            extra, extra_gradient = dilution_gradient(n, h2_standard_rt(temperature, pressure))
+            combined = np.append(np.asarray(gradient)[indices], 0.) + np.asarray(extra_gradient)
+            if n[-1] == 0:
+                combined[-1] = -np.inf
+            return float(energy + extra), combined
+
+        evaluate.energy_value_and_grad_rt = energy_value_and_grad_rt
+
     return evaluate
 
 
@@ -105,7 +152,7 @@ def provider_ledger(evaluator: Any, host_components: Sequence[str]) -> dict[str,
     elements = list(evaluator.ELEMENTS)
     hydrogen = [2 if element == "H" else 0 for element in elements]
     return {
-        "model_id": PROVIDER_MODEL_ID,
+        "model_id": getattr(evaluator, "MODEL_ID", PROVIDER_MODEL_ID),
         "evaluator_path": str(path),
         "evaluator_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         "backend": evaluator.REFERENCE["backend"],
@@ -121,4 +168,8 @@ def provider_ledger(evaluator: Any, host_components: Sequence[str]) -> dict[str,
         "calibration_domain": "not established for the coupled reduced host/alloy/gas model",
         "stable_phase_evidence": "not supplied by a liquid property callback",
         "extrapolation_policy": "conditional mechanism only until common standards and competing phases are validated",
+        **({"liquid_model": "published", "mixing_model_id": evaluator.mixing_model_id,
+            "mixing_parameter_sha256": evaluator.mixing_parameter_sha256,
+            "native_standard_state_receipts": evaluator.standard_state_receipts}
+           if getattr(evaluator, "MODEL_ID", PROVIDER_MODEL_ID) == PUBLISHED_MODEL_ID else {"liquid_model": "native"}),
     }
