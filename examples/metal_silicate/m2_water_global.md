@@ -81,8 +81,13 @@ Curvature is verified on the composition simplex: with columns
 `B_i = e_i - e_pivot`, interval LDL checks `B.T H B`. The infeasible normal
 direction need not be convex. The smooth Hessian enclosure plus an ideal
 positive diagonal lower bound remains a valid lower bound after congruence.
-For an alphaBB shift, `B.T B = I + 11.T >= I`, so verifying the more
-conservative tangent matrix plus `rho I` suffices for the actual ambient
-`rho I` perturbation. This changes neither the composition domain nor the
-provider scalar. Progress lower bounds are emitted only after both closed
+If a shift remains necessary, its positive definiteness is verified in
+the original ambient coordinates. Restriction to the tangent space then
+preserves positivity. This changes neither the domain nor the provider scalar. Progress lower bounds are emitted only after both closed
 child boxes have replaced their parent, preserving full simplex coverage.
+
+The tangent enclosure may widen interval dependencies on broad boxes. The
+verifier therefore accepts zero shift if either the ambient or tangent LDL
+check succeeds, and otherwise retains the original verified ambient shift.
+It never pays a larger alphaBB penalty merely because the tangent basis is
+less convenient for interval arithmetic.
