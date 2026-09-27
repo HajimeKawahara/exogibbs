@@ -256,3 +256,33 @@ with zero within `1e-8`. The only phase-selection reason remains
 `Host global stability is not established.` This supports a conditional
 local BSE connection; it establishes neither global liquid stability nor
 calibrated physical metal formation.
+
+## Constrained absent branches and declared model sensitivity
+
+`select_metal_phase(..., allow_metal=False)` solves the metal-free branch and
+evaluates the same certified insertion/domain diagnostics, without attempting
+a present-metal solve. A favorable insertion leaves its physical status
+`unresolved` even though the constrained branch can have a valid numerical
+solution. Its negative insertion is not accepted metal absence. This mode
+lets Inventory reclose the constrained metal-free planet at its own pressure;
+metal-allowed closure is a separate solve. Local energies at different closure
+pressures cannot be ranked as a global phase comparison.
+
+`build_expanded_bse_problem(..., scenario=...)` accepts a provider-owned JSON
+mapping with optional `standard_offsets_rt` (`H2_dissolved`, `H_metal`) and
+`metal_bounds` (`lower`, `upper`, four atomic fractions in Fe, Si, O, H order).
+Unknown keys, booleans, nonfinite values and infeasible Fe-rich boxes are
+rejected. Each standard shift adds the identical linear term to extensive
+`G/RT`, full chemical potentials and the supplied energy gradient. Omitting
+the scenario preserves the original model. A normalized explicit scenario
+is retained in source metadata and its module hash is part of provenance.
+
+The exported `metal_selection_domain(scenario)` returns the declared box.
+Consumers must recompute the provider's alloy curvature bound on that same
+box; the original-box certificate cannot be reused after changing O limits.
+These offsets and boxes are explicit model sensitivity choices, **not**
+calibrated uncertainties. Enlarging an active O cap neither calibrates the
+Fe-Si-O-H law nor establishes a physical metal appearance boundary. The
+existing contact/slack/multiplier diagnostics distinguish a chosen domain
+boundary from exact-zero elemental support and retain the unresolved global
+host-stability gate.

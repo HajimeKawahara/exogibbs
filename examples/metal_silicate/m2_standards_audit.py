@@ -16,7 +16,7 @@ import jax
 import numpy as np
 
 from hydrogen import H2_CALIBRATION, _checkout_provenance
-from melts_coupled import COMMON_R, load_melts_evaluator
+from melts_coupled import COMMON_R, PROVIDER_MODEL_ID, load_melts_evaluator
 from m1_chemistry import build_setups, provenance as upper_provenance
 from run_bse_common_gibbs import json_value, source_standards_rt
 from m2_common_gas import SHARED_SPECIES, UPPER_SPECIES
@@ -207,6 +207,81 @@ def native_standard_audit(inventory_path, checkout, runtime, python_executable, 
                                "host_mean_component_mass_kg_mol": .1 / float(host.sum() * scale),
                                "h2_mass_kg_mol": h2_mass, "diagnostic_conversions": conversions,
                                "scope": "Exact amount conversion only; diagnostic ppm values are not experimental observations."}}
+
+
+def extract_formal_reduction_standards(source, *, evaluator, runtime, python_executable, amount_scale=1e-24):
+    """Extract the actual saved BSE model's standards at its recorded T/P.
+
+    This supplies inputs for independent reaction audits, not a calibration.
+    Native pure-endmember standards are evaluated at the unchanged finite host;
+    alloy conventions follow the source builder and gas standards stay in the
+    saved retained-atmosphere gauge. No endpoint or trace floor is introduced.
+    """
+    import exoeos
+    from exoeos import MaFeSiOHLiquid
+
+    if Path(exoeos.__file__).resolve().parents[2] != Path(evaluator.__file__).resolve().parents[1]:
+        raise ValueError("Select the same ExoEOS checkout for the alloy and native evaluator.")
+    record = source.get("source_record", source.get("record"))
+    parcel = source.get("source_atmosphere_parcel", source.get("source_atmosphere"))
+    metadata = source["source_metadata"]
+    temperature, pressure = source["temperature_K"], source["pressure_bar"]
+    if (metadata["model_id"] != "bse_melts_ma_retained_atmosphere_conditional_v1"
+            or source["source_result"].get("accepted") is not True or parcel.get("accepted") is not True
+            or any(isinstance(v, (bool, np.bool_)) or not np.isfinite(v) or v <= 0
+                   for v in (temperature, pressure, amount_scale))
+            or parcel["T_K"] != temperature or parcel["P_bar"] != pressure):
+        raise ValueError("Require an accepted retained BSE source with unchanged finite T/P and amount scale.")
+    names = [name for group in record["phases"].values() for name in group]
+    amounts = np.asarray(source["source_result"]["component_amounts_mol"], dtype=float)
+    if len(set(names)) != len(names) or amounts.shape != (len(names),) or not np.all(np.isfinite(amounts)) or np.any(amounts < 0):
+        raise ValueError("Require the complete nonnegative saved component ledger.")
+    host = np.zeros(len(evaluator.COMPONENTS))
+    for name in record["phases"]["silicate"]:
+        if name == "H2_dissolved":
+            if record["component_formulas"][name] != {"H": 2}:
+                raise ValueError("The dissolved molecular-H2 formula changed.")
+            continue
+        if not name.endswith("_melts") or name[:-6] not in evaluator.COMPONENTS:
+            raise ValueError("Unsupported saved native host component.")
+        index = evaluator.COMPONENTS.index(name[:-6])
+        expected = {element: float(value) for element, value in zip(evaluator.ELEMENTS, evaluator.FORMULA_MATRIX[index]) if value}
+        if record["component_formulas"][name] != expected:
+            raise ValueError("The saved native host formula changed.")
+        host[index] = amounts[names.index(name)] * amount_scale
+    state = evaluator.evaluate_liquid(temperature, pressure * 1e5, host, runtime=runtime,
+                                      common_R=COMMON_R, python_executable=python_executable)
+    if (state["model_id"] != PROVIDER_MODEL_ID or state["status"] != "ok_supplied_liquid_properties"
+            or state["T_K"] != temperature or state["P_Pa"] != pressure * 1e5
+            or state["component_order"] != list(evaluator.COMPONENTS)
+            or state["basis"]["common_R_J_mol_K"] != COMMON_R
+            or state["phase_policy"]["oxygen_buffer"] != "None" or state["phase_policy"]["equilibrated"]
+            or not np.allclose(state["returned_component_moles"], host, rtol=5e-9, atol=0)):
+        raise ValueError("The native provider changed the requested state or convention.")
+    standards, _ = source_standards_rt(temperature, pressure)
+    model = MaFeSiOHLiquid()
+    shifts = np.asarray(model.standard_state_shift_RT(temperature))
+    gas_names, gas_mu0 = parcel["gas_species"], parcel["gas_standard_potentials_rt"]
+    if len(set(gas_names)) != len(gas_names) or len(gas_mu0) != len(gas_names):
+        raise ValueError("Invalid saved gas standard basis.")
+    values = {name + "_liquid": state["mu0_RT"][evaluator.COMPONENTS.index(name)] for name in ("sio2", "fe2sio4")}
+    values.update({name + "_metal": float(standards[name + "_metal"] + shifts[list(model.components).index(name)]) for name in ("Fe", "Si")})
+    values.update({"H2_gas": gas_mu0[gas_names.index("H2")], "H2O_gas": gas_mu0[gas_names.index("H2O1")]})
+    if any(value is None or isinstance(value, (bool, np.bool_)) or not np.isfinite(value) for value in values.values()):
+        raise ValueError("A required actual standard is unavailable; no endpoint value is invented.")
+    return {"temperature_K": temperature, "pressure_bar": pressure, "standards_rt": values,
+            "standard_conventions": {
+                "liquid": "Native MELTS pure endmember standards at the recorded T/P; independent endmember activity convention.",
+                "metal": "Source Fe/Si standards plus the Ma Fe-Si-O-H atomic-ideal standard-state shifts used by the BSE builder.",
+                "gas": "Saved retained-atmosphere standard potentials in the source common elemental gauge; ideal gas at 1 bar."},
+            "native_state": state, "native_amount_scale": amount_scale,
+            "alloy_component_order": list(model.components), "alloy_standard_shift_rt": shifts.tolist(),
+            "physical_calibration_accepted": False,
+            "scope": "Actual model-standard extraction only; no independent reduction calibration or global stability acceptance.",
+            "provenance": {"source": metadata.get("provenance"), "source_model_id": metadata["model_id"],
+                "source_scenario": metadata.get("provider_scenario"),
+                "extractor_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                "source_standard_builder_sha256": hashlib.sha256(Path(__file__).with_name("run_bse_common_gibbs.py").read_bytes()).hexdigest()}}
 
 
 def run_audit(*, inventory_path=None, exoeos_checkout=None, runtime=None, python_executable=None):

@@ -3,6 +3,7 @@
 import importlib
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -82,3 +83,47 @@ def test_mass_fraction_conversion_preserves_hydrogen_and_total_mass(mass_fractio
 def test_invalid_mass_fraction_is_not_clipped(fraction):
     with pytest.raises(ValueError, match="mass_fraction"):
         AUDIT.h2_mass_fraction_to_amount(fraction, .1, .8, .00201588)
+
+
+def test_saved_reduction_standards_use_actual_pressure_host_and_source_conventions(monkeypatch):
+    eos = pytest.importorskip("exoeos")
+    components, elements = ["sio2", "fe2sio4"], ["Si", "Fe", "O"]
+    formulas = np.array([[1., 0., 2.], [1., 2., 4.]])
+    record = {"phases": {"silicate": ["sio2_melts", "fe2sio4_melts", "H2_dissolved"]},
+              "component_formulas": {"sio2_melts": {"Si": 1., "O": 2.},
+                                     "fe2sio4_melts": {"Si": 1., "Fe": 2., "O": 4.},
+                                     "H2_dissolved": {"H": 2}}}
+    source = {"source_record": record, "source_result": {"accepted": True, "component_amounts_mol": [3., 2., .1]},
+              "temperature_K": 2173.15, "pressure_bar": 60.,
+              "source_metadata": {"model_id": "bse_melts_ma_retained_atmosphere_conditional_v1"},
+              "source_atmosphere_parcel": {"accepted": True, "T_K": 2173.15, "P_bar": 60.,
+                                          "gas_species": ["H2O1", "H2"], "gas_standard_potentials_rt": [-9., -1.]}}
+    calls = []
+
+    def evaluate(t, p, n, **kwargs):
+        calls.append((t, p, n.copy()))
+        return {"model_id": AUDIT.PROVIDER_MODEL_ID, "status": "ok_supplied_liquid_properties",
+                "T_K": t, "P_Pa": p, "component_order": components,
+                "returned_component_moles": n.tolist(), "mu0_RT": [-5., -7.],
+                "basis": {"common_R_J_mol_K": AUDIT.COMMON_R},
+                "phase_policy": {"oxygen_buffer": "None", "equilibrated": False}}
+
+    provider = SimpleNamespace(__file__=str(Path(eos.__file__).resolve().parents[2] / "examples/melts_liquid_evaluator.py"),
+        COMPONENTS=components, ELEMENTS=elements, FORMULA_MATRIX=formulas, evaluate_liquid=evaluate)
+    result = AUDIT.extract_formal_reduction_standards(source, evaluator=provider, runtime=None,
+                                                      python_executable=None, amount_scale=.1)
+    assert calls[0][:2] == (2173.15, 6e6)
+    np.testing.assert_allclose(calls[0][2], [.3, .2])
+    assert result["standards_rt"]["sio2_liquid"] == -5.
+    assert result["standards_rt"]["H2O_gas"] == -9.
+    assert result["standards_rt"]["H2_gas"] == -1.
+    original, _ = AUDIT.source_standards_rt(2173.15, 60.)
+    model = eos.MaFeSiOHLiquid()
+    for name in ("Fe", "Si"):
+        expected = original[name + "_metal"] + model.standard_state_shift_RT(2173.15)[list(model.components).index(name)]
+        assert result["standards_rt"][name + "_metal"] == pytest.approx(float(expected))
+    assert not result["physical_calibration_accepted"]
+    source["source_atmosphere_parcel"]["P_bar"] = 1.
+    with pytest.raises(ValueError, match="unchanged"):
+        AUDIT.extract_formal_reduction_standards(source, evaluator=provider, runtime=None,
+                                                python_executable=None, amount_scale=.1)
