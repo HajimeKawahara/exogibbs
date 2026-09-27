@@ -1,0 +1,21 @@
+{
+  "assessment_process_exit_code": 0,
+  "native_evaluations": 0,
+  "pressure_closure_evaluations": 0,
+  "executed_code_commit": "c861b469a44561529d6974edce1dea9e4a94cc3c",
+  "files": {
+    "README.md": "6db074db13d4af2d65b5f38c070d3fd786fa35f75808ae31885921ee45bad8b8",
+    "full_pytest.log": "2271a511b2d1c1bc152301314656bf7dbce470ffca47d3e01006fc921ceff835",
+    "h1e22.json": "b6ebd4b1765603d9864c9833591f84aa0c28ae7c69052b5121f672db7ae1e03a",
+    "h1e24.json": "57070fb43b14833f3c242318f78f66abd54713406625aeb4516759211803f33c",
+    "h2e24.json": "954d3acec57726e38bd3d1aa62bb27b978243bcd4c4299b794ce93d08d5798fd",
+    "optional_eos_exit.json": "34312a72fcd2760cce54b23c23b4c0ad2b1be5d1305797aceb2cd7a5683ce188",
+    "optional_eos_nodeids.json": "8e75f39074f50844a905c6d604a8051681e6b5b7025e7133cabfdfd84f75351f",
+    "optional_eos_pytest.log": "d26257a146a42c617ce3d732ba3d476c168c1a8f0a52cfab7af89f0b409a1546",
+    "reproduce.py": "e79e3804ed4baac37f80973c967a3add50aa7ecc5f1fcb52a0e6e3e70a8a85db",
+    "run.log": "c4f617d60ba4c273b4f203d2e90d5ffb568ae4cd45a0e8540b39b244c5036a43",
+    "summary.json": "c4f617d60ba4c273b4f203d2e90d5ffb568ae4cd45a0e8540b39b244c5036a43",
+    "targeted_final.log": "cfccc04f8f4c54a5cc18f0a5c08f1e1f346a4e9c5dec7c09a96a142e7d084e6a",
+    "validation.json": "60e00e33ee65f46aa9d925f602d34368210a056aed1eb4cd981e567e4f34b0dd"
+  }
+}
