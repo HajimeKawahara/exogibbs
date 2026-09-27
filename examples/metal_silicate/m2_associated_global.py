@@ -270,16 +270,11 @@ def _load_provider(checkout, potassium):
     return module
 
 
-def make_associated_insertion_minimizer(metadata, metal_evaluator, exoeos_checkout):
-    """Return the pressure-trial-scoped source phase-selection callback.
-
-    Signature: (temperature_k, pressure_bar, formula, potentials, lower, upper,
-    *, tolerance=1e-8, maxiter=1000). The provider's frozen T/P check remains
-    active. Metadata and all physical coefficients are copied and hash-bound.
-    """
+def load_associated_expression(metadata, exoeos_checkout):
+    """Bind a saved 18/19-species expression for insertion and primal energy."""
     metadata = deepcopy(metadata)
     kind = metadata.get("metal_model")
-    if kind not in ("associated", "associated_k") or not callable(metal_evaluator):
+    if kind not in ("associated", "associated_k"):
         raise ValueError("Require a declared associated alloy and its actual callback.")
     potassium = kind == "associated_k"
     row = metadata["associated_metal"]
@@ -295,10 +290,14 @@ def make_associated_insertion_minimizer(metadata, metal_evaluator, exoeos_checko
                 raise ValueError("The imported alloy dependency differs from its saved recipe: "+path)
     temperature = row["standards"]["temperature_K"]
     policy = row["interactions"]["temperature_policy_for_extra_P_H_cross_terms"]
-    model, interactions = provider.make_associated_model(
-        temperature, temperature_policy=policy, hydrogen_oxygen_model="schenck1961_abstract")
-    reference, _ = provider.make_associated_model(temperature, temperature_policy=policy,
-                                                hydrogen_oxygen_model="omitted")
+    options = {"temperature_policy": policy}
+    if "hydrogen_oxygen" in row["interactions"]:
+        options["hydrogen_oxygen_model"] = row["interactions"]["hydrogen_oxygen"]["model"]
+    model, interactions = provider.make_associated_model(temperature, **options)
+    reference_options = {**options}
+    if "hydrogen_oxygen_model" in options:
+        reference_options["hydrogen_oxygen_model"] = "omitted"
+    reference, _ = provider.make_associated_model(temperature, **reference_options)
     if (model.reference_model_id != row["model_id"] or interactions != row["interactions"]
             or list(provider.COMPONENTS) != row["component_order"]
             or list(provider.FORMULAS) != row["component_formulas"]
@@ -313,12 +312,12 @@ def make_associated_insertion_minimizer(metadata, metal_evaluator, exoeos_checko
     if kappa <= 0:
         raise ValueError("The declared H--O-free reference has no positive global curvature bound.")
     standards = [_I(float(value)) for value in row["standards"]["standard_potentials_rt"]]
-    offsets = metadata.get("provider_scenario", {}).get("standard_offsets_rt", {})
+    offsets = (metadata.get("provider_scenario") or {}).get("standard_offsets_rt", {})
     for i, name in enumerate(provider.COMPONENTS):
         standards[i] += _I(float(offsets.get(name+"_metal", 0.)))
     ho = _I(float(matrix[2][3]))
-    if ho.lo <= 0:
-        raise ValueError("This opt-in certificate requires the positive declared H--O coefficient.")
+    if ho.lo < 0:
+        raise ValueError("The declared H--O coefficient must be nonnegative.")
     shifts = [_I(0) for _ in range(len(standards)-1)]
     if potassium:
         h = 1-_I(float(saved_hi[-1]))
@@ -330,6 +329,16 @@ def make_associated_insertion_minimizer(metadata, metal_evaluator, exoeos_checko
         shifts[1] = shifts[2] = ho
     def excess(values):
         return provider.associated_excess(temperature, dry, epsilon, matrix, values)
+
+    return {"metadata": metadata, "row": row, "provider": provider, "model": model, "temperature": temperature, "standards": standards, "saved_lo": saved_lo, "saved_hi": saved_hi, "kappa": kappa, "shifts": shifts, "excess": excess, "offsets": offsets}
+
+
+def _insertion_callback(context, metal_evaluator):
+    if not callable(metal_evaluator):
+        raise ValueError("The source alloy evaluator must be callable.")
+    metadata, row, provider, temperature, standards, saved_lo, saved_hi, kappa, shifts, excess = (context[key] for key in ('metadata', 'row', 'provider', 'temperature', 'standards', 'saved_lo', 'saved_hi', 'kappa', 'shifts', 'excess'))
+
+    offsets = context["offsets"]
 
     def minimize_actual(t, p, formula, potentials, lower, upper, *, tolerance=1e-8, maxiter=1000):
         lo, hi = _validate_domain(lower, upper)
@@ -395,3 +404,28 @@ def make_associated_insertion_minimizer(metadata, metal_evaluator, exoeos_checko
                                 else "Associated-alloy global minimum budget is unresolved.", report)
     minimize_actual.last_report = None
     return minimize_actual
+
+
+def make_associated_insertion_minimizer(metadata, metal_evaluator, exoeos_checkout):
+    """Return the source insertion hook for the bound declared expression.
+
+    The callback takes K, bar, formula matrix, elemental potentials, lower
+    and upper fractions, and keyword tolerance/maxiter. Its original source
+    T/P and scalar/potential validation are retained.
+    """
+    return _insertion_callback(load_associated_expression(metadata, exoeos_checkout), metal_evaluator)
+
+
+def alloy_energy_interval(context, amounts):
+    """Outward extensive G for exact atom-repaired component amounts."""
+    values = [Fraction(v) for v in amounts]
+    if (len(values) != len(context["standards"]) or any(v < 0 for v in values)
+            or sum(values) <= 0):
+        raise ValueError("Require nonnegative declared alloy amounts and a positive phase.")
+    total = sum(values)
+    fractions = [v/total for v in values]
+    if any(x < Fraction(float(lo)) or x > Fraction(float(hi)) for x, lo, hi in
+           zip(fractions, context["saved_lo"], context["saved_hi"])):
+        raise ValueError("The feasible primal alloy lies outside the declared domain.")
+    value, _ = _scalar_gradient(context["excess"], context["standards"], fractions[1:], intervals=True)
+    return _I(total)*value

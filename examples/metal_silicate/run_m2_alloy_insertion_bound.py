@@ -30,7 +30,7 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def saved_inputs(closure_path: Path, physical_path: Path) -> tuple:
+def saved_inputs(closure_path: Path, physical_path: Path, *, allow_extended=False) -> tuple:
     """Require the exact accepted root already named by a physical audit."""
     report = json.loads(Path(closure_path).read_text())
     audit = json.loads(Path(physical_path).read_text())
@@ -66,13 +66,23 @@ def saved_inputs(closure_path: Path, physical_path: Path) -> tuple:
             or audit["host_stability"]["pressure_Pa"] != state["pressure_base_pa"]):
         raise ValueError("The audit and selected root must have identical T/P and layers.")
     record = source["source_internal_record"]
-    if tuple(record["phases"]["metal"]) != COMPONENTS:
-        raise ValueError("Only the declared four-component source alloy is supported.")
-    # Unit atomic columns select lambda exactly; a rounded matrix product
-    # must not be mistaken for the exact external supporting plane.
-    for name, element in zip(COMPONENTS, ELEMENTS):
-        if record["component_formulas"][name] != {element: 1}:
-            raise ValueError("The source alloy requires unit atomic formula columns.")
+    metadata = source["source_metadata"]
+    kind = metadata.get("metal_model", "ma")
+    components = COMPONENTS
+    formulas = [{element: 1} for element in ELEMENTS]
+    extended = None
+    if allow_extended and kind in ("phosphorus", "associated", "associated_k"):
+        extended = metadata["phosphorus_metal" if kind == "phosphorus" else "associated_metal"]
+        components = tuple(name+"_metal" for name in extended["component_order"])
+        formulas = ([{name: 1} for name in extended["component_order"]] if kind == "phosphorus"
+                    else extended["component_formulas"])
+    if tuple(record["phases"]["metal"]) != components:
+        raise ValueError("Only an explicitly selected declared source alloy is supported.")
+    if len(formulas) != len(components):
+        raise ValueError("Every declared alloy component requires its complete atom column.")
+    for name, formula in zip(components, formulas):
+        if record["component_formulas"][name] != formula:
+            raise ValueError("The source alloy atom columns differ from its declaration.")
     basis = record["elements"]
     result = source["source_internal_result"]
     if not result["accepted"] or len(basis) != len(set(basis)):
@@ -80,20 +90,20 @@ def saved_inputs(closure_path: Path, physical_path: Path) -> tuple:
     potential = np.asarray(result["elemental_potentials_rt"], dtype=float)
     if potential.shape != (len(basis),) or not np.all(np.isfinite(potential)):
         raise ValueError("The saved elemental plane must be finite and complete.")
-    plane = potential[[basis.index(element) for element in ELEMENTS]]
+    plane = potential.copy() if extended is not None else potential[[basis.index(element) for element in ELEMENTS]]
     selection = source["metal_selection"]
     domain = selection["metal_composition_domain"]
     composition = np.asarray(selection["metal_composition"], dtype=float)
-    if (composition.shape != (4,) or np.any(composition <= 0)
+    if (composition.shape != (len(components),) or np.any(composition <= 0)
             or not np.all(np.isfinite(composition)) or selection["metal_amount_mol"] <= 0
-            or domain["component_order"] != list(COMPONENTS)
+            or domain["component_order"] != list(components)
             or not np.array_equal(composition, domain["selected_metal"]["composition"])):
         raise ValueError("Require the saved positive selected alloy and its exact domain record.")
     names = [name for phase in record["phases"].values() for name in phase]
     amounts = np.asarray(result["component_amounts_mol"], dtype=float)
     if len(names) != len(set(names)) or amounts.shape != (len(names),):
         raise ValueError("Require a unique complete source component ledger.")
-    metal = amounts[[names.index(name) for name in COMPONENTS]]
+    metal = amounts[[names.index(name) for name in components]]
     if (not np.all(np.isfinite(metal)) or np.any(metal <= 0)
             or not np.array_equal(metal / metal.sum(), composition)):
         raise ValueError("The saved alloy composition must match the source primitive amounts.")
@@ -103,8 +113,12 @@ def saved_inputs(closure_path: Path, physical_path: Path) -> tuple:
     if (normalize_scenario(source["source_metadata"].get("provider_scenario")) != scenario
             or source.get("provider_scenario_sha256") != expected_scenario_sha):
         raise ValueError("The closure and executed source must name the same scenario and bytes.")
-    if (scenario["metal_bounds"]["lower"] != domain["lower_atomic_fractions"]
-            or scenario["metal_bounds"]["upper"] != domain["upper_atomic_fractions"]
+    expected_lower = scenario["metal_bounds"]["lower"] if extended is None else extended[
+        "lower_atomic_fractions" if kind == "phosphorus" else "lower_species_fractions"]
+    expected_upper = scenario["metal_bounds"]["upper"] if extended is None else extended[
+        "upper_atomic_fractions" if kind == "phosphorus" else "upper_species_fractions"]
+    if (expected_lower != domain["lower_atomic_fractions"]
+            or expected_upper != domain["upper_atomic_fractions"]
             or domain["effective_upper_atomic_fractions"] != domain["upper_atomic_fractions"]):
         raise ValueError("The source scenario and supported alloy domain must agree exactly.")
     return report, audit, state, scenario, plane, composition

@@ -57,6 +57,29 @@ the latter's rounding is bounded rather than silently changing the former.
 An independent repaired-primal energy check against the saved total source
 energy must meet the same `1e-9 RT` per inventory atom tolerance.
 
+The reconstructed-water model uses `--water-proof` instead of the original
+native-water liquid proof. Its coefficients, elemental plane, external water
+standard shift, H2 standard and exact source/audit hashes must match the
+fresh audit. The complete dry simplex and all nonnegative water/H2 amounts
+have an analytic volatile minimum; only the lower bound relaxes the original
+oxygen-capacity constraint. The atom-repaired primal retains that constraint
+and evaluates the unreduced extensive water/H2 scalar. A negative lower bound
+remains usable, with its explicit contribution to the common-plane correction.
+
+For `metal_model='phosphorus'|'associated'|'associated_k'`, omit `--alloy-bound`.
+The runner freshly reconstructs the provider-owned scalar and standards from
+the actual saved P gas anchor, original Ma host, association/K recipe and
+separate scenario offsets. All selected reduced chemical potentials are checked
+against the saved primitive ledger. Positive-curvature reference bounds or the
+H–O alphaBB bound cover the entire declared domain; search error remains an
+explicit acceptance condition. P's coupled Fe constraint is enclosed by a
+larger rectangle only for the lower bound, with curvature recomputed on that
+rectangle. The feasible primal always obeys the original domain.
+Associated components count chemical species moles: each component's complete
+atom column enters the plane, exact budget repair and atom normalization.
+This extension does not certify a zero-metal branch or uncalibrated material
+properties.
+
 The runner requires an accepted final pressure root bound to a fresh physical
 audit and the original phase-proof inputs. Exact mathematical input equality
 permits previously recorded proof reuse. Runtime receipt hashes may differ
