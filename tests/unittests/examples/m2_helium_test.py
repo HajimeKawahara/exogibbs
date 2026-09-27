@@ -61,6 +61,12 @@ def test_finite_atomic_helium_keeps_budgets_and_records_actual_retained_gas_anch
     assert "He silicate dissolution" not in metadata["atmosphere"]["missing_paths"]
     assert {"Na alloy component", "He alloy dissolution"} <= set(metadata["atmosphere"]["missing_paths"])
     assert metadata["helium_solubility_model"] == "guillot2012_olivine"
+    changed = copy.deepcopy(receipt)
+    changed["gas_anchor"]["formula"] = [0.] * len(anchor["elements"])
+    # Even preserving the numeric gauge sum cannot turn another atom into He.
+    changed["gas_anchor"]["retained_raw_standard_rt"] = receipt["gas_standard_rt"]
+    with pytest.raises(ValueError, match="formula"):
+        HE.reconstruct_helium_model(checkout, changed)
 
 
 def test_wrapped_host_potentials_and_saved_recipe_agree_with_closed_henry_solution(checkout):

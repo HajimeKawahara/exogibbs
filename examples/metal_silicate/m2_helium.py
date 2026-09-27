@@ -31,7 +31,15 @@ def reconstruct_helium_model(exoeos_checkout, receipt):
             raise ValueError("Saved He provider recipe differs: " + key)
     if "gas_anchor" in receipt:
         anchor = receipt["gas_anchor"]
-        standard = anchor["retained_raw_standard_rt"] + np.dot(anchor["formula"], anchor["element_gauge_rt"])
+        elements = anchor["elements"]
+        formula = np.asarray(anchor["formula"], dtype=float)
+        gauge = np.asarray(anchor["element_gauge_rt"], dtype=float)
+        if (len(set(elements)) != len(elements) or "He" not in elements
+                or formula.shape != (len(elements),) or gauge.shape != formula.shape
+                or not np.all(np.isfinite(gauge))
+                or not np.array_equal(formula, [float(element == "He") for element in elements])):
+            raise ValueError("Saved He retained-gas formula or gauge is invalid")
+        standard = anchor["retained_raw_standard_rt"] + np.dot(formula, gauge)
         if (anchor["species"] != "He1" or anchor["temperature_K"] != receipt["temperature_K"]
                 or anchor["pressure_standard_bar"] != 1.
                 or anchor["common_standard_rt"] != receipt["gas_standard_rt"]
