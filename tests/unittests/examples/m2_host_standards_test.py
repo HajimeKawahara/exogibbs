@@ -58,6 +58,7 @@ def test_changed_recipe_or_invalid_source_fails_closed(change):
 @pytest.mark.parametrize("metal,key,model_id", [
     ("phosphorus", "phosphorus_metal", "ma_fe_si_o_h_p_dilute_quadratic_continuation_v1"),
     ("associated", "associated_metal", "ma_p_jung_associated_metal_continuation_v1"),
+    ("associated_k", "associated_metal", "ma_p_jung_associated_potassium_sensitivity_v1"),
 ])
 def test_explicit_new_metal_ids_preserve_the_hydrogen_recipe(metal, key, model_id):
     saved = source()
