@@ -129,6 +129,7 @@ jobs:
             tests/unittests/examples/metal_silicate_common_gibbs_test.py
             tests/unittests/examples/metal_silicate_common_gas_test.py
             tests/unittests/examples/m2_atmosphere_test.py
+            tests/unittests/examples/m2_finite_gas_test.py
             tests/unittests/examples/m2_host_stability_test.py
             tests/unittests/examples/metal_silicate_expanded_contact_test.py
             tests/unittests/examples/metal_silicate_phase_selection_test.py

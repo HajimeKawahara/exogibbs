@@ -1,0 +1,102 @@
+.F.                                                                      [100%]
+=================================== FAILURES ===================================
+__ test_67_condensates_preserve_finite_atoms_and_cannot_raise_minimum[1000.0] __
+
+temperature = 1000.0, pressure = 267.0
+atom_tuple = (1.0, 0.1, 0.3, 0.02, 0.01, 0.001, ...)
+
+    @lru_cache(maxsize=1)
+    def solve(temperature, pressure, atom_tuple):
+        b = np.array(atom_tuple)
+        ng, nc = np.zeros(len(gas_setup.species)), np.zeros(len(cloud_setup.species))
+        try:
+            if np.any(b > 0):
+                rows, gas_columns, cloud_columns, gas, combined = support(tuple(b > 0))
+                scale = float(b.sum())
+                reduced_budget = jnp.asarray(b[rows] / scale)
+                if len(cloud_columns):
+                    result = solve_condensate(
+                        combined, temperature, pressure, reduced_budget,
+                        options=CondensateEquilibriumOptions(
+                            return_diagnostics=True, rainout=False,
+                            full_condensate_budget_relative_tolerance=1e-9,
+                        ),
+                    )
+                    gas_n, cloud_n = np.asarray(result.gas_n), np.asarray(result.condensate_amounts)
+                    converged = bool(result.converged)
+                else:
+                    result, diagnostics = solve_gas(
+                        gas, temperature, pressure, reduced_budget,
+                        options=EquilibriumOptions(epsilon_crit=1e-14), return_diagnostics=True,
+                    )
+                    gas_n, cloud_n = np.asarray(result.n), np.zeros(0)
+                    converged = bool(diagnostics["converged"])
+                if not converged:
+>                   raise PhaseEvaluationError("The atmospheric parcel solver did not converge.")
+E                   common_gibbs.PhaseEvaluationError: The atmospheric parcel solver did not converge.
+
+examples/metal_silicate/m2_atmosphere.py:191: PhaseEvaluationError
+
+The above exception was the direct cause of the following exception:
+
+setup = CondensateChemicalSetup(gas_setup=ChemicalSetup(formula_matrix=Array([[ 0.,  1.,  0.,  0.,  0.,  0.,  0.,  1.,  2.,  0...e2SiO4(s)', 'H2O(s,l)', 'SiO(s)'), elements=('H', 'He', 'O', 'Mg', 'Si', 'Fe', 'Na', 'Al', 'Ca', 'K', 'Ti', 'Cr', 'P'))
+temperature = 1000.0
+
+    @pytest.mark.parametrize("temperature", [1000., 2173.15])
+    def test_67_condensates_preserve_finite_atoms_and_cannot_raise_minimum(setup, temperature):
+        b = np.array([1., .1, .3, .02, .01, .001, .001,
+                      1e-5, 1e-5, 1e-5, 1e-6, 1e-5, 2e-4])
+        expanded = GAS.build_atmosphere_setup("janaf_condensed")
+>       original = ATM.make_atmosphere_phase(setup, np.zeros(13)).parcel(temperature, 267., b)
+
+tests/unittests/examples/m2_finite_gas_test.py:151: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+examples/metal_silicate/m2_atmosphere.py:215: in <lambda>
+    callback.parcel = lambda t, p, b: deepcopy(evaluate(t, p, b))
+examples/metal_silicate/m2_atmosphere.py:209: in evaluate
+    return solve(float(temperature), float(pressure), tuple(b))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+temperature = 1000.0, pressure = 267.0
+atom_tuple = (1.0, 0.1, 0.3, 0.02, 0.01, 0.001, ...)
+
+    @lru_cache(maxsize=1)
+    def solve(temperature, pressure, atom_tuple):
+        b = np.array(atom_tuple)
+        ng, nc = np.zeros(len(gas_setup.species)), np.zeros(len(cloud_setup.species))
+        try:
+            if np.any(b > 0):
+                rows, gas_columns, cloud_columns, gas, combined = support(tuple(b > 0))
+                scale = float(b.sum())
+                reduced_budget = jnp.asarray(b[rows] / scale)
+                if len(cloud_columns):
+                    result = solve_condensate(
+                        combined, temperature, pressure, reduced_budget,
+                        options=CondensateEquilibriumOptions(
+                            return_diagnostics=True, rainout=False,
+                            full_condensate_budget_relative_tolerance=1e-9,
+                        ),
+                    )
+                    gas_n, cloud_n = np.asarray(result.gas_n), np.asarray(result.condensate_amounts)
+                    converged = bool(result.converged)
+                else:
+                    result, diagnostics = solve_gas(
+                        gas, temperature, pressure, reduced_budget,
+                        options=EquilibriumOptions(epsilon_crit=1e-14), return_diagnostics=True,
+                    )
+                    gas_n, cloud_n = np.asarray(result.n), np.zeros(0)
+                    converged = bool(diagnostics["converged"])
+                if not converged:
+                    raise PhaseEvaluationError("The atmospheric parcel solver did not converge.")
+                ng[gas_columns], nc[cloud_columns] = scale * gas_n, scale * cloud_n
+            report = audit_atmosphere(setup, temperature, pressure, b, ng, nc, element_gauge_rt)
+            if not report["accepted"]:
+                raise PhaseEvaluationError("The atmospheric parcel failed independent equilibrium acceptance.")
+        except (ValueError, RuntimeError, FloatingPointError, np.linalg.LinAlgError) as error:
+>           raise PhaseEvaluationError(str(error)) from error
+E           common_gibbs.PhaseEvaluationError: The atmospheric parcel solver did not converge.
+
+examples/metal_silicate/m2_atmosphere.py:197: PhaseEvaluationError
+=========================== short test summary info ============================
+FAILED tests/unittests/examples/m2_finite_gas_test.py::test_67_condensates_preserve_finite_atoms_and_cannot_raise_minimum[1000.0]
+1 failed, 2 passed, 6 deselected in 96.96s (0:01:36)

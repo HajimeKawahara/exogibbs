@@ -1,0 +1,379 @@
+{
+  "strategy": "saved_m1_metal_free_plus_1e-4_target_lp_interior",
+  "scope": "Numerical initialization only; no new equilibrium was evaluated or accepted.",
+  "donor_file": "/tmp/stage2-finite-closure-h1e24-m1-16/trial_0000.json",
+  "donor_sha256": "82763cc16ea5851353b57b8b4a33d4e328a71ff50fb7d662602ee3e621b4948d",
+  "inventory_sha256": "7294c2d507cf55f60b918a0f2ab6344c8bc8e101c2787855525d5ea9a735c6d7",
+  "temperature_K": 2173.15,
+  "pressure_bar": 250.0,
+  "donor_metal_status": "unresolved",
+  "donor_metal_free_accepted": true,
+  "donor_source_provenance": {
+    "exogibbs": {
+      "source_root": "/tmp/stage2-finite-gibbs-frozen-20260927",
+      "commit": "0dbb9a69f96101680a807c7642200dbadca58e41",
+      "changed_tracked_file_sha256": {}
+    },
+    "exoeos": {
+      "source_root": "/tmp/stage2-candidate-eos-20260927",
+      "commit": "44b977847ea7ed1e16377907722277a3e75bc9d7",
+      "changed_tracked_file_sha256": {}
+    },
+    "jax_version": "0.4.30",
+    "numpy_version": "1.26.4",
+    "file_sha256": {
+      "run_bse_common_gibbs.py": "379ed85df5b051e2f37eb198c4aa4605fc6c7bfb262f554cc93d77fbde4c8188",
+      "common_gibbs.py": "d04543e98c13edbbf3fc2c24bd5f122183d7b6b57c61df71a85b5323ef73a22d",
+      "full_potential.py": "0d312a1a5ac0fdae0479d0e85e09bc35a88f59952a36895b703ac35513b8bc19",
+      "melts_coupled.py": "3c5623622d4423fb5b00624a0f45e7a712044a1422346c34b0c3e5ecf84c1770",
+      "hydrogen.py": "8c6aaa6303583e1a7048b93db07a8edfea036321bc5c266425950821961887f3",
+      "source.py": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e",
+      "reference.json": "0c7146ab1c5935daae25f4371a34847e1469dfc637b02afe3f5984d4aeb22092",
+      "reduced_gas_reference.json": "0aa9b23cf1d85b9db6b877c5c360bd4420985e595ee9f9c7735dfe91347dc234",
+      "m2_common_gas.py": "d9466af88628ee78051f979ce99f8f34cfd4abdfbbc8dcce725b0a29fa618cde",
+      "m2_expanded_source.py": "f7f56de1446a9fa833ea08e4d8d2bae4c58fcbb2d7ce6214fa2b3fd1a3f7a9db",
+      "m2_atmosphere.py": "252c9a75a4a86a07fac9683d34c4a285fb2f5cbc650c1dacdd09039931b4eedd",
+      "m1_chemistry.py": "e998fcab3d5a4846877e135ff664f3f246a344ff20a6d1f1c55c16e7144be523",
+      "m2_scenarios.py": "aa9a335581197d6e8c9a636c29a5409e5c8f16bf6bb31095b540f67a99ade43f",
+      "m2_finite_gas.py": "09686261ea39a8d68b684a09d719129ee0a5b33d5a61c6e809b6c4594fa0001d",
+      "m2_janaf.py": "895db34792a256a1fb9bca4153b81340f4cdd8f8d45aff4afc51d04043fae127",
+      "m2_omitted_gas.py": "21baad5d2d07e441ac46998a8dce9dc2eb22459607732408f1c22ac16a947729",
+      "data/janaf_atomic.json": "4a9d51e8dd58f513b334b5025f0de49476ec5359e1ca811f9e9fd3daab829518"
+    }
+  },
+  "target_model_id": "bse_melts_ma_retained_atmosphere_conditional_v1",
+  "target_provenance": {
+    "exogibbs": {
+      "source_root": "/tmp/stage2-finite-seed-20260927",
+      "commit": "eeca82960c19aa0c50a5d39d4fb9160c2fafc0f8",
+      "changed_tracked_file_sha256": {}
+    },
+    "exoeos": {
+      "source_root": "/tmp/stage2-candidate-eos-20260927",
+      "commit": "44b977847ea7ed1e16377907722277a3e75bc9d7",
+      "changed_tracked_file_sha256": {}
+    },
+    "jax_version": "0.4.30",
+    "numpy_version": "1.26.4",
+    "file_sha256": {
+      "run_bse_common_gibbs.py": "379ed85df5b051e2f37eb198c4aa4605fc6c7bfb262f554cc93d77fbde4c8188",
+      "common_gibbs.py": "d04543e98c13edbbf3fc2c24bd5f122183d7b6b57c61df71a85b5323ef73a22d",
+      "full_potential.py": "0d312a1a5ac0fdae0479d0e85e09bc35a88f59952a36895b703ac35513b8bc19",
+      "melts_coupled.py": "3c5623622d4423fb5b00624a0f45e7a712044a1422346c34b0c3e5ecf84c1770",
+      "hydrogen.py": "8c6aaa6303583e1a7048b93db07a8edfea036321bc5c266425950821961887f3",
+      "source.py": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e",
+      "reference.json": "0c7146ab1c5935daae25f4371a34847e1469dfc637b02afe3f5984d4aeb22092",
+      "reduced_gas_reference.json": "0aa9b23cf1d85b9db6b877c5c360bd4420985e595ee9f9c7735dfe91347dc234",
+      "m2_common_gas.py": "d9466af88628ee78051f979ce99f8f34cfd4abdfbbc8dcce725b0a29fa618cde",
+      "m2_expanded_source.py": "c87933a69fd337b52f519dd77a5dae71801616874ba183819c302760fe6c8560",
+      "m2_atmosphere.py": "252c9a75a4a86a07fac9683d34c4a285fb2f5cbc650c1dacdd09039931b4eedd",
+      "m1_chemistry.py": "e998fcab3d5a4846877e135ff664f3f246a344ff20a6d1f1c55c16e7144be523",
+      "m2_scenarios.py": "aa9a335581197d6e8c9a636c29a5409e5c8f16bf6bb31095b540f67a99ade43f",
+      "m2_finite_gas.py": "dd68ca835f7eaedc5132c18c06112c87d481382ec0e47a2709bb34c410fc4cab",
+      "m2_janaf.py": "895db34792a256a1fb9bca4153b81340f4cdd8f8d45aff4afc51d04043fae127",
+      "m2_omitted_gas.py": "21baad5d2d07e441ac46998a8dce9dc2eb22459607732408f1c22ac16a947729",
+      "phase_selection.py": "711267c8cc285d96bc8bc44420d14831bb5d717c086798b40d89fcaf4a8a09ed",
+      "data/janaf_atomic.json": "4a9d51e8dd58f513b334b5025f0de49476ec5359e1ca811f9e9fd3daab829518"
+    }
+  },
+  "target_gas_model": "janaf",
+  "target_liquid_model": "native",
+  "record": {
+    "elements": [
+      "O",
+      "Mg",
+      "Si",
+      "Fe",
+      "Al",
+      "Ca",
+      "Na",
+      "K",
+      "Ti",
+      "Cr",
+      "P",
+      "H",
+      "He"
+    ],
+    "phases": {
+      "silicate": [
+        "sio2_melts",
+        "tio2_melts",
+        "al2o3_melts",
+        "fe2o3_melts",
+        "mgcr2o4_melts",
+        "fe2sio4_melts",
+        "mg2sio4_melts",
+        "casio3_melts",
+        "na2sio3_melts",
+        "kalsio4_melts",
+        "ca3(po4)2_melts",
+        "h2o_melts",
+        "H2_dissolved"
+      ],
+      "metal": [
+        "Fe_metal",
+        "Si_metal",
+        "O_metal",
+        "H_metal"
+      ],
+      "atmosphere": [
+        "H_atmosphere_atom",
+        "He_atmosphere_atom",
+        "O_atmosphere_atom",
+        "Mg_atmosphere_atom",
+        "Si_atmosphere_atom",
+        "Fe_atmosphere_atom",
+        "Na_atmosphere_atom",
+        "Al_atmosphere_atom",
+        "Ca_atmosphere_atom",
+        "K_atmosphere_atom",
+        "Ti_atmosphere_atom",
+        "Cr_atmosphere_atom",
+        "P_atmosphere_atom"
+      ]
+    },
+    "component_formulas": {
+      "sio2_melts": {
+        "O": 2.0,
+        "Si": 1.0
+      },
+      "tio2_melts": {
+        "O": 2.0,
+        "Ti": 1.0
+      },
+      "al2o3_melts": {
+        "Al": 2.0,
+        "O": 3.0
+      },
+      "fe2o3_melts": {
+        "Fe": 2.0,
+        "O": 3.0
+      },
+      "mgcr2o4_melts": {
+        "Cr": 2.0,
+        "Mg": 1.0,
+        "O": 4.0
+      },
+      "fe2sio4_melts": {
+        "Fe": 2.0,
+        "O": 4.0,
+        "Si": 1.0
+      },
+      "mg2sio4_melts": {
+        "Mg": 2.0,
+        "O": 4.0,
+        "Si": 1.0
+      },
+      "casio3_melts": {
+        "Ca": 1.0,
+        "O": 3.0,
+        "Si": 1.0
+      },
+      "na2sio3_melts": {
+        "Na": 2.0,
+        "O": 3.0,
+        "Si": 1.0
+      },
+      "kalsio4_melts": {
+        "Al": 1.0,
+        "K": 1.0,
+        "O": 4.0,
+        "Si": 1.0
+      },
+      "ca3(po4)2_melts": {
+        "Ca": 3.0,
+        "O": 8.0,
+        "P": 2.0
+      },
+      "h2o_melts": {
+        "H": 2.0,
+        "O": 1.0
+      },
+      "H2_dissolved": {
+        "H": 2
+      },
+      "Fe_metal": {
+        "Fe": 1
+      },
+      "Si_metal": {
+        "Si": 1
+      },
+      "O_metal": {
+        "O": 1
+      },
+      "H_metal": {
+        "H": 1
+      },
+      "H_atmosphere_atom": {
+        "H": 1.0
+      },
+      "He_atmosphere_atom": {
+        "He": 1.0
+      },
+      "O_atmosphere_atom": {
+        "O": 1.0
+      },
+      "Mg_atmosphere_atom": {
+        "Mg": 1.0
+      },
+      "Si_atmosphere_atom": {
+        "Si": 1.0
+      },
+      "Fe_atmosphere_atom": {
+        "Fe": 1.0
+      },
+      "Na_atmosphere_atom": {
+        "Na": 1.0
+      },
+      "Al_atmosphere_atom": {
+        "Al": 1.0
+      },
+      "Ca_atmosphere_atom": {
+        "Ca": 1.0
+      },
+      "K_atmosphere_atom": {
+        "K": 1.0
+      },
+      "Ti_atmosphere_atom": {
+        "Ti": 1.0
+      },
+      "Cr_atmosphere_atom": {
+        "Cr": 1.0
+      },
+      "P_atmosphere_atom": {
+        "P": 1.0
+      }
+    },
+    "reactions": [],
+    "atmosphere_element_order": [
+      "H",
+      "He",
+      "O",
+      "Mg",
+      "Si",
+      "Fe",
+      "Na",
+      "Al",
+      "Ca",
+      "K",
+      "Ti",
+      "Cr",
+      "P"
+    ],
+    "atmosphere_gas_model": "janaf"
+  },
+  "budget_mol": [
+    2.765799320714748e+24,
+    9.393188077599715e+23,
+    7.50110399560859e+23,
+    1.1222164664397966e+23,
+    8.742354607778429e+22,
+    6.34036357269645e+22,
+    1.163488354656573e+22,
+    6.166932731890957e+20,
+    2.520628775422783e+21,
+    5.060794944841094e+21,
+    2.9634958698121776e+20,
+    1e+24,
+    1e+23
+  ],
+  "component_order": [
+    "sio2_melts",
+    "tio2_melts",
+    "al2o3_melts",
+    "fe2o3_melts",
+    "mgcr2o4_melts",
+    "fe2sio4_melts",
+    "mg2sio4_melts",
+    "casio3_melts",
+    "na2sio3_melts",
+    "kalsio4_melts",
+    "ca3(po4)2_melts",
+    "h2o_melts",
+    "H2_dissolved",
+    "Fe_metal",
+    "Si_metal",
+    "O_metal",
+    "H_metal",
+    "H_atmosphere_atom",
+    "He_atmosphere_atom",
+    "O_atmosphere_atom",
+    "Mg_atmosphere_atom",
+    "Si_atmosphere_atom",
+    "Fe_atmosphere_atom",
+    "Na_atmosphere_atom",
+    "Al_atmosphere_atom",
+    "Ca_atmosphere_atom",
+    "K_atmosphere_atom",
+    "Ti_atmosphere_atom",
+    "Cr_atmosphere_atom",
+    "P_atmosphere_atom"
+  ],
+  "mapped_donor_component_amounts_mol": [
+    1.793909592763052e+23,
+    2.520628775422783e+21,
+    4.340342640229756e+22,
+    2.83954952905197e+19,
+    2.530397472420547e+21,
+    3.2941880312649247e+22,
+    4.6839232491275905e+23,
+    6.295911134649268e+22,
+    5.802409424221389e+21,
+    6.166932731890953e+20,
+    1.48174793490609e+20,
+    9.369338669899682e+21,
+    1.7011813278437453e+21,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    9.778589600045131e+23,
+    1.0000000000000001e+23,
+    3.6916195704489602e+22,
+    3.7604620331292037e+18,
+    7.021015242431604e+18,
+    4.628109502810008e+22,
+    3.0064698122950156e+19,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "initial_component_amounts_mol": [
+    1.7939802386036296e+23,
+    2.5204607335044214e+21,
+    4.340054311875863e+22,
+    3.026301651839031e+19,
+    2.5302287792557193e+21,
+    3.2940456485395385e+22,
+    4.683611409937304e+23,
+    6.295492888988227e+22,
+    5.802023098004744e+21,
+    6.16652160304216e+20,
+    1.48164915171043e+20,
+    9.385068402699359e+21,
+    1.7176778763776277e+21,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    9.77794507441846e+23,
+    1.0000000000000001e+23,
+    3.703477575871082e+22,
+    6.629699325517664e+19,
+    3.717407317911756e+19,
+    4.628020764015207e+22,
+    3.0837350556242244e+19,
+    5.807679962745983e+18,
+    4.2120915691152394e+18,
+    4.111288487927306e+16,
+    1.680419183615189e+17,
+    3.3738632965607296e+17,
+    1.9756639132081188e+16
+  ],
+  "lp_interior_fraction": 0.0001,
+  "maximum_relative_element_residual": 8.881784197001252e-16,
+  "native_calls": 0
+}
