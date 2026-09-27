@@ -45,7 +45,8 @@ def test_nineteen_species_keep_the_exact_thirteen_element_initial_budget(eos_che
     lo,hi,kappa=SOURCE.associated_metal_domain(metadata)
     assert lo.shape==hi.shape==(19,)
     assert .344<kappa<.345
-    assert metadata['atmosphere']['missing_paths']==[]
+    assert metadata['atmosphere']['missing_paths']==[
+        'Na alloy component', 'He alloy dissolution', 'He silicate dissolution']
     with pytest.raises(ValueError,match='requires an explicit'):
         build(eos_checkout,tmp_path,None)
 

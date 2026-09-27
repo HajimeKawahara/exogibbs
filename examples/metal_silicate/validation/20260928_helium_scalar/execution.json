@@ -1,0 +1,15 @@
+{
+  "created_utc": "2026-09-27T23:02:42.614410+00:00",
+  "test_command": "taskset -c 40 env JAX_ENABLE_X64=1 PYTHONPATH=/tmp/stage2-helium-eos-20260928/src:src /home/kawahara/anaconda3/envs/myenv39/bin/python -m pytest -q tests/unittests/examples/m2_helium_test.py tests/unittests/examples/m2_host_stability_test.py tests/unittests/examples/m2_potassium_test.py::test_nineteen_species_keep_the_exact_thirteen_element_initial_budget",
+  "actual_exit_code": 0,
+  "passed": 35,
+  "stdout": "...................................                                      [100%]\n35 passed in 4.03s\n",
+  "provider_commit": "a90031f98b802a6d33207404ebedfacd076eac1b",
+  "base_runtime_commit": "0edfee5a165dbd8dbe5071dfd1604317a5fa1d9b",
+  "source_hashes": {
+    "m2_helium.py": "5bbf49ba8552ac10d2cd5efcff600a7fd0b8bbb8733c48d880b2d331682899f2",
+    "m2_expanded_source.py": "68f901001dce8b8b9da1f4d26efc062dd7a4202b85a330d82313c2b07fccee85",
+    "m2_host_stability.py": "696435df497f71abe7916c4f16509db9a83717c3f75d02558aa6db419ba6b012"
+  },
+  "scope": "Source assembly, finite toy He budget, fresh mocked native candidate audit and scalar derivatives. No native runtime, finite BSE equilibrium or pressure closure was run."
+}
