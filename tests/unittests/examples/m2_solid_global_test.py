@@ -99,3 +99,41 @@ def test_signed_corner_is_not_omitted_by_nonnegative_endmember_search():
     result = SOLID.certify_solid_insertion(model, standards, host, 0., max_nodes=1)
     assert not result["formal_global_insertion_bound_accepted"]
     assert result["lower_bound_rt_per_formula_unit"] <= -1.
+
+
+def test_lp_dual_bound_retains_feasibility_without_trusting_solver_tolerances():
+    box = [SOLID._I(0, SOLID.Decimal(1)), SOLID._I(0, SOLID.Decimal(1))]
+    # min x+y subject to x+y>=1 is exactly one.
+    terms = [(SOLID._I(1), [1, 0]), (SOLID._I(1), [0, 1])]
+    bound = SOLID._linear_program_lower(terms, box, [(-1., [1., 1.])])
+    assert 1.-1e-14 <= float(bound) <= 1.
+
+
+@pytest.mark.parametrize("entropy_sign", [-1., 1.])
+def test_verified_curvature_minorant_never_exceeds_the_global_minimum(entropy_sign):
+    # A nonconvex polynomial plus convex/concave entropy exercises both
+    # quadratic minorants and lower chords at a closed entropy endpoint.
+    terms = [(SOLID._I(2), [1]), (SOLID._I(-2), [2])]
+    sites = [{"coefficient_rt": entropy_sign, "polynomial": [[1., [1]]]}]
+    first = [SOLID._derivative(terms, 0)]
+    second = [[SOLID._derivative(first[0], 0)]]
+    box = [SOLID._I(0, SOLID.Decimal(1))]
+    lower = SOLID._curvature_relaxation(terms, sites, box, [(0., [1.]), (1., [-1.])], first, second)
+    points = np.linspace(1e-8, 1., 10001)
+    values = 2*points*(1-points)+entropy_sign*points*np.log(points)
+    assert float(lower) <= min(0., values.min())
+
+
+def test_pure_reference_bounds_cover_the_entire_order_interval():
+    model = {"coordinate_bounds": [[0, 1]],
+             "polynomial_rt": [[1., [0]], [-4., [1]], [4., [2]]], "entropy_sites": []}
+    interval, proof = SOLID._pure_minimum_interval(model, subdivisions=16)
+    assert interval.lo <= 0 <= interval.hi
+    assert len(proof["subintervals"]) == 16
+
+
+def test_binary_specific_model_rejects_an_unmatched_standard_provider():
+    model, standards, host = case()
+    model.update(source_kind="pinned_native_binary_instruction_transcription", source_sha256="required")
+    with pytest.raises(ValueError, match="binary-specific"):
+        SOLID.certify_solid_insertion(model, standards, host, 0.)

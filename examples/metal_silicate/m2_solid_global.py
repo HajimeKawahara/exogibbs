@@ -12,8 +12,9 @@ from fractions import Fraction
 import heapq
 
 import numpy as np
+from scipy.optimize import linprog
 
-from m2_liquid_global import _I, _outward_float
+from m2_liquid_global import _I, _outward_float, _positive_definite
 
 
 def _power(value, exponent):
@@ -76,6 +77,210 @@ def _solve_exact(matrix, rhs):
     return [row[-1] for row in rows]
 
 
+def _linear_domain(parameters):
+    """Return declared linear inequalities b + a.x >= 0, including sites."""
+    size = len(parameters["coordinate_bounds"])
+    rows = list(parameters["nonnegative_polynomials"])
+    for site in parameters["entropy_sites"]:
+        rows.append(site["polynomial"])
+        rows.append([[1., [0]*size]] + [[-c, powers] for c, powers in site["polynomial"]])
+    result = []
+    for terms in rows:
+        coefficients, constant = [Fraction(0)]*size, Fraction(0)
+        if any(sum(powers) > 1 for _, powers in terms):
+            continue
+        for c, powers in terms:
+            if sum(powers) == 0:
+                constant += Fraction(float(c))
+            else:
+                coefficients[powers.index(1)] += Fraction(float(c))
+        # The numerical LP only receives exactly representable constraints.
+        # Other rows remain in the original interval domain check.
+        if all(Fraction(float(x)) == x for x in [constant]+coefficients):
+            result.append((float(constant), [float(x) for x in coefficients]))
+    return result
+
+
+def _tighten_domain(lower, upper, inequalities):
+    """Enclose bound propagation without discarding any feasible boundary."""
+    lower, upper = lower.copy(), upper.copy()
+    for _ in range(2):
+        for constant, coefficients in inequalities:
+            for index, coefficient in enumerate(coefficients):
+                if coefficient == 0:
+                    continue
+                remainder = _I(constant)
+                for j, c in enumerate(coefficients):
+                    if j != index and c:
+                        remainder += _I(c)*_I(float(upper[j] if c > 0 else lower[j]))
+                edge = -remainder/_I(coefficient)
+                if coefficient > 0:
+                    lower[index] = max(lower[index], _outward_float(edge.lo, True))
+                else:
+                    upper[index] = min(upper[index], _outward_float(edge.hi, False))
+                if lower[index] > upper[index]:
+                    return lower, upper, True
+    return lower, upper, False
+
+
+def _linear_program_lower(terms, box, inequalities):
+    """Certify an affine LP lower bound from arbitrary nonnegative duals.
+
+    The numerical LP supplies useful multipliers only. Re-evaluating their
+    Lagrangian with intervals and minimizing its residual on the box makes
+    the bound independent of the numerical LP feasibility tolerances.
+    """
+    size = len(box)
+    gradient, constant = [_I(0) for _ in box], _I(0)
+    for coefficient, powers in terms:
+        if sum(powers) == 0:
+            constant += coefficient
+        else:
+            gradient[powers.index(1)] += coefficient
+    matrix = np.asarray([row[1] for row in inequalities])
+    rhs = np.asarray([row[0] for row in inequalities])
+    result = linprog([float(g.lo) for g in gradient], A_ub=-matrix, b_ub=rhs,
+                     bounds=[(float(v.lo), float(v.hi)) for v in box], method="highs")
+    multipliers = np.maximum(0., -result.ineqlin.marginals) if result.success else np.zeros(len(rhs))
+    for multiplier, (b, a) in zip(multipliers, inequalities):
+        weight = _I(float(multiplier))
+        constant -= weight*_I(b)
+        for j, value in enumerate(a):
+            gradient[j] -= weight*_I(value)
+    return (constant + sum((g*x for g, x in zip(gradient, box)), _I(0))).lo
+
+
+def _derivative(terms, index):
+    result = []
+    for coefficient, powers in terms:
+        if powers[index]:
+            reduced = list(powers)
+            reduced[index] -= 1
+            result.append((_I(coefficient)*_I(powers[index]), reduced))
+    return result
+
+
+def _curvature_relaxation(terms, sites, box, inequalities, derivatives, hessians):
+    """Support a convex polynomial/entropy minorant and verify its affine LP.
+
+    Positive site entropy has curvature at least c/upper. Negative site
+    entropy is concave and lies above its endpoint chord. These replacements
+    are valid on the full closed site interval, including empty sites.
+    """
+    size = len(box)
+    center = [_I((v.lo+v.hi)/2) for v in box]
+    value = _poly(terms, center)
+    gradient = [_poly(row, center) for row in derivatives]
+    hessian = [[_poly(row, box) for row in rows] for rows in hessians]
+    for site in sites:
+        occupation = _poly(site["polynomial"], box)
+        lo, hi = max(Decimal(0), occupation.lo), min(Decimal(1), occupation.hi)
+        at_center = _poly(site["polynomial"], center)
+        slope = [_poly(_derivative(site["polynomial"], j), center) for j in range(size)]
+        if any(sum(powers) > 1 for _, powers in site["polynomial"]):
+            raise ArithmeticError("Curvature relaxation requires affine site occupations.")
+        coefficient = _I(site["coefficient_rt"])
+        if hi == 0:
+            continue
+        if coefficient.lo >= 0:
+            anchor = max(lo, min(hi, (at_center.lo+at_center.hi)/2))
+            if anchor == 0:
+                anchor = hi/2
+            logarithm = _I(anchor).log()
+            curvature = _I(_outward_float((coefficient/_I(hi)).lo, True))
+            delta = at_center-_I(anchor)
+            value += coefficient*_I(anchor)*logarithm + coefficient*(logarithm+1)*delta + _I(.5)*curvature*delta*delta
+            for i in range(size):
+                gradient[i] += (coefficient*(logarithm+1)+curvature*delta)*slope[i]
+                for j in range(size):
+                    hessian[i][j] += curvature*slope[i]*slope[j]
+        else:
+            first = coefficient*_xlogx(_I(lo))
+            last = coefficient*_xlogx(_I(hi))
+            if hi == lo:
+                value += first
+                continue
+            # Interpolate lower endpoint values. Convex combination weights
+            # are nonnegative on the declared site interval.
+            chord = (_I(last.lo)-_I(first.lo))/(_I(hi)-_I(lo))
+            value += _I(first.lo)+chord*(at_center-_I(lo))
+            for i in range(size):
+                gradient[i] += chord*slope[i]
+    midpoint = np.array([[float((entry.lo+entry.hi)/2) for entry in row] for row in hessian])
+    rho = max(0., -float(np.linalg.eigvalsh(midpoint)[0])+1e-8)
+    ceiling = max(Decimal(0), max(sum(max(abs(hessian[i][j].lo), abs(hessian[i][j].hi))
+                                    for j in range(size) if j != i)-hessian[i][i].lo for i in range(size)))
+    ceiling = _outward_float(ceiling, False)+1e-7
+    for _ in range(8):
+        shifted = [[entry+(_I(rho) if i == j else _I(0)) for j, entry in enumerate(row)]
+                   for i, row in enumerate(hessian)]
+        if _positive_definite(shifted):
+            break
+        rho = max(1e-7, min(ceiling, 2*rho+1e-7))
+    else:
+        rho = ceiling
+        shifted = [[entry+(_I(rho) if i == j else _I(0)) for j, entry in enumerate(row)]
+                   for i, row in enumerate(hessian)]
+        if not _positive_definite(shifted):
+            raise ArithmeticError("The convex minorant curvature was not verified.")
+    for i in range(size):
+        value += _I(.5)*_I(rho)*(center[i]-_I(box[i].lo))*(center[i]-_I(box[i].hi))
+        gradient[i] += _I(rho)*(center[i]-_I(.5)*(_I(box[i].lo)+_I(box[i].hi)))
+    constant = value-sum((g*x for g, x in zip(gradient, center)), _I(0))
+    affine = [(constant, [0]*size)]
+    for j, g in enumerate(gradient):
+        powers = [0]*size
+        powers[j] = 1
+        affine.append((g, powers))
+    return _linear_program_lower(affine, box, inequalities)
+
+
+def _pure_minimum_interval(model, subdivisions=256):
+    """Enclose a complete one-dimensional pure-order global minimum.
+
+    Every interval is covered, and point energies provide only upper bounds.
+    This defines the declared equilibrium reference independently of any
+    local native Newton ordering state.
+    """
+    if model["coordinate_bounds"] != [[0, 1]]:
+        raise ValueError("A complete [0,1] pure-order coordinate is required.")
+    terms = model["polynomial_rt"]
+    derivatives = [_derivative(terms, 0)]
+    hessians = [[_derivative(derivatives[0], 0)]]
+    inequalities = _linear_domain({**model, "nonnegative_polynomials": []})
+
+    def energy(box):
+        value = _poly(terms, box)
+        for site in model["entropy_sites"]:
+            occupation = _poly(site["polynomial"], box)
+            if occupation.lo < 0 or occupation.hi > 1:
+                raise ValueError("A pure-order expression leaves its physical site domain.")
+            value += _I(site["coefficient_rt"])*_xlogx(occupation)
+        return value
+
+    constant = all(not any(powers) for _, powers in terms) and not model["entropy_sites"]
+    count = 1 if constant else subdivisions
+    intervals, witnesses = [], []
+    for i in range(count):
+        lo, hi = Decimal(i)/Decimal(count), Decimal(i+1)/Decimal(count)
+        box = [_I(lo, hi)]
+        value = energy(box)
+        if not constant and inequalities:
+            try:
+                bound = _curvature_relaxation(terms, model["entropy_sites"], box, inequalities, derivatives, hessians)
+                value = _I(max(value.lo, bound), value.hi)
+            except ArithmeticError:
+                pass
+        intervals.append({"lower": str(lo), "upper": str(hi), "energy_lower_rt": str(value.lo)})
+        point = (lo+hi)/2
+        witnesses.append({"coordinate": str(point), "energy_upper_rt": str(energy([_I(point)]).hi)})
+    for point in (Decimal(0), Decimal(1)):
+        witnesses.append({"coordinate": str(point), "energy_upper_rt": str(energy([_I(point)]).hi)})
+    lower = min(Decimal(row["energy_lower_rt"]) for row in intervals)
+    witness = min(witnesses, key=lambda row: Decimal(row["energy_upper_rt"]))
+    return _I(lower, Decimal(witness["energy_upper_rt"])), {"subintervals": intervals, "upper_witness": witness}
+
+
 def certify_solid_insertion(parameters: dict, standard_states: dict,
                             host_properties: dict, dissolved_h2_moles: float,
                             *, max_nodes: int = 100000, tolerance_rt: float = 1e-8) -> dict:
@@ -96,6 +301,9 @@ def certify_solid_insertion(parameters: dict, standard_states: dict,
             or parameters["common_R_J_mol_K"] != host_properties["basis"]["common_R_J_mol_K"]
             or parameters["oxide_order"] != host_properties["oxide_order"]):
         raise ValueError("Phase, T/P/R and oxide ledgers must agree.")
+    if (parameters.get("source_kind") == "pinned_native_binary_instruction_transcription"
+            and standard_states.get("native_binary_sha256") != parameters["source_sha256"]):
+        raise ValueError("The binary-specific declaration requires its pinned native standard provider.")
     if (host_properties.get("model_id") not in {
             "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1",
             "melts_v102_published_mixing_native_standard_states_v1"}
@@ -144,6 +352,9 @@ def certify_solid_insertion(parameters: dict, standard_states: dict,
     root_box = [_I(float(a), Decimal.from_float(float(b))) for a, b in zip(lower, upper)]
     costs, reactions = [], []
     reference_intervals = {}
+    reference_proofs = {}
+    for model in parameters.get("pure_reference_models", []):
+        reference_intervals[model["endmember_index"]], reference_proofs[str(model["endmember_index"])] = _pure_minimum_interval(model)
     for row in parameters.get("pure_reference_bounds", []):
         entropy = sum((_I(float(multiplicity))*_I(int(categories)).log()
                        for multiplicity, categories in row["entropy_site_groups"]), _I(0))
@@ -175,6 +386,11 @@ def certify_solid_insertion(parameters: dict, standard_states: dict,
         combined[key] = combined.get(key, _I(0)) + _I(coefficient)
     terms = [(coefficient, powers) for powers, coefficient in combined.items()
              if coefficient.lo != 0 or coefficient.hi != 0]
+    inequalities = _linear_domain(parameters)
+    affine = [(c, powers) for c, powers in terms if sum(powers) <= 1]
+    nonlinear = [(c, powers) for c, powers in terms if sum(powers) > 1]
+    derivatives = [_derivative(terms, j) for j in range(len(lower))]
+    hessians = [[_derivative(row, j) for j in range(len(lower))] for row in derivatives]
 
     def bound(lo, hi):
         box = [_I(float(a), Decimal.from_float(float(b))) for a, b in zip(lo, hi)]
@@ -197,6 +413,25 @@ def certify_solid_insertion(parameters: dict, standard_states: dict,
             # A positive singularity can only increase G. Its finite lower
             # bound includes boxes touching the divergent endpoint.
             value += _I(barrier["numerator_rt"]) / _I(occupation.hi)
+        if value.lo < 0 and inequalities:
+            improved = _linear_program_lower(affine, box, inequalities)
+            # Replace only the affine polynomial contribution; all nonlinear
+            # and entropy intervals remain independently enclosing.
+            residual = _poly(nonlinear, box)
+            for site in parameters["entropy_sites"]:
+                residual += _I(site["coefficient_rt"])*_xlogx(_poly(site["polynomial"], box))
+            if barrier is not None:
+                residual += _I(barrier["numerator_rt"])/_I(_poly(barrier["polynomial"], box).hi)
+            value = _I(max(value.lo, (residual + _I(improved)).lo), value.hi)
+        if value.lo < 0 and inequalities and barrier is None:
+            try:
+                relaxed = _curvature_relaxation(terms, parameters["entropy_sites"], box,
+                                                 inequalities, derivatives, hessians)
+                value = _I(max(value.lo, relaxed), value.hi)
+            except ArithmeticError:
+                # The basic interval partition remains valid when a stronger
+                # relaxation cannot be verified on a degenerate face.
+                pass
         return value.lo, None
 
     queue, leaves, excluded = [], [], []
@@ -205,6 +440,10 @@ def certify_solid_insertion(parameters: dict, standard_states: dict,
     def visit(lo, hi):
         nonlocal serial, nodes
         nodes += 1
+        lo, hi, impossible = _tighten_domain(lo, hi, inequalities)
+        if impossible:
+            excluded.append({"lower": lo.tolist(), "upper": hi.tolist(), "reason": "empty_linear_domain"})
+            return
         value, reason = bound(lo, hi)
         row = {"lower": lo.tolist(), "upper": hi.tolist()}
         if reason:
@@ -237,6 +476,7 @@ def certify_solid_insertion(parameters: dict, standard_states: dict,
             "standard_insertion_cost_intervals_rt": costs, "host_reactions_exact": reactions,
             "pure_reference_intervals_rt": {str(index): [str(v.lo), str(v.hi)]
                                              for index, v in reference_intervals.items()},
+            "pure_reference_proofs": reference_proofs,
             "element_support_restrictions": removed,
             "required_absent_elements_verified": parameters["required_absent_elements"],
             "leaves": leaves, "excluded_boxes": excluded,

@@ -9,6 +9,8 @@ import subprocess
 import sys
 import time
 
+import numpy as np
+
 from m2_solid_global import certify_solid_insertion
 from melts_coupled import COMMON_R, load_melts_evaluator
 
@@ -27,7 +29,17 @@ def main():
     saved = json.loads(raw)
     host = saved["host_stability"]
     request = host["provider_properties"]
-    liquid_model = "published" if request["model_id"] == "melts_v102_published_mixing_native_standard_states_v1" else "native"
+    models_by_id = {"melts_v102_published_mixing_native_standard_states_v1": "published",
+                    "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1": "native"}
+    if request["model_id"] not in models_by_id:
+        raise ValueError("The saved host model is not supported.")
+    liquid_model = models_by_id[request["model_id"]]
+    if (not saved["source"].get("numerical_source_accepted")
+            or not saved["source"].get("source_contact_accepted")
+            or host["temperature_K"] != request["T_K"]
+            or host["pressure_Pa"] != request["P_Pa"]
+            or not np.array_equal(host["native_host_component_amounts_mol"], request["component_moles"])):
+        raise ValueError("The saved accepted source and host T/P/amount ledger must agree.")
     native = load_melts_evaluator(args.exoeos_checkout)
     evaluator = load_melts_evaluator(args.exoeos_checkout, liquid_model=liquid_model,
                                      runtime=args.runtime, python_executable=args.python)

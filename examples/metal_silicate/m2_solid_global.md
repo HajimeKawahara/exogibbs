@@ -14,6 +14,23 @@ ordering reference energies are subtracted as enclosing intervals. A finite
 node budget that leaves any negative box unresolved cannot certify stability.
 The output preserves every accepted, excluded, and unresolved box.
 
+Linear physical-site constraints also tighten boxes and support an affine
+lower bound. A numerical LP proposes nonnegative dual multipliers; its
+Lagrangian is reevaluated with intervals and minimized on the box. LP solver
+tolerances are never a certificate. Stronger bounds replace positive site
+entropy with a global quadratic minorant and negative site entropy with its
+lower endpoint chord. Interval Hessians and an interval LDL decomposition
+verify a convex relaxation before its supporting plane is passed to that
+same checked affine bound. The basic interval enclosure remains available
+when the stronger relaxation cannot be verified.
+
+For provider-declared equilibrium pure references, the full [0,1] ordering
+curve is partitioned into 256 closed subintervals. Each has a verified lower
+bound, and an evaluated point supplies an upper witness. Subtracting the
+enclosed global minimum retains uncertainty in the reference rather than
+silently treating an optimizer result as exact. These pure-reference
+partitions are preserved alongside the mixture proof.
+
 The canonical oxide-to-host reaction is solved with exact rational
 elimination. An absent host potential is never filled with zero. Restrictions
 such as an Fe-only native alloy or the Fe/Mg/Ca olivine face require absence
