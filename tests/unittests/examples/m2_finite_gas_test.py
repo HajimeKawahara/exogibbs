@@ -198,3 +198,20 @@ def test_canonical_interior_initialization_changes_only_a_conserved_start(tmp_pa
         SOURCE.canonical_interior_seed(record, b, canonical * 1.001)
     with pytest.raises(ValueError, match="initialization"):
         SOURCE.build_expanded_bse_problem(path, checkout, tmp_path, sys.executable, initialization="bad")
+
+
+def test_warm_start_execution_is_outside_the_physical_contract(tmp_path):
+    eos = pytest.importorskip("exoeos")
+    checkout = Path(eos.__file__).resolve().parents[2]
+    path = checkout / "examples/m2_material/bse_inventory.json"
+    if not path.exists():
+        pytest.skip("Requires the explicitly selected ExoEOS BSE checkout.")
+    cold = SOURCE.build_expanded_bse_problem(path, checkout, tmp_path, sys.executable, gas_model="janaf")
+    warm = SOURCE.build_expanded_bse_problem(path, checkout, tmp_path, sys.executable, gas_model="janaf",
+                                           atmosphere_warm_start=True)
+    assert cold[-1]["standards"] == warm[-1]["standards"]
+    assert cold[-1]["atmosphere"] == warm[-1]["atmosphere"]
+    assert cold[-1]["provenance"] == warm[-1]["provenance"]
+    assert warm[-1]["numerical_execution"]["atmosphere"] is warm[2]["atmosphere"].numerical_execution
+    assert not cold[-1]["numerical_execution"]["atmosphere"]["warm_start_enabled"]
+    assert warm[-1]["numerical_execution"]["atmosphere"]["warm_start_enabled"]

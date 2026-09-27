@@ -207,11 +207,12 @@ def main():
     parser.add_argument("--gas-model", choices=("m1_shared", "m1_expanded", "m1_retained", "janaf_retained", "janaf_condensed_retained"), default="m1_shared")
     parser.add_argument("--metal-mode", choices=("suppressed", "select"), default="suppressed")
     parser.add_argument("--initialization", choices=("lp", "canonical"), default="lp")
+    parser.add_argument("--atmosphere-warm-start", action="store_true")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if not jax.config.x64_enabled:
         parser.error("Set JAX_ENABLE_X64=1 for the declared contact tolerances.")
-    if args.initialization != "lp" and not args.gas_model.endswith("_retained"):
+    if (args.initialization != "lp" or args.atmosphere_warm_start) and not args.gas_model.endswith("_retained"):
         parser.error("Canonical initialization applies to retained-atmosphere source models.")
     if (not all(np.isfinite(value) and value > 0 for value in (args.temperature, args.pressure))
             or args.maxiter < 1 or args.output.exists()):
@@ -227,7 +228,8 @@ def main():
             record, budget, callbacks, initial, metadata = build_expanded_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,
                 temperature_k=args.temperature, pressure_bar=args.pressure,
-                gas_model=args.gas_model.removesuffix("_retained"), initialization=args.initialization)
+                gas_model=args.gas_model.removesuffix("_retained"), initialization=args.initialization,
+                atmosphere_warm_start=args.atmosphere_warm_start)
         else:
             record, budget, callbacks, initial, metadata = build_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,

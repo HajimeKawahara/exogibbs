@@ -219,3 +219,15 @@ The original scalar-energy, derivative, extensivity, conservation and KKT
 audits still decide acceptance. A different initial state can find a different
 local branch in a nonconvex model, so initialization is recorded and must be
 kept distinct from material or gas-catalog changes in paired comparisons.
+
+`atmosphere_warm_start=True` additionally permits a previously accepted,
+normalized gas/cloud parcel to initialize a later solve at exactly the same
+temperature, pressure and positive-element support. The public CLI option
+is `--atmosphere-warm-start`; its default is false. Every trial repeats the
+full equilibrium and independent atom, mass and KKT audits. A rejected warm
+trial falls back to the original cold solve. Both the rejection and fallback
+outcome are preserved under `metadata["numerical_execution"]["atmosphere"]`,
+outside the physical atmosphere contract. Exact-zero elements never acquire
+a floor, and previous chemical potentials are not transported to other
+layers. Reuse is a numerical option; a performance improvement has not been
+established for the complete source or planetary closure.

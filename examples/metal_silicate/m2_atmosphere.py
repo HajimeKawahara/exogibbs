@@ -16,7 +16,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from exogibbs.api.condensate import (
-    CondensateEquilibriumOptions, build_condensate_chemical_setup,
+    CondensateEquilibriumInit, CondensateEquilibriumOptions, build_condensate_chemical_setup,
     solve as solve_condensate,
 )
 from exogibbs.api.gas import EquilibriumOptions, solve as solve_gas
@@ -133,7 +133,7 @@ def audit_atmosphere(setup, temperature, pressure, amounts, gas_amounts, condens
     }
 
 
-def make_atmosphere_phase(setup, element_gauge_rt):
+def make_atmosphere_phase(setup, element_gauge_rt, *, warm_start=False):
     """Return a full-potential callback in ``setup.elements`` atom-mol order.
 
     ``element_gauge_rt`` is a vector or ``q(T_K, P_bar)`` callback. The same
@@ -142,10 +142,18 @@ def make_atmosphere_phase(setup, element_gauge_rt):
     insertion potentials are -inf. An empty atmosphere has zero energy. No
     atom floor or condensate mixing entropy is introduced. Failed parcels
     raise ``PhaseEvaluationError``. ``parcel`` returns a full-catalog copy.
+    Optional warm starts use only a previously accepted normalized parcel at
+    the same T/P and positive-element support. A failed warm trial is retried
+    cold, with both attempts recorded; all physical audits remain unchanged.
     """
+    if not isinstance(warm_start, bool):
+        raise ValueError("warm_start must be a boolean.")
     gas_setup, cloud_setup = setup.gas_setup, setup.condensate_setup
     elements = tuple(setup.elements)
     ag, ac = np.asarray(gas_setup.formula_matrix), np.asarray(cloud_setup.formula_matrix)
+    previous = {"key": None, "init": None}
+    execution = {"warm_start_enabled": warm_start, "warm_attempts": 0,
+                 "cold_attempts": 0, "cold_fallbacks": 0, "warm_rejections": []}
 
     @lru_cache(maxsize=16)
     def support(mask):
@@ -165,22 +173,72 @@ def make_atmosphere_phase(setup, element_gauge_rt):
     def solve(temperature, pressure, atom_tuple):
         b = np.array(atom_tuple)
         ng, nc = np.zeros(len(gas_setup.species)), np.zeros(len(cloud_setup.species))
+        key = (temperature, pressure, tuple(b > 0))
+        accepted_seed = None
         try:
             if np.any(b > 0):
                 rows, gas_columns, cloud_columns, gas, combined = support(tuple(b > 0))
                 scale = float(b.sum())
                 reduced_budget = jnp.asarray(b[rows] / scale)
                 if len(cloud_columns):
-                    result = solve_condensate(
-                        combined, temperature, pressure, reduced_budget,
-                        options=CondensateEquilibriumOptions(
-                            return_diagnostics=True, rainout=False,
-                            full_condensate_budget_relative_tolerance=1e-9,
-                        ),
-                    )
-                    gas_n, cloud_n = np.asarray(result.gas_n), np.asarray(result.condensate_amounts)
-                    converged = bool(result.converged)
+                    seed = previous["init"] if warm_start and previous["key"] == key else None
+                    attempts = (seed, None) if seed is not None else (None,)
+                    fallback_record = None
+                    for initial in attempts:
+                        execution["warm_attempts" if initial is not None else "cold_attempts"] += 1
+                        attempted_result, attempted_audit = None, None
+                        try:
+                            result = solve_condensate(
+                                combined, temperature, pressure, reduced_budget, init=initial,
+                                options=CondensateEquilibriumOptions(
+                                    return_diagnostics=True, rainout=False,
+                                    full_condensate_budget_relative_tolerance=1e-9,
+                                ),
+                            )
+                            attempted_result = result
+                            if not bool(result.converged):
+                                raise PhaseEvaluationError("The atmospheric parcel solver did not converge.")
+                            gas_n, cloud_n = np.asarray(result.gas_n), np.asarray(result.condensate_amounts)
+                            ng[gas_columns], nc[cloud_columns] = scale * gas_n, scale * cloud_n
+                            report = audit_atmosphere(setup, temperature, pressure, b, ng, nc, element_gauge_rt)
+                            attempted_audit = report
+                            if not report["accepted"]:
+                                raise PhaseEvaluationError("The atmospheric parcel failed independent equilibrium acceptance.")
+                            if fallback_record is not None:
+                                fallback_record["cold_fallback"] = {
+                                    "accepted": True, "independent_audit": report,
+                                    "provider_diagnostics": jax.device_get(result.diagnostics),
+                                }
+                            accepted_seed = CondensateEquilibriumInit(
+                                gas_ln_n=jnp.array(result.gas_ln_n), gas_ntot=jnp.array(result.gas_ntot),
+                                condensate_amounts=jnp.array(result.condensate_amounts),
+                            )
+                            converged = True
+                            break
+                        except (ValueError, RuntimeError, FloatingPointError, np.linalg.LinAlgError) as error:
+                            if initial is None:
+                                if fallback_record is not None:
+                                    fallback_record["cold_fallback"] = {
+                                        "accepted": False, "error_type": type(error).__name__,
+                                        "error": str(error), "independent_audit": attempted_audit,
+                                    }
+                                raise
+                            execution["cold_fallbacks"] += 1
+                            fallback_record = {
+                                "T_K": temperature, "P_bar": pressure,
+                                "element_amounts_mol": b.tolist(),
+                                "error_type": type(error).__name__, "error": str(error),
+                                "normalized_gas_amounts_mol": (None if attempted_result is None
+                                    else np.asarray(attempted_result.gas_n).tolist()),
+                                "normalized_condensate_amounts_mol": (None if attempted_result is None
+                                    else np.asarray(attempted_result.condensate_amounts).tolist()),
+                                "provider_diagnostics": (None if attempted_result is None
+                                    else jax.device_get(attempted_result.diagnostics)),
+                                "independent_audit": attempted_audit,
+                            }
+                            execution["warm_rejections"].append(fallback_record)
                 else:
+                    execution["cold_attempts"] += 1
                     result, diagnostics = solve_gas(
                         gas, temperature, pressure, reduced_budget,
                         options=EquilibriumOptions(epsilon_crit=1e-14), return_diagnostics=True,
@@ -195,6 +253,8 @@ def make_atmosphere_phase(setup, element_gauge_rt):
                 raise PhaseEvaluationError("The atmospheric parcel failed independent equilibrium acceptance.")
         except (ValueError, RuntimeError, FloatingPointError, np.linalg.LinAlgError) as error:
             raise PhaseEvaluationError(str(error)) from error
+        if warm_start:
+            previous.update(key=key, init=accepted_seed)
         return {**report, "solver_converged": True}
 
     def evaluate(temperature, pressure, amounts):
@@ -216,4 +276,5 @@ def make_atmosphere_phase(setup, element_gauge_rt):
     callback.elements = elements
     callback.setup = setup
     callback.element_gauge_rt = element_gauge_rt
+    callback.numerical_execution = execution
     return callback

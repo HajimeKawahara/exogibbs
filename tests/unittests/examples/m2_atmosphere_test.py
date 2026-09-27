@@ -1,6 +1,7 @@
 """Independent Gibbs-envelope derivatives, cloud amounts, and zero support."""
 
 import importlib
+from dataclasses import replace
 from pathlib import Path
 import sys
 
@@ -188,3 +189,50 @@ def test_nested_solver_failure_is_not_a_thermodynamic_value(analytic_setup, monk
     phase = ATM.make_atmosphere_phase(analytic_setup, np.zeros(3))
     with pytest.raises(ATM.PhaseEvaluationError, match="parcel unavailable"):
         phase(1000., 1., [2., 1., 2.])
+
+
+def test_warm_parcel_preserves_physics_across_amount_scale_and_support(analytic_setup):
+    cold = ATM.make_atmosphere_phase(analytic_setup, np.zeros(3))
+    warm = ATM.make_atmosphere_phase(analytic_setup, np.zeros(3), warm_start=True)
+    for b in (np.array([2., 1., 2.]), np.array([2.01, 1., 2.]),
+              1e24 * np.array([2.02, 1., 2.])):
+        expected = cold.parcel(1000., 1., b)
+        actual = warm.parcel(1000., 1., b)
+        assert expected["accepted"] and actual["accepted"]
+        for key in ("gas_amounts_mol", "condensate_amounts_mol", "elemental_potentials_rt"):
+            np.testing.assert_allclose(actual[key], expected[key], rtol=1e-9, atol=1e-10)
+        assert actual["gibbs_rt"] == pytest.approx(expected["gibbs_rt"], rel=1e-10)
+    assert warm.numerical_execution["warm_attempts"] == 2
+    # Changes of T/P or exact-zero element support must not reuse the seed.
+    count = warm.numerical_execution["warm_attempts"]
+    warm.parcel(1100., 1., [2., 1., 2.])
+    warm.parcel(1100., 2., [2., 1., 2.])
+    report = warm.parcel(1100., 2., [0., 2., 0.])
+    assert warm.numerical_execution["warm_attempts"] == count
+    np.testing.assert_array_equal(report["gas_amounts_mol"], [0., 2., 0.])
+    assert report["accepted"]
+
+
+def test_rejected_warm_trial_is_preserved_before_cold_fallback(analytic_setup, monkeypatch):
+    phase = ATM.make_atmosphere_phase(analytic_setup, np.zeros(3), warm_start=True)
+    phase.parcel(1000., 1., [2., 1., 2.])
+    original = ATM.solve_condensate
+    attempts = []
+
+    def failed_warm(*args, **kwargs):
+        result = original(*args, **kwargs)
+        attempts.append(kwargs.get("init") is not None)
+        return replace(result, converged=False) if kwargs.get("init") is not None else result
+
+    monkeypatch.setattr(ATM, "solve_condensate", failed_warm)
+    report = phase.parcel(1000., 1., [2.01, 1., 2.])
+    assert report["accepted"] and attempts == [True, False]
+    assert phase.numerical_execution["cold_fallbacks"] == 1
+    rejected = phase.numerical_execution["warm_rejections"][0]
+    assert rejected["element_amounts_mol"] == [2.01, 1., 2.]
+    assert rejected["provider_diagnostics"] is not None
+    assert len(rejected["normalized_gas_amounts_mol"]) == 3
+    assert "did not converge" in rejected["error"]
+    assert rejected["cold_fallback"]["accepted"]
+    assert rejected["cold_fallback"]["independent_audit"] == {key: value for key, value in report.items()
+                                                            if key != "solver_converged"}

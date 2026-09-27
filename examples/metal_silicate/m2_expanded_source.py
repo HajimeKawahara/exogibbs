@@ -25,7 +25,7 @@ from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 
 def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_executable,
                                *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1",
-                               initialization="lp"):
+                               initialization="lp", atmosphere_warm_start=False):
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
@@ -48,7 +48,8 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
 
     initial_gauge = gauge(temperature_k, pressure_bar)
 
-    atmosphere = make_atmosphere_phase(setup, gauge)
+    atmosphere = make_atmosphere_phase(setup, gauge, warm_start=atmosphere_warm_start)
+    metadata["numerical_execution"]["atmosphere"] = atmosphere.numerical_execution
     gas_names = record["phases"].pop("gas")
     start = len(initial) - len(gas_names)
     atom_names = [element + "_atmosphere_atom" for element in setup.gas_setup.elements]
