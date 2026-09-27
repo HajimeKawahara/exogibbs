@@ -30,7 +30,7 @@ def eos_checkout():
 def build(checkout, tmp_path, **kwargs):
     return SOURCE.build_expanded_bse_problem(
         checkout / "examples/m2_material/bse_inventory.json", checkout, tmp_path,
-        sys.executable, gas_model="janaf_condensed", metal_model="associated",
+        sys.executable, gas_model="janaf_condensed", metal_model=kwargs.pop("metal_model", "associated"),
         initialization="canonical", **kwargs)
 
 
@@ -91,3 +91,40 @@ def test_closed_fe_mg_o_parcel_solves_association_with_the_original_finite_atoms
     assert values["MgO_metal"]+values["Mg_metal"] == pytest.approx(.0001, abs=1e-14)
     assert values["MgO_metal"]+values["O_metal"] == pytest.approx(.001, abs=1e-14)
     assert max(abs(result.element_residual)) < 1e-12
+
+
+@pytest.mark.parametrize("potassium", [False, True])
+def test_hydrogen_oxygen_option_uses_the_actual_scalar_and_preserves_negative_curvature(
+        eos_checkout, tmp_path, potassium):
+    options = ({"metal_model": "associated_k", "potassium_standard_offset_rt": 0.}
+               if potassium else {})
+    base = build(eos_checkout, tmp_path, **options)
+    changed = build(eos_checkout, tmp_path,
+                    hydrogen_oxygen_model="schenck1961_abstract", **options)
+    _, upper, curvature = SOURCE.associated_metal_domain(changed[-1])
+    assert curvature < 0
+    n = upper*.1
+    n[0] = 1-n[1:].sum()
+    a = base[2]["metal"](2173.15, 1., n)
+    b = changed[2]["metal"](2173.15, 1., n)
+    denominator = 1-n[-1] if potassium else 1.
+    difference = 52.4*np.log(10.)*n[2]*n[3]/denominator
+    assert b.gibbs_rt-a.gibbs_rt == pytest.approx(difference, abs=1e-13)
+    energy, gradient = changed[2]["metal"].energy_value_and_grad_rt(2173.15, 1., n)
+    assert energy == pytest.approx(b.gibbs_rt, abs=1e-13)
+    np.testing.assert_allclose(gradient, b.mu_rt, atol=1e-12)
+    assert gradient@n == pytest.approx(energy, abs=1e-12)
+    receipt = changed[-1]["associated_metal"]
+    assert receipt["interactions"]["hydrogen_oxygen"]["model"] == "schenck1961_abstract"
+    assert "examples/m2_material/hydrogen_oxygen_sources.json" in receipt["provider_recipe_file_sha256"]
+    assert changed[0] == base[0]
+    np.testing.assert_array_equal(changed[1], base[1])
+    np.testing.assert_array_equal(changed[3], base[3])
+
+
+def test_hydrogen_oxygen_selection_rejects_unknown_or_unsupported_models(eos_checkout, tmp_path):
+    for options in ({"hydrogen_oxygen_model": "unknown"},
+                    {"hydrogen_oxygen_model": "schenck1961_abstract", "metal_model": "ma"},
+                    {"hydrogen_oxygen_model": "schenck1961_abstract", "metal_model": "phosphorus"}):
+        with pytest.raises(ValueError, match="H-O|hydrogen_oxygen_model"):
+            build(eos_checkout, tmp_path, **options)

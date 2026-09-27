@@ -29,7 +29,7 @@ def load_associated_provider(exoeos_checkout, *, potassium=False):
 
 def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
                          exoeos_checkout, temperature_k, pressure_bar, options=None,
-                         potassium_standard_offset_rt=None):
+                         potassium_standard_offset_rt=None, hydrogen_oxygen_model="omitted"):
     """Extend the finite P host by five free metals and eight O associates."""
     from exoeos import total_gex_RT, total_solution_state
 
@@ -42,7 +42,8 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
         raise ValueError("Associated metal requires the declared finite-P host first.")
     options = {} if options is None else options
     model, interactions = provider.make_associated_model(
-        temperature_k, temperature_policy=options.get("temperature_policy", "constant"))
+        temperature_k, temperature_policy=options.get("temperature_policy", "constant"),
+        hydrogen_oxygen_model=hydrogen_oxygen_model)
     gas = np.asarray(setup.gas_setup.hvector_func(temperature_k)) + np.asarray(
         setup.gas_setup.formula_matrix).T @ np.asarray(gauge)
     standard_options = ({"potassium_standard_offset_rt": potassium_standard_offset_rt}
@@ -109,6 +110,9 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
     for path in (Path(provider.__file__),
                  Path(provider.__file__).with_name("associate_reference.py"),
                  Path(provider.__file__).with_name("associate_sources.json")):
+        recipe[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    if hydrogen_oxygen_model != "omitted":
+        path = Path(provider.__file__).with_name("hydrogen_oxygen_sources.json")
         recipe[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
     metadata["associated_metal"] = {
         "model_id": model.reference_model_id, "component_order": list(provider.COMPONENTS),
