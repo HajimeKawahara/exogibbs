@@ -118,7 +118,11 @@ for the constrained KKT residual there.
 An energy-decreasing metal-bearing start is constructed from the accepted
 absent state and the minimizing incipient composition. An atom-conserving
 linear program limits host/gas changes relative to each actual component
-amount before backtracking on the true energy. These restrictions apply
+amount before backtracking on the true energy. The fixed incipient
+composition is eliminated algebraically: one inventory-scaled metal phase
+amount represents every metal species, including traces. This avoids
+separate tiny composition equalities being discarded by LP coefficient
+tolerances; no trace species or elemental budget is removed. These restrictions apply
 only to the initial guess; the equilibrium solve uses the original atom
 inventory and declared composition domain. Failed attempts remain in
 `local_attempts`. If a scalar step collapses an entire phase, minimizing
