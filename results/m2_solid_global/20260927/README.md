@@ -1,5 +1,12 @@
 # Complete declared phase bounds at the newly closed published central root
 
+The final shared-consumer 35-gas comparison is now in
+[matched_consumer_published_m1](matched_consumer_published_m1/README.md).
+It has a separately reclosed root, fresh native standards and complete new
+20-phase/liquid proofs; all strict lower bounds remain positive/zero.
+The earlier root and final-code replay below remain unchanged historical
+records, not relabeled final-consumer executions.
+
 This archive keeps the complete raw solid and second-liquid proof partitions
 for the accepted 35-gas central BSE source at **2173.15 K and
 267.2028341602767 bar**, H inventory 1e24 mol, and 16 layers.
