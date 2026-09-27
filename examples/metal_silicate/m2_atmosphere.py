@@ -13,6 +13,7 @@ from functools import lru_cache
 
 import jax
 import jax.numpy as jnp
+from jax.scipy.special import xlogy
 import numpy as np
 
 from exogibbs.api.condensate import (
@@ -26,6 +27,17 @@ from exogibbs.utils.elements import element_mass
 from common_gibbs import PhaseEvaluationError
 from full_potential import PhaseState
 from m1_chemistry import audit_parcel
+
+
+def _primitive_gibbs(gas, cloud, gas_standard, cloud_standard, log_pressure):
+    """Explicit ideal-gas/pure-cloud scalar, independent of atom potentials."""
+    total = jnp.sum(gas)
+    return (jnp.dot(gas, gas_standard + log_pressure)
+            + jnp.sum(xlogy(gas, gas)) - xlogy(total, total)
+            + jnp.dot(cloud, cloud_standard))
+
+
+_primitive_value_and_grad = jax.jit(jax.value_and_grad(_primitive_gibbs, argnums=(0, 1)))
 
 
 def _restrict(setup, rows, columns):
@@ -212,7 +224,39 @@ def make_atmosphere_phase(setup, element_gauge_rt):
         report = evaluate(temperature, pressure, amounts)
         return PhaseState(np.asarray(report["elemental_potentials_rt"]), report["gibbs_rt"])
 
+    def energy_value_and_grad_rt(temperature, pressure, amounts):
+        """Differentiate primitive G and project its stationary atom envelope.
+
+        At an accepted parcel, dG/dn = A.T lambda. Differentiating the explicit
+        primitive scalar with AD and solving this full-rank system gives
+        dG_min/db = lambda without subtracting trace-sized energy changes.
+        Neither saved elemental potentials nor callback mu are reused.
+        """
+        report = evaluate(temperature, pressure, amounts)
+        b = np.asarray(amounts, dtype=float)
+        potential = np.full(len(b), -np.inf)
+        if not np.any(b > 0):
+            return 0., potential
+        ng, nc = np.asarray(report["gas_amounts_mol"]), np.asarray(report["condensate_amounts_mol"])
+        rows, gas_columns, cloud_columns = np.flatnonzero(b > 0), np.flatnonzero(ng > 0), np.flatnonzero(nc > 0)
+        q = np.asarray(element_gauge_rt(temperature, pressure) if callable(element_gauge_rt)
+                       else element_gauge_rt, dtype=float)
+        hg = np.asarray(gas_setup.hvector_func(temperature)) + ag.T @ q
+        hc = np.asarray(cloud_setup.hvector_func(temperature)) + ac.T @ q
+        energy, (gas_gradient, cloud_gradient) = _primitive_value_and_grad(
+            ng[gas_columns], nc[cloud_columns], hg[gas_columns], hc[cloud_columns], np.log(pressure))
+        matrix = np.r_[ag[np.ix_(rows, gas_columns)].T, ac[np.ix_(rows, cloud_columns)].T]
+        gradient = np.r_[np.asarray(gas_gradient), np.asarray(cloud_gradient)]
+        if np.linalg.matrix_rank(matrix) != len(rows) or not np.all(np.isfinite(gradient)):
+            raise PhaseEvaluationError("The primitive scalar does not identify finite atom derivatives.")
+        value = np.linalg.lstsq(matrix, gradient, rcond=None)[0]
+        if np.max(np.abs(matrix @ value - gradient), initial=0.) >= 1e-8:
+            raise PhaseEvaluationError("The primitive scalar is not stationary on the accepted support.")
+        potential[rows] = value
+        return float(energy), potential
+
     callback.parcel = lambda t, p, b: deepcopy(evaluate(t, p, b))
+    callback.energy_value_and_grad_rt = energy_value_and_grad_rt
     callback.elements = elements
     callback.setup = setup
     callback.element_gauge_rt = element_gauge_rt
