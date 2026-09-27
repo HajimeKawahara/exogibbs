@@ -18,7 +18,8 @@ WATER_MODEL_ID = "dry_melts_thompson2025_water_equivalent_v1"
 
 
 def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *,
-                           candidate_properties=None, tolerance_rt: float = 1e-8) -> dict:
+                           candidate_properties=None, tolerance_rt: float = 1e-8,
+                           helium_host_mu_rt=None) -> dict:
     """Evaluate candidate insertion into the formal ideal-H2 augmented host.
 
     All quantities use the same native amount scale. Candidate amounts have
@@ -67,6 +68,9 @@ def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *,
             or not np.all(np.isfinite(mu[n > 0]))):
         raise ValueError("Invalid supplied-liquid basis or changed phase policy.")
     rows = saturation["candidates"]
+    helium_mu = np.zeros_like(n) if helium_host_mu_rt is None else np.asarray(helium_host_mu_rt, dtype=float)
+    if helium_mu.shape != n.shape or np.any(~np.isfinite(helium_mu)):
+        raise ValueError("Require a finite He correction in the complete native host basis.")
     if [row["phase"] for row in rows] != saturation["candidate_order"] or len({row["phase"] for row in rows}) != len(rows):
         raise ValueError("The complete ordered native candidate catalog is required.")
     log_host_fraction = -float(np.log1p(dissolved_h2_moles / n.sum()))
@@ -109,12 +113,14 @@ def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *,
                 native_work = float(coefficients[used] @ mu[used])
                 dilution = -float(coefficients[used].sum() * log_host_fraction)
                 native_cost = float(native["gibbs_J"] / rt - native_work)
-                insertion = (native_cost + dilution) / float(atoms.sum())
+                helium_cost = -float(coefficients @ helium_mu)
+                insertion = (native_cost + dilution + helium_cost) / float(atoms.sum())
                 row.update(
                     status="negative_insertion_trial" if insertion < -tolerance_rt else "nonnegative_insertion_trial",
                     reason=None, native_insertion_gibbs_rt=native_cost,
-                    selected_host_insertion_gibbs_rt=native_cost,
+                    selected_host_insertion_gibbs_rt=native_cost + helium_cost,
                     h2_dilution_correction_gibbs_rt=dilution,
+                    helium_dissolution_correction_gibbs_rt=helium_cost,
                     insertion_rt_per_mol_atoms=insertion,
                     maximum_feasible_trial_scale=float(np.min(n[consumed] / coefficients[consumed])),
                 )
@@ -147,6 +153,7 @@ def evaluate_host_stability(
     record: dict, component_amounts_mol, temperature_k: float, pressure_bar: float,
     *, evaluator, runtime: Path, python_executable: str, amount_scale: float = 1e-24,
     tolerance_rt: float = 1e-8, candidate_evaluator=None,
+    helium_dissolution=None, exoeos_checkout=None,
 ) -> dict:
     """Reevaluate an unchanged source host using the selected ExoEOS provider."""
     names = [name for phase in record["phases"].values() for name in phase]
@@ -157,10 +164,20 @@ def evaluate_host_stability(
         raise ValueError("Supply a complete finite nonnegative component ledger and positive amount scale.")
     host = np.zeros(len(evaluator.COMPONENTS))
     h2 = 0.
+    helium = 0.
+    has_helium = "He_dissolved" in record["phases"]["silicate"]
+    if has_helium != (helium_dissolution is not None):
+        raise ValueError("A dissolved-He source requires exactly its saved He recipe.")
+    if has_helium and exoeos_checkout is None:
+        raise ValueError("A dissolved-He assessment requires its explicit EOS checkout.")
     for name in record["phases"]["silicate"]:
         value = float(amounts[names.index(name)] * amount_scale)
         if name == "H2_dissolved":
             h2 = value
+        elif name == "He_dissolved":
+            if record["component_formulas"].get(name) != {"He": 1.}:
+                raise ValueError("The dissolved-He formula must be explicit atomic He.")
+            helium = value
         elif name.endswith("_melts") and name[:-6] in evaluator.COMPONENTS:
             index = evaluator.COMPONENTS.index(name[:-6])
             expected = {element: float(count) for element, count in zip(evaluator.ELEMENTS, evaluator.FORMULA_MATRIX[index]) if count}
@@ -188,7 +205,38 @@ def evaluate_host_stability(
             or tuple(properties["component_order"]) != tuple(evaluator.COMPONENTS)
             or not np.array_equal(properties["component_moles"], host)):
         raise ValueError("The property provider changed the requested state.")
-    assessment = assess_host_candidates(properties, h2, candidate_properties=candidates, tolerance_rt=tolerance_rt)
+    helium_mu = None
+    helium_result = None
+    if has_helium:
+        from m2_helium import reconstruct_helium_model
+
+        if (helium_dissolution["temperature_K"] != temperature_k
+                or helium_dissolution["pressure_bar"] != pressure_bar
+                or helium_dissolution["component_order"] != record["phases"]["silicate"]
+                or helium_dissolution["host_component_order"] != record["phases"]["silicate"][:-1]):
+            raise ValueError("The He receipt differs from the supplied source state or basis.")
+        model = reconstruct_helium_model(exoeos_checkout, helium_dissolution)
+        native_amounts = np.asarray([amounts[names.index(name)] * amount_scale
+                                     for name in record["phases"]["silicate"]])
+        helium_result = model.state(native_amounts)
+        helium_mu = np.zeros_like(host)
+        for i, name in enumerate(helium_dissolution["host_component_order"]):
+            if name.endswith("_melts"):
+                helium_mu[evaluator.COMPONENTS.index(name[:-6])] = helium_result["mu_rt"][i]
+    assessment = assess_host_candidates(properties, h2, candidate_properties=candidates,
+                                        tolerance_rt=tolerance_rt, helium_host_mu_rt=helium_mu)
+    if has_helium:
+        assessment["helium_dissolution"] = {
+            "receipt": helium_dissolution, "native_dissolved_helium_moles": helium,
+            "native_additional_gibbs_rt": helium_result["gibbs_rt"],
+            "native_host_mu_correction_rt": helium_mu.tolist(),
+            "helium_mu_rt": (float(helium_result["mu_rt"][-1])
+                             if np.isfinite(helium_result["mu_rt"][-1]) else None),
+            "helium_mu_endpoint": ("positive_infinity_at_fixed_zero_dry_mass"
+                                   if np.isposinf(helium_result["mu_rt"][-1]) else
+                                   "negative_infinity_at_zero_He_positive_dry_mass"
+                                   if np.isneginf(helium_result["mu_rt"][-1]) else "finite"),
+            "scope": "He-free native competitor against the selected host plus the EOS dry-mass He derivative; He is excluded from the H2 mixing denominator."}
     assessment.update(native_amount_scale=amount_scale, provider_properties=properties,
                       native_candidate_properties=candidates,
                       native_standard_state_receipts=getattr(evaluator, "standard_state_receipts", []),

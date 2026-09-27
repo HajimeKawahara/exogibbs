@@ -1,0 +1,12 @@
+{
+  "created_utc": "2026-09-27T23:10:30.515292+00:00",
+  "actual_exit_code": 0,
+  "targeted_He_tests_passed": 4,
+  "stdout": "....                                                                     [100%]\n4 passed in 3.33s\n",
+  "provider_commit": "813131ab63822c556ae62c95ff69f119487d0340",
+  "scope": "Preserve pure-water host energy/potentials at zero He; reject positive He without dry mass; distinguish nonfinite He endpoint limits in saved audits. Original 35-test receipt is preserved.",
+  "source_hashes": {
+    "m2_helium.py": "488a3708e1b5011851e2cc15718aa10ce6d80a0fbf969e5dac7e9157a72274aa",
+    "m2_host_stability.py": "2ef63d7e843ae7f851dbed876c4953daf06e82304802d20e4e1701bd26d613be"
+  }
+}
