@@ -4,6 +4,7 @@ import importlib
 from dataclasses import asdict
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -25,6 +26,31 @@ finally:
             sys.modules.pop(name, None)
         else:
             sys.modules[name] = module
+
+
+@pytest.mark.parametrize("scale", [1., 1e24])
+def test_insertion_seed_preserves_trace_composition_and_atoms(scale):
+    elements = ["Fe", "Cr", "Ca", "He"]
+    host, metal = [e + "_host" for e in elements], [e + "_metal" for e in elements]
+    record = {"elements": elements, "phases": {"host": host, "metal": metal},
+              "component_formulas": {n: {e: 1} for names in (host, metal)
+                                     for n, e in zip(names, elements)}}
+    budget = scale * np.array([.9, .1, .01, 0.])
+    original = np.r_[budget, np.zeros(4)]
+    composition = np.array([.9, .1 - 1e-12, 1e-12, 0.])
+    absent = SimpleNamespace(component_amounts_mol=original, gibbs_rt=0.)
+    def host_state(t, p, n):
+        return FULL.PhaseState(np.zeros(4), 0.)
+    def metal_state(t, p, n):
+        return FULL.PhaseState(-np.ones(4), -float(np.sum(n)))
+    seed = PHASE._insertion_seed(record, budget, absent, composition,
+                                 {"host": host_state, "metal": metal_state}, 2000., 1., .01)
+    assert np.all(seed >= 0)
+    assert seed[6] > 0
+    assert seed[3] == seed[7] == 0
+    np.testing.assert_allclose(seed[:4] + seed[4:], budget, rtol=1e-12, atol=0)
+    np.testing.assert_allclose(seed[4:] / seed[4:].sum(), composition, rtol=5e-16, atol=0)
+    np.testing.assert_allclose(original, absent.component_amounts_mol, rtol=0, atol=0)
 
 
 def test_pure_endmembers_cannot_certify_absence_of_a_favorable_mixed_phase():

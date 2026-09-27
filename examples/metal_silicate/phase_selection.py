@@ -284,20 +284,29 @@ def _insertion_seed(record, budget, absent, composition, callbacks, temperature,
                              np.inf), axis=0)
     reference = np.where(allowed, np.where(baseline > 0, baseline, limits), 1.)
     matrix = formula[positive] * reference / normalized[:, None]
-    fixed_composition = np.zeros((len(positions), len(names)))
-    fixed_composition[:, positions] = np.eye(len(positions)) - composition[:, None]
-    cost = np.zeros(len(names))
-    cost[positions] = -reference[positions]
+    host = np.setdiff1d(np.arange(len(names)), positions)
+    metal_atoms = formula[:, positions] @ composition
+    if np.any(metal_atoms[~positive] > 0):
+        raise ValueError("No atom-conserving insertion direction supports the incipient composition.")
+    supported = metal_atoms[positive] > 0
+    metal_scale = np.min(normalized[supported] / metal_atoms[positive][supported])
+    # Eliminate the fixed metal composition algebraically. Separate trace
+    # equalities can be dropped by LP coefficient tolerances and force the
+    # entire metal phase to zero. One scaled phase amount retains every trace.
+    matrix = np.column_stack((matrix[:, host], metal_atoms[positive] * metal_scale / normalized))
     # Keep host/gas trial changes relative to their actual amounts, including
     # traces. This is a starting-point trust region, not an equilibrium bound.
     start_bounds = [(.5, 1.5) if baseline[index] > 0 else (0, None) if allowed[index] else (0, 0)
                     for index in range(len(names))]
-    endpoint = linprog(cost, A_eq=np.vstack((matrix, fixed_composition * reference)),
-                       b_eq=np.r_[np.ones(positive.sum()), np.zeros(len(positions))],
-                       bounds=start_bounds, method="highs")
-    if not endpoint.success or endpoint.x[positions].sum() <= 0:
+    endpoint = linprog(np.r_[np.zeros(len(host)), -1.], A_eq=matrix,
+                       b_eq=np.ones(positive.sum()),
+                       bounds=[start_bounds[index] for index in host] + [(0, None)], method="highs")
+    if not endpoint.success or endpoint.x[-1] <= 0:
         raise ValueError("No atom-conserving insertion direction supports the incipient composition.")
-    direction = scale * reference * endpoint.x - absent.component_amounts_mol
+    endpoint_amounts = np.zeros(len(names))
+    endpoint_amounts[host] = scale * reference[host] * endpoint.x[:-1]
+    endpoint_amounts[positions] = scale * metal_scale * endpoint.x[-1] * composition
+    direction = endpoint_amounts - absent.component_amounts_mol
     last_rejection = "No trial was evaluated."
     for _ in range(16):
         candidate = absent.component_amounts_mol + fraction * direction
