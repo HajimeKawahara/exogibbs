@@ -188,3 +188,60 @@ def test_nested_solver_failure_is_not_a_thermodynamic_value(analytic_setup, monk
     phase = ATM.make_atmosphere_phase(analytic_setup, np.zeros(3))
     with pytest.raises(ATM.PhaseEvaluationError, match="parcel unavailable"):
         phase(1000., 1., [2., 1., 2.])
+
+
+@pytest.mark.parametrize("scale", [1., 1e24])
+@pytest.mark.parametrize("temperature,budget", [(1000., [2., 1., 2.]), (2000., [2., 1., 1e-18])])
+def test_primitive_ad_envelope_resolves_trace_atoms_and_retained_clouds(analytic_setup, scale, temperature, budget):
+    b = scale * np.asarray(budget)
+    phase = ATM.make_atmosphere_phase(analytic_setup, np.array([.3, -.7, 1.2]))
+    state = phase(temperature, 1., b)
+    energy, gradient = phase.energy_value_and_grad_rt(temperature, 1., b)
+    assert energy == pytest.approx(state.gibbs_rt, rel=1e-12)
+    np.testing.assert_allclose(gradient, state.mu_rt, atol=1e-11)
+    if temperature == 2000.:
+        plus, minus = b.copy(), b.copy()
+        plus[-1] *= 1.01
+        minus[-1] *= .99
+        difference = (phase(temperature, 1., plus).gibbs_rt - phase(temperature, 1., minus).gibbs_rt) / (.02*b[-1])
+        assert abs(difference - gradient[-1]) > 1.
+
+
+def test_primitive_ad_preserves_zero_element_support(analytic_setup):
+    phase = ATM.make_atmosphere_phase(analytic_setup, np.zeros(3))
+    energy, gradient = phase.energy_value_and_grad_rt(1000., 1., [0., 2., 0.])
+    assert energy == pytest.approx(0., abs=1e-12)
+    np.testing.assert_array_equal(gradient[[0, 2]], [-np.inf, -np.inf])
+    assert gradient[1] == pytest.approx(0., abs=1e-12)
+    energy, gradient = phase.energy_value_and_grad_rt(1000., 1., [0., 0., 0.])
+    assert energy == 0.
+    np.testing.assert_array_equal(gradient, np.full(3, -np.inf))
+
+
+@pytest.mark.parametrize("corrupt", ["none", "trace_mu", "scalar"])
+def test_common_gibbs_independent_scalar_hook_rejects_corrupted_callback(analytic_setup, corrupt):
+    b = np.array([2., 1., 1e-18])
+    names = [element + "_atmosphere_atom" for element in analytic_setup.elements]
+    record = {"elements": list(analytic_setup.elements), "phases": {"atmosphere": names},
+              "component_formulas": {name: {element: 1.} for name, element in zip(names, analytic_setup.elements)},
+              "reactions": []}
+    phase = ATM.make_atmosphere_phase(analytic_setup, np.zeros(3))
+
+    def callback(t, p, n):
+        state = phase(t, p, n)
+        error = np.array([0., 0., 1e-3 if corrupt == "trace_mu" else 0.])
+        if corrupt == "scalar":
+            error[:] = 1e-3
+        # The injected trace error preserves Euler's identity and budgets.
+        return FULL.PhaseState(state.mu_rt + error, state.gibbs_rt + n @ error)
+
+    callback.energy_value_and_grad_rt = phase.energy_value_and_grad_rt
+    problem = LOCAL.build_problem(record, b, lambda t, p: np.zeros(3), phases=("atmosphere",))
+    result = ENERGY.minimize_gibbs(problem, 2000., 1., b, {"atmosphere": callback},
+                                   initial_component_amounts_mol=b)
+    assert result.accepted is (corrupt == "none")
+    if corrupt == "trace_mu":
+        assert result.derivative_error_rt == pytest.approx(1e-3, abs=1e-10)
+        assert "scalar energy derivative disagrees with the supplied potentials" in result.audit_reasons
+    elif corrupt == "scalar":
+        assert "independent phase scalar is inconsistent or unavailable" in result.audit_reasons
