@@ -3,6 +3,7 @@
 import importlib
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -13,6 +14,7 @@ sys.path.insert(0, str(DIRECTORY))
 try:
     SCENARIOS = importlib.import_module("m2_scenarios")
     FULL = importlib.import_module("full_potential")
+    COUPLED = importlib.import_module("melts_coupled")
 finally:
     sys.path.pop(0)
 
@@ -117,3 +119,36 @@ def test_reconstructed_water_capacity_offset_leaves_molecular_h2_unchanged():
         np.testing.assert_allclose(difference, 0., atol=2e-9)
     assert changed(2173.15, 270., 3*n).gibbs_rt == pytest.approx(3*new.gibbs_rt)
     assert SCENARIOS.normalize_scenario()["standard_offsets_rt"]["h2o_melts"] == 0.
+
+
+def test_saved_water_host_offset_matches_phase_and_preserves_gas_receipt():
+    original = FULL.ideal_phase(lambda t, p: np.array([-2., -5.]))
+    receipts = [{"H2O_gas_standard_RT": -3.}]
+    def evaluate(t, p, n):
+        state=original(t,p,n);rt=COUPLED.COMMON_R*t
+        return {"gibbs_RT":state.gibbs_rt,"gibbs_J":state.gibbs_rt*rt,
+                "mu_RT":list(state.mu_rt),"mu_J_mol":list(state.mu_rt*rt),
+                "basis":{"common_R_J_mol_K":COUPLED.COMMON_R},
+                "water_reconstruction":{"gas_H2O_standard_RT":-3.}}
+    provider=SimpleNamespace(MODEL_ID=COUPLED.WATER_MODEL_ID,COMPONENTS=["sio2","h2o"],
+        evaluate_liquid=evaluate,water_standard_receipts=receipts,
+        energy_value_and_grad_rt=lambda t,p,n:(original(t,p,n).gibbs_rt,original(t,p,n).mu_rt))
+    offset=1.6351495178699949
+    saved=COUPLED.with_saved_water_standard_offset(provider,offset)
+    phase=SCENARIOS.apply_standard_offsets({"phases":{"silicate":["sio2_melts","h2o_melts"]}},
+            {"silicate":original},{"standard_offsets_rt":{"h2o_melts":offset}})["silicate"]
+    n=np.array([.97,.03]);state=saved.evaluate_liquid(2173.15,270.,n)
+    expected=phase(2173.15,270.,n)
+    assert state["gibbs_RT"] == pytest.approx(expected.gibbs_rt)
+    np.testing.assert_allclose(state["mu_RT"],expected.mu_rt)
+    energy,gradient=saved.energy_value_and_grad_rt(2173.15,270.,n)
+    assert energy == pytest.approx(expected.gibbs_rt)
+    np.testing.assert_allclose(gradient,expected.mu_rt)
+    assert state["water_reconstruction"]["gas_H2O_standard_RT"] == -3.
+    assert state["water_reconstruction"]["standard_offset_rt"] == offset
+    assert saved.water_standard_receipts is receipts
+    assert COUPLED.with_saved_water_standard_offset(provider,0.) is provider
+    with pytest.raises(ValueError,match="already applied"):
+        COUPLED.with_saved_water_standard_offset(saved,offset)
+    assert COUPLED.saved_liquid_model({"source_metadata":{"liquid_model":"published_water",
+        "host_ledger":{"model_id":COUPLED.WATER_MODEL_ID}}}) == "published_water"

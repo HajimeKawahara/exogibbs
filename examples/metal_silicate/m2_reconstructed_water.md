@@ -40,3 +40,11 @@ change the Hessian or the separate `H2_dissolved` standard. The capacity
 interpretation applies to `published_water`, not to native hydrated MELTS.
 A chosen finite range is a declared model sensitivity, not a calibrated
 universal error bound. The default offset is zero.
+
+An independent audit can reconstruct a saved host scenario with
+`with_saved_water_standard_offset(evaluator, offset_rt)`. It adds the same
+linear term to returned G, chemical potentials and the independent scalar
+derivative, while leaving the gas-standard receipts unchanged and recording
+`water_reconstruction.standard_offset_rt` separately. Do not wrap a source
+callback which already receives `apply_standard_offsets`; that would apply
+the scenario twice. A second nonzero saved wrapper is rejected.
