@@ -124,3 +124,48 @@ amounts, assessment and provider code hashes, runtime hashes, native property
 receipt, candidate catalog, and unresolved reasons. An assessment of an old
 source is a new property evaluation of that source's composition; it does
 not revise the provenance or scientific status of the original equilibrium.
+
+## Independent coverage and local liquid curvature
+
+The composition search now evaluates the simplex center, every native unit
+endmember and every pairwise edge midpoint **before** local SLSQP steps. Each
+phase obtains its basis in a fresh worker; a failed native endpoint therefore
+does not prevent later phases from being assessed. `initial_points_requested`
+and `initial_points_attempted` expose incomplete coverage when the budget is
+small. Failed endpoints remain failed evidence, without clipping negative
+native coordinates or treating an unavailable phase as absent.
+
+A one-endmember phase has a single native composition (up to its extensive
+amount). If both its evaluation and fresh repetition succeed,
+`composition_minimum_enumerated` records that complete composition enumeration.
+This does not certify numerical error bounds, empirical applicability, finite
+exsolution, or the stability of the entire phase assemblage. Solution phases
+still require a global minimum over their full admissible domain; their
+nonnegative endmember simplex can be only a subset of that domain.
+
+`--liquid-local-curvature` differentiates the augmented host chemical potentials
+on every positive native/H2 component using two relative central-difference
+steps (0.001 and 0.0005). It normalizes the parent to one mole of host plus H2
+components, scales the Hessian by `diag(sqrt(n))` on both sides, and removes the
+homogeneous amount direction `sqrt(n)`. This removes the physically irrelevant
+zero mode without omitting any composition fluctuation on the positive support.
+Exact-zero components remain absent. The identical linear dissolved-H2 standard
+has zero curvature and cancels between two daughters; native water remains
+inside MELTS throughout.
+
+The report retains both matrices, all projected eigenvalues, step dependence,
+antisymmetry and homogeneous-direction residuals. Five times the largest of
+these residuals (with a `1e-10` floor) is a **numerical sensitivity margin**, not
+a proved derivative-error bound. A positive eigenvalue exceeding this margin
+is `numerically_positive_local_curvature`; it is not a global certificate.
+The least-curved direction is also evaluated as three finite two-liquid splits
+(0.001, 0.01 and 0.1 of the largest feasible step), with exactly conserved
+component totals and fresh native energies. Only an independently evaluated
+negative energy difference can give `negative_feasible_witness`.
+
+This distinction follows the Gibbs tangent-plane criterion: the entire Gibbs
+surface must lie above the supporting plane, whereas local curvature checks
+only a neighborhood. See [Michelsen (1982), Part I](https://doi.org/10.1016/0378-3812(82)85001-2)
+and the explicit global-minimization treatment by
+[McDonald and Floudas (1995)](https://doi.org/10.1002/aic.690410715).
+A positive local Hessian can coexist with a distant lower-energy liquid.

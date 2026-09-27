@@ -10,6 +10,7 @@ import hashlib
 from pathlib import Path
 
 import numpy as np
+from scipy.linalg import null_space
 from scipy.optimize import minimize
 from scipy.special import xlogy
 
@@ -17,7 +18,7 @@ from m2_host_stability import assess_host_candidates
 from melts_coupled import COMMON_R, PROVIDER_MODEL_ID
 
 
-def _search(objective, seeds, bounds, *, max_evaluations, tolerance_rt, simplex=False):
+def _search(objective, seeds, bounds, *, max_evaluations, tolerance_rt, simplex=False, initial_points=()):
     if type(max_evaluations) is not int or max_evaluations < 2:
         raise ValueError("max_evaluations must be an integer of at least two.")
     if isinstance(tolerance_rt, (bool, np.bool_)) or not np.isfinite(tolerance_rt) or tolerance_rt <= 0:
@@ -48,6 +49,14 @@ def _search(objective, seeds, bounds, *, max_evaluations, tolerance_rt, simplex=
 
     constraints = ({"type": "eq", "fun": lambda x: x.sum() - 1},) if simplex else ()
     exhausted = False
+    initial_attempted = 0
+    for point in initial_points:
+        try:
+            evaluate(point)
+            initial_attempted += 1
+        except BudgetExhausted:
+            exhausted = True
+            break
     for seed in seeds:
         try:
             result = minimize(evaluate, seed, method="SLSQP", bounds=bounds, constraints=constraints,
@@ -67,7 +76,9 @@ def _search(objective, seeds, bounds, *, max_evaluations, tolerance_rt, simplex=
     return {"status": "negative_feasible_witness" if negative else "unresolved",
             "minimum_certified": False, "lower_bound_rt": None, "best_fresh_trial": final,
             "tolerance_rt": tolerance_rt, "max_evaluations": max_evaluations,
-            "budget_exhausted": exhausted, "trials": trials, "failed_evaluations": failures,
+            "budget_exhausted": exhausted,
+            "initial_points_requested": len(initial_points), "initial_points_attempted": initial_attempted,
+            "trials": trials, "failed_evaluations": failures,
             "optimizer_attempts": optimizers,
             "interpretation": "A finite negative feasible trial rejects this host in the declared formal model. Nonnegative trials, optimizer success and search exhaustion do not bound the global minimum."}
 
@@ -99,19 +110,25 @@ def search_competing_solutions(properties, dissolved_h2_moles, *, evaluator, run
     phases = catalog if phases is None else list(phases)
     if not phases or len(set(phases)) != len(phases) or not set(phases) <= set(catalog):
         raise ValueError("Select unique phases from the complete native catalog.")
-    basis_receipt = _provider_call(properties, evaluator, runtime, python_executable,
-                                  candidate_compositions=[{"phase": phase} for phase in phases])
-    bases = basis_receipt["candidate_evaluations"]
-    if [row["phase"] for row in bases] != phases:
-        raise ValueError("The provider changed the requested candidate order.")
     results = []
-    for phase, basis in zip(phases, bases):
+    basis_provenance = []
+    for phase in phases:
+        # Each phase gets a fresh worker, so a native endpoint failure cannot
+        # invalidate the remaining candidate catalog in the same C session.
+        basis_receipt = _provider_call(properties, evaluator, runtime, python_executable,
+                                      candidate_compositions=[{"phase": phase}])
+        bases = basis_receipt["candidate_evaluations"]
+        if len(bases) != 1 or bases[0]["phase"] != phase:
+            raise ValueError("The provider changed the requested candidate order.")
+        basis_provenance.append({"phase": phase, "provenance": basis_receipt["provenance"]})
+        basis = bases[0]
         if "native_endmember_oxide_mass_g_per_mol" not in basis:
             results.append({"phase": phase, "status": "unresolved", "reason": basis.get("reason"),
                             "minimum_certified": False, "lower_bound_rt": None})
             continue
         matrix = np.asarray(basis["native_endmember_oxide_mass_g_per_mol"], dtype=float)
-        if matrix.ndim != 2 or matrix.shape[0] != len(properties["component_moles"]) or not np.all(np.isfinite(matrix)):
+        if (matrix.ndim != 2 or matrix.shape[0] != len(properties["component_moles"])
+                or matrix.shape[1] < 1 or not np.all(np.isfinite(matrix))):
             raise ValueError("Invalid native endmember basis.")
         count = matrix.shape[1]
         center = np.full(count, 1. / count)
@@ -136,14 +153,27 @@ def search_competing_solutions(properties, dissolved_h2_moles, *, evaluator, run
                     "chemical_trial": chemical, "provider_candidate": candidate}
 
         seeds = [center] + [.5 * (center + vertex) for vertex in np.eye(count)]
-        result = _search(objective, seeds, [(0., 1.)] * count, simplex=True,
-                         max_evaluations=max_evaluations, tolerance_rt=tolerance_rt)
-        results.append({"phase": phase, "native_basis": basis, **result})
+        # Evaluate independent geometrical probes before a local optimizer can
+        # consume the entire budget estimating its first numerical gradient.
+        probes = [center] if count == 1 else [center, *np.eye(count)]
+        probes += [.5 * (np.eye(count)[i] + np.eye(count)[j])
+                   for i in range(count) for j in range(i + 1, count)]
+        result = _search(objective, [] if count == 1 else seeds, [(0., 1.)] * count, simplex=True,
+                         max_evaluations=max_evaluations, tolerance_rt=tolerance_rt, initial_points=probes)
+        complete = count == 1 and result["best_fresh_trial"] is not None and not result["failed_evaluations"]
+        if complete and result["status"] == "unresolved":
+            result["status"] = "nonnegative_fixed_composition"
+        results.append({"phase": phase, "native_basis": basis,
+                        "composition_domain_is_single_point": count == 1,
+                        "composition_minimum_enumerated": complete,
+                        "scope": "Fixed native endmember proportions only; numerical energies and empirical applicability are not interval certified." if count == 1 else
+                                 "Nonnegative simplex probes and local optimization; signed-coordinate extensions remain outside this search.",
+                        **result})
     return {"assessment_id": "m2_native_solution_composition_search_v1",
             "status": "rejected_by_feasible_trial" if any(r["status"] == "negative_feasible_witness" for r in results) else "unresolved",
             "global_stability_certified": False, "phase_order": phases, "phases": results,
             "domain": "Nonnegative native endmember fractions summing to one; a search subset, not a calibrated composition domain.",
-            "provider_provenance": basis_receipt["provenance"],
+            "provider_provenance": basis_provenance,
             "search_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 
 
@@ -193,4 +223,98 @@ def search_liquid_splitting(properties, dissolved_h2_moles, *, evaluator, runtim
             "active_component_indices": np.flatnonzero(active).tolist(), "daughter_fraction_bounds": [.001, .999],
             "domain": "Finite daughter splits of every positive parent component; exact-zero parent components remain zero. This bounded search does not cover the full liquid-splitting domain.",
             "h2_standard": "The identical linear H2 standard cancels between parent and daughters; native H2O remains in MELTS.",
+            "search_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+
+
+def assess_liquid_local_curvature(properties, dissolved_h2_moles, *, evaluator, runtime,
+                                  python_executable, relative_steps=(1e-3, 5e-4), tolerance_rt=1e-8):
+    """Check local splitting curvature and independently evaluate finite splits.
+
+    Chemical-potential differences estimate the Hessian on the positive
+    support. Two step sizes and symmetry/homogeneity residuals diagnose
+    numerical sensitivity, not rigorous derivative error bounds. Positive
+    local curvature cannot exclude a distant, lower-energy second liquid.
+    """
+    assess_host_candidates(properties, dissolved_h2_moles, tolerance_rt=tolerance_rt)
+    steps = np.asarray(relative_steps, dtype=float)
+    if (steps.shape != (2,) or not np.all(np.isfinite(steps))
+            or not 0 < steps[1] < steps[0] < .1):
+        raise ValueError("Supply two decreasing positive relative steps below 0.1.")
+    original = np.r_[properties["component_moles"], dissolved_h2_moles].astype(float)
+    total = original / original.sum()
+    active = total > 0
+    root = np.sqrt(total[active])
+    projection = null_space(root[None, :])
+    rt = COMMON_R * properties["T_K"]
+    receipts = []
+
+    def evaluate(amounts):
+        request = {**properties, "component_moles": amounts[:-1].tolist()}
+        receipt = _provider_call(request, evaluator, runtime, python_executable)
+        nhost, h2 = float(amounts[:-1].sum()), float(amounts[-1])
+        mu = np.r_[np.asarray(receipt["mu_RT"], dtype=float) + np.log(nhost / (nhost + h2)),
+                   np.log(h2 / (nhost + h2)) if h2 > 0 else np.nan]
+        dilution = float(xlogy(nhost, nhost / (nhost + h2)) + xlogy(h2, h2 / (nhost + h2)))
+        energy = float(receipt["gibbs_J"] / rt + dilution)
+        if not np.isfinite(energy) or not np.all(np.isfinite(mu[active])):
+            raise ValueError("The provider returned unavailable active-support potentials or energy.")
+        receipts.append({"native_component_moles": amounts[:-1].tolist(), "dissolved_h2_moles": h2,
+                         "augmented_gibbs_rt": energy, "provider_properties": receipt})
+        return energy, mu[active]
+
+    baseline, _ = evaluate(total)
+    matrices, diagnostics = [], []
+    for step in steps:
+        columns = []
+        for index in np.flatnonzero(active):
+            delta = np.zeros_like(total)
+            delta[index] = step * total[index]
+            _, plus = evaluate(total + delta)
+            _, minus = evaluate(total - delta)
+            columns.append((plus - minus) / (2 * delta[index]))
+        jacobian = np.asarray(columns).T
+        scaled = root[:, None] * jacobian * root[None, :]
+        symmetric = .5 * (scaled + scaled.T)
+        projected = projection.T @ symmetric @ projection
+        matrices.append(projected)
+        diagnostics.append({"relative_step": float(step), "scaled_hessian": scaled.tolist(),
+                            "projected_hessian": projected.tolist(),
+                            "projected_eigenvalues": np.linalg.eigvalsh(projected).tolist(),
+                            "symmetry_residual_norm": float(np.linalg.norm(scaled - scaled.T, ord=2)),
+                            "homogeneous_direction_residual_norm": float(np.linalg.norm(scaled @ root))})
+    variation = float(np.linalg.norm(matrices[0] - matrices[1], ord=2)) if projection.shape[1] else 0.
+    margin = 5 * max([variation, 1e-10] + [row[key] for row in diagnostics
+                     for key in ("symmetry_residual_norm", "homogeneous_direction_residual_norm")])
+    eigvals, eigvecs = np.linalg.eigh(matrices[-1])
+    splits = []
+    atoms = np.asarray(properties["basis"]["component_element_matrix"]).T @ total[:-1]
+    denominator = float(atoms.sum() + 2 * total[-1])
+    if eigvals.size:
+        direction = np.zeros_like(total)
+        direction[active] = root * (projection @ eigvecs[:, 0])
+        used = direction != 0
+        limit = float(np.min(total[used] / np.abs(direction[used])))
+        for fraction in (.001, .01, .1):
+            first = .5 * (total + fraction * limit * direction)
+            second = total - first
+            before = len(receipts)
+            energy_a, _ = evaluate(first)
+            energy_b, _ = evaluate(second)
+            splits.append({"fraction_of_feasible_step": fraction,
+                           "objective_rt_per_mol_atoms": (energy_a + energy_b - baseline) / denominator,
+                           "component_conservation_max_error_mol": float(np.max(np.abs(first + second - total))),
+                           "daughter_evaluation_indices": [before, before + 1]})
+    negative = any(row["objective_rt_per_mol_atoms"] < -tolerance_rt for row in splits)
+    return {"assessment_id": "m2_liquid_local_curvature_v1",
+            "status": "negative_feasible_witness" if negative else
+                      "numerically_positive_local_curvature" if eigvals.size and eigvals[0] > margin else "unresolved",
+            "global_stability_certified": False, "curvature_bound_certified": False,
+            "normalization": "Parent native component plus dissolved-H2 amounts sum to one mol; energy differences per total mol atoms.",
+            "parent_component_moles": total.tolist(), "original_component_moles": original.tolist(),
+            "active_component_indices": np.flatnonzero(active).tolist(), "composition_subspace_dimension": int(projection.shape[1]),
+            "finite_difference_assessments": diagnostics, "step_variation_norm": variation,
+            "numerical_sensitivity_margin": margin, "tolerance_rt_per_mol_atoms": tolerance_rt,
+            "normalization_mol_atoms": denominator, "baseline_augmented_gibbs_rt": baseline,
+            "finite_split_trials": splits, "provider_evaluations": receipts,
+            "interpretation": "A finite negative energy difference rejects the host within the formal model. Positive finite-difference curvature is local numerical evidence only; the sensitivity margin is not an interval bound. Exact-zero components are excluded, and a remote liquid minimum is still possible.",
             "search_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
