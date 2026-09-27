@@ -1452,7 +1452,6 @@ def _run_head_v2_profile(
     )
     from exogibbs.equilibrium.condensate.fixed_support.batch import (
         FixedSupportV2BatchShape,
-        run_fixed_support_profile,
     )
     from exogibbs.equilibrium.condensate.fixed_support.types import (
         TerminalStatus,
@@ -1928,41 +1927,6 @@ def _run_head_v2_profile(
                 round_diagnostic_execution
             )
         backend = str(raw["backend"])
-
-    if (
-        not pending
-        and gas_only_states
-        and setup.condensate_species
-    ):
-        source_indices = tuple(sorted(gas_only_states))
-        warmup = run_fixed_support_profile(
-            buckets=_head_v2_prepared_buckets(
-                setup=setup,
-                temperatures=tuple(
-                    float(temperatures[index]) for index in source_indices
-                ),
-                pressures=tuple(
-                    float(pressures[index]) for index in source_indices
-                ),
-                b=b,
-                Pref=Pref,
-                states=tuple(
-                    gas_only_states[index] for index in source_indices
-                ),
-                fixed_shape=fixed_batch_shape,
-                source_layer_indices=source_indices,
-                lnphi_func=lnphi_func,
-            ),
-            formula_matrix=setup.formula_matrix,
-            layer_count=len(source_indices),
-            condensate_count=len(setup.condensate_species),
-            config=policy.solver_config,
-            budget_relative_floor=policy.budget_relative_floor,
-            include_terminal_diagnostics=return_diagnostics,
-        )
-        accumulate_solver_timing(warmup)
-        for source_index in source_indices:
-            records[source_index]["fixed_shape_warmup"] = True
 
     for round_index in range(policy.lifecycle_max_rounds):
         if not pending:
