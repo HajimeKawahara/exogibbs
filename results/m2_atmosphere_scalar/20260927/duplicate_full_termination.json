@@ -1,0 +1,8 @@
+{
+  "status": "duplicate_full_suite_intentionally_stopped",
+  "utc": "2026-09-27T03:41:50.935133+00:00",
+  "source_head": "89a6522618a63c38e9d7175457b01d2ecf2654e8",
+  "reason": "Root requested the in-progress c83bb99 full suite plus targeted hook/affected integration validation, avoiding two redundant heavy suites.",
+  "primary_full_log": "/tmp/stage2-finite-seed-validation/full_pytest.log",
+  "scientific_run_terminated": false
+}
