@@ -12,7 +12,7 @@ from m2_liquid_global import _I
 from m2_solid_global import _poly
 
 
-def interval_json(value):
+def interval_json(value: _I) -> dict:
     return {"lower": str(value.lo), "upper": str(value.hi)}
 
 
@@ -28,7 +28,7 @@ def _dot(a, b):
     return sum((_I(x)*_I(y) for x, y in zip(a, b)), _I(0))
 
 
-def ideal_energy(amounts):
+def ideal_energy(amounts: list) -> _I:
     """Extensive ideal mixing, including exact zero faces."""
     total = sum(amounts, Fraction(0))
     if total == 0:
@@ -36,7 +36,7 @@ def ideal_energy(amounts):
     return sum((_I(n)*_I(n/total).log() for n in amounts if n), _I(0))
 
 
-def ideal_minimum(costs):
+def ideal_minimum(costs: list) -> _I:
     """Exact simplex minimum -log(sum(exp(-cost))), enclosed outwards."""
     if not costs:
         raise ValueError("An ideal simplex requires at least one component.")
@@ -44,7 +44,7 @@ def ideal_minimum(costs):
     return _I(anchor)-sum((_exp(_I(anchor)-value) for value in costs), _I(0)).log()
 
 
-def rational_solve(matrix, rhs):
+def rational_solve(matrix: list, rhs: list) -> list:
     """Solve a square exact system; no binary64 conversion of rational RHS."""
     rows = [[Fraction(v) for v in row]+[Fraction(b)] for row, b in zip(matrix, rhs)]
     size = len(rows)
@@ -64,7 +64,7 @@ def rational_solve(matrix, rhs):
     return [row[-1] for row in rows]
 
 
-def feasible_primal(columns, amounts, budget):
+def feasible_primal(columns: list, amounts: list, budget: list) -> tuple:
     """Repair an abundant independent atom basis with exact rationals.
 
     The selected columns are unchanged chemical species. Negative repaired
@@ -108,7 +108,7 @@ def feasible_primal(columns, amounts, budget):
                       "maximum_relative_basis_change": float(max(abs(d)/n[i] for i, d in zip(chosen, changes)))}
 
 
-def liquid_mixing(parameters, amounts):
+def liquid_mixing(parameters: dict, amounts: list) -> _I:
     total = sum(amounts, Fraction(0))
     if total <= 0:
         raise ValueError("A positive liquid amount is required.")
@@ -123,7 +123,7 @@ def liquid_mixing(parameters, amounts):
     return energy
 
 
-def liquid_standard_intervals(properties):
+def liquid_standard_intervals(properties: dict) -> list:
     """Enclose the declared J/(R*T) and the provider's binary64 conversion.
 
     The real J, R and T constants are retained. Their rounded RT and mu0_RT
@@ -145,7 +145,7 @@ def liquid_standard_intervals(properties):
     return result
 
 
-def liquid_common_plane(properties, proof, plane, h2_standard):
+def liquid_common_plane(properties: dict, proof: dict, plane: dict, h2_standard: _I) -> tuple:
     """Transfer the global self-plane bound to an external element plane."""
     parameters = properties["mixing_expression"]
     if (properties["model_id"] != "melts_v102_published_mixing_native_standard_states_v1"
@@ -183,7 +183,7 @@ def liquid_common_plane(properties, proof, plane, h2_standard):
                                  "all_nonnegative_dissolved_h2_fractions": True}
 
 
-def solution_common_plane(proof, properties, dissolved_h2, plane):
+def solution_common_plane(proof: dict, properties: dict, dissolved_h2: float, plane: dict) -> tuple:
     """Translate every signed endmember reaction over the full declared box."""
     if proof["unresolved_box_count"] or proof["lower_bound_rt_per_formula_unit"] is None:
         raise ValueError("A complete solution-domain lower bound is required.")
@@ -226,7 +226,7 @@ def solution_common_plane(proof, properties, dissolved_h2, plane):
                                   "original_lower_bound_rt": proof["lower_bound_rt_per_formula_unit"]}
 
 
-def primal_dual_certificate(budget, potentials, primal_energy, phase_bounds, *, tolerance=1e-9):
+def primal_dual_certificate(budget: list, potentials: list, primal_energy: _I, phase_bounds: list, *, tolerance: float = 1e-9) -> dict:
     """Weak duality with an explicit common-plane correction in RT units."""
     if not phase_bounds or len(budget) != len(potentials) or any(Fraction(v) < 0 for v in budget):
         raise ValueError("A complete nonnegative finite budget and phase catalog are required.")

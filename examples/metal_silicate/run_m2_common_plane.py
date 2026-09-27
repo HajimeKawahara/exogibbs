@@ -29,7 +29,7 @@ PURE_PHASES = frozenset(("sphene", "aenigmatite", "muscovite", "quartz", "tridym
                          "whitlockite", "apatite", "water"))
 
 
-def saved_solution_provider(summary, eos_checkout):
+def saved_solution_provider(summary: dict, eos_checkout: Path) -> tuple:
     """Load the exact immutable EOS declaration from its recorded git blobs."""
     revision = summary["exoeos_commit"]
     blobs = {}
@@ -47,7 +47,7 @@ def saved_solution_provider(summary, eos_checkout):
     return namespace["solid_mixing_parameters"], set(json.loads(data)["models"]), receipt
 
 
-def require_solution_proof(proof, row, parameters, standard_states):
+def require_solution_proof(proof: dict, row: dict, parameters: dict, standard_states: dict) -> None:
     """Bind the full domain/expression and native standards, not just a label."""
     if proof["parameters"] != parameters or proof["native_standard_states"] != standard_states:
         raise ValueError("The solution bound changed its declared expression, domain or native standards.")
@@ -56,7 +56,7 @@ def require_solution_proof(proof, row, parameters, standard_states):
         raise ValueError("The solution proof differs from its bound summary.")
 
 
-def assess(binding_path, alloy_path, eos_checkout, *, case=None):
+def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=None) -> dict:
     files = {}
 
     def read(path, expected=None):
@@ -313,7 +313,7 @@ def assess(binding_path, alloy_path, eos_checkout, *, case=None):
     return result
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence-binding", type=Path, required=True)
     parser.add_argument("--case", help="Required when selecting a case from the five-root aggregate.")
