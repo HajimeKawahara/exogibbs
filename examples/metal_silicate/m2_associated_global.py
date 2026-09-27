@@ -353,6 +353,23 @@ def make_associated_insertion_minimizer(metadata, metal_evaluator, exoeos_checko
         x = np.asarray(report["composition"])
         state = metal_evaluator(t, p, x)
         actual = float(state.gibbs_rt-atoms.T.dot(plane).dot(x))
+        potentials_actual = np.asarray(state.mu_rt, float)
+        varying = np.flatnonzero(hi[1:] > lo[1:])
+        if (potentials_actual.shape != x.shape
+                or not np.all(np.isfinite(potentials_actual[np.r_[0, varying+1]]))):
+            raise ValueError("The actual alloy callback needs finite potentials on its active face.")
+        _, expected_gradient = _scalar_gradient(
+            excess, costs, [Fraction(v) for v in report["exact_composition"][1:]], intervals=True)
+        gradient_differences = []
+        for i in varying:
+            observed = _I(float(potentials_actual[i+1]))-_I(float(potentials_actual[0]))
+            observed -= sum(((_I(float(atoms[j, i+1]))-_I(float(atoms[j, 0])))*_I(float(plane[j]))
+                             for j in range(len(plane))), _I(0))
+            difference = observed-expected_gradient[i]
+            error = max(abs(difference.lo), abs(difference.hi))
+            gradient_differences.append(float(error))
+            if error > Decimal('1e-10')*(1+max(abs(expected_gradient[i].lo), abs(expected_gradient[i].hi))):
+                raise ValueError("The source potentials do not match the saved insertion gradient.")
         lower_value = _outward_float(Decimal(report["lower_bound_rt"]), True)
         upper_value = _outward_float(Decimal(report["upper_bound_rt"]), False)
         if not np.isfinite(actual) or abs(actual-upper_value) > 1e-10*(1+abs(actual)):
@@ -363,6 +380,7 @@ def make_associated_insertion_minimizer(metadata, metal_evaluator, exoeos_checko
             "element_order": metadata["input"]["elements"],
             "elemental_potentials_rt": plane.tolist(), "formula_matrix": atoms.tolist(),
             "component_order": row["component_order"],
+            "maximum_source_reduced_gradient_difference_rt": max(gradient_differences, default=0.),
             "insertion_linear_cost_intervals_rt": [[str(v.lo), str(v.hi)] for v in costs],
             "standard_offsets_rt": offsets,
             "provider_recipe_file_sha256": row["provider_recipe_file_sha256"],

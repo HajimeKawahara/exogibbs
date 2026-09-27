@@ -13,7 +13,9 @@ ExoEOS-owned. The factory verifies the saved provider hashes, component and
 element order, interactions, and selected 18- or 19-species model. Independent
 linear scenario shifts remain separate from the provider's base standards.
 The actual source callback is evaluated again at the final candidate. Its
-scalar must agree with the independently evaluated saved expression.
+scalar and every free reduced chemical-potential direction must agree with
+the independently evaluated saved expression. Checking the energy alone would
+miss a changed linear standard orthogonal to that single composition.
 
 Let `G0` be the same declared alloy with only its additional H–O interaction
 omitted. The provider must establish a positive curvature lower bound `kappa`
