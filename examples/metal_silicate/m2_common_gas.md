@@ -230,3 +230,24 @@ before mixing. Reusing numerical amounts from a different gas catalog or
 liquid model does not transport its chemical potentials or acceptance: the
 new model must be independently minimized and audited from the supplied
 `initial_component_amounts_mol`.
+
+## Independent scalar derivatives for trace atmospheric atoms
+
+Finite differences of the total atmospheric Gibbs energy can lose the
+contribution of a trace carrier below floating-point resolution. The
+atmosphere callback therefore supplies `energy_value_and_grad_rt` to the
+existing independent derivative audit. It differentiates the explicit
+primitive ideal-gas and pure-condensate scalar with JAX AD, including the
+same pressure and reference terms. It then solves
+`A_active.T @ lambda = dG_primitive/dn_active` on the accepted gas/cloud
+support. Full column rank and a stationarity residual below `1e-8 RT`
+are required. The envelope theorem gives `dG_min/db = lambda`.
+
+This path reuses primitive equilibrium amounts, but never the callback's
+chemical potentials or its saved elemental dual. The outer audit still
+compares the independently reconstructed scalar and gradient with the
+callback, using the unchanged `5e-6 RT` derivative tolerance. The complete
+parcel solver and absent-phase KKT audit continue to select condensate
+support. Exact-zero elements retain their excluded support and unavailable
+one-sided derivatives. Tests include trace fractions below finite-difference
+resolution and deliberately corrupted potentials and scalar energies.

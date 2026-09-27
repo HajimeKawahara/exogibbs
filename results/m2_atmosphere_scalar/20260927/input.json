@@ -1,0 +1,36 @@
+{
+  "scope": "Atmospheric atom vector from the old unaccepted source; not an accepted complete source.",
+  "temperature_K": 2173.15,
+  "pressure_bar": 250.0,
+  "elements": [
+    "H",
+    "He",
+    "O",
+    "Mg",
+    "Si",
+    "Fe",
+    "Na",
+    "Al",
+    "Ca",
+    "K",
+    "Ti",
+    "Cr",
+    "P"
+  ],
+  "element_amounts_mol": [
+    9.77834573031162e+23,
+    1.0000000000000001e+23,
+    3.7090749659383104e+22,
+    3.764864790351279e+18,
+    6.967171665940782e+18,
+    4.573350299199107e+22,
+    3.0115847241105826e+19,
+    1.212552200278645e+16,
+    6679467031110710.0,
+    2.4743261682353915e+18,
+    22995286452958.598,
+    8.218322163309263e+17,
+    2.9370053114418663e+20
+  ],
+  "source_file_sha256": "320765a409b1dc2b3f8e1c92fb5034e9c867af1aafd3347d43d884ea1b75f8e5"
+}
