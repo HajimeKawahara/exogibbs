@@ -116,6 +116,8 @@ jobs:
           assert callable(ma_alloy_curvature_lower_bound)
           assert (provider / "examples/melts_liquid_mixing.py").is_file()
           assert (provider / "examples/m2_material/hydrogen_oxygen_sources.json").is_file()
+          assert (provider / "examples/m2_material/phosphorus_reference.py").is_file()
+          assert (provider / "examples/m2_material/associate_reference.py").is_file()
           assert (provider / "examples/m2_material/potassium_reference.py").is_file()
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
@@ -142,6 +144,9 @@ jobs:
             tests/unittests/examples/metal_silicate_phase_selection_test.py
             tests/unittests/examples/metal_silicate_melts_coupled_test.py
             tests/unittests/examples/metal_silicate_melts_archive_test.py
+            tests/unittests/examples/m2_phosphorus_test.py
+            tests/unittests/examples/m2_associated_test.py
+            tests/unittests/examples/m2_potassium_test.py
             tests/unittests/interop
           )
           python -m pytest "${tests[@]}" --junitxml=results/provider.xml
