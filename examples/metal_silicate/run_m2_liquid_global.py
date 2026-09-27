@@ -11,7 +11,7 @@ import time
 
 import numpy as np
 
-from m2_liquid_global import assess_liquid_global_tangent_plane
+from m2_liquid_global import assess_liquid_global_tangent_plane, require_saved_liquid_expression
 from melts_coupled import COMMON_R, load_melts_evaluator
 
 
@@ -74,6 +74,7 @@ def main():
     properties = native_parent if liquid_model == "native" else evaluator.evaluate_liquid(
         request["T_K"], request["P_Pa"], request["component_moles"], runtime=args.runtime,
         python_executable=args.python, common_R=COMMON_R)
+    require_saved_liquid_expression(request, properties)
     write("host_properties.json", properties)
     comparison = mixing_model.compare_native_mixing(native_parent)
     checks = [{"role": "independent_native_parent", "comparison": comparison, "provider_properties": native_parent}]
