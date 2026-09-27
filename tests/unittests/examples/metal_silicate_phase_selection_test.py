@@ -413,3 +413,34 @@ def test_local_status_uses_legacy_selection_gate_and_finite_amount(amount, expec
     assert PHASE.local_metal_status(selection) == expected
     selection["reasons"] = ["Metal-bearing branch unavailable; see local attempts."]
     assert PHASE.local_metal_status(selection) == "unresolved"
+
+
+def test_opt_in_global_insertion_preserves_local_and_host_acceptance():
+    record, budget, callbacks, _ = _ideal_assemblage(metal_offset=10.)
+    calls = []
+    def insertion(t, p, formula, plane, lo, hi, *, tolerance, maxiter):
+        calls.append((t, p, plane.copy()))
+        return PHASE.minimize_insertion(callbacks['metal'], t, p, formula, plane,
+                                        lo, hi, curvature_lower_bound_rt=0.,
+                                        tolerance=tolerance, maxiter=maxiter)
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                      np.zeros(4), np.ones(4),
+                                      metal_insertion_minimizer=insertion)
+    assert calls and calls[0][:2] == (2000., 1.)
+    assert result.insertion.minimum_certified
+    assert result.status == 'unresolved'
+    assert result.reasons == ('Host global stability is not established.',)
+    assert PHASE.local_metal_status(asdict(result)) == 'metal_absent'
+
+
+@pytest.mark.parametrize('gap', [None, np.nan, 1e-4, -1.])
+def test_opt_in_cannot_claim_certification_without_a_valid_error_bound(gap):
+    record, budget, callbacks, _ = _ideal_assemblage(metal_offset=10.)
+    def malformed(*args, **kwargs):
+        return PHASE.InsertionMinimum(np.full(4, .25), 1., .99, gap, True, 'invalid')
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                      np.zeros(4), np.ones(4),
+                                      metal_insertion_minimizer=malformed)
+    assert result.status == 'unresolved'
+    assert 'invalid certificate' in ' '.join(result.reasons)
+    assert not PHASE.local_metal_selection_accepted(asdict(result))
