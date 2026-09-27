@@ -19,13 +19,15 @@ from m2_atmosphere import make_atmosphere_phase
 from m2_common_gas import anchored_standards_rt, source_gas_names
 from m2_finite_gas import atmosphere_gauge_rt, build_atmosphere_setup, catalog_sha256
 from m2_janaf import DATA_PATH, atomic_standard_audit
+from m2_phosphorus import add_phosphorus_metal, phosphorus_metal_domain
 from m2_scenarios import apply_standard_offsets, metal_selection_domain, normalize_scenario
 from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 
 
 def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_executable,
                                *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1",
-                               initialization="lp", liquid_model="native"):
+                               initialization="lp", liquid_model="native", metal_model="ma",
+                               phosphorus_options=None):
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
@@ -37,6 +39,8 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     """
     if initialization not in ("lp", "canonical"):
         raise ValueError("initialization must be lp or canonical.")
+    if metal_model not in ("ma", "phosphorus") or (metal_model == "ma" and phosphorus_options is not None):
+        raise ValueError("Select metal_model ma or phosphorus; P options require phosphorus.")
     normalized = normalize_scenario(scenario)
     setup = build_atmosphere_setup(gas_model)
     record, budget, callbacks, initial, metadata = build_bse_problem(
@@ -65,6 +69,11 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     record.pop("gas_species_aliases")
     record["atmosphere_element_order"] = list(setup.gas_setup.elements)
     record["atmosphere_gas_model"] = gas_model
+    if metal_model == "phosphorus":
+        if scenario is not None and "metal_bounds" in scenario:
+            raise ValueError("Four-component scenario bounds cannot define the five-component P domain.")
+        initial = add_phosphorus_metal(record, initial, callbacks, metadata, setup, initial_gauge,
+                                       exoeos_checkout, temperature_k, pressure_bar, phosphorus_options)
     metadata["numerical_initialization"] = {
         "strategy": initialization,
         "canonical_interior_fraction": 1e-4 if initialization == "canonical" else None,
@@ -98,14 +107,17 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         "upper_reference_policy": "Re-evaluate raw FastChem reactions at every layer T/P. Conserved-element gauges cancel from isolated parcel composition; no low-temperature JANAF extrapolation or frozen source chemical potentials.",
         "missing_paths": (["Al/Ca/K/Ti/Cr/P retained condensates"]
                           if gas_model != "janaf_condensed" else [])
-                         + ["Mg/Al/Ca/K/Ti/Cr/P alloy components"],
+                         + ["Mg/Al/Ca/K/Ti/Cr alloy components" if metal_model == "phosphorus"
+                            else "Mg/Al/Ca/K/Ti/Cr/P alloy components"],
         "pure_phase_reference_policy": "FastChem pure condensates and native MELTS phases are independent thermochemical models. Matching formulas do not establish matching energies or a calibrated phase boundary.",
     }
     metadata["provenance"]["file_sha256"].update({name: hashlib.sha256(
         Path(__file__).with_name(name).read_bytes()).hexdigest()
         for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py", "m2_scenarios.py",
-                     "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py", "phase_selection.py")})
+                     "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py", "phase_selection.py",
+                     "m2_phosphorus.py")})
     metadata["provenance"]["file_sha256"]["data/janaf_atomic.json"] = hashlib.sha256(DATA_PATH.read_bytes()).hexdigest()
+    metadata["metal_model"] = metal_model
     if gas_model in ("janaf", "janaf_condensed"):
         metadata["standards"]["janaf_atomic_reference"] = atomic_standard_audit(temperature_k)
         metadata["standards"]["common_gas"]["policy"] = (
