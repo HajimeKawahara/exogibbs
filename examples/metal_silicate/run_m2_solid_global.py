@@ -31,6 +31,7 @@ def main():
     host = saved["host_stability"]
     request = host["provider_properties"]
     models_by_id = {"melts_v102_published_mixing_native_standard_states_v1": "published",
+                    "dry_melts_thompson2025_water_equivalent_v1": "published_water",
                     "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1": "native"}
     if request["model_id"] not in models_by_id:
         raise ValueError("The saved host model is not supported.")
@@ -42,8 +43,19 @@ def main():
             or not np.array_equal(host["native_host_component_amounts_mol"], request["component_moles"])):
         raise ValueError("The saved accepted source and host T/P/amount ledger must agree.")
     native = load_melts_evaluator(args.exoeos_checkout)
+    water_options = {}
+    if liquid_model == "published_water":
+        def saved_water_standard(t, p):
+            if t != request["T_K"] or p != request["P_Pa"]:
+                raise ValueError("The saved water gas anchor is valid only at its recorded T/P.")
+            return request["water_reconstruction"]["gas_H2O_standard_RT"]
+        water_options["gas_water_standard_rt"] = saved_water_standard
     evaluator = load_melts_evaluator(args.exoeos_checkout, liquid_model=liquid_model,
-                                     runtime=args.runtime, python_executable=args.python)
+                                     runtime=args.runtime, python_executable=args.python, **water_options)
+    if liquid_model == "published_water":
+        from melts_coupled import with_saved_water_standard_offset
+        evaluator = with_saved_water_standard_offset(
+            evaluator, request["water_reconstruction"].get("standard_offset_rt", 0.))
     mixing_path = args.exoeos_checkout / "examples/melts_solid_mixing.py"
     spec = importlib.util.spec_from_file_location("melts_solid_mixing", mixing_path)
     provider = importlib.util.module_from_spec(spec)
