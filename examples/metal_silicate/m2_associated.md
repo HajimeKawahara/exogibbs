@@ -55,3 +55,23 @@ from the species formulas before any mass-percent material comparison.
 The existing finite source solver controls K uptake and compensating changes
 in the other reservoirs. Standard scans remain conditional finite responses;
 they do not establish a universal coupled-error bound or physical acceptance.
+
+## Explicit hydrogen-oxygen continuation
+
+`hydrogen_oxygen_model="schenck1961_abstract"` selects the EOS-owned reciprocal
+H/O excess term; the default `"omitted"` preserves the earlier scalar. Only
+`associated` and `associated_k` accept this option. It is independent of the
+strict P-reference options and retains their temperature policy. The receipt
+preserves the distinct 1883.15 K H/O reference, contemporary abstract, logarithm
+conversion and source hash; it does not claim that the original concentration
+table was replayed.
+
+For eighteen species the extensive contribution is
+`N_species*epsilon_HO*x_H*x_O`; the K perspective contributes
+`N_19*epsilon_HO*x_H*x_O/(1-x_K)`. Both chemical potentials follow from this same
+scalar. The actual declared box is unchanged, and its matched curvature bound
+becomes negative. Construction does not imply accepted equilibrium: the
+existing phase-selection acceptance still requires a certified insertion
+minimum. A nonconvex global insertion method is required before accepting such
+a source; neither the old positive-curvature certificate nor an altered
+tolerance supplies that evidence.

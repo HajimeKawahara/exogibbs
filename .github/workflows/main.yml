@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: HajimeKawahara/exoeos
-          ref: f3c30deb4bc9502fdec0fa6abc1b3f00df4f800e
+          ref: 126c1f38a1b0dd9cf784ad66a5168c1083881760
           path: providers/exoeos
           fetch-depth: 0
 
@@ -105,7 +105,7 @@ jobs:
           provider = root / "providers/exoeos"
           assert subprocess.check_output(
               ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,
-          ).strip() == "f3c30deb4bc9502fdec0fa6abc1b3f00df4f800e"
+          ).strip() == "126c1f38a1b0dd9cf784ad66a5168c1083881760"
           for module, source in ((exogibbs, root), (exoeos, provider)):
               actual = Path(module.__file__).resolve()
               expected = source / "src" / module.__name__ / "__init__.py"
@@ -115,6 +115,8 @@ jobs:
           assert exoeos.total_solution_state is total_solution_state
           assert callable(ma_alloy_curvature_lower_bound)
           assert (provider / "examples/melts_liquid_mixing.py").is_file()
+          assert (provider / "examples/m2_material/hydrogen_oxygen_sources.json").is_file()
+          assert (provider / "examples/m2_material/potassium_reference.py").is_file()
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
           ).resolve()
@@ -131,6 +133,9 @@ jobs:
             tests/unittests/examples/metal_silicate_common_gas_test.py
             tests/unittests/examples/m2_atmosphere_test.py
             tests/unittests/examples/m2_finite_gas_test.py
+            tests/unittests/examples/m2_phosphorus_test.py
+            tests/unittests/examples/m2_associated_test.py
+            tests/unittests/examples/m2_potassium_test.py
             tests/unittests/examples/m2_host_stability_test.py
             tests/unittests/examples/m2_liquid_global_test.py
             tests/unittests/examples/metal_silicate_expanded_contact_test.py

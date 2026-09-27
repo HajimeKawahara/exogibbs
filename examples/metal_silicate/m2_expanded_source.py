@@ -28,7 +28,8 @@ from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_executable,
                                *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1",
                                initialization="lp", liquid_model="native", metal_model="ma",
-                               phosphorus_options=None, potassium_standard_offset_rt=None):
+                               phosphorus_options=None, potassium_standard_offset_rt=None,
+                               hydrogen_oxygen_model="omitted"):
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
@@ -44,6 +45,10 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         raise ValueError("Select metal_model ma, phosphorus, associated or associated_k; P options require an extended model.")
     if (metal_model == "associated_k") != (potassium_standard_offset_rt is not None):
         raise ValueError("Only associated_k requires an explicit potassium_standard_offset_rt.")
+    if hydrogen_oxygen_model not in ("omitted", "schenck1961_abstract"):
+        raise ValueError("Select hydrogen_oxygen_model omitted or schenck1961_abstract.")
+    if hydrogen_oxygen_model != "omitted" and metal_model not in ("associated", "associated_k"):
+        raise ValueError("The H-O interaction requires an associated metal model.")
     normalized = normalize_scenario(scenario)
     setup = build_atmosphere_setup(gas_model)
     record, budget, callbacks, initial, metadata = build_bse_problem(
@@ -80,7 +85,8 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         if metal_model in ("associated", "associated_k"):
             initial = add_associated_metal(record, initial, callbacks, metadata, setup, initial_gauge,
                                            exoeos_checkout, temperature_k, pressure_bar, phosphorus_options,
-                                           potassium_standard_offset_rt=potassium_standard_offset_rt)
+                                           potassium_standard_offset_rt=potassium_standard_offset_rt,
+                                           hydrogen_oxygen_model=hydrogen_oxygen_model)
     metadata["numerical_initialization"] = {
         "strategy": initialization,
         "canonical_interior_fraction": 1e-4 if initialization == "canonical" else None,
