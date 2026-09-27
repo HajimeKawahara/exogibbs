@@ -24,9 +24,9 @@ def normalize_scenario(scenario=None):
     if not isinstance(scenario, dict) or set(scenario) - {"standard_offsets_rt", "metal_bounds"}:
         raise ValueError("Unknown or invalid M2 provider scenario.")
     offsets = scenario.get("standard_offsets_rt", {})
-    names = ("H2_dissolved", "H_metal")
+    names = ("H2_dissolved", "H_metal", "O_metal")
     if not isinstance(offsets, dict) or set(offsets) - set(names):
-        raise ValueError("Standard offsets may name only H2_dissolved and H_metal.")
+        raise ValueError("Standard offsets may name only H2_dissolved, H_metal and O_metal.")
     for value in offsets.values():
         if not _finite_number(value):
             raise ValueError("Standard offsets must be finite JSON numbers, not booleans.")
