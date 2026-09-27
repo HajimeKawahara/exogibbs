@@ -28,7 +28,8 @@ def source_hydrogen_standard_receipt(source: dict) -> dict:
     liquid = metadata.get("liquid_model", "native")
     metal = metadata.get("metal_model", "ma")
     metal_ids = {"phosphorus": ("phosphorus_metal", "ma_fe_si_o_h_p_dilute_quadratic_continuation_v1"),
-                 "associated": ("associated_metal", "ma_p_jung_associated_metal_continuation_v1")}
+                 "associated": ("associated_metal", "ma_p_jung_associated_metal_continuation_v1"),
+                 "associated_k": ("associated_metal", "ma_p_jung_associated_potassium_sensitivity_v1")}
     if (liquid not in liquid_ids or metadata["host_ledger"]["model_id"] != liquid_ids[liquid]
             or metal not in {"ma", *metal_ids}
             or (metal in metal_ids and metadata[metal_ids[metal][0]]["model_id"] != metal_ids[metal][1])):
