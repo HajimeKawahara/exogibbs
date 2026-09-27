@@ -121,8 +121,8 @@ def test_solution_search_uses_h2_dilution_and_does_not_certify_nonnegative_trial
         rows = []
         for request in kwargs.get("candidate_compositions", []):
             row = {"phase": "AB", "native_endmember_oxide_mass_g_per_mol": np.eye(2).tolist()}
-            if "oxide_mass_g" in request:
-                n = np.asarray(request["oxide_mass_g"])
+            if "endmember_moles" in request:
+                n = np.asarray(request["endmember_moles"])
                 positive = n > 0
                 energy = n @ [-2., -3.] + .4 * n.sum() + np.sum(n[positive] * np.log(n[positive] / n.sum()))
                 row.update(status="ok_candidate_properties", reason=None, oxide_mass_g=n.tolist(),
@@ -190,7 +190,7 @@ def test_singleton_has_complete_composition_enumeration_but_no_global_certificat
 
     def evaluate(t, p, n, **kwargs):
         row = {"phase": "AB", "native_endmember_oxide_mass_g_per_mol": [[1.], [1.]]}
-        if "oxide_mass_g" in kwargs["candidate_compositions"][0]:
+        if "endmember_moles" in kwargs["candidate_compositions"][0]:
             row.update(native["saturation"]["candidates"][0])
         return {**native, "returned_component_moles": native["component_moles"],
                 "candidate_evaluations": [row], "provenance": {"mock": True}}
@@ -267,3 +267,33 @@ def test_local_curvature_invalid_steps_and_changed_provider_host_are_rejected():
     provider.evaluate_liquid = lambda *args, **kwargs: {**native, "returned_component_moles": [9., 9.]}
     with pytest.raises(ValueError, match="changed"):
         assess_liquid_local_curvature(native, 0., evaluator=provider, runtime=None, python_executable=None)
+
+
+def test_solution_search_stays_on_supported_face_without_faking_pure_phase_coverage():
+    native = properties(.4)
+    native["component_moles"] = [2., 0.]
+    native["mu_RT"] = [-2., None]
+    native["saturation"]["candidates"][0]["oxide_mass_g"] = [1., 0.]
+    requests = []
+
+    def evaluate(t, p, n, **kwargs):
+        request = kwargs["candidate_compositions"][0]
+        row = {"phase": "AB", "native_endmember_oxide_mass_g_per_mol": np.eye(2).tolist()}
+        if "endmember_moles" in request:
+            x = np.asarray(request["endmember_moles"])
+            requests.append(x)
+            assert x[1] == 0 and x[0] == 1
+            row.update(status="ok_candidate_properties", reason=None, oxide_mass_g=x.tolist(),
+                       gibbs_J=-1.5 * COMMON_R * t)
+        return {**native, "returned_component_moles": native["component_moles"],
+                "candidate_evaluations": [row], "provenance": {"mock": True}}
+
+    result = search_competing_solutions(native, 0., evaluator=SimpleNamespace(evaluate_liquid=evaluate),
+                                       runtime=None, python_executable=None)
+    row = result["phases"][0]
+    assert row["supported_face"]["supported_endmember_indices"] == [0]
+    assert row["supported_face"]["excluded_endmember_indices"] == [1]
+    assert len(requests) == 2
+    assert not row["composition_domain_is_single_point"]
+    assert not row["composition_minimum_enumerated"]
+    assert row["status"] == "unresolved"
