@@ -243,3 +243,23 @@ def test_fresh_water_receipt_must_keep_the_same_expression_and_standards(change)
     change(evaluated)
     with pytest.raises(ValueError):
         require(saved, evaluated)
+
+
+def test_simplex_curvature_does_not_require_positive_normal_curvature():
+    # H = 2 I - 20 11.T has a negative normal eigenvalue but is strictly
+    # convex on sum(x)=1. The exact congruence removes only that normal.
+    hessian = [[M._I(2 if i == j else 0)-20 for j in range(3)] for i in range(3)]
+    tangent = M._simplex_tangent_hessian(hessian, 1)
+    assert [[float(v.lo) for v in row] for row in tangent] == [[4., 2.], [2., 4.]]
+    assert M._positive_definite(tangent)
+    assert not M._positive_definite(hessian)
+
+
+def test_tangent_shift_has_the_ambient_alphabb_positive_remainder():
+    # B.T B = I + 11.T: an ambient diagonal shift is at least the
+    # conservative rho I checked in the tangent-coordinate certificate.
+    hessian = [[M._I(0) for _ in range(4)] for _ in range(4)]
+    shifted = [[v+(3 if i == j else 0) for j,v in enumerate(row)]
+               for i,row in enumerate(hessian)]
+    tangent = M._simplex_tangent_hessian(shifted, 2)
+    assert [[float(v.lo) for v in row] for row in tangent] == [[6.,3.,3.],[3.,6.,3.],[3.,3.,6.]]
