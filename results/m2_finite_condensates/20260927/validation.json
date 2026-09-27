@@ -11,7 +11,7 @@
     "log": "condensate_all_targeted.log"
   },
   "initial_more_oxidized_control": "The original 76gas/26cond model failed before evaluating 67cond at 1000 K; retained in condensate_targeted.log. This is not a new-condensate regression or proof of general composition robustness.",
-  "full_suite": "Initial run explicitly terminated under memory pressure; preserved here, a later stack validation is reported separately.",
+  "full_suite": "Initial run intentionally stopped under memory pressure; later complete c83bb99 stack validation is recorded separately below.",
   "reference_file_sha256": {
     "m1_chemistry.py": "e998fcab3d5a4846877e135ff664f3f246a344ff20a6d1f1c55c16e7144be523",
     "m2_finite_gas.py": "dd68ca835f7eaedc5132c18c06112c87d481382ec0e47a2709bb34c410fc4cab",
@@ -25,5 +25,15 @@
     "reference.json": "0c7146ab1c5935daae25f4371a34847e1469dfc637b02afe3f5984d4aeb22092",
     "reduced_gas_reference.json": "0aa9b23cf1d85b9db6b877c5c360bd4420985e595ee9f9c7735dfe91347dc234",
     "data/janaf_atomic.json": "4a9d51e8dd58f513b334b5025f0de49476ec5359e1ca811f9e9fd3daab829518"
+  },
+  "completed_stack_validation": {
+    "source_head": "c83bb99e20b313c167eefdd7761e4e7458aa4d49",
+    "provider_eos_head": "44b977847ea7ed1e16377907722277a3e75bc9d7",
+    "summary": "1893 passed, 1 skipped, 24 warnings in 1952.62s (0:32:32)",
+    "code_identity": "All examples/src/tests/documents files are byte-identical to c83bb99; delivery adds only archives and the provider CI test list.",
+    "raw_log": "completed_stack_full_pytest.log",
+    "log_sha256": "f70768de7dbde7a9e6fba252a919ffec3074745fa5a69037b66e5e5d003daba7",
+    "documentation": "./update_doc.sh succeeded with 301 pre-existing warnings.",
+    "documentation_log": "completed_stack_docs_build.log"
   }
 }
