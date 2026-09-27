@@ -92,3 +92,28 @@ def test_measured_oxygen_standard_offset_preserves_energy_derivative_and_curvatu
         np.testing.assert_allclose(curvature_new, curvature_old, atol=2e-9)
     assert changed(2173.15, 267.2, 3*n).gibbs_rt == pytest.approx(3*new.gibbs_rt)
     assert SCENARIOS.normalize_scenario()["standard_offsets_rt"]["O_metal"] == 0.
+
+
+def test_reconstructed_water_capacity_offset_leaves_molecular_h2_unchanged():
+    record = {"phases": {"silicate": ["sio2_melts", "h2o_melts", "H2_dissolved"]}}
+    original = FULL.ideal_phase(lambda t, p: np.array([-2., -5., -7.]))
+    original.energy_value_and_grad_rt = lambda t, p, n: (original(t, p, n).gibbs_rt, original(t, p, n).mu_rt)
+    offset = 2*np.log(2.265)
+    changed = SCENARIOS.apply_standard_offsets(record, {"silicate": original},
+        {"standard_offsets_rt": {"h2o_melts": offset}})["silicate"]
+    n = np.array([.96, .03, .01])
+    old, new = original(2173.15, 270., n), changed(2173.15, 270., n)
+    np.testing.assert_allclose(new.mu_rt-old.mu_rt, [0., offset, 0.], atol=2e-15)
+    assert new.gibbs_rt-old.gibbs_rt == pytest.approx(n[1]*offset)
+    energy, gradient = changed.energy_value_and_grad_rt(2173.15, 270., n)
+    assert energy == pytest.approx(new.gibbs_rt)
+    np.testing.assert_allclose(gradient, new.mu_rt)
+    for i in range(3):
+        step = np.eye(3)[i]*1e-6
+        derivative = (changed(2173.15, 270., n+step).gibbs_rt-changed(2173.15, 270., n-step).gibbs_rt)/2e-6
+        assert derivative == pytest.approx(new.mu_rt[i], abs=2e-8)
+        difference = ((changed(2173.15, 270., n+step).mu_rt-changed(2173.15, 270., n-step).mu_rt)
+                      -(original(2173.15, 270., n+step).mu_rt-original(2173.15, 270., n-step).mu_rt))/2e-6
+        np.testing.assert_allclose(difference, 0., atol=2e-9)
+    assert changed(2173.15, 270., 3*n).gibbs_rt == pytest.approx(3*new.gibbs_rt)
+    assert SCENARIOS.normalize_scenario()["standard_offsets_rt"]["h2o_melts"] == 0.
