@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import subprocess
@@ -265,6 +266,18 @@ def artifact_errors(job: Any, directory: Path, *, retrieval_quick: bool) -> list
             if (report.get("scientific_acceptance") != {"M2_A": "pending", "M2_B": "pending"}
                     or native.get("cross_phase_standards_accepted") is not False):
                 errors.append("The diagnostic audit cannot establish calibrated common standards.")
+        elif job.name == "metal_m2_alloy_insertion_bound":
+            report = json.loads((directory / "alloy_bound.json").read_text())
+            bound = report.get("insertion_lower_bound_rt_per_mol_atoms", float("nan"))
+            if (report.get("completed") is not True or type(bound) not in (int, float) or not math.isfinite(bound)
+                    or report.get("strict_nonnegative_bound") is not (bound >= 0)
+                    or report.get("empirical_material_certified") is not False):
+                errors.append("The fixed-plane alloy bound is incomplete or overclaims acceptance.")
+            for name in ("source", "physical_audit"):
+                record = report.get(name, {})
+                path = Path(record.get("path", ""))
+                if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != record.get("sha256"):
+                    errors.append("The alloy bound is not tied to its exact " + name + " input.")
         elif job.name == "metal_archive_revalidation":
             report = json.loads((directory / "revalidated.json").read_text())
             for name in ("melts_present", "melts_absent"):
