@@ -98,7 +98,7 @@ def test_reconstructed_water_capacity_offset_leaves_molecular_h2_unchanged():
     record = {"phases": {"silicate": ["sio2_melts", "h2o_melts", "H2_dissolved"]}}
     original = FULL.ideal_phase(lambda t, p: np.array([-2., -5., -7.]))
     original.energy_value_and_grad_rt = lambda t, p, n: (original(t, p, n).gibbs_rt, original(t, p, n).mu_rt)
-    offset = 2*np.log(2.265)
+    offset = float(2*np.log(2.265))
     changed = SCENARIOS.apply_standard_offsets(record, {"silicate": original},
         {"standard_offsets_rt": {"h2o_melts": offset}})["silicate"]
     n = np.array([.96, .03, .01])
