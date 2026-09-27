@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: HajimeKawahara/exoeos
-          ref: efddf5846a3e3cd8756b38f6b58b3e402d4c40f3
+          ref: 3ebb21cc9b3a3cdad92077b30631ec5765baf223
           path: providers/exoeos
           fetch-depth: 0
 
@@ -105,7 +105,7 @@ jobs:
           provider = root / "providers/exoeos"
           assert subprocess.check_output(
               ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,
-          ).strip() == "efddf5846a3e3cd8756b38f6b58b3e402d4c40f3"
+          ).strip() == "3ebb21cc9b3a3cdad92077b30631ec5765baf223"
           for module, source in ((exogibbs, root), (exoeos, provider)):
               actual = Path(module.__file__).resolve()
               expected = source / "src" / module.__name__ / "__init__.py"
@@ -117,6 +117,7 @@ jobs:
           assert (provider / "examples/melts_liquid_mixing.py").is_file()
           assert (provider / "examples/m2_material/phosphorus_reference.py").is_file()
           assert (provider / "examples/m2_material/associate_reference.py").is_file()
+          assert (provider / "examples/m2_material/potassium_reference.py").is_file()
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
           ).resolve()
@@ -141,6 +142,7 @@ jobs:
             tests/unittests/examples/metal_silicate_melts_archive_test.py
             tests/unittests/examples/m2_phosphorus_test.py
             tests/unittests/examples/m2_associated_test.py
+            tests/unittests/examples/m2_potassium_test.py
             tests/unittests/interop
           )
           python -m pytest "${tests[@]}" --junitxml=results/provider.xml
