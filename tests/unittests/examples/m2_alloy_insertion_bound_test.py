@@ -1,6 +1,7 @@
 """Saved-root binding rejects changed formulas, gauges and source conditions."""
 
 import importlib
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -138,3 +139,51 @@ def test_extended_source_requires_its_explicit_basis_and_original_domain(tmp_pat
     domain['lower_atomic_fractions'][0]=.84
     with pytest.raises(ValueError,match='domain must agree'):
         RUNNER.saved_inputs(*save(tmp_path,report,audit),allow_extended=True)
+
+
+def historical_recipe(tmp_path,monkeypatch):
+    here=tmp_path/'gibbs/examples/metal_silicate'
+    here.mkdir(parents=True)
+    eos=tmp_path/'eos'
+    original={name:(name+' original\n').encode() for name in
+              ['run_bse_common_gibbs.py','source.py','reference.json','m2_common_gas.py',
+               'm2_scenarios.py','phase_selection.py','melts_coupled.py','m2_expanded_source.py']}
+    blobs={}
+    for name,raw in original.items():
+        (here/name).write_bytes(raw)
+        blobs['gibbs-source:examples/metal_silicate/'+name]=raw
+    for name in ['ma_fe_si_o.py','ma_fe_si_o_h.py','_arrays.py']:
+        path=eos/'src/exoeos'/name;path.parent.mkdir(parents=True,exist_ok=True)
+        raw=(name+' model\n').encode();path.write_bytes(raw)
+        blobs['eos-source:src/exoeos/'+name]=raw
+    monkeypatch.setattr(RUNNER,'HERE',here)
+    monkeypatch.setattr(RUNNER.subprocess,'check_output',lambda command,**kwargs:blobs[command[-1]])
+    provenance={'file_sha256':{name:hashlib.sha256(raw).hexdigest() for name,raw in original.items()},
+                'exogibbs':{'commit':'gibbs-source'},'exoeos':{'commit':'eos-source'},
+                'jax_version':RUNNER.jax.__version__,'numpy_version':np.__version__}
+    return {'source_metadata':{'provenance':provenance}},eos,here,blobs
+
+
+@pytest.mark.parametrize('name',['melts_coupled.py','m2_expanded_source.py','m2_scenarios.py','phase_selection.py'])
+def test_historical_builder_requires_its_original_blob_and_explicit_opt_in(tmp_path,monkeypatch,name):
+    source,eos,here,_=historical_recipe(tmp_path,monkeypatch)
+    (here/name).write_text('new construction or verification control flow\n')
+    with pytest.raises(ValueError,match='source recipe has changed'):
+        RUNNER.verified_recipe(source,eos)
+    receipt={}
+    files=RUNNER.verified_recipe(source,eos,allow_historical_builders=True,receipt=receipt)
+    assert receipt['changed_nonreplayed_builder_files']==[name]
+    assert receipt['executed_git_blob_sha256'][name]==source['source_metadata']['provenance']['file_sha256'][name]
+    assert receipt['proof_checkout_file_sha256'][name]==files[str(here/name)]
+    assert receipt['proof_checkout_file_sha256'][name]!=receipt['executed_git_blob_sha256'][name]
+
+
+@pytest.mark.parametrize('change',['thermochemical_file','git_blob','saved_hash','provider_model'])
+def test_historical_policy_cannot_hide_changed_standards_or_fabricated_provenance(tmp_path,monkeypatch,change):
+    source,eos,here,blobs=historical_recipe(tmp_path,monkeypatch)
+    if change=='thermochemical_file':(here/'source.py').write_text('different thermochemistry')
+    if change=='git_blob':blobs['gibbs-source:examples/metal_silicate/phase_selection.py']=b'different executed blob'
+    if change=='saved_hash':source['source_metadata']['provenance']['file_sha256']['phase_selection.py']='0'*64
+    if change=='provider_model':(eos/'src/exoeos/ma_fe_si_o.py').write_text('different model')
+    with pytest.raises(ValueError):
+        RUNNER.verified_recipe(source,eos,allow_historical_builders=True)

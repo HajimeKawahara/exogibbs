@@ -124,7 +124,7 @@ def saved_inputs(closure_path: Path, physical_path: Path, *, allow_extended=Fals
     return report, audit, state, scenario, plane, composition
 
 
-def verified_recipe(source: dict, eos_checkout: Path) -> dict:
+def verified_recipe(source: dict, eos_checkout: Path, *, allow_historical_builders=False, receipt=None) -> dict:
     """Bind the reconstructed binary64 standards to the executed recipe."""
     provenance = source["source_metadata"]["provenance"]
     hashes = provenance["file_sha256"]
@@ -132,11 +132,32 @@ def verified_recipe(source: dict, eos_checkout: Path) -> dict:
     if not required <= set(hashes):
         raise ValueError("The source does not record the required standard-state recipe.")
     verified = {}
+    historical = {}
+    current = {}
+    builders = {'melts_coupled.py','m2_expanded_source.py','m2_scenarios.py','phase_selection.py'}
+    gibbs_revision = provenance['exogibbs']['commit']
     for name, expected in hashes.items():
         path = HERE / name
-        if not path.is_file() or sha256(path) != expected:
+        if allow_historical_builders:
+            try:
+                original = subprocess.check_output(['git','-C',str(HERE.parents[1]),'show',
+                    gibbs_revision+':examples/metal_silicate/'+name],stderr=subprocess.PIPE)
+            except subprocess.CalledProcessError as error:
+                raise ValueError('Fetch the executed source recipe commit before verification: '+gibbs_revision) from error
+            if hashlib.sha256(original).hexdigest() != expected:
+                raise ValueError('The saved recipe hash differs from its executed git blob: '+name)
+            historical[name] = expected
+        digest = sha256(path) if path.is_file() else None
+        if digest is None or (digest != expected and not (allow_historical_builders and name in builders)):
             raise ValueError("The source recipe has changed: " + name)
-        verified[str(path)] = expected
+        verified[str(path)] = digest
+        current[name] = digest
+    if receipt is not None:
+        receipt.update(executed_gibbs_commit=gibbs_revision,
+            historical_builder_policy=bool(allow_historical_builders),
+            executed_git_blob_sha256=historical,proof_checkout_file_sha256=current,
+            changed_nonreplayed_builder_files=[name for name in hashes if current[name] != hashes[name]],
+            scope='All original recipe blobs must match their executed commit. Only explicitly listed construction/selection files may differ; source-building control flow is not replayed. Explicit saved scenario values and domains are rebound independently, and replayed thermochemical standards/data remain byte-identical. Saved constitutive expressions, phase gradients and primal energies have separate binding checks.')
     if provenance["jax_version"] != jax.__version__ or provenance["numpy_version"] != np.__version__:
         raise ValueError("Reconstruct standards with the recorded JAX and NumPy versions.")
     revision = provenance["exoeos"]["commit"]
@@ -153,7 +174,7 @@ def verified_recipe(source: dict, eos_checkout: Path) -> dict:
     return verified
 
 
-def assess(closure_path: Path, physical_path: Path, eos_checkout: Path) -> dict:
+def assess(closure_path: Path, physical_path: Path, eos_checkout: Path, *, allow_historical_builders=False) -> dict:
     import exoeos
     from exoeos.ma_fe_si_o_h import MaFeSiOHLiquid
     from exoeos.ma_interval import ma_alloy_curvature_lower_bound, ma_alloy_insertion_lower_bound
@@ -165,7 +186,8 @@ def assess(closure_path: Path, physical_path: Path, eos_checkout: Path) -> dict:
         raise ValueError("Reconstruction and proof require JAX_ENABLE_X64=1.")
     report, audit, state, scenario, plane, composition = saved_inputs(closure_path, physical_path)
     source = state["source"]
-    files = verified_recipe(source, eos_checkout)
+    recipe_receipt = {}
+    files = verified_recipe(source, eos_checkout,allow_historical_builders=allow_historical_builders,receipt=recipe_receipt)
     temperature, pressure = source["temperature_K"], source["pressure_bar"]
     model = MaFeSiOHLiquid()
     reference, _ = source_standards_rt(temperature, pressure)
@@ -186,6 +208,8 @@ def assess(closure_path: Path, physical_path: Path, eos_checkout: Path) -> dict:
                                           standards, plane, standard_offsets_rt=offsets)
     files[str(eos_checkout / "src/exoeos/ma_interval.py")] = sha256(eos_checkout / "src/exoeos/ma_interval.py")
     files[str(Path(__file__).resolve())] = sha256(Path(__file__))
+    if any(sha256(Path(path)) != digest for path,digest in files.items()):
+        raise ValueError('A replayed proof recipe changed during verification.')
     return {
         "model_id": "saved_m2_alloy_fixed_plane_interval_bound_v1",
         "completed": True,
@@ -205,6 +229,7 @@ def assess(closure_path: Path, physical_path: Path, eos_checkout: Path) -> dict:
         "empirical_material_certified": False,
         "scope": "Whole declared alloy domain against the fixed saved elemental plane. Reconstructed binary64 base standards and separately added scenario constants define the exact scalar; original Shomate arithmetic and empirical uncertainty are not interval-certified. Negative bounds and original source status are preserved. Other phases and coupled feasibility are not certified here.",
         "source_checkouts": report["checkouts"],
+        "source_recipe_verification":recipe_receipt,
         "proof_checkouts": {"exogibbs": _checkout_provenance(HERE.parents[1]),
                             "exoeos": _checkout_provenance(eos_checkout)},
         "file_sha256": files,
@@ -217,10 +242,13 @@ def main() -> None:
     parser.add_argument("--saved-physical-audit", type=Path, required=True)
     parser.add_argument("--exoeos-checkout", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--allow-historical-builders", action="store_true",
+                        help="Verify original builder git blobs while retaining byte-identical thermochemical replay files.")
     args = parser.parse_args()
     if args.output.exists():
         raise FileExistsError(args.output)
-    result = assess(args.saved_closure, args.saved_physical_audit, args.exoeos_checkout)
+    result = assess(args.saved_closure, args.saved_physical_audit, args.exoeos_checkout,
+                    allow_historical_builders=args.allow_historical_builders)
     with args.output.open("x") as stream:
         json.dump(result, stream, indent=2, allow_nan=False)
         stream.write("\n")
