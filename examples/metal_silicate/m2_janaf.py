@@ -1,4 +1,7 @@
-"""Pinned JANAF atomic references and finite-source trace-demand diagnostics.
+"""M2 JANAF omitted-gas references
+==============================
+
+Pinned atomic references and finite-source trace-demand diagnostics.
 
 These paper-specific, opt-in inputs fill six missing gas reference energies.
 They neither recalibrate MELTS nor bound a re-equilibrated planetary response.
