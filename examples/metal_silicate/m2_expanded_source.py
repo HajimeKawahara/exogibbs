@@ -28,7 +28,8 @@ from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_executable,
                                *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1",
                                initialization="lp", liquid_model="native", metal_model="ma",
-                               phosphorus_options=None):
+                               phosphorus_options=None, potassium_standard_offset_rt=None,
+                               hydrogen_oxygen_model="omitted"):
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
@@ -40,8 +41,14 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     """
     if initialization not in ("lp", "canonical"):
         raise ValueError("initialization must be lp or canonical.")
-    if metal_model not in ("ma", "phosphorus", "associated") or (metal_model == "ma" and phosphorus_options is not None):
-        raise ValueError("Select metal_model ma, phosphorus or associated; P options require an extended model.")
+    if metal_model not in ("ma", "phosphorus", "associated", "associated_k") or (metal_model == "ma" and phosphorus_options is not None):
+        raise ValueError("Select metal_model ma, phosphorus, associated or associated_k; P options require an extended model.")
+    if (metal_model == "associated_k") != (potassium_standard_offset_rt is not None):
+        raise ValueError("Only associated_k requires an explicit potassium_standard_offset_rt.")
+    if hydrogen_oxygen_model not in ("omitted", "schenck1961_abstract"):
+        raise ValueError("Select hydrogen_oxygen_model omitted or schenck1961_abstract.")
+    if hydrogen_oxygen_model != "omitted" and metal_model not in ("associated", "associated_k"):
+        raise ValueError("The H-O interaction requires an associated metal model.")
     normalized = normalize_scenario(scenario)
     setup = build_atmosphere_setup(gas_model)
     record, budget, callbacks, initial, metadata = build_bse_problem(
@@ -70,14 +77,16 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     record.pop("gas_species_aliases")
     record["atmosphere_element_order"] = list(setup.gas_setup.elements)
     record["atmosphere_gas_model"] = gas_model
-    if metal_model in ("phosphorus", "associated"):
+    if metal_model in ("phosphorus", "associated", "associated_k"):
         if scenario is not None and "metal_bounds" in scenario:
             raise ValueError("Four-component scenario bounds cannot define the five-component P domain.")
         initial = add_phosphorus_metal(record, initial, callbacks, metadata, setup, initial_gauge,
                                        exoeos_checkout, temperature_k, pressure_bar, phosphorus_options)
-        if metal_model == "associated":
+        if metal_model in ("associated", "associated_k"):
             initial = add_associated_metal(record, initial, callbacks, metadata, setup, initial_gauge,
-                                           exoeos_checkout, temperature_k, pressure_bar, phosphorus_options)
+                                           exoeos_checkout, temperature_k, pressure_bar, phosphorus_options,
+                                           potassium_standard_offset_rt=potassium_standard_offset_rt,
+                                           hydrogen_oxygen_model=hydrogen_oxygen_model)
     metadata["numerical_initialization"] = {
         "strategy": initialization,
         "canonical_interior_fraction": 1e-4 if initialization == "canonical" else None,
@@ -111,9 +120,9 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         "upper_reference_policy": "Re-evaluate raw FastChem reactions at every layer T/P. Conserved-element gauges cancel from isolated parcel composition; no low-temperature JANAF extrapolation or frozen source chemical potentials.",
         "missing_paths": (["Al/Ca/K/Ti/Cr/P retained condensates"]
                           if gas_model != "janaf_condensed" else [])
-                         + ["K alloy component" if metal_model == "associated" else
+                         + ([] if metal_model == "associated_k" else ["K alloy component" if metal_model == "associated" else
                             "Mg/Al/Ca/K/Ti/Cr alloy components" if metal_model == "phosphorus"
-                            else "Mg/Al/Ca/K/Ti/Cr/P alloy components"],
+                            else "Mg/Al/Ca/K/Ti/Cr/P alloy components"]),
         "pure_phase_reference_policy": "FastChem pure condensates and native MELTS phases are independent thermochemical models. Matching formulas do not establish matching energies or a calibrated phase boundary.",
     }
     metadata["provenance"]["file_sha256"].update({name: hashlib.sha256(

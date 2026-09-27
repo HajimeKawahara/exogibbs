@@ -11,9 +11,10 @@ import numpy as np
 from full_potential import PhaseState
 
 
-def load_associated_provider(exoeos_checkout):
-    path = Path(exoeos_checkout).resolve() / "examples/m2_material/associate_reference.py"
-    name = "_exoeos_m2_associated_reference"
+def load_associated_provider(exoeos_checkout, *, potassium=False):
+    filename = "potassium_reference.py" if potassium else "associate_reference.py"
+    path = Path(exoeos_checkout).resolve() / "examples/m2_material" / filename
+    name = "_exoeos_m2_associated_" + ("potassium_reference" if potassium else "reference")
     if name in sys.modules:
         module = sys.modules[name]
         if Path(module.__file__).resolve() != path:
@@ -27,30 +28,39 @@ def load_associated_provider(exoeos_checkout):
 
 
 def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
-                         exoeos_checkout, temperature_k, pressure_bar, options=None):
+                         exoeos_checkout, temperature_k, pressure_bar, options=None,
+                         potassium_standard_offset_rt=None, hydrogen_oxygen_model="omitted"):
     """Extend the finite P host by five free metals and eight O associates."""
     from exoeos import total_gex_RT, total_solution_state
 
-    provider = load_associated_provider(exoeos_checkout)
+    potassium = potassium_standard_offset_rt is not None
+    provider = load_associated_provider(exoeos_checkout, potassium=potassium)
+    size = len(provider.COMPONENTS)
     p = metadata["phosphorus_metal"]
     names = record["phases"]["metal"]
     if names != [element + "_metal" for element in provider.COMPONENTS[:5]]:
         raise ValueError("Associated metal requires the declared finite-P host first.")
     options = {} if options is None else options
     model, interactions = provider.make_associated_model(
-        temperature_k, temperature_policy=options.get("temperature_policy", "constant"))
+        temperature_k, temperature_policy=options.get("temperature_policy", "constant"),
+        hydrogen_oxygen_model=hydrogen_oxygen_model)
     gas = np.asarray(setup.gas_setup.hvector_func(temperature_k)) + np.asarray(
         setup.gas_setup.formula_matrix).T @ np.asarray(gauge)
+    standard_options = ({"potassium_standard_offset_rt": potassium_standard_offset_rt}
+                        if potassium else {})
     standards, reference = provider.associated_standards_rt(
-        temperature_k, p["base_standard_potentials_rt"], dict(zip(setup.gas_species, gas)))
+        temperature_k, p["base_standard_potentials_rt"], dict(zip(setup.gas_species, gas)),
+        **standard_options)
     # This is a numerical species simplex, not an empirical material domain.
-    lower = np.r_[.75, np.zeros(17)]
+    lower = np.r_[.75, np.zeros(size-1)]
     upper = np.array([1., .02, .01, .04, .02, .002, .00002, .0001, .12, .00001,
                       .003, .00002, .0001, .005, .00001, .000001, .002, .000001])
+    if potassium:
+        upper = np.r_[upper, .02]
     curvature = provider.associated_curvature_lower_bound(model, temperature_k, lower, upper)
     flattened = [name for phase in record["phases"].values() for name in phase]
     insertion = flattened.index(names[-1]) + 1
-    initial = np.insert(initial, insertion, np.zeros(13))
+    initial = np.insert(initial, insertion, np.zeros(size-5))
     names.extend(species + "_metal" for species in provider.COMPONENTS[5:])
     for name, formula in zip(names, provider.FORMULAS):
         record["component_formulas"][name] = dict(formula)
@@ -74,12 +84,12 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
         n = np.asarray(n)
         support = tuple(np.flatnonzero(n > 0))
         if not support:
-            return 0., np.full(18, np.nan)
+            return 0., np.full(size, np.nan)
         if support not in derivatives:
             indices = np.asarray(support)
 
             def scalar(active):
-                full = jnp.zeros(18, dtype=active.dtype).at[indices].set(active)
+                full = jnp.zeros(size, dtype=active.dtype).at[indices].set(active)
                 # Differentiate the continuous scalar on this exact support.
                 # xlogy(0, 0) has no derivative along an absent component;
                 # excluding that constant term avoids 0/0 AD contamination.
@@ -89,7 +99,7 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
 
             derivatives[support] = jax.jit(jax.value_and_grad(scalar))
         energy, active_gradient = derivatives[support](n[list(support)])
-        gradient = np.full(18, -np.inf)
+        gradient = np.full(size, -np.inf)
         gradient[list(support)] = np.asarray(active_gradient)
         return energy, gradient
 
@@ -97,7 +107,12 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
     callbacks["metal"] = alloy
     recipe = dict(p["provider_recipe_file_sha256"])
     root = Path(exoeos_checkout).resolve()
-    for path in (Path(provider.__file__), provider.DATA_PATH):
+    for path in (Path(provider.__file__),
+                 Path(provider.__file__).with_name("associate_reference.py"),
+                 Path(provider.__file__).with_name("associate_sources.json")):
+        recipe[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    if hydrogen_oxygen_model != "omitted":
+        path = Path(provider.__file__).with_name("hydrogen_oxygen_sources.json")
         recipe[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
     metadata["associated_metal"] = {
         "model_id": model.reference_model_id, "component_order": list(provider.COMPONENTS),
@@ -109,12 +124,14 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
         "curvature_lower_bound_rt": curvature, "provider_recipe_file_sha256": recipe,
         "linear_scenario_offsets_applied_separately": True,
         "scenario_offset_scope": "Existing named O_metal/H_metal offsets change those free atomic species only. They are not automatically applied to MO/M2O species, whose independent Jung/gas-anchored standards are retained.",
-        "scope": "Finite conserved Mg/Ca/Al/Cr/Ti/P transfer under the declared associated scalar. Numerical curvature and inactive numerical bounds do not establish empirical coupled calibration. K metal transfer remains omitted."}
+        "scope": "Finite conserved Mg/Ca/Al/Cr/Ti/P transfer under the declared associated scalar. Numerical curvature and inactive numerical bounds do not establish empirical coupled calibration. " + ("K has an explicit uncalibrated finite-standard sensitivity." if potassium else "K metal transfer remains omitted.")}
+    if potassium:
+        metadata["potassium_metal"] = reference["potassium"]
     return initial
 
 
 def associated_metal_domain(metadata):
-    """Return the actual eighteen-species numerical simplex and matched bound."""
+    """Return the actual selected species numerical simplex and matched bound."""
     row = metadata["associated_metal"]
     return (np.asarray(row["lower_species_fractions"]),
             np.asarray(row["upper_species_fractions"]), row["curvature_lower_bound_rt"])
