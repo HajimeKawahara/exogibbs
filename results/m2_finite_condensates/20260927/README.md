@@ -49,3 +49,10 @@ control where the old 26-condensate model itself failed, are retained.
 The first full suite was intentionally stopped under memory pressure; its
 partial log and termination receipt are also retained, without claiming a
 completed suite or fresh source result.
+
+The subsequent complete stack at c83bb99 finished with **1893 passed, 1
+skipped, 24 warnings in 1952.62 seconds**. The sole skip is the unavailable
+SCM-generated version module, not a provider dependency. All scientific and
+test source files in this delivery match that tested head; only archives and
+the provider CI test list were subsequently added. See
+`completed_stack_full_pytest.log` and `validation.json`.
