@@ -44,6 +44,7 @@ def helium_fixture(monkeypatch):
                            'formula':[float(e=='He') for e in setup.elements]}}
     record['elements'].append('He')
     report['inventory']['total_element_amounts_mol'].append(.001)
+    report['inventory']['atomic_masses_kg_mol']=[.01,.01,.001,.004]
     selected.append('He_dissolved')
     record['component_formulas']['He_dissolved']={'He':1.}
     result=source['source_internal_result']
@@ -90,6 +91,7 @@ def test_actual_he_scalar_replay_and_elimination_keep_the_finite_upper_bound(mon
     lambda r,a,s:s['source_metadata']['helium_dissolution'].update(gas_standard_rt=.1),
     lambda r,a,s:a['host_stability']['helium_dissolution'].update(native_host_mu_correction_rt=[0.,0.,0.]),
     lambda r,a,s:s['source_internal_record']['component_formulas'].update(He_dissolved={'He':2.}),
+    lambda r,a,s:r['inventory']['atomic_masses_kg_mol'].__setitem__(0,.02),
 ])
 def test_changed_he_receipt_or_actual_ledger_is_rejected(monkeypatch,change):
     root,report,audit,source,_,_=helium_fixture(monkeypatch)
