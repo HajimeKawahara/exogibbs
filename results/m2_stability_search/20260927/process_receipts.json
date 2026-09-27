@@ -1,0 +1,22 @@
+{
+  "initial_oxide_requests": {
+    "session_id": 80078,
+    "observed_exit_code": 0,
+    "gibbs_commit": "38c107a7aa537496e51f5ca786fd9048cecbe776"
+  },
+  "explicit_coordinates": {
+    "session_id": 70689,
+    "observed_exit_code": 0,
+    "gibbs_commit": "55fcf66662d5c25bb0ec0590fb8afcb4312db4d1"
+  },
+  "superseded_full_pytest": {
+    "session_id": 5154,
+    "observed_exit_code": 130,
+    "reason": "Stopped after substantive supported-face changes; replaced by a full run on the final fixed checkout."
+  },
+  "exoeos_full_pytest": {
+    "session_id": 74360,
+    "observed_exit_code": 0,
+    "summary": "451 passed in 73.97s"
+  }
+}

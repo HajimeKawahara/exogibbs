@@ -182,3 +182,10 @@ check the returned oxide amounts against the recorded native basis. No tiny
 negative least-squares coordinate is rounded away, and the existing insertion
 support checks still apply to each returned state. This requires the ExoEOS
 explicit-native-coordinate candidate API.
+
+The [2026-09-27 whole-catalog archive](../../results/m2_stability_search/20260927/README.md)
+contains both the initial oxide-request failures and fresh supported-face
+results at the unchanged middle-H saved host. It includes every raw trial,
+all local-curvature native evaluations, and independent energy/conservation
+recounts. The [Japanese design supplement](https://github.com/HajimeKawahara/doc_ExoGibbs/pull/10)
+also describes the distinct JANAF finite-source trace-demand contract.

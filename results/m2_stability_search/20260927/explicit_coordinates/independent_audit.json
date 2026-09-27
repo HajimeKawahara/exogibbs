@@ -1,0 +1,12 @@
+{
+  "accepted": true,
+  "insertion_trials_recounted": 1097,
+  "catalog_count": 33,
+  "complete_geometric_probe_attempts": 33,
+  "failed_native_evaluations_preserved": 31,
+  "fixed_composition_minima_enumerated": 13,
+  "maximum_energy_recount_error_rt": 1.4210854715202004e-14,
+  "maximum_finite_split_component_error_mol": 0.0,
+  "curvature_native_evaluations_recounted": 59,
+  "scope": "Primitive energy/composition recount only; neither global stability nor empirical calibration is certified."
+}
