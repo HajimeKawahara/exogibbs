@@ -4,6 +4,7 @@ from decimal import Decimal, localcontext
 from fractions import Fraction
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -91,3 +92,17 @@ def test_invalid_model_is_rejected_before_search():
         global_liquid.certify_liquid_tangent_plane(parameters(), [np.nan, 1.])
     with pytest.raises(ValueError):
         global_liquid.certify_liquid_tangent_plane(parameters(), [-1., 2.])
+
+
+def test_declared_solver_model_must_use_identical_coefficients_for_its_bound():
+    model = SimpleNamespace(PUBLISHED_MODEL_ID="explicit", liquid_mixing_parameters=lambda *args: parameters())
+    properties = {"model_id": "explicit", "T_K": 2173.15, "P_Pa": 3e7,
+                  "basis": {"common_R_J_mol_K": 8.3}, "component_moles": [1., 2.],
+                  "mixing_expression": parameters(),
+                  "provenance": {"native_standard_state_receipt_sha256": "fixed-reference"}}
+    result = global_liquid.assess_liquid_global_tangent_plane(properties, 8., mixing_model=model)
+    assert result["formal_two_liquid_bound_accepted"]
+    assert result["formal_h2_augmented_lower_bound_rt"] == 0
+    properties["mixing_expression"] = parameters(3.)
+    with pytest.raises(ValueError, match="identical mixing coefficients"):
+        global_liquid.assess_liquid_global_tangent_plane(properties, 8., mixing_model=model)

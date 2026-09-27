@@ -88,3 +88,20 @@ mixing_model=exoeos_example_module, tolerance_rt=1e-8, max_nodes=20000)`.
 Only `formal_two_liquid_bound_accepted` combines the formal bound and complete
 supported domain. `native_binary_error_bound_certified` and
 `global_empirical_stability_certified` remain false.
+
+## Use the bounded expression in the source solve
+
+`run_bse_common_gibbs.py` and `run_m2_contact.py` accept
+`--liquid-model published`; the default remains `native`.
+`build_bse_problem` and `build_expanded_bse_problem` forward the same explicit
+selection. The selected ExoEOS factory caches native pure-liquid standards at
+each exact T/P and uses its declared published expression for subsequent
+compositions. The host ledger names the new model, pins its parameter hash,
+and retains all standard-state receipts accumulated during the solve.
+
+For a supplied published-model receipt the global-bound API checks exact
+agreement of the full coefficient declaration with the selected provider.
+It does not substitute a finite native comparison for model identity.
+The thermal properties of the standard probe are not used as properties of
+the evolving liquid, and this model selection does not align alloy/gas
+standards or supply an empirical calibration range.
