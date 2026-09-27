@@ -337,14 +337,16 @@ def certify_water_common_plane(parameters: dict, reference_amounts: list, *, tol
         if np.any(lower >= upper) or np.any(upper <= 0):
             raise ArithmeticError("Degenerate box requires an explicit boundary proof.")
         pivot = int(np.argmax(upper))
-        hessian = _simplex_tangent_hessian(hessian_lower_enclosure(model, lower, upper), pivot)
-        if _positive_definite(hessian):
+        ambient = hessian_lower_enclosure(model, lower, upper)
+        tangent = _simplex_tangent_hessian(ambient, pivot)
+        if _positive_definite(ambient) or _positive_definite(tangent):
             rho = 0.
         else:
-            # Interval row sums determine the shift on the tangent basis.
-            # The actual ambient alphaBB diagonal contributes rho*B.T*B;
-            # B.T*B = I + 11.T >= I, so verifying H_tangent + rho*I is
-            # conservative for that actual minorant.
+            # The interval congruence can widen off-diagonal dependencies on
+            # a broad box. Preserve the original ambient shift whenever the
+            # tangent test does not establish zero shift: it is already a
+            # valid sufficient condition on every feasible direction.
+            hessian = ambient
             required = max((sum((_I(max(v.lo.copy_abs(), v.hi.copy_abs())) for j, v in enumerate(row) if i != j), _I(0))
                             -row[i]).hi for i, row in enumerate(hessian))
             rho = _outward_float(max(Decimal(0), required)+Decimal('1e-20'), False)
