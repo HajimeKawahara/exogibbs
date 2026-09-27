@@ -137,3 +137,23 @@ def test_binary_specific_model_rejects_an_unmatched_standard_provider():
     model.update(source_kind="pinned_native_binary_instruction_transcription", source_sha256="required")
     with pytest.raises(ValueError, match="binary-specific"):
         SOLID.certify_solid_insertion(model, standards, host, 0.)
+
+
+def test_a_negative_insertion_within_tolerance_is_not_a_formal_certificate():
+    model, standards, host = case()
+    model["entropy_sites"] = []
+    standards["mu0_J_mol"] = [-5e-9, -5e-9]
+    result = SOLID.certify_solid_insertion(model, standards, host, 0.)
+    assert result["bound_within_requested_tolerance"]
+    assert -1e-8 <= result["lower_bound_rt_per_formula_unit"] < 0
+    assert not result["formal_global_insertion_bound_accepted"]
+
+
+def test_curvature_anchor_stays_inside_an_exact_singleton_box():
+    # The ambient Decimal midpoint can round away from this binary64 value.
+    point = SOLID.Decimal.from_float(.1)
+    box = [SOLID._I(point)]
+    terms = [(SOLID._I(1), [1])]
+    result = SOLID._curvature_relaxation(terms, [], box, [],
+                                        [[(SOLID._I(1), [0])]], [[[]]])
+    assert result <= point

@@ -139,7 +139,7 @@ def _linear_program_lower(terms, box, inequalities):
             gradient[powers.index(1)] += coefficient
     matrix = np.asarray([row[1] for row in inequalities])
     rhs = np.asarray([row[0] for row in inequalities])
-    result = linprog([float(g.lo) for g in gradient], A_ub=-matrix, b_ub=rhs,
+    result = linprog([float(g.lo) for g in gradient], A_ub=-matrix if len(matrix) else None, b_ub=rhs if len(matrix) else None,
                      bounds=[(float(v.lo), float(v.hi)) for v in box], method="highs")
     multipliers = np.maximum(0., -result.ineqlin.marginals) if result.success else np.zeros(len(rhs))
     for multiplier, (b, a) in zip(multipliers, inequalities):
@@ -168,7 +168,7 @@ def _curvature_relaxation(terms, sites, box, inequalities, derivatives, hessians
     are valid on the full closed site interval, including empty sites.
     """
     size = len(box)
-    center = [_I((v.lo+v.hi)/2) for v in box]
+    center = [_I(max(v.lo, min(v.hi, (v.lo+v.hi)/2))) for v in box]
     value = _poly(terms, center)
     gradient = [_poly(row, center) for row in derivatives]
     hessian = [[_poly(row, box) for row in rows] for rows in hessians]
@@ -468,7 +468,8 @@ def certify_solid_insertion(parameters: dict, standard_states: dict,
         visit(right, hi)
     minimum = min([Decimal(row["lower_bound_rt"]) for row in leaves] + [row[0] for row in queue], default=Decimal("Infinity"))
     return {"assessment_id": "declared_solid_site_global_insertion_v1", "phase": parameters["phase"],
-            "formal_global_insertion_bound_accepted": not queue and bool(leaves),
+            "formal_global_insertion_bound_accepted": not queue and bool(leaves) and minimum >= 0,
+            "bound_within_requested_tolerance": not queue and bool(leaves),
             "lower_bound_rt_per_formula_unit": _outward_float(minimum, True) if minimum.is_finite() else None,
             "node_count": nodes, "leaf_count": len(leaves), "unresolved_box_count": len(queue),
             "max_nodes": max_nodes, "tolerance_rt": tolerance_rt,

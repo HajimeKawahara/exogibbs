@@ -13,6 +13,10 @@ Positive singular barriers retain their divergent endpoint limit. Pure
 ordering reference energies are subtracted as enclosing intervals. A finite
 node budget that leaves any negative box unresolved cannot certify stability.
 The output preserves every accepted, excluded, and unresolved box.
+`formal_global_insertion_bound_accepted` requires a nonnegative verified
+lower bound. `bound_within_requested_tolerance` separately records closure
+within the requested numerical tolerance; a small negative bound never
+receives the formal flag.
 
 Linear physical-site constraints also tighten boxes and support an affine
 lower bound. A numerical LP proposes nonnegative dual multipliers; its

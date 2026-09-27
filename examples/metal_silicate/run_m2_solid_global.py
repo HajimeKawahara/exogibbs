@@ -11,6 +11,7 @@ import time
 
 import numpy as np
 
+from m2_liquid_global import require_saved_liquid_expression
 from m2_solid_global import certify_solid_insertion
 from melts_coupled import COMMON_R, load_melts_evaluator
 
@@ -76,6 +77,7 @@ def main():
     write("native_standard_state_receipt.json", native_properties)
     properties = native_properties if liquid_model == "native" else evaluator.evaluate_liquid(
         request["T_K"], request["P_Pa"], request["component_moles"], **kwargs)
+    require_saved_liquid_expression(request, properties)
     write("host_properties.json", properties)
     rows = []
     for standards in native_properties["candidate_standard_states"]:
@@ -85,7 +87,8 @@ def main():
                                          max_nodes=args.max_nodes)
         write(phase + ".json", result)
         row = {key: result[key] for key in ("phase", "formal_global_insertion_bound_accepted",
-                                           "lower_bound_rt_per_formula_unit", "node_count", "unresolved_box_count")}
+                                           "lower_bound_rt_per_formula_unit", "node_count", "unresolved_box_count",
+                                           "bound_within_requested_tolerance")}
         rows.append(row)
         print(json.dumps(row), flush=True)
     write("summary.json", {**protocol, "completed": True, "elapsed_seconds": time.time()-started,
