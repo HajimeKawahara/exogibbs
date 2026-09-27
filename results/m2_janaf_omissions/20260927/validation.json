@@ -1,0 +1,53 @@
+{
+  "full_suite": {
+    "command": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 PYTHONPATH=src taskset -c 33-40 python -m pytest tests/unittests",
+    "commit": "c861b469a44561529d6974edce1dea9e4a94cc3c",
+    "exit_code": 1,
+    "passed": 1872,
+    "skipped": 6,
+    "failed": 1,
+    "warnings": 24,
+    "elapsed_s": 1770.41,
+    "failure": "Existing ExoEOS installation lacks exoeos.ma_interval; five optional-provider tests also skip."
+  },
+  "optional_provider_recheck": {
+    "passed": 21,
+    "skipped": 0,
+    "failed": 0,
+    "elapsed_s": 33.12,
+    "exit_code": 0,
+    "exoeos_commit": "44b977847ea7ed1e16377907722277a3e75bc9d7",
+    "covers_full_failure_and_five_provider_skips": true
+  },
+  "remaining_skip": "setuptools-scm generated version module is unavailable",
+  "unresolved_test_failures": [],
+  "targeted_after_gallery_title": {
+    "passed": 33,
+    "skipped": 0,
+    "failed": 0,
+    "elapsed_s": 1.33,
+    "commit": "f30a47b7a64b1204eda65f46c002a3575bcd0692"
+  },
+  "final_gallery_heading_fix": {
+    "commit": "09453dd87e0aab9d7c0b76f91a7d9d024db7c848",
+    "only_module_docstring_changed_from_full_suite": true,
+    "ast_equal_except_module_docstring": true,
+    "fresh_three_case_replay_numerically_identical": true,
+    "replay_exit_code": 0,
+    "ignored_replay_comparison_fields": [
+      "execution",
+      "janaf_reference_audit.evaluator_sha256",
+      "provenance.gas_table.example_git_commit",
+      "provenance.gas_table.provider_git_commit",
+      "provenance.gas_table.example_git_status",
+      "provenance.gas_table.provider_git_status"
+    ]
+  },
+  "documentation": {
+    "update_doc_sh_exit_code": 0,
+    "final_incremental_html_exit_code": 0,
+    "remaining_warnings": 296,
+    "warnings_in_new_module": 0,
+    "log_sha256": "484cf4e42c15e6e198503b6e3a2ac668b4f7632a2c8ac8a4eae871fa5c61f945"
+  }
+}
