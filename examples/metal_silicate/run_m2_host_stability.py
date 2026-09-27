@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--search-solutions", nargs="+", metavar="PHASE",
                         help="Search these native endmember simplexes; nonnegative samples do not certify stability.")
     parser.add_argument("--search-liquid-splitting", action="store_true")
+    parser.add_argument("--liquid-local-curvature", action="store_true")
     parser.add_argument("--search-evaluations", type=int, default=60,
                         help="Objective evaluations per search, plus one fresh final evaluation.")
     args = parser.parse_args()
@@ -52,6 +53,13 @@ def main():
             assessment["liquid_splitting_search"] = search_liquid_splitting(properties, h2, **parameters)
         if any(assessment.get(key, {}).get("status") in {"rejected_by_feasible_trial", "negative_feasible_witness"}
                for key in ("solution_search", "liquid_splitting_search")):
+            assessment["status"] = "rejected_by_feasible_trial"
+    if args.liquid_local_curvature:
+        from m2_stability_search import assess_liquid_local_curvature
+        assessment["liquid_local_curvature"] = assess_liquid_local_curvature(
+            assessment["provider_properties"], assessment["native_dissolved_h2_moles"],
+            evaluator=evaluator, runtime=args.runtime, python_executable=args.python_executable)
+        if assessment["liquid_local_curvature"]["status"] == "negative_feasible_witness":
             assessment["status"] = "rejected_by_feasible_trial"
     result = {
         "scope": "New native-property postprocessing of the recorded source composition; no source re-equilibration.",

@@ -1,0 +1,457 @@
+{
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "a0feb523dc527a28c2c22f2fa14ef592f2e1b4d01913815bd5d3e67b3d8946af",
+      "bytes": 7264
+    },
+    {
+      "path": "audit_native_archive.py",
+      "sha256": "c694befc5e66212c7d86f5d74c7a7bb7fa2c9b2abe388451bcbede028824bd49",
+      "bytes": 4950
+    },
+    {
+      "path": "base_environment_skip_reasons.log",
+      "sha256": "ddff49eea642453cc13d91dbdd0b3572135a219fbb44c071f02094f585c5ae48",
+      "bytes": 808
+    },
+    {
+      "path": "executed_sources.json",
+      "sha256": "8dee8d46d1535e1fb514fd7dbeabdef2eeb38a737845d38a9156c8dfe6a97703",
+      "bytes": 3728
+    },
+    {
+      "path": "explicit_coordinates/fresh_host_assessment.json",
+      "sha256": "fa39c52c5b78c4f67b0e5c14b88b58762495916e3c3a0578cb66ec7787070462",
+      "bytes": 120388
+    },
+    {
+      "path": "explicit_coordinates/independent_audit.json",
+      "sha256": "501fb6ffbd10767bd292b4038a606e4d7958a8b6fd026bae7317c5320b6b003a",
+      "bytes": 499
+    },
+    {
+      "path": "explicit_coordinates/local_curvature.json",
+      "sha256": "150c446526296e3d4cccf24a6602ed0c46aed5bf257204311e9417a539ba8294",
+      "bytes": 1942945
+    },
+    {
+      "path": "explicit_coordinates/phase_00_olivine.json",
+      "sha256": "63cada5bd3925e34a76342aff2add5f100196893ea497228f64b187ba0af7c89",
+      "bytes": 427245
+    },
+    {
+      "path": "explicit_coordinates/phase_01_sphene.json",
+      "sha256": "f8d7e87aa3d4e399b43ca2287852b965abab0820820e0fe65f8a9a17d7403396",
+      "bytes": 20047
+    },
+    {
+      "path": "explicit_coordinates/phase_02_garnet.json",
+      "sha256": "63aa160a3ac0e9b984642026df9d41ccb1cabd36ce943165125a340819e10c70",
+      "bytes": 348987
+    },
+    {
+      "path": "explicit_coordinates/phase_03_melilite.json",
+      "sha256": "2c158cf1d88591afbb60ddf4ffd33f9047f4bb590536bf2ba89e917cbfdb3ae8",
+      "bytes": 382116
+    },
+    {
+      "path": "explicit_coordinates/phase_04_orthopyroxene.json",
+      "sha256": "a2bb0ddc13edc4849228e4282454c893702283d16cb2e169ddd961c4410eb0e9",
+      "bytes": 459967
+    },
+    {
+      "path": "explicit_coordinates/phase_05_clinopyroxene.json",
+      "sha256": "79aa29f92dd4489a9a27780b55d2b99968ae3fed9e63ae03a50d85805a636e4f",
+      "bytes": 459772
+    },
+    {
+      "path": "explicit_coordinates/phase_06_aenigmatite.json",
+      "sha256": "30893f66eba3c2bc5800ff8550c11be416111115ecab85c19924d00f4f1d091a",
+      "bytes": 20322
+    },
+    {
+      "path": "explicit_coordinates/phase_07_cummingtonite.json",
+      "sha256": "59a85cd580d50302016981bb40f8e240ce8626d49fc35f963512aa78a6bbc158",
+      "bytes": 314223
+    },
+    {
+      "path": "explicit_coordinates/phase_08_clinoamphibole.json",
+      "sha256": "25305577a1ce8ff8da3c5142b080a12192dde079187c29292d853e5b6ea9d5eb",
+      "bytes": 331106
+    },
+    {
+      "path": "explicit_coordinates/phase_09_orthoamphibole.json",
+      "sha256": "5e3a6824b9d05954d47b6b0aa816c7a475c02fb49749430831a078a895e318aa",
+      "bytes": 331205
+    },
+    {
+      "path": "explicit_coordinates/phase_10_hornblende.json",
+      "sha256": "077986c2ed7b4ff77a3d111e9506fd57e9515eed11fa2e2c0c892ec6726c6809",
+      "bytes": 342488
+    },
+    {
+      "path": "explicit_coordinates/phase_11_biotite.json",
+      "sha256": "268202fcae631dab5f80315f13a640a17dff313b5396e755a0a6249347eaa633",
+      "bytes": 325664
+    },
+    {
+      "path": "explicit_coordinates/phase_12_muscovite.json",
+      "sha256": "1ea63e0f2c4abdbca212a7eb0faa0995671438a0575f20330282676f579a7756",
+      "bytes": 20336
+    },
+    {
+      "path": "explicit_coordinates/phase_13_alkali-feldspar.json",
+      "sha256": "256fd48f680655b5921f8d97d44ea4941c142ade008af52b39fc8d19c012181e",
+      "bytes": 350688
+    },
+    {
+      "path": "explicit_coordinates/phase_14_plagioclase.json",
+      "sha256": "db7c150a0361369812af49e528d9cf627cf5960ab0b321109ea159d14d8a96fc",
+      "bytes": 349741
+    },
+    {
+      "path": "explicit_coordinates/phase_15_quartz.json",
+      "sha256": "36627531504361f64250a6b5d7b054efa83c634ab6bd15665e632b5c488674ef",
+      "bytes": 19521
+    },
+    {
+      "path": "explicit_coordinates/phase_16_tridymite.json",
+      "sha256": "3a661041f20a8c386f24a1fcabb66e6c786a005930936e92111232b9b64ef0bc",
+      "bytes": 19545
+    },
+    {
+      "path": "explicit_coordinates/phase_17_cristobalite.json",
+      "sha256": "c00802a2ce80c671357ab91f47e5c81099e8dcc141502034e0cf4bb048d5a277",
+      "bytes": 19572
+    },
+    {
+      "path": "explicit_coordinates/phase_18_nepheline.json",
+      "sha256": "de850df06178e212312f8733cf1bf8b9294b9b64a5e1162d8330f297cb71ca55",
+      "bytes": 347509
+    },
+    {
+      "path": "explicit_coordinates/phase_19_kalsilite.json",
+      "sha256": "e6ec29a4ea44fc402b9309537832f7e36b21df5dcfe62eb9dd1ecd98f969df2d",
+      "bytes": 347455
+    },
+    {
+      "path": "explicit_coordinates/phase_20_leucite.json",
+      "sha256": "8fd2be760b281dc38584d75dcd79c20e3cfb2f18e2d90f9507188812b73f35ed",
+      "bytes": 350520
+    },
+    {
+      "path": "explicit_coordinates/phase_21_corundum.json",
+      "sha256": "3fdd703aefaad4dbfac0931972a89056f8125bbd49dd921c7b5b451bdbc6e7dd",
+      "bytes": 19551
+    },
+    {
+      "path": "explicit_coordinates/phase_22_sillimanite.json",
+      "sha256": "bdbda54722005f3eb2fde97d432e189c424fb2c15d56d917d5ad52910c38debb",
+      "bytes": 19827
+    },
+    {
+      "path": "explicit_coordinates/phase_23_rutile.json",
+      "sha256": "c6b127a851c00d52d0a05e505c4926bc9ad155bb87407be52ca6b183a090dbf4",
+      "bytes": 19563
+    },
+    {
+      "path": "explicit_coordinates/phase_24_perovskite.json",
+      "sha256": "d3793de6900ff610ff1cf2beb866d8fa4a0bc72f5667a64b5fc4074d87f18ed9",
+      "bytes": 19909
+    },
+    {
+      "path": "explicit_coordinates/phase_25_spinel.json",
+      "sha256": "50f0ccebc05da03e702c5e890e242c87de1764425a4874de72b78092d7da875b",
+      "bytes": 407781
+    },
+    {
+      "path": "explicit_coordinates/phase_26_rhm-oxide.json",
+      "sha256": "bfa144b4f039f764d48fc44c35e6508578cd7eb6fd91c759c57eb682648aff4c",
+      "bytes": 401815
+    },
+    {
+      "path": "explicit_coordinates/phase_27_ortho-oxide.json",
+      "sha256": "9b75e36459b17da118dcc7891fc8673fab361cb8e9ad6c012be42596a75fc350",
+      "bytes": 344020
+    },
+    {
+      "path": "explicit_coordinates/phase_28_whitlockite.json",
+      "sha256": "01da9a64e46aef05544359509d8e4f6f64407a77819575b388b7ffb44322fb3f",
+      "bytes": 19957
+    },
+    {
+      "path": "explicit_coordinates/phase_29_apatite.json",
+      "sha256": "5caf0ebc56af5b251c4a862bf523a393631105e356fbb19b7429d36eda9bc907",
+      "bytes": 20117
+    },
+    {
+      "path": "explicit_coordinates/phase_30_water.json",
+      "sha256": "826a20fa741ee3df1c02882ca55c01d566839b2843a252d3ddad58ca4e1f2b20",
+      "bytes": 19563
+    },
+    {
+      "path": "explicit_coordinates/phase_31_alloy-solid.json",
+      "sha256": "ed446dbff209e62e2c2e9d215db43771a911f0e0af9d563aded0cb0ae3480df7",
+      "bytes": 22040
+    },
+    {
+      "path": "explicit_coordinates/phase_32_alloy-liquid.json",
+      "sha256": "74a1a6a0bb490ec9f9b9ec1564e34604842b74a440e45ce914d4b09cb1b8e110",
+      "bytes": 22053
+    },
+    {
+      "path": "explicit_coordinates/protocol.json",
+      "sha256": "98e5ef6f1db8e8596b3ee7f39086b44aa2ba263c6763eb4566f65d326d72d3ca",
+      "bytes": 4769
+    },
+    {
+      "path": "explicit_coordinates/source_physical_audit.json",
+      "sha256": "1f07dca4af7d1aa7599e3165f4a2a0ef94cc41ba37a363a3e72ba6f1685995bf",
+      "bytes": 243347
+    },
+    {
+      "path": "explicit_coordinates/stdout.log",
+      "sha256": "7db8935c9e3c8b138b3eb3b47bfc20135212b702cdb6f196497d490e603eb7a4",
+      "bytes": 1644
+    },
+    {
+      "path": "explicit_coordinates/summary.json",
+      "sha256": "f209c697201702a06dd9c2790b687ee66af5fa2321a3add2a895776cdd41a1d3",
+      "bytes": 16458
+    },
+    {
+      "path": "full_pytest.log",
+      "sha256": "a89e91db8c8d31ca2ee0283f1d9645c73e5fc0f77cfcd4be92c7c982a4561873",
+      "bytes": 3977
+    },
+    {
+      "path": "initial_oxide_requests/fresh_host_assessment.json",
+      "sha256": "d62c7d319a424ef29eb7208e425cae428dda5b7aab4c076faf539e243078f345",
+      "bytes": 120315
+    },
+    {
+      "path": "initial_oxide_requests/independent_audit.json",
+      "sha256": "740faa12d641932fc0a7e712df4fc1270614397b7b9e874f9b39fdfcb137432d",
+      "bytes": 499
+    },
+    {
+      "path": "initial_oxide_requests/local_curvature.json",
+      "sha256": "fb32319e3c22265df324f6263cd903ea90908a41739bd1b59b855a813391f91a",
+      "bytes": 1942119
+    },
+    {
+      "path": "initial_oxide_requests/phase_00_olivine.json",
+      "sha256": "ce7261929132e2e2a68294c64e80e638b06ff19cfa89d97a5f0a49cf0b400b76",
+      "bytes": 28949
+    },
+    {
+      "path": "initial_oxide_requests/phase_01_sphene.json",
+      "sha256": "c91daf89c7680af39fb09c1c7a2593dbf95d496cf02dc48865a96b92d3e4e01e",
+      "bytes": 18574
+    },
+    {
+      "path": "initial_oxide_requests/phase_02_garnet.json",
+      "sha256": "471c27a7c93ba5a942dbcaff1b88c3e9316a082302f7314a5347302d1f723e47",
+      "bytes": 328380
+    },
+    {
+      "path": "initial_oxide_requests/phase_03_melilite.json",
+      "sha256": "da34a05d30e7107eff474016019c429b72da1be8414183a47eee4695e698774e",
+      "bytes": 349768
+    },
+    {
+      "path": "initial_oxide_requests/phase_04_orthopyroxene.json",
+      "sha256": "fd3aa88f57e23d1bf8b06f8fcfa9170fcb3514d27db23b2708e2a86f12c29f0a",
+      "bytes": 264264
+    },
+    {
+      "path": "initial_oxide_requests/phase_05_clinopyroxene.json",
+      "sha256": "228e04a934680df285937f74d9b28989e0ca2f7599e0be5eaa27340994bf40f4",
+      "bytes": 236229
+    },
+    {
+      "path": "initial_oxide_requests/phase_06_aenigmatite.json",
+      "sha256": "d9eb49d7c38d2f194f4cd53404e7bba32e83d98a17ba8cdcfebe897025ba5528",
+      "bytes": 18830
+    },
+    {
+      "path": "initial_oxide_requests/phase_07_cummingtonite.json",
+      "sha256": "65e60178b45e3adf8d14bb90b9eb9fec17843417c5471bf1afb9002437b2cecb",
+      "bytes": 271976
+    },
+    {
+      "path": "initial_oxide_requests/phase_08_clinoamphibole.json",
+      "sha256": "c61ff94f42edb45e2f95f475f538590cc9453cb47fc1e4a47d23e81721e734dd",
+      "bytes": 319881
+    },
+    {
+      "path": "initial_oxide_requests/phase_09_orthoamphibole.json",
+      "sha256": "d3fc81a86b756d4d8d79341a06a1ac8bc17bf2acd95f7462936bc7fb8619ba0a",
+      "bytes": 320119
+    },
+    {
+      "path": "initial_oxide_requests/phase_10_hornblende.json",
+      "sha256": "7dd40cea688fa76ad88581a4e617e66fada3eff0fff01a4b48fd77467e2675cc",
+      "bytes": 314728
+    },
+    {
+      "path": "initial_oxide_requests/phase_11_biotite.json",
+      "sha256": "744c6418a909c257d9cb4a5717841b804d5363aba8ba0c4c5c6a42ca8ebc7c00",
+      "bytes": 300735
+    },
+    {
+      "path": "initial_oxide_requests/phase_12_muscovite.json",
+      "sha256": "056fed0733c9b9be8be6b4152983ca622cef5248c6177d48d8fd120fb454f7d8",
+      "bytes": 18852
+    },
+    {
+      "path": "initial_oxide_requests/phase_13_alkali-feldspar.json",
+      "sha256": "57de0018d2b9e50d3b37330f5140c8737e2f32880696d52df27ae4c9dae30ca8",
+      "bytes": 319140
+    },
+    {
+      "path": "initial_oxide_requests/phase_14_plagioclase.json",
+      "sha256": "33f1aedad33d12f21b4ab615227b8cd23ee4ea1d28696bb256ec895ff50331d0",
+      "bytes": 323833
+    },
+    {
+      "path": "initial_oxide_requests/phase_15_quartz.json",
+      "sha256": "39d6fbcc2444cdde831e3f95c2e01d7aaae9b100bd3a40bbe166fe45956d933e",
+      "bytes": 18023
+    },
+    {
+      "path": "initial_oxide_requests/phase_16_tridymite.json",
+      "sha256": "f19e4a24cf3430b9b5647e2e2a474b69f97cdcbd371f3402f088c722aef05101",
+      "bytes": 18047
+    },
+    {
+      "path": "initial_oxide_requests/phase_17_cristobalite.json",
+      "sha256": "71d387d6c3ecb980339d078bbcf1828a88696b5f99f120621c57dcb667940289",
+      "bytes": 18074
+    },
+    {
+      "path": "initial_oxide_requests/phase_18_nepheline.json",
+      "sha256": "2484306f80e00fe74c438734faf831d9c7eed44dcef472e88f0bfe38af8bf788",
+      "bytes": 347348
+    },
+    {
+      "path": "initial_oxide_requests/phase_19_kalsilite.json",
+      "sha256": "de4afbf015a4fc7ff26ec84ec690f17bad4472ac9fc73d2114265359264fd191",
+      "bytes": 302391
+    },
+    {
+      "path": "initial_oxide_requests/phase_20_leucite.json",
+      "sha256": "da2d8a8d2e66707d08f9eb8d8dc61b1d0e1cb12dd5f0e1d2633e52a27535f106",
+      "bytes": 329613
+    },
+    {
+      "path": "initial_oxide_requests/phase_21_corundum.json",
+      "sha256": "a8086daf8a1234d846ac3ba113ad69f30f3205eb8a7f4d8a8fc5ff8ac7217926",
+      "bytes": 18095
+    },
+    {
+      "path": "initial_oxide_requests/phase_22_sillimanite.json",
+      "sha256": "e89975cb0babccaa90c828625124c2297404964f05640037005a63e7d4a50df6",
+      "bytes": 18359
+    },
+    {
+      "path": "initial_oxide_requests/phase_23_rutile.json",
+      "sha256": "ae92f7bb2d118f41ec961f152890eeefd5f91db9eb15d0dd9709c70facea582a",
+      "bytes": 18065
+    },
+    {
+      "path": "initial_oxide_requests/phase_24_perovskite.json",
+      "sha256": "7ba78a7881e19c762e09b325cb121886ba9ac1779bae883e7f688e4e46be15ed",
+      "bytes": 18431
+    },
+    {
+      "path": "initial_oxide_requests/phase_25_spinel.json",
+      "sha256": "e7d2435f88a5edcb5593f90d2dd4b63940662b30f047ef0c530799609fdab71d",
+      "bytes": 277622
+    },
+    {
+      "path": "initial_oxide_requests/phase_26_rhm-oxide.json",
+      "sha256": "b4695bba3efd2af592b0a2e882306c067b1244e5ea3da0ea2e3faf6f47c9dda3",
+      "bytes": 22173
+    },
+    {
+      "path": "initial_oxide_requests/phase_27_ortho-oxide.json",
+      "sha256": "0313a9346df033426a216f60cd39f3f20c0eaba55d9780f06af87f4f6cac8eb3",
+      "bytes": 272428
+    },
+    {
+      "path": "initial_oxide_requests/phase_28_whitlockite.json",
+      "sha256": "d74fbc5d10c879d8ade4262d6bc471fa1b30255147d48e556210a95d1668be66",
+      "bytes": 18473
+    },
+    {
+      "path": "initial_oxide_requests/phase_29_apatite.json",
+      "sha256": "ae35819497eb41340751d1052f54fc7dff57dc134c878a5fe907ba64fb75e3aa",
+      "bytes": 18574
+    },
+    {
+      "path": "initial_oxide_requests/phase_30_water.json",
+      "sha256": "990cc81da888a0be2ba70443350b6950652b07acdb3cf9b1a6f737e20c8722d3",
+      "bytes": 18065
+    },
+    {
+      "path": "initial_oxide_requests/phase_31_alloy-solid.json",
+      "sha256": "5479655a4fbc7eba22a89de81e159f921b7bfd980128ed0cd2c541b4708b2523",
+      "bytes": 23162
+    },
+    {
+      "path": "initial_oxide_requests/phase_32_alloy-liquid.json",
+      "sha256": "87dd1fbc12c6721e5ef5dfaa2088e350a8d9192f737749e1f6d5a47f09a8cbe0",
+      "bytes": 23175
+    },
+    {
+      "path": "initial_oxide_requests/protocol.json",
+      "sha256": "252bde2df9b35d391c5a21217f3f17f35a8935f9439357553f88c8508185c868",
+      "bytes": 4757
+    },
+    {
+      "path": "initial_oxide_requests/source_physical_audit.json",
+      "sha256": "1f07dca4af7d1aa7599e3165f4a2a0ef94cc41ba37a363a3e72ba6f1685995bf",
+      "bytes": 243347
+    },
+    {
+      "path": "initial_oxide_requests/stdout.log",
+      "sha256": "6a7256aec065f1176fdf6f3a6925f79fc0834d5adde7a0803fc78e7052627218",
+      "bytes": 1617
+    },
+    {
+      "path": "initial_oxide_requests/summary.json",
+      "sha256": "387013a5220bec589363bff72c66f7322ef3fcdec327398bb83157803d6d548a",
+      "bytes": 16426
+    },
+    {
+      "path": "optional_provider_nodeids.json",
+      "sha256": "8e75f39074f50844a905c6d604a8051681e6b5b7025e7133cabfdfd84f75351f",
+      "bytes": 2891
+    },
+    {
+      "path": "optional_provider_pytest.log",
+      "sha256": "4da2104a76834dc14871e1a430d3a2116e0c73d17eb75127d899144f2aeb8ee5",
+      "bytes": 100
+    },
+    {
+      "path": "process_receipts.json",
+      "sha256": "dbbbdc80b6f2bc263254753ed8d79295ab564e9c2b7a2cdc9d6ed9798ad9df4f",
+      "bytes": 636
+    },
+    {
+      "path": "run_native_check.py",
+      "sha256": "25d92c0d5e6251d506c2f9e0bd30a51228a3cd12c175367fce0ebc5e9406cfd0",
+      "bytes": 4772
+    },
+    {
+      "path": "validation.json",
+      "sha256": "8dfe034cdbfa5271759de64a9e4f7ba228509638726f1e7fcf38906480e4f6e0",
+      "bytes": 4646
+    }
+  ],
+  "excluded": [
+    "manifest.json"
+  ]
+}

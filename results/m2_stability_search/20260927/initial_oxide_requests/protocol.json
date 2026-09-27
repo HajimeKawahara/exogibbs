@@ -1,0 +1,99 @@
+{
+  "gibbs_commit": "38c107a7aa537496e51f5ca786fd9048cecbe776",
+  "command": [
+    "results/m2_stability_search/20260927/run_native_check.py",
+    "--saved-physical-audit",
+    "/home/kawahara/exoinventory/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_readiness/physical/physical_reactions_h1e24.json",
+    "--exoeos-checkout",
+    "/tmp/stage2-stability-eos-frozen",
+    "--runtime",
+    "/tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64",
+    "--python",
+    "/tmp/exoeos-pr3-env/bin/python",
+    "--output-directory",
+    "/tmp/stage2-stability-native-h1e24"
+  ],
+  "source_path": "/home/kawahara/exoinventory/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_readiness/physical/physical_reactions_h1e24.json",
+  "source_sha256": "1f07dca4af7d1aa7599e3165f4a2a0ef94cc41ba37a363a3e72ba6f1685995bf",
+  "source_closure": {
+    "path": "/tmp/exoinventory-m2-series-preflight-20260925/native_h_pilot/case_001/closure/closure.json",
+    "sha256": "6b1bdd16ec83f5eeb4f29fe57d55f8f8c37d7167e4f7858525203cc342460940",
+    "executed_checkouts": {
+      "exoinventory": {
+        "path": "/tmp/exoinventory-m2-series-preflight-20260925/pilot-checkout",
+        "head": "35fc5ae669227b225c1176a06499568883d97cf8",
+        "status": "",
+        "remote": "https://github.com/HajimeKawahara/exoinventory.git"
+      },
+      "exogibbs": {
+        "path": "/tmp/exoinventory-m2-series-preflight-20260925/exogibbs",
+        "head": "f9fb584e8b95d3ce5e8a155904c029667af5fbd1",
+        "status": "",
+        "remote": "https://github.com/HajimeKawahara/exogibbs.git"
+      },
+      "exoeos": {
+        "path": "/tmp/exoinventory-m2-series-preflight-20260925/exoeos",
+        "head": "1566b705df509bf170da321c834fa9284b9f4034",
+        "status": "",
+        "remote": "https://github.com/HajimeKawahara/exoeos.git"
+      }
+    },
+    "executed_arguments": {
+      "inventory": "/tmp/exoinventory-m2-series-preflight-20260925/native_h_pilot/case_001/inventory.json",
+      "exogibbs_checkout": "/tmp/exoinventory-m2-series-preflight-20260925/exogibbs",
+      "exoeos_checkout": "/tmp/exoinventory-m2-series-preflight-20260925/exoeos",
+      "runtime": "/tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64",
+      "output": "/tmp/exoinventory-m2-series-preflight-20260925/native_h_pilot/case_001/closure",
+      "worker_python": "/tmp/exoeos-pr3-env/bin/python",
+      "pressure_scan_bar": [
+        20.0,
+        600.0
+      ],
+      "temperature_k": 2173.15,
+      "top_pressure_bar": 0.01,
+      "temperature_floor_k": 1000.0,
+      "temperature_exponent": 0.2,
+      "base_radius_m": 6371000.0,
+      "layers": [
+        16
+      ],
+      "metal": "select",
+      "maxiter": 1000
+    },
+    "kind": "global_closure_root",
+    "inventory_sha256": "7294c2d507cf55f60b918a0f2ab6344c8bc8e101c2787855525d5ea9a735c6d7",
+    "consumer_sha256": {
+      "examples/subneptune_taxonomy/finite_melt/run_m2_closure.py": "41bb745a92786382d34768f36ddf9937fe53c63fe20a788038001b01aff01001",
+      "examples/subneptune_taxonomy/finite_melt/m2_source.py": "b5695f95bb10b47722326f21281eba8d9e0c5483a42ad5e57fa01f6445c972dd",
+      "examples/subneptune_taxonomy/finite_melt/m2_closure.py": "566f3ef807cead934cec7643039a544fd7676efb62b34ac17dac7213d5bd67a6",
+      "examples/subneptune_taxonomy/finite_melt/m2_column.py": "ae74be0e7fa2b8cd29f6b22d67c1be7d1c92558062006800850ed4baf65e1aa8",
+      "examples/retained_rock_atmosphere/column.py": "da113e6712b896ec1284b72a0386fa959137c174ef37054c92f83ba01218fcab",
+      "examples/retained_rock_atmosphere/model.py": "1b475bffe9dd4d2298588fe009516e190a3fa398bdb46b51ec800a95e7075b65"
+    },
+    "structure_provider": {
+      "import_path": "/tmp/exoinventory-m2-global-closure-20260925/exojax/src/exojax/__init__.py",
+      "version": "2.4.1.dev127+gcde2bda1f.d20260821",
+      "pressure_grid_source": "/tmp/exoinventory-m2-global-closure-20260925/exojax/src/exojax/atm/atmprof.py",
+      "sha256": "bba0ee11db0bcc45f34f932ca7e12013369e61f8121016a3292c3aa9edf38654"
+    },
+    "selection": {
+      "run_index": 0,
+      "layers": 16,
+      "root_index": 0,
+      "temperature_k": 2173.15,
+      "pressure_bar": 267.20283416157343
+    },
+    "numerical_source_accepted": true,
+    "source_contact_accepted": true,
+    "metal_selection_status": "unresolved"
+  },
+  "search_sha256": "a16995ea472d2e63c026bc75ecfb9320b79625058522bf524017febcc2d1fd39",
+  "runner_sha256": "25d92c0d5e6251d506c2f9e0bd30a51228a3cd12c175367fce0ebc5e9406cfd0",
+  "scope": "Fresh fixed-host properties and local/composition diagnostics; no pressure or equilibrium root is recomputed.",
+  "max_evaluations_per_phase": 60,
+  "local_curvature_steps": [
+    0.001,
+    0.0005
+  ],
+  "tolerance_rt": 1e-08
+}

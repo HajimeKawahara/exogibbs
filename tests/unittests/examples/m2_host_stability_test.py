@@ -121,8 +121,8 @@ def test_solution_search_uses_h2_dilution_and_does_not_certify_nonnegative_trial
         rows = []
         for request in kwargs.get("candidate_compositions", []):
             row = {"phase": "AB", "native_endmember_oxide_mass_g_per_mol": np.eye(2).tolist()}
-            if "oxide_mass_g" in request:
-                n = np.asarray(request["oxide_mass_g"])
+            if "endmember_moles" in request:
+                n = np.asarray(request["endmember_moles"])
                 positive = n > 0
                 energy = n @ [-2., -3.] + .4 * n.sum() + np.sum(n[positive] * np.log(n[positive] / n.sum()))
                 row.update(status="ok_candidate_properties", reason=None, oxide_mass_g=n.tolist(),
@@ -173,3 +173,127 @@ def test_failed_search_evaluations_never_become_finite_thermodynamic_evidence():
     result = _search(fail, [np.array([.5])], [(0., 1.)], max_evaluations=5, tolerance_rt=1e-8)
     assert result["status"] == "unresolved" and result["best_fresh_trial"] is None
     assert not result["trials"] and result["failed_evaluations"]
+
+
+def test_prescan_reaches_endpoint_before_local_gradient_uses_the_budget():
+    result = _search(lambda x: {"objective_rt": float(x[0]) - .2}, [np.array([.5])], [(0., 1.)],
+                     max_evaluations=2, tolerance_rt=1e-8,
+                     initial_points=[np.array([.5]), np.array([0.])])
+    assert result["status"] == "negative_feasible_witness"
+    assert result["initial_points_attempted"] == result["initial_points_requested"] == 2
+    assert result["best_fresh_trial"]["coordinates"] == [0.]
+    assert result["budget_exhausted"]
+
+
+def test_singleton_has_complete_composition_enumeration_but_no_global_certificate():
+    native = properties(.4)
+
+    def evaluate(t, p, n, **kwargs):
+        row = {"phase": "AB", "native_endmember_oxide_mass_g_per_mol": [[1.], [1.]]}
+        if "endmember_moles" in kwargs["candidate_compositions"][0]:
+            row.update(native["saturation"]["candidates"][0])
+        return {**native, "returned_component_moles": native["component_moles"],
+                "candidate_evaluations": [row], "provenance": {"mock": True}}
+
+    result = search_competing_solutions(native, 0., evaluator=SimpleNamespace(evaluate_liquid=evaluate),
+                                       runtime=None, python_executable=None, max_evaluations=2)
+    row = result["phases"][0]
+    assert row["composition_domain_is_single_point"] and row["composition_minimum_enumerated"]
+    assert row["status"] == "nonnegative_fixed_composition"
+    assert len(row["trials"]) == 2 and not row["optimizer_attempts"]
+    assert not row["minimum_certified"] and not result["global_stability_certified"]
+
+
+def regular_liquid(interaction, *, scale=1., gauge=(0., 0.)):
+    native = properties()
+    gauge = np.asarray(gauge)
+
+    def evaluate(t, p, n, **kwargs):
+        n = np.asarray(n)
+        x = n / n.sum()
+        energy = np.sum(n * np.log(x)) + interaction * np.prod(n) / n.sum() + n @ gauge
+        mu = np.log(x) + interaction * x[::-1] ** 2 + gauge
+        return {**native, "component_moles": n.tolist(), "returned_component_moles": n.tolist(),
+                "mu_RT": mu.tolist(), "gibbs_J": energy * COMMON_R * t}
+
+    native = evaluate(native["T_K"], native["P_Pa"], np.array([.5, .5]) * scale)
+    return native, SimpleNamespace(evaluate_liquid=evaluate)
+
+
+@pytest.mark.parametrize("interaction,expected", [(0., "numerically_positive_local_curvature"),
+                                                    (4., "negative_feasible_witness")])
+def test_local_curvature_uses_complete_support_and_finite_energy_witness(interaction, expected):
+    from m2_stability_search import assess_liquid_local_curvature
+    native, provider = regular_liquid(interaction)
+    result = assess_liquid_local_curvature(native, .1, evaluator=provider,
+                                          runtime=None, python_executable=None)
+    assert result["status"] == expected
+    assert result["composition_subspace_dimension"] == 2
+    assert len(result["provider_evaluations"]) == 1 + 4 * 3 + 6
+    assert not result["global_stability_certified"] and not result["curvature_bound_certified"]
+    for split in result["finite_split_trials"]:
+        daughters = [result["provider_evaluations"][i] for i in split["daughter_evaluation_indices"]]
+        np.testing.assert_allclose(np.sum([d["native_component_moles"] for d in daughters], axis=0),
+                                   np.array([.5, .5]) / 1.1, rtol=0, atol=1e-16)
+        assert sum(d["dissolved_h2_moles"] for d in daughters) == pytest.approx(.1 / 1.1)
+    if interaction:
+        assert min(row["objective_rt_per_mol_atoms"] for row in result["finite_split_trials"]) < -1e-4
+    else:
+        eig = result["finite_difference_assessments"][-1]["projected_eigenvalues"]
+        np.testing.assert_allclose(eig, [1., 1.], rtol=1e-6)
+
+
+def test_local_curvature_gauge_amount_invariance_and_exact_zero_h2():
+    from m2_stability_search import assess_liquid_local_curvature
+    results = []
+    for scale, gauge in [(1., (0., 0.)), (10., (71., -23.))]:
+        native, provider = regular_liquid(0., scale=scale, gauge=gauge)
+        result = assess_liquid_local_curvature(native, 0., evaluator=provider,
+                                              runtime=None, python_executable=None)
+        assert result["active_component_indices"] == [0, 1]
+        assert result["composition_subspace_dimension"] == 1
+        results.append(result)
+    assert results[0]["status"] == results[1]["status"] == "numerically_positive_local_curvature"
+    np.testing.assert_allclose(results[0]["finite_difference_assessments"][-1]["projected_eigenvalues"],
+                               results[1]["finite_difference_assessments"][-1]["projected_eigenvalues"], atol=1e-10)
+
+
+def test_local_curvature_invalid_steps_and_changed_provider_host_are_rejected():
+    from m2_stability_search import assess_liquid_local_curvature
+    native, provider = regular_liquid(0.)
+    with pytest.raises(ValueError, match="decreasing"):
+        assess_liquid_local_curvature(native, 0., evaluator=provider, runtime=None,
+                                      python_executable=None, relative_steps=(1e-3, 1e-2))
+    provider.evaluate_liquid = lambda *args, **kwargs: {**native, "returned_component_moles": [9., 9.]}
+    with pytest.raises(ValueError, match="changed"):
+        assess_liquid_local_curvature(native, 0., evaluator=provider, runtime=None, python_executable=None)
+
+
+def test_solution_search_stays_on_supported_face_without_faking_pure_phase_coverage():
+    native = properties(.4)
+    native["component_moles"] = [2., 0.]
+    native["mu_RT"] = [-2., None]
+    native["saturation"]["candidates"][0]["oxide_mass_g"] = [1., 0.]
+    requests = []
+
+    def evaluate(t, p, n, **kwargs):
+        request = kwargs["candidate_compositions"][0]
+        row = {"phase": "AB", "native_endmember_oxide_mass_g_per_mol": np.eye(2).tolist()}
+        if "endmember_moles" in request:
+            x = np.asarray(request["endmember_moles"])
+            requests.append(x)
+            assert x[1] == 0 and x[0] == 1
+            row.update(status="ok_candidate_properties", reason=None, oxide_mass_g=x.tolist(),
+                       gibbs_J=-1.5 * COMMON_R * t)
+        return {**native, "returned_component_moles": native["component_moles"],
+                "candidate_evaluations": [row], "provenance": {"mock": True}}
+
+    result = search_competing_solutions(native, 0., evaluator=SimpleNamespace(evaluate_liquid=evaluate),
+                                       runtime=None, python_executable=None)
+    row = result["phases"][0]
+    assert row["supported_face"]["supported_endmember_indices"] == [0]
+    assert row["supported_face"]["excluded_endmember_indices"] == [1]
+    assert len(requests) == 2
+    assert not row["composition_domain_is_single_point"]
+    assert not row["composition_minimum_enumerated"]
+    assert row["status"] == "unresolved"
