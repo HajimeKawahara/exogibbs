@@ -1,0 +1,869 @@
+Running Sphinx v7.4.7
+loading translations [en]... done
+making output directory... done
+Using Sphinx-Gallery to convert rst text blocks to markdown for .ipynb files.
+generating gallery...
+generating gallery for examples... [100%] plot_exoeos_pure_fugacity.py
+
+generating gallery for examples/metal_silicate... [  3%] cns_inventory.py
+generating gallery for examples/metal_silicate... [  5%] common_gibbs.py
+generating gallery for examples/metal_silicate... [  8%] extract_reference.py
+generating gallery for examples/metal_silicate... [ 11%] extract_sulfur_reference.py
+generating gallery for examples/metal_silicate... [ 14%] full_potential.py
+generating gallery for examples/metal_silicate... [ 16%] gas_exchange.py
+generating gallery for examples/metal_silicate... [ 19%] generate_equilibrium_reference.py
+generating gallery for examples/metal_silicate... [ 22%] hydrogen.py
+generating gallery for examples/metal_silicate... [ 24%] local.py
+generating gallery for examples/metal_silicate... [ 27%] m1_boundary_validation.py
+generating gallery for examples/metal_silicate... [ 30%] m1_chemistry.py
+generating gallery for examples/metal_silicate... [ 32%] m1_thermochemical_control.py
+generating gallery for examples/metal_silicate... [ 35%] m2_atmosphere.py
+generating gallery for examples/metal_silicate... [ 38%] m2_common_gas.py
+generating gallery for examples/metal_silicate... [ 41%] m2_expanded_source.py
+generating gallery for examples/metal_silicate... [ 43%] m2_finite_gas.py
+generating gallery for examples/metal_silicate... [ 46%] m2_host_stability.py
+generating gallery for examples/metal_silicate... [ 49%] m2_janaf.py
+generating gallery for examples/metal_silicate... [ 51%] m2_omitted_gas.py
+generating gallery for examples/metal_silicate... [ 54%] m2_scenarios.py
+generating gallery for examples/metal_silicate... [ 57%] m2_stability_search.py
+generating gallery for examples/metal_silicate... [ 59%] m2_standards_audit.py
+generating gallery for examples/metal_silicate... [ 62%] melts_coupled.py
+generating gallery for examples/metal_silicate... [ 65%] native.py
+generating gallery for examples/metal_silicate... [ 68%] phase_selection.py
+generating gallery for examples/metal_silicate... [ 70%] reference.py
+generating gallery for examples/metal_silicate... [ 73%] revalidate_archive.py
+generating gallery for examples/metal_silicate... [ 76%] revalidate_melts_archive.py
+generating gallery for examples/metal_silicate... [ 78%] run_bse_common_gibbs.py
+generating gallery for examples/metal_silicate... [ 81%] run_m2_contact.py
+generating gallery for examples/metal_silicate... [ 84%] run_m2_host_stability.py
+generating gallery for examples/metal_silicate... [ 86%] run_m2_omitted_gas.py
+generating gallery for examples/metal_silicate... [ 89%] run_melts_reference.py
+generating gallery for examples/metal_silicate... [ 92%] run_metal_selection.py
+generating gallery for examples/metal_silicate... [ 95%] source.py
+generating gallery for examples/metal_silicate... [ 97%] sulfide.py
+generating gallery for examples/metal_silicate... [100%] sulfur_source.py
+
+computation time summary:
+    - ../examples/plot_exoeos_pure_fugacity.py:                       59.06 sec   0.0 MB
+    - ../examples/metal_silicate/cns_inventory.py:                     0.00 sec   0.0 MB
+    - ../examples/metal_silicate/common_gibbs.py:                      0.00 sec   0.0 MB
+    - ../examples/metal_silicate/extract_reference.py:                 0.00 sec   0.0 MB
+    - ../examples/metal_silicate/extract_sulfur_reference.py:          0.00 sec   0.0 MB
+    - ../examples/metal_silicate/full_potential.py:                    0.00 sec   0.0 MB
+    - ../examples/metal_silicate/gas_exchange.py:                      0.00 sec   0.0 MB
+    - ../examples/metal_silicate/generate_equilibrium_reference.py:    0.00 sec   0.0 MB
+    - ../examples/metal_silicate/hydrogen.py:                          0.00 sec   0.0 MB
+    - ../examples/metal_silicate/local.py:                             0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m1_boundary_validation.py:            0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m1_chemistry.py:                      0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m1_thermochemical_control.py:         0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_atmosphere.py:                     0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_common_gas.py:                     0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_expanded_source.py:                0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_finite_gas.py:                     0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_host_stability.py:                 0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_janaf.py:                          0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_omitted_gas.py:                    0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_scenarios.py:                      0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_stability_search.py:               0.00 sec   0.0 MB
+    - ../examples/metal_silicate/m2_standards_audit.py:                0.00 sec   0.0 MB
+    - ../examples/metal_silicate/melts_coupled.py:                     0.00 sec   0.0 MB
+    - ../examples/metal_silicate/native.py:                            0.00 sec   0.0 MB
+    - ../examples/metal_silicate/phase_selection.py:                   0.00 sec   0.0 MB
+    - ../examples/metal_silicate/reference.py:                         0.00 sec   0.0 MB
+    - ../examples/metal_silicate/revalidate_archive.py:                0.00 sec   0.0 MB
+    - ../examples/metal_silicate/revalidate_melts_archive.py:          0.00 sec   0.0 MB
+    - ../examples/metal_silicate/run_bse_common_gibbs.py:              0.00 sec   0.0 MB
+    - ../examples/metal_silicate/run_m2_contact.py:                    0.00 sec   0.0 MB
+    - ../examples/metal_silicate/run_m2_host_stability.py:             0.00 sec   0.0 MB
+    - ../examples/metal_silicate/run_m2_omitted_gas.py:                0.00 sec   0.0 MB
+    - ../examples/metal_silicate/run_melts_reference.py:               0.00 sec   0.0 MB
+    - ../examples/metal_silicate/run_metal_selection.py:               0.00 sec   0.0 MB
+    - ../examples/metal_silicate/source.py:                            0.00 sec   0.0 MB
+    - ../examples/metal_silicate/sulfide.py:                           0.00 sec   0.0 MB
+    - ../examples/metal_silicate/sulfur_source.py:                     0.00 sec   0.0 MB
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.api.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.applications.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.applications.magma_gas.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.applications.magma_gas.models.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.applications.magma_gas.models.meltyq.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.condensates.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.equilibrium.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.equilibrium.condensate.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.equilibrium.condensate.fixed_support.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.equilibrium.gas.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.equilibrium.gas.grid.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.equilibrium.gas.kernel.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.experimental.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.experimental.magma_gas.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.interop.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.io.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.math.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.optimize.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.optimize.fixed_support_v2.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.presets.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.solubility.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.test.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.thermo.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/exogibbs.utils.rst.
+Creating file /tmp/stage2-finite-transfer-20260927/documents/exogibbs/index.rst.
+building [mo]: all of 0 po files
+writing output... 
+building [html]: all source files
+updating environment: [new config] 95 added, 0 changed, 0 removed
+reading sources... [  1%] cns_inventory
+reading sources... [  2%] comparison_example_lineage
+reading sources... [  3%] condensate_profile
+reading sources... [  4%] equilibrium_solvers
+reading sources... [  5%] examples/index
+reading sources... [  6%] examples/metal_silicate/cns_inventory
+reading sources... [  7%] examples/metal_silicate/common_gibbs
+reading sources... [  8%] examples/metal_silicate/extract_reference
+reading sources... [  9%] examples/metal_silicate/extract_sulfur_reference
+reading sources... [ 11%] examples/metal_silicate/full_potential
+reading sources... [ 12%] examples/metal_silicate/gas_exchange
+reading sources... [ 13%] examples/metal_silicate/generate_equilibrium_reference
+reading sources... [ 14%] examples/metal_silicate/hydrogen
+reading sources... [ 15%] examples/metal_silicate/index
+reading sources... [ 16%] examples/metal_silicate/local
+reading sources... [ 17%] examples/metal_silicate/m1_boundary_validation
+reading sources... [ 18%] examples/metal_silicate/m1_chemistry
+reading sources... [ 19%] examples/metal_silicate/m1_thermochemical_control
+reading sources... [ 20%] examples/metal_silicate/m2_atmosphere
+reading sources... [ 21%] examples/metal_silicate/m2_common_gas
+reading sources... [ 22%] examples/metal_silicate/m2_expanded_source
+reading sources... [ 23%] examples/metal_silicate/m2_finite_gas
+reading sources... [ 24%] examples/metal_silicate/m2_host_stability
+reading sources... [ 25%] examples/metal_silicate/m2_janaf
+reading sources... [ 26%] examples/metal_silicate/m2_omitted_gas
+reading sources... [ 27%] examples/metal_silicate/m2_scenarios
+reading sources... [ 28%] examples/metal_silicate/m2_stability_search
+reading sources... [ 29%] examples/metal_silicate/m2_standards_audit
+reading sources... [ 31%] examples/metal_silicate/melts_coupled
+reading sources... [ 32%] examples/metal_silicate/native
+reading sources... [ 33%] examples/metal_silicate/phase_selection
+reading sources... [ 34%] examples/metal_silicate/reference
+reading sources... [ 35%] examples/metal_silicate/revalidate_archive
+reading sources... [ 36%] examples/metal_silicate/revalidate_melts_archive
+reading sources... [ 37%] examples/metal_silicate/run_bse_common_gibbs
+reading sources... [ 38%] examples/metal_silicate/run_m2_contact
+reading sources... [ 39%] examples/metal_silicate/run_m2_host_stability
+reading sources... [ 40%] examples/metal_silicate/run_m2_omitted_gas
+reading sources... [ 41%] examples/metal_silicate/run_melts_reference
+reading sources... [ 42%] examples/metal_silicate/run_metal_selection
+reading sources... [ 43%] examples/metal_silicate/sg_execution_times
+reading sources... [ 44%] examples/metal_silicate/source
+reading sources... [ 45%] examples/metal_silicate/sulfide
+reading sources... [ 46%] examples/metal_silicate/sulfur_source
+reading sources... [ 47%] examples/plot_exoeos_pure_fugacity
+reading sources... [ 48%] examples/sg_execution_times
+reading sources... [ 49%] exogibbs/exogibbs
+reading sources... [ 51%] exogibbs/exogibbs.api
+reading sources... [ 52%] exogibbs/exogibbs.applications
+reading sources... [ 53%] exogibbs/exogibbs.applications.magma_gas
+reading sources... [ 54%] exogibbs/exogibbs.applications.magma_gas.models
+reading sources... [ 55%] exogibbs/exogibbs.applications.magma_gas.models.meltyq
+reading sources... [ 56%] exogibbs/exogibbs.condensates
+reading sources... [ 57%] exogibbs/exogibbs.equilibrium
+reading sources... [ 58%] exogibbs/exogibbs.equilibrium.condensate
+reading sources... [ 59%] exogibbs/exogibbs.equilibrium.condensate.fixed_support
+reading sources... [ 60%] exogibbs/exogibbs.equilibrium.gas
+reading sources... [ 61%] exogibbs/exogibbs.equilibrium.gas.grid
+reading sources... [ 62%] exogibbs/exogibbs.equilibrium.gas.kernel
+reading sources... [ 63%] exogibbs/exogibbs.experimental
+reading sources... [ 64%] exogibbs/exogibbs.experimental.magma_gas
+reading sources... [ 65%] exogibbs/exogibbs.interop
+reading sources... [ 66%] exogibbs/exogibbs.io
+reading sources... [ 67%] exogibbs/exogibbs.math
+reading sources... [ 68%] exogibbs/exogibbs.optimize
+reading sources... [ 69%] exogibbs/exogibbs.optimize.fixed_support_v2
+reading sources... [ 71%] exogibbs/exogibbs.presets
+reading sources... [ 72%] exogibbs/exogibbs.solubility
+reading sources... [ 73%] exogibbs/exogibbs.test
+reading sources... [ 74%] exogibbs/exogibbs.thermo
+reading sources... [ 75%] exogibbs/exogibbs.utils
+reading sources... [ 76%] exogibbs/index
+reading sources... [ 77%] fastchem4_production_comparison
+reading sources... [ 78%] fe_fes_rainout_demo
+reading sources... [ 79%] index
+reading sources... [ 80%] ipynb/exojax_nuts_condensate_fixed_support
+reading sources... [ 81%] ipynb/exojax_nuts_condensate_grid
+reading sources... [ 82%] ipynb/exojax_nuts_gas_grid
+reading sources... [ 83%] ipynb/exojax_nuts_gas_no_grid
+reading sources... [ 84%] ito_2025_rainout_comparison
+reading sources... [ 85%] magma_gas_interface
+reading sources... [ 86%] metal_silicate_reference
+reading sources... [ 87%] presets/fastchem
+reading sources... [ 88%] presets/fastchem4
+reading sources... [ 89%] presets/ykb4
+reading sources... [ 91%] rocky_raccoon_trace_mg
+reading sources... [ 92%] sg_execution_times
+reading sources... [ 93%] solubility
+reading sources... [ 94%] subneptune_hydrogen
+reading sources... [ 95%] subneptune_melts
+reading sources... [ 96%] subneptune_sulfide
+reading sources... [ 97%] subneptune_sulfur
+reading sources... [ 98%] v0_4_fastchem4_validation_demo
+reading sources... [ 99%] visscher_2006_na2s_morley_2012_kcl
+reading sources... [100%] visscher_2010_forsterite_enstatite_competition
+
+/tmp/stage2-finite-transfer-20260927/documents/cns_inventory.rst:2: WARNING: Title underline too short.
+
+Finite C, S and N on the source hosts
+===================================
+/tmp/stage2-finite-transfer-20260927/documents/cns_inventory.rst:49: WARNING: Title underline too short.
+
+Physical scope and provider handoff
+----------------------------------
+/tmp/stage2-finite-transfer-20260927/documents/cns_inventory.rst:49: WARNING: Title underline too short.
+
+Physical scope and provider handoff
+----------------------------------
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/setup.py:docstring of exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInit:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInit, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitRequest:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitRequest, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitializer:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitializer, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumOptions:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumOptions, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumPoint:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumPoint, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumProfileResult:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumProfileResult, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumResult:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumResult, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/initialization.py:docstring of exogibbs.equilibrium.condensate.initialization.DefaultCondensateEquilibriumInitializer:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.initialization.DefaultCondensateEquilibriumInitializer, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/initialization.py:docstring of exogibbs.equilibrium.condensate.initialization.FixedSupportCondensateEquilibriumGrid:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.initialization.FixedSupportCondensateEquilibriumGrid, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/initialization.py:docstring of exogibbs.equilibrium.condensate.initialization.GridCondensateEquilibriumInitializer:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.initialization.GridCondensateEquilibriumInitializer, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/initialization.py:docstring of exogibbs.equilibrium.gas.initialization.DefaultEquilibriumInitializer:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.initialization.DefaultEquilibriumInitializer, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/types.py:docstring of exogibbs.equilibrium.gas.types.EquilibriumInit:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.types.EquilibriumInit, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/types.py:docstring of exogibbs.equilibrium.gas.types.EquilibriumInitRequest:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.types.EquilibriumInitRequest, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/types.py:docstring of exogibbs.equilibrium.gas.types.EquilibriumInitializer:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.types.EquilibriumInitializer, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/types.py:docstring of exogibbs.equilibrium.gas.types.EquilibriumOptions:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.types.EquilibriumOptions, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/types.py:docstring of exogibbs.equilibrium.gas.types.EquilibriumResult:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.types.EquilibriumResult, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/initialization.py:docstring of exogibbs.equilibrium.gas.grid.initialization.GridEquilibriumInitializer:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.initialization.GridEquilibriumInitializer, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/initialization.py:docstring of exogibbs.equilibrium.gas.initialization.LearnedEquilibriumInitializer:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.initialization.LearnedEquilibriumInitializer, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/thermo/models.py:docstring of exogibbs.thermo.models.ChemicalSetup:1: WARNING: duplicate object description of exogibbs.thermo.models.ChemicalSetup, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/setup.py:docstring of exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumOptions:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumOptions, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumResult:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumResult, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGrid:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGridInterpolationOptions:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGridInterpolationOptions, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGridInterpolationResult:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGridInterpolationResult, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGridMetadata:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGridMetadata, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGridOutputs:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGridOutputs, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/types.py:docstring of exogibbs.equilibrium.gas.types.EquilibriumInit:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.types.EquilibriumInit, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/types.py:docstring of exogibbs.equilibrium.gas.types.EquilibriumOptions:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.types.EquilibriumOptions, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/types.py:docstring of exogibbs.equilibrium.gas.types.EquilibriumResult:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.types.EquilibriumResult, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/types.py:docstring of exogibbs.equilibrium.gas.types.ThermoState:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.types.ThermoState, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/jax/__init__.py:docstring of jax._src.numpy.array_methods._view:21: ERROR: Unknown target name: "jnp.bool".
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/applications/magma_gas/__init__.py:docstring of exogibbs.applications.magma_gas.solve.solve:1: WARNING: duplicate object description of exogibbs.applications.magma_gas.solve, other instance in exogibbs/exogibbs.applications.magma_gas, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.ExperimentalCondensateProfileFixedSupportBatchPlan:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.ExperimentalCondensateProfileFixedSupportBatchPlan, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInit:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInit, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitRequest:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitRequest, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitializer:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitializer, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumOptions:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumOptions, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumPoint:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumPoint, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumProfileResult:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumProfileResult, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.CondensateEquilibriumResult:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.CondensateEquilibriumResult, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/types.py:docstring of exogibbs.equilibrium.condensate.types.ExperimentalCondensateProfileFixedSupportBatchPlan:1: WARNING: duplicate object description of exogibbs.equilibrium.condensate.types.ExperimentalCondensateProfileFixedSupportBatchPlan, other instance in exogibbs/exogibbs.equilibrium.condensate, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGrid:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGridInterpolationOptions:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGridInterpolationOptions, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGridInterpolationResult:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGridInterpolationResult, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGridMetadata:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGridMetadata, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/types.py:docstring of exogibbs.equilibrium.gas.grid.types.EquilibriumGridOutputs:1: WARNING: duplicate object description of exogibbs.equilibrium.gas.grid.types.EquilibriumGridOutputs, other instance in exogibbs/exogibbs.api, use :no-index: for one of them
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/functools.py:docstring of functools.partial:1: WARNING: Inline emphasis start-string without end-string.
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/functools.py:docstring of functools.partial:1: WARNING: Inline strong start-string without end-string.
+/tmp/stage2-finite-transfer-20260927/documents/metal_silicate_reference.rst:381: WARNING: Title underline too short.
+
+Milestone 1 source-to-upper chemistry
+------------------------------------
+/tmp/stage2-finite-transfer-20260927/documents/metal_silicate_reference.rst:381: WARNING: Title underline too short.
+
+Milestone 1 source-to-upper chemistry
+------------------------------------
+looking for now-outdated files... none found
+pickling environment... WARNING: cannot cache unpickable configuration value: 'sphinx_gallery_conf' (because it contains a function, class, or module object)
+done
+checking consistency... done
+preparing documents... done
+copying assets... 
+copying downloadable files... [  1%] ../examples/comparisons/comparison_with_fastchem4_gas.py
+copying downloadable files... [  1%] ../examples/comparisons/comparison_with_fastchem4_condensates.py
+copying downloadable files... [  2%] ../examples/comparisons/comparison_with_fastchem_initializer.py
+copying downloadable files... [  3%] ../examples/comparisons/comparison_with_hsystem.py
+copying downloadable files... [  4%] ../examples/comparisons/comparison_with_hcosystem.py
+copying downloadable files... [  4%] ../examples/comparisons/comparison_with_ykcode.py
+copying downloadable files... [  5%] ../examples/data/p10.txt
+copying downloadable files... [  6%] ../examples/data/README.md
+copying downloadable files... [  7%] examples/examples_python.zip
+copying downloadable files... [  7%] examples/examples_jupyter.zip
+copying downloadable files... [  8%] examples/metal_silicate/cns_inventory.ipynb
+copying downloadable files... [  9%] examples/metal_silicate/cns_inventory.py
+copying downloadable files... [ 10%] examples/metal_silicate/cns_inventory.zip
+copying downloadable files... [ 10%] examples/metal_silicate/common_gibbs.ipynb
+copying downloadable files... [ 11%] examples/metal_silicate/common_gibbs.py
+copying downloadable files... [ 12%] examples/metal_silicate/common_gibbs.zip
+copying downloadable files... [ 13%] examples/metal_silicate/extract_reference.ipynb
+copying downloadable files... [ 13%] examples/metal_silicate/extract_reference.py
+copying downloadable files... [ 14%] examples/metal_silicate/extract_reference.zip
+copying downloadable files... [ 15%] examples/metal_silicate/extract_sulfur_reference.ipynb
+copying downloadable files... [ 16%] examples/metal_silicate/extract_sulfur_reference.py
+copying downloadable files... [ 16%] examples/metal_silicate/extract_sulfur_reference.zip
+copying downloadable files... [ 17%] examples/metal_silicate/full_potential.ipynb
+copying downloadable files... [ 18%] examples/metal_silicate/full_potential.py
+copying downloadable files... [ 19%] examples/metal_silicate/full_potential.zip
+copying downloadable files... [ 19%] examples/metal_silicate/gas_exchange.ipynb
+copying downloadable files... [ 20%] examples/metal_silicate/gas_exchange.py
+copying downloadable files... [ 21%] examples/metal_silicate/gas_exchange.zip
+copying downloadable files... [ 21%] examples/metal_silicate/generate_equilibrium_reference.ipynb
+copying downloadable files... [ 22%] examples/metal_silicate/generate_equilibrium_reference.py
+copying downloadable files... [ 23%] examples/metal_silicate/generate_equilibrium_reference.zip
+copying downloadable files... [ 24%] examples/metal_silicate/hydrogen.ipynb
+copying downloadable files... [ 24%] examples/metal_silicate/hydrogen.py
+copying downloadable files... [ 25%] examples/metal_silicate/hydrogen.zip
+copying downloadable files... [ 26%] examples/metal_silicate/local.ipynb
+copying downloadable files... [ 27%] examples/metal_silicate/local.py
+copying downloadable files... [ 27%] examples/metal_silicate/local.zip
+copying downloadable files... [ 28%] examples/metal_silicate/m1_boundary_validation.ipynb
+copying downloadable files... [ 29%] examples/metal_silicate/m1_boundary_validation.py
+copying downloadable files... [ 30%] examples/metal_silicate/m1_boundary_validation.zip
+copying downloadable files... [ 30%] examples/metal_silicate/m1_chemistry.ipynb
+copying downloadable files... [ 31%] examples/metal_silicate/m1_chemistry.py
+copying downloadable files... [ 32%] examples/metal_silicate/m1_chemistry.zip
+copying downloadable files... [ 33%] examples/metal_silicate/m1_thermochemical_control.ipynb
+copying downloadable files... [ 33%] examples/metal_silicate/m1_thermochemical_control.py
+copying downloadable files... [ 34%] examples/metal_silicate/m1_thermochemical_control.zip
+copying downloadable files... [ 35%] examples/metal_silicate/m2_atmosphere.ipynb
+copying downloadable files... [ 36%] examples/metal_silicate/m2_atmosphere.py
+copying downloadable files... [ 36%] examples/metal_silicate/m2_atmosphere.zip
+copying downloadable files... [ 37%] examples/metal_silicate/m2_common_gas.ipynb
+copying downloadable files... [ 38%] examples/metal_silicate/m2_common_gas.py
+copying downloadable files... [ 39%] examples/metal_silicate/m2_common_gas.zip
+copying downloadable files... [ 39%] examples/metal_silicate/m2_expanded_source.ipynb
+copying downloadable files... [ 40%] examples/metal_silicate/m2_expanded_source.py
+copying downloadable files... [ 41%] examples/metal_silicate/m2_expanded_source.zip
+copying downloadable files... [ 41%] examples/metal_silicate/m2_finite_gas.ipynb
+copying downloadable files... [ 42%] examples/metal_silicate/m2_finite_gas.py
+copying downloadable files... [ 43%] examples/metal_silicate/m2_finite_gas.zip
+copying downloadable files... [ 44%] examples/metal_silicate/m2_host_stability.ipynb
+copying downloadable files... [ 44%] examples/metal_silicate/m2_host_stability.py
+copying downloadable files... [ 45%] examples/metal_silicate/m2_host_stability.zip
+copying downloadable files... [ 46%] examples/metal_silicate/m2_janaf.ipynb
+copying downloadable files... [ 47%] examples/metal_silicate/m2_janaf.py
+copying downloadable files... [ 47%] examples/metal_silicate/m2_janaf.zip
+copying downloadable files... [ 48%] examples/metal_silicate/m2_omitted_gas.ipynb
+copying downloadable files... [ 49%] examples/metal_silicate/m2_omitted_gas.py
+copying downloadable files... [ 50%] examples/metal_silicate/m2_omitted_gas.zip
+copying downloadable files... [ 50%] examples/metal_silicate/m2_scenarios.ipynb
+copying downloadable files... [ 51%] examples/metal_silicate/m2_scenarios.py
+copying downloadable files... [ 52%] examples/metal_silicate/m2_scenarios.zip
+copying downloadable files... [ 53%] examples/metal_silicate/m2_stability_search.ipynb
+copying downloadable files... [ 53%] examples/metal_silicate/m2_stability_search.py
+copying downloadable files... [ 54%] examples/metal_silicate/m2_stability_search.zip
+copying downloadable files... [ 55%] examples/metal_silicate/m2_standards_audit.ipynb
+copying downloadable files... [ 56%] examples/metal_silicate/m2_standards_audit.py
+copying downloadable files... [ 56%] examples/metal_silicate/m2_standards_audit.zip
+copying downloadable files... [ 57%] examples/metal_silicate/melts_coupled.ipynb
+copying downloadable files... [ 58%] examples/metal_silicate/melts_coupled.py
+copying downloadable files... [ 59%] examples/metal_silicate/melts_coupled.zip
+copying downloadable files... [ 59%] examples/metal_silicate/native.ipynb
+copying downloadable files... [ 60%] examples/metal_silicate/native.py
+copying downloadable files... [ 61%] examples/metal_silicate/native.zip
+copying downloadable files... [ 61%] examples/metal_silicate/phase_selection.ipynb
+copying downloadable files... [ 62%] examples/metal_silicate/phase_selection.py
+copying downloadable files... [ 63%] examples/metal_silicate/phase_selection.zip
+copying downloadable files... [ 64%] examples/metal_silicate/reference.ipynb
+copying downloadable files... [ 64%] examples/metal_silicate/reference.py
+copying downloadable files... [ 65%] examples/metal_silicate/reference.zip
+copying downloadable files... [ 66%] examples/metal_silicate/revalidate_archive.ipynb
+copying downloadable files... [ 67%] examples/metal_silicate/revalidate_archive.py
+copying downloadable files... [ 67%] examples/metal_silicate/revalidate_archive.zip
+copying downloadable files... [ 68%] examples/metal_silicate/revalidate_melts_archive.ipynb
+copying downloadable files... [ 69%] examples/metal_silicate/revalidate_melts_archive.py
+copying downloadable files... [ 70%] examples/metal_silicate/revalidate_melts_archive.zip
+copying downloadable files... [ 70%] examples/metal_silicate/run_bse_common_gibbs.ipynb
+copying downloadable files... [ 71%] examples/metal_silicate/run_bse_common_gibbs.py
+copying downloadable files... [ 72%] examples/metal_silicate/run_bse_common_gibbs.zip
+copying downloadable files... [ 73%] examples/metal_silicate/run_m2_contact.ipynb
+copying downloadable files... [ 73%] examples/metal_silicate/run_m2_contact.py
+copying downloadable files... [ 74%] examples/metal_silicate/run_m2_contact.zip
+copying downloadable files... [ 75%] examples/metal_silicate/run_m2_host_stability.ipynb
+copying downloadable files... [ 76%] examples/metal_silicate/run_m2_host_stability.py
+copying downloadable files... [ 76%] examples/metal_silicate/run_m2_host_stability.zip
+copying downloadable files... [ 77%] examples/metal_silicate/run_m2_omitted_gas.ipynb
+copying downloadable files... [ 78%] examples/metal_silicate/run_m2_omitted_gas.py
+copying downloadable files... [ 79%] examples/metal_silicate/run_m2_omitted_gas.zip
+copying downloadable files... [ 79%] examples/metal_silicate/run_melts_reference.ipynb
+copying downloadable files... [ 80%] examples/metal_silicate/run_melts_reference.py
+copying downloadable files... [ 81%] examples/metal_silicate/run_melts_reference.zip
+copying downloadable files... [ 81%] examples/metal_silicate/run_metal_selection.ipynb
+copying downloadable files... [ 82%] examples/metal_silicate/run_metal_selection.py
+copying downloadable files... [ 83%] examples/metal_silicate/run_metal_selection.zip
+copying downloadable files... [ 84%] examples/metal_silicate/source.ipynb
+copying downloadable files... [ 84%] examples/metal_silicate/source.py
+copying downloadable files... [ 85%] examples/metal_silicate/source.zip
+copying downloadable files... [ 86%] examples/metal_silicate/sulfide.ipynb
+copying downloadable files... [ 87%] examples/metal_silicate/sulfide.py
+copying downloadable files... [ 87%] examples/metal_silicate/sulfide.zip
+copying downloadable files... [ 88%] examples/metal_silicate/sulfur_source.ipynb
+copying downloadable files... [ 89%] examples/metal_silicate/sulfur_source.py
+copying downloadable files... [ 90%] examples/metal_silicate/sulfur_source.zip
+copying downloadable files... [ 90%] examples/plot_exoeos_pure_fugacity.ipynb
+copying downloadable files... [ 91%] examples/plot_exoeos_pure_fugacity.py
+copying downloadable files... [ 92%] examples/plot_exoeos_pure_fugacity.zip
+copying downloadable files... [ 93%] ../examples/comparisons/demo_fe_fes_rainout.py
+copying downloadable files... [ 93%] ../examples/comparisons/comparison_with_ito_2025_rainout.py
+copying downloadable files... [ 94%] ../examples/comparisons/comparison_with_ito_2025.py
+copying downloadable files... [ 95%] ../external_data/Ito_2025.xlsx
+copying downloadable files... [ 96%] ../examples/metal_silicate/m1_chemistry.md
+copying downloadable files... [ 96%] ../examples/comparisons/demo_rocky_raccoon_trace_mg.py
+copying downloadable files... [ 97%] ../examples/metal_silicate/COMMON_GIBBS.md
+copying downloadable files... [ 98%] ../examples/metal_silicate/m2_common_gas.md
+copying downloadable files... [ 99%] ../examples/metal_silicate/m2_phase_selection.md
+copying downloadable files... [ 99%] ../examples/comparisons/comparison_with_visscher_2006_na2s_morley_2012_kcl.py
+copying downloadable files... [100%] ../examples/comparisons/comparison_with_visscher_2010_forsterite_enstatite.py
+
+copying static files... done
+copying extra files... done
+copying assets: done
+writing output... [  1%] cns_inventory
+writing output... [  2%] comparison_example_lineage
+writing output... [  3%] condensate_profile
+writing output... [  4%] equilibrium_solvers
+writing output... [  5%] examples/index
+writing output... [  6%] examples/metal_silicate/cns_inventory
+writing output... [  7%] examples/metal_silicate/common_gibbs
+writing output... [  8%] examples/metal_silicate/extract_reference
+writing output... [  9%] examples/metal_silicate/extract_sulfur_reference
+writing output... [ 11%] examples/metal_silicate/full_potential
+writing output... [ 12%] examples/metal_silicate/gas_exchange
+writing output... [ 13%] examples/metal_silicate/generate_equilibrium_reference
+writing output... [ 14%] examples/metal_silicate/hydrogen
+writing output... [ 15%] examples/metal_silicate/index
+writing output... [ 16%] examples/metal_silicate/local
+writing output... [ 17%] examples/metal_silicate/m1_boundary_validation
+writing output... [ 18%] examples/metal_silicate/m1_chemistry
+writing output... [ 19%] examples/metal_silicate/m1_thermochemical_control
+writing output... [ 20%] examples/metal_silicate/m2_atmosphere
+writing output... [ 21%] examples/metal_silicate/m2_common_gas
+writing output... [ 22%] examples/metal_silicate/m2_expanded_source
+writing output... [ 23%] examples/metal_silicate/m2_finite_gas
+writing output... [ 24%] examples/metal_silicate/m2_host_stability
+writing output... [ 25%] examples/metal_silicate/m2_janaf
+writing output... [ 26%] examples/metal_silicate/m2_omitted_gas
+writing output... [ 27%] examples/metal_silicate/m2_scenarios
+writing output... [ 28%] examples/metal_silicate/m2_stability_search
+writing output... [ 29%] examples/metal_silicate/m2_standards_audit
+writing output... [ 31%] examples/metal_silicate/melts_coupled
+writing output... [ 32%] examples/metal_silicate/native
+writing output... [ 33%] examples/metal_silicate/phase_selection
+writing output... [ 34%] examples/metal_silicate/reference
+writing output... [ 35%] examples/metal_silicate/revalidate_archive
+writing output... [ 36%] examples/metal_silicate/revalidate_melts_archive
+writing output... [ 37%] examples/metal_silicate/run_bse_common_gibbs
+writing output... [ 38%] examples/metal_silicate/run_m2_contact
+writing output... [ 39%] examples/metal_silicate/run_m2_host_stability
+writing output... [ 40%] examples/metal_silicate/run_m2_omitted_gas
+writing output... [ 41%] examples/metal_silicate/run_melts_reference
+writing output... [ 42%] examples/metal_silicate/run_metal_selection
+writing output... [ 43%] examples/metal_silicate/sg_execution_times
+writing output... [ 44%] examples/metal_silicate/source
+writing output... [ 45%] examples/metal_silicate/sulfide
+writing output... [ 46%] examples/metal_silicate/sulfur_source
+writing output... [ 47%] examples/plot_exoeos_pure_fugacity
+writing output... [ 48%] examples/sg_execution_times
+writing output... [ 49%] exogibbs/exogibbs
+writing output... [ 51%] exogibbs/exogibbs.api
+writing output... [ 52%] exogibbs/exogibbs.applications
+writing output... [ 53%] exogibbs/exogibbs.applications.magma_gas
+writing output... [ 54%] exogibbs/exogibbs.applications.magma_gas.models
+writing output... [ 55%] exogibbs/exogibbs.applications.magma_gas.models.meltyq
+writing output... [ 56%] exogibbs/exogibbs.condensates
+writing output... [ 57%] exogibbs/exogibbs.equilibrium
+writing output... [ 58%] exogibbs/exogibbs.equilibrium.condensate
+writing output... [ 59%] exogibbs/exogibbs.equilibrium.condensate.fixed_support
+writing output... [ 60%] exogibbs/exogibbs.equilibrium.gas
+writing output... [ 61%] exogibbs/exogibbs.equilibrium.gas.grid
+writing output... [ 62%] exogibbs/exogibbs.equilibrium.gas.kernel
+writing output... [ 63%] exogibbs/exogibbs.experimental
+writing output... [ 64%] exogibbs/exogibbs.experimental.magma_gas
+writing output... [ 65%] exogibbs/exogibbs.interop
+writing output... [ 66%] exogibbs/exogibbs.io
+writing output... [ 67%] exogibbs/exogibbs.math
+writing output... [ 68%] exogibbs/exogibbs.optimize
+writing output... [ 69%] exogibbs/exogibbs.optimize.fixed_support_v2
+writing output... [ 71%] exogibbs/exogibbs.presets
+writing output... [ 72%] exogibbs/exogibbs.solubility
+writing output... [ 73%] exogibbs/exogibbs.test
+writing output... [ 74%] exogibbs/exogibbs.thermo
+writing output... [ 75%] exogibbs/exogibbs.utils
+writing output... [ 76%] exogibbs/index
+writing output... [ 77%] fastchem4_production_comparison
+writing output... [ 78%] fe_fes_rainout_demo
+writing output... [ 79%] index
+writing output... [ 80%] ipynb/exojax_nuts_condensate_fixed_support
+writing output... [ 81%] ipynb/exojax_nuts_condensate_grid
+writing output... [ 82%] ipynb/exojax_nuts_gas_grid
+writing output... [ 83%] ipynb/exojax_nuts_gas_no_grid
+writing output... [ 84%] ito_2025_rainout_comparison
+writing output... [ 85%] magma_gas_interface
+writing output... [ 86%] metal_silicate_reference
+writing output... [ 87%] presets/fastchem
+writing output... [ 88%] presets/fastchem4
+writing output... [ 89%] presets/ykb4
+writing output... [ 91%] rocky_raccoon_trace_mg
+writing output... [ 92%] sg_execution_times
+writing output... [ 93%] solubility
+writing output... [ 94%] subneptune_hydrogen
+writing output... [ 95%] subneptune_melts
+writing output... [ 96%] subneptune_sulfide
+writing output... [ 97%] subneptune_sulfur
+writing output... [ 98%] v0_4_fastchem4_validation_demo
+writing output... [ 99%] visscher_2006_na2s_morley_2012_kcl
+writing output... [100%] visscher_2010_forsterite_enstatite_competition
+
+/tmp/stage2-finite-transfer-20260927/documents/examples/index.rst:235: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m1_chemistry.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/index.rst:371: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_omitted_gas.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/index.rst:388: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_scenarios.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/index.rst:405: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_stability_search.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/index.rst:592: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_run_m2_omitted_gas.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:198: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m1_chemistry.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:334: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_omitted_gas.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:351: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_scenarios.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:368: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_stability_search.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:555: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_run_m2_omitted_gas.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/sg_execution_times.rst:65: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m1_chemistry.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/sg_execution_times.rst:89: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_omitted_gas.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/sg_execution_times.rst:92: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_scenarios.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/sg_execution_times.rst:95: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_stability_search.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/sg_execution_times.rst:128: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_run_m2_omitted_gas.py'
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m1_chemistry' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_omitted_gas' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_scenarios' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/m2_stability_search' that doesn't have a title: no link will be generated
+/tmp/stage2-finite-transfer-20260927/documents/examples/metal_silicate/index.rst:655: WARNING: toctree contains reference to document 'examples/metal_silicate/run_m2_omitted_gas' that doesn't have a title: no link will be generated
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/jax/__init__.py:docstring of jax._src.numpy.lax_numpy.copy:5: WARNING: undefined label: 'faq-data-placement'
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/initialization.py:docstring of exogibbs.equilibrium.gas.grid.initialization.GridEquilibriumInitializer:1: WARNING: more than one target found for cross-reference 'EquilibriumGrid': exogibbs.api.equilibrium_grid.EquilibriumGrid, exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, exogibbs.api.EquilibriumGrid, exogibbs.equilibrium.gas.grid.service.EquilibriumGrid, exogibbs.equilibrium.gas.grid.EquilibriumGrid
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/initialization.py:docstring of exogibbs.api.equilibrium.GridEquilibriumInitializer.grid:1: WARNING: more than one target found for cross-reference 'EquilibriumGrid': exogibbs.api.equilibrium_grid.EquilibriumGrid, exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, exogibbs.api.EquilibriumGrid, exogibbs.equilibrium.gas.grid.service.EquilibriumGrid, exogibbs.equilibrium.gas.grid.EquilibriumGrid
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/initialization.py:docstring of exogibbs.equilibrium.gas.grid.initialization.GridEquilibriumInitializer:1: WARNING: more than one target found for cross-reference 'EquilibriumGrid': exogibbs.api.equilibrium_grid.EquilibriumGrid, exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, exogibbs.api.EquilibriumGrid, exogibbs.equilibrium.gas.grid.service.EquilibriumGrid, exogibbs.equilibrium.gas.grid.EquilibriumGrid
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/initialization.py:docstring of exogibbs.api.gas.GridEquilibriumInitializer.grid:1: WARNING: more than one target found for cross-reference 'EquilibriumGrid': exogibbs.api.equilibrium_grid.EquilibriumGrid, exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, exogibbs.api.EquilibriumGrid, exogibbs.equilibrium.gas.grid.service.EquilibriumGrid, exogibbs.equilibrium.gas.grid.EquilibriumGrid
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/api/__init__.py:docstring of exogibbs.equilibrium.condensate.solve.condensate_equilibrium_profile:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumInit': exogibbs.api.condensate.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.types.CondensateEquilibriumInit, exogibbs.api.condensate_equilibrium.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumInit
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/api/__init__.py:docstring of exogibbs.equilibrium.condensate.solve.condensate_equilibrium_profile:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumInitializer': exogibbs.api.condensate.CondensateEquilibriumInitializer, exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitializer, exogibbs.api.condensate_equilibrium.CondensateEquilibriumInitializer, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumInitializer
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/api/__init__.py:docstring of exogibbs.equilibrium.condensate.solve.condensate_equilibrium_profile:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumProfileResult': exogibbs.api.condensate.CondensateEquilibriumProfileResult, exogibbs.equilibrium.condensate.types.CondensateEquilibriumProfileResult, exogibbs.api.condensate_equilibrium.CondensateEquilibriumProfileResult, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumProfileResult
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/acceptance.py:docstring of exogibbs.equilibrium.condensate.acceptance.accept_condensate_result_state:1: WARNING: more than one target found for cross-reference 'CondensateChemicalSetup': exogibbs.api.condensate.CondensateChemicalSetup, exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup, exogibbs.api.condensate_equilibrium.CondensateChemicalSetup, exogibbs.api.CondensateChemicalSetup, exogibbs.equilibrium.condensate.solve.CondensateChemicalSetup, exogibbs.equilibrium.condensate.types.CondensateChemicalSetup, exogibbs.equilibrium.condensate.CondensateChemicalSetup
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/acceptance.py:docstring of exogibbs.equilibrium.condensate.acceptance.apply_full_condensate_budget_residual_gate:1: WARNING: more than one target found for cross-reference 'CondensateChemicalSetup': exogibbs.api.condensate.CondensateChemicalSetup, exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup, exogibbs.api.condensate_equilibrium.CondensateChemicalSetup, exogibbs.api.CondensateChemicalSetup, exogibbs.equilibrium.condensate.solve.CondensateChemicalSetup, exogibbs.equilibrium.condensate.types.CondensateChemicalSetup, exogibbs.equilibrium.condensate.CondensateChemicalSetup
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/acceptance.py:docstring of exogibbs.equilibrium.condensate.acceptance.polish_gas_log_amounts_for_full_condensate_budget_gate:1: WARNING: more than one target found for cross-reference 'CondensateChemicalSetup': exogibbs.api.condensate.CondensateChemicalSetup, exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup, exogibbs.api.condensate_equilibrium.CondensateChemicalSetup, exogibbs.api.CondensateChemicalSetup, exogibbs.equilibrium.condensate.solve.CondensateChemicalSetup, exogibbs.equilibrium.condensate.types.CondensateChemicalSetup, exogibbs.equilibrium.condensate.CondensateChemicalSetup
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/lifecycle.py:docstring of exogibbs.equilibrium.condensate.lifecycle.prepare_experimental_profile_fixed_support_batch_plan:1: WARNING: more than one target found for cross-reference 'CondensateChemicalSetup': exogibbs.api.condensate.CondensateChemicalSetup, exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup, exogibbs.api.condensate_equilibrium.CondensateChemicalSetup, exogibbs.api.CondensateChemicalSetup, exogibbs.equilibrium.condensate.solve.CondensateChemicalSetup, exogibbs.equilibrium.condensate.types.CondensateChemicalSetup, exogibbs.equilibrium.condensate.CondensateChemicalSetup
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/lifecycle.py:docstring of exogibbs.equilibrium.condensate.lifecycle.prepare_experimental_profile_fixed_support_batch_plan:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumInit': exogibbs.api.condensate.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.types.CondensateEquilibriumInit, exogibbs.api.condensate_equilibrium.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumInit
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/lifecycle.py:docstring of exogibbs.equilibrium.condensate.lifecycle.prepare_experimental_profile_fixed_support_batch_plan:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumInitializer': exogibbs.api.condensate.CondensateEquilibriumInitializer, exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitializer, exogibbs.api.condensate_equilibrium.CondensateEquilibriumInitializer, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumInitializer
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/profile.py:docstring of exogibbs.equilibrium.condensate.profile.run_rainout_profile:1: WARNING: more than one target found for cross-reference 'CondensateChemicalSetup': exogibbs.api.condensate.CondensateChemicalSetup, exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup, exogibbs.api.condensate_equilibrium.CondensateChemicalSetup, exogibbs.api.CondensateChemicalSetup, exogibbs.equilibrium.condensate.solve.CondensateChemicalSetup, exogibbs.equilibrium.condensate.types.CondensateChemicalSetup, exogibbs.equilibrium.condensate.CondensateChemicalSetup
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/profile.py:docstring of exogibbs.equilibrium.condensate.profile.run_rainout_profile:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumInit': exogibbs.api.condensate.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.types.CondensateEquilibriumInit, exogibbs.api.condensate_equilibrium.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumInit
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/profile.py:docstring of exogibbs.equilibrium.condensate.profile.run_rainout_profile:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumInitializer': exogibbs.api.condensate.CondensateEquilibriumInitializer, exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitializer, exogibbs.api.condensate_equilibrium.CondensateEquilibriumInitializer, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumInitializer
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/profile.py:docstring of exogibbs.equilibrium.condensate.profile.run_rainout_profile:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumOptions': exogibbs.api.condensate.CondensateEquilibriumOptions, exogibbs.equilibrium.condensate.types.CondensateEquilibriumOptions, exogibbs.api.condensate_equilibrium.CondensateEquilibriumOptions, exogibbs.api.CondensateEquilibriumOptions, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumOptions
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/profile.py:docstring of exogibbs.equilibrium.condensate.profile.run_rainout_profile:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumProfileResult': exogibbs.api.condensate.CondensateEquilibriumProfileResult, exogibbs.equilibrium.condensate.types.CondensateEquilibriumProfileResult, exogibbs.api.condensate_equilibrium.CondensateEquilibriumProfileResult, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumProfileResult
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/support.py:docstring of exogibbs.equilibrium.condensate.support.support_payload_from_condensate_init:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumInit': exogibbs.api.condensate.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.types.CondensateEquilibriumInit, exogibbs.api.condensate_equilibrium.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumInit
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/support.py:docstring of exogibbs.equilibrium.condensate.support.support_payload_from_condensate_init:1: WARNING: more than one target found for cross-reference 'CondensateChemicalSetup': exogibbs.api.condensate.CondensateChemicalSetup, exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup, exogibbs.api.condensate_equilibrium.CondensateChemicalSetup, exogibbs.api.CondensateChemicalSetup, exogibbs.equilibrium.condensate.solve.CondensateChemicalSetup, exogibbs.equilibrium.condensate.types.CondensateChemicalSetup, exogibbs.equilibrium.condensate.CondensateChemicalSetup
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/fixed_support/batch.py:docstring of exogibbs.equilibrium.condensate.fixed_support.batch.FixedSupportV2BucketResult:1: WARNING: more than one target found for cross-reference 'ContinuationState': exogibbs.equilibrium.condensate.fixed_support.types.ContinuationState, exogibbs.optimize.fixed_support_v2_profile.ContinuationState, exogibbs.optimize.fixed_support_v2.types.ContinuationState
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/fixed_support/batch.py:docstring of exogibbs.equilibrium.condensate.fixed_support.batch.FixedSupportV2BucketResult:1: WARNING: more than one target found for cross-reference 'KKTComponentNorms': exogibbs.equilibrium.condensate.fixed_support.types.KKTComponentNorms, exogibbs.optimize.fixed_support_v2_profile.KKTComponentNorms, exogibbs.optimize.fixed_support_v2.types.KKTComponentNorms
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/fixed_support/batch.py:docstring of exogibbs.equilibrium.condensate.fixed_support.batch.FixedSupportV2ProductionBucketResult:1: WARNING: more than one target found for cross-reference 'OriginalState': exogibbs.equilibrium.condensate.fixed_support.types.OriginalState, exogibbs.optimize.fixed_support_v2_profile.OriginalState, exogibbs.optimize.fixed_support_v2.types.OriginalState
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/fixed_support/batch.py:docstring of exogibbs.equilibrium.condensate.fixed_support.batch.FixedSupportV2ProductionBucketResult:1: WARNING: more than one target found for cross-reference 'KKTComponentNorms': exogibbs.equilibrium.condensate.fixed_support.types.KKTComponentNorms, exogibbs.optimize.fixed_support_v2_profile.KKTComponentNorms, exogibbs.optimize.fixed_support_v2.types.KKTComponentNorms
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/initialization.py:docstring of exogibbs.equilibrium.gas.grid.initialization.GridEquilibriumInitializer:1: WARNING: more than one target found for cross-reference 'EquilibriumGrid': exogibbs.api.equilibrium_grid.EquilibriumGrid, exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, exogibbs.api.EquilibriumGrid, exogibbs.equilibrium.gas.grid.service.EquilibriumGrid, exogibbs.equilibrium.gas.grid.EquilibriumGrid
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/initialization.py:docstring of exogibbs.equilibrium.gas.grid.initialization.GridEquilibriumInitializer.grid:1: WARNING: more than one target found for cross-reference 'EquilibriumGrid': exogibbs.api.equilibrium_grid.EquilibriumGrid, exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, exogibbs.api.EquilibriumGrid, exogibbs.equilibrium.gas.grid.service.EquilibriumGrid, exogibbs.equilibrium.gas.grid.EquilibriumGrid
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/storage.py:docstring of exogibbs.equilibrium.gas.grid.storage.equilibrium_grid_from_dataset:1: WARNING: more than one target found for cross-reference 'EquilibriumGrid': exogibbs.api.equilibrium_grid.EquilibriumGrid, exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, exogibbs.api.EquilibriumGrid, exogibbs.equilibrium.gas.grid.service.EquilibriumGrid, exogibbs.equilibrium.gas.grid.EquilibriumGrid
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/gas/grid/storage.py:docstring of exogibbs.equilibrium.gas.grid.storage.equilibrium_grid_to_dataset:1: WARNING: more than one target found for cross-reference 'EquilibriumGrid': exogibbs.api.equilibrium_grid.EquilibriumGrid, exogibbs.equilibrium.gas.grid.types.EquilibriumGrid, exogibbs.api.EquilibriumGrid, exogibbs.equilibrium.gas.grid.service.EquilibriumGrid, exogibbs.equilibrium.gas.grid.EquilibriumGrid
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/experimental/condensate.py:docstring of exogibbs.equilibrium.condensate.lifecycle.prepare_experimental_profile_fixed_support_batch_plan:1: WARNING: more than one target found for cross-reference 'CondensateChemicalSetup': exogibbs.api.condensate.CondensateChemicalSetup, exogibbs.equilibrium.condensate.setup.CondensateChemicalSetup, exogibbs.api.condensate_equilibrium.CondensateChemicalSetup, exogibbs.api.CondensateChemicalSetup, exogibbs.equilibrium.condensate.solve.CondensateChemicalSetup, exogibbs.equilibrium.condensate.types.CondensateChemicalSetup, exogibbs.equilibrium.condensate.CondensateChemicalSetup
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/experimental/condensate.py:docstring of exogibbs.equilibrium.condensate.lifecycle.prepare_experimental_profile_fixed_support_batch_plan:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumInit': exogibbs.api.condensate.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.types.CondensateEquilibriumInit, exogibbs.api.condensate_equilibrium.CondensateEquilibriumInit, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumInit
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/experimental/condensate.py:docstring of exogibbs.equilibrium.condensate.lifecycle.prepare_experimental_profile_fixed_support_batch_plan:1: WARNING: more than one target found for cross-reference 'CondensateEquilibriumInitializer': exogibbs.api.condensate.CondensateEquilibriumInitializer, exogibbs.equilibrium.condensate.types.CondensateEquilibriumInitializer, exogibbs.api.condensate_equilibrium.CondensateEquilibriumInitializer, exogibbs.equilibrium.condensate.solve.CondensateEquilibriumInitializer
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/fixed_support/types.py:docstring of exogibbs.equilibrium.condensate.fixed_support.types.ContinuationState:1: WARNING: more than one target found for cross-reference 'ControllerState': exogibbs.equilibrium.condensate.fixed_support.types.ControllerState, exogibbs.optimize.fixed_support_v2.types.ControllerState
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/equilibrium/condensate/fixed_support/types.py:docstring of exogibbs.equilibrium.condensate.fixed_support.types.ContinuationState:1: WARNING: more than one target found for cross-reference 'RestorationReturnDiagnostics': exogibbs.equilibrium.condensate.fixed_support.types.RestorationReturnDiagnostics, exogibbs.optimize.fixed_support_v2.types.RestorationReturnDiagnostics
+/tmp/stage2-finite-transfer-20260927/src/exogibbs/presets/fastchem.py:docstring of exogibbs.presets.fastchem.chemsetup:: WARNING: more than one target found for cross-reference 'ChemicalSetup': exogibbs.api.chemistry.ChemicalSetup, exogibbs.thermo.models.ChemicalSetup, exogibbs.api.ChemicalSetup
+/tmp/stage2-finite-transfer-20260927/documents/sg_execution_times.rst:68: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m1_chemistry.py'
+/tmp/stage2-finite-transfer-20260927/documents/sg_execution_times.rst:92: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_omitted_gas.py'
+/tmp/stage2-finite-transfer-20260927/documents/sg_execution_times.rst:95: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_scenarios.py'
+/tmp/stage2-finite-transfer-20260927/documents/sg_execution_times.rst:98: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_m2_stability_search.py'
+/tmp/stage2-finite-transfer-20260927/documents/sg_execution_times.rst:131: WARNING: Failed to create a cross reference. A title or caption not found: 'sphx_glr_examples_metal_silicate_run_m2_omitted_gas.py'
+generating indices... genindex py-modindex done
+writing additional pages... search done
+copying images... [  2%] _static/comparison_with_fastchem4_ldwarf_profile.png
+copying images... [  5%] examples/images/thumb/sphx_glr_plot_exoeos_pure_fugacity_thumb.png
+copying images... [  7%] examples/metal_silicate/images/thumb/sphx_glr_cns_inventory_thumb.png
+copying images... [  9%] examples/metal_silicate/images/thumb/sphx_glr_common_gibbs_thumb.png
+copying images... [ 12%] examples/metal_silicate/images/thumb/sphx_glr_extract_reference_thumb.png
+copying images... [ 14%] examples/metal_silicate/images/thumb/sphx_glr_extract_sulfur_reference_thumb.png
+copying images... [ 16%] examples/metal_silicate/images/thumb/sphx_glr_full_potential_thumb.png
+copying images... [ 19%] examples/metal_silicate/images/thumb/sphx_glr_gas_exchange_thumb.png
+copying images... [ 21%] examples/metal_silicate/images/thumb/sphx_glr_generate_equilibrium_reference_thumb.png
+copying images... [ 23%] examples/metal_silicate/images/thumb/sphx_glr_hydrogen_thumb.png
+copying images... [ 26%] examples/metal_silicate/images/thumb/sphx_glr_local_thumb.png
+copying images... [ 28%] examples/metal_silicate/images/thumb/sphx_glr_m1_boundary_validation_thumb.png
+copying images... [ 30%] examples/metal_silicate/images/thumb/sphx_glr_m1_chemistry_thumb.png
+copying images... [ 33%] examples/metal_silicate/images/thumb/sphx_glr_m1_thermochemical_control_thumb.png
+copying images... [ 35%] examples/metal_silicate/images/thumb/sphx_glr_m2_atmosphere_thumb.png
+copying images... [ 37%] examples/metal_silicate/images/thumb/sphx_glr_m2_common_gas_thumb.png
+copying images... [ 40%] examples/metal_silicate/images/thumb/sphx_glr_m2_expanded_source_thumb.png
+copying images... [ 42%] examples/metal_silicate/images/thumb/sphx_glr_m2_finite_gas_thumb.png
+copying images... [ 44%] examples/metal_silicate/images/thumb/sphx_glr_m2_host_stability_thumb.png
+copying images... [ 47%] examples/metal_silicate/images/thumb/sphx_glr_m2_janaf_thumb.png
+copying images... [ 49%] examples/metal_silicate/images/thumb/sphx_glr_m2_omitted_gas_thumb.png
+copying images... [ 51%] examples/metal_silicate/images/thumb/sphx_glr_m2_scenarios_thumb.png
+copying images... [ 53%] examples/metal_silicate/images/thumb/sphx_glr_m2_stability_search_thumb.png
+copying images... [ 56%] examples/metal_silicate/images/thumb/sphx_glr_m2_standards_audit_thumb.png
+copying images... [ 58%] examples/metal_silicate/images/thumb/sphx_glr_melts_coupled_thumb.png
+copying images... [ 60%] examples/metal_silicate/images/thumb/sphx_glr_native_thumb.png
+copying images... [ 63%] examples/metal_silicate/images/thumb/sphx_glr_phase_selection_thumb.png
+copying images... [ 65%] examples/metal_silicate/images/thumb/sphx_glr_reference_thumb.png
+copying images... [ 67%] examples/metal_silicate/images/thumb/sphx_glr_revalidate_archive_thumb.png
+copying images... [ 70%] examples/metal_silicate/images/thumb/sphx_glr_revalidate_melts_archive_thumb.png
+copying images... [ 72%] examples/metal_silicate/images/thumb/sphx_glr_run_bse_common_gibbs_thumb.png
+copying images... [ 74%] examples/metal_silicate/images/thumb/sphx_glr_run_m2_contact_thumb.png
+copying images... [ 77%] examples/metal_silicate/images/thumb/sphx_glr_run_m2_host_stability_thumb.png
+copying images... [ 79%] examples/metal_silicate/images/thumb/sphx_glr_run_m2_omitted_gas_thumb.png
+copying images... [ 81%] examples/metal_silicate/images/thumb/sphx_glr_run_melts_reference_thumb.png
+copying images... [ 84%] examples/metal_silicate/images/thumb/sphx_glr_run_metal_selection_thumb.png
+copying images... [ 86%] examples/metal_silicate/images/thumb/sphx_glr_source_thumb.png
+copying images... [ 88%] examples/metal_silicate/images/thumb/sphx_glr_sulfide_thumb.png
+copying images... [ 91%] examples/metal_silicate/images/thumb/sphx_glr_sulfur_source_thumb.png
+copying images... [ 93%] _static/fe_fes_rainout_demo.png
+copying images... [ 95%] _static/ito_2025_rainout_comparison.png
+copying images... [ 98%] _static/visscher_2006_na2s_morley_2012_kcl.png
+copying images... [100%] _static/visscher_2010_forsterite_enstatite_competition.png
+
+dumping search index in English (code: en)... done
+dumping object inventory... done
+
+Sphinx-Gallery successfully executed 1 out of 1 file subselected by:
+
+    gallery_conf["filename_pattern"] = '/plot_'
+    gallery_conf["ignore_pattern"]   = '/_'
+
+after excluding 0 files that had previously been run (based on MD5).
+
+embedding documentation hyperlinks...
+embedding documentation hyperlinks for examples... [  2%] plot_exoeos_pure_fugacity.html
+embedding documentation hyperlinks for examples... [  5%] index.html
+embedding documentation hyperlinks for examples... [  7%] sg_execution_times.html
+embedding documentation hyperlinks for examples... [ 10%] run_melts_reference.html
+embedding documentation hyperlinks for examples... [ 12%] run_metal_selection.html
+embedding documentation hyperlinks for examples... [ 14%] run_m2_contact.html
+embedding documentation hyperlinks for examples... [ 17%] m1_chemistry.html
+embedding documentation hyperlinks for examples... [ 19%] m2_scenarios.html
+embedding documentation hyperlinks for examples... [ 21%] revalidate_archive.html
+embedding documentation hyperlinks for examples... [ 24%] m2_common_gas.html
+embedding documentation hyperlinks for examples... [ 26%] m2_expanded_source.html
+embedding documentation hyperlinks for examples... [ 29%] index.html
+embedding documentation hyperlinks for examples... [ 31%] m2_janaf.html
+embedding documentation hyperlinks for examples... [ 33%] common_gibbs.html
+embedding documentation hyperlinks for examples... [ 36%] run_bse_common_gibbs.html
+embedding documentation hyperlinks for examples... [ 38%] sulfide.html
+embedding documentation hyperlinks for examples... [ 40%] cns_inventory.html
+embedding documentation hyperlinks for examples... [ 43%] sg_execution_times.html
+embedding documentation hyperlinks for examples... [ 45%] hydrogen.html
+embedding documentation hyperlinks for examples... [ 48%] m2_omitted_gas.html
+embedding documentation hyperlinks for examples... [ 50%] native.html
+embedding documentation hyperlinks for examples... [ 52%] m2_finite_gas.html
+embedding documentation hyperlinks for examples... [ 55%] generate_equilibrium_reference.html
+embedding documentation hyperlinks for examples... [ 57%] run_m2_host_stability.html
+embedding documentation hyperlinks for examples... [ 60%] sulfur_source.html
+embedding documentation hyperlinks for examples... [ 62%] gas_exchange.html
+embedding documentation hyperlinks for examples... [ 64%] m2_atmosphere.html
+embedding documentation hyperlinks for examples... [ 67%] m1_thermochemical_control.html
+embedding documentation hyperlinks for examples... [ 69%] full_potential.html
+embedding documentation hyperlinks for examples... [ 71%] phase_selection.html
+embedding documentation hyperlinks for examples... [ 74%] run_m2_omitted_gas.html
+embedding documentation hyperlinks for examples... [ 76%] revalidate_melts_archive.html
+embedding documentation hyperlinks for examples... [ 79%] extract_sulfur_reference.html
+embedding documentation hyperlinks for examples... [ 81%] m1_boundary_validation.html
+embedding documentation hyperlinks for examples... [ 83%] local.html
+embedding documentation hyperlinks for examples... [ 86%] extract_reference.html
+embedding documentation hyperlinks for examples... [ 88%] m2_host_stability.html
+embedding documentation hyperlinks for examples... [ 90%] m2_standards_audit.html
+embedding documentation hyperlinks for examples... [ 93%] reference.html
+embedding documentation hyperlinks for examples... [ 95%] source.html
+embedding documentation hyperlinks for examples... [ 98%] melts_coupled.html
+embedding documentation hyperlinks for examples... [100%] m2_stability_search.html
+
+build succeeded, 301 warnings.
+
+The HTML pages are in documents/_build/html.

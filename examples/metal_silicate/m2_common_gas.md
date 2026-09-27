@@ -131,3 +131,43 @@ source solve, its primitive expansion, native calls and complete contact
 audit. Both retain pending M2-A/B/C: local contact does not establish a
 calibrated BSE material domain, global MELTS phase stability or a planetary
 pressure/inventory closure.
+
+## Finite background-element gases
+
+`build_expanded_bse_problem(..., gas_model="janaf")` adds all 41 neutral
+Al/Ca/K/Ti/Cr/P gas species from the packaged FastChem table to the 35-gas
+model. The default `gas_model="m1"` preserves the original catalog. The
+opt-in source minimizes the actual gas/cloud energy over **thirteen finite
+atmospheric atom allocations**, together with MELTS and the optional FeSiOH
+alloy. P atoms transferred into P2, PH2, PH3 or other gases are removed from
+the finite silicate inventory by the same thirteen conservation constraints.
+Frozen source potentials and trace-demand additions are not equilibrium states.
+
+The seven inherited source anchors remain exactly unchanged. Six additional
+atomic energies use the pinned [JANAF convention](m2_omitted_gas.md), evaluated
+only at source temperatures between 2100 and 2400 K. All 76 gases share the
+same elemental gauge; the existing 26 condensates retain their original
+standards. This is a conditional extension of the same material model, not a
+new calibration of gas/MELTS/alloy reaction energies.
+
+Consumers obtain the matching setup from `callbacks["atmosphere"].setup`.
+`unpack_expanded_source` restores all primitive species; `audit_expanded_contact`
+checks all 76 partial pressures, condensate KKT and thirteen-element transfer.
+Ordered catalog/formula and source-reference hashes are stored in atmosphere
+metadata, alongside model-file and thermochemical-data provenance.
+
+An isolated upper parcel uses that same setup with raw FastChem reactions
+**re-evaluated at each layer's own temperature and pressure**. At fixed atom
+budget `b`, adding an elemental gauge changes every feasible state's energy
+by the same `q(T).T b`. It therefore cannot change gas/cloud partitioning.
+The upper calculation needs no JANAF extrapolation below 2100 K and does not
+freeze source chemical potentials. Its raw absolute Gibbs energy must not be
+compared with a melt on the source reference. Gauge invariance and finite P
+conservation are tested at both 1000 K and 2173.15 K.
+
+Run this finite contact with `--gas-model janaf_retained --metal-mode select`
+in `run_m2_contact.py`. It retains the same **26** condensate candidates:
+Al/Ca/K/Ti/Cr/P condensation and Mg/background-element alloy components remain
+outside the catalog. A fresh comparison with `m1` measures this finite gas
+extension within the declared model; it does not bound all omitted pathways,
+establish global host stability, or close planetary pressure by itself.

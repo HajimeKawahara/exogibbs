@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
 from pathlib import Path
 
 import numpy as np
@@ -14,27 +15,30 @@ from full_potential import PhaseState, ideal_phase
 from m1_chemistry import build_setups
 from m2_atmosphere import make_atmosphere_phase
 from m2_common_gas import anchored_standards_rt, source_gas_names
+from m2_finite_gas import atmosphere_gauge_rt, build_atmosphere_setup, catalog_sha256
+from m2_janaf import DATA_PATH, atomic_standard_audit
 from m2_scenarios import apply_standard_offsets, metal_selection_domain, normalize_scenario
 from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 
 
 def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_executable,
-                               *, temperature_k=2173.15, pressure_bar=1., scenario=None):
-    """Return the finite source using seven internal atmosphere atom carriers.
+                               *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1"):
+    """Return a finite source with seven or thirteen atmosphere atom carriers.
 
-    The atmosphere callback minimizes all 35 gases and 26 retained pure
-    condensates at its current finite atomic allocation. Its seven amounts
-    are bookkeeping coordinates, never atomic gases or extra matter.
+    ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
+    gases on six additional atomic references. Both retain 26 condensates.
+    Carrier amounts are conserved coordinates, never added atomic gases.
     """
     normalized = normalize_scenario(scenario)
+    setup = build_atmosphere_setup(gas_model)
     record, budget, callbacks, initial, metadata = build_bse_problem(
         inventory_path, exoeos_checkout, runtime, python_executable,
         temperature_k=temperature_k, pressure_bar=pressure_bar, gas_model="m1_expanded")
-    _, setup = build_setups()
-
     def gauge(t, p):
         reference, _ = source_standards_rt(t, p)
-        return anchored_standards_rt(setup.gas_setup, t, reference)[1]
+        return atmosphere_gauge_rt(setup, t, reference)
+
+    initial_gauge = gauge(temperature_k, pressure_bar)
 
     atmosphere = make_atmosphere_phase(setup, gauge)
     gas_names = record["phases"].pop("gas")
@@ -50,6 +54,7 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
                                           zip(atom_names, setup.gas_setup.elements)})
     record.pop("gas_species_aliases")
     record["atmosphere_element_order"] = list(setup.gas_setup.elements)
+    record["atmosphere_gas_model"] = gas_model
     callbacks.pop("gas")
     callbacks["atmosphere"] = atmosphere
     if scenario is not None:
@@ -58,16 +63,35 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         metadata["provider_scenario_interpretation"] = (
             "Declared model sensitivity only; offsets and alloy bounds are not calibrated uncertainties.")
     metadata["model_id"] = "bse_melts_ma_retained_atmosphere_conditional_v1"
-    metadata["standards"]["gas_model"] = "m1_retained"
+    metadata["standards"]["gas_model"] = gas_model + "_retained"
+    metadata["standards"]["common_gas"].update(
+        elements=list(setup.elements), element_gauge_rt=initial_gauge.tolist(),
+        species=list(setup.gas_species))
     metadata["atmosphere"] = {
         "gas_species": list(setup.gas_species), "condensate_species": list(setup.condensate_species),
-        "amount_basis": "Seven finite atomic amounts, internally minimized into gas plus retained cloud.",
+        "gas_model": gas_model, "elements": list(setup.elements),
+        "catalog_sha256": catalog_sha256(setup),
+        "source_reference_sha256": hashlib.sha256(json.dumps({
+            "temperature_K": temperature_k, "pressure_standard_bar": 1.,
+            "elements": list(setup.elements), "element_gauge_rt": initial_gauge.tolist(),
+        }, sort_keys=True, allow_nan=False).encode()).hexdigest(),
+        "amount_basis": "Finite atomic amounts, internally minimized into gas plus retained cloud.",
         "retention": "Full retention; atmospheric Fe condensate is distinct from the deep alloy.",
         "pressure": "Gas partial pressures sum to total pressure; clouds add mass without gas pressure.",
+        "upper_reference_policy": "Re-evaluate raw FastChem reactions at every layer T/P. Conserved-element gauges cancel from isolated parcel composition; no low-temperature JANAF extrapolation or frozen source chemical potentials.",
+        "missing_paths": ["Al/Ca/K/Ti/Cr/P retained condensates", "Mg/Al/Ca/K/Ti/Cr/P alloy components"],
     }
     metadata["provenance"]["file_sha256"].update({name: hashlib.sha256(
         Path(__file__).with_name(name).read_bytes()).hexdigest()
-        for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py", "m2_scenarios.py")})
+        for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py", "m2_scenarios.py",
+                     "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py")})
+    metadata["provenance"]["file_sha256"]["data/janaf_atomic.json"] = hashlib.sha256(DATA_PATH.read_bytes()).hexdigest()
+    if gas_model == "janaf":
+        metadata["standards"]["janaf_atomic_reference"] = atomic_standard_audit(temperature_k)
+        metadata["standards"]["common_gas"]["policy"] = (
+            "Keep the seven lower anchors and add six pinned JANAF atomic energies; no cross-phase calibration.")
+        metadata["standards"]["common_gas"]["reaction_model"] = (
+            "Packaged FastChem4 76 neutral gases on thirteen elements; continuous temperature evaluation")
     return record, budget, callbacks, initial, metadata
 
 
@@ -80,7 +104,8 @@ def unpack_expanded_source(record, result, callbacks, temperature_k, pressure_ba
     """
     if list(record["phases"])[-1] != "atmosphere":
         raise ValueError("The internal atmosphere must be the final declared phase.")
-    _, setup = build_setups()
+    atmosphere = callbacks["atmosphere"]
+    setup = atmosphere.setup
     carrier_names = record["phases"]["atmosphere"]
     if (tuple(record.get("atmosphere_element_order", ())) != setup.gas_setup.elements
             or len(carrier_names) != len(setup.gas_setup.elements)
@@ -91,7 +116,8 @@ def unpack_expanded_source(record, result, callbacks, temperature_k, pressure_ba
     names = [name for group in record["phases"].values() for name in group]
     if n.shape != (len(names),) or np.any(n < 0) or not np.all(np.isfinite(n)):
         raise ValueError("Supply finite nonnegative internal component amounts.")
-    parcel = callbacks["atmosphere"].parcel(temperature_k, pressure_bar, n[-7:])
+    count = len(carrier_names)
+    parcel = atmosphere.parcel(temperature_k, pressure_bar, n[-count:])
     public = copy.deepcopy(record)
     for name in public["phases"].pop("atmosphere"):
         del public["component_formulas"][name]
@@ -105,14 +131,14 @@ def unpack_expanded_source(record, result, callbacks, temperature_k, pressure_ba
         public["component_formulas"].update({name: {element: float(phase_setup.formula_matrix[row, column])
             for row, element in enumerate(phase_setup.elements) if phase_setup.formula_matrix[row, column]}
             for column, name in enumerate(phase_names)})
-    amounts = np.r_[n[:-7], parcel["gas_amounts_mol"], parcel["condensate_amounts_mol"]]
+    amounts = np.r_[n[:-count], parcel["gas_amounts_mol"], parcel["condensate_amounts_mol"]]
     public_callbacks = {name: callback for name, callback in callbacks.items() if name != "atmosphere"}
 
     def standards(t, p, condensed=False):
-        reference, _ = source_standards_rt(t, p)
-        gas, gauge = anchored_standards_rt(setup.gas_setup, t, reference)
-        return (np.asarray(setup.condensate_setup.hvector_func(t))
-                + np.asarray(setup.condensate_setup.formula_matrix).T @ gauge) if condensed else gas
+        q = atmosphere.element_gauge_rt
+        gauge = np.asarray(q(t, p) if callable(q) else q)
+        selected = setup.condensate_setup if condensed else setup.gas_setup
+        return np.asarray(selected.hvector_func(t)) + np.asarray(selected.formula_matrix).T @ gauge
 
     public_callbacks["gas"] = ideal_phase(standards, gas=True)
 

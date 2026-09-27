@@ -214,4 +214,6 @@ def make_atmosphere_phase(setup, element_gauge_rt):
 
     callback.parcel = lambda t, p, b: deepcopy(evaluate(t, p, b))
     callback.elements = elements
+    callback.setup = setup
+    callback.element_gauge_rt = element_gauge_rt
     return callback
