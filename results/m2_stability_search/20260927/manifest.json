@@ -2,13 +2,18 @@
   "files": [
     {
       "path": "README.md",
-      "sha256": "a9d03bb17d9819de7aa20bbbc498ef05a8a344121e5efe5ce1d399a6f42eb55c",
-      "bytes": 6549
+      "sha256": "a0feb523dc527a28c2c22f2fa14ef592f2e1b4d01913815bd5d3e67b3d8946af",
+      "bytes": 7264
     },
     {
       "path": "audit_native_archive.py",
       "sha256": "c694befc5e66212c7d86f5d74c7a7bb7fa2c9b2abe388451bcbede028824bd49",
       "bytes": 4950
+    },
+    {
+      "path": "base_environment_skip_reasons.log",
+      "sha256": "ddff49eea642453cc13d91dbdd0b3572135a219fbb44c071f02094f585c5ae48",
+      "bytes": 808
     },
     {
       "path": "executed_sources.json",
@@ -216,6 +221,11 @@
       "bytes": 16458
     },
     {
+      "path": "full_pytest.log",
+      "sha256": "a89e91db8c8d31ca2ee0283f1d9645c73e5fc0f77cfcd4be92c7c982a4561873",
+      "bytes": 3977
+    },
+    {
       "path": "initial_oxide_requests/fresh_host_assessment.json",
       "sha256": "d62c7d319a424ef29eb7208e425cae428dda5b7aab4c076faf539e243078f345",
       "bytes": 120315
@@ -416,6 +426,16 @@
       "bytes": 16426
     },
     {
+      "path": "optional_provider_nodeids.json",
+      "sha256": "8e75f39074f50844a905c6d604a8051681e6b5b7025e7133cabfdfd84f75351f",
+      "bytes": 2891
+    },
+    {
+      "path": "optional_provider_pytest.log",
+      "sha256": "4da2104a76834dc14871e1a430d3a2116e0c73d17eb75127d899144f2aeb8ee5",
+      "bytes": 100
+    },
+    {
       "path": "process_receipts.json",
       "sha256": "dbbbdc80b6f2bc263254753ed8d79295ab564e9c2b7a2cdc9d6ed9798ad9df4f",
       "bytes": 636
@@ -424,6 +444,11 @@
       "path": "run_native_check.py",
       "sha256": "25d92c0d5e6251d506c2f9e0bd30a51228a3cd12c175367fce0ebc5e9406cfd0",
       "bytes": 4772
+    },
+    {
+      "path": "validation.json",
+      "sha256": "8dfe034cdbfa5271759de64a9e4f7ba228509638726f1e7fcf38906480e4f6e0",
+      "bytes": 4646
     }
   ],
   "excluded": [

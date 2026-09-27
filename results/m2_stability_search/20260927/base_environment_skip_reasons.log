@@ -1,0 +1,8 @@
+ssssss                                                                   [100%]
+=========================== short test summary info ============================
+SKIPPED [1] tests/unittests/api/version_test.py:12: setuptools-scm generated version module is unavailable
+SKIPPED [2] tests/unittests/examples/metal_silicate_common_gas_test.py:61: Requires the explicitly selected ExoEOS BSE checkout.
+SKIPPED [1] tests/unittests/examples/metal_silicate_common_gibbs_test.py:195: Requires the ExoEOS common total-energy provider.
+SKIPPED [1] tests/unittests/examples/metal_silicate_expanded_contact_test.py:86: Requires the explicitly selected ExoEOS BSE checkout.
+SKIPPED [1] tests/unittests/examples/metal_silicate_melts_coupled_test.py:211: Requires the ExoEOS common total-energy provider.
+6 skipped in 0.80s

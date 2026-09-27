@@ -100,3 +100,14 @@ Global stability, empirical model applicability, a shared material calibration
 domain, and omitted-transfer error bounds remain unestablished. These results
 are evidence about the declared formal model at this one preserved host, not
 a BSE physical phase boundary or a new globally closed planetary solution.
+
+
+The completed full unit run reports **1861 passed, 6 skipped, 1 failed** in
+1793.31 s. Its default environment picked an older site-packages ExoEOS without
+`ma_interval`, `total_solution_state`, or the BSE checkout fixtures. The failure
+and five dependency skips are covered by a separate run of **all 21 optional
+ExoEOS test nodes** with `PYTHONPATH=src:/tmp/stage2-candidate-eos-20260927/src`:
+**21 passed, no skips**, in 33.87 s. The unrelated generated-version-module skip
+remains. No model or test source correction was required. This is not described
+as one all-green full-suite run; both logs, exact node IDs, skip reasons, and
+execution receipts are preserved in `validation.json` and the adjacent files.

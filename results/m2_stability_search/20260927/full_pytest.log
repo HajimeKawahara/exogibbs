@@ -1,0 +1,61 @@
+........................................................................ [  3%]
+........................................................................ [  7%]
+..........................s............................................. [ 11%]
+........................................................................ [ 15%]
+........................................................................ [ 19%]
+........................................................................ [ 23%]
+........................................................................ [ 26%]
+........................................................................ [ 30%]
+........................................................................ [ 34%]
+........................................................................ [ 38%]
+........................................................................ [ 42%]
+........................................................................ [ 46%]
+........................................................................ [ 50%]
+........................................................................ [ 53%]
+........................................................................ [ 57%]
+........................................................................ [ 61%]
+........................................................................ [ 65%]
+........................................................................ [ 69%]
+..ss...............s..............s..................................... [ 73%]
+..........................................................s............. [ 77%]
+................F....................................................... [ 80%]
+........................................................................ [ 84%]
+........................................................................ [ 88%]
+........................................................................ [ 92%]
+........................................................................ [ 96%]
+....................................................................     [100%]
+=================================== FAILURES ===================================
+__ test_real_ma_alloy_uses_the_provider_curvature_bound_and_full_composition ___
+
+    def test_real_ma_alloy_uses_the_provider_curvature_bound_and_full_composition():
+        jax = pytest.importorskip("jax")
+        eos = pytest.importorskip("exoeos")
+>       from exoeos.ma_interval import ma_alloy_curvature_lower_bound
+E       ModuleNotFoundError: No module named 'exoeos.ma_interval'
+
+tests/unittests/examples/metal_silicate_phase_selection_test.py:241: ModuleNotFoundError
+=============================== warnings summary ===============================
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:115: RuntimeWarning: overflow encountered in power
+    phi_prime = -np.sum(suf ** 2 / denom**3) / p_norm
+
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:154: RuntimeWarning: divide by zero encountered in scalar divide
+    ratio = phi / phi_prime
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unittests/examples/metal_silicate_phase_selection_test.py::test_real_ma_alloy_uses_the_provider_curvature_bound_and_full_composition
+1 failed, 1861 passed, 6 skipped, 24 warnings in 1793.31s (0:29:53)
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
