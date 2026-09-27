@@ -197,6 +197,13 @@ def build_jobs() -> tuple[Job, ...]:
         native_resources, ("equilibrium.json",),
     ))
     jobs.append(Job(
+        "metal_m2_liquid_global", metal + "run_m2_liquid_global.py",
+        ("--saved-physical-audit", str(ROOT / "results/m2_liquid_global/20260927/central/source_physical_audit.json"),
+         "--exoeos-checkout", "{exoeos_checkout}", "--runtime", "{melts_runtime}",
+         "--python", "{melts_python}", "--output-directory", "{output}/liquid-bound"),
+        native_resources, ("liquid-bound/assessment.json", "liquid-bound/summary.json"),
+    ))
+    jobs.append(Job(
         "metal_m2_omitted_gas", metal + "run_m2_omitted_gas.py",
         ("--source", str(ROOT / "results/m2_expanded_contact/20260924/contact.json"),
          "--mole-fraction-target", "1e-8", "--output", "{output}/screen.json"),
