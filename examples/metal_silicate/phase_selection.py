@@ -375,6 +375,8 @@ def select_metal_phase(
         raise ValueError("Supply positive conditions and feasible bounds in the full metal component order.")
 
     declared_upper = hi.copy()
+    atom_counts = metal_formula.sum(axis=0)
+    fraction_basis = "atomic" if np.all(atom_counts == 1.) else "species"
     unsupported = np.any(metal_formula[budget == 0] != 0, axis=0)
     absent, metal_free_trial = None, None
 
@@ -382,9 +384,9 @@ def select_metal_phase(
         selected = MetalSelection(*args)
         effective_upper = np.where(unsupported, 0., declared_upper)
         domain = {
-            "component_order": tuple(metal_names), "lower_atomic_fractions": lo.copy(),
-            "upper_atomic_fractions": declared_upper.copy(),
-            "effective_upper_atomic_fractions": effective_upper,
+            "component_order": tuple(metal_names), "lower_" + fraction_basis + "_fractions": lo.copy(),
+            "upper_" + fraction_basis + "_fractions": declared_upper.copy(),
+            "effective_upper_" + fraction_basis + "_fractions": effective_upper,
             "zero_budget_components": tuple(name for name, excluded in zip(metal_names, unsupported) if excluded),
             "contact_tolerance": 1e-8,
             "metal_free_incipient": _domain_position(
@@ -396,6 +398,9 @@ def select_metal_phase(
                 row for row in selected.result.composition_constraints if row["phase"] == "metal")),
             "interpretation": "Composition-box contact is a model restriction, not a physical phase boundary or a calibration certificate.",
         }
+        if fraction_basis == "species":
+            domain["composition_basis"] = "chemical_species_moles"
+            domain["atom_counts_per_component"] = atom_counts.copy()
         return replace(selected, metal_free_result=absent, metal_free_insertion=metal_free_trial,
                        metal_composition_domain=domain)
 
