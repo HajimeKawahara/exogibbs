@@ -56,12 +56,13 @@ def require_solution_proof(proof: dict, row: dict, parameters: dict, standard_st
         raise ValueError("The solution proof differs from its bound summary.")
 
 
-def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=None, water_path=None) -> dict:
+def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=None, water_path=None,
+           alloy_tolerance_rt=1e-10, alloy_max_nodes=20000) -> dict:
     here = Path(__file__).resolve().parent
     code_names = ("run_m2_common_plane.py", "m2_common_plane.py", "m2_liquid_global.py",
                   "m2_extended_common_plane.py", "m2_extended_alloy.py", "m2_associated_global.py",
                   "m2_water_global.py", "run_m2_water_global.py", "m2_host_standards.py",
-                  "run_m2_alloy_insertion_bound.py")
+                  "run_m2_alloy_insertion_bound.py", "m2_helium_global.py", "m2_helium.py")
     files = {str(here/name): sha256(here/name) for name in code_names}
     files[str(eos_checkout/"src/exoeos/ma_interval.py")] = sha256(eos_checkout/"src/exoeos/ma_interval.py")
 
@@ -102,6 +103,8 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     host = audit["host_stability"]
     properties = host["provider_properties"]
     is_water = source["source_metadata"].get("liquid_model") == "published_water"
+    if 'helium_dissolution' in source['source_metadata'] and not is_water:
+        raise ValueError('The common-plane He extension currently requires reconstructed water.')
     expression = properties.get("mixing_expression")
     if is_water != (water_path is not None):
         raise ValueError("The reconstructed-water source requires its explicit matching water proof.")
@@ -157,7 +160,10 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     if is_water:
         from run_m2_water_global import saved_water_problem
         from m2_extended_common_plane import water_common_plane, water_primal_energy
-        water_parameters, _, water_binding = saved_water_problem(report, audit, row["source"]["sha256"])
+        water_parameters, _, water_binding = saved_water_problem(report, audit, row["source"]["sha256"],exoeos_checkout=eos_checkout)
+        if 'helium_elimination' in water_binding:
+            files.update({str(eos_checkout/name):digest for name,digest in
+                          water_binding['helium_elimination']['receipt']['provider_recipe_file_sha256'].items()})
         if (liquid["input_and_code_sha256"].get(str(Path(row["source"]["path"]).resolve())) != row["source"]["sha256"]
                 or liquid["input_and_code_sha256"].get(str(Path(row["physical_audit"]["path"]).resolve())) != row["physical_audit"]["sha256"]):
             raise ValueError("The water proof is not bound to these exact root/audit bytes.")
@@ -211,7 +217,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
         alloy_context = load_saved_alloy(source, eos_checkout)
         files.update({str(eos_checkout/name): digest for name,digest
                       in alloy_context["row"]["provider_recipe_file_sha256"].items()})
-        alloy = certify_saved_alloy(source, alloy_context)
+        alloy = certify_saved_alloy(source, alloy_context,tolerance=alloy_tolerance_rt,max_nodes=alloy_max_nodes)
         alloy_components = alloy["component_order"]
         alloy_plane = [sum((_I(float(col.get(e, 0.)))*_I(float(plane[e])) for e in elements),_I(0))
                        for col in alloy["component_formulas"]]
@@ -288,7 +294,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     h2 = repaired_lower["H2_dissolved"]
     if is_water:
         primal_liquid = water_primal_energy(water_parameters, water_binding, properties,
-                                           plane, melt_amounts, h2)
+                                           plane, melt_amounts, h2, repaired_lower.get('He_dissolved',0))
     else:
         primal_liquid = liquid_mixing(expression, melt_amounts)
         primal_liquid += sum((_I(n)*mu for n, mu in zip(melt_amounts, liquid_standard_intervals(properties)) if n), _I(0))
@@ -372,12 +378,15 @@ def main() -> None:
     parser.add_argument("--case", help="Required when selecting a case from the five-root aggregate.")
     parser.add_argument("--alloy-bound", type=Path)
     parser.add_argument("--water-proof", type=Path)
+    parser.add_argument("--alloy-tolerance-rt", type=float, default=1e-10)
+    parser.add_argument("--alloy-max-nodes", type=int, default=20000)
     parser.add_argument("--exoeos-checkout", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Use a new output file; original evidence is never overwritten.")
-    result = assess(args.evidence_binding, args.alloy_bound, args.exoeos_checkout.resolve(), case=args.case, water_path=args.water_proof)
+    result = assess(args.evidence_binding, args.alloy_bound, args.exoeos_checkout.resolve(), case=args.case,
+                    water_path=args.water_proof,alloy_tolerance_rt=args.alloy_tolerance_rt,alloy_max_nodes=args.alloy_max_nodes)
     with args.output.open("x") as stream:
         json.dump(result, stream, indent=2, allow_nan=False)
         stream.write("\n")

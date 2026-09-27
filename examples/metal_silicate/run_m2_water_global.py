@@ -18,7 +18,7 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def saved_water_problem(report: dict, audit: dict, closure_sha256: str) -> tuple:
+def saved_water_problem(report: dict, audit: dict, closure_sha256: str, *, exoeos_checkout=None) -> tuple:
     """Require an accepted final root and its exact independently audited host."""
     provenance = audit["source"]
     if (provenance["kind"] != "global_closure_root" or provenance["sha256"] != closure_sha256
@@ -73,12 +73,18 @@ def saved_water_problem(report: dict, audit: dict, closure_sha256: str) -> tuple
     component_names = properties["component_order"]
     actual = [0.]*len(component_names)
     dissolved = 0.
+    has_helium = 'He_dissolved' in record['phases']['silicate']
+    if has_helium != ('helium_dissolution' in metadata) or has_helium != ('helium_dissolution' in host):
+        raise ValueError('Source and audit must declare the same dissolved-He scalar.')
     for name in record["phases"]["silicate"]:
         value = float(amounts[names.index(name)]*scale)
         if name == "H2_dissolved":
             if record["component_formulas"][name] != {"H": 2}:
                 raise ValueError("Require the molecular dissolved-H2 atom column.")
             dissolved = value
+        elif name == 'He_dissolved':
+            if record['component_formulas'][name] != {'He':1.}:
+                raise ValueError('The dissolved-He component must preserve atomic He.')
         else:
             if not name.endswith("_melts") or name[:-6] not in component_names:
                 raise ValueError("Unknown primitive host component.")
@@ -112,6 +118,9 @@ def saved_water_problem(report: dict, audit: dict, closure_sha256: str) -> tuple
         properties, plane, inventory,
         _I(hydrogen["dissolved_h2_base_standard_rt"])+_I(hydrogen["H2_dissolved_standard_offset_rt"]),
         water_standard_offset_rt=offsets.get("h2o_melts", 0.))
+    if has_helium:
+        from m2_helium_global import add_saved_helium
+        parameters, binding = add_saved_helium(parameters,binding,source,host,exoeos_checkout)
     return parameters, reference, {**binding, "dissolved_hydrogen_standard_receipt": hydrogen,
                                   "source_selection": selector, "source_provider_checkouts": report["checkouts"]}
 
@@ -123,13 +132,17 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-nodes", type=int, default=20000)
     parser.add_argument("--tolerance-rt", type=float, default=1e-10)
+    parser.add_argument("--exoeos-checkout", type=Path, help="Required for the declared dissolved-He scalar.")
     args = parser.parse_args()
     files = {str(path.resolve()): sha256(path) for path in (args.saved_closure, args.saved_physical_audit)}
-    for name in ("run_m2_water_global.py", "m2_water_global.py", "m2_common_plane.py", "m2_liquid_global.py", "m2_host_standards.py"):
+    for name in ("run_m2_water_global.py", "m2_water_global.py", "m2_common_plane.py", "m2_liquid_global.py", "m2_host_standards.py", "m2_helium_global.py", "m2_helium.py"):
         path = Path(__file__).with_name(name)
         files[str(path.resolve())] = sha256(path)
     report, audit = [json.loads(path.read_text()) for path in (args.saved_closure, args.saved_physical_audit)]
-    parameters, reference, binding = saved_water_problem(report, audit, files[str(args.saved_closure.resolve())])
+    parameters, reference, binding = saved_water_problem(report, audit, files[str(args.saved_closure.resolve())],exoeos_checkout=args.exoeos_checkout)
+    if 'helium_elimination' in binding:
+        for name,digest in binding['helium_elimination']['receipt']['provider_recipe_file_sha256'].items():
+            files[str((args.exoeos_checkout/name).resolve())]=digest
     started = time.monotonic()
     result = certify_water_common_plane(parameters, reference, tolerance_rt=args.tolerance_rt, max_nodes=args.max_nodes,
         progress_callback=lambda nodes, best: print(json.dumps({"nodes_evaluated": nodes, "best_trial": best}), flush=True))
