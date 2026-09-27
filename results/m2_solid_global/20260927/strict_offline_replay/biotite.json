@@ -1,0 +1,380 @@
+{
+  "assessment_id": "declared_solid_site_global_insertion_v1",
+  "phase": "biotite",
+  "formal_global_insertion_bound_accepted": true,
+  "bound_within_requested_tolerance": true,
+  "lower_bound_rt_per_formula_unit": 13.353396620452456,
+  "node_count": 1,
+  "leaf_count": 1,
+  "unresolved_box_count": 0,
+  "max_nodes": 100000,
+  "tolerance_rt": 1e-08,
+  "parameters": {
+    "phase": "biotite",
+    "expression_id": "magma_published_biotite_v1",
+    "source_file": "biotite.c",
+    "source_sha256": "d8f1a7499c361cf656ec5520282c8f690a9b1ed7292c2bdb4a9af62adbce3981",
+    "coordinate_order": [
+      "v0"
+    ],
+    "coordinate_bounds": [
+      [
+        0,
+        1
+      ]
+    ],
+    "endmember_names": [
+      "annite",
+      "phlogopite"
+    ],
+    "native_endmember_indices": [
+      0,
+      1
+    ],
+    "endmember_polynomials": [
+      [
+        [
+          1.0,
+          [
+            1
+          ]
+        ]
+      ],
+      [
+        [
+          -1.0,
+          [
+            1
+          ]
+        ],
+        [
+          1.0,
+          [
+            0
+          ]
+        ]
+      ]
+    ],
+    "entropy_sites": [
+      {
+        "polynomial": [
+          [
+            1.0,
+            [
+              1
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      },
+      {
+        "polynomial": [
+          [
+            -1.0,
+            [
+              1
+            ]
+          ],
+          [
+            1.0,
+            [
+              0
+            ]
+          ]
+        ],
+        "coefficient_rt": 0.9999804415317372
+      }
+    ],
+    "nonnegative_polynomials": [],
+    "required_absent_elements": [],
+    "boundary_policy": "Continuous 0 log 0 site entropy; no endpoint derivatives are supplied.",
+    "barrier": null,
+    "endmember_oxide_moles": [
+      [
+        3.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        3.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.5,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        3.0,
+        0.0,
+        0.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        3.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.5,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "polynomial_rt": [
+      [
+        0.743314866682483,
+        [
+          1
+        ]
+      ],
+      [
+        -0.743314866682483,
+        [
+          2
+        ]
+      ]
+    ],
+    "T_K": 2173.15,
+    "P_Pa": 26720283.416027673,
+    "native_entropy_R_J_mol_K": 8.3143,
+    "common_R_J_mol_K": 8.31446261815324,
+    "oxide_order": [
+      "sio2",
+      "tio2",
+      "al2o3",
+      "fe2o3",
+      "cr2o3",
+      "feo",
+      "mno",
+      "mgo",
+      "nio",
+      "coo",
+      "cao",
+      "na2o",
+      "k2o",
+      "p2o5",
+      "h2o",
+      "co2",
+      "so3",
+      "cl2o-1",
+      "f2o-1"
+    ],
+    "schema": "magma_site_mixing_polynomials_v1",
+    "parameter_sha256": "abf8e929122bba24d81d3505310dea95f6f6f65f8655e4b804171341b057d808",
+    "source_commit": "705a0fb315e5054d18275a580562f6121c8e458c",
+    "source_url": "https://github.com/magmasource/MAGMA",
+    "native_binary_uniform_error_bound": null,
+    "empirical_calibration_domain_established": false
+  },
+  "native_standard_states": {
+    "phase": "biotite",
+    "native_endmember_oxide_mass_g_per_mol": [
+      [
+        180.25289999999183,
+        180.2528999999825
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        50.98063999999627,
+        50.98063999999016
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        215.53920000009046,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        120.91319999999718
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        47.101699999966485,
+        47.10169999996479
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        18.015200000000377,
+        18.015200000000018
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0
+      ]
+    ],
+    "composition_basis_method": "Native unit endmembers through calcMolarProperties.",
+    "status": "ok_candidate_standard_states",
+    "native_property_model_id": "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1",
+    "T_K": 2173.15,
+    "P_Pa": 26720283.416027673,
+    "mu0_J_mol": [
+      -7270485.456492215,
+      -8080958.51556193
+    ],
+    "standard": "Native pure endmember reference at supplied T/P; ordering and mixing corrections are separate.",
+    "probe": {
+      "requested_native_fractions": [
+        0.5,
+        0.5
+      ],
+      "oxide_mass_g": [
+        180.25289999998716,
+        0.0,
+        50.980639999993215,
+        0.0,
+        0.0,
+        107.76960000004523,
+        0.0,
+        60.45659999999859,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        47.10169999996563,
+        0.0,
+        18.0152000000002,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "returned_native_fractions": [
+        0.5000000000001108,
+        0.49999999999988926
+      ]
+    },
+    "method": "calcEndMemberProperties(candidate, positive_probe_oxide_mass_g)",
+    "native_binary_sha256": "c218ef6f7ba5aef4b0760f3176530d1335457d6e2716823a1d0de3a5d13301e5"
+  },
+  "standard_insertion_cost_intervals_rt": [
+    [
+      "23.963132057964002934700776043832175144077454312643",
+      "23.963132057964002934700776043832175144077454312714"
+    ],
+    [
+      "14.832455979161074452572045200357613697085700748033",
+      "14.832455979161074452572045200357613697085700748114"
+    ]
+  ],
+  "host_reactions_exact": [
+    [
+      "1/2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "3/2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1"
+    ],
+    [
+      "1/2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "3/2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "1"
+    ]
+  ],
+  "pure_reference_intervals_rt": {},
+  "pure_reference_proofs": {},
+  "element_support_restrictions": [],
+  "required_absent_elements_verified": [],
+  "leaves": [
+    {
+      "lower": [
+        0.0
+      ],
+      "upper": [
+        1.0
+      ],
+      "lower_bound_rt": "13.353396620452456188151445070502453558196247622618"
+    }
+  ],
+  "excluded_boxes": [],
+  "unresolved_boxes": [],
+  "native_binary_error_bound_certified": false,
+  "global_empirical_stability_certified": false,
+  "interpretation": "The declared site expression is bounded over every admitted composition and ordering coordinate. Pure standards are fixed numerical inputs. Native build identity, standard-state uncertainty, source-alloy stability and empirical applicability are separate requirements."
+}
