@@ -78,6 +78,32 @@ source Fe/Si/O/H alloy. The native Fe/Ni alloy's Fe-only domain is a different
 property model. New gas/condensate/standard scenarios require their own
 source and proof; no historical root is substituted for them.
 
+## Separate source-alloy mathematical scope
+
+The adopted Fe/Si/O/H source imposes the hard atomic-fraction domain
+`D = {x >= 0, sum(x)=1, Fe >= 0.86, Si <= 0.08, O <= 0.02, H <= 0.04}`
+in both the equilibrium solve and its insertion assessment. The existing
+ExoEOS [`ma_interval.py`](https://github.com/HajimeKawahara/exoeos/blob/113ae4d/src/exoeos/ma_interval.py) supplies a verified positive curvature lower bound
+over all of this same domain, using outward interval arithmetic. Consequently
+the exact declared alloy's self-tangent-plane distance is nonnegative on D;
+any finite alloy split whose daughter compositions remain in D cannot lower
+its Gibbs energy. This is stronger than a local Hessian check and does not
+extend to the provider's wider numerical evaluation domain `Fe > 0`.
+
+The stored external shared-element potential lambda is a separate numerical
+object. At the final 35-gas root, its alloy insertion lower bound is
+`-3.3763994072592514e-14 RT/mol` of atomic components, accepted within the
+existing `1e-8` tolerance. The `128*eps` arithmetic padding in that supporting
+plane calculation is not a verified interval enclosure of all evaluation
+errors. Therefore it is not relabeled a strict nonnegative external-lambda
+certificate. Neither the within-D self-plane result nor the coupled KKT/branch
+comparison establishes empirical Fe/Si/O/H calibration. The saved source
+status and its actual tolerances remain unchanged.
+
+The separately labeled [fixed 250-bar expanded-source checks](fixed_pressure_250bar/README.md)
+also pass all 20 declared phase bounds and the second-liquid bound. They
+are preliminary local/column connections, not substitutes for global roots.
+
 ## Files and validation
 
 - `fresh_published_m1/solids` and `liquid`: unmodified fresh-run inputs,
@@ -89,8 +115,10 @@ source and proof; no historical root is substituted for them.
 - `tests`: original focused pass and all strict-test attempts. The first
   attempt exposed the singleton regression and sparse-checkout omissions;
   after the fix and acquisition of tracked assets, **56 tests passed**.
-  Full Gibbs validation runs in the PR's GitHub CI to reserve local resources
-  for ongoing planetary closure calculations.
+  Full Gibbs CI at `1af5821` passed **1908 tests**, with 32 optional-dependency
+  skips. Fixed-provider CI passed **255 tests with zero skips**; all optional
+  cases are covered by that job or the preserved five-test replay. Complete
+  CI logs, JUnit skip matching and exact revision scopes are in `tests/ci`.
 - `execution_receipt.json` and `manifest.json`: actual process outcomes and
   a complete byte inventory.
 
