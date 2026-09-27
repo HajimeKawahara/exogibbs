@@ -22,6 +22,17 @@ def source_hydrogen_standard_receipt(source: dict) -> dict:
     if (metadata["model_id"] != "bse_melts_ma_retained_atmosphere_conditional_v1"
             or source["gas_model"] not in {"m1", "janaf", "janaf_condensed"}):
         raise ValueError("Unsupported source builder for the dissolved-H2 replay.")
+    liquid_ids = {"native": "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1",
+                  "published": "melts_v102_published_mixing_native_standard_states_v1",
+                  "published_water": "dry_melts_thompson2025_water_equivalent_v1"}
+    liquid = metadata.get("liquid_model", "native")
+    metal = metadata.get("metal_model", "ma")
+    metal_ids = {"phosphorus": ("phosphorus_metal", "ma_fe_si_o_h_p_dilute_quadratic_continuation_v1"),
+                 "associated": ("associated_metal", "ma_p_jung_associated_metal_continuation_v1")}
+    if (liquid not in liquid_ids or metadata["host_ledger"]["model_id"] != liquid_ids[liquid]
+            or metal not in {"ma", *metal_ids}
+            or (metal in metal_ids and metadata[metal_ids[metal][0]]["model_id"] != metal_ids[metal][1])):
+        raise ValueError("Unsupported selected liquid or metal model for the saved builder.")
     temperature, pressure = source["temperature_K"], source["pressure_bar"]
     if not np.isfinite(temperature) or temperature <= 0 or not np.isfinite(pressure) or pressure <= 0:
         raise ValueError("A finite positive source T/P is required.")
@@ -60,6 +71,7 @@ def source_hydrogen_standard_receipt(source: dict) -> dict:
     return {"schema": "saved_builder_dissolved_hydrogen_standard_v1",
             "temperature_K": temperature, "pressure_bar": pressure,
             "common_lower_gas_model": "m1_expanded", "gas_species": "H2",
+            "selected_liquid_model": liquid, "selected_metal_model": metal,
             "common_H2_gas_standard_rt": gas_standard,
             "ln_solubility_per_fugacity_bar": log_solubility,
             "dissolved_h2_base_standard_rt": base, "H2_dissolved_standard_offset_rt": offset,
