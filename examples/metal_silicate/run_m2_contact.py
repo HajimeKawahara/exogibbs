@@ -203,6 +203,7 @@ def main():
     parser.add_argument("--pressure", type=float, default=1.)
     parser.add_argument("--maxiter", type=int, default=1000)
     parser.add_argument("--gas-model", choices=("m1_shared", "m1_expanded", "m1_retained"), default="m1_shared")
+    parser.add_argument("--liquid-model", choices=("native", "published"), default="native")
     parser.add_argument("--metal-mode", choices=("suppressed", "select"), default="suppressed")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
@@ -221,11 +222,12 @@ def main():
             from m2_expanded_source import build_expanded_bse_problem, unpack_expanded_source
             record, budget, callbacks, initial, metadata = build_expanded_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,
-                temperature_k=args.temperature, pressure_bar=args.pressure)
+                temperature_k=args.temperature, pressure_bar=args.pressure, liquid_model=args.liquid_model)
         else:
             record, budget, callbacks, initial, metadata = build_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,
-                temperature_k=args.temperature, pressure_bar=args.pressure, gas_model=args.gas_model)
+                temperature_k=args.temperature, pressure_bar=args.pressure, gas_model=args.gas_model,
+                liquid_model=args.liquid_model)
         report.update(source_metadata=metadata, record=record, element_amounts_mol=budget.tolist(),
                       canonical_initial_component_amounts_mol=initial.tolist())
         metadata["provenance"]["file_sha256"]["run_m2_contact.py"] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()

@@ -19,7 +19,8 @@ from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 
 
 def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_executable,
-                               *, temperature_k=2173.15, pressure_bar=1., scenario=None):
+                               *, temperature_k=2173.15, pressure_bar=1., scenario=None,
+                               liquid_model="native"):
     """Return the finite source using seven internal atmosphere atom carriers.
 
     The atmosphere callback minimizes all 35 gases and 26 retained pure
@@ -29,7 +30,8 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     normalized = normalize_scenario(scenario)
     record, budget, callbacks, initial, metadata = build_bse_problem(
         inventory_path, exoeos_checkout, runtime, python_executable,
-        temperature_k=temperature_k, pressure_bar=pressure_bar, gas_model="m1_expanded")
+        temperature_k=temperature_k, pressure_bar=pressure_bar, gas_model="m1_expanded",
+        liquid_model=liquid_model)
     _, setup = build_setups()
 
     def gauge(t, p):

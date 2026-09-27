@@ -205,7 +205,8 @@ def test_reduced_gas_common_r_standards_match_independent_pinned_energies():
             RUNNER.reduced_gas_standards_rt(temperature)
 
 
-def test_bse_builder_preserves_absolute_atoms_and_initially_zero_reaction_channels(tmp_path):
+@pytest.mark.parametrize("liquid_model", ["native", "published"])
+def test_bse_builder_preserves_absolute_atoms_and_initially_zero_reaction_channels(tmp_path, liquid_model):
     eos = pytest.importorskip("exoeos")
     if not hasattr(eos, "total_solution_state"):
         pytest.skip("Requires the ExoEOS common total-energy provider.")
@@ -213,8 +214,11 @@ def test_bse_builder_preserves_absolute_atoms_and_initially_zero_reaction_channe
     ledger_path = root / "examples" / "m2_material" / "bse_inventory.json"
     if not ledger_path.is_file():
         pytest.skip("Requires the explicitly selected ExoEOS BSE fixture checkout.")
+    if liquid_model == "published" and not (root / "examples/melts_liquid_mixing.py").is_file():
+        pytest.skip("Requires the explicitly selected published-mixing ExoEOS provider.")
     record, budget, callbacks, initial, metadata = BSE.build_bse_problem(
         ledger_path, root, tmp_path, sys.executable,
+        liquid_model=liquid_model,
     )
     names = [name for values in record["phases"].values() for name in values]
     formula = np.array([[record["component_formulas"][name].get(e, 0) for name in names]
@@ -227,6 +231,11 @@ def test_bse_builder_preserves_absolute_atoms_and_initially_zero_reaction_channe
     assert initial[names.index("h2o_melts")] == initial[names.index("fe2o3_melts")] == 0
     assert initial[names.index("H2_dissolved")] == 0
     assert set(callbacks) == {"silicate", "metal", "gas"}
+    assert metadata["liquid_model"] == liquid_model
+    assert metadata["host_ledger"]["liquid_model"] == liquid_model
+    if liquid_model == "published":
+        assert metadata["host_ledger"]["model_id"] == MELTS.PUBLISHED_MODEL_ID
+        assert metadata["host_ledger"]["native_standard_state_receipts"] == []
     assert metadata["scientific_acceptance"] == {"M2_A": "pending", "M2_B": "pending"}
     assert metadata["input"]["sha256"] == hashlib.sha256(ledger_path.read_bytes()).hexdigest()
     # Reducing the static phase support never changes the prescribed budget.

@@ -347,8 +347,17 @@ def assess_liquid_global_tangent_plane(properties, dissolved_h2_moles, *, mixing
     """
     if not np.isfinite(dissolved_h2_moles) or dissolved_h2_moles < 0:
         raise ValueError("Dissolved H2 must be finite and nonnegative.")
-    comparison = mixing_model.compare_native_mixing(properties, tolerance_rt=tolerance_rt)
-    if comparison["status"] != "compatible_at_supplied_state":
+    if properties["model_id"] == getattr(mixing_model, "PUBLISHED_MODEL_ID", None):
+        parameters = mixing_model.liquid_mixing_parameters(
+            properties["T_K"], properties["P_Pa"], properties["basis"]["common_R_J_mol_K"])
+        if properties.get("mixing_expression") != parameters:
+            raise ValueError("The solver and certificate do not declare identical mixing coefficients.")
+        comparison = {"status": "same_declared_expression", "parameters": parameters,
+                      "native_standard_state_receipt_sha256": properties["provenance"]["native_standard_state_receipt_sha256"],
+                      "global_native_error_bound_certified": False}
+    else:
+        comparison = mixing_model.compare_native_mixing(properties, tolerance_rt=tolerance_rt)
+    if comparison["status"] not in {"compatible_at_supplied_state", "same_declared_expression"}:
         return {"status": "native_expression_mismatch", "comparison": comparison,
                 "formal_mixing_bound_certified": False, "native_binary_error_bound_certified": False}
     bound = certify_liquid_tangent_plane(comparison["parameters"], properties["component_moles"],
