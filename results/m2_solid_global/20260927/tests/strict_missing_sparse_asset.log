@@ -1,0 +1,62 @@
+........................F...............................                 [100%]
+=================================== FAILURES ===================================
+________________ test_manifest_covers_every_documented_example _________________
+
+    def test_manifest_covers_every_documented_example() -> None:
+        documents = example_documents_from_index(
+            REPOSITORY_ROOT / "documents" / "index.rst"
+        )
+    
+        assert documents == tuple(case.document for case in CASES)
+        assert len({case.case_id for case in CASES}) == len(CASES)
+        assert len({case.workload for case in CASES}) == len(CASES)
+        assert set(case.workload for case in CASES) == set(workloads.WORKLOADS)
+        for case in CASES:
+            assert case.full_output_layer_count > 0
+            assert case.output_rows_per_condition > 0
+            assert (
+                case.full_output_layer_count % case.output_rows_per_condition == 0
+            )
+            assert case.expected_output_layer_count(1) == (
+                case.output_rows_per_condition
+            )
+            assert len(set(case.expected_phases)) == len(case.expected_phases)
+            assert all(
+                category in ("setup", "solver")
+                for _, category in case.expected_phases
+            )
+            assert case.source_scripts
+            document = REPOSITORY_ROOT / "documents" / f"{case.document}.rst"
+            assert document.is_file()
+            document_source = document.read_text()
+            assert all(
+                (REPOSITORY_ROOT / source).is_file()
+                for source in case.source_scripts
+            )
+            assert all(
+                Path(source).name in document_source
+                for source in case.source_scripts
+            )
+>           assert all(
+                (REPOSITORY_ROOT / artifact).is_file()
+                for artifact in case.input_artifacts
+            )
+E           assert False
+E            +  where False = all(<generator object test_manifest_covers_every_documented_example.<locals>.<genexpr> at 0x7dfb14e41dd0>)
+
+tests/unittests/benchmarks/documented_examples_benchmark_test.py:66: AssertionError
+=============================== warnings summary ===============================
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    fx = wrapped_fun(x)
+
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    g = append(wrapped_grad(x), 0.0)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unittests/benchmarks/documented_examples_benchmark_test.py::test_manifest_covers_every_documented_example
+1 failed, 55 passed, 4 warnings in 1.31s

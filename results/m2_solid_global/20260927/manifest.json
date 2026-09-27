@@ -1,0 +1,395 @@
+{
+  "self_excluded": "manifest.json",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 5680,
+      "sha256": "7c80c99a8fdfd9c945896dec5a5009017610fcec3bdfacf2e1dad7db50aa8e31"
+    },
+    {
+      "path": "execution_receipt.json",
+      "bytes": 647,
+      "sha256": "d7aeb2b609dcf22200bd98f80a35ebb6c6bdc0f9452c9c80fcf031bddcbf1e28"
+    },
+    {
+      "path": "fresh_published_m1/liquid/assessment.json",
+      "bytes": 2419987,
+      "sha256": "f124b4d1572323caf8ed0a35edd01a034a3eaec3809d4a466e8560ba81202d9b"
+    },
+    {
+      "path": "fresh_published_m1/liquid/host_properties.json",
+      "bytes": 34497,
+      "sha256": "f9d89c20728f12367030638e635714ddda45ae8197e7a3f5a48fc3f6ce7483e0"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_expression_checks.json",
+      "bytes": 629937,
+      "sha256": "ced0b62688808af6426f9102f7f63ca12efb38aa55ed4879b04cf509d1e31388"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_01.json",
+      "bytes": 43864,
+      "sha256": "d8b31e82049686a93b96714663175060de7a86194264212ed680a555c8e66309"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_02.json",
+      "bytes": 43846,
+      "sha256": "4815230e3b0e539045ffa84177816521ce5a7b4f33fbeba8db071a7c089a9192"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_03.json",
+      "bytes": 43849,
+      "sha256": "bb4f093d11bf5cb9cd52c4b7ee9de74c5de108a491c04e63b73f2bf1ed9542d7"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_04.json",
+      "bytes": 43851,
+      "sha256": "98b69ead3f8f84818bab5264fb0683bb7e0b50f9966ea0be966caaf4af9cdeb4"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_05.json",
+      "bytes": 43818,
+      "sha256": "c4828fa5217c01a779c1030673f6871ce32b25a97bae16f35328e1fcb8de2e8a"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_06.json",
+      "bytes": 43836,
+      "sha256": "ac682d6976c655e8befc725969dc5baac81e2edc4d73e960dc8f883bc1c27d17"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_07.json",
+      "bytes": 43871,
+      "sha256": "50862b918ce11c4e761c829f6d549fe79f145882632cd5852330057f054bf91d"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_08.json",
+      "bytes": 43833,
+      "sha256": "5ef88e0b33d5d0d3d76c63f3c1b5447729942a483d44331eede9fde36130b2eb"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_09.json",
+      "bytes": 43846,
+      "sha256": "ea909e216be7dbd40892489645f4eefe659926af902e6f4088b00342d9ce6e62"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_10.json",
+      "bytes": 43825,
+      "sha256": "d6f9a5c648292e202c5ed8d7fe26773c46985cd20467f61aff581fc1f89b72e7"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_11.json",
+      "bytes": 1493,
+      "sha256": "c0366b749a369a73514b2a8bd28ecb04fe9b20d57320b584749f68da47a4f333"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_12.json",
+      "bytes": 43729,
+      "sha256": "b452c621f9cc874ee26eadc9722f186272672b8178a706c9aaf177f42ffb6496"
+    },
+    {
+      "path": "fresh_published_m1/liquid/native_probe_13.json",
+      "bytes": 43841,
+      "sha256": "554bf7b3e7e256e241842b9a6b32dedb8c0e373280cd63cfb6e5070fadcefdab"
+    },
+    {
+      "path": "fresh_published_m1/liquid/protocol.json",
+      "bytes": 1313,
+      "sha256": "8587a7cb2b03325ec9379733ab6a9802b40f87ef1e03a1a76e512807472fef87"
+    },
+    {
+      "path": "fresh_published_m1/liquid/source_physical_audit.json",
+      "bytes": 392620,
+      "sha256": "a9ef8ac88ab48863978bf00483ea3cc269e9c0fa7ca7395197825e0c278793cf"
+    },
+    {
+      "path": "fresh_published_m1/liquid/summary.json",
+      "bytes": 1753,
+      "sha256": "ec22073609f246d9508ca341dcb3a89ffd0aeaad449f220854d605565e88b362"
+    },
+    {
+      "path": "fresh_published_m1/liquid_execution.log",
+      "bytes": 471,
+      "sha256": "5ee30ba05d11a24e436535c930daf63e1790d2f073b449f1689f3e727b109f5a"
+    },
+    {
+      "path": "fresh_published_m1/solids/alkali-feldspar.json",
+      "bytes": 9908,
+      "sha256": "aed68ebb58e2ddbe95e27f720e1bb234205741fb69434955c01792c9a55766ed"
+    },
+    {
+      "path": "fresh_published_m1/solids/alloy-liquid.json",
+      "bytes": 6907,
+      "sha256": "39574aefb7312bc7868dbd7c6eedfda968077847148f08b7fcc10aaa0d2c50f2"
+    },
+    {
+      "path": "fresh_published_m1/solids/alloy-solid.json",
+      "bytes": 6899,
+      "sha256": "00dd4d34ad40dc28d4fa381f809c9ab361738d5ae5e9b39262a48e142276022d"
+    },
+    {
+      "path": "fresh_published_m1/solids/biotite.json",
+      "bytes": 7093,
+      "sha256": "24d23fbe2951541207313ff8476775f28a55163f0dd311fde8a438adf58d3a3f"
+    },
+    {
+      "path": "fresh_published_m1/solids/clinoamphibole.json",
+      "bytes": 12907,
+      "sha256": "fac500599fb3df7133943a7d20fddc450bc58d447b5ddc710fbaa4d74fff1ea4"
+    },
+    {
+      "path": "fresh_published_m1/solids/clinopyroxene.json",
+      "bytes": 192601,
+      "sha256": "bc78de11041241d6c319fc9e312c9f26cc37e6ac8ab67f9a3ba4dca7fa8b7b15"
+    },
+    {
+      "path": "fresh_published_m1/solids/cummingtonite.json",
+      "bytes": 9787,
+      "sha256": "fc750ffeb2555965b0b441c71ef6d1af7582ce72bf3e4d578e12054c11934f33"
+    },
+    {
+      "path": "fresh_published_m1/solids/garnet.json",
+      "bytes": 9871,
+      "sha256": "17732c5c30ebc37c116145bfc32aad5e6e38b709642fc9a28b4557b25e86afe8"
+    },
+    {
+      "path": "fresh_published_m1/solids/hornblende.json",
+      "bytes": 9384,
+      "sha256": "fc9fac14f0593ecf02f2c931ffeb4bbb6bfb343e84786938140aaa850c4acd2a"
+    },
+    {
+      "path": "fresh_published_m1/solids/host_properties.json",
+      "bytes": 34497,
+      "sha256": "9c193a9194c4216f190578b46f216cf35b50771e3e3f3b5ace726f96eb50ba27"
+    },
+    {
+      "path": "fresh_published_m1/solids/kalsilite.json",
+      "bytes": 12294,
+      "sha256": "5fc7156ee7cab318cfe1dca90ed45f9c3388cc26a6bc4f2153ae31fde98281ac"
+    },
+    {
+      "path": "fresh_published_m1/solids/leucite.json",
+      "bytes": 10118,
+      "sha256": "38ca262710f29374fe1d923c5235dabae6394770a628e16484538b2bdd1b70be"
+    },
+    {
+      "path": "fresh_published_m1/solids/melilite.json",
+      "bytes": 15319,
+      "sha256": "4848b7b63963e3f08047e0046df6edf8017cf7354f69d0579e236456e4b37ee0"
+    },
+    {
+      "path": "fresh_published_m1/solids/native_standard_state_receipt.json",
+      "bytes": 86497,
+      "sha256": "439249888fbddc9874474dbf9ec5fc2585ed099955b186f20496fa2bb76ccb66"
+    },
+    {
+      "path": "fresh_published_m1/solids/nepheline.json",
+      "bytes": 15035,
+      "sha256": "d2f888f36603ae47184118bfd75f8a3be15ba62d72ce0536fabf45bdd65e2088"
+    },
+    {
+      "path": "fresh_published_m1/solids/olivine.json",
+      "bytes": 12881,
+      "sha256": "3c804ff082cc7521f1a743a8ae3ed5228d19c75ebc3a8e9d8946c5a52a4e8230"
+    },
+    {
+      "path": "fresh_published_m1/solids/ortho-oxide.json",
+      "bytes": 18738,
+      "sha256": "c41a83bd21e61324bec0d3f3c0debc7d1f72e6fbf06d8d153165f2bf5a81deea"
+    },
+    {
+      "path": "fresh_published_m1/solids/orthoamphibole.json",
+      "bytes": 13023,
+      "sha256": "4709700fe6946c08a63cb6d3db6b7ffe0dbd4a5722e3fec249b7d0f8642ea484"
+    },
+    {
+      "path": "fresh_published_m1/solids/orthopyroxene.json",
+      "bytes": 231947,
+      "sha256": "2a4e27b6e3cfd6b4187994239a48451e0db478b2c4465893cf358705394b4b23"
+    },
+    {
+      "path": "fresh_published_m1/solids/plagioclase.json",
+      "bytes": 10562,
+      "sha256": "b885d67885d6914ce0de940732594549861322c65eb94504f7be751630cda8fd"
+    },
+    {
+      "path": "fresh_published_m1/solids/protocol.json",
+      "bytes": 1636,
+      "sha256": "e5fbe67ebcd7c5a3e4127f1d964a2b5b1a58f003188deb69ab169f6bcc82de8e"
+    },
+    {
+      "path": "fresh_published_m1/solids/rhm-oxide.json",
+      "bytes": 127762,
+      "sha256": "80911ddc779733b1b270a35b0c66590dfeb2c167a59c782349c7669b34e61ee0"
+    },
+    {
+      "path": "fresh_published_m1/solids/source_physical_audit.json",
+      "bytes": 392620,
+      "sha256": "a9ef8ac88ab48863978bf00483ea3cc269e9c0fa7ca7395197825e0c278793cf"
+    },
+    {
+      "path": "fresh_published_m1/solids/spinel.json",
+      "bytes": 220947,
+      "sha256": "d9a8e3a57f8b468358c1396a697b167a662bd546588bc35a107dc1880f0cc9e0"
+    },
+    {
+      "path": "fresh_published_m1/solids/summary.json",
+      "bytes": 6119,
+      "sha256": "4b62d29cd30906be8aa06868103d2514bd3c4bbe99387cb1adacef3b545acf88"
+    },
+    {
+      "path": "fresh_published_m1/solids_execution.log",
+      "bytes": 3436,
+      "sha256": "648fae41caae50448cd089bca6c683ab9d946fae40b2a1769b1bf9aed33e4474"
+    },
+    {
+      "path": "independent_math_review.md",
+      "bytes": 6260,
+      "sha256": "5234eabb81694a3f1ea4b4dbfb3324a008480ff66db82437b42fee9f6af05a9c"
+    },
+    {
+      "path": "strict_offline_replay/alkali-feldspar.json",
+      "bytes": 9952,
+      "sha256": "14f23d43df8994b45cad7e17fb0c37af1df05e8b626656c22d22f13e009dff97"
+    },
+    {
+      "path": "strict_offline_replay/alloy-liquid.json",
+      "bytes": 6951,
+      "sha256": "6b1c9d31e780cd2d4cd7c89d5dc3833f903cb6bc6cd196d712c1ad4e85a56944"
+    },
+    {
+      "path": "strict_offline_replay/alloy-solid.json",
+      "bytes": 6943,
+      "sha256": "c375a8d2e1bb10352e2c69e9f017aaed6079c8716af9ba65b98564372099562c"
+    },
+    {
+      "path": "strict_offline_replay/biotite.json",
+      "bytes": 7137,
+      "sha256": "1d70a8013792ffeb9ea5b4d478e076845054d889320eee701d1c2217e5ad265f"
+    },
+    {
+      "path": "strict_offline_replay/clinoamphibole.json",
+      "bytes": 12951,
+      "sha256": "7fba2b245007cfb958cf9eba7c8e833b0477bfde97ab73499d8ab4a699833870"
+    },
+    {
+      "path": "strict_offline_replay/clinopyroxene.json",
+      "bytes": 192193,
+      "sha256": "8630c0baab6cb11ba268101c8ca29293fdf1761e22bd62224cb2711700eddd35"
+    },
+    {
+      "path": "strict_offline_replay/cummingtonite.json",
+      "bytes": 9831,
+      "sha256": "96b87a96bd6220506e561df6f45b6d48222f7950553f3cccc6bace2470eba29e"
+    },
+    {
+      "path": "strict_offline_replay/executed_replay.py",
+      "bytes": 2708,
+      "sha256": "a4c78b05a3cd6095fcc7a962d9c41f0dea48ca7b798fbf6c1af9a3a9c49139b9"
+    },
+    {
+      "path": "strict_offline_replay/execution.log",
+      "bytes": 8810,
+      "sha256": "94f6449e5325e4bcc3c8081fcce50beed508da1e24e3ca2ae68b9f7a2a9e69d5"
+    },
+    {
+      "path": "strict_offline_replay/garnet.json",
+      "bytes": 9915,
+      "sha256": "c23f6a3c161893c674165f5a1373121f18fe8eea710bb3293b4972cfb0bf7c07"
+    },
+    {
+      "path": "strict_offline_replay/hornblende.json",
+      "bytes": 9428,
+      "sha256": "bfdc90554fed91cae3546d2a35e52d9fc3508a5becf52973c7c5c3ae49ec9473"
+    },
+    {
+      "path": "strict_offline_replay/kalsilite.json",
+      "bytes": 12338,
+      "sha256": "2366bca7271903107527f53bf2ee9a76ca065fb0618750d724c66114a5f6f900"
+    },
+    {
+      "path": "strict_offline_replay/leucite.json",
+      "bytes": 10162,
+      "sha256": "b0493f40de28a453e54a1ef9e1f117b2c17e1960640248bb943731eaa6638f46"
+    },
+    {
+      "path": "strict_offline_replay/liquid.json",
+      "bytes": 2420031,
+      "sha256": "c400cb4f330e5a202fbd8385661da9fdb383b0e8e8e1fbe178fdf77a6bf8faa0"
+    },
+    {
+      "path": "strict_offline_replay/melilite.json",
+      "bytes": 15363,
+      "sha256": "b08b23ed569593b044b68f5826edafb88300adb08268a92b9da571130da408ee"
+    },
+    {
+      "path": "strict_offline_replay/nepheline.json",
+      "bytes": 15079,
+      "sha256": "343aca69c20ee07d6964061e46c8c2dec0c40053131ff44715c1d446f1297257"
+    },
+    {
+      "path": "strict_offline_replay/olivine.json",
+      "bytes": 12925,
+      "sha256": "7f39eb8a94b00ceb7fe1b542bce7b4ebab3be00e0719eba04948cca72bc234ec"
+    },
+    {
+      "path": "strict_offline_replay/ortho-oxide.json",
+      "bytes": 18782,
+      "sha256": "36760275b65dce85e0f61b04c7b7e2f3786e0952060d7e034a8d407fff157596"
+    },
+    {
+      "path": "strict_offline_replay/orthoamphibole.json",
+      "bytes": 13067,
+      "sha256": "57beae689ff6ffbc0c66b49e3815d05fbe9716891aa3ba6ef7ddcae08c3d2352"
+    },
+    {
+      "path": "strict_offline_replay/orthopyroxene.json",
+      "bytes": 231214,
+      "sha256": "0279df55211d131c508e746ffe70a19a13f360ac6caad7e91c28bb1897e587e5"
+    },
+    {
+      "path": "strict_offline_replay/plagioclase.json",
+      "bytes": 10606,
+      "sha256": "7cda45f19949679973ccc7504a12547cf0aac5d1f0b79fa9bd3270163cdbf906"
+    },
+    {
+      "path": "strict_offline_replay/protocol.json",
+      "bytes": 790,
+      "sha256": "8b6d7343583c22d76d92f230b376ce88268947b781e91745762bc2a086149b4a"
+    },
+    {
+      "path": "strict_offline_replay/rhm-oxide.json",
+      "bytes": 127806,
+      "sha256": "750a90e93f19e0b4a032f0f2df392e3aff1147ad350271a59051737e26486e33"
+    },
+    {
+      "path": "strict_offline_replay/spinel.json",
+      "bytes": 220995,
+      "sha256": "187dd8cc6ad70cd8093f8e23b2e7c4f8f359869df017241eb9a49414c996c1bf"
+    },
+    {
+      "path": "strict_offline_replay/summary.json",
+      "bytes": 5491,
+      "sha256": "eb213b6cb0d4dc11a0c21c13384ee6637f14410d19a2e237c0459d9569bc0aa5"
+    },
+    {
+      "path": "tests/initial_focused.log",
+      "bytes": 1169,
+      "sha256": "0e95b8ac0eab84ecb95fb083463677713f26a6ef4c4a165327076c5871f0c268"
+    },
+    {
+      "path": "tests/strict_final.log",
+      "bytes": 1169,
+      "sha256": "d804cbe67214705fd77c277046541ad58926250c2c2ba9759217de71b0e47ecb"
+    },
+    {
+      "path": "tests/strict_initial.log",
+      "bytes": 10441,
+      "sha256": "ca11238ada52fa6d5d9d87a329d1b2be42e9718b7dde2d6b140bb115603d81d1"
+    },
+    {
+      "path": "tests/strict_missing_sparse_asset.log",
+      "bytes": 3484,
+      "sha256": "aa23c5d27059fce6809a7053a1485ca03181aa9b322fe519d2d48f5e57e459de"
+    }
+  ]
+}

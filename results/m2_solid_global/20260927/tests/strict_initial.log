@@ -1,0 +1,183 @@
+............F...........F...............................                 [100%]
+=================================== FAILURES ===================================
+__________ test_curvature_anchor_stays_inside_an_exact_singleton_box ___________
+
+    def test_curvature_anchor_stays_inside_an_exact_singleton_box():
+        # The ambient Decimal midpoint can round away from this binary64 value.
+        point = SOLID.Decimal.from_float(.1)
+        box = [SOLID._I(point)]
+        terms = [(SOLID._I(1), [1])]
+>       result = SOLID._curvature_relaxation(terms, [], box, [],
+                                            [[(SOLID._I(1), [0])]], [[[]]])
+
+tests/unittests/examples/m2_solid_global_test.py:157: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+examples/metal_silicate/m2_solid_global.py:235: in _curvature_relaxation
+    return _linear_program_lower(affine, box, inequalities)
+examples/metal_silicate/m2_solid_global.py:142: in _linear_program_lower
+    result = linprog([float(g.lo) for g in gradient], A_ub=-matrix, b_ub=rhs,
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_linprog.py:630: in linprog
+    lp, solver_options = _parse_linprog(lp, options, meth)
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_linprog_util.py:1026: in _parse_linprog
+    lp = _clean_inputs(lp._replace(A_ub=A_ub, A_eq=A_eq))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+lp = _LPProblem(c=[1.0], A_ub=array([], dtype=float64), b_ub=array([], dtype=float64), A_eq=None, b_eq=None, bounds=[(0.1, 0.1)], x0=None, integrality=None)
+
+    def _clean_inputs(lp):
+        """
+        Given user inputs for a linear programming problem, return the
+        objective vector, upper bound constraints, equality constraints,
+        and simple bounds in a preferred format.
+    
+        Parameters
+        ----------
+        lp : A `scipy.optimize._linprog_util._LPProblem` consisting of the following fields:
+    
+            c : 1D array
+                The coefficients of the linear objective function to be minimized.
+            A_ub : 2D array, optional
+                The inequality constraint matrix. Each row of ``A_ub`` specifies the
+                coefficients of a linear inequality constraint on ``x``.
+            b_ub : 1D array, optional
+                The inequality constraint vector. Each element represents an
+                upper bound on the corresponding value of ``A_ub @ x``.
+            A_eq : 2D array, optional
+                The equality constraint matrix. Each row of ``A_eq`` specifies the
+                coefficients of a linear equality constraint on ``x``.
+            b_eq : 1D array, optional
+                The equality constraint vector. Each element of ``A_eq @ x`` must equal
+                the corresponding element of ``b_eq``.
+            bounds : various valid formats, optional
+                The bounds of ``x``, as ``min`` and ``max`` pairs.
+                If bounds are specified for all N variables separately, valid formats are:
+                * a 2D array (2 x N or N x 2);
+                * a sequence of N sequences, each with 2 values.
+                If all variables have the same bounds, a single pair of values can
+                be specified. Valid formats are:
+                * a sequence with 2 scalar values;
+                * a sequence with a single element containing 2 scalar values.
+                If all variables have a lower bound of 0 and no upper bound, the bounds
+                parameter can be omitted (or given as None).
+            x0 : 1D array, optional
+                Guess values of the decision variables, which will be refined by
+                the optimization algorithm. This argument is currently used only by the
+                'revised simplex' method, and can only be used if `x0` represents a
+                basic feasible solution.
+    
+        Returns
+        -------
+        lp : A `scipy.optimize._linprog_util._LPProblem` consisting of the following fields:
+    
+            c : 1D array
+                The coefficients of the linear objective function to be minimized.
+            A_ub : 2D array, optional
+                The inequality constraint matrix. Each row of ``A_ub`` specifies the
+                coefficients of a linear inequality constraint on ``x``.
+            b_ub : 1D array, optional
+                The inequality constraint vector. Each element represents an
+                upper bound on the corresponding value of ``A_ub @ x``.
+            A_eq : 2D array, optional
+                The equality constraint matrix. Each row of ``A_eq`` specifies the
+                coefficients of a linear equality constraint on ``x``.
+            b_eq : 1D array, optional
+                The equality constraint vector. Each element of ``A_eq @ x`` must equal
+                the corresponding element of ``b_eq``.
+            bounds : 2D array
+                The bounds of ``x``, as ``min`` and ``max`` pairs, one for each of the N
+                elements of ``x``. The N x 2 array contains lower bounds in the first
+                column and upper bounds in the 2nd. Unbounded variables have lower
+                bound -np.inf and/or upper bound np.inf.
+            x0 : 1D array, optional
+                Guess values of the decision variables, which will be refined by
+                the optimization algorithm. This argument is currently used only by the
+                'revised simplex' method, and can only be used if `x0` represents a
+                basic feasible solution.
+    
+        """
+        c, A_ub, b_ub, A_eq, b_eq, bounds, x0, integrality = lp
+    
+        if c is None:
+            raise TypeError
+    
+        try:
+            c = np.array(c, dtype=np.float64, copy=True).squeeze()
+        except ValueError as e:
+            raise TypeError(
+                "Invalid input for linprog: c must be a 1-D array of numerical "
+                "coefficients") from e
+        else:
+            # If c is a single value, convert it to a 1-D array.
+            if c.size == 1:
+                c = c.reshape(-1)
+    
+            n_x = len(c)
+            if n_x == 0 or len(c.shape) != 1:
+                raise ValueError(
+                    "Invalid input for linprog: c must be a 1-D array and must "
+                    "not have more than one non-singleton dimension")
+            if not np.isfinite(c).all():
+                raise ValueError(
+                    "Invalid input for linprog: c must not contain values "
+                    "inf, nan, or None")
+    
+        sparse_lhs = sps.issparse(A_eq) or sps.issparse(A_ub)
+        try:
+            A_ub = _format_A_constraints(A_ub, n_x, sparse_lhs=sparse_lhs)
+        except ValueError as e:
+            raise TypeError(
+                "Invalid input for linprog: A_ub must be a 2-D array "
+                "of numerical values") from e
+        else:
+            n_ub = A_ub.shape[0]
+            if len(A_ub.shape) != 2 or A_ub.shape[1] != n_x:
+>               raise ValueError(
+                    "Invalid input for linprog: A_ub must have exactly two "
+                    "dimensions, and the number of columns in A_ub must be "
+                    "equal to the size of c")
+E               ValueError: Invalid input for linprog: A_ub must have exactly two dimensions, and the number of columns in A_ub must be equal to the size of c
+
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_linprog_util.py:320: ValueError
+________________ test_manifest_covers_every_documented_example _________________
+
+    def test_manifest_covers_every_documented_example() -> None:
+>       documents = example_documents_from_index(
+            REPOSITORY_ROOT / "documents" / "index.rst"
+        )
+
+tests/unittests/benchmarks/documented_examples_benchmark_test.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+benchmarks/documented_examples/manifest.py:158: in example_documents_from_index
+    lines = path.read_text().splitlines()
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/pathlib.py:1266: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/pathlib.py:1252: in open
+    return io.open(self, mode, buffering, encoding, errors, newline,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/stage2-solid-bounds-20260927/documents/index.rst')
+name = '/tmp/stage2-solid-bounds-20260927/documents/index.rst', flags = 524288
+mode = 438
+
+    def _opener(self, name, flags, mode=0o666):
+        # A stub for the opener argument to built-in open()
+>       return self._accessor.open(self, flags, mode)
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/stage2-solid-bounds-20260927/documents/index.rst'
+
+/home/kawahara/anaconda3/envs/myenv39/lib/python3.9/pathlib.py:1120: FileNotFoundError
+=============================== warnings summary ===============================
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    fx = wrapped_fun(x)
+
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    g = append(wrapped_grad(x), 0.0)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unittests/examples/m2_solid_global_test.py::test_curvature_anchor_stays_inside_an_exact_singleton_box
+FAILED tests/unittests/benchmarks/documented_examples_benchmark_test.py::test_manifest_covers_every_documented_example
+2 failed, 54 passed, 4 warnings in 1.82s
