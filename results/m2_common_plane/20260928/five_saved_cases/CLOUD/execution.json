@@ -1,0 +1,46 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "40",
+    "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/run_m2_common_plane.py",
+    "--evidence-binding",
+    "/tmp/stage2-finite-response-results-20260927/examples/subneptune_taxonomy/finite_melt/validation/20260927_m2_finite_response/final_five_case_aggregate/aggregate.json",
+    "--case",
+    "CLOUD",
+    "--alloy-bound",
+    "/tmp/stage2-final-response-audit-20260927/CLOUD_alloy_insertion_bound.json",
+    "--exoeos-checkout",
+    "/tmp/stage2-alloy-insertion-eos-20260927",
+    "--output",
+    "/tmp/stage2-common-plane-final-20260928/CLOUD/result.json"
+  ],
+  "environment_overrides": {
+    "PYTHONPATH": "/tmp/stage2-common-plane-gibbs-20260928/src:/tmp/stage2-alloy-insertion-eos-20260927/src",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu"
+  },
+  "cwd": "/tmp/stage2-common-plane-gibbs-20260928",
+  "started_utc": "2026-09-27T21:08:48.065656+00:00",
+  "finished_utc": "2026-09-27T21:08:51.553313+00:00",
+  "elapsed_seconds": 3.487653097137809,
+  "exit_code": 0,
+  "checkouts_before": {
+    "commit": "aa12f3c9378dd48763d1fe1d4e5ba8d2e75763f8",
+    "status": "",
+    "remote": "https://github.com/HajimeKawahara/exogibbs.git"
+  },
+  "checkouts_after": {
+    "commit": "aa12f3c9378dd48763d1fe1d4e5ba8d2e75763f8",
+    "status": "",
+    "remote": "https://github.com/HajimeKawahara/exogibbs.git"
+  },
+  "files": {
+    "result.json": "267bd770d44786853349d88a0b7db499b766a926d82c90daf6efee55da5a33ea",
+    "stdout.log": "a5b44296d86ab19f93a2a5aac3ed81e8899a8e84d174afd8ebfcab7ff5f157b0"
+  }
+}

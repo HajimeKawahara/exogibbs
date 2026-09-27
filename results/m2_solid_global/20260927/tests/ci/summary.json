@@ -1,0 +1,35 @@
+{
+  "liquid_head": "90afae96efdb4a9597a0edb58325ef7d56b6ae41",
+  "liquid_full": {
+    "passed": 1895,
+    "skipped": 32,
+    "seconds": 1551.97
+  },
+  "liquid_pinned_provider": {
+    "passed": 242,
+    "skipped": 0
+  },
+  "solid_head": "1af5821e3c7b8abcf0e8ebdc985ad1440d600021",
+  "solid_full": {
+    "passed": 1908,
+    "skipped": 32,
+    "seconds": 1421.05
+  },
+  "solid_pinned_provider": {
+    "passed": 255,
+    "skipped": 0
+  },
+  "optional_skip_reasons": {
+    "exoeos_uninstalled_in_base_ci": 28,
+    "pyfastchem_uninstalled_in_base_ci": 4
+  },
+  "optional_cases_covered_in_pinned_provider": 27,
+  "remaining_optional_cases_replayed": {
+    "passed": 5,
+    "skipped": 0,
+    "seconds": 2.78,
+    "gibbs_head": "90afae96efdb4a9597a0edb58325ef7d56b6ae41",
+    "exoeos_code_head": "05155344aac453b23d643c1bc8867c11d089d236",
+    "test_sources_unchanged_in_solid_branch": true
+  }
+}

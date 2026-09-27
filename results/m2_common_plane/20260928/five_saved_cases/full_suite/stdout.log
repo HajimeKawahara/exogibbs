@@ -1,0 +1,63 @@
+........................................................................ [  3%]
+........................................................................ [  7%]
+...........................s............................................ [ 10%]
+........................................................................ [ 14%]
+........................................................................ [ 18%]
+........................................................................ [ 21%]
+........................................................................ [ 25%]
+........................................................................ [ 28%]
+........................................................................ [ 32%]
+........................................................................ [ 36%]
+........................................................................ [ 39%]
+........................................................................ [ 43%]
+........................................................................ [ 47%]
+........................................................................ [ 50%]
+........................................................................ [ 54%]
+........................................................................ [ 57%]
+........................................................................ [ 61%]
+........................................................................ [ 65%]
+........................................................................ [ 68%]
+........................................................................ [ 72%]
+........................................................................ [ 75%]
+........................................................................ [ 79%]
+........................................................................ [ 83%]
+........................................................................ [ 86%]
+........................................................................ [ 90%]
+........................................................................ [ 94%]
+........................................................................ [ 97%]
+...............................................                          [100%]
+=============================== warnings summary ===============================
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:115: RuntimeWarning: overflow encountered in power
+    phi_prime = -np.sum(suf ** 2 / denom**3) / p_norm
+
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:154: RuntimeWarning: divide by zero encountered in scalar divide
+    ratio = phi / phi_prime
+
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:437: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    fx = wrapped_fun(x)
+
+tests/unittests/examples/m2_liquid_global_test.py::test_a_nonconvex_regular_liquid_cannot_receive_a_certificate
+tests/unittests/examples/m2_liquid_global_test.py::test_stable_nonconvex_mixing_domain_can_be_bounded_by_subdivision
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_slsqp_py.py:441: RuntimeWarning: Values in x were outside bounds during a minimize step, clipping to bounds
+    g = append(wrapped_grad(x), 0.0)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/unittests/api/version_test.py:12: setuptools-scm generated version module is unavailable
+1990 passed, 1 skipped, 28 warnings in 2108.04s (0:35:08)
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+

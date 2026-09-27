@@ -1,0 +1,15 @@
+{
+  "gibbs_commit": "2f960493a3c36afc57e9cf93f25a84c78f2e1b41",
+  "exoeos_commit": "05155344aac453b23d643c1bc8867c11d089d236",
+  "command": [
+    "/tmp/stage2-solid-final-offline-replay.py"
+  ],
+  "fresh_native_calls": false,
+  "new_pressure_root": false,
+  "input_hashes": {
+    "/tmp/stage2-solid-published-m1-frozen/source_physical_audit.json": "a9ef8ac88ab48863978bf00483ea3cc269e9c0fa7ca7395197825e0c278793cf",
+    "/tmp/stage2-solid-published-m1-frozen/host_properties.json": "9c193a9194c4216f190578b46f216cf35b50771e3e3f3b5ace726f96eb50ba27",
+    "/tmp/stage2-solid-published-m1-frozen/native_standard_state_receipt.json": "439249888fbddc9874474dbf9ec5fc2585ed099955b186f20496fa2bb76ccb66"
+  },
+  "script_sha256": "a4c78b05a3cd6095fcc7a962d9c41f0dea48ca7b798fbf6c1af9a3a9c49139b9"
+}

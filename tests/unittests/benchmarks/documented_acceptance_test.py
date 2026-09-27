@@ -1,6 +1,7 @@
 """Fresh numerical acceptance cannot be replaced by a successful process exit."""
 
 import json
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -8,6 +9,26 @@ import pytest
 
 from benchmarks.documented_examples import acceptance, run_all
 from benchmarks.documented_examples.check_inline import extract_blocks
+
+
+@pytest.mark.parametrize("failure", [None, "incomplete", "nonfinite", "boolean", "strict", "empirical", "input"])
+def test_alloy_bound_keeps_negative_bounds_and_requires_exact_inputs(tmp_path, failure):
+    job = next(job for job in run_all.build_jobs() if job.name == "metal_m2_alloy_insertion_bound")
+    source = tmp_path / "source.json"
+    source.write_text("{}")
+    record = {"path": str(source), "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}
+    report = {"completed": failure != "incomplete",
+              "insertion_lower_bound_rt_per_mol_atoms": float("nan") if failure == "nonfinite" else -1e-13,
+              "strict_nonnegative_bound": failure == "strict",
+              "empirical_material_certified": failure == "empirical",
+              "source": record, "physical_audit": record}
+    if failure == "boolean":
+        report.update(insertion_lower_bound_rt_per_mol_atoms=True, strict_nonnegative_bound=True)
+    (tmp_path / "alloy_bound.json").write_text(json.dumps(report))
+    if failure == "input":
+        source.write_text("{ }")
+    assert bool(acceptance.artifact_errors(job, tmp_path, retrieval_quick=False)) == (failure is not None)
+    assert {"m2_closure", "m2_physical_audit"} <= set(job.resources)
 
 
 @pytest.mark.parametrize("failure", ["preflight", "short", "nonfinite", "diagnostics", "missing"])

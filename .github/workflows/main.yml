@@ -115,6 +115,7 @@ jobs:
           assert exoeos.total_solution_state is total_solution_state
           assert callable(ma_alloy_curvature_lower_bound)
           assert (provider / "examples/melts_liquid_mixing.py").is_file()
+          assert (provider / "examples/melts_solid_mixing.py").is_file()
           assert (provider / "examples/melts_water_reconstruction.py").is_file()
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
@@ -134,6 +135,7 @@ jobs:
             tests/unittests/examples/m2_finite_gas_test.py
             tests/unittests/examples/m2_host_stability_test.py
             tests/unittests/examples/m2_liquid_global_test.py
+            tests/unittests/examples/m2_solid_global_test.py
             tests/unittests/examples/metal_silicate_expanded_contact_test.py
             tests/unittests/examples/metal_silicate_phase_selection_test.py
             tests/unittests/examples/metal_silicate_melts_coupled_test.py
