@@ -12,10 +12,11 @@ from pathlib import Path
 
 import numpy as np
 
-from melts_coupled import COMMON_R, PROVIDER_MODEL_ID
+from melts_coupled import COMMON_R, PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID
 
 
-def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *, tolerance_rt: float = 1e-8) -> dict:
+def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *,
+                           candidate_properties=None, tolerance_rt: float = 1e-8) -> dict:
     """Evaluate candidate insertion into the formal ideal-H2 augmented host.
 
     All quantities use the same native amount scale. Candidate amounts have
@@ -23,8 +24,25 @@ def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *, toler
     are allowed, but each consumed component must be present. Potentials of
     absent components are not substituted by zero.
     """
-    if properties.get("model_id") != PROVIDER_MODEL_ID or properties.get("status") != "ok_supplied_liquid_properties":
-        raise ValueError("Expected the declared supplied-liquid MELTS model.")
+    if (properties.get("model_id") not in (PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID)
+            or properties.get("status") != "ok_supplied_liquid_properties"):
+        raise ValueError("Expected a declared supplied-liquid model.")
+    candidates = properties if candidate_properties is None else candidate_properties
+    if (candidates.get("model_id") != PROVIDER_MODEL_ID
+            or candidates.get("status") != "ok_supplied_liquid_properties"):
+        raise ValueError("Require a separate native candidate receipt for a published host.")
+    for key in ("T_K", "P_Pa", "component_order"):
+        if candidates[key] != properties[key]:
+            raise ValueError("Native candidates and selected host differ in state or basis.")
+    for key in ("component_moles", "oxide_molar_masses_g_mol"):
+        if not np.array_equal(candidates[key], properties[key]):
+            raise ValueError("Native candidates and selected host differ in amount or oxide basis.")
+    for key in ("component_oxide_matrix", "component_element_matrix", "element_order", "common_R_J_mol_K"):
+        if not np.array_equal(candidates["basis"][key], properties["basis"][key]):
+            raise ValueError("Native candidates and selected host have different thermochemical bases.")
+    if (candidates["phase_policy"]["oxygen_buffer"] != "None"
+            or candidates["phase_policy"]["equilibrated"]):
+        raise ValueError("The native candidate provider changed the phase policy.")
     if (not np.isfinite(dissolved_h2_moles) or dissolved_h2_moles < 0
             or not np.isfinite(tolerance_rt) or tolerance_rt <= 0):
         raise ValueError("Supply nonnegative dissolved H2 and a positive finite tolerance.")
@@ -34,7 +52,7 @@ def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *, toler
     matrix = np.asarray(basis["component_oxide_matrix"], dtype=float)
     formula = np.asarray(basis["component_element_matrix"], dtype=float)
     masses = np.asarray(properties["oxide_molar_masses_g_mol"], dtype=float)
-    saturation = properties["saturation"]
+    saturation = candidates["saturation"]
     if (n.ndim != 1 or mu.shape != n.shape or matrix.shape != (n.size, n.size)
             or formula.shape[0] != n.size or masses.shape != n.shape
             or not np.all(np.isfinite(n)) or np.any(n < 0) or n.sum() <= 0
@@ -93,6 +111,7 @@ def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *, toler
                 row.update(
                     status="negative_insertion_trial" if insertion < -tolerance_rt else "nonnegative_insertion_trial",
                     reason=None, native_insertion_gibbs_rt=native_cost,
+                    selected_host_insertion_gibbs_rt=native_cost,
                     h2_dilution_correction_gibbs_rt=dilution,
                     insertion_rt_per_mol_atoms=insertion,
                     maximum_feasible_trial_scale=float(np.min(n[consumed] / coefficients[consumed])),
@@ -102,6 +121,9 @@ def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *, toler
     unresolved = [row["phase"] for row in results if row["status"] == "unresolved"]
     return {
         "assessment_id": "m2_native_host_competitor_insertion_v1",
+        "host_model_id": properties["model_id"],
+        "candidate_model_id": candidates["model_id"],
+        "candidate_scope": "Native incipient compositions used as one-sided trials against the selected host potentials; not reoptimized for published mixing or H2 dilution.",
         "status": "rejected_by_feasible_trial" if negative else "unresolved",
         "global_stability_certified": False, "physical_liquid_domain_accepted": False,
         "temperature_K": properties["T_K"], "pressure_Pa": properties["P_Pa"],
@@ -122,7 +144,7 @@ def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *, toler
 def evaluate_host_stability(
     record: dict, component_amounts_mol, temperature_k: float, pressure_bar: float,
     *, evaluator, runtime: Path, python_executable: str, amount_scale: float = 1e-24,
-    tolerance_rt: float = 1e-8,
+    tolerance_rt: float = 1e-8, candidate_evaluator=None,
 ) -> dict:
     """Reevaluate an unchanged source host using the selected ExoEOS provider."""
     names = [name for phase in record["phases"].values() for name in phase]
@@ -147,15 +169,26 @@ def evaluate_host_stability(
             raise ValueError(f"Unsupported supplied host component: {name}")
     if record["component_formulas"].get("H2_dissolved") != {"H": 2}:
         raise ValueError("The molecular dissolved-H2 formula must be explicit.")
+    model_id = getattr(evaluator, "MODEL_ID", PROVIDER_MODEL_ID)
+    if model_id not in (PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID):
+        raise ValueError("Unknown selected host model.")
+    if model_id == PUBLISHED_MODEL_ID and candidate_evaluator is None:
+        raise ValueError("Published host stability requires an explicit native candidate evaluator.")
+    options = dict(runtime=runtime, python_executable=python_executable, common_R=COMMON_R)
     properties = evaluator.evaluate_liquid(
-        temperature_k, pressure_bar * 1e5, host, runtime=runtime,
-        python_executable=python_executable, common_R=COMMON_R, include_saturation=True,
-    )
+        temperature_k, pressure_bar * 1e5, host,
+        **options, **({"include_saturation": True} if candidate_evaluator is None else {}))
+    if properties["model_id"] != model_id:
+        raise ValueError("The provider returned a different selected host model.")
+    candidates = properties if candidate_evaluator is None else candidate_evaluator.evaluate_liquid(
+        temperature_k, pressure_bar * 1e5, host, **options, include_saturation=True)
     if (properties["T_K"] != temperature_k or properties["P_Pa"] != pressure_bar * 1e5
             or tuple(properties["component_order"]) != tuple(evaluator.COMPONENTS)
-            or not np.allclose(properties["component_moles"], host, rtol=5e-9, atol=0)):
+            or not np.array_equal(properties["component_moles"], host)):
         raise ValueError("The property provider changed the requested state.")
-    assessment = assess_host_candidates(properties, h2, tolerance_rt=tolerance_rt)
+    assessment = assess_host_candidates(properties, h2, candidate_properties=candidates, tolerance_rt=tolerance_rt)
     assessment.update(native_amount_scale=amount_scale, provider_properties=properties,
+                      native_candidate_properties=candidates,
+                      native_standard_state_receipts=getattr(evaluator, "standard_state_receipts", []),
                       assessment_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest())
     return assessment

@@ -189,3 +189,31 @@ results at the unchanged middle-H saved host. It includes every raw trial,
 all local-curvature native evaluations, and independent energy/conservation
 recounts. The [Japanese design supplement](https://github.com/HajimeKawahara/doc_ExoGibbs/pull/10)
 also describes the distinct JANAF finite-source trace-demand contract.
+
+
+## Preserve the selected liquid model
+
+`evaluate_host_stability` accepts an explicit `candidate_evaluator` when the
+host uses published liquid mixing. The host evaluator supplies the actual
+selected liquid potentials, while the native evaluator supplies candidate
+compositions and Gibbs energies in a separate receipt. Both receipts must
+have identical temperature, pressure, component amounts, component/element
+order, oxide basis and gas constant. Unknown liquid models are rejected.
+Historical records without a model declaration retain native behavior;
+contradictory saved model declarations are rejected.
+
+`provider_properties` always describes the selected host.
+`native_candidate_properties` preserves the native candidate call. Candidate
+costs use `G_candidate - c.mu_selected_host`, including the same molecular-H2
+dilution as the source. Native incipient compositions have not been optimized
+against the published host: they remain one-sided trials, and nonnegative
+values do not establish global stability. The standalone runner preserves
+this selection; its older optional composition-search flags are limited to
+native hosts. Use the dedicated published-model certificate runners for
+published composition searches.
+
+Formal Fe/Si reaction extraction likewise requires the saved selected model
+and retains its pure-liquid standard-state receipts. Published mixing uses
+native pure-liquid standards at the exact source T/P; this shared standard
+input does not make the two liquid mixing laws identical or empirically
+calibrated.

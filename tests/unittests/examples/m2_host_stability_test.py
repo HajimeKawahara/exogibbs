@@ -297,3 +297,77 @@ def test_solution_search_stays_on_supported_face_without_faking_pure_phase_cover
     assert not row["composition_domain_is_single_point"]
     assert not row["composition_minimum_enumerated"]
     assert row["status"] == "unresolved"
+
+
+def test_published_host_uses_its_own_potential_and_separate_native_trials():
+    from copy import deepcopy
+    from m2_host_stability import evaluate_host_stability
+    from melts_coupled import PUBLISHED_MODEL_ID
+
+    native = properties()
+    published = deepcopy(native)
+    published.update(model_id=PUBLISHED_MODEL_ID, mu_RT=[-3., -4.])
+    published.pop("saturation")
+    calls = []
+    def host_call(t, p, n, **options):
+        assert "include_saturation" not in options
+        calls.append("host")
+        return published
+    def candidate_call(t, p, n, **options):
+        assert options["include_saturation"] is True
+        calls.append("candidate")
+        return native
+    common = dict(COMPONENTS=["A", "B"], ELEMENTS=["A", "B"], FORMULA_MATRIX=np.eye(2))
+    host = SimpleNamespace(**common, MODEL_ID=PUBLISHED_MODEL_ID, evaluate_liquid=host_call)
+    provider = SimpleNamespace(**common, MODEL_ID=PROVIDER_MODEL_ID, evaluate_liquid=candidate_call)
+    record = {"phases": {"silicate": ["A_melts", "B_melts", "H2_dissolved"]},
+              "component_formulas": {"A_melts": {"A": 1.}, "B_melts": {"B": 1.}, "H2_dissolved": {"H": 2}}}
+    result = evaluate_host_stability(record, [2., 3., 0.], 1000., 1., evaluator=host,
+        candidate_evaluator=provider, runtime=None, python_executable=None, amount_scale=1.)
+    assert calls == ["host", "candidate"]
+    assert result["provider_properties"] is published
+    assert result["native_candidate_properties"] is native
+    assert result["candidates"][0]["insertion_rt_per_mol_atoms"] == pytest.approx(.9)
+    assert result["negative_trial_phases"] == []
+    assert not result["global_stability_certified"]
+    with pytest.raises(ValueError, match="explicit native"):
+        evaluate_host_stability(record, [2., 3., 0.], 1000., 1., evaluator=host,
+            runtime=None, python_executable=None, amount_scale=1.)
+
+
+@pytest.mark.parametrize("corruption", ["temperature", "pressure", "amounts", "basis", "model"])
+def test_selected_host_rejects_mismatched_native_candidate_receipts(corruption):
+    from copy import deepcopy
+    from melts_coupled import PUBLISHED_MODEL_ID
+    native = properties()
+    selected = deepcopy(native)
+    selected["model_id"] = PUBLISHED_MODEL_ID
+    selected.pop("saturation")
+    if corruption == "temperature":
+        native["T_K"] += 1.
+    elif corruption == "pressure":
+        native["P_Pa"] += 1.
+    elif corruption == "amounts":
+        native["component_moles"][0] += 1e-12
+    elif corruption == "basis":
+        native["basis"]["component_oxide_matrix"][0][0] = 2.
+    else:
+        selected["model_id"] = "unknown"
+    with pytest.raises(ValueError):
+        assess_host_candidates(selected, 0., candidate_properties=native)
+
+
+def test_saved_liquid_model_preserves_and_cross_checks_all_declarations():
+    from melts_coupled import saved_liquid_model, PUBLISHED_MODEL_ID
+    assert saved_liquid_model({}) == "native"
+    source = {"arguments": {"liquid_model": "published"}, "source_metadata": {
+        "liquid_model": "published", "host_ledger": {"model_id": PUBLISHED_MODEL_ID}}}
+    assert saved_liquid_model(source) == "published"
+    source["liquid_model"] = "native"
+    with pytest.raises(ValueError, match="inconsistent"):
+        saved_liquid_model(source)
+    for value in ("unknown", None, True):
+        with pytest.raises(ValueError, match="unknown"):
+            saved_liquid_model({"liquid_model": value})
+    with pytest.raises(ValueError, match="inconsistent"):
+        saved_liquid_model({"source_metadata": {"host_ledger": {"model_id": PUBLISHED_MODEL_ID}}})

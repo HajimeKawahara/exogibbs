@@ -16,7 +16,7 @@ import jax
 import numpy as np
 
 from hydrogen import H2_CALIBRATION, _checkout_provenance
-from melts_coupled import COMMON_R, PROVIDER_MODEL_ID, load_melts_evaluator
+from melts_coupled import COMMON_R, PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID, load_melts_evaluator, saved_liquid_model
 from m1_chemistry import build_setups, provenance as upper_provenance
 from run_bse_common_gibbs import json_value, source_standards_rt
 from m2_common_gas import SHARED_SPECIES, UPPER_SPECIES
@@ -225,6 +225,10 @@ def extract_formal_reduction_standards(source, *, evaluator, runtime, python_exe
     record = source.get("source_record", source.get("record"))
     parcel = source.get("source_atmosphere_parcel", source.get("source_atmosphere"))
     metadata = source["source_metadata"]
+    liquid_model = saved_liquid_model(source)
+    expected_model_id = {"native": PROVIDER_MODEL_ID, "published": PUBLISHED_MODEL_ID}[liquid_model]
+    if getattr(evaluator, "MODEL_ID", PROVIDER_MODEL_ID) != expected_model_id:
+        raise ValueError("The selected evaluator differs from the saved liquid model.")
     temperature, pressure = source["temperature_K"], source["pressure_bar"]
     if (metadata["model_id"] != "bse_melts_ma_retained_atmosphere_conditional_v1"
             or source["source_result"].get("accepted") is not True or parcel.get("accepted") is not True
@@ -251,13 +255,31 @@ def extract_formal_reduction_standards(source, *, evaluator, runtime, python_exe
         host[index] = amounts[names.index(name)] * amount_scale
     state = evaluator.evaluate_liquid(temperature, pressure * 1e5, host, runtime=runtime,
                                       common_R=COMMON_R, python_executable=python_executable)
-    if (state["model_id"] != PROVIDER_MODEL_ID or state["status"] != "ok_supplied_liquid_properties"
+    if (state["model_id"] != expected_model_id or state["status"] != "ok_supplied_liquid_properties"
             or state["T_K"] != temperature or state["P_Pa"] != pressure * 1e5
             or state["component_order"] != list(evaluator.COMPONENTS)
             or state["basis"]["common_R_J_mol_K"] != COMMON_R
             or state["phase_policy"]["oxygen_buffer"] != "None" or state["phase_policy"]["equilibrated"]
             or not np.allclose(state["returned_component_moles"], host, rtol=5e-9, atol=0)):
         raise ValueError("The native provider changed the requested state or convention.")
+    receipts = getattr(evaluator, "standard_state_receipts", [])
+    if liquid_model == "published":
+        receipt_id = state.get("provenance", {}).get("native_standard_state_receipt_sha256")
+        matching = [row for row in receipts if row.get("sha256_without_this_field") == receipt_id]
+        if len(matching) != 1:
+            raise ValueError("Published standards require their explicit native reference receipt.")
+        receipt = matching[0]
+        payload = {key: value for key, value in receipt.items() if key != "sha256_without_this_field"}
+        digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
+        anchor = receipt["native_properties"]
+        positive = host > 0
+        if (digest != receipt_id or receipt["T_K"] != temperature or receipt["P_Pa"] != pressure * 1e5
+                or receipt["common_R_J_mol_K"] != COMMON_R or anchor["model_id"] != PROVIDER_MODEL_ID
+                or anchor["T_K"] != temperature or anchor["P_Pa"] != pressure * 1e5
+                or anchor["component_order"] != list(evaluator.COMPONENTS)
+                or not np.array_equal(np.asarray(anchor["mu0_RT"], dtype=float)[positive],
+                                      np.asarray(state["mu0_RT"], dtype=float)[positive])):
+            raise ValueError("The published pure-liquid standards differ from their native reference receipt.")
     standards, _ = source_standards_rt(temperature, pressure)
     model = MaFeSiOHLiquid()
     shifts = np.asarray(model.standard_state_shift_RT(temperature))
@@ -270,8 +292,10 @@ def extract_formal_reduction_standards(source, *, evaluator, runtime, python_exe
     if any(value is None or isinstance(value, (bool, np.bool_)) or not np.isfinite(value) for value in values.values()):
         raise ValueError("A required actual standard is unavailable; no endpoint value is invented.")
     return {"temperature_K": temperature, "pressure_bar": pressure, "standards_rt": values,
+            "liquid_model": liquid_model, "liquid_model_id": expected_model_id,
+            "native_standard_state_receipts": receipts,
             "standard_conventions": {
-                "liquid": "Native MELTS pure endmember standards at the recorded T/P; independent endmember activity convention.",
+                "liquid": "Native MELTS pure endmember standards at the recorded T/P, evaluated through the saved " + liquid_model + " liquid model; independent endmember activity convention.",
                 "metal": "Source Fe/Si standards plus the Ma Fe-Si-O-H atomic-ideal standard-state shifts used by the BSE builder.",
                 "gas": "Saved retained-atmosphere standard potentials in the source common elemental gauge; ideal gas at 1 bar."},
             "native_state": state, "native_amount_scale": amount_scale,

@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 
 from m2_host_stability import evaluate_host_stability
-from melts_coupled import load_melts_evaluator
+from melts_coupled import load_melts_evaluator, saved_liquid_model
 
 
 def main():
@@ -35,10 +35,16 @@ def main():
     parameters = source.get("arguments", {})
     temperature = source.get("temperature_K", parameters.get("temperature_k"))
     pressure = source.get("pressure_bar", parameters.get("bottom_pressure_bar"))
-    evaluator = load_melts_evaluator(args.exoeos_checkout)
+    liquid_model = saved_liquid_model(source)
+    if liquid_model == "published" and (args.search_solutions or args.search_liquid_splitting or args.liquid_local_curvature):
+        parser.error("Published hosts require the separate published-model stability certificate runners for composition searches.")
+    native = load_melts_evaluator(args.exoeos_checkout)
+    evaluator = native if liquid_model == "native" else load_melts_evaluator(
+        args.exoeos_checkout, liquid_model=liquid_model,
+        runtime=args.runtime, python_executable=args.python_executable)
     assessment = evaluate_host_stability(
         record, source["source_result"]["component_amounts_mol"], temperature, pressure,
-        evaluator=evaluator, runtime=args.runtime,
+        evaluator=evaluator, candidate_evaluator=native if liquid_model == "published" else None, runtime=args.runtime,
         python_executable=args.python_executable,
     )
     if args.search_solutions or args.search_liquid_splitting:
@@ -62,7 +68,8 @@ def main():
         if assessment["liquid_local_curvature"]["status"] == "negative_feasible_witness":
             assessment["status"] = "rejected_by_feasible_trial"
     result = {
-        "scope": "New native-property postprocessing of the recorded source composition; no source re-equilibration.",
+        "scope": "New selected-host-property assessment with native candidate trials at the recorded source composition; no source re-equilibration.",
+        "liquid_model": liquid_model,
         "input": {"path": str(args.source_json.resolve()), "sha256": hashlib.sha256(raw).hexdigest(),
                   "source_accepted": source["source_result"].get("accepted"),
                   "source_scope": source.get("scope", source.get("model_id")),
