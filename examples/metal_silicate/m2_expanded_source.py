@@ -113,12 +113,15 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     return record, budget, callbacks, initial, metadata
 
 
-def canonical_interior_seed(record, budget, canonical):
+def canonical_interior_seed(record, budget, canonical, *, interior_fraction=1e-4):
     """Mix a feasible canonical ledger with 1e-4 of its metal-free LP interior.
 
     The fraction selects a starting point, not a lower amount bound. Exact-zero
     global elements remain absent, and all outer equilibrium audits are kept.
     """
+    if (isinstance(interior_fraction, bool) or not np.isfinite(interior_fraction)
+            or not 0 < interior_fraction <= 1):
+        raise ValueError("The interior fraction must be finite and in (0, 1].")
     canonical = np.asarray(canonical, dtype=float)
     budget = np.asarray(budget, dtype=float)
     phases = tuple(phase for phase in record["phases"] if phase != "metal")
@@ -135,8 +138,36 @@ def canonical_interior_seed(record, budget, canonical):
     interior = scale * _feasible_start(np.asarray(problem.formula_matrix),
                                        budget[problem.element_indices] / scale)
     seed = np.zeros_like(canonical)
-    seed[active] = (1. - 1e-4) * canonical[active] + 1e-4 * interior
+    seed[active] = (1. - interior_fraction) * canonical[active] + interior_fraction * interior
     return seed
+
+
+def conserved_source_seed(prior_record, prior_amounts, record, budget, *, interior_fraction=1e-4):
+    """Map a metal-free source into a larger catalog as a numerical seed.
+
+    The caller must require an accepted prior result. This helper validates
+    every component formula and the identical finite elemental budget; it
+    neither evaluates a new equilibrium nor reuses prior chemical potentials.
+    """
+    if prior_record["elements"] != record["elements"]:
+        raise ValueError("The prior and target elemental orders must match.")
+    prior_names = [(phase, name) for phase, names in prior_record["phases"].items() for name in names]
+    names = [(phase, name) for phase, values in record["phases"].items() for name in values]
+    prior_amounts = np.asarray(prior_amounts, dtype=float)
+    if (prior_amounts.shape != (len(prior_names),) or np.any(~np.isfinite(prior_amounts))
+            or np.any(prior_amounts < 0)):
+        raise ValueError("Prior component amounts must be finite and nonnegative.")
+    mapped = np.zeros(len(names))
+    for i, pair in enumerate(prior_names):
+        if pair not in names:
+            raise ValueError("The target lacks a prior component: " + str(pair))
+        formula = prior_record["component_formulas"][pair[1]]
+        target_formula = record["component_formulas"][pair[1]]
+        if any(formula.get(e, 0.) != target_formula.get(e, 0.)
+               for e in set(formula) | set(target_formula)):
+            raise ValueError("The prior and target component formulas differ: " + str(pair))
+        mapped[names.index(pair)] = prior_amounts[i]
+    return canonical_interior_seed(record, budget, mapped, interior_fraction=interior_fraction)
 
 
 def unpack_expanded_source(record, result, callbacks, temperature_k, pressure_bar):

@@ -219,3 +219,14 @@ The original scalar-energy, derivative, extensivity, conservation and KKT
 audits still decide acceptance. A different initial state can find a different
 local branch in a nonconvex model, so initialization is recorded and must be
 kept distinct from material or gas-catalog changes in paired comparisons.
+
+`conserved_source_seed(prior_record, prior_amounts, record, budget,
+interior_fraction=1e-4)` can instead map an accepted, saved metal-free source
+to an expanded catalog before the same conservative LP mixture. The caller
+must check the prior result's acceptance and pin its provenance. The helper
+requires identical element order, component formulas, phases and total
+element budgets, and zero metal. Additional target components start at zero
+before mixing. Reusing numerical amounts from a different gas catalog or
+liquid model does not transport its chemical potentials or acceptance: the
+new model must be independently minimized and audited from the supplied
+`initial_component_amounts_mol`.

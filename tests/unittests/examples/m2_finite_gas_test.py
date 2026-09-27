@@ -1,6 +1,7 @@
 """Finite background-element gas catalogs, reference invariance and contact."""
 
 import importlib
+import copy
 from pathlib import Path
 import sys
 
@@ -198,3 +199,34 @@ def test_canonical_interior_initialization_changes_only_a_conserved_start(tmp_pa
         SOURCE.canonical_interior_seed(record, b, canonical * 1.001)
     with pytest.raises(ValueError, match="initialization"):
         SOURCE.build_expanded_bse_problem(path, checkout, tmp_path, sys.executable, initialization="bad")
+
+
+def test_saved_source_seed_maps_formulas_and_rejects_changed_budgets(tmp_path):
+    eos = pytest.importorskip("exoeos")
+    checkout = Path(eos.__file__).resolve().parents[2]
+    path = checkout / "examples/m2_material/bse_inventory.json"
+    if not path.exists():
+        pytest.skip("Requires the explicitly selected ExoEOS BSE checkout.")
+    old, _, _, amounts, _ = SOURCE.build_expanded_bse_problem(path, checkout, tmp_path, sys.executable)
+    new, budget, _, canonical, _ = SOURCE.build_expanded_bse_problem(
+        path, checkout, tmp_path, sys.executable, gas_model="janaf")
+    mapped = SOURCE.conserved_source_seed(old, amounts, new, budget)
+    np.testing.assert_array_equal(mapped, SOURCE.canonical_interior_seed(new, budget, canonical))
+    with pytest.raises(ValueError, match="ledger"):
+        SOURCE.conserved_source_seed(old, amounts, new, budget * 1.0001)
+    changed = copy.deepcopy(old)
+    changed["component_formulas"]["sio2_melts"]["O"] = 3.
+    with pytest.raises(ValueError, match="formulas"):
+        SOURCE.conserved_source_seed(changed, amounts, new, budget)
+    changed = copy.deepcopy(old)
+    changed["elements"] = changed["elements"][::-1]
+    with pytest.raises(ValueError, match="elemental orders"):
+        SOURCE.conserved_source_seed(changed, amounts, new, budget)
+    old_names = [name for names in old["phases"].values() for name in names]
+    metal = amounts.copy()
+    metal[old_names.index("Fe_metal")] = 1.
+    with pytest.raises(ValueError, match="ledger"):
+        SOURCE.conserved_source_seed(old, metal, new, budget)
+    for fraction in (0., -1., 1.01, np.nan, True):
+        with pytest.raises(ValueError, match="fraction"):
+            SOURCE.conserved_source_seed(old, amounts, new, budget, interior_fraction=fraction)
