@@ -2,9 +2,10 @@
 ===================================================================
 
 The opt-in catalog adds every neutral Al/Ca/K/Ti/Cr/P gas in the packaged
-FastChem table to the existing 35 gases. The 26 retained condensates stay
-explicitly unchanged; background-element condensates and alloy components
-remain outside this model. Atomic references align conventions, not materials.
+FastChem table to the existing 35 gases. ``janaf`` retains the original 26
+condensates; ``janaf_condensed`` also includes the 41 neutral background-element
+condensates. Alloy components remain unchanged. Atomic references align
+conventions, not materials or independently tabulated pure phases.
 """
 
 from __future__ import annotations
@@ -30,19 +31,24 @@ def build_atmosphere_setup(gas_model="m1"):
     """Return the explicit retained catalog; the historical model is default."""
     if gas_model == "m1":
         return build_setups()[1]
-    if gas_model != "janaf":
-        raise ValueError("gas_model must be m1 or janaf.")
+    if gas_model not in ("janaf", "janaf_condensed"):
+        raise ValueError("gas_model must be m1, janaf, or janaf_condensed.")
     full = condensate_chemical_setup(silent=True)
     gas = full.gas_setup
-    matrix = np.asarray(gas.formula_matrix)
-    excluded = [i for i, name in enumerate(gas.elements) if name not in FINITE_ELEMENTS]
-    background = [gas.elements.index(name) for name in OMITTED_ELEMENTS]
-    columns = np.flatnonzero(np.all(matrix[excluded] == 0, axis=0)
-                            & np.any(matrix[background] > 0, axis=0))
-    names = EXPANDED_GAS_SPECIES + tuple(gas.species[i] for i in columns)
+    def additions(selected):
+        matrix = np.asarray(selected.formula_matrix)
+        excluded = [i for i, name in enumerate(selected.elements) if name not in FINITE_ELEMENTS]
+        background = [selected.elements.index(name) for name in OMITTED_ELEMENTS]
+        columns = np.flatnonzero(np.all(matrix[excluded] == 0, axis=0)
+                                & np.any(matrix[background] > 0, axis=0))
+        return tuple(selected.species[i] for i in columns)
+
+    names = EXPANDED_GAS_SPECIES + additions(gas)
+    clouds = CONDENSATE_SPECIES + (additions(full.condensate_setup)
+                                    if gas_model == "janaf_condensed" else ())
     return build_condensate_chemical_setup(
         gas_setup=subset_setup(gas, names, elements=FINITE_ELEMENTS),
-        condensate_setup=subset_setup(full.condensate_setup, CONDENSATE_SPECIES,
+        condensate_setup=subset_setup(full.condensate_setup, clouds,
                                      elements=FINITE_ELEMENTS),
     )
 

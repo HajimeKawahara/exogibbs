@@ -171,3 +171,62 @@ Al/Ca/K/Ti/Cr/P condensation and Mg/background-element alloy components remain
 outside the catalog. A fresh comparison with `m1` measures this finite gas
 extension within the declared model; it does not bound all omitted pathways,
 establish global host stability, or close planetary pressure by itself.
+
+## Retained background-element condensates
+
+The separate `gas_model="janaf_condensed"` model keeps the same 76 gases and
+adds all 41 neutral Al/Ca/K/Ti/Cr/P condensates in the packaged FastChem table,
+for **67** retained candidates. It uses the same thirteen finite carrier
+coordinates and atomic references; every condensate obeys its own tabulated
+temperature eligibility. Examples include Mg3P2O8(s,l) (upper validity
+4500 K), H3PO4(s,l) (1000 K), and PH3(s,l) (185.56 K); the last cannot enter
+the 1000--2173 K column. The source and upper must use the same selected mode.
+
+This finite gas/cloud calculation consumes the conserved atmospheric element
+allocation directly. It does not first add a cloud to a fixed gas inventory.
+All cloud atom totals, mass and phase KKT are audited, including the added
+candidates. For fixed T/P and atmospheric atoms the larger cloud catalog
+cannot raise the equilibrium Gibbs minimum; representative tests verify this
+and finite element conservation at 1000 K and 2173.15 K.
+
+Run the extended source with `--gas-model janaf_condensed_retained`. The
+unchanged FeSiOH alloy still omits Mg and the six background elements.
+FastChem pure condensates and native MELTS candidates are independent
+thermochemical models. In particular, equal elemental formulas do not make
+their standard energies equal. Native endpoint energies can include internal
+ordering and pressure terms absent from FastChem's pure-condensate standard.
+Their differences must be recorded separately; this larger conditional
+catalog does not establish a calibrated BSE phase boundary.
+
+## Optional conserved numerical initialization
+
+`build_expanded_bse_problem(..., initialization="canonical")` exposes a
+metal-free starting vector as
+`metadata["numerical_initialization"]["initial_component_amounts_mol"]`.
+It mixes 0.9999 of the canonical dry-melt plus H/He inventory with 0.0001 of
+the metal-free feasible LP interior. Both endpoints conserve the same atoms,
+so the mixture also preserves all thirteen budgets, exact-zero global
+elements and exactly zero initial metal. The returned canonical ledger stays
+unchanged. The default `initialization="lp"` keeps the original solver start.
+
+Pass the optional vector as `initial_component_amounts_mol` to
+`select_metal_phase` (or to the suppressed-branch `minimize_gibbs`). It seeds
+only the initial metal-free solve; the existing insertion procedure generates
+metal-bearing starts. `run_m2_contact.py --initialization canonical` wires
+both paths. This is a numerical starting point, not an atom floor, phase
+constraint, added reservoir, thermodynamic change or looser acceptance gate.
+The original scalar-energy, derivative, extensivity, conservation and KKT
+audits still decide acceptance. A different initial state can find a different
+local branch in a nonconvex model, so initialization is recorded and must be
+kept distinct from material or gas-catalog changes in paired comparisons.
+
+`conserved_source_seed(prior_record, prior_amounts, record, budget,
+interior_fraction=1e-4)` can instead map an accepted, saved metal-free source
+to an expanded catalog before the same conservative LP mixture. The caller
+must check the prior result's acceptance and pin its provenance. The helper
+requires identical element order, component formulas, phases and total
+element budgets, and zero metal. Additional target components start at zero
+before mixing. Reusing numerical amounts from a different gas catalog or
+liquid model does not transport its chemical potentials or acceptance: the
+new model must be independently minimized and audited from the supplied
+`initial_component_amounts_mol`.
