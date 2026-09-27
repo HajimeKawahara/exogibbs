@@ -24,6 +24,7 @@ from hydrogen import ideal_host_h2_dilution
 COMMON_R = 8.31446261815324
 PROVIDER_MODEL_ID = "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1"
 PUBLISHED_MODEL_ID = "melts_v102_published_mixing_native_standard_states_v1"
+WATER_MODEL_ID = "dry_melts_thompson2025_water_equivalent_v1"
 
 
 def saved_liquid_model(source: dict) -> str:
@@ -42,7 +43,7 @@ def saved_liquid_model(source: dict) -> str:
 
 
 def load_melts_evaluator(checkout: Path, *, liquid_model="native", runtime=None,
-                         python_executable=None) -> Any:
+                         python_executable=None, gas_water_standard_rt=None) -> Any:
     """Load the supplied-composition evaluator from an explicit ExoEOS checkout."""
     path = Path(checkout).resolve() / "examples" / "melts_liquid_evaluator.py"
     spec = importlib.util.spec_from_file_location("_exogibbs_melts_property_provider", path)
@@ -54,16 +55,32 @@ def load_melts_evaluator(checkout: Path, *, liquid_model="native", runtime=None,
         raise ValueError("The supplied checkout does not provide the declared MELTS model.")
     if liquid_model == "native":
         return module
-    if liquid_model != "published" or runtime is None or python_executable is None:
-        raise ValueError("Select native or published; the published model requires a native standard runtime and Python.")
+    if liquid_model not in {"published", "published_water"} or runtime is None or python_executable is None:
+        raise ValueError("Select native, published or published_water; published models require a native standard runtime and Python.")
     mixing_path = path.with_name("melts_liquid_mixing.py")
     mixing_spec = importlib.util.spec_from_file_location("_exogibbs_melts_mixing_provider", mixing_path)
     mixing = importlib.util.module_from_spec(mixing_spec)
     mixing_spec.loader.exec_module(mixing)
     if mixing.PUBLISHED_MODEL_ID != PUBLISHED_MODEL_ID:
         raise ValueError("The published provider has an unexpected model identity.")
-    return mixing.make_published_liquid_evaluator(module, runtime=runtime,
-                                                 python_executable=python_executable)
+    published = mixing.make_published_liquid_evaluator(module, runtime=runtime,
+                                                      python_executable=python_executable)
+    if liquid_model == "published_water":
+        return reconstruct_water_evaluator(checkout, published, gas_water_standard_rt)
+    return published
+
+
+def reconstruct_water_evaluator(checkout, published, gas_water_standard_rt):
+    """Load the explicit water provider using the consumer's common gas gauge."""
+    if not callable(gas_water_standard_rt):
+        raise ValueError("published_water requires an explicit common-gauge H2O standard callback (K, Pa -> RT).")
+    path = Path(checkout).resolve() / "examples" / "melts_water_reconstruction.py"
+    spec = importlib.util.spec_from_file_location("_exogibbs_water_property_provider", path)
+    water = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(water)
+    if water.MODEL_ID != WATER_MODEL_ID:
+        raise ValueError("The water provider has an unexpected model identity.")
+    return water.make_reconstructed_water_evaluator(published, gas_water_standard_rt)
 
 
 def make_melts_h2_phase(
@@ -84,7 +101,7 @@ def make_melts_h2_phase(
     """
     names = tuple(host_components)
     selected_model = getattr(evaluator, "MODEL_ID", PROVIDER_MODEL_ID)
-    if selected_model not in {PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID}:
+    if selected_model not in {PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID, WATER_MODEL_ID}:
         raise ValueError("Unsupported supplied-liquid model identity.")
     if not jax.config.x64_enabled:
         raise RuntimeError("MELTS coupling requires JAX_ENABLE_X64=1 for the residual tolerances.")
@@ -187,4 +204,14 @@ def provider_ledger(evaluator: Any, host_components: Sequence[str]) -> dict[str,
             "mixing_parameter_sha256": evaluator.mixing_parameter_sha256,
             "native_standard_state_receipts": evaluator.standard_state_receipts}
            if getattr(evaluator, "MODEL_ID", PROVIDER_MODEL_ID) == PUBLISHED_MODEL_ID else {"liquid_model": "native"}),
+        **({"liquid_model": "published_water", "dry_provider_model_id": evaluator.dry_provider_model_id,
+            "standard_convention": "Native dry-host standards plus the consumer's common-gauge H2O gas standard; native water contribution removed.",
+            "water_source_sha256": evaluator.water_source_sha256,
+            "water_standard_receipts": evaluator.water_standard_receipts,
+            "mixing_model_id": evaluator.mixing_model_id,
+            "mixing_parameter_sha256": evaluator.mixing_parameter_sha256,
+            "native_standard_state_receipts": evaluator.standard_state_receipts,
+            "water_policy": "Native H2O contribution removed; dry published MELTS plus integrated absorptivity-based water G with all host derivatives.",
+            "water_pressure_volume_term": "Not fitted; zero under the published-law assumption."}
+           if getattr(evaluator, "MODEL_ID", None) == WATER_MODEL_ID else {}),
     }

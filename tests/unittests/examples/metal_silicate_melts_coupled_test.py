@@ -237,7 +237,7 @@ def test_independent_host_scalar_audit_preserves_basis_and_h2_dilution(tmp_path,
         assert gradient[-1] == -np.inf
 
 
-@pytest.mark.parametrize("liquid_model", ["native", "published"])
+@pytest.mark.parametrize("liquid_model", ["native", "published", "published_water"])
 def test_bse_builder_preserves_absolute_atoms_and_initially_zero_reaction_channels(tmp_path, liquid_model):
     eos = pytest.importorskip("exoeos")
     if not hasattr(eos, "total_solution_state"):
@@ -248,6 +248,8 @@ def test_bse_builder_preserves_absolute_atoms_and_initially_zero_reaction_channe
         pytest.skip("Requires the explicitly selected ExoEOS BSE fixture checkout.")
     if liquid_model == "published" and not (root / "examples/melts_liquid_mixing.py").is_file():
         pytest.skip("Requires the explicitly selected published-mixing ExoEOS provider.")
+    if liquid_model == "published_water" and not (root / "examples/melts_water_reconstruction.py").is_file():
+        pytest.skip("Requires the explicitly selected reconstructed-water ExoEOS provider.")
     record, budget, callbacks, initial, metadata = BSE.build_bse_problem(
         ledger_path, root, tmp_path, sys.executable,
         liquid_model=liquid_model,
@@ -268,6 +270,12 @@ def test_bse_builder_preserves_absolute_atoms_and_initially_zero_reaction_channe
     if liquid_model == "published":
         assert metadata["host_ledger"]["model_id"] == MELTS.PUBLISHED_MODEL_ID
         assert metadata["host_ledger"]["native_standard_state_receipts"] == []
+    if liquid_model == "published_water":
+        assert metadata["host_ledger"]["model_id"] == MELTS.WATER_MODEL_ID
+        assert metadata["host_ledger"]["water_standard_receipts"] == []
+        with pytest.raises(ValueError, match="explicit common-gauge H2O"):
+            MELTS.load_melts_evaluator(root, liquid_model=liquid_model,
+                                      runtime=tmp_path, python_executable=sys.executable)
     assert metadata["scientific_acceptance"] == {"M2_A": "pending", "M2_B": "pending"}
     assert metadata["input"]["sha256"] == hashlib.sha256(ledger_path.read_bytes()).hexdigest()
     # Reducing the static phase support never changes the prescribed budget.
