@@ -1,0 +1,30 @@
+{
+  "role": "toward_vertex",
+  "component_index": 13,
+  "vertex_weight": 0.98,
+  "requested_component_moles": [
+    0.004459546430614626,
+    6.235387034177373e-05,
+    0.001073689092446246,
+    6.877143613932111e-07,
+    6.259552277070169e-05,
+    0.0007926933889479458,
+    0.0,
+    0.011586822309693396,
+    0.0,
+    0.0,
+    0.0015574464213097136,
+    0.0001435600030633287,
+    1.5255404830736e-05,
+    0.9800036654631381,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0002416843784820199
+  ],
+  "comparison": {
+    "status": "native_evaluation_unavailable"
+  },
+  "reason": "\nalphaMELTS for Python version 2.3.2 (Jul 21 2026 17:06:24)\nSetting calculation mode to rhyolite-MELTS 1.0.2\n\nProcessed line... log fo2 path: none Traceback (most recent call last):\n  File \"/tmp/stage2-global-eos-20260927/examples/melts_liquid_evaluator.py\", line 546, in <module>\n    main()\n  File \"/tmp/stage2-global-eos-20260927/examples/melts_liquid_evaluator.py\", line 535, in main\n    result = _worker(args.runtime.resolve(), request) if args.worker else evaluate_liquid(\n  File \"/tmp/stage2-global-eos-20260927/examples/melts_liquid_evaluator.py\", line 292, in _worker\n    require_match(returned_n, n, \"phase endmember amounts\")\n  File \"/tmp/stage2-global-eos-20260927/examples/melts_liquid_evaluator.py\", line 97, in require_match\n    raise ValueError(f\"Backend changed or failed to reproduce {label}.\")\nValueError: Backend changed or failed to reproduce phase endmember amounts.\n"
+}

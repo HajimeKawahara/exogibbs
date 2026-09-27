@@ -1,0 +1,27 @@
+{
+  "command": [
+    "examples/metal_silicate/run_m2_liquid_global.py",
+    "--saved-physical-audit",
+    "/tmp/stage2-stability-supported-native-h1e24/source_physical_audit.json",
+    "--exoeos-checkout",
+    "/tmp/stage2-global-eos-20260927",
+    "--runtime",
+    "/tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64",
+    "--python",
+    "/tmp/exoeos-pr3-env/bin/python",
+    "--output-directory",
+    "/tmp/stage2-liquid-global-fixed2-h1e24"
+  ],
+  "source_path": "/tmp/stage2-stability-supported-native-h1e24/source_physical_audit.json",
+  "source_sha256": "1f07dca4af7d1aa7599e3165f4a2a0ef94cc41ba37a363a3e72ba6f1685995bf",
+  "gibbs_commit": "5ae43b9c0427d29011564b392b21e9ec4c0b144c",
+  "exoeos_commit": "d797ab639a4e58617730ad899191fc028cc8967f",
+  "source_hashes": {
+    "examples/metal_silicate/run_m2_liquid_global.py": "926f3a1b798af9fbb80b833a40a3c821fc954b6052a0be86adb5d78ca2d3502d",
+    "examples/metal_silicate/m2_liquid_global.py": "446de82082f03f07d4e9e0fa7d93d18c882adb7c47e6e27363cf004e5f70de70"
+  },
+  "mixing_provider_sha256": "0ed215d7ab18b94ebb83811175151f5ee050a27c9c24fa5bd162033fd677efea",
+  "max_nodes": 20000,
+  "new_pressure_root": false,
+  "fresh_native_properties": true
+}

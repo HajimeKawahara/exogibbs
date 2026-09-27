@@ -1,0 +1,129 @@
+{
+  "archive_type": "independent_complete_domain_second_liquid_assessment",
+  "executions": {
+    "central": {
+      "actual_process_exit_code": 0
+    },
+    "failed_original_vertex_probe": {
+      "actual_process_exit_code": 1
+    },
+    "pytest_full_before_manifest_fix": {
+      "actual_process_exit_code": 1,
+      "result": "1876 passed, 1 skipped, 1 failed in 1898.97s"
+    },
+    "pytest_final_targeted": {
+      "actual_process_exit_code": 0,
+      "result": "36 passed in 2.90s"
+    }
+  },
+  "files": {
+    "README.md": {
+      "sha256": "58887a6665ff3a103ba1b348776af05d307dfe659762e67b030264b2e40b6caa",
+      "bytes": 2680
+    },
+    "central/assessment.json": {
+      "sha256": "7ff98513e07f2a63197be57473ad9427a515b7908425cec174b37edfd665b55c",
+      "bytes": 2421136
+    },
+    "central/host_properties.json": {
+      "sha256": "757dc5525674f8f338d150f9d898fef55e6742a68ec4fb8796ab4bb9da80c036",
+      "bytes": 23540
+    },
+    "central/native_expression_checks.json": {
+      "sha256": "37f104334121174cc7ba71146e9d6fdcf2e9f8e3658fe8a13f08a507ab1da87d",
+      "bytes": 629850
+    },
+    "central/native_probe_01.json": {
+      "sha256": "ea92388424f510b12e2b184dfeabfcbcbd16069cdab4d1bfc9cc38d5e72a1e86",
+      "bytes": 43843
+    },
+    "central/native_probe_02.json": {
+      "sha256": "d1260423b2a5a0ba35623f5e569ba29a193da68db73723da1a94bc33942da461",
+      "bytes": 43853
+    },
+    "central/native_probe_03.json": {
+      "sha256": "9ae3542431d2174081275f34ef443eade4bc589ca9c863c0bbf153232ed7eed5",
+      "bytes": 43851
+    },
+    "central/native_probe_04.json": {
+      "sha256": "7abc21af1800f0ce93f7cb26f64f162fc2f4a9eab9746d00ef490e7e3af6f789",
+      "bytes": 43841
+    },
+    "central/native_probe_05.json": {
+      "sha256": "ac7486b5824295579a3106fc42a16aff25b74a40893c6735201c2da0ce971280",
+      "bytes": 43815
+    },
+    "central/native_probe_06.json": {
+      "sha256": "920c19d7dca6ea98db0163404fa8377bae2fb3801b75b582a2a5dc8c115f4b0c",
+      "bytes": 43839
+    },
+    "central/native_probe_07.json": {
+      "sha256": "dc0fc0a1cd63cc756312a94c1c2ec05b954b522be6e50c1e63984b741ff841ba",
+      "bytes": 43850
+    },
+    "central/native_probe_08.json": {
+      "sha256": "ec89f1fb81d91b31555157c5673507daa8f61878a955afe64e873f7eb3b74ae0",
+      "bytes": 43836
+    },
+    "central/native_probe_09.json": {
+      "sha256": "5ec200d46b1c97b5f77aff1d73bc0cde2ed7c3ce4e9b1ef5916db7392d305494",
+      "bytes": 43836
+    },
+    "central/native_probe_10.json": {
+      "sha256": "391f10da9438a972ac2a29ce03d0979ecb604964ac3a023887b1a63859a8afc3",
+      "bytes": 43817
+    },
+    "central/native_probe_11.json": {
+      "sha256": "e9f1227e33dddadaecae4b1772206a63c7383d7c5aa41d2de832f0e959f8779a",
+      "bytes": 1495
+    },
+    "central/native_probe_12.json": {
+      "sha256": "27a14f0afccfbdf6c4290677517bd26e87e732d84ce54a87454e466417eeb3b7",
+      "bytes": 43745
+    },
+    "central/native_probe_13.json": {
+      "sha256": "28f99065c1d808714381141057314e8a57ab79decf1fd50d614a7510da7833e1",
+      "bytes": 43826
+    },
+    "central/protocol.json": {
+      "sha256": "24b34bf5f2b2e39da7915e6f182e8172af59560b0018ea42a148cf3cb20c5fb3",
+      "bytes": 1224
+    },
+    "central/source_physical_audit.json": {
+      "sha256": "1f07dca4af7d1aa7599e3165f4a2a0ef94cc41ba37a363a3e72ba6f1685995bf",
+      "bytes": 243347
+    },
+    "central/summary.json": {
+      "sha256": "4d0a24af2f5367ec25e1a2412305e02e095ccf29b7a8f1c455d6870237729fc4",
+      "bytes": 1664
+    },
+    "central.log": {
+      "sha256": "5ee30ba05d11a24e436535c930daf63e1790d2f073b449f1689f3e727b109f5a",
+      "bytes": 471
+    },
+    "failed_original_vertex_probe/host_properties.json": {
+      "sha256": "f54755d179e1a8f8235895c3b4b704b17f466c270666ac12287de35ae82b4a8a",
+      "bytes": 23539
+    },
+    "failed_original_vertex_probe/protocol.json": {
+      "sha256": "e46b4626c50d02f9bfc923ad72657cfaf11c5f43c458085beb81f0fc49198397",
+      "bytes": 1223
+    },
+    "failed_original_vertex_probe/source_physical_audit.json": {
+      "sha256": "1f07dca4af7d1aa7599e3165f4a2a0ef94cc41ba37a363a3e72ba6f1685995bf",
+      "bytes": 243347
+    },
+    "failed_original_vertex_probe.log": {
+      "sha256": "35657a1d5297ab049e9e370900528c959ad4a69de7ea78915610a08efbdab21e",
+      "bytes": 1608
+    },
+    "pytest_final_targeted.log": {
+      "sha256": "8400918ec43140b8ca4602d5bbe2a984f21063bf05551ad629c511e1c501b789",
+      "bytes": 1169
+    },
+    "pytest_full_before_manifest_fix.log": {
+      "sha256": "a02fa4137ad0542f7b3632131380c36bd02babdbc867c729d4108e506a965ea7",
+      "bytes": 5891
+    }
+  }
+}
