@@ -50,6 +50,16 @@ def test_negative_water_branch_is_a_witness_not_an_accepted_phase_bound():
     assert not result["empirical_material_certified"]
 
 
+def test_saved_reference_remains_a_trial_when_a_minorant_anchor_is_worse():
+    p = parameters()
+    p.update(quadratic_matrix_rt=[[0., 4.], [4., 0.]])
+    result = M.certify_water_common_plane(p, [1., 999.], max_nodes=1)
+    assert result["best_trial"]["origin"] == "saved_dry_reference_with_analytically_minimized_volatiles"
+    model = M.eliminate_volatiles(p)
+    expected, _, _ = M.value_gradient(model, [Fraction(1, 1000), Fraction(999, 1000)])
+    assert Decimal(result["best_trial"]["value_upper_rt"]) == expected.hi
+
+
 def test_elimination_requires_positive_cost_on_every_dry_composition():
     model = parameters()
     model["dissolved_h2_cost_rt"] = 0.

@@ -293,14 +293,15 @@ def _floating_model(model):
 
 
 def certify_water_common_plane(parameters: dict, reference_amounts: list, *, tolerance_rt: float = 1e-10,
-                                max_nodes: int = 20000) -> dict:
+                                max_nodes: int = 20000, progress_callback=None) -> dict:
     """Cover the dry simplex using verified convex alpha-BB minorants."""
     model = eliminate_volatiles(parameters)
     n = len(reference_amounts)
     if (n != len(parameters["dry_standard_costs_rt"])
             or not np.all(np.isfinite(np.asarray(reference_amounts, dtype=float)))
             or not np.isfinite(tolerance_rt) or tolerance_rt <= 0
-            or type(max_nodes) is not int or max_nodes < 1):
+            or type(max_nodes) is not int or max_nodes < 1
+            or (progress_callback is not None and not callable(progress_callback))):
         raise ValueError("Require a matching finite reference, positive tolerance and integer node budget.")
     amounts = list(map(Fraction, reference_amounts))
     if any(v <= 0 for v in amounts) or n < 2:
@@ -309,7 +310,11 @@ def certify_water_common_plane(parameters: dict, reference_amounts: list, *, tol
     objective = _floating_model(model)
     leaves, heap = [], []
     counter = 0
-    best = {"value_upper_rt": None, "coordinates": None}
+    initial_value, _, initial_volatiles = value_gradient(model, reference)
+    initial_capacity = _dot(parameters["dry_oxygen_counts"], reference)
+    best = {"value_upper_rt": str(initial_value.hi), "coordinates": [str(v) for v in reference],
+            "water_capacity_satisfied": initial_volatiles["water_per_dry_component"].hi <= initial_capacity.lo,
+            "origin": "saved_dry_reference_with_analytically_minimized_volatiles"}
     def assess_box(lower, upper):
         nonlocal counter, best
         counter += 1
@@ -349,7 +354,8 @@ def certify_water_common_plane(parameters: dict, reference_amounts: list, *, tol
         if best["value_upper_rt"] is None or value.hi < Decimal(best["value_upper_rt"]):
             capacity = _dot(parameters["dry_oxygen_counts"], point)
             best = {"value_upper_rt": str(value.hi), "coordinates": [str(v) for v in point],
-                    "water_capacity_satisfied": volatiles["water_per_dry_component"].hi <= capacity.lo}
+                    "water_capacity_satisfied": volatiles["water_per_dry_component"].hi <= capacity.lo,
+                    "origin": "box_minorant_anchor"}
         for i in range(n):
             value += _I(.5)*_I(rho)*(_I(point[i])-_I(float(lower[i])))*(_I(point[i])-_I(float(upper[i])))
             gradient[i] += _I(rho)*(_I(point[i])-_I(.5)*(_I(float(lower[i]))+_I(float(upper[i]))))
@@ -363,6 +369,8 @@ def certify_water_common_plane(parameters: dict, reference_amounts: list, *, tol
             leaves.append(row)
         else:
             heapq.heappush(heap, (bound, counter, lower, upper, row))
+        if progress_callback is not None and counter % 100 == 0:
+            progress_callback(counter, dict(best))
     assess_box(np.zeros(n), np.ones(n))
     while heap and counter+2 <= max_nodes:
         if best["water_capacity_satisfied"] and Decimal(best["value_upper_rt"]) < Decimal.from_float(tolerance_rt).copy_negate():
