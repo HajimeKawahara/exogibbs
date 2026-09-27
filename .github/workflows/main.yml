@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: HajimeKawahara/exoeos
-          ref: 05155344aac453b23d643c1bc8867c11d089d236
+          ref: a8538852308f34b122e26d440b9e22b945fb506f
           path: providers/exoeos
           fetch-depth: 0
 
@@ -105,7 +105,7 @@ jobs:
           provider = root / "providers/exoeos"
           assert subprocess.check_output(
               ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,
-          ).strip() == "05155344aac453b23d643c1bc8867c11d089d236"
+          ).strip() == "a8538852308f34b122e26d440b9e22b945fb506f"
           for module, source in ((exogibbs, root), (exoeos, provider)):
               actual = Path(module.__file__).resolve()
               expected = source / "src" / module.__name__ / "__init__.py"
@@ -116,6 +116,7 @@ jobs:
           assert callable(ma_alloy_curvature_lower_bound)
           assert (provider / "examples/melts_liquid_mixing.py").is_file()
           assert (provider / "examples/melts_solid_mixing.py").is_file()
+          assert (provider / "examples/melts_water_reconstruction.py").is_file()
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
           ).resolve()
