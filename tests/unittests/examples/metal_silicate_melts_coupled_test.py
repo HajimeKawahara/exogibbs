@@ -205,6 +205,38 @@ def test_reduced_gas_common_r_standards_match_independent_pinned_energies():
             RUNNER.reduced_gas_standards_rt(temperature)
 
 
+@pytest.mark.parametrize("hydrogen", [0., 1e-18, .03])
+@pytest.mark.parametrize("scale", [1., 1e24])
+def test_independent_host_scalar_audit_preserves_basis_and_h2_dilution(tmp_path, hydrogen, scale):
+    import jax
+    import jax.numpy as jnp
+    evaluator, _ = fake_evaluator(tmp_path)
+
+    def independent(t, p, n, **options):
+        present = np.flatnonzero(np.asarray(n) > 0)
+        def scalar(active):
+            full = jnp.zeros(len(n)).at[present].set(active)
+            total = jnp.sum(active)
+            standard = jnp.linspace(-9., -3., len(n))
+            return (jnp.dot(full, standard) + (8.3143/options["common_R"])
+                    * jnp.sum(active*jnp.log(active/total)) + .7*full[0]*full[1]/total)
+        energy, active_gradient = jax.value_and_grad(scalar)(jnp.asarray(n)[present])
+        gradient = np.full(len(n), np.nan)
+        gradient[present] = active_gradient
+        return energy, gradient
+
+    evaluator.energy_value_and_grad_rt = independent
+    phase = MELTS.make_melts_h2_phase(evaluator, HOST_NAMES, lambda t, p: 2.3,
+                                     runtime=tmp_path, python_executable="worker", common_r=8.3)
+    n = scale*np.array([.15, .4, 1e-18, .1, .05, hydrogen])
+    state = phase(2173.15, 250., n)
+    energy, gradient = phase.energy_value_and_grad_rt(2173.15, 250., n)
+    assert energy == pytest.approx(state.gibbs_rt, rel=2e-14)
+    np.testing.assert_allclose(gradient[n > 0], state.mu_rt[n > 0], atol=1e-12, rtol=0)
+    if hydrogen == 0:
+        assert gradient[-1] == -np.inf
+
+
 @pytest.mark.parametrize("liquid_model", ["native", "published"])
 def test_bse_builder_preserves_absolute_atoms_and_initially_zero_reaction_channels(tmp_path, liquid_model):
     eos = pytest.importorskip("exoeos")

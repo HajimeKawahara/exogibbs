@@ -1,0 +1,39 @@
+{
+  "physics_source_head": "a611c8a8840faa89a67cf604cbf2c2753a630f7e",
+  "native_evaluations": 0,
+  "assessment": "Compare saved native unit-composition energies with FastChem standards at the saved host T/P; not a new native search or empirical uncertainty bound.",
+  "comparison_count": 26,
+  "script_sha256": "3ae7b5a6e67849759ed45620cdabaac0ab802bb2b6d2b5ebedce0133807dac47",
+  "comparison_sha256": "40945ae2873b2505d24f8d3431b6d48754a2b38ab6b21d8c828fb5ebce4a3644",
+  "focused_tests": {
+    "passed": 10,
+    "elapsed_seconds": 102.82,
+    "log": "condensate_all_targeted.log"
+  },
+  "initial_more_oxidized_control": "The original 76gas/26cond model failed before evaluating 67cond at 1000 K; retained in condensate_targeted.log. This is not a new-condensate regression or proof of general composition robustness.",
+  "full_suite": "Initial run intentionally stopped under memory pressure; later complete c83bb99 stack validation is recorded separately below.",
+  "reference_file_sha256": {
+    "m1_chemistry.py": "e998fcab3d5a4846877e135ff664f3f246a344ff20a6d1f1c55c16e7144be523",
+    "m2_finite_gas.py": "dd68ca835f7eaedc5132c18c06112c87d481382ec0e47a2709bb34c410fc4cab",
+    "m2_janaf.py": "895db34792a256a1fb9bca4153b81340f4cdd8f8d45aff4afc51d04043fae127",
+    "m2_common_gas.py": "d9466af88628ee78051f979ce99f8f34cfd4abdfbbc8dcce725b0a29fa618cde",
+    "m2_omitted_gas.py": "21baad5d2d07e441ac46998a8dce9dc2eb22459607732408f1c22ac16a947729",
+    "run_bse_common_gibbs.py": "379ed85df5b051e2f37eb198c4aa4605fc6c7bfb262f554cc93d77fbde4c8188",
+    "source.py": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e",
+    "hydrogen.py": "8c6aaa6303583e1a7048b93db07a8edfea036321bc5c266425950821961887f3",
+    "reference.py": "cba9d0343b09847290f9d06b52c39f06b0fbf696f8ef246069be2a49623fcf4e",
+    "reference.json": "0c7146ab1c5935daae25f4371a34847e1469dfc637b02afe3f5984d4aeb22092",
+    "reduced_gas_reference.json": "0aa9b23cf1d85b9db6b877c5c360bd4420985e595ee9f9c7735dfe91347dc234",
+    "data/janaf_atomic.json": "4a9d51e8dd58f513b334b5025f0de49476ec5359e1ca811f9e9fd3daab829518"
+  },
+  "completed_stack_validation": {
+    "source_head": "c83bb99e20b313c167eefdd7761e4e7458aa4d49",
+    "provider_eos_head": "44b977847ea7ed1e16377907722277a3e75bc9d7",
+    "summary": "1893 passed, 1 skipped, 24 warnings in 1952.62s (0:32:32)",
+    "code_identity": "All examples/src/tests/documents files are byte-identical to c83bb99; delivery adds only archives and the provider CI test list.",
+    "raw_log": "completed_stack_full_pytest.log",
+    "log_sha256": "f70768de7dbde7a9e6fba252a919ffec3074745fa5a69037b66e5e5d003daba7",
+    "documentation": "./update_doc.sh succeeded with 301 pre-existing warnings.",
+    "documentation_log": "completed_stack_docs_build.log"
+  }
+}

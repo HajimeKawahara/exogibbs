@@ -24,13 +24,14 @@ from phase_selection import local_metal_selection_accepted, restrict_phase_callb
 from m1_chemistry import audit_parcel, build_setups, solve_parcel
 from m2_atmosphere import audit_atmosphere, make_atmosphere_phase
 from m2_common_gas import build_common_gas_setup, source_gas_names
+from m2_finite_gas import build_atmosphere_setup
 from m2_standards_audit import audit_contact, audit_shared_standards
 from run_bse_common_gibbs import build_bse_problem, json_value
 
 
 def audit_expanded_contact(record, source_result, callbacks, temperature_k, pressure_bar, basal):
     """Audit primitive source/basal gases, clouds, standards and atom transfer."""
-    _, upper = build_setups()
+    upper = build_atmosphere_setup(record.get("atmosphere_gas_model", "m1"))
     gas_map = record.get("gas_species_aliases", {})
     cloud_map = record.get("retained_condensate_components", {})
     cloud_names = [name for phase, names in record["phases"].items()
@@ -122,12 +123,13 @@ def diagnose_contact(record, budget, source_result, callbacks, temperature_k, pr
             or np.max(np.abs(reconstructed[b > 0] / b[b > 0] - 1.), initial=0.) > 1e-9):
         raise ValueError("The fresh source must independently preserve its nonnegative atomic ledger.")
     if "retained_condensate_components" in record:
+        expanded = build_atmosphere_setup(record.get("atmosphere_gas_model", "m1"))
         atmospheric = [name for phase, group in record["phases"].items()
                        if phase not in ("silicate", "metal") for name in group]
         positions = [names.index(name) for name in atmospheric]
         rows = [record["elements"].index(element) for element in expanded.gas_setup.elements]
         atmospheric_budget = formula[np.ix_(rows, positions)] @ amounts[positions]
-        parcel = make_atmosphere_phase(expanded, np.zeros(7)).parcel(temperature_k, pressure_bar, atmospheric_budget)
+        parcel = make_atmosphere_phase(expanded, np.zeros(len(expanded.elements))).parcel(temperature_k, pressure_bar, atmospheric_budget)
         contact = audit_expanded_contact(record, source_result, callbacks, temperature_k, pressure_bar, parcel)
         return {"common_standards": contact["common_standards"],
                 "source_gas_audit": contact["source_atmosphere_audit"],
@@ -136,7 +138,7 @@ def diagnose_contact(record, budget, source_result, callbacks, temperature_k, pr
                 "catalogs": [{"catalog": "expanded_condensed", "parcel": parcel,
                               "contact": contact["gas_contact"], "expanded_contact": contact}],
                 "numerical_diagnostics_completed": contact["accepted"],
-                "interpretation": "All 35 gases and 26 retained condensates participate in the finite source and contact audits."}
+                "interpretation": f"All {len(expanded.gas_species)} gases and {len(expanded.condensate_species)} retained condensates participate in the finite source and contact audits."}
     columns = [names.index(name) for name in record["phases"]["gas"]]
     aliases = record.get("gas_species_aliases", dict(zip(source_gas_names(shared), shared.species)))
     if set(aliases) != set(record["phases"]["gas"]) or len(set(aliases.values())) != len(aliases):
@@ -202,13 +204,16 @@ def main():
     parser.add_argument("--temperature", type=float, default=2173.15)
     parser.add_argument("--pressure", type=float, default=1.)
     parser.add_argument("--maxiter", type=int, default=1000)
-    parser.add_argument("--gas-model", choices=("m1_shared", "m1_expanded", "m1_retained"), default="m1_shared")
+    parser.add_argument("--gas-model", choices=("m1_shared", "m1_expanded", "m1_retained", "janaf_retained", "janaf_condensed_retained"), default="m1_shared")
     parser.add_argument("--liquid-model", choices=("native", "published"), default="native")
     parser.add_argument("--metal-mode", choices=("suppressed", "select"), default="suppressed")
+    parser.add_argument("--initialization", choices=("lp", "canonical"), default="lp")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if not jax.config.x64_enabled:
         parser.error("Set JAX_ENABLE_X64=1 for the declared contact tolerances.")
+    if args.initialization != "lp" and not args.gas_model.endswith("_retained"):
+        parser.error("Canonical initialization applies to retained-atmosphere source models.")
     if (not all(np.isfinite(value) and value > 0 for value in (args.temperature, args.pressure))
             or args.maxiter < 1 or args.output.exists()):
         parser.error("Require positive finite T/P, maxiter >= 1, and a new output path.")
@@ -218,11 +223,12 @@ def main():
               "scientific_acceptance": {"M2_A": "pending", "M2_B": "pending", "M2_C": "pending"},
               "numerical_diagnostics_completed": False}
     try:
-        if args.gas_model == "m1_retained":
+        if args.gas_model.endswith("_retained"):
             from m2_expanded_source import build_expanded_bse_problem, unpack_expanded_source
             record, budget, callbacks, initial, metadata = build_expanded_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,
-                temperature_k=args.temperature, pressure_bar=args.pressure, liquid_model=args.liquid_model)
+                temperature_k=args.temperature, pressure_bar=args.pressure, liquid_model=args.liquid_model,
+                gas_model=args.gas_model.removesuffix("_retained"), initialization=args.initialization)
         else:
             record, budget, callbacks, initial, metadata = build_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,
@@ -231,6 +237,7 @@ def main():
         report.update(source_metadata=metadata, record=record, element_amounts_mol=budget.tolist(),
                       canonical_initial_component_amounts_mol=initial.tolist())
         metadata["provenance"]["file_sha256"]["run_m2_contact.py"] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        seed = metadata.get("numerical_initialization", {}).get("initial_component_amounts_mol")
         if args.metal_mode == "select":
             from exoeos import MaFeSiOHLiquid
             from exoeos.ma_interval import ma_alloy_curvature_lower_bound
@@ -238,7 +245,8 @@ def main():
             from run_metal_selection import METAL_LOWER, METAL_UPPER
             curvature = ma_alloy_curvature_lower_bound(MaFeSiOHLiquid(), args.temperature, METAL_LOWER, METAL_UPPER)
             selection = select_metal_phase(record, budget, args.temperature, args.pressure, callbacks,
-                METAL_LOWER, METAL_UPPER, convex_phase_bounds={"metal": curvature}, maxiter=args.maxiter)
+                METAL_LOWER, METAL_UPPER, convex_phase_bounds={"metal": curvature}, maxiter=args.maxiter,
+                initial_component_amounts_mol=seed)
             report["metal_selection"] = asdict(selection)
             if not local_metal_selection_accepted(report["metal_selection"]):
                 raise ValueError("Metal selection did not establish the locally selected phase branch.")
@@ -247,9 +255,10 @@ def main():
             phases = tuple(phase for phase in record["phases"] if phase != "metal")
             problem = build_problem(record, budget, lambda t, p: np.zeros(len(initial)), phases=phases)
             result = minimize_gibbs(problem, args.temperature, args.pressure, budget,
-                                    restrict_phase_callbacks(record, problem, callbacks), maxiter=args.maxiter)
+                                    restrict_phase_callbacks(record, problem, callbacks), maxiter=args.maxiter,
+                                    initial_component_amounts_mol=seed)
         report["source_result"] = asdict(result)
-        if args.gas_model == "m1_retained":
+        if args.gas_model.endswith("_retained"):
             report["source_internal_record"] = record
             report["source_internal_result"] = asdict(result)
             record, public, callbacks, parcel = unpack_expanded_source(

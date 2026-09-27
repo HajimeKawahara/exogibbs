@@ -1,0 +1,6 @@
+{
+  "reason": "Stopped the later duplicate full-suite process to protect ongoing native source control from observed memory exhaustion: 1.9 GB available, 2 GB swap full. Test log preserved; full suite must be rerun after the earlier run releases memory.",
+  "pid": 2607579,
+  "signal": "SIGTERM",
+  "time_utc": "2026-09-27T02:59:29.943808+00:00"
+}

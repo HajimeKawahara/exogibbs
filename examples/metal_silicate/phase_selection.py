@@ -320,9 +320,14 @@ def select_metal_phase(
     temperature_k: float, pressure_bar: float, callbacks: Mapping[str, PhaseCallback],
     metal_lower: np.ndarray, metal_upper: np.ndarray, *,
     convex_phase_bounds: Optional[Mapping[str, float]] = None,
+    initial_component_amounts_mol: Optional[np.ndarray] = None,
     maxiter: int = 1000, tolerance: float = 1e-8, allow_metal: bool = True,
 ) -> MetalSelection:
     """Evaluate metal-free and metal-bearing branches without a metal floor.
+
+    An optional full-record initial ledger seeds only the metal-free solve;
+    it must conserve every atom and contain exactly zero metal. Subsequent
+    insertion seeds and all equilibrium/phase-selection audits are unchanged.
 
     Callbacks follow each phase's complete record order. Components containing
     exactly absent elements are removed before any logarithmic solve. The
@@ -408,7 +413,8 @@ def select_metal_phase(
 
     failures = (ValueError, RuntimeError, FloatingPointError, np.linalg.LinAlgError)
     try:
-        absent = solve(tuple(phase for phase in phases if phase != "metal"))
+        absent = solve(tuple(phase for phase in phases if phase != "metal"),
+                       initial_component_amounts_mol)
     except failures as error:
         return finish("unresolved", None, None, 0., None,
                               (f"Metal-free branch unavailable: {type(error).__name__}: {error}",))

@@ -29,7 +29,20 @@ def main():
     saved = json.loads(raw)
     host = saved["host_stability"]
     request = host["provider_properties"]
-    evaluator = load_melts_evaluator(args.exoeos_checkout)
+    models_by_id = {"melts_v102_published_mixing_native_standard_states_v1": "published",
+                    "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1": "native"}
+    if request["model_id"] not in models_by_id:
+        raise ValueError("The saved host model is not supported.")
+    liquid_model = models_by_id[request["model_id"]]
+    if (not saved["source"].get("numerical_source_accepted")
+            or not saved["source"].get("source_contact_accepted")
+            or host["temperature_K"] != request["T_K"]
+            or host["pressure_Pa"] != request["P_Pa"]
+            or not np.array_equal(host["native_host_component_amounts_mol"], request["component_moles"])):
+        raise ValueError("The saved accepted source and host T/P/amount ledger must agree.")
+    native = load_melts_evaluator(args.exoeos_checkout)
+    evaluator = load_melts_evaluator(args.exoeos_checkout, liquid_model=liquid_model,
+                                     runtime=args.runtime, python_executable=args.python)
     mixing_path = args.exoeos_checkout / "examples/melts_liquid_mixing.py"
     spec = importlib.util.spec_from_file_location("melts_liquid_mixing", mixing_path)
     mixing_model = importlib.util.module_from_spec(spec)
@@ -38,8 +51,8 @@ def main():
     started = time.time()
 
     def evaluate(n):
-        return evaluator.evaluate_liquid(request["T_K"], request["P_Pa"], n, runtime=args.runtime,
-                                         python_executable=args.python, common_R=COMMON_R)
+        return native.evaluate_liquid(request["T_K"], request["P_Pa"], n, runtime=args.runtime,
+                                      python_executable=args.python, common_R=COMMON_R)
 
     def write(name, value):
         with (args.output_directory / name).open("x") as stream:
@@ -53,13 +66,17 @@ def main():
                 "source_hashes": {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest()
                                   for path in (Path(__file__), Path(__file__).with_name("m2_liquid_global.py"))},
                 "mixing_provider_sha256": hashlib.sha256(mixing_path.read_bytes()).hexdigest(),
-                "max_nodes": args.max_nodes, "new_pressure_root": False, "fresh_native_properties": True}
+                "max_nodes": args.max_nodes, "new_pressure_root": False, "fresh_native_properties": True,
+                "selected_liquid_model": liquid_model, "native_comparisons_are_separate_controls": True}
     (args.output_directory / "source_physical_audit.json").write_bytes(raw)
     write("protocol.json", protocol)
-    properties = evaluate(request["component_moles"])
+    native_parent = evaluate(request["component_moles"])
+    properties = native_parent if liquid_model == "native" else evaluator.evaluate_liquid(
+        request["T_K"], request["P_Pa"], request["component_moles"], runtime=args.runtime,
+        python_executable=args.python, common_R=COMMON_R)
     write("host_properties.json", properties)
-    comparison = mixing_model.compare_native_mixing(properties)
-    checks = [{"role": "parent", "comparison": comparison, "provider_properties": properties}]
+    comparison = mixing_model.compare_native_mixing(native_parent)
+    checks = [{"role": "independent_native_parent", "comparison": comparison, "provider_properties": native_parent}]
     parent = np.asarray(properties["component_moles"])
     parent /= parent.sum()
     # Independent native probes validate the published expression away from

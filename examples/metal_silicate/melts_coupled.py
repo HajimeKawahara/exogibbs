@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 import jax
+import jax.numpy as jnp
+from jax.scipy.special import xlogy
 import numpy as np
 
 from full_potential import PhaseState
@@ -110,6 +112,35 @@ def make_melts_h2_phase(
             np.append(np.asarray(diluted.host_mu_rt), float(diluted.h2_mu_rt)),
             float(diluted.gibbs_rt),
         )
+
+    independent_host = getattr(evaluator, "energy_value_and_grad_rt", None)
+    if independent_host is not None:
+        @jax.jit
+        def dilution_scalar(n, standard):
+            host, hydrogen = jnp.sum(n[:-1]), n[-1]
+            total = host + hydrogen
+            return (hydrogen * standard + xlogy(host, host/total)
+                    + xlogy(hydrogen, jnp.where(hydrogen > 0, hydrogen/total, 1.)))
+
+        dilution_gradient = jax.jit(jax.value_and_grad(dilution_scalar))
+
+        def energy_value_and_grad_rt(temperature, pressure, amounts):
+            n = np.asarray(amounts, dtype=float)
+            if (n.shape != (len(names)+1,) or not np.all(np.isfinite(n))
+                    or np.any(n < 0) or n[:-1].sum() <= 0):
+                raise ValueError("Supply finite nonnegative host/H2 amounts with a positive host.")
+            host = np.zeros(len(evaluator.COMPONENTS))
+            host[indices] = n[:-1]
+            energy, gradient = independent_host(
+                temperature, pressure*1e5, host, runtime=runtime,
+                common_R=common_r, python_executable=python_executable)
+            extra, extra_gradient = dilution_gradient(n, h2_standard_rt(temperature, pressure))
+            combined = np.append(np.asarray(gradient)[indices], 0.) + np.asarray(extra_gradient)
+            if n[-1] == 0:
+                combined[-1] = -np.inf
+            return float(energy + extra), combined
+
+        evaluate.energy_value_and_grad_rt = energy_value_and_grad_rt
 
     return evaluate
 
