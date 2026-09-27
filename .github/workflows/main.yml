@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: HajimeKawahara/exoeos
-          ref: a90031f98b802a6d33207404ebedfacd076eac1b
+          ref: 813131ab63822c556ae62c95ff69f119487d0340
           path: providers/exoeos
           fetch-depth: 0
 
@@ -105,7 +105,7 @@ jobs:
           provider = root / "providers/exoeos"
           assert subprocess.check_output(
               ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,
-          ).strip() == "a90031f98b802a6d33207404ebedfacd076eac1b"
+          ).strip() == "813131ab63822c556ae62c95ff69f119487d0340"
           for module, source in ((exogibbs, root), (exoeos, provider)):
               actual = Path(module.__file__).resolve()
               expected = source / "src" / module.__name__ / "__init__.py"

@@ -28,6 +28,11 @@ does. `evaluate_host_stability` accepts `helium_dissolution` and
 includes the He-derived host work, saved separately from the H2 dilution.
 The bare `provider_properties` and its model identity remain unchanged.
 
+Zero He preserves a water-only original host even at zero dry mass. Positive
+He at zero dry mass is infeasible; the fixed-zero-dry-mass insertion limit is
+positive infinity, not a smooth joint derivative. The fresh audit labels
+nonfinite He endpoints explicitly while serializing their numeric value as null.
+
 The three capacities are named constitutive choices, not an empirical BSE
 error bracket. Temperatures beyond the chosen simulation interval are
 rejected. No low-pressure He-metal or Na-metal transfer law is inferred.
