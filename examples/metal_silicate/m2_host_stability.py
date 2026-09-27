@@ -14,6 +14,8 @@ import numpy as np
 
 from melts_coupled import COMMON_R, PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID
 
+WATER_MODEL_ID = "dry_melts_thompson2025_water_equivalent_v1"
+
 
 def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *,
                            candidate_properties=None, tolerance_rt: float = 1e-8,
@@ -25,7 +27,7 @@ def assess_host_candidates(properties: dict, dissolved_h2_moles: float, *,
     are allowed, but each consumed component must be present. Potentials of
     absent components are not substituted by zero.
     """
-    if (properties.get("model_id") not in (PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID)
+    if (properties.get("model_id") not in (PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID, WATER_MODEL_ID)
             or properties.get("status") != "ok_supplied_liquid_properties"):
         raise ValueError("Expected a declared supplied-liquid model.")
     candidates = properties if candidate_properties is None else candidate_properties
@@ -187,9 +189,9 @@ def evaluate_host_stability(
     if record["component_formulas"].get("H2_dissolved") != {"H": 2}:
         raise ValueError("The molecular dissolved-H2 formula must be explicit.")
     model_id = getattr(evaluator, "MODEL_ID", PROVIDER_MODEL_ID)
-    if model_id not in (PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID):
+    if model_id not in (PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID, WATER_MODEL_ID):
         raise ValueError("Unknown selected host model.")
-    if model_id == PUBLISHED_MODEL_ID and candidate_evaluator is None:
+    if model_id in (PUBLISHED_MODEL_ID, WATER_MODEL_ID) and candidate_evaluator is None:
         raise ValueError("Published host stability requires an explicit native candidate evaluator.")
     options = dict(runtime=runtime, python_executable=python_executable, common_R=COMMON_R)
     properties = evaluator.evaluate_liquid(

@@ -318,14 +318,16 @@ def test_solution_search_stays_on_supported_face_without_faking_pure_phase_cover
     assert row["status"] == "unresolved"
 
 
-def test_published_host_uses_its_own_potential_and_separate_native_trials():
+@pytest.mark.parametrize("model_id", ["melts_v102_published_mixing_native_standard_states_v1",
+                                      "dry_melts_thompson2025_water_equivalent_v1"])
+def test_published_host_uses_its_own_potential_and_separate_native_trials(model_id):
     from copy import deepcopy
     from m2_host_stability import evaluate_host_stability
     from melts_coupled import PUBLISHED_MODEL_ID
 
     native = properties()
     published = deepcopy(native)
-    published.update(model_id=PUBLISHED_MODEL_ID, mu_RT=[-3., -4.])
+    published.update(model_id=model_id, mu_RT=[-3., -4.])
     published.pop("saturation")
     calls = []
     def host_call(t, p, n, **options):
@@ -337,7 +339,7 @@ def test_published_host_uses_its_own_potential_and_separate_native_trials():
         calls.append("candidate")
         return native
     common = dict(COMPONENTS=["A", "B"], ELEMENTS=["A", "B"], FORMULA_MATRIX=np.eye(2))
-    host = SimpleNamespace(**common, MODEL_ID=PUBLISHED_MODEL_ID, evaluate_liquid=host_call)
+    host = SimpleNamespace(**common, MODEL_ID=model_id, evaluate_liquid=host_call)
     provider = SimpleNamespace(**common, MODEL_ID=PROVIDER_MODEL_ID, evaluate_liquid=candidate_call)
     record = {"phases": {"silicate": ["A_melts", "B_melts", "H2_dissolved"]},
               "component_formulas": {"A_melts": {"A": 1.}, "B_melts": {"B": 1.}, "H2_dissolved": {"H": 2}}}
