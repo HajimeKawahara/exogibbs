@@ -31,3 +31,12 @@ Validation includes the offline atom-ledger/provider-selection regression,
 the EOS scalar-derivative and zero-water tests, and one fixed-composition
 evaluation of the saved OH source. This point evaluation is not a new
 equilibrium or pressure closure.
+
+For a declared capacity sensitivity of the reconstructed-water model, use
+`standard_offsets_rt["h2o_melts"]`. Multiplying capacity by a positive factor
+`c` is the linear water-standard shift `-2*log(c)` in units of RT. This uses
+the existing extensive-G/chemical-potential offset mechanism; it does not
+change the Hessian or the separate `H2_dissolved` standard. The capacity
+interpretation applies to `published_water`, not to native hydrated MELTS.
+A chosen finite range is a declared model sensitivity, not a calibrated
+universal error bound. The default offset is zero.
