@@ -1,5 +1,5 @@
 """M2 JANAF omitted-gas references
-==============================
+===============================
 
 Pinned atomic references and finite-source trace-demand diagnostics.
 
