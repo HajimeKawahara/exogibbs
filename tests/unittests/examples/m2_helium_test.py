@@ -100,6 +100,13 @@ def test_wrapped_host_potentials_and_saved_recipe_agree_with_closed_henry_soluti
                                             "scalar": "inconsistent saved law"})
     with pytest.raises(ValueError, match="T/P"):
         phase(2200., 270., n)
+    wet_only = phase(2173.15, 270., [0., 1., 0.])
+    bare_wet_only = host(2173.15, 270., [0., 1.])
+    assert wet_only.gibbs_rt == bare_wet_only.gibbs_rt
+    np.testing.assert_array_equal(wet_only.mu_rt[:-1], bare_wet_only.mu_rt)
+    assert wet_only.mu_rt[-1] == np.inf
+    with pytest.raises(ValueError, match="Positive He"):
+        phase(2173.15, 270., [0., 1., .001])
 
 
 def test_default_preserves_gas_only_species_and_marks_each_omission(checkout, tmp_path):

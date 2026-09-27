@@ -230,6 +230,10 @@ def evaluate_host_stability(
             "native_host_mu_correction_rt": helium_mu.tolist(),
             "helium_mu_rt": (float(helium_result["mu_rt"][-1])
                              if np.isfinite(helium_result["mu_rt"][-1]) else None),
+            "helium_mu_endpoint": ("positive_infinity_at_fixed_zero_dry_mass"
+                                   if np.isposinf(helium_result["mu_rt"][-1]) else
+                                   "negative_infinity_at_zero_He_positive_dry_mass"
+                                   if np.isneginf(helium_result["mu_rt"][-1]) else "finite"),
             "scope": "He-free native competitor against the selected host plus the EOS dry-mass He derivative; He is excluded from the H2 mixing denominator."}
     assessment.update(native_amount_scale=amount_scale, provider_properties=properties,
                       native_candidate_properties=candidates,
