@@ -105,3 +105,8 @@ It does not substitute a finite native comparison for model identity.
 The thermal properties of the standard probe are not used as properties of
 the evolving liquid, and this model selection does not align alloy/gas
 standards or supply an empirical calibration range.
+
+The [fixed central-source assessment](../../results/m2_liquid_global/20260927/README.md)
+closes the full 12-component domain at zero with 4715 verified boxes. It
+preserves both the original unavailable native vertex request and the fresh
+successful assessment, along with their separate source and execution records.
