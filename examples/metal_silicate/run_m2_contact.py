@@ -207,10 +207,13 @@ def main():
     parser.add_argument("--gas-model", choices=("m1_shared", "m1_expanded", "m1_retained", "janaf_retained", "janaf_condensed_retained"), default="m1_shared")
     parser.add_argument("--liquid-model", choices=("native", "published"), default="native")
     parser.add_argument("--metal-mode", choices=("suppressed", "select"), default="suppressed")
+    parser.add_argument("--initialization", choices=("lp", "canonical"), default="lp")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if not jax.config.x64_enabled:
         parser.error("Set JAX_ENABLE_X64=1 for the declared contact tolerances.")
+    if args.initialization != "lp" and not args.gas_model.endswith("_retained"):
+        parser.error("Canonical initialization applies to retained-atmosphere source models.")
     if (not all(np.isfinite(value) and value > 0 for value in (args.temperature, args.pressure))
             or args.maxiter < 1 or args.output.exists()):
         parser.error("Require positive finite T/P, maxiter >= 1, and a new output path.")
@@ -225,7 +228,8 @@ def main():
             record, budget, callbacks, initial, metadata = build_expanded_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,
                 temperature_k=args.temperature, pressure_bar=args.pressure,
-                gas_model=args.gas_model.removesuffix("_retained"), liquid_model=args.liquid_model)
+                gas_model=args.gas_model.removesuffix("_retained"), liquid_model=args.liquid_model,
+                initialization=args.initialization)
         else:
             record, budget, callbacks, initial, metadata = build_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,
@@ -234,6 +238,7 @@ def main():
         report.update(source_metadata=metadata, record=record, element_amounts_mol=budget.tolist(),
                       canonical_initial_component_amounts_mol=initial.tolist())
         metadata["provenance"]["file_sha256"]["run_m2_contact.py"] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        seed = metadata.get("numerical_initialization", {}).get("initial_component_amounts_mol")
         if args.metal_mode == "select":
             from exoeos import MaFeSiOHLiquid
             from exoeos.ma_interval import ma_alloy_curvature_lower_bound
@@ -241,7 +246,8 @@ def main():
             from run_metal_selection import METAL_LOWER, METAL_UPPER
             curvature = ma_alloy_curvature_lower_bound(MaFeSiOHLiquid(), args.temperature, METAL_LOWER, METAL_UPPER)
             selection = select_metal_phase(record, budget, args.temperature, args.pressure, callbacks,
-                METAL_LOWER, METAL_UPPER, convex_phase_bounds={"metal": curvature}, maxiter=args.maxiter)
+                METAL_LOWER, METAL_UPPER, convex_phase_bounds={"metal": curvature}, maxiter=args.maxiter,
+                initial_component_amounts_mol=seed)
             report["metal_selection"] = asdict(selection)
             if not local_metal_selection_accepted(report["metal_selection"]):
                 raise ValueError("Metal selection did not establish the locally selected phase branch.")
@@ -250,7 +256,8 @@ def main():
             phases = tuple(phase for phase in record["phases"] if phase != "metal")
             problem = build_problem(record, budget, lambda t, p: np.zeros(len(initial)), phases=phases)
             result = minimize_gibbs(problem, args.temperature, args.pressure, budget,
-                                    restrict_phase_callbacks(record, problem, callbacks), maxiter=args.maxiter)
+                                    restrict_phase_callbacks(record, problem, callbacks), maxiter=args.maxiter,
+                                    initial_component_amounts_mol=seed)
         report["source_result"] = asdict(result)
         if args.gas_model.endswith("_retained"):
             report["source_internal_record"] = record

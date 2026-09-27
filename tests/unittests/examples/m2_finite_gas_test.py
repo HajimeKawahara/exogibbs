@@ -158,3 +158,43 @@ def test_67_condensates_preserve_finite_atoms_and_cannot_raise_minimum(setup, te
                                + report["cloud_element_amounts_mol"], b, rtol=1e-9)
     assert report["condensate_amounts_mol"][expanded.condensate_species.index("PH3(s,l)")] == 0.
     assert max(abs(x) for x in report["relative_element_residual"]) < 1e-9
+
+
+@pytest.mark.parametrize("mode", ["m1", "janaf", "janaf_condensed"])
+def test_canonical_interior_initialization_changes_only_a_conserved_start(tmp_path, mode):
+    eos = pytest.importorskip("exoeos")
+    checkout = Path(eos.__file__).resolve().parents[2]
+    path = checkout / "examples/m2_material/bse_inventory.json"
+    if not path.exists():
+        pytest.skip("Requires the explicitly selected ExoEOS BSE checkout.")
+    default = SOURCE.build_expanded_bse_problem(path, checkout, tmp_path, sys.executable, gas_model=mode)
+    record, b, callbacks, canonical, metadata = SOURCE.build_expanded_bse_problem(
+        path, checkout, tmp_path, sys.executable, gas_model=mode, initialization="canonical")
+    seed = np.array(metadata["numerical_initialization"]["initial_component_amounts_mol"])
+    names = [name for phase in record["phases"].values() for name in phase]
+    formula = np.array([[record["component_formulas"][name].get(element, 0.) for name in names]
+                        for element in record["elements"]])
+    np.testing.assert_allclose(formula @ seed, b, rtol=1e-12, atol=0)
+    np.testing.assert_array_equal(canonical, default[3])
+    assert default[-1]["numerical_initialization"]["initial_component_amounts_mol"] is None
+    assert metadata["numerical_initialization"]["canonical_interior_fraction"] == 1e-4
+    assert metadata["standards"] == default[-1]["standards"]
+    assert metadata["atmosphere"] == default[-1]["atmosphere"]
+    assert metadata["numerical_execution"]["native_melt_calls"] == 0
+    metal = [names.index(name) for name in record["phases"]["metal"]]
+    np.testing.assert_array_equal(seed[metal], 0.)
+    for name in record["phases"]["atmosphere"]:
+        assert seed[names.index(name)] > 0
+    if mode != "m1":
+        p = names.index("P_atmosphere_atom")
+        assert canonical[p] == 0. and 0 < seed[p] < 1e-4 * b[record["elements"].index("P")]
+    zero_he, no_he = b.copy(), canonical.copy()
+    zero_he[record["elements"].index("He")] = 0.
+    no_he[names.index("He_atmosphere_atom")] = 0.
+    restricted = SOURCE.canonical_interior_seed(record, zero_he, no_he)
+    assert restricted[names.index("He_atmosphere_atom")] == 0.
+    np.testing.assert_allclose(formula @ restricted, zero_he, rtol=1e-12, atol=0)
+    with pytest.raises(ValueError, match="ledger"):
+        SOURCE.canonical_interior_seed(record, b, canonical * 1.001)
+    with pytest.raises(ValueError, match="initialization"):
+        SOURCE.build_expanded_bse_problem(path, checkout, tmp_path, sys.executable, initialization="bad")

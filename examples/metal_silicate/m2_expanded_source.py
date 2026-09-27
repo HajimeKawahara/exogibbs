@@ -11,7 +11,9 @@ from pathlib import Path
 
 import numpy as np
 
+from common_gibbs import _feasible_start
 from full_potential import PhaseState, ideal_phase
+from local import build_problem
 from m1_chemistry import build_setups
 from m2_atmosphere import make_atmosphere_phase
 from m2_common_gas import anchored_standards_rt, source_gas_names
@@ -23,14 +25,18 @@ from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 
 def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_executable,
                                *, temperature_k=2173.15, pressure_bar=1., scenario=None,
-                               gas_model="m1", liquid_model="native"):
+                               gas_model="m1", liquid_model="native", initialization="lp"):
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
     gases on six additional atomic references, retaining 26 condensates.
     ``janaf_condensed`` adds all 41 neutral background-element condensates.
     Carrier amounts are conserved coordinates, never added atomic gases.
+    ``initialization='canonical'`` exposes a conserved metal-free starting
+    vector in metadata. The returned canonical ledger remains unchanged.
     """
+    if initialization not in ("lp", "canonical"):
+        raise ValueError("initialization must be lp or canonical.")
     normalized = normalize_scenario(scenario)
     setup = build_atmosphere_setup(gas_model)
     record, budget, callbacks, initial, metadata = build_bse_problem(
@@ -59,6 +65,13 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     record.pop("gas_species_aliases")
     record["atmosphere_element_order"] = list(setup.gas_setup.elements)
     record["atmosphere_gas_model"] = gas_model
+    metadata["numerical_initialization"] = {
+        "strategy": initialization,
+        "canonical_interior_fraction": 1e-4 if initialization == "canonical" else None,
+        "initial_component_amounts_mol": (canonical_interior_seed(record, budget, initial).tolist()
+                                           if initialization == "canonical" else None),
+        "scope": "Numerical metal-free starting point only; no atom floor, new phase constraint, thermodynamic change, or relaxed acceptance tolerance.",
+    }
     callbacks.pop("gas")
     callbacks["atmosphere"] = atmosphere
     if scenario is not None:
@@ -91,7 +104,7 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     metadata["provenance"]["file_sha256"].update({name: hashlib.sha256(
         Path(__file__).with_name(name).read_bytes()).hexdigest()
         for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py", "m2_scenarios.py",
-                     "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py")})
+                     "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py", "phase_selection.py")})
     metadata["provenance"]["file_sha256"]["data/janaf_atomic.json"] = hashlib.sha256(DATA_PATH.read_bytes()).hexdigest()
     if gas_model in ("janaf", "janaf_condensed"):
         metadata["standards"]["janaf_atomic_reference"] = atomic_standard_audit(temperature_k)
@@ -100,6 +113,32 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         metadata["standards"]["common_gas"]["reaction_model"] = (
             "Packaged FastChem4 76 neutral gases on thirteen elements; continuous temperature evaluation")
     return record, budget, callbacks, initial, metadata
+
+
+def canonical_interior_seed(record, budget, canonical):
+    """Mix a feasible canonical ledger with 1e-4 of its metal-free LP interior.
+
+    The fraction selects a starting point, not a lower amount bound. Exact-zero
+    global elements remain absent, and all outer equilibrium audits are kept.
+    """
+    canonical = np.asarray(canonical, dtype=float)
+    budget = np.asarray(budget, dtype=float)
+    phases = tuple(phase for phase in record["phases"] if phase != "metal")
+    problem = build_problem(record, budget, lambda t, p: np.zeros(len(canonical)), phases=phases)
+    active = problem.species_indices
+    excluded = np.ones(len(problem.full_species), dtype=bool)
+    excluded[active] = False
+    if (canonical.shape != excluded.shape or np.any(~np.isfinite(canonical))
+            or np.any(canonical < 0) or np.any(canonical[excluded] != 0)
+            or not np.allclose(np.asarray(problem.full_formula_matrix) @ canonical,
+                               budget, rtol=1e-12, atol=0)):
+        raise ValueError("The canonical seed must preserve the metal-free elemental ledger exactly.")
+    scale = float(budget.sum())
+    interior = scale * _feasible_start(np.asarray(problem.formula_matrix),
+                                       budget[problem.element_indices] / scale)
+    seed = np.zeros_like(canonical)
+    seed[active] = (1. - 1e-4) * canonical[active] + 1e-4 * interior
+    return seed
 
 
 def unpack_expanded_source(record, result, callbacks, temperature_k, pressure_bar):
