@@ -125,7 +125,9 @@ def factory_fixture(monkeypatch, tmp_path):
     def callback(t,p,x):
         assert (t,p)==(2000.,1.)
         x=np.asarray(x);positive=x>0
-        return S(gibbs_rt=float(standards@x+np.dot(x[positive],np.log(x[positive]))+100*x[2]*x[3]))
+        mu=np.full(18,-np.inf);mu[positive]=standards[positive]+np.log(x[positive])-100*x[2]*x[3]
+        mu[2]+=100*x[3];mu[3]+=100*x[2]
+        return S(mu_rt=mu, gibbs_rt=float(standards@x+np.dot(x[positive],np.log(x[positive]))+100*x[2]*x[3]))
     return metadata,callback,tmp_path,lo,hi
 
 
@@ -144,10 +146,28 @@ def test_factory_returns_bound_provenance_and_exact_element_order(factory_fixtur
 def test_factory_rejects_changed_scalar_or_provider(factory_fixture):
     from types import SimpleNamespace
     metadata,callback,path,lo,hi=factory_fixture
-    bad=lambda t,p,x:SimpleNamespace(gibbs_rt=callback(t,p,x).gibbs_rt+.01)
+    bad=lambda t,p,x:SimpleNamespace(mu_rt=callback(t,p,x).mu_rt, gibbs_rt=callback(t,p,x).gibbs_rt+.01)
     fn=M.make_associated_insertion_minimizer(metadata,bad,path)
     with pytest.raises(ValueError,match='source scalar'):
         fn(2000.,1.,np.eye(18),np.zeros(18),lo,hi,maxiter=100)
     (path/'recipe.py').write_text('# changed\n')
     with pytest.raises(ValueError,match='recipe'):
         M.make_associated_insertion_minimizer(metadata,callback,path)
+
+
+def test_orthogonal_linear_standard_tampering_is_detected(factory_fixture):
+    from types import SimpleNamespace
+    metadata,callback,path,lo,hi=factory_fixture
+    reference=M.make_associated_insertion_minimizer(metadata,callback,path)
+    result=reference(2000.,1.,np.eye(18),np.zeros(18),lo,hi,maxiter=100)
+    x=result.composition
+    # A fixed linear shift with zero energy at the verified anchor still
+    # changes the scalar throughout its nontrivial composition domain.
+    shift=np.zeros(18);shift[2]=.01;shift[3]=-.01*x[2]/x[3]
+    assert abs(shift@x)<1e-20
+    def modified(t,p,n):
+        state=callback(t,p,n)
+        return SimpleNamespace(gibbs_rt=state.gibbs_rt+shift@n,mu_rt=state.mu_rt+shift)
+    fn=M.make_associated_insertion_minimizer(metadata,modified,path)
+    with pytest.raises(ValueError,match='insertion gradient'):
+        fn(2000.,1.,np.eye(18),np.zeros(18),lo,hi,maxiter=100)
