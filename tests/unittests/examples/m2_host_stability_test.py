@@ -62,6 +62,25 @@ def test_h2_dilution_is_the_derivative_of_the_same_full_scalar():
     assert row["status"] == "nonnegative_insertion_trial"
 
 
+def test_helium_dry_mass_derivative_changes_candidate_work_without_h2_dilution():
+    native = properties()
+    helium, masses = .1, np.array([.04, .06])
+    dry_mass = np.dot(native["component_moles"], masses)
+    mu = -helium*masses/dry_mass
+    base = assess_host_candidates(native, 1.)
+    result = assess_host_candidates(native, 1., helium_host_mu_rt=mu)
+    row = result["candidates"][0]
+    assert row["helium_dissolution_correction_gibbs_rt"] == pytest.approx(-mu.sum())
+    assert result["log_native_host_fraction"] == base["log_native_host_fraction"]
+    assert row["insertion_rt_per_mol_atoms"] - base["candidates"][0]["insertion_rt_per_mol_atoms"] == pytest.approx(-mu.sum()/2)
+    # At fixed nHe the only candidate-dependent He term is -nHe*ln(Mdry).
+    step = 1e-5
+    derivative = (-helium*np.log(dry_mass-step*masses.sum())
+                  + helium*np.log(dry_mass+step*masses.sum()))/(2*step)
+    assert row["helium_dissolution_correction_gibbs_rt"] == pytest.approx(derivative, abs=1e-11)
+    assert native["mu_RT"] == [-2., -3.]
+
+
 def test_insertion_is_invariant_to_element_gauge_and_amount_scale():
     reference = assess_host_candidates(properties(), 1.)["candidates"][0]
     shifted = properties()

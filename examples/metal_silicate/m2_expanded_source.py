@@ -21,6 +21,7 @@ from m2_finite_gas import atmosphere_gauge_rt, build_atmosphere_setup, catalog_s
 from m2_janaf import DATA_PATH, atomic_standard_audit
 from m2_phosphorus import add_phosphorus_metal, phosphorus_metal_domain
 from m2_associated import add_associated_metal, associated_metal_domain
+from m2_helium import HELIUM_MODELS, add_helium_silicate
 from m2_scenarios import apply_standard_offsets, metal_selection_domain, normalize_scenario
 from run_bse_common_gibbs import build_bse_problem, source_standards_rt
 
@@ -29,7 +30,7 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
                                *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1",
                                initialization="lp", liquid_model="native", metal_model="ma",
                                phosphorus_options=None, potassium_standard_offset_rt=None,
-                               hydrogen_oxygen_model="omitted"):
+                               hydrogen_oxygen_model="omitted", helium_solubility_model="gas_only"):
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
@@ -41,6 +42,8 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     """
     if initialization not in ("lp", "canonical"):
         raise ValueError("initialization must be lp or canonical.")
+    if helium_solubility_model not in HELIUM_MODELS:
+        raise ValueError("Unknown helium_solubility_model.")
     if metal_model not in ("ma", "phosphorus", "associated", "associated_k") or (metal_model == "ma" and phosphorus_options is not None):
         raise ValueError("Select metal_model ma, phosphorus, associated or associated_k; P options require an extended model.")
     if (metal_model == "associated_k") != (potassium_standard_offset_rt is not None):
@@ -77,6 +80,11 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     record.pop("gas_species_aliases")
     record["atmosphere_element_order"] = list(setup.gas_setup.elements)
     record["atmosphere_gas_model"] = gas_model
+    metadata["helium_solubility_model"] = helium_solubility_model
+    if helium_solubility_model != "gas_only":
+        initial = add_helium_silicate(record, initial, callbacks, metadata, setup, initial_gauge,
+                                     inventory_path, exoeos_checkout, temperature_k, pressure_bar,
+                                     helium_solubility_model)
     if metal_model in ("phosphorus", "associated", "associated_k"):
         if scenario is not None and "metal_bounds" in scenario:
             raise ValueError("Four-component scenario bounds cannot define the five-component P domain.")
@@ -122,14 +130,16 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
                           if gas_model != "janaf_condensed" else [])
                          + ([] if metal_model == "associated_k" else ["K alloy component" if metal_model == "associated" else
                             "Mg/Al/Ca/K/Ti/Cr alloy components" if metal_model == "phosphorus"
-                            else "Mg/Al/Ca/K/Ti/Cr/P alloy components"]),
+                            else "Mg/Al/Ca/K/Ti/Cr/P alloy components"])
+                         + ["Na alloy component", "He alloy dissolution"]
+                         + (["He silicate dissolution"] if helium_solubility_model == "gas_only" else []),
         "pure_phase_reference_policy": "FastChem pure condensates and native MELTS phases are independent thermochemical models. Matching formulas do not establish matching energies or a calibrated phase boundary.",
     }
     metadata["provenance"]["file_sha256"].update({name: hashlib.sha256(
         Path(__file__).with_name(name).read_bytes()).hexdigest()
         for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py", "m2_scenarios.py",
                      "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py", "phase_selection.py",
-                     "m2_phosphorus.py", "m2_associated.py")})
+                     "m2_phosphorus.py", "m2_associated.py", "m2_helium.py")})
     metadata["provenance"]["file_sha256"]["data/janaf_atomic.json"] = hashlib.sha256(DATA_PATH.read_bytes()).hexdigest()
     metadata["metal_model"] = metal_model
     if gas_model in ("janaf", "janaf_condensed"):
