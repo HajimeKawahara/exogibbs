@@ -26,7 +26,8 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
-    gases on six additional atomic references. Both retain 26 condensates.
+    gases on six additional atomic references, retaining 26 condensates.
+    ``janaf_condensed`` adds all 41 neutral background-element condensates.
     Carrier amounts are conserved coordinates, never added atomic gases.
     """
     normalized = normalize_scenario(scenario)
@@ -79,14 +80,17 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         "retention": "Full retention; atmospheric Fe condensate is distinct from the deep alloy.",
         "pressure": "Gas partial pressures sum to total pressure; clouds add mass without gas pressure.",
         "upper_reference_policy": "Re-evaluate raw FastChem reactions at every layer T/P. Conserved-element gauges cancel from isolated parcel composition; no low-temperature JANAF extrapolation or frozen source chemical potentials.",
-        "missing_paths": ["Al/Ca/K/Ti/Cr/P retained condensates", "Mg/Al/Ca/K/Ti/Cr/P alloy components"],
+        "missing_paths": (["Al/Ca/K/Ti/Cr/P retained condensates"]
+                          if gas_model != "janaf_condensed" else [])
+                         + ["Mg/Al/Ca/K/Ti/Cr/P alloy components"],
+        "pure_phase_reference_policy": "FastChem pure condensates and native MELTS phases are independent thermochemical models. Matching formulas do not establish matching energies or a calibrated phase boundary.",
     }
     metadata["provenance"]["file_sha256"].update({name: hashlib.sha256(
         Path(__file__).with_name(name).read_bytes()).hexdigest()
         for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py", "m2_scenarios.py",
                      "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py")})
     metadata["provenance"]["file_sha256"]["data/janaf_atomic.json"] = hashlib.sha256(DATA_PATH.read_bytes()).hexdigest()
-    if gas_model == "janaf":
+    if gas_model in ("janaf", "janaf_condensed"):
         metadata["standards"]["janaf_atomic_reference"] = atomic_standard_audit(temperature_k)
         metadata["standards"]["common_gas"]["policy"] = (
             "Keep the seven lower anchors and add six pinned JANAF atomic energies; no cross-phase calibration.")

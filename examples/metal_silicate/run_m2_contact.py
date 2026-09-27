@@ -204,7 +204,7 @@ def main():
     parser.add_argument("--temperature", type=float, default=2173.15)
     parser.add_argument("--pressure", type=float, default=1.)
     parser.add_argument("--maxiter", type=int, default=1000)
-    parser.add_argument("--gas-model", choices=("m1_shared", "m1_expanded", "m1_retained", "janaf_retained"), default="m1_shared")
+    parser.add_argument("--gas-model", choices=("m1_shared", "m1_expanded", "m1_retained", "janaf_retained", "janaf_condensed_retained"), default="m1_shared")
     parser.add_argument("--metal-mode", choices=("suppressed", "select"), default="suppressed")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
@@ -219,12 +219,12 @@ def main():
               "scientific_acceptance": {"M2_A": "pending", "M2_B": "pending", "M2_C": "pending"},
               "numerical_diagnostics_completed": False}
     try:
-        if args.gas_model in ("m1_retained", "janaf_retained"):
+        if args.gas_model.endswith("_retained"):
             from m2_expanded_source import build_expanded_bse_problem, unpack_expanded_source
             record, budget, callbacks, initial, metadata = build_expanded_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,
                 temperature_k=args.temperature, pressure_bar=args.pressure,
-                gas_model="janaf" if args.gas_model == "janaf_retained" else "m1")
+                gas_model=args.gas_model.removesuffix("_retained"))
         else:
             record, budget, callbacks, initial, metadata = build_bse_problem(
                 args.inventory, args.exoeos_checkout, args.runtime, args.python,
@@ -250,7 +250,7 @@ def main():
             result = minimize_gibbs(problem, args.temperature, args.pressure, budget,
                                     restrict_phase_callbacks(record, problem, callbacks), maxiter=args.maxiter)
         report["source_result"] = asdict(result)
-        if args.gas_model in ("m1_retained", "janaf_retained"):
+        if args.gas_model.endswith("_retained"):
             report["source_internal_record"] = record
             report["source_internal_result"] = asdict(result)
             record, public, callbacks, parcel = unpack_expanded_source(

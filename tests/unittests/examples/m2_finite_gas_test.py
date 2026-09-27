@@ -107,14 +107,15 @@ def test_thirteen_carrier_unpack_and_contact_include_background_species(setup):
     assert CONTACT.diagnose_contact(public, b, values, callbacks, 2173.15, 267.)["matched_contact_accepted"]
 
 
-def test_bse_builder_preserves_all_atoms_and_pins_identical_model_files(tmp_path):
+@pytest.mark.parametrize("mode", ["janaf", "janaf_condensed"])
+def test_bse_builder_preserves_all_atoms_and_pins_identical_model_files(tmp_path, mode):
     eos = pytest.importorskip("exoeos")
     checkout = Path(eos.__file__).resolve().parents[2]
     path = checkout / "examples/m2_material/bse_inventory.json"
     if not path.exists():
         pytest.skip("Requires the explicitly selected ExoEOS BSE checkout.")
     outputs = [SOURCE.build_expanded_bse_problem(path, checkout, tmp_path, sys.executable,
-                                                gas_model=mode) for mode in ("m1", "janaf")]
+                                                gas_model=selected) for selected in ("m1", mode)]
     record, budget, callbacks, initial, metadata = outputs[1]
     names = [name for group in record["phases"].values() for name in group]
     formula = np.array([[record["component_formulas"][name].get(element, 0.) for name in names]
@@ -122,7 +123,38 @@ def test_bse_builder_preserves_all_atoms_and_pins_identical_model_files(tmp_path
     np.testing.assert_allclose(formula @ initial, budget, rtol=1e-12)
     assert len(record["phases"]["atmosphere"]) == 13
     assert callbacks["atmosphere"].setup.gas_species == GAS.build_atmosphere_setup("janaf").gas_species
-    assert metadata["standards"]["gas_model"] == "janaf_retained"
+    assert metadata["standards"]["gas_model"] == mode + "_retained"
     assert len(metadata["standards"]["common_gas"]["element_gauge_rt"]) == 13
     assert metadata["provenance"]["file_sha256"] == outputs[0][-1]["provenance"]["file_sha256"]
     assert metadata["numerical_execution"]["native_melt_calls"] == 0
+    assert len(metadata["atmosphere"]["condensate_species"]) == (67 if mode == "janaf_condensed" else 26)
+
+
+def test_background_condensates_keep_the_gas_catalog_and_pure_phase_validity(setup):
+    expanded = GAS.build_atmosphere_setup("janaf_condensed")
+    assert expanded.gas_species == setup.gas_species
+    assert len(expanded.condensate_species) == 67
+    assert expanded.condensate_species[:26] == setup.condensate_species
+    assert len(set(expanded.condensate_species)) == 67
+    matrix = np.asarray(expanded.condensate_setup.formula_matrix)
+    assert np.all(np.any(matrix[7:, 26:] > 0, axis=0))
+    candidates = expanded.condensate_species
+    upper = expanded.condensate_setup.temperature_validity_upper
+    assert upper[candidates.index("Mg3P2O8(s,l)")] == 4500.
+    assert upper[candidates.index("PH3(s,l)")] == 185.56
+    assert GAS.catalog_sha256(expanded) != GAS.catalog_sha256(setup)
+
+
+@pytest.mark.parametrize("temperature", [1000., 2173.15])
+def test_67_condensates_preserve_finite_atoms_and_cannot_raise_minimum(setup, temperature):
+    b = np.array([1., .1, .03, .001, .001, .001, .001,
+                  1e-7, 1e-7, 1e-7, 1e-8, 1e-7, 2e-4])
+    expanded = GAS.build_atmosphere_setup("janaf_condensed")
+    original = ATM.make_atmosphere_phase(setup, np.zeros(13)).parcel(temperature, 267., b)
+    report = ATM.make_atmosphere_phase(expanded, np.zeros(13)).parcel(temperature, 267., b)
+    assert report["accepted"]
+    assert report["gibbs_rt"] <= original["gibbs_rt"] + 1e-10
+    np.testing.assert_allclose(np.asarray(report["gas_element_amounts_mol"])
+                               + report["cloud_element_amounts_mol"], b, rtol=1e-9)
+    assert report["condensate_amounts_mol"][expanded.condensate_species.index("PH3(s,l)")] == 0.
+    assert max(abs(x) for x in report["relative_element_residual"]) < 1e-9

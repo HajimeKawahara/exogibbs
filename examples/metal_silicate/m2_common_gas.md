@@ -171,3 +171,29 @@ Al/Ca/K/Ti/Cr/P condensation and Mg/background-element alloy components remain
 outside the catalog. A fresh comparison with `m1` measures this finite gas
 extension within the declared model; it does not bound all omitted pathways,
 establish global host stability, or close planetary pressure by itself.
+
+## Retained background-element condensates
+
+The separate `gas_model="janaf_condensed"` model keeps the same 76 gases and
+adds all 41 neutral Al/Ca/K/Ti/Cr/P condensates in the packaged FastChem table,
+for **67** retained candidates. It uses the same thirteen finite carrier
+coordinates and atomic references; every condensate obeys its own tabulated
+temperature eligibility. Examples include Mg3P2O8(s,l) (upper validity
+4500 K), H3PO4(s,l) (1000 K), and PH3(s,l) (185.56 K); the last cannot enter
+the 1000--2173 K column. The source and upper must use the same selected mode.
+
+This finite gas/cloud calculation consumes the conserved atmospheric element
+allocation directly. It does not first add a cloud to a fixed gas inventory.
+All cloud atom totals, mass and phase KKT are audited, including the added
+candidates. For fixed T/P and atmospheric atoms the larger cloud catalog
+cannot raise the equilibrium Gibbs minimum; representative tests verify this
+and finite element conservation at 1000 K and 2173.15 K.
+
+Run the extended source with `--gas-model janaf_condensed_retained`. The
+unchanged FeSiOH alloy still omits Mg and the six background elements.
+FastChem pure condensates and native MELTS candidates are independent
+thermochemical models. In particular, equal elemental formulas do not make
+their standard energies equal. Native endpoint energies can include internal
+ordering and pressure terms absent from FastChem's pure-condensate standard.
+Their differences must be recorded separately; this larger conditional
+catalog does not establish a calibrated BSE phase boundary.
