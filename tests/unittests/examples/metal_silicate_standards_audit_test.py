@@ -149,3 +149,151 @@ def test_saved_reduction_standards_use_actual_pressure_host_and_source_conventio
     with pytest.raises(ValueError, match="unchanged"):
         AUDIT.extract_formal_reduction_standards(source, evaluator=provider, runtime=None,
                                                 python_executable=None, amount_scale=.1)
+
+
+@pytest.fixture
+def reconstructed_water_case():
+    """Keep water standards unavailable while exposing the actual dry receipt."""
+    import copy
+    import hashlib
+    import json
+
+    eos = pytest.importorskip("exoeos")
+    components, elements = ["sio2", "fe2sio4", "h2o"], ["Si", "Fe", "O", "H"]
+    formulas = np.array([[1., 0., 2., 0.], [1., 2., 4., 0.], [0., 0., 1., 2.]])
+    source = {"liquid_model": "published_water", "temperature_K": 2173.15, "pressure_bar": 60.,
+              "source_record": {"phases": {"silicate": ["sio2_melts", "fe2sio4_melts", "h2o_melts", "H2_dissolved"]},
+                  "component_formulas": {"sio2_melts": {"Si": 1., "O": 2.},
+                      "fe2sio4_melts": {"Si": 1., "Fe": 2., "O": 4.}, "h2o_melts": {"H": 2., "O": 1.}, "H2_dissolved": {"H": 2.}}},
+              "source_result": {"accepted": True, "component_amounts_mol": [3., 2., .4, .1]},
+              "source_metadata": {"model_id": "bse_melts_ma_retained_atmosphere_conditional_v1"},
+              "source_atmosphere_parcel": {"accepted": True, "T_K": 2173.15, "P_bar": 60.,
+                  "gas_species": ["H2O1", "H2", "He1"], "gas_standard_potentials_rt": [-9., -1., -3.]}}
+    receipt = {"T_K": 2173.15, "P_Pa": 6e6, "common_R_J_mol_K": AUDIT.COMMON_R,
+               "native_properties": {"model_id": AUDIT.PROVIDER_MODEL_ID, "T_K": 2173.15,
+                   "P_Pa": 6e6, "component_order": components, "mu0_RT": [-5., -7., -999.]}}
+    receipt["sha256_without_this_field"] = hashlib.sha256(json.dumps(receipt, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    dry = {"model_id": AUDIT.PUBLISHED_MODEL_ID, "status": "ok_supplied_liquid_properties",
+           "T_K": 2173.15, "P_Pa": 6e6, "component_order": components,
+           "returned_component_moles": [.3, .2, 0.], "mu0_RT": [-5., -7., None],
+           "provenance": {"native_standard_state_receipt_sha256": receipt["sha256_without_this_field"]},
+           "basis": {"common_R_J_mol_K": AUDIT.COMMON_R},
+           "phase_policy": {"oxygen_buffer": "None", "equilibrated": False}}
+    state = copy.deepcopy(dry)
+    state.update(model_id=AUDIT.WATER_MODEL_ID, mu0_RT=[None]*3,
+                 water_reconstruction={"dry_properties": dry, "native_water_amount_used_mol": 0.})
+    calls = []
+
+    def evaluate(t, p, n, **kwargs):
+        calls.append((t, p, n.copy()))
+        state["returned_component_moles"] = n.tolist()
+        return copy.deepcopy(state)
+
+    provider = SimpleNamespace(__file__=str(Path(eos.__file__).resolve().parents[2] / "examples/melts_water_reconstruction.py"),
+        MODEL_ID=AUDIT.WATER_MODEL_ID, standard_state_receipts=[receipt], COMPONENTS=components,
+        ELEMENTS=elements, FORMULA_MATRIX=formulas, evaluate_liquid=evaluate)
+    return source, provider, state, calls
+
+
+def extract_case(case):
+    return AUDIT.extract_formal_reduction_standards(case[0], evaluator=case[1], runtime=None,
+                                                    python_executable=None, amount_scale=1.)
+
+
+def test_reconstructed_water_uses_only_dry_native_standards(reconstructed_water_case):
+    case = reconstructed_water_case
+    case[2]["water_reconstruction"]["dry_properties"]["returned_component_moles"] = [3., 2., 0.]
+    result = extract_case(case)
+    assert result["standards_rt"]["sio2_liquid"] == -5.
+    assert result["standards_rt"]["fe2sio4_liquid"] == -7.
+    assert result["native_state"]["mu0_RT"] == [None]*3
+    assert result["liquid_model_id"] == AUDIT.WATER_MODEL_ID
+    assert result["liquid_standard_state_model_id"] == AUDIT.PUBLISHED_MODEL_ID
+    assert result["excluded_dissolved_components"] == []
+    assert not result["physical_calibration_accepted"]
+    np.testing.assert_array_equal(case[3][0][2], [3., 2., .4])
+
+
+@pytest.mark.parametrize("tamper", ["water", "amount", "standard", "temperature", "identity"])
+def test_reconstructed_water_rejects_changed_dry_reference(reconstructed_water_case, tamper):
+    case = reconstructed_water_case
+    dry = case[2]["water_reconstruction"]["dry_properties"]
+    dry["returned_component_moles"] = [3., 2., 0.]
+    if tamper == "water":
+        case[2]["water_reconstruction"]["native_water_amount_used_mol"] = .4
+    elif tamper == "amount":
+        dry["returned_component_moles"][2] = .4
+    elif tamper == "standard":
+        dry["mu0_RT"][0] += 1.
+    elif tamper == "temperature":
+        dry["T_K"] += 1.
+    else:
+        dry["model_id"] = AUDIT.PROVIDER_MODEL_ID
+    with pytest.raises(ValueError, match="dry standard|reference receipt"):
+        extract_case(case)
+
+
+def test_formal_reactions_exclude_only_declared_atomic_helium(reconstructed_water_case):
+    import importlib.util
+
+    case = reconstructed_water_case
+    source, provider = case[:2]
+    case[2]["water_reconstruction"]["dry_properties"]["returned_component_moles"] = [3., 2., 0.]
+    path = Path(provider.__file__).parent / "m2_material/helium_dissolution.py"
+    spec = importlib.util.spec_from_file_location("_formal_helium_test", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    receipt = module.make_helium_dissolution("guillot2012_olivine", 2173.15, [.06008, .20377, 0., 0.], -3.).receipt
+    host = source["source_record"]["phases"]["silicate"]
+    receipt = {**receipt, "temperature_K": 2173.15, "pressure_bar": 60., "pressure_Pa": 6e6,
+               "host_component_order": list(host), "component_order": list(host)+["He_dissolved"],
+               "gas_anchor": {"species": "He1", "temperature_K": 2173.15, "pressure_standard_bar": 1.,
+                   "retained_raw_standard_rt": -3., "elements": ["He"], "formula": [1.],
+                   "element_gauge_rt": [0.], "common_standard_rt": -3.}}
+    source["source_metadata"]["helium_dissolution"] = receipt
+    host.append("He_dissolved")
+    source["source_record"]["component_formulas"]["He_dissolved"] = {"He": 1.}
+    source["source_result"]["component_amounts_mol"].append(.03)
+    result = extract_case(case)
+    assert result["excluded_dissolved_components"][0]["saved_amount_mol"] == .03
+    assert result["helium_declaration"] == receipt
+    assert result["standards_rt"]["sio2_liquid"] == -5.
+    source["source_atmosphere_parcel"]["gas_standard_potentials_rt"][-1] += .1
+    with pytest.raises(ValueError, match="retained gas"):
+        extract_case(case)
+    source["source_atmosphere_parcel"]["gas_standard_potentials_rt"][-1] -= .1
+    source["source_record"]["component_formulas"]["He_dissolved"] = {"He": 2.}
+    with pytest.raises(ValueError, match="atomic-He"):
+        extract_case(case)
+    source["source_metadata"].pop("helium_dissolution")
+    with pytest.raises(ValueError, match="explicit saved"):
+        extract_case(case)
+
+
+@pytest.mark.parametrize("selection", ["phosphorus", "associated", "associated_k", "associated_k_na"])
+def test_actual_extended_alloy_fe_si_standards_remain_bound(reconstructed_water_case, selection):
+    import exoeos
+
+    case = reconstructed_water_case
+    source = case[0]
+    case[2]["water_reconstruction"]["dry_properties"]["returned_component_moles"] = [3., 2., 0.]
+    source["source_metadata"]["metal_model"] = selection
+    order = ["Fe", "Si", "O", "H", "P"] + (["Na"] if selection == "associated_k_na" else [])
+    original, _ = AUDIT.source_standards_rt(2173.15, 60.)
+    shift = np.asarray(exoeos.MaFeSiOHLiquid().standard_state_shift_RT(2173.15))
+    standards = [float(original[name+"_metal"]+shift[index]) for index, name in enumerate(order[:4])]+[0.]*(len(order)-4)
+    record = source["source_record"]
+    record["phases"]["metal"] = [name+"_metal" for name in order]
+    record["component_formulas"].update({name+"_metal": {name: 1.} for name in order})
+    source["source_result"]["component_amounts_mol"].extend([.1]*len(order))
+    if selection == "phosphorus":
+        source["source_metadata"]["phosphorus_metal"] = {"component_order": order, "base_standard_potentials_rt": standards}
+    else:
+        source["source_metadata"]["associated_metal"] = {"component_order": order,
+            "standards": {"component_order": order, "standard_potentials_rt": standards}}
+    result = extract_case(case)
+    assert result["alloy_component_order"] == order
+    assert result["metal_model"] == selection
+    standards[1] += .1
+    with pytest.raises(ValueError, match="Fe/Si alloy standards"):
+        extract_case(case)
