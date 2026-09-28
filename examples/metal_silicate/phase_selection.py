@@ -325,12 +325,47 @@ def _insertion_seed(record, budget, absent, composition, callbacks, temperature,
     raise ValueError("No evaluated energy-decreasing feasible insertion start was found. " + last_rejection)
 
 
+def validate_metal_initial_ledger(record: dict, element_amounts_mol: np.ndarray,
+                                  amounts: np.ndarray, metal_lower: np.ndarray,
+                                  metal_upper: np.ndarray, *, metal_present: bool) -> np.ndarray:
+    """Copy an atom-conserving full ledger within the current metal domain.
+
+    This validates an initial guess, not prior equilibrium acceptance. The
+    caller owns the provenance of any previously accepted branch.
+    """
+    names = [name for group in record["phases"].values() for name in group]
+    budget = _budgets(element_amounts_mol, len(record["elements"]))
+    if not np.isrealobj(amounts):
+        raise ValueError("An initial ledger must be real.")
+    n = np.array(amounts, dtype=float, copy=True)
+    formula = np.array([[record["component_formulas"][name].get(e, 0.) for name in names]
+                        for e in record["elements"]])
+    unsupported = np.any(formula[budget == 0] != 0, axis=0)
+    if (n.shape != (len(names),) or np.any(~np.isfinite(n)) or np.any(n < 0)
+            or np.any(n[unsupported] != 0)
+            or not np.allclose(formula @ n, budget, rtol=1e-9, atol=0)):
+        raise ValueError("An initial ledger must preserve atoms and exact-zero element support.")
+    metal = n[[names.index(name) for name in record["phases"]["metal"]]]
+    total = metal.sum()
+    if metal_present:
+        if total <= 0:
+            raise ValueError("The metal-present initial ledger requires positive metal.")
+        composition = metal / total
+        if (np.any(composition < np.asarray(metal_lower) - 1e-10)
+                or np.any(composition > np.asarray(metal_upper) + 1e-10)):
+            raise ValueError("The initial metal composition lies outside the declared domain.")
+    elif np.any(metal != 0):
+        raise ValueError("The metal-free initial ledger requires exactly zero metal.")
+    return n
+
+
 def select_metal_phase(
     record: dict, element_amounts_mol: np.ndarray,
     temperature_k: float, pressure_bar: float, callbacks: Mapping[str, PhaseCallback],
     metal_lower: np.ndarray, metal_upper: np.ndarray, *,
     convex_phase_bounds: Optional[Mapping[str, float]] = None,
     initial_component_amounts_mol: Optional[np.ndarray] = None,
+    initial_metal_present_component_amounts_mol: Optional[np.ndarray] = None,
     maxiter: int = 1000, tolerance: float = 1e-8, allow_metal: bool = True,
     metal_insertion_minimizer=None,
 ) -> MetalSelection:
@@ -339,6 +374,10 @@ def select_metal_phase(
     An optional full-record initial ledger seeds only the metal-free solve;
     it must conserve every atom and contain exactly zero metal. Subsequent
     insertion seeds and all equilibrium/phase-selection audits are unchanged.
+    An optional metal-present ledger is tried only after a fresh favorable
+    absent-branch insertion. It is reoptimized at the current T/P and must pass
+    every existing present-branch audit; otherwise the usual insertion starts
+    are tried. No thermodynamic state or acceptance flag is reused.
     An optional ``metal_insertion_minimizer`` supplies a provider-bound global
     insertion certificate for a nonconvex alloy. It receives the actual T/P,
     formula, elemental plane and effective domain. Existing local acceptance,
@@ -394,6 +433,13 @@ def select_metal_phase(
     fraction_basis = "atomic" if np.all(atom_counts == 1.) else "species"
     unsupported = np.any(metal_formula[budget == 0] != 0, axis=0)
     absent, metal_free_trial = None, None
+    present_seed = None
+    if initial_metal_present_component_amounts_mol is not None:
+        if not allow_metal:
+            raise ValueError("A metal-present initial ledger requires allow_metal=True.")
+        present_seed = validate_metal_initial_ledger(
+            record, budget, initial_metal_present_component_amounts_mol,
+            lo, np.where(unsupported, 0., hi), metal_present=True)
 
     def finish(*args):
         selected = MetalSelection(*args)
@@ -486,7 +532,56 @@ def select_metal_phase(
     if not allow_metal:
         return finish("unresolved", absent, trial, 0., None,
                       ("The constrained metal-free branch has a favorable metal insertion.",))
+    def assess_present(present):
+        amounts = present.component_amounts_mol[[names.index(name) for name in metal_names]]
+        total = float(amounts.sum())
+        reasons = list(present.audit_reasons)
+        if not present.accepted:
+            reasons.append("Metal-bearing local minimization failed.")
+        if total <= 0:
+            return finish("unresolved", present, None, total, None,
+                                  tuple(reasons + ["No positive metal candidate was obtained."]), tuple(attempts))
+        composition = amounts / total
+        if np.any(composition < lo - 1e-10) or np.any(composition > hi + 1e-10):
+            return finish("unresolved", present, None, total, composition,
+                                  tuple(reasons + ["The metal candidate lies outside the declared composition domain."]), tuple(attempts))
+        try:
+            trial = insertion(present)
+        except failures as error:
+            return finish("unresolved", present, None, total, composition,
+                                  tuple(reasons + [f"Metal insertion unavailable: {type(error).__name__}: {error}"]), tuple(attempts))
+        if not trial.minimum_certified or max(abs(trial.upper_bound_rt), abs(trial.lower_bound_rt or 0.)) > tolerance:
+            reasons.append("The present metal does not attain a certified zero insertion minimum.")
+        candidate = callbacks["metal"](temperature_k, pressure_bar, composition)
+        actual_cost = candidate.gibbs_rt - present.elemental_potentials_rt @ metal_formula @ composition
+        if abs(actual_cost - trial.upper_bound_rt) > tolerance:
+            reasons.append("The present metal composition is not the minimizing incipient composition.")
+        if abs(total / budget.sum() * trial.upper_bound_rt) > tolerance:
+            reasons.append("Metal amount and insertion energy violate complementarity.")
+        if present.gibbs_rt > absent.gibbs_rt + tolerance * budget.sum():
+            reasons.append("Allowing metal raised the minimum energy.")
+        if not host_certified:
+            reasons.append("Host global stability is not established.")
+        return finish("metal_present" if not reasons else "unresolved", present, trial,
+                              total, composition, tuple(reasons), tuple(attempts))
+
     attempts, candidates = [], []
+    if present_seed is not None:
+        attempt = {"initialization": "supplied_metal_present"}
+        try:
+            candidate = solve(phases, present_seed)
+            attempt["result"] = candidate
+            attempts.append(attempt)
+            assessed = assess_present(candidate)
+            attempt["selection_reasons"] = assessed.reasons
+            if (candidate.accepted and assessed.insertion is not None
+                    and assessed.insertion.minimum_certified
+                    and assessed.reasons in ((), ("Host global stability is not established.",))):
+                return assessed
+        except failures as error:
+            attempt["error"] = f"{type(error).__name__}: {error}"
+            if not attempts:
+                attempts.append(attempt)
     for fraction in (.01, .1):
         try:
             seed = _insertion_seed(record, budget, absent, trial.composition, callbacks,
@@ -502,34 +597,4 @@ def select_metal_phase(
         return finish("unresolved", absent, trial, 0., None,
                               ("Metal-bearing branch unavailable; see local attempts.",), tuple(attempts))
     present = min(candidates, key=lambda result: (not result.accepted, result.gibbs_rt))
-    amounts = present.component_amounts_mol[[names.index(name) for name in metal_names]]
-    total = float(amounts.sum())
-    reasons = list(present.audit_reasons)
-    if not present.accepted:
-        reasons.append("Metal-bearing local minimization failed.")
-    if total <= 0:
-        return finish("unresolved", present, None, total, None,
-                              tuple(reasons + ["No positive metal candidate was obtained."]), tuple(attempts))
-    composition = amounts / total
-    if np.any(composition < lo - 1e-10) or np.any(composition > hi + 1e-10):
-        return finish("unresolved", present, None, total, composition,
-                              tuple(reasons + ["The metal candidate lies outside the declared composition domain."]), tuple(attempts))
-    try:
-        trial = insertion(present)
-    except failures as error:
-        return finish("unresolved", present, None, total, composition,
-                              tuple(reasons + [f"Metal insertion unavailable: {type(error).__name__}: {error}"]), tuple(attempts))
-    if not trial.minimum_certified or max(abs(trial.upper_bound_rt), abs(trial.lower_bound_rt or 0.)) > tolerance:
-        reasons.append("The present metal does not attain a certified zero insertion minimum.")
-    candidate = callbacks["metal"](temperature_k, pressure_bar, composition)
-    actual_cost = candidate.gibbs_rt - present.elemental_potentials_rt @ metal_formula @ composition
-    if abs(actual_cost - trial.upper_bound_rt) > tolerance:
-        reasons.append("The present metal composition is not the minimizing incipient composition.")
-    if abs(total / budget.sum() * trial.upper_bound_rt) > tolerance:
-        reasons.append("Metal amount and insertion energy violate complementarity.")
-    if present.gibbs_rt > absent.gibbs_rt + tolerance * budget.sum():
-        reasons.append("Allowing metal raised the minimum energy.")
-    if not host_certified:
-        reasons.append("Host global stability is not established.")
-    return finish("metal_present" if not reasons else "unresolved", present, trial,
-                          total, composition, tuple(reasons), tuple(attempts))
+    return assess_present(present)
