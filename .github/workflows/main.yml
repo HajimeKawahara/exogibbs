@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: HajimeKawahara/exoeos
-          ref: 180e2f6db4ae5bb6eb791cde98f3ae65bf6ce340
+          ref: 27b272821f0ebe747d0a8cb575e28a886d3d0dc2
           path: providers/exoeos
           fetch-depth: 0
 
@@ -142,6 +142,7 @@ jobs:
             tests/unittests/examples/m2_associated_test.py
             tests/unittests/examples/m2_potassium_test.py
             tests/unittests/examples/m2_sodium_test.py
+            tests/unittests/examples/m2_sodium_global_test.py
             tests/unittests/examples/m2_host_stability_test.py
             tests/unittests/examples/m2_helium_test.py
             tests/unittests/examples/m2_water_global_test.py
