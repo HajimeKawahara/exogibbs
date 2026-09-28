@@ -1,4 +1,5 @@
 """Finite atomic budgets with an EOS-owned chemical-species alloy scalar."""
+import copy
 import hashlib
 import importlib.util
 from pathlib import Path
@@ -11,10 +12,10 @@ import numpy as np
 from full_potential import PhaseState
 
 
-def load_associated_provider(exoeos_checkout, *, potassium=False):
-    filename = "potassium_reference.py" if potassium else "associate_reference.py"
+def load_associated_provider(exoeos_checkout, *, potassium=False, sodium=False):
+    filename = "sodium_metal.py" if sodium else "potassium_reference.py" if potassium else "associate_reference.py"
     path = Path(exoeos_checkout).resolve() / "examples/m2_material" / filename
-    name = "_exoeos_m2_associated_" + ("potassium_reference" if potassium else "reference")
+    name = "_exoeos_m2_associated_" + ("sodium" if sodium else "potassium_reference" if potassium else "reference")
     if name in sys.modules:
         module = sys.modules[name]
         if Path(module.__file__).resolve() != path:
@@ -29,12 +30,18 @@ def load_associated_provider(exoeos_checkout, *, potassium=False):
 
 def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
                          exoeos_checkout, temperature_k, pressure_bar, options=None,
-                         potassium_standard_offset_rt=None, hydrogen_oxygen_model="omitted"):
+                         potassium_standard_offset_rt=None, hydrogen_oxygen_model="omitted", sodium_options=None):
     """Extend the finite P host by five free metals and eight O associates."""
     from exoeos import total_gex_RT, total_solution_state
 
     potassium = potassium_standard_offset_rt is not None
-    provider = load_associated_provider(exoeos_checkout, potassium=potassium)
+    sodium = sodium_options is not None
+    provider = load_associated_provider(exoeos_checkout, potassium=potassium, sodium=sodium)
+    if sodium and (not potassium or not isinstance(sodium_options, dict)
+            or set(sodium_options) != {"projection", "temperature_policy"}
+            or sodium_options["projection"] not in provider.PROJECTIONS
+            or sodium_options["temperature_policy"] not in provider.TEMPERATURE_POLICIES):
+        raise ValueError("Finite Na requires explicit supported projection/temperature options and K standard.")
     size = len(provider.COMPONENTS)
     p = metadata["phosphorus_metal"]
     names = record["phases"]["metal"]
@@ -48,14 +55,35 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
         setup.gas_setup.formula_matrix).T @ np.asarray(gauge)
     standard_options = ({"potassium_standard_offset_rt": potassium_standard_offset_rt}
                         if potassium else {})
-    standards, reference = provider.associated_standards_rt(
+    standard_provider = load_associated_provider(exoeos_checkout, potassium=potassium) if sodium else provider
+    standards, reference = standard_provider.associated_standards_rt(
         temperature_k, p["base_standard_potentials_rt"], dict(zip(setup.gas_species, gas)),
         **standard_options)
+    if sodium:
+        # Populate the selected published host's exact-T/P native standard
+        # receipt once. This evaluates a property callback, not an equilibrium.
+        host = metadata["host_ledger"]
+        if host.get("liquid_model") not in ("published", "published_water"):
+            raise ValueError("Finite Na requires the declared published dry-host standard receipt.")
+        callbacks["silicate"](temperature_k, pressure_bar, initial[:len(record["phases"]["silicate"])])
+        receipts = host["native_standard_state_receipts"]
+        if (len(receipts) != 1 or receipts[0]["T_K"] != temperature_k
+                or receipts[0]["P_Pa"] != pressure_bar*1e5):
+            raise ValueError("Finite Na requires one native standard receipt at the actual source T/P.")
+        properties = copy.deepcopy(receipts[0]["native_properties"])
+        sodium_standard, sodium_reference = provider.sodium_standard_rt(
+            temperature_k, pressure_bar*1e5, float(standards[0]), properties, **sodium_options)
+        standards = np.r_[standards, sodium_standard]
+        reference.update(component_order=list(provider.COMPONENTS), component_formulas=list(provider.FORMULAS),
+                         standard_potentials_rt=standards.tolist(), sodium=sodium_reference)
+        metadata["sodium_metal"] = {**sodium_reference, "native_liquid_properties": properties}
     # This is a numerical species simplex, not an empirical material domain.
     lower = np.r_[.75, np.zeros(size-1)]
     upper = np.array([1., .02, .01, .04, .02, .002, .00002, .0001, .12, .00001,
                       .003, .00002, .0001, .005, .00001, .000001, .002, .000001])
     if potassium:
+        upper = np.r_[upper, .02]
+    if sodium:
         upper = np.r_[upper, .02]
     curvature = provider.associated_curvature_lower_bound(model, temperature_k, lower, upper)
     flattened = [name for phase in record["phases"].values() for name in phase]
@@ -111,6 +139,9 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
                  Path(provider.__file__).with_name("associate_reference.py"),
                  Path(provider.__file__).with_name("associate_sources.json")):
         recipe[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    if sodium:
+        for path in (Path(standard_provider.__file__), provider.CALIBRATION_PATH):
+            recipe[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
     if hydrogen_oxygen_model != "omitted":
         path = Path(provider.__file__).with_name("hydrogen_oxygen_sources.json")
         recipe[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -125,6 +156,8 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
         "linear_scenario_offsets_applied_separately": True,
         "scenario_offset_scope": "Existing named O_metal/H_metal offsets change those free atomic species only. They are not automatically applied to MO/M2O species, whose independent Jung/gas-anchored standards are retained.",
         "scope": "Finite conserved Mg/Ca/Al/Cr/Ti/P transfer under the declared associated scalar. Numerical curvature and inactive numerical bounds do not establish empirical coupled calibration. " + ("K has an explicit uncalibrated finite-standard sensitivity." if potassium else "K metal transfer remains omitted.")}
+    if sodium:
+        metadata["associated_metal"]["scope"] += " Na follows the explicit projected native-standard continuation; its numerical box is not an empirical bound."
     if potassium:
         metadata["potassium_metal"] = reference["potassium"]
     return initial

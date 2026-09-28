@@ -30,7 +30,7 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
                                *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1",
                                initialization="lp", liquid_model="native", metal_model="ma",
                                phosphorus_options=None, potassium_standard_offset_rt=None,
-                               hydrogen_oxygen_model="omitted", helium_solubility_model="gas_only"):
+                               hydrogen_oxygen_model="omitted", helium_solubility_model="gas_only", sodium_options=None):
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
@@ -44,13 +44,19 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         raise ValueError("initialization must be lp or canonical.")
     if helium_solubility_model not in HELIUM_MODELS:
         raise ValueError("Unknown helium_solubility_model.")
-    if metal_model not in ("ma", "phosphorus", "associated", "associated_k") or (metal_model == "ma" and phosphorus_options is not None):
-        raise ValueError("Select metal_model ma, phosphorus, associated or associated_k; P options require an extended model.")
-    if (metal_model == "associated_k") != (potassium_standard_offset_rt is not None):
-        raise ValueError("Only associated_k requires an explicit potassium_standard_offset_rt.")
+    if metal_model not in ("ma", "phosphorus", "associated", "associated_k", "associated_k_na") or (metal_model == "ma" and phosphorus_options is not None):
+        raise ValueError("Select metal_model ma, phosphorus, associated, associated_k or associated_k_na; P options require an extended model.")
+    if ((metal_model == "associated_k_na") != (sodium_options is not None)
+            or (sodium_options is not None and (not isinstance(sodium_options, dict)
+                or set(sodium_options) != {"projection", "temperature_policy"}))):
+        raise ValueError("Only associated_k_na requires explicit sodium projection and temperature_policy options.")
+    if metal_model == "associated_k_na" and liquid_model not in ("published", "published_water"):
+        raise ValueError("Finite Na requires a published or published_water liquid standard provider.")
+    if (metal_model in ("associated_k", "associated_k_na")) != (potassium_standard_offset_rt is not None):
+        raise ValueError("Only associated_k or associated_k_na requires an explicit potassium_standard_offset_rt.")
     if hydrogen_oxygen_model not in ("omitted", "schenck1961_abstract"):
         raise ValueError("Select hydrogen_oxygen_model omitted or schenck1961_abstract.")
-    if hydrogen_oxygen_model != "omitted" and metal_model not in ("associated", "associated_k"):
+    if hydrogen_oxygen_model != "omitted" and metal_model not in ("associated", "associated_k", "associated_k_na"):
         raise ValueError("The H-O interaction requires an associated metal model.")
     normalized = normalize_scenario(scenario)
     setup = build_atmosphere_setup(gas_model)
@@ -85,16 +91,16 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         initial = add_helium_silicate(record, initial, callbacks, metadata, setup, initial_gauge,
                                      inventory_path, exoeos_checkout, temperature_k, pressure_bar,
                                      helium_solubility_model)
-    if metal_model in ("phosphorus", "associated", "associated_k"):
+    if metal_model in ("phosphorus", "associated", "associated_k", "associated_k_na"):
         if scenario is not None and "metal_bounds" in scenario:
             raise ValueError("Four-component scenario bounds cannot define the five-component P domain.")
         initial = add_phosphorus_metal(record, initial, callbacks, metadata, setup, initial_gauge,
                                        exoeos_checkout, temperature_k, pressure_bar, phosphorus_options)
-        if metal_model in ("associated", "associated_k"):
+        if metal_model in ("associated", "associated_k", "associated_k_na"):
             initial = add_associated_metal(record, initial, callbacks, metadata, setup, initial_gauge,
                                            exoeos_checkout, temperature_k, pressure_bar, phosphorus_options,
                                            potassium_standard_offset_rt=potassium_standard_offset_rt,
-                                           hydrogen_oxygen_model=hydrogen_oxygen_model)
+                                           hydrogen_oxygen_model=hydrogen_oxygen_model, sodium_options=sodium_options)
     metadata["numerical_initialization"] = {
         "strategy": initialization,
         "canonical_interior_fraction": 1e-4 if initialization == "canonical" else None,
@@ -128,10 +134,11 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         "upper_reference_policy": "Re-evaluate raw FastChem reactions at every layer T/P. Conserved-element gauges cancel from isolated parcel composition; no low-temperature JANAF extrapolation or frozen source chemical potentials.",
         "missing_paths": (["Al/Ca/K/Ti/Cr/P retained condensates"]
                           if gas_model != "janaf_condensed" else [])
-                         + ([] if metal_model == "associated_k" else ["K alloy component" if metal_model == "associated" else
+                         + ([] if metal_model in ("associated_k", "associated_k_na") else ["K alloy component" if metal_model == "associated" else
                             "Mg/Al/Ca/K/Ti/Cr alloy components" if metal_model == "phosphorus"
                             else "Mg/Al/Ca/K/Ti/Cr/P alloy components"])
-                         + ["Na alloy component", "He alloy dissolution"]
+                         + ([] if metal_model == "associated_k_na" else ["Na alloy component"])
+                         + ["He alloy dissolution"]
                          + (["He silicate dissolution"] if helium_solubility_model == "gas_only" else []),
         "pure_phase_reference_policy": "FastChem pure condensates and native MELTS phases are independent thermochemical models. Matching formulas do not establish matching energies or a calibrated phase boundary.",
     }
