@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: HajimeKawahara/exoeos
-          ref: 813131ab63822c556ae62c95ff69f119487d0340
+          ref: 180e2f6db4ae5bb6eb791cde98f3ae65bf6ce340
           path: providers/exoeos
           fetch-depth: 0
 
@@ -105,7 +105,7 @@ jobs:
           provider = root / "providers/exoeos"
           assert subprocess.check_output(
               ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,
-          ).strip() == "813131ab63822c556ae62c95ff69f119487d0340"
+          ).strip() == "180e2f6db4ae5bb6eb791cde98f3ae65bf6ce340"
           for module, source in ((exogibbs, root), (exoeos, provider)):
               actual = Path(module.__file__).resolve()
               expected = source / "src" / module.__name__ / "__init__.py"
@@ -121,6 +121,7 @@ jobs:
           assert (provider / "examples/m2_material/hydrogen_oxygen_sources.json").is_file()
           assert (provider / "examples/m2_material/potassium_reference.py").is_file()
           assert (provider / "examples/m2_material/helium_dissolution.py").is_file()
+          assert (provider / "examples/m2_material/sodium_metal.py").is_file()
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
           ).resolve()
@@ -140,6 +141,7 @@ jobs:
             tests/unittests/examples/m2_phosphorus_test.py
             tests/unittests/examples/m2_associated_test.py
             tests/unittests/examples/m2_potassium_test.py
+            tests/unittests/examples/m2_sodium_test.py
             tests/unittests/examples/m2_host_stability_test.py
             tests/unittests/examples/m2_helium_test.py
             tests/unittests/examples/m2_water_global_test.py

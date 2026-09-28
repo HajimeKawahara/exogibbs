@@ -75,3 +75,8 @@ existing phase-selection acceptance still requires a certified insertion
 minimum. A nonconvex global insertion method is required before accepting such
 a source; neither the old positive-curvature certificate nor an altered
 tolerance supplies that evidence.
+
+The opt-in [finite sodium extension](m2_sodium.md) appends one independently
+conserved Na component and an explicitly projected native-host standard. It
+requires its own declared reference/temperature choices and a global insertion
+certificate; the parent model remains unchanged.
