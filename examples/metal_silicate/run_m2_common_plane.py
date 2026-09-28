@@ -57,7 +57,7 @@ def require_solution_proof(proof: dict, row: dict, parameters: dict, standard_st
 
 
 def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=None, water_path=None,
-           alloy_tolerance_rt=1e-10, alloy_max_nodes=20000) -> dict:
+           alloy_tolerance_rt=1e-10, alloy_max_nodes=20000, allow_fixed_pressure=False) -> dict:
     here = Path(__file__).resolve().parent
     code_names = ("run_m2_common_plane.py", "m2_common_plane.py", "m2_liquid_global.py",
                   "m2_extended_common_plane.py", "m2_extended_alloy.py", "m2_associated_global.py",
@@ -91,7 +91,8 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
             raise ValueError("The case selector does not match the binding.")
     read(row["source"]["path"], row["source"]["sha256"])
     read(row["physical_audit"]["path"], row["physical_audit"]["sha256"])
-    report, audit, state, scenario, _, _ = saved_inputs(Path(row["source"]["path"]), Path(row["physical_audit"]["path"]), allow_extended=True)
+    report, audit, state, scenario, _, _ = saved_inputs(Path(row["source"]["path"]), Path(row["physical_audit"]["path"]), allow_extended=True,
+        allow_fixed_pressure=allow_fixed_pressure)
     source = state["source"]
     recipe_receipt = {}
     files.update(verified_recipe(source, eos_checkout,allow_historical_builders=True,receipt=recipe_receipt))
@@ -162,7 +163,8 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     if is_water:
         from run_m2_water_global import saved_water_problem
         from m2_extended_common_plane import water_common_plane, water_primal_energy
-        water_parameters, _, water_binding = saved_water_problem(report, audit, row["source"]["sha256"],exoeos_checkout=eos_checkout)
+        water_parameters, _, water_binding = saved_water_problem(report, audit, row["source"]["sha256"],exoeos_checkout=eos_checkout,
+            allow_fixed_pressure=allow_fixed_pressure)
         if 'helium_elimination' in water_binding:
             files.update({str(eos_checkout/name):digest for name,digest in
                           water_binding['helium_elimination']['receipt']['provider_recipe_file_sha256'].items()})
@@ -365,6 +367,9 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     root = Path(__file__).resolve().parents[2]
     if any(sha256(path) != digest for path, digest in files.items()):
         raise ValueError("An input changed during the assessment.")
+    if audit["source"]["kind"] == "fixed_pressure_internal_source":
+        result.update(source_kind="fixed_pressure_internal_source", pressure_closure_performed=False,
+                      scope=result["scope"]+" Fixed-pressure source only; no bottom-pressure root or global column closure is established.")
     result["input_and_code_sha256"] = files
     result["alloy_interval_bound_replayed_exactly"] = not extended_alloy
     if extended_alloy:
@@ -381,6 +386,8 @@ def main() -> None:
     parser.add_argument("--case", help="Required when selecting a case from the five-root aggregate.")
     parser.add_argument("--alloy-bound", type=Path)
     parser.add_argument("--water-proof", type=Path)
+    parser.add_argument("--allow-fixed-pressure-source", action="store_true",
+                        help="Allow an explicitly audited fixed-T/P source; never imply pressure closure.")
     parser.add_argument("--alloy-tolerance-rt", type=float, default=1e-10)
     parser.add_argument("--alloy-max-nodes", type=int, default=20000)
     parser.add_argument("--exoeos-checkout", type=Path, required=True)
@@ -389,7 +396,8 @@ def main() -> None:
     if args.output.exists():
         parser.error("Use a new output file; original evidence is never overwritten.")
     result = assess(args.evidence_binding, args.alloy_bound, args.exoeos_checkout.resolve(), case=args.case,
-                    water_path=args.water_proof,alloy_tolerance_rt=args.alloy_tolerance_rt,alloy_max_nodes=args.alloy_max_nodes)
+                    water_path=args.water_proof,alloy_tolerance_rt=args.alloy_tolerance_rt,alloy_max_nodes=args.alloy_max_nodes,
+                    allow_fixed_pressure=args.allow_fixed_pressure_source)
     with args.output.open("x") as stream:
         json.dump(result, stream, indent=2, allow_nan=False)
         stream.write("\n")

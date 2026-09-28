@@ -30,27 +30,74 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def saved_inputs(closure_path: Path, physical_path: Path, *, allow_extended=False) -> tuple:
-    """Require the exact accepted root already named by a physical audit."""
+def selected_source_state(report: dict, audit: dict, source_sha256: str, *,
+                          allow_fixed_pressure=False) -> dict:
+    """Select a bound source without promoting a fixed pressure to a root."""
+    provenance = audit["source"]
+    kind = provenance["kind"]
+    if (kind not in ("global_closure_root", "fixed_pressure_internal_source")
+            or provenance["sha256"] != source_sha256
+            or provenance["numerical_source_accepted"] is not True
+            or provenance["source_contact_accepted"] is not True
+            or provenance["executed_checkouts"] != report["checkouts"]
+            or any(item["status"] for item in report["checkouts"].values())):
+        raise ValueError("Require the exact accepted source and clean executed provider records.")
+    selector = provenance["selection"]
+    if kind == "global_closure_root":
+        state = report["runs"][selector["run_index"]]["roots"][selector["root_index"]]
+        if (report["numerically_accepted"] is not True or state["accepted"] is not True
+                or state["global_closure_numerically_accepted"] is not True
+                or state["pressure_closure_performed"] is not True):
+            raise ValueError("An unaccepted pressure trial cannot supply a final-root proof.")
+    else:
+        if not allow_fixed_pressure:
+            raise ValueError("A fixed-pressure source requires explicit opt-in; it is not a pressure root.")
+        state = report["source_state"]
+        if (report.get("model_id") != "m2_fixed_pressure_internal_source_v1"
+                or report.get("fixed_pressure_numerically_accepted") is not True
+                or report.get("pressure_closure_performed") is not False
+                or report.get("failure") or state.get("failure")
+                or any(key in item and item[key] is not False for item in (report, state)
+                       for key in ("accepted", "numerically_accepted", "global_closure_numerically_accepted",
+                                   "pressure_closure_performed"))
+                or "runs" in report or "roots" in report
+                or "run_index" in selector or "root_index" in selector
+                or type(report["arguments"]["nlayer"]) is not int or report["arguments"]["nlayer"] < 2
+                or type(selector["layers"]) is not int
+                or selector["layers"] != report["arguments"]["nlayer"]):
+            raise ValueError("A fixed-pressure envelope must preserve its explicit non-root scope.")
+        source = state["source"]
+        record, result = source["source_internal_record"], source["source_internal_result"]
+        elements = record["elements"]
+        names = [name for group in record["phases"].values() for name in group]
+        amounts = np.asarray(result["component_amounts_mol"], dtype=float)
+        budget = np.asarray(report["inventory"]["total_element_amounts_mol"], dtype=float)
+        matrix = np.asarray([[record["component_formulas"][name].get(element, 0.)
+                              for name in names] for element in elements], dtype=float)
+        if (result["accepted"] is not True or len(names) != len(set(names))
+                or len(elements) != len(set(elements))
+                or elements != report["inventory"]["elements"]
+                or any(set(record["component_formulas"][name])-set(elements) for name in names)
+                or amounts.shape != (len(names),) or budget.shape != (len(elements),)
+                or np.any(~np.isfinite(amounts)) or np.any(amounts < 0)
+                or np.any(~np.isfinite(budget)) or np.any(budget < 0)
+                or not np.any(budget > 0) or np.any(~np.isfinite(matrix)) or np.any(matrix < 0)
+                or np.any(np.abs(matrix @ amounts-budget) > 1e-9*budget)):
+            raise ValueError("The fixed-pressure source primitives must close the exact inventory atoms.")
+    if state["contact_accepted"] is not True or state["column_numerically_accepted"] is not True:
+        raise ValueError("Require accepted source contact and column diagnostics at the declared pressure.")
+    return state
+
+
+def saved_inputs(closure_path: Path, physical_path: Path, *, allow_extended=False,
+                 allow_fixed_pressure=False) -> tuple:
+    """Require the exact accepted source already named by a physical audit."""
     report = json.loads(Path(closure_path).read_text())
     audit = json.loads(Path(physical_path).read_text())
     provenance = audit["source"]
-    if (provenance["kind"] != "global_closure_root"
-            or provenance["sha256"] != sha256(closure_path)
-            or not provenance["numerical_source_accepted"]
-            or not provenance["source_contact_accepted"]):
-        raise ValueError("Require a physical audit of this exact accepted pressure root.")
-    if (provenance["executed_checkouts"] != report["checkouts"]
-            or any(item["status"] for item in report["checkouts"].values())):
-        raise ValueError("Require the same clean executed checkouts in both records.")
+    state = selected_source_state(report, audit, sha256(closure_path),
+                                  allow_fixed_pressure=allow_fixed_pressure)
     selector = provenance["selection"]
-    run = report["runs"][selector["run_index"]]
-    state = run["roots"][selector["root_index"]]
-    if (not report["numerically_accepted"] or not state["accepted"]
-            or not state["global_closure_numerically_accepted"]
-            or not state["pressure_closure_performed"]
-            or not state["contact_accepted"] or not state["column_numerically_accepted"]):
-        raise ValueError("A trial or unaccepted closure cannot supply a final-root proof.")
     source = state["source"]
     for owner in ("exogibbs", "exoeos"):
         origin = source["source_metadata"]["provenance"][owner]

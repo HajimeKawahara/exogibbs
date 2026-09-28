@@ -13,6 +13,7 @@ from m2_common_plane import _I
 from m2_host_standards import source_hydrogen_standard_receipt
 from m2_scenarios import normalize_scenario
 from m2_water_global import certify_water_common_plane, parameters_from_saved_water
+from run_m2_alloy_insertion_bound import selected_source_state
 
 
 def sha256(path):
@@ -29,20 +30,13 @@ def saved_scenario_values(scenario, source):
     return values
 
 
-def saved_water_problem(report: dict, audit: dict, closure_sha256: str, *, exoeos_checkout=None) -> tuple:
-    """Require an accepted final root and its exact independently audited host."""
+def saved_water_problem(report: dict, audit: dict, closure_sha256: str, *, exoeos_checkout=None,
+                        allow_fixed_pressure=False) -> tuple:
+    """Bind an accepted source; fixed pressure requires explicit separate scope."""
+    state = selected_source_state(report, audit, closure_sha256,
+                                  allow_fixed_pressure=allow_fixed_pressure)
     provenance = audit["source"]
-    if (provenance["kind"] != "global_closure_root" or provenance["sha256"] != closure_sha256
-            or not provenance["numerical_source_accepted"] or not provenance["source_contact_accepted"]
-            or provenance["executed_checkouts"] != report["checkouts"]
-            or any(item["status"] for item in report["checkouts"].values())):
-        raise ValueError("Require the exact accepted pressure root and clean executed provider records.")
     selector = provenance["selection"]
-    state = report["runs"][selector["run_index"]]["roots"][selector["root_index"]]
-    if (not report["numerically_accepted"] or not state["accepted"]
-            or not state["global_closure_numerically_accepted"] or not state["pressure_closure_performed"]
-            or not state["contact_accepted"] or not state["column_numerically_accepted"]):
-        raise ValueError("An unaccepted pressure trial cannot supply a final-root proof.")
     source = state["source"]
     metadata = source["source_metadata"]
     scenario = saved_scenario_values(report["provider_scenario"], source)
@@ -127,12 +121,17 @@ def saved_water_problem(report: dict, audit: dict, closure_sha256: str, *, exoeo
         from m2_helium_global import add_saved_helium
         parameters, binding = add_saved_helium(parameters,binding,source,host,exoeos_checkout,inventory=report['inventory'])
     return parameters, reference, {**binding, "dissolved_hydrogen_standard_receipt": hydrogen,
-                                  "source_selection": selector, "source_provider_checkouts": report["checkouts"]}
+                                  "source_selection": selector, "source_provider_checkouts": report["checkouts"],
+                                  **({"source_kind": provenance["kind"], "pressure_closure_performed": False}
+                                     if provenance["kind"] == "fixed_pressure_internal_source" else {})}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--saved-closure", type=Path, required=True)
+    parser.add_argument("--saved-closure", type=Path, required=True,
+                        help="Saved closure, or an explicitly selected fixed-pressure internal-source envelope.")
+    parser.add_argument("--allow-fixed-pressure-source", action="store_true",
+                        help="Certify only the declared fixed-T/P source; never a pressure closure.")
     parser.add_argument("--saved-physical-audit", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-nodes", type=int, default=20000)
@@ -140,11 +139,12 @@ def main():
     parser.add_argument("--exoeos-checkout", type=Path, help="Required for the declared dissolved-He scalar.")
     args = parser.parse_args()
     files = {str(path.resolve()): sha256(path) for path in (args.saved_closure, args.saved_physical_audit)}
-    for name in ("run_m2_water_global.py", "m2_water_global.py", "m2_common_plane.py", "m2_liquid_global.py", "m2_host_standards.py", "m2_helium_global.py", "m2_helium.py", "m2_scenarios.py"):
+    for name in ("run_m2_water_global.py", "m2_water_global.py", "m2_common_plane.py", "m2_liquid_global.py", "m2_host_standards.py", "m2_helium_global.py", "m2_helium.py", "m2_scenarios.py", "run_m2_alloy_insertion_bound.py"):
         path = Path(__file__).with_name(name)
         files[str(path.resolve())] = sha256(path)
     report, audit = [json.loads(path.read_text()) for path in (args.saved_closure, args.saved_physical_audit)]
-    parameters, reference, binding = saved_water_problem(report, audit, files[str(args.saved_closure.resolve())],exoeos_checkout=args.exoeos_checkout)
+    parameters, reference, binding = saved_water_problem(report, audit, files[str(args.saved_closure.resolve())],exoeos_checkout=args.exoeos_checkout,
+        allow_fixed_pressure=args.allow_fixed_pressure_source)
     if 'helium_elimination' in binding:
         for name,digest in binding['helium_elimination']['receipt']['provider_recipe_file_sha256'].items():
             files[str((args.exoeos_checkout/name).resolve())]=digest
@@ -156,6 +156,8 @@ def main():
     result.update(binding=binding, command=sys.argv, elapsed_seconds=time.monotonic()-started,
                   input_and_code_sha256=files, proof_commit=subprocess.check_output(
                       ["git", "rev-parse", "HEAD"], cwd=Path(__file__).resolve().parents[2], text=True).strip())
+    if audit["source"]["kind"] == "fixed_pressure_internal_source":
+        result.update(source_kind="fixed_pressure_internal_source", pressure_closure_performed=False)
     with args.output.open("x") as stream:
         json.dump(result, stream, indent=2, allow_nan=False)
         stream.write("\n")

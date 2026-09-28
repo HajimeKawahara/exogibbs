@@ -125,3 +125,95 @@ def test_fixed_pressure_trial_cannot_pass_the_final_root_gate(monkeypatch, flag)
     report["runs"][0]["roots"][0][flag] = False
     with pytest.raises(ValueError, match="unaccepted pressure trial"):
         runner.saved_water_problem(report, audit, "source-digest")
+
+
+def fixed_pressure_fixture(monkeypatch):
+    report, audit, source = fixture(monkeypatch)
+    state = report.pop("runs")[0]["roots"][0]
+    report.pop("numerically_accepted")
+    state.pop("accepted")
+    state.pop("global_closure_numerically_accepted")
+    state["pressure_closure_performed"] = False
+    state["layers"] = [{}, {}]
+    report.update(model_id="m2_fixed_pressure_internal_source_v1", source_state=state,
+                  fixed_pressure_numerically_accepted=True, pressure_closure_performed=False,
+                  arguments={"nlayer": 2})
+    audit["source"].update(kind="fixed_pressure_internal_source",
+                           selection={"layers": 2, "temperature_k": 2000., "pressure_bar": 1.})
+    return report, audit, source
+
+
+def test_fixed_pressure_requires_opt_in_and_reuses_unchanged_water_math(monkeypatch):
+    root, root_audit, _ = fixture(monkeypatch)
+    expected, reference, _ = runner.saved_water_problem(root, root_audit, "source-digest")
+    report, audit, _ = fixed_pressure_fixture(monkeypatch)
+    original = copy.deepcopy(report)
+    with pytest.raises(ValueError, match="explicit opt-in"):
+        runner.saved_water_problem(report, audit, "source-digest")
+    actual, point, receipt = runner.saved_water_problem(
+        report, audit, "source-digest", allow_fixed_pressure=True)
+    def primitive(value):
+        if hasattr(value, "lo") and hasattr(value, "hi"):
+            return (value.lo, value.hi)
+        if isinstance(value, dict):
+            return {key: primitive(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [primitive(item) for item in value]
+        return value
+    assert primitive(actual) == primitive(expected)
+    assert point == reference
+    assert report == original
+    assert "runs" not in report and "roots" not in report
+    assert receipt["source_kind"] == "fixed_pressure_internal_source"
+    assert receipt["pressure_closure_performed"] is False
+
+
+@pytest.mark.parametrize("change", [
+    lambda r,a,s: r.update(model_id="unrecognized"),
+    lambda r,a,s: r.update(failure="failed-source"),
+    lambda r,a,s: r["source_state"].update(failure="failed-column"),
+    lambda r,a,s: r.update(fixed_pressure_numerically_accepted=False),
+    lambda r,a,s: r.update(pressure_closure_performed=True),
+    lambda r,a,s: r.update(numerically_accepted=True),
+    lambda r,a,s: r.update(numerically_accepted=1),
+    lambda r,a,s: r.update(numerically_accepted=0),
+    lambda r,a,s: r.update(numerically_accepted=None),
+    lambda r,a,s: r.update(accepted=True),
+    lambda r,a,s: r.update(accepted=None),
+    lambda r,a,s: r["source_state"].update(accepted=None),
+    lambda r,a,s: r["source_state"].update(numerically_accepted=True),
+    lambda r,a,s: r["source_state"].update(accepted=1),
+    lambda r,a,s: r["source_state"].update(global_closure_numerically_accepted=0),
+    lambda r,a,s: r.update(runs=[]),
+    lambda r,a,s: r.update(roots=[]),
+    lambda r,a,s: r["source_state"].update(accepted=True),
+    lambda r,a,s: r["source_state"].update(global_closure_numerically_accepted=True),
+    lambda r,a,s: r["source_state"].update(pressure_closure_performed=True),
+    lambda r,a,s: r["source_state"].update(contact_accepted=False),
+    lambda r,a,s: r["source_state"].update(column_numerically_accepted=False),
+    lambda r,a,s: a["source"]["selection"].update(root_index=0),
+    lambda r,a,s: a["source"]["selection"].update(run_index=0),
+    lambda r,a,s: r["arguments"].update(nlayer=3),
+    lambda r,a,s: a["source"].update(sha256="different-source"),
+    lambda r,a,s: a["source"].update(numerical_source_accepted=False),
+    lambda r,a,s: s["source_internal_result"].update(component_amounts_mol=[1., 1., .2, .05]),
+    lambda r,a,s: s["source_internal_result"].update(component_amounts_mol=[1., 1.]),
+    lambda r,a,s: s["source_internal_result"].update(component_amounts_mol=[1., 1., float("nan"), .05]),
+    lambda r,a,s: s["source_internal_record"]["component_formulas"]["a_melts"].update(Unknown=1.),
+    lambda r,a,s: r["inventory"].update(total_element_amounts_mol=[2., 5.1, .4]),
+])
+def test_fixed_pressure_binding_rejects_promotion_or_changed_primitives(monkeypatch, change):
+    report, audit, source = fixed_pressure_fixture(monkeypatch)
+    change(report, audit, source)
+    with pytest.raises(ValueError):
+        runner.saved_water_problem(report, audit, "source-digest", allow_fixed_pressure=True)
+
+
+def test_fixed_pressure_preserves_absent_original_state_closure_flag(monkeypatch):
+    report, audit, _ = fixed_pressure_fixture(monkeypatch)
+    del report["source_state"]["pressure_closure_performed"]
+    original = copy.deepcopy(report)
+    _, _, receipt = runner.saved_water_problem(
+        report, audit, "source-digest", allow_fixed_pressure=True)
+    assert report == original
+    assert receipt["pressure_closure_performed"] is False

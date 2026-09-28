@@ -148,3 +148,23 @@ The [five saved-case assessment](../../results/m2_common_plane/20260928/five_sav
 archives the original executions: all five normalized gap upper bounds are
 between `1.08e-13` and `1.50e-13`, below the `1e-9` design tolerance. Each
 case retains its original strict-sign and empirical-material flags.
+
+
+## Fixed-pressure internal sources
+
+The common-plane and reconstructed-water runners remain final-pressure-root
+only by default. `--allow-fixed-pressure-source` explicitly permits the separate
+`m2_fixed_pressure_internal_source_v1` envelope after a fresh physical audit
+labels it `fixed_pressure_internal_source`. This envelope preserves one original
+`source_state`, its inventory, scenario, clean provider records, and primitive
+source ledger. It must not contain `runs` or `roots`, and its pressure-closure
+flag must remain false. The source atoms, contact, column diagnostics, exact
+T/P, and every existing constitutive-expression/standard binding still apply.
+
+Both runners reuse the same global bounds and primal-dual arithmetic. A
+successful fixed-pressure result certifies only the declared finite source at
+that T/P. Its `pressure_closure_performed: false` and explicit source kind do
+not establish a bottom-pressure root, global column closure, or empirical
+material applicability. Earlier root-only artifacts and their input bytes are
+unchanged. Solid-model bounds use the exact same fresh physical audit; they do
+not require or imply a pressure solve.
