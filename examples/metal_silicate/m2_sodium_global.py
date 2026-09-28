@@ -149,5 +149,6 @@ def certify_sodium_insertion(parent_excess, costs, lower, upper, curvature,
             'folded_Fe_cost_interval_rt':[str(folded.lo), str(folded.hi)],
             'original_Na_fraction_bounds':[float(lo[-1]), float(hi[-1])],
             'restored_Na_fraction':str(sodium),
+            'curvature_coordinate_basis':'Eighteen parent solutes after constrained Fe/Na minimization; not the full twenty-species Hessian.',
             'scope':'The constrained split retains every original Fe/Na bound. Its convex piecewise correction preserves the parent curvature. Physical atom columns remain separate.'})
     return result

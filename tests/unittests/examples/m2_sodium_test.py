@@ -115,3 +115,50 @@ def test_sodium_options_are_explicit_and_invalid_choices_never_evaluate_host(bui
     with pytest.raises(ValueError):
         build(**change)
     assert not seen
+
+
+def test_saved_sodium_proof_replays_host_recipe_and_preserves_exact_primal_atoms(builder):
+    from fractions import Fraction
+    from decimal import Decimal
+    sys.path.insert(0, str(DIRECTORY))
+    try:
+        proof_module = importlib.import_module('m2_extended_alloy')
+        finite = importlib.import_module('m2_finite_gas')
+        reference_module = importlib.import_module('run_bse_common_gibbs')
+    finally:
+        sys.path.pop(0)
+    build, checkout, _ = builder
+    record, _, callbacks, _, metadata = build(270.)
+    setup = finite.build_atmosphere_setup('janaf_condensed')
+    reference, _ = reference_module.source_standards_rt(2173.15,270.)
+    gauge = finite.atmosphere_gauge_rt(setup,2173.15,reference)
+    gas = np.asarray(setup.gas_setup.hvector_func(2173.15))+np.asarray(setup.gas_setup.formula_matrix).T@gauge
+    names = [name for group in record['phases'].values() for name in group]
+    metal = record['phases']['metal']
+    x = np.asarray(metadata['associated_metal']['upper_species_fractions'])*.03
+    x[0] = 1-sum(x[1:])
+    actual = callbacks['metal'](2173.15,270.,x)
+    amounts, potentials = np.zeros(len(names)), np.zeros(len(names))
+    for i,name in enumerate(metal):
+        amounts[names.index(name)] = x[i]
+        potentials[names.index(name)] = actual.mu_rt[i]
+    source = {'source_metadata':metadata,'temperature_K':2173.15,'pressure_bar':270.,
+        'source_internal_record':record,
+        'source_atmosphere_parcel':{'gas_species':list(setup.gas_species),'gas_standard_potentials_rt':gas.tolist()},
+        'source_internal_result':{'accepted':True,'elemental_potentials_rt':[0.]*len(record['elements']),
+            'component_amounts_mol':amounts.tolist(),'reduced_potentials_rt':potentials.tolist()}}
+    context = proof_module.load_saved_alloy(source,checkout)
+    energy = proof_module.alloy_energy_interval(context,list(map(Fraction,x)))
+    assert abs(float(energy.lo)-actual.gibbs_rt) < 1e-11
+    result = proof_module.certify_saved_alloy(source,context,max_nodes=1)
+    assert Decimal(result['maximum_saved_source_potential_difference_rt']) < Decimal('1e-10')
+    assert result['component_formulas'][-1] == {'Na':1.}
+    assert Decimal(result['lower_bound_rt']) <= energy.hi
+    changed = copy.deepcopy(source)
+    changed['source_metadata']['sodium_metal']['native_liquid_properties']['mu0_RT'][0] += .1
+    with pytest.raises(ValueError,match='native receipt'):
+        proof_module.load_saved_alloy(changed,checkout)
+    changed = copy.deepcopy(source)
+    changed['source_metadata']['sodium_metal']['fe_metal_standard_rt'] += .1
+    with pytest.raises(ValueError,match='sodium standard'):
+        proof_module.load_saved_alloy(changed,checkout)

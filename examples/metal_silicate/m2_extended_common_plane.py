@@ -3,6 +3,7 @@ from decimal import Decimal
 from fractions import Fraction
 
 from m2_common_plane import interval_json
+from m2_helium_global import undo_helium_elimination
 from m2_liquid_global import _I
 from m2_water_global import water_insertion_value
 
@@ -48,7 +49,6 @@ def water_primal_energy(parameters, binding, properties, plane, amounts, dissolv
     if (len(values) != len(properties['component_order']) or h2 < 0 or any(v < 0 for v in values)
             or any(v for i,v in enumerate(values) if i not in [*active,water])):
         raise ValueError('The feasible primal uses an unsupported water-host component.')
-    from m2_helium_global import undo_helium_elimination
     original, helium_energy = undo_helium_elimination(parameters,binding,[values[i] for i in active],dissolved_he)
     insertion = water_insertion_value(original, [values[i] for i in active], values[water], h2)
     basis = properties['basis']
