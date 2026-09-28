@@ -16,10 +16,11 @@ import jax
 import numpy as np
 
 from hydrogen import H2_CALIBRATION, _checkout_provenance
-from melts_coupled import COMMON_R, PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID, load_melts_evaluator, saved_liquid_model
+from melts_coupled import COMMON_R, PROVIDER_MODEL_ID, PUBLISHED_MODEL_ID, WATER_MODEL_ID, load_melts_evaluator, saved_liquid_model
 from m1_chemistry import build_setups, provenance as upper_provenance
 from run_bse_common_gibbs import json_value, source_standards_rt
 from m2_common_gas import SHARED_SPECIES, UPPER_SPECIES
+from m2_helium import reconstruct_helium_model
 
 
 REACTIONS = {
@@ -226,7 +227,8 @@ def extract_formal_reduction_standards(source, *, evaluator, runtime, python_exe
     parcel = source.get("source_atmosphere_parcel", source.get("source_atmosphere"))
     metadata = source["source_metadata"]
     liquid_model = saved_liquid_model(source)
-    expected_model_id = {"native": PROVIDER_MODEL_ID, "published": PUBLISHED_MODEL_ID}[liquid_model]
+    expected_model_id = {"native": PROVIDER_MODEL_ID, "published": PUBLISHED_MODEL_ID,
+                         "published_water": WATER_MODEL_ID}[liquid_model]
     if getattr(evaluator, "MODEL_ID", PROVIDER_MODEL_ID) != expected_model_id:
         raise ValueError("The selected evaluator differs from the saved liquid model.")
     temperature, pressure = source["temperature_K"], source["pressure_bar"]
@@ -241,7 +243,28 @@ def extract_formal_reduction_standards(source, *, evaluator, runtime, python_exe
     if len(set(names)) != len(names) or amounts.shape != (len(names),) or not np.all(np.isfinite(amounts)) or np.any(amounts < 0):
         raise ValueError("Require the complete nonnegative saved component ledger.")
     host = np.zeros(len(evaluator.COMPONENTS))
+    excluded = []
+    helium = metadata.get("helium_dissolution")
+    if ("He_dissolved" in record["phases"]["silicate"]) != (helium is not None):
+        raise ValueError("Dissolved He requires its explicit saved scalar declaration.")
     for name in record["phases"]["silicate"]:
+        if name == "He_dissolved":
+            if (record["component_formulas"][name] != {"He": 1}
+                    or helium["temperature_K"] != temperature or helium["pressure_bar"] != pressure
+                    or helium["pressure_Pa"] != pressure * 1e5
+                    or helium["component_order"] != record["phases"]["silicate"]
+                    or helium["host_component_order"] != record["phases"]["silicate"][:-1]
+                    or record["phases"]["silicate"][-1] != name
+                    or "gas_anchor" not in helium):
+                raise ValueError("The saved atomic-He scalar basis or state changed.")
+            reconstruct_helium_model(Path(evaluator.__file__).resolve().parents[1], helium)
+            gas_index = parcel["gas_species"].index("He1")
+            if helium["gas_standard_rt"] != parcel["gas_standard_potentials_rt"][gas_index]:
+                raise ValueError("The dissolved-He anchor differs from the saved retained gas.")
+            excluded.append({"component": name, "formula": {"He": 1},
+                             "saved_amount_mol": float(amounts[names.index(name)]),
+                             "reason": "Not a reactant in the formal Fe/Si reduction standards; its finite scalar is audited separately."})
+            continue
         if name == "H2_dissolved":
             if record["component_formulas"][name] != {"H": 2}:
                 raise ValueError("The dissolved molecular-H2 formula changed.")
@@ -262,9 +285,24 @@ def extract_formal_reduction_standards(source, *, evaluator, runtime, python_exe
             or state["phase_policy"]["oxygen_buffer"] != "None" or state["phase_policy"]["equilibrated"]
             or not np.allclose(state["returned_component_moles"], host, rtol=5e-9, atol=0)):
         raise ValueError("The native provider changed the requested state or convention.")
+    standard_state = state
+    standard_host = host.copy()
+    if liquid_model == "published_water":
+        standard_state = state["water_reconstruction"]["dry_properties"]
+        standard_host[evaluator.COMPONENTS.index("h2o")] = 0.
+        if (standard_state["model_id"] != PUBLISHED_MODEL_ID
+                or standard_state["status"] != "ok_supplied_liquid_properties"
+                or standard_state["T_K"] != temperature or standard_state["P_Pa"] != pressure * 1e5
+                or standard_state["component_order"] != list(evaluator.COMPONENTS)
+                or standard_state["basis"]["common_R_J_mol_K"] != COMMON_R
+                or standard_state["phase_policy"]["oxygen_buffer"] != "None"
+                or standard_state["phase_policy"]["equilibrated"]
+                or not np.array_equal(standard_state["returned_component_moles"], standard_host)
+                or state["water_reconstruction"]["native_water_amount_used_mol"] != 0.):
+            raise ValueError("The reconstructed-water dry standard state changed.")
     receipts = getattr(evaluator, "standard_state_receipts", [])
-    if liquid_model == "published":
-        receipt_id = state.get("provenance", {}).get("native_standard_state_receipt_sha256")
+    if liquid_model in ("published", "published_water"):
+        receipt_id = standard_state.get("provenance", {}).get("native_standard_state_receipt_sha256")
         matching = [row for row in receipts if row.get("sha256_without_this_field") == receipt_id]
         if len(matching) != 1:
             raise ValueError("Published standards require their explicit native reference receipt.")
@@ -272,13 +310,14 @@ def extract_formal_reduction_standards(source, *, evaluator, runtime, python_exe
         payload = {key: value for key, value in receipt.items() if key != "sha256_without_this_field"}
         digest = hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest()
         anchor = receipt["native_properties"]
-        positive = host > 0
+        positive = standard_host > 0
+        positive[[evaluator.COMPONENTS.index(name) for name in ("sio2", "fe2sio4")]] = True
         if (digest != receipt_id or receipt["T_K"] != temperature or receipt["P_Pa"] != pressure * 1e5
                 or receipt["common_R_J_mol_K"] != COMMON_R or anchor["model_id"] != PROVIDER_MODEL_ID
                 or anchor["T_K"] != temperature or anchor["P_Pa"] != pressure * 1e5
                 or anchor["component_order"] != list(evaluator.COMPONENTS)
                 or not np.array_equal(np.asarray(anchor["mu0_RT"], dtype=float)[positive],
-                                      np.asarray(state["mu0_RT"], dtype=float)[positive])):
+                                      np.asarray(standard_state["mu0_RT"], dtype=float)[positive])):
             raise ValueError("The published pure-liquid standards differ from their native reference receipt.")
     standards, _ = source_standards_rt(temperature, pressure)
     model = MaFeSiOHLiquid()
@@ -286,20 +325,48 @@ def extract_formal_reduction_standards(source, *, evaluator, runtime, python_exe
     gas_names, gas_mu0 = parcel["gas_species"], parcel["gas_standard_potentials_rt"]
     if len(set(gas_names)) != len(gas_names) or len(gas_mu0) != len(gas_names):
         raise ValueError("Invalid saved gas standard basis.")
-    values = {name + "_liquid": state["mu0_RT"][evaluator.COMPONENTS.index(name)] for name in ("sio2", "fe2sio4")}
+    values = {name + "_liquid": standard_state["mu0_RT"][evaluator.COMPONENTS.index(name)] for name in ("sio2", "fe2sio4")}
     values.update({name + "_metal": float(standards[name + "_metal"] + shifts[list(model.components).index(name)]) for name in ("Fe", "Si")})
+    metal_selection = metadata.get("metal_model", "ma")
+    alloy_order = list(model.components)
+    if metal_selection != "ma":
+        if metal_selection == "phosphorus":
+            metal_receipt = metadata["phosphorus_metal"]
+            alloy_order = metal_receipt["component_order"]
+            actual_standards = metal_receipt["base_standard_potentials_rt"]
+        elif metal_selection in ("associated", "associated_k", "associated_k_na"):
+            metal_receipt = metadata["associated_metal"]
+            alloy_order = metal_receipt["component_order"]
+            actual_standards = metal_receipt["standards"]["standard_potentials_rt"]
+            if metal_receipt["standards"]["component_order"] != alloy_order:
+                raise ValueError("The associated standard component order changed.")
+        else:
+            raise ValueError("Unsupported saved alloy model for formal standards.")
+        if (len(set(alloy_order)) != len(alloy_order)
+                or record["phases"]["metal"] != [name + "_metal" for name in alloy_order]
+                or np.asarray(actual_standards).shape != (len(alloy_order),)
+                or not np.all(np.isfinite(actual_standards))):
+            raise ValueError("The saved alloy standard basis changed.")
+        for name in ("Fe", "Si"):
+            if (record["component_formulas"][name + "_metal"] != {name: 1}
+                    or actual_standards[alloy_order.index(name)] != values[name + "_metal"]):
+                raise ValueError("Saved Fe/Si alloy standards differ from the source construction.")
     values.update({"H2_gas": gas_mu0[gas_names.index("H2")], "H2O_gas": gas_mu0[gas_names.index("H2O1")]})
     if any(value is None or isinstance(value, (bool, np.bool_)) or not np.isfinite(value) for value in values.values()):
         raise ValueError("A required actual standard is unavailable; no endpoint value is invented.")
     return {"temperature_K": temperature, "pressure_bar": pressure, "standards_rt": values,
             "liquid_model": liquid_model, "liquid_model_id": expected_model_id,
             "native_standard_state_receipts": receipts,
+            "liquid_standard_state_model_id": standard_state["model_id"],
+            "excluded_dissolved_components": excluded,
+            "helium_declaration": helium,
             "standard_conventions": {
-                "liquid": "Native MELTS pure endmember standards at the recorded T/P, evaluated through the saved " + liquid_model + " liquid model; independent endmember activity convention.",
+                "liquid": "Native MELTS pure endmember standards at the recorded T/P, extracted from its dry standard receipt when water is reconstructed; saved liquid model: " + liquid_model + ". No native water standard or He contribution is substituted into these Fe/Si reactions.",
                 "metal": "Source Fe/Si standards plus the Ma Fe-Si-O-H atomic-ideal standard-state shifts used by the BSE builder.",
                 "gas": "Saved retained-atmosphere standard potentials in the source common elemental gauge; ideal gas at 1 bar."},
             "native_state": state, "native_amount_scale": amount_scale,
-            "alloy_component_order": list(model.components), "alloy_standard_shift_rt": shifts.tolist(),
+            "alloy_component_order": alloy_order, "metal_model": metal_selection,
+            "alloy_shift_component_order": list(model.components), "alloy_standard_shift_rt": shifts.tolist(),
             "physical_calibration_accepted": False,
             "scope": "Actual model-standard extraction only; no independent reduction calibration or global stability acceptance.",
             "provenance": {"source": metadata.get("provenance"), "source_model_id": metadata["model_id"],

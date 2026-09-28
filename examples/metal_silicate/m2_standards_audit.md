@@ -121,3 +121,18 @@ fresh native dry-BSE evaluation, both gas comparisons, provider provenance,
 and reversible mass-fraction checks. The documented-example harness also ran
 this job successfully with complete entry-point coverage. This single-job run
 does not constitute acceptance of all 62 documented jobs.
+
+For `published_water`, formal Fe/Si reduction audits retain the selected wet
+provider state and extract only the dry published MELTS endmember standards.
+The dry state must contain the same dry amounts, zero native water, and the
+same T/P; every available dry standard and both reaction endmembers are bound
+to the hashed native reference receipt. The reconstructed water standard is
+not replaced by a native water value. Its full scalar is assessed separately.
+
+A separate `He_dissolved` component is excluded from these reaction standards
+only after checking its atomic formula, saved amount basis, EOS scalar recipe,
+and retained-He gas anchor. The extraction records that exclusion and retains
+the complete He declaration. This is not removal of He from the finite budget.
+For P and associated alloys, the recorded Fe/Si standards must exactly match
+the unchanged source convention in their actual component order. These checks
+establish reproducible model inputs, not independent material calibration.
