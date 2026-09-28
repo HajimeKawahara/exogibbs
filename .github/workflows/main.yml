@@ -141,6 +141,7 @@ jobs:
             tests/unittests/examples/m2_associated_test.py
             tests/unittests/examples/m2_potassium_test.py
             tests/unittests/examples/m2_host_stability_test.py
+            tests/unittests/examples/metal_silicate_standards_audit_test.py
             tests/unittests/examples/m2_helium_test.py
             tests/unittests/examples/m2_water_global_test.py
             tests/unittests/examples/m2_water_binding_test.py
