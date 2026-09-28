@@ -56,6 +56,8 @@ def selected_source_state(report: dict, audit: dict, source_sha256: str, *,
         if (report.get("model_id") != "m2_fixed_pressure_internal_source_v1"
                 or report.get("fixed_pressure_numerically_accepted") is not True
                 or report.get("pressure_closure_performed") is not False
+                or provenance.get("pressure_closure_performed") is not False
+                or state.get("connection_numerically_accepted") is not True
                 or report.get("failure") or state.get("failure")
                 or any(key in item and item[key] is not False for item in (report, state)
                        for key in ("accepted", "numerically_accepted", "global_closure_numerically_accepted",
@@ -67,6 +69,11 @@ def selected_source_state(report: dict, audit: dict, source_sha256: str, *,
                 or selector["layers"] != report["arguments"]["nlayer"]):
             raise ValueError("A fixed-pressure envelope must preserve its explicit non-root scope.")
         source = state["source"]
+        if (report["arguments"]["temperature_k"] != source["temperature_K"]
+                or report["arguments"]["bottom_pressure_bar"] != source["pressure_bar"]
+                or state["temperature_base_k"] != source["temperature_K"]
+                or state["pressure_base_pa"] != source["pressure_bar"]*1e5):
+            raise ValueError("The fixed-pressure arguments, state and source must name identical T/P.")
         record, result = source["source_internal_record"], source["source_internal_result"]
         elements = record["elements"]
         names = [name for group in record["phases"].values() for name in group]

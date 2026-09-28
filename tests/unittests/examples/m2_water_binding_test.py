@@ -135,10 +135,11 @@ def fixed_pressure_fixture(monkeypatch):
     state.pop("global_closure_numerically_accepted")
     state["pressure_closure_performed"] = False
     state["layers"] = [{}, {}]
+    state["connection_numerically_accepted"] = True
     report.update(model_id="m2_fixed_pressure_internal_source_v1", source_state=state,
                   fixed_pressure_numerically_accepted=True, pressure_closure_performed=False,
-                  arguments={"nlayer": 2})
-    audit["source"].update(kind="fixed_pressure_internal_source",
+                  arguments={"nlayer": 2, "temperature_k": 2000., "bottom_pressure_bar": 1.})
+    audit["source"].update(kind="fixed_pressure_internal_source", pressure_closure_performed=False,
                            selection={"layers": 2, "temperature_k": 2000., "pressure_bar": 1.})
     return report, audit, source
 
@@ -194,6 +195,13 @@ def test_fixed_pressure_requires_opt_in_and_reuses_unchanged_water_math(monkeypa
     lambda r,a,s: a["source"]["selection"].update(root_index=0),
     lambda r,a,s: a["source"]["selection"].update(run_index=0),
     lambda r,a,s: r["arguments"].update(nlayer=3),
+    lambda r,a,s: r["arguments"].update(temperature_k=1999.),
+    lambda r,a,s: r["arguments"].update(bottom_pressure_bar=2.),
+    lambda r,a,s: r["source_state"].update(temperature_base_k=1999.),
+    lambda r,a,s: r["source_state"].update(pressure_base_pa=2e5),
+    lambda r,a,s: r["source_state"].update(connection_numerically_accepted=False),
+    lambda r,a,s: a["source"].update(pressure_closure_performed=True),
+    lambda r,a,s: a["source"].pop("pressure_closure_performed"),
     lambda r,a,s: a["source"].update(sha256="different-source"),
     lambda r,a,s: a["source"].update(numerical_source_accepted=False),
     lambda r,a,s: s["source_internal_result"].update(component_amounts_mol=[1., 1., .2, .05]),
