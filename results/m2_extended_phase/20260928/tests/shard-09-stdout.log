@@ -1,0 +1,76 @@
+........................................................................ [ 22%]
+........................................................................ [ 45%]
+........................................................................ [ 67%]
+.................F...................................................... [ 90%]
+............................s.                                           [100%]
+=================================== FAILURES ===================================
+________________ test_manifest_covers_every_documented_example _________________
+
+    def test_manifest_covers_every_documented_example() -> None:
+        documents = example_documents_from_index(
+            REPOSITORY_ROOT / "documents" / "index.rst"
+        )
+    
+        assert documents == tuple(case.document for case in CASES)
+        assert len({case.case_id for case in CASES}) == len(CASES)
+        assert len({case.workload for case in CASES}) == len(CASES)
+        assert set(case.workload for case in CASES) == set(workloads.WORKLOADS)
+        for case in CASES:
+            assert case.full_output_layer_count > 0
+            assert case.output_rows_per_condition > 0
+            assert (
+                case.full_output_layer_count % case.output_rows_per_condition == 0
+            )
+            assert case.expected_output_layer_count(1) == (
+                case.output_rows_per_condition
+            )
+            assert len(set(case.expected_phases)) == len(case.expected_phases)
+            assert all(
+                category in ("setup", "solver")
+                for _, category in case.expected_phases
+            )
+            assert case.source_scripts
+            document = REPOSITORY_ROOT / "documents" / f"{case.document}.rst"
+            assert document.is_file()
+            document_source = document.read_text()
+            assert all(
+                (REPOSITORY_ROOT / source).is_file()
+                for source in case.source_scripts
+            )
+            assert all(
+                Path(source).name in document_source
+                for source in case.source_scripts
+            )
+>           assert all(
+                (REPOSITORY_ROOT / artifact).is_file()
+                for artifact in case.input_artifacts
+            )
+E           assert False
+E            +  where False = all(<generator object test_manifest_covers_every_documented_example.<locals>.<genexpr> at 0x7696a73f70b0>)
+
+tests/unittests/benchmarks/documented_examples_benchmark_test.py:66: AssertionError
+=============================== warnings summary ===============================
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:115: RuntimeWarning: overflow encountered in power
+    phi_prime = -np.sum(suf ** 2 / denom**3) / p_norm
+
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:154: RuntimeWarning: divide by zero encountered in scalar divide
+    ratio = phi / phi_prime
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/unittests/api/version_test.py:12: setuptools-scm generated version module is unavailable
+1 failed, 316 passed, 1 skipped, 24 warnings in 93.78s (0:01:33)
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+

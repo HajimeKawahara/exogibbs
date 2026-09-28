@@ -1,0 +1,48 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "44",
+    "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+    "/tmp/stage2-run-test-shard.py",
+    "/tmp/stage2-extended-proof-suite-20260928/manifest.json",
+    "5",
+    "--repo",
+    "/tmp/stage2-extended-common-plane-gibbs-20260928",
+    "--prefix",
+    "/tmp/stage2-extended-proof-suite-20260928/shard"
+  ],
+  "started_utc": "2026-09-27T23:28:58.627355+00:00",
+  "finished_utc": "2026-09-27T23:31:38.499114+00:00",
+  "elapsed_seconds": 159.87176829203963,
+  "exit_code": 0,
+  "checkouts_before": {
+    "gibbs": {
+      "head": "54cfba891e379b48191da74f6d4bd77dfb5cbf0d",
+      "status": ""
+    },
+    "eos": {
+      "head": "9cd03ec7d72982eeb0985be99d1245e027dfccfc",
+      "status": ""
+    }
+  },
+  "checkouts_after": {
+    "gibbs": {
+      "head": "54cfba891e379b48191da74f6d4bd77dfb5cbf0d",
+      "status": ""
+    },
+    "eos": {
+      "head": "9cd03ec7d72982eeb0985be99d1245e027dfccfc",
+      "status": ""
+    }
+  },
+  "environment": {
+    "PYTHONPATH": "/tmp/stage2-extended-common-plane-gibbs-20260928/src:/tmp/stage2-material-proof-eos-20260928/src",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "manifest_sha256": "ae8fd0c6d66cf61991122347ac81efac10068a6b1e7b33464a872d3a0382a13c"
+}
