@@ -254,10 +254,12 @@ def certify_associated_insertion(excess, costs, lower, upper, curvature, shifts,
             "empirical_material_certified": False}
 
 
-def _load_provider(checkout, potassium):
-    name = "_m2_global_potassium" if potassium else "_m2_global_associated"
-    path = Path(checkout).resolve()/"examples/m2_material"/(
-        "potassium_reference.py" if potassium else "associate_reference.py")
+def _load_provider(checkout, potassium, sodium=False):
+    kind = "sodium" if sodium else "potassium" if potassium else "associated"
+    name = "_m2_global_"+kind
+    filename = {"sodium":"sodium_metal.py", "potassium":"potassium_reference.py",
+                "associated":"associate_reference.py"}[kind]
+    path = Path(checkout).resolve()/"examples/m2_material"/filename
     if name in sys.modules:
         module = sys.modules[name]
         if Path(module.__file__).resolve() != path:
@@ -271,14 +273,15 @@ def _load_provider(checkout, potassium):
 
 
 def load_associated_expression(metadata, exoeos_checkout):
-    """Bind a saved 18/19-species expression for insertion and primal energy."""
+    """Bind a saved 18/19/20-species expression and its full declared domain."""
     metadata = deepcopy(metadata)
     kind = metadata.get("metal_model")
-    if kind not in ("associated", "associated_k"):
+    if kind not in ("associated", "associated_k", "associated_k_na"):
         raise ValueError("Require a declared associated alloy and its actual callback.")
-    potassium = kind == "associated_k"
+    sodium = kind == "associated_k_na"
+    potassium = kind in ("associated_k", "associated_k_na")
     row = metadata["associated_metal"]
-    provider = _load_provider(exoeos_checkout, potassium)
+    provider = _load_provider(exoeos_checkout, potassium, sodium)
     root = Path(exoeos_checkout).resolve()
     for path, digest in row["provider_recipe_file_sha256"].items():
         if hashlib.sha256((root/path).read_bytes()).hexdigest() != digest:
@@ -303,34 +306,65 @@ def load_associated_expression(metadata, exoeos_checkout):
             or list(provider.FORMULAS) != row["component_formulas"]
             or row["composition_basis"] != "chemical_species_moles"):
         raise ValueError("Saved associated-alloy expression or basis differs from its provider.")
-    host = model.host if potassium else model
+    parent_model = model.host if sodium else model
+    host = parent_model.host if potassium else parent_model
     dry = np.asarray(host.host.host.dry_model.interaction_K).tolist()
     epsilon = np.asarray(host.host.epsilon).tolist()
     matrix = np.asarray(host.additional_matrix).tolist()
-    saved_lo, saved_hi = _validate_domain(row["lower_species_fractions"], row["upper_species_fractions"])
-    kappa = provider.associated_curvature_lower_bound(reference, temperature, saved_lo, saved_hi)
+    if sodium:
+        from m2_sodium_global import parent_domain
+        saved_lo, saved_hi = (np.asarray(row[key], float) for key in
+                              ('lower_species_fractions', 'upper_species_fractions'))
+        parent_lo, parent_hi = parent_domain(saved_lo, saved_hi)
+    else:
+        saved_lo, saved_hi = _validate_domain(row["lower_species_fractions"], row["upper_species_fractions"])
+    parent_provider = provider._potassium() if sodium else provider
+    parent_reference = reference.host if sodium else reference
+    if sodium:
+        from m2_sodium_global import parent_domain
+        parent_lo, parent_hi = parent_domain(saved_lo, saved_hi)
+    else:
+        parent_lo, parent_hi = saved_lo, saved_hi
+    kappa = parent_provider.associated_curvature_lower_bound(
+        parent_reference, temperature, parent_lo, parent_hi)
     if kappa <= 0:
         raise ValueError("The declared H--O-free reference has no positive global curvature bound.")
     standards = [_I(float(value)) for value in row["standards"]["standard_potentials_rt"]]
+    if (len(standards) != len(saved_lo)
+            or not all(v.lo.is_finite() and v.hi.is_finite() for v in standards)):
+        raise ValueError("Require one finite standard for each declared alloy species.")
     offsets = (metadata.get("provider_scenario") or {}).get("standard_offsets_rt", {})
     for i, name in enumerate(provider.COMPONENTS):
         standards[i] += _I(float(offsets.get(name+"_metal", 0.)))
     ho = _I(float(matrix[2][3]))
     if ho.lo < 0:
         raise ValueError("The declared H--O coefficient must be nonnegative.")
-    shifts = [_I(0) for _ in range(len(standards)-1)]
+    shifts = [_I(0) for _ in range(len(parent_lo)-1)]
     if potassium:
-        h = 1-_I(float(saved_hi[-1]))
-        shifts[1] = ho/h+ho*_I(float(saved_hi[3]))/h/h
-        shifts[2] = ho/h+ho*_I(float(saved_hi[2]))/h/h
-        shifts[-1] = ho*(_I(float(saved_hi[2]))+_I(float(saved_hi[3])))/h/h
+        h = 1-_I(float(parent_hi[-1]))
+        shifts[1] = ho/h+ho*_I(float(parent_hi[3]))/h/h
+        shifts[2] = ho/h+ho*_I(float(parent_hi[2]))/h/h
+        shifts[-1] = ho*(_I(float(parent_hi[2]))+_I(float(parent_hi[3])))/h/h
         shifts = [_I(v.hi) for v in shifts]
     else:
         shifts[1] = shifts[2] = ho
     def excess(values):
         return provider.associated_excess(temperature, dry, epsilon, matrix, values)
+    def parent_excess(values):
+        return parent_provider.associated_excess(temperature, dry, epsilon, matrix, values)
 
-    return {"metadata": metadata, "row": row, "provider": provider, "model": model, "temperature": temperature, "standards": standards, "saved_lo": saved_lo, "saved_hi": saved_hi, "kappa": kappa, "shifts": shifts, "excess": excess, "offsets": offsets}
+    return {"metadata": metadata, "row": row, "provider": provider, "model": model, "temperature": temperature, "standards": standards, "saved_lo": saved_lo, "saved_hi": saved_hi, "kappa": kappa, "shifts": shifts, "excess": excess, "offsets": offsets,
+            "parent_excess":parent_excess, "sodium_elimination":sodium}
+
+
+def certify_context_insertion(context, costs, lower, upper, **options):
+    """Select only the bound that matches the saved provider expression."""
+    if context.get('sodium_elimination', False):
+        from m2_sodium_global import certify_sodium_insertion
+        return certify_sodium_insertion(context['parent_excess'], costs, lower, upper,
+                                        context['kappa'], context['shifts'], **options)
+    return certify_associated_insertion(context['excess'], costs, lower, upper,
+                                         context['kappa'], context['shifts'], **options)
 
 
 def _insertion_callback(context, metal_evaluator):
@@ -341,7 +375,12 @@ def _insertion_callback(context, metal_evaluator):
     offsets = context["offsets"]
 
     def minimize_actual(t, p, formula, potentials, lower, upper, *, tolerance=1e-8, maxiter=1000):
-        lo, hi = _validate_domain(lower, upper)
+        if context.get('sodium_elimination', False):
+            from m2_sodium_global import parent_domain
+            parent_domain(lower, upper)
+            lo, hi = np.asarray(lower, float), np.asarray(upper, float)
+        else:
+            lo, hi = _validate_domain(lower, upper)
         atoms, plane = np.asarray(formula, float), np.asarray(potentials, float)
         if (t != temperature or not np.isfinite(p) or p <= 0
                 or lo.shape != saved_lo.shape or np.any(lo < saved_lo) or np.any(hi > saved_hi)
@@ -356,9 +395,8 @@ def _insertion_callback(context, metal_evaluator):
         costs = [standard-sum((_I(float(a))*_I(float(l))
                     for a, l in zip(atoms[:, i], plane)), _I(0))
                  for i, standard in enumerate(standards)]
-        report = certify_associated_insertion(excess, costs, lo, hi, kappa, shifts,
-                                              tolerance=tolerance, max_nodes=max(1, 2*maxiter-1),
-                                              maxiter=maxiter)
+        report = certify_context_insertion(context, costs, lo, hi, tolerance=tolerance,
+                                            max_nodes=max(1, 2*maxiter-1), maxiter=maxiter)
         x = np.asarray(report["composition"])
         state = metal_evaluator(t, p, x)
         actual = float(state.gibbs_rt-atoms.T.dot(plane).dot(x))
@@ -394,7 +432,9 @@ def _insertion_callback(context, metal_evaluator):
             "standard_offsets_rt": offsets,
             "provider_recipe_file_sha256": row["provider_recipe_file_sha256"],
             "verifier_file_sha256": {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-                                      for name in ("m2_associated_global.py", "m2_liquid_global.py")}}
+                                      for name in ("m2_associated_global.py", "m2_liquid_global.py",
+                                          *(("m2_sodium_global.py", "m2_common_plane.py")
+                                             if context.get('sodium_elimination', False) else ()))}}
         minimize_actual.last_report = report
         accepted = bool(report["minimum_certified"] and gap <= tolerance
                         and upper_value-lower_value <= tolerance)

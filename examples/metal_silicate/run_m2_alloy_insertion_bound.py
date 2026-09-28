@@ -71,7 +71,7 @@ def saved_inputs(closure_path: Path, physical_path: Path, *, allow_extended=Fals
     components = COMPONENTS
     formulas = [{element: 1} for element in ELEMENTS]
     extended = None
-    if allow_extended and kind in ("phosphorus", "associated", "associated_k"):
+    if allow_extended and kind in ("phosphorus", "associated", "associated_k", "associated_k_na"):
         extended = metadata["phosphorus_metal" if kind == "phosphorus" else "associated_metal"]
         components = tuple(name+"_metal" for name in extended["component_order"])
         formulas = ([{name: 1} for name in extended["component_order"]] if kind == "phosphorus"
