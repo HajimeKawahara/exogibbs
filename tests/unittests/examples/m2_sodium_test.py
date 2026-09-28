@@ -123,6 +123,7 @@ def test_saved_sodium_proof_replays_host_recipe_and_preserves_exact_primal_atoms
     sys.path.insert(0, str(DIRECTORY))
     try:
         proof_module = importlib.import_module('m2_extended_alloy')
+        importlib.import_module('m2_sodium_global')  # The source loader also loads this sibling explicitly.
         finite = importlib.import_module('m2_finite_gas')
         reference_module = importlib.import_module('run_bse_common_gibbs')
     finally:
