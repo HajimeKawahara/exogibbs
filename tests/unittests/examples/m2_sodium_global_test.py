@@ -108,11 +108,11 @@ def test_sodium_factory_binds_actual_provider_energy_and_all_twenty_potentials()
     from types import SimpleNamespace
     import jax
     exoeos = pytest.importorskip("exoeos")
-    from exoeos import total_solution_state
     associated = importlib.import_module('m2_associated_global')
     root = Path(exoeos.__file__).resolve().parents[2]
     recipe = root/'examples/m2_material/sodium_metal.py'
     if not recipe.exists():pytest.skip('The pinned sodium provider is unavailable.')
+    from exoeos import total_solution_state
     jax.config.update('jax_enable_x64', True)
     provider = associated._load_provider(root, True, True)
     model, interactions = provider.make_associated_model(2173.15)
