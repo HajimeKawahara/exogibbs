@@ -61,6 +61,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     here = Path(__file__).resolve().parent
     code_names = ("run_m2_common_plane.py", "m2_common_plane.py", "m2_liquid_global.py",
                   "m2_extended_common_plane.py", "m2_extended_alloy.py", "m2_associated_global.py",
+                  "m2_sodium_global.py",
                   "m2_water_global.py", "run_m2_water_global.py", "m2_host_standards.py",
                   "run_m2_alloy_insertion_bound.py", "m2_helium_global.py", "m2_helium.py")
     files = {str(here/name): sha256(here/name) for name in code_names}

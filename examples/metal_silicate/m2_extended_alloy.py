@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from m2_associated_global import (alloy_energy_interval, certify_associated_insertion,
+from m2_associated_global import (alloy_energy_interval, certify_context_insertion,
                                   load_associated_expression, _scalar_gradient)
 from m2_liquid_global import _I, _outward_float
 
@@ -39,18 +39,38 @@ def load_saved_alloy(source, exoeos_checkout):
     """Reconstruct the exact selected scalar from provider-owned expressions."""
     metadata = deepcopy(source["source_metadata"])
     kind = metadata.get("metal_model", "ma")
-    if kind in ("associated", "associated_k"):
+    if kind in ("associated", "associated_k", "associated_k_na"):
         context = load_associated_expression(metadata, exoeos_checkout)
         context["proof_lo"] = context["saved_lo"].copy()
         provider = context['provider']
-        associated = provider._associated() if kind == 'associated_k' else provider
-        host = context['model'].host if kind == 'associated_k' else context['model']
+        sodium = kind == 'associated_k_na'
+        potassium = kind in ('associated_k', 'associated_k_na')
+        standard_provider = provider._potassium() if sodium else provider
+        associated = standard_provider._associated() if potassium else provider
+        parent_model = context['model'].host if sodium else context['model']
+        host = parent_model.host if potassium else parent_model
         base = _verify_phosphorus_standard(source, associated._phosphorus(), host.host)
         parcel = source['source_atmosphere_parcel']
         gas = dict(zip(parcel['gas_species'], parcel['gas_standard_potentials_rt']))
         options = ({'potassium_standard_offset_rt': metadata['potassium_metal']['gas_to_metal_standard_offset_rt']}
-                   if kind == 'associated_k' else {})
-        standards, receipt = provider.associated_standards_rt(source['temperature_K'], base, gas, **options)
+                   if potassium else {})
+        standards, receipt = standard_provider.associated_standards_rt(source['temperature_K'], base, gas, **options)
+        if sodium:
+            sodium_row = metadata['sodium_metal']
+            native = sodium_row['native_liquid_properties']
+            host_receipts = metadata['host_ledger']['native_standard_state_receipts']
+            if (len(host_receipts) != 1 or host_receipts[0]['native_properties'] != native
+                    or host_receipts[0]['T_K'] != source['temperature_K']
+                    or host_receipts[0]['P_Pa'] != source['pressure_bar']*1e5):
+                raise ValueError("The sodium standard must use the actual host's exact native receipt.")
+            value, sodium_receipt = provider.sodium_standard_rt(source['temperature_K'],
+                source['pressure_bar']*1e5, float(standards[0]), native,
+                projection=sodium_row['projection'], temperature_policy=sodium_row['temperature_policy'])
+            if {k:v for k,v in sodium_row.items() if k != 'native_liquid_properties'} != sodium_receipt:
+                raise ValueError("The saved sodium standard differs from the executed native/Fe recipe.")
+            standards = np.r_[standards, value]
+            receipt.update(component_order=list(provider.COMPONENTS), component_formulas=list(provider.FORMULAS),
+                           standard_potentials_rt=standards.tolist(), sodium=sodium_receipt)
         if receipt != context['row']['standards'] or standards.tolist() != receipt['standard_potentials_rt']:
             raise ValueError("The associated standards differ from the executed gas/host recipe.")
     elif kind == "phosphorus":
@@ -143,8 +163,8 @@ def certify_saved_alloy(source, context, *, tolerance=1e-8, max_nodes=2000):
                for name in context['names']]
     costs = [standard-sum((_I(float(c))*_I(float(l)) for c,l in zip(column,plane)),_I(0))
              for standard,column in zip(context['standards'],columns)]
-    report = certify_associated_insertion(context['excess'],costs,context['proof_lo'],
-        context['saved_hi'],context['kappa'],context['shifts'],tolerance=tolerance,max_nodes=max_nodes)
+    report = certify_context_insertion(context,costs,context['proof_lo'],
+        context['saved_hi'],tolerance=tolerance,max_nodes=max_nodes)
     amounts = [Fraction(saved['component_amounts_mol'][names.index(name)]) for name in context['names']]
     if any(value < 0 for value in amounts):
         raise ValueError("The source alloy contains a negative component amount.")
