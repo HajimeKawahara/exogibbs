@@ -187,6 +187,12 @@ def solution_common_plane(proof: dict, properties: dict, dissolved_h2: float, pl
     """Translate every signed endmember reaction over the full declared box."""
     if proof["unresolved_box_count"] or proof["lower_bound_rt_per_formula_unit"] is None:
         raise ValueError("A complete solution-domain lower bound is required.")
+    reference = proof.get('host_potential_reference')
+    if ((reference is None and properties.get('model_id') == 'dry_melts_thompson2025_water_equivalent_v1')
+            or (reference is not None and (reference['model_id'] != properties['model_id']
+                or reference['dissolved_h2_moles'] != dissolved_h2
+                or reference['helium_host_correction_applied'] is not False))):
+        raise ValueError('The solution proof and common-plane conversion need the identical bare-host reference.')
     parameters = proof["parameters"]
     order = properties["basis"]["element_order"]
     columns = properties["basis"]["component_element_matrix"]

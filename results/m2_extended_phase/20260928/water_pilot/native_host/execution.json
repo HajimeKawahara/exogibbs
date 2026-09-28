@@ -1,0 +1,53 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "40",
+    "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+    "/tmp/stage2-water-fixed-pressure-pilot-20260928.py",
+    "/tmp/stage2-water-fixed-pressure-pilot-20260928/results",
+    "1"
+  ],
+  "environment_overrides": {
+    "PYTHONPATH": "/tmp/stage2-material-proof-gibbs-20260928/src:/tmp/stage2-combined-eos-20260928/src",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "JAX_ENABLE_X64": "1",
+    "JAX_PLATFORMS": "cpu",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "started_utc": "2026-09-27T22:03:48.161345+00:00",
+  "finished_utc": "2026-09-27T22:03:51.601368+00:00",
+  "exit_code": 0,
+  "elapsed_seconds": 3.4400208573788404,
+  "checkouts_before": {
+    "/tmp/stage2-material-proof-gibbs-20260928": {
+      "head": "9612c9ebc6beea20914999b23d4abded8feae2ae",
+      "status": "",
+      "remote": "https://github.com/HajimeKawahara/exogibbs.git"
+    },
+    "/tmp/stage2-combined-eos-20260928": {
+      "head": "8c95ca86916ffd1dd7030e717a052d6970ed66ad",
+      "status": "",
+      "remote": "https://github.com/HajimeKawahara/exoeos.git"
+    }
+  },
+  "checkouts_after": {
+    "/tmp/stage2-material-proof-gibbs-20260928": {
+      "head": "9612c9ebc6beea20914999b23d4abded8feae2ae",
+      "status": "",
+      "remote": "https://github.com/HajimeKawahara/exogibbs.git"
+    },
+    "/tmp/stage2-combined-eos-20260928": {
+      "head": "8c95ca86916ffd1dd7030e717a052d6970ed66ad",
+      "status": "",
+      "remote": "https://github.com/HajimeKawahara/exoeos.git"
+    }
+  },
+  "script_sha256": "2bc924e7c4626809018370d2307891bee800ee60e0d428a57d11d340ada825cf",
+  "files": {
+    "stdout.log": "75996456acfb5189ee4a95a2d1b9573e7a349afd1701b91c1fd5e377bb99a718",
+    "results/assessment.json": "574a90a193d19ccbb7e722cb4de74615ee281d56cc640ce73bf31555c5e8f0e5",
+    "results/fresh_properties.json": "ae300b4a3f0107fb486c12d68766d33458abdc010ef0eb14fd5549ed09d566d1"
+  }
+}

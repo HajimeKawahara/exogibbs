@@ -8,6 +8,16 @@ define the complete dry-component simplex. A component can be excluded only
 by the declared unsupported provider domain or a zero total elemental
 inventory; a zero parent amount alone never justifies exclusion.
 
+For a source with dissolved He, supply `--exoeos-checkout` as well. The saved
+trace scalar contributes the exact analytic term
+`-M_dry*a*exp(lambda_He-muHe0)` after minimizing its nonnegative He amount.
+Its masses and capacity come from the independently replayed provider receipt,
+not the water mass-ratio convention. This linear term leaves the water/H2
+elimination, Hessian and original oxygen-capacity constraint unchanged.
+The complete receipt and interval cost reductions are retained in the bound.
+Actual finite-primal energies undo the He minimization before evaluating the
+primitive He amount. No empirical wet-BSE He calibration is inferred.
+
 At fixed dry amounts, write `N=sum(n_dry)`,
 `S=sum(W_i n_i)/W_water`, and `log C=log_a+(w.n)/(T k.n)` using the
 **actual binary64 coefficients supplied by ExoEOS**. Let `q_H2` be the
@@ -81,8 +91,13 @@ Curvature is verified on the composition simplex: with columns
 `B_i = e_i - e_pivot`, interval LDL checks `B.T H B`. The infeasible normal
 direction need not be convex. The smooth Hessian enclosure plus an ideal
 positive diagonal lower bound remains a valid lower bound after congruence.
-For an alphaBB shift, `B.T B = I + 11.T >= I`, so verifying the more
-conservative tangent matrix plus `rho I` suffices for the actual ambient
-`rho I` perturbation. This changes neither the composition domain nor the
-provider scalar. Progress lower bounds are emitted only after both closed
+If a shift remains necessary, its positive definiteness is verified in
+the original ambient coordinates. Restriction to the tangent space then
+preserves positivity. This changes neither the domain nor the provider scalar. Progress lower bounds are emitted only after both closed
 child boxes have replaced their parent, preserving full simplex coverage.
+
+The tangent enclosure may widen interval dependencies on broad boxes. The
+verifier therefore accepts zero shift if either the ambient or tangent LDL
+check succeeds, and otherwise retains the original verified ambient shift.
+It never pays a larger alphaBB penalty merely because the tangent basis is
+less convenient for interval arithmetic.

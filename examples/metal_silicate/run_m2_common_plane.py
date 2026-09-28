@@ -56,8 +56,15 @@ def require_solution_proof(proof: dict, row: dict, parameters: dict, standard_st
         raise ValueError("The solution proof differs from its bound summary.")
 
 
-def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=None) -> dict:
-    files = {}
+def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=None, water_path=None,
+           alloy_tolerance_rt=1e-10, alloy_max_nodes=20000) -> dict:
+    here = Path(__file__).resolve().parent
+    code_names = ("run_m2_common_plane.py", "m2_common_plane.py", "m2_liquid_global.py",
+                  "m2_extended_common_plane.py", "m2_extended_alloy.py", "m2_associated_global.py",
+                  "m2_water_global.py", "run_m2_water_global.py", "m2_host_standards.py",
+                  "run_m2_alloy_insertion_bound.py", "m2_helium_global.py", "m2_helium.py")
+    files = {str(here/name): sha256(here/name) for name in code_names}
+    files[str(eos_checkout/"src/exoeos/ma_interval.py")] = sha256(eos_checkout/"src/exoeos/ma_interval.py")
 
     def read(path, expected=None):
         path = Path(path).resolve()
@@ -83,9 +90,10 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
             raise ValueError("The case selector does not match the binding.")
     read(row["source"]["path"], row["source"]["sha256"])
     read(row["physical_audit"]["path"], row["physical_audit"]["sha256"])
-    report, audit, state, scenario, _, _ = saved_inputs(Path(row["source"]["path"]), Path(row["physical_audit"]["path"]))
+    report, audit, state, scenario, _, _ = saved_inputs(Path(row["source"]["path"]), Path(row["physical_audit"]["path"]), allow_extended=True)
     source = state["source"]
-    files.update(verified_recipe(source, eos_checkout))
+    recipe_receipt = {}
+    files.update(verified_recipe(source, eos_checkout,allow_historical_builders=True,receipt=recipe_receipt))
     elements = source["source_internal_record"]["elements"]
     budget = list(map(Fraction, source["source_metadata"]["input"]["element_amounts_mol"]))
     if elements != report["inventory"]["elements"] or list(map(Fraction, report["inventory"]["total_element_amounts_mol"])) != budget:
@@ -95,7 +103,12 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     temperature, pressure = source["temperature_K"], source["pressure_bar"]
     host = audit["host_stability"]
     properties = host["provider_properties"]
-    expression = properties["mixing_expression"]
+    is_water = source["source_metadata"].get("liquid_model") == "published_water"
+    if 'helium_dissolution' in source['source_metadata'] and not is_water:
+        raise ValueError('The common-plane He extension currently requires reconstructed water.')
+    expression = properties.get("mixing_expression")
+    if is_water != (water_path is not None):
+        raise ValueError("The reconstructed-water source requires its explicit matching water proof.")
     phase_bounds = []
 
     def bound(name, value, atoms, **metadata):
@@ -103,7 +116,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
 
     proofs = row["declared_expression_phase_evidence"]["proofs"]
     proof_dirs = {}
-    for kind in ("solids", "liquid"):
+    for kind in (("solids",) if is_water else ("solids", "liquid")):
         entry = proofs[kind]["file"]
         summary = read(entry["path"], entry["sha256"])
         proof_dirs[kind] = Path(entry["path"]).parent
@@ -115,7 +128,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
                 != {k: v for k, v in properties.items() if k != "provenance"}
                 or old_host["native_dissolved_h2_moles"] != host["native_dissolved_h2_moles"]):
             raise ValueError("Saved proof inputs differ from the actual selected host.")
-    liquid = read(proof_dirs["liquid"]/"assessment.json")
+    liquid = read(water_path) if is_water else read(proof_dirs["liquid"]/"assessment.json")
     solid_summary = read(proof_dirs["solids"]/"summary.json")
     solid_host = read(proof_dirs["solids"]/"host_properties.json")
     require_saved_liquid_expression(properties, solid_host)
@@ -139,10 +152,25 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     h2_gas = anchored_standards_rt(common, temperature, reference)[0][common.species.index("H2")]
     h2_base = float(dissolved_h2_standard_rt(h2_gas, hirschmann2012_ln_solubility(pressure)))
     offsets = scenario["standard_offsets_rt"]
-    if set(offsets)-{"H2_dissolved", "Fe_metal", "Si_metal", "O_metal", "H_metal"}:
+    allowed_shifts = {"H2_dissolved", "Fe_metal", "Si_metal", "O_metal", "H_metal"}
+    if is_water or not offsets.get("h2o_melts", 0.):
+        allowed_shifts.add("h2o_melts")
+    if set(offsets)-allowed_shifts:
         raise ValueError("Unsupported extra standard shifts in the saved recipe.")
     h2_standard = _I(h2_base)+_I(offsets.get("H2_dissolved", 0.))
-    lo, atoms, details = liquid_common_plane(properties, liquid, plane, h2_standard)
+    if is_water:
+        from run_m2_water_global import saved_water_problem
+        from m2_extended_common_plane import water_common_plane, water_primal_energy
+        water_parameters, _, water_binding = saved_water_problem(report, audit, row["source"]["sha256"],exoeos_checkout=eos_checkout)
+        if 'helium_elimination' in water_binding:
+            files.update({str(eos_checkout/name):digest for name,digest in
+                          water_binding['helium_elimination']['receipt']['provider_recipe_file_sha256'].items()})
+        if (liquid["input_and_code_sha256"].get(str(Path(row["source"]["path"]).resolve())) != row["source"]["sha256"]
+                or liquid["input_and_code_sha256"].get(str(Path(row["physical_audit"]["path"]).resolve())) != row["physical_audit"]["sha256"]):
+            raise ValueError("The water proof is not bound to these exact root/audit bytes.")
+        lo, atoms, details = water_common_plane(water_parameters, water_binding, liquid)
+    else:
+        lo, atoms, details = liquid_common_plane(properties, liquid, plane, h2_standard)
     bound("H2_augmented_declared_liquid", lo, atoms, **details)
     solution_parameters, expected_solutions, solution_provider_receipt = saved_solution_provider(solid_summary, eos_checkout)
     native_standards = read(proof_dirs["solids"]/"native_standard_state_receipt.json")
@@ -181,34 +209,57 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
         pure_names.append(name)
     if set(pure_names) != PURE_PHASES:
         raise ValueError("All thirteen remaining native pure candidates are required.")
-    alloy = read(alloy_path)
-    if (alloy["source"]["sha256"] != row["source"]["sha256"]
-            or alloy["physical_audit"]["sha256"] != row["physical_audit"]["sha256"]
-            or alloy["supporting_potentials_rt"] != [plane[e] for e in alloy["component_order"]]
-            or not alloy["completed"] or alloy["reduced_curvature_lower_bound_rt"] <= 0):
-        raise ValueError("The alloy bound must use this exact source, common plane and full box.")
-    from exoeos.ma_fe_si_o_h import MaFeSiOHLiquid
-    from exoeos.ma_interval import ma_alloy_insertion_lower_bound
-    model = MaFeSiOHLiquid()
-    alloy_names = [element+"_metal" for element in alloy["component_order"]]
-    standards = (np.array([reference[name] for name in alloy_names])
-                 + np.asarray(model.standard_state_shift_RT(temperature)))
-    alloy_offsets = [offsets.get(name, 0.) for name in alloy_names]
-    if (standards.tolist() != alloy["base_standard_potentials_rt"]
-            or alloy_offsets != alloy["linear_standard_offsets_rt"]
-            or alloy["lower_atomic_fractions"] != scenario["metal_bounds"]["lower"]
-            or alloy["upper_atomic_fractions"] != scenario["metal_bounds"]["upper"]
-            or alloy["interaction_K"] != np.asarray(model.dry_model.interaction_K).tolist()
-            or alloy["temperature_K"] != temperature or alloy["pressure_bar"] != pressure):
-        raise ValueError("The alloy bound changed the actual source model or domain.")
-    replayed_bound = ma_alloy_insertion_lower_bound(
-        model, temperature, np.array(alloy["lower_atomic_fractions"]), np.array(alloy["upper_atomic_fractions"]),
-        np.array(alloy["evaluation_point"]["solute_fractions"]), standards,
-        np.array(alloy["supporting_potentials_rt"]), standard_offsets_rt=np.array(alloy_offsets))
-    if replayed_bound != alloy["insertion_lower_bound_rt_per_mol_atoms"]:
-        raise ValueError("The archived alloy interval bound was not reproduced exactly.")
-    bound("source_Fe_Si_O_H_alloy", alloy["insertion_lower_bound_rt_per_mol_atoms"], 1,
-          original_strict_nonnegative_bound=alloy["strict_nonnegative_bound"])
+    extended_alloy = source["source_metadata"].get("metal_model", "ma") != "ma"
+    if extended_alloy:
+        if alloy_path is not None:
+            raise ValueError("Extended alloys require a fresh declared-expression replay, not a four-component bound.")
+        from m2_extended_alloy import load_saved_alloy, certify_saved_alloy
+        from m2_associated_global import alloy_energy_interval
+        alloy_context = load_saved_alloy(source, eos_checkout)
+        files.update({str(eos_checkout/name): digest for name,digest
+                      in alloy_context["row"]["provider_recipe_file_sha256"].items()})
+        alloy = certify_saved_alloy(source, alloy_context,tolerance=alloy_tolerance_rt,max_nodes=alloy_max_nodes)
+        alloy_components = alloy["component_order"]
+        alloy_plane = [sum((_I(float(col.get(e, 0.)))*_I(float(plane[e])) for e in elements),_I(0))
+                       for col in alloy["component_formulas"]]
+        replayed_bound = Decimal(alloy["lower_bound_rt"])
+        bound("source:"+alloy["model_id"], replayed_bound,
+              min(sum(col.values()) for col in alloy["component_formulas"]),
+              amount_unit="mole of declared chemical components",
+              original_strict_nonnegative_bound=replayed_bound >= 0)
+    else:
+        if alloy_path is None:
+            raise ValueError("The four-component source requires its original saved alloy bound.")
+        alloy = read(alloy_path)
+        if (alloy["source"]["sha256"] != row["source"]["sha256"]
+                or alloy["physical_audit"]["sha256"] != row["physical_audit"]["sha256"]
+                or alloy["supporting_potentials_rt"] != [plane[e] for e in alloy["component_order"]]
+                or not alloy["completed"] or alloy["reduced_curvature_lower_bound_rt"] <= 0):
+            raise ValueError("The alloy bound must use this exact source, common plane and full box.")
+        from exoeos.ma_fe_si_o_h import MaFeSiOHLiquid
+        from exoeos.ma_interval import ma_alloy_insertion_lower_bound
+        model = MaFeSiOHLiquid()
+        alloy_names = [element+"_metal" for element in alloy["component_order"]]
+        standards = (np.array([reference[name] for name in alloy_names])
+                     + np.asarray(model.standard_state_shift_RT(temperature)))
+        alloy_offsets = [offsets.get(name, 0.) for name in alloy_names]
+        if (standards.tolist() != alloy["base_standard_potentials_rt"]
+                or alloy_offsets != alloy["linear_standard_offsets_rt"]
+                or alloy["lower_atomic_fractions"] != scenario["metal_bounds"]["lower"]
+                or alloy["upper_atomic_fractions"] != scenario["metal_bounds"]["upper"]
+                or alloy["interaction_K"] != np.asarray(model.dry_model.interaction_K).tolist()
+                or alloy["temperature_K"] != temperature or alloy["pressure_bar"] != pressure):
+            raise ValueError("The alloy bound changed the actual source model or domain.")
+        replayed_bound = ma_alloy_insertion_lower_bound(
+            model, temperature, np.array(alloy["lower_atomic_fractions"]), np.array(alloy["upper_atomic_fractions"]),
+            np.array(alloy["evaluation_point"]["solute_fractions"]), standards,
+            np.array(alloy["supporting_potentials_rt"]), standard_offsets_rt=np.array(alloy_offsets))
+        if replayed_bound != alloy["insertion_lower_bound_rt_per_mol_atoms"]:
+            raise ValueError("The archived alloy interval bound was not reproduced exactly.")
+        bound("source_Fe_Si_O_H_alloy", alloy["insertion_lower_bound_rt_per_mol_atoms"], 1,
+              original_strict_nonnegative_bound=alloy["strict_nonnegative_bound"])
+        alloy_components = alloy["component_order"]
+        alloy_plane = list(map(_I, alloy["supporting_potentials_rt"]))
     atom_columns = lambda matrix: [[Fraction(float(matrix[setup.elements.index(e), i])) if e in setup.elements else Fraction(0)
                                    for e in elements] for i in range(matrix.shape[1])]
     gas_columns, cloud_columns = atom_columns(ag), atom_columns(ac)
@@ -242,17 +293,24 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
             if record["component_formulas"][name+"_melts"] != {e: c for e, c in zip(host_elements, col) if c}:
                 raise ValueError("The source and liquid component formulas differ.")
     h2 = repaired_lower["H2_dissolved"]
-    primal_liquid = liquid_mixing(expression, melt_amounts)
-    primal_liquid += sum((_I(n)*mu for n, mu in zip(melt_amounts, liquid_standard_intervals(properties)) if n), _I(0))
-    primal_liquid += ideal_energy([sum(melt_amounts), h2])+_I(h2)*h2_standard
-    metal = [repaired_lower[e+"_metal"] for e in alloy["component_order"]]
+    if is_water:
+        primal_liquid = water_primal_energy(water_parameters, water_binding, properties,
+                                           plane, melt_amounts, h2, repaired_lower.get('He_dissolved',0))
+    else:
+        primal_liquid = liquid_mixing(expression, melt_amounts)
+        primal_liquid += sum((_I(n)*mu for n, mu in zip(melt_amounts, liquid_standard_intervals(properties)) if n), _I(0))
+        primal_liquid += ideal_energy([sum(melt_amounts), h2])+_I(h2)*h2_standard
+    metal = [repaired_lower[e+"_metal"] for e in alloy_components]
     total = sum(metal)
-    fraction = [v/total for v in metal]
-    if any(x < Fraction(low) or x > Fraction(high) for x, low, high in zip(fraction, alloy["lower_atomic_fractions"], alloy["upper_atomic_fractions"])):
-        raise ValueError("The feasible primal leaves the declared alloy box.")
-    from exoeos.ma_interval import _ma_excess
-    primal_alloy = ideal_energy(metal)+_I(total)*_ma_excess(temperature, alloy["interaction_K"], list(map(_I, fraction[1:])))
-    primal_alloy += sum((_I(n)*(_I(st)+_I(off)) for n, st, off in zip(metal, alloy["base_standard_potentials_rt"], alloy["linear_standard_offsets_rt"])), _I(0))
+    if extended_alloy:
+        primal_alloy = alloy_energy_interval(alloy_context, metal)
+    else:
+        fraction = [v/total for v in metal]
+        if any(x < Fraction(low) or x > Fraction(high) for x, low, high in zip(fraction, alloy["lower_atomic_fractions"], alloy["upper_atomic_fractions"])):
+            raise ValueError("The feasible primal leaves the declared alloy box.")
+        from exoeos.ma_interval import _ma_excess
+        primal_alloy = ideal_energy(metal)+_I(total)*_ma_excess(temperature, alloy["interaction_K"], list(map(_I, fraction[1:])))
+        primal_alloy += sum((_I(n)*(_I(st)+_I(off)) for n, st, off in zip(metal, alloy["base_standard_potentials_rt"], alloy["linear_standard_offsets_rt"])), _I(0))
     count = len(lower_names)
     repaired_gas = repaired[count:count+len(gas.species)]
     repaired_cloud = repaired[count+len(gas.species):]
@@ -273,7 +331,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
                                           "maximum_chemical_residual_rt": chemistry_error,
                                           "independent_primal_vs_saved_energy_error_rt_per_inventory_atom": str(energy_error),
                                           "accepted": numerical_prerequisites}
-    alloy_point = (primal_alloy-_dot(metal, alloy["supporting_potentials_rt"]))/_I(total)
+    alloy_point = (primal_alloy-_dot(metal, alloy_plane))/_I(total)
     alloy_lower = _I(replayed_bound)
     alloy_minimum = _I(alloy_lower.lo, alloy_point.hi)
     search_error = alloy_point-alloy_lower
@@ -283,7 +341,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
                        and search_error.hi <= Decimal.from_float(1e-8)
                        and complementarity.hi <= Decimal.from_float(1e-8))
     result["present_alloy_condition"] = {
-        "global_minimum_interval_rt_per_mol_atoms": interval_json(alloy_minimum),
+        "global_minimum_interval_rt_per_mol_components" if extended_alloy else "global_minimum_interval_rt_per_mol_atoms": interval_json(alloy_minimum),
         "composition_search_uncertainty_upper_rt": str(search_error.hi),
         "complementarity_upper_rt_per_inventory_atom": str(complementarity.hi),
         "tolerance_rt": 1e-8, "accepted": metal_condition,
@@ -292,6 +350,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
         result["declared_model_gap_accepted"] and numerical_prerequisites and metal_condition)
     result.update(schema="m2_declared_finite_source_common_plane_gap_v1", case=row["case"],
                   source=row["source"], physical_audit=row["physical_audit"],
+                  source_recipe_verification=recipe_receipt,
                   temperature_K=temperature, pressure_bar=pressure, exact_primal_repair=repair,
                   solution_provider=solution_provider_receipt,
                   phase_bounds=[{**{k: v for k, v in item.items() if k not in ("bound", "minimum_atoms")},
@@ -303,12 +362,14 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
                   excluded_temperature_ineligible_clouds=[name for name, valid in zip(cloud.species, eligible) if not valid],
                   scope="Global Gibbs bounds at this source T/P, finite 13-element budget and declared phase domains. Exact atom repair supplies a feasible upper bound; a uniform shift of the common elemental plane supplies a global lower bound. This is error-bounded model acceptance, not exact KKT, empirical validity, unbounded Fe alloy composition, metal-free boundary certification, native-build equivalence, or a Gibbs minimum of the nonisothermal planet.")
     root = Path(__file__).resolve().parents[2]
-    for path in (Path(__file__), Path(__file__).with_name("m2_common_plane.py"), Path(__file__).with_name("m2_liquid_global.py"), eos_checkout/"src/exoeos/ma_interval.py"):
-        files[str(path)] = sha256(path)
     if any(sha256(path) != digest for path, digest in files.items()):
         raise ValueError("An input changed during the assessment.")
     result["input_and_code_sha256"] = files
-    result["alloy_interval_bound_replayed_exactly"] = True
+    result["alloy_interval_bound_replayed_exactly"] = not extended_alloy
+    if extended_alloy:
+        result["fresh_extended_alloy_bound"] = alloy
+    if is_water:
+        result["water_proof_bound_to_same_source_and_plane"] = True
     result["proof_commit"] = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
     return result
 
@@ -317,13 +378,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence-binding", type=Path, required=True)
     parser.add_argument("--case", help="Required when selecting a case from the five-root aggregate.")
-    parser.add_argument("--alloy-bound", type=Path, required=True)
+    parser.add_argument("--alloy-bound", type=Path)
+    parser.add_argument("--water-proof", type=Path)
+    parser.add_argument("--alloy-tolerance-rt", type=float, default=1e-10)
+    parser.add_argument("--alloy-max-nodes", type=int, default=20000)
     parser.add_argument("--exoeos-checkout", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     if args.output.exists():
         parser.error("Use a new output file; original evidence is never overwritten.")
-    result = assess(args.evidence_binding, args.alloy_bound, args.exoeos_checkout.resolve(), case=args.case)
+    result = assess(args.evidence_binding, args.alloy_bound, args.exoeos_checkout.resolve(), case=args.case,
+                    water_path=args.water_proof,alloy_tolerance_rt=args.alloy_tolerance_rt,alloy_max_nodes=args.alloy_max_nodes)
     with args.output.open("x") as stream:
         json.dump(result, stream, indent=2, allow_nan=False)
         stream.write("\n")

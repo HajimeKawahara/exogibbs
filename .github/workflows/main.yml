@@ -142,8 +142,19 @@ jobs:
             tests/unittests/examples/m2_associated_test.py
             tests/unittests/examples/m2_potassium_test.py
             tests/unittests/examples/m2_sodium_test.py
+            tests/unittests/examples/m2_sodium_global_test.py
             tests/unittests/examples/m2_host_stability_test.py
             tests/unittests/examples/m2_helium_test.py
+            tests/unittests/examples/m2_water_global_test.py
+            tests/unittests/examples/m2_water_binding_test.py
+            tests/unittests/examples/m2_host_standards_test.py
+            tests/unittests/examples/m2_associated_global_test.py
+            tests/unittests/examples/m2_extended_common_plane_test.py
+            tests/unittests/examples/m2_helium_global_test.py
+            tests/unittests/examples/m2_common_plane_test.py
+            tests/unittests/examples/m2_common_plane_binding_test.py
+            tests/unittests/examples/m2_alloy_insertion_bound_test.py
+            tests/unittests/examples/m2_solid_global_test.py
             tests/unittests/examples/m2_liquid_global_test.py
             tests/unittests/examples/metal_silicate_expanded_contact_test.py
             tests/unittests/examples/metal_silicate_phase_selection_test.py

@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/tmp/stage2-water-actual-schema-preflight.py", line 88, in <module>
+    lower,atoms,details=solution_common_plane(proof,properties,h2,plane)
+  File "/tmp/stage2-helium-common-plane-gibbs-20260928/examples/metal_silicate/m2_common_plane.py", line 189, in solution_common_plane
+    raise ValueError("A complete solution-domain lower bound is required.")
+ValueError: A complete solution-domain lower bound is required.

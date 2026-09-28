@@ -57,6 +57,47 @@ the latter's rounding is bounded rather than silently changing the former.
 An independent repaired-primal energy check against the saved total source
 energy must meet the same `1e-9 RT` per inventory atom tolerance.
 
+The reconstructed-water model uses `--water-proof` instead of the original
+native-water liquid proof. Its coefficients, elemental plane, external water
+standard shift, H2 standard and exact source/audit hashes must match the
+fresh audit. The complete dry simplex and all nonnegative water/H2 amounts
+have an analytic volatile minimum; only the lower bound relaxes the original
+oxygen-capacity constraint. The atom-repaired primal retains that constraint
+and evaluates the unreduced extensive water/H2 scalar. A negative lower bound
+remains usable, with its explicit contribution to the common-plane correction.
+
+For `metal_model='phosphorus'|'associated'|'associated_k'`, omit `--alloy-bound`.
+The runner freshly reconstructs the provider-owned scalar and standards from
+the actual saved P gas anchor, original Ma host, association/K recipe and
+separate scenario offsets. All selected reduced chemical potentials are checked
+against the saved primitive ledger. Positive-curvature reference bounds or the
+H–O alphaBB bound cover the entire declared domain; search error remains an
+explicit acceptance condition. P's coupled Fe constraint is enclosed by a
+larger rectangle only for the lower bound, with curvature recomputed on that
+rectangle. The feasible primal always obeys the original domain.
+Associated components count chemical species moles: each component's complete
+atom column enters the plane, exact budget repair and atom normalization.
+This extension does not certify a zero-metal branch or uncalibrated material
+properties.
+
+With reconstructed water and an explicit dry-host He scalar, the lower bound
+also eliminates every nonnegative dissolved-He amount analytically:
+`min_nHe (G_He/RT - lambda_He*nHe) = -M_dry*a*exp(lambda_He-muHe0)`.
+This is linear in the declared dry-host masses and only changes the dry
+component costs. The provider receipt, actual retained-gas standard/gauge,
+primitive He amount and independent host correction must all match. Water
+and H2 have zero He-host mass, and the original H2 denominator is unchanged.
+The feasible upper bound explicitly reverses that elimination and evaluates
+the unreduced scalar at its exact atom-repaired He amount. A minimized He
+energy must never be used as a feasible upper bound. Other liquid models with
+He currently fail closed in this runner.
+
+`--alloy-tolerance-rt` (default `1e-10`) and `--alloy-max-nodes` (default
+`20000`) control fresh extended-alloy bounds. The stricter search target helps
+resolve the `1e-9` common-plane energy gate; neither option changes that gate
+or the chemical acceptance tolerance. A finite budget that does not resolve
+the bound remains explicitly unaccepted.
+
 The runner requires an accepted final pressure root bound to a fresh physical
 audit and the original phase-proof inputs. Exact mathematical input equality
 permits previously recorded proof reuse. Runtime receipt hashes may differ
@@ -64,6 +105,19 @@ between native calls, but all liquid numerical fields, basis, expression,
 standards and dissolved H2 must agree; both records remain hashed. The alloy
 interval bound is independently reproduced. Every read input is checked
 again for changes before the output is written.
+
+Post-hoc proof code can differ from the executed source's construction and
+selection wrappers. The runner verifies **every** recorded source-recipe hash
+against its original git blob. Only `melts_coupled.py`, `m2_expanded_source.py`,
+`m2_scenarios.py` and `phase_selection.py` may differ in the current checkout;
+all other recorded files, including the thermochemical replay and gas data,
+must remain byte-identical. Source-building control flow is not rerun. Saved
+scenario values/domains, constitutive coefficients, standards and the exact
+primitive energy are bound separately. Original blob hashes and current proof
+hashes are both retained. The standalone four-component alloy runner offers
+this same policy only with `--allow-historical-builders`; its default remains
+strict byte equality. Missing commits, changed historical blobs or modified
+replayed standards fail closed.
 
 ```bash
 PYTHONPATH="$GIBBS_CHECKOUT/src:$EOS_CHECKOUT/src" \
@@ -89,3 +143,8 @@ empirical applicability, native-binary equivalence, a larger alloy domain,
 a metal-free boundary, omitted transport, or a Gibbs minimum for the
 nonisothermal planet. Those scientific and numerical questions retain their
 own evidence and acceptance conditions.
+
+The [five saved-case assessment](../../results/m2_common_plane/20260928/five_saved_cases/README.md)
+archives the original executions: all five normalized gap upper bounds are
+between `1.08e-13` and `1.50e-13`, below the `1e-9` design tolerance. Each
+case retains its original strict-sign and empirical-material flags.
