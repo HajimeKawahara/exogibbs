@@ -107,7 +107,7 @@ def test_sodium_factory_binds_actual_provider_energy_and_all_twenty_potentials()
     import hashlib
     from types import SimpleNamespace
     import jax
-    import exoeos
+    exoeos = pytest.importorskip("exoeos")
     from exoeos import total_solution_state
     associated = importlib.import_module('m2_associated_global')
     root = Path(exoeos.__file__).resolve().parents[2]
