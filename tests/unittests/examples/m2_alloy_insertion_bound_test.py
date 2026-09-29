@@ -105,4 +105,5 @@ def test_declared_oxygen_and_hydrogen_offsets_survive_input_binding(tmp_path):
     source["source_metadata"]["provider_scenario"] = RUNNER.normalize_scenario(values)
     source["provider_scenario_sha256"] = "saved-scenario"
     result = RUNNER.saved_inputs(*save(tmp_path, report, audit))
-    assert result[3]["standard_offsets_rt"] == {"O_metal": 1.63, "H_metal": -.44, "H2_dissolved": 0.}
+    assert result[3]["standard_offsets_rt"] == {
+        "O_metal": 1.63, "H_metal": -.44, "H2_dissolved": 0., "h2o_melts": 0.}
