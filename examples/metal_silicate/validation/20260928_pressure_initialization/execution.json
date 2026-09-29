@@ -1,0 +1,72 @@
+{
+  "source_head": "f65efac4e0351d613b817ce57e907592a25a79f8",
+  "runs": [
+    {
+      "script": "replay.py",
+      "result": "control.json",
+      "actual_exit_code": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "python": "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+      "cpu_affinity": [
+        46
+      ],
+      "environment": {
+        "PYTHONPATH": "src:/tmp/stage2-helium-boundary-eos-20260928/src",
+        "JAX_PLATFORMS": "cpu",
+        "JAX_ENABLE_X64": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1"
+      }
+    },
+    {
+      "script": "check_default.py",
+      "result": "default_compatibility.json",
+      "actual_exit_code": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "python": "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+      "cpu_affinity": [
+        46
+      ],
+      "environment": {
+        "PYTHONPATH": "src:/tmp/stage2-helium-boundary-eos-20260928/src",
+        "JAX_PLATFORMS": "cpu",
+        "JAX_ENABLE_X64": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1"
+      }
+    }
+  ],
+  "targeted_tests": {
+    "actual_exit_code": 0,
+    "passed": 113,
+    "skipped": 0,
+    "wall_seconds": 288.09,
+    "log": "targeted_tests.log",
+    "scope": "All existing test files directly exercising phase selection and retained source adapters."
+  },
+  "scope": "Independent ideal equilibrium controls. No native BSE or full pressure-closure performance measurement.",
+  "files": {
+    "default_compatibility.json": {
+      "sha256": "fd051cfbece19410a696b5d83fc54772cc98aac9dcc4832bc946fa1878704b95",
+      "bytes": 1641
+    },
+    "replay.py": {
+      "sha256": "426e78d36b1e00ce7e7a27f1a5a2becbad215173fda6294f78cb8f094eafcff5",
+      "bytes": 3470
+    },
+    "targeted_tests.log": {
+      "sha256": "fd9e9484e80b1e744869f62b3c49b06a50ee06a6824c9f59d6af9b7f47db5ce5",
+      "bytes": 192
+    },
+    "control.json": {
+      "sha256": "1aea487836a0645dd99a29dcb289c9ba0c3c590ed515c197d571f75333160581",
+      "bytes": 82921
+    },
+    "check_default.py": {
+      "sha256": "b644121204b52026986503aa551c437d4f735c6149413b4c646962364049ba3e",
+      "bytes": 2259
+    }
+  }
+}
