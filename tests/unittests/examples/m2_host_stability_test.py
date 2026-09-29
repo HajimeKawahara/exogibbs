@@ -62,6 +62,25 @@ def test_h2_dilution_is_the_derivative_of_the_same_full_scalar():
     assert row["status"] == "nonnegative_insertion_trial"
 
 
+def test_helium_dry_mass_derivative_changes_candidate_work_without_h2_dilution():
+    native = properties()
+    helium, masses = .1, np.array([.04, .06])
+    dry_mass = np.dot(native["component_moles"], masses)
+    mu = -helium*masses/dry_mass
+    base = assess_host_candidates(native, 1.)
+    result = assess_host_candidates(native, 1., helium_host_mu_rt=mu)
+    row = result["candidates"][0]
+    assert row["helium_dissolution_correction_gibbs_rt"] == pytest.approx(-mu.sum())
+    assert result["log_native_host_fraction"] == base["log_native_host_fraction"]
+    assert row["insertion_rt_per_mol_atoms"] - base["candidates"][0]["insertion_rt_per_mol_atoms"] == pytest.approx(-mu.sum()/2)
+    # At fixed nHe the only candidate-dependent He term is -nHe*ln(Mdry).
+    step = 1e-5
+    derivative = (-helium*np.log(dry_mass-step*masses.sum())
+                  + helium*np.log(dry_mass+step*masses.sum()))/(2*step)
+    assert row["helium_dissolution_correction_gibbs_rt"] == pytest.approx(derivative, abs=1e-11)
+    assert native["mu_RT"] == [-2., -3.]
+
+
 def test_insertion_is_invariant_to_element_gauge_and_amount_scale():
     reference = assess_host_candidates(properties(), 1.)["candidates"][0]
     shifted = properties()
@@ -299,14 +318,16 @@ def test_solution_search_stays_on_supported_face_without_faking_pure_phase_cover
     assert row["status"] == "unresolved"
 
 
-def test_published_host_uses_its_own_potential_and_separate_native_trials():
+@pytest.mark.parametrize("model_id", ["melts_v102_published_mixing_native_standard_states_v1",
+                                      "dry_melts_thompson2025_water_equivalent_v1"])
+def test_published_host_uses_its_own_potential_and_separate_native_trials(model_id):
     from copy import deepcopy
     from m2_host_stability import evaluate_host_stability
     from melts_coupled import PUBLISHED_MODEL_ID
 
     native = properties()
     published = deepcopy(native)
-    published.update(model_id=PUBLISHED_MODEL_ID, mu_RT=[-3., -4.])
+    published.update(model_id=model_id, mu_RT=[-3., -4.])
     published.pop("saturation")
     calls = []
     def host_call(t, p, n, **options):
@@ -318,7 +339,7 @@ def test_published_host_uses_its_own_potential_and_separate_native_trials():
         calls.append("candidate")
         return native
     common = dict(COMPONENTS=["A", "B"], ELEMENTS=["A", "B"], FORMULA_MATRIX=np.eye(2))
-    host = SimpleNamespace(**common, MODEL_ID=PUBLISHED_MODEL_ID, evaluate_liquid=host_call)
+    host = SimpleNamespace(**common, MODEL_ID=model_id, evaluate_liquid=host_call)
     provider = SimpleNamespace(**common, MODEL_ID=PROVIDER_MODEL_ID, evaluate_liquid=candidate_call)
     record = {"phases": {"silicate": ["A_melts", "B_melts", "H2_dissolved"]},
               "component_formulas": {"A_melts": {"A": 1.}, "B_melts": {"B": 1.}, "H2_dissolved": {"H": 2}}}

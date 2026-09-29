@@ -306,11 +306,32 @@ def certify_solid_insertion(parameters: dict, standard_states: dict,
         raise ValueError("The binary-specific declaration requires its pinned native standard provider.")
     if (host_properties.get("model_id") not in {
             "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1",
-            "melts_v102_published_mixing_native_standard_states_v1"}
+            "melts_v102_published_mixing_native_standard_states_v1",
+            "dry_melts_thompson2025_water_equivalent_v1"}
             or host_properties.get("status") != "ok_supplied_liquid_properties"
             or host_properties["phase_policy"]["oxygen_buffer"] != "None"
             or host_properties["phase_policy"]["equilibrated"]):
         raise ValueError("The declared unbuffered supplied-liquid host is required.")
+    if host_properties['model_id'] == 'dry_melts_thompson2025_water_equivalent_v1':
+        water = host_properties['water_reconstruction']
+        dry, expression = water['dry_properties'], water['expression']
+        index = expression['water_index']
+        names = host_properties['component_order']
+        if (expression['schema'] != 'dry_melts_water_equivalent_expression_v1'
+                or expression['component_order'] != names or dry['component_order'] != names
+                or type(index) is not int or not 0 <= index < len(names) or names[index] != 'h2o'
+                or dry['model_id'] != 'melts_v102_published_mixing_native_standard_states_v1'
+                or dry['T_K'] != host_properties['T_K'] or dry['P_Pa'] != host_properties['P_Pa']
+                or any(dry['basis'][key] != host_properties['basis'][key] for key in
+                       ('common_R_J_mol_K','component_element_matrix','component_oxide_matrix','element_order'))
+                or water['native_water_amount_used_mol'] != 0.
+                or water['gas_standard_pressure_Pa'] != 1e5
+                or not np.isfinite(water['gas_H2O_standard_RT'])
+                or not np.isfinite(water.get('standard_offset_rt',0.))
+                or len(dry['component_moles']) != len(names) or dry['component_moles'][index] != 0.
+                or any(dry['component_moles'][i] != host_properties['component_moles'][i]
+                       for i in range(len(names)) if i != index)):
+            raise ValueError('The reconstructed-water reference requires its complete matching dry declaration.')
     amounts = np.asarray(host_properties["component_moles"], dtype=float)
     mu = np.asarray(host_properties["mu_RT"], dtype=float)
     matrix = np.asarray(host_properties["basis"]["component_oxide_matrix"], dtype=float).T
@@ -474,6 +495,11 @@ def certify_solid_insertion(parameters: dict, standard_states: dict,
             "node_count": nodes, "leaf_count": len(leaves), "unresolved_box_count": len(queue),
             "max_nodes": max_nodes, "tolerance_rt": tolerance_rt,
             "parameters": parameters, "native_standard_states": standard_states,
+            "host_potential_reference":{
+                "model_id":host_properties['model_id'],
+                "dissolved_h2_moles":float(dissolved_h2_moles),
+                "helium_host_correction_applied":False,
+                "definition":"Bare supplied provider mu_RT plus log(N_native/(N_native+nH2)); source He corrections are excluded and require common-plane rebasing."},
             "standard_insertion_cost_intervals_rt": costs, "host_reactions_exact": reactions,
             "pure_reference_intervals_rt": {str(index): [str(v.lo), str(v.hi)]
                                              for index, v in reference_intervals.items()},

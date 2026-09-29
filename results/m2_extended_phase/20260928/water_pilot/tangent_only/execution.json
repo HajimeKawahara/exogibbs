@@ -1,0 +1,36 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "40",
+    "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+    "/tmp/stage2-water-saved-property-tangent-global-20260928.py",
+    "/tmp/stage2-water-fixed-pressure-tangent-global-20260928/assessment.json",
+    "20000"
+  ],
+  "environment_overrides": {
+    "PYTHONPATH": "",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "started_utc": "2026-09-27T22:35:27.377758+00:00",
+  "finished_utc": "2026-09-27T22:53:31.225191+00:00",
+  "elapsed_seconds": 1083.8474654145539,
+  "exit_code": 0,
+  "checkout_before": {
+    "head": "91f748ddb9305ec37176d018628067c8cade7311",
+    "status": "",
+    "remote": "https://github.com/HajimeKawahara/exogibbs.git"
+  },
+  "checkout_after": {
+    "head": "91f748ddb9305ec37176d018628067c8cade7311",
+    "status": "",
+    "remote": "https://github.com/HajimeKawahara/exogibbs.git"
+  },
+  "script_sha256": "db5431acc2f9771edc0f095c791cd3a82d15bcb6b9548281986320dca450b145",
+  "files": {
+    "assessment.json": "3924e4b964d162713eefc5c835fe4db8b76c042adc5018723e019443ce2ce8e5",
+    "stdout.log": "7bddf0023d67bf2def959750b4bb10816b41cb87930f96d9564dc18627ecac2d"
+  }
+}

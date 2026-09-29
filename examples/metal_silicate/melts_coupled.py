@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Callable, Sequence
 
 import jax
@@ -35,7 +36,7 @@ def saved_liquid_model(source: dict) -> str:
                     (source, source.get("arguments", {}), metadata, ledger)
                     if "liquid_model" in item]
     model = declarations[0] if declarations else "native"
-    identities = {"native": PROVIDER_MODEL_ID, "published": PUBLISHED_MODEL_ID}
+    identities = {"native": PROVIDER_MODEL_ID, "published": PUBLISHED_MODEL_ID, "published_water": WATER_MODEL_ID}
     if (not isinstance(model, str) or model not in identities or any(value != model for value in declarations)
             or ledger.get("model_id", identities[model]) != identities[model]):
         raise ValueError("The saved liquid model declarations are unknown or inconsistent.")
@@ -81,6 +82,48 @@ def reconstruct_water_evaluator(checkout, published, gas_water_standard_rt):
     if water.MODEL_ID != WATER_MODEL_ID:
         raise ValueError("The water provider has an unexpected model identity.")
     return water.make_reconstructed_water_evaluator(published, gas_water_standard_rt)
+
+
+def with_saved_water_standard_offset(evaluator, offset_rt):
+    """Reconstruct one saved water scenario for an independent host audit.
+
+    This consumer-owned linear standard term is separate from the provider's
+    gas standard receipt. Do not use this wrapper inside a source phase that
+    already receives apply_standard_offsets: that would count the term twice.
+    """
+    if evaluator.MODEL_ID != WATER_MODEL_ID:
+        raise ValueError("Water-capacity reconstruction requires published_water.")
+    if isinstance(offset_rt, (bool, np.bool_)) or not np.isfinite(offset_rt):
+        raise ValueError("The saved water offset must be finite and real.")
+    offset = float(offset_rt)
+    if getattr(evaluator, "saved_water_standard_offset_rt", 0.) != 0.:
+        raise ValueError("The saved water standard offset is already applied.")
+    if offset == 0.:
+        return evaluator
+    index = list(evaluator.COMPONENTS).index("h2o")
+
+    def evaluate(temperature, pressure, amounts, **options):
+        result = dict(evaluator.evaluate_liquid(temperature, pressure, amounts, **options))
+        change = float(np.asarray(amounts)[index])*offset
+        rt = result["basis"]["common_R_J_mol_K"]*temperature
+        result["gibbs_RT"] += change
+        result["gibbs_J"] += rt*change
+        for key, increment in (("mu_RT", offset), ("mu_J_mol", rt*offset)):
+            result[key] = list(result[key])
+            if result[key][index] is not None:
+                result[key][index] += increment
+        result["water_reconstruction"] = {**result["water_reconstruction"],
+            "standard_offset_rt": offset, "standard_offset_gibbs_RT": change}
+        return result
+
+    def derivative(temperature, pressure, amounts, **options):
+        energy, gradient = evaluator.energy_value_and_grad_rt(temperature, pressure, amounts, **options)
+        gradient = np.asarray(gradient).copy()
+        gradient[index] += offset
+        return float(energy+np.asarray(amounts)[index]*offset), gradient
+
+    return SimpleNamespace(**{**vars(evaluator), "evaluate_liquid": evaluate,
+        "energy_value_and_grad_rt": derivative, "saved_water_standard_offset_rt": offset})
 
 
 def make_melts_h2_phase(

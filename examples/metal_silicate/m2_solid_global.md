@@ -50,10 +50,22 @@ python examples/metal_silicate/run_m2_solid_global.py \
   --python /path/to/native/worker/python --output-directory /path/to/new/results
 ```
 
-The runner reevaluates the supplied host with its original native/published
-liquid model, obtains native standards at the same T/P, and bounds every
+The runner reevaluates the supplied host with its original native, published
+or reconstructed-water liquid model, obtains native standards at the same T/P, and bounds every
 declared provider model. It preserves raw input, native receipts, code hashes,
 parameter declarations, and the complete proof partition. It does not solve
 a new global pressure root. Formal expression stability, finite native
 compatibility, native binary error bounds, empirical property validity, and
 the Fe/Si/O/H source-alloy stability are distinct assertions.
+
+Reconstructed water requires the complete dry declaration and saved gas
+standard. The fresh model expression, standards, component amounts, chemical
+potentials, Gibbs energy and basis must match the supplied audit. The core
+reference is always the bare selected provider `mu_RT` plus
+`log(N_native/(N_native+nH2))`. A source's separate He host correction is
+explicitly excluded from this reference and recorded as such. For a He-bearing
+source, these bounds must be rebased from that same bare reference to the
+common elemental plane; adding the He correction only during rebasing would
+be inconsistent. They are not independently labeled as the actual He-bearing
+host's self-tangent bounds. The common-plane converter verifies the recorded
+reference and keeps signed reaction coefficients throughout.

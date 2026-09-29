@@ -261,3 +261,19 @@ parcel solver and absent-phase KKT audit continue to select condensate
 support. Exact-zero elements retain their excluded support and unavailable
 one-sided derivatives. Tests include trace fractions below finite-difference
 resolution and deliberately corrupted potentials and scalar energies.
+
+## Conditional sodium insertion bounds
+
+The declared `associated_k_na` provider places Fe+Na in the parent K19
+excess energy and retains separate Fe and Na ideal terms, standards, and atom
+columns. The insertion factory analytically minimizes the Fe/Na split at each
+parent composition. It retains both species' bounds, including the coupled
+Fe-rich face; an unconstrained soft minimum alone would not certify that box.
+The constrained split adds a convex, piecewise smooth function of Fe+Na to the
+parent objective, preserving its proved reference curvature. At intersections
+of active bounds the derivative may jump upwards; interval subgradient
+enclosures retain all potentially active branches. Failure to close the
+requested lower/upper gap remains unresolved, including difficult corners.
+Actual full-20 G and every free chemical-potential difference are rebound to
+the source callback before a minimum is admitted. This establishes a numerical
+bound for the selected conditional scalar, not an empirical Na domain.

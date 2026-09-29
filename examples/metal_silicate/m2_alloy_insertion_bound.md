@@ -33,6 +33,13 @@ a rounded matrix multiplication. All recorded Gibbs recipe files must match;
 the source ExoEOS commit's Ma model and array helpers must match the proof
 checkout. The recorded JAX/NumPy versions are also required.
 
+The shared input binding also supports the associated-alloy common-plane path.
+Its 18-, 19-, and 20-species composition domains use chemical-species mole
+fractions, including multi-atom oxide associates. The saved domain and provider
+metadata must agree on that basis, every component's atom count, and the exact
+species-fraction limits. Atomic-fraction aliases are rejected; the atomic
+four-component and phosphorus-alloy contracts remain unchanged.
+
 All four base standards are reconstructed with that pinned source recipe.
 Fe/Si standards and the formal shifts are checked against the saved independent
 extraction. The reconstructed binary64 values define exact constants for this

@@ -1,0 +1,198 @@
+{
+  "kind": "unit_schema_preflight_from_unclosed_fixed_pressure_pilot",
+  "scientific_root_certificate": false,
+  "new_equilibrium_solve": false,
+  "original_pressure_closure_performed": false,
+  "original_pressure_log_residual": 0.05199473610542105,
+  "actual_final_root_gate_rejection": "An unaccepted pressure trial cannot supply a final-root proof.",
+  "root_shaped_objects_are_test_fixtures_only": true,
+  "temporary_fixture_files_removed": true,
+  "source_scalar_parameters_equal_prior_pilot_proof": true,
+  "unchanged_gas_standards_replayed_exactly": true,
+  "water_and_legacy_alloy_root_schemas_checked": true,
+  "twenty_solution_common_plane_schemas": [
+    {
+      "phase": "hornblende",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "biotite",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "garnet",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 1,
+      "common_plane_schema_status": "incomplete_budget_rejected_as_required"
+    },
+    {
+      "phase": "alkali-feldspar",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 1,
+      "common_plane_schema_status": "incomplete_budget_rejected_as_required"
+    },
+    {
+      "phase": "kalsilite",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "leucite",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "alloy-solid",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "alloy-liquid",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "cummingtonite",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "olivine",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 1,
+      "common_plane_schema_status": "incomplete_budget_rejected_as_required"
+    },
+    {
+      "phase": "nepheline",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "clinoamphibole",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "orthoamphibole",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "melilite",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "ortho-oxide",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 1,
+      "common_plane_schema_status": "incomplete_budget_rejected_as_required"
+    },
+    {
+      "phase": "rhm-oxide",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 1,
+      "common_plane_schema_status": "incomplete_budget_rejected_as_required"
+    },
+    {
+      "phase": "plagioclase",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 0,
+      "common_plane_schema_status": "complete_single_box_reference_rebased"
+    },
+    {
+      "phase": "clinopyroxene",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 1,
+      "common_plane_schema_status": "incomplete_budget_rejected_as_required"
+    },
+    {
+      "phase": "orthopyroxene",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 1,
+      "common_plane_schema_status": "incomplete_budget_rejected_as_required"
+    },
+    {
+      "phase": "spinel",
+      "single_box_schema_checked": true,
+      "unresolved_boxes": 1,
+      "common_plane_schema_status": "incomplete_budget_rejected_as_required"
+    }
+  ],
+  "no_twenty_phase_stability_claim": true,
+  "recipe_binding": {
+    "executed_gibbs_commit": "b8e37c015e8df96bf383e67b00ef4ecb984d1212",
+    "historical_builder_policy": true,
+    "executed_git_blob_sha256": {
+      "run_bse_common_gibbs.py": "360d7211d014111f991dcd76d66e455a5208deb9d897da3ec545ae429680da67",
+      "common_gibbs.py": "d04543e98c13edbbf3fc2c24bd5f122183d7b6b57c61df71a85b5323ef73a22d",
+      "full_potential.py": "0d312a1a5ac0fdae0479d0e85e09bc35a88f59952a36895b703ac35513b8bc19",
+      "melts_coupled.py": "e5b8481f9f5fee4791e71ebaf3d76c7b5ab0ad23bee296acda02e148f232d399",
+      "hydrogen.py": "8c6aaa6303583e1a7048b93db07a8edfea036321bc5c266425950821961887f3",
+      "source.py": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e",
+      "reference.json": "0c7146ab1c5935daae25f4371a34847e1469dfc637b02afe3f5984d4aeb22092",
+      "reduced_gas_reference.json": "0aa9b23cf1d85b9db6b877c5c360bd4420985e595ee9f9c7735dfe91347dc234",
+      "m2_common_gas.py": "d9466af88628ee78051f979ce99f8f34cfd4abdfbbc8dcce725b0a29fa618cde",
+      "m2_expanded_source.py": "fff280c5172cae594bd05eb6725a409c1a9b773290ea6bbf1dd0d1432226f0e0",
+      "m2_atmosphere.py": "188baa7dd7695fc4789202a62199ccaedeca625ac1b27d1553713e4feac9a47f",
+      "m1_chemistry.py": "e998fcab3d5a4846877e135ff664f3f246a344ff20a6d1f1c55c16e7144be523",
+      "m2_scenarios.py": "9bf55ec0c659560ce492a8fb7e4a048c32ef65b8b2e972b7d0cf947960c6cf85",
+      "m2_finite_gas.py": "dd68ca835f7eaedc5132c18c06112c87d481382ec0e47a2709bb34c410fc4cab",
+      "m2_janaf.py": "895db34792a256a1fb9bca4153b81340f4cdd8f8d45aff4afc51d04043fae127",
+      "m2_omitted_gas.py": "21baad5d2d07e441ac46998a8dce9dc2eb22459607732408f1c22ac16a947729",
+      "phase_selection.py": "711267c8cc285d96bc8bc44420d14831bb5d717c086798b40d89fcaf4a8a09ed",
+      "data/janaf_atomic.json": "4a9d51e8dd58f513b334b5025f0de49476ec5359e1ca811f9e9fd3daab829518"
+    },
+    "proof_checkout_file_sha256": {
+      "run_bse_common_gibbs.py": "360d7211d014111f991dcd76d66e455a5208deb9d897da3ec545ae429680da67",
+      "common_gibbs.py": "d04543e98c13edbbf3fc2c24bd5f122183d7b6b57c61df71a85b5323ef73a22d",
+      "full_potential.py": "0d312a1a5ac0fdae0479d0e85e09bc35a88f59952a36895b703ac35513b8bc19",
+      "melts_coupled.py": "c4b02092ba0c0d775cfce5a1a2c03691f972d330e8fb71eaf7ef0e222b53852d",
+      "hydrogen.py": "8c6aaa6303583e1a7048b93db07a8edfea036321bc5c266425950821961887f3",
+      "source.py": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e",
+      "reference.json": "0c7146ab1c5935daae25f4371a34847e1469dfc637b02afe3f5984d4aeb22092",
+      "reduced_gas_reference.json": "0aa9b23cf1d85b9db6b877c5c360bd4420985e595ee9f9c7735dfe91347dc234",
+      "m2_common_gas.py": "d9466af88628ee78051f979ce99f8f34cfd4abdfbbc8dcce725b0a29fa618cde",
+      "m2_expanded_source.py": "68f901001dce8b8b9da1f4d26efc062dd7a4202b85a330d82313c2b07fccee85",
+      "m2_atmosphere.py": "188baa7dd7695fc4789202a62199ccaedeca625ac1b27d1553713e4feac9a47f",
+      "m1_chemistry.py": "e998fcab3d5a4846877e135ff664f3f246a344ff20a6d1f1c55c16e7144be523",
+      "m2_scenarios.py": "0da44c46fd06453bdf65088cfe31c9e8a23edd63640990d41d032f6862b64b8d",
+      "m2_finite_gas.py": "dd68ca835f7eaedc5132c18c06112c87d481382ec0e47a2709bb34c410fc4cab",
+      "m2_janaf.py": "895db34792a256a1fb9bca4153b81340f4cdd8f8d45aff4afc51d04043fae127",
+      "m2_omitted_gas.py": "21baad5d2d07e441ac46998a8dce9dc2eb22459607732408f1c22ac16a947729",
+      "phase_selection.py": "2f86fab61de86137642abf61109d35e9e969f43a13f38b8a1fcd21c15c68ec6f",
+      "data/janaf_atomic.json": "4a9d51e8dd58f513b334b5025f0de49476ec5359e1ca811f9e9fd3daab829518"
+    },
+    "changed_nonreplayed_builder_files": [
+      "melts_coupled.py",
+      "m2_expanded_source.py",
+      "m2_scenarios.py",
+      "phase_selection.py"
+    ],
+    "scope": "All original recipe blobs must match their executed commit. Only explicitly listed construction/selection files may differ; source-building control flow is not replayed. Explicit saved scenario values and domains are rebound independently, and replayed thermochemical standards/data remain byte-identical. Saved constitutive expressions, phase gradients and primal energies have separate binding checks."
+  },
+  "original_input_sha256": {
+    "/tmp/stage2-reclosed-water-h1e24-16-20260928/trial_0000.json": "de8a5e26df949d1a4bfcbecb359fed7d10c0ac86747fe9c084e9aa7b39d7733f",
+    "/tmp/stage2-reclosed-water-h1e24-16-20260928/closure.json": "1e9df68baaa9f1a05ecd2b3df8f97bce4678e07e388196cf54f8c058af5cc0b4",
+    "/tmp/stage2-water-solid-native-check-20260928/fresh_properties.json": "9ab1e685acea18a5ab978abcbc14dde05a4f4cbffb4184c88c6f1436f846509b",
+    "/tmp/stage2-water-fixed-pressure-curvature-global-20260928/assessment.json": "ee3e546a5d4b090ba8f3ef28416b6430ebf116462daae9eb5f7d4f95004f4c7c"
+  },
+  "proof_head": "5004fdabd2e5b004fd3b63e244e5042d5a5487fd",
+  "provider_head": "813131ab63822c556ae62c95ff69f119487d0340",
+  "started_utc": "2026-09-27T23:54:02.142626+00:00",
+  "finished_utc": "2026-09-27T23:54:14.206124+00:00",
+  "elapsed_seconds": 12.063538935035467
+}

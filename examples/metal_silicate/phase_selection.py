@@ -91,6 +91,7 @@ class InsertionMinimum:
     uncertainty_rt: Optional[float]
     minimum_certified: bool
     reason: str
+    global_certificate: Optional[dict] = None
 
 
 def _linear_minimum(cost, lower, upper):
@@ -283,20 +284,29 @@ def _insertion_seed(record, budget, absent, composition, callbacks, temperature,
                              np.inf), axis=0)
     reference = np.where(allowed, np.where(baseline > 0, baseline, limits), 1.)
     matrix = formula[positive] * reference / normalized[:, None]
-    fixed_composition = np.zeros((len(positions), len(names)))
-    fixed_composition[:, positions] = np.eye(len(positions)) - composition[:, None]
-    cost = np.zeros(len(names))
-    cost[positions] = -reference[positions]
+    host = np.setdiff1d(np.arange(len(names)), positions)
+    metal_atoms = formula[:, positions] @ composition
+    if np.any(metal_atoms[~positive] > 0):
+        raise ValueError("No atom-conserving insertion direction supports the incipient composition.")
+    supported = metal_atoms[positive] > 0
+    metal_scale = np.min(normalized[supported] / metal_atoms[positive][supported])
+    # Eliminate the fixed metal composition algebraically. Separate trace
+    # equalities can be dropped by LP coefficient tolerances and force the
+    # entire metal phase to zero. One scaled phase amount retains every trace.
+    matrix = np.column_stack((matrix[:, host], metal_atoms[positive] * metal_scale / normalized))
     # Keep host/gas trial changes relative to their actual amounts, including
     # traces. This is a starting-point trust region, not an equilibrium bound.
     start_bounds = [(.5, 1.5) if baseline[index] > 0 else (0, None) if allowed[index] else (0, 0)
                     for index in range(len(names))]
-    endpoint = linprog(cost, A_eq=np.vstack((matrix, fixed_composition * reference)),
-                       b_eq=np.r_[np.ones(positive.sum()), np.zeros(len(positions))],
-                       bounds=start_bounds, method="highs")
-    if not endpoint.success or endpoint.x[positions].sum() <= 0:
+    endpoint = linprog(np.r_[np.zeros(len(host)), -1.], A_eq=matrix,
+                       b_eq=np.ones(positive.sum()),
+                       bounds=[start_bounds[index] for index in host] + [(0, None)], method="highs")
+    if not endpoint.success or endpoint.x[-1] <= 0:
         raise ValueError("No atom-conserving insertion direction supports the incipient composition.")
-    direction = scale * reference * endpoint.x - absent.component_amounts_mol
+    endpoint_amounts = np.zeros(len(names))
+    endpoint_amounts[host] = scale * reference[host] * endpoint.x[:-1]
+    endpoint_amounts[positions] = scale * metal_scale * endpoint.x[-1] * composition
+    direction = endpoint_amounts - absent.component_amounts_mol
     last_rejection = "No trial was evaluated."
     for _ in range(16):
         candidate = absent.component_amounts_mol + fraction * direction
@@ -322,12 +332,17 @@ def select_metal_phase(
     convex_phase_bounds: Optional[Mapping[str, float]] = None,
     initial_component_amounts_mol: Optional[np.ndarray] = None,
     maxiter: int = 1000, tolerance: float = 1e-8, allow_metal: bool = True,
+    metal_insertion_minimizer=None,
 ) -> MetalSelection:
     """Evaluate metal-free and metal-bearing branches without a metal floor.
 
     An optional full-record initial ledger seeds only the metal-free solve;
     it must conserve every atom and contain exactly zero metal. Subsequent
     insertion seeds and all equilibrium/phase-selection audits are unchanged.
+    An optional ``metal_insertion_minimizer`` supplies a provider-bound global
+    insertion certificate for a nonconvex alloy. It receives the actual T/P,
+    formula, elemental plane and effective domain. Existing local acceptance,
+    complementarity and host-evidence gates still apply.
 
     Callbacks follow each phase's complete record order. Components containing
     exactly absent elements are removed before any logarithmic solve. The
@@ -375,6 +390,8 @@ def select_metal_phase(
         raise ValueError("Supply positive conditions and feasible bounds in the full metal component order.")
 
     declared_upper = hi.copy()
+    atom_counts = metal_formula.sum(axis=0)
+    fraction_basis = "atomic" if np.all(atom_counts == 1.) else "species"
     unsupported = np.any(metal_formula[budget == 0] != 0, axis=0)
     absent, metal_free_trial = None, None
 
@@ -382,9 +399,9 @@ def select_metal_phase(
         selected = MetalSelection(*args)
         effective_upper = np.where(unsupported, 0., declared_upper)
         domain = {
-            "component_order": tuple(metal_names), "lower_atomic_fractions": lo.copy(),
-            "upper_atomic_fractions": declared_upper.copy(),
-            "effective_upper_atomic_fractions": effective_upper,
+            "component_order": tuple(metal_names), "lower_" + fraction_basis + "_fractions": lo.copy(),
+            "upper_" + fraction_basis + "_fractions": declared_upper.copy(),
+            "effective_upper_" + fraction_basis + "_fractions": effective_upper,
             "zero_budget_components": tuple(name for name, excluded in zip(metal_names, unsupported) if excluded),
             "contact_tolerance": 1e-8,
             "metal_free_incipient": _domain_position(
@@ -396,6 +413,9 @@ def select_metal_phase(
                 row for row in selected.result.composition_constraints if row["phase"] == "metal")),
             "interpretation": "Composition-box contact is a model restriction, not a physical phase boundary or a calibration certificate.",
         }
+        if fraction_basis == "species":
+            domain["composition_basis"] = "chemical_species_moles"
+            domain["atom_counts_per_component"] = atom_counts.copy()
         return replace(selected, metal_free_result=absent, metal_free_insertion=metal_free_trial,
                        metal_composition_domain=domain)
 
@@ -428,6 +448,26 @@ def select_metal_phase(
                               reasons + ("The metal domain is excluded by exact-zero element budgets.",))
 
     def insertion(result):
+        if metal_insertion_minimizer is not None:
+            trial = metal_insertion_minimizer(temperature_k, pressure_bar, metal_formula,
+                                             result.elemental_potentials_rt, lo, hi,
+                                             tolerance=tolerance, maxiter=maxiter)
+            if (not isinstance(trial, InsertionMinimum)
+                    or np.asarray(trial.composition).shape != lo.shape
+                    or not np.all(np.isfinite(trial.composition))
+                    or np.any(trial.composition < lo) or np.any(trial.composition > hi)
+                    or abs(np.sum(trial.composition)-1) > 1e-12
+                    or not np.isfinite(trial.upper_bound_rt)
+                    or (trial.minimum_certified and
+                        (trial.lower_bound_rt is None or trial.uncertainty_rt is None
+                         or not np.isfinite(trial.lower_bound_rt)
+                         or not np.isfinite(trial.uncertainty_rt)
+                         or trial.lower_bound_rt > trial.upper_bound_rt
+                         or trial.upper_bound_rt-trial.lower_bound_rt > tolerance
+                         or trial.uncertainty_rt < trial.upper_bound_rt-trial.lower_bound_rt-1e-14
+                         or trial.uncertainty_rt > tolerance or trial.uncertainty_rt < 0))):
+                raise ValueError("The supplied insertion minimizer returned an invalid certificate.")
+            return trial
         return minimize_insertion(callbacks["metal"], temperature_k, pressure_bar,
                                   metal_formula, result.elemental_potentials_rt, lo, hi,
                                   curvature_lower_bound_rt=bounds.get("metal"), tolerance=tolerance,

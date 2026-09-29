@@ -121,6 +121,39 @@ def test_signed_solution_endmember_coordinates_keep_reference_error_direction():
         M.solution_common_plane(proof, properties, 0., {"A": 2.1, "H": 1.55})
 
 
+@pytest.mark.parametrize("shift", [.3, -.3])
+def test_shared_signed_endmember_monomials_preserve_constant_reference_shift(shift):
+    properties, _ = liquid_fixture()
+    properties["mu_RT"] = [shift, 0.]
+    proof = {"unresolved_box_count": 0, "lower_bound_rt_per_formula_unit": 0.,
+             "element_support_restrictions": [], "host_reactions_exact": [["1", "0"], ["1", "0"]],
+             "parameters": {"coordinate_bounds": [[0., 1.]],
+                            "endmember_polynomials": [[[1., [0]], [-2., [1]]], [[2., [1]]]]}}
+    lower, atoms, details = M.solution_common_plane(proof, properties, 0., {"A": 0., "H": 0.})
+    # (1 - 2*x)*shift + 2*x*shift is constant, even where a weight is negative.
+    exact = Decimal.from_float(shift)
+    assert lower.lo <= exact <= lower.hi
+    assert lower.hi-lower.lo < Decimal("1e-45")
+    assert atoms.lo <= 1 <= atoms.hi
+    assert (Decimal(details["reference_conversion_interval_rt"]["upper"]) < 0) == (shift < 0)
+
+
+def test_signed_reference_rebase_keeps_a_real_negative_endpoint():
+    properties, _ = liquid_fixture()
+    properties["mu_RT"] = [.25, -.25]
+    proof = {"unresolved_box_count": 0, "lower_bound_rt_per_formula_unit": 0.,
+             "element_support_restrictions": [], "host_reactions_exact": [["1", "0"], ["0", "1"]],
+             "parameters": {"coordinate_bounds": [[0., 1.]],
+                            "endmember_polynomials": [[[1., [0]], [-2., [1]]], [[2., [1]]]]}}
+    lower, _, _ = M.solution_common_plane(proof, properties, 0., {"A": 0., "H": 0.})
+    # The exact correction is 1/4 - x; combining terms must not erase its minimum.
+    assert lower.lo <= Decimal("-.75") <= lower.hi
+    assert lower.lo > Decimal("-.750000000000001")
+    certificate = M.primal_dual_certificate([1.], [0.], I(0),
+                                          [{"bound": lower, "minimum_atoms": I(1)}])
+    assert not certificate["declared_model_gap_accepted"]
+
+
 @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
 def test_nonfinite_common_plane_inputs_fail_closed(value):
     with pytest.raises((ValueError, ArithmeticError)):
