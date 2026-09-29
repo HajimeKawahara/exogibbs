@@ -141,6 +141,74 @@ def test_extended_source_requires_its_explicit_basis_and_original_domain(tmp_pat
         RUNNER.saved_inputs(*save(tmp_path,report,audit),allow_extended=True)
 
 
+def associated_records(kind):
+    report, audit, state, source = records()
+    count = {"associated": 18, "associated_k": 19, "associated_k_na": 20}[kind]
+    order = ["Fe", "Si", "O", "H", "P", "Mg", "Ca", "Al", "Cr", "Ti",
+             "MgO", "CaO", "AlO", "CrO", "TiO", "Al2O", "Cr2O", "Ti2O", "K", "Na"][:count]
+    formulas = ([{element: 1.} for element in order[:10]]
+                + [{element: 1., "O": 1.} for element in ("Mg", "Ca", "Al", "Cr", "Ti")]
+                + [{element: 2., "O": 1.} for element in ("Al", "Cr", "Ti")]
+                + [{element: 1.} for element in order[18:]])
+    components = [name + "_metal" for name in order]
+    elements = list(dict.fromkeys(element for formula in formulas for element in formula))
+    amounts = np.array([.96] + [.04 / (count - 1)] * (count - 1))
+    composition = (amounts / amounts.sum()).tolist()
+    lower, upper = [.86] + [0.] * (count - 1), [1.] * count
+    counts = [sum(formula.values()) for formula in formulas]
+    source["source_metadata"].update(metal_model=kind, associated_metal={
+        "component_order": order, "component_formulas": formulas,
+        "composition_basis": "chemical_species_moles", "atom_counts_per_component": counts[:],
+        "lower_species_fractions": lower[:], "upper_species_fractions": upper[:]})
+    source["source_internal_record"] = {"elements": elements, "phases": {"metal": components},
+                                       "component_formulas": dict(zip(components, formulas))}
+    source["source_internal_result"].update(component_amounts_mol=amounts.tolist(),
+        elemental_potentials_rt=list(map(float, range(len(elements)))))
+    source["metal_selection"].update(metal_composition=composition, metal_amount_mol=float(amounts.sum()),
+        metal_composition_domain={"component_order": components,
+            "composition_basis": "chemical_species_moles", "atom_counts_per_component": counts[:],
+            "lower_species_fractions": lower[:], "upper_species_fractions": upper[:],
+            "effective_upper_species_fractions": upper[:], "selected_metal": {"composition": composition}})
+    return report, audit, state, source
+
+
+@pytest.mark.parametrize("kind", ["associated", "associated_k", "associated_k_na"])
+def test_associated_saved_root_binds_species_domain_and_complete_elemental_plane(tmp_path, kind):
+    report, audit, _, source = associated_records(kind)
+    original = json.dumps(source, sort_keys=True)
+    bound = RUNNER.saved_inputs(*save(tmp_path, report, audit), allow_extended=True)
+    np.testing.assert_array_equal(bound[4], source["source_internal_result"]["elemental_potentials_rt"])
+    np.testing.assert_array_equal(bound[5], source["metal_selection"]["metal_composition"])
+    assert json.dumps(source, sort_keys=True) == original
+
+
+@pytest.mark.parametrize("change", ["atomic_alias", "wrong_basis", "wrong_metadata_basis",
+                                    "wrong_atom_counts", "wrong_metadata_counts", "changed_lower",
+                                    "changed_effective_upper", "missing_species_bounds"])
+def test_associated_root_rejects_domain_basis_or_bound_changes(tmp_path, change):
+    report, audit, _, source = associated_records("associated_k_na")
+    domain = source["metal_selection"]["metal_composition_domain"]
+    metadata = source["source_metadata"]["associated_metal"]
+    if change == "atomic_alias":
+        domain["lower_atomic_fractions"] = domain["lower_species_fractions"][:]
+    elif change == "wrong_basis":
+        domain["composition_basis"] = "atomic_moles"
+    elif change == "wrong_metadata_basis":
+        metadata["composition_basis"] = "atomic_moles"
+    elif change == "wrong_atom_counts":
+        domain["atom_counts_per_component"][10] = 1.
+    elif change == "wrong_metadata_counts":
+        metadata["atom_counts_per_component"][10] = 1.
+    elif change == "changed_lower":
+        domain["lower_species_fractions"][0] = .85
+    elif change == "changed_effective_upper":
+        domain["effective_upper_species_fractions"][0] = .99
+    else:
+        del domain["lower_species_fractions"]
+    with pytest.raises(ValueError, match="domain"):
+        RUNNER.saved_inputs(*save(tmp_path, report, audit), allow_extended=True)
+
+
 def historical_recipe(tmp_path,monkeypatch):
     here=tmp_path/'gibbs/examples/metal_silicate'
     here.mkdir(parents=True)

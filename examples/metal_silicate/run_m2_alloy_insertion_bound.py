@@ -167,13 +167,22 @@ def saved_inputs(closure_path: Path, physical_path: Path, *, allow_extended=Fals
     if (normalize_scenario(source["source_metadata"].get("provider_scenario")) != scenario
             or source.get("provider_scenario_sha256") != expected_scenario_sha):
         raise ValueError("The closure and executed source must name the same scenario and bytes.")
-    expected_lower = scenario["metal_bounds"]["lower"] if extended is None else extended[
-        "lower_atomic_fractions" if kind == "phosphorus" else "lower_species_fractions"]
-    expected_upper = scenario["metal_bounds"]["upper"] if extended is None else extended[
-        "upper_atomic_fractions" if kind == "phosphorus" else "upper_species_fractions"]
-    if (expected_lower != domain["lower_atomic_fractions"]
-            or expected_upper != domain["upper_atomic_fractions"]
-            or domain["effective_upper_atomic_fractions"] != domain["upper_atomic_fractions"]):
+    fraction_basis = "atomic" if extended is None or kind == "phosphorus" else "species"
+    if fraction_basis == "species":
+        atom_counts = [sum(formula.values()) for formula in formulas]
+        if (domain.get("composition_basis") != "chemical_species_moles"
+                or extended.get("composition_basis") != "chemical_species_moles"
+                or domain.get("atom_counts_per_component") != atom_counts
+                or extended.get("atom_counts_per_component") != atom_counts
+                or any(key in domain for key in ("lower_atomic_fractions", "upper_atomic_fractions",
+                                                 "effective_upper_atomic_fractions"))):
+            raise ValueError("The associated alloy domain must preserve its chemical-species basis and atom counts.")
+    lower_key, upper_key = f"lower_{fraction_basis}_fractions", f"upper_{fraction_basis}_fractions"
+    expected_lower = scenario["metal_bounds"]["lower"] if extended is None else extended[lower_key]
+    expected_upper = scenario["metal_bounds"]["upper"] if extended is None else extended[upper_key]
+    if (expected_lower != domain.get(lower_key)
+            or expected_upper != domain.get(upper_key)
+            or domain.get("effective_" + upper_key) != domain.get(upper_key)):
         raise ValueError("The source scenario and supported alloy domain must agree exactly.")
     return report, audit, state, scenario, plane, composition
 
