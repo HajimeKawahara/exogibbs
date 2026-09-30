@@ -18,6 +18,7 @@ from m1_chemistry import build_setups
 from m2_atmosphere import make_atmosphere_phase
 from m2_common_gas import anchored_standards_rt, source_gas_names
 from m2_finite_gas import atmosphere_gauge_rt, build_atmosphere_setup, catalog_sha256
+from m2_gas_eos import build_gas_eos, with_gas_residual
 from m2_janaf import DATA_PATH, atomic_standard_audit
 from m2_phosphorus import add_phosphorus_metal, phosphorus_metal_domain
 from m2_associated import add_associated_metal, associated_metal_domain
@@ -30,7 +31,8 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
                                *, temperature_k=2173.15, pressure_bar=1., scenario=None, gas_model="m1",
                                initialization="lp", liquid_model="native", metal_model="ma",
                                phosphorus_options=None, potassium_standard_offset_rt=None,
-                               hydrogen_oxygen_model="omitted", helium_solubility_model="gas_only", sodium_options=None):
+                               hydrogen_oxygen_model="omitted", helium_solubility_model="gas_only", sodium_options=None,
+                               gas_eos_options=None):
     """Return a finite source with seven or thirteen atmosphere atom carriers.
 
     ``m1`` retains 35 gases; opt-in ``janaf`` includes 41 background-element
@@ -60,6 +62,7 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         raise ValueError("The H-O interaction requires an associated metal model.")
     normalized = normalize_scenario(scenario)
     setup = build_atmosphere_setup(gas_model)
+    gas_eos = build_gas_eos(exoeos_checkout, setup.gas_species, gas_eos_options)
     record, budget, callbacks, initial, metadata = build_bse_problem(
         inventory_path, exoeos_checkout, runtime, python_executable,
         temperature_k=temperature_k, pressure_bar=pressure_bar, gas_model="m1_expanded",
@@ -71,7 +74,9 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
 
     initial_gauge = gauge(temperature_k, pressure_bar)
 
-    atmosphere = make_atmosphere_phase(setup, gauge)
+    atmosphere = make_atmosphere_phase(setup, gauge, **({} if gas_eos is None else {"gas_eos": gas_eos}))
+    if gas_eos is not None:
+        metadata["gas_eos"] = gas_eos.parameters(temperature_k, pressure_bar * 1e5)
     gas_names = record["phases"].pop("gas")
     start = len(initial) - len(gas_names)
     atom_names = [element + "_atmosphere_atom" for element in setup.gas_setup.elements]
@@ -91,6 +96,10 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         initial = add_helium_silicate(record, initial, callbacks, metadata, setup, initial_gauge,
                                      inventory_path, exoeos_checkout, temperature_k, pressure_bar,
                                      helium_solubility_model)
+        if gas_eos is not None:
+            metadata["helium_dissolution"]["gas_fugacity_policy"] = (
+                "Nonideal retained gas: muHe = muHe_gas0 + ln(pHe / 1 bar) + lnphiHe, "
+                "using the same full-catalog EOS residual potential as the atmosphere.")
     if metal_model in ("phosphorus", "associated", "associated_k", "associated_k_na"):
         if scenario is not None and "metal_bounds" in scenario:
             raise ValueError("Four-component scenario bounds cannot define the five-component P domain.")
@@ -146,7 +155,8 @@ def build_expanded_bse_problem(inventory_path, exoeos_checkout, runtime, python_
         Path(__file__).with_name(name).read_bytes()).hexdigest()
         for name in ("m2_expanded_source.py", "m2_atmosphere.py", "m1_chemistry.py", "m2_scenarios.py",
                      "m2_finite_gas.py", "m2_janaf.py", "m2_omitted_gas.py", "phase_selection.py",
-                     "m2_phosphorus.py", "m2_associated.py", "m2_helium.py")})
+                     "m2_phosphorus.py", "m2_associated.py", "m2_helium.py",
+                     "m2_gas_eos.py", "m2_gas_global.py", "run_m2_contact.py")})
     metadata["provenance"]["file_sha256"]["data/janaf_atomic.json"] = hashlib.sha256(DATA_PATH.read_bytes()).hexdigest()
     metadata["metal_model"] = metal_model
     if gas_model in ("janaf", "janaf_condensed"):
@@ -260,7 +270,8 @@ def unpack_expanded_source(record, result, callbacks, temperature_k, pressure_ba
         selected = setup.condensate_setup if condensed else setup.gas_setup
         return np.asarray(selected.hvector_func(t)) + np.asarray(selected.formula_matrix).T @ gauge
 
-    public_callbacks["gas"] = ideal_phase(standards, gas=True)
+    public_callbacks["gas"] = with_gas_residual(ideal_phase(standards, gas=True),
+                                               getattr(atmosphere, "gas_eos", None))
 
     def cloud(t, p, values):
         h = standards(t, p, True)
