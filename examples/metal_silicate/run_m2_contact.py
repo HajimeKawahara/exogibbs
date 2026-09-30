@@ -65,9 +65,15 @@ def audit_expanded_contact(record, source_result, callbacks, temperature_k, pres
             or tuple(basal["condensate_species"]) != upper.condensate_species
             or basal["T_K"] != temperature_k or basal["P_bar"] != pressure_bar):
         raise ValueError("Basal catalog and temperature/pressure must match the finite source.")
-    source_audit = audit_atmosphere(upper, temperature_k, pressure_bar, budget, gas, cloud)
+    gas_eos = getattr(callbacks["gas"], "gas_eos", None)
+    if (basal.get("gas_eos") is None) != (gas_eos is None):
+        raise ValueError("Source and basal parcel must use the same gas EOS.")
+    if gas_eos is not None and basal["gas_eos"] != gas_eos.parameters(temperature_k, pressure_bar * 1e5):
+        raise ValueError("The basal gas EOS receipt differs from the source provider.")
+    eos_options = {} if gas_eos is None else {"gas_eos": gas_eos}
+    source_audit = audit_atmosphere(upper, temperature_k, pressure_bar, budget, gas, cloud, **eos_options)
     upper_audit = audit_atmosphere(upper, temperature_k, pressure_bar, budget,
-                                   basal["gas_amounts_mol"], basal["condensate_amounts_mol"])
+                                   basal["gas_amounts_mol"], basal["condensate_amounts_mol"], **eos_options)
     gas_contact = audit_contact(source_audit["partial_pressures_bar"], upper_audit["partial_pressures_bar"],
                                 species=upper.gas_species)
     # Recover gas standards at a positive test composition, so exact-zero
@@ -75,6 +81,9 @@ def audit_expanded_contact(record, source_result, callbacks, temperature_k, pres
     uniform = np.ones(len(record["phases"]["gas"]))
     gas_mu = np.asarray(callbacks["gas"](temperature_k, pressure_bar, uniform).mu_rt)
     gas_standard = gas_mu + np.log(len(uniform)) - np.log(pressure_bar)
+    if gas_eos is not None:
+        gas_standard -= np.asarray(gas_eos.state(temperature_k, pressure_bar * 1e5,
+                                                 uniform / uniform.sum()).lnphi)
     lower = list(gas_standard[[record["phases"]["gas"].index(name) for name in source_gas]])
     cloud_standard = {}
     for phase, phase_names in record["phases"].items():
@@ -129,7 +138,9 @@ def diagnose_contact(record, budget, source_result, callbacks, temperature_k, pr
         positions = [names.index(name) for name in atmospheric]
         rows = [record["elements"].index(element) for element in expanded.gas_setup.elements]
         atmospheric_budget = formula[np.ix_(rows, positions)] @ amounts[positions]
-        parcel = make_atmosphere_phase(expanded, np.zeros(len(expanded.elements))).parcel(temperature_k, pressure_bar, atmospheric_budget)
+        gas_eos = getattr(callbacks["gas"], "gas_eos", None)
+        parcel = make_atmosphere_phase(expanded, np.zeros(len(expanded.elements)),
+            **({} if gas_eos is None else {"gas_eos": gas_eos})).parcel(temperature_k, pressure_bar, atmospheric_budget)
         contact = audit_expanded_contact(record, source_result, callbacks, temperature_k, pressure_bar, parcel)
         return {"common_standards": contact["common_standards"],
                 "source_gas_audit": contact["source_atmosphere_audit"],

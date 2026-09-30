@@ -19,6 +19,8 @@ from m2_common_plane import (_I, _dot, feasible_primal, ideal_energy, ideal_mini
                              interval_json, liquid_common_plane, liquid_mixing, liquid_standard_intervals,
                              primal_dual_certificate, rational_solve, solution_common_plane)
 from m2_finite_gas import atmosphere_gauge_rt, build_atmosphere_setup
+from m2_gas_global import (gas_element_support, gas_insertion_lower_bound,
+                           gas_residual_energy, require_saved_gas_eos)
 from m2_liquid_global import require_saved_liquid_expression
 from run_bse_common_gibbs import source_standards_rt
 from run_m2_alloy_insertion_bound import saved_inputs, sha256, verified_recipe
@@ -63,7 +65,8 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
                   "m2_extended_common_plane.py", "m2_extended_alloy.py", "m2_associated_global.py",
                   "m2_sodium_global.py",
                   "m2_water_global.py", "run_m2_water_global.py", "m2_host_standards.py",
-                  "run_m2_alloy_insertion_bound.py", "m2_helium_global.py", "m2_helium.py")
+                  "run_m2_alloy_insertion_bound.py", "m2_helium_global.py", "m2_helium.py",
+                  "m2_gas_global.py", "m2_gas_eos.py")
     files = {str(here/name): sha256(here/name) for name in code_names}
     files[str(eos_checkout/"src/exoeos/ma_interval.py")] = sha256(eos_checkout/"src/exoeos/ma_interval.py")
 
@@ -140,6 +143,9 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     reference, _ = source_standards_rt(temperature, pressure)
     setup = build_atmosphere_setup(source["gas_model"])
     parcel = source["source_atmosphere_parcel"]
+    gas_parameters = require_saved_gas_eos(source, eos_checkout)
+    if gas_parameters is not None:
+        files.update(gas_parameters["file_sha256"])
     gauge = atmosphere_gauge_rt(setup, temperature, reference)
     gas, cloud = setup.gas_setup, setup.condensate_setup
     ag, ac = np.asarray(gas.formula_matrix), np.asarray(cloud.formula_matrix)
@@ -272,7 +278,16 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     cloud_standard = [_I(float(v))+sum((_I(gauge_by_element.get(e, 0.))*_I(c) for e, c in zip(elements, col)), _I(0))
                       for v, col in zip(hc, cloud_columns)]
     gas_costs = [st-_dot(col, potentials) for st, col in zip(gas_standard, gas_columns)]
-    bound("ideal_atmosphere", ideal_minimum(gas_costs), min(map(sum, gas_columns)), species=len(gas_costs))
+    gas_proof = None
+    if gas_parameters is None:
+        bound("ideal_atmosphere", ideal_minimum(gas_costs), min(map(sum, gas_columns)), species=len(gas_costs))
+    else:
+        support = gas_element_support(ag, setup.elements, elements, budget)
+        gas_lower, gas_proof = gas_insertion_lower_bound(
+            gas_parameters, gas_costs, parcel["gas_amounts_mol"], support)
+        bound("major_second_virial_atmosphere", gas_lower,
+              min(sum(col) for col, active in zip(gas_columns, support) if active),
+              species=len(gas_costs), proof=gas_proof)
     eligible = [temperature <= limit for limit in cloud.temperature_validity_upper]
     if eligible != parcel["condensate_temperature_eligible"]:
         raise ValueError("The condensate validity catalog has changed.")
@@ -320,6 +335,10 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     if any(n and not valid for n, valid in zip(repaired_cloud, eligible)):
         raise ValueError("The feasible primal uses an ineligible condensate.")
     primal_atmosphere = ideal_energy(repaired_gas)+_dot(repaired_gas, gas_standard)+_dot(repaired_cloud, cloud_standard)
+    if gas_parameters is not None:
+        if any(amount and not active for amount, active in zip(repaired_gas, support)):
+            raise ValueError("The exactly repaired primal contains an unsupported gas species.")
+        primal_atmosphere += gas_residual_energy(gas_parameters, repaired_gas)
     primal = primal_liquid+primal_alloy+primal_atmosphere
     result = primal_dual_certificate(budget, potentials, primal, phase_bounds)
     recorded_energy = source["source_internal_result"]["gibbs_rt"]
@@ -376,6 +395,12 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
         result["fresh_extended_alloy_bound"] = alloy
     if is_water:
         result["water_proof_bound_to_same_source_and_plane"] = True
+    if gas_parameters is not None:
+        result["gas_eos_proof"] = {
+            "parameters": gas_parameters, "lower_bound": gas_proof,
+            "source_options_and_provider_recipe_replayed": True,
+            "exact_primal_includes_same_residual_gibbs": True,
+            "empirical_full_gas_error_bound": None}
     result["proof_commit"] = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
     return result
 
