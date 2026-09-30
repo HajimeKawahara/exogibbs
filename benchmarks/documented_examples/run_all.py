@@ -223,6 +223,12 @@ def build_jobs() -> tuple[Job, ...]:
         ("exoeos", "exoeos_checkout", "m2_evidence_binding", "m2_alloy_bound"), ("common_plane.json",),
     ))
     jobs.append(Job(
+        "metal_m2_water_global", metal + "run_m2_water_global.py",
+        ("--saved-closure", "{m2_closure}", "--saved-physical-audit", "{m2_physical_audit}",
+         "--exoeos-checkout", "{exoeos_checkout}", "--output", "{output}/water_bound.json"),
+        ("exoeos", "exoeos_checkout", "m2_closure", "m2_physical_audit"), ("water_bound.json",),
+    ))
+    jobs.append(Job(
         "metal_m2_omitted_gas", metal + "run_m2_omitted_gas.py",
         ("--source", str(ROOT / "results/m2_expanded_contact/20260924/contact.json"),
          "--mole-fraction-target", "1e-8", "--output", "{output}/screen.json"),

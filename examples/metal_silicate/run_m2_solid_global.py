@@ -16,6 +16,14 @@ from m2_solid_global import certify_solid_insertion
 from melts_coupled import COMMON_R, load_melts_evaluator
 
 
+def require_fresh_host(request,properties):
+    """Bind the freshly executed constitutive model and its actual G/mu ledger."""
+    require_saved_liquid_expression(request,properties)
+    for key in ('T_K','P_Pa','component_order','component_moles','mu_RT','gibbs_RT','basis'):
+        if request[key] != properties[key]:
+            raise ValueError('The freshly evaluated host differs from the saved audit: '+key)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--saved-physical-audit", type=Path, required=True)
@@ -31,6 +39,7 @@ def main():
     host = saved["host_stability"]
     request = host["provider_properties"]
     models_by_id = {"melts_v102_published_mixing_native_standard_states_v1": "published",
+                    "dry_melts_thompson2025_water_equivalent_v1": "published_water",
                     "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1": "native"}
     if request["model_id"] not in models_by_id:
         raise ValueError("The saved host model is not supported.")
@@ -42,8 +51,19 @@ def main():
             or not np.array_equal(host["native_host_component_amounts_mol"], request["component_moles"])):
         raise ValueError("The saved accepted source and host T/P/amount ledger must agree.")
     native = load_melts_evaluator(args.exoeos_checkout)
+    water_options = {}
+    if liquid_model == "published_water":
+        def saved_water_standard(t, p):
+            if t != request["T_K"] or p != request["P_Pa"]:
+                raise ValueError("The saved water gas anchor is valid only at its recorded T/P.")
+            return request["water_reconstruction"]["gas_H2O_standard_RT"]
+        water_options["gas_water_standard_rt"] = saved_water_standard
     evaluator = load_melts_evaluator(args.exoeos_checkout, liquid_model=liquid_model,
-                                     runtime=args.runtime, python_executable=args.python)
+                                     runtime=args.runtime, python_executable=args.python, **water_options)
+    if liquid_model == "published_water":
+        from melts_coupled import with_saved_water_standard_offset
+        evaluator = with_saved_water_standard_offset(
+            evaluator, request["water_reconstruction"].get("standard_offset_rt", 0.))
     mixing_path = args.exoeos_checkout / "examples/melts_solid_mixing.py"
     spec = importlib.util.spec_from_file_location("melts_solid_mixing", mixing_path)
     provider = importlib.util.module_from_spec(spec)
@@ -68,6 +88,9 @@ def main():
                                     for path in (mixing_path, provider.PARAMETER_PATH,
                                                  args.exoeos_checkout / "examples/melts_liquid_evaluator.py")},
                 "max_nodes": args.max_nodes, "new_pressure_root": False,
+                "source_has_dissolved_helium":'helium_dissolution' in host,
+                "helium_host_correction_applied":False,
+                "host_reference_scope":"Bare selected provider chemical potentials plus the saved H2 dilution. Rebase this same reference onto the common elemental plane before claiming stability for a source containing He.",
                 "fresh_native_standard_states": True}
     (args.output_directory / "source_physical_audit.json").write_bytes(raw)
     write("protocol.json", protocol)
@@ -77,7 +100,7 @@ def main():
     write("native_standard_state_receipt.json", native_properties)
     properties = native_properties if liquid_model == "native" else evaluator.evaluate_liquid(
         request["T_K"], request["P_Pa"], request["component_moles"], **kwargs)
-    require_saved_liquid_expression(request, properties)
+    require_fresh_host(request, properties)
     write("host_properties.json", properties)
     rows = []
     for standards in native_properties["candidate_standard_states"]:

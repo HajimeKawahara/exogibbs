@@ -1,0 +1,65 @@
+{
+  "schema": "full_pytest_shard_coverage_v1",
+  "source_head": "54cfba891e379b48191da74f6d4bd77dfb5cbf0d",
+  "provider_head": "9cd03ec7d72982eeb0985be99d1245e027dfccfc",
+  "collected_tests": 2111,
+  "nonoverlapping_shards": 12,
+  "full_collection_covered": true,
+  "final_outcomes": {
+    "passed": 2110,
+    "skipped": 1
+  },
+  "skips": [
+    {
+      "nodeid": "tests/unittests/api/version_test.py::test_package_version_matches_scm_generated_module",
+      "when": "call",
+      "outcome": "skipped",
+      "duration": 0.00038379989564418793,
+      "longrepr": "('/tmp/stage2-extended-common-plane-gibbs-20260928/tests/unittests/api/version_test.py', 12, 'Skipped: setuptools-scm generated version module is unavailable')"
+    }
+  ],
+  "initial_failures_preserved": [
+    {
+      "nodeid": "tests/unittests/benchmarks/documented_examples_benchmark_test.py::test_manifest_covers_every_documented_example",
+      "reason": "Tracked external_data/Ito_2025.xlsx absent from sparse checkout; fixture-only checkout expansion and isolated rerun pass. Source/test bytes unchanged.",
+      "original_shard": 9,
+      "retry": {
+        "command": [
+          "taskset",
+          "-c",
+          "45",
+          "python",
+          "-m",
+          "pytest",
+          "tests/unittests/benchmarks/documented_examples_benchmark_test.py::test_manifest_covers_every_documented_example",
+          "-q"
+        ],
+        "started_utc": "2026-09-27T23:49:56.741694+00:00",
+        "finished_utc": "2026-09-27T23:49:57.826099+00:00",
+        "elapsed_seconds": 1.0844116248190403,
+        "exit_code": 0,
+        "source_head": "54cfba891e379b48191da74f6d4bd77dfb5cbf0d",
+        "source_status": "",
+        "tracked_fixture": "external_data/Ito_2025.xlsx",
+        "reason": "The original shard 09 omitted this tracked file from its sparse checkout; no source or test change.",
+        "original_receipt": "/tmp/stage2-extended-proof-suite-20260928/shard-09-execution.json"
+      }
+    }
+  ],
+  "receipts_sha256": {
+    "shard-00-receipt.json": "ddeaf66e13ffbab745f13e11e0b33b9f3e90470f3b34aee536dacc9a12e4e6b9",
+    "shard-01-receipt.json": "f4c977d5ad8da3e0444fa40b9cf99548f1e4d8fb8228869d68487e95300022c9",
+    "shard-02-receipt.json": "179ee72d65b78ba895fc8bc1c7e979cee71aa96738b8d2b1bf84a6210e1b1037",
+    "shard-03-receipt.json": "23ceadccebeeef5a8318d446d4ac2e9fec9d6a2285f0e7bc50a5b5acfba869f5",
+    "shard-04-receipt.json": "7a1a8542e4f0bd8ead57da85fca1bfdea441de71a747bd61dce1a945a2a6808d",
+    "shard-05-receipt.json": "3342d2350f2101c214087f6ceccd28d5d5fba3b16cc077be3c63c136c40aa05e",
+    "shard-06-receipt.json": "7276db3b639b636aa76a5e9bacc4042850d5a5f8795139cdb7bd6429559d50e1",
+    "shard-07-receipt.json": "927c9b10899e5412b5663af392432e80138822339972d1097336d83d30a7acb5",
+    "shard-08-receipt.json": "5424c54ad2aab8b829651ea79e6e2e5beb6aa094b1e65620d7b94abdf2d0963d",
+    "shard-09-receipt.json": "58321b1819a95907eb192b31f2bc9b6801ac1811311e7e73a09bad3ca8f6ce61",
+    "shard-10-receipt.json": "a27f30f2d172370bacd62c9825a39be1fa8a964ffb7e81248fd2cd5cc1cd6ded",
+    "shard-11-receipt.json": "acc06c4012f49dc6aa94ec926dd1f8977ab06b4c10a5f6882fd29cd503fa13db"
+  },
+  "all_executed_source_and_provider_checkouts_clean": true,
+  "manifest_sha256": "ae8fd0c6d66cf61991122347ac81efac10068a6b1e7b33464a872d3a0382a13c"
+}

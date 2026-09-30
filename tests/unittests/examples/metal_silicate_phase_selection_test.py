@@ -4,6 +4,7 @@ import importlib
 from dataclasses import asdict
 from pathlib import Path
 import sys
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -25,6 +26,31 @@ finally:
             sys.modules.pop(name, None)
         else:
             sys.modules[name] = module
+
+
+@pytest.mark.parametrize("scale", [1., 1e24])
+def test_insertion_seed_preserves_trace_composition_and_atoms(scale):
+    elements = ["Fe", "Cr", "Ca", "He"]
+    host, metal = [e + "_host" for e in elements], [e + "_metal" for e in elements]
+    record = {"elements": elements, "phases": {"host": host, "metal": metal},
+              "component_formulas": {n: {e: 1} for names in (host, metal)
+                                     for n, e in zip(names, elements)}}
+    budget = scale * np.array([.9, .1, .01, 0.])
+    original = np.r_[budget, np.zeros(4)]
+    composition = np.array([.9, .1 - 1e-12, 1e-12, 0.])
+    absent = SimpleNamespace(component_amounts_mol=original, gibbs_rt=0.)
+    def host_state(t, p, n):
+        return FULL.PhaseState(np.zeros(4), 0.)
+    def metal_state(t, p, n):
+        return FULL.PhaseState(-np.ones(4), -float(np.sum(n)))
+    seed = PHASE._insertion_seed(record, budget, absent, composition,
+                                 {"host": host_state, "metal": metal_state}, 2000., 1., .01)
+    assert np.all(seed >= 0)
+    assert seed[6] > 0
+    assert seed[3] == seed[7] == 0
+    np.testing.assert_allclose(seed[:4] + seed[4:], budget, rtol=1e-12, atol=0)
+    np.testing.assert_allclose(seed[4:] / seed[4:].sum(), composition, rtol=5e-16, atol=0)
+    np.testing.assert_allclose(original, absent.component_amounts_mol, rtol=0, atol=0)
 
 
 def test_pure_endmembers_cannot_certify_absence_of_a_favorable_mixed_phase():
@@ -387,3 +413,133 @@ def test_local_status_uses_legacy_selection_gate_and_finite_amount(amount, expec
     assert PHASE.local_metal_status(selection) == expected
     selection["reasons"] = ["Metal-bearing branch unavailable; see local attempts."]
     assert PHASE.local_metal_status(selection) == "unresolved"
+
+
+def test_opt_in_global_insertion_preserves_local_and_host_acceptance():
+    record, budget, callbacks, _ = _ideal_assemblage(metal_offset=10.)
+    calls = []
+    def insertion(t, p, formula, plane, lo, hi, *, tolerance, maxiter):
+        calls.append((t, p, plane.copy()))
+        return PHASE.minimize_insertion(callbacks['metal'], t, p, formula, plane,
+                                        lo, hi, curvature_lower_bound_rt=0.,
+                                        tolerance=tolerance, maxiter=maxiter)
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                      np.zeros(4), np.ones(4),
+                                      metal_insertion_minimizer=insertion)
+    assert calls and calls[0][:2] == (2000., 1.)
+    assert result.insertion.minimum_certified
+    assert result.status == 'unresolved'
+    assert result.reasons == ('Host global stability is not established.',)
+    assert PHASE.local_metal_status(asdict(result)) == 'metal_absent'
+
+
+@pytest.mark.parametrize('gap', [None, np.nan, 1e-4, -1.])
+def test_opt_in_cannot_claim_certification_without_a_valid_error_bound(gap):
+    record, budget, callbacks, _ = _ideal_assemblage(metal_offset=10.)
+    def malformed(*args, **kwargs):
+        return PHASE.InsertionMinimum(np.full(4, .25), 1., .99, gap, True, 'invalid')
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                      np.zeros(4), np.ones(4),
+                                      metal_insertion_minimizer=malformed)
+    assert result.status == 'unresolved'
+    assert 'invalid certificate' in ' '.join(result.reasons)
+    assert not PHASE.local_metal_selection_accepted(asdict(result))
+
+
+@pytest.mark.parametrize("scale", [1., 1e24])
+def test_pressure_initial_ledgers_still_solve_and_audit_both_branches(scale, monkeypatch):
+    record, budget, callbacks, _ = _ideal_assemblage()
+    budget *= scale
+    bounds = {phase: 0. for phase in callbacks}
+    prior = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+                                    np.zeros(4), np.ones(4), convex_phase_bounds=bounds)
+    assert prior.status == "metal_present"
+    cold = PHASE.select_metal_phase(record, budget, 2000., 1.01, callbacks,
+                                   np.zeros(4), np.ones(4), convex_phase_bounds=bounds)
+    original = PHASE.minimize_gibbs
+    calls = []
+    def tracked(problem, t, p, b, providers, **kwargs):
+        calls.append((problem.phases, p, kwargs["initial_component_amounts_mol"].copy()))
+        return original(problem, t, p, b, providers, **kwargs)
+    monkeypatch.setattr(PHASE, "minimize_gibbs", tracked)
+    warm = PHASE.select_metal_phase(record, budget, 2000., 1.01, callbacks,
+        np.zeros(4), np.ones(4), convex_phase_bounds=bounds,
+        initial_component_amounts_mol=prior.metal_free_result.component_amounts_mol,
+        initial_metal_present_component_amounts_mol=prior.result.component_amounts_mol)
+    assert warm.status == cold.status == "metal_present", warm.reasons
+    assert len(calls) == 2 and all(row[1] == 1.01 for row in calls)
+    assert "metal" not in calls[0][0] and "metal" in calls[1][0]
+    np.testing.assert_array_equal(calls[0][2], prior.metal_free_result.component_amounts_mol)
+    np.testing.assert_array_equal(calls[1][2], prior.result.component_amounts_mol)
+    np.testing.assert_allclose(warm.result.component_amounts_mol, cold.result.component_amounts_mol, rtol=2e-6)
+    assert abs((warm.result.gibbs_rt-cold.result.gibbs_rt)/budget.sum()) < 1e-10
+    assert warm.metal_free_insertion.minimum_certified and warm.insertion.minimum_certified
+    assert warm.local_attempts[0]["initialization"] == "supplied_metal_present"
+    assert warm.local_attempts[0]["selection_reasons"] == ()
+
+
+@pytest.mark.parametrize("failure", ["local", "insertion"])
+def test_supplied_present_seed_cannot_skip_failed_final_admission(monkeypatch, failure):
+    from dataclasses import replace
+    record, budget, callbacks, target = _ideal_assemblage()
+    original_solve, original_insertion = PHASE.minimize_gibbs, PHASE.minimize_insertion
+    calls = []
+    def solve(problem, *args, **kwargs):
+        result = original_solve(problem, *args, **kwargs)
+        calls.append(problem.phases)
+        if len(calls) == 2 and failure == "local":
+            return replace(result, accepted=False, audit_reasons=("Deliberate local rejection.",))
+        return result
+    inserted = []
+    def insertion(*args, **kwargs):
+        result = original_insertion(*args, **kwargs)
+        inserted.append(result)
+        if len(inserted) == 2 and failure == "insertion":
+            return replace(result, minimum_certified=False, reason="Deliberate global rejection.")
+        return result
+    monkeypatch.setattr(PHASE, "minimize_gibbs", solve)
+    monkeypatch.setattr(PHASE, "minimize_insertion", insertion)
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+        np.zeros(4), np.ones(4), convex_phase_bounds={phase: 0. for phase in callbacks},
+        initial_metal_present_component_amounts_mol=target)
+    assert result.status == "metal_present", result.reasons
+    assert len(calls) == 3
+    assert result.local_attempts[0]["selection_reasons"]
+    assert result.local_attempts[1]["insertion_fraction"] == .01
+
+
+@pytest.mark.parametrize("mutation", ["shape", "nan", "negative", "atoms", "absent", "domain", "unsupported"])
+def test_present_initial_ledger_rejects_invalid_inputs_before_chemistry(monkeypatch, mutation):
+    record, budget, callbacks, target = _ideal_assemblage()
+    lower, upper = np.zeros(4), np.ones(4)
+    seed = target.copy()
+    if mutation == "shape": seed = seed[:-1]
+    elif mutation == "nan": seed[0] = np.nan
+    elif mutation == "negative": seed[0] = -1.
+    elif mutation == "atoms": seed[0] += .1
+    elif mutation == "absent": seed[4:8] = 0.
+    elif mutation == "domain": upper[0] = .5
+    else:
+        record["component_formulas"]["H_m"] = {"H": 1, "C": 1}
+    def forbidden(*args, **kwargs):
+        pytest.fail("An invalid ledger reached chemistry.")
+    monkeypatch.setattr(PHASE, "minimize_gibbs", forbidden)
+    with pytest.raises(ValueError, match="ledger|composition"):
+        PHASE.select_metal_phase(record, budget, 2000., 1., callbacks, lower, upper,
+                                initial_metal_present_component_amounts_mol=seed)
+
+
+def test_fresh_absence_ignores_old_present_branch(monkeypatch):
+    record, budget, callbacks, target = _ideal_assemblage(metal_offset=10.)
+    original = PHASE.minimize_gibbs
+    calls = []
+    def tracked(problem, *args, **kwargs):
+        calls.append(problem.phases)
+        return original(problem, *args, **kwargs)
+    monkeypatch.setattr(PHASE, "minimize_gibbs", tracked)
+    result = PHASE.select_metal_phase(record, budget, 2000., 1., callbacks,
+        np.zeros(4), np.ones(4), convex_phase_bounds={phase: 0. for phase in callbacks},
+        initial_metal_present_component_amounts_mol=target)
+    assert result.status == "metal_absent"
+    assert len(calls) == 1 and "metal" not in calls[0]
+    assert result.local_attempts == ()

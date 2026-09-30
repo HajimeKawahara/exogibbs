@@ -187,6 +187,12 @@ def solution_common_plane(proof: dict, properties: dict, dissolved_h2: float, pl
     """Translate every signed endmember reaction over the full declared box."""
     if proof["unresolved_box_count"] or proof["lower_bound_rt_per_formula_unit"] is None:
         raise ValueError("A complete solution-domain lower bound is required.")
+    reference = proof.get('host_potential_reference')
+    if ((reference is None and properties.get('model_id') == 'dry_melts_thompson2025_water_equivalent_v1')
+            or (reference is not None and (reference['model_id'] != properties['model_id']
+                or reference['dissolved_h2_moles'] != dissolved_h2
+                or reference['helium_host_correction_applied'] is not False))):
+        raise ValueError('The solution proof and common-plane conversion need the identical bare-host reference.')
     parameters = proof["parameters"]
     order = properties["basis"]["element_order"]
     columns = properties["basis"]["component_element_matrix"]
@@ -198,7 +204,7 @@ def solution_common_plane(proof: dict, properties: dict, dissolved_h2: float, pl
     for row in proof["element_support_restrictions"]:
         bounds[row["coordinate"]] = [row["value"]]*2
     box = [_I(float(a), Decimal.from_float(float(b))) for a, b in bounds]
-    correction = _I(0)
+    correction_terms = {}
     atom_polynomial = []
     for coefficients, polynomial in zip(proof["host_reactions_exact"], parameters["endmember_polynomials"]):
         weight = _poly(polynomial, box)
@@ -208,7 +214,9 @@ def solution_common_plane(proof: dict, properties: dict, dissolved_h2: float, pl
             continue
         reaction = list(map(Fraction, coefficients))
         shift = sum((_I(c)*shifts[i] for i, c in enumerate(reaction) if c), _I(0))
-        correction += weight*shift
+        for coefficient, powers in polynomial:
+            key = tuple(powers)
+            correction_terms[key] = correction_terms.get(key, _I(0))+_I(coefficient)*shift
         atoms = sum(c*sum(map(Fraction, col)) for c, col in zip(reaction, columns))
         atom_polynomial.extend([(_I(atoms)*_I(coefficient), powers) for coefficient, powers in polynomial])
     # Combine equal powers before interval evaluation (e.g. total atoms may
@@ -218,6 +226,9 @@ def solution_common_plane(proof: dict, properties: dict, dissolved_h2: float, pl
         key = tuple(powers)
         combined[key] = combined.get(key, _I(0))+coefficient
     minimum_atoms = _poly([(c, p) for p, c in combined.items()], box)
+    # Signed endmember coordinates share monomials. Preserve their
+    # cancellations before enclosing the reference shift over the domain.
+    correction = _poly([(c, p) for p, c in correction_terms.items()], box)
     lower = _I(proof["lower_bound_rt_per_formula_unit"])+correction
     # Positive insertion costs require no atom normalization or dual shift.
     if lower.lo < 0 and minimum_atoms.lo <= 0:

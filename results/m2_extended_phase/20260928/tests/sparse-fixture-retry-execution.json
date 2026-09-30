@@ -1,0 +1,21 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "45",
+    "python",
+    "-m",
+    "pytest",
+    "tests/unittests/benchmarks/documented_examples_benchmark_test.py::test_manifest_covers_every_documented_example",
+    "-q"
+  ],
+  "started_utc": "2026-09-27T23:49:56.741694+00:00",
+  "finished_utc": "2026-09-27T23:49:57.826099+00:00",
+  "elapsed_seconds": 1.0844116248190403,
+  "exit_code": 0,
+  "source_head": "54cfba891e379b48191da74f6d4bd77dfb5cbf0d",
+  "source_status": "",
+  "tracked_fixture": "external_data/Ito_2025.xlsx",
+  "reason": "The original shard 09 omitted this tracked file from its sparse checkout; no source or test change.",
+  "original_receipt": "/tmp/stage2-extended-proof-suite-20260928/shard-09-execution.json"
+}

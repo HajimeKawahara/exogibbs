@@ -118,7 +118,11 @@ for the constrained KKT residual there.
 An energy-decreasing metal-bearing start is constructed from the accepted
 absent state and the minimizing incipient composition. An atom-conserving
 linear program limits host/gas changes relative to each actual component
-amount before backtracking on the true energy. These restrictions apply
+amount before backtracking on the true energy. The fixed incipient
+composition is eliminated algebraically: one inventory-scaled metal phase
+amount represents every metal species, including traces. This avoids
+separate tiny composition equalities being discarded by LP coefficient
+tolerances; no trace species or elemental budget is removed. These restrictions apply
 only to the initial guess; the equilibrium solve uses the original atom
 inventory and declared composition domain. Failed attempts remain in
 `local_attempts`. If a scalar step collapses an entire phase, minimizing
@@ -305,3 +309,20 @@ For a saved accepted pressure root, the supplementary
 outward lower bound against the fixed numerical elemental potential. This
 quantifies rounding uncertainty separately from the exact self-tangent
 convexity result, retaining negative bounds and the original selection status.
+
+## Optional previous-pressure initial amounts
+
+`select_metal_phase(..., initial_metal_present_component_amounts_mol=...)`
+accepts an additional full-record metal-present initial ledger. The existing
+`initial_component_amounts_mol` continues to seed only the metal-free branch.
+`validate_metal_initial_ledger` checks atoms, exact-zero support and the declared
+metal composition domain; it does not certify prior equilibrium acceptance.
+
+Every call recomputes the absent branch and its insertion minimum. Only a
+fresh favorable insertion permits the supplied present start to be optimized
+with the current callbacks and T/P. Its result must pass the unchanged local,
+composition, insertion, complementarity and energy checks. A rejected warm
+candidate is recorded and the existing insertion starts are tried. Fresh
+certified absence returns without a present solve even if an old positive
+ledger was supplied. No thermodynamic values or acceptance flags are cached.
+The caller owns donor provenance and the choice to enable continuation.

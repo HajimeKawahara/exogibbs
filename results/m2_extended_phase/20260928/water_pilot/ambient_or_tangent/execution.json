@@ -1,0 +1,36 @@
+{
+  "command": [
+    "taskset",
+    "-c",
+    "41",
+    "/home/kawahara/anaconda3/envs/myenv39/bin/python",
+    "/tmp/stage2-water-saved-property-curvature-global-20260928.py",
+    "/tmp/stage2-water-fixed-pressure-curvature-global-20260928/assessment.json",
+    "20000"
+  ],
+  "environment_overrides": {
+    "PYTHONPATH": "",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "started_utc": "2026-09-27T22:46:44.402736+00:00",
+  "finished_utc": "2026-09-27T23:04:25.695335+00:00",
+  "elapsed_seconds": 1061.2926069479436,
+  "exit_code": 0,
+  "checkout_before": {
+    "head": "a34d7b72f6876e4308923e17e651bd3dd467b2ab",
+    "status": "",
+    "remote": "https://github.com/HajimeKawahara/exogibbs.git"
+  },
+  "checkout_after": {
+    "head": "a34d7b72f6876e4308923e17e651bd3dd467b2ab",
+    "status": "",
+    "remote": "https://github.com/HajimeKawahara/exogibbs.git"
+  },
+  "script_sha256": "6462bddcd99c04cf522a054af13599ca63ff67d28d2bd1bd187139260a103976",
+  "files": {
+    "assessment.json": "ee3e546a5d4b090ba8f3ef28416b6430ebf116462daae9eb5f7d4f95004f4c7c",
+    "stdout.log": "61003012c2241b5cb6a61197b8e3c6c04dccfd1b61cb8c31a1a1b604b03cd556"
+  }
+}

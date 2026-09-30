@@ -286,6 +286,16 @@ def artifact_errors(job: Any, directory: Path, *, retrieval_quick: bool) -> list
                     or report.get("original_negative_bounds_preserved") is not True
                     or report.get("exact_primal_repair", {}).get("exactly_feasible") is not True):
                 errors.append("The declared finite-source primal/dual certificate is incomplete or overclaims acceptance.")
+        elif job.name == "metal_m2_water_global":
+            from decimal import Decimal
+            report = json.loads((directory / "water_bound.json").read_text())
+            lower = Decimal(report["lower_bound_rt_per_dry_component"])
+            if (report.get("complete_simplex_coverage") is not True
+                    or report.get("bound_within_requested_tolerance") is not True
+                    or report.get("formal_nonnegative_common_plane_certified") is not (lower >= 0)
+                    or report.get("empirical_material_certified") is not False
+                    or report.get("binding", {}).get("complete_element_supported_provider_domain") is not True):
+                errors.append("The reconstructed-water global bound is incomplete or overclaims acceptance.")
         elif job.name == "metal_archive_revalidation":
             report = json.loads((directory / "revalidated.json").read_text())
             for name in ("melts_present", "melts_absent"):

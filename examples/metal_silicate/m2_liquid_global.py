@@ -352,6 +352,16 @@ def require_saved_liquid_expression(saved, evaluated):
             raise ValueError("The reevaluated mixing expression differs from the saved source declaration.")
         if saved["mu0_J_mol"] != evaluated["mu0_J_mol"]:
             raise ValueError("The reevaluated pure standards differ from the saved source.")
+    elif saved["model_id"] == "dry_melts_thompson2025_water_equivalent_v1":
+        left, right = saved["water_reconstruction"], evaluated["water_reconstruction"]
+        for key in ("expression", "gas_H2O_standard_RT", "gas_standard_pressure_Pa", "native_water_amount_used_mol"):
+            if left[key] != right[key]:
+                raise ValueError("The reevaluated water expression or gas standard differs from the saved source.")
+        if left.get("standard_offset_rt", 0.) != right.get("standard_offset_rt", 0.):
+            raise ValueError("The reevaluated external water standard shift differs from the saved source.")
+        require_saved_liquid_expression(left["dry_properties"], right["dry_properties"])
+    elif saved["model_id"] != "alphamelts_2_3_2_rhyolite_melts_1_0_2_supplied_liquid_v1":
+        raise ValueError("Unknown saved liquid constitutive model.")
     elif saved["provenance"]["backend"]["runtime_sha256"] != evaluated["provenance"]["backend"]["runtime_sha256"]:
         raise ValueError("The reevaluated native runtime differs from the saved source.")
 
