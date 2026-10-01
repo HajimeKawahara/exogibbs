@@ -122,7 +122,7 @@ oxygen-capacity constraint. The atom-repaired primal retains that constraint
 and evaluates the unreduced extensive water/H2 scalar. A negative lower bound
 remains usable, with its explicit contribution to the common-plane correction.
 
-For `metal_model='phosphorus'|'associated'|'associated_k'`, omit `--alloy-bound`.
+For `metal_model='phosphorus'|'associated'|'associated_k'|'associated_k_na'`, omit `--alloy-bound`.
 The runner freshly reconstructs the provider-owned scalar and standards from
 the actual saved P gas anchor, original Ma host, association/K recipe and
 separate scenario offsets. All selected reduced chemical potentials are checked
@@ -133,8 +133,22 @@ larger rectangle only for the lower bound, with curvature recomputed on that
 rectangle. The feasible primal always obeys the original domain.
 Associated components count chemical species moles: each component's complete
 atom column enters the plane, exact budget repair and atom normalization.
-This extension does not certify a zero-metal branch or uncalibrated material
-properties.
+
+A naturally selected zero-metal source can use this same extended-alloy proof.
+Its primitive alloy amounts must all equal zero exactly, its local metal test
+must be accepted, and its finite inventory, source recipe and full composition
+domain must retain the same binding checks. A forced `--metal absent` source
+cannot supply this evidence. Exact atom repair leaves the absent alloy at zero;
+its extensive primal energy and complementarity are zero without evaluating
+an undefined zero-amount composition. `absent_alloy_condition` records the fresh
+global generation-cost lower bound and accepts it only at or above `-1e-8 RT`
+per mole of declared alloy components. The finite-source Gibbs-gap and all
+other phase tests must also pass. Positive alloys retain their existing
+`present_alloy_condition` and its search-error checks.
+
+Zero-metal acceptance is relative to this numerical tolerance and the declared
+composition box. It neither establishes a strictly positive insertion margin,
+locates a physical metal boundary, nor certifies uncalibrated material properties.
 
 With reconstructed water and an explicit dry-host He scalar, the lower bound
 also eliminates every nonnegative dissolved-He amount analytically:
