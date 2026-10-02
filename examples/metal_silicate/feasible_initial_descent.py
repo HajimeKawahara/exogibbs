@@ -1,4 +1,9 @@
-"""Prepare a conserved lower-G initial ledger; never accept an equilibrium."""
+"""
+Conserved Gibbs descent for an initial ledger
+=============================================
+
+Prepare a conserved lower-G initial ledger; never accept an equilibrium.
+"""
 
 from time import perf_counter
 from typing import Callable, Mapping, NamedTuple, Optional
