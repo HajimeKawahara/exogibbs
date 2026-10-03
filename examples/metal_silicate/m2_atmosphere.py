@@ -27,6 +27,7 @@ from exogibbs.utils.elements import element_mass
 from common_gibbs import PhaseEvaluationError
 from full_potential import PhaseState
 from m1_chemistry import audit_parcel
+from m2_gas_global import gas_convexity_certificate
 
 
 def _primitive_gibbs(gas, cloud, gas_standard, cloud_standard, log_pressure):
@@ -54,7 +55,7 @@ def _restrict(setup, rows, columns):
 
 
 def audit_atmosphere(setup, temperature, pressure, amounts, gas_amounts, condensate_amounts,
-                     element_gauge_rt=None):
+                     element_gauge_rt=None, *, gas_eos=None):
     """Audit supplied primitive amounts, without solving or trusting saved fields.
 
     Exact-zero elements and their containing species stay excluded. The full
@@ -90,6 +91,16 @@ def audit_atmosphere(setup, temperature, pressure, amounts, gas_amounts, condens
     cloud_supported = np.all(ac[b == 0] == 0, axis=0)
     if np.any(ng[~gas_supported] != 0) or np.any(nc[~cloud_supported] != 0):
         raise ValueError("Species containing exact-zero elements must have exact-zero amounts.")
+    lnphi, residual_energy = np.zeros_like(ng), 0.
+    if gas_eos is not None:
+        if tuple(gas_eos.species) != tuple(gas_setup.species):
+            raise ValueError("The gas EOS must preserve the full atmospheric species order.")
+        if ng.sum():
+            state = gas_eos.state(temperature, pressure * 1e5, ng / ng.sum())
+            lnphi = np.asarray(state.lnphi, dtype=float)
+            residual_energy = float(gas_eos.gibbs_residual_rt(temperature, pressure * 1e5, ng))
+            if lnphi.shape != ng.shape or not np.all(np.isfinite(lnphi)) or not np.isfinite(residual_energy):
+                raise ValueError("The gas EOS returned nonfinite or mismatched thermodynamic values.")
     potential = np.full(len(b), -np.inf)
     insertion = np.full(len(nc), np.nan)
     audit = {"accepted": True, "gas_stationarity_max_abs": 0.,
@@ -99,19 +110,27 @@ def audit_atmosphere(setup, temperature, pressure, amounts, gas_amounts, condens
         gas, cloud = _restrict(gas_setup, rows, gas_columns), _restrict(cloud_setup, rows, cloud_columns)
         if np.linalg.matrix_rank(np.asarray(gas.formula_matrix)) != len(rows):
             raise ValueError("The supported gas catalog cannot span the atmospheric atoms.")
+        if gas_eos is not None:
+            # The independent KKT audit uses the EOS at the supplied composition.
+            # Its shifted vector is local to this audit; standards stay unchanged.
+            gas = ChemicalSetup(
+                formula_matrix=gas.formula_matrix,
+                hvector_func=lambda t: jnp.asarray(hg[gas_columns] + lnphi[gas_columns]),
+                elements=gas.elements, species=gas.species,
+                temperature_validity_upper=gas.temperature_validity_upper)
         audit = audit_parcel(
             gas, temperature, pressure, b[rows], ng[gas_columns],
             condensate_setup=cloud if len(cloud_columns) else None,
             condensate_amounts=nc[cloud_columns] if len(cloud_columns) else None,
         )
-        chemical = hg[gas_columns] + np.log(ng[gas_columns] / ng.sum()) + np.log(pressure)
+        chemical = hg[gas_columns] + np.log(ng[gas_columns] / ng.sum()) + np.log(pressure) + lnphi[gas_columns]
         potential[rows] = np.linalg.lstsq(np.asarray(gas.formula_matrix).T, chemical, rcond=None)[0]
         insertion[cloud_columns] = hc[cloud_columns] - ac[np.ix_(rows, cloud_columns)].T @ potential[rows]
     active_gas, active_cloud = ng > 0, nc > 0
     fraction = ng / ng.sum() if ng.sum() else np.zeros_like(ng)
     # This is an independent primitive species sum, not Euler's identity.
     raw_energy = float(ng[active_gas] @ (hg[active_gas] + np.log(fraction[active_gas])
-                                        + np.log(pressure)) + nc[active_cloud] @ hc[active_cloud])
+                                        + np.log(pressure)) + nc[active_cloud] @ hc[active_cloud]) + residual_energy
     gas_atoms, cloud_atoms = ag @ ng, ac @ nc
     weights = np.array([element_mass[name] * 1e-3 for name in elements])
     gas_mass, cloud_mass, target_mass = float(weights @ gas_atoms), float(weights @ cloud_atoms), float(weights @ b)
@@ -119,7 +138,7 @@ def audit_atmosphere(setup, temperature, pressure, amounts, gas_amounts, condens
     relative[b > 0] = (gas_atoms + cloud_atoms)[b > 0] / b[b > 0] - 1.
     accepted = bool(audit["accepted"] and np.max(np.abs(relative), initial=0.) < 1e-9
                     and np.all((gas_atoms + cloud_atoms)[b == 0] == 0))
-    return {
+    report = {
         "accepted": accepted, "T_K": float(temperature), "P_bar": float(pressure),
         "elements": list(elements), "gas_species": list(gas_setup.species),
         "condensate_species": list(cloud_setup.species), "element_amounts_mol": b.tolist(),
@@ -143,9 +162,13 @@ def audit_atmosphere(setup, temperature, pressure, amounts, gas_amounts, condens
         "gas_standard_potentials_rt": (hg + ag.T @ q).tolist(),
         "condensate_standard_potentials_rt": (hc + ac.T @ q).tolist(),
     }
+    if gas_eos is not None:
+        report.update(gas_eos=gas_eos.parameters(temperature, pressure * 1e5),
+                      gas_lnphi=lnphi.tolist(), gas_residual_gibbs_rt=residual_energy)
+    return report
 
 
-def make_atmosphere_phase(setup, element_gauge_rt):
+def make_atmosphere_phase(setup, element_gauge_rt, *, gas_eos=None):
     """Return a full-potential callback in ``setup.elements`` atom-mol order.
 
     ``element_gauge_rt`` is a vector or ``q(T_K, P_bar)`` callback. The same
@@ -154,10 +177,24 @@ def make_atmosphere_phase(setup, element_gauge_rt):
     insertion potentials are -inf. An empty atmosphere has zero energy. No
     atom floor or condensate mixing entropy is introduced. Failed parcels
     raise ``PhaseEvaluationError``. ``parcel`` returns a full-catalog copy.
+    An optional ``gas_eos`` supplies residual G and full-catalog fugacity;
+    each T/P requires global convexity and each parcel requires a converged
+    composition-dependent fugacity iteration with fresh independent KKT.
     """
     gas_setup, cloud_setup = setup.gas_setup, setup.condensate_setup
     elements = tuple(setup.elements)
     ag, ac = np.asarray(gas_setup.formula_matrix), np.asarray(cloud_setup.formula_matrix)
+    if gas_eos is not None and tuple(gas_eos.species) != tuple(gas_setup.species):
+        raise ValueError("The gas EOS must preserve the full atmospheric species order.")
+    residual_value_and_grad = (None if gas_eos is None else jax.jit(jax.value_and_grad(
+        lambda t, p, n: gas_eos.gibbs_residual_rt(t, p * 1e5, n), argnums=2)))
+
+    @lru_cache(maxsize=16)
+    def convexity(temperature, pressure):
+        proof = gas_convexity_certificate(gas_eos.parameters(temperature, pressure * 1e5))
+        if not proof["accepted"]:
+            raise PhaseEvaluationError("The gas EOS lacks a positive global entropy curvature bound.")
+        return proof
 
     @lru_cache(maxsize=16)
     def support(mask):
@@ -177,37 +214,61 @@ def make_atmosphere_phase(setup, element_gauge_rt):
     def solve(temperature, pressure, atom_tuple):
         b = np.array(atom_tuple)
         ng, nc = np.zeros(len(gas_setup.species)), np.zeros(len(cloud_setup.species))
+        iteration_report = {}
         try:
+            if gas_eos is not None:
+                iteration_report["gas_eos_convexity"] = convexity(temperature, pressure)
             if np.any(b > 0):
                 rows, gas_columns, cloud_columns, gas, combined = support(tuple(b > 0))
                 scale = float(b.sum())
                 reduced_budget = jnp.asarray(b[rows] / scale)
-                if len(cloud_columns):
-                    result = solve_condensate(
-                        combined, temperature, pressure, reduced_budget,
-                        options=CondensateEquilibriumOptions(
-                            return_diagnostics=True, rainout=False,
-                            full_condensate_budget_relative_tolerance=1e-9,
-                        ),
-                    )
-                    gas_n, cloud_n = np.asarray(result.gas_n), np.asarray(result.condensate_amounts)
-                    converged = bool(result.converged)
+                correction = np.zeros(len(gas_columns))
+                for iteration in range(1, 65 if gas_eos is not None else 2):
+                    options = ({} if gas_eos is None else {
+                        "lnphi_func": lambda t, p, x: jnp.asarray(correction)})
+                    if len(cloud_columns):
+                        result = solve_condensate(
+                            combined, temperature, pressure, reduced_budget,
+                            options=CondensateEquilibriumOptions(
+                                return_diagnostics=True, rainout=False,
+                                full_condensate_budget_relative_tolerance=1e-9,
+                            ), **options,
+                        )
+                        gas_n, cloud_n = np.asarray(result.gas_n), np.asarray(result.condensate_amounts)
+                        converged = bool(result.converged)
+                    else:
+                        result, diagnostics = solve_gas(
+                            gas, temperature, pressure, reduced_budget,
+                            options=EquilibriumOptions(epsilon_crit=1e-14), return_diagnostics=True,
+                            **options,
+                        )
+                        gas_n, cloud_n = np.asarray(result.n), np.zeros(0)
+                        converged = bool(diagnostics["converged"])
+                    if not converged:
+                        raise PhaseEvaluationError("The atmospheric parcel solver did not converge.")
+                    ng[gas_columns], nc[cloud_columns] = scale * gas_n, scale * cloud_n
+                    if gas_eos is None:
+                        break
+                    state = gas_eos.state(temperature, pressure * 1e5, ng / ng.sum())
+                    actual = np.asarray(state.lnphi)[gas_columns]
+                    error = float(np.max(np.abs(actual - correction)))
+                    if not np.all(np.isfinite(actual)):
+                        raise PhaseEvaluationError("The gas EOS returned nonfinite fugacity coefficients.")
+                    if error <= 1e-11:
+                        iteration_report["gas_eos_iteration"] = {
+                            "iterations": iteration, "lnphi_fixed_point_max_abs": error,
+                            "lnphi_tolerance": 1e-11, "converged": True}
+                        break
+                    correction = actual
                 else:
-                    result, diagnostics = solve_gas(
-                        gas, temperature, pressure, reduced_budget,
-                        options=EquilibriumOptions(epsilon_crit=1e-14), return_diagnostics=True,
-                    )
-                    gas_n, cloud_n = np.asarray(result.n), np.zeros(0)
-                    converged = bool(diagnostics["converged"])
-                if not converged:
-                    raise PhaseEvaluationError("The atmospheric parcel solver did not converge.")
-                ng[gas_columns], nc[cloud_columns] = scale * gas_n, scale * cloud_n
-            report = audit_atmosphere(setup, temperature, pressure, b, ng, nc, element_gauge_rt)
+                    raise PhaseEvaluationError("The composition-dependent gas fugacity iteration did not converge.")
+            report = audit_atmosphere(setup, temperature, pressure, b, ng, nc, element_gauge_rt,
+                                      **({} if gas_eos is None else {"gas_eos": gas_eos}))
             if not report["accepted"]:
                 raise PhaseEvaluationError("The atmospheric parcel failed independent equilibrium acceptance.")
         except (ValueError, RuntimeError, FloatingPointError, np.linalg.LinAlgError) as error:
             raise PhaseEvaluationError(str(error)) from error
-        return {**report, "solver_converged": True}
+        return {**report, **iteration_report, "solver_converged": True}
 
     def evaluate(temperature, pressure, amounts):
         b = np.asarray(amounts, dtype=float)
@@ -245,6 +306,10 @@ def make_atmosphere_phase(setup, element_gauge_rt):
         hc = np.asarray(cloud_setup.hvector_func(temperature)) + ac.T @ q
         energy, (gas_gradient, cloud_gradient) = _primitive_value_and_grad(
             ng[gas_columns], nc[cloud_columns], hg[gas_columns], hc[cloud_columns], np.log(pressure))
+        if gas_eos is not None:
+            residual, correction = residual_value_and_grad(temperature, pressure, ng)
+            energy += residual
+            gas_gradient += correction[gas_columns]
         matrix = np.r_[ag[np.ix_(rows, gas_columns)].T, ac[np.ix_(rows, cloud_columns)].T]
         gradient = np.r_[np.asarray(gas_gradient), np.asarray(cloud_gradient)]
         if np.linalg.matrix_rank(matrix) != len(rows) or not np.all(np.isfinite(gradient)):
@@ -260,4 +325,5 @@ def make_atmosphere_phase(setup, element_gauge_rt):
     callback.elements = elements
     callback.setup = setup
     callback.element_gauge_rt = element_gauge_rt
+    callback.gas_eos = gas_eos
     return callback

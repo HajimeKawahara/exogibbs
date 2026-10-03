@@ -81,6 +81,16 @@ class _I:
             # context.rounding; one representable neighbor encloses it.
             return _I(self.lo.ln().next_minus(), self.hi.ln().next_plus())
 
+    def sqrt(self):
+        """Enclose the nonnegative square root, including an exact zero."""
+        if self.lo < 0:
+            raise ArithmeticError("A square root needs a nonnegative interval.")
+        with localcontext() as context:
+            context.prec = 50
+            lower = self.lo.sqrt().next_minus() if self.lo else Decimal(0)
+            upper = self.hi.sqrt().next_plus() if self.hi else Decimal(0)
+            return _I(lower, upper)
+
 
 def _outward_float(value, lower):
     result = float(value)

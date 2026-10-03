@@ -46,6 +46,7 @@ The phase catalog is covered as follows:
 | Thirteen remaining native pure candidates | Evaluate the fixed recorded oxide-mass/Gibbs unit with rational stoichiometry. Its domain is that composition and every nonnegative amount of it; no other composition or native build is certified. |
 | Source Fe–Si–O–H alloy | Replay the existing outward curvature/insertion calculation on the same full declared box, standards, separate offsets and original saved elemental plane. |
 | Ideal gas | Use the analytic full-simplex minimum `-log(sum(exp(-cost_i)))`. |
+| Declared second-virial gas | Independently enclose the full-matrix residual scalar, certify an entropy curvature lower bound over the full simplex, and use its analytic entropy tangent minimum against the same elemental plane. |
 | Eligible pure clouds | Evaluate every scalar insertion cost on the retained temperature-valid catalog. Ineligible catalog entries are listed explicitly. |
 
 The source gas standards are reconstructed as the original raw standard plus
@@ -56,6 +57,61 @@ reconstructed from the pinned recipe. Liquid intervals retain the declared
 the latter's rounding is bounded rather than silently changing the former.
 An independent repaired-primal energy check against the saved total source
 energy must meet the same `1e-9 RT` per inventory atom tolerance.
+
+For an explicitly selected nonideal gas, `m2_gas_global.py` reconstructs the
+complete provider receipt from the actual source options, species order, T/P,
+gas constant, pair matrix and provider file hashes. The source and parcel must
+carry identical receipts and the same independently replayed convexity proof.
+A different gas catalog, changed coefficient, temperature prescription or
+provider byte cannot inherit the certificate. The historical ideal path is
+unchanged when `gas_eos_options` is absent or null.
+The [gas coupling description](m2_gas_eos.md) documents the source and parcel
+integration and its focused checks.
+
+For `b = max(abs(B_ij))`, `bmin = min(B_ij)` and `I = P/(R*T)`, outward
+interval arithmetic encloses
+
+```text
+dmin = sqrt(1 + 4*I*bmin)
+rhomax = 2*I/(1 + dmin)
+alpha = 1 - 2*rhomax*b - 4*rhomax^2*b^2/dmin
+```
+
+Both `dmin` and `alpha` must have strictly positive lower bounds. At every
+composition, the fixed-T/P molar Gibbs Hessian on a simplex tangent is
+`diag(1/x) + 2*rho*B - 4*rho^2/(1+2*rho*Bmix)*(B*x)*(B*x).T`.
+The weighted Cauchy inequality `||v||_1^2 <= sum(v_i^2/x_i)` bounds both
+residual terms, proving `H >= alpha*diag(1/x)`. This argument covers the
+entire nonnegative simplex by continuity, independently of the saved point.
+The provider's binary64 convexity diagnostic is retained as a diagnostic;
+it is not substituted for the outward proof.
+
+Let `F` include ideal mixing, the residual scalar, and the linear species
+costs against the saved elemental plane. At any strictly positive supported
+reference composition `x`, its reduced chemical potential vector `mu` gives
+the global insertion lower bound
+
+```text
+F(x) - dot(mu, x) - alpha*log(sum(x_i*exp(-mu_i/alpha)))
+```
+
+The chemical potentials are independently evaluated as
+`cost_i + log(x_i) + 2*rho*(B*x)_i - log(Z)`, using the same matrix and
+density root as `Gres/(nRT) = 2*rho*Bmix - log(Z)`. In particular, zero-pair
+trace species retain `ln(phi_i) = -log(Z)`. Species requiring an absent or
+zero-budget element are fixed exactly at zero using the complete formula
+matrix. All species positions remain in the EOS basis. A zero amount of an
+otherwise supported species may be replaced by a positive value only in the
+certificate reference, with exact rational renormalization. This does not
+alter the primal amounts or introduce a lower composition bound.
+
+The exactly repaired feasible primal evaluates the original extensive
+`sum(n)*Gres/(nRT)` at its own full species fractions, including exact zero
+faces. A minimized gas energy or a density-only correction is never used for
+that upper bound. The gap gate remains `1e-9 RT` per inventory atom. These
+proofs concern the declared pair matrix and density-second-virial potential;
+they establish no empirical bound on missing pairs, higher virials or
+high-temperature continuation.
 
 The reconstructed-water model uses `--water-proof` instead of the original
 native-water liquid proof. Its coefficients, elemental plane, external water
