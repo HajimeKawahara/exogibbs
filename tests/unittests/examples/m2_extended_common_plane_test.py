@@ -114,6 +114,38 @@ def test_exact_primal_domain_is_not_relaxed_with_the_lower_bound():
         A.alloy_energy_interval(context,[Fraction('.7'),Fraction('.15'),Fraction('.15')])
 
 
+def test_saved_outside_box_point_can_only_be_evaluated_after_explicit_exact_repair():
+    context, source = alloy_fixture()
+    original = copy.deepcopy(source)
+    context['saved_hi'][1] = .15
+    saved = list(map(Fraction, source['source_internal_result']['component_amounts_mol']))
+    assert saved[1]/sum(saved) > Fraction(.15)
+    with pytest.raises(ValueError, match='outside'):
+        A.certify_saved_alloy(source, context, max_nodes=1)
+    repaired = saved.copy()
+    repaired[1] = Fraction(.15)*sum(saved)
+    repaired[0] += saved[1]-repaired[1]
+    report = A.certify_saved_alloy(source, context, feasible_amounts=repaired, max_nodes=1)
+    assert source == original
+    assert report['saved_component_amounts_mol'] == list(map(str, saved))
+    receipt = report['selected_point_repair']
+    assert receipt['evaluation_component_amounts_mol_exact'] == list(map(str, repaired))
+    assert receipt['amount_corrections_mol_exact'] == [str(new-old) for new, old in zip(repaired, saved)]
+    assert Decimal(report['maximum_saved_source_potential_difference_rt']) < Decimal('1e-9')
+    with pytest.raises(ValueError, match='outside'):
+        A.certify_saved_alloy(source, context, feasible_amounts=saved, max_nodes=1)
+    context['standards'][0] += W._I(.01)
+    with pytest.raises(ValueError, match='potentials differ'):
+        A.certify_saved_alloy(source, context, feasible_amounts=repaired, max_nodes=1)
+
+
+@pytest.mark.parametrize('repaired', [[0, 0, 0], [1, -1, 1], [1, 1]])
+def test_explicit_repair_cannot_remove_phase_or_supply_invalid_support(repaired):
+    context, source = alloy_fixture()
+    with pytest.raises(ValueError, match='original support'):
+        A.certify_saved_alloy(source, context, feasible_amounts=repaired, max_nodes=1)
+
+
 def test_absent_associated_alloy_still_bounds_generation_over_its_full_domain():
     context, source = alloy_fixture()
     source['source_internal_result']['component_amounts_mol'] = [0., 0., 0.]

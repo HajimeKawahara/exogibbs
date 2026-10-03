@@ -26,8 +26,28 @@ The primal construction replaces the atmosphere's atom-carrier coordinates
 with its saved primitive gas/cloud species. Rational elimination repairs a
 well-populated, independent set of columns to match the original thirteen
 binary64 elemental budgets **exactly as rational numbers**. Negative
-repaired amounts, an unsupported element, or departure from the alloy box
-cause failure. Interval evaluation of this feasible state gives an upper
+repaired amounts and unsupported elements cause failure. Every declared alloy
+fraction bound is encoded as a homogeneous exact row: `n_i - lower_i * N >= 0`
+or `upper_i * N - n_i >= 0`, where `N` sums the alloy component amounts. The
+binary64 limits retain their exact rational values. If the atom repair violates
+a row, that row is added as an equality at zero and the augmented system is
+solved again from the original amounts. Further violated rows are added in
+declaration order. All thirteen atom equations, nonnegative primitive amounts,
+and every box row are checked exactly after repair. Rank loss or a negative
+correction result fails closed; this procedure need not find every feasible
+solution. No composition tolerance is added. Without composition rows,
+`feasible_primal` retains its original atom-only behavior.
+
+The saved source is not edited. `exact_primal_repair` records the primitive
+order, original atom residuals, chosen basis and rational amount corrections.
+Its `composition_constraints` receipt records every row's index, name, exact
+coefficients, original and repaired slacks, and activation reason. Added face
+indices give the order of zero equalities appended after the atom equations.
+The evaluated alloy amounts and their differences from the saved amounts appear
+under `fresh_extended_alloy_bound.selected_point_repair`; the original amounts
+remain under `saved_component_amounts_mol`. The repaired point must still match
+the saved reduced potentials within the existing `1e-9 RT` gate. Interval
+evaluation of the repaired liquid, alloy, gas and cloud amounts gives an upper
 bound `U`. Therefore `0 <= G_primal/(RT) - G_min/(RT) <= U-L`.
 
 The new model acceptance requires `(U-L)/sum(b) <= 1e-9`, the M2 energy

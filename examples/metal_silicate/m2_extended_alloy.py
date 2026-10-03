@@ -150,7 +150,7 @@ def load_saved_alloy(source, exoeos_checkout):
     return context
 
 
-def certify_saved_alloy(source, context, *, tolerance=1e-8, max_nodes=2000):
+def certify_saved_alloy(source, context, *, tolerance=1e-8, max_nodes=2000, feasible_amounts=None):
     """Bound the exact saved external elemental plane over the full alloy box."""
     record, saved = source['source_internal_record'], source['source_internal_result']
     if not saved['accepted']:
@@ -170,6 +170,13 @@ def certify_saved_alloy(source, context, *, tolerance=1e-8, max_nodes=2000):
     amounts = [Fraction(saved['component_amounts_mol'][names.index(name)]) for name in context['names']]
     if any(value < 0 for value in amounts):
         raise ValueError("The source alloy contains a negative component amount.")
+    original_amounts = amounts.copy()
+    if feasible_amounts is not None:
+        amounts = list(map(Fraction, feasible_amounts))
+        if (len(amounts) != len(original_amounts) or any(value < 0 for value in amounts)
+                or any(old == 0 and new != 0 for old, new in zip(original_amounts, amounts))
+                or bool(sum(amounts)) != bool(sum(original_amounts))):
+            raise ValueError("The feasible alloy point must retain nonnegative original support and phase presence.")
     source_amount = sum(amounts)
     selected = None
     selected_gap = None
@@ -197,7 +204,7 @@ def certify_saved_alloy(source, context, *, tolerance=1e-8, max_nodes=2000):
         model_id=context['model'].reference_model_id, temperature_K=source['temperature_K'],
         pressure_bar=source['pressure_bar'], component_order=list(context['provider'].COMPONENTS),
         component_formulas=context['provider'].FORMULAS, element_order=elements,
-        elemental_potentials_rt=plane, saved_component_amounts_mol=[str(v) for v in amounts],
+        elemental_potentials_rt=plane, saved_component_amounts_mol=[str(v) for v in original_amounts],
         declared_domain_lower=context['saved_lo'].tolist(), declared_domain_upper=context['saved_hi'].tolist(),
         lower_bound_domain_relaxation=not np.array_equal(context['proof_lo'],context['saved_lo']),
         source_insertion_interval_rt=None if selected is None else [str(selected.lo),str(selected.hi)],
@@ -205,4 +212,14 @@ def certify_saved_alloy(source, context, *, tolerance=1e-8, max_nodes=2000):
         maximum_saved_source_potential_difference_rt=None if gradient_error is None else str(gradient_error),
         provider_recipe_file_sha256=context['row']['provider_recipe_file_sha256'],
         scope='Full declared composition box; any rectangular relaxation is used only for the lower bound. The saved source point and exact atom-repaired primal retain the original domain. No empirical calibration is inferred.')
+    if feasible_amounts is not None:
+        report['selected_point_repair'] = {
+            'basis': 'exact_feasible_primal',
+            'evaluation_component_amounts_mol_exact': [str(v) for v in amounts],
+            'amount_corrections_mol_exact': [str(new-old) for new, old in zip(amounts, original_amounts)],
+            'original_saved_source_unchanged': True,
+            'scope': 'Source insertion and search intervals evaluate these repaired amounts. The saved plane, potential-difference gate, and declared domain are unchanged.'}
+        report['scope'] = ('Full declared composition box; any rectangular relaxation is used only for the lower bound. '
+            'The original saved amounts are retained for provenance and may have a binary64 boundary violation. '
+            'The evaluated exact feasible-primal point obeys the original domain. No empirical calibration is inferred.')
     return report

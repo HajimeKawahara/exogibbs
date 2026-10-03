@@ -35,6 +35,79 @@ def test_repair_rejects_rank_loss_or_a_negative_amount():
         M.feasible_primal([[1, 1], [0, 1]], [2., 1.], [3., 1.])
 
 
+def test_exact_box_repair_removes_roundoff_violation_without_widening_domain():
+    columns = [[1, 0], [0, 1], [1, 0], [0, 1]]
+    amounts = list(map(Fraction, [1., 1., .98, .020000000000000004]))
+    original = amounts.copy()
+    budget = [sum(n*col[j] for n, col in zip(amounts, columns)) for j in range(2)]
+    rows = M.composition_box_rows(4, [2, 3], ['Fe', 'P'], [.75, 0.], [1., .02])
+    repaired, receipt = M.feasible_primal(columns, amounts, budget, composition_rows=rows)
+    assert amounts == original
+    assert repaired[3]/sum(repaired[2:]) == Fraction(.02)
+    assert repaired[2]/sum(repaired[2:]) >= Fraction(.75)
+    assert all(value >= 0 for value in repaired)
+    assert [sum(n*col[j] for n, col in zip(repaired, columns)) for j in range(2)] == budget
+    audit = receipt['composition_constraints']
+    assert audit['all_satisfied_exactly'] and audit['added_face_indices'] == [3]
+    assert audit['rows'][3]['activation']['reason'] == 'original_ledger_outside_box'
+    assert Fraction(audit['rows'][3]['original_slack_mol_exact']) < 0
+    assert Fraction(audit['rows'][3]['repaired_slack_mol_exact']) == 0
+    assert receipt['maximum_relative_basis_change'] < 1e-14
+    # Independently replay the saved augmented equality solve and all row slacks.
+    chosen = receipt['basis_indices']
+    augmented = [[col[j] for col in columns] for j in range(2)]
+    augmented += [list(map(Fraction, audit['rows'][i]['coefficients_exact'])) for i in audit['added_face_indices']]
+    residual = list(map(Fraction, receipt['original_atom_residual_mol_exact']))
+    residual += [-sum(c*n for c, n in zip(row, original)) for row in augmented[2:]]
+    changes = M.rational_solve([[row[i] for i in chosen] for row in augmented], residual)
+    assert changes == list(map(Fraction, receipt['amount_corrections_mol_exact']))
+    for row in audit['rows']:
+        coefficients = list(map(Fraction, row['coefficients_exact']))
+        assert sum(c*n for c, n in zip(coefficients, original)) == Fraction(row['original_slack_mol_exact'])
+        assert sum(c*n for c, n in zip(coefficients, repaired)) == Fraction(row['repaired_slack_mol_exact']) >= 0
+
+
+def test_atom_repair_can_activate_a_previously_satisfied_box_face():
+    columns = [[1, 0], [0, 1], [1, 0], [0, 1]]
+    amounts = [Fraction(1), Fraction(1), Fraction(1, 10), Fraction(1, 10)]
+    budget = [Fraction(11, 10)-Fraction(1, 10**16), Fraction(11, 10)]
+    rows = M.composition_box_rows(4, [0, 1], ['Fe', 'P'], [0, 0], [1, Fraction(1, 2)])
+    repaired, receipt = M.feasible_primal(columns, amounts, budget, composition_rows=rows)
+    row = receipt['composition_constraints']['rows'][3]
+    assert row['original_slack_mol_exact'] == row['repaired_slack_mol_exact'] == '0'
+    assert row['activation']['reason'] == 'equality_repair_left_box'
+    assert repaired[1]/sum(repaired[:2]) == Fraction(1, 2)
+
+
+def test_new_face_correction_rechecks_every_other_composition_row():
+    rows = [{'name': 'zero_first', 'coefficients': [-1, 0, 0]},
+            {'name': 'second_upper', 'coefficients': [Fraction(1, 2), Fraction(-1, 2), Fraction(1, 2)]}]
+    repaired, receipt = M.feasible_primal([[1], [1], [1]], [1, 1, 1], [3], composition_rows=rows)
+    assert repaired == [0, Fraction(3, 2), Fraction(3, 2)]
+    assert receipt['composition_constraints']['added_face_indices'] == [0, 1]
+    assert all(Fraction(row['repaired_slack_mol_exact']) == 0 for row in receipt['composition_constraints']['rows'])
+
+
+def test_box_repair_rejects_rank_loss_negative_amounts_and_truncated_rows():
+    with pytest.raises(ValueError, match='span'):
+        M.feasible_primal([[1]], [1], [1], composition_rows=[{'name': 'impossible', 'coefficients': [-1]}])
+    with pytest.raises(ValueError, match='nonnegative cone'):
+        M.feasible_primal([[1], [1]], [1, 1], [2], composition_rows=[{'name': 'impossible', 'coefficients': [-2, -3]}])
+    with pytest.raises(ValueError, match='complete primitive ledger'):
+        M.feasible_primal([[1], [1]], [1, 1], [2], composition_rows=[{'name': 'truncated', 'coefficients': [1]}])
+
+
+def test_inactive_composition_rows_leave_atom_repair_exactly_unchanged():
+    columns, amounts, budget = [[1, 0], [0, 1]], [1., 2.], [1.0000000000000002, 2.]
+    expected, original = M.feasible_primal(columns, amounts, budget)
+    rows = M.composition_box_rows(2, [0, 1], ['A', 'B'], [0, 0], [1, 1])
+    actual, receipt = M.feasible_primal(columns, amounts, budget, composition_rows=rows)
+    assert actual == expected
+    extra = receipt.pop('composition_constraints')
+    assert extra['added_face_indices'] == []
+    assert receipt == original
+
+
 def test_interval_ideal_simplex_minimum_encloses_independent_analytic_value():
     result = M.ideal_minimum([I(Fraction(1, 3)), I(Fraction(5, 7))])
     with localcontext() as context:

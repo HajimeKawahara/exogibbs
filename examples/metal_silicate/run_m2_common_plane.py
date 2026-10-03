@@ -15,7 +15,7 @@ import numpy as np
 
 from hydrogen import dissolved_h2_standard_rt, hirschmann2012_ln_solubility
 from m2_common_gas import anchored_standards_rt, build_common_gas_setup
-from m2_common_plane import (_I, _dot, feasible_primal, ideal_energy, ideal_minimum,
+from m2_common_plane import (_I, _dot, composition_box_rows, feasible_primal, ideal_energy, ideal_minimum,
                              interval_json, liquid_common_plane, liquid_mixing, liquid_standard_intervals,
                              primal_dual_certificate, rational_solve, solution_common_plane)
 from m2_finite_gas import atmosphere_gauge_rt, build_atmosphere_setup
@@ -231,6 +231,29 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
         pure_names.append(name)
     if set(pure_names) != PURE_PHASES:
         raise ValueError("All thirteen remaining native pure candidates are required.")
+    atom_columns = lambda matrix: [[Fraction(float(matrix[setup.elements.index(e), i])) if e in setup.elements else Fraction(0)
+                                   for e in elements] for i in range(matrix.shape[1])]
+    gas_columns, cloud_columns = atom_columns(ag), atom_columns(ac)
+    record = source["source_internal_record"]
+    names = [name for phase in record["phases"].values() for name in phase]
+    ledger = dict(zip(names, source["source_internal_result"]["component_amounts_mol"]))
+    lower_names = record["phases"]["silicate"]+record["phases"]["metal"]
+    primitive_names = lower_names+list(gas.species)+list(cloud.species)
+    columns = [[Fraction(record["component_formulas"][name].get(e, 0)) for e in elements] for name in lower_names]
+    amounts = [Fraction(ledger[name]) for name in lower_names]
+    columns += gas_columns+cloud_columns
+    amounts += list(map(Fraction, parcel["gas_amounts_mol"]))+list(map(Fraction, parcel["condensate_amounts_mol"]))
+
+    def repair_box(component_names, lower, upper):
+        metal_names = [name+"_metal" for name in component_names]
+        indices = [lower_names.index(name) for name in metal_names]
+        constraints = composition_box_rows(len(amounts), indices, metal_names, lower, upper)
+        values, receipt = feasible_primal(columns, amounts, budget, composition_rows=constraints)
+        receipt["primitive_names"] = primitive_names
+        receipt["basis_names"] = [primitive_names[i] for i in receipt["basis_indices"]]
+        receipt["primal_energy_uses_repaired_amounts"] = True
+        return values, receipt, [values[i] for i in indices]
+
     extended_alloy = source["source_metadata"].get("metal_model", "ma") != "ma"
     if extended_alloy:
         if alloy_path is not None:
@@ -240,7 +263,10 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
         alloy_context = load_saved_alloy(source, eos_checkout)
         files.update({str(eos_checkout/name): digest for name,digest
                       in alloy_context["row"]["provider_recipe_file_sha256"].items()})
-        alloy = certify_saved_alloy(source, alloy_context,tolerance=alloy_tolerance_rt,max_nodes=alloy_max_nodes)
+        repaired, repair, feasible_metal = repair_box(alloy_context["provider"].COMPONENTS,
+                                                     alloy_context["saved_lo"], alloy_context["saved_hi"])
+        alloy = certify_saved_alloy(source, alloy_context,tolerance=alloy_tolerance_rt,max_nodes=alloy_max_nodes,
+                                    feasible_amounts=feasible_metal)
         alloy_components = alloy["component_order"]
         alloy_plane = [sum((_I(float(col.get(e, 0.)))*_I(float(plane[e])) for e in elements),_I(0))
                        for col in alloy["component_formulas"]]
@@ -282,9 +308,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
               original_strict_nonnegative_bound=alloy["strict_nonnegative_bound"])
         alloy_components = alloy["component_order"]
         alloy_plane = list(map(_I, alloy["supporting_potentials_rt"]))
-    atom_columns = lambda matrix: [[Fraction(float(matrix[setup.elements.index(e), i])) if e in setup.elements else Fraction(0)
-                                   for e in elements] for i in range(matrix.shape[1])]
-    gas_columns, cloud_columns = atom_columns(ag), atom_columns(ac)
+        repaired, repair, _ = repair_box(alloy_components, alloy["lower_atomic_fractions"], alloy["upper_atomic_fractions"])
     gauge_by_element = dict(zip(setup.elements, map(float, gauge)))
     gas_standard = [_I(float(v))+sum((_I(gauge_by_element.get(e, 0.))*_I(c) for e, c in zip(elements, col)), _I(0))
                     +_I(float(np.log(pressure))) for v, col in zip(hg, gas_columns)]
@@ -307,16 +331,6 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     for name, st, col, valid in zip(cloud.species, cloud_standard, cloud_columns, eligible):
         if valid:
             bound("cloud:"+name, st-_dot(col, potentials), sum(col))
-    record = source["source_internal_record"]
-    names = [name for phase in record["phases"].values() for name in phase]
-    ledger = dict(zip(names, source["source_internal_result"]["component_amounts_mol"]))
-    lower_names = record["phases"]["silicate"]+record["phases"]["metal"]
-    columns = [[Fraction(record["component_formulas"][name].get(e, 0)) for e in elements] for name in lower_names]
-    amounts = [Fraction(ledger[name]) for name in lower_names]
-    columns += gas_columns+cloud_columns
-    amounts += list(map(Fraction, parcel["gas_amounts_mol"]))+list(map(Fraction, parcel["condensate_amounts_mol"]))
-    repaired, repair = feasible_primal(columns, amounts, budget)
-    repair["basis_names"] = [(lower_names+list(gas.species)+list(cloud.species))[i] for i in repair["basis_indices"]]
     repaired_lower = dict(zip(lower_names, repaired))
     melt_amounts = [repaired_lower.get(name+"_melts", Fraction(0)) for name in properties["component_order"]]
     for name, col in zip(properties["component_order"], host_columns):
@@ -401,7 +415,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
                                                 "atmosphere": interval_json(primal_atmosphere)},
                   h2_standard_recipe={"base_rt": h2_base, "scenario_offset_rt": offsets.get("H2_dissolved", 0.)},
                   excluded_temperature_ineligible_clouds=[name for name, valid in zip(cloud.species, eligible) if not valid],
-                  scope="Global Gibbs bounds at this source T/P, finite 13-element budget and declared phase domains. Exact atom repair supplies a feasible upper bound; a uniform shift of the common elemental plane supplies a global lower bound. This is error-bounded model acceptance, not exact KKT, empirical validity, unbounded Fe alloy composition, a located physical metal boundary, native-build equivalence, or a Gibbs minimum of the nonisothermal planet.")
+                  scope="Global Gibbs bounds at this source T/P, finite 13-element budget and declared phase domains. Exact atom and composition-box repair supplies a feasible upper bound; a uniform shift of the common elemental plane supplies a global lower bound. This is error-bounded model acceptance, not exact KKT, empirical validity, unbounded Fe alloy composition, a located physical metal boundary, native-build equivalence, or a Gibbs minimum of the nonisothermal planet.")
     root = Path(__file__).resolve().parents[2]
     if any(sha256(path) != digest for path, digest in files.items()):
         raise ValueError("An input changed during the assessment.")
