@@ -95,3 +95,30 @@ def test_zero_phosphorus_retains_independent_scalar_audit_on_present_support(eos
     np.testing.assert_allclose(gradient[:4], old.mu_rt, atol=1e-12, rtol=0)
     assert np.isneginf(gradient[4])
     assert n[:4] @ gradient[:4] == pytest.approx(energy, abs=1e-12)
+
+
+@pytest.mark.parametrize("upper", [.01, .02, .03])
+def test_p_bound_changes_only_domain_and_recomputed_curvature(eos_checkout, tmp_path, upper):
+    base = build(eos_checkout, tmp_path)
+    changed = build(eos_checkout, tmp_path, phosphorus_options={"upper_mole_fraction": upper})
+    assert changed[0] == base[0]
+    np.testing.assert_array_equal(changed[1], base[1])
+    np.testing.assert_array_equal(changed[3], base[3])
+    row = changed[-1]["phosphorus_metal"]
+    assert row["upper_atomic_fractions"] == [1., .08, .02, .04, upper]
+    assert row["standard"] == base[-1]["phosphorus_metal"]["standard"]
+    assert row["interactions"] == base[-1]["phosphorus_metal"]["interactions"]
+    n = np.array([.96, .003, .007, .025, .005])
+    a, b = (item[2]["metal"](2173.15, 1., n) for item in (base, changed))
+    assert a.gibbs_rt == b.gibbs_rt
+    np.testing.assert_array_equal(a.mu_rt, b.mu_rt)
+    if upper == .02:
+        assert row == base[-1]["phosphorus_metal"]
+    else:
+        assert row["curvature_lower_bound_rt"] != base[-1]["phosphorus_metal"]["curvature_lower_bound_rt"]
+
+
+@pytest.mark.parametrize("value", [True, False, "0.02", None, 0., -.01, 1.01, np.nan, np.inf])
+def test_invalid_p_bound_fails_before_provider_loading(value):
+    with pytest.raises(ValueError, match="upper mole fraction"):
+        PHOSPHORUS.phosphorus_upper_mole_fraction({"upper_mole_fraction": value})

@@ -81,6 +81,9 @@ def add_associated_metal(record, initial, callbacks, metadata, setup, gauge,
     lower = np.r_[.75, np.zeros(size-1)]
     upper = np.array([1., .02, .01, .04, .02, .002, .00002, .0001, .12, .00001,
                       .003, .00002, .0001, .005, .00001, .000001, .002, .000001])
+    # Reuse the requested number in this final species basis, without
+    # identifying it with the parent host's atomic concentration.
+    upper[4] = p["upper_atomic_fractions"][4]
     if potassium:
         upper = np.r_[upper, .02]
     if sodium:
