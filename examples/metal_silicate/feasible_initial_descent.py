@@ -44,10 +44,16 @@ def descend_initial_amounts(
     element_amounts_mol: np.ndarray, phase_callbacks: Mapping[str, "PhaseCallback"],
     *, initial_component_amounts_mol: np.ndarray,
     phase_composition_bounds: Optional[Mapping[str, tuple[np.ndarray, np.ndarray]]] = None,
+    allow_interior: bool = False,
     max_iterations: int = 256, max_evaluations: int = 1024,
     max_seconds: float = 300., progress: Optional[Callable[[dict], None]] = None,
 ) -> FeasibleInitialDescentResult:
     """Descend current-pressure G on the donor's atom and explicit active face.
+
+    By default an explicit active metal composition face is required. With
+    ``allow_interior=True``, a feasible donor containing metal may also descend
+    without that face. Only the supplied current bounds define active rows;
+    with no active rows the tangent contains atom constraints alone.
 
     All trials retain positive support and every declared composition bound.
     The amount-space direction uses the null space of C diag(sqrt(n)), with
@@ -67,11 +73,12 @@ def descend_initial_amounts(
 
     if (problem.reaction_offset is not None or set(phase_callbacks) != set(problem.phases)
             or not all(np.isfinite(v) and v > 0 for v in (temperature_k, pressure_bar))
+            or type(allow_interior) is not bool
             or type(max_iterations) is not int or not 1 <= max_iterations <= 256
             or type(max_evaluations) is not int or not 1 <= max_evaluations <= 1024
             or not np.isfinite(max_seconds) or not 0 < max_seconds <= 1800
             or (progress is not None and not callable(progress))):
-        raise ValueError("Require common callbacks, positive T/P and bounded iteration/evaluation/time limits.")
+        raise ValueError("Require common callbacks, positive T/P, boolean allow_interior and bounded iteration/evaluation/time limits.")
     budget = _budgets(element_amounts_mol, len(problem.elements))
     positive = budget > 0
     if not np.array_equal(np.flatnonzero(positive), problem.element_indices):
@@ -112,6 +119,7 @@ def descend_initial_amounts(
     started = perf_counter()
     report = {
         "adopted": False, "stage": "input_validation", "iterations": 0,
+        "allow_interior": allow_interior,
         "evaluations": 0, "callback_evaluations": 0, "accepted_steps": 0,
         "max_iterations": max_iterations, "max_evaluations": max_evaluations,
         "max_seconds": float(max_seconds), "elapsed_seconds": 0.,
@@ -199,7 +207,8 @@ def descend_initial_amounts(
         return FeasibleInitialDescentResult(result, adopted, report)
 
     initial_energy = None
-    if "metal" not in problem.phases or not any(label["phase"] == "metal" for label in report["active_constraints"]):
+    if ("metal" not in problem.phases or (not allow_interior and not any(
+            label["phase"] == "metal" for label in report["active_constraints"]))):
         report["stage"] = "skipped"
         report["reason"] = "No explicit active metal composition face."
         event("complete", adopted=False, reason=report["reason"])

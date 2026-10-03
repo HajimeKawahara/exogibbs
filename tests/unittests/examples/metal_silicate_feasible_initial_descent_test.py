@@ -1,6 +1,7 @@
 """Analytic CPU descent tests preserve inventory, support and scalar ownership."""
 
 import builtins
+from dataclasses import replace
 import importlib
 import importlib.util
 import json
@@ -87,9 +88,12 @@ def test_all_evaluated_ledgers_conserve_atoms_active_face_and_positive_support(m
     json.dumps(report, allow_nan=False)
 
 
-def test_original_scalar_can_reject_an_adopted_partial_descent(modules):
+@pytest.mark.parametrize("allow_interior", [False, True])
+def test_original_scalar_can_reject_an_adopted_partial_descent(modules, allow_interior):
     case = toy_case(modules)
-    result = run(modules, case, max_iterations=1)
+    if allow_interior:
+        case.bounds["metal"][1][1] = .021
+    result = run(modules, case, max_iterations=1, allow_interior=allow_interior)
     assert result.adopted and result.diagnostics["final_stationarity_max_abs"] > 1e-8
     assert "accepted" not in result._fields
     scalar = modules.scalar.minimize_gibbs(case.problem, 3000., 60., case.budget, case.callbacks,
@@ -107,7 +111,8 @@ def test_element_potential_gauge_does_not_change_descent(modules):
 
 
 @pytest.mark.parametrize("kind", ["atoms", "domain", "zero_trace", "excluded", "complex", "nan"])
-def test_invalid_initial_input_has_no_callback_side_effect(modules, kind):
+@pytest.mark.parametrize("allow_interior", [False, True])
+def test_invalid_initial_input_has_no_callback_side_effect(modules, kind, allow_interior):
     case = toy_case(modules)
     if kind == "atoms":
         case.initial[0] *= 1.01
@@ -123,7 +128,7 @@ def test_invalid_initial_input_has_no_callback_side_effect(modules, kind):
     else:
         case.initial[0] = np.nan
     with pytest.raises(ValueError, match="ledger"):
-        run(modules, case)
+        run(modules, case, allow_interior=allow_interior)
     assert not case.seen
 
 
@@ -133,6 +138,69 @@ def test_no_active_metal_face_skips_without_callbacks(modules):
     result = run(modules, case)
     assert not result.adopted and result.diagnostics["stage"] == "skipped"
     assert result.diagnostics["evaluations"] == 0 and not case.seen
+
+
+@pytest.mark.parametrize("scale", [1e-6, 1., 1e26])
+def test_opt_in_interior_uses_current_bound_and_preserves_every_evaluated_ledger(modules, scale):
+    case = toy_case(modules, scale)
+    # The donor's old .02 face is interior to the supplied .021 domain.
+    case.bounds["metal"][1][1] = .021
+    result = run(modules, case, allow_interior=True)
+    report = result.diagnostics
+    assert result.adopted and report["allow_interior"]
+    assert report["active_constraints"] == []
+    assert report["tangent_rank"] == 3
+    assert report["final_gibbs_rt"] < report["initial_gibbs_rt"]
+    assert result.component_amounts_mol[5] == 0
+    for left, right in zip(case.seen[::2], case.seen[1::2]):
+        ledger = np.r_[left[3], right[3]]
+        np.testing.assert_allclose(case.problem.formula_matrix @ ledger,
+                                   case.budget[:3], rtol=2e-14, atol=0)
+        assert np.all(ledger > 0)
+        assert ledger[3] / ledger[2:].sum() <= .021
+        assert ledger[2] / ledger[2:].sum() >= .75
+    final_metal = result.component_amounts_mol[2:5]
+    assert .02099 < final_metal[1] / final_metal.sum() <= .021
+    energies = [report["initial_gibbs_rt"] / case.budget.sum()] + [
+        row["gibbs_rt_per_inventory_atom"] for row in report["history"]]
+    assert all(right < left for left, right in zip(energies, energies[1:]))
+    assert all(row["max_relative_active_face_drift"] == 0 for row in report["history"])
+    json.dumps(report, allow_nan=False)
+
+
+def test_opt_in_leaves_existing_active_face_descent_identical(modules):
+    ordinary = run(modules, toy_case(modules))
+    enabled = run(modules, toy_case(modules), allow_interior=True)
+    assert ordinary.adopted and enabled.adopted
+    np.testing.assert_array_equal(ordinary.component_amounts_mol, enabled.component_amounts_mol)
+    for key in ("history", "active_constraints", "evaluations", "final_gibbs_rt"):
+        assert ordinary.diagnostics[key] == enabled.diagnostics[key]
+
+
+def test_interior_opt_in_does_not_admit_donor_outside_tighter_current_bound(modules):
+    case = toy_case(modules)
+    case.bounds["metal"][1][1] = .01
+    with pytest.raises(ValueError, match="composition bound"):
+        run(modules, case, allow_interior=True)
+    assert not case.seen
+
+
+def test_interior_opt_in_does_not_evaluate_metal_free_problem(modules):
+    case = toy_case(modules)
+    case.problem = replace(case.problem, phases=("silicate", "atmosphere"))
+    case.callbacks["atmosphere"] = case.callbacks.pop("metal")
+    case.bounds["atmosphere"] = case.bounds.pop("metal")
+    result = run(modules, case, allow_interior=True)
+    assert not result.adopted and result.diagnostics["stage"] == "skipped"
+    assert result.diagnostics["evaluations"] == 0 and not case.seen
+
+
+@pytest.mark.parametrize("flag", [None, 0, 1, "yes", np.bool_(True)])
+def test_interior_permission_requires_explicit_boolean(modules, flag):
+    case = toy_case(modules)
+    with pytest.raises(ValueError, match="boolean allow_interior"):
+        run(modules, case, allow_interior=flag)
+    assert not case.seen
 
 
 def test_invalid_initial_callback_fails_without_adopting(modules):
