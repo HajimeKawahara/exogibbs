@@ -32,9 +32,24 @@ trial = x + step * direction
 When no composition row is active, `C` contains only the atom constraints. The
 same projected direction preserves those constraints and has nonpositive
 directional derivative. Positive support, all current bounds, and the energy
-line search remain mandatory. The active set stays fixed during this initial
-descent; approaching another bound can therefore limit progress. This option
-does not guarantee convergence or impose a wall-time limit on a callback.
+line search remain mandatory. By default the active set stays fixed during
+this initial descent; approaching another bound can therefore limit progress.
+Neither option guarantees convergence or imposes a wall-time limit on a callback.
+
+The independent boolean option `update_active_faces=True` adds a previously
+inactive current-domain row when its phase-relative slack falls below the
+existing `1e-8` threshold. Before the next direction, the helper rebuilds the
+tangent, rank and stationarity basis. It preserves each old row's original
+linear value and each new row's value at activation. Adding a row changes
+neither amounts nor energy and does not project onto the physical boundary.
+A small positive slack is retained. All feasibility and energy gates remain
+unchanged; no scalar or domain tolerance is increased.
+
+These additional equalities belong only to the initial descent. A near-bound
+row can unnecessarily restrict that descent, so its stationarity is not KKT
+acceptance. The unchanged scalar receives only the original composition box
+and the lower-G amounts, and can leave any initializer face. Disabling this
+option preserves the previous direction and line-search trajectory.
 
 Rows are normalized by their Euclidean norms before SVD. A second projection
 removes the residual constraint component of the computed null basis; this
@@ -64,6 +79,7 @@ initial = descend_initial_amounts(
     initial_component_amounts_mol=accepted_donor_amounts,
     phase_composition_bounds=bounds,
     allow_interior=False,  # Opt in only when an interior donor should descend.
+    update_active_faces=False,  # Opt in to continue along newly approached rows.
     max_iterations=256, max_evaluations=1024, max_seconds=300,
     progress=record_progress,
 )
@@ -76,7 +92,8 @@ result = minimize_gibbs(
 
 `FeasibleInitialDescentResult` contains the full `component_amounts_mol` ledger,
 `adopted`, and `diagnostics`; it has no equilibrium `accepted` flag. Diagnostics
-include the `allow_interior` option, all complete or partial callback-bundle
+include both options, initial and final active rows, each added row's iteration,
+slack, held linear value, phase amount and unchanged current energy, all complete or partial callback-bundle
 evaluations, phase callback counts, invalid callbacks, every accepted iteration, atom and face residuals,
 composition slacks, current energies, tangent stationarity, elapsed time, and
 the termination reason. The fixed request caps are 256 iterations, 1024 bundle
@@ -92,7 +109,8 @@ evaluated trial, inactive composition bounds, invalid inputs and callbacks,
 actual evaluation counts, deadlines, and original-scalar rejection of a partial
 initial descent. Interior tests also check crossing an old `.02` face while
 remaining inside the current `.021` bound, and identical active-face descent
-with the option enabled or left at its default. These tests establish numerical
-contracts, not convergence of
+with the option enabled or left at its default. Reached-face tests also cover
+continued strict Gibbs decrease and every current bound across amount scales.
+These tests establish numerical contracts, not convergence of
 a physical low-hydrogen case. The older
 [log-amount correction](constrained_initial_correction.md) is unchanged.

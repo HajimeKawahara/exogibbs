@@ -177,6 +177,77 @@ def test_opt_in_leaves_existing_active_face_descent_identical(modules):
         assert ordinary.diagnostics[key] == enabled.diagnostics[key]
 
 
+@pytest.mark.parametrize("scale", [1e-6, 1., 1e26])
+def test_reached_face_opt_in_continues_descent_inside_current_box(modules, scale):
+    case = toy_case(modules, scale)
+    case.bounds["metal"][1][1] = .021
+    fixed = run(modules, case, allow_interior=True)
+    case.seen.clear()
+    events = []
+    updated = run(modules, case, allow_interior=True, update_active_faces=True, progress=events.append)
+    report = updated.diagnostics
+    assert updated.adopted and report["update_active_faces"]
+    assert report["final_gibbs_rt"] < fixed.diagnostics["final_gibbs_rt"]
+    assert report["final_stationarity_max_abs"] < fixed.diagnostics["final_stationarity_max_abs"]
+    assert len(report["activated_constraints"]) == 1
+    added = report["activated_constraints"][0]
+    assert 0 <= added["relative_slack"] < 1e-8
+    assert added["constraint"] in report["active_constraints"]
+    assert report["tangent_rank"] == 4
+    assert report["accepted_steps"] > fixed.diagnostics["accepted_steps"]
+    assert any(e["event"] == "active_faces_updated" for e in events)
+    for left, right in zip(case.seen[::2], case.seen[1::2]):
+        ledger = np.r_[left[3], right[3]]
+        np.testing.assert_allclose(case.problem.formula_matrix @ ledger,
+                                   case.budget[:3], rtol=2e-14, atol=0)
+        assert np.all(ledger > 0)
+        assert ledger[3] / ledger[2:].sum() <= .021
+        assert ledger[2] / ledger[2:].sum() >= .75
+    assert updated.component_amounts_mol[5] == 0
+    assert all(h["max_relative_active_face_drift"] < 1e-10 for h in report["history"])
+    energies = [report["initial_gibbs_rt"] / case.budget.sum()] + [
+        h["gibbs_rt_per_inventory_atom"] for h in report["history"]]
+    assert all(b < a for a, b in zip(energies, energies[1:]))
+    json.dumps(report, allow_nan=False)
+
+
+@pytest.mark.parametrize("allow_interior", [False, True])
+def test_reached_face_default_keeps_original_trajectory(modules, allow_interior):
+    case = toy_case(modules)
+    if allow_interior:
+        case.bounds["metal"][1][1] = .021
+    ordinary = run(modules, case, allow_interior=allow_interior)
+    explicit = run(modules, case, allow_interior=allow_interior, update_active_faces=False)
+    np.testing.assert_array_equal(ordinary.component_amounts_mol, explicit.component_amounts_mol)
+    for key in ("history", "active_constraints", "evaluations", "final_gibbs_rt"):
+        assert ordinary.diagnostics[key] == explicit.diagnostics[key]
+    assert explicit.diagnostics["activated_constraints"] == []
+
+
+def test_reached_face_rows_are_not_passed_to_original_scalar(modules):
+    case = toy_case(modules)
+    case.bounds["metal"][1][1] = .021
+    bounds = {phase: tuple(v.copy() for v in values) for phase, values in case.bounds.items()}
+    result = run(modules, case, allow_interior=True, update_active_faces=True, max_iterations=8)
+    assert result.adopted and result.diagnostics["activated_constraints"]
+    for phase in bounds:
+        for original, final in zip(bounds[phase], case.bounds[phase]):
+            np.testing.assert_array_equal(original, final)
+    scalar = modules.scalar.minimize_gibbs(case.problem, 3000., 60., case.budget, case.callbacks,
+        initial_component_amounts_mol=result.component_amounts_mol,
+        phase_composition_bounds=case.bounds, maxiter=1)
+    assert not scalar.accepted
+    assert "scalar minimizer did not converge" in scalar.audit_reasons
+
+
+@pytest.mark.parametrize("flag", [None, 0, 1, "yes", np.bool_(True)])
+def test_reached_face_updates_require_explicit_boolean(modules, flag):
+    case = toy_case(modules)
+    with pytest.raises(ValueError, match="update_active_faces"):
+        run(modules, case, update_active_faces=flag)
+    assert not case.seen
+
+
 def test_interior_opt_in_does_not_admit_donor_outside_tighter_current_bound(modules):
     case = toy_case(modules)
     case.bounds["metal"][1][1] = .01
