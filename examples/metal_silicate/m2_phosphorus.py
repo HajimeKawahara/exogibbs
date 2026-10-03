@@ -16,6 +16,33 @@ from run_metal_selection import METAL_LOWER, METAL_UPPER
 from run_bse_common_gibbs import source_standards_rt
 
 
+def phosphorus_upper_mole_fraction(options=None):
+    """Read a numerical P bound in the selected model's component basis.
+
+    The five-component parent uses atomic moles; associated alloys use
+    chemical-species moles. Equal values do not imply equal atom fractions.
+    This option changes a constraint, never a thermodynamic coefficient.
+    """
+    value = (options or {}).get("upper_mole_fraction", .02)
+    if (isinstance(value, bool) or not isinstance(value, (int, float))
+            or not np.isfinite(value) or not 0 < value <= 1):
+        raise ValueError("Phosphorus upper mole fraction must be a finite number in (0, 1].")
+    return float(value)
+
+
+def verify_phosphorus_domain(source):
+    """Bind saved atomic/species P boxes to the explicit source option."""
+    upper = phosphorus_upper_mole_fraction(source.get("phosphorus_options"))
+    metadata = source["source_metadata"]
+    parent = metadata["phosphorus_metal"]
+    if parent["upper_atomic_fractions"][parent["component_order"].index("P")] != upper:
+        raise ValueError("The saved phosphorus domain differs from the source option.")
+    if metadata.get("metal_model") in ("associated", "associated_k", "associated_k_na"):
+        row = metadata["associated_metal"]
+        if row["upper_species_fractions"][row["component_order"].index("P")] != upper:
+            raise ValueError("The saved associated phosphorus domain differs from the source option.")
+
+
 def load_phosphorus_provider(exoeos_checkout):
     path = Path(exoeos_checkout).resolve() / "examples/m2_material/phosphorus_reference.py"
     name = "_exoeos_m2_phosphorus_reference"
@@ -43,8 +70,9 @@ def add_phosphorus_metal(record, initial, callbacks, metadata, setup, gauge,
     from exoeos import total_gex_RT, total_solution_state
 
     options = {} if options is None else dict(options)
-    if set(options) - {"gas_reference", "temperature_policy", "standard_shift_kcal_mol"}:
+    if set(options) - {"gas_reference", "temperature_policy", "standard_shift_kcal_mol", "upper_mole_fraction"}:
         raise ValueError("Unknown phosphorus model option.")
+    upper_p = phosphorus_upper_mole_fraction(options)
     gas_reference = options.get("gas_reference", "P1")
     policy = options.get("temperature_policy", "constant")
     shift = options.get("standard_shift_kcal_mol", 0.)
@@ -67,7 +95,7 @@ def add_phosphorus_metal(record, initial, callbacks, metadata, setup, gauge,
     source_standards, _ = source_standards_rt(temperature_k, pressure_bar)
     standards = np.r_[[source_standards[name] for name in names], standard["standard_rt"]]
     standards = standards + np.asarray(model.standard_state_shift_RT(temperature_k))
-    lower, upper = np.r_[METAL_LOWER, 0.], np.r_[METAL_UPPER, .02]
+    lower, upper = np.r_[METAL_LOWER, 0.], np.r_[METAL_UPPER, upper_p]
     curvature = provider.phosphorus_curvature_lower_bound(model, temperature_k, lower, upper)
     flattened = [name for phase in record["phases"].values() for name in phase]
     insertion = flattened.index(names[-1]) + 1

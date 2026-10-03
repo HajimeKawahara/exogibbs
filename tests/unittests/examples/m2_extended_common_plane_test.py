@@ -127,7 +127,8 @@ def test_absent_associated_alloy_still_bounds_generation_over_its_full_domain():
 
 
 @pytest.mark.parametrize('kind', ['phosphorus','associated','associated_k'])
-def test_actual_provider_recipe_replays_the_selected_scalar_and_all_potentials(tmp_path, kind):
+@pytest.mark.parametrize('upper_p', [.01, .02, .021])
+def test_actual_provider_recipe_replays_the_selected_scalar_and_all_potentials(tmp_path, kind, upper_p):
     eos=pytest.importorskip('exoeos')
     root=Path(eos.__file__).resolve().parents[2]
     if not (root/'examples/m2_material/potassium_reference.py').is_file():
@@ -140,6 +141,7 @@ def test_actual_provider_recipe_replays_the_selected_scalar_and_all_potentials(t
     finally:
         sys.path.pop(0)
     options={'potassium_standard_offset_rt':-8.} if kind=='associated_k' else {}
+    options['phosphorus_options'] = {'upper_mole_fraction': upper_p}
     record,_,callbacks,initial,metadata=source_module.build_expanded_bse_problem(
         root/'examples/m2_material/bse_inventory.json',root,tmp_path,sys.executable,
         gas_model='janaf_condensed',metal_model=kind,initialization='canonical',**options)
@@ -160,6 +162,7 @@ def test_actual_provider_recipe_replays_the_selected_scalar_and_all_potentials(t
         amounts[names.index(name)]=x[i]
         mu[names.index(name)]=actual.mu_rt[i]
     source={'source_metadata':metadata,'temperature_K':2173.15,'pressure_bar':1.,
+            'phosphorus_options': options['phosphorus_options'],
             'source_internal_record':record,
             'source_atmosphere_parcel':{'gas_species':list(setup.gas_species),
                                       'gas_standard_potentials_rt':gas.tolist()},
@@ -171,9 +174,19 @@ def test_actual_provider_recipe_replays_the_selected_scalar_and_all_potentials(t
     proof=A.certify_saved_alloy(source,context,max_nodes=1)
     assert Decimal(proof['maximum_saved_source_potential_difference_rt'])<Decimal('1e-10')
     assert proof['lower_bound_domain_relaxation']==(kind=='phosphorus')
+    assert proof['declared_domain_upper'][4] == upper_p
     assert Decimal(proof['lower_bound_rt'])<=energy.hi
     assert metadata['numerical_execution']['native_melt_calls']==0
     changed=copy.deepcopy(source)
     changed['source_atmosphere_parcel']['gas_standard_potentials_rt'][list(setup.gas_species).index('P1')]+=.1
     with pytest.raises(ValueError,match='finite-P standard'):
+        A.load_saved_alloy(changed,root)
+    changed=copy.deepcopy(source)
+    changed['phosphorus_options']['upper_mole_fraction'] = upper_p/2
+    with pytest.raises(ValueError,match='phosphorus domain'):
+        A.load_saved_alloy(changed,root)
+    changed=copy.deepcopy(source)
+    row = changed['source_metadata']['phosphorus_metal' if kind == 'phosphorus' else 'associated_metal']
+    row['upper_atomic_fractions' if kind == 'phosphorus' else 'upper_species_fractions'][4] = upper_p/2
+    with pytest.raises(ValueError,match='phosphorus domain'):
         A.load_saved_alloy(changed,root)
