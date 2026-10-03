@@ -10,8 +10,13 @@ adopted initial guess is not an accepted equilibrium or a new pressure root.
 The caller supplies an accepted, conserved donor at the same atom inventory
 and evaluates it with the existing callbacks at the current temperature and
 pressure. Only explicitly declared composition rows whose phase-relative slack
-is below `1e-8` select an active face. Without an active metal composition row,
-the helper returns the donor without evaluating a callback.
+is below `1e-8` select an active face. By default, without an active metal
+composition row, the helper returns the donor without evaluating a callback.
+The explicit boolean option `allow_interior=True` also permits a feasible,
+positive donor containing metal to descend without an active metal row. Only
+the currently supplied bounds define active rows: a donor at P species fraction
+`.02` inside a supplied `.021` upper bound is free to leave `.02`. No old bound
+is inferred or retained. Metal-free donors still return without evaluation.
 
 Let `x` be the amounts divided by the total atom inventory. Stack relative atom
 rows and active homogeneous composition rows into `C`. At each iteration:
@@ -23,6 +28,13 @@ B = S Q
 direction = -B B.T mu_RT
 trial = x + step * direction
 ```
+
+When no composition row is active, `C` contains only the atom constraints. The
+same projected direction preserves those constraints and has nonpositive
+directional derivative. Positive support, all current bounds, and the energy
+line search remain mandatory. The active set stays fixed during this initial
+descent; approaching another bound can therefore limit progress. This option
+does not guarantee convergence or impose a wall-time limit on a callback.
 
 Rows are normalized by their Euclidean norms before SVD. A second projection
 removes the residual constraint component of the computed null basis; this
@@ -51,6 +63,7 @@ initial = descend_initial_amounts(
     problem, temperature_k, pressure_bar, atom_budget, callbacks,
     initial_component_amounts_mol=accepted_donor_amounts,
     phase_composition_bounds=bounds,
+    allow_interior=False,  # Opt in only when an interior donor should descend.
     max_iterations=256, max_evaluations=1024, max_seconds=300,
     progress=record_progress,
 )
@@ -63,8 +76,8 @@ result = minimize_gibbs(
 
 `FeasibleInitialDescentResult` contains the full `component_amounts_mol` ledger,
 `adopted`, and `diagnostics`; it has no equilibrium `accepted` flag. Diagnostics
-include all complete or partial callback-bundle evaluations, phase callback
-counts, invalid callbacks, every accepted iteration, atom and face residuals,
+include the `allow_interior` option, all complete or partial callback-bundle
+evaluations, phase callback counts, invalid callbacks, every accepted iteration, atom and face residuals,
 composition slacks, current energies, tangent stationarity, elapsed time, and
 the termination reason. The fixed request caps are 256 iterations, 1024 bundle
 evaluations, and 1800 seconds. The default time budget is 300 seconds. A deadline
@@ -77,6 +90,9 @@ The analytic CPU tests cover scale changes from `1e-6` to `1e26`, element-potent
 gauges, positive trace support, atom and active-face preservation for every
 evaluated trial, inactive composition bounds, invalid inputs and callbacks,
 actual evaluation counts, deadlines, and original-scalar rejection of a partial
-initial descent. These tests establish numerical contracts, not convergence of
+initial descent. Interior tests also check crossing an old `.02` face while
+remaining inside the current `.021` bound, and identical active-face descent
+with the option enabled or left at its default. These tests establish numerical
+contracts, not convergence of
 a physical low-hydrogen case. The older
 [log-amount correction](constrained_initial_correction.md) is unchanged.
