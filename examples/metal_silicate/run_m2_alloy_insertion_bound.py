@@ -97,7 +97,7 @@ def selected_source_state(report: dict, audit: dict, source_sha256: str, *,
 
 
 def saved_inputs(closure_path: Path, physical_path: Path, *, allow_extended=False,
-                 allow_fixed_pressure=False) -> tuple:
+                 allow_fixed_pressure=False, allow_absent=False) -> tuple:
     """Require the exact accepted source already named by a physical audit."""
     report = json.loads(Path(closure_path).read_text())
     audit = json.loads(Path(physical_path).read_text())
@@ -147,20 +147,33 @@ def saved_inputs(closure_path: Path, physical_path: Path, *, allow_extended=Fals
     plane = potential.copy() if extended is not None else potential[[basis.index(element) for element in ELEMENTS]]
     selection = source["metal_selection"]
     domain = selection["metal_composition_domain"]
-    composition = np.asarray(selection["metal_composition"], dtype=float)
-    if (composition.shape != (len(components),) or np.any(composition <= 0)
-            or not np.all(np.isfinite(composition)) or selection["metal_amount_mol"] <= 0
-            or domain["component_order"] != list(components)
-            or not np.array_equal(composition, domain["selected_metal"]["composition"])):
-        raise ValueError("Require the saved positive selected alloy and its exact domain record.")
     names = [name for phase in record["phases"].values() for name in phase]
     amounts = np.asarray(result["component_amounts_mol"], dtype=float)
     if len(names) != len(set(names)) or amounts.shape != (len(names),):
         raise ValueError("Require a unique complete source component ledger.")
     metal = amounts[[names.index(name) for name in components]]
-    if (not np.all(np.isfinite(metal)) or np.any(metal <= 0)
-            or not np.array_equal(metal / metal.sum(), composition)):
-        raise ValueError("The saved alloy composition must match the source primitive amounts.")
+    if allow_absent and extended is not None and np.all(metal == 0):
+        from phase_selection import local_metal_status
+        if (report.get("arguments", {}).get("metal") != "select"
+                or source.get("branch_constraint") is not None
+                or local_metal_status(selection) != "metal_absent"
+                or selection.get("result") != result
+                or selection.get("metal_free_result") != result
+                or selection["metal_composition"] is not None
+                or domain["selected_metal"] is not None
+                or domain["component_order"] != list(components)):
+            raise ValueError("Require a naturally selected exact-zero alloy and its accepted local branch.")
+        composition = None
+    else:
+        composition = np.asarray(selection["metal_composition"], dtype=float)
+        if (composition.shape != (len(components),) or np.any(composition <= 0)
+                or not np.all(np.isfinite(composition)) or selection["metal_amount_mol"] <= 0
+                or domain["component_order"] != list(components)
+                or not np.array_equal(composition, domain["selected_metal"]["composition"])):
+            raise ValueError("Require the saved positive selected alloy and its exact domain record.")
+        if (not np.all(np.isfinite(metal)) or np.any(metal <= 0)
+                or not np.array_equal(metal / metal.sum(), composition)):
+            raise ValueError("The saved alloy composition must match the source primitive amounts.")
     scenario_record = report["provider_scenario"]
     scenario = normalize_scenario(None if scenario_record is None else scenario_record["values"])
     expected_scenario_sha = None if scenario_record is None else scenario_record["sha256"]

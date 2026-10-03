@@ -114,6 +114,18 @@ def test_exact_primal_domain_is_not_relaxed_with_the_lower_bound():
         A.alloy_energy_interval(context,[Fraction('.7'),Fraction('.15'),Fraction('.15')])
 
 
+def test_absent_associated_alloy_still_bounds_generation_over_its_full_domain():
+    context, source = alloy_fixture()
+    source['source_internal_result']['component_amounts_mol'] = [0., 0., 0.]
+    proof = A.certify_saved_alloy(source, context, max_nodes=101)
+    assert proof['saved_component_amounts_mol'] == ['0', '0', '0']
+    assert proof['source_insertion_interval_rt'] is None
+    assert proof['maximum_saved_source_potential_difference_rt'] is None
+    assert Decimal(proof['lower_bound_rt']) < Decimal('-.1')
+    assert proof['declared_domain_lower'] == context['saved_lo'].tolist()
+    assert proof['declared_domain_upper'] == context['saved_hi'].tolist()
+
+
 @pytest.mark.parametrize('kind', ['phosphorus','associated','associated_k'])
 def test_actual_provider_recipe_replays_the_selected_scalar_and_all_potentials(tmp_path, kind):
     eos=pytest.importorskip('exoeos')

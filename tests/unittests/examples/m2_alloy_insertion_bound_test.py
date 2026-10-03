@@ -209,6 +209,48 @@ def test_associated_root_rejects_domain_basis_or_bound_changes(tmp_path, change)
         RUNNER.saved_inputs(*save(tmp_path, report, audit), allow_extended=True)
 
 
+def absent_records():
+    values = associated_records("associated_k_na")
+    report, _, _, source = values
+    report["arguments"] = {"metal": "select"}
+    result = source["source_internal_result"]
+    result["component_amounts_mol"] = [0.] * 20
+    selection = source["metal_selection"]
+    selection.update(metal_composition=None, metal_amount_mol=0.,
+        status="unresolved", reasons=["Host global stability is not established."],
+        result=result, metal_free_result=result, insertion={"minimum_certified": True})
+    selection["metal_composition_domain"]["selected_metal"] = None
+    return values
+
+
+def test_natural_absence_requires_opt_in_and_preserves_the_full_declared_domain(tmp_path):
+    report, audit, _, source = absent_records()
+    paths = save(tmp_path, report, audit)
+    with pytest.raises(ValueError):
+        RUNNER.saved_inputs(*paths, allow_extended=True)
+    bound = RUNNER.saved_inputs(*paths, allow_extended=True, allow_absent=True)
+    assert bound[-1] is None
+    assert bound[2]["source"] == source
+
+
+@pytest.mark.parametrize("change", [
+    lambda r, s: r["arguments"].update(metal="absent"),
+    lambda r, s: s.update(branch_constraint="Metal is fixed to zero."),
+    lambda r, s: s["metal_selection"].update(reasons=["The constrained metal-free branch has a favorable metal insertion."]),
+    lambda r, s: s["metal_selection"]["insertion"].update(minimum_certified=False),
+    lambda r, s: s["metal_selection"].update(metal_amount_mol=1e-30),
+    lambda r, s: s["source_internal_result"]["component_amounts_mol"].__setitem__(0, 1e-30),
+    lambda r, s: s["metal_selection"].update(metal_composition=[.05] * 20),
+    lambda r, s: s["metal_selection"].update(metal_free_result={"accepted": True}),
+    lambda r, s: s["metal_selection"]["metal_composition_domain"].update(effective_upper_species_fractions=[.9] * 20),
+])
+def test_constrained_unresolved_or_mismatched_zero_branch_cannot_supply_absence(tmp_path, change):
+    report, audit, _, source = absent_records()
+    change(report, source)
+    with pytest.raises(ValueError):
+        RUNNER.saved_inputs(*save(tmp_path, report, audit), allow_extended=True, allow_absent=True)
+
+
 def historical_recipe(tmp_path,monkeypatch):
     here=tmp_path/'gibbs/examples/metal_silicate'
     here.mkdir(parents=True)

@@ -58,6 +58,19 @@ def require_solution_proof(proof: dict, row: dict, parameters: dict, standard_st
         raise ValueError("The solution proof differs from its bound summary.")
 
 
+def absent_alloy_condition(metal: list, global_lower_bound) -> dict:
+    """Check phase generation over the full declared box at exact zero amount."""
+    if not metal or any(Fraction(value) != 0 for value in metal):
+        raise ValueError("Absent-alloy evidence requires every primitive amount to equal zero.")
+    lower = Decimal(global_lower_bound)
+    if not lower.is_finite():
+        raise ValueError("The absent-alloy global lower bound must be finite.")
+    return {"metal_amount_mol": 0, "global_insertion_lower_bound_rt": str(lower),
+            "complementarity_upper_rt_per_inventory_atom": "0", "tolerance_rt": 1e-8,
+            "accepted": lower >= Decimal("-1e-8"),
+            "scope": "Exact-zero alloy; generation cost is bounded over its full declared composition domain. Acceptance is relative to the numerical tolerance, not a strictly positive physical boundary margin or an empirical calibration."}
+
+
 def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=None, water_path=None,
            alloy_tolerance_rt=1e-10, alloy_max_nodes=20000, allow_fixed_pressure=False) -> dict:
     here = Path(__file__).resolve().parent
@@ -95,7 +108,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
     read(row["source"]["path"], row["source"]["sha256"])
     read(row["physical_audit"]["path"], row["physical_audit"]["sha256"])
     report, audit, state, scenario, _, _ = saved_inputs(Path(row["source"]["path"]), Path(row["physical_audit"]["path"]), allow_extended=True,
-        allow_fixed_pressure=allow_fixed_pressure)
+        allow_fixed_pressure=allow_fixed_pressure, allow_absent=True)
     source = state["source"]
     recipe_receipt = {}
     files.update(verified_recipe(source, eos_checkout,allow_historical_builders=True,receipt=recipe_receipt))
@@ -320,8 +333,10 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
         primal_liquid += ideal_energy([sum(melt_amounts), h2])+_I(h2)*h2_standard
     metal = [repaired_lower[e+"_metal"] for e in alloy_components]
     total = sum(metal)
+    if not total and any(Fraction(ledger[e+"_metal"]) for e in alloy_components):
+        raise ValueError("Exact atom repair cannot relabel a positive selected alloy as absent.")
     if extended_alloy:
-        primal_alloy = alloy_energy_interval(alloy_context, metal)
+        primal_alloy = alloy_energy_interval(alloy_context, metal) if total else _I(0)
     else:
         fraction = [v/total for v in metal]
         if any(x < Fraction(low) or x > Fraction(high) for x, low, high in zip(fraction, alloy["lower_atomic_fractions"], alloy["upper_atomic_fractions"])):
@@ -353,21 +368,25 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
                                           "maximum_chemical_residual_rt": chemistry_error,
                                           "independent_primal_vs_saved_energy_error_rt_per_inventory_atom": str(energy_error),
                                           "accepted": numerical_prerequisites}
-    alloy_point = (primal_alloy-_dot(metal, alloy_plane))/_I(total)
-    alloy_lower = _I(replayed_bound)
-    alloy_minimum = _I(alloy_lower.lo, alloy_point.hi)
-    search_error = alloy_point-alloy_lower
-    complementarity = _I(total/sum(budget))*_I(max(alloy_minimum.lo.copy_abs(), alloy_minimum.hi.copy_abs()))
-    metal_condition = (alloy_minimum.lo >= Decimal.from_float(1e-8).copy_negate()
-                       and alloy_minimum.hi <= Decimal.from_float(1e-8)
-                       and search_error.hi <= Decimal.from_float(1e-8)
-                       and complementarity.hi <= Decimal.from_float(1e-8))
-    result["present_alloy_condition"] = {
-        "global_minimum_interval_rt_per_mol_components" if extended_alloy else "global_minimum_interval_rt_per_mol_atoms": interval_json(alloy_minimum),
-        "composition_search_uncertainty_upper_rt": str(search_error.hi),
-        "complementarity_upper_rt_per_inventory_atom": str(complementarity.hi),
-        "tolerance_rt": 1e-8, "accepted": metal_condition,
-        "scope": "Positive selected alloy only; amount normalized by total inventory atoms. The original plane and negative bounds are retained."}
+    if total:
+        alloy_point = (primal_alloy-_dot(metal, alloy_plane))/_I(total)
+        alloy_lower = _I(replayed_bound)
+        alloy_minimum = _I(alloy_lower.lo, alloy_point.hi)
+        search_error = alloy_point-alloy_lower
+        complementarity = _I(total/sum(budget))*_I(max(alloy_minimum.lo.copy_abs(), alloy_minimum.hi.copy_abs()))
+        metal_condition = (alloy_minimum.lo >= Decimal.from_float(1e-8).copy_negate()
+                           and alloy_minimum.hi <= Decimal.from_float(1e-8)
+                           and search_error.hi <= Decimal.from_float(1e-8)
+                           and complementarity.hi <= Decimal.from_float(1e-8))
+        result["present_alloy_condition"] = {
+            "global_minimum_interval_rt_per_mol_components" if extended_alloy else "global_minimum_interval_rt_per_mol_atoms": interval_json(alloy_minimum),
+            "composition_search_uncertainty_upper_rt": str(search_error.hi),
+            "complementarity_upper_rt_per_inventory_atom": str(complementarity.hi),
+            "tolerance_rt": 1e-8, "accepted": metal_condition,
+            "scope": "Positive selected alloy only; amount normalized by total inventory atoms. The original plane and negative bounds are retained."}
+    else:
+        result["absent_alloy_condition"] = absent_alloy_condition(metal, replayed_bound)
+        metal_condition = result["absent_alloy_condition"]["accepted"]
     result["declared_finite_source_numerically_accepted"] = (
         result["declared_model_gap_accepted"] and numerical_prerequisites and metal_condition)
     result.update(schema="m2_declared_finite_source_common_plane_gap_v1", case=row["case"],
@@ -382,7 +401,7 @@ def assess(binding_path: Path, alloy_path: Path, eos_checkout: Path, *, case=Non
                                                 "atmosphere": interval_json(primal_atmosphere)},
                   h2_standard_recipe={"base_rt": h2_base, "scenario_offset_rt": offsets.get("H2_dissolved", 0.)},
                   excluded_temperature_ineligible_clouds=[name for name, valid in zip(cloud.species, eligible) if not valid],
-                  scope="Global Gibbs bounds at this source T/P, finite 13-element budget and declared phase domains. Exact atom repair supplies a feasible upper bound; a uniform shift of the common elemental plane supplies a global lower bound. This is error-bounded model acceptance, not exact KKT, empirical validity, unbounded Fe alloy composition, metal-free boundary certification, native-build equivalence, or a Gibbs minimum of the nonisothermal planet.")
+                  scope="Global Gibbs bounds at this source T/P, finite 13-element budget and declared phase domains. Exact atom repair supplies a feasible upper bound; a uniform shift of the common elemental plane supplies a global lower bound. This is error-bounded model acceptance, not exact KKT, empirical validity, unbounded Fe alloy composition, a located physical metal boundary, native-build equivalence, or a Gibbs minimum of the nonisothermal planet.")
     root = Path(__file__).resolve().parents[2]
     if any(sha256(path) != digest for path, digest in files.items()):
         raise ValueError("An input changed during the assessment.")
