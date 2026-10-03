@@ -64,18 +64,8 @@ def rational_solve(matrix: list, rhs: list) -> list:
     return [row[-1] for row in rows]
 
 
-def feasible_primal(columns: list, amounts: list, budget: list) -> tuple:
-    """Repair an abundant independent atom basis with exact rationals.
-
-    The selected columns are unchanged chemical species. Negative repaired
-    amounts cause failure; clipping would destroy the feasibility proof.
-    """
-    cols = [[Fraction(v) for v in col] for col in columns]
-    n, b = list(map(Fraction, amounts)), list(map(Fraction, budget))
-    if len(cols) != len(n) or any(len(col) != len(b) for col in cols):
-        raise ValueError("Inconsistent primitive atom ledger.")
-    if any(v < 0 for v in n+b) or any(v < 0 for col in cols for v in col):
-        raise ValueError("Nonnegative atom columns, amounts and budgets are required.")
+def _repair_equalities(cols: list, n: list, b: list) -> tuple:
+    """Select the same abundant positive basis for atom and optional face rows."""
     chosen, reduced = [], []
     for index in sorted(range(len(n)), key=lambda i: n[i], reverse=True):
         if n[index] == 0:
@@ -92,7 +82,7 @@ def feasible_primal(columns: list, amounts: list, budget: list) -> tuple:
         if len(chosen) == len(b):
             break
     if len(chosen) != len(b):
-        raise ValueError("Positive primitive amounts do not span the atom budget.")
+        raise ValueError("Positive primitive amounts do not span the exact equality constraints.")
     residual = [target-sum(col[j]*v for col, v in zip(cols, n)) for j, target in enumerate(b)]
     changes = rational_solve([[cols[i][j] for i in chosen] for j in range(len(b))], residual)
     repaired = n.copy()
@@ -101,11 +91,81 @@ def feasible_primal(columns: list, amounts: list, budget: list) -> tuple:
     if any(v < 0 for v in repaired):
         raise ValueError("The exact atom correction leaves the nonnegative cone.")
     if any(sum(col[j]*v for col, v in zip(cols, repaired)) != b[j] for j in range(len(b))):
-        raise ArithmeticError("Exact atom correction failed.")
-    return repaired, {"exactly_feasible": True, "basis_indices": chosen,
+        raise ArithmeticError("Exact equality correction failed.")
+    return repaired, chosen, changes
+
+
+def composition_box_rows(size: int, indices: list, names: list, lower: list, upper: list) -> list:
+    """Encode every phase fraction bound as an exact homogeneous row C n >= 0."""
+    if (len(indices) != len(names) or len(indices) != len(lower) or len(indices) != len(upper)
+            or len(set(indices)) != len(indices) or any(i < 0 or i >= size for i in indices)):
+        raise ValueError("Require a complete distinct phase support for the composition box.")
+    result = []
+    for i, name, low, high in zip(indices, names, lower, upper):
+        low, high = Fraction(low), Fraction(high)
+        if not 0 <= low <= high <= 1:
+            raise ValueError("Composition bounds must remain inside the unit interval.")
+        for sense, bound, sign in (("lower", low, 1), ("upper", high, -1)):
+            row = [Fraction(0)]*size
+            for j in indices:
+                row[j] = -sign*bound
+            row[i] += sign
+            result.append({"name": name+":"+sense, "coefficients": row})
+    return result
+
+
+def feasible_primal(columns: list, amounts: list, budget: list, *, composition_rows=None) -> tuple:
+    """Repair atoms and declared homogeneous composition bounds exactly.
+
+    Start with the original abundant atom basis. Any violated composition row
+    is added as an exact zero face and the augmented system is solved again
+    from the original amounts. Every result must satisfy all atoms, nonnegative
+    amounts, and every box row without a tolerance. Rank loss or negative repair
+    fails closed; this finite face-addition procedure is not a general LP solve.
+    """
+    cols = [[Fraction(v) for v in col] for col in columns]
+    n, b = list(map(Fraction, amounts)), list(map(Fraction, budget))
+    if len(cols) != len(n) or any(len(col) != len(b) for col in cols):
+        raise ValueError("Inconsistent primitive atom ledger.")
+    if any(v < 0 for v in n+b) or any(v < 0 for col in cols for v in col):
+        raise ValueError("Nonnegative atom columns, amounts and budgets are required.")
+    constraints = [] if composition_rows is None else [
+        {"name": row["name"], "coefficients": list(map(Fraction, row["coefficients"]))}
+        for row in composition_rows]
+    if (any(len(row["coefficients"]) != len(n) or not isinstance(row["name"], str)
+            or not row["name"] for row in constraints)
+            or len({row["name"] for row in constraints}) != len(constraints)):
+        raise ValueError("Composition rows require distinct names and the complete primitive ledger.")
+    dot = lambda row, values: sum((c*v for c, v in zip(row["coefficients"], values)), Fraction(0))
+    faces, activations = [], {}
+    while True:
+        augmented = [col+[constraints[j]["coefficients"][i] for j in faces] for i, col in enumerate(cols)]
+        repaired, chosen, changes = _repair_equalities(augmented, n, b+[Fraction(0)]*len(faces))
+        violated = next((i for i, row in enumerate(constraints) if dot(row, repaired) < 0), None)
+        if violated is None:
+            break
+        if violated in faces:
+            raise ArithmeticError("An exact active composition equality was not preserved.")
+        row = constraints[violated]
+        activations[violated] = {
+            "reason": "original_ledger_outside_box" if dot(row, n) < 0 else "equality_repair_left_box",
+            "violated_slack_before_activation_mol_exact": str(dot(row, repaired))}
+        faces.append(violated)
+    residual = [target-sum(col[j]*v for col, v in zip(cols, n)) for j, target in enumerate(b)]
+    receipt = {"exactly_feasible": True, "basis_indices": chosen,
                       "original_atom_residual_mol_exact": [str(v) for v in residual],
                       "amount_corrections_mol_exact": [str(v) for v in changes],
                       "maximum_relative_basis_change": float(max(abs(d)/n[i] for i, d in zip(chosen, changes)))}
+    if composition_rows is not None:
+        receipt["composition_constraints"] = {
+            "schema": "exact_homogeneous_composition_repair_v1", "all_satisfied_exactly": True,
+            "added_face_indices": faces,
+            "rows": [{"index": i, "name": row["name"],
+                      "coefficients_exact": [str(v) for v in row["coefficients"]],
+                      "original_slack_mol_exact": str(dot(row, n)),
+                      "repaired_slack_mol_exact": str(dot(row, repaired)),
+                      "activation": activations.get(i)} for i, row in enumerate(constraints)]}
+    return repaired, receipt
 
 
 def liquid_mixing(parameters: dict, amounts: list) -> _I:
