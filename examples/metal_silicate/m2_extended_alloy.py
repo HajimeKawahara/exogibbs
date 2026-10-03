@@ -13,6 +13,7 @@ import numpy as np
 from m2_associated_global import (alloy_energy_interval, certify_context_insertion,
                                   load_associated_expression, _scalar_gradient)
 from m2_liquid_global import _I, _outward_float
+from m2_phosphorus import verify_phosphorus_domain
 
 
 def _verify_phosphorus_standard(source, provider, model):
@@ -37,6 +38,7 @@ def _verify_phosphorus_standard(source, provider, model):
 
 def load_saved_alloy(source, exoeos_checkout):
     """Reconstruct the exact selected scalar from provider-owned expressions."""
+    verify_phosphorus_domain(source)
     metadata = deepcopy(source["source_metadata"])
     kind = metadata.get("metal_model", "ma")
     if kind in ("associated", "associated_k", "associated_k_na"):

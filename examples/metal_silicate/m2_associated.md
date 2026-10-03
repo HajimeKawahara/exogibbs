@@ -22,6 +22,13 @@ standards, formulas, source receipts, interactions, numerical domain and file
 hashes. `phosphorus_metal` remains as the parent P-reference receipt; its presence
 alone does not identify the selected final model.
 
+`phosphorus_options.upper_mole_fraction` selects the numerical P upper bound
+in this final chemical-species basis (default 0.02). The parent P receipt
+uses atomic fractions; giving both declarations the same numeric bound does
+not equate their physical concentrations. The scalar and standard states
+remain unchanged. See [P-domain sensitivity and primary evidence](m2_phosphorus.md#numerical-p-domain-sensitivity)
+for the 0.01/0.02/0.021 stress test and its empirical limitations.
+
 The independent derivative audit differentiates the EOS excess scalar and the
 ideal entropy on the exact active support. Exact-zero components do not acquire
 floors; their undefined boundary derivatives are not passed through `xlogy(0,0)`
@@ -42,8 +49,8 @@ omitted and no inventory-only coupled-error bound is asserted.
 `potassium_standard_offset_rt`. Other metal modes reject that argument. The
 nineteenth component is `K_metal`, with one K atom per species. Its standard is
 the actual source `K1` gas standard plus the explicitly supplied offset; no
-empirical value is inferred. `phosphorus_options` continues to configure only
-the P reference.
+empirical value is inferred. `phosphorus_options` configures the P reference
+and its numerical domain; it does not alter the K standard.
 
 The EOS perspective scalar dilutes the eighteen-species host and mixes finite
 K ideally. The selected domain adds `x_K<=0.02`; the returned matched curvature

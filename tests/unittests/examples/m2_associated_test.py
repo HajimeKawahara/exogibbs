@@ -128,3 +128,26 @@ def test_hydrogen_oxygen_selection_rejects_unknown_or_unsupported_models(eos_che
                     {"hydrogen_oxygen_model": "schenck1961_abstract", "metal_model": "phosphorus"}):
         with pytest.raises(ValueError, match="H-O|hydrogen_oxygen_model"):
             build(eos_checkout, tmp_path, **options)
+
+
+@pytest.mark.parametrize("upper", [.01, .02, .03])
+@pytest.mark.parametrize("kind", ["associated", "associated_k"])
+def test_associated_p_bound_preserves_scalar_and_species_basis(eos_checkout, tmp_path, upper, kind):
+    options = {"metal_model": kind}
+    if kind == "associated_k":
+        options["potassium_standard_offset_rt"] = 0.
+    base = build(eos_checkout, tmp_path, **options)
+    changed = build(eos_checkout, tmp_path, phosphorus_options={"upper_mole_fraction": upper}, **options)
+    row = changed[-1]["associated_metal"]
+    assert row["composition_basis"] == "chemical_species_moles"
+    assert row["upper_species_fractions"][4] == upper
+    assert changed[-1]["phosphorus_metal"]["upper_atomic_fractions"][4] == upper
+    assert row["standards"] == base[-1]["associated_metal"]["standards"]
+    assert row["interactions"] == base[-1]["associated_metal"]["interactions"]
+    n = np.asarray(base[-1]["associated_metal"]["upper_species_fractions"])*.1
+    n[0] = 1-n[1:].sum()
+    a, b = (item[2]["metal"](2173.15, 1., n) for item in (base, changed))
+    assert a.gibbs_rt == b.gibbs_rt
+    np.testing.assert_array_equal(a.mu_rt, b.mu_rt)
+    if upper == .02:
+        assert row == base[-1]["associated_metal"]

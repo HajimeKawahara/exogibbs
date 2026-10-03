@@ -56,6 +56,37 @@ def builder(tmp_path, monkeypatch):
     return build, checkout, seen
 
 
+@pytest.mark.parametrize('upper', [.01, .02, .021, .03])
+def test_sodium_p_bound_keeps_standards_and_has_a_matched_proof_context(builder, upper):
+    build, checkout, _ = builder
+    base = build()
+    changed = build(phosphorus_options={'upper_mole_fraction': upper})
+    row = changed[-1]['associated_metal']
+    assert row['composition_basis'] == 'chemical_species_moles'
+    assert row['upper_species_fractions'][4] == upper
+    assert row['standards'] == base[-1]['associated_metal']['standards']
+    n = np.asarray(base[-1]['associated_metal']['upper_species_fractions'])*.1
+    n[0] = 1-n[1:].sum()
+    a, b = (item[2]['metal'](2173.15, 1., n) for item in (base, changed))
+    assert a.gibbs_rt == b.gibbs_rt
+    np.testing.assert_array_equal(a.mu_rt, b.mu_rt)
+    sys.path.insert(0, str(DIRECTORY))
+    try:
+        global_alloy = importlib.import_module('m2_associated_global')
+        if upper == .03:
+            # A feasible composition simplex does not guarantee that the
+            # existing rectangular certificate encloses it with a valid split.
+            with pytest.raises(ValueError, match='feasible Fe/Na split'):
+                global_alloy.load_associated_expression(changed[-1], checkout)
+            return
+        context = global_alloy.load_associated_expression(changed[-1], checkout)
+    finally:
+        sys.path.pop(0)
+    assert context['saved_hi'][4] == upper and context['kappa'] > 0
+    if upper == .02:
+        assert row == base[-1]['associated_metal']
+
+
 def test_sodium_standard_reconstructs_from_exact_current_host_and_parent_fe(builder):
     build, checkout, seen = builder
     prior = None
