@@ -45,6 +45,7 @@ def descend_initial_amounts(
     *, initial_component_amounts_mol: np.ndarray,
     phase_composition_bounds: Optional[Mapping[str, tuple[np.ndarray, np.ndarray]]] = None,
     allow_interior: bool = False,
+    update_active_faces: bool = False,
     max_iterations: int = 256, max_evaluations: int = 1024,
     max_seconds: float = 300., progress: Optional[Callable[[dict], None]] = None,
 ) -> FeasibleInitialDescentResult:
@@ -54,6 +55,9 @@ def descend_initial_amounts(
     ``allow_interior=True``, a feasible donor containing metal may also descend
     without that face. Only the supplied current bounds define active rows;
     with no active rows the tangent contains atom constraints alone.
+    ``update_active_faces=True`` adds newly approached current composition rows
+    at the existing active-slack threshold, preserving their current linear
+    value. These extra tangent rows constrain this initializer only.
 
     All trials retain positive support and every declared composition bound.
     The amount-space direction uses the null space of C diag(sqrt(n)), with
@@ -74,11 +78,12 @@ def descend_initial_amounts(
     if (problem.reaction_offset is not None or set(phase_callbacks) != set(problem.phases)
             or not all(np.isfinite(v) and v > 0 for v in (temperature_k, pressure_bar))
             or type(allow_interior) is not bool
+            or type(update_active_faces) is not bool
             or type(max_iterations) is not int or not 1 <= max_iterations <= 256
             or type(max_evaluations) is not int or not 1 <= max_evaluations <= 1024
             or not np.isfinite(max_seconds) or not 0 < max_seconds <= 1800
             or (progress is not None and not callable(progress))):
-        raise ValueError("Require common callbacks, positive T/P, boolean allow_interior and bounded iteration/evaluation/time limits.")
+        raise ValueError("Require common callbacks, positive T/P, boolean allow_interior and update_active_faces, and bounded iteration/evaluation/time limits.")
     budget = _budgets(element_amounts_mol, len(problem.elements))
     positive = budget > 0
     if not np.array_equal(np.flatnonzero(positive), problem.element_indices):
@@ -120,10 +125,12 @@ def descend_initial_amounts(
     report = {
         "adopted": False, "stage": "input_validation", "iterations": 0,
         "allow_interior": allow_interior,
+        "update_active_faces": update_active_faces, "activated_constraints": [],
         "evaluations": 0, "callback_evaluations": 0, "accepted_steps": 0,
         "max_iterations": max_iterations, "max_evaluations": max_evaluations,
         "max_seconds": float(max_seconds), "elapsed_seconds": 0.,
         "active_constraints": [label for label, present in zip(labels, active) if present],
+        "initial_active_constraints": [label for label, present in zip(labels, active) if present],
         "tangent_rank": rank, "tangent_reaction_count": reaction.shape[1],
         "initial_max_relative_atom_residual": _maximum(rows @ initial - 1.),
         "initial_relative_composition_slacks": initial_slack.tolist(),
@@ -228,6 +235,30 @@ def descend_initial_amounts(
         for iteration in range(1, max_iterations + 1):
             check_budget()
             report.update(stage="descent", iterations=iteration)
+            if update_active_faces:
+                current_slack = slacks(amounts)
+                reached = (current_slack < 1e-8) & ~active
+                if np.any(reached):
+                    held_values = np.zeros(len(domain))
+                    held_values[active] = active_values
+                    held_values[reached] = (domain @ amounts)[reached]
+                    for index in np.flatnonzero(reached):
+                        report["activated_constraints"].append({
+                            "iteration": iteration, "constraint_index": int(index),
+                            "constraint": labels[index], "relative_slack": float(current_slack[index]),
+                            "phase_amount_mol": float(scale * amounts[sections[index]].sum()),
+                            "gibbs_rt_per_inventory_atom": float(energy),
+                            "held_linear_value_per_inventory_atom": float(held_values[index])})
+                    active |= reached
+                    active_rows = domain[active]
+                    active_sections = [section for section, present in zip(sections, active) if present]
+                    active_values = held_values[active]
+                    tangent = np.vstack((rows, np.asarray([row / amounts[section].sum()
+                        for row, section in zip(active_rows, active_sections)]).reshape((-1, len(initial)))))
+                    reaction, rank, _ = _null_basis(tangent)
+                    report.update(active_constraints=[label for label, present in zip(labels, active) if present],
+                                  tangent_rank=rank, tangent_reaction_count=reaction.shape[1])
+                    event("active_faces_updated", activated_indices=np.flatnonzero(reached).tolist())
             root = np.sqrt(amounts)
             basis, current_rank, condition = _null_basis(tangent * root)
             if current_rank != rank:
