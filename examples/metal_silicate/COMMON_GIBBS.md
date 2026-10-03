@@ -6,6 +6,11 @@ provided by the existing full-potential callbacks. It shares `LocalProblem`,
 the original local-root path remains available unchanged. No model equations
 are moved out of ExoEOS and no reaction-specific offsets are permitted.
 
+A separate [bounded initial correction](constrained_initial_correction.md) can
+prepare an atom-conserving donor on an explicit active composition face at a new
+pressure. It changes only a caller-supplied initial guess; the scalar minimizer
+and every acceptance audit described here remain unchanged.
+
 The numerical variables are nonnegative component amounts divided by the
 sum of the specified atom amounts. Linear equality constraints preserve
 those atom amounts. A feasible LP supplies an initial composition without
