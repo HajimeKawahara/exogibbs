@@ -27,6 +27,7 @@ Contents
    presets/fastchem4.rst
    equilibrium_solvers.rst
    condensate_profile.rst
+   standard_thermodynamics.rst
 
 .. toctree::
    :maxdepth: 1

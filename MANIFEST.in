@@ -45,7 +45,13 @@ include src/exogibbs/data/fastchem/README.md
 include src/exogibbs/data/fastchem/logK/README.TXT
 include src/exogibbs/data/fastchem/element_abundances/README.TXT
 
-#grids for GridEquilibriumInitializer 
+# Explicit NASA9 excerpt for the optional FastChem4 caloric model
+include src/exogibbs/data/nasa9/fastchem4_hot.json
+include src/exogibbs/data/nasa9/README.md
+include src/exogibbs/data/nasa9/LICENSE.txt
+include src/exogibbs/data/nasa9/NOTICE.txt
+
+#grids for GridEquilibriumInitializer
 include src/exogibbs/data/grids/fastchem/grid_exogibbs.nc
 include src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc
 

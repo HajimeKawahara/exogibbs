@@ -100,6 +100,11 @@ def build_jobs() -> tuple[Job, ...]:
         ("--output-directory", "{output}"), ("exoeos",),
         ("exoeos_audit.json", "exoeos_pure_fugacity.png"),
     ))
+    jobs.append(Job(
+        "rce_thermodynamics_audit", "examples/audit_rce_thermodynamics.py",
+        ("--output", "{output}/rce_thermodynamics_audit.json"),
+        artifacts=("rce_thermodynamics_audit.json",),
+    ))
     metal = "examples/metal_silicate/"
     jobs.append(Job("metal_thermochemistry", metal + "reference.py"))
     jobs.append(Job(
