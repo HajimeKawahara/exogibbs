@@ -41,8 +41,11 @@ initializer receives the value as ``request.user_init`` and controls its own
 precedence.  The effective convergence tolerance is the larger of the
 requested ``epsilon_crit`` and eight machine epsilons in the solver dtype.
 
-The ordinary gas route provides a first-order implicit JVP and an
-automatically transposed VJP.  Initial values, the formula matrix, and solver
+The gas route provides a first-order implicit JVP and an automatically
+transposed VJP, including when ``return_diagnostics=True``. Composition and
+convergence diagnostics come from one numerical solve. Diagnostic floating
+outputs have zero derivatives; boolean statuses and iteration counters are
+nondifferentiable.  Initial values, the formula matrix, and solver
 configuration are held fixed.  The derivative assumes a converged root and a
 nonsingular bordered equilibrium system.  Use the diagnostics route to certify
 convergence before differentiation; for compatibility, an uncertified gas
@@ -529,7 +532,7 @@ Execution and JAX Contracts
        generated reverse-mode VJP; the complete lifecycle is not a
        differentiable or JIT-compatible public contract
    * - Diagnostics
-     - Optional numerical diagnostics use a distinct solver route
+     - Optional numerical diagnostics share the differentiable composition solve
      - Optional lifecycle, KKT, support-closure, and timing diagnostics
 
 Compatibility

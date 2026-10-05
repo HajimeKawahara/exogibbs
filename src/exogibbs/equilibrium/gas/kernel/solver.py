@@ -1266,27 +1266,6 @@ def minimize_gibbs_core_with_source_trace(
     return ln_nk, ln_tot, counter, epsilon, source_trace
 
 
-def _minimize_gibbs_solve_impl(
-    state: ThermoState,
-    ln_nk0: jnp.ndarray,
-    ln_ntot0: float,
-    formula_matrix: jnp.ndarray,
-    hvector: jnp.ndarray,
-    epsilon_crit: float,
-    max_iter: int,
-) -> jnp.ndarray:
-    ln_nk, _, _, _ = minimize_gibbs_core(
-        state,
-        ln_nk0,
-        ln_ntot0,
-        formula_matrix,
-        hvector,
-        epsilon_crit,
-        max_iter,
-    )
-    return ln_nk
-
-
 # Keep the transformed solver at module scope so repeated calls reuse the same
 # Python callable identity instead of rebuilding a new custom_jvp closure.
 @partial(custom_jvp, nondiff_argnums=(3, 5, 6))
@@ -1298,8 +1277,8 @@ def _minimize_gibbs_solve(
     hvector: jnp.ndarray,
     epsilon_crit: float,
     max_iter: int,
-) -> jnp.ndarray:
-    return _minimize_gibbs_solve_impl(
+) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
+    return minimize_gibbs_core(
         state,
         ln_nk0,
         ln_ntot0,
@@ -1395,7 +1374,7 @@ def _minimize_gibbs_solve_jvp(
 ):
     state, ln_nk0, ln_ntot0, hvector = primals
     state_dot, _, _, hvector_dot = tangents
-    ln_nk, ln_ntot, _, _ = minimize_gibbs_core(
+    ln_nk, ln_ntot, n_iter, final_residual = minimize_gibbs_core(
         state,
         ln_nk0,
         ln_ntot0,
@@ -1413,7 +1392,18 @@ def _minimize_gibbs_solve_jvp(
         state_dot.ln_normalized_pressure,
         hvector_dot,
     )
-    return ln_nk, ln_nk_dot
+    # The total amount shares the implicit composition derivative. Iteration
+    # diagnostics are auxiliary outputs, with float0 tangents for integers.
+    ln_ntot_dot = jnp.sum(jnp.exp(ln_nk - ln_ntot) * ln_nk_dot)
+    return (
+        (ln_nk, ln_ntot, n_iter, final_residual),
+        (
+            ln_nk_dot,
+            ln_ntot_dot,
+            jnp.zeros_like(n_iter, dtype=jax.dtypes.float0),
+            jnp.zeros_like(final_residual),
+        ),
+    )
 
 
 _minimize_gibbs_solve.defjvp(_minimize_gibbs_solve_jvp)
@@ -1460,7 +1450,7 @@ def minimize_gibbs(
         hvector,
         epsilon_crit,
         max_iter,
-    )
+    )[0]
 
 
 def minimize_gibbs_with_diagnostics(
@@ -1472,13 +1462,20 @@ def minimize_gibbs_with_diagnostics(
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> Tuple[jnp.ndarray, Dict[str, jnp.ndarray]]:
-    """Run Gibbs minimization and return lightweight convergence diagnostics."""
-    ln_nk, _, n_iter, final_residual = minimize_gibbs_core(
+    """Return composition and diagnostics from one Gibbs minimization.
+
+    Composition retains the same first-order implicit JVP/VJP as
+    :func:`minimize_gibbs`. Convergence diagnostics have zero tangents; they
+    describe the numerical solve and are not thermodynamic observables.
+    Derivatives require a converged, nonsingular equilibrium state.
+    """
+    hvector = _evaluate_hvector_source(state, hvector_func)
+    ln_nk, _, n_iter, final_residual = _minimize_gibbs_solve(
         state,
-        ln_nk_init,
-        ln_ntot_init,
+        stop_gradient(ln_nk_init),
+        stop_gradient(ln_ntot_init),
         formula_matrix,
-        hvector_func,
+        hvector,
         epsilon_crit,
         max_iter,
     )
