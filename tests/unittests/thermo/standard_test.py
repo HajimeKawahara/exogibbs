@@ -97,6 +97,26 @@ def test_preparation_snapshots_temperature_domain():
     assert np.all(np.isfinite(thermo.standard_entropy_r(2000.0)))
 
 
+@pytest.mark.parametrize("enable_x64", [False, True])
+def test_integer_temperatures_match_floating_inputs(enable_x64):
+    previous_x64 = jax.config.jax_enable_x64
+    jax.config.update("jax_enable_x64", enable_x64)
+    try:
+        thermo = prepare_fastchem_thermodynamics()
+        dtype = np.float64 if enable_x64 else np.float32
+        for temperature in (3000, np.array([1500, 3000, 4500], dtype=np.int32)):
+            for evaluate in (
+                thermo.hvector_func, thermo.standard_gibbs_rt,
+                thermo.standard_entropy_r, thermo.standard_cp_r,
+            ):
+                actual = evaluate(temperature)
+                expected = evaluate(np.asarray(temperature, dtype=dtype))
+                assert np.all(np.isfinite(actual))
+                np.testing.assert_allclose(actual, expected, rtol=0, atol=0)
+    finally:
+        jax.config.update("jax_enable_x64", previous_x64)
+
+
 def test_cp_minimum_finds_interior_failure():
     # cp = (T / 3000 - 1)**2 - 1/4: positive at both endpoints.
     coefficients = np.array([[0, 0, 0.75, -2 / 3000, 1 / 3000**2, 0, 0]])

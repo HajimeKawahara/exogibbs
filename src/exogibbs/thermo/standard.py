@@ -58,7 +58,7 @@ class StandardThermodynamics:
 
 def _nasa9(temperature, coefficients):
     """Return g/RT, s/R and cp/R from one NASA9 interval."""
-    t = jnp.asarray(temperature)[..., None]
+    t = jnp.asarray(temperature, dtype=jnp.result_type(temperature, coefficients))[..., None]
     a1, a2, a3, a4, a5, a6, a7, b1, b2 = coefficients.T
     entropy = (
         -a1 / (2 * t**2) - a2 / t + a3 * jnp.log(t) + a4 * t
@@ -151,7 +151,8 @@ def prepare_fastchem_thermodynamics(
     replacement_indices = jnp.asarray(replacement_indices)
 
     def properties(temperature):
-        t = jnp.asarray(temperature)[..., None]
+        temperature = jnp.asarray(temperature, dtype=jnp.result_type(temperature, reaction))
+        t = temperature[..., None]
         a1, a2, a3, a4, a5 = reaction.T
         log_k = a1 / t + a2 * jnp.log(t) + a3 + a4 * t + a5 * t**2
         reaction_s = a2 * (jnp.log(t) + 1) + a3 + 2 * a4 * t + 3 * a5 * t**2
