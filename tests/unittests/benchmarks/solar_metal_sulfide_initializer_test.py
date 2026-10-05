@@ -56,6 +56,7 @@ def solar_metal_sulfide_profile():
     return setup, temperatures, pressures, profile
 
 
+@pytest.mark.scientific
 def test_solar_metal_sulfide_profile_accepts_regression_layers(
     solar_metal_sulfide_profile,
 ) -> None:
@@ -66,6 +67,7 @@ def test_solar_metal_sulfide_profile_accepts_regression_layers(
     assert all(layer.status == "converged" for layer in profile.layers)
 
 
+@pytest.mark.scientific
 def test_previously_failing_layers_accept_basic_finite_barrier_initializers(
     solar_metal_sulfide_profile,
 ) -> None:
@@ -105,6 +107,7 @@ def test_previously_failing_layers_accept_basic_finite_barrier_initializers(
         assert np.linalg.matrix_rank(positive_matrix) == len(support)
 
 
+@pytest.mark.scientific
 def test_finite_initializer_reduction_keeps_full_condensate_catalog(
     solar_metal_sulfide_profile,
 ) -> None:

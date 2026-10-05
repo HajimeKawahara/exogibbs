@@ -212,6 +212,7 @@ def test_fastchem_result_is_aligned_and_normalized_on_the_shared_catalog(
     assert np.all(solution.converged)
 
 
+@pytest.mark.scientific
 def test_production_solver_brackets_both_literature_transitions(
     demo,
     setups,
@@ -241,6 +242,7 @@ def test_production_solver_brackets_both_literature_transitions(
     ) <= na2s_bracket[1]
 
 
+@pytest.mark.scientific
 def test_release_criteria_fail_closed(demo, setups, solutions) -> None:
     demo["_validate_release_criteria"](
         setups=setups,
@@ -278,6 +280,7 @@ def test_release_criteria_fail_closed(demo, setups, solutions) -> None:
         )
 
 
+@pytest.mark.scientific
 def test_cold_kcl_gas_follows_saturation_vapor_pressure(
     demo,
     setups,
@@ -295,6 +298,7 @@ def test_cold_kcl_gas_follows_saturation_vapor_pressure(
     assert calculated_pressure == pytest.approx(reference_pressure, rel=0.03)
 
 
+@pytest.mark.scientific
 def test_na2s_is_sodium_limited_and_leaves_most_sulfur(
     demo,
     setups,

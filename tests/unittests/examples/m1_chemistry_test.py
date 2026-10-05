@@ -229,6 +229,7 @@ def test_source_failure_preserves_attempted_diagnostic_inputs(monkeypatch):
     assert record["oxygen_factor"] == 1.1
 
 
+@pytest.mark.scientific
 def test_real_shared_gas_has_separate_source_and_upper_model_residuals():
     network, case, budget = M1.source_inputs()
     source = M1.SOURCE.solve_reduced_source(network, case, element_amounts_mol=budget,
@@ -259,6 +260,7 @@ def retained_parcel_setup():
 
 
 @pytest.mark.parametrize("case", PARCELS["cases"], ids=lambda case: case["id"])
+@pytest.mark.scientific
 def test_native_condensate_accepts_saved_retained_parcels(retained_parcel_setup, case):
     report = M1.solve_parcel(
         retained_parcel_setup, case["temperature_k"], case["pressure_bar"],
@@ -291,6 +293,7 @@ def _assert_native_parcel_accepted(report, condensate_expected):
     "fixed_oxygen_1p1_128_layer_86_1000K",
     "contact_oxygen_0p9_128_layer_1_1000K",
 ])
+@pytest.mark.scientific
 def test_native_retained_column_parcel_pressure_and_amount_gauge(
     retained_parcel_setup, pressure_factor, amount_scale, case_id,
 ):
@@ -327,6 +330,7 @@ def test_native_retained_column_parcel_pressure_and_amount_gauge(
     "pressure_relative_up", "pressure_relative_down",
     "inventory_ulp_up", "inventory_ulp_down", "oxygen_relative", "amount_scale",
 ])
+@pytest.mark.scientific
 def test_native_retained_parcel_dual_termination_neighborhood(
     retained_parcel_setup, case, perturbation,
 ):

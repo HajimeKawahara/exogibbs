@@ -71,6 +71,7 @@ def local_control(request, upper):
     return network, case, budget, report
 
 
+@pytest.mark.scientific
 def test_shared_partial_pressures_close_all_source_reactions(local_control, upper):
     network, case, budget, report = local_control
     audit = CONTROL.audit_control(network, case, upper, report)
@@ -87,6 +88,7 @@ def test_shared_partial_pressures_close_all_source_reactions(local_control, uppe
                                report["atmosphere_element_amounts_mol"], rtol=1e-9, atol=0)
 
 
+@pytest.mark.scientific
 def test_audit_recounts_primitive_arrays_instead_of_saved_acceptance(local_control, upper):
     network, case, _, report = local_control
     bad = deepcopy(report)
@@ -95,6 +97,7 @@ def test_audit_recounts_primitive_arrays_instead_of_saved_acceptance(local_contr
     assert not CONTROL.audit_control(network, case, upper, bad)["accepted"]
 
 
+@pytest.mark.scientific
 def test_control_preserves_absolute_amount_scale(upper):
     network, case, budget = CONTROL.CHEMISTRY.source_inputs()
     report = CONTROL.solve_control(network, case, upper, element_amounts_mol=budget, pressure_bar=16.224)
@@ -104,6 +107,7 @@ def test_control_preserves_absolute_amount_scale(upper):
         np.testing.assert_allclose(np.asarray(scaled[key]) / 1e20, report[key], rtol=1e-8, atol=0)
 
 
+@pytest.mark.scientific
 def test_large_pressure_steps_then_neighboring_and_fresh_roots(upper):
     saved = json.loads(Path(__file__).with_name("data").joinpath("m1_contact_pressure_seed.json").read_text())
     initial = saved["seed"]
@@ -129,6 +133,7 @@ def low_oxygen_pressure_seed():
     return json.loads(path.read_text())["seed"]
 
 
+@pytest.mark.scientific
 def test_pressure_jump_keeps_nested_parcels_within_finite_supply(
     upper, low_oxygen_pressure_seed, monkeypatch,
 ):
@@ -169,6 +174,7 @@ def test_control_rejects_seed_above_finite_capacity(upper, low_oxygen_pressure_s
                               pressure_bar=seed["P_bar"], initial_control=seed)
 
 
+@pytest.mark.scientific
 def test_control_allows_roundoff_at_helium_capacity(upper, low_oxygen_pressure_seed):
     seed = low_oxygen_pressure_seed
     network, case, _ = CONTROL.CHEMISTRY.source_inputs(0.9)

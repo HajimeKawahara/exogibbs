@@ -124,6 +124,7 @@ BSE_ATMOSPHERE = np.array([9.99295840634972, 1., .18823552485434354,
                           .04974492773582125, .06534238286807431])
 
 
+@pytest.mark.scientific
 def test_fastchem_bse_iron_cloud_scalar_derivative_and_elemental_gauge(fastchem_setup):
     setup, b = fastchem_setup, BSE_ATMOSPHERE
     phase = ATM.make_atmosphere_phase(setup, np.zeros(7))

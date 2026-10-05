@@ -52,6 +52,7 @@ def low_oxygen_boundary(request):
     return saved, network, case, source, upper, report
 
 
+@pytest.mark.scientific
 def test_low_oxygen_contract_quantifies_condensation_and_unmet_deep_reactions(low_oxygen_boundary):
     saved, network, case, source, upper, report = low_oxygen_boundary
     boundary = M1.audit_boundary(network, case, source, upper, report)
@@ -83,6 +84,7 @@ def test_low_oxygen_contract_quantifies_condensation_and_unmet_deep_reactions(lo
 
 
 @pytest.mark.parametrize("field", ["T_K", "P_bar"])
+@pytest.mark.scientific
 def test_boundary_requires_common_temperature_and_pressure(low_oxygen_boundary, field):
     _, network, case, source, upper, report = low_oxygen_boundary
     changed = {**report, field: report[field] * 1.01}
@@ -91,6 +93,7 @@ def test_boundary_requires_common_temperature_and_pressure(low_oxygen_boundary, 
 
 
 @pytest.mark.parametrize("phase", ["gas", "condensate"])
+@pytest.mark.scientific
 def test_boundary_recounts_actual_phase_amounts_despite_accepted_report(low_oxygen_boundary, phase):
     _, network, case, source, upper, report = low_oxygen_boundary
     changed = {**report, f"{phase}_amounts_mol": (1.01 * np.asarray(report[f"{phase}_amounts_mol"])).tolist()}
@@ -100,6 +103,7 @@ def test_boundary_recounts_actual_phase_amounts_despite_accepted_report(low_oxyg
     assert np.max(np.abs(boundary["relative_element_residual"])) > M1.ELEMENT_TOLERANCE
 
 
+@pytest.mark.scientific
 def test_boundary_does_not_use_stale_element_or_partial_pressure_summaries(low_oxygen_boundary):
     _, network, case, source, upper, report = low_oxygen_boundary
     changed = {**report, **{key: [0.] * len(report[key]) for key in (
@@ -109,6 +113,7 @@ def test_boundary_does_not_use_stale_element_or_partial_pressure_summaries(low_o
     assert M1.audit_boundary(network, case, source, upper, changed) == M1.audit_boundary(network, case, source, upper, report)
 
 
+@pytest.mark.scientific
 def test_boundary_rechecks_source_atom_closure_despite_accepted_flag(low_oxygen_boundary):
     _, network, case, source, upper, report = low_oxygen_boundary
     amounts = np.asarray(source["component_amounts_mol"]).copy()

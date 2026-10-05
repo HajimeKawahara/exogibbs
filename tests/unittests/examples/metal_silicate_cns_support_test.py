@@ -30,6 +30,7 @@ def reduced_inputs(name, absent, case_index=0):
 
 @pytest.mark.parametrize("name,absent", ZERO_CASES)
 @pytest.mark.parametrize("case_index", [0, 1])
+@pytest.mark.scientific
 def test_zero_cns_support_closes_finite_source_equations(name, absent, case_index):
     network, case, budget = reduced_inputs(name, absent, case_index)
     result = SOURCE.solve_reduced_source(network, case, element_amounts_mol=budget)
@@ -69,6 +70,7 @@ def test_zero_cns_support_closes_finite_source_equations(name, absent, case_inde
 
 
 @pytest.mark.parametrize("name", ["carbon", "sulfur_nitrogen"])
+@pytest.mark.scientific
 def test_positive_reduced_entry_point_preserves_source_fixture(name):
     network = RECORD["networks"][name]
     case = network["cases"][1]
@@ -81,6 +83,7 @@ def test_positive_reduced_entry_point_preserves_source_fixture(name):
 
 @pytest.mark.parametrize("name,absent", [("carbon", ("C",)), ("sulfur_nitrogen", ("C", "N"))])
 @pytest.mark.parametrize("scale", [1e-6, 1e6])
+@pytest.mark.scientific
 def test_reduced_chemistry_is_invariant_to_amount_scale(name, absent, scale):
     network, case, budget = reduced_inputs(name, absent)
     reference = SOURCE.solve_reduced_source(network, case, element_amounts_mol=budget)
@@ -97,6 +100,7 @@ def test_reduced_chemistry_is_invariant_to_amount_scale(name, absent, scale):
     ("sulfur_nitrogen", ()), ("sulfur_nitrogen", ("C", "N")),
 ])
 @pytest.mark.parametrize("scale", [1e-6, 1e20])
+@pytest.mark.scientific
 def test_default_reduced_seed_follows_absolute_inventory_scale(name, absent, scale):
     network, case, budget = reduced_inputs(name, absent)
     reference = SOURCE.solve_reduced_source(network, case, element_amounts_mol=budget)
