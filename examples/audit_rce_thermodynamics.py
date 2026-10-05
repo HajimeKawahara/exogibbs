@@ -166,6 +166,7 @@ def run_audit():
         "epsilon_crit": options.epsilon_crit,
         "max_iter": options.max_iter,
         "comparison_element_rtol": conservation_rtol,
+        "comparison_charge_rtol": conservation_rtol,
         "fastchem_sha256": thermodynamics.metadata["fastchem_sha256"],
         "nasa_excerpt_sha256": thermodynamics.metadata["nasa_excerpt_sha256"],
         "excluded_species": excluded_name,

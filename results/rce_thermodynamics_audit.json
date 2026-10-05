@@ -4000,5 +4000,6 @@
       "converged_points": 76,
       "valid_points": 74
     }
-  }
+  },
+  "comparison_charge_rtol": 3e-06
 }
