@@ -1,0 +1,4004 @@
+{
+  "jax_version": "0.6.2",
+  "platform": "cpu",
+  "x64": true,
+  "epsilon_crit": 1e-14,
+  "max_iter": 2000,
+  "comparison_element_rtol": 3e-06,
+  "fastchem_sha256": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+  "nasa_excerpt_sha256": "420b32fb834ed24f62fe18b63d5879ea287afe36b468203d30af36709f6bcc36",
+  "excluded_species": "C4H6O4",
+  "models": {
+    "original": {
+      "species_count": 539,
+      "points": [
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 210,
+          "relative_element_error": 3.9293809087657716e-08,
+          "relative_charge_error": 7.368984014253999e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.320005420173503
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 200,
+          "relative_element_error": 3.29895262940399e-08,
+          "relative_charge_error": 1.8615220456639233e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.325828861239972
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 190,
+          "relative_element_error": 2.8255423055724878e-08,
+          "relative_charge_error": 1.613482767287883e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.326025315836265
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 179,
+          "relative_element_error": 2.3835758036352068e-08,
+          "relative_charge_error": 7.679739415099822e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3283919889786633
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 206,
+          "relative_element_error": 3.433911993302184e-08,
+          "relative_charge_error": 7.096096523970265e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4667694217154665
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 177,
+          "relative_element_error": 2.6948140834834345e-08,
+          "relative_charge_error": 6.456216368432507e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2669765899082823
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 166,
+          "relative_element_error": 2.256988435096657e-08,
+          "relative_charge_error": 3.6931244810648695e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3199579521187377
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 163,
+          "relative_element_error": 1.824229367637149e-08,
+          "relative_charge_error": 2.947747731369508e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.325862241295555
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": false,
+          "iterations": 2000,
+          "relative_element_error": 3.342897770861899e-08,
+          "relative_charge_error": 5.190650400450819e-13,
+          "valid_for_comparison": false,
+          "mmw_u": 1.2518735147419457
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 179,
+          "relative_element_error": 2.614612120655385e-08,
+          "relative_charge_error": 2.8493163242460977e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.502632228916373
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 162,
+          "relative_element_error": 2.1134984671115495e-08,
+          "relative_charge_error": 1.1577778960903927e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.1686717666311757
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 149,
+          "relative_element_error": 1.805142771803202e-08,
+          "relative_charge_error": 6.853698840105508e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.309173418760108
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 220,
+          "relative_element_error": 2.8208246894131814e-07,
+          "relative_charge_error": 4.16290423499726e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.25082749647608
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 181,
+          "relative_element_error": 2.701457382752499e-08,
+          "relative_charge_error": 1.0972769035090732e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.25204334355619
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 161,
+          "relative_element_error": 2.1463057679136968e-08,
+          "relative_charge_error": 3.223779772067082e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3282029535020445
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 147,
+          "relative_element_error": 1.6496406239317335e-08,
+          "relative_charge_error": 1.3370424858953481e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 2.012058551502324
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 213,
+          "relative_element_error": 3.9720859556436125e-07,
+          "relative_charge_error": 2.952993295407804e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2931137861601556
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 211,
+          "relative_element_error": 3.3285909187444565e-07,
+          "relative_charge_error": 6.22652260012017e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2988472261602553
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 204,
+          "relative_element_error": 2.855486799060889e-07,
+          "relative_charge_error": 5.603292579664968e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.299022238252963
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 197,
+          "relative_element_error": 2.398738895555097e-07,
+          "relative_charge_error": 3.1489038219365197e-06,
+          "valid_for_comparison": false,
+          "mmw_u": 2.299200060705364
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 220,
+          "relative_element_error": 3.599311222214421e-07,
+          "relative_charge_error": 4.6523359606864286e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4494816361382263
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 190,
+          "relative_element_error": 2.8472753843424774e-07,
+          "relative_charge_error": 2.921280176843767e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2406815069331927
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 179,
+          "relative_element_error": 2.388584217779648e-07,
+          "relative_charge_error": 1.448220918724166e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2930489225225363
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 175,
+          "relative_element_error": 1.9796892397468185e-07,
+          "relative_charge_error": 1.0504428262449754e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2985136830315747
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 215,
+          "relative_element_error": 3.598605085839825e-07,
+          "relative_charge_error": 2.711794853694716e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.237076363912652
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 193,
+          "relative_element_error": 2.8454782207252765e-07,
+          "relative_charge_error": 1.7131598192478558e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4849750698770205
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 175,
+          "relative_element_error": 4.143472143626861e-07,
+          "relative_charge_error": 5.522939214055898e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.143474563334641
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 164,
+          "relative_element_error": 1.9060876753613158e-07,
+          "relative_charge_error": 2.807144110101358e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.282343252760739
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 237,
+          "relative_element_error": 4.214209768684932e-07,
+          "relative_charge_error": 6.680760249948258e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2364372888462227
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 195,
+          "relative_element_error": 3.0758983701125893e-07,
+          "relative_charge_error": 7.178985123018067e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.23750495040855
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 176,
+          "relative_element_error": 2.397940981625486e-07,
+          "relative_charge_error": 1.6228694871232988e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3125830958831748
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 161,
+          "relative_element_error": 1.8872049373981446e-07,
+          "relative_charge_error": 6.9868892882104225e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.9886279618792846
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 304,
+          "relative_element_error": 3.5125433888231164e-07,
+          "relative_charge_error": 2.952932467229214e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2928806009372185
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 263,
+          "relative_element_error": 2.8093457529288413e-07,
+          "relative_charge_error": 6.228442583389681e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.298639405215652
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 211,
+          "relative_element_error": 2.761753249777572e-07,
+          "relative_charge_error": 5.627632257320179e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2988566197907963
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": false,
+          "iterations": 2000,
+          "relative_element_error": 2.3832778387454153e-07,
+          "relative_charge_error": 4.8315484339838974e-06,
+          "valid_for_comparison": false,
+          "mmw_u": 2.299131684379634
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 291,
+          "relative_element_error": 3.5595986249641265e-07,
+          "relative_charge_error": 4.6531835416769904e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.44936832223452
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 233,
+          "relative_element_error": 2.802500897314812e-07,
+          "relative_charge_error": 2.921068422732272e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2404527781507215
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 200,
+          "relative_element_error": 2.3399520560787658e-07,
+          "relative_charge_error": 1.4477972469616559e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2928302839034638
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 175,
+          "relative_element_error": 1.9685104046708523e-07,
+          "relative_charge_error": 1.050427050287172e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2984149986674463
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 223,
+          "relative_element_error": 3.5985961661042523e-07,
+          "relative_charge_error": 2.7133167194997806e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2370048756368035
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 227,
+          "relative_element_error": 2.843087680789965e-07,
+          "relative_charge_error": 1.7086112183787813e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4848600175811708
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 197,
+          "relative_element_error": 2.3353346771525567e-07,
+          "relative_charge_error": 5.5207387134121985e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.143256419016945
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 166,
+          "relative_element_error": 1.4075545938461088e-06,
+          "relative_charge_error": 2.806170731735733e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2821701427707124
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 238,
+          "relative_element_error": 4.213537935591969e-07,
+          "relative_charge_error": 5.946410383925744e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2363458738822664
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 195,
+          "relative_element_error": 3.0757166986817294e-07,
+          "relative_charge_error": 7.165268595038477e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2374153011441271
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 177,
+          "relative_element_error": 2.398837567456087e-07,
+          "relative_charge_error": 1.620526999184271e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.312495449719518
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 163,
+          "relative_element_error": 1.8869879319428265e-07,
+          "relative_charge_error": 6.983915883886283e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.9884489911358136
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 193,
+          "relative_element_error": 3.959010216873688e-09,
+          "relative_charge_error": 2.0859102748884017e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.600197201741734
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 180,
+          "relative_element_error": 3.328436505180592e-09,
+          "relative_charge_error": 5.275775800321971e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6069719178934445
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 170,
+          "relative_element_error": 2.854424387966356e-09,
+          "relative_charge_error": 3.4368869831480115e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6072893383520532
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 493,
+          "relative_element_error": 2.384406429946372e-09,
+          "relative_charge_error": 1.5544445119918808e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6217149610156434
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 193,
+          "relative_element_error": 3.4832170616193608e-09,
+          "relative_charge_error": 1.1815563243457358e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.6440468607110112
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 164,
+          "relative_element_error": 2.7430516712160756e-09,
+          "relative_charge_error": 1.4284485901242987e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5409938135312684
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 153,
+          "relative_element_error": 2.2913314491252687e-09,
+          "relative_charge_error": 9.935296378474098e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.600358229684724
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 147,
+          "relative_element_error": 1.8235433822179316e-09,
+          "relative_charge_error": 6.460892659655138e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.606866446067629
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 185,
+          "relative_element_error": 3.101861189630138e-09,
+          "relative_charge_error": 9.539718604080087e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4020704068856744
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 166,
+          "relative_element_error": 2.490308204423424e-09,
+          "relative_charge_error": 4.960821061225837e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.6832481387140017
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 148,
+          "relative_element_error": 2.024589858412984e-09,
+          "relative_charge_error": 2.699959371636724e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 2.4311204544852796
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 136,
+          "relative_element_error": 1.5610858314108815e-09,
+          "relative_charge_error": 1.7446118336700007e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.588327780267344
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 204,
+          "relative_element_error": 3.550737705903282e-09,
+          "relative_charge_error": 8.244697214227449e-15,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3975158825594827
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 166,
+          "relative_element_error": 2.405063082995328e-09,
+          "relative_charge_error": 1.6148829097330437e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.401446574520335
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 147,
+          "relative_element_error": 1.909246768429979e-09,
+          "relative_charge_error": 6.174390274263034e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4871119647998052
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 133,
+          "relative_element_error": 1.4344002602200202e-09,
+          "relative_charge_error": 2.8165194328791096e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2549903497987924
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 338,
+          "relative_element_error": 3.037352121870772e-09,
+          "relative_charge_error": 2.08397690296489e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5763933544608504
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 282,
+          "relative_element_error": 2.3531552700624683e-09,
+          "relative_charge_error": 5.3542325518172745e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5838082424805506
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 208,
+          "relative_element_error": 2.4155742534039184e-09,
+          "relative_charge_error": 4.703894954174365e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5877301161983293
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 164,
+          "relative_element_error": 2.361629917247084e-09,
+          "relative_charge_error": 1.5665924318948898e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6137668483687295
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 299,
+          "relative_element_error": 3.084060563184672e-09,
+          "relative_charge_error": 1.1668056601799453e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.633225176268673
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 216,
+          "relative_element_error": 3.237564430504524e-09,
+          "relative_charge_error": 1.4222761037087906e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.517589440795279
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 191,
+          "relative_element_error": 1.8688272326705943e-09,
+          "relative_charge_error": 9.798534460833051e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.576990258123289
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 157,
+          "relative_element_error": 1.651490795270076e-09,
+          "relative_charge_error": 7.160231300553542e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5884695792993737
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 213,
+          "relative_element_error": 3.101334647158063e-09,
+          "relative_charge_error": 9.047639685920448e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3951961027795752
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 209,
+          "relative_element_error": 5.86285175635426e-09,
+          "relative_charge_error": 4.952410760524722e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.6725086133552072
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 177,
+          "relative_element_error": 1.8619289615837226e-09,
+          "relative_charge_error": 2.675121105120573e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 2.4088159054252416
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 146,
+          "relative_element_error": 1.438628856589034e-09,
+          "relative_charge_error": 1.6563774311850622e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5661099248491026
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 205,
+          "relative_element_error": 3.547819562004581e-09,
+          "relative_charge_error": 1.3386487203413073e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3885564124397696
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 168,
+          "relative_element_error": 2.404907361952238e-09,
+          "relative_charge_error": 1.394947197313505e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3937857958100006
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 157,
+          "relative_element_error": 1.905347239715759e-09,
+          "relative_charge_error": 5.770474644578684e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4793027218849621
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 141,
+          "relative_element_error": 1.4114360266588973e-09,
+          "relative_charge_error": 2.809802167899771e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2358018282868075
+        }
+      ],
+      "converged_points": 78,
+      "valid_points": 77
+    },
+    "omission_only": {
+      "species_count": 538,
+      "points": [
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": false,
+          "iterations": 2000,
+          "relative_element_error": 3.929379218935771e-08,
+          "relative_charge_error": 7.368871635792739e-10,
+          "valid_for_comparison": false,
+          "mmw_u": 2.320005420173504,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 199,
+          "relative_element_error": 3.2989615277493095e-08,
+          "relative_charge_error": 1.86152302918934e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3258288612399727,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.220446049250313e-16,
+            "relative_mmw_change": 4.440892098500626e-16,
+            "relative_electron_fraction_change": 7.66053886991358e-15,
+            "excluded_fraction": 1.396650462545386e-66
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 190,
+          "relative_element_error": 2.8255428831093234e-08,
+          "relative_charge_error": 1.613508665932876e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.326025315836268,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.440892098500626e-16,
+            "relative_mmw_change": 1.1102230246251565e-15,
+            "relative_electron_fraction_change": 2.5504043321689096e-12,
+            "excluded_fraction": 1.344271382732154e-54
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 179,
+          "relative_element_error": 2.383573707390396e-08,
+          "relative_charge_error": 8.882520409275254e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3283919889786464,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.4432899320127035e-15,
+            "relative_mmw_change": 7.216449660063518e-15,
+            "relative_electron_fraction_change": 1.1965130242153066e-07,
+            "excluded_fraction": 7.335139661878834e-49
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 192,
+          "relative_element_error": 4.849572352447587e-08,
+          "relative_charge_error": 7.094581076142391e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4667694217154865,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2212453270876722e-15,
+            "relative_mmw_change": 1.354472090042691e-14,
+            "relative_electron_fraction_change": 1.3322676295501878e-15,
+            "excluded_fraction": 6.912307316209199e-88
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 174,
+          "relative_element_error": 2.694987152021847e-08,
+          "relative_charge_error": 6.456762188752123e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.266976589908288,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 5.551115123125783e-16,
+            "relative_mmw_change": 2.4424906541753444e-15,
+            "relative_electron_fraction_change": 5.10702591327572e-15,
+            "excluded_fraction": 4.142244534944252e-67
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 166,
+          "relative_element_error": 2.256967494038802e-08,
+          "relative_charge_error": 3.6931495418386327e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3199579521187377,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.3877787807814457e-16,
+            "relative_mmw_change": 0.0,
+            "relative_electron_fraction_change": 2.220446049250313e-15,
+            "excluded_fraction": 5.290117321431142e-55
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 163,
+          "relative_element_error": 1.824228747319807e-08,
+          "relative_charge_error": 2.9477493818376074e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3258622412955554,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.440892098500626e-16,
+            "relative_mmw_change": 2.220446049250313e-16,
+            "relative_electron_fraction_change": 3.3306690738754696e-16,
+            "excluded_fraction": 2.4065722538175626e-43
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": false,
+          "iterations": 2000,
+          "relative_element_error": 3.3428973858373424e-08,
+          "relative_charge_error": 5.14399786434958e-13,
+          "valid_for_comparison": false,
+          "mmw_u": 1.251873514741946,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 170,
+          "relative_element_error": 2.6145353296464986e-08,
+          "relative_charge_error": 2.846189215667555e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.5026322289163687,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.886579864025407e-15,
+            "relative_mmw_change": 2.7755575615628914e-15,
+            "relative_electron_fraction_change": 4.440892098500626e-15,
+            "excluded_fraction": 6.373362807988798e-70
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 158,
+          "relative_element_error": 2.184510309270991e-07,
+          "relative_charge_error": 1.1582676839211755e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.16867176663133,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 8.713475799001397e-15,
+            "relative_mmw_change": 7.127631818093505e-14,
+            "relative_electron_fraction_change": 4.3298697960381105e-15,
+            "excluded_fraction": 1.3463597882777036e-55
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 149,
+          "relative_element_error": 1.6784915621169836e-08,
+          "relative_charge_error": 6.854071003215831e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3091734187601056,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.776903466818805e-16,
+            "relative_mmw_change": 9.992007221626409e-16,
+            "relative_electron_fraction_change": 3.552713678800501e-15,
+            "excluded_fraction": 2.4564048346385245e-43
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 220,
+          "relative_element_error": 3.942106612085231e-08,
+          "relative_charge_error": 4.408518992175253e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2508274964759662,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 6.510071543106583e-15,
+            "relative_mmw_change": 9.092726571680032e-14,
+            "relative_electron_fraction_change": 3.1086244689504383e-15,
+            "excluded_fraction": 1.071250471921299e-118
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 178,
+          "relative_element_error": 2.7014908584987127e-08,
+          "relative_charge_error": 1.0267514342386641e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.252043343556191,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1102230246251565e-16,
+            "relative_mmw_change": 8.881784197001252e-16,
+            "relative_electron_fraction_change": 1.5987211554602254e-14,
+            "excluded_fraction": 6.686634010123805e-81
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 155,
+          "relative_element_error": 3.001938199339621e-08,
+          "relative_charge_error": 3.233227920893385e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.328202953502057,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.6697030937759e-16,
+            "relative_mmw_change": 9.325873406851315e-15,
+            "relative_electron_fraction_change": 8.881784197001252e-16,
+            "excluded_fraction": 2.123242365757184e-61
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 143,
+          "relative_element_error": 7.158200604332582e-08,
+          "relative_charge_error": 1.340401128516117e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 2.0120585515023706,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.5983903834573935e-15,
+            "relative_mmw_change": 2.3092638912203256e-14,
+            "relative_electron_fraction_change": 6.772360450213455e-15,
+            "excluded_fraction": 1.148223481590323e-45
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 213,
+          "relative_element_error": 3.9720863353206063e-07,
+          "relative_charge_error": 2.9530001147358724e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.293113786160156,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.0357660829594124e-16,
+            "relative_mmw_change": 2.220446049250313e-16,
+            "relative_electron_fraction_change": 2.220446049250313e-16,
+            "excluded_fraction": 1.9653641856445393e-89
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 210,
+          "relative_element_error": 3.331106610377294e-07,
+          "relative_charge_error": 6.226522890783724e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2988472261602846,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 8.881784197001252e-16,
+            "relative_mmw_change": 1.2656542480726785e-14,
+            "relative_electron_fraction_change": 1.176836406102666e-14,
+            "excluded_fraction": 2.0175181978314357e-71
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 203,
+          "relative_element_error": 2.8554870249954384e-07,
+          "relative_charge_error": 5.603292580238902e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.299022238252964,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.3306690738754696e-16,
+            "relative_mmw_change": 4.440892098500626e-16,
+            "relative_electron_fraction_change": 1.2101430968414206e-14,
+            "excluded_fraction": 1.719572227500845e-59
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 197,
+          "relative_element_error": 2.3987385546479366e-07,
+          "relative_charge_error": 3.806678923675474e-06,
+          "valid_for_comparison": false,
+          "mmw_u": 2.2992000607053593,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 206,
+          "relative_element_error": 3.5993269119651227e-07,
+          "relative_charge_error": 4.653125654193209e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4494816361382294,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.4424906541753444e-15,
+            "relative_mmw_change": 2.220446049250313e-15,
+            "relative_electron_fraction_change": 7.993605777301127e-15,
+            "excluded_fraction": 9.97676814950653e-93
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 188,
+          "relative_element_error": 2.847231137266901e-07,
+          "relative_charge_error": 2.9212735311656083e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.240681506933192,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 8.326672684688674e-16,
+            "relative_mmw_change": 4.440892098500626e-16,
+            "relative_electron_fraction_change": 6.8833827526759706e-15,
+            "excluded_fraction": 5.98268498397078e-72
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 179,
+          "relative_element_error": 2.388376694890939e-07,
+          "relative_charge_error": 1.4482135242707756e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2930489225225354,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1102230246251565e-16,
+            "relative_mmw_change": 3.3306690738754696e-16,
+            "relative_electron_fraction_change": 1.9761969838327786e-14,
+            "excluded_fraction": 7.637074902750861e-60
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 175,
+          "relative_element_error": 1.9796875846759793e-07,
+          "relative_charge_error": 1.0504424377158422e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2985136830315733,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1102230246251565e-16,
+            "relative_mmw_change": 5.551115123125783e-16,
+            "relative_electron_fraction_change": 6.994405055138486e-15,
+            "excluded_fraction": 4.80240113573283e-49
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 207,
+          "relative_element_error": 5.766368063289691e-07,
+          "relative_charge_error": 2.7206403627383712e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2370763639126754,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2314382345432579e-15,
+            "relative_mmw_change": 1.887379141862766e-14,
+            "relative_electron_fraction_change": 2.731148640577885e-14,
+            "excluded_fraction": 2.1332545203072688e-101
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 184,
+          "relative_element_error": 2.8454772287522854e-07,
+          "relative_charge_error": 1.713380235244995e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.484975069877018,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.0816681711721685e-15,
+            "relative_mmw_change": 1.6653345369377348e-15,
+            "relative_electron_fraction_change": 2.6645352591003757e-15,
+            "excluded_fraction": 9.19906993207047e-75
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 172,
+          "relative_element_error": 2.339264613448551e-07,
+          "relative_charge_error": 5.522815776900528e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.143474563334614,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.569782791639729e-15,
+            "relative_mmw_change": 1.2656542480726785e-14,
+            "relative_electron_fraction_change": 1.021405182655144e-14,
+            "excluded_fraction": 1.9440818557613018e-60
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 164,
+          "relative_element_error": 1.9060875015655088e-07,
+          "relative_charge_error": 2.807121898759664e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.282343252760738,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1102230246251565e-16,
+            "relative_mmw_change": 4.440892098500626e-16,
+            "relative_electron_fraction_change": 1.0658141036401503e-14,
+            "excluded_fraction": 2.940702598223712e-48
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 236,
+          "relative_element_error": 2.1331468447726195e-06,
+          "relative_charge_error": 4.906482383166494e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2364372888463115,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 5.329070518200751e-15,
+            "relative_mmw_change": 7.194245199571014e-14,
+            "relative_electron_fraction_change": 2.5979218776228663e-14,
+            "excluded_fraction": 3.2714248067473284e-127
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 192,
+          "relative_element_error": 3.075906812578138e-07,
+          "relative_charge_error": 7.15657802667401e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.23750495040855,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.3877787807814457e-17,
+            "relative_mmw_change": 0.0,
+            "relative_electron_fraction_change": 6.994405055138486e-15,
+            "excluded_fraction": 2.802876667976188e-88
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 170,
+          "relative_element_error": 2.397947497631358e-07,
+          "relative_charge_error": 1.625282364313283e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3125830958831752,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 9.71445146547012e-17,
+            "relative_mmw_change": 4.440892098500626e-16,
+            "relative_electron_fraction_change": 2.220446049250313e-16,
+            "excluded_fraction": 2.0103784600397564e-66
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 158,
+          "relative_element_error": 1.8872038745699403e-07,
+          "relative_charge_error": 6.988567581486657e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.9886279618792841,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.6653345369377348e-16,
+            "relative_mmw_change": 2.220446049250313e-16,
+            "relative_electron_fraction_change": 9.992007221626409e-15,
+            "excluded_fraction": 1.3975934093268278e-50
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 305,
+          "relative_element_error": 3.5125224611341694e-07,
+          "relative_charge_error": 2.9529290272108695e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2928806009372167,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 8.881784197001252e-16,
+            "relative_mmw_change": 7.771561172376096e-16,
+            "relative_electron_fraction_change": 6.661338147750939e-16,
+            "excluded_fraction": 2.9459965779704303e-88
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 263,
+          "relative_element_error": 2.809345785014221e-07,
+          "relative_charge_error": 6.22844235153053e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2986394052156505,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 6.38378239159465e-16,
+            "relative_mmw_change": 5.551115123125783e-16,
+            "relative_electron_fraction_change": 6.417089082333405e-14,
+            "excluded_fraction": 2.456845833296967e-70
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 210,
+          "relative_element_error": 2.761753325980349e-07,
+          "relative_charge_error": 5.627632219971685e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2988566197907976,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.6653345369377348e-16,
+            "relative_mmw_change": 6.661338147750939e-16,
+            "relative_electron_fraction_change": 1.5987211554602254e-14,
+            "excluded_fraction": 1.4111518475555289e-58
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": false,
+          "iterations": 2000,
+          "relative_element_error": 2.383277818692053e-07,
+          "relative_charge_error": 4.831548431581837e-06,
+          "valid_for_comparison": false,
+          "mmw_u": 2.2991316843796334,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 277,
+          "relative_element_error": 3.559610955108189e-07,
+          "relative_charge_error": 4.652664936013995e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4493683222345166,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.1086244689504383e-15,
+            "relative_mmw_change": 2.3314683517128287e-15,
+            "relative_electron_fraction_change": 2.3647750424515834e-14,
+            "excluded_fraction": 1.501913995832097e-91
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 231,
+          "relative_element_error": 2.802473580624621e-07,
+          "relative_charge_error": 2.9209847505200467e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2404527781507224,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 8.049116928532385e-16,
+            "relative_mmw_change": 4.440892098500626e-16,
+            "relative_electron_fraction_change": 4.440892098500626e-16,
+            "excluded_fraction": 8.994256295614352e-71
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 200,
+          "relative_element_error": 2.339951556081598e-07,
+          "relative_charge_error": 1.4477977368088197e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2928302839034647,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 6.661338147750939e-16,
+            "relative_mmw_change": 4.440892098500626e-16,
+            "relative_electron_fraction_change": 3.774758283725532e-15,
+            "excluded_fraction": 1.0639347895509026e-58
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 175,
+          "relative_element_error": 1.9685034087211744e-07,
+          "relative_charge_error": 1.0504268026740344e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2984149986674463,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 5.551115123125783e-17,
+            "relative_mmw_change": 0.0,
+            "relative_electron_fraction_change": 1.3322676295501878e-14,
+            "excluded_fraction": 1.8679080951427013e-48
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 216,
+          "relative_element_error": 3.5985958104912935e-07,
+          "relative_charge_error": 2.705685278087271e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2370048756368044,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.220446049250313e-16,
+            "relative_mmw_change": 6.661338147750939e-16,
+            "relative_electron_fraction_change": 7.66053886991358e-15,
+            "excluded_fraction": 2.917898532148579e-100
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 217,
+          "relative_element_error": 1.8699328336296676e-06,
+          "relative_charge_error": 1.7095108172692614e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4848600175812654,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 5.070934659542792e-15,
+            "relative_mmw_change": 6.372680161348399e-14,
+            "relative_electron_fraction_change": 5.329070518200751e-15,
+            "excluded_fraction": 1.3844225195960702e-73
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 194,
+          "relative_element_error": 2.3353239673201719e-07,
+          "relative_charge_error": 5.521242183923472e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.1432564190169443,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.608224830031759e-16,
+            "relative_mmw_change": 4.440892098500626e-16,
+            "relative_electron_fraction_change": 7.549516567451064e-15,
+            "excluded_fraction": 2.9111090937612476e-59
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 166,
+          "relative_element_error": 9.354204692671407e-07,
+          "relative_charge_error": 2.806169533647761e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.282170142770676,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.0196036467963736e-15,
+            "relative_mmw_change": 1.5987211554602254e-14,
+            "relative_electron_fraction_change": 5.551115123125783e-15,
+            "excluded_fraction": 2.4548103950373695e-47
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 237,
+          "relative_element_error": 4.213594031530912e-07,
+          "relative_charge_error": 6.177729686566694e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2363458738822672,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 6.938893903907228e-17,
+            "relative_mmw_change": 6.661338147750939e-16,
+            "relative_electron_fraction_change": 8.104628079763643e-15,
+            "excluded_fraction": 1.2472566468397547e-126
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 192,
+          "relative_element_error": 3.075737153111325e-07,
+          "relative_charge_error": 7.176435492480728e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.237415301144127,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.3877787807814457e-16,
+            "relative_mmw_change": 2.220446049250313e-16,
+            "relative_electron_fraction_change": 3.1086244689504383e-15,
+            "excluded_fraction": 1.070768798669e-87
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 172,
+          "relative_element_error": 2.39790852592697e-07,
+          "relative_charge_error": 1.6219655913732416e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3124954497195145,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.469446951953614e-16,
+            "relative_mmw_change": 2.6645352591003757e-15,
+            "relative_electron_fraction_change": 3.9968028886505635e-15,
+            "excluded_fraction": 1.4244641559123615e-65
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 160,
+          "relative_element_error": 1.8869646245882143e-07,
+          "relative_charge_error": 6.983856863499494e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.9884489911358114,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.27675647831893e-15,
+            "relative_mmw_change": 1.1102230246251565e-15,
+            "relative_electron_fraction_change": 2.4424906541753444e-15,
+            "excluded_fraction": 1.2388555819872263e-49
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 191,
+          "relative_element_error": 3.959011756971916e-09,
+          "relative_charge_error": 2.0859024996249222e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6001972017417367,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.498001805406602e-16,
+            "relative_mmw_change": 1.1102230246251565e-15,
+            "relative_electron_fraction_change": 2.5646151868841116e-14,
+            "excluded_fraction": 1.8007179950371382e-81
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 180,
+          "relative_element_error": 3.328455328603383e-09,
+          "relative_charge_error": 5.275774339559407e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6069719178934463,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.3306690738754696e-16,
+            "relative_mmw_change": 6.661338147750939e-16,
+            "relative_electron_fraction_change": 2.0095036745715333e-14,
+            "excluded_fraction": 1.8491300227167897e-63
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 170,
+          "relative_element_error": 2.854429863871168e-09,
+          "relative_charge_error": 3.4370198376380195e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6072893383520555,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 5.551115123125783e-16,
+            "relative_mmw_change": 8.881784197001252e-16,
+            "relative_electron_fraction_change": 1.2743139876647547e-12,
+            "excluded_fraction": 1.8483590650463547e-51
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 202,
+          "relative_element_error": 2.3844084834106765e-09,
+          "relative_charge_error": 1.5544444329311638e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6217149610156434,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.3306690738754696e-16,
+            "relative_mmw_change": 0.0,
+            "relative_electron_fraction_change": 1.0269562977782698e-13,
+            "excluded_fraction": 4.9222150083151644e-42
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 179,
+          "relative_element_error": 3.483202002881128e-09,
+          "relative_charge_error": 1.1782630659838816e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.644046860711013,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.7208456881689926e-15,
+            "relative_mmw_change": 1.1102230246251565e-15,
+            "relative_electron_fraction_change": 3.885780586188048e-15,
+            "excluded_fraction": 9.208828566983835e-85
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 161,
+          "relative_element_error": 2.743271049652605e-09,
+          "relative_charge_error": 1.428824882527531e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.54099381353128,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 5.551115123125783e-16,
+            "relative_mmw_change": 4.440892098500626e-15,
+            "relative_electron_fraction_change": 5.88418203051333e-15,
+            "excluded_fraction": 5.514793244365531e-64
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 153,
+          "relative_element_error": 2.2913139946786806e-09,
+          "relative_charge_error": 9.935688887770556e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6003582296847214,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.440892098500626e-16,
+            "relative_mmw_change": 9.992007221626409e-16,
+            "relative_electron_fraction_change": 6.661338147750939e-16,
+            "excluded_fraction": 7.046195859824673e-52
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 147,
+          "relative_element_error": 1.8235492003667943e-09,
+          "relative_charge_error": 6.460872272177627e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.606866446067629,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.3877787807814457e-16,
+            "relative_mmw_change": 0.0,
+            "relative_electron_fraction_change": 9.992007221626409e-15,
+            "excluded_fraction": 6.86919196110969e-40
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 178,
+          "relative_element_error": 3.101861018508113e-09,
+          "relative_charge_error": 9.89044630413669e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4020704068856744,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.3306690738754696e-16,
+            "relative_mmw_change": 0.0,
+            "relative_electron_fraction_change": 9.325873406851315e-15,
+            "excluded_fraction": 2.016137582030737e-93
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 156,
+          "relative_element_error": 1.6916511885037554e-08,
+          "relative_charge_error": 5.03200237861611e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.6832481387140854,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.542252084375575e-15,
+            "relative_mmw_change": 4.973799150320701e-14,
+            "relative_electron_fraction_change": 3.885780586188048e-15,
+            "excluded_fraction": 8.496823484805433e-67
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 145,
+          "relative_element_error": 2.024501559447891e-09,
+          "relative_charge_error": 2.6996713185933083e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 2.4311204544852734,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 5.551115123125783e-16,
+            "relative_mmw_change": 2.55351295663786e-15,
+            "relative_electron_fraction_change": 1.3322676295501878e-15,
+            "excluded_fraction": 1.7964206831677382e-52
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 136,
+          "relative_element_error": 1.5611036281015206e-09,
+          "relative_charge_error": 1.7445542713269997e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.58832778026734,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1102230246251565e-16,
+            "relative_mmw_change": 1.5543122344752192e-15,
+            "relative_electron_fraction_change": 3.3306690738754696e-16,
+            "excluded_fraction": 3.520006879648838e-40
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 203,
+          "relative_element_error": 9.70280139286203e-09,
+          "relative_charge_error": 8.084256002325863e-15,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3975158825595206,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.220446049250313e-15,
+            "relative_mmw_change": 2.708944180085382e-14,
+            "relative_electron_fraction_change": 2.3314683517128287e-15,
+            "excluded_fraction": 3.5572098956690776e-111
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 163,
+          "relative_element_error": 2.405282803675908e-09,
+          "relative_charge_error": 1.697333528647538e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4014465745203393,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.440892098500626e-16,
+            "relative_mmw_change": 3.1086244689504383e-15,
+            "relative_electron_fraction_change": 7.771561172376096e-15,
+            "excluded_fraction": 2.3592708858724842e-76
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 142,
+          "relative_element_error": 1.9089238611680984e-09,
+          "relative_charge_error": 6.175573371057459e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4871119647997975,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.3306690738754696e-16,
+            "relative_mmw_change": 5.218048215738236e-15,
+            "relative_electron_fraction_change": 1.2212453270876722e-15,
+            "excluded_fraction": 3.1906484668843326e-58
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 130,
+          "relative_element_error": 1.4343908485086247e-09,
+          "relative_charge_error": 2.836090940357126e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 2.254990349798791,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.3306690738754696e-16,
+            "relative_mmw_change": 5.551115123125783e-16,
+            "relative_electron_fraction_change": 1.1102230246251565e-14,
+            "excluded_fraction": 1.6321009115173724e-42
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 334,
+          "relative_element_error": 3.037352121870772e-09,
+          "relative_charge_error": 2.0841116686223903e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5763933544608557,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 8.881784197001252e-16,
+            "relative_mmw_change": 1.9984014443252818e-15,
+            "relative_electron_fraction_change": 3.730349362740526e-14,
+            "excluded_fraction": 2.6822756836503336e-80
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 280,
+          "relative_element_error": 2.353150649767783e-09,
+          "relative_charge_error": 5.354235363349175e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5838082424805453,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.440892098500626e-16,
+            "relative_mmw_change": 2.1094237467877974e-15,
+            "relative_electron_fraction_change": 3.1086244689504383e-15,
+            "excluded_fraction": 2.278597338532302e-62
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 208,
+          "relative_element_error": 2.4155881142879736e-09,
+          "relative_charge_error": 4.703894481619174e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5877301161983186,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1102230246251565e-15,
+            "relative_mmw_change": 4.107825191113079e-15,
+            "relative_electron_fraction_change": 5.084821452783217e-14,
+            "excluded_fraction": 2.2096815044182796e-50
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 163,
+          "relative_element_error": 2.3616338530536677e-09,
+          "relative_charge_error": 1.3680224989586994e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.613766848368792,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.1094237467877974e-15,
+            "relative_mmw_change": 2.398081733190338e-14,
+            "relative_electron_fraction_change": 1.965584739416215e-08,
+            "excluded_fraction": 1.7044674359096164e-41
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 251,
+          "relative_element_error": 3.084067921431763e-09,
+          "relative_charge_error": 1.180081721828559e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.633225176268681,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.6629367034256575e-15,
+            "relative_mmw_change": 4.884981308350689e-15,
+            "relative_electron_fraction_change": 4.6629367034256575e-15,
+            "excluded_fraction": 1.4078843548898319e-83
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 214,
+          "relative_element_error": 2.327636013540488e-09,
+          "relative_charge_error": 1.422383395291688e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5175894407952484,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.0776569900833928e-15,
+            "relative_mmw_change": 1.2212453270876722e-14,
+            "relative_electron_fraction_change": 1.1102230246251565e-15,
+            "excluded_fraction": 8.282553115597014e-63
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 191,
+          "relative_element_error": 1.8687835965541237e-09,
+          "relative_charge_error": 9.797899208679537e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5769902581232884,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.718447854656915e-16,
+            "relative_mmw_change": 2.220446049250313e-16,
+            "relative_electron_fraction_change": 2.9976021664879227e-15,
+            "excluded_fraction": 9.075899112543452e-51
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 157,
+          "relative_element_error": 1.6515020893237506e-09,
+          "relative_charge_error": 7.160250879677042e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.588469579299375,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.220446049250313e-16,
+            "relative_mmw_change": 4.440892098500626e-16,
+            "relative_electron_fraction_change": 1.3100631690576847e-14,
+            "excluded_fraction": 6.912693310058303e-39
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 204,
+          "relative_element_error": 2.457338644480495e-08,
+          "relative_charge_error": 9.624673945270396e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3951961027796758,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 5.316202552484742e-15,
+            "relative_mmw_change": 7.216449660063518e-14,
+            "relative_electron_fraction_change": 2.4424906541753444e-15,
+            "excluded_fraction": 3.0767073857629954e-92
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 200,
+          "relative_element_error": 2.367658717323031e-09,
+          "relative_charge_error": 4.995148311789307e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.672508613355182,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2583281648206694e-15,
+            "relative_mmw_change": 1.4988010832439613e-14,
+            "relative_electron_fraction_change": 4.6629367034256575e-15,
+            "excluded_fraction": 1.2950089949709516e-65
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 174,
+          "relative_element_error": 1.8619260525092912e-09,
+          "relative_charge_error": 2.671732303385176e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 2.408815905425242,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 6.938893903907228e-16,
+            "relative_mmw_change": 2.220446049250313e-16,
+            "relative_electron_fraction_change": 4.6629367034256575e-15,
+            "excluded_fraction": 2.6899485571903924e-51
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 146,
+          "relative_element_error": 1.4386204716097906e-09,
+          "relative_charge_error": 1.6566724863809372e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.566109924849103,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1102230246251565e-16,
+            "relative_mmw_change": 2.220446049250313e-16,
+            "relative_electron_fraction_change": 7.105427357601002e-15,
+            "excluded_fraction": 4.3916516071835405e-39
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 204,
+          "relative_element_error": 3.5478080968288813e-09,
+          "relative_charge_error": 7.802506614547727e-15,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3885564124397707,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.498001805406602e-16,
+            "relative_mmw_change": 8.881784197001252e-16,
+            "relative_electron_fraction_change": 1.2212453270876722e-14,
+            "excluded_fraction": 1.3553709287057648e-110
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 165,
+          "relative_element_error": 2.404907875318314e-09,
+          "relative_charge_error": 1.4940171967337518e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3937857958100002,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1102230246251565e-16,
+            "relative_mmw_change": 3.3306690738754696e-16,
+            "relative_electron_fraction_change": 2.55351295663786e-15,
+            "excluded_fraction": 1.7339082120423112e-75
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 151,
+          "relative_element_error": 1.905393784906661e-09,
+          "relative_charge_error": 5.992092525380191e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4793027218849626,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.926614671774132e-16,
+            "relative_mmw_change": 2.220446049250313e-16,
+            "relative_electron_fraction_change": 2.6645352591003757e-15,
+            "excluded_fraction": 4.7132279161983446e-57
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 138,
+          "relative_element_error": 1.4114293528999076e-09,
+          "relative_charge_error": 2.8012705384865293e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 2.23580182828681,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2212453270876722e-15,
+            "relative_mmw_change": 1.1102230246251565e-15,
+            "relative_electron_fraction_change": 7.993605777301127e-15,
+            "excluded_fraction": 2.3305098133444955e-41
+          }
+        }
+      ],
+      "comparison_summary": {
+        "common_valid_points": 76,
+        "max_absolute_fraction_change": 8.713475799001397e-15,
+        "relative_mmw_change": 9.092726571680032e-14,
+        "relative_electron_fraction_change": 1.1965130242153066e-07,
+        "excluded_fraction": 6.912693310058303e-39
+      },
+      "converged_points": 77,
+      "valid_points": 76
+    },
+    "hybrid": {
+      "species_count": 538,
+      "points": [
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 257,
+          "relative_element_error": 3.929379261716277e-08,
+          "relative_charge_error": 7.356849541153372e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.320005420042798,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 6.075516815306771e-11,
+            "relative_mmw_change": 5.633837840690603e-11,
+            "relative_electron_fraction_change": 0.0015609768477855557,
+            "excluded_fraction": 1.3604738726769804e-84
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 200,
+          "relative_element_error": 3.2989520518671545e-08,
+          "relative_charge_error": 1.858149033137429e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.325828861234902,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.327380132151867e-12,
+            "relative_mmw_change": 2.17970086424657e-12,
+            "relative_electron_fraction_change": 0.0017496979518378808,
+            "excluded_fraction": 1.396650462545386e-66
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 190,
+          "relative_element_error": 2.8255426478165386e-08,
+          "relative_charge_error": 1.610589585558158e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.32602531583614,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.252881159419331e-13,
+            "relative_mmw_change": 5.384581669432009e-14,
+            "relative_electron_fraction_change": 0.001764241594001792,
+            "excluded_fraction": 1.344271382732154e-54
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 179,
+          "relative_element_error": 2.3835749266348268e-08,
+          "relative_charge_error": 8.353172823715622e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3283919890128377,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.986154422015717e-11,
+            "relative_mmw_change": 1.4677370430149494e-11,
+            "relative_electron_fraction_change": 0.0017703971643889815,
+            "excluded_fraction": 7.335139661878834e-49
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 192,
+          "relative_element_error": 4.616328984900011e-08,
+          "relative_charge_error": 7.10987263240914e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4667694273071106,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.472657889170157e-09,
+            "relative_mmw_change": 3.81221743062099e-09,
+            "relative_electron_fraction_change": 0.001707898340815528,
+            "excluded_fraction": 6.912307316209199e-88
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 174,
+          "relative_element_error": 2.6949782536765275e-08,
+          "relative_charge_error": 6.46708875394143e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.266976590826103,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.0300133025254515e-10,
+            "relative_mmw_change": 4.048654744792657e-10,
+            "relative_electron_fraction_change": 0.0014459240860622558,
+            "excluded_fraction": 4.142244534944252e-67
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 166,
+          "relative_element_error": 2.256952435300569e-08,
+          "relative_charge_error": 3.695923314437043e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3199579521904887,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.527269586367927e-11,
+            "relative_mmw_change": 3.092770484158791e-11,
+            "relative_electron_fraction_change": 0.0007237536807044309,
+            "excluded_fraction": 5.290117321431142e-55
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 163,
+          "relative_element_error": 1.8242296884909465e-08,
+          "relative_charge_error": 2.9498206150583274e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3258622413151313,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.0943851361700126e-11,
+            "relative_mmw_change": 8.416822794288237e-12,
+            "relative_electron_fraction_change": 0.0006547991564107569,
+            "excluded_fraction": 2.4065722538175626e-43
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 192,
+          "relative_element_error": 3.734708153149219e-08,
+          "relative_charge_error": 5.373907566887077e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2518745993488842,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 170,
+          "relative_element_error": 2.6145354793782706e-08,
+          "relative_charge_error": 2.9719711242945076e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.502632473381251,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.8794270526547296e-07,
+            "relative_mmw_change": 1.6269109193167708e-07,
+            "relative_electron_fraction_change": 0.04078836560883936,
+            "excluded_fraction": 6.373362807988798e-70
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 158,
+          "relative_element_error": 2.1079237631750428e-07,
+          "relative_charge_error": 1.1690463700418912e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.16867178639334,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.0555096634730184e-08,
+            "relative_mmw_change": 9.112565813040874e-09,
+            "relative_electron_fraction_change": 0.008519180820645178,
+            "excluded_fraction": 1.3463597882777036e-55
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 149,
+          "relative_element_error": 1.6784730167674838e-08,
+          "relative_charge_error": 6.889131692870976e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.3091734204543255,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 7.435647051259855e-10,
+            "relative_mmw_change": 7.33689997645115e-10,
+            "relative_electron_fraction_change": 0.0047494266084842085,
+            "excluded_fraction": 2.4564048346385245e-43
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 220,
+          "relative_element_error": 3.940444632194294e-08,
+          "relative_charge_error": 4.250394867254424e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2508274897836762,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.571712397581846e-08,
+            "relative_mmw_change": 5.350381027113826e-09,
+            "relative_electron_fraction_change": 2.359425503106749e-05,
+            "excluded_fraction": 1.071250471921299e-118
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 178,
+          "relative_element_error": 2.7010214921733653e-08,
+          "relative_charge_error": 9.877544977428091e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2520439948673667,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 6.462756854099232e-07,
+            "relative_mmw_change": 5.201985857627989e-07,
+            "relative_electron_fraction_change": 0.0075605869847859,
+            "excluded_fraction": 6.686634010123805e-81
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 155,
+          "relative_element_error": 2.8473886537932692e-08,
+          "relative_charge_error": 3.3662142396888604e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3282041599413286,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.3731972670984123e-06,
+            "relative_mmw_change": 9.083245002816653e-07,
+            "relative_electron_fraction_change": 0.04780468452505893,
+            "excluded_fraction": 2.123242365757184e-61
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 0.0,
+          "c_over_o": 0.6,
+          "converged": true,
+          "iterations": 143,
+          "relative_element_error": 5.251805974338309e-08,
+          "relative_charge_error": 1.5423574540998622e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 2.01205968806999,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 8.298567292954415e-07,
+            "relative_mmw_change": 5.648780276867882e-07,
+            "relative_electron_fraction_change": 0.11746432543404317,
+            "excluded_fraction": 1.148223481590323e-45
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 213,
+          "relative_element_error": 3.972086124091856e-07,
+          "relative_charge_error": 2.9494396283655427e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2931137861350184,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.24711765097647e-11,
+            "relative_mmw_change": 1.0962009078241408e-11,
+            "relative_electron_fraction_change": 0.0011614584801529215,
+            "excluded_fraction": 1.9653641856445393e-89
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 210,
+          "relative_element_error": 3.3306787464906633e-07,
+          "relative_charge_error": 6.21533024800357e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.298847226158718,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 7.241206740146533e-13,
+            "relative_mmw_change": 6.687983500341943e-13,
+            "relative_electron_fraction_change": 0.0017350017732606915,
+            "excluded_fraction": 2.0175181978314357e-71
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": false,
+          "iterations": 2000,
+          "relative_element_error": 2.855486860557867e-07,
+          "relative_charge_error": 5.593097023062319e-07,
+          "valid_for_comparison": false,
+          "mmw_u": 2.2990222382528103,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 197,
+          "relative_element_error": 2.3987388300474465e-07,
+          "relative_charge_error": 3.427831334555332e-06,
+          "valid_for_comparison": false,
+          "mmw_u": 2.2992000607057195,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 206,
+          "relative_element_error": 3.5993262555517283e-07,
+          "relative_charge_error": 4.676738792712685e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.449481638663902,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.903077277732164e-09,
+            "relative_mmw_change": 1.7424681697519873e-09,
+            "relative_electron_fraction_change": 0.004764720477759554,
+            "excluded_fraction": 9.97676814950653e-93
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 188,
+          "relative_element_error": 2.8472309607973124e-07,
+          "relative_charge_error": 2.9270780299903713e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.240681507214605,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.239925891364874e-10,
+            "relative_mmw_change": 1.2559220330388143e-10,
+            "relative_electron_fraction_change": 0.001889329568169118,
+            "excluded_fraction": 5.98268498397078e-72
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 179,
+          "relative_element_error": 2.388302751459506e-07,
+          "relative_charge_error": 1.4496107563773032e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.293048922547196,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2035215893989278e-11,
+            "relative_mmw_change": 1.0754064305729116e-11,
+            "relative_electron_fraction_change": 0.0009164396497831628,
+            "excluded_fraction": 7.637074902750861e-60
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 175,
+          "relative_element_error": 1.9796862972501165e-07,
+          "relative_charge_error": 1.0511920566564416e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2985136830338813,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.0748226112599326e-12,
+            "relative_mmw_change": 1.0034195696562165e-12,
+            "relative_electron_fraction_change": 0.0006705359936873823,
+            "excluded_fraction": 4.80240113573283e-49
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 207,
+          "relative_element_error": 5.651699050633395e-07,
+          "relative_charge_error": 2.766570722562554e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2370764608468392,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.0670389255901021e-07,
+            "relative_mmw_change": 7.835748050410984e-08,
+            "relative_electron_fraction_change": 0.017816093782512588,
+            "excluded_fraction": 2.1332545203072688e-101
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 184,
+          "relative_element_error": 2.8454944051255824e-07,
+          "relative_charge_error": 1.8757995603928036e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4849751593970997,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 6.93558415109814e-08,
+            "relative_mmw_change": 6.028389365475562e-08,
+            "relative_electron_fraction_change": 0.08269122213528823,
+            "excluded_fraction": 9.19906993207047e-75
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 172,
+          "relative_element_error": 2.3392633086431076e-07,
+          "relative_charge_error": 5.6100851552641085e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.1434745711168057,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.488686439262318e-09,
+            "relative_mmw_change": 3.630630684980929e-09,
+            "relative_electron_fraction_change": 0.014626977380936323,
+            "excluded_fraction": 1.9440818557613018e-60
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 164,
+          "relative_element_error": 1.9060875697469407e-07,
+          "relative_charge_error": 2.825790451883757e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.282343253350221,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.7152717797385975e-10,
+            "relative_mmw_change": 2.5827917582432747e-10,
+            "relative_electron_fraction_change": 0.006116490717901879,
+            "excluded_fraction": 2.940702598223712e-48
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 238,
+          "relative_element_error": 4.21247148842404e-07,
+          "relative_charge_error": 6.113652472610428e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2364372884600199,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.3124365760718708e-09,
+            "relative_mmw_change": 3.1235136699336863e-10,
+            "relative_electron_fraction_change": 1.9181326480488536e-06,
+            "excluded_fraction": 3.2714248067473284e-127
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 192,
+          "relative_element_error": 3.074558444547187e-07,
+          "relative_charge_error": 7.24505579495309e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.237504966633302,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.685060176533988e-08,
+            "relative_mmw_change": 1.3110858176901274e-08,
+            "relative_electron_fraction_change": 0.0011747719668947498,
+            "excluded_fraction": 2.802876667976188e-88
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 170,
+          "relative_element_error": 2.3980298019779995e-07,
+          "relative_charge_error": 1.6613547243888005e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3125832124843693,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2540028492977623e-07,
+            "relative_mmw_change": 8.883338109555439e-08,
+            "relative_electron_fraction_change": 0.020897410985528886,
+            "excluded_fraction": 2.0103784600397564e-66
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 158,
+          "relative_element_error": 1.887265332777975e-07,
+          "relative_charge_error": 7.878520464558314e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.9886281857613048,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.6431353334996902e-07,
+            "relative_mmw_change": 1.1258114862577884e-07,
+            "relative_electron_fraction_change": 0.10222716765560746,
+            "excluded_fraction": 1.3975934093268278e-50
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 304,
+          "relative_element_error": 3.5125395064921656e-07,
+          "relative_charge_error": 2.9494003191191146e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2928806009120866,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2470957176563524e-11,
+            "relative_mmw_change": 1.096078783291432e-11,
+            "relative_electron_fraction_change": 0.0011614393720222882,
+            "excluded_fraction": 2.9459965779704303e-88
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 263,
+          "relative_element_error": 2.8093458197733823e-07,
+          "relative_charge_error": 6.217246662812559e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2986394052140837,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 7.238961749954856e-13,
+            "relative_mmw_change": 6.822320486321587e-13,
+            "relative_electron_fraction_change": 0.0017349327025240058,
+            "excluded_fraction": 2.456845833296967e-70
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 210,
+          "relative_element_error": 2.761753375445309e-07,
+          "relative_charge_error": 5.617388563385617e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2988566197906395,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 7.367797369841251e-14,
+            "relative_mmw_change": 6.816769371198461e-14,
+            "relative_electron_fraction_change": 0.0017535373049903935,
+            "excluded_fraction": 1.4111518475555289e-58
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 200,
+          "relative_element_error": 2.3832777451630577e-07,
+          "relative_charge_error": 4.822744708605109e-06,
+          "valid_for_comparison": false,
+          "mmw_u": 2.2991316843799954,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 278,
+          "relative_element_error": 3.559592312165659e-07,
+          "relative_charge_error": 4.674610879571838e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4493683247585563,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.90238268322612e-09,
+            "relative_mmw_change": 1.7414734099219231e-09,
+            "relative_electron_fraction_change": 0.004759952805958201,
+            "excluded_fraction": 1.501913995832097e-91
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 231,
+          "relative_element_error": 2.8024735752770574e-07,
+          "relative_charge_error": 2.926737993229776e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.240452778432095,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2398017786608143e-10,
+            "relative_mmw_change": 1.2558776241178293e-10,
+            "relative_electron_fraction_change": 0.0018892629825461027,
+            "excluded_fraction": 8.994256295614352e-71
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 200,
+          "relative_element_error": 2.339951269986962e-07,
+          "relative_charge_error": 1.4491973488342855e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.292830283928128,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2039291060026406e-11,
+            "relative_mmw_change": 1.0757172930198067e-11,
+            "relative_electron_fraction_change": 0.0009164931812012389,
+            "excluded_fraction": 1.0639347895509026e-58
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 175,
+          "relative_element_error": 1.9684973338892736e-07,
+          "relative_charge_error": 1.0511765024381939e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.298414998669756,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.0746359895953507e-12,
+            "relative_mmw_change": 1.0049738818906917e-12,
+            "relative_electron_fraction_change": 0.0006704402982015134,
+            "excluded_fraction": 1.8679080951427013e-48
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 216,
+          "relative_element_error": 3.5992447640347074e-07,
+          "relative_charge_error": 2.7630913672598405e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2370049725912693,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.0671166697426774e-07,
+            "relative_mmw_change": 7.83784022129197e-08,
+            "relative_electron_fraction_change": 0.017810945209587703,
+            "excluded_fraction": 2.917898532148579e-100
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 217,
+          "relative_element_error": 1.8296410084109634e-06,
+          "relative_charge_error": 1.8702201560692957e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4848601068735638,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 6.926690570027714e-08,
+            "relative_mmw_change": 6.013522613201872e-08,
+            "relative_electron_fraction_change": 0.08227538552351876,
+            "excluded_fraction": 1.3844225195960702e-73
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 194,
+          "relative_element_error": 2.335324019458914e-07,
+          "relative_charge_error": 5.608261591313721e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.1432564267950704,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 4.48798871376185e-09,
+            "relative_mmw_change": 3.6291156746415254e-09,
+            "relative_electron_fraction_change": 0.014617670161847562,
+            "excluded_fraction": 2.9111090937612476e-59
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 166,
+          "relative_element_error": 8.617151559058205e-07,
+          "relative_charge_error": 2.82486219440496e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2821701433602826,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.7163159425202575e-10,
+            "relative_mmw_change": 2.5833757355542275e-10,
+            "relative_electron_fraction_change": 0.006116249562674425,
+            "excluded_fraction": 2.4548103950373695e-47
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 237,
+          "relative_element_error": 4.211921649292479e-07,
+          "relative_charge_error": 5.822696185283185e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.2363458723620029,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.0709018702482407e-09,
+            "relative_mmw_change": 1.2296424989344246e-09,
+            "relative_electron_fraction_change": 7.509678481731896e-06,
+            "excluded_fraction": 1.2472566468397547e-126
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 192,
+          "relative_element_error": 3.074387753000659e-07,
+          "relative_charge_error": 7.147568779998267e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.237415317343931,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.6880646223910185e-08,
+            "relative_mmw_change": 1.3091646655638556e-08,
+            "relative_electron_fraction_change": 0.001170824258266645,
+            "excluded_fraction": 1.070768798669e-87
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 172,
+          "relative_element_error": 2.3979914144949013e-07,
+          "relative_charge_error": 1.6662921893498875e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3124955663475912,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.2540949974654736e-07,
+            "relative_mmw_change": 8.88597924131318e-08,
+            "relative_electron_fraction_change": 0.02088620015326592,
+            "excluded_fraction": 1.4244641559123615e-65
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": -1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 160,
+          "relative_element_error": 1.8870253475062964e-07,
+          "relative_charge_error": 7.866263961906195e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.988449214838736,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.6429069630145318e-07,
+            "relative_mmw_change": 1.1250121234596122e-07,
+            "relative_electron_fraction_change": 0.10214022085151764,
+            "excluded_fraction": 1.2388555819872263e-49
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 191,
+          "relative_element_error": 3.9590201419511595e-09,
+          "relative_charge_error": 2.0823366169075545e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.600197201208791,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.1883584579852298e-10,
+            "relative_mmw_change": 2.0496249142354372e-10,
+            "relative_electron_fraction_change": 0.0016933102826268698,
+            "excluded_fraction": 1.8007179950371382e-81
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 180,
+          "relative_element_error": 3.3284245266388154e-09,
+          "relative_charge_error": 5.266246033911356e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6069719178759017,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 7.785579864221392e-12,
+            "relative_mmw_change": 6.729172774555536e-12,
+            "relative_electron_fraction_change": 0.0017635728389393535,
+            "excluded_fraction": 1.8491300227167897e-63
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 170,
+          "relative_element_error": 2.854469221937004e-09,
+          "relative_charge_error": 3.430917439339375e-08,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6072893383887297,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.992643936480799e-11,
+            "relative_mmw_change": 1.4066969811210583e-11,
+            "relative_electron_fraction_change": 0.001770506655952575,
+            "excluded_fraction": 1.8483590650463547e-51
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 164,
+          "relative_element_error": 2.384430215907899e-09,
+          "relative_charge_error": 1.5516872522207747e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6217149608403343,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 5.019700332481447e-10,
+            "relative_mmw_change": 6.68680666393584e-11,
+            "relative_electron_fraction_change": 0.0017196143068820557,
+            "excluded_fraction": 4.9222150083151644e-42
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 180,
+          "relative_element_error": 3.4832447833874715e-09,
+          "relative_charge_error": 1.165357335259548e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 1.644046895095796,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.903791107420531e-08,
+            "relative_mmw_change": 2.091472306453568e-08,
+            "relative_electron_fraction_change": 0.0016712761305177626,
+            "excluded_fraction": 9.208828566983835e-85
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 161,
+          "relative_element_error": 2.7432462369589257e-09,
+          "relative_charge_error": 1.4291862670873944e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.540993816257037,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1898758645891304e-09,
+            "relative_mmw_change": 1.0727174704072695e-09,
+            "relative_electron_fraction_change": 0.0009220232822323426,
+            "excluded_fraction": 5.514793244365531e-64
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 153,
+          "relative_element_error": 2.2913064653095644e-09,
+          "relative_charge_error": 9.942065773798547e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6003582299436,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1240940751680803e-10,
+            "relative_mmw_change": 9.955392066274271e-11,
+            "relative_electron_fraction_change": 0.0006712904845170842,
+            "excluded_fraction": 7.046195859824673e-52
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 147,
+          "relative_element_error": 1.82355638749186e-09,
+          "relative_charge_error": 6.465634230708064e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.606866447356763,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 9.732215753774365e-10,
+            "relative_mmw_change": 4.945146514501175e-10,
+            "relative_electron_fraction_change": 0.0006630156794481534,
+            "excluded_fraction": 6.86919196110969e-40
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 178,
+          "relative_element_error": 3.1019724189466312e-09,
+          "relative_charge_error": 1.1035806221079639e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.402082079603766,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1493655332569072e-05,
+            "relative_mmw_change": 8.325343744841618e-06,
+            "relative_electron_fraction_change": 0.07994678319702053,
+            "excluded_fraction": 2.016137582030737e-93
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 157,
+          "relative_element_error": 2.4903083755454497e-09,
+          "relative_charge_error": 5.075332697006056e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.683248714536894,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.9777057793655927e-07,
+            "relative_mmw_change": 3.4209031873899676e-07,
+            "relative_electron_fraction_change": 0.016687409218551386,
+            "excluded_fraction": 8.496823484805433e-67
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 145,
+          "relative_element_error": 2.024493858956749e-09,
+          "relative_charge_error": 2.7192042290925956e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 2.431120517528933,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.7396994940466798e-08,
+            "relative_mmw_change": 2.5931933267386853e-08,
+            "relative_electron_fraction_change": 0.006314162896218334,
+            "excluded_fraction": 1.7964206831677382e-52
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 136,
+          "relative_element_error": 1.5610978099526578e-09,
+          "relative_charge_error": 1.7521091673449284e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.588327786242641,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.2766504564511974e-09,
+            "relative_mmw_change": 2.3085549027968e-09,
+            "relative_electron_fraction_change": 0.004169072137932717,
+            "excluded_fraction": 3.520006879648838e-40
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": false,
+          "iterations": 2000,
+          "relative_element_error": 3.549013993741691e-09,
+          "relative_charge_error": 9.068320035695374e-15,
+          "valid_for_comparison": false,
+          "mmw_u": 1.3975160888497211,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 163,
+          "relative_element_error": 2.4053433808728907e-09,
+          "relative_charge_error": 1.561633668958977e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4014577094915859,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1613805356850611e-05,
+            "relative_mmw_change": 7.945341230497505e-06,
+            "relative_electron_fraction_change": 0.020693106459146238,
+            "excluded_fraction": 2.3592708858724842e-76
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 142,
+          "relative_element_error": 1.909004117397999e-09,
+          "relative_charge_error": 6.966737171553952e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4871237268184474,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1467875500117989e-05,
+            "relative_mmw_change": 7.909302675690455e-06,
+            "relative_electron_fraction_change": 0.09556929915964973,
+            "excluded_fraction": 3.1906484668843326e-58
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 0.3,
+          "converged": true,
+          "iterations": 130,
+          "relative_element_error": 1.4343987201217918e-09,
+          "relative_charge_error": 3.212363897300836e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 2.254994502293512,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.9087142072786173e-06,
+            "relative_mmw_change": 1.841468953545089e-06,
+            "relative_electron_fraction_change": 0.09954471937201659,
+            "excluded_fraction": 1.6321009115173724e-42
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": false,
+          "iterations": 2000,
+          "relative_element_error": 3.0373486994302645e-09,
+          "relative_charge_error": 2.0805063425515992e-10,
+          "valid_for_comparison": false,
+          "mmw_u": 2.576393353933571,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 281,
+          "relative_element_error": 2.353142435910565e-09,
+          "relative_charge_error": 5.344486489374119e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5838082424630326,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 7.692329208222552e-12,
+            "relative_mmw_change": 6.779909966780906e-12,
+            "relative_electron_fraction_change": 0.0017523359643119019,
+            "excluded_fraction": 2.278597338532302e-62
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 207,
+          "relative_element_error": 2.522289505826623e-09,
+          "relative_charge_error": 6.566759715308329e-09,
+          "valid_for_comparison": true,
+          "mmw_u": 2.587730116238436,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.209200483481056e-11,
+            "relative_mmw_change": 1.5498713423767185e-11,
+            "relative_electron_fraction_change": 0.0017674776233398415,
+            "excluded_fraction": 2.2096815044182796e-50
+          }
+        },
+        {
+          "temperature_K": 1500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 164,
+          "relative_element_error": 2.3616150296308764e-09,
+          "relative_charge_error": 1.563796223618944e-07,
+          "valid_for_comparison": true,
+          "mmw_u": 2.6137668488956005,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1838069056925235e-09,
+            "relative_mmw_change": 2.015754230200173e-10,
+            "relative_electron_fraction_change": 0.0017313929250393212,
+            "excluded_fraction": 1.7044674359096164e-41
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": false,
+          "iterations": 2000,
+          "relative_element_error": 3.084065525723408e-09,
+          "relative_charge_error": 1.1695151228164191e-12,
+          "valid_for_comparison": false,
+          "mmw_u": 1.6332252103604912,
+          "comparison_to_original": {
+            "accepted": false
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 214,
+          "relative_element_error": 2.327644911885808e-09,
+          "relative_charge_error": 1.423994236890766e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5175894434963735,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1931045908580592e-09,
+            "relative_mmw_change": 1.0728891108868766e-09,
+            "relative_electron_fraction_change": 0.0009230703341887025,
+            "excluded_fraction": 8.282553115597014e-63
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 191,
+          "relative_element_error": 1.8687885590928595e-09,
+          "relative_charge_error": 9.806298425591672e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.576990258382079,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1356251466715442e-10,
+            "relative_mmw_change": 1.0042344733562913e-10,
+            "relative_electron_fraction_change": 0.00067067601271531,
+            "excluded_fraction": 9.075899112543452e-51
+          }
+        },
+        {
+          "temperature_K": 2200.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 157,
+          "relative_element_error": 1.6514883995617208e-09,
+          "relative_charge_error": 7.165336679821113e-10,
+          "valid_for_comparison": true,
+          "mmw_u": 2.5884695807193228,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.0801909031956866e-09,
+            "relative_mmw_change": 5.485669696270179e-10,
+            "relative_electron_fraction_change": 0.0006503769535700643,
+            "excluded_fraction": 6.912693310058303e-39
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 204,
+          "relative_element_error": 2.436659843043472e-08,
+          "relative_charge_error": 1.0966389809616901e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3952077416135908,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.150289727650504e-05,
+            "relative_mmw_change": 8.342077499001732e-06,
+            "relative_electron_fraction_change": 0.07957191514310957,
+            "excluded_fraction": 3.0767073857629954e-92
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 200,
+          "relative_element_error": 2.3676571772248028e-09,
+          "relative_charge_error": 5.010735086735618e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 1.672509183980112,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 3.9758582714095523e-07,
+            "relative_mmw_change": 3.4117905300945495e-07,
+            "relative_electron_fraction_change": 0.01663938849536073,
+            "excluded_fraction": 1.2950089949709516e-65
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 174,
+          "relative_element_error": 1.8619255391432152e-09,
+          "relative_charge_error": 2.6915064017113976e-12,
+          "valid_for_comparison": true,
+          "mmw_u": 2.4088159678387266,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.7625543920661192e-08,
+            "relative_mmw_change": 2.591044201416537e-08,
+            "relative_electron_fraction_change": 0.006318508924698318,
+            "excluded_fraction": 2.6899485571903924e-51
+          }
+        },
+        {
+          "temperature_K": 3000.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 146,
+          "relative_element_error": 1.43862936995511e-09,
+          "relative_charge_error": 1.664264245940639e-11,
+          "valid_for_comparison": true,
+          "mmw_u": 2.566109930983706,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.3959701226506503e-09,
+            "relative_mmw_change": 2.390623921044721e-09,
+            "relative_electron_fraction_change": 0.004160076131108914,
+            "excluded_fraction": 4.3916516071835405e-39
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1e-05,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 204,
+          "relative_element_error": 3.54618722900454e-09,
+          "relative_charge_error": 5.3462518471123124e-15,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3885565781990128,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.7429315176000696e-07,
+            "relative_mmw_change": 1.193752314776475e-07,
+            "relative_electron_fraction_change": 0.00011456840791201905,
+            "excluded_fraction": 1.3553709287057648e-110
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 0.01,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 165,
+          "relative_element_error": 2.4050090084353098e-09,
+          "relative_charge_error": 1.812156730594196e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.3937968882034626,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1626747866152627e-05,
+            "relative_mmw_change": 7.958463556834161e-06,
+            "relative_electron_fraction_change": 0.020687586715262496,
+            "excluded_fraction": 1.7339082120423112e-75
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 1.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 151,
+          "relative_element_error": 1.905468051865673e-09,
+          "relative_charge_error": 7.116698473309221e-14,
+          "valid_for_comparison": true,
+          "mmw_u": 1.4793144403102347,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 1.1462552819604168e-05,
+            "relative_mmw_change": 7.921587041881395e-06,
+            "relative_electron_fraction_change": 0.09460026268069133,
+            "excluded_fraction": 4.7132279161983446e-57
+          }
+        },
+        {
+          "temperature_K": 4500.0,
+          "pressure_bar": 100.0,
+          "log_metal_scale": 1.0,
+          "c_over_o": 1.2,
+          "converged": true,
+          "iterations": 138,
+          "relative_element_error": 1.411438593489278e-09,
+          "relative_charge_error": 3.1559441821430387e-13,
+          "valid_for_comparison": true,
+          "mmw_u": 2.2358059178328276,
+          "comparison_to_original": {
+            "accepted": true,
+            "max_absolute_fraction_change": 2.915346300148075e-06,
+            "relative_mmw_change": 1.8291182914964565e-06,
+            "relative_electron_fraction_change": 0.09854468498568225,
+            "excluded_fraction": 2.3305098133444955e-41
+          }
+        }
+      ],
+      "comparison_summary": {
+        "common_valid_points": 73,
+        "max_absolute_fraction_change": 1.1626747866152627e-05,
+        "relative_mmw_change": 8.342077499001732e-06,
+        "relative_electron_fraction_change": 0.11746432543404317,
+        "excluded_fraction": 6.912693310058303e-39
+      },
+      "converged_points": 76,
+      "valid_points": 74
+    }
+  }
+}
