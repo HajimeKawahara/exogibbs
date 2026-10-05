@@ -19,8 +19,17 @@ from exogibbs.thermo.models import ChemicalSetup
 from exogibbs.thermo.standard import prepare_fastchem_thermodynamics
 
 
-def run_audit():
-    """Return aggregate and pointwise diagnostics, including failed states."""
+def run_audit(
+    *,
+    temperatures_k: tuple = (1500.0, 2200.0, 3000.0, 4500.0),
+    pressures_bar: tuple = (1e-5, 0.01, 1.0, 100.0),
+    abundance_points: tuple = ((0.0, 0.6), (-1.0, 0.3), (-1.0, 1.2), (1.0, 0.3), (1.0, 1.2)),
+) -> dict:
+    """Audit the grid product, retaining failed states and absent comparisons.
+
+    Each abundance point is a pair of log10 metal scale and C/O ratio.
+    The default grid contains the documented 80 states per model.
+    """
     jax.config.update("jax_enable_x64", True)
     thermodynamics = prepare_fastchem_thermodynamics()
     original = chemsetup(path="FastChem4/logK/logK.dat", silent=True)
@@ -39,9 +48,8 @@ def run_audit():
         "omission_only": reduced,
         "hybrid": thermodynamics.chemical_setup,
     }
-    temperature = jnp.repeat(jnp.array([1500.0, 2200.0, 3000.0, 4500.0]), 4)
-    pressure = jnp.tile(jnp.array([1e-5, 0.01, 1.0, 100.0]), 4)
-    abundance_points = [(0.0, 0.6), (-1.0, 0.3), (-1.0, 1.2), (1.0, 0.3), (1.0, 1.2)]
+    temperature = jnp.repeat(jnp.asarray(temperatures_k), len(pressures_bar))
+    pressure = jnp.tile(jnp.asarray(pressures_bar), len(temperatures_k))
     options = EquilibriumOptions(method="vmap_cold", epsilon_crit=1e-14, max_iter=2000)
     conservation_rtol = 3e-6
     elements = original.elements
@@ -145,7 +153,7 @@ def run_audit():
         report[label]["comparison_summary"] = {
             "common_valid_points": len(common),
             **{
-                key: max(row[key] for row in common)
+                key: max((row[key] for row in common), default=None)
                 for key in (
                     "max_absolute_fraction_change",
                     "relative_mmw_change",
