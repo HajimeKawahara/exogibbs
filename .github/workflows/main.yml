@@ -36,7 +36,7 @@ jobs:
       - name: Run tests and generate XML report
         run: |
           mkdir -p results
-          pytest tests/unittests --junit-xml results/pytest.xml
+          pytest tests/unittests --durations=20 --junit-xml results/pytest.xml
 
       - name: Upload Unit Test Results
         if: ${{ always() }}
@@ -166,7 +166,7 @@ jobs:
             tests/unittests/examples/metal_silicate_melts_archive_test.py
             tests/unittests/interop
           )
-          python -m pytest "${tests[@]}" --junitxml=results/provider.xml
+          python -m pytest "${tests[@]}" --durations=20 --junitxml=results/provider.xml
           python - <<'PY'
           from xml.etree import ElementTree
 
