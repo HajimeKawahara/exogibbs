@@ -69,6 +69,7 @@ def test_janaf_gauge_keeps_every_existing_gas_and_cloud_standard(setup):
 
 
 @pytest.mark.parametrize("temperature", [1000., 2173.15])
+@pytest.mark.scientific
 def test_finite_phosphorus_and_upper_composition_are_gauge_invariant(setup, temperature):
     # A finite atmospheric allocation with all thirteen elements; the column
     # re-evaluates reactions at its own T and uses no JANAF extrapolation.
@@ -147,6 +148,7 @@ def test_background_condensates_keep_the_gas_catalog_and_pure_phase_validity(set
 
 
 @pytest.mark.parametrize("temperature", [1000., 2173.15])
+@pytest.mark.scientific
 def test_67_condensates_preserve_finite_atoms_and_cannot_raise_minimum(setup, temperature):
     b = np.array([1., .1, .03, .001, .001, .001, .001,
                   1e-7, 1e-7, 1e-7, 1e-8, 1e-7, 2e-4])

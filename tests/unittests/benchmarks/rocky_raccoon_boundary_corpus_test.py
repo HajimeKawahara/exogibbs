@@ -62,6 +62,7 @@ def test_boundary_fixture_preserves_named_source_state(case):
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
+@pytest.mark.scientific
 def test_public_rainout_certifies_warm_boundary(case, setups):
     stored = _load_case(case)
     setup = setups[case["include_sio"]]

@@ -22,6 +22,7 @@ REFERENCE = SCAN.load_reference()
 
 
 @pytest.mark.parametrize("element,absent", [("C", ("S", "N")), ("S", ("C", "N")), ("N", ())])
+@pytest.mark.scientific
 def test_scan_crosses_exact_zero_without_changing_background_inventory(element, absent) -> None:
     network = REFERENCE["networks"]["sulfur_nitrogen"]
     budget = np.asarray(network["element_amounts_mol"]).copy()
@@ -57,6 +58,7 @@ def test_scan_crosses_exact_zero_without_changing_background_inventory(element, 
                                rtol=1e-7, atol=0)
 
 
+@pytest.mark.scientific
 def test_carbon_scan_scales_absolute_reservoirs_but_not_composition() -> None:
     network = REFERENCE["networks"]["carbon"]
     case = network["cases"][0]

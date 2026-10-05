@@ -5,13 +5,47 @@ on:
     branches: [ "develop", "main", "release*" ]
   # Stacked PRs target feature branches and need the same checks.
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 18 * * *"
 
 permissions:
   checks: write
   contents: read
   pull-requests: write
 
+env:
+  OPENBLAS_NUM_THREADS: "1"
+  OMP_NUM_THREADS: "1"
+
 jobs:
+  test-scope:
+    runs-on: ubuntu-latest
+    outputs:
+      scientific: ${{ steps.scope.outputs.scientific }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Select scientific regressions
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Pushes, scheduled runs, and manual runs always cover the full suite.
+          if [[ "$EVENT_NAME" != "pull_request" ]]; then
+            echo "scientific=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet "$BASE_SHA...$HEAD_SHA" -- \
+            examples benchmarks src/exogibbs/data \
+            tests/unittests/examples tests/unittests/benchmarks \
+            .github/workflows/main.yml pyproject.toml; then
+            echo "scientific=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "scientific=true" >> "$GITHUB_OUTPUT"
+          fi
+
   pytest:
     runs-on: ubuntu-latest
 
@@ -36,7 +70,7 @@ jobs:
       - name: Run tests and generate XML report
         run: |
           mkdir -p results
-          pytest tests/unittests --durations=20 --junit-xml results/pytest.xml
+          pytest tests/unittests -m "not scientific" --durations=20 --junit-xml results/pytest.xml
 
       - name: Upload Unit Test Results
         if: ${{ always() }}
@@ -45,20 +79,43 @@ jobs:
           name: Unit Test Results (Python 3.11)
           path: results/*.xml
 
-      - name: Download Artifacts
-        if: success() || failure()
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
       - name: Publish Unit Test Results
         if: ${{ always() }}
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: artifacts/**/*.xml
+          files: results/pytest.xml
+
+  scientific:
+    name: Scientific regressions
+    needs: test-scope
+    if: needs.test-scope.outputs.scientific == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test deps
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -e .
+          pip install pytest matplotlib==3.9.1
+      - name: Run scientific regressions
+        run: |
+          mkdir -p results
+          pytest tests/unittests -m scientific --durations=20 --junitxml=results/scientific.xml
+      - name: Upload scientific regression results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Scientific Regression Results (Python 3.11)
+          path: results/scientific.xml
 
   provider-integration:
     name: Pinned ExoEOS integration (no skips)
+    needs: test-scope
     runs-on: ubuntu-latest
     env:
       JAX_PLATFORMS: cpu
@@ -129,6 +186,8 @@ jobs:
           PY
 
       - name: Run offline provider connections and require zero skips
+        env:
+          RUN_SCIENTIFIC: ${{ needs.test-scope.outputs.scientific }}
         run: |
           mkdir -p results
           tests=(
@@ -166,7 +225,11 @@ jobs:
             tests/unittests/examples/metal_silicate_melts_archive_test.py
             tests/unittests/interop
           )
-          python -m pytest "${tests[@]}" --durations=20 --junitxml=results/provider.xml
+          marker_args=(-m "not scientific")
+          if [[ "$RUN_SCIENTIFIC" == "true" ]]; then
+            marker_args=()
+          fi
+          python -m pytest "${tests[@]}" "${marker_args[@]}" --durations=20 --junitxml=results/provider.xml
           python - <<'PY'
           from xml.etree import ElementTree
 

@@ -73,6 +73,7 @@ def setup():
     return build_condensate_chemical_setup(gas_setup=gas, condensate_setup=cloud)
 
 
+@pytest.mark.scientific
 def test_nonideal_cloud_saturation_and_independent_scalar_envelope(setup):
     eos, budget = FrozenEOS(), np.array([6., 1., 2., 2.])
     phase = ATM.make_atmosphere_phase(setup, np.zeros(4), gas_eos=eos)
@@ -101,6 +102,7 @@ def test_nonideal_cloud_saturation_and_independent_scalar_envelope(setup):
     assert not stale["accepted"]
 
 
+@pytest.mark.scientific
 def test_zero_coefficients_recover_ideal_and_full_basis_survives_zero_elements(setup):
     budget = np.array([6., 1., 2., 2.])
     ideal = ATM.make_atmosphere_phase(setup, np.zeros(4)).parcel(1500., 1., budget)
@@ -119,6 +121,7 @@ def test_zero_coefficients_recover_ideal_and_full_basis_survives_zero_elements(s
     assert empty.gibbs_rt == 0.
 
 
+@pytest.mark.scientific
 def test_gauge_invariance_primitive_unpack_and_contact_use_same_residual(setup, monkeypatch):
     monkeypatch.setattr(CONTACT, "build_atmosphere_setup", lambda model: setup)
     budget, gauge = np.array([6., 1., 2., 2.]), np.array([.2, -.3, .4, .1])

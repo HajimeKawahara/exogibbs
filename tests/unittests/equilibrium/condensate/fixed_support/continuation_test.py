@@ -331,10 +331,12 @@ def test_batched_layers_advance_stages_independently_and_match_single_solves():
 def test_terminal_continuation_state_is_frozen():
     problem, state = _equilibrium_fixture()
     config = _config((math.log(0.1),))
-    result = solve_continuation(
-        problem, initialize_continuation(problem, state, config), config
-    )
-    repeated = continuation_step(problem, result, config)
+    # JIT and batched execution have dedicated tests; this checks a terminal no-op.
+    with jax.disable_jit():
+        result = solve_continuation(
+            problem, initialize_continuation(problem, state, config), config
+        )
+        repeated = continuation_step(problem, result, config)
 
     assert jax.tree_util.tree_all(
         jax.tree_util.tree_map(jnp.array_equal, repeated, result)

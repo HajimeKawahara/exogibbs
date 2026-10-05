@@ -356,6 +356,7 @@ def test_setup_has_exact_network_without_reference_gases(example, setup) -> None
     assert inventory[setup.elements.index("e-")] == 0.0
 
 
+@pytest.mark.scientific
 def test_public_profile_resolves_positive_trace_magnesium(
     example,
     setup,
@@ -378,6 +379,7 @@ def test_public_profile_resolves_positive_trace_magnesium(
     ] == pytest.approx(audit["target_magnesium"], rel=1.0e-10)
 
 
+@pytest.mark.scientific
 def test_physical_audit_can_be_persisted(example, solved, tmp_path) -> None:
     _, audit = solved
     output_path = tmp_path / "trace_mg_audit.json"
@@ -421,6 +423,7 @@ def test_main_invalidates_stale_audit_before_computation(
 
 
 @pytest.mark.parametrize("case_name", tuple(BOUNDARY_CASES))
+@pytest.mark.scientific
 def test_public_profile_certifies_exact_rocky_boundary(
     case_name,
     boundary_profiles,
@@ -452,6 +455,7 @@ def test_public_profile_certifies_exact_rocky_boundary(
     _assert_caller_physical_kkt(lifecycle)
 
 
+@pytest.mark.scientific
 def test_public_amount_gauge_boundary_uses_exact_polish_rescue(
     boundary_profiles,
 ) -> None:
@@ -468,6 +472,7 @@ def test_public_amount_gauge_boundary_uses_exact_polish_rescue(
     assert lifecycle["zero_barrier_active_support_polish"]["accepted"]
 
 
+@pytest.mark.scientific
 def test_public_trace_capacity_boundary_uses_pre_pdipm_initializer(
     boundary_profiles,
 ) -> None:
@@ -506,6 +511,7 @@ def test_public_trace_capacity_boundary_uses_pre_pdipm_initializer(
     assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
 
 
+@pytest.mark.scientific
 def test_pre_pdipm_initializer_expands_the_initial_support_envelope(
     boundary_profiles,
 ) -> None:
@@ -541,6 +547,7 @@ def test_pre_pdipm_initializer_expands_the_initial_support_envelope(
     assert polish["basic_support_reduction"]["initial_support_nullity"] > 0
 
 
+@pytest.mark.scientific
 def test_trace_geometry_initializer_expands_the_initial_support_envelope(
     boundary_profiles,
 ) -> None:
@@ -565,6 +572,7 @@ def test_trace_geometry_initializer_expands_the_initial_support_envelope(
     assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
 
 
+@pytest.mark.scientific
 def test_public_support_release_relaxes_only_the_initializer_partition(
     boundary_profiles,
 ) -> None:
@@ -635,6 +643,7 @@ def test_public_support_release_relaxes_only_the_initializer_partition(
     assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
 
 
+@pytest.mark.scientific
 def test_public_warm_boundary_uses_signed_zero_regularized_portfolio(
     setup,
     upper_warm_state,
@@ -698,6 +707,7 @@ def test_public_warm_boundary_uses_signed_zero_regularized_portfolio(
         ]
 
 
+@pytest.mark.scientific
 def test_public_warm_boundary_ignores_signed_rows_for_gas_capacity(
     setup,
     lower_warm_state,
@@ -753,6 +763,7 @@ def test_public_warm_boundary_ignores_signed_rows_for_gas_capacity(
     assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
 
 
+@pytest.mark.scientific
 def test_public_trace_mg_warm_boundary_closes_from_trace_geometry(
     setup,
     trace_mg_warm_state,
@@ -795,6 +806,7 @@ def test_public_trace_mg_warm_boundary_closes_from_trace_geometry(
     assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
 
 
+@pytest.mark.scientific
 def test_public_rank_deficient_boundary_selects_an_exact_basic_support(
     boundary_profiles,
     setup,
@@ -825,6 +837,7 @@ def test_public_rank_deficient_boundary_selects_an_exact_basic_support(
     assert closure["termination_reason"] == "accepted"
 
 
+@pytest.mark.scientific
 def test_public_mixed_charge_budget_boundary_preserves_signed_constraint(
     boundary_profiles,
 ) -> None:
@@ -841,6 +854,7 @@ def test_public_mixed_charge_budget_boundary_preserves_signed_constraint(
     _assert_trace_geometry_initializer(lifecycle)
 
 
+@pytest.mark.scientific
 def test_public_trace_partition_boundary_closes_with_feasible_support(
     boundary_profiles,
 ) -> None:
@@ -859,6 +873,7 @@ def test_public_trace_partition_boundary_closes_with_feasible_support(
     _assert_trace_geometry_initializer(lifecycle)
 
 
+@pytest.mark.scientific
 def test_public_trace_depletion_uses_optimizer_directed_support_release(
     setup,
     trace_depletion_warm_state,
@@ -950,6 +965,7 @@ def test_public_trace_depletion_uses_optimizer_directed_support_release(
     assert lifecycle["caller_gauge_zero_barrier_kkt"]["accepted"]
 
 
+@pytest.mark.scientific
 def test_public_optimizer_limit_boundary_uses_physical_certificate(
     boundary_profiles,
 ) -> None:

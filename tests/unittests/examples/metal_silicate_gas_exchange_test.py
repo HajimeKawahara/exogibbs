@@ -42,6 +42,7 @@ def _problem(index=0):
 
 
 @pytest.mark.parametrize("index", [0, 1])
+@pytest.mark.scientific
 def test_nested_gas_reproduces_independent_full_source_reference(index):
     problem, case = _problem(index)
     initial = MagmaGasInit(problem.model.reference_root + jnp.linspace(-0.15, 0.15, 22))
@@ -77,6 +78,7 @@ def test_nested_gas_reproduces_independent_full_source_reference(index):
     assert not np.isclose(float(result.gas.equilibrium.ntot), float(state.phase_amounts_mol[2]))
 
 
+@pytest.mark.scientific
 def test_finite_hydrogen_exchange_and_uniform_budget_scaling_are_differentiable():
     problem, case = _problem()
     budget = jnp.asarray(case["element_amounts_mol"])
@@ -129,6 +131,7 @@ def test_finite_hydrogen_exchange_and_uniform_budget_scaling_are_differentiable(
 
 
 @pytest.mark.parametrize("failed_inner", [False, True])
+@pytest.mark.scientific
 def test_failed_nested_solution_reports_failure_and_nan_gradient(failed_inner):
     problem, case = _problem()
     budget = jnp.asarray(case["element_amounts_mol"])

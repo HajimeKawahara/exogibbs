@@ -138,6 +138,7 @@ def test_reduced_setups_differ_only_by_enstatite(demo, setups) -> None:
     assert run_b.formula_matrix_cond.shape == (6, 2)
 
 
+@pytest.mark.scientific
 def test_production_solver_resolves_the_three_phase_boundaries(
     demo,
     setups,
@@ -176,6 +177,7 @@ def test_production_solver_resolves_the_three_phase_boundaries(
     )
 
 
+@pytest.mark.scientific
 def test_enstatite_suppresses_quartz_and_changes_the_cold_phase_split(
     demo,
     setups,
@@ -218,6 +220,7 @@ def test_enstatite_suppresses_quartz_and_changes_the_cold_phase_split(
     )
 
 
+@pytest.mark.scientific
 def test_saturation_diagnostic_exposes_the_excluded_stable_phase(
     demo,
     setups,
@@ -251,6 +254,7 @@ def test_saturation_diagnostic_exposes_the_excluded_stable_phase(
     assert log_saturation_b[temperature_index, enstatite_index] > 0.05
 
 
+@pytest.mark.scientific
 def test_release_criteria_fail_closed(
     demo,
     setups,
@@ -286,6 +290,7 @@ def test_release_criteria_fail_closed(
         ("without_enstatite", "MgSiO3(s,l)"),
     ),
 )
+@pytest.mark.scientific
 def test_release_criteria_reject_nonfinite_inactive_saturation(
     demo,
     setups,
@@ -314,6 +319,7 @@ def test_release_criteria_reject_nonfinite_inactive_saturation(
         validate(setups=setups, solutions=solutions)
 
 
+@pytest.mark.scientific
 def test_both_runs_conserve_the_shared_element_inventory(
     demo,
     setups,

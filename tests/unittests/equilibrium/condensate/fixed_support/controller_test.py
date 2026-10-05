@@ -225,7 +225,9 @@ def test_converged_controller_freezes_original_state():
     problem, state = _equilibrium_fixture()
     config = _controller_config()
     controller = initialize_controller(problem, state, config)
-    result = controller_step(problem, controller, config)
+    # JIT and batched execution have dedicated tests; this checks a terminal no-op.
+    with jax.disable_jit():
+        result = controller_step(problem, controller, config)
 
     assert int(result.mode) == SolverMode.CONVERGED
     assert int(result.terminal_status) == TerminalStatus.CONVERGED
