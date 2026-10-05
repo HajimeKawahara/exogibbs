@@ -389,16 +389,17 @@ def test_batched_fixed_epsilon_matches_independent_controller_solves():
             problem, state._replace(lambda_=jnp.asarray([0.01])), config
         ),
     )
-    independent = tuple(
-        solve_fixed_epsilon(problem, controller, config)
-        for controller in controllers
+    solve_one = jax.jit(
+        lambda controller: solve_fixed_epsilon(problem, controller, config)
     )
+    independent = tuple(solve_one(controller) for controller in controllers)
     batched_input = jax.tree_util.tree_map(
         lambda first, second: jnp.stack([first, second]), *controllers
     )
-    batched = jax.jit(
+    solve_batch = jax.jit(
         jax.vmap(lambda controller: solve_fixed_epsilon(problem, controller, config))
-    )(batched_input)
+    )
+    batched = solve_batch(batched_input)
 
     expected = jax.tree_util.tree_map(
         lambda first, second: jnp.stack([first, second]), *independent
@@ -410,9 +411,7 @@ def test_batched_fixed_epsilon_matches_independent_controller_solves():
     reversed_input = jax.tree_util.tree_map(
         lambda values: values[::-1], batched_input
     )
-    reversed_result = jax.jit(
-        jax.vmap(lambda controller: solve_fixed_epsilon(problem, controller, config))
-    )(reversed_input)
+    reversed_result = solve_batch(reversed_input)
     restored_order = jax.tree_util.tree_map(
         lambda values: values[::-1], reversed_result
     )

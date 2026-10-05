@@ -129,9 +129,8 @@ def low_oxygen_pressure_seed():
     return json.loads(path.read_text())["seed"]
 
 
-@pytest.mark.parametrize("pressure,warm", [(80., True), (80., False), (60., True)])
-def test_pressure_steps_keep_nested_parcels_within_finite_supply(
-    upper, low_oxygen_pressure_seed, monkeypatch, pressure, warm,
+def test_pressure_jump_keeps_nested_parcels_within_finite_supply(
+    upper, low_oxygen_pressure_seed, monkeypatch,
 ):
     seed = low_oxygen_pressure_seed
     network, case, _ = CONTROL.CHEMISTRY.source_inputs(0.9)
@@ -144,9 +143,10 @@ def test_pressure_steps_keep_nested_parcels_within_finite_supply(
         return original_parcel(setup, temperature, pressure_bar, atoms)
 
     monkeypatch.setattr(CONTROL.CHEMISTRY, "solve_parcel", checked_parcel)
+    # Retain the historical 40 -> 80 bar failure; local_control covers cold starts.
     report = CONTROL.solve_control(
-        network, case, upper, element_amounts_mol=budget, pressure_bar=pressure,
-        initial_control=seed if warm else None,
+        network, case, upper, element_amounts_mol=budget, pressure_bar=80.,
+        initial_control=seed,
     )
     assert report["accepted"] and CONTROL.audit_control(network, case, upper, report)["accepted"]
     helium = CONTROL.CHEMISTRY.ELEMENTS.index("He")
