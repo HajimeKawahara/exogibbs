@@ -54,7 +54,8 @@ def _seed(setup, budget, result):
     return {"gas_amounts": gas.copy(), "condensate_amounts": cloud.copy()}
 
 
-def make_previous_parcel_retry(solver, *, enabled=False, record=None):
+def make_previous_parcel_retry(solver, *, enabled=False, record=None,
+                               allow_nonideal=False, nonideal_identity=None):
     """Wrap a condensate solver with an explicitly enabled, single warm retry.
 
     The cold call is always first and is unchanged. Only a returned
@@ -63,9 +64,15 @@ def make_previous_parcel_retry(solver, *, enabled=False, record=None):
     caller budget and pressure standard. All donor amounts use the solver's
     caller gauge; the helper never normalizes them a second time.
 
-    Explicit initializers/support, rainout and nonideal fugacity callbacks
-    are outside this retry's scope. Temperature-ineligible donor condensates
-    also prevent a retry. There is no final-support constraint or tolerance
+    Explicit initializers/support and rainout are outside this retry's scope.
+    Nonideal fugacity callbacks require ``allow_nonideal=True`` and an explicit
+    identity object for one fixed EOS/column context. The callback may change
+    between EOS fixed-point iterations, but the warm call receives the exact
+    current callback and options. Donor options and nonideal mode must match.
+    No fugacity value, elemental potential, or EOS state is reused. Construct
+    a new wrapper for every column/EOS context; the consumer binds its recipe.
+    Temperature-ineligible donor condensates also prevent a retry.
+    There is no final-support constraint or tolerance
     override. Failed calls are sent to ``record(receipt)`` before returning or
     propagating an exception, so a surrounding generic exception cannot erase
     their raw solver diagnostics. This callback must persist receipts itself.
@@ -75,6 +82,10 @@ def make_previous_parcel_retry(solver, *, enabled=False, record=None):
     """
     if type(enabled) is not bool:
         raise TypeError("enabled must be a bool.")
+    if type(allow_nonideal) is not bool:
+        raise TypeError("allow_nonideal must be a bool.")
+    if allow_nonideal and nonideal_identity is None:
+        raise ValueError("Nonideal retry requires an explicit fixed EOS/column identity.")
     if not callable(solver) or (record is not None and not callable(record)):
         raise TypeError("solver and any record callback must be callable.")
     previous = None
@@ -86,11 +97,15 @@ def make_previous_parcel_retry(solver, *, enabled=False, record=None):
             return solver(setup, temperature, pressure, budget, **kwargs)
         b = np.asarray(budget, dtype=float)
         options = kwargs.get("options")
+        nonideal = kwargs.get("lnphi_func") is not None
+        option_record = _plain(options)
         unsupported = None
         if options is None or options.rainout or not options.return_diagnostics:
             unsupported = "requires explicit retained-parcel diagnostic options"
         if any(kwargs.get(key) is not None for key in (
-                "init", "initializer", "support_indices", "support_amounts_init", "lnphi_func")):
+                "init", "initializer", "support_indices", "support_amounts_init")):
+            unsupported = "explicit initialization/support or fugacity callback"
+        if nonideal and not allow_nonideal:
             unsupported = "explicit initialization/support or fugacity callback"
         point = {"temperature_K": float(temperature), "pressure_bar": float(pressure),
                  "pressure_standard_bar": float(kwargs.get("Pref", 1.)),
@@ -98,8 +113,20 @@ def make_previous_parcel_retry(solver, *, enabled=False, record=None):
                  "condensate_species": list(setup.condensate_species),
                  "caller_element_amounts": b.tolist()}
         receipt = {"schema": "m2_previous_parcel_retry_v1", "point": point,
-                   "options": _plain(options), "retry_attempted": False,
+                   "options": option_record, "retry_attempted": False,
                    "scope": "Initial amounts only; original solver and downstream audits are unchanged."}
+        if allow_nonideal:
+            receipt["nonideal_initialization"] = {
+                "enabled": True, "fugacity_callback_present": nonideal,
+                "identity_scope": "Explicit fixed EOS/column context; current fugacity callback unchanged.",
+            }
+
+        def remember(result):
+            seed = None if unsupported else _seed(setup, b, result)
+            return (None if seed is None else
+                    {"setup": setup, "budget": b.copy(), "point": point,
+                     "options": option_record, "nonideal": nonideal,
+                     "nonideal_identity": nonideal_identity, **seed})
 
         def emit():
             if record is not None:
@@ -113,9 +140,7 @@ def make_previous_parcel_retry(solver, *, enabled=False, record=None):
             emit()
             raise
         if bool(cold.converged):
-            seed = None if unsupported else _seed(setup, b, cold)
-            previous = (None if seed is None else
-                        {"setup": setup, "budget": b.copy(), "point": point, **seed})
+            previous = remember(cold)
             return cold
         receipt["cold_result"] = _plain(cold)
         reason = unsupported
@@ -126,6 +151,11 @@ def make_previous_parcel_retry(solver, *, enabled=False, record=None):
                 or previous["budget"].tobytes() != b.tobytes()
                 or previous["point"]["pressure_standard_bar"] != point["pressure_standard_bar"]):
             reason = "the donor setup, caller budget or pressure standard differs"
+        if reason is None and allow_nonideal and (
+                previous["options"] != option_record
+                or previous["nonideal"] != nonideal
+                or previous["nonideal_identity"] is not nonideal_identity):
+            reason = "the donor options or fixed nonideal context differs"
         if reason is None:
             upper = setup.condensate_setup.temperature_validity_upper
             if upper is not None and np.any((previous["condensate_amounts"] > 0)
@@ -155,9 +185,7 @@ def make_previous_parcel_retry(solver, *, enabled=False, record=None):
         receipt["warm_result"] = _plain(warm)
         emit()
         if bool(warm.converged):
-            seed = _seed(setup, b, warm)
-            previous = (None if seed is None else
-                        {"setup": setup, "budget": b.copy(), "point": point, **seed})
+            previous = remember(warm)
         return warm
 
     return wrapped

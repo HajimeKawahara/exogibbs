@@ -10,7 +10,8 @@ using the most recent solver-converged species amounts. The setup object,
 caller budget bytes, and pressure standard must match. Donor amounts must be
 finite, nonnegative, independently conserved, and have positive gas amounts;
 present condensates must remain temperature eligible. Explicit initialization
-or support arguments, fugacity callbacks, and rainout are excluded.
+or support arguments and rainout are excluded. Fugacity callbacks remain
+excluded by default.
 
 The donor already uses the local solver's caller gauge. The wrapper passes
 `log(gas_n)`, `sum(gas_n)`, and the full condensate amounts without a second
@@ -21,6 +22,25 @@ retains all its physical acceptance gates. A failed retry stays failed.
 ```python
 retry = make_previous_parcel_retry(
     original_solve_condensate, enabled=True, record=save_receipt,
+)
+```
+
+For a fixed nonideal EOS/column context, `allow_nonideal=True` additionally
+requires an explicit `nonideal_identity` object. Construct a new wrapper for
+each context and bind the physical EOS recipe in the consumer receipt. The
+context identity, setup, budget, pressure standard, full solver options and
+presence of a fugacity callback must match the donor. An EOS fixed-point loop
+may supply a fresh fugacity callback for each iteration. The warm call uses
+the current callback and options unchanged; it does not reuse fugacity values,
+EOS states or chemical potentials. Only the primitive gas and condensate
+amounts become an initializer. The provider's full support search and the
+consumer's independent EOS fixed-point, convexity and KKT audits still decide
+acceptance.
+
+```python
+retry = make_previous_parcel_retry(
+    original_solve_condensate, enabled=True, record=save_receipt,
+    allow_nonideal=True, nonideal_identity=original_column_parcel_callback,
 )
 ```
 
