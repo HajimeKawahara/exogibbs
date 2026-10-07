@@ -151,7 +151,10 @@ def main() -> None:
         axis.set_ylim(1.0e-8, 1.0)
         axis.grid(which="major", alpha=0.25)
         axis.legend(loc="upper left", fontsize=9, framealpha=0.95)
-    figure.suptitle(f"ExoGibbs volatile-solubility laws | {backend}", fontsize=16)
+    figure.suptitle(
+        "ExoGibbs volatile-solubility laws" + (f" | {backend}" if args.exoeos else ""),
+        fontsize=16,
+    )
     figure.legend(
         handles=[
             Line2D([], [], color="0.3", linewidth=2.5,
