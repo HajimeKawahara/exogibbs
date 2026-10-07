@@ -2,6 +2,7 @@
 
 import importlib.util
 import json
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -180,3 +181,82 @@ def test_nonfinite_failed_diagnostics_are_explicit_json_evidence(setup):
     assert wrapped(setup, 1000., 1., BUDGET, options=OPTIONS) is failed
     assert receipts[0]["cold_result"]["diagnostics"]["failed_residual"] == {"nonfinite_float": "nan"}
     json.dumps(receipts[0], allow_nan=False)
+
+
+@pytest.mark.parametrize("value", [1, "yes", None])
+def test_nonideal_opt_in_is_strict_bool(value):
+    with pytest.raises(TypeError, match="allow_nonideal must be a bool"):
+        HELPER.make_previous_parcel_retry(lambda: None, allow_nonideal=value)
+
+
+def test_nonideal_opt_in_requires_explicit_fixed_context():
+    with pytest.raises(ValueError, match="fixed EOS/column identity"):
+        HELPER.make_previous_parcel_retry(lambda: None, enabled=True, allow_nonideal=True)
+
+
+def test_nonideal_retry_preserves_current_fugacity_and_options(setup):
+    prior, cold, warm = result(True), result(False), result(True)
+    solver, calls = sequence([prior, cold, warm])
+    context = object()
+    receipts = []
+    wrapped = HELPER.make_previous_parcel_retry(
+        solver, enabled=True, record=receipts.append,
+        allow_nonideal=True, nonideal_identity=context,
+    )
+    previous_phi = lambda *args: np.array([.1, .2])
+    current_phi = lambda *args: np.array([.3, .4])
+    wrapped(setup, 1000., 1., BUDGET, options=OPTIONS, lnphi_func=previous_phi)
+    assert wrapped(setup, 1010., 1.1, BUDGET, options=OPTIONS, lnphi_func=current_phi) is warm
+    assert len(calls) == 3
+    assert calls[-2][1]["lnphi_func"] is current_phi
+    assert calls[-1][1]["lnphi_func"] is current_phi
+    assert calls[-1][1]["options"] is OPTIONS
+    assert calls[-1][0] == calls[-2][0]
+    initial = calls[-1][1]["init"]
+    np.testing.assert_array_equal(initial.gas_ln_n, np.log(prior.gas_n))
+    np.testing.assert_array_equal(initial.condensate_amounts, prior.condensate_amounts)
+    assert initial.element_potential is None and initial.support_indices is None
+    assert receipts[0]["nonideal_initialization"]["enabled"] is True
+    assert receipts[0]["retry_attempted"] is True
+    json.dumps(receipts[0], allow_nan=False)
+
+
+@pytest.mark.parametrize("change", ["options", "nonideal_mode", "new_context"])
+def test_nonideal_donor_rejected_when_its_options_or_context_change(setup, change):
+    cold = result(False)
+    solver, calls = sequence([result(True), cold])
+    receipts = []
+    wrapped = HELPER.make_previous_parcel_retry(
+        solver, enabled=True, record=receipts.append,
+        allow_nonideal=True, nonideal_identity=object(),
+    )
+    phi = lambda *args: np.array([.1, .2])
+    wrapped(setup, 1000., 1., BUDGET, options=OPTIONS, lnphi_func=phi)
+    options = OPTIONS
+    if change == "options":
+        options = replace(OPTIONS, full_condensate_budget_relative_tolerance=1e-8)
+    elif change == "nonideal_mode":
+        phi = None
+    else:
+        wrapped = HELPER.make_previous_parcel_retry(
+            solver, enabled=True, record=receipts.append,
+            allow_nonideal=True, nonideal_identity=object(),
+        )
+    assert wrapped(setup, 1010., 1.1, BUDGET, options=options, lnphi_func=phi) is cold
+    assert len(calls) == 2 and receipts[0]["retry_attempted"] is False
+
+
+def test_nonideal_options_snapshot_rejects_in_place_tolerance_change(setup):
+    cold = result(False)
+    solver, calls = sequence([result(True), cold])
+    receipts = []
+    options = replace(OPTIONS)
+    wrapped = HELPER.make_previous_parcel_retry(
+        solver, enabled=True, record=receipts.append,
+        allow_nonideal=True, nonideal_identity=object(),
+    )
+    phi = lambda *args: np.array([.1, .2])
+    wrapped(setup, 1000., 1., BUDGET, options=options, lnphi_func=phi)
+    object.__setattr__(options, "full_condensate_budget_relative_tolerance", 1e-8)
+    assert wrapped(setup, 1010., 1.1, BUDGET, options=options, lnphi_func=phi) is cold
+    assert len(calls) == 2 and receipts[0]["skip_reason"] == "the donor options or fixed nonideal context differs"
