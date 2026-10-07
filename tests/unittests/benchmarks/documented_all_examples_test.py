@@ -33,7 +33,7 @@ def test_every_public_script_and_all_expensive_configurations_are_covered():
     covered.add("examples/plot_exoeos_pure_fugacity.py")
     assert public <= covered, f"Unexecuted entry points: {public - covered}"
     assert len(curated) == 10
-    assert sum(job.script.startswith("examples/comparisons/") for job in jobs) == 14
+    assert sum(job.script.startswith("examples/comparisons/") for job in jobs) == 15
     assert {alias for alias in run_all.ALIASES.values()} <= {job.name for job in jobs}
     assert {job.arguments for job in jobs if job.script.endswith("/native.py")} == {
         ("--case", f"{kind}_{temperature}")

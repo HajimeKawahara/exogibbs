@@ -223,6 +223,7 @@ jobs:
             tests/unittests/examples/metal_silicate_phase_selection_test.py
             tests/unittests/examples/metal_silicate_melts_coupled_test.py
             tests/unittests/examples/metal_silicate_melts_archive_test.py
+            tests/unittests/examples/solubility_comparison_test.py
             tests/unittests/interop
           )
           marker_args=(-m "not scientific")

@@ -2,11 +2,16 @@
 
 Run from the repository root:
     python examples/comparisons/compare_solubility_laws.py
+    python examples/comparisons/compare_solubility_laws.py --exoeos
 
-Each curve is an independent ideal pure-component pressure sweep, with
-partial pressure = fugacity = total melt pressure. This is an illustrative
-law comparison, not a coupled gas-magma equilibrium calculation. Solid lines
-mark the metadata's calibration pressure interval; dashed lines extrapolate.
+By default, each curve is an independent ideal pure-component pressure sweep,
+with partial pressure = fugacity = total melt pressure. The optional --exoeos run
+adds a separate pressure plot using ExoEOS Zhang-Duan pure-gas fugacities for
+H2, CH4, and CO. H2O, CO2, and N2 retain their partial-pressure inputs, and
+melt pressure remains the actual pressure in every law. Dotted curves in
+the ExoEOS plot show the ideal-gas reference. These are illustrative law
+evaluations, not coupled gas-magma equilibrium calculations. Solid lines mark
+the metadata's calibration pressure interval; dashed lines extrapolate.
 The temperature is 1700 K, within all six metadata temperature intervals.
 Only the N law explicitly depends on temperature, redox, and composition.
 """
@@ -31,6 +36,50 @@ from exogibbs.solubility import (
 )
 
 
+def _exoeos_fugacity_bar(pressure_bar: np.ndarray) -> dict[str, np.ndarray]:
+    """Convert actual pressure to pure-gas fugacity through the existing adapter."""
+    import jax
+    from exoeos import ZhangDuanEOS
+
+    from exogibbs.interop.exoeos import make_pure_lnphi_func
+
+    jax.config.update("jax_enable_x64", True)
+    species = ("H2", "CH4", "CO")
+    lnphi_func = make_pure_lnphi_func(
+        source_species=species,
+        eos_by_species={name: ZhangDuanEOS.from_species((name,)) for name in species},
+    )
+    lnphi = np.asarray(jax.jit(jax.vmap(
+        lambda pressure: lnphi_func(1700.0, pressure, None)
+    ))(pressure_bar))
+    return {
+        name: pressure_bar * np.exp(lnphi[:, index])
+        for index, name in enumerate(species)
+    }
+
+
+def _solubility_curves(
+    pressure_bar: np.ndarray, fugacity_bar: dict[str, np.ndarray],
+) -> tuple:
+    """Evaluate native laws with separate fugacity and actual melt pressure."""
+    pressure_gpa = pressure_bar / 1.0e4
+    pressure_pa = pressure_bar * 1.0e5
+    return (
+        ("h2_hirschmann2012", r"H$_2$ | Hirschmann (2012)",
+         h2_hirschmann2012(fugacity_bar["H2"], pressure_gpa)),
+        ("ch4_ardia2013", r"CH$_4$ | Ardia (2013)",
+         ch4_ardia2013(fugacity_bar["CH4"] / 1.0e4, pressure_gpa)),
+        ("h2o_lichtenberg2021", r"H$_2$O | Lichtenberg (2021)",
+         h2o_lichtenberg2021(pressure_pa)),
+        ("co2_lichtenberg2021", r"CO$_2$ | Lichtenberg (2021)",
+         co2_lichtenberg2021(pressure_pa)),
+        ("co_yoshioka2019", "C from CO | Yoshioka (2019)",
+         co_yoshioka2019(fugacity_bar["CO"])),
+        ("n2_dasgupta2022", r"Total N from N$_2$ | Dasgupta (2022)",
+         n2_dasgupta2022(pressure_gpa, 1700.0, pressure_gpa, 0.0)),
+    )
+
+
 def main() -> None:
     """Save a PNG/PDF comparison and print values at a shared calibration P."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -39,6 +88,10 @@ def main() -> None:
         type=Path,
         default=Path(__file__).resolve().parents[2] / "results" / "solubility",
         help="Directory for the PNG and PDF figures.",
+    )
+    parser.add_argument(
+        "--exoeos", action="store_true",
+        help="Save an additional pressure plot using an optional ExoEOS checkout.",
     )
     args = parser.parse_args()
 
@@ -52,26 +105,19 @@ def main() -> None:
     pressure_bar = np.unique(
         np.r_[np.geomspace(1.0, 3.0e4, 400), boundaries_bar, 7500.0]
     )
-    pressure_gpa = pressure_bar / 1.0e4
-    pressure_pa = pressure_bar * 1.0e5
-    curves = (
-        ("h2_hirschmann2012", r"H$_2$ | Hirschmann (2012)",
-         h2_hirschmann2012(pressure_bar, pressure_gpa)),
-        ("ch4_ardia2013", r"CH$_4$ | Ardia (2013)",
-         ch4_ardia2013(pressure_gpa, pressure_gpa)),
-        ("h2o_lichtenberg2021", r"H$_2$O | Lichtenberg (2021)",
-         h2o_lichtenberg2021(pressure_pa)),
-        ("co2_lichtenberg2021", r"CO$_2$ | Lichtenberg (2021)",
-         co2_lichtenberg2021(pressure_pa)),
-        ("co_yoshioka2019", "C from CO | Yoshioka (2019)",
-         co_yoshioka2019(pressure_bar)),
-        ("n2_dasgupta2022", r"Total N from N$_2$ | Dasgupta (2022)",
-         n2_dasgupta2022(pressure_gpa, 1700.0, pressure_gpa, 0.0)),
+    fugacity_bar = (
+        _exoeos_fugacity_bar(pressure_bar) if args.exoeos else
+        {name: pressure_bar for name in ("H2", "CH4", "CO")}
     )
+    curves = _solubility_curves(pressure_bar, fugacity_bar)
+    ideal_curves = _solubility_curves(
+        pressure_bar, {name: pressure_bar for name in fugacity_bar},
+    ) if args.exoeos else curves
 
     figure, axes = plt.subplots(1, 2, figsize=(12, 5.8), sharex=True, sharey=True)
     axes_by_basis = {"mole_fraction": axes[0], "mass_fraction": axes[1]}
-    print("At P = 7500 bar, T = 1700 K, delta IW = 0:")
+    backend = "ExoEOS Zhang-Duan" if args.exoeos else "Ideal gas (f = P)"
+    print(f"{backend}: P = 7500 bar, T = 1700 K, delta IW = 0:")
     for index, (name, label, values) in enumerate(curves):
         metadata = MELTYQ_SOLUBILITY_METADATA[name]
         axis = axes_by_basis[metadata.output_basis]
@@ -79,6 +125,11 @@ def main() -> None:
         low, high = metadata.calibration_total_pressure_gpa
         calibrated = (pressure_bar >= low * 1.0e4) & (pressure_bar <= high * 1.0e4)
         color = f"C{index}"
+        if args.exoeos and metadata.species in fugacity_bar:
+            axis.loglog(
+                pressure_bar, ideal_curves[index][2], ":", color=color,
+                linewidth=1.5, alpha=0.6,
+            )
         axis.loglog(pressure_bar, values, "--", color=color, linewidth=1.5)
         axis.loglog(
             pressure_bar, np.where(calibrated, values, np.nan),
@@ -98,19 +149,25 @@ def main() -> None:
         axis.set_ylim(1.0e-8, 1.0)
         axis.grid(which="major", alpha=0.25)
         axis.legend(loc="upper left", fontsize=9, framealpha=0.95)
-    figure.suptitle("ExoGibbs volatile-solubility laws", fontsize=16)
+    figure.suptitle(f"ExoGibbs volatile-solubility laws | {backend}", fontsize=16)
     figure.legend(
         handles=[
             Line2D([], [], color="0.3", linewidth=2.5,
                    label="Within calibration pressure interval"),
             Line2D([], [], color="0.3", linestyle="--", linewidth=1.5,
                    label="Pressure extrapolation"),
-        ],
-        loc="lower center", bbox_to_anchor=(0.5, 0.07), ncol=2, frameon=False,
+        ] + ([Line2D([], [], color="0.3", linestyle=":", linewidth=1.5,
+                     label="Ideal-gas reference (f = P)")] if args.exoeos else []),
+        loc="lower center", bbox_to_anchor=(0.5, 0.07),
+        ncol=3 if args.exoeos else 2, frameon=False,
     )
     figure.text(
         0.5, 0.025,
-        r"Independent ideal pure gases: $p_i=f_i=P_{\rm melt}$ | $T=1700$ K | "
+        (r"Pure gases: H$_2$, CH$_4$, CO: $f_i=\phi_i P_{\rm melt}$; "
+         r"H$_2$O, CO$_2$, N$_2$: $p_i=P_{\rm melt}$" + "\n"
+         if args.exoeos else
+         r"Independent ideal pure gases: $p_i=f_i=P_{\rm melt}$ | ") +
+        r"$T=1700$ K | "
         r"N: $\Delta$IW$=0$, $(x_{\rm SiO_2},x_{\rm Al_2O_3},x_{\rm TiO_2})"
         r"=(0.56,0.11,0.01)$",
         ha="center", fontsize=9,
@@ -118,7 +175,8 @@ def main() -> None:
     figure.tight_layout(rect=(0, 0.14, 1, 0.94))
     args.output_dir.mkdir(parents=True, exist_ok=True)
     for extension in ("png", "pdf"):
-        output = args.output_dir / f"solubility_laws.{extension}"
+        stem = "solubility_laws_exoeos" if args.exoeos else "solubility_laws"
+        output = args.output_dir / f"{stem}.{extension}"
         figure.savefig(output, dpi=200, bbox_inches="tight")
         print(f"Saved {output}")
     plt.close(figure)
