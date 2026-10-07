@@ -4,9 +4,10 @@ Run from the repository root:
     python examples/comparisons/compare_solubility_laws.py
     python examples/comparisons/compare_solubility_laws.py --exoeos
 
-By default, each curve is an independent ideal pure-component pressure sweep,
-with partial pressure = fugacity = total melt pressure. The optional --exoeos run
-adds a separate pressure plot using ExoEOS Zhang-Duan pure-gas fugacities for
+By default, the horizontal axis is fugacity along the independent ideal
+pure-component path: partial pressure = fugacity = total melt pressure.
+The optional --exoeos run uses actual pressure on the horizontal axis and
+ExoEOS Zhang-Duan pure-gas fugacities for
 H2, CH4, and CO. H2O, CO2, and N2 retain their partial-pressure inputs, and
 melt pressure remains the actual pressure in every law. Dotted curves in
 the ExoEOS plot show the ideal-gas reference. These are illustrative law
@@ -144,7 +145,8 @@ def main() -> None:
         ("Mole-fraction laws", "Mass-fraction laws"),
         ("Dissolved mole fraction", "Dissolved mass fraction"),
     ):
-        axis.set(title=title, xlabel="Total melt pressure (bar)", ylabel=ylabel)
+        xlabel = "Total melt pressure (bar)" if args.exoeos else "Fugacity (bar)"
+        axis.set(title=title, xlabel=xlabel, ylabel=ylabel)
         axis.set_xlim(1.0, 3.0e4)
         axis.set_ylim(1.0e-8, 1.0)
         axis.grid(which="major", alpha=0.25)
