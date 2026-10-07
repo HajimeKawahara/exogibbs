@@ -112,7 +112,8 @@ class EquilibriumGridOutputs:
     ``ln_n``, ``n``, and ``x`` are stored per species on the full
     ``(temperature, pressure, log10(Z/Zsun), species)`` grid.
     ``ntot`` is stored on the corresponding ``(temperature, pressure, log10(Z/Zsun))``
-    grid.
+    grid. Species amounts and ``ntot`` use the setup's element-inventory gauge,
+    regardless of the grid's computational source.
     """
 
     ln_n: Array
@@ -134,7 +135,7 @@ class EquilibriumGridMetadata:
     composition_axis_definition: str = _COMPOSITION_AXIS_DEFINITION
     exogibbs_epsilon_crit: Optional[float] = None
     exogibbs_max_iter: Optional[int] = None
-    verify_exogibbs_against_fastchem: bool = True
+    verify_exogibbs_against_fastchem: bool = False
     verification_abundance_floor: Optional[float] = None
     verification_tolerance_percent: Optional[float] = None
     verification_points_checked: Optional[int] = None
@@ -156,7 +157,7 @@ class EquilibriumGridMetadata:
         *,
         exogibbs_epsilon_crit: Optional[float] = None,
         exogibbs_max_iter: Optional[int] = None,
-        verify_exogibbs_against_fastchem: bool = True,
+        verify_exogibbs_against_fastchem: bool = False,
         verification_abundance_floor: Optional[float] = None,
         verification_tolerance_percent: Optional[float] = None,
         verification_points_checked: Optional[int] = None,

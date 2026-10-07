@@ -1,0 +1,62 @@
+{
+  "note": "Property-domain diagnostic only; each nonzero increment changes the sample inventory and is not used in optimization.",
+  "original_scaled_host_amounts_mol": [
+    1.4084026247705863e-12,
+    0.0025206287754228063,
+    0.04340342640229758,
+    0.0,
+    0.002530397472420469,
+    9.658607650781813e-12,
+    0.0,
+    0.07946571952040568,
+    0.0,
+    0.0,
+    0.0629591113464927,
+    3.245177501206932e-12,
+    0.0006166932731890983,
+    0.0001481747934906241,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "component_order": [
+    "sio2",
+    "tio2",
+    "al2o3",
+    "fe2o3",
+    "mgcr2o4",
+    "fe2sio4",
+    "mnsi0.5o2",
+    "mg2sio4",
+    "nisi0.5o2",
+    "cosi0.5o2",
+    "casio3",
+    "na2sio3",
+    "kalsio4",
+    "ca3(po4)2",
+    "co2",
+    "so3",
+    "cl2o-1",
+    "f2o-1",
+    "h2o"
+  ],
+  "probes": [
+    {
+      "added_silica_mol": 0.0,
+      "status": "unavailable",
+      "error": "\nalphaMELTS for Python version 2.3.2 (Jul 21 2026 17:06:24)\nSetting calculation mode to rhyolite-MELTS 1.0.2\n\nMELTS call calcPhaseProperties failed. Cleaning up...\nMELTS:calculationFailed. MELTS library has been reloaded and initialized. Please check stderr (console or terminal) for failure details.\nCAUTION: Liquid component SiO2 has negative mole fraction.\nProcessed line... log fo2 path: none Caught SIGABRT: usually caused by an abort() or assert()\nProcessed line... log fo2 path: none Traceback (most recent call last):\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 361, in <module>\n    main()\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 352, in main\n    result = _worker(args.runtime.resolve(), request) if args.worker else evaluate_liquid(\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 145, in _worker\n    mass, gibbs = float(engine.mass[\"liquid\"]), float(engine.g[\"liquid\"])\nTypeError: 'NoneType' object is not subscriptable\n"
+    },
+    {
+      "added_silica_mol": 1e-10,
+      "status": "unavailable",
+      "error": "\nalphaMELTS for Python version 2.3.2 (Jul 21 2026 17:06:24)\nSetting calculation mode to rhyolite-MELTS 1.0.2\n\nProcessed line... log fo2 path: none Traceback (most recent call last):\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 361, in <module>\n    main()\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 352, in main\n    result = _worker(args.runtime.resolve(), request) if args.worker else evaluate_liquid(\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 151, in _worker\n    require_match(returned_n, n, \"phase endmember amounts\")\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 97, in require_match\n    raise ValueError(f\"Backend changed or failed to reproduce {label}.\")\nValueError: Backend changed or failed to reproduce phase endmember amounts.\n"
+    },
+    {
+      "added_silica_mol": 1e-08,
+      "status": "unavailable",
+      "error": "\nalphaMELTS for Python version 2.3.2 (Jul 21 2026 17:06:24)\nSetting calculation mode to rhyolite-MELTS 1.0.2\n\nProcessed line... log fo2 path: none Traceback (most recent call last):\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 361, in <module>\n    main()\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 352, in main\n    result = _worker(args.runtime.resolve(), request) if args.worker else evaluate_liquid(\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 151, in _worker\n    require_match(returned_n, n, \"phase endmember amounts\")\n  File \"/tmp/exoinventory-m2-20260920/exoeos/examples/melts_liquid_evaluator.py\", line 97, in require_match\n    raise ValueError(f\"Backend changed or failed to reproduce {label}.\")\nValueError: Backend changed or failed to reproduce phase endmember amounts.\n"
+    }
+  ]
+}

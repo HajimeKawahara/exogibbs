@@ -3,15 +3,49 @@ name: Run pytest
 on:
   push:
     branches: [ "develop", "main", "release*" ]
+  # Stacked PRs target feature branches and need the same checks.
   pull_request:
-    branches: [ "develop", "main" ]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 18 * * *"
 
 permissions:
   checks: write
   contents: read
   pull-requests: write
 
+env:
+  OPENBLAS_NUM_THREADS: "1"
+  OMP_NUM_THREADS: "1"
+
 jobs:
+  test-scope:
+    runs-on: ubuntu-latest
+    outputs:
+      scientific: ${{ steps.scope.outputs.scientific }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Select scientific regressions
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Pushes, scheduled runs, and manual runs always cover the full suite.
+          if [[ "$EVENT_NAME" != "pull_request" ]]; then
+            echo "scientific=true" >> "$GITHUB_OUTPUT"
+          elif git diff --quiet "$BASE_SHA...$HEAD_SHA" -- \
+            examples benchmarks src/exogibbs/data \
+            tests/unittests/examples tests/unittests/benchmarks \
+            .github/workflows/main.yml pyproject.toml; then
+            echo "scientific=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "scientific=true" >> "$GITHUB_OUTPUT"
+          fi
+
   pytest:
     runs-on: ubuntu-latest
 
@@ -36,7 +70,7 @@ jobs:
       - name: Run tests and generate XML report
         run: |
           mkdir -p results
-          pytest tests/unittests --junit-xml results/pytest.xml
+          pytest tests/unittests -m "not scientific" --durations=20 --junit-xml results/pytest.xml
 
       - name: Upload Unit Test Results
         if: ${{ always() }}
@@ -45,17 +79,174 @@ jobs:
           name: Unit Test Results (Python 3.11)
           path: results/*.xml
 
-      - name: Download Artifacts
-        if: success() || failure()
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
       - name: Publish Unit Test Results
         if: ${{ always() }}
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: artifacts/**/*.xml
+          files: results/pytest.xml
+
+  scientific:
+    name: Scientific regressions
+    needs: test-scope
+    if: needs.test-scope.outputs.scientific == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package and test deps
+        run: |
+          python -m pip install --upgrade pip wheel
+          pip install -e .
+          pip install pytest matplotlib==3.9.1
+      - name: Run scientific regressions
+        run: |
+          mkdir -p results
+          pytest tests/unittests -m scientific --durations=20 --junitxml=results/scientific.xml
+      - name: Upload scientific regression results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Scientific Regression Results (Python 3.11)
+          path: results/scientific.xml
+
+  provider-integration:
+    name: Pinned ExoEOS integration (no skips)
+    needs: test-scope
+    runs-on: ubuntu-latest
+    env:
+      JAX_PLATFORMS: cpu
+      JAX_ENABLE_X64: "1"
+
+    steps:
+      - name: Checkout ExoGibbs
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout pinned ExoEOS provider
+        uses: actions/checkout@v4
+        with:
+          repository: HajimeKawahara/exoeos
+          ref: 6f3bfdc94336e6bad3106c819281944178e7f015
+          path: providers/exoeos
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install packages and integration dependencies
+        run: |
+          python -m pip install -e . -e ./providers/exoeos \
+            'jax[cpu]==0.4.30' 'numpy==1.26.4' 'scipy==1.13.1' 'pytest==8.3.5'
+
+      - name: Assert provider API and actual import paths
+        run: |
+          python - <<'PY'
+          import inspect
+          from pathlib import Path
+          import subprocess
+
+          import exoeos
+          import exogibbs
+          from exoeos.ma_fe_si_o_h import MaFeSiOHLiquid
+          from exoeos.solution_gibbs import total_solution_state
+          from exoeos.ma_interval import ma_alloy_curvature_lower_bound
+
+          root = Path.cwd()
+          provider = root / "providers/exoeos"
+          assert subprocess.check_output(
+              ["git", "-C", str(provider), "rev-parse", "HEAD"], text=True,
+          ).strip() == "6f3bfdc94336e6bad3106c819281944178e7f015"
+          for module, source in ((exogibbs, root), (exoeos, provider)):
+              actual = Path(module.__file__).resolve()
+              expected = source / "src" / module.__name__ / "__init__.py"
+              print(f"{module.__name__}: {actual}")
+              assert actual == expected.resolve(), (actual, expected)
+          assert exoeos.MaFeSiOHLiquid is MaFeSiOHLiquid
+          assert exoeos.total_solution_state is total_solution_state
+          assert callable(ma_alloy_curvature_lower_bound)
+          assert (provider / "examples/melts_liquid_mixing.py").is_file()
+          assert (provider / "examples/melts_water_reconstruction.py").is_file()
+          assert (provider / "examples/melts_solid_mixing.py").is_file()
+          assert (provider / "examples/m2_material/associate_reference.py").is_file()
+          assert (provider / "examples/m2_material/hydrogen_oxygen_sources.json").is_file()
+          assert (provider / "examples/m2_material/potassium_reference.py").is_file()
+          assert (provider / "examples/m2_material/helium_dissolution.py").is_file()
+          assert (provider / "examples/m2_material/sodium_metal.py").is_file()
+          assert (provider / "examples/m2_material/major_gas_eos.py").is_file()
+          assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
+              provider / "src/exoeos/ma_fe_si_o_h.py"
+          ).resolve()
+          PY
+
+      - name: Run offline provider connections and require zero skips
+        env:
+          RUN_SCIENTIFIC: ${{ needs.test-scope.outputs.scientific }}
+        run: |
+          mkdir -p results
+          tests=(
+            tests/unittests/examples/metal_silicate_hydrogen_test.py
+            tests/unittests/examples/metal_silicate_native_test.py
+            tests/unittests/examples/metal_silicate_full_potential_test.py
+            tests/unittests/examples/metal_silicate_common_gibbs_test.py
+            tests/unittests/examples/metal_silicate_common_gas_test.py
+            tests/unittests/examples/m2_atmosphere_test.py
+            tests/unittests/examples/m2_gas_eos_test.py
+            tests/unittests/examples/m2_gas_global_test.py
+            tests/unittests/examples/m2_finite_gas_test.py
+            tests/unittests/examples/m2_phosphorus_test.py
+            tests/unittests/examples/m2_associated_test.py
+            tests/unittests/examples/m2_potassium_test.py
+            tests/unittests/examples/m2_sodium_test.py
+            tests/unittests/examples/m2_sodium_global_test.py
+            tests/unittests/examples/m2_host_stability_test.py
+            tests/unittests/examples/metal_silicate_standards_audit_test.py
+            tests/unittests/examples/m2_helium_test.py
+            tests/unittests/examples/m2_water_global_test.py
+            tests/unittests/examples/m2_water_binding_test.py
+            tests/unittests/examples/m2_host_standards_test.py
+            tests/unittests/examples/m2_associated_global_test.py
+            tests/unittests/examples/m2_extended_common_plane_test.py
+            tests/unittests/examples/m2_helium_global_test.py
+            tests/unittests/examples/m2_common_plane_test.py
+            tests/unittests/examples/m2_common_plane_binding_test.py
+            tests/unittests/examples/m2_alloy_insertion_bound_test.py
+            tests/unittests/examples/m2_solid_global_test.py
+            tests/unittests/examples/m2_liquid_global_test.py
+            tests/unittests/examples/metal_silicate_expanded_contact_test.py
+            tests/unittests/examples/metal_silicate_phase_selection_test.py
+            tests/unittests/examples/metal_silicate_melts_coupled_test.py
+            tests/unittests/examples/metal_silicate_melts_archive_test.py
+            tests/unittests/interop
+          )
+          marker_args=(-m "not scientific")
+          if [[ "$RUN_SCIENTIFIC" == "true" ]]; then
+            marker_args=()
+          fi
+          python -m pytest "${tests[@]}" "${marker_args[@]}" --durations=20 --junitxml=results/provider.xml
+          python - <<'PY'
+          from xml.etree import ElementTree
+
+          report = ElementTree.parse("results/provider.xml")
+          cases = report.findall(".//testcase")
+          skipped = report.findall(".//skipped")
+          assert cases, "Provider integration collected no tests."
+          assert not skipped, f"Provider integration skipped {len(skipped)} tests."
+          print(f"Provider integration: {len(cases)} tests, zero skips.")
+          PY
+
+      - name: Upload provider integration results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pinned ExoEOS Integration Results
+          path: results/provider.xml
 
   docs:
     name: Build documentation

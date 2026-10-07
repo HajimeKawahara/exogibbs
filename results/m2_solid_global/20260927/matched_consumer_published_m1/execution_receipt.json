@@ -1,0 +1,22 @@
+{
+  "schema": "matched_consumer_phase_bound_receipt_v1",
+  "inventory_consumer_commit": "4b5255f",
+  "source_gibbs_commit": "7cf41f1",
+  "source_provider_commit": "ee21fa1",
+  "source_closure_path": "/tmp/stage2-column-reclosed-h1e24-m1-16/closure.json",
+  "source_closure_sha256": "f64e117c5d4c1b32f2de10516d76c699a9a3395e50001b169218e47d4db5adf8",
+  "physical_audit_sha256": "1a590ea1128dea2397da942b463da9f01d6676e721489708dae4c6c9195a5ac9",
+  "gibbs_proof_commit": "1af5821e3c7b8abcf0e8ebdc985ad1440d600021",
+  "eos_proof_commit": "113ae4d306aea81c86f78267b1d9074030bda3f1",
+  "pressure_bar": 267.2028341602758,
+  "temperature_K": 2173.15,
+  "solids_exit_code": 0,
+  "liquid_exit_code": 0,
+  "solid_elapsed_seconds": 253.71067595481873,
+  "liquid_elapsed_seconds": 151.46947383880615,
+  "accepted_solution_models": 20,
+  "minimum_insertion_lower_bound_rt_per_formula_unit": 0.000370622565611766,
+  "liquid_lower_bound_rt": 0.0,
+  "new_native_receipts": true,
+  "new_pressure_root_by_proof_runners": false
+}

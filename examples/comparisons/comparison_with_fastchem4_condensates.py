@@ -23,6 +23,7 @@ import argparse
 import os
 from pathlib import Path
 import sys
+from typing import Sequence
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -88,6 +89,8 @@ L_DWARF_TEMPERATURES_K = (
 PROFILE_CHOICES = ("validation", "l-dwarf")
 MAJOR_GAS_THRESHOLD = 1.0e-8
 ACTIVE_CONDENSATE_FLOOR = 1.0e-8
+GAS_AGREEMENT_TOLERANCE_DEX = 1.0e-3
+CONDENSATE_AGREEMENT_TOLERANCE_DEX = 1.0e-3
 GAS_PLOT_FLOOR = 1.0e-20
 CONDENSATE_PLOT_FLOOR = 1.0e-20
 GAS_SPECIES = (
@@ -291,6 +294,125 @@ def _validate_gas_only_comparison_contract(
         )
 
 
+def _validate_gas_release_metrics(
+    gas_metrics: dict,
+    *,
+    comparison_label: str,
+) -> None:
+    """Apply the shared major-gas release gate to one comparison row."""
+
+    values = np.asarray(
+        (
+            gas_metrics["major_set_jaccard"],
+            gas_metrics["mean_absolute_log10_ratio"],
+            gas_metrics["max_absolute_log10_ratio"],
+        ),
+        dtype=np.float64,
+    )
+    finite = gas_metrics["finite"]
+    if type(finite) is not bool or not finite:
+        raise RuntimeError(
+            f"The {comparison_label} comparison contains non-finite amounts."
+        )
+    if not np.all(np.isfinite(values)):
+        raise RuntimeError(
+            f"The {comparison_label} comparison produced non-finite metrics."
+        )
+    if gas_metrics["major_set_jaccard"] < 1.0:
+        raise RuntimeError(
+            f"{comparison_label}: FastChem and ExoGibbs disagree on the "
+            "major-gas set: "
+            f"Jaccard={gas_metrics['major_set_jaccard']:.6g}."
+        )
+    if (
+        gas_metrics["max_absolute_log10_ratio"]
+        > GAS_AGREEMENT_TOLERANCE_DEX
+    ):
+        raise RuntimeError(
+            f"{comparison_label}: FastChem and ExoGibbs gas abundances differ by "
+            f"{gas_metrics['max_absolute_log10_ratio']:.6g} dex; limit "
+            f"{GAS_AGREEMENT_TOLERANCE_DEX:.1e} dex."
+        )
+
+
+def _validate_release_metrics(
+    *,
+    gas_metrics: dict,
+    condensate_metrics: dict,
+) -> None:
+    """Require the reported cross-code metrics to pass the release gate."""
+
+    _validate_gas_release_metrics(
+        gas_metrics,
+        comparison_label="gas-plus-condensate",
+    )
+    values = np.asarray(
+        (
+            condensate_metrics["active_set_jaccard"],
+            condensate_metrics["max_absolute_log10_ratio"],
+        ),
+        dtype=np.float64,
+    )
+    finite = condensate_metrics["finite"]
+    if type(finite) is not bool or not finite:
+        raise RuntimeError(
+            "The gas-plus-condensate comparison contains non-finite amounts."
+        )
+    if not np.all(np.isfinite(values)):
+        raise RuntimeError(
+            "The gas-plus-condensate comparison produced non-finite metrics."
+        )
+    if condensate_metrics["active_set_jaccard"] < 1.0:
+        raise RuntimeError(
+            "FastChem and ExoGibbs disagree on the active condensate set: "
+            f"Jaccard={condensate_metrics['active_set_jaccard']:.6g}."
+        )
+    if (
+        condensate_metrics["max_absolute_log10_ratio"]
+        > CONDENSATE_AGREEMENT_TOLERANCE_DEX
+    ):
+        raise RuntimeError(
+            "FastChem and ExoGibbs condensate amounts differ by "
+            f"{condensate_metrics['max_absolute_log10_ratio']:.6g} dex; "
+            f"limit {CONDENSATE_AGREEMENT_TOLERANCE_DEX:.1e} dex."
+        )
+
+
+def _validate_gas_profile_release_metrics(
+    *,
+    names: Sequence[str],
+    left_values: np.ndarray,
+    right_values: np.ndarray,
+    comparison_label: str,
+) -> None:
+    """Apply the shared gas release gate across a complete profile."""
+
+    left = np.asarray(left_values, dtype=np.float64)
+    right = np.asarray(right_values, dtype=np.float64)
+    expected_columns = len(names)
+    if (
+        left.ndim != 2
+        or left.shape[0] == 0
+        or left.shape[1] != expected_columns
+        or right.shape != left.shape
+    ):
+        raise RuntimeError(
+            f"The {comparison_label} comparison has invalid profile shapes."
+        )
+    for left_row, right_row in zip(left, right):
+        metrics = gas_major_species_metrics(
+            names=names,
+            left_values=left_row,
+            right_values=right_row,
+            threshold=MAJOR_GAS_THRESHOLD,
+            excluded_names=("e-",),
+        )
+        _validate_gas_release_metrics(
+            metrics,
+            comparison_label=comparison_label,
+        )
+
+
 def _print_summary(
     *,
     profile: str,
@@ -332,6 +454,10 @@ def _print_summary(
             active_floor=ACTIVE_CONDENSATE_FLOOR,
             ratio_floor=ACTIVE_CONDENSATE_FLOOR,
         )
+        _validate_release_metrics(
+            gas_metrics=gas_metrics,
+            condensate_metrics=condensate_metrics,
+        )
         exogibbs_status = exogibbs_result.layers[layer_index].status
         fastchem_status = str(fastchem.status[layer_index])
         fastchem_conserved = str(
@@ -349,6 +475,13 @@ def _print_summary(
             f"{condensate_metrics['right_active_count']:2d} | "
             f"{condensate_metrics['active_set_jaccard']:.3f}"
         )
+    print(
+        "  release gate: passed "
+        f"(gas <= {GAS_AGREEMENT_TOLERANCE_DEX:.1e} dex; condensate <= "
+        f"{CONDENSATE_AGREEMENT_TOLERANCE_DEX:.1e} dex; "
+        "exact major and active sets"
+        f"{' including gas-only profile' if profile == 'l-dwarf' else ''})"
+    )
 
 
 def _plot_validation_comparison(
@@ -652,12 +785,18 @@ def _plot_l_dwarf_profile_comparison(
 
 def main() -> None:
     args = _parse_args()
+    executable_path = args.fastchem_executable.resolve(strict=True)
+    if not executable_path.is_file() or not os.access(executable_path, os.X_OK):
+        raise ValueError(
+            f"FastChem executable is not an executable file: {executable_path}."
+        )
     temperatures, pressures = _profile_conditions(args.profile)
     output_path = args.output or _default_output_path(args.profile)
+    output_path.unlink(missing_ok=True)
 
     # 1. Run FastChem as an independent equilibrium-condensation process.
     fastchem = run_fastchem_executable(
-        executable=args.fastchem_executable,
+        executable=executable_path,
         temperatures=temperatures,
         pressures=pressures,
         element_abundance_file=ELEMENT_FILE,
@@ -668,7 +807,7 @@ def main() -> None:
     fastchem_gas_only = None
     if args.profile == "l-dwarf":
         fastchem_gas_only = run_fastchem_executable(
-            executable=args.fastchem_executable,
+            executable=executable_path,
             temperatures=temperatures,
             pressures=pressures,
             element_abundance_file=ELEMENT_FILE,
@@ -776,6 +915,13 @@ def main() -> None:
             for layer in exogibbs.layers
         ]
     )
+    if exogibbs_gas_only_x is not None and fastchem_gas_only_x is not None:
+        _validate_gas_profile_release_metrics(
+            names=setup.gas_species,
+            left_values=exogibbs_gas_only_x,
+            right_values=fastchem_gas_only_x,
+            comparison_label="gas-only",
+        )
     exogibbs_condensates = np.stack(
         [
             np.asarray(layer.condensate_amounts, dtype=np.float64)

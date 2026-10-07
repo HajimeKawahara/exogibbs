@@ -6,7 +6,7 @@
 ExoGibbs
 ==================================
 
-Version 0.6
+Version 0.7
 
 |:frog:| `DeepWiki for ExoGibbs <https://deepwiki.com/HajimeKawahara/exogibbs>`_
 
@@ -27,6 +27,20 @@ Contents
    presets/fastchem4.rst
    equilibrium_solvers.rst
    condensate_profile.rst
+   standard_thermodynamics.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: AUXILIARY:
+
+   solubility.rst
+   magma_gas_interface.rst
+   metal_silicate_reference.rst
+   subneptune_hydrogen.rst
+   subneptune_melts.rst
+   subneptune_sulfur.rst
+   cns_inventory.rst
+   subneptune_sulfide.rst
 
 .. toctree::
    :maxdepth: 1
@@ -37,6 +51,13 @@ Contents
    ito_2025_rainout_comparison
    fe_fes_rainout_demo
    comparison_example_lineage
+   rocky_raccoon_trace_mg
+
+.. toctree::
+   :maxdepth: 1
+   :caption: OPTIONAL EXAMPLES:
+
+   examples/index
 
 .. toctree::
    :maxdepth: 1

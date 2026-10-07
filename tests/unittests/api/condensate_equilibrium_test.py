@@ -102,6 +102,7 @@ def test_build_condensate_chemical_setup_validates_element_order() -> None:
 def test_one_layer_solver_forwards_initializer(monkeypatch) -> None:
     _gas, _condensate, setup = _setup_pair()
     initializer = object()
+    lnphi_func = lambda temperature, pressure_bar, mole_fractions: jnp.zeros(2)
     captured = {}
 
     def fake_profile(**kwargs):
@@ -116,10 +117,12 @@ def test_one_layer_solver_forwards_initializer(monkeypatch) -> None:
         P=1.0,
         b=jnp.asarray([1.0, 1.0]),
         initializer=initializer,
+        lnphi_func=lnphi_func,
     )
 
     assert result == "layer"
     assert captured["initializer"] is initializer
+    assert captured["lnphi_func"] is lnphi_func
 
 
 def test_condensate_chemical_setup_rejects_element_order_mismatch() -> None:
@@ -344,6 +347,40 @@ def test_result_mole_fractions_are_stable_in_a_tiny_amount_gauge() -> None:
     assert result.gas_x.tolist() == pytest.approx([0.5, 0.5])
     gate = result.diagnostics["full_condensate_budget_residual_gate"]
     assert gate["absolute_floor"] / amount_scale == pytest.approx(1.0e-6)
+
+
+def test_result_materialization_preserves_subnormal_gas_amounts() -> None:
+    _gas, _condensate, setup = _setup_pair()
+    trace_amount = np.float64(9.108388204e-314)
+    gas_ln_n = np.log(
+        np.asarray([0.25, trace_amount], dtype=np.float64)
+    )
+    expected_gas_n = np.exp(gas_ln_n)
+    expected_relative = np.exp(gas_ln_n - np.max(gas_ln_n))
+    expected_gas_x = expected_relative / np.sum(expected_relative)
+
+    result = build_condensate_equilibrium_result_from_solver_payload(
+        setup=setup,
+        gas_ln_n=gas_ln_n,
+        support_indices=(),
+        support_amounts=(),
+        selected_route=CONDENSATE_HEAD_V2_ROUTE_NAME,
+        solver_success=True,
+        element_inventory_target=np.asarray(
+            [0.25, trace_amount], dtype=np.float64
+        ),
+    )
+
+    np.testing.assert_array_equal(np.asarray(result.gas_n), expected_gas_n)
+    np.testing.assert_array_equal(np.asarray(result.gas_x), expected_gas_x)
+    assert float(result.gas_n[1]) > 0.0
+    assert float(result.gas_x[1]) > 0.0
+    assert float(result.gas_ntot) == pytest.approx(
+        float(np.sum(expected_gas_n))
+    )
+    gate = result.diagnostics["full_condensate_budget_residual_gate"]
+    assert gate["accepted"]
+    assert gate["element_budget_reconstructed"][1] == expected_gas_n[1]
 
 
 def test_gas_log_amount_polish_repairs_trace_budget_residual() -> None:

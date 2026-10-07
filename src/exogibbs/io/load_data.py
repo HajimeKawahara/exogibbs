@@ -92,7 +92,7 @@ def load_JANAF_molecules(
 
     Args:
         df_molname : pd.DataFrame
-            Must contain a column named ``"Molecule"`` with file prefixes.
+            Must contain a column named ``"JANAF"`` with file prefixes.
         path_JANAF_data : str or Path
             Directory that holds ``<molecule>(g).txt`` files.
         tag : str
@@ -112,7 +112,7 @@ def load_JANAF_molecules(
         * Use ``jax.numpy.asarray(df.to_numpy())`` when you need a JAX array.
 
     Examples:
-        >>> df_molname = load_molname_ykb4()
+        >>> df_molname = pd.DataFrame({"JANAF": ["C1O2"]})
         >>> path_JANAF_data = "/home/kawahara/thermochemical_equilibrium/Equilibrium/JANAF"
         >>> matrices = load_JANAF_molecules(df_molname, path_JANAF_data)
         >>> mat = matrices["C1O2"].to_numpy()
@@ -128,13 +128,19 @@ def load_JANAF_molecules(
     for mol in df_molname[JANAF_NAME_KEY]:
         file_path = path_JANAF_data / Path(mol + tag + ".txt")
         if not file_path.is_file():
-            warnings.warn(f"Missing file: {file_path}", RuntimeWarning)
+            warnings.warn(
+                f"Missing file: {file_path}", RuntimeWarning, stacklevel=2
+            )
             continue
 
         try:
             df_single = load_JANAF_rawtxt(file_path)  # -> pd.DataFrame
         except Exception as exc:  # pragma: no cover
-            warnings.warn(f"Failed to load {file_path}: {exc}", RuntimeWarning)
+            warnings.warn(
+                f"Failed to load {file_path}: {exc}",
+                RuntimeWarning,
+                stacklevel=2,
+            )
             continue
 
         gibbs_matrices[mol] = df_single
@@ -153,5 +159,4 @@ def load_JANAF_molecules(
                 store.put(f"/{mol}", df, format="table")
 
     return gibbs_matrices
-
 

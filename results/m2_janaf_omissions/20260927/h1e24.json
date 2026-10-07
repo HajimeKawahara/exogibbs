@@ -1,0 +1,1580 @@
+{
+  "assessment_id": "m2_janaf_omitted_gas_demand_v1",
+  "temperature_K": 2173.15,
+  "pressure_bar": 267.20283416157343,
+  "elements": [
+    "O",
+    "Mg",
+    "Si",
+    "Fe",
+    "Al",
+    "Ca",
+    "Na",
+    "K",
+    "Ti",
+    "Cr",
+    "P",
+    "H",
+    "He"
+  ],
+  "mole_fraction_target": 1e-08,
+  "target_basis": "Declared screening threshold; not an empirical error tolerance.",
+  "atomic_gauge_rt": {
+    "O": -8.447040806194867,
+    "Mg": -12.545856175800804,
+    "Si": 1.8153736403492466,
+    "Fe": -1.9681779289064742,
+    "Al": -4.379438618738327,
+    "Ca": -11.597353506134155,
+    "Na": -15.353074494571606,
+    "K": -17.168085958521534,
+    "Ti": 1.5049974757449087,
+    "Cr": -1.796602415797923,
+    "P": -4.9278073514325245,
+    "H": -4.541156769990245,
+    "He": -17.981569671633338
+  },
+  "additional_atomic_references": {
+    "temperature_K": 2173.15,
+    "pressure_standard_bar": 1.0,
+    "elements": {
+      "Al": {
+        "value_rt": -4.379438618738327,
+        "source": "https://janaf.nist.gov/tables/Al-005.html; Hf(298.15 K) + H(T)-H(298.15 K) - T*S(T), with absolute entropy and p0=1 bar; not delta-f G(T)."
+      },
+      "Ca": {
+        "value_rt": -11.597353506134155,
+        "source": "https://janaf.nist.gov/tables/Ca-006.html; Hf(298.15 K) + H(T)-H(298.15 K) - T*S(T), with absolute entropy and p0=1 bar; not delta-f G(T)."
+      },
+      "K": {
+        "value_rt": -17.168085958521534,
+        "source": "https://janaf.nist.gov/tables/K-005.html; Hf(298.15 K) + H(T)-H(298.15 K) - T*S(T), with absolute entropy and p0=1 bar; not delta-f G(T)."
+      },
+      "Ti": {
+        "value_rt": 1.5049974757449087,
+        "source": "https://janaf.nist.gov/tables/Ti-006.html; Hf(298.15 K) + H(T)-H(298.15 K) - T*S(T), with absolute entropy and p0=1 bar; not delta-f G(T)."
+      },
+      "Cr": {
+        "value_rt": -1.796602415797923,
+        "source": "https://janaf.nist.gov/tables/Cr-005.html; Hf(298.15 K) + H(T)-H(298.15 K) - T*S(T), with absolute entropy and p0=1 bar; not delta-f G(T)."
+      },
+      "P": {
+        "value_rt": -4.9278073514325245,
+        "source": "https://janaf.nist.gov/tables/P-008.html; Hf(298.15 K) + H(T)-H(298.15 K) - T*S(T), with absolute entropy and p0=1 bar; not delta-f G(T)."
+      }
+    }
+  },
+  "gas_candidates": [
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -5.849496021246388,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -24.270176765198755,
+      "mole_fraction": 2.8813509318773024e-11,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al1",
+      "formula": {
+        "Al": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -5.7996057168012385,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -24.220286460753606,
+      "mole_fraction": 3.028748694706855e-11,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Ca1",
+      "formula": {
+        "Ca": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 4.735300329265531,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -13.685380414686836,
+      "mole_fraction": 1.1389766038276087e-06,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Cr1",
+      "formula": {
+        "Cr": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 5.208239528039046,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -13.212441215913321,
+      "mole_fraction": 1.8277200979981034e-06,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "K1",
+      "formula": {
+        "K": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 6.396090863280843,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -12.024589880671524,
+      "mole_fraction": 5.9949693585138765e-06,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "P1",
+      "formula": {
+        "P": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -14.613706038148187,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -33.034386782100555,
+      "mole_fraction": 4.5014051915025986e-15,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Ti1",
+      "formula": {
+        "Ti": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -4.81407437934071,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -23.234755123293077,
+      "mole_fraction": 8.114729764246208e-11,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al1H1",
+      "formula": {
+        "Al": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -10.91466631994431,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -29.335347063896677,
+      "mole_fraction": 1.818949515246779e-13,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al1H1O1_oalh",
+      "formula": {
+        "O": 1.0,
+        "Al": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 0.3673462185168148,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -18.053334525435552,
+      "mole_fraction": 1.4438977367199672e-08,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al1H1O1_aloh",
+      "formula": {
+        "O": 1.0,
+        "Al": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -0.6403135371160928,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -19.06099428106846,
+      "mole_fraction": 5.271271242122459e-09,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al1H1O2",
+      "formula": {
+        "O": 2.0,
+        "Al": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -6.875300170372618,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -25.295980914324986,
+      "mole_fraction": 1.0329875198569816e-11,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al1O1",
+      "formula": {
+        "O": 1.0,
+        "Al": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -15.395974133224946,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -33.816654877177314,
+      "mole_fraction": 2.0587963537385374e-15,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al1O2",
+      "formula": {
+        "O": 2.0,
+        "Al": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -26.55225348197674,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -44.97293422592911,
+      "mole_fraction": 2.9410528631265135e-20,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al2",
+      "formula": {
+        "Al": 2.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -11.056626098056569,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -29.477306842008936,
+      "mole_fraction": 1.578222741724195e-13,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al2O1",
+      "formula": {
+        "O": 1.0,
+        "Al": 2.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -15.169197917191227,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -33.589878661143594,
+      "mole_fraction": 2.582861089100073e-15,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Al2O2",
+      "formula": {
+        "O": 2.0,
+        "Al": 2.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -8.475325458061334,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -26.8960062020137,
+      "mole_fraction": 2.0855130954378108e-12,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Ca1H1",
+      "formula": {
+        "Ca": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -2.600946691570975,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -21.021627435523342,
+      "mole_fraction": 7.420329731630792e-10,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Ca1H1O1",
+      "formula": {
+        "O": 1.0,
+        "Ca": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 0.054434171509484486,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -18.366246572442883,
+      "mole_fraction": 1.055942962994442e-08,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Ca1H2O2",
+      "formula": {
+        "O": 2.0,
+        "Ca": 1.0,
+        "H": 2.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -12.480380176402214,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -30.90106092035458,
+      "mole_fraction": 3.800491428126717e-14,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Ca1O1",
+      "formula": {
+        "O": 1.0,
+        "Ca": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -31.888169749119747,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -50.308850493072114,
+      "mole_fraction": 1.416262773834991e-22,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Ca2",
+      "formula": {
+        "Ca": 2.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 1.9467377161027315,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -16.473943027849636,
+      "mole_fraction": 7.005795367028551e-08,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Cr1H1",
+      "formula": {
+        "Cr": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 2.0099568130059957,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -16.41072393094637,
+      "mole_fraction": 7.462995036037528e-08,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Cr1O1",
+      "formula": {
+        "O": 1.0,
+        "Cr": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -1.5488522246020011,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -19.96953296855437,
+      "mole_fraction": 2.1249172668938584e-09,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Cr1O2",
+      "formula": {
+        "O": 2.0,
+        "Cr": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -11.131924568032048,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -29.552605311984415,
+      "mole_fraction": 1.463748918301429e-13,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "Cr1O3",
+      "formula": {
+        "O": 3.0,
+        "Cr": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 2.5526511637613165,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -15.86802958019105,
+      "mole_fraction": 1.2841102560348846e-07,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "H1K1",
+      "formula": {
+        "K": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 5.307828136781039,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -13.112852607171329,
+      "mole_fraction": 2.0191122826643455e-06,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "H1K1O1",
+      "formula": {
+        "O": 1.0,
+        "K": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 9.021350551132356,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -9.399330192820011,
+      "mole_fraction": 8.277949329057476e-05,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "H1P1",
+      "formula": {
+        "P": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -17.50240604672515,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -35.923086790677516,
+      "mole_fraction": 2.504964836786218e-16,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "H1Ti1",
+      "formula": {
+        "Ti": 1.0,
+        "H": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -9.97563290373781,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -28.396313647690178,
+      "mole_fraction": 4.651978259282344e-13,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "H2K2O2",
+      "formula": {
+        "O": 2.0,
+        "K": 2.0,
+        "H": 2.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 12.259583717634179,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -6.161097026318188,
+      "mole_fraction": 0.0021099373448515758,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "H2P1",
+      "formula": {
+        "P": 1.0,
+        "H": 2.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 11.95659588016551,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -6.464084863786857,
+      "mole_fraction": 0.0015584167704832418,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "H3P1",
+      "formula": {
+        "P": 1.0,
+        "H": 3.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -6.161688111035076,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -24.582368854987443,
+      "mole_fraction": 2.1086905616469885e-11,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "K1O1",
+      "formula": {
+        "O": 1.0,
+        "K": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -8.559374274088732,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -26.9800550180411,
+      "mole_fraction": 1.9173923231804227e-12,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "K2",
+      "formula": {
+        "K": 2.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 10.453052864792566,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -7.967627879159801,
+      "mole_fraction": 0.0003464999515504728,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "O1P1",
+      "formula": {
+        "O": 1.0,
+        "P": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -7.153751140609394,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -25.57443188456176,
+      "mole_fraction": 7.819254608177943e-12,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "O1Ti1",
+      "formula": {
+        "O": 1.0,
+        "Ti": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 8.27059888315443,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -10.150081860797938,
+      "mole_fraction": 3.9072883007406385e-05,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "O2P1",
+      "formula": {
+        "O": 2.0,
+        "P": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -5.852664926771389,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -24.273345670723756,
+      "mole_fraction": 2.872234654928778e-11,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "O2Ti1",
+      "formula": {
+        "O": 2.0,
+        "Ti": 1.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -17.942875661131104,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -36.36355640508347,
+      "mole_fraction": 1.6125311427284494e-16,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "O6P4",
+      "formula": {
+        "O": 6.0,
+        "P": 4.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": -26.920667136881967,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -45.341347880834334,
+      "mole_fraction": 2.0347113763790122e-20,
+      "fixed_reservoir_trace_target_passed": true,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "O10P4",
+      "formula": {
+        "O": 10.0,
+        "P": 4.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 13.15063818017023,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -5.2700425637821375,
+      "mole_fraction": 0.005143391646169761,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "P2",
+      "formula": {
+        "P": 2.0
+      }
+    },
+    {
+      "missing_gauge_coefficients": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "required_missing_gauge_dot_lower_rt": 8.223306195772937,
+      "inequality": "dot(missing_gauge_coefficients, atomic_gauge_rt) >= required_missing_gauge_dot_lower_rt implies x <= target at fixed elemental potentials",
+      "log_mole_fraction": -10.19737454817943,
+      "mole_fraction": 3.7268035784626486e-05,
+      "fixed_reservoir_trace_target_passed": false,
+      "status": "conditional_fixed_reservoir_estimate",
+      "species": "P4",
+      "formula": {
+        "P": 4.0
+      }
+    }
+  ],
+  "omitted_metal_paths": [
+    {
+      "element": "Mg",
+      "elemental_potential_rt": -20.025132300100935,
+      "metal_component_amount_mol": 4.975464098838043e+22,
+      "status": "missing_alloy_activity_and_standard",
+      "incipient_alloy_effect_bounded": false
+    },
+    {
+      "element": "Al",
+      "elemental_potential_rt": -23.06160733543873,
+      "metal_component_amount_mol": 4.975464098838043e+22,
+      "status": "missing_alloy_activity_and_standard",
+      "incipient_alloy_effect_bounded": false
+    },
+    {
+      "element": "Ca",
+      "elemental_potential_rt": -30.22963191838941,
+      "metal_component_amount_mol": 4.975464098838043e+22,
+      "status": "missing_alloy_activity_and_standard",
+      "incipient_alloy_effect_bounded": false
+    },
+    {
+      "element": "K",
+      "elemental_potential_rt": -24.7925191259365,
+      "metal_component_amount_mol": 4.975464098838043e+22,
+      "status": "missing_alloy_activity_and_standard",
+      "incipient_alloy_effect_bounded": false
+    },
+    {
+      "element": "Ti",
+      "elemental_potential_rt": -25.94138125785729,
+      "metal_component_amount_mol": 4.975464098838043e+22,
+      "status": "missing_alloy_activity_and_standard",
+      "incipient_alloy_effect_bounded": false
+    },
+    {
+      "element": "Cr",
+      "elemental_potential_rt": -9.893974781986405,
+      "metal_component_amount_mol": 4.975464098838043e+22,
+      "status": "missing_alloy_activity_and_standard",
+      "incipient_alloy_effect_bounded": false
+    },
+    {
+      "element": "P",
+      "elemental_potential_rt": -11.364389183605695,
+      "metal_component_amount_mol": 4.975464098838043e+22,
+      "status": "missing_alloy_activity_and_standard",
+      "incipient_alloy_effect_bounded": false
+    }
+  ],
+  "source_scope": "Saved local source only; no assertion of planetary closure or host global stability.",
+  "response_scope": "Fixed chemical potentials and ideal gas at p0=1 bar. Trace estimates omit reservoir depletion and chemical/pressure feedback; coupled errors remain unbounded.",
+  "accepted_omission_bound": false,
+  "scientific_acceptance": "pending",
+  "provenance": {
+    "gas_table": {
+      "example_git_commit": "c861b469a44561529d6974edce1dea9e4a94cc3c",
+      "example_git_status": "",
+      "provider_git_commit": "c861b469a44561529d6974edce1dea9e4a94cc3c",
+      "provider_git_status": "",
+      "exogibbs_import_path": "/tmp/stage2-transfer-20260927/gibbs/src/exogibbs",
+      "package_python_sha256": "ddb7bd99772181fbe11620524546bf6597412f672ce784e1afad1ec407e6cdc6",
+      "jax_version": "0.4.30",
+      "numpy_version": "1.26.4",
+      "jax_backend": "cpu",
+      "x64_enabled": true,
+      "files": [
+        {
+          "path": "/tmp/stage2-transfer-20260927/gibbs/examples/metal_silicate/m1_chemistry.py",
+          "sha256": "9dd1e179cdc087fd37aeec9f96b732abaa8f7e1976d345134f0a710ef1ea5e56"
+        },
+        {
+          "path": "/tmp/stage2-transfer-20260927/gibbs/examples/metal_silicate/sulfur_source.py",
+          "sha256": "a798c87bbe9cb838117785cbb3f66bfd5cbca9189e881e6af53c905ed57fb58f"
+        },
+        {
+          "path": "/tmp/stage2-transfer-20260927/gibbs/examples/metal_silicate/source.py",
+          "sha256": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e"
+        },
+        {
+          "path": "/tmp/stage2-transfer-20260927/gibbs/examples/metal_silicate/sulfur_reference.json",
+          "sha256": "7dc71a2312a8b00f6cd94e7064f087b5c7bb500bf16d8941396605daabf9441e"
+        },
+        {
+          "path": "/tmp/stage2-transfer-20260927/gibbs/src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat",
+          "sha256": "3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606"
+        },
+        {
+          "path": "/tmp/stage2-transfer-20260927/gibbs/src/exogibbs/data/FastChem4/logK/logK_condensates.dat",
+          "sha256": "566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467"
+        }
+      ]
+    },
+    "screen_sha256": "21baad5d2d07e441ac46998a8dce9dc2eb22459607732408f1c22ac16a947729"
+  },
+  "fixed_reservoir_demand": {
+    "gas_amount_scale_mol": 5.8809790683879525e+23,
+    "log_sum_mole_fractions": -4.674664609776315,
+    "sum_mole_fractions": 0.00932865335224721,
+    "fraction_sum_at_least_one": false,
+    "element_demands": [
+      {
+        "element": "O",
+        "source_budget_mol": 2.765799320714748e+24,
+        "log_demand_mol": 46.971963450280796,
+        "demand_mol": 2.5099468820750998e+20,
+        "log_demand_over_source_budget": -9.307408460022963,
+        "demand_over_source_budget": 9.074942145211307e-05,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "Mg",
+        "source_budget_mol": 9.393188077599714e+23,
+        "log_demand_mol": null,
+        "demand_mol": 0.0,
+        "log_demand_over_source_budget": null,
+        "demand_over_source_budget": 0.0,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "Si",
+        "source_budget_mol": 7.50110399560859e+23,
+        "log_demand_mol": null,
+        "demand_mol": 0.0,
+        "log_demand_over_source_budget": null,
+        "demand_over_source_budget": 0.0,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "Fe",
+        "source_budget_mol": 1.1222164664397964e+23,
+        "log_demand_mol": null,
+        "demand_mol": 0.0,
+        "log_demand_over_source_budget": null,
+        "demand_over_source_budget": 0.0,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "Al",
+        "source_budget_mol": 8.742354607778422e+22,
+        "log_demand_mol": 36.99516314964674,
+        "demand_mol": 1.166259549950227e+16,
+        "log_demand_over_source_budget": -15.82988845553075,
+        "demand_over_source_budget": 1.3340336811693288e-07,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "Ca",
+        "source_budget_mol": 6.340363572696451e+22,
+        "log_demand_mol": 36.43571046430709,
+        "demand_mol": 6665427345278265.0,
+        "log_demand_over_source_budget": -16.06809769421801,
+        "demand_over_source_budget": 1.0512689483583628e-07,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "Na",
+        "source_budget_mol": 1.1634883546565738e+22,
+        "log_demand_mol": null,
+        "demand_mol": 0.0,
+        "log_demand_over_source_budget": null,
+        "demand_over_source_budget": 0.0,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "K",
+        "source_budget_mol": 6.166932731890953e+20,
+        "log_demand_mol": 42.295762320939936,
+        "demand_mol": 2.337847529957337e+18,
+        "log_demand_over_source_budget": -5.575141127138444,
+        "demand_over_source_budget": 0.0037909405398046047,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "Ti",
+        "source_budget_mol": 2.520628775422783e+21,
+        "log_demand_mol": 30.69874068092714,
+        "demand_mol": 21492833736672.438,
+        "log_demand_over_source_budget": -18.580054656404354,
+        "demand_over_source_budget": 8.526774726305141e-09,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "Cr",
+        "source_budget_mol": 5.060794944841094e+21,
+        "log_demand_mol": 41.16704281935535,
+        "demand_mol": 7.56170155634338e+17,
+        "log_demand_over_source_budget": -8.808767708203021,
+        "demand_over_source_budget": 0.00014941726821102823,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "P",
+        "source_budget_mol": 2.96349586981218e+20,
+        "log_demand_mol": 50.502976856223995,
+        "demand_mol": 8.573618767051241e+21,
+        "log_demand_over_source_budget": 3.364905387784077,
+        "demand_over_source_budget": 28.9307599662509,
+        "source_budget_exceeded": true
+      },
+      {
+        "element": "H",
+        "source_budget_mol": 9.999999999999974e+23,
+        "log_demand_mol": 50.018443231179745,
+        "demand_mol": 5.281215493383454e+21,
+        "log_demand_over_source_budget": -5.243599000677349,
+        "demand_over_source_budget": 0.005281215493383464,
+        "source_budget_exceeded": false
+      },
+      {
+        "element": "He",
+        "source_budget_mol": 1.0000000000000004e+23,
+        "log_demand_mol": null,
+        "demand_mol": 0.0,
+        "log_demand_over_source_budget": null,
+        "demand_over_source_budget": 0.0,
+        "source_budget_exceeded": false
+      }
+    ],
+    "source_budget_exceeded_elements": [
+      "P"
+    ],
+    "species_trace_target_exceeded": [
+      "Cr1",
+      "K1",
+      "P1",
+      "Al1H1O1_aloh",
+      "Ca1H2O2",
+      "Cr1H1",
+      "Cr1O1",
+      "H1K1",
+      "H1K1O1",
+      "H1P1",
+      "H2P1",
+      "H3P1",
+      "O1P1",
+      "O2P1",
+      "P2",
+      "P4"
+    ],
+    "trace_screen_passed": false,
+    "reasons": [
+      "Fixed-reservoir demands exceed the finite source budgets for: P.",
+      "One or more omitted gases exceed the declared species trace target."
+    ],
+    "is_equilibrated_finite_state": false,
+    "accepted_omission_bound": false,
+    "scope": "Unnormalized demands at unchanged chemical potentials and saved gas amount scale. The denominator is reconstructed from the same local source, not the planetary inventory. Passing is only a trace screen; depletion, O/H exchange, alloy response, condensates and pressure feedback remain unbounded."
+  },
+  "janaf_reference_audit": {
+    "temperature_K": 2173.15,
+    "pressure_standard_bar": 1.0,
+    "atomic_standards": {
+      "Al": {
+        "value_rt": -4.379438618738327,
+        "linear_h_s_value_rt": -4.378912796317515,
+        "hermite_minus_linear_rt": -0.0005258224208120055,
+        "source": "https://janaf.nist.gov/tables/Al-005.html",
+        "g_function_reconstruction_max_abs_J_mol": 2.2000000000116415
+      },
+      "Ca": {
+        "value_rt": -11.597353506134155,
+        "linear_h_s_value_rt": -11.596829637075677,
+        "hermite_minus_linear_rt": -0.0005238690584778993,
+        "source": "https://janaf.nist.gov/tables/Ca-006.html",
+        "g_function_reconstruction_max_abs_J_mol": 2.0000000000582077
+      },
+      "K": {
+        "value_rt": -17.168085958521534,
+        "linear_h_s_value_rt": -17.16755072528582,
+        "hermite_minus_linear_rt": -0.0005352332357126954,
+        "source": "https://janaf.nist.gov/tables/K-005.html",
+        "g_function_reconstruction_max_abs_J_mol": 0.7000000000116415
+      },
+      "Ti": {
+        "value_rt": 1.5049974757449087,
+        "linear_h_s_value_rt": 1.5056438462750217,
+        "hermite_minus_linear_rt": -0.0006463705301129608,
+        "source": "https://janaf.nist.gov/tables/Ti-006.html",
+        "g_function_reconstruction_max_abs_J_mol": 1.7999999999883585
+      },
+      "Cr": {
+        "value_rt": -1.796602415797923,
+        "linear_h_s_value_rt": -1.7959609172600048,
+        "hermite_minus_linear_rt": -0.0006414985379181726,
+        "source": "https://janaf.nist.gov/tables/Cr-005.html",
+        "g_function_reconstruction_max_abs_J_mol": 0.7999999999301508
+      },
+      "P": {
+        "value_rt": -4.9278073514325245,
+        "linear_h_s_value_rt": -4.927265304255931,
+        "hermite_minus_linear_rt": -0.000542047176593563,
+        "source": "https://janaf.nist.gov/tables/P-008.html",
+        "g_function_reconstruction_max_abs_J_mol": 0.9999999999417923
+      },
+      "Mg": {
+        "value_rt": -12.545862109689498,
+        "linear_h_s_value_rt": -12.545324923091457,
+        "hermite_minus_linear_rt": -0.0005371865980414725,
+        "source": "https://janaf.nist.gov/tables/Mg-005.html",
+        "g_function_reconstruction_max_abs_J_mol": 1.0
+      },
+      "Fe": {
+        "value_rt": -1.9681153471394977,
+        "linear_h_s_value_rt": -1.9675187884358287,
+        "hermite_minus_linear_rt": -0.0005965587036689257,
+        "source": "https://janaf.nist.gov/tables/Fe-008.html",
+        "g_function_reconstruction_max_abs_J_mol": 1.5
+      },
+      "Na": {
+        "value_rt": -15.352275374639914,
+        "linear_h_s_value_rt": -15.351741922474973,
+        "hermite_minus_linear_rt": -0.0005334521649409396,
+        "source": "https://janaf.nist.gov/tables/Na-005.html",
+        "g_function_reconstruction_max_abs_J_mol": 1.8000000000465661
+      }
+    },
+    "reference_convention": "Hf(298.15 K) + H(T)-H(298.15 K) - T*S(T), with absolute entropy and p0=1 bar; not delta-f G(T).",
+    "temperature_interval_K": [
+      2100.0,
+      2400.0
+    ],
+    "interpolation": "Cubic Hermite G(T), derivative -S at each tabulated node.",
+    "interpolation_error_bounded": false,
+    "empirical_uncertainty_available": false,
+    "physical_cross_phase_calibration_accepted": false,
+    "data_sha256": "4a9d51e8dd58f513b334b5025f0de49476ec5359e1ca811f9e9fd3daab829518",
+    "data_extraction": "Numeric excerpts transcribed from the linked primary HTML/TXT tables; not byte copies of downloads.",
+    "evaluator_sha256": "f9b9ce078e87a2e2e8b717d84a17b2f1ab6412922edda90a5892baf14048bc9a",
+    "existing_anchor_controls": [
+      {
+        "element": "Mg",
+        "saved_atomic_standard_rt": -12.545856175800804,
+        "janaf_atomic_standard_rt": -12.545862109689498,
+        "janaf_minus_saved_rt": -5.933888694187317e-06
+      },
+      {
+        "element": "Fe",
+        "saved_atomic_standard_rt": -1.9681779289064742,
+        "janaf_atomic_standard_rt": -1.9681153471394977,
+        "janaf_minus_saved_rt": 6.258176697659934e-05
+      },
+      {
+        "element": "Na",
+        "saved_atomic_standard_rt": -15.353074494571606,
+        "janaf_atomic_standard_rt": -15.352275374639914,
+        "janaf_minus_saved_rt": 0.0007991199316919051
+      }
+    ],
+    "control_scope": "Independent Mg/Fe/Na data comparison only; no fitted gauge offset or cross-phase calibration. H/He/O/Si controls are not evaluated by this numeric excerpt."
+  },
+  "saved_source": {
+    "repository": "https://github.com/HajimeKawahara/exoinventory",
+    "commit": "564e73ec97224b66285bbe63c9234a9564fe4561",
+    "path": "examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_hydrogen_pilot/native_h_pilot/case_001/closure/closure.json",
+    "url": "https://github.com/HajimeKawahara/exoinventory/blob/564e73ec97224b66285bbe63c9234a9564fe4561/examples/subneptune_taxonomy/finite_melt/validation/20260925_m2_hydrogen_pilot/native_h_pilot/case_001/closure/closure.json",
+    "sha256": "6b1bdd16ec83f5eeb4f29fe57d55f8f8c37d7167e4f7858525203cc342460940",
+    "layers": 16,
+    "root_index": 0
+  },
+  "execution": {
+    "gibbs_commit": "c861b469a44561529d6974edce1dea9e4a94cc3c",
+    "new_native_solve": false,
+    "new_pressure_closure": false,
+    "input_bytes_unchanged": true
+  }
+}

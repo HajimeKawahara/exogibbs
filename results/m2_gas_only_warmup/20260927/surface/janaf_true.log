@@ -1,0 +1,1 @@
+{"gas_model": "janaf", "return_diagnostics": true, "cold_parcel_seconds": 2.0493212826550007, "primitive_ad_seconds": 0.07378768920898438, "peak_rss_kib": 400768, "primitive_result": {"status": "converged", "converged": true, "acceptance_tier": "fixed_support_v2_accepted", "selected_route": "head_v2_gas_only_no_candidate", "diagnostics_present": true}}

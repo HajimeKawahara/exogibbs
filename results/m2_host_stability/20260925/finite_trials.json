@@ -1,0 +1,144 @@
+{
+  "scope": "Fresh one-sided full-energy differences for the stored native incipient olivine trial, using the same formal ideal-H2 augmented scalar. No new finite-source equilibrium or global stability certificate.",
+  "generator_sha256": "a825b6eb44fb8a83095eebf29e96bc105ca1af7a6157b24698ec95e1bb02932a",
+  "checks": [
+    {
+      "assessment_file": "contact.json",
+      "assessment_sha256": "46ae97da799d11b6028cc27f1b3d14c0ce1a906bad89ce013f6450762d243c74",
+      "phase": "olivine",
+      "checks": [
+        {
+          "fraction_of_maximum_feasible_step": 0.0001,
+          "candidate_scale": 6.904705406339042e-05,
+          "full_gibbs_difference_rt": 2.8162193316916273e-05,
+          "one_sided_rt_per_mol_atoms": 0.08314075906887505,
+          "analytic_rt_per_mol_atoms": 0.08313772528438049,
+          "error_rt_per_mol_atoms": 3.0337844945660386e-06
+        },
+        {
+          "fraction_of_maximum_feasible_step": 5e-05,
+          "candidate_scale": 3.452352703169521e-05,
+          "full_gibbs_difference_rt": 1.4080839704888604e-05,
+          "one_sided_rt_per_mol_atoms": 0.08313924190616148,
+          "analytic_rt_per_mol_atoms": 0.08313772528438049,
+          "error_rt_per_mol_atoms": 1.5166217809947646e-06
+        }
+      ]
+    },
+    {
+      "assessment_file": "dry_mgsi_0.8_2173.15.json",
+      "assessment_sha256": "c69e0a0782f4d81705fd21825584db9225244120d45f3eac808906150d9ebda0",
+      "phase": "olivine",
+      "checks": [
+        {
+          "fraction_of_maximum_feasible_step": 0.0001,
+          "candidate_scale": 6.239590281156883e-05,
+          "full_gibbs_difference_rt": 3.452246576785001e-05,
+          "one_sided_rt_per_mol_atoms": 0.11365885110468758,
+          "analytic_rt_per_mol_atoms": 0.11365523727217042,
+          "error_rt_per_mol_atoms": 3.613832517165849e-06
+        },
+        {
+          "fraction_of_maximum_feasible_step": 5e-05,
+          "candidate_scale": 3.1197951405784416e-05,
+          "full_gibbs_difference_rt": 1.7260958443898744e-05,
+          "one_sided_rt_per_mol_atoms": 0.11365704401835189,
+          "analytic_rt_per_mol_atoms": 0.11365523727217042,
+          "error_rt_per_mol_atoms": 1.8067461814708086e-06
+        }
+      ]
+    },
+    {
+      "assessment_file": "dry_mgsi_1.2_2173.15.json",
+      "assessment_sha256": "6f02ac5571ca8ce3d773aaafd400ad2213c6d6bc3190164e1f1e31ee339f4bf1",
+      "phase": "olivine",
+      "checks": [
+        {
+          "fraction_of_maximum_feasible_step": 0.0001,
+          "candidate_scale": 7.59455603418611e-05,
+          "full_gibbs_difference_rt": 2.1674995693388155e-05,
+          "one_sided_rt_per_mol_atoms": 0.0581637690139752,
+          "analytic_rt_per_mol_atoms": 0.05816139068879313,
+          "error_rt_per_mol_atoms": 2.3783251820730378e-06
+        },
+        {
+          "fraction_of_maximum_feasible_step": 5e-05,
+          "candidate_scale": 3.797278017093055e-05,
+          "full_gibbs_difference_rt": 1.0837276235520221e-05,
+          "one_sided_rt_per_mol_atoms": 0.058162579648929,
+          "analytic_rt_per_mol_atoms": 0.05816139068879313,
+          "error_rt_per_mol_atoms": 1.1889601358727742e-06
+        }
+      ]
+    },
+    {
+      "assessment_file": "dry_mgsi_1_1873.15.json",
+      "assessment_sha256": "ccc4cb9f8be4caa71183cdb7933d217b25407c93997528c121c67610ae1f7f3b",
+      "phase": "olivine",
+      "checks": [
+        {
+          "fraction_of_maximum_feasible_step": 0.0001,
+          "candidate_scale": 6.913848778861628e-05,
+          "full_gibbs_difference_rt": -1.825020829926416e-05,
+          "one_sided_rt_per_mol_atoms": -0.05382756557804857,
+          "analytic_rt_per_mol_atoms": -0.05383084307920574,
+          "error_rt_per_mol_atoms": 3.277501157174234e-06
+        },
+        {
+          "fraction_of_maximum_feasible_step": 5e-05,
+          "candidate_scale": 3.456924389430814e-05,
+          "full_gibbs_difference_rt": -9.125381978947189e-06,
+          "one_sided_rt_per_mol_atoms": -0.05382920444982837,
+          "analytic_rt_per_mol_atoms": -0.05383084307920574,
+          "error_rt_per_mol_atoms": 1.6386293773748561e-06
+        }
+      ]
+    },
+    {
+      "assessment_file": "dry_mgsi_1_2173.15.json",
+      "assessment_sha256": "8c65d6d39f66970abaa4970299e9ff14d96350dcdb716ccba43c2d9b16c3f6f8",
+      "phase": "olivine",
+      "checks": [
+        {
+          "fraction_of_maximum_feasible_step": 0.0001,
+          "candidate_scale": 6.978653055257517e-05,
+          "full_gibbs_difference_rt": 2.879768987895659e-05,
+          "one_sided_rt_per_mol_atoms": 0.08437350923198288,
+          "analytic_rt_per_mol_atoms": 0.08437042908580006,
+          "error_rt_per_mol_atoms": 3.0801461828183774e-06
+        },
+        {
+          "fraction_of_maximum_feasible_step": 5e-05,
+          "candidate_scale": 3.489326527628758e-05,
+          "full_gibbs_difference_rt": 1.4398582095509482e-05,
+          "one_sided_rt_per_mol_atoms": 0.08437196903427102,
+          "analytic_rt_per_mol_atoms": 0.08437042908580006,
+          "error_rt_per_mol_atoms": 1.5399484709632816e-06
+        }
+      ]
+    },
+    {
+      "assessment_file": "metal_select.json",
+      "assessment_sha256": "c2aabff4807094c3dd5df1f9fee50da9abb7126de2de8e8d8b792f9ae683d3a5",
+      "phase": "olivine",
+      "checks": [
+        {
+          "fraction_of_maximum_feasible_step": 0.0001,
+          "candidate_scale": 6.902568946428086e-05,
+          "full_gibbs_difference_rt": 2.814343710610956e-05,
+          "one_sided_rt_per_mol_atoms": 0.08310333434319046,
+          "analytic_rt_per_mol_atoms": 0.08310030192018093,
+          "error_rt_per_mol_atoms": 3.0324230095302163e-06
+        },
+        {
+          "fraction_of_maximum_feasible_step": 5e-05,
+          "candidate_scale": 3.451284473214043e-05,
+          "full_gibbs_difference_rt": 1.407146180554264e-05,
+          "one_sided_rt_per_mol_atoms": 0.08310181806966192,
+          "analytic_rt_per_mol_atoms": 0.08310030192018093,
+          "error_rt_per_mol_atoms": 1.5161494809901033e-06
+        }
+      ]
+    }
+  ]
+}

@@ -12,8 +12,8 @@ only algorithmic change in
 ``examples/retrievals/exojax_nuts_gas_grid.py`` is
 ``GridEquilibriumInitializer``.
 
-Initialization values have stopped gradients in the custom VJP. Once
-both primal solves converge, grid and no-grid spectra and posterior
+Initialization values have stopped gradients in the implicit derivative.
+Once both primal solves converge, grid and no-grid spectra and posterior
 derivatives should agree; the grid is intended to reduce primal
 iterations. The plain demo checks all eight prior corners and records
 grid bounds and the spectral-loss gradient in ``run_summary.json``.
@@ -161,8 +161,9 @@ benchmarks.
 Reverse-mode NUTS
 -----------------
 
-Forward-mode differentiation is intentionally disabled because ExoGibbs
-exposes custom VJPs for these equilibrium solves.
+ExoGibbs supports both forward-mode JVPs and generated VJPs for these
+equilibrium solves. This NUTS example selects reverse mode because it
+differentiates a scalar log density.
 
 .. code:: python
 
@@ -213,9 +214,12 @@ downloaded.
 
 
 The CUDA-only production wrapper uses 500 warmup steps, 1000 samples,
-seed 0, and writes to ``results/vjp_retrieval/gas_grid/``. The
-five-warmup ``--quick`` mode is only an end-to-end smoke test, not an
-inference-quality chain.
+seed 0, and writes to ``results/vjp_retrieval/gas_grid/``. The gas
+``--quick`` profile uses at most 100 warmup steps, 100 samples, and tree
+depth 8; it checks sampler adaptation but is not an inference-quality
+chain. Sampling runs record the effective configuration and sampler
+diagnostics and fail if a transition diverges, a parameter is completely
+stuck, or samples are incomplete or non-finite.
 
 .. code:: tcsh
 

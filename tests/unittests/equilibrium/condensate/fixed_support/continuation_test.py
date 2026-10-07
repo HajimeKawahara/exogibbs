@@ -188,13 +188,14 @@ def test_stage_transition_is_separate_and_strict_stage_must_converge_itself():
     schedule = (math.log(0.1), math.log(0.01))
     config = _config(schedule, max_normal_iterations=0)
     initial = initialize_continuation(problem, state, config)
+    step = jax.jit(lambda carry: continuation_step(problem, carry, config))
 
-    fixed_epsilon_done = continuation_step(problem, initial, config)
+    fixed_epsilon_done = step(initial)
     assert int(fixed_epsilon_done.controller.mode) == SolverMode.CONVERGED
     assert int(fixed_epsilon_done.stage_index) == 0
     assert int(fixed_epsilon_done.completed_stage_count) == 0
 
-    advanced = continuation_step(problem, fixed_epsilon_done, config)
+    advanced = step(fixed_epsilon_done)
     assert int(advanced.controller.mode) == SolverMode.NORMAL
     assert int(advanced.stage_index) == 1
     assert int(advanced.completed_stage_count) == 1
@@ -209,13 +210,13 @@ def test_stage_transition_is_separate_and_strict_stage_must_converge_itself():
     assert int(advanced.controller.original_state.iteration) == 0
     assert not bool(jnp.any(advanced.controller.filter_state.valid_entries))
 
-    strict_stage_attempted = continuation_step(problem, advanced, config)
+    strict_stage_attempted = step(advanced)
     assert int(strict_stage_attempted.controller.mode) == SolverMode.FAILED
     assert int(strict_stage_attempted.terminal_status) == (
         TerminalStatus.NOT_TERMINATED
     )
 
-    failed = continuation_step(problem, strict_stage_attempted, config)
+    failed = step(strict_stage_attempted)
     assert int(failed.terminal_status) == TerminalStatus.NORMAL_MAX_ITER
     assert int(failed.completed_stage_count) == 1
     assert int(failed.stage_statuses[1]) == TerminalStatus.NORMAL_MAX_ITER
@@ -297,9 +298,8 @@ def test_batched_layers_advance_stages_independently_and_match_single_solves():
         initialize_continuation(problem, exact, config),
         initialize_continuation(problem, perturbed, config),
     )
-    independent = tuple(
-        solve_continuation(problem, initial, config) for initial in initial_states
-    )
+    solve_one = jax.jit(lambda carry: solve_continuation(problem, carry, config))
+    independent = tuple(solve_one(initial) for initial in initial_states)
     batched_input = jax.tree_util.tree_map(
         lambda first, second: jnp.stack([first, second]), *initial_states
     )
@@ -331,10 +331,12 @@ def test_batched_layers_advance_stages_independently_and_match_single_solves():
 def test_terminal_continuation_state_is_frozen():
     problem, state = _equilibrium_fixture()
     config = _config((math.log(0.1),))
-    result = solve_continuation(
-        problem, initialize_continuation(problem, state, config), config
-    )
-    repeated = continuation_step(problem, result, config)
+    # JIT and batched execution have dedicated tests; this checks a terminal no-op.
+    with jax.disable_jit():
+        result = solve_continuation(
+            problem, initialize_continuation(problem, state, config), config
+        )
+        repeated = continuation_step(problem, result, config)
 
     assert jax.tree_util.tree_all(
         jax.tree_util.tree_map(jnp.array_equal, repeated, result)

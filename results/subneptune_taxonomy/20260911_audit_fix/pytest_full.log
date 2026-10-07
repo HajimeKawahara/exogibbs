@@ -1,0 +1,42 @@
+........................................................................ [  5%]
+........................................................................ [ 10%]
+...................s.................................................... [ 16%]
+........................................................................ [ 21%]
+........................................................................ [ 27%]
+........................................................................ [ 32%]
+........................................................................ [ 37%]
+........................................................................ [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 54%]
+........................................................................ [ 59%]
+........................................................................ [ 64%]
+........................................................................ [ 70%]
+........................................................................ [ 75%]
+........................................................................ [ 81%]
+........................................................................ [ 86%]
+........................................................................ [ 91%]
+........................................................................ [ 97%]
+...................................                                      [100%]
+=============================== warnings summary ===============================
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:115: RuntimeWarning: overflow encountered in power
+    phi_prime = -np.sum(suf ** 2 / denom**3) / p_norm
+
+tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+  /home/kawahara/anaconda3/envs/myenv39/lib/python3.9/site-packages/scipy/optimize/_lsq/common.py:154: RuntimeWarning: divide by zero encountered in scalar divide
+    ratio = phi / phi_prime
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+--------------- generated xml file: /tmp/exogibbs-audit-full.xml ---------------
+1330 passed, 1 skipped, 24 warnings in 1265.77s (0:21:05)
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0
+
+
+FastChem initialisation summary:
+  number of species: 523    elements: 28    molecules: 495    condensates: 0

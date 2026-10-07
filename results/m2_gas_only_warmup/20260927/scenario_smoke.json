@@ -1,0 +1,50 @@
+[
+  {
+    "input": "/tmp/m2-actual-oxygen-scenarios-20260927/sakao1959.json",
+    "normalized": {
+      "standard_offsets_rt": {
+        "H2_dissolved": 0.0,
+        "H_metal": 0.0,
+        "O_metal": 1.6320817196241961
+      },
+      "metal_bounds": {
+        "lower": [
+          0.86,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "upper": [
+          1.0,
+          0.08,
+          0.02,
+          0.04
+        ]
+      }
+    }
+  },
+  {
+    "input": "/tmp/m2-actual-oh-scenarios-20260927-verified/sakao1959_o_kato_h.json",
+    "normalized": {
+      "standard_offsets_rt": {
+        "H2_dissolved": 0.0,
+        "H_metal": -0.4445191104224264,
+        "O_metal": 1.6320817196241961
+      },
+      "metal_bounds": {
+        "lower": [
+          0.86,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "upper": [
+          1.0,
+          0.08,
+          0.02,
+          0.04
+        ]
+      }
+    }
+  }
+]

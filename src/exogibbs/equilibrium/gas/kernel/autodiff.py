@@ -1,4 +1,10 @@
-"""Implicit reverse-mode sensitivities for gas equilibrium."""
+"""Legacy gas-equilibrium VJP helpers retained for compatibility.
+
+The production solver defines one implicit custom JVP and obtains its VJP by
+automatic transposition.  These analytic component helpers remain available
+through :mod:`exogibbs.optimize.vjpgibbs` for downstream compatibility and
+reference comparisons.
+"""
 
 import jax.numpy as jnp
 from jax import jit
@@ -40,6 +46,29 @@ def vjp_temperature(
     gTATPi = jnp.vdot(alpha_vector, etav - dqtot_dT * element_vector)  # original
 
     return dqtot_dT * jnp.sum(gvector) + gTATPi - jnp.vdot(gvector, hdot)  # original
+
+
+@jit
+def vjp_hvector(
+    gvector: jnp.ndarray,
+    nspecies: jnp.ndarray,
+    formula_matrix: jnp.ndarray,
+    alpha_vector: jnp.ndarray,
+    beta_vector: jnp.ndarray,
+    element_vector: jnp.ndarray,
+    beta_dot_b_element: float,
+) -> jnp.ndarray:
+    """Compute the vector-Jacobian product for an evaluated hvector."""
+
+    dqtot_dh = (
+        nspecies * (formula_matrix.T @ beta_vector - 1.0) / beta_dot_b_element
+    )
+    return (
+        dqtot_dh
+        * (jnp.sum(gvector) - jnp.vdot(alpha_vector, element_vector))
+        + nspecies * (formula_matrix.T @ alpha_vector)
+        - gvector
+    )
 
 
 @jit
@@ -91,5 +120,7 @@ def vjp_elements(
     eps = jnp.asarray(1e-20, dtype=beta_dot_b_element.dtype)
     denom = jnp.where(jnp.abs(beta_dot_b_element) < eps, eps, beta_dot_b_element)
     dqtot_db = beta_vector / denom
-    Xmatrix = jnp.eye(len(element_vector)) - jnp.outer(element_vector, dqtot_db)
+    Xmatrix = jnp.eye(
+        len(element_vector), dtype=element_vector.dtype
+    ) - jnp.outer(element_vector, dqtot_db)
     return jnp.sum(gvector) * dqtot_db + alpha_vector @ Xmatrix

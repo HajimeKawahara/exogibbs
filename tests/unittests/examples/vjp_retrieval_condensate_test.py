@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ast
 import importlib.util
+import json
 from pathlib import Path
 from types import SimpleNamespace
 import sys
@@ -88,6 +89,13 @@ def test_condensate_grid_wrapper_selects_shared_grid_runner():
     assert "use_grid_initializer=False" in common_source
     assert "interpolate_graphite_grid_initial_values" in common_source
     assert "GridCondensateEquilibriumInitializer" in common_source
+
+
+def test_no_grid_preflight_does_not_claim_grid_equivalence():
+    source = EXAMPLE_PATH.read_text(encoding="utf-8")
+
+    assert "grid_primal_equivalent = None" in source
+    assert "grid_primal_equivalent is not False" in source
 
 
 def test_pressure_and_temperature_profiles_match_exojax_convention(
@@ -317,3 +325,59 @@ def test_condensate_cli_defaults_to_preflighted_eight_layer_grid(
     assert args.nlayer == 8
     assert args.co_database is None
     assert "vjp_retrieval" in str(args.output_dir)
+
+
+def test_database_free_preflight_clears_stale_sampling_outputs(
+    condensate_example,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+):
+    module = condensate_example
+    case_name = "condensate_fixed_support"
+    for name in (
+        "mock_spectrum.npz",
+        "posterior_samples.npz",
+        "run_summary.json",
+        f"{case_name}_preflight.json",
+    ):
+        (tmp_path / name).write_bytes(b"stale")
+    unrelated = tmp_path / "keep.txt"
+    unrelated.write_text("user output\n")
+    plan = SimpleNamespace()
+    monkeypatch.setattr(module, "graphite_only_chemical_setup", object)
+    monkeypatch.setattr(
+        module,
+        "prepare_graphite_profile",
+        lambda pressures, setup: plan,
+    )
+    monkeypatch.setattr(
+        module,
+        "preflight_graphite_plan",
+        lambda plan, case_name: {"case_name": case_name, "passed": True},
+    )
+    monkeypatch.setattr(module, "_json_ready_plan_metadata", lambda plan: {})
+    monkeypatch.setattr(module, "_print_preflight_summary", lambda *args: None)
+
+    module.run_condensate_demo(
+        use_grid_initializer=False,
+        case_name=case_name,
+        argv=[
+            "--preflight-only",
+            "--nlayer",
+            "2",
+            "--output-dir",
+            str(tmp_path),
+        ],
+    )
+
+    assert not (tmp_path / "mock_spectrum.npz").exists()
+    assert not (tmp_path / "posterior_samples.npz").exists()
+    assert not (tmp_path / "run_summary.json").exists()
+    assert unrelated.read_text() == "user output\n"
+    preflight = json.loads(
+        (tmp_path / f"{case_name}_preflight.json").read_text()
+    )
+    assert preflight["passed"] is True
+    status = json.loads((tmp_path / "run_status.json").read_text())
+    assert status["state"] == "preflight_complete"
+    assert status["artifacts"][f"{case_name}_preflight.json"] is True

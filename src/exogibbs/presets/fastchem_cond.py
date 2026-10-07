@@ -14,6 +14,7 @@ from exogibbs.equilibrium.condensate.setup import (
     build_condensate_chemical_setup,
 )
 from exogibbs.io.load_data import get_data_filepath
+from exogibbs.presets._condensate import validate_condensate_elements
 from exogibbs.presets.fastchem import chemsetup as _base_chemsetup
 from exogibbs.presets.fastchem import _print_status
 from exogibbs.thermo.stoichiometry import build_formula_matrix
@@ -39,7 +40,8 @@ def chemsetup(
     """Build a ``ChemicalSetup`` from FastChem condensate data."""
 
     data_path = get_data_filepath(path)
-    text = open(data_path, "r", encoding="utf-8").read()
+    with open(data_path, "r", encoding="utf-8") as stream:
+        text = stream.read()
     entries = _parse_condensate_logk(text)
     species = [entry.name for entry in entries]
     components = {entry.name: dict(entry.components) for entry in entries}
@@ -52,6 +54,9 @@ def chemsetup(
     elements = list(gas.elements)
     element_vector_ref = gas.element_vector_reference
 
+    validate_condensate_elements(
+        ((entry.name, entry.components) for entry in entries), elements,
+    )
     formula_matrix = build_formula_matrix(components, elements)
     if not silent:
         _print_status(species, elements, species, preset_name="fastchem_cond")

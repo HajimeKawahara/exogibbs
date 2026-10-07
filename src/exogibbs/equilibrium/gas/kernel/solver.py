@@ -1,25 +1,32 @@
 import math
 import time
+from functools import partial
+from typing import Any, Callable, Dict, Tuple, Union
 
 import jax
 import jax.numpy as jnp
 import numpy as np
-from jax import custom_vjp
-from jax import jacrev
+from jax import custom_jvp
 from jax.lax import while_loop, stop_gradient
 from jax.scipy.linalg import cho_factor
 from jax.scipy.linalg import cho_solve
-from functools import partial
-from typing import Any, Tuple, Callable, Dict
 
 from exogibbs.equilibrium.gas.types import ThermoState
 from exogibbs.equilibrium.gas.kernel.equations import _A_diagn_At
 from exogibbs.equilibrium.gas.kernel.equations import _compute_gk
-from exogibbs.equilibrium.gas.kernel.autodiff import vjp_elements
-from exogibbs.equilibrium.gas.kernel.autodiff import vjp_pressure
-from exogibbs.equilibrium.gas.kernel.autodiff import vjp_temperature
 
 _CHO_EPS = 1.0e-18
+
+
+def _evaluate_hvector_source(
+    state: ThermoState,
+    hvector_source: Any,
+) -> jnp.ndarray:
+    """Evaluate a legacy callable source or accept an already evaluated vector."""
+
+    if callable(hvector_source):
+        return hvector_source(state.temperature)
+    return jnp.asarray(hvector_source)
 
 
 def build_minimize_gibbs_core_lnnk_output_source_trace(
@@ -445,7 +452,7 @@ def trace_minimize_gibbs_core_update_all_lnnk_new_source_components(
 ) -> dict[str, Any]:
     """Replay the core loop in Python and trace final ln_nk_new source terms."""
 
-    hvector = hvector_func(state.temperature)
+    hvector = _evaluate_hvector_source(state, hvector_func)
     gk = _compute_gk(
         state.temperature,
         ln_nk_init,
@@ -872,8 +879,8 @@ def _cea_lambda(delta_ln_nk, delta_ln_ntot, ln_nk, ln_ntot, size=CEA_SIZE):
     lam2   = jnp.where(jnp.any(safe), jnp.min(jnp.where(safe, cand, jnp.inf)), jnp.inf)
 
     lam = jnp.minimum(1.0, jnp.minimum(lam1, lam2))
-    # safe guard
-    lam = jnp.clip(lam, 1e-6, 1.0)
+    # Do not force a minimum step; allow very small values when needed.
+    lam = jnp.clip(lam, 0.0, 1.0)
     return lam
 
 
@@ -1022,7 +1029,7 @@ def profile_minimize_gibbs_iterations(
     apply_step = jax.jit(_apply_iteration_step)
     eval_state = jax.jit(_evaluate_iteration_state)
 
-    hvector = hvector_func(state.temperature)
+    hvector = _evaluate_hvector_source(state, hvector_func)
     _block(hvector)
 
     gk = _compute_gk(
@@ -1178,7 +1185,7 @@ def minimize_gibbs_core(
             - Final residual norm used in convergence checks.
     """
 
-    hvector = hvector_func(state.temperature)
+    hvector = _evaluate_hvector_source(state, hvector_func)
 
     gk = _compute_gk(
         state.temperature,
@@ -1259,111 +1266,147 @@ def minimize_gibbs_core_with_source_trace(
     return ln_nk, ln_tot, counter, epsilon, source_trace
 
 
-def _minimize_gibbs_solve_impl(
-    state: ThermoState,
-    ln_nk0: jnp.ndarray,
-    ln_ntot0: float,
-    formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
-    epsilon_crit: float,
-    max_iter: int,
-) -> jnp.ndarray:
-    ln_nk, _, _, _ = minimize_gibbs_core(
-        state,
-        ln_nk0,
-        ln_ntot0,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit,
-        max_iter,
-    )
-    return ln_nk
-
-
 # Keep the transformed solver at module scope so repeated calls reuse the same
-# Python callable identity instead of rebuilding a new custom_vjp closure.
-@partial(custom_vjp, nondiff_argnums=(3, 4, 5, 6))
+# Python callable identity instead of rebuilding a new custom_jvp closure.
+@partial(custom_jvp, nondiff_argnums=(3, 5, 6))
 def _minimize_gibbs_solve(
     state: ThermoState,
     ln_nk0: jnp.ndarray,
     ln_ntot0: float,
     formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
+    hvector: jnp.ndarray,
     epsilon_crit: float,
     max_iter: int,
+) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
+    return minimize_gibbs_core(
+        state,
+        ln_nk0,
+        ln_ntot0,
+        formula_matrix,
+        hvector,
+        epsilon_crit,
+        max_iter,
+    )
+
+
+def _solve_implicit_gibbs_tangent(
+    ln_nk: jnp.ndarray,
+    ln_ntot: float,
+    formula_matrix: jnp.ndarray,
+    element_vector: jnp.ndarray,
+    element_vector_dot: jnp.ndarray,
+    ln_normalized_pressure_dot: float,
+    hvector_dot: jnp.ndarray,
 ) -> jnp.ndarray:
-    return _minimize_gibbs_solve_impl(
-        state,
-        ln_nk0,
-        ln_ntot0,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit,
-        max_iter,
-    )
+    """Solve the linearized equilibrium equations on the converged state.
 
-
-def _minimize_gibbs_solve_fwd(
-    state: ThermoState,
-    ln_nk0: jnp.ndarray,
-    ln_ntot0: float,
-    formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
-    epsilon_crit: float,
-    max_iter: int,
-):
-    ln_nk, ln_ntot, _, _ = minimize_gibbs_core(
-        state,
-        ln_nk0,
-        ln_ntot0,
-        formula_matrix,
-        hvector_func,
-        epsilon_crit,
-        max_iter,
-    )
-    dfunc = jacrev(hvector_func)
-    hdot = dfunc(state.temperature)
-    residuals = (ln_nk, hdot, state.element_vector, ln_ntot)
-    return ln_nk, residuals
-
-
-def _minimize_gibbs_solve_bwd(
-    formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
-    epsilon_crit: float,
-    max_iter: int,
-    res,
-    g,
-):
-    del hvector_func, epsilon_crit, max_iter
-    ln_nk, hdot, element_vector, ln_ntot = res
+    The implicit tangent is obtained from the symmetric bordered system for
+    the element multipliers and ``ln(ntot)``. ``custom_linear_solve`` exposes
+    its transpose to reverse mode without differentiating the Gibbs iterations.
+    """
 
     nk = jnp.exp(ln_nk)
-    ntot_result = jnp.exp(ln_ntot)
+    ntot = jnp.exp(ln_ntot)
+    bmatrix = _A_diagn_At(nk, formula_matrix)
 
-    Bmatrix = _A_diagn_At(nk, formula_matrix)
-    c, lower = cho_factor(Bmatrix)
-    alpha = cho_solve((c, lower), formula_matrix @ g)
-    beta = cho_solve((c, lower), element_vector)
-    beta_dot_b_element = jnp.vdot(beta, element_vector)
-
-    cot_T = vjp_temperature(
-        g,
-        nk,
-        formula_matrix,
-        hdot,
-        alpha,
-        beta,
-        element_vector,
-        beta_dot_b_element,
+    element_rhs = (
+        element_vector_dot
+        + formula_matrix @ (nk * hvector_dot)
+        + ln_normalized_pressure_dot * element_vector
     )
-    cot_P = vjp_pressure(g, ntot_result, alpha, element_vector, beta_dot_b_element)
-    cot_b = vjp_elements(g, alpha, beta, element_vector, beta_dot_b_element)
-    # No gradients for initialization arguments.
-    return (ThermoState(jnp.asarray(cot_T), jnp.asarray(cot_P), cot_b), None, None)
+    total_rhs = (
+        jnp.vdot(nk, hvector_dot) + ln_normalized_pressure_dot * ntot
+    )
+    rhs = jnp.concatenate((element_rhs, total_rhs[None]))
+
+    def matvec(solution):
+        pi_dot = solution[:-1]
+        ln_ntot_dot = solution[-1]
+        return jnp.concatenate(
+            (
+                bmatrix @ pi_dot + element_vector * ln_ntot_dot,
+                jnp.vdot(element_vector, pi_dot)[None],
+            )
+        )
+
+    def solve_reduced(_, solve_rhs):
+        element_solve_rhs = solve_rhs[:-1]
+        total_solve_rhs = solve_rhs[-1]
+        c, lower = cho_factor(bmatrix)
+        solved = cho_solve(
+            (c, lower),
+            jnp.stack((element_solve_rhs, element_vector), axis=1),
+        )
+        binv_rhs = solved[:, 0]
+        beta = solved[:, 1]
+        beta_dot_b = jnp.vdot(beta, element_vector)
+        # The implicit-function contract requires this Schur complement to be
+        # nonzero. Keep the exact denominator so JVP and VJP remain transposes
+        # of one linear map; legacy VJP-only code clipped selected cotangents.
+        ln_ntot_dot = (
+            jnp.vdot(element_vector, binv_rhs) - total_solve_rhs
+        ) / beta_dot_b
+        pi_dot = binv_rhs - beta * ln_ntot_dot
+        return jnp.concatenate((pi_dot, ln_ntot_dot[None]))
+
+    solution_dot = jax.lax.custom_linear_solve(
+        matvec,
+        rhs,
+        solve_reduced,
+        symmetric=True,
+    )
+    pi_dot = solution_dot[:-1]
+    ln_ntot_dot = solution_dot[-1]
+    return (
+        formula_matrix.T @ pi_dot
+        + ln_ntot_dot
+        - hvector_dot
+        - ln_normalized_pressure_dot
+    )
 
 
-_minimize_gibbs_solve.defvjp(_minimize_gibbs_solve_fwd, _minimize_gibbs_solve_bwd)
+def _minimize_gibbs_solve_jvp(
+    formula_matrix: jnp.ndarray,
+    epsilon_crit: float,
+    max_iter: int,
+    primals,
+    tangents,
+):
+    state, ln_nk0, ln_ntot0, hvector = primals
+    state_dot, _, _, hvector_dot = tangents
+    ln_nk, ln_ntot, n_iter, final_residual = minimize_gibbs_core(
+        state,
+        ln_nk0,
+        ln_ntot0,
+        formula_matrix,
+        hvector,
+        epsilon_crit,
+        max_iter,
+    )
+    ln_nk_dot = _solve_implicit_gibbs_tangent(
+        ln_nk,
+        ln_ntot,
+        formula_matrix,
+        state.element_vector,
+        state_dot.element_vector,
+        state_dot.ln_normalized_pressure,
+        hvector_dot,
+    )
+    # The total amount shares the implicit composition derivative. Iteration
+    # diagnostics are auxiliary outputs, with float0 tangents for integers.
+    ln_ntot_dot = jnp.sum(jnp.exp(ln_nk - ln_ntot) * ln_nk_dot)
+    return (
+        (ln_nk, ln_ntot, n_iter, final_residual),
+        (
+            ln_nk_dot,
+            ln_ntot_dot,
+            jnp.zeros_like(n_iter, dtype=jax.dtypes.float0),
+            jnp.zeros_like(final_residual),
+        ),
+    )
+
+
+_minimize_gibbs_solve.defjvp(_minimize_gibbs_solve_jvp)
 
 
 def minimize_gibbs(
@@ -1371,7 +1414,7 @@ def minimize_gibbs(
     ln_nk_init: jnp.ndarray,
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
+    hvector_func: Union[Callable[[float], jnp.ndarray], jnp.ndarray],
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> jnp.ndarray:
@@ -1382,25 +1425,32 @@ def minimize_gibbs(
         ln_nk_init: Initial natural log number of species vector (n_species,).
         ln_ntot_init: Initial natural log total number of species.
         formula_matrix: Stoichiometric formula matrix (n_elements, n_species).
-        hvector_func: Function that returns chemical potential over RT vector (n_species,).
+        hvector_func: Function returning, or an evaluated, chemical potential
+            over RT vector (n_species,).
         epsilon_crit: Convergence tolerance for residual norm.
         max_iter: Maximum number of iterations allowed.
 
     Returns:
         Final log number of species vector (n_species,).
+
+    Notes:
+        First-order forward and reverse derivatives use the implicit
+        equilibrium equations. Initial guesses, the formula matrix, and
+        numerical configuration are held fixed.
     """
     # Treat initial guesses as non-differentiable inputs
     ln_nk0 = stop_gradient(ln_nk_init)
     ln_ntot0 = stop_gradient(ln_ntot_init)
+    hvector = _evaluate_hvector_source(state, hvector_func)
     return _minimize_gibbs_solve(
         state,
         ln_nk0,
         ln_ntot0,
         formula_matrix,
-        hvector_func,
+        hvector,
         epsilon_crit,
         max_iter,
-    )
+    )[0]
 
 
 def minimize_gibbs_with_diagnostics(
@@ -1408,17 +1458,24 @@ def minimize_gibbs_with_diagnostics(
     ln_nk_init: jnp.ndarray,
     ln_ntot_init: float,
     formula_matrix: jnp.ndarray,
-    hvector_func: Callable[[float], jnp.ndarray],
+    hvector_func: Union[Callable[[float], jnp.ndarray], jnp.ndarray],
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
 ) -> Tuple[jnp.ndarray, Dict[str, jnp.ndarray]]:
-    """Run Gibbs minimization and return lightweight convergence diagnostics."""
-    ln_nk, _, n_iter, final_residual = minimize_gibbs_core(
+    """Return composition and diagnostics from one Gibbs minimization.
+
+    Composition retains the same first-order implicit JVP/VJP as
+    :func:`minimize_gibbs`. Convergence diagnostics have zero tangents; they
+    describe the numerical solve and are not thermodynamic observables.
+    Derivatives require a converged, nonsingular equilibrium state.
+    """
+    hvector = _evaluate_hvector_source(state, hvector_func)
+    ln_nk, _, n_iter, final_residual = _minimize_gibbs_solve(
         state,
-        ln_nk_init,
-        ln_ntot_init,
+        stop_gradient(ln_nk_init),
+        stop_gradient(ln_ntot_init),
         formula_matrix,
-        hvector_func,
+        hvector,
         epsilon_crit,
         max_iter,
     )

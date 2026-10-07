@@ -1,0 +1,28 @@
+{
+  "full_suite_commit": "f2e0d20fcc68a542fc0724c034274e75f599c2d9",
+  "passed": 1810,
+  "skipped": [
+    {
+      "test": "tests.unittests.api.version_test.test_package_version_matches_scm_generated_module",
+      "reason": "setuptools-scm generated version module is unavailable"
+    }
+  ],
+  "collection_manifest_sha256": "bd04e1c5f1245c47d02aacc9afa6e511d49928a32a6b8e27a7ee0088c8e78e76",
+  "junit_sha256": {
+    "shard_0.xml": "017069cbae5ba4a12618050c15c66ad497d23ce7fc2cde5f0266c598b6064828",
+    "shard_1.xml": "75864d98da84fcf24e3dd70dac23098c36339f1c4f899fde77c3ee57c0eb080d",
+    "shard_2.xml": "589463f4f9eaa20ec7ce4aacb129f5ae8c359107ac486af773022547b63c638e",
+    "shard_3.xml": "0a57b44067ff6cc91b1d8c6bf2f2b31fc9b0aedf635cfa853b8d0f9af0ba2fbe",
+    "shard_4.xml": "84f563f0fef9641e05d307746604e6b314f5f38f92b0cf048cf558db47f34d15",
+    "shard_5.xml": "4c56b5256b69e7632593e3fe354704622ef646510c6b9d339381023bd3c09296",
+    "shard_6.xml": "18989cd1d09f97409aaea9fe00221f79c5e8cd5a3cdeff007da6522e9d53a7cc",
+    "shard_7.xml": "0fa41910aa3b6f54c007c10f0f4c081ec050e81ab73194cffa664f3af478484b"
+  },
+  "documentation": {
+    "command": "./update_doc.sh",
+    "exit_code": 0,
+    "warnings": 125,
+    "new_section_warnings": 0,
+    "log_sha256": "d15450ed208df20e6990bf5a4c56b7e5e9abc609329f95aeb4a78e2aa80e2b3a"
+  }
+}

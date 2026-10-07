@@ -178,6 +178,7 @@ cython_debug/
 /volatiles_artifacts/
 
 # Local external checkouts and scratch workspaces.
+/.databases/
 /FastChem/
 /FastChem4/
 /Ipopt/

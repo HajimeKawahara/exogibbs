@@ -1,0 +1,18 @@
+[
+  {
+    "gas_model": "janaf",
+    "return_diagnostics": true,
+    "exit_code": 0,
+    "wall_seconds": 3.8080852199345827,
+    "observed_peak_rss_kib": 401588,
+    "interruption_reason": null
+  },
+  {
+    "gas_model": "janaf_condensed",
+    "return_diagnostics": true,
+    "exit_code": 0,
+    "wall_seconds": 3.6085414104163647,
+    "observed_peak_rss_kib": 400948,
+    "interruption_reason": null
+  }
+]

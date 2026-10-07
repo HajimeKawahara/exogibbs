@@ -17,7 +17,7 @@ def np_nonzeromax(x, A, fill_value=-np.inf):
     x_broadcasted = np.broadcast_to(x, A.shape)  # shape (m,n)
     x_masked = np.where(masked_A, x_broadcasted, -np.inf)  # shape (m,n)
     m = np.max(x_masked, axis=1)  # shape (m,)
-    m = np.where(m == -np.inf, fill_value, m)
+    m = np.where(np.any(masked_A, axis=1), m, fill_value)
     return m
     
 def nonzeromax(x, masked_A):
@@ -30,5 +30,6 @@ def nonzeromax(x, masked_A):
         m: 1D jax array, shape (m,)
 
     """
-    return jnp.max(x*masked_A, axis=1)
-
+    masked_values = jnp.where(masked_A, x, -jnp.inf)
+    maxima = jnp.max(masked_values, axis=1)
+    return jnp.where(jnp.any(masked_A, axis=1), maxima, 0.0)

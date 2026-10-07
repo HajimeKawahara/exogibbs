@@ -3,7 +3,11 @@
 from importlib import import_module
 from typing import Final
 
-from .chemistry import ChemicalSetup, ThermoState
+from .chemistry import (
+    ChemicalSetup,
+    LogFugacityCoefficientFunction,
+    ThermoState,
+)
 
 
 _MODULE_EXPORTS: Final = {
@@ -12,6 +16,7 @@ _MODULE_EXPORTS: Final = {
     "equilibrium": ".equilibrium",
     "equilibrium_grid": ".equilibrium_grid",
     "gas": ".gas",
+    "magma_gas": ".magma_gas",
 }
 
 _ATTRIBUTE_EXPORTS: Final = {
@@ -107,12 +112,14 @@ _ATTRIBUTE_EXPORTS: Final = {
 
 __all__ = [
     "ChemicalSetup",
+    "LogFugacityCoefficientFunction",
     "ThermoState",
     "condensate",
     "condensate_equilibrium",
     "equilibrium",
     "equilibrium_grid",
     "gas",
+    "magma_gas",
     "get_default_equilibrium_grid_path",
     "build_equilibrium_grid",
     "build_h_he_element_vector_from_log10_z_over_z_sun",

@@ -3,6 +3,7 @@
 from types import SimpleNamespace
 
 import jax.numpy as jnp
+import pytest
 
 from exogibbs.condensates import (
     seed_fixed_support_payload as exported_seed_fixed_support_payload,
@@ -39,3 +40,17 @@ def test_seed_fixed_support_payload_deduplicates_and_preserves_budget() -> None:
     assert len(amounts) == 2
     assert all(amount > 0.0 for amount in amounts)
     assert sum(amounts) <= 1.0e-3
+
+
+def test_seed_fixed_support_payload_rejects_zero_capacity_support() -> None:
+    setup = SimpleNamespace(
+        formula_matrix_cond=jnp.asarray([[1.0], [1.0]], dtype=jnp.float64),
+        condensate_species=("AB_s",),
+    )
+
+    with pytest.raises(ValueError, match="cannot receive a positive seed"):
+        seed_fixed_support_payload(
+            setup=setup,
+            element_inventory_target=jnp.asarray([1.0, 0.0], dtype=jnp.float64),
+            support_indices=(0,),
+        )

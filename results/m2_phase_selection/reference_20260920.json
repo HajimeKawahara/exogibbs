@@ -1,0 +1,1194 @@
+{
+  "model_id": "m2_mixed_ma_phase_selection_controls_v1",
+  "scientific_acceptance": {
+    "M2_A": "pending",
+    "M2_B": "pending"
+  },
+  "temperature_K": 2173.15,
+  "pressure_bar": 1.0,
+  "metal_domain": {
+    "component_order": [
+      "Fe",
+      "Si",
+      "O",
+      "H"
+    ],
+    "lower": [
+      0.86,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "upper": [
+      1.0,
+      0.08,
+      0.02,
+      0.04
+    ],
+    "curvature_lower_bound_rt": 7.955676543232684,
+    "meaning": "Restricted mathematical control, not experimental calibration."
+  },
+  "provenance": {
+    "exogibbs": {
+      "source_root": "/tmp/exoinventory-m2-20260920/exogibbs",
+      "commit": "0495d1ae62eb89c7b1a737a8d7dc10f8f9921887",
+      "changed_tracked_file_sha256": {}
+    },
+    "exoeos": {
+      "source_root": "/tmp/exoinventory-m2-20260920/exoeos",
+      "commit": "a081339ec85476add0a83512eca6d4a5c5e7ef14",
+      "changed_tracked_file_sha256": {}
+    },
+    "file_sha256": {
+      "exogibbs/examples/metal_silicate/run_metal_selection.py": "8803ab22bfd4ddd63682d4252b8b9315f2ca4351015f62bc345683ccecf17f7d",
+      "exogibbs/examples/metal_silicate/phase_selection.py": "3fae75f314b1060ab74d59be04feb6efc27e6aef7e2ee47b52344dc09ffbeb88",
+      "exogibbs/examples/metal_silicate/common_gibbs.py": "81ce3846b3df92b94c36068bb055873d17b45fab9e2d4f521ba4bbbea66c74d3",
+      "exogibbs/examples/metal_silicate/full_potential.py": "0d312a1a5ac0fdae0479d0e85e09bc35a88f59952a36895b703ac35513b8bc19",
+      "exogibbs/examples/metal_silicate/local.py": "0c8195f8680e374ae2bc91c081ff8abc7661d17319f426f0766fc5b3a13ce535",
+      "exogibbs/examples/metal_silicate/run_bse_common_gibbs.py": "18bfc320761afda774138fa88afe8be21748107a664fcb97fd34690132c93e7f",
+      "exogibbs/examples/metal_silicate/hydrogen.py": "0fae4fb8a81df8b6fdfe0aa82d72e290e2beb199938b515cccb251d561d5eef3",
+      "exoeos/src/exoeos/ma_fe_si_o.py": "32b526dc260d39a5071e25b198cc06fd331b1ceae89483d509702629ab5c7cde",
+      "exoeos/src/exoeos/ma_fe_si_o_h.py": "131931749adf57a63642a156d93827c3429941b4c442256bc098c9d0cb86765d",
+      "exoeos/src/exoeos/ma_interval.py": "bfc6fb5e922be7abab3cf872df2eba2b8d5c90735aad58639df474a935a54d30",
+      "exoeos/src/exoeos/solution_gibbs.py": "6894b0821ab2955add1c85aa9087766d430b8bb2585b73aa1fe5c97ad463b693",
+      "exoeos/src/exoeos/gibbs_excess.py": "c3354acd4f79940cee2723ec3d2c5500751c767666d295f8c04c3c97b8cfc7b3",
+      "exoeos/src/exoeos/state.py": "ef677c6faa7f050ac6a359ce5bc396d81b9d314dbcb6c571c42f2427f6a0e880",
+      "exoeos/src/exoeos/_arrays.py": "12b7550107f17026eb54be2b22ad2376cbdcb55e0a24c49c39dff34ec585042b"
+    },
+    "jax_version": "0.4.30",
+    "numpy_version": "1.26.4",
+    "scipy_version": "1.13.1",
+    "jax_enable_x64": true,
+    "command": [
+      "/tmp/exoeos-pr1-env/bin/python",
+      "examples/metal_silicate/run_metal_selection.py",
+      "--exoeos-checkout",
+      "/tmp/exoinventory-m2-20260920/exoeos",
+      "--output",
+      "results/m2_phase_selection/reference_20260920.json"
+    ]
+  },
+  "cases": [
+    {
+      "metal_standard_shift_rt": 0.0,
+      "record": {
+        "elements": [
+          "H",
+          "He",
+          "O",
+          "Si",
+          "Fe",
+          "C"
+        ],
+        "phases": {
+          "silicate": [
+            "SiO2_l",
+            "FeO_l",
+            "H2O_l",
+            "H2_l"
+          ],
+          "metal": [
+            "Fe_m",
+            "Si_m",
+            "O_m",
+            "H_m"
+          ],
+          "gas": [
+            "H2_g",
+            "He_g",
+            "H2O_g",
+            "SiO_g"
+          ]
+        },
+        "component_formulas": {
+          "SiO2_l": {
+            "Si": 1,
+            "O": 2
+          },
+          "FeO_l": {
+            "Fe": 1,
+            "O": 1
+          },
+          "H2O_l": {
+            "H": 2,
+            "O": 1
+          },
+          "H2_l": {
+            "H": 2
+          },
+          "Fe_m": {
+            "Fe": 1
+          },
+          "Si_m": {
+            "Si": 1
+          },
+          "O_m": {
+            "O": 1
+          },
+          "H_m": {
+            "H": 1
+          },
+          "H2_g": {
+            "H": 2
+          },
+          "He_g": {
+            "He": 1
+          },
+          "H2O_g": {
+            "H": 2,
+            "O": 1
+          },
+          "SiO_g": {
+            "Si": 1,
+            "O": 1
+          }
+        },
+        "reactions": []
+      },
+      "element_amounts_mol": [
+        0.8039999999999999,
+        0.1,
+        2.5540000000000003,
+        1.007,
+        0.6890000000000001,
+        0.0
+      ],
+      "standard_potentials_rt": {
+        "silicate": [
+          0.45742484703887554,
+          1.150572027598821,
+          3.9639827443588573,
+          3.4531571205928664
+        ],
+        "metal": [
+          0.05854984300856984,
+          14.155786849907571,
+          -2.7951175003991837,
+          3.912023005428146
+        ],
+        "gas": [
+          0.3412228393798109,
+          1.4398351280479205,
+          3.0492730404820207,
+          5.351858133476067
+        ]
+      },
+      "selection": {
+        "status": "metal_present",
+        "result": {
+          "component_amounts_mol": [
+            1.0,
+            0.5000000000000002,
+            0.03000000000000004,
+            0.05000000000000002,
+            0.1889999999999996,
+            0.004999999999999984,
+            0.002,
+            0.003999999999999993,
+            0.29999999999999993,
+            0.09999999999999999,
+            0.020000000000000025,
+            0.0019999999999999983
+          ],
+          "phase_amounts_mol": [
+            1.5800000000000003,
+            0.1999999999999996,
+            0.42199999999999993
+          ],
+          "phase_element_amounts_mol": [
+            [
+              0.16000000000000011,
+              0.0,
+              2.5300000000000002,
+              1.0,
+              0.5000000000000002,
+              0.0
+            ],
+            [
+              0.003999999999999993,
+              0.0,
+              0.002,
+              0.004999999999999984,
+              0.1889999999999996,
+              0.0
+            ],
+            [
+              0.6399999999999999,
+              0.09999999999999999,
+              0.022000000000000023,
+              0.0019999999999999983,
+              0.0,
+              0.0
+            ]
+          ],
+          "element_residual": [
+            0.0,
+            -1.1102230246251565e-16,
+            0.0,
+            0.0,
+            -3.3306690738754696e-16,
+            0.0
+          ],
+          "reaction_residual": [
+            2.2905454454200473e-16,
+            -6.015571716323381e-17,
+            2.4274350325567277e-16,
+            -1.5345451016464785e-16,
+            3.7808770489146814e-16,
+            6.39455288284072e-17,
+            1.6889882737877058e-16
+          ],
+          "elemental_potentials_rt": [
+            1.4410276165204028e-16,
+            2.220446049250315e-16,
+            9.037819906721232e-16,
+            -1.7919604103722472e-15,
+            -2.2594326259008164e-16,
+            0.0
+          ],
+          "gibbs_rt": 5.569791917058305e-16,
+          "accepted": true,
+          "solver_message": "Optimization terminated successfully",
+          "reduced_potentials_rt": [
+            -1.560357097199915e-17,
+            -2.337495182319789e-16,
+            1.4028011557398403e-16,
+            -2.8820552330408057e-16,
+            2.3374951823197727e-16,
+            1.5603570971996784e-17,
+            -1.5603570971997967e-17,
+            2.586347235328431e-16,
+            -1.2167206961030709e-16,
+            -1.9721522630525295e-31,
+            1.4028011557398403e-16,
+            -1.1832913578315177e-30
+          ],
+          "audit_reasons": [],
+          "derivative_error_rt": 1.7763568394002505e-15,
+          "extensivity_error": 2.220446049250313e-16,
+          "initial_gibbs_rt": 1.6668086699106426,
+          "phase_order": [
+            "silicate",
+            "metal",
+            "gas"
+          ]
+        },
+        "insertion": {
+          "composition": [
+            0.9450000000000001,
+            0.024999999999999946,
+            0.010000000000000031,
+            0.02000000000000001
+          ],
+          "upper_bound_rt": 3.8517339634531573e-16,
+          "lower_bound_rt": -2.816511651216937e-14,
+          "uncertainty_rt": 2.8550289908514684e-14,
+          "minimum_certified": true,
+          "reason": "Global supporting bound closes the minimum."
+        },
+        "metal_amount_mol": 0.1999999999999996,
+        "metal_composition": [
+          0.945,
+          0.02499999999999997,
+          0.010000000000000021,
+          0.020000000000000007
+        ],
+        "reasons": []
+      },
+      "independent_audit": {
+        "available": true,
+        "reconstructed_element_amounts_mol": [
+          0.8039999999999999,
+          0.09999999999999999,
+          2.5540000000000003,
+          1.007,
+          0.6889999999999998,
+          0.0
+        ],
+        "element_relative_error": [
+          0.0,
+          -1.3877787807814457e-16,
+          0.0,
+          0.0,
+          -3.222708344340077e-16,
+          0.0
+        ],
+        "maximum_element_error": 3.222708344340077e-16,
+        "fresh_phase_gibbs_rt": {
+          "silicate": 4.440892098500626e-16,
+          "metal": 1.867679393252294e-18,
+          "gas": 1.1102230246251565e-16
+        },
+        "fresh_phase_mu_rt": {
+          "silicate": [
+            0.0,
+            4.440892098500626e-16,
+            1.3322676295501878e-15,
+            0.0
+          ],
+          "metal": [
+            7.806255641895632e-18,
+            -1.7763568394002505e-15,
+            8.881784197001252e-16,
+            4.027374851848834e-16
+          ],
+          "gas": [
+            1.6653345369377348e-16,
+            2.220446049250313e-16,
+            1.3322676295501878e-15,
+            -8.881784197001252e-16
+          ]
+        },
+        "energy_difference_rt": 0.0,
+        "known_coexistence_component_amounts_mol": [
+          1.0,
+          0.5,
+          0.03,
+          0.05,
+          0.189,
+          0.005000000000000001,
+          0.002,
+          0.004,
+          0.3,
+          0.1,
+          0.02,
+          0.002
+        ],
+        "maximum_known_coexistence_relative_error": 3.4694469519536134e-15
+      }
+    },
+    {
+      "metal_standard_shift_rt": 0.1,
+      "record": {
+        "elements": [
+          "H",
+          "He",
+          "O",
+          "Si",
+          "Fe",
+          "C"
+        ],
+        "phases": {
+          "silicate": [
+            "SiO2_l",
+            "FeO_l",
+            "H2O_l",
+            "H2_l"
+          ],
+          "metal": [
+            "Fe_m",
+            "Si_m",
+            "O_m",
+            "H_m"
+          ],
+          "gas": [
+            "H2_g",
+            "He_g",
+            "H2O_g",
+            "SiO_g"
+          ]
+        },
+        "component_formulas": {
+          "SiO2_l": {
+            "Si": 1,
+            "O": 2
+          },
+          "FeO_l": {
+            "Fe": 1,
+            "O": 1
+          },
+          "H2O_l": {
+            "H": 2,
+            "O": 1
+          },
+          "H2_l": {
+            "H": 2
+          },
+          "Fe_m": {
+            "Fe": 1
+          },
+          "Si_m": {
+            "Si": 1
+          },
+          "O_m": {
+            "O": 1
+          },
+          "H_m": {
+            "H": 1
+          },
+          "H2_g": {
+            "H": 2
+          },
+          "He_g": {
+            "He": 1
+          },
+          "H2O_g": {
+            "H": 2,
+            "O": 1
+          },
+          "SiO_g": {
+            "Si": 1,
+            "O": 1
+          }
+        },
+        "reactions": []
+      },
+      "element_amounts_mol": [
+        0.8039999999999999,
+        0.1,
+        2.5540000000000003,
+        1.007,
+        0.6890000000000001,
+        0.0
+      ],
+      "standard_potentials_rt": {
+        "silicate": [
+          0.45742484703887554,
+          1.150572027598821,
+          3.9639827443588573,
+          3.4531571205928664
+        ],
+        "metal": [
+          0.15854984300856984,
+          14.25578684990757,
+          -2.695117500399184,
+          4.012023005428146
+        ],
+        "gas": [
+          0.3412228393798109,
+          1.4398351280479205,
+          3.0492730404820207,
+          5.351858133476067
+        ]
+      },
+      "selection": {
+        "status": "metal_present",
+        "result": {
+          "component_amounts_mol": [
+            0.9996354681954283,
+            0.504926318693434,
+            0.027558300776236916,
+            0.05042189858525252,
+            0.18407368130656607,
+            0.005160514232226559,
+            0.0015908430114551745,
+            0.003529148779203342,
+            0.303805642693237,
+            0.09999999999999999,
+            0.018449583555672142,
+            0.0022040175723456673
+          ],
+          "phase_amounts_mol": [
+            1.5825419862503518,
+            0.19435418732945114,
+            0.42445924382125483
+          ],
+          "phase_element_amounts_mol": [
+            [
+              0.15596039872297887,
+              0.0,
+              2.5317555558605274,
+              0.9996354681954283,
+              0.504926318693434,
+              0.0
+            ],
+            [
+              0.003529148779203342,
+              0.0,
+              0.0015908430114551745,
+              0.005160514232226559,
+              0.18407368130656607,
+              0.0
+            ],
+            [
+              0.6445104524978184,
+              0.09999999999999999,
+              0.02065360112801781,
+              0.0022040175723456673,
+              0.0,
+              0.0
+            ]
+          ],
+          "element_residual": [
+            6.661338147750939e-16,
+            -1.1102230246251565e-16,
+            0.0,
+            6.661338147750939e-16,
+            0.0,
+            0.0
+          ],
+          "reaction_residual": [
+            2.699229728619912e-15,
+            -8.85055917443367e-15,
+            -2.9156364822480185e-15,
+            -2.374836438612249e-15,
+            -4.570128997460898e-15,
+            5.568462357885551e-16,
+            -8.049116928532385e-16
+          ],
+          "elemental_potentials_rt": [
+            0.003397505890607091,
+            -0.005810677262227559,
+            -0.09329616387392352,
+            0.1846201702442434,
+            0.1014930212636061,
+            0.0
+          ],
+          "gibbs_rt": 0.019713327562404397,
+          "accepted": true,
+          "solver_message": "Optimization terminated successfully",
+          "reduced_potentials_rt": [
+            1.3322676295501878e-15,
+            3.649858193455202e-15,
+            2.3037127760972e-15,
+            -1.403391292065237e-15,
+            -3.58046925441613e-15,
+            8.604228440844963e-16,
+            -8.28503932126523e-15,
+            -2.538334126223063e-15,
+            -1.6254358969902682e-15,
+            5.551115123125783e-17,
+            1.8596235662471372e-15,
+            -2.095545958979983e-15
+          ],
+          "audit_reasons": [],
+          "derivative_error_rt": 3.552713678800501e-15,
+          "extensivity_error": 9.189697613987136e-16,
+          "initial_gibbs_rt": 1.9635486699106415,
+          "phase_order": [
+            "silicate",
+            "metal",
+            "gas"
+          ]
+        },
+        "insertion": {
+          "composition": [
+            0.9471042730586369,
+            0.026552112424924345,
+            0.008185277782353496,
+            0.018158336734062416
+          ],
+          "upper_bound_rt": -3.469446951953614e-15,
+          "lower_bound_rt": -3.261643295397999e-14,
+          "uncertainty_rt": 2.9146986002026376e-14,
+          "minimum_certified": true,
+          "reason": "Global supporting bound closes the minimum."
+        },
+        "metal_amount_mol": 0.19435418732945114,
+        "metal_composition": [
+          0.947104273058658,
+          0.026552112424925195,
+          0.008185277782353747,
+          0.018158336734063037
+        ],
+        "reasons": []
+      },
+      "independent_audit": {
+        "available": true,
+        "reconstructed_element_amounts_mol": [
+          0.8040000000000005,
+          0.09999999999999999,
+          2.5540000000000003,
+          1.0070000000000006,
+          0.6890000000000001,
+          0.0
+        ],
+        "element_relative_error": [
+          6.904372043688785e-16,
+          -1.3877787807814457e-16,
+          0.0,
+          6.615032917329632e-16,
+          0.0,
+          0.0
+        ],
+        "maximum_element_error": 6.904372043688785e-16,
+        "fresh_phase_gibbs_rt": {
+          "silicate": 0.00012616306521673337,
+          "metal": 0.01949849982049017,
+          "gas": 8.86646766974919e-05
+        },
+        "fresh_phase_mu_rt": {
+          "silicate": [
+            -0.001972157503602301,
+            0.00819685738968623,
+            -0.08650115209270703,
+            0.006795011781212779
+          ],
+          "metal": [
+            0.10149302126360252,
+            0.18462017024424426,
+            -0.0932961638739318,
+            0.0033975058906045527
+          ],
+          "gas": [
+            0.0067950117812125566,
+            -0.005810677262227504,
+            -0.08650115209270748,
+            0.09132400637031779
+          ]
+        },
+        "energy_difference_rt": 0.0
+      }
+    },
+    {
+      "metal_standard_shift_rt": 4.62,
+      "record": {
+        "elements": [
+          "H",
+          "He",
+          "O",
+          "Si",
+          "Fe",
+          "C"
+        ],
+        "phases": {
+          "silicate": [
+            "SiO2_l",
+            "FeO_l",
+            "H2O_l",
+            "H2_l"
+          ],
+          "metal": [
+            "Fe_m",
+            "Si_m",
+            "O_m",
+            "H_m"
+          ],
+          "gas": [
+            "H2_g",
+            "He_g",
+            "H2O_g",
+            "SiO_g"
+          ]
+        },
+        "component_formulas": {
+          "SiO2_l": {
+            "Si": 1,
+            "O": 2
+          },
+          "FeO_l": {
+            "Fe": 1,
+            "O": 1
+          },
+          "H2O_l": {
+            "H": 2,
+            "O": 1
+          },
+          "H2_l": {
+            "H": 2
+          },
+          "Fe_m": {
+            "Fe": 1
+          },
+          "Si_m": {
+            "Si": 1
+          },
+          "O_m": {
+            "O": 1
+          },
+          "H_m": {
+            "H": 1
+          },
+          "H2_g": {
+            "H": 2
+          },
+          "He_g": {
+            "He": 1
+          },
+          "H2O_g": {
+            "H": 2,
+            "O": 1
+          },
+          "SiO_g": {
+            "Si": 1,
+            "O": 1
+          }
+        },
+        "reactions": []
+      },
+      "element_amounts_mol": [
+        0.8039999999999999,
+        0.1,
+        2.5540000000000003,
+        1.007,
+        0.6890000000000001,
+        0.0
+      ],
+      "standard_potentials_rt": {
+        "silicate": [
+          0.45742484703887554,
+          1.150572027598821,
+          3.9639827443588573,
+          3.4531571205928664
+        ],
+        "metal": [
+          4.67854984300857,
+          18.775786849907572,
+          1.8248824996008164,
+          8.532023005428146
+        ],
+        "gas": [
+          0.3412228393798109,
+          1.4398351280479205,
+          3.0492730404820207,
+          5.351858133476067
+        ]
+      },
+      "selection": {
+        "status": "unresolved",
+        "result": {
+          "component_amounts_mol": [
+            0.8571943677100784,
+            0.6890000000000001,
+            0.0004114211656373335,
+            0.04168892660221525,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.3595054411078663,
+            0.09999999999999999,
+            0.00039421112428158003,
+            0.14980563228992147
+          ],
+          "phase_amounts_mol": [
+            1.5882947154779312,
+            0.0,
+            0.6097052845220693
+          ],
+          "phase_element_amounts_mol": [
+            [
+              0.08420069553570517,
+              0.0,
+              2.4038001565857945,
+              0.8571943677100784,
+              0.6890000000000001,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.7197993044642957,
+              0.09999999999999999,
+              0.15019984341420306,
+              0.14980563228992147,
+              0.0,
+              0.0
+            ]
+          ],
+          "element_residual": [
+            1.3322676295501878e-15,
+            -1.1102230246251565e-16,
+            -1.2212453270876722e-15,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "reaction_residual": [
+            1.7208456881689926e-15,
+            4.773959005888173e-15,
+            -7.549516567451064e-15
+          ],
+          "elemental_potentials_rt": [
+            -0.09351177432689241,
+            -0.3679703862537931,
+            -4.107547775923305,
+            8.055768878216991,
+            4.422944860856331,
+            0.0
+          ],
+          "gibbs_rt": 0.5569107446022173,
+          "accepted": true,
+          "solver_message": "Optimization terminated successfully",
+          "reduced_potentials_rt": [
+            6.217248937900877e-15,
+            5.551115123125783e-16,
+            -6.217248937900877e-15,
+            -6.38378239159465e-16,
+            null,
+            null,
+            null,
+            null,
+            -1.304512053934559e-15,
+            6.661338147750939e-16,
+            4.440892098500626e-15,
+            -1.7763568394002505e-15
+          ],
+          "audit_reasons": [],
+          "derivative_error_rt": 4.440892098500626e-16,
+          "extensivity_error": 4.440892098500626e-16,
+          "initial_gibbs_rt": 1.747049691476463,
+          "phase_order": [
+            "silicate",
+            "metal",
+            "gas"
+          ]
+        },
+        "insertion": {
+          "composition": [
+            0.919792154800729,
+            0.08,
+            2.274666890445649e-06,
+            0.00020557053238068275
+          ],
+          "upper_bound_rt": -0.0067180259084684835,
+          "lower_bound_rt": -0.00671802590855546,
+          "uncertainty_rt": 8.697643300026314e-14,
+          "minimum_certified": true,
+          "reason": "Global supporting bound closes the minimum."
+        },
+        "metal_amount_mol": 0.0,
+        "metal_composition": null,
+        "reasons": [
+          "Metal-bearing branch unavailable: ValueError: A phase omitted a present component potential."
+        ]
+      },
+      "independent_audit": {
+        "available": true,
+        "reconstructed_element_amounts_mol": [
+          0.8040000000000009,
+          0.09999999999999999,
+          2.553999999999997,
+          1.007,
+          0.6890000000000001,
+          0.0
+        ],
+        "element_relative_error": [
+          1.2427869678639814e-15,
+          -1.3877787807814457e-16,
+          -1.21715914994144e-15,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "maximum_element_error": 1.2427869678639814e-15,
+        "fresh_phase_gibbs_rt": {
+          "silicate": 0.0711709757245873,
+          "metal": 0.0,
+          "gas": 0.48573976887763004
+        },
+        "fresh_phase_mu_rt": {
+          "silicate": [
+            -0.15932667362961173,
+            0.3153970849330273,
+            -4.294571324577095,
+            -0.18702354865378545
+          ],
+          "metal": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "gas": [
+            -0.18702354865378612,
+            -0.3679703862537924,
+            -4.294571324577085,
+            3.948221102293685
+          ]
+        },
+        "energy_difference_rt": 0.0
+      }
+    },
+    {
+      "metal_standard_shift_rt": 4.63,
+      "record": {
+        "elements": [
+          "H",
+          "He",
+          "O",
+          "Si",
+          "Fe",
+          "C"
+        ],
+        "phases": {
+          "silicate": [
+            "SiO2_l",
+            "FeO_l",
+            "H2O_l",
+            "H2_l"
+          ],
+          "metal": [
+            "Fe_m",
+            "Si_m",
+            "O_m",
+            "H_m"
+          ],
+          "gas": [
+            "H2_g",
+            "He_g",
+            "H2O_g",
+            "SiO_g"
+          ]
+        },
+        "component_formulas": {
+          "SiO2_l": {
+            "Si": 1,
+            "O": 2
+          },
+          "FeO_l": {
+            "Fe": 1,
+            "O": 1
+          },
+          "H2O_l": {
+            "H": 2,
+            "O": 1
+          },
+          "H2_l": {
+            "H": 2
+          },
+          "Fe_m": {
+            "Fe": 1
+          },
+          "Si_m": {
+            "Si": 1
+          },
+          "O_m": {
+            "O": 1
+          },
+          "H_m": {
+            "H": 1
+          },
+          "H2_g": {
+            "H": 2
+          },
+          "He_g": {
+            "He": 1
+          },
+          "H2O_g": {
+            "H": 2,
+            "O": 1
+          },
+          "SiO_g": {
+            "Si": 1,
+            "O": 1
+          }
+        },
+        "reactions": []
+      },
+      "element_amounts_mol": [
+        0.8039999999999999,
+        0.1,
+        2.5540000000000003,
+        1.007,
+        0.6890000000000001,
+        0.0
+      ],
+      "standard_potentials_rt": {
+        "silicate": [
+          0.45742484703887554,
+          1.150572027598821,
+          3.9639827443588573,
+          3.4531571205928664
+        ],
+        "metal": [
+          4.68854984300857,
+          18.785786849907574,
+          1.8348824996008162,
+          8.542023005428145
+        ],
+        "gas": [
+          0.3412228393798109,
+          1.4398351280479205,
+          3.0492730404820207,
+          5.351858133476067
+        ]
+      },
+      "selection": {
+        "status": "metal_absent",
+        "result": {
+          "component_amounts_mol": [
+            0.8571943677100784,
+            0.6890000000000001,
+            0.0004114211656373335,
+            0.04168892660221525,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.3595054411078663,
+            0.09999999999999999,
+            0.00039421112428158003,
+            0.14980563228992147
+          ],
+          "phase_amounts_mol": [
+            1.5882947154779312,
+            0.0,
+            0.6097052845220693
+          ],
+          "phase_element_amounts_mol": [
+            [
+              0.08420069553570517,
+              0.0,
+              2.4038001565857945,
+              0.8571943677100784,
+              0.6890000000000001,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.7197993044642957,
+              0.09999999999999999,
+              0.15019984341420306,
+              0.14980563228992147,
+              0.0,
+              0.0
+            ]
+          ],
+          "element_residual": [
+            1.3322676295501878e-15,
+            -1.1102230246251565e-16,
+            -1.2212453270876722e-15,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "reaction_residual": [
+            1.7208456881689926e-15,
+            4.773959005888173e-15,
+            -7.549516567451064e-15
+          ],
+          "elemental_potentials_rt": [
+            -0.09351177432689241,
+            -0.3679703862537931,
+            -4.107547775923305,
+            8.055768878216991,
+            4.422944860856331,
+            0.0
+          ],
+          "gibbs_rt": 0.5569107446022173,
+          "accepted": true,
+          "solver_message": "Optimization terminated successfully",
+          "reduced_potentials_rt": [
+            6.217248937900877e-15,
+            5.551115123125783e-16,
+            -6.217248937900877e-15,
+            -6.38378239159465e-16,
+            null,
+            null,
+            null,
+            null,
+            -1.304512053934559e-15,
+            6.661338147750939e-16,
+            4.440892098500626e-15,
+            -1.7763568394002505e-15
+          ],
+          "audit_reasons": [],
+          "derivative_error_rt": 4.440892098500626e-16,
+          "extensivity_error": 4.440892098500626e-16,
+          "initial_gibbs_rt": 1.747049691476463,
+          "phase_order": [
+            "silicate",
+            "metal",
+            "gas"
+          ]
+        },
+        "insertion": {
+          "composition": [
+            0.9197921548007288,
+            0.08,
+            2.274666890445649e-06,
+            0.00020557053238068275
+          ],
+          "upper_bound_rt": 0.0032819740915313034,
+          "lower_bound_rt": 0.003281974091443872,
+          "uncertainty_rt": 8.743136423183806e-14,
+          "minimum_certified": true,
+          "reason": "Global supporting bound closes the minimum."
+        },
+        "metal_amount_mol": 0.0,
+        "metal_composition": null,
+        "reasons": []
+      },
+      "independent_audit": {
+        "available": true,
+        "reconstructed_element_amounts_mol": [
+          0.8040000000000009,
+          0.09999999999999999,
+          2.553999999999997,
+          1.007,
+          0.6890000000000001,
+          0.0
+        ],
+        "element_relative_error": [
+          1.2427869678639814e-15,
+          -1.3877787807814457e-16,
+          -1.21715914994144e-15,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "maximum_element_error": 1.2427869678639814e-15,
+        "fresh_phase_gibbs_rt": {
+          "silicate": 0.0711709757245873,
+          "metal": 0.0,
+          "gas": 0.48573976887763004
+        },
+        "fresh_phase_mu_rt": {
+          "silicate": [
+            -0.15932667362961173,
+            0.3153970849330273,
+            -4.294571324577095,
+            -0.18702354865378545
+          ],
+          "metal": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "gas": [
+            -0.18702354865378612,
+            -0.3679703862537924,
+            -4.294571324577085,
+            3.948221102293685
+          ]
+        },
+        "energy_difference_rt": 0.0
+      }
+    }
+  ],
+  "reference_definition": {
+    "unshifted_metal_composition": [
+      0.945,
+      0.025,
+      0.01,
+      0.02
+    ],
+    "known_unshifted_metal_amount_mol": 0.2,
+    "known_unshifted_elemental_potentials_rt": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "standards": "Manufactured so every component potential is zero at known three-phase coexistence; metal shifts add the same dimensionless standard offset to all four atoms.",
+    "scope": "Real Ma excess mixing, ideal synthetic host/gas and synthetic absolute standards. Parameter offsets are not physical hydrogen-series boundaries or BSE predictions."
+  },
+  "insertion_sign_bracket": {
+    "metal_standard_shift_rt": [
+      4.62,
+      4.63
+    ],
+    "meaning": "Candidate loss of stability of the metal-free branch only; an unresolved metal-bearing branch is not a certified coexistence boundary."
+  },
+  "numerical_reference_acceptance": {
+    "unshifted_coexistence_recovered": true,
+    "both_metal_presence_and_absence_certified": true
+  }
+}

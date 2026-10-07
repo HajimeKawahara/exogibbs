@@ -28,6 +28,22 @@ def fastchem4_condensate_example():
     return module
 
 
+@pytest.fixture(scope="module")
+def fastchem4_gas_example():
+    matplotlib = pytest.importorskip("matplotlib")
+    matplotlib.use("Agg", force=True)
+    path = EXAMPLE_ROOT / "comparison_with_fastchem4_gas.py"
+    spec = importlib.util.spec_from_file_location(
+        "comparison_with_fastchem4_gas_test_module",
+        path,
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _guarded_main_call_count(tree: ast.Module) -> int:
     return sum(
         1
@@ -79,6 +95,111 @@ def test_fastchem4_comparison_example_is_current_and_main_guarded(
     assert "elements_conserved" in source
 
     assert _guarded_main_call_count(tree) == 1
+    main_node = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "main"
+    )
+    main_source = ast.get_source_segment(source, main_node)
+    assert main_source is not None
+    resolve_index = main_source.index("resolve(strict=True)")
+    invalidate_index = main_source.index("unlink(missing_ok=True)")
+    solve_index = main_source.index("run_fastchem_executable(")
+    assert resolve_index < invalidate_index < solve_index
+    assert main_source.index("os.access(") < invalidate_index
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("finite", False, "non-finite amounts"),
+        ("finite", np.nan, "non-finite amounts"),
+        ("jaccard", 0.5, "major-gas set"),
+        ("gas_difference", 2.0e-3, "gas abundances"),
+        ("budget", 3.0e-4, "elemental-budget"),
+        ("total_gas", 2.0e-8, "total gas amounts"),
+    ],
+)
+def test_fastchem4_gas_release_metrics_fail_closed(
+    fastchem4_gas_example,
+    field,
+    value,
+    message,
+) -> None:
+    module = fastchem4_gas_example
+    row = {
+        "gas": {
+            "finite": True,
+            "major_set_jaccard": 1.0,
+            "max_absolute_log10_ratio": 1.0e-6,
+        },
+        "exogibbs_budget": 1.0e-8,
+        "fastchem_budget": 1.0e-8,
+        "total_gas_relative_difference": 1.0e-10,
+    }
+    module._validate_release_metrics([row])
+    if field == "finite":
+        row["gas"]["finite"] = value
+    elif field == "jaccard":
+        row["gas"]["major_set_jaccard"] = value
+    elif field == "gas_difference":
+        row["gas"]["max_absolute_log10_ratio"] = value
+    elif field == "budget":
+        row["exogibbs_budget"] = value
+    else:
+        row["total_gas_relative_difference"] = value
+    with pytest.raises(RuntimeError, match=message):
+        module._validate_release_metrics([row])
+
+
+@pytest.mark.parametrize(
+    ("target", "field", "value", "message"),
+    [
+        ("gas", "finite", False, "non-finite amounts"),
+        ("gas", "finite", np.nan, "non-finite amounts"),
+        ("condensate", "finite", False, "non-finite amounts"),
+        ("condensate", "finite", np.nan, "non-finite amounts"),
+        ("gas", "major_set_jaccard", 0.5, "major-gas set"),
+        ("gas", "max_absolute_log10_ratio", 2.0e-3, "gas abundances"),
+        ("condensate", "active_set_jaccard", 0.5, "active condensate set"),
+        (
+            "condensate",
+            "max_absolute_log10_ratio",
+            2.0e-3,
+            "condensate amounts",
+        ),
+    ],
+)
+def test_fastchem4_condensate_release_metrics_fail_closed(
+    fastchem4_condensate_example,
+    target,
+    field,
+    value,
+    message,
+) -> None:
+    module = fastchem4_condensate_example
+    gas = {
+        "finite": True,
+        "major_set_jaccard": 1.0,
+        "mean_absolute_log10_ratio": 1.0e-6,
+        "max_absolute_log10_ratio": 1.0e-6,
+    }
+    condensate = {
+        "finite": True,
+        "active_set_jaccard": 1.0,
+        "max_absolute_log10_ratio": 1.0e-6,
+    }
+    module._validate_release_metrics(
+        gas_metrics=gas,
+        condensate_metrics=condensate,
+    )
+    metrics = gas if target == "gas" else condensate
+    metrics[field] = value
+    with pytest.raises(RuntimeError, match=message):
+        module._validate_release_metrics(
+            gas_metrics=gas,
+            condensate_metrics=condensate,
+        )
 
 
 def test_l_dwarf_gas_only_runs_remain_independent_of_condensation_runs():
@@ -118,6 +239,39 @@ def test_l_dwarf_gas_only_runs_remain_independent_of_condensation_runs():
     assert isinstance(gas_solve_call.args[0].value, ast.Name)
     assert gas_solve_call.args[0].value.id == "setup"
     assert gas_solve_call.args[0].attr == "gas_setup"
+    main_node = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "main"
+    )
+    main_source = ast.get_source_segment(source, main_node)
+    assert main_source is not None
+    assert main_source.index(
+        "_validate_gas_profile_release_metrics("
+    ) < main_source.index("_plot_l_dwarf_profile_comparison(")
+
+
+def test_l_dwarf_gas_only_profile_uses_shared_release_gate(
+    fastchem4_condensate_example,
+) -> None:
+    module = fastchem4_condensate_example
+    left = np.asarray([[0.9, 0.1], [0.8, 0.2]])
+    right = left.copy()
+    module._validate_gas_profile_release_metrics(
+        names=("H2", "H1"),
+        left_values=left,
+        right_values=right,
+        comparison_label="gas-only",
+    )
+
+    right[1, 0] *= 0.5
+    with pytest.raises(RuntimeError, match="gas-only.*gas abundances"):
+        module._validate_gas_profile_release_metrics(
+            names=("H2", "H1"),
+            left_values=left,
+            right_values=right,
+            comparison_label="gas-only",
+        )
 
 
 def test_l_dwarf_profile_is_positive_monotonic_and_reproducible(

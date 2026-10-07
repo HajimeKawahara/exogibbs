@@ -4,7 +4,7 @@
 ExoJAX NUTS with the gas VJP: no grid initializer
 =================================================
 
-This tutorial demonstrates the gas-equilibrium custom VJP inside an
+This tutorial demonstrates the gas-equilibrium generated VJP inside an
 ExoJAX emission-spectrum retrieval. It is the no-grid baseline: every
 atmospheric layer uses the same uniform cold initialization. The full,
 executable source is ``examples/retrievals/exojax_nuts_gas_no_grid.py``;
@@ -15,8 +15,12 @@ The deterministic mock truth is :math:`T_0=1160` K, :math:`\alpha=0.03`,
 and ``log_co_scale=0``. Carbon and oxygen are scaled together, so C/O
 remains fixed. The normal defaults use 24 layers, 1024 spectral points,
 500 warmup steps, and 1000 samples. Use ``--quick`` before submitting
-the production GPU job. Its five warmup steps make it an end-to-end
-smoke test, not an inference-quality chain.
+the production GPU job. The gas quick profile uses at most 100 warmup
+steps, 100 samples, and tree depth 8; it checks sampler adaptation but
+is not an inference-quality chain. Sampling runs record the effective
+configuration and sampler diagnostics and fail if a transition diverges,
+a parameter is completely stuck, or samples are incomplete or
+non-finite.
 
 The equilibrium call used by the forward model
 ----------------------------------------------
@@ -89,8 +93,9 @@ corners for primal convergence.
 Reverse-mode NUTS
 -----------------
 
-The ExoGibbs gas solver provides a custom VJP, not a forward-mode JVP.
-The shared runner therefore selects reverse mode explicitly. Its
+The ExoGibbs gas solver provides an implicit custom JVP and an
+automatically transposed VJP. The shared runner selects reverse mode
+explicitly because NUTS differentiates a scalar log density. Its
 essential NumPyro construction is:
 
 .. code:: python
@@ -128,8 +133,8 @@ log_co_scale    0          -0.0000416 :math:`\pm` 0.0005270
 
 All three mock truth values lie inside their central 90% posterior
 intervals. This is deliberately a compact, one-chain demonstration of an
-end-to-end ExoJAX retrieval through the ExoGibbs custom VJP, rather than
-a precision convergence benchmark.
+end-to-end ExoJAX retrieval through the ExoGibbs generated VJP, rather
+than a precision convergence benchmark.
 
 Run the complete demo
 ---------------------

@@ -104,8 +104,11 @@ def evaluate_profile_support_closure(
 ) -> dict[str, Any]:
     """Attach full-budget and inactive-condensate closure reports."""
 
-    if support_closure_tolerance < 0.0:
-        raise ValueError("support_closure_tolerance must be non-negative.")
+    closure_tolerance = float(support_closure_tolerance)
+    if not math.isfinite(closure_tolerance) or closure_tolerance < 0.0:
+        raise ValueError(
+            "support_closure_tolerance must be finite and non-negative."
+        )
     result = dict(fixed_support_result)
     ag = jnp.asarray(formula_matrix)
     ac_full = jnp.asarray(formula_matrix_cond_full, dtype=ag.dtype)
@@ -164,13 +167,15 @@ def evaluate_profile_support_closure(
     inactive_driving = hcond_full - jax.vmap(
         lambda multiplier: ac_full.T @ multiplier
     )(element_potential)
+    inactive_candidate_mask = ~support_mask & valid_mask
     inactive_violation = jnp.where(
-        support_mask | ~valid_mask,
-        0.0,
+        inactive_candidate_mask,
         jnp.maximum(-inactive_driving, 0.0),
+        0.0,
     )
-    support_expansion_mask = (
-        inactive_violation > support_closure_tolerance
+    support_expansion_mask = inactive_candidate_mask & (
+        ~jnp.isfinite(inactive_driving)
+        | (inactive_violation > closure_tolerance)
     )
     support_closed = ~jnp.any(support_expansion_mask, axis=1)
     result.update(

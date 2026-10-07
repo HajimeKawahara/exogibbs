@@ -6,14 +6,18 @@ expansion remain an API-level lifecycle outside that solver.
 
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import math
-from typing import Any, Mapping, Optional, Sequence
+from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 
+from exogibbs.equilibrium.condensate.amount_gauge import (
+    transform_condensate_init_amount_gauge,
+    transform_linear_amount_gauge_on_host as _transform_linear_amount_gauge_on_host,
+)
 from exogibbs.equilibrium.condensate.initialization import (
     resolve_condensate_initial_guess,
 )
@@ -28,9 +32,9 @@ from exogibbs.equilibrium.condensate.setup import (
     validate_condensate_chemical_setup,
 )
 from exogibbs.equilibrium.condensate.results import (
+    _full_condensate_amounts_numpy,
+    _merge_external_condensate_amounts_numpy,
     build_condensate_equilibrium_result,
-    full_condensate_amounts,
-    merge_external_condensate_amounts,
 )
 from exogibbs.equilibrium.condensate.support import (
     evaluate_profile_support_closure,
@@ -40,6 +44,11 @@ from exogibbs.equilibrium.condensate.support import (
 )
 from exogibbs.equilibrium.condensate.support import (
     support_payload_from_condensate_init as _support_payload_from_condensate_init,
+)
+from exogibbs.equilibrium.condensate.support_geometry import (
+    finite_barrier_trace_capacity_report,
+    monotone_formula_row_mask,
+    reduce_initial_condensate_support_to_basic,
 )
 from exogibbs.equilibrium.condensate.types import (
     CONDENSATE_HEAD_V2_ROUTE_NAME,
@@ -59,14 +68,141 @@ from exogibbs.equilibrium.condensate.types import (
     CondensateProfileNativeActivitySupportPolicy,
     ExperimentalCondensateProfileFixedSupportBatchPlan,
     HeadV2LayerState,
+    PhysicalKKTValidation,
 )
 from exogibbs.equilibrium.gas.types import EquilibriumInit, ThermoState
+from exogibbs.thermo.fugacity import (
+    LogFugacityCoefficientFunction,
+    effective_gas_hvector,
+)
+
+
+if TYPE_CHECKING:
+    from exogibbs.equilibrium.condensate.fixed_support.zero_barrier import (
+        ZeroBarrierPolishResult,
+    )
+    from exogibbs.equilibrium.condensate.policy import (
+        FixedSupportV2ProductionPolicy,
+    )
 
 
 _ExperimentalProfileFixedSupportBatchPlan = (
     ExperimentalCondensateProfileFixedSupportBatchPlan
 )
 _HeadV2LayerState = HeadV2LayerState
+
+
+@dataclass(frozen=True)
+class _ZeroBarrierInitializerPayload:
+    """Host arrays accepted for one bounded exact-polish attempt."""
+
+    support_indices: tuple[int, ...]
+    gas_log_amounts: np.ndarray
+    condensate_amounts: np.ndarray
+    total_gas_log_amount: float
+    element_potential: np.ndarray
+
+
+@dataclass(frozen=True)
+class _ExactRefinement:
+    """One exact candidate and its independently certified acceptance."""
+
+    result: ZeroBarrierPolishResult
+    caller_audit: Mapping[str, Any] | None
+    validation: PhysicalKKTValidation
+
+
+@dataclass(frozen=True)
+class _FiniteBarrierAssessment:
+    """Finite-barrier decisions; none certifies physical acceptance."""
+
+    terminal_status: int
+    fixed_support_converged: bool
+    support_closed: bool
+    independent_kkt: Mapping[str, float]
+    independent_kkt_passed: bool
+    zero_barrier_initializer_kkt_passed: bool
+    zero_barrier_initializer_gas_stationarity_tolerance: float
+    final_state_values_finite: bool
+
+    @property
+    def fixed_support_accepted(self) -> bool:
+        return bool(
+            self.fixed_support_converged
+            and self.support_closed
+            and self.independent_kkt_passed
+            and self.final_state_values_finite
+        )
+
+    @property
+    def terminal_initializer_eligible(self) -> bool:
+        """Authorize exact refinement even with finite-barrier phase bias."""
+
+        return bool(
+            self.support_closed
+            and self.zero_barrier_initializer_kkt_passed
+            and self.final_state_values_finite
+        )
+
+    @property
+    def early_initializer_eligible(self) -> bool:
+        return bool(
+            self.fixed_support_converged
+            and self.independent_kkt_passed
+            and self.final_state_values_finite
+            and not self.support_closed
+        )
+
+    @property
+    def terminal_outcome(self) -> str | None:
+        """Preserve finite-barrier stop precedence before support expansion."""
+
+        if not self.fixed_support_converged:
+            return "fixed_support_failed"
+        if not self.independent_kkt_passed:
+            return "independent_kkt_failed"
+        if not self.final_state_values_finite:
+            return "nonfinite_final_state"
+        if self.support_closed:
+            return "closed"
+        return None
+
+    def diagnostics(self) -> dict[str, Any]:
+        """Serialize decisions without making diagnostics control routing."""
+
+        from exogibbs.equilibrium.condensate.fixed_support.types import (
+            TerminalStatus,
+        )
+
+        return {
+            "terminal_status": self.terminal_status,
+            "terminal_status_name": TerminalStatus(self.terminal_status).name,
+            "fixed_support_converged": self.fixed_support_converged,
+            "support_closed": self.support_closed,
+            "independent_kkt": self.independent_kkt,
+            "independent_kkt_passed": self.independent_kkt_passed,
+            "zero_barrier_initializer_kkt_passed": (
+                self.zero_barrier_initializer_kkt_passed
+            ),
+            "zero_barrier_initializer_gas_stationarity_tolerance": (
+                self.zero_barrier_initializer_gas_stationarity_tolerance
+            ),
+            "final_state_values_finite": self.final_state_values_finite,
+        }
+
+
+@dataclass(frozen=True)
+class _FiniteBarrierLayerResult:
+    """One assessed state and the original state eligible for fallback."""
+
+    raw: Mapping[str, Any]
+    local_index: int
+    support_indices: tuple[int, ...]
+    assessment: _FiniteBarrierAssessment
+    round_index: int
+    pre_pdipm_state: _HeadV2LayerState | None
+    pre_pdipm_trace_capacity: Mapping[str, Any]
+    rank_reduced_initial_support: bool
 
 
 def build_condensate_equilibrium_result_from_solver_payload(
@@ -88,21 +224,22 @@ def build_condensate_equilibrium_result_from_solver_payload(
     full_condensate_budget_relative_floor: float = (
         DEFAULT_FULL_CONDENSATE_BUDGET_RELATIVE_FLOOR
     ),
+    physical_validation: PhysicalKKTValidation | None = None,
 ) -> CondensateEquilibriumResult:
     """Accept a solver payload, then construct its public result."""
 
-    condensate_amounts = full_condensate_amounts(
+    condensate_amounts = _full_condensate_amounts_numpy(
         support_indices=support_indices,
-        support_amounts=jnp.asarray(support_amounts, dtype=jnp.float64),
+        support_amounts=np.asarray(support_amounts, dtype=np.float64),
         condensate_count=len(setup.condensate_species),
     )
-    condensate_amounts = merge_external_condensate_amounts(
+    condensate_amounts = _merge_external_condensate_amounts_numpy(
         condensate_amounts=condensate_amounts,
         external_condensate_amounts=external_condensate_amounts,
     )
     accepted_state = accept_condensate_result_state(
         setup=setup,
-        gas_ln_n=jnp.asarray(gas_ln_n, dtype=jnp.float64),
+        gas_ln_n=gas_ln_n,
         condensate_amounts=condensate_amounts,
         solver_success=solver_success,
         diagnostics=diagnostics,
@@ -116,6 +253,7 @@ def build_condensate_equilibrium_result_from_solver_payload(
         full_condensate_budget_relative_floor=(
             full_condensate_budget_relative_floor
         ),
+        physical_validation=physical_validation,
     )
     return build_condensate_equilibrium_result(
         setup=setup,
@@ -218,40 +356,8 @@ def _normalize_condensate_init_amount_gauge(
 ) -> CondensateEquilibriumInit | None:
     """Convert one caller-gauge initializer to the canonical amount gauge."""
 
-    if not math.isfinite(amount_scale) or amount_scale <= 0.0:
-        raise ValueError("amount_scale must be finite and positive.")
-    if init is None or amount_scale == 1.0:
-        return init
-    log_scale = math.log(amount_scale)
-    return replace(
-        init,
-        gas_ln_n=(
-            None
-            if init.gas_ln_n is None
-            else jnp.asarray(init.gas_ln_n, dtype=jnp.float64) - log_scale
-        ),
-        gas_ntot=(
-            None
-            if init.gas_ntot is None
-            else jnp.asarray(init.gas_ntot, dtype=jnp.float64) / amount_scale
-        ),
-        condensate_amounts=(
-            None
-            if init.condensate_amounts is None
-            else jnp.asarray(init.condensate_amounts, dtype=jnp.float64)
-            / amount_scale
-        ),
-        support_amounts=(
-            None
-            if init.support_amounts is None
-            else tuple(float(value) / amount_scale for value in init.support_amounts)
-        ),
-        barrier_epsilon=(
-            None
-            if init.barrier_epsilon is None
-            else jnp.asarray(init.barrier_epsilon, dtype=jnp.float64)
-            - log_scale
-        ),
+    return transform_condensate_init_amount_gauge(
+        init, amount_scale, to_canonical=True
     )
 
 
@@ -393,7 +499,13 @@ def _native_activity_expanded_profile_support_payload(
     activity_gas_ntot: Sequence[float] | Array | float | None = None,
     activity_gas_stationarity_source: Sequence[float] | Array | None = None,
     gas_equilibrium_init: EquilibriumInit | None = None,
-) -> tuple[tuple[int, ...], tuple[float, ...], Mapping[str, Any]]:
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
+) -> tuple[
+    tuple[int, ...],
+    tuple[float, ...],
+    Mapping[str, Any],
+    EquilibriumInit | None,
+]:
     from exogibbs.equilibrium.gas.solve import equilibrium
     from exogibbs.equilibrium.gas.types import EquilibriumOptions
     from exogibbs.condensates.support_selection_policy import (
@@ -404,6 +516,7 @@ def _native_activity_expanded_profile_support_payload(
     activity_source = str(activity_source_requested)
     gas_ln_n_for_activity = None
     gas_stationarity_source = None
+    gas_equilibrium_seed = None
     if activity_source == "initializer_gas" and activity_gas_ln_n is not None:
         candidate_ln_n = jnp.asarray(activity_gas_ln_n, dtype=jnp.float64)
         if (
@@ -428,9 +541,14 @@ def _native_activity_expanded_profile_support_payload(
                     gas_ntot = jnp.sum(jnp.exp(candidate_ln_n))
                 else:
                     gas_ntot = jnp.asarray(activity_gas_ntot, dtype=jnp.float64)
-                gas_stationarity_source = setup.gas_setup.hvector_func(float(T)) + (
-                    _ln_normalized_pressure(P, Pref)
-                ) - jnp.log(jnp.clip(gas_ntot, 1.0e-300))
+                gas_stationarity_source = effective_gas_hvector(
+                    setup.gas_setup,
+                    float(T),
+                    float(P),
+                    lnphi_func,
+                ) + _ln_normalized_pressure(P, Pref) - jnp.log(
+                    jnp.clip(gas_ntot, 1.0e-300)
+                )
     if gas_ln_n_for_activity is None or gas_stationarity_source is None:
         activity_source = "gas_only_full_budget"
         gas_result = equilibrium(
@@ -442,11 +560,21 @@ def _native_activity_expanded_profile_support_payload(
             init=gas_equilibrium_init,
             options=EquilibriumOptions(),
             return_diagnostics=False,
+            lnphi_func=lnphi_func,
         )
         gas_ln_n_for_activity = jnp.asarray(gas_result.ln_n, dtype=jnp.float64)
-        gas_stationarity_source = setup.gas_setup.hvector_func(float(T)) + (
-            _ln_normalized_pressure(P, Pref)
-        ) - jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64))
+        gas_equilibrium_seed = EquilibriumInit(
+            ln_nk=gas_ln_n_for_activity,
+            ln_ntot=jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64)),
+        )
+        gas_stationarity_source = effective_gas_hvector(
+            setup.gas_setup,
+            float(T),
+            float(P),
+            lnphi_func,
+        ) + _ln_normalized_pressure(P, Pref) - jnp.log(
+            jnp.asarray(gas_result.ntot, dtype=jnp.float64)
+        )
     element_potential = _least_squares_element_potential(
         formula_matrix=setup.formula_matrix,
         gas_ln_n=gas_ln_n_for_activity,
@@ -588,7 +716,7 @@ def _native_activity_expanded_profile_support_payload(
         ),
         "selection_report": report.as_dict(),
     }
-    return seeded_support, seeded_amounts, trace
+    return seeded_support, seeded_amounts, trace, gas_equilibrium_seed
 
 
 def _head_v2_best_residual_element_potential(
@@ -603,6 +731,7 @@ def _head_v2_best_residual_element_potential(
     gas_ln_n: Array,
     total_gas_log_amount: Array,
     epsilon: float,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> Array:
     """Return the validated global best-residual multiplier initializer."""
 
@@ -615,7 +744,13 @@ def _head_v2_best_residual_element_potential(
     r = jnp.log(jnp.asarray(support_amounts, dtype=jnp.float64))
     qtot = jnp.asarray(total_gas_log_amount, dtype=jnp.float64)
     gamma = jnp.asarray(
-        setup.gas_setup.hvector_func(float(T)), dtype=jnp.float64
+        effective_gas_hvector(
+            setup.gas_setup,
+            float(T),
+            float(P),
+            lnphi_func,
+        ),
+        dtype=jnp.float64,
     ) + _ln_normalized_pressure(P, Pref)
     hcond = jnp.asarray(
         setup.condensate_setup.hvector_func(float(T)), dtype=jnp.float64
@@ -701,6 +836,8 @@ def _head_v2_initial_state(
     support_amounts: Sequence[float],
     initial_guess: CondensateEquilibriumInit | None,
     first_epsilon: float,
+    gas_equilibrium_seed: EquilibriumInit | None = None,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> _HeadV2LayerState:
     """Build one v2 lifecycle state from gas equilibrium and support seeds."""
 
@@ -710,7 +847,11 @@ def _head_v2_initial_state(
     support = tuple(int(index) for index in support_indices)
     amounts = jnp.asarray(support_amounts, dtype=jnp.float64)
     candidate_q = None if initial_guess is None else initial_guess.gas_ln_n
-    if candidate_q is None:
+    if candidate_q is None and gas_equilibrium_seed is not None:
+        # Activity selection already solved this cold full-budget gas problem.
+        q = jnp.asarray(gas_equilibrium_seed.ln_nk, dtype=jnp.float64)
+        qtot = jnp.asarray(gas_equilibrium_seed.ln_ntot, dtype=jnp.float64)
+    elif candidate_q is None:
         gas_result = equilibrium(
             setup.gas_setup,
             float(T),
@@ -719,6 +860,7 @@ def _head_v2_initial_state(
             Pref=Pref,
             options=EquilibriumOptions(),
             return_diagnostics=False,
+            lnphi_func=lnphi_func,
         )
         q = jnp.asarray(gas_result.ln_n, dtype=jnp.float64)
         qtot = jnp.log(jnp.asarray(gas_result.ntot, dtype=jnp.float64))
@@ -749,6 +891,7 @@ def _head_v2_initial_state(
             gas_ln_n=q,
             total_gas_log_amount=qtot,
             epsilon=first_epsilon,
+            lnphi_func=lnphi_func,
         )
     else:
         element_potential = jnp.asarray(
@@ -780,6 +923,7 @@ def _head_v2_prepared_buckets(
     states: Sequence[_HeadV2LayerState],
     fixed_shape: Any | None = None,
     source_layer_indices: Sequence[int] | None = None,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> tuple[Any, ...]:
     """Prepare pending v2 lifecycle states with an optional fixed shape."""
 
@@ -810,10 +954,15 @@ def _head_v2_prepared_buckets(
         hvector_by_layer=jnp.stack(
             [
                 jnp.asarray(
-                    setup.gas_setup.hvector_func(float(temperature)),
+                    effective_gas_hvector(
+                        setup.gas_setup,
+                        float(temperature),
+                        float(pressure),
+                        lnphi_func,
+                    ),
                     dtype=jnp.float64,
                 )
-                for temperature in temperatures
+                for temperature, pressure in zip(temperatures, pressures)
             ]
         ),
         hvector_cond_by_layer=jnp.stack(
@@ -843,10 +992,156 @@ def _head_v2_kkt_row(kkt_norms: Any, index: int) -> Mapping[str, float]:
     }
 
 
+def _run_finite_barrier_batch(
+    *,
+    setup: CondensateChemicalSetup,
+    temperatures: Sequence[float],
+    pressures: Sequence[float],
+    b: Array,
+    Pref: float,
+    states: Sequence[_HeadV2LayerState],
+    fixed_shape: Any,
+    source_layer_indices: Sequence[int],
+    policy: FixedSupportV2ProductionPolicy,
+    return_diagnostics: bool,
+    lnphi_func: LogFugacityCoefficientFunction | None,
+) -> tuple[Mapping[str, Any], Array]:
+    """Solve supplied supports and measure closure without changing them."""
+
+    from exogibbs.equilibrium.condensate.fixed_support.batch import (
+        run_fixed_support_profile,
+    )
+
+    buckets = _head_v2_prepared_buckets(
+        setup=setup,
+        temperatures=temperatures,
+        pressures=pressures,
+        b=b,
+        Pref=Pref,
+        states=states,
+        fixed_shape=fixed_shape,
+        source_layer_indices=source_layer_indices,
+        lnphi_func=lnphi_func,
+    )
+    hcond_full = jnp.stack(
+        [
+            jnp.asarray(
+                setup.condensate_setup.hvector_func(temperature),
+                dtype=jnp.float64,
+            )
+            for temperature in temperatures
+        ]
+    )
+    validity_upper = condensate_temperature_validity_upper(setup)
+    if validity_upper is None:
+        valid_mask = jnp.ones(
+            (len(states), len(setup.condensate_species)), dtype=bool
+        )
+    else:
+        upper = jnp.asarray(validity_upper, dtype=jnp.float64)
+        if upper.shape != (len(setup.condensate_species),):
+            raise ValueError(
+                "temperature_validity_upper must have one value per "
+                "condensate."
+            )
+        valid_mask = (
+            jnp.asarray(temperatures, dtype=jnp.float64)[:, None]
+            <= upper[None, :]
+        )
+    raw = run_fixed_support_profile(
+        buckets=buckets,
+        formula_matrix=setup.formula_matrix,
+        layer_count=len(states),
+        condensate_count=len(setup.condensate_species),
+        config=policy.solver_config,
+        budget_relative_floor=policy.budget_relative_floor,
+        include_terminal_diagnostics=return_diagnostics,
+    )
+    return evaluate_profile_support_closure(
+        raw,
+        formula_matrix=setup.formula_matrix,
+        formula_matrix_cond_full=setup.formula_matrix_cond,
+        condensate_standard_source_full=hcond_full,
+        condensate_valid_mask=valid_mask,
+        budget_relative_floor=policy.budget_relative_floor,
+        support_closure_tolerance=policy.support_closure_tolerance,
+    ), valid_mask
+
+
+def _assess_finite_barrier_layer(
+    raw: Mapping[str, Any],
+    index: int,
+    *,
+    terminal_status: int,
+    fixed_support_converged: bool,
+    support_closed: bool,
+    policy: FixedSupportV2ProductionPolicy,
+) -> _FiniteBarrierAssessment:
+    """Read a solver row once and distinguish convergence from eligibility."""
+
+    independent_kkt = _head_v2_kkt_row(raw["final_kkt_norms"], index)
+    tolerances = policy.solver_config.normal
+    return _FiniteBarrierAssessment(
+        terminal_status=terminal_status,
+        fixed_support_converged=fixed_support_converged,
+        support_closed=support_closed,
+        independent_kkt=independent_kkt,
+        independent_kkt_passed=_head_v2_kkt_passed(
+            independent_kkt,
+            stationarity_tolerance=tolerances.stationarity_tolerance,
+            budget_tolerance=tolerances.budget_tolerance,
+            complementarity_tolerance=tolerances.complementarity_tolerance,
+            total_density_tolerance=tolerances.total_density_tolerance,
+        ),
+        zero_barrier_initializer_kkt_passed=(
+            _head_v2_zero_barrier_initializer_kkt_passed(
+                independent_kkt,
+                gas_stationarity_tolerance=(
+                    policy.zero_barrier_initializer_gas_stationarity_tolerance
+                ),
+                budget_tolerance=tolerances.budget_tolerance,
+                complementarity_tolerance=tolerances.complementarity_tolerance,
+                total_density_tolerance=tolerances.total_density_tolerance,
+            )
+        ),
+        zero_barrier_initializer_gas_stationarity_tolerance=(
+            policy.zero_barrier_initializer_gas_stationarity_tolerance
+        ),
+        final_state_values_finite=bool(
+            np.asarray(jax.device_get(raw["final_state_values_finite"][index]))
+        ),
+    )
+
+
+def _finite_barrier_initializer_payload(
+    raw: Mapping[str, Any],
+    index: int,
+    *,
+    support_indices: tuple[int, ...],
+) -> _ZeroBarrierInitializerPayload:
+    """Cross from positive finite-barrier amounts to exact linear amounts."""
+
+    return _ZeroBarrierInitializerPayload(
+        support_indices=support_indices,
+        gas_log_amounts=np.asarray(
+            jax.device_get(raw["gas_log_amounts"][index]), dtype=np.float64
+        ),
+        condensate_amounts=np.asarray(
+            jax.device_get(raw["condensate_amounts"][index]), dtype=np.float64
+        ),
+        total_gas_log_amount=float(
+            np.asarray(jax.device_get(raw["total_gas_log_amount"][index]))
+        ),
+        element_potential=np.asarray(
+            jax.device_get(raw["element_potential"][index]), dtype=np.float64
+        ),
+    )
+
+
 def _head_v2_zero_barrier_initializer_kkt_passed(
     kkt: Mapping[str, float],
     *,
-    stationarity_tolerance: float,
+    gas_stationarity_tolerance: float,
     budget_tolerance: float,
     complementarity_tolerance: float,
     total_density_tolerance: float,
@@ -860,7 +1155,7 @@ def _head_v2_zero_barrier_initializer_kkt_passed(
     """
 
     required = (
-        ("gas_stationarity", stationarity_tolerance),
+        ("gas_stationarity", gas_stationarity_tolerance),
         ("budget_scaled", budget_tolerance),
         ("complementarity", complementarity_tolerance),
         ("total_density_scaled", total_density_tolerance),
@@ -871,6 +1166,255 @@ def _head_v2_zero_barrier_initializer_kkt_passed(
             and float(kkt[name]) <= float(tolerance)
             for name, tolerance in required
         )
+    )
+
+
+def _head_v2_pre_pdipm_zero_barrier_candidate(
+    *,
+    setup: CondensateChemicalSetup,
+    state: _HeadV2LayerState | None,
+    trace_capacity_report: Mapping[str, Any],
+    valid_condensates: Sequence[bool] | None,
+    enabled: bool,
+    disabled_reason: str | None,
+    rank_reduced_initial_support: bool = False,
+) -> tuple[_ZeroBarrierInitializerPayload | None, dict[str, Any]]:
+    """Recover a finite initializer after a qualified finite-barrier failure.
+
+    Trace capacity and initial rank reduction can make the finite-barrier
+    route unreliable. Neither condition authorizes physical acceptance: the
+    recovered state only initializes the catalog-wide zero-barrier solve.
+    """
+
+    support = (
+        ()
+        if state is None
+        else tuple(int(index) for index in state.support_indices)
+    )
+    report: dict[str, Any] = {
+        "schema": "exogibbs_pre_pdipm_zero_barrier_fallback_v1",
+        "eligible": False,
+        "attempted": False,
+        "internal_accepted": False,
+        "caller_gauge_accepted": False,
+        "accepted": False,
+        "skip_reason": disabled_reason,
+        "source_support_indices": support,
+        "source_state_values_finite": None,
+        "source_support_temperature_valid": None,
+        "trace_capacity": dict(trace_capacity_report),
+        "rank_reduced_initial_support": rank_reduced_initial_support,
+    }
+    if not enabled:
+        return None, report
+    if not trace_capacity_report["capacity_geometry_valid"]:
+        report["skip_reason"] = "invalid_capacity_geometry"
+        return None, report
+    if not (trace_capacity_report["trace_capacity_detected"]
+            or rank_reduced_initial_support):
+        report["skip_reason"] = "capacity_not_below_initial_barrier"
+        return None, report
+    if state is None:
+        report["skip_reason"] = "missing_source_state"
+        return None, report
+
+    support_valid = bool(
+        support
+        and len(set(support)) == len(support)
+        and all(
+            0 <= index < len(setup.condensate_species)
+            for index in support
+        )
+    )
+    if not support_valid:
+        report["skip_reason"] = "invalid_source_support"
+        return None, report
+
+    gas_log_amounts = np.asarray(
+        jax.device_get(state.gas_ln_n), dtype=np.float64
+    )
+    condensate_log_amounts = np.asarray(
+        jax.device_get(state.condensate_log_amounts), dtype=np.float64
+    )
+    total_gas_log_amount_array = np.asarray(
+        jax.device_get(state.total_gas_log_amount), dtype=np.float64
+    )
+    element_potential = np.asarray(
+        jax.device_get(state.element_potential), dtype=np.float64
+    )
+    with np.errstate(over="ignore", under="ignore", invalid="ignore"):
+        support_amounts = np.exp(condensate_log_amounts)
+    shapes_valid = bool(
+        gas_log_amounts.shape == (len(setup.gas_species),)
+        and condensate_log_amounts.shape == (len(support),)
+        and total_gas_log_amount_array.shape == ()
+        and element_potential.shape == (len(setup.elements),)
+    )
+    state_values_finite = bool(
+        shapes_valid
+        and np.all(np.isfinite(gas_log_amounts))
+        and np.all(np.isfinite(condensate_log_amounts))
+        and np.isfinite(total_gas_log_amount_array)
+        and np.all(np.isfinite(element_potential))
+        and np.all(np.isfinite(support_amounts))
+        and np.all(support_amounts > 0.0)
+    )
+    report["source_state_values_finite"] = state_values_finite
+    if not state_values_finite:
+        report["skip_reason"] = "invalid_source_state"
+        return None, report
+
+    valid_mask = np.asarray(valid_condensates, dtype=bool)
+    support_temperature_valid = bool(
+        valid_mask.shape == (len(setup.condensate_species),)
+        and all(valid_mask[index] for index in support)
+    )
+    report["source_support_temperature_valid"] = support_temperature_valid
+    if not support_temperature_valid:
+        report["skip_reason"] = "temperature_invalid_source_support"
+        return None, report
+
+    if tuple(sorted(support)) != tuple(trace_capacity_report["support_indices"]):
+        report["skip_reason"] = "source_support_geometry_mismatch"
+        return None, report
+
+    condensate_amounts = np.zeros(
+        len(setup.condensate_species), dtype=np.float64
+    )
+    condensate_amounts[np.asarray(support, dtype=np.int64)] = support_amounts
+    payload = _ZeroBarrierInitializerPayload(
+        support_indices=support,
+        gas_log_amounts=gas_log_amounts,
+        condensate_amounts=condensate_amounts,
+        total_gas_log_amount=float(total_gas_log_amount_array),
+        element_potential=element_potential,
+    )
+    report["eligible"] = True
+    report["skip_reason"] = None
+    return payload, report
+
+
+def _expand_zero_barrier_initializer_support(
+    payload: _ZeroBarrierInitializerPayload | None,
+    envelope_support: Sequence[int] | None,
+    *,
+    source_round_index: int,
+    reduction: Mapping[str, Any],
+    valid_condensates: Sequence[bool] | None,
+) -> tuple[_ZeroBarrierInitializerPayload | None, dict[str, Any]]:
+    """Expand candidate support without changing the initializer state."""
+
+    report: dict[str, Any] = {
+        "schema": (
+            "exogibbs_zero_barrier_initializer_support_envelope_v1"
+        ),
+        "available": envelope_support is not None,
+        "expanded": False,
+        "source_support_indices": (
+            None if payload is None else payload.support_indices
+        ),
+        "envelope_support_indices": (
+            None
+            if envelope_support is None
+            else tuple(int(index) for index in envelope_support)
+        ),
+        "added_support_indices": (),
+        "initializer_state_preserved": False,
+        "added_support_amounts_zero": False,
+        "skip_reason": None,
+    }
+    if payload is None:
+        report["skip_reason"] = "initializer_not_available"
+        return payload, report
+    if envelope_support is None:
+        report["skip_reason"] = "no_rank_deficient_initial_support"
+        return payload, report
+    if source_round_index != 0:
+        report["skip_reason"] = "not_initial_lifecycle_round"
+        return payload, report
+    if not reduction.get("applied", False) or reduction.get(
+        "initial_support_nullity", 0
+    ) <= 0:
+        report["skip_reason"] = "rank_deficient_reduction_not_applied"
+        return payload, report
+    if reduction.get("output_support_nullity") != 0:
+        report["skip_reason"] = "reduced_basis_not_full_rank"
+        return payload, report
+
+    support = tuple(int(index) for index in envelope_support)
+    initial_support = tuple(
+        int(index)
+        for index in reduction.get("initial_support_indices", ())
+    )
+    selected_support = tuple(
+        int(index)
+        for index in reduction.get("output_support_indices", ())
+    )
+    if support != initial_support:
+        report["skip_reason"] = (
+            "envelope_support_differs_from_reduction_input"
+        )
+        return payload, report
+    selected_set = set(selected_support)
+    support_set = set(support)
+    if (
+        not selected_support
+        or len(selected_set) != len(selected_support)
+    ):
+        report["skip_reason"] = "invalid_reduced_basis"
+        return payload, report
+    if not selected_set.issubset(support_set):
+        report["skip_reason"] = "reduced_basis_outside_envelope_support"
+        return payload, report
+    if selected_set == support_set:
+        report["skip_reason"] = "envelope_does_not_expand_reduced_basis"
+        return payload, report
+    if payload.support_indices != selected_support:
+        report["skip_reason"] = (
+            "source_support_differs_from_reduced_basis"
+        )
+        return payload, report
+
+    amounts = np.asarray(payload.condensate_amounts, dtype=np.float64)
+    valid_mask = np.asarray(valid_condensates, dtype=bool)
+    if amounts.ndim != 1 or valid_mask.shape != amounts.shape:
+        report["skip_reason"] = "invalid_condensate_catalog_shape"
+        return payload, report
+    support_valid = bool(
+        support
+        and len(set(support)) == len(support)
+        and all(0 <= index < amounts.size for index in support)
+    )
+    source_mask = np.zeros(amounts.size, dtype=bool)
+    if support_valid:
+        source_mask[np.asarray(payload.support_indices, dtype=np.int64)] = True
+    if (
+        not support_valid
+        or not np.all(np.isfinite(amounts))
+        or np.any(amounts < 0.0)
+    ):
+        report["skip_reason"] = "invalid_initializer_amounts"
+        return payload, report
+    if np.any(amounts[~source_mask] != 0.0):
+        report["skip_reason"] = "initializer_amounts_outside_source_support"
+        return payload, report
+    if any(not valid_mask[index] for index in support):
+        report["skip_reason"] = "temperature_invalid_envelope_support"
+        return payload, report
+
+    added_support = tuple(
+        index for index in support if index not in selected_set
+    )
+    report["expanded"] = True
+    report["added_support_indices"] = added_support
+    report["initializer_state_preserved"] = True
+    report["added_support_amounts_zero"] = True
+    return (
+        replace(
+            payload,
+            support_indices=support,
+        ),
+        report,
     )
 
 
@@ -894,6 +1438,7 @@ def _run_head_v2_profile(
     support_amounts_init: Sequence[float] | None,
     options: CondensateEquilibriumOptions,
     return_diagnostics: bool,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> CondensateEquilibriumProfileResult:
     """Run the production v2 route and its external support lifecycle."""
 
@@ -907,7 +1452,6 @@ def _run_head_v2_profile(
     )
     from exogibbs.equilibrium.condensate.fixed_support.batch import (
         FixedSupportV2BatchShape,
-        run_fixed_support_profile,
     )
     from exogibbs.equilibrium.condensate.fixed_support.types import (
         TerminalStatus,
@@ -923,13 +1467,25 @@ def _run_head_v2_profile(
     caller_inventory = jnp.asarray(b, dtype=jnp.float64)
     amount_scale = _inventory_amount_gauge_scale(setup, caller_inventory)
     log_amount_scale = math.log(amount_scale)
-    b = caller_inventory / amount_scale
+    b = _transform_linear_amount_gauge_on_host(
+        caller_inventory,
+        amount_scale,
+        to_canonical=True,
+    )
     caller_explicit_inits = tuple(explicit_inits)
     if support_amounts_init is not None:
         support_amounts_init = tuple(
             float(value) / amount_scale for value in support_amounts_init
         )
     epsilon_schedule = policy.solver_config.continuation.epsilon_schedule
+    normalized_inventory_host = np.asarray(b, dtype=np.float64)
+    condensate_formula_host = np.asarray(
+        setup.formula_matrix_cond, dtype=np.float64
+    )
+    trace_capacity_monotone_rows = monotone_formula_row_mask(
+        np.asarray(setup.formula_matrix, dtype=np.float64),
+        condensate_formula_host,
+    )
     amount_gauge = {
         "schema": "exogibbs_condensate_amount_gauge_v1",
         "scale_basis": "sum_positive_non_charge_element_inventory",
@@ -943,6 +1499,13 @@ def _run_head_v2_profile(
         "internal_gauge": "normalized_element_inventory",
         "public_result_gauge": "caller_element_inventory",
     }
+    finite_barrier_initializer_budget_scale = (
+        _canonical_budget_scale_for_caller_audit(
+            b,
+            amount_scale=1.0,
+            relative_floor=policy.budget_relative_floor,
+        )
+    )
     n_layers = int(temperatures.shape[0])
     fixed_batch_shape = FixedSupportV2BatchShape(
         support_capacity=max(
@@ -957,6 +1520,7 @@ def _run_head_v2_profile(
     records: list[dict[str, Any]] = [
         {"layer_index": index, "rounds": []} for index in range(n_layers)
     ]
+    initial_support_envelopes: dict[int, tuple[int, ...]] = {}
     pending: dict[int, _HeadV2LayerState] = {}
     gas_only_states: dict[int, _HeadV2LayerState] = {}
     gas_only_layers: set[int] = set()
@@ -1021,6 +1585,7 @@ def _run_head_v2_profile(
             initial_support,
             initial_amounts,
             support_trace,
+            gas_equilibrium_seed,
         ) = _native_activity_expanded_profile_support_payload(
             setup=setup,
             T=float(temperatures[layer_index]),
@@ -1041,6 +1606,7 @@ def _run_head_v2_profile(
             activity_gas_ntot=None,
             activity_gas_stationarity_source=None,
             gas_equilibrium_init=gas_equilibrium_init,
+            lnphi_func=lnphi_func,
         )
         base_amount_by_index = {
             int(index): float(amount)
@@ -1050,9 +1616,55 @@ def _run_head_v2_profile(
             base_amount_by_index.get(int(index), float(amount))
             for index, amount in zip(initial_support, initial_amounts)
         )
+        initial_full_amounts = np.zeros(
+            len(setup.condensate_species), dtype=np.float64
+        )
+        if initial_support:
+            initial_full_amounts[
+                np.asarray(initial_support, dtype=np.int64)
+            ] = np.asarray(initial_amounts, dtype=np.float64)
+        unreduced_support = tuple(int(index) for index in initial_support)
+        (
+            initial_support,
+            initial_full_amounts,
+            finite_barrier_initial_support_reduction,
+        ) = reduce_initial_condensate_support_to_basic(
+            condensate_formula_matrix_full=np.asarray(
+                setup.formula_matrix_cond, dtype=np.float64
+            ),
+            condensate_standard_source_full=np.asarray(
+                setup.condensate_setup.hvector_func(
+                    float(temperatures[layer_index])
+                ),
+                dtype=np.float64,
+            ),
+            target_inventory=np.asarray(b, dtype=np.float64),
+            condensate_amounts=initial_full_amounts,
+            support_indices=initial_support,
+            budget_scale=finite_barrier_initializer_budget_scale,
+            budget_tolerance=(
+                policy.solver_config.normal.budget_tolerance
+            ),
+            enabled=True,
+            diagnostic_role="finite_barrier_pdipm_initializer",
+        )
+        if (
+            finite_barrier_initial_support_reduction.get("applied", False)
+            and finite_barrier_initial_support_reduction.get(
+                "initial_support_nullity", 0
+            )
+            > 0
+        ):
+            initial_support_envelopes[layer_index] = unreduced_support
+        initial_amounts = tuple(
+            float(initial_full_amounts[index]) for index in initial_support
+        )
         records[layer_index]["initial_support_indices"] = initial_support
         records[layer_index]["initial_support_count"] = len(initial_support)
         records[layer_index]["initial_support_selection"] = support_trace
+        records[layer_index][
+            "finite_barrier_initial_support_reduction"
+        ] = finite_barrier_initial_support_reduction
         if not initial_support:
             records[layer_index]["outcome"] = "gas_only_no_candidate"
             gas_only_layers.add(layer_index)
@@ -1068,6 +1680,8 @@ def _run_head_v2_profile(
                 first_epsilon=(
                     policy.solver_config.continuation.epsilon_schedule[0]
                 ),
+                gas_equilibrium_seed=gas_equilibrium_seed,
+                lnphi_func=lnphi_func,
             )
             continue
         pending[layer_index] = _head_v2_initial_state(
@@ -1080,25 +1694,39 @@ def _run_head_v2_profile(
             support_amounts=initial_amounts,
             initial_guess=initial_guess,
             first_epsilon=policy.solver_config.continuation.epsilon_schedule[0],
+            gas_equilibrium_seed=gas_equilibrium_seed,
+            lnphi_func=lnphi_func,
         )
 
-    def polish_layer_state(
+    def valid_condensates_for_layer(layer_index: int) -> np.ndarray:
+        temperature = float(temperatures[layer_index])
+        upper = condensate_temperature_validity_upper(setup)
+        return (
+            np.ones(len(setup.condensate_species), dtype=bool)
+            if upper is None
+            else temperature <= np.asarray(upper, dtype=np.float64)
+        )
+
+    def refine_layer_state(
         *,
         layer_index: int,
-        gas_log_amounts: Array,
-        condensate_amounts: Array,
-        total_gas_log_amount: float,
-        element_potential: Array,
-        support: Sequence[int],
+        initializer: _ZeroBarrierInitializerPayload,
         valid_condensates: Sequence[bool],
-    ) -> Any:
+    ) -> _ExactRefinement:
+        """Solve one eligible initializer and certify the same caller state."""
+
         temperature = float(temperatures[layer_index])
-        return polish_zero_barrier_active_support(
+        exact = polish_zero_barrier_active_support(
             gas_formula_matrix=setup.formula_matrix,
             condensate_formula_matrix_full=setup.formula_matrix_cond,
             target_inventory=b,
             gas_standard_source=(
-                setup.gas_setup.hvector_func(temperature)
+                effective_gas_hvector(
+                    setup.gas_setup,
+                    temperature,
+                    float(pressures[layer_index]),
+                    lnphi_func,
+                )
                 + _ln_normalized_pressure(
                     float(pressures[layer_index]), Pref
                 )
@@ -1106,11 +1734,11 @@ def _run_head_v2_profile(
             condensate_standard_source_full=(
                 setup.condensate_setup.hvector_func(temperature)
             ),
-            gas_log_amounts_init=gas_log_amounts,
-            condensate_amounts_init=condensate_amounts,
-            total_gas_log_amount_init=total_gas_log_amount,
-            element_potential_init=element_potential,
-            support_indices=support,
+            gas_log_amounts_init=initializer.gas_log_amounts,
+            condensate_amounts_init=initializer.condensate_amounts,
+            total_gas_log_amount_init=initializer.total_gas_log_amount,
+            element_potential_init=initializer.element_potential,
+            support_indices=initializer.support_indices,
             condensate_valid_mask=valid_condensates,
             stationarity_tolerance=(
                 policy.solver_config.normal.stationarity_tolerance
@@ -1122,13 +1750,45 @@ def _run_head_v2_profile(
             support_closure_tolerance=policy.support_closure_tolerance,
             budget_relative_floor=policy.budget_relative_floor,
         )
+        internal_accepted = bool(exact.accepted)
+        caller_audit = (
+            audit_state_in_caller_gauge(
+                layer_index=layer_index,
+                gas_log_amounts=exact.gas_log_amounts,
+                condensate_amounts=exact.condensate_amounts,
+                total_gas_log_amount=exact.total_gas_log_amount,
+                element_potential=exact.element_potential,
+                support_indices=exact.support_indices,
+                valid_condensates=valid_condensates,
+            )
+            if internal_accepted
+            else None
+        )
+        return _ExactRefinement(
+            result=exact,
+            caller_audit=caller_audit,
+            validation=PhysicalKKTValidation(
+                internal_accepted=internal_accepted,
+                caller_gauge_accepted=(
+                    bool(caller_audit["accepted"])
+                    if caller_audit is not None
+                    else False
+                ),
+            ),
+        )
 
-    def audit_exact_in_caller_gauge(
+    def audit_state_in_caller_gauge(
         *,
         layer_index: int,
-        exact: Any,
+        gas_log_amounts: Array,
+        condensate_amounts: Array,
+        total_gas_log_amount: float,
+        element_potential: Array,
+        support_indices: Sequence[int],
         valid_condensates: Sequence[bool],
     ) -> dict[str, Any]:
+        """Audit one canonical state after restoring the caller amount gauge."""
+
         temperature = float(temperatures[layer_index])
         return _physical_zero_barrier_audit(
             gas_formula_matrix=np.asarray(
@@ -1141,7 +1801,12 @@ def _run_head_v2_profile(
                 caller_inventory, dtype=np.float64
             ),
             gas_standard_source=np.asarray(
-                setup.gas_setup.hvector_func(temperature)
+                effective_gas_hvector(
+                    setup.gas_setup,
+                    temperature,
+                    float(pressures[layer_index]),
+                    lnphi_func,
+                )
                 + _ln_normalized_pressure(
                     float(pressures[layer_index]), Pref
                 ),
@@ -1152,20 +1817,26 @@ def _run_head_v2_profile(
                 dtype=np.float64,
             ),
             gas_log_amounts=(
-                np.asarray(exact.gas_log_amounts, dtype=np.float64)
+                np.asarray(gas_log_amounts, dtype=np.float64)
                 + log_amount_scale
             ),
-            condensate_amounts=(
-                np.asarray(exact.condensate_amounts, dtype=np.float64)
-                * amount_scale
+            condensate_amounts=np.asarray(
+                jax.device_get(
+                    _transform_linear_amount_gauge_on_host(
+                        condensate_amounts,
+                        amount_scale,
+                        to_canonical=False,
+                    )
+                ),
+                dtype=np.float64,
             ),
             total_gas_log_amount=(
-                float(exact.total_gas_log_amount) + log_amount_scale
+                float(total_gas_log_amount) + log_amount_scale
             ),
             element_potential=np.asarray(
-                exact.element_potential, dtype=np.float64
+                element_potential, dtype=np.float64
             ),
-            support_indices=exact.support_indices,
+            support_indices=support_indices,
             condensate_valid_mask=np.asarray(
                 valid_condensates, dtype=bool
             ),
@@ -1192,6 +1863,8 @@ def _run_head_v2_profile(
             for key in (
                 "accepted",
                 "finite",
+                "support_consistent",
+                "nonnegative_condensate_amounts",
                 "positive_active_amounts",
                 "gas_stationarity_max_abs",
                 "active_condensate_driving_max_abs",
@@ -1199,11 +1872,11 @@ def _run_head_v2_profile(
                 "budget_scaled_max_abs",
                 "total_density_scaled_abs",
             )
+            if key in audit
         }
 
-    last_outputs: dict[int, dict[str, Any]] = {}
-    early_zero_barrier_results: dict[int, Any] = {}
-    early_zero_barrier_caller_audits: dict[int, dict[str, Any]] = {}
+    last_outputs: dict[int, _FiniteBarrierLayerResult] = {}
+    early_zero_barrier_results: dict[int, _ExactRefinement] = {}
     early_zero_barrier_provenance: dict[int, dict[str, Any]] = {}
     early_zero_barrier_attempted: set[int] = set()
     compilation_seconds = 0.0
@@ -1255,52 +1928,28 @@ def _run_head_v2_profile(
             )
         backend = str(raw["backend"])
 
-    if (
-        not pending
-        and gas_only_states
-        and setup.condensate_species
-    ):
-        source_indices = tuple(sorted(gas_only_states))
-        warmup = run_fixed_support_profile(
-            buckets=_head_v2_prepared_buckets(
-                setup=setup,
-                temperatures=tuple(
-                    float(temperatures[index]) for index in source_indices
-                ),
-                pressures=tuple(
-                    float(pressures[index]) for index in source_indices
-                ),
-                b=b,
-                Pref=Pref,
-                states=tuple(
-                    gas_only_states[index] for index in source_indices
-                ),
-                fixed_shape=fixed_batch_shape,
-                source_layer_indices=source_indices,
-            ),
-            formula_matrix=setup.formula_matrix,
-            layer_count=len(source_indices),
-            condensate_count=len(setup.condensate_species),
-            config=policy.solver_config,
-            budget_relative_floor=policy.budget_relative_floor,
-            include_terminal_diagnostics=return_diagnostics,
-        )
-        accumulate_solver_timing(warmup)
-        for source_index in source_indices:
-            records[source_index]["fixed_shape_warmup"] = True
-
     for round_index in range(policy.lifecycle_max_rounds):
         if not pending:
             break
         source_indices = tuple(sorted(pending))
         round_states = tuple(pending[index] for index in source_indices)
+        trace_capacity_by_source = {
+            source_index: finite_barrier_trace_capacity_report(
+                condensate_formula_matrix_full=condensate_formula_host,
+                target_inventory=normalized_inventory_host,
+                support_indices=pending[source_index].support_indices,
+                monotone_constraint_row_mask=trace_capacity_monotone_rows,
+                log_barrier=epsilon_schedule[0],
+            )
+            for source_index in source_indices
+        }
         round_temperatures = tuple(
             float(temperatures[index]) for index in source_indices
         )
         round_pressures = tuple(
             float(pressures[index]) for index in source_indices
         )
-        buckets = _head_v2_prepared_buckets(
+        raw, valid_mask = _run_finite_barrier_batch(
             setup=setup,
             temperatures=round_temperatures,
             pressures=round_pressures,
@@ -1309,50 +1958,9 @@ def _run_head_v2_profile(
             states=round_states,
             fixed_shape=fixed_batch_shape,
             source_layer_indices=source_indices,
-        )
-        hcond_full = jnp.stack(
-            [
-                jnp.asarray(
-                    setup.condensate_setup.hvector_func(temperature),
-                    dtype=jnp.float64,
-                )
-                for temperature in round_temperatures
-            ]
-        )
-        validity_upper = condensate_temperature_validity_upper(setup)
-        if validity_upper is None:
-            valid_mask = jnp.ones(
-                (len(source_indices), len(setup.condensate_species)),
-                dtype=bool,
-            )
-        else:
-            upper = jnp.asarray(validity_upper, dtype=jnp.float64)
-            if upper.shape != (len(setup.condensate_species),):
-                raise ValueError(
-                    "temperature_validity_upper must have one value per "
-                    "condensate."
-                )
-            valid_mask = (
-                jnp.asarray(round_temperatures, dtype=jnp.float64)[:, None]
-                <= upper[None, :]
-            )
-        raw = run_fixed_support_profile(
-            buckets=buckets,
-            formula_matrix=setup.formula_matrix,
-            layer_count=len(source_indices),
-            condensate_count=len(setup.condensate_species),
-            config=policy.solver_config,
-            budget_relative_floor=policy.budget_relative_floor,
-            include_terminal_diagnostics=return_diagnostics,
-        )
-        raw = evaluate_profile_support_closure(
-            raw,
-            formula_matrix=setup.formula_matrix,
-            formula_matrix_cond_full=setup.formula_matrix_cond,
-            condensate_standard_source_full=hcond_full,
-            condensate_valid_mask=valid_mask,
-            budget_relative_floor=policy.budget_relative_floor,
-            support_closure_tolerance=policy.support_closure_tolerance,
+            policy=policy,
+            return_diagnostics=return_diagnostics,
+            lnphi_func=lnphi_func,
         )
         accumulate_solver_timing(raw)
         converged = np.asarray(
@@ -1372,6 +1980,7 @@ def _run_head_v2_profile(
         next_pending: dict[int, _HeadV2LayerState] = {}
         for local_index, source_index in enumerate(source_indices):
             current = pending[source_index]
+            trace_capacity = trace_capacity_by_source[source_index]
             candidate_indices = np.flatnonzero(expansion[local_index])
             ordered = tuple(
                 int(index)
@@ -1390,83 +1999,53 @@ def _run_head_v2_profile(
             expanded_support = tuple(
                 dict.fromkeys((*current.support_indices, *additions))
             )
-            terminal_code = int(terminal[local_index])
-            independent_kkt = _head_v2_kkt_row(
-                raw["final_kkt_norms"], local_index
+            assessment = _assess_finite_barrier_layer(
+                raw,
+                local_index,
+                terminal_status=int(terminal[local_index]),
+                fixed_support_converged=bool(converged[local_index]),
+                support_closed=bool(closed[local_index]),
+                policy=policy,
             )
-            tolerances = policy.solver_config.normal
-            independent_kkt_passed = _head_v2_kkt_passed(
-                independent_kkt,
-                stationarity_tolerance=tolerances.stationarity_tolerance,
-                budget_tolerance=tolerances.budget_tolerance,
-                complementarity_tolerance=(
-                    tolerances.complementarity_tolerance
-                ),
-                total_density_tolerance=(
-                    tolerances.total_density_tolerance
-                ),
-            )
-            zero_barrier_initializer_kkt_passed = (
-                _head_v2_zero_barrier_initializer_kkt_passed(
-                    independent_kkt,
-                    stationarity_tolerance=(
-                        tolerances.stationarity_tolerance
-                    ),
-                    budget_tolerance=tolerances.budget_tolerance,
-                    complementarity_tolerance=(
-                        tolerances.complementarity_tolerance
-                    ),
-                    total_density_tolerance=(
-                        tolerances.total_density_tolerance
-                    ),
-                )
-            )
-            final_state_values_finite = bool(
-                np.asarray(
-                    jax.device_get(
-                        raw["final_state_values_finite"][local_index]
-                    )
-                )
-            )
+            terminal_code = assessment.terminal_status
             round_record = {
                 "round_index": round_index,
                 "support_indices": current.support_indices,
                 "support_count": len(current.support_indices),
-                "fixed_support_converged": bool(converged[local_index]),
-                "support_closed": bool(closed[local_index]),
-                "terminal_status": terminal_code,
-                "terminal_status_name": TerminalStatus(terminal_code).name,
+                **assessment.diagnostics(),
                 "positive_inactive_count": int(candidate_indices.size),
                 "added_support_indices": additions,
-                "independent_kkt": independent_kkt,
-                "independent_kkt_passed": independent_kkt_passed,
-                "zero_barrier_initializer_kkt_passed": (
-                    zero_barrier_initializer_kkt_passed
-                ),
-                "final_state_values_finite": final_state_values_finite,
+                "pre_pdipm_trace_capacity": trace_capacity,
             }
             records[source_index]["rounds"].append(round_record)
-            last_outputs[source_index] = {
-                "raw": raw,
-                "local_index": local_index,
-                "round_index": round_index,
-                "support_indices": current.support_indices,
-                "fixed_support_converged": bool(converged[local_index]),
-                "support_closed": bool(closed[local_index]),
-                "terminal_status": terminal_code,
-                "independent_kkt": independent_kkt,
-                "independent_kkt_passed": independent_kkt_passed,
-                "zero_barrier_initializer_kkt_passed": (
-                    zero_barrier_initializer_kkt_passed
-                ),
-                "final_state_values_finite": final_state_values_finite,
-            }
+            # A basic subset of dependent initial phases is an initializer,
+            # not a thermodynamic support decision. If its first PDIPM solve
+            # fails, preserve the pre-solve state for exact catalog closure.
+            rank_reduced_initial_support = bool(
+                round_index == 0
+                and source_index in initial_support_envelopes
+            )
+            retain_pre_pdipm_state = bool(
+                not assessment.fixed_support_converged
+                and trace_capacity["capacity_geometry_valid"]
+                and (trace_capacity["trace_capacity_detected"]
+                     or rank_reduced_initial_support)
+            )
+            terminal_layer = _FiniteBarrierLayerResult(
+                raw=raw,
+                local_index=local_index,
+                support_indices=current.support_indices,
+                assessment=assessment,
+                round_index=round_index,
+                # Initial geometry determines whether to retain a fallback.
+                pre_pdipm_state=(current if retain_pre_pdipm_state else None),
+                pre_pdipm_trace_capacity=trace_capacity,
+                rank_reduced_initial_support=rank_reduced_initial_support,
+            )
+            last_outputs[source_index] = terminal_layer
             early_exact_eligible = bool(
                 current.support_indices
-                and converged[local_index]
-                and independent_kkt_passed
-                and final_state_values_finite
-                and not closed[local_index]
+                and assessment.early_initializer_eligible
                 and source_index not in early_zero_barrier_attempted
             )
             round_record["early_zero_barrier_eligible"] = (
@@ -1479,39 +2058,18 @@ def _run_head_v2_profile(
                 # closure once before changing that support. Its independent
                 # physical audit remains the only acceptance authority.
                 early_zero_barrier_attempted.add(source_index)
-                full_amounts = np.asarray(
-                    jax.device_get(
-                        raw["condensate_amounts"][local_index]
-                    ),
-                    dtype=np.float64,
-                )
-                early_exact = polish_layer_state(
+                early_refinement = refine_layer_state(
                     layer_index=source_index,
-                    gas_log_amounts=np.asarray(
-                        jax.device_get(
-                            raw["gas_log_amounts"][local_index]
-                        ),
-                        dtype=np.float64,
+                    initializer=_finite_barrier_initializer_payload(
+                        raw,
+                        local_index,
+                        support_indices=current.support_indices,
                     ),
-                    condensate_amounts=full_amounts,
-                    total_gas_log_amount=float(
-                        np.asarray(
-                            jax.device_get(
-                                raw["total_gas_log_amount"][local_index]
-                            )
-                        )
-                    ),
-                    element_potential=np.asarray(
-                        jax.device_get(
-                            raw["element_potential"][local_index]
-                        ),
-                        dtype=np.float64,
-                    ),
-                    support=current.support_indices,
                     valid_condensates=np.asarray(
                         jax.device_get(valid_mask[local_index]), dtype=bool
                     ),
                 )
+                early_exact = early_refinement.result
                 provenance = {
                     "schema": (
                         "exogibbs_zero_barrier_initializer_provenance_v1"
@@ -1528,7 +2086,7 @@ def _run_head_v2_profile(
                     "raw_support_closed": False,
                     "raw_independent_kkt_passed": True,
                     "raw_noncondensate_kkt_passed": (
-                        zero_barrier_initializer_kkt_passed
+                        assessment.zero_barrier_initializer_kkt_passed
                     ),
                     "raw_final_state_values_finite": True,
                     "raw_terminal_status": terminal_code,
@@ -1543,22 +2101,13 @@ def _run_head_v2_profile(
                 round_record["early_zero_barrier_internal_accepted"] = bool(
                     early_exact.accepted
                 )
-                if early_exact.accepted:
-                    early_caller_audit = audit_exact_in_caller_gauge(
-                        layer_index=source_index,
-                        exact=early_exact,
-                        valid_condensates=np.asarray(
-                            jax.device_get(valid_mask[local_index]),
-                            dtype=bool,
-                        ),
-                    )
+                if early_refinement.validation.internal_accepted:
                     round_record[
                         "early_caller_gauge_zero_barrier_kkt"
-                    ] = caller_audit_summary(early_caller_audit)
-                    if early_caller_audit["accepted"]:
-                        early_zero_barrier_results[source_index] = early_exact
-                        early_zero_barrier_caller_audits[source_index] = (
-                            early_caller_audit
+                    ] = caller_audit_summary(early_refinement.caller_audit)
+                    if early_refinement.validation.accepted:
+                        early_zero_barrier_results[source_index] = (
+                            early_refinement
                         )
                         early_zero_barrier_provenance[source_index] = (
                             provenance
@@ -1576,17 +2125,8 @@ def _run_head_v2_profile(
                         )
                         continue
                 round_record["early_zero_barrier_accepted"] = False
-            if not converged[local_index]:
-                records[source_index]["outcome"] = "fixed_support_failed"
-                continue
-            if not independent_kkt_passed:
-                records[source_index]["outcome"] = "independent_kkt_failed"
-                continue
-            if not final_state_values_finite:
-                records[source_index]["outcome"] = "nonfinite_final_state"
-                continue
-            if closed[local_index]:
-                records[source_index]["outcome"] = "closed"
+            if assessment.terminal_outcome is not None:
+                records[source_index]["outcome"] = assessment.terminal_outcome
                 continue
             if not additions:
                 records[source_index]["outcome"] = (
@@ -1636,6 +2176,7 @@ def _run_head_v2_profile(
 
     layer_results: list[CondensateEquilibriumResult] = []
     for layer_index in range(n_layers):
+        physical_validation = PhysicalKKTValidation(False, False)
         lifecycle_summary = {
             "schema": "exogibbs_head_v2_fixed_support_lifecycle_v1",
             "preset": policy.name,
@@ -1656,6 +2197,15 @@ def _run_head_v2_profile(
             "backend": backend,
             "production_preset_promoted": True,
             "amount_gauge": amount_gauge,
+            "initial_support_indices": records[layer_index].get(
+                "initial_support_indices", ()
+            ),
+            "initial_support_count": records[layer_index].get(
+                "initial_support_count", 0
+            ),
+            "finite_barrier_initial_support_reduction": records[
+                layer_index
+            ].get("finite_barrier_initial_support_reduction", {}),
         }
         if layer_index in gas_only_layers:
             gas_equilibrium_init = _gas_init_from_condensate_init(
@@ -1669,18 +2219,158 @@ def _run_head_v2_profile(
                 jnp.asarray(b, dtype=jnp.float64),
                 Pref=Pref,
                 init=gas_equilibrium_init,
-                options=EquilibriumOptions(),
+                # Absolute gas residuals must resolve trace-element budgets
+                # before the independent KKT and caller-relative gates.
+                options=EquilibriumOptions(epsilon_crit=1.0e-14),
                 return_diagnostics=False,
+                lnphi_func=lnphi_func,
             )
-            result = _build_empty_support_gas_result(
-                setup=setup,
-                gas_ln_n=(
-                    jnp.asarray(gas_result.ln_n, dtype=jnp.float64)
-                    + log_amount_scale
+            gas_log_amounts = np.asarray(
+                jax.device_get(gas_result.ln_n), dtype=np.float64
+            )
+            total_gas_log_amount = float(
+                np.logaddexp.reduce(gas_log_amounts)
+            )
+            support: tuple[int, ...] = ()
+            full_amounts = np.zeros(
+                len(setup.condensate_species), dtype=np.float64
+            )
+            element_potential = np.asarray(
+                jax.device_get(
+                    _head_v2_best_residual_element_potential(
+                        setup=setup,
+                        T=float(temperatures[layer_index]),
+                        P=float(pressures[layer_index]),
+                        Pref=Pref,
+                        b=b,
+                        support_indices=(),
+                        support_amounts=(),
+                        gas_ln_n=gas_log_amounts,
+                        total_gas_log_amount=total_gas_log_amount,
+                        epsilon=(
+                            policy.solver_config.continuation.epsilon_schedule[
+                                0
+                            ]
+                        ),
+                        lnphi_func=lnphi_func,
+                    )
                 ),
+                dtype=np.float64,
+            )
+            valid_mask = valid_condensates_for_layer(layer_index)
+            raw_caller_audit = audit_state_in_caller_gauge(
+                layer_index=layer_index,
+                gas_log_amounts=gas_log_amounts,
+                condensate_amounts=full_amounts,
+                total_gas_log_amount=total_gas_log_amount,
+                element_potential=element_potential,
+                support_indices=support,
+                valid_condensates=valid_mask,
+            )
+            raw_caller_audit_summary = caller_audit_summary(
+                raw_caller_audit
+            )
+            lifecycle_summary[
+                "gas_only_initial_caller_gauge_zero_barrier_kkt"
+            ] = raw_caller_audit_summary
+            lifecycle_summary["caller_gauge_zero_barrier_kkt"] = (
+                raw_caller_audit_summary
+            )
+            accepted = bool(raw_caller_audit["accepted"])
+            lifecycle_summary["zero_barrier_initializer"] = {
+                "schema": "exogibbs_zero_barrier_initializer_provenance_v1",
+                "eligible": True,
+                "attempted": not accepted,
+                "role": "initializer_only",
+                "source": "gas_only_equilibrium_empty_support",
+                "source_support_indices": (),
+                "rescue_attempted": not accepted,
+                "raw_caller_gauge_accepted": accepted,
+            }
+            selected_route = "head_v2_gas_only_no_candidate"
+            if not accepted:
+                refinement = refine_layer_state(
+                    layer_index=layer_index,
+                    initializer=_ZeroBarrierInitializerPayload(
+                        support_indices=tuple(support),
+                        gas_log_amounts=gas_log_amounts,
+                        condensate_amounts=full_amounts,
+                        total_gas_log_amount=total_gas_log_amount,
+                        element_potential=element_potential,
+                    ),
+                    valid_condensates=valid_mask,
+                )
+                exact = refinement.result
+                physical_validation = refinement.validation
+                lifecycle_summary[
+                    "zero_barrier_active_support_polish"
+                ] = exact.report
+                accepted = physical_validation.accepted
+                if physical_validation.internal_accepted:
+                    lifecycle_summary[
+                        "caller_gauge_zero_barrier_kkt"
+                    ] = caller_audit_summary(refinement.caller_audit)
+                    if accepted:
+                        support = tuple(exact.support_indices)
+                        gas_log_amounts = np.asarray(
+                            exact.gas_log_amounts, dtype=np.float64
+                        )
+                        full_amounts = np.asarray(
+                            exact.condensate_amounts, dtype=np.float64
+                        )
+                        total_gas_log_amount = float(
+                            exact.total_gas_log_amount
+                        )
+                        element_potential = np.asarray(
+                            exact.element_potential, dtype=np.float64
+                        )
+                        lifecycle_summary[
+                            "support_indices_after_polish"
+                        ] = support
+                        if support:
+                            selected_route = CONDENSATE_HEAD_V2_ROUTE_NAME
+                            lifecycle_summary["outcome"] = (
+                                "zero_barrier_empty_support_rescued"
+                            )
+                            records[layer_index]["outcome"] = (
+                                "zero_barrier_empty_support_rescued"
+                            )
+                    else:
+                        lifecycle_summary["outcome"] = (
+                            "caller_gauge_zero_barrier_kkt_failed"
+                        )
+                        records[layer_index]["outcome"] = (
+                            "caller_gauge_zero_barrier_kkt_failed"
+                        )
+                else:
+                    lifecycle_summary["outcome"] = (
+                        "zero_barrier_empty_support_polish_failed"
+                    )
+                    records[layer_index]["outcome"] = (
+                        "zero_barrier_empty_support_polish_failed"
+                    )
+            caller_gas_log_amounts = (
+                jnp.asarray(gas_log_amounts, dtype=jnp.float64)
+                + log_amount_scale
+            )
+            caller_full_amounts = _transform_linear_amount_gauge_on_host(
+                full_amounts,
+                amount_scale,
+                to_canonical=False,
+            )
+            support_amounts = caller_full_amounts[
+                jnp.asarray(support, dtype=jnp.int32)
+            ]
+            result = build_condensate_equilibrium_result_from_solver_payload(
+                setup=setup,
+                gas_ln_n=caller_gas_log_amounts,
+                support_indices=support,
+                support_amounts=support_amounts,
+                selected_route=selected_route,
+                solver_success=accepted,
+                physical_validation=physical_validation,
                 diagnostics={"fixed_support_v2": lifecycle_summary},
                 route=HEAD_ROUTE_V2,
-                selected_route="head_v2_gas_only_no_candidate",
                 head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
                 head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
                 element_inventory_target=caller_inventory,
@@ -1696,9 +2386,10 @@ def _run_head_v2_profile(
             )
         else:
             terminal_output = last_outputs[layer_index]
-            raw = terminal_output["raw"]
-            local_index = int(terminal_output["local_index"])
-            support = terminal_output["support_indices"]
+            assessment = terminal_output.assessment
+            raw = terminal_output.raw
+            local_index = terminal_output.local_index
+            support = terminal_output.support_indices
             full_amounts = jnp.asarray(
                 raw["condensate_amounts"][local_index], dtype=jnp.float64
             )
@@ -1707,54 +2398,73 @@ def _run_head_v2_profile(
             )
             total_gas_log_amount = float(
                 np.asarray(
-                    jax.device_get(
-                        raw["total_gas_log_amount"][local_index]
-                    )
+                    jax.device_get(raw["total_gas_log_amount"][local_index])
                 )
             )
             element_potential = np.asarray(
                 jax.device_get(raw["element_potential"][local_index]),
                 dtype=np.float64,
             )
-            lifecycle_summary.update(
+            lifecycle_summary.update(assessment.diagnostics())
+            fixed_support_accepted = assessment.fixed_support_accepted
+            early_refinement = early_zero_barrier_results.get(layer_index)
+            early_exact = (
+                early_refinement.result if early_refinement is not None else None
+            )
+            terminal_initializer_eligible = bool(
+                support and assessment.terminal_initializer_eligible
+            )
+            pre_pdipm_state = terminal_output.pre_pdipm_state
+            fallback_routing_candidate = bool(
+                early_exact is None and not assessment.fixed_support_converged
+            )
+            if early_exact is not None:
+                fallback_disabled_reason = (
+                    "accepted_early_exact_result_preferred"
+                )
+            elif not fallback_routing_candidate:
+                fallback_disabled_reason = "finite_barrier_converged"
+            else:
+                fallback_disabled_reason = None
+            valid_mask = (
+                valid_condensates_for_layer(layer_index)
+                if fallback_routing_candidate
+                else None
+            )
+            (
+                pre_pdipm_payload,
+                pre_pdipm_fallback_report,
+            ) = _head_v2_pre_pdipm_zero_barrier_candidate(
+                setup=setup,
+                state=pre_pdipm_state,
+                trace_capacity_report=terminal_output.pre_pdipm_trace_capacity,
+                valid_condensates=valid_mask,
+                enabled=fallback_routing_candidate,
+                disabled_reason=fallback_disabled_reason,
+                rank_reduced_initial_support=(
+                    terminal_output.rank_reduced_initial_support
+                ),
+            )
+            pre_pdipm_fallback_report.update(
                 {
-                    "terminal_status": terminal_output["terminal_status"],
+                    "terminal_status": assessment.terminal_status,
                     "terminal_status_name": TerminalStatus(
-                        terminal_output["terminal_status"]
+                        assessment.terminal_status
                     ).name,
-                    "fixed_support_converged": terminal_output[
-                        "fixed_support_converged"
-                    ],
-                    "support_closed": terminal_output["support_closed"],
-                    "independent_kkt": terminal_output["independent_kkt"],
-                    "independent_kkt_passed": terminal_output[
-                        "independent_kkt_passed"
-                    ],
-                    "zero_barrier_initializer_kkt_passed": terminal_output[
-                        "zero_barrier_initializer_kkt_passed"
-                    ],
-                    "final_state_values_finite": terminal_output[
-                        "final_state_values_finite"
-                    ],
+                    "source_round_index": terminal_output.round_index,
+                    "source_support_indices": tuple(
+                        terminal_output.support_indices
+                    ),
                 }
             )
-            fixed_support_accepted = bool(
-                terminal_output["fixed_support_converged"]
-                and terminal_output["support_closed"]
-                and terminal_output["independent_kkt_passed"]
-                and terminal_output["final_state_values_finite"]
+            pre_pdipm_fallback_eligible = pre_pdipm_payload is not None
+            lifecycle_summary["pre_pdipm_zero_barrier_fallback"] = (
+                pre_pdipm_fallback_report
             )
-            early_exact = early_zero_barrier_results.get(layer_index)
             exact_initializer_eligible = bool(
                 early_exact is not None
-                or (
-                    support
-                    and terminal_output["support_closed"]
-                    and terminal_output[
-                        "zero_barrier_initializer_kkt_passed"
-                    ]
-                    and terminal_output["final_state_values_finite"]
-                )
+                or terminal_initializer_eligible
+                or pre_pdipm_fallback_eligible
             )
             rescue_attempted = bool(
                 exact_initializer_eligible and not fixed_support_accepted
@@ -1764,6 +2474,11 @@ def _run_head_v2_profile(
                     early_zero_barrier_provenance[layer_index]
                 )
             else:
+                initializer_source = (
+                    "pre_pdipm_finite_support_state"
+                    if pre_pdipm_fallback_eligible
+                    else "fixed_support_terminal_state"
+                )
                 initializer_report = {
                     "schema": (
                         "exogibbs_zero_barrier_initializer_provenance_v1"
@@ -1771,33 +2486,31 @@ def _run_head_v2_profile(
                     "eligible": exact_initializer_eligible,
                     "attempted": exact_initializer_eligible,
                     "role": "initializer_only",
-                    "source": "fixed_support_terminal_state",
-                    "source_round_index": terminal_output["round_index"],
-                    "lifecycle_terminal_round_index": terminal_output[
-                        "round_index"
-                    ],
-                    "selected_before_lifecycle_terminal_round": False,
+                    "source": initializer_source,
+                    "source_round_index": terminal_output.round_index,
+                    "lifecycle_terminal_round_index": (
+                        terminal_output.round_index
+                    ),
+                    "selected_before_lifecycle_terminal_round": bool(
+                        pre_pdipm_fallback_eligible
+                    ),
                     "rescue_attempted": rescue_attempted,
-                    "raw_fixed_support_converged": terminal_output[
-                        "fixed_support_converged"
-                    ],
-                    "raw_support_closed": terminal_output[
-                        "support_closed"
-                    ],
-                    "raw_independent_kkt_passed": terminal_output[
-                        "independent_kkt_passed"
-                    ],
-                    "raw_noncondensate_kkt_passed": terminal_output[
-                        "zero_barrier_initializer_kkt_passed"
-                    ],
-                    "raw_final_state_values_finite": terminal_output[
-                        "final_state_values_finite"
-                    ],
-                    "raw_terminal_status": terminal_output[
-                        "terminal_status"
-                    ],
+                    "raw_fixed_support_converged": (
+                        assessment.fixed_support_converged
+                    ),
+                    "raw_support_closed": assessment.support_closed,
+                    "raw_independent_kkt_passed": (
+                        assessment.independent_kkt_passed
+                    ),
+                    "raw_noncondensate_kkt_passed": (
+                        assessment.zero_barrier_initializer_kkt_passed
+                    ),
+                    "raw_final_state_values_finite": (
+                        assessment.final_state_values_finite
+                    ),
+                    "raw_terminal_status": assessment.terminal_status,
                     "raw_terminal_status_name": TerminalStatus(
-                        terminal_output["terminal_status"]
+                        assessment.terminal_status
                     ).name,
                 }
             lifecycle_summary["zero_barrier_initializer"] = (
@@ -1805,42 +2518,59 @@ def _run_head_v2_profile(
             )
             accepted = False
             if exact_initializer_eligible:
-                temperature = float(temperatures[layer_index])
-                upper = condensate_temperature_validity_upper(setup)
-                valid_mask = (
-                    np.ones(len(setup.condensate_species), dtype=bool)
-                    if upper is None
-                    else temperature <= np.asarray(upper, dtype=np.float64)
-                )
-                exact = early_exact
-                if exact is None:
-                    exact = polish_layer_state(
-                        layer_index=layer_index,
+                if valid_mask is None:
+                    valid_mask = valid_condensates_for_layer(layer_index)
+                refinement = early_refinement
+                if refinement is None:
+                    initializer_payload = _ZeroBarrierInitializerPayload(
+                        support_indices=tuple(support),
                         gas_log_amounts=gas_log_amounts,
                         condensate_amounts=full_amounts,
                         total_gas_log_amount=total_gas_log_amount,
                         element_potential=element_potential,
-                        support=support,
-                        valid_condensates=valid_mask,
                     )
-                lifecycle_summary[
-                    "zero_barrier_active_support_polish"
-                ] = exact.report
-                accepted = bool(exact.accepted)
-                if accepted:
-                    caller_audit = (
-                        early_zero_barrier_caller_audits[layer_index]
-                        if early_exact is not None
-                        else audit_exact_in_caller_gauge(
-                            layer_index=layer_index,
-                            exact=exact,
+                    if pre_pdipm_fallback_eligible:
+                        initializer_payload = pre_pdipm_payload
+                        pre_pdipm_fallback_report["attempted"] = True
+                    initializer_payload, envelope_report = (
+                        _expand_zero_barrier_initializer_support(
+                            initializer_payload,
+                            initial_support_envelopes.get(layer_index),
+                            source_round_index=terminal_output.round_index,
+                            reduction=records[layer_index].get(
+                                "finite_barrier_initial_support_reduction",
+                                {},
+                            ),
                             valid_condensates=valid_mask,
                         )
                     )
-                    lifecycle_summary["caller_gauge_zero_barrier_kkt"] = (
-                        caller_audit_summary(caller_audit)
+                    initializer_report["initial_support_envelope"] = (
+                        envelope_report
                     )
-                    accepted = bool(caller_audit["accepted"])
+                    refinement = refine_layer_state(
+                        layer_index=layer_index,
+                        initializer=initializer_payload,
+                        valid_condensates=valid_mask,
+                    )
+                    if pre_pdipm_fallback_eligible:
+                        pre_pdipm_fallback_report["internal_accepted"] = (
+                            refinement.validation.internal_accepted
+                        )
+                exact = refinement.result
+                physical_validation = refinement.validation
+                lifecycle_summary[
+                    "zero_barrier_active_support_polish"
+                ] = exact.report
+                accepted = physical_validation.accepted
+                if physical_validation.internal_accepted:
+                    lifecycle_summary["caller_gauge_zero_barrier_kkt"] = (
+                        caller_audit_summary(refinement.caller_audit)
+                    )
+                    if pre_pdipm_fallback_eligible:
+                        pre_pdipm_fallback_report[
+                            "caller_gauge_accepted"
+                        ] = accepted
+                        pre_pdipm_fallback_report["accepted"] = accepted
                     if not accepted:
                         lifecycle_summary["outcome"] = (
                             "caller_gauge_zero_barrier_kkt_failed"
@@ -1874,12 +2604,22 @@ def _run_head_v2_profile(
                             lifecycle_summary["outcome"] = (
                                 "zero_barrier_active_support_rescued"
                             )
+                            records[layer_index]["outcome"] = (
+                                "zero_barrier_active_support_rescued"
+                            )
                 else:
                     lifecycle_summary["outcome"] = (
                         "zero_barrier_active_support_polish_failed"
                     )
+                    records[layer_index]["outcome"] = (
+                        "zero_barrier_active_support_polish_failed"
+                    )
             caller_gas_log_amounts = gas_log_amounts + log_amount_scale
-            caller_full_amounts = full_amounts * amount_scale
+            caller_full_amounts = _transform_linear_amount_gauge_on_host(
+                full_amounts,
+                amount_scale,
+                to_canonical=False,
+            )
             support_amounts = caller_full_amounts[
                 jnp.asarray(support, dtype=jnp.int32)
             ]
@@ -1890,6 +2630,7 @@ def _run_head_v2_profile(
                 support_amounts=support_amounts,
                 selected_route=CONDENSATE_HEAD_V2_ROUTE_NAME,
                 solver_success=accepted,
+                physical_validation=physical_validation,
                 route=HEAD_ROUTE_V2,
                 head_route_version=CONDENSATE_HEAD_V2_ROUTE_VERSION,
                 head_route_name=CONDENSATE_HEAD_V2_ROUTE_NAME,
@@ -1958,6 +2699,7 @@ def _prepare_experimental_profile_fixed_support_batch_plan(
     support_amounts_init: Optional[Sequence[float]],
     max_iter: int,
     min_seed_amount: float,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> _ExperimentalProfileFixedSupportBatchPlan | None:
     n_layers = int(temperatures.shape[0])
     solver_inits = []
@@ -2023,18 +2765,34 @@ def _prepare_experimental_profile_fixed_support_batch_plan(
     )
 
     temperature_array = jnp.asarray(temperatures, dtype=jnp.float64)
-    hvector_by_layer = jnp.asarray(
-        setup.gas_setup.hvector_func(temperature_array),
-        dtype=jnp.float64,
-    )
-    if hvector_by_layer.ndim != 2 or hvector_by_layer.shape[0] != n_layers:
+    if lnphi_func is None:
+        hvector_by_layer = jnp.asarray(
+            setup.gas_setup.hvector_func(temperature_array),
+            dtype=jnp.float64,
+        )
+        if hvector_by_layer.ndim != 2 or hvector_by_layer.shape[0] != n_layers:
+            hvector_by_layer = jnp.stack(
+                [
+                    jnp.asarray(
+                        setup.gas_setup.hvector_func(float(temperature)),
+                        dtype=jnp.float64,
+                    )
+                    for temperature in temperatures
+                ]
+            )
+    else:
         hvector_by_layer = jnp.stack(
             [
                 jnp.asarray(
-                    setup.gas_setup.hvector_func(float(temperature)),
+                    effective_gas_hvector(
+                        setup.gas_setup,
+                        float(temperature),
+                        float(pressure),
+                        lnphi_func,
+                    ),
                     dtype=jnp.float64,
                 )
-                for temperature in temperatures
+                for temperature, pressure in zip(temperatures, pressures)
             ]
         )
     hvector_cond_by_layer = jnp.asarray(
@@ -2098,6 +2856,7 @@ def prepare_experimental_profile_fixed_support_batch_plan(
     initializer: Optional[CondensateEquilibriumInitializer] = None,
     max_iter: int = 100,
     min_seed_amount: float = 1.0e-300,
+    lnphi_func: LogFugacityCoefficientFunction | None = None,
 ) -> ExperimentalCondensateProfileFixedSupportBatchPlan:
     """Prepare a reusable experimental fixed-support batch profile plan.
 
@@ -2140,6 +2899,7 @@ def prepare_experimental_profile_fixed_support_batch_plan(
         support_amounts_init=support_amounts_init,
         max_iter=int(max_iter),
         min_seed_amount=float(min_seed_amount),
+        lnphi_func=lnphi_func,
     )
     if plan is None:
         raise ValueError(

@@ -1,0 +1,20 @@
+{
+  "kind": "fixed_pressure_pilot_water_reference_replay_and_one_native_candidate_control",
+  "new_source_solve": false,
+  "pressure_root": false,
+  "started_utc": "2026-09-27T23:43:41.375253+00:00",
+  "finished_utc": "2026-09-27T23:43:42.072737+00:00",
+  "elapsed_seconds": 0.6975123956799507,
+  "proof_head": "cbef22e82833d858e047dc69eca864c6cea438c9",
+  "proof_status": "",
+  "provider_head": "813131ab63822c556ae62c95ff69f119487d0340",
+  "source_sha256": "de8a5e26df949d1a4bfcbecb359fed7d10c0ac86747fe9c084e9aa7b39d7733f",
+  "original_properties_sha256": "ae300b4a3f0107fb486c12d68766d33458abdc010ef0eb14fd5549ed09d566d1",
+  "fresh_expression_basis_G_mu_amounts_equal": true,
+  "one_candidate_global_lower_rt": 0.22607875706625782,
+  "files": {
+    "native_standard_state_receipt.json": "8b9f0203ed0889387207bfb27a8b8686b02adb64566aee7e8182b6405165c3d8",
+    "fresh_properties.json": "9ab1e685acea18a5ab978abcbc14dde05a4f4cbffb4184c88c6f1436f846509b",
+    "alloy-solid.json": "4eccb4f195e49e0216628031cafa0398274b8b5aef5345e8705b817ece71eda1"
+  }
+}

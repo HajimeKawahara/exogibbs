@@ -1,0 +1,71 @@
+{
+  "sources": [
+    {
+      "dataset": "initial_oxide_requests",
+      "repository": "exogibbs",
+      "commit": "38c107a7aa537496e51f5ca786fd9048cecbe776",
+      "path": "examples/metal_silicate/m2_stability_search.py",
+      "sha256": "a16995ea472d2e63c026bc75ecfb9320b79625058522bf524017febcc2d1fd39",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/38c107a7aa537496e51f5ca786fd9048cecbe776/examples/metal_silicate/m2_stability_search.py"
+    },
+    {
+      "dataset": "initial_oxide_requests",
+      "repository": "exogibbs",
+      "commit": "38c107a7aa537496e51f5ca786fd9048cecbe776",
+      "path": "examples/metal_silicate/m2_host_stability.py",
+      "sha256": "888149cb3ced64bd705c2504aa8cc76a41f449aa6e3ad673556309453c42c356",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/38c107a7aa537496e51f5ca786fd9048cecbe776/examples/metal_silicate/m2_host_stability.py"
+    },
+    {
+      "dataset": "initial_oxide_requests",
+      "repository": "exogibbs",
+      "commit": "38c107a7aa537496e51f5ca786fd9048cecbe776",
+      "path": "examples/metal_silicate/melts_coupled.py",
+      "sha256": "3c5623622d4423fb5b00624a0f45e7a712044a1422346c34b0c3e5ecf84c1770",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/38c107a7aa537496e51f5ca786fd9048cecbe776/examples/metal_silicate/melts_coupled.py"
+    },
+    {
+      "dataset": "initial_oxide_requests",
+      "repository": "exoeos",
+      "commit": "4bee4e10a504c595e7a50896d439f7eba1c595a9",
+      "path": "examples/melts_liquid_evaluator.py",
+      "sha256": "802a3a95d6d9aff373780fbb06eb67392ba22f2b9c0b45f9c0e0b473ae695718",
+      "url": "https://github.com/HajimeKawahara/exoeos/blob/4bee4e10a504c595e7a50896d439f7eba1c595a9/examples/melts_liquid_evaluator.py"
+    },
+    {
+      "dataset": "explicit_coordinates",
+      "repository": "exogibbs",
+      "commit": "55fcf66662d5c25bb0ec0590fb8afcb4312db4d1",
+      "path": "examples/metal_silicate/m2_stability_search.py",
+      "sha256": "caebdad5bb883e843acef5bb22312a4c933fa399e39345d4e8df09a88515761c",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/55fcf66662d5c25bb0ec0590fb8afcb4312db4d1/examples/metal_silicate/m2_stability_search.py"
+    },
+    {
+      "dataset": "explicit_coordinates",
+      "repository": "exogibbs",
+      "commit": "55fcf66662d5c25bb0ec0590fb8afcb4312db4d1",
+      "path": "examples/metal_silicate/m2_host_stability.py",
+      "sha256": "888149cb3ced64bd705c2504aa8cc76a41f449aa6e3ad673556309453c42c356",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/55fcf66662d5c25bb0ec0590fb8afcb4312db4d1/examples/metal_silicate/m2_host_stability.py"
+    },
+    {
+      "dataset": "explicit_coordinates",
+      "repository": "exogibbs",
+      "commit": "55fcf66662d5c25bb0ec0590fb8afcb4312db4d1",
+      "path": "examples/metal_silicate/melts_coupled.py",
+      "sha256": "3c5623622d4423fb5b00624a0f45e7a712044a1422346c34b0c3e5ecf84c1770",
+      "url": "https://github.com/HajimeKawahara/exogibbs/blob/55fcf66662d5c25bb0ec0590fb8afcb4312db4d1/examples/metal_silicate/melts_coupled.py"
+    },
+    {
+      "dataset": "explicit_coordinates",
+      "repository": "exoeos",
+      "commit": "44b977847ea7ed1e16377907722277a3e75bc9d7",
+      "path": "examples/melts_liquid_evaluator.py",
+      "sha256": "ec6dc160386ce241cd9bb575e382cccb1fcdf57eb364395a9b7c18632e7bd4ab",
+      "url": "https://github.com/HajimeKawahara/exoeos/blob/44b977847ea7ed1e16377907722277a3e75bc9d7/examples/melts_liquid_evaluator.py"
+    }
+  ],
+  "runner_public_commit": "55fcf66",
+  "runner_sha256": "25d92c0d5e6251d506c2f9e0bd30a51228a3cd12c175367fce0ebc5e9406cfd0",
+  "scope": "Actual executed code references and byte hashes, not relabeled native model executions."
+}

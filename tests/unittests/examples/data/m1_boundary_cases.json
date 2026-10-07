@@ -1,0 +1,148 @@
+{
+  "origin": "ExoInventory validation/20260914_connection; saved inputs, not new solver results",
+  "manifest_sha256": "6aad926ec69b601d8f03ee4968929819e76485a40b9c90eb82c650255d161ce4",
+  "provider_git_commit": "7ba9e0ea2e0a923c33e79d02685c2629829cf124",
+  "package_python_sha256": "85c50ad552d3262f412181e5f3ae4ba5f2acc4c6117591cc47226cc9e86d9507",
+  "files": [
+    {
+      "name": "m1_chemistry.py",
+      "sha256": "60de6fc7649022a4e847dcbdabc2772d34cb57c0194417017905e005785dea27"
+    },
+    {
+      "name": "sulfur_source.py",
+      "sha256": "71b4ce301842b746ae17d7bb0a4643f1b9b554eff67289d9831223d3cf9f29a6"
+    },
+    {
+      "name": "sulfur_reference.json",
+      "sha256": "7dc71a2312a8b00f6cd94e7064f087b5c7bb500bf16d8941396605daabf9441e"
+    },
+    {
+      "name": "logK_wo_ions.dat",
+      "sha256": "3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606"
+    },
+    {
+      "name": "logK_condensates.dat",
+      "sha256": "566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467"
+    }
+  ],
+  "cases": [
+    {
+      "id": "oxygen_0.9_mass_1e+21",
+      "original_json_sha256": "40fba446851e4d41c47a8acbcfcd6ea0f27d35fff43f37e2a17fbc4f541f74fe",
+      "oxygen_factor": 0.9,
+      "T_K": 2350.0,
+      "P_bar": 20.42834233241181,
+      "source_elements": [
+        "Si",
+        "Mg",
+        "O",
+        "Fe",
+        "H",
+        "Na",
+        "C",
+        "S",
+        "N",
+        "He"
+      ],
+      "source_element_amounts_mol": [
+        5.841057086225356e+21,
+        5.963058593362929e+21,
+        1.5974043732633593e+22,
+        5.741838538160707e+21,
+        7.988488890571062e+22,
+        1.0010383855194594e+20,
+        0.0,
+        0.0,
+        0.0,
+        7.988488890571062e+21
+      ],
+      "source_gas_elements": [
+        "H",
+        "He",
+        "O",
+        "Mg",
+        "Si",
+        "Fe",
+        "Na"
+      ],
+      "source_gas_element_amounts_mol": [
+        7.984316851877472e+22,
+        7.988488890571062e+21,
+        6.602814669317564e+20,
+        3.936158159366002e+20,
+        5.139368144268865e+20,
+        2.233798203389667e+19,
+        9.990490542501187e+19
+      ],
+      "saved_cloud_element_fraction": [
+        0.0,
+        0.0,
+        0.4340434405736281,
+        0.0,
+        0.5576382769419852,
+        0.0,
+        0.0
+      ],
+      "saved_max_abs_delta_source_reaction_residual_rt": 0.8265632899295926
+    },
+    {
+      "id": "oxygen_0.9_mass_3e+21",
+      "original_json_sha256": "60facadf0f00799d0e3a37f9d289a53dbaccd2e652efd589f9a28cfb53e2bbfa",
+      "oxygen_factor": 0.9,
+      "T_K": 2350.0,
+      "P_bar": 54.15523948877404,
+      "source_elements": [
+        "Si",
+        "Mg",
+        "O",
+        "Fe",
+        "H",
+        "Na",
+        "C",
+        "S",
+        "N",
+        "He"
+      ],
+      "source_element_amounts_mol": [
+        1.7523171258676065e+22,
+        1.7889175780088787e+22,
+        4.7922131197900775e+22,
+        1.7225515614482119e+22,
+        2.3965466671713184e+23,
+        3.003115156558378e+20,
+        0.0,
+        0.0,
+        0.0,
+        2.3965466671713186e+22
+      ],
+      "source_gas_elements": [
+        "H",
+        "He",
+        "O",
+        "Mg",
+        "Si",
+        "Fe",
+        "Na"
+      ],
+      "source_gas_element_amounts_mol": [
+        2.394354716276082e+23,
+        2.3965466671713194e+22,
+        1.0762066530035548e+21,
+        6.278211625162268e+20,
+        7.551704600237463e+20,
+        2.4189506064274428e+19,
+        2.972911956061372e+20
+      ],
+      "saved_cloud_element_fraction": [
+        0.0,
+        0.0,
+        0.4641947934378125,
+        0.0,
+        0.6615321327209696,
+        0.0,
+        0.0
+      ],
+      "saved_max_abs_delta_source_reaction_residual_rt": 1.0969342008470653
+    }
+  ]
+}

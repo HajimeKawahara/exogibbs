@@ -1,0 +1,761 @@
+{
+  "original_common_plane_rt_mol": {
+    "lower": "-111965817630589222739482598.52998589375056326389316",
+    "upper": "-111965817630589222739482598.52998589375056326389308"
+  },
+  "uniform_element_plane_reduction_rt": "1.4629041378669475202138317729876317100637037049716E-13",
+  "corrected_dual_lower_rt_mol": "-111965817630590076842415563.71177978559751330060180",
+  "primal_energy_rt_mol": {
+    "lower": "-111965817630589301148359425.37068421243821290768157",
+    "upper": "-111965817630589296077096081.07824661019618515030434"
+  },
+  "primal_dual_gap_rt_mol": {
+    "lower": "775694056138.34109557315930039292014",
+    "upper": "780765319482.63353317540132815029746"
+  },
+  "normalized_gap_per_inventory_atom": {
+    "lower": "1.3286057226194247705873005169856686173360903151732E-13",
+    "upper": "1.3372917624914840950965500970441903207047017293908E-13"
+  },
+  "energy_tolerance_rt_per_inventory_atom": 1e-09,
+  "declared_model_gap_accepted": true,
+  "original_plane_strict_nonnegative": false,
+  "original_negative_bounds_preserved": true,
+  "empirical_material_certified": false,
+  "numerical_prerequisites": {
+    "source_atoms_tolerance": 1e-09,
+    "chemical_tolerance_rt": 1e-08,
+    "maximum_chemical_residual_rt": 1.1368683772161603e-13,
+    "independent_primal_vs_saved_energy_error_rt_per_inventory_atom": "4.4882548359038647355667084099656008748636509544399E-15",
+    "accepted": true
+  },
+  "present_alloy_condition": {
+    "global_minimum_interval_rt_per_mol_atoms": {
+      "lower": "-1.462904137866947520213831772987631710063703704971516117439023219048976898193359375E-13",
+      "upper": "-1.6631191185556187511624876129065131855782443260802E-14"
+    },
+    "composition_search_uncertainty_upper_rt": "1.2965922260113856450975830116969803915058792723635E-13",
+    "complementarity_upper_rt_per_inventory_atom": "1.1938147955043312225524308060058406810311516870957E-15",
+    "tolerance_rt": 1e-08,
+    "accepted": true,
+    "scope": "Positive selected alloy only; amount normalized by total inventory atoms. The original plane and negative bounds are retained."
+  },
+  "declared_finite_source_numerically_accepted": true,
+  "schema": "m2_declared_finite_source_common_plane_gap_v1",
+  "case": "OXYGEN",
+  "source": {
+    "path": "/tmp/stage2-final-reclosed-h1e24-sakao-16/closure.json",
+    "sha256": "824695dc2cd08952bd5486ef8e4b1750d98193f053ef0719a0e58abcac96a510",
+    "bytes": 1161991
+  },
+  "physical_audit": {
+    "path": "/tmp/stage2-final-response-audit-20260927/OXYGEN_physical.json",
+    "sha256": "b4ceb5901aa4a44ad731f2a4076f121cd33a8ff60fc6b7a19cb19fa23e6c7067",
+    "bytes": 397700
+  },
+  "temperature_K": 2173.15,
+  "pressure_bar": 268.95309124174867,
+  "exact_primal_repair": {
+    "exactly_feasible": true,
+    "basis_indices": [
+      6,
+      34,
+      0,
+      19,
+      7,
+      13,
+      2,
+      37,
+      8,
+      4,
+      1,
+      9,
+      81
+    ],
+    "original_atom_residual_mol_exact": [
+      "-332770785586727754497493/2251799813685248",
+      "1051864520215/16384",
+      "51594525168745176529541/1125899906842624",
+      "19484064",
+      "5436406007906352315/137438953472",
+      "-221448595622053892273/17592186044416",
+      "-20493487/32",
+      "-1033703403/8192",
+      "1159604881433/33554432",
+      "203795750327/65536",
+      "51047490725077304367/1125899906842624",
+      "-1613231551812519/33554432",
+      "-16777216"
+    ],
+    "amount_corrections_mol_exact": [
+      "8211120411393/262144",
+      "744538646477339461003019/2251799813685248",
+      "31003338008017210615493/1125899906842624",
+      "-16777216",
+      "-221448595622053892273/17592186044416",
+      "19484064",
+      "5453748673178418363/274877906944",
+      "-798771809864337261145961/2251799813685248",
+      "-20493487/64",
+      "203795750327/131072",
+      "1159604881433/33554432",
+      "-1033703403/8192",
+      "51047490725077304367/1125899906842624"
+    ],
+    "maximum_relative_basis_change": 9.469962492072267e-15,
+    "basis_names": [
+      "mg2sio4_melts",
+      "H2",
+      "sio2_melts",
+      "He1",
+      "casio3_melts",
+      "Fe_metal",
+      "al2o3_melts",
+      "H2O1",
+      "na2sio3_melts",
+      "mgcr2o4_melts",
+      "tio2_melts",
+      "kalsio4_melts",
+      "H2P1"
+    ]
+  },
+  "solution_provider": {
+    "git_commit": "113ae4d306aea81c86f78267b1d9074030bda3f1",
+    "checkout": "/tmp/stage2-alloy-insertion-eos-20260927",
+    "blob_sha256": {
+      "examples/melts_solid_mixing.py": "df51c0597b6aecd96e6a03874b61727520eb4c72eff240cb2bd655d671eacb20",
+      "examples/m2_solid_mixing/parameters.json": "abf8e929122bba24d81d3505310dea95f6f6f65f8655e4b804171341b057d808"
+    }
+  },
+  "phase_bounds": [
+    {
+      "phase": "H2_augmented_declared_liquid",
+      "dry_lower_rt": "0.00225400986199042128073741025123000911388757829792",
+      "dissolved_h2_cost_rt": {
+        "lower": "6.096171281242055428606363420840352773666381835937",
+        "upper": "6.096171281242055428606363420840352773666381835938"
+      },
+      "all_nonnegative_dissolved_h2_fractions": true,
+      "global_insertion_lower_bound_rt": "-1.003294871836458965469560162593736897740E-13",
+      "minimum_atoms_per_unit_lower_bound": "2"
+    },
+    {
+      "phase": "hornblende",
+      "reference_conversion_interval_rt": {
+        "lower": "-5.038370253957007601664027432682623995E-13",
+        "upper": "1.969595035087710109785384886821942355E-13"
+      },
+      "original_lower_bound_rt": 14.961151513251092,
+      "global_insertion_lower_bound_rt": "14.961151513250588544980995134398360494687151659475",
+      "minimum_atoms_per_unit_lower_bound": "42"
+    },
+    {
+      "phase": "biotite",
+      "reference_conversion_interval_rt": {
+        "lower": "-2.579952976190300146239820137548294090E-13",
+        "upper": "0E-49"
+      },
+      "original_lower_bound_rt": 13.348828335939121,
+      "global_insertion_lower_bound_rt": "13.348828335938863108295078151724289077220864311216",
+      "minimum_atoms_per_unit_lower_bound": "22"
+    },
+    {
+      "phase": "garnet",
+      "reference_conversion_interval_rt": {
+        "lower": "-1.711655904414145904776190243553886530E-13",
+        "upper": "1.050168314776116260388405628466529815E-13"
+      },
+      "original_lower_bound_rt": 1.1463663822769057,
+      "global_insertion_lower_bound_rt": "1.1463663822767345165566753349569443131961035957220",
+      "minimum_atoms_per_unit_lower_bound": "20"
+    },
+    {
+      "phase": "alkali-feldspar",
+      "reference_conversion_interval_rt": {
+        "lower": "-7.3906831027034280077433953088579500E-15",
+        "upper": "4.41279929515637774457618762824121650E-14"
+      },
+      "original_lower_bound_rt": 2.436531375003992,
+      "global_insertion_lower_bound_rt": "2.4365313750039844709776765466592087530722814740812",
+      "minimum_atoms_per_unit_lower_bound": "13"
+    },
+    {
+      "phase": "kalsilite",
+      "reference_conversion_interval_rt": {
+        "lower": "-1.678246547156109381711131363963775840E-13",
+        "upper": "8.17815646928571569235129478338256890E-14"
+      },
+      "original_lower_bound_rt": 8.403628626533598,
+      "global_insertion_lower_bound_rt": "8.4036286265334299427792872788477445000380420989785",
+      "minimum_atoms_per_unit_lower_bound": "26"
+    },
+    {
+      "phase": "leucite",
+      "reference_conversion_interval_rt": {
+        "lower": "-2.28073831671008298917793860632124115E-14",
+        "upper": "1.03037352108534410907010543182540250E-14"
+      },
+      "original_lower_bound_rt": 1.1808418375186687,
+      "global_insertion_lower_bound_rt": "1.1808418375186458614662193486076966739067834672760",
+      "minimum_atoms_per_unit_lower_bound": "10"
+    },
+    {
+      "phase": "alloy-solid",
+      "reference_conversion_interval_rt": {
+        "lower": "-7.76626672355117456739417834216375650E-14",
+        "upper": "-7.76626672355117456739417834216375175E-14"
+      },
+      "original_lower_bound_rt": 0.21796603286750335,
+      "global_insertion_lower_bound_rt": "0.21796603286742568826656664137641353312898337647308",
+      "minimum_atoms_per_unit_lower_bound": "1"
+    },
+    {
+      "phase": "alloy-liquid",
+      "reference_conversion_interval_rt": {
+        "lower": "-7.76626672355117456739417834216375650E-14",
+        "upper": "-7.76626672355117456739417834216375175E-14"
+      },
+      "original_lower_bound_rt": 0.032733503484186174,
+      "global_insertion_lower_bound_rt": "0.032733503484108511725376178363659780137426255196230",
+      "minimum_atoms_per_unit_lower_bound": "1"
+    },
+    {
+      "phase": "cummingtonite",
+      "reference_conversion_interval_rt": {
+        "lower": "-3.0204548506682826866891280690402710649025955562437E-13",
+        "upper": "-1.2870092698576170577068152874467317491049466333091E-29"
+      },
+      "original_lower_bound_rt": 9.793500266168115,
+      "global_insertion_lower_bound_rt": "9.7935002661678129305546933939241847763868215588310",
+      "minimum_atoms_per_unit_lower_bound": "40.999999999999999999999999999999999999999999999997"
+    },
+    {
+      "phase": "olivine",
+      "reference_conversion_interval_rt": {
+        "lower": "-1.915612829101246240361713996130171000E-13",
+        "upper": "8.75385188287115475410946087902765300E-14"
+      },
+      "original_lower_bound_rt": 0.0023981086301565913,
+      "global_insertion_lower_bound_rt": "0.0023981086299650300453317416548224802402806339086059",
+      "minimum_atoms_per_unit_lower_bound": "7.0"
+    },
+    {
+      "phase": "nepheline",
+      "reference_conversion_interval_rt": {
+        "lower": "-2.2360485609977476794870564871637420300E-13",
+        "upper": "4.682493939505699992802103972107276700E-14"
+      },
+      "original_lower_bound_rt": 4.673458103421011,
+      "global_insertion_lower_bound_rt": "4.6734581034207878176841323860591962747818866531407",
+      "minimum_atoms_per_unit_lower_bound": "27.00"
+    },
+    {
+      "phase": "clinoamphibole",
+      "reference_conversion_interval_rt": {
+        "lower": "-4.8415447228974678808363084790616427399025955562437E-13",
+        "upper": "2.3184697872612551955560404115643533143184712553270E-13"
+      },
+      "original_lower_bound_rt": 3.9486354756906414,
+      "global_insertion_lower_bound_rt": "3.9486354756901572842451311500764125406265506228353",
+      "minimum_atoms_per_unit_lower_bound": "40.999999999999999999999999999999999999999999999997"
+    },
+    {
+      "phase": "orthoamphibole",
+      "reference_conversion_interval_rt": {
+        "lower": "-4.8415447228974678808363084790616427399025955562437E-13",
+        "upper": "2.3184697872612551955560404115643533143184712553270E-13"
+      },
+      "original_lower_bound_rt": 3.5789035626709333,
+      "global_insertion_lower_bound_rt": "3.5789035626704491926062270706307747780800113161947",
+      "minimum_atoms_per_unit_lower_bound": "40.999999999999999999999999999999999999999999999997"
+    },
+    {
+      "phase": "melilite",
+      "reference_conversion_interval_rt": {
+        "lower": "-1.610779608952179399876164656078701400E-13",
+        "upper": "1.479346513683200633401401715344172100E-13"
+      },
+      "original_lower_bound_rt": 1.8868419826095726,
+      "global_insertion_lower_bound_rt": "1.8868419826094115097870528734789604080457294101334",
+      "minimum_atoms_per_unit_lower_bound": "12"
+    },
+    {
+      "phase": "ortho-oxide",
+      "reference_conversion_interval_rt": {
+        "lower": "-2.03222146766044560323699560034313350E-14",
+        "upper": "6.98484282268146204204989213550205810E-14"
+      },
+      "original_lower_bound_rt": 0.9422823754460617,
+      "global_insertion_lower_bound_rt": "0.94228237544604142625494060968514836885072111700484",
+      "minimum_atoms_per_unit_lower_bound": "8"
+    },
+    {
+      "phase": "rhm-oxide",
+      "reference_conversion_interval_rt": {
+        "lower": "-5.52788399744046130278618641161842280E-14",
+        "upper": "5.78374862570065644134537134301624350E-14"
+      },
+      "original_lower_bound_rt": 0.09473302465653184,
+      "global_insertion_lower_bound_rt": "0.094733024656476562949534114400879200025651462561550",
+      "minimum_atoms_per_unit_lower_bound": "5"
+    },
+    {
+      "phase": "plagioclase",
+      "reference_conversion_interval_rt": {
+        "lower": "-7.3906831027034280077433953088579500E-15",
+        "upper": "4.41279929515637774457618762824121650E-14"
+      },
+      "original_lower_bound_rt": 1.9393634324239766,
+      "global_insertion_lower_bound_rt": "1.9393634324239691835872384853934682094683843793546",
+      "minimum_atoms_per_unit_lower_bound": "13"
+    },
+    {
+      "phase": "clinopyroxene",
+      "reference_conversion_interval_rt": {
+        "lower": "-3.7430560399203368931943864075179291100E-13",
+        "upper": "4.0493155387949158644250965107347825900E-13"
+      },
+      "original_lower_bound_rt": 0.006858564787931951,
+      "global_insertion_lower_bound_rt": "0.0068585647875576451376808481434361541273287396398117",
+      "minimum_atoms_per_unit_lower_bound": "10"
+    },
+    {
+      "phase": "orthopyroxene",
+      "reference_conversion_interval_rt": {
+        "lower": "-3.7430560399203368931943864075179291100E-13",
+        "upper": "4.0493155387949158644250965107347825900E-13"
+      },
+      "original_lower_bound_rt": 0.003998552594772435,
+      "global_insertion_lower_bound_rt": "0.0039985525943981295274507001017989326596475105252792",
+      "minimum_atoms_per_unit_lower_bound": "10"
+    },
+    {
+      "phase": "spinel",
+      "reference_conversion_interval_rt": {
+        "lower": "-3.2194414383743903135238319783686072000E-13",
+        "upper": "1.7884152928922044463439457229732328300E-13"
+      },
+      "original_lower_bound_rt": 0.005211888192763045,
+      "global_insertion_lower_bound_rt": "0.0052118881924411005560137324837401906292957219444897",
+      "minimum_atoms_per_unit_lower_bound": "7.0"
+    },
+    {
+      "phase": "native_pure:sphene",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "5.148972368294979682002160124954280492334614829248",
+      "minimum_atoms_per_unit_lower_bound": "4.0803315269365380151093055091940045165479283947832"
+    },
+    {
+      "phase": "native_pure:aenigmatite",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "3.067815259563338164697794034178186608836253728403",
+      "minimum_atoms_per_unit_lower_bound": "3.9460755315530540761380983573426120669987688114724"
+    },
+    {
+      "phase": "native_pure:muscovite",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "5.44276554456842173450973000039552984881377156079",
+      "minimum_atoms_per_unit_lower_bound": "5.2722525965343863280314052989377805011345591687446"
+    },
+    {
+      "phase": "native_pure:quartz",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "2.31007507667047756436972115814898894030791372913",
+      "minimum_atoms_per_unit_lower_bound": "4.9929848562769310008735159693828974767857508170772"
+    },
+    {
+      "phase": "native_pure:tridymite",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "2.00052003624575675267548426550486705184056522053",
+      "minimum_atoms_per_unit_lower_bound": "4.9929848562769310008735159693828974767857508170772"
+    },
+    {
+      "phase": "native_pure:cristobalite",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "2.19631836243549707631762567886141499509097971446",
+      "minimum_atoms_per_unit_lower_bound": "4.9929848562769310008735159693828974767857508170772"
+    },
+    {
+      "phase": "native_pure:corundum",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "4.18980836013583949761982867940458368919886230422",
+      "minimum_atoms_per_unit_lower_bound": "4.9038223137253677006487706075623865688044485846630"
+    },
+    {
+      "phase": "native_pure:sillimanite",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "3.49513751554522782281442780088931332947974562041",
+      "minimum_atoms_per_unit_lower_bound": "4.9368825734092838592264558352640684308685762532052"
+    },
+    {
+      "phase": "native_pure:rutile",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "7.153568040770543782859491713105053229266531245725",
+      "minimum_atoms_per_unit_lower_bound": "3.7547497584444324760074941584464192612560610311129"
+    },
+    {
+      "phase": "native_pure:perovskite",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "6.239250268514234810994032858618904692113825258494",
+      "minimum_atoms_per_unit_lower_bound": "3.6770599993234243885053125447594495807514414362849"
+    },
+    {
+      "phase": "native_pure:whitlockite",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "4.223403314818740464925308840769665915124247945571",
+      "minimum_atoms_per_unit_lower_bound": "4.1910780845561532282180847187103510968923770931944"
+    },
+    {
+      "phase": "native_pure:apatite",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "5.048619745709301803129797144850820383706699321963",
+      "minimum_atoms_per_unit_lower_bound": "4.3796662606716626683204563100654395490799454732673"
+    },
+    {
+      "phase": "native_pure:water",
+      "amount_unit": "one recorded native oxide-mass/Gibbs unit; linear scaling only",
+      "global_insertion_lower_bound_rt": "196.17220964567586010275339443877798645462652363213",
+      "minimum_atoms_per_unit_lower_bound": "16.652604467338691676813815691830632660378074490982"
+    },
+    {
+      "phase": "source_Fe_Si_O_H_alloy",
+      "original_strict_nonnegative_bound": false,
+      "global_insertion_lower_bound_rt": "-1.462904137866947520213831772987631710063703704971516117439023219048976898193359375E-13",
+      "minimum_atoms_per_unit_lower_bound": "1"
+    },
+    {
+      "phase": "ideal_atmosphere",
+      "species": 76,
+      "global_insertion_lower_bound_rt": "-5.444809273950928075836364306135586748E-14",
+      "minimum_atoms_per_unit_lower_bound": "1"
+    },
+    {
+      "phase": "cloud:Fe(s,l)",
+      "global_insertion_lower_bound_rt": "0.0202959729807288269398668489884585142135620117187",
+      "minimum_atoms_per_unit_lower_bound": "1"
+    },
+    {
+      "phase": "cloud:FeO(s,l)",
+      "global_insertion_lower_bound_rt": "1.746698418171346744998118083458393812179565429687",
+      "minimum_atoms_per_unit_lower_bound": "2"
+    },
+    {
+      "phase": "cloud:Fe2O3(s)",
+      "global_insertion_lower_bound_rt": "13.412505446126939290252266800962388515472412109375",
+      "minimum_atoms_per_unit_lower_bound": "5"
+    },
+    {
+      "phase": "cloud:Fe3O4(s)",
+      "global_insertion_lower_bound_rt": "13.77039337855663525544969161273911595344543457030",
+      "minimum_atoms_per_unit_lower_bound": "7"
+    },
+    {
+      "phase": "cloud:NaOH(s,l)",
+      "global_insertion_lower_bound_rt": "7.494715642075317596493277960689738392829895019530",
+      "minimum_atoms_per_unit_lower_bound": "3"
+    },
+    {
+      "phase": "cloud:MgO(s,l)",
+      "global_insertion_lower_bound_rt": "1.117355477051411583033768692985177040100097656250",
+      "minimum_atoms_per_unit_lower_bound": "2"
+    },
+    {
+      "phase": "cloud:MgSiO3(s,l)",
+      "global_insertion_lower_bound_rt": "0.17992778198329162364643707405775785446166992187",
+      "minimum_atoms_per_unit_lower_bound": "5"
+    },
+    {
+      "phase": "cloud:Mg2SiO4(s,l)",
+      "global_insertion_lower_bound_rt": "0.25928615905595364665714441798627376556396484374",
+      "minimum_atoms_per_unit_lower_bound": "7"
+    },
+    {
+      "phase": "cloud:Mg2Si(s,l)",
+      "global_insertion_lower_bound_rt": "29.683609129353556888020193582633510231971740722656",
+      "minimum_atoms_per_unit_lower_bound": "3"
+    },
+    {
+      "phase": "cloud:Na2O(s,l)",
+      "global_insertion_lower_bound_rt": "18.293168754867614289594257570570334792137145996093",
+      "minimum_atoms_per_unit_lower_bound": "3"
+    },
+    {
+      "phase": "cloud:Na2O2(s)",
+      "global_insertion_lower_bound_rt": "33.318629950304222475665483216289430856704711914062",
+      "minimum_atoms_per_unit_lower_bound": "4"
+    },
+    {
+      "phase": "cloud:Na2SiO3(s,l)",
+      "global_insertion_lower_bound_rt": "7.61643302515838982458262762520462274551391601562",
+      "minimum_atoms_per_unit_lower_bound": "6"
+    },
+    {
+      "phase": "cloud:Na2Si2O5(s,l)",
+      "global_insertion_lower_bound_rt": "6.95297061297162954929262923542410135269165039062",
+      "minimum_atoms_per_unit_lower_bound": "9"
+    },
+    {
+      "phase": "cloud:SiO2(s,l)",
+      "global_insertion_lower_bound_rt": "1.254856925437564996173023246228694915771484375000",
+      "minimum_atoms_per_unit_lower_bound": "3"
+    },
+    {
+      "phase": "cloud:Si(s,l)",
+      "global_insertion_lower_bound_rt": "11.053530001816687544646811147686094045639038085937",
+      "minimum_atoms_per_unit_lower_bound": "1"
+    },
+    {
+      "phase": "cloud:Fe2SiO4(s)",
+      "global_insertion_lower_bound_rt": "6.14270363988083190065481176134198904037475585936",
+      "minimum_atoms_per_unit_lower_bound": "7"
+    },
+    {
+      "phase": "cloud:SiO(s)",
+      "global_insertion_lower_bound_rt": "1.772328801362391459406353533267974853515625000000",
+      "minimum_atoms_per_unit_lower_bound": "2"
+    },
+    {
+      "phase": "cloud:NaAlO2(s)",
+      "global_insertion_lower_bound_rt": "7.036768943946361432040248473640531301498413085937",
+      "minimum_atoms_per_unit_lower_bound": "4"
+    },
+    {
+      "phase": "cloud:MgAl2O4(s,l)",
+      "global_insertion_lower_bound_rt": "2.59824516649863213046955934260040521621704101562",
+      "minimum_atoms_per_unit_lower_bound": "7"
+    },
+    {
+      "phase": "cloud:Al2O3(s,l)",
+      "global_insertion_lower_bound_rt": "4.20787488733861181344764190725982189178466796874",
+      "minimum_atoms_per_unit_lower_bound": "5"
+    },
+    {
+      "phase": "cloud:Al2SiO5(s)",
+      "global_insertion_lower_bound_rt": "6.19674939241419764357488020323216915130615234374",
+      "minimum_atoms_per_unit_lower_bound": "8"
+    },
+    {
+      "phase": "cloud:Al6Si2O13(s)",
+      "global_insertion_lower_bound_rt": "12.90778733393975841181600117124617099761962890624",
+      "minimum_atoms_per_unit_lower_bound": "21"
+    },
+    {
+      "phase": "cloud:Ca(s,l)",
+      "global_insertion_lower_bound_rt": "20.445060629865380086300774564733728766441345214843",
+      "minimum_atoms_per_unit_lower_bound": "1"
+    },
+    {
+      "phase": "cloud:CaO(s,l)",
+      "global_insertion_lower_bound_rt": "7.637066474106550373335267067886888980865478515625",
+      "minimum_atoms_per_unit_lower_bound": "2"
+    },
+    {
+      "phase": "cloud:Cr(s,l)",
+      "global_insertion_lower_bound_rt": "3.0755997539849035948833488873788155615329742431640",
+      "minimum_atoms_per_unit_lower_bound": "1"
+    },
+    {
+      "phase": "cloud:Cr2O3(s,l)",
+      "global_insertion_lower_bound_rt": "2.782566627801058789515309399575926363468170166015",
+      "minimum_atoms_per_unit_lower_bound": "5"
+    },
+    {
+      "phase": "cloud:K2SiO3(s,l)",
+      "global_insertion_lower_bound_rt": "12.47097151229482392409408930689096450805664062500",
+      "minimum_atoms_per_unit_lower_bound": "6"
+    },
+    {
+      "phase": "cloud:MgTiO3(s,l)",
+      "global_insertion_lower_bound_rt": "5.37931946190128318363576909177936613559722900390",
+      "minimum_atoms_per_unit_lower_bound": "5"
+    },
+    {
+      "phase": "cloud:MgTi2O5(s,l)",
+      "global_insertion_lower_bound_rt": "10.47922986892488061982930958038195967674255371093",
+      "minimum_atoms_per_unit_lower_bound": "8"
+    },
+    {
+      "phase": "cloud:Mg2TiO4(s,l)",
+      "global_insertion_lower_bound_rt": "5.29346564792526397269512017373926937580108642577",
+      "minimum_atoms_per_unit_lower_bound": "7"
+    },
+    {
+      "phase": "cloud:Mg3P2O8(s,l)",
+      "global_insertion_lower_bound_rt": "5.13405127211640710527262854157015681266784667967",
+      "minimum_atoms_per_unit_lower_bound": "13"
+    },
+    {
+      "phase": "cloud:TiO(s,l)",
+      "global_insertion_lower_bound_rt": "8.283251488742398471742944821016862988471984863281",
+      "minimum_atoms_per_unit_lower_bound": "2"
+    },
+    {
+      "phase": "cloud:TiO2(s,l)",
+      "global_insertion_lower_bound_rt": "6.159927953520313970159349992172792553901672363281",
+      "minimum_atoms_per_unit_lower_bound": "3"
+    },
+    {
+      "phase": "cloud:Ti2O3(s,l)",
+      "global_insertion_lower_bound_rt": "12.03747988334909457819321687566116452217102050780",
+      "minimum_atoms_per_unit_lower_bound": "5"
+    },
+    {
+      "phase": "cloud:Ti3O5(s,l)",
+      "global_insertion_lower_bound_rt": "16.34851549764867595371242714463733136653900146483",
+      "minimum_atoms_per_unit_lower_bound": "8"
+    },
+    {
+      "phase": "cloud:Ti4O7(s,l)",
+      "global_insertion_lower_bound_rt": "21.58534899036621013124204182531684637069702148437",
+      "minimum_atoms_per_unit_lower_bound": "11"
+    },
+    {
+      "phase": "cloud:Ti(s,l)",
+      "global_insertion_lower_bound_rt": "18.030174021000429540606546652270480990409851074218",
+      "minimum_atoms_per_unit_lower_bound": "1"
+    },
+    {
+      "phase": "cloud:CaTiO3(s)",
+      "global_insertion_lower_bound_rt": "9.18079854774422532415201203548349440097808837890",
+      "minimum_atoms_per_unit_lower_bound": "5"
+    },
+    {
+      "phase": "cloud:CaSiO3(s)",
+      "global_insertion_lower_bound_rt": "4.07840705371375733534478058572858572006225585937",
+      "minimum_atoms_per_unit_lower_bound": "5"
+    },
+    {
+      "phase": "cloud:Ca2SiO4(s)",
+      "global_insertion_lower_bound_rt": "8.50230678394238026385210105217993259429931640624",
+      "minimum_atoms_per_unit_lower_bound": "7"
+    },
+    {
+      "phase": "cloud:CaMgSi2O6(s)",
+      "global_insertion_lower_bound_rt": "4.58913844036433005157959996722638607025146484374",
+      "minimum_atoms_per_unit_lower_bound": "10"
+    },
+    {
+      "phase": "cloud:Ca2Al2SiO7(s)",
+      "global_insertion_lower_bound_rt": "12.37189554979669026124611264094710350036621093749",
+      "minimum_atoms_per_unit_lower_bound": "12"
+    },
+    {
+      "phase": "cloud:CaAl2Si2O8(s)",
+      "global_insertion_lower_bound_rt": "14.59357134673783562561766302678734064102172851562",
+      "minimum_atoms_per_unit_lower_bound": "13"
+    },
+    {
+      "phase": "cloud:KAlSi3O8(s)",
+      "global_insertion_lower_bound_rt": "8.40646162765768067970384436193853616714477539062",
+      "minimum_atoms_per_unit_lower_bound": "13"
+    },
+    {
+      "phase": "cloud:NaAlSi3O8(s)",
+      "global_insertion_lower_bound_rt": "6.91655739530019353367151779821142554283142089842",
+      "minimum_atoms_per_unit_lower_bound": "13"
+    }
+  ],
+  "phase_energy_intervals_rt_mol": {
+    "liquid": {
+      "lower": "-102221723996760289459041204.64609676128462072626180",
+      "upper": "-102221723996760284387777860.35365915904259296888460"
+    },
+    "alloy": {
+      "lower": "-387654442165548027616366.89954624047680579787771300",
+      "upper": "-387654442165548027616366.89954624047680579787771294"
+    },
+    "atmosphere": {
+      "lower": "-9356439191663463661701853.8250412106767863835420414",
+      "upper": "-9356439191663463661701853.8250412106767863835420322"
+    }
+  },
+  "h2_standard_recipe": {
+    "base_rt": -8.324187937192022,
+    "scenario_offset_rt": 0.0
+  },
+  "excluded_temperature_ineligible_clouds": [
+    "Fe(OH)2(s)",
+    "Fe(OH)3(s)",
+    "NaH(s)",
+    "MgH2(s)",
+    "Mg(OH)2(s)",
+    "Mg(s,l)",
+    "Na(s,l)",
+    "NaO2(s)",
+    "H2O(s,l)",
+    "Al(s)",
+    "Ca(OH)2(s)",
+    "KH(s)",
+    "KOH(s,l)",
+    "TiH2(s)",
+    "H3PO4(s,l)",
+    "K(s,l)",
+    "KO2(s)",
+    "K2O(s)",
+    "K2O2(s)",
+    "(P2O5)2(s)",
+    "P(s,l)",
+    "PH3(s,l)"
+  ],
+  "scope": "Global Gibbs bounds at this source T/P, finite 13-element budget and declared phase domains. Exact atom repair supplies a feasible upper bound; a uniform shift of the common elemental plane supplies a global lower bound. This is error-bounded model acceptance, not exact KKT, empirical validity, unbounded Fe alloy composition, metal-free boundary certification, native-build equivalence, or a Gibbs minimum of the nonisothermal planet.",
+  "input_and_code_sha256": {
+    "/tmp/stage2-finite-response-results-20260927/examples/subneptune_taxonomy/finite_melt/validation/20260927_m2_finite_response/final_five_case_aggregate/aggregate.json": "8e7321bf8729b6b4772dbd89b636976d9a449e608b57f39d7bd610a15a0ef458",
+    "/tmp/stage2-final-reclosed-h1e24-sakao-16/closure.json": "824695dc2cd08952bd5486ef8e4b1750d98193f053ef0719a0e58abcac96a510",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_physical.json": "b4ceb5901aa4a44ad731f2a4076f121cd33a8ff60fc6b7a19cb19fa23e6c7067",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/run_bse_common_gibbs.py": "bac68be0117172934cee06d0006a7a894c8890a5fefb59c0dd64fa88d5a9fd97",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/common_gibbs.py": "d04543e98c13edbbf3fc2c24bd5f122183d7b6b57c61df71a85b5323ef73a22d",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/full_potential.py": "0d312a1a5ac0fdae0479d0e85e09bc35a88f59952a36895b703ac35513b8bc19",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/melts_coupled.py": "2de54a311cdf9e3046f93ad3958740d4fa65490ada0dc6988a0e4793046844f5",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/hydrogen.py": "8c6aaa6303583e1a7048b93db07a8edfea036321bc5c266425950821961887f3",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/source.py": "df61525a449761d66193e37845b79adfffc54f24947db47a8de56a150287a07e",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/reference.json": "0c7146ab1c5935daae25f4371a34847e1469dfc637b02afe3f5984d4aeb22092",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/reduced_gas_reference.json": "0aa9b23cf1d85b9db6b877c5c360bd4420985e595ee9f9c7735dfe91347dc234",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m2_common_gas.py": "d9466af88628ee78051f979ce99f8f34cfd4abdfbbc8dcce725b0a29fa618cde",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m2_expanded_source.py": "fff280c5172cae594bd05eb6725a409c1a9b773290ea6bbf1dd0d1432226f0e0",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m2_atmosphere.py": "188baa7dd7695fc4789202a62199ccaedeca625ac1b27d1553713e4feac9a47f",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m1_chemistry.py": "e998fcab3d5a4846877e135ff664f3f246a344ff20a6d1f1c55c16e7144be523",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m2_scenarios.py": "9bf55ec0c659560ce492a8fb7e4a048c32ef65b8b2e972b7d0cf947960c6cf85",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m2_finite_gas.py": "dd68ca835f7eaedc5132c18c06112c87d481382ec0e47a2709bb34c410fc4cab",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m2_janaf.py": "895db34792a256a1fb9bca4153b81340f4cdd8f8d45aff4afc51d04043fae127",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m2_omitted_gas.py": "21baad5d2d07e441ac46998a8dce9dc2eb22459607732408f1c22ac16a947729",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/phase_selection.py": "711267c8cc285d96bc8bc44420d14831bb5d717c086798b40d89fcaf4a8a09ed",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/data/janaf_atomic.json": "4a9d51e8dd58f513b334b5025f0de49476ec5359e1ca811f9e9fd3daab829518",
+    "/tmp/stage2-alloy-insertion-eos-20260927/src/exoeos/ma_fe_si_o.py": "32b526dc260d39a5071e25b198cc06fd331b1ceae89483d509702629ab5c7cde",
+    "/tmp/stage2-alloy-insertion-eos-20260927/src/exoeos/ma_fe_si_o_h.py": "131931749adf57a63642a156d93827c3429941b4c442256bc098c9d0cb86765d",
+    "/tmp/stage2-alloy-insertion-eos-20260927/src/exoeos/_arrays.py": "12b7550107f17026eb54be2b22ad2376cbdcb55e0a24c49c39dff34ec585042b",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/summary.json": "ecb028a43e9119e486a0f4ce076d1e9594423063b88e396e3450789a3925f49f",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/source_physical_audit.json": "b4ceb5901aa4a44ad731f2a4076f121cd33a8ff60fc6b7a19cb19fa23e6c7067",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_liquid_global/summary.json": "4831a5defc2c5604915bde441950d681d41c16abe3d262ea9122c77d76d24404",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_liquid_global/source_physical_audit.json": "b4ceb5901aa4a44ad731f2a4076f121cd33a8ff60fc6b7a19cb19fa23e6c7067",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_liquid_global/assessment.json": "0e7a78761a3b001d842f5297862f7767244829b7c6f7eef7ffb84859dea250bb",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/host_properties.json": "0030ab0d9372ba57c3381d8a156282e9f4092a5c025be0d0ac33bd7bed142090",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/native_standard_state_receipt.json": "29bc8f3d8565c8b2b2b866b8cdf9d7f19d57f9d03084c5a1b8779645a97cb873",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/hornblende.json": "904c7c29f5edc0c96556a2ac176a1f7207c0cbc40f90d7a48feab540b42200c9",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/biotite.json": "3bea4769659faf80be4ab0097507acf84f0bf3edf3714bbc8e5f8da8e7b93292",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/garnet.json": "90d705479eaffd4e7c593be892af1b8c59ac51b47377000ad632d449229869f1",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/alkali-feldspar.json": "ca6f7a9bfdf3b4d3115cf8a58b407bb90472964862acf6e385fdc819d31a6ec3",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/kalsilite.json": "594711df33de113e4e26c66e9bf110c4b4b926052d20b1154cfa7eebdb1f6886",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/leucite.json": "70bd6e80a99a5adc780e4fbc637ab55e219667f0a2c1fcb7beb686f2da72c7c6",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/alloy-solid.json": "334ae23c908eea411636c62e0b70734064c74a78c28b4623f10b9376ce1b2672",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/alloy-liquid.json": "b6b87c2ca8b980e69714cdb1c33994655c679523b1ac4a3da5685ad9abbbc3c6",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/cummingtonite.json": "780ca38ee868fbc64666489c0e13946c7c3f9fd8ce10922677a208d81f0b3509",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/olivine.json": "4ce6d422f320f7bd7f31ac2a99839becb1f73ce6d3a88e5c9e121459b6a57923",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/nepheline.json": "ec9db1b40b8e616180874960afcb87be92635992401f0f21d05405352356a53c",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/clinoamphibole.json": "e31803116b38d4f350583fd2f8fc1a0ce49633d8fa9e18f37745e2a7547a9e89",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/orthoamphibole.json": "b722ad3c8046b10970208ff8dacbefb735e78820d58b236bc427999293c587d9",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/melilite.json": "afbe125d023ca719e7ade202d5acee7e8a8423ecf48fa1d1b6e8856056439749",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/ortho-oxide.json": "708e963a3c395f29b50670ec4d623f3ea73fd70086b48a8467c17c9a76e782ec",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/rhm-oxide.json": "c8d9b9040027b33068cddd28820a698f8b119d98445b6bd2a4e0fb2af42910bc",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/plagioclase.json": "bb4cae7c67c7a7073ceea63ccbe4c27931d9cca749d632933cf8e99ce50d9f82",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/clinopyroxene.json": "a9a07962a74c59302a982eb196159dba7b887f48aa5829564b74ae36fe48c8a9",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/orthopyroxene.json": "b9648c066a505dee7b1022944652dae32fb1621d4eaf17e5b5175bf90c039275",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_solid_global/spinel.json": "561c6f118ae33e7468b0cc8bb479ec3b391fafbf3f47e75479b548c5ea75faa7",
+    "/tmp/stage2-final-response-audit-20260927/OXYGEN_alloy_insertion_bound.json": "fba1aa328821c134aedca1c3daca6ec5cfaf5fb30e9256f67e59d63a62ed50a6",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/run_m2_common_plane.py": "596950492beabf555a9d1ad0e1a95c1d17579c0acbe6d0a5b7b78a419eaf8274",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m2_common_plane.py": "cc51dd7af7794bfa67e8160fbfcdc1b61fe245b0d009c4d59ef74d898a5e665a",
+    "/tmp/stage2-common-plane-gibbs-20260928/examples/metal_silicate/m2_liquid_global.py": "157b37e9940432c7e720e3280a7e4f42e582cf9ad812636ce78dd06a29c36be4",
+    "/tmp/stage2-alloy-insertion-eos-20260927/src/exoeos/ma_interval.py": "def2f1442908c54c229f106177c7fbaaed3caf59b209e665a7a0cb794c566f56"
+  },
+  "alloy_interval_bound_replayed_exactly": true,
+  "proof_commit": "aa12f3c9378dd48763d1fe1d4e5ba8d2e75763f8"
+}

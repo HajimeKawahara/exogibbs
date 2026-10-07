@@ -84,6 +84,11 @@ PHASE_COLORS = {
     ENSTATITE: "tab:green",
     QUARTZ: "tab:purple",
 }
+ELEMENT_BUDGET_ABSOLUTE_TOLERANCE = 1.0e-10
+ACTIVE_LOG_SATURATION_TOLERANCE = 1.0e-8
+INACTIVE_QUARTZ_LOG_SATURATION_MAXIMUM = -0.1
+EXCLUDED_ENSTATITE_LOG_SATURATION_MINIMUM = 0.05
+COLD_PHASE_ALLOCATION_RELATIVE_TOLERANCE = 5.0e-4
 
 
 @dataclass(frozen=True)
@@ -527,6 +532,125 @@ def make_figure(
     return figure
 
 
+def _validate_release_criteria(
+    *,
+    setups: dict[str, CondensateChemicalSetup],
+    solutions: dict[str, DemoSolution],
+) -> None:
+    """Require the phase-competition regression criteria to pass."""
+
+    for run in COMPETITION_RUNS:
+        setup = setups[run.key]
+        solution = solutions[run.key]
+        gas_inventory = np.exp(solution.gas_ln_n) @ np.asarray(
+            setup.formula_matrix,
+            dtype=np.float64,
+        ).T
+        condensate_inventory = solution.condensate_amounts @ np.asarray(
+            setup.formula_matrix_cond,
+            dtype=np.float64,
+        ).T
+        residual = (
+            gas_inventory
+            + condensate_inventory
+            - np.asarray(solar_element_budget(setup), dtype=np.float64)[None, :]
+        )
+        maximum_residual = float(np.max(np.abs(residual)))
+        if (
+            not np.all(np.isfinite(residual))
+            or maximum_residual >= ELEMENT_BUDGET_ABSOLUTE_TOLERANCE
+        ):
+            raise RuntimeError(
+                f"{run.label} elemental-budget residual is "
+                f"{maximum_residual:.6g}; limit "
+                f"{ELEMENT_BUDGET_ABSOLUTE_TOLERANCE:.1e}."
+            )
+
+    run_a_setup = setups[RUN_A.key]
+    run_b_setup = setups[RUN_B.key]
+    run_a = solutions[RUN_A.key]
+    run_b = solutions[RUN_B.key]
+    temperature_matches = np.flatnonzero(run_a.temperatures_k == 1550.0)
+    if temperature_matches.size != 1:
+        raise RuntimeError("The release profile must contain 1550 K exactly.")
+    temperature_index = int(temperature_matches[0])
+    log_saturation_a = log_saturation_ratios(run_a, run_a_setup)[
+        temperature_index
+    ]
+    log_saturation_b = log_saturation_ratios(run_b, run_a_setup)[
+        temperature_index
+    ]
+    forsterite_index = run_a_setup.condensate_species.index(FORSTERITE)
+    enstatite_index = run_a_setup.condensate_species.index(ENSTATITE)
+    quartz_index = run_a_setup.condensate_species.index(QUARTZ)
+    active_saturation = np.asarray(
+        (
+            log_saturation_a[forsterite_index],
+            log_saturation_a[enstatite_index],
+            log_saturation_b[forsterite_index],
+            log_saturation_b[quartz_index],
+        ),
+        dtype=np.float64,
+    )
+    inactive_saturation = np.asarray(
+        (
+            log_saturation_a[quartz_index],
+            log_saturation_b[enstatite_index],
+        ),
+        dtype=np.float64,
+    )
+    if (
+        not np.all(np.isfinite(active_saturation))
+        or not np.all(np.isfinite(inactive_saturation))
+        or np.max(np.abs(active_saturation))
+        >= ACTIVE_LOG_SATURATION_TOLERANCE
+        or log_saturation_a[quartz_index]
+        >= INACTIVE_QUARTZ_LOG_SATURATION_MAXIMUM
+        or log_saturation_b[enstatite_index]
+        <= EXCLUDED_ENSTATITE_LOG_SATURATION_MINIMUM
+    ):
+        raise RuntimeError(
+            "The 1550 K phase-competition saturation criteria failed."
+        )
+
+    cold_a = phase_element_fractions(run_a, run_a_setup, "Si")
+    cold_b = phase_element_fractions(run_b, run_b_setup, "Si")
+    budget_b = np.asarray(solar_element_budget(run_b_setup), dtype=np.float64)
+    expected_forsterite = (
+        budget_b[run_b_setup.elements.index("Mg")]
+        / budget_b[run_b_setup.elements.index("Si")]
+        / 2.0
+    )
+    cold_allocation = np.asarray(
+        (
+            cold_a[ENSTATITE][0],
+            cold_a[QUARTZ][0],
+            cold_b[FORSTERITE][0],
+            cold_b[QUARTZ][0],
+            expected_forsterite,
+        ),
+        dtype=np.float64,
+    )
+    if (
+        not np.all(np.isfinite(cold_allocation))
+        or cold_a[ENSTATITE][0] <= 0.97
+        or cold_a[QUARTZ][0] != 0.0
+        or not np.isclose(
+            cold_b[FORSTERITE][0],
+            expected_forsterite,
+            rtol=COLD_PHASE_ALLOCATION_RELATIVE_TOLERANCE,
+            atol=0.0,
+        )
+        or not np.isclose(
+            cold_b[QUARTZ][0],
+            1.0 - expected_forsterite,
+            rtol=COLD_PHASE_ALLOCATION_RELATIVE_TOLERANCE,
+            atol=0.0,
+        )
+    ):
+        raise RuntimeError("The cold silicon phase-allocation criteria failed.")
+
+
 def print_summary(
     *,
     setups: dict[str, CondensateChemicalSetup],
@@ -589,6 +713,11 @@ def print_summary(
         "enstatite="
         f"{float(enstatite_condensation_temperature(PRESSURE_BAR)):.2f} K"
     )
+    print(
+        "Release gate: passed "
+        f"(budget < {ELEMENT_BUDGET_ABSOLUTE_TOLERANCE:.1e}; "
+        "active/inactive saturation and cold phase allocation)"
+    )
 
 
 def _parse_args() -> argparse.Namespace:
@@ -614,6 +743,7 @@ def _parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = _parse_args()
+    args.figure.unlink(missing_ok=True)
     setups = {
         run.key: build_reduced_setup(run) for run in COMPETITION_RUNS
     }
@@ -624,6 +754,7 @@ def main() -> None:
         )
         for run in COMPETITION_RUNS
     }
+    _validate_release_criteria(setups=setups, solutions=solutions)
     print_summary(setups=setups, solutions=solutions)
 
     figure = make_figure(setups=setups, solutions=solutions)

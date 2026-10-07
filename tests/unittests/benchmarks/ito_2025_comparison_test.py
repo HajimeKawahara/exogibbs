@@ -1,6 +1,7 @@
 """Regression tests for the Ito et al. (2025) comparison example."""
 
 import ast
+from dataclasses import replace
 from pathlib import Path
 import runpy
 from types import SimpleNamespace
@@ -171,6 +172,137 @@ def test_propagated_rainout_example_uses_both_native_profile_modes() -> None:
     assert len(guarded_calls) == 1
 
 
+@pytest.mark.parametrize(
+    ("field", "values", "message"),
+    [
+        ("exogibbs_done", [True, False], "incomplete rows"),
+        ("fastchem_converged", [True, False], "unconverged rows"),
+        ("exogibbs_done", [np.nan, np.nan], "invalid completion arrays"),
+        ("fastchem_converged", [1, 1], "invalid completion arrays"),
+    ],
+)
+def test_ito_requested_solver_gate_fails_closed(
+    comparison_module,
+    field,
+    values,
+    message,
+) -> None:
+    state = {
+        "layers": np.asarray([2, 3]),
+        "exogibbs_done": np.asarray([True, True]),
+        "exogibbs_converged": np.asarray([True, True]),
+        "fastchem_done": np.asarray([True, True]),
+        "fastchem_converged": np.asarray([True, True]),
+    }
+    comparison_module["_validate_requested_solvers"](state, "both")
+    state[field] = np.asarray(values)
+    with pytest.raises(RuntimeError, match=message):
+        comparison_module["_validate_requested_solvers"](state, "both")
+
+
+def test_ito_writes_current_artifacts_before_release_gate() -> None:
+    source = EXAMPLE_PATH.read_text(encoding="utf-8")
+    main_source = ast.get_source_segment(
+        source,
+        next(
+            node
+            for node in ast.parse(source, filename=str(EXAMPLE_PATH)).body
+            if isinstance(node, ast.FunctionDef) and node.name == "main"
+        ),
+    )
+    assert main_source is not None
+    invalidate_index = main_source.index("unlink(missing_ok=True)")
+    assert main_source.index("resolve(strict=True)") < invalidate_index
+    assert main_source.index("os.access(") < invalidate_index
+    assert invalidate_index < main_source.index("_run_calculations(")
+    assert main_source.index("_write_table(") < main_source.index(
+        "_validate_requested_solvers("
+    )
+    assert main_source.index("_write_summary(") < main_source.index(
+        "_validate_requested_solvers("
+    )
+    assert main_source.index("_validate_requested_solvers(") < (
+        main_source.index("make_comparison_figure(")
+    )
+
+
+def test_ito_rainout_invalidates_figure_before_solving() -> None:
+    source = RAINOUT_EXAMPLE_PATH.read_text(encoding="utf-8")
+    main_source = ast.get_source_segment(
+        source,
+        next(
+            node
+            for node in ast.parse(
+                source, filename=str(RAINOUT_EXAMPLE_PATH)
+            ).body
+            if isinstance(node, ast.FunctionDef) and node.name == "main"
+        ),
+    )
+    assert main_source is not None
+    resolve_index = main_source.index("resolve(strict=True)")
+    invalidate_index = main_source.index("unlink(missing_ok=True)")
+    solve_index = main_source.index("solve_exogibbs_rainout(")
+    assert resolve_index < invalidate_index < solve_index
+    assert main_source.index("os.access(") < invalidate_index
+
+
+@pytest.mark.parametrize(
+    ("failure", "message"),
+    [
+        ("exogibbs_count", "all ExoGibbs layers converged"),
+        ("fastchem_count", "all FastChem layers converged"),
+        ("conservation_count", "conserved elements"),
+        ("stability", "active_sio_is_saturated"),
+        ("nonfinite_check", "non-boolean result"),
+        ("nonboolean_overall", "non-boolean result"),
+    ],
+)
+def test_ito_rainout_release_gate_fails_closed(
+    rainout_comparison_module,
+    failure,
+    message,
+) -> None:
+    payload = {
+        "profile": {"layer_count": 2},
+        "exogibbs": {
+            "converged_layers": 2,
+            "stability_diagnostics": {
+                "rerun_pass_criteria": {
+                    "checks": {"active_sio_is_saturated": True},
+                    "overall_passed": True,
+                }
+            },
+        },
+        "fastchem4": {
+            "converged_layers": 2,
+            "elements_conserved_layers": 2,
+        },
+    }
+    rainout_comparison_module["_validate_release_criteria"](payload)
+    if failure == "exogibbs_count":
+        payload["exogibbs"]["converged_layers"] = 1
+    elif failure == "fastchem_count":
+        payload["fastchem4"]["converged_layers"] = 1
+    elif failure == "conservation_count":
+        payload["fastchem4"]["elements_conserved_layers"] = 1
+    elif failure == "stability":
+        criteria = payload["exogibbs"]["stability_diagnostics"][
+            "rerun_pass_criteria"
+        ]
+        criteria["checks"]["active_sio_is_saturated"] = False
+        criteria["overall_passed"] = False
+    elif failure == "nonfinite_check":
+        payload["exogibbs"]["stability_diagnostics"][
+            "rerun_pass_criteria"
+        ]["checks"]["active_sio_is_saturated"] = np.nan
+    else:
+        payload["exogibbs"]["stability_diagnostics"][
+            "rerun_pass_criteria"
+        ]["overall_passed"] = 1
+    with pytest.raises(RuntimeError, match=message):
+        rainout_comparison_module["_validate_release_criteria"](payload)
+
+
 def test_propagated_rainout_target_excludes_layer1(
     rainout_comparison_module,
     tmp_path: Path,
@@ -309,6 +441,13 @@ def test_rainout_inventory_diagnostics_expose_depletion_and_reintroduction(
     diagnostics = rainout_comparison_module[
         "_exogibbs_profile_diagnostics"
     ](solution)
+    with pytest.raises(ValueError, match="must be boolean"):
+        rainout_comparison_module["_exogibbs_profile_diagnostics"](
+            replace(
+                solution,
+                sio_support_active=np.asarray([np.nan, np.nan]),
+            )
+        )
     profile_type = rainout_comparison_module["ItoProfile"]
     profile = profile_type(
         layer=np.asarray([10, 11]),
@@ -320,6 +459,18 @@ def test_rainout_inventory_diagnostics_expose_depletion_and_reintroduction(
     summary = rainout_comparison_module[
         "_stability_diagnostic_summary"
     ](profile, solution, diagnostics)
+
+    invalid_diagnostics = dict(diagnostics)
+    invalid_floor_scaled = diagnostics[
+        "gas_vs_conservative_inventory_floor_scaled_mismatch"
+    ].copy()
+    invalid_floor_scaled[0, 0] = np.nan
+    invalid_diagnostics[
+        "gas_vs_conservative_inventory_floor_scaled_mismatch"
+    ] = invalid_floor_scaled
+    invalid_summary = rainout_comparison_module[
+        "_stability_diagnostic_summary"
+    ](profile, solution, invalid_diagnostics)
 
     np.testing.assert_allclose(
         diagnostics["conservative_gas_element_inventory"][0],
@@ -338,6 +489,16 @@ def test_rainout_inventory_diagnostics_expose_depletion_and_reintroduction(
         ][1, 1]
     )
     assert summary["sio_saturation"]["support_transition_count"] == 1
+    assert summary["rerun_pass_criteria"]["checks"][
+        "profile_metrics_are_finite"
+    ]
+    assert not invalid_summary["rerun_pass_criteria"]["checks"][
+        "profile_metrics_are_finite"
+    ]
+    assert not invalid_summary["rerun_pass_criteria"]["checks"][
+        "floor_scaled_inventory_is_conservative"
+    ]
+    assert not invalid_summary["rerun_pass_criteria"]["overall_passed"]
     assert (
         summary["numerical_depletion"]["positive_to_exact_zero_events"][
             "first_layer"

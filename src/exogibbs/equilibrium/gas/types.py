@@ -39,7 +39,11 @@ class ThermoState:
 
 @dataclass(frozen=True)
 class EquilibriumOptions:
-    """Solver and profile scheduling options for gas equilibrium."""
+    """Solver and profile scheduling options for gas equilibrium.
+
+    The solver floors ``epsilon_crit`` at eight machine epsilons in its
+    effective floating-point dtype.
+    """
 
     epsilon_crit: float = 1.0e-10
     max_iter: int = 1000

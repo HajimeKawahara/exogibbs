@@ -1,0 +1,885 @@
+{
+  "schema_version": 1,
+  "status": "Frozen standard thermochemistry; no equilibrium solve or phase-stability claim.",
+  "source": {
+    "repository": "https://github.com/ExoInteriors/GlobalChemicalEquilibrium_Release",
+    "commit": "31558873d8da460c3cd11986b574cb347621b43d",
+    "version": "Young_2023_Version",
+    "license": "GPL-3.0; source used for offline reference evaluation only",
+    "files": {
+      "Young_2023_Version/Equations.py": "9ee5b8c5da458325df9a4dccbf121b972d59821421b96a1fdc500a7f0dbef191",
+      "Young_2023_Version/Gibbs_Young_Version.py": "de26349e1b71c60b7f5fb60ba35a8f11d04d69e811795e7dd880be0370e91d03",
+      "Young_2023_Version/chem_input.dat": "7b7927bd8cf6923274624ebce1fa79259d6a5777b4f49c7a23d5f658e4084aef"
+    },
+    "gas_constant_J_mol_K": 8.314462618153,
+    "log10_to_ln": 2.302585093,
+    "standard_pressure_bar": 1.0,
+    "shomate_coefficient_order": [
+      "DH",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H"
+    ],
+    "shomate_units": "t=T_K/1000; enthalpy in kJ/mol, entropy in J/(mol K), output mu0 in J/mol",
+    "original_conditions": {
+      "T_AMOI": 2350,
+      "T_SME": 3000,
+      "Mplanet_Mearth": 0.5
+    },
+    "thermochemistry_provenance": {
+      "Shomate": "Chase (1998) / NIST, as transcribed in the pinned source; no independent NIST download",
+      "metal_Si": "Corgne et al. (2008) reaction fit, as used by the pinned source",
+      "metal_O": "Badro et al. (2015) reaction fit with the sign selected in the pinned source",
+      "metal_H": "Okuchi (1997) fit, as used by the pinned source",
+      "silicate_H2": "Hirschmann fit evaluated at 1 bar in the pinned source",
+      "silicate_H2O": "Moore et al. (1998) fit, as used by the pinned source",
+      "silicate_Na_Fe": "Empirical Magma-code reactions R0/R5 selected by the pinned source",
+      "silicate_CO_CO2": "G17=5200+119.77*T J/mol; G16=G17+RT*log_to_ln*log10(3), as used by the pinned source"
+    },
+    "notes": [
+      "Preserve all 25 components and 18 reactions of this version; the general GCE network also includes SiH4.",
+      "Source reaction R14 uses -ln(1e4/Pstd), not the ordinary -ln(P/Pstd); this is an additional closure prescription.",
+      "Source reactions R1, R3, R4 and R6 use T_SME; the remaining reactions use T_AMOI.",
+      "The two frozen cases set both source temperatures equal and evaluate 1 bar standards; they are not source planetary solutions.",
+      "No calibrated joint T/P/composition domain is established. Liquid standard continuations do not establish liquid-phase stability.",
+      "The source MgO liquid coefficients list 3105-5000 K; both frozen temperatures extrapolate these formal endmember coefficients.",
+      "GRT is dimensionless Delta G/(R*T), despite the source output-file header saying J/mol. Natural-log equilibrium constants equal -GRT.",
+      "R3 follows Equations.py: 0.5 Si(metal)+O(metal) -> 0.5 SiO2(silicate); the Gibbs script's reaction comment points the other way.",
+      "The source activities use gamma_Fe=1 and the GCE O coefficient variant; the completed ExoEOS Fe-Si-O model is a distinct model.",
+      "Na2SiO3 and FeSiO3 standards must be reconstructed from the selected empirical reactions, not substituted from the unused source standard formulas."
+    ]
+  },
+  "phases": {
+    "silicate": [
+      "MgO_silicate",
+      "SiO2_silicate",
+      "MgSiO3_silicate",
+      "FeO_silicate",
+      "FeSiO3_silicate",
+      "Na2O_silicate",
+      "Na2SiO3_silicate",
+      "H2_silicate",
+      "H2O_silicate",
+      "CO_silicate",
+      "CO2_silicate"
+    ],
+    "metal": [
+      "Fe_metal",
+      "Si_metal",
+      "O_metal",
+      "H_metal"
+    ],
+    "gas": [
+      "H2_gas",
+      "CO_gas",
+      "CO2_gas",
+      "CH4_gas",
+      "O2_gas",
+      "H2O_gas",
+      "Fe_gas",
+      "Mg_gas",
+      "SiO_gas",
+      "Na_gas"
+    ]
+  },
+  "elements": [
+    "Si",
+    "Mg",
+    "O",
+    "Fe",
+    "H",
+    "Na",
+    "C"
+  ],
+  "component_formulas": {
+    "MgO_silicate": {
+      "Mg": 1,
+      "O": 1
+    },
+    "SiO2_silicate": {
+      "Si": 1,
+      "O": 2
+    },
+    "MgSiO3_silicate": {
+      "Mg": 1,
+      "Si": 1,
+      "O": 3
+    },
+    "FeO_silicate": {
+      "Fe": 1,
+      "O": 1
+    },
+    "FeSiO3_silicate": {
+      "Fe": 1,
+      "Si": 1,
+      "O": 3
+    },
+    "Na2O_silicate": {
+      "Na": 2,
+      "O": 1
+    },
+    "Na2SiO3_silicate": {
+      "Na": 2,
+      "Si": 1,
+      "O": 3
+    },
+    "H2_silicate": {
+      "H": 2
+    },
+    "H2O_silicate": {
+      "H": 2,
+      "O": 1
+    },
+    "CO_silicate": {
+      "C": 1,
+      "O": 1
+    },
+    "CO2_silicate": {
+      "C": 1,
+      "O": 2
+    },
+    "Fe_metal": {
+      "Fe": 1
+    },
+    "Si_metal": {
+      "Si": 1
+    },
+    "O_metal": {
+      "O": 1
+    },
+    "H_metal": {
+      "H": 1
+    },
+    "H2_gas": {
+      "H": 2
+    },
+    "CO_gas": {
+      "C": 1,
+      "O": 1
+    },
+    "CO2_gas": {
+      "C": 1,
+      "O": 2
+    },
+    "CH4_gas": {
+      "C": 1,
+      "H": 4
+    },
+    "O2_gas": {
+      "O": 2
+    },
+    "H2O_gas": {
+      "H": 2,
+      "O": 1
+    },
+    "Fe_gas": {
+      "Fe": 1
+    },
+    "Mg_gas": {
+      "Mg": 1
+    },
+    "SiO_gas": {
+      "Si": 1,
+      "O": 1
+    },
+    "Na_gas": {
+      "Na": 1
+    }
+  },
+  "original_element_amounts_mol": {
+    "Si": 191.45859056972253,
+    "Mg": 195.45756479864164,
+    "O": 579.6632269947607,
+    "Fe": 184.07829601240238,
+    "H": 57.968671352371786,
+    "Na": 3.2812098037631667,
+    "C": 0.029014021688931024
+  },
+  "local_contract": {
+    "temperature": "one supplied temperature, in K, for every local reaction",
+    "pressure": "supplied independently in bar; no planetary pressure law",
+    "standard_pressure_bar": 1.0,
+    "component_amount_unit": "mol of the declared component formula units; atomic mol for metal",
+    "element_amount_unit": "mol of atoms, ordered by elements",
+    "phase_amount_definition": "N_phase=sum(n_i in phase); n_i=N_phase*x_i; sum(x_i)=1 for a present phase",
+    "element_closure": "b=sum(A_phase@n_phase); finite local oxygen budget, no external oxygen buffer",
+    "example_budget": "original_element_amounts_mol interpreted as a supplied local parcel; no planetary mass is inferred",
+    "zero_budget": "exact zero; remove unsupported components in a future solve instead of inserting traces",
+    "phase_assumptions": "declared silicate liquid, metal liquid, gas; no phase selection or liquid-stability validation"
+  },
+  "exoeos_standard_reference": {
+    "repository": "https://github.com/HajimeKawahara/exoeos",
+    "commit": "39176c423e9e7783dd956e1abe75c9b610a81864",
+    "path": "tests/reference/fe_si_o_ma2001.json",
+    "sha256": "cf59178a3cf6622b924cd8d8ac1d03e7e5feb65c6f2e687dcb3b66820b601e0f",
+    "model_id": "ma2001_fe_si_o_young2023_printed_v1",
+    "components": [
+      "Fe",
+      "Si",
+      "O"
+    ],
+    "states": [
+      {
+        "id": "ternary_2350",
+        "T_K": 2350.0,
+        "P_Pa": 100000.0,
+        "x": [
+          0.85,
+          0.1,
+          0.05
+        ],
+        "ln_gamma_source": [
+          -0.020569452065669763,
+          -4.506406117248992,
+          -3.555211577385589
+        ],
+        "ln_gamma_formal": [
+          -0.020569452065669763,
+          -9.097248670440482,
+          6.197341614103773
+        ],
+        "mu0_formal_minus_source_over_RT": [
+          0.0,
+          4.590842553191489,
+          -9.752553191489362
+        ]
+      },
+      {
+        "id": "ternary_3000",
+        "T_K": 3000.0,
+        "P_Pa": 100000.0,
+        "x": [
+          0.8,
+          0.15,
+          0.05
+        ],
+        "ln_gamma_source": [
+          -0.060760074213998684,
+          -3.1426088880910044,
+          -2.089261590132516
+        ],
+        "ln_gamma_formal": [
+          -0.060760074213998684,
+          -6.738768888091005,
+          4.620738409867484
+        ],
+        "mu0_formal_minus_source_over_RT": [
+          0.0,
+          3.59616,
+          -6.71
+        ]
+      }
+    ]
+  },
+  "reactions": [
+    {
+      "id": "R0",
+      "stoichiometry": {
+        "Na2SiO3_silicate": -1,
+        "Na2O_silicate": 1,
+        "SiO2_silicate": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R1",
+      "stoichiometry": {
+        "Fe_metal": -1,
+        "SiO2_silicate": -0.5,
+        "Si_metal": 0.5,
+        "FeO_silicate": 1
+      },
+      "source_temperature": "T_SME"
+    },
+    {
+      "id": "R2",
+      "stoichiometry": {
+        "MgSiO3_silicate": -1,
+        "MgO_silicate": 1,
+        "SiO2_silicate": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R3",
+      "stoichiometry": {
+        "Si_metal": -0.5,
+        "O_metal": -1,
+        "SiO2_silicate": 0.5
+      },
+      "source_temperature": "T_SME"
+    },
+    {
+      "id": "R4",
+      "stoichiometry": {
+        "H_metal": -2,
+        "H2_silicate": 1
+      },
+      "source_temperature": "T_SME"
+    },
+    {
+      "id": "R5",
+      "stoichiometry": {
+        "FeSiO3_silicate": -1,
+        "FeO_silicate": 1,
+        "SiO2_silicate": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R6",
+      "stoichiometry": {
+        "H2O_silicate": -2,
+        "Si_metal": -1,
+        "SiO2_silicate": 1,
+        "H2_silicate": 2
+      },
+      "source_temperature": "T_SME"
+    },
+    {
+      "id": "R7",
+      "stoichiometry": {
+        "CO_gas": -1,
+        "O2_gas": -0.5,
+        "CO2_gas": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R8",
+      "stoichiometry": {
+        "CH4_gas": -1,
+        "O2_gas": -0.5,
+        "H2_gas": 2,
+        "CO_gas": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R9",
+      "stoichiometry": {
+        "O2_gas": -0.5,
+        "H2_gas": -1,
+        "H2O_gas": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R10",
+      "stoichiometry": {
+        "FeO_silicate": -1,
+        "O2_gas": 0.5,
+        "Fe_gas": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R11",
+      "stoichiometry": {
+        "MgO_silicate": -1,
+        "O2_gas": 0.5,
+        "Mg_gas": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R12",
+      "stoichiometry": {
+        "SiO2_silicate": -1,
+        "O2_gas": 0.5,
+        "SiO_gas": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R13",
+      "stoichiometry": {
+        "Na2O_silicate": -1,
+        "O2_gas": 0.5,
+        "Na_gas": 2
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R14",
+      "stoichiometry": {
+        "H2_gas": -1,
+        "H2_silicate": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R15",
+      "stoichiometry": {
+        "H2O_gas": -1,
+        "H2O_silicate": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R16",
+      "stoichiometry": {
+        "CO_gas": -1,
+        "CO_silicate": 1
+      },
+      "source_temperature": "T_AMOI"
+    },
+    {
+      "id": "R17",
+      "stoichiometry": {
+        "CO2_gas": -1,
+        "CO2_silicate": 1
+      },
+      "source_temperature": "T_AMOI"
+    }
+  ],
+  "cases": [
+    {
+      "id": "isothermal_2350K_1bar",
+      "T_K": 2350.0,
+      "P_bar": 1.0,
+      "shomate": {
+        "MgO_silicate": [
+          -532.61,
+          66.944,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          -580.9944,
+          93.74712,
+          -532.6106
+        ],
+        "SiO2_silicate": [
+          -902.661,
+          85.772,
+          -1.6e-05,
+          4e-06,
+          -3.809081e-07,
+          -1.7e-05,
+          -952.87,
+          113.344,
+          -902.661
+        ],
+        "MgSiO3_silicate": [
+          -1494.86,
+          146.44,
+          -1.499926e-07,
+          6.220145e-08,
+          -8.733222e-09,
+          -3.144171e-08,
+          -1563.306,
+          220.6679,
+          -1494.864
+        ],
+        "FeO_silicate": [
+          -249.5321,
+          68.1992,
+          -4.501232e-10,
+          1.195227e-10,
+          -1.064302e-11,
+          -3.09268e-10,
+          -281.4326,
+          137.8377,
+          -249.5321
+        ],
+        "Na2O_silicate": [
+          -372.84,
+          104.6,
+          9.909135e-10,
+          -6.022074e-10,
+          1.113058e-10,
+          2.362827e-11,
+          -404.0296,
+          218.1902,
+          -372.8434
+        ],
+        "Fe_metal": [
+          12.4,
+          46.024,
+          -1.884667e-08,
+          6.09475e-09,
+          -6.640301e-10,
+          -8.246121e-09,
+          -10.80543,
+          72.54094,
+          12.39502
+        ],
+        "H2_gas": [
+          0.0,
+          18.563083,
+          12.257357,
+          -2.859786,
+          0.268238,
+          1.97799,
+          -1.147438,
+          156.288133,
+          0.0
+        ],
+        "CO_gas": [
+          -110.53,
+          35.1507,
+          1.300095,
+          -0.205921,
+          0.01355,
+          -3.28278,
+          -127.8375,
+          231.712,
+          -110.5271
+        ],
+        "CO2_gas": [
+          -393.51,
+          58.16639,
+          2.720074,
+          -0.492289,
+          0.038844,
+          -6.447293,
+          -425.9186,
+          263.6125,
+          -393.5224
+        ],
+        "CH4_gas": [
+          -74.873,
+          85.81217,
+          11.26467,
+          -2.114146,
+          0.13819,
+          -26.42221,
+          -153.5327,
+          224.4143,
+          -74.8731
+        ],
+        "O2_gas": [
+          0.0,
+          20.91111,
+          10.72071,
+          -2.020498,
+          0.146449,
+          9.245722,
+          5.337651,
+          237.6185,
+          0.0
+        ],
+        "H2O_gas": [
+          -241.83,
+          41.96426,
+          8.622053,
+          -1.49978,
+          0.098119,
+          -11.15764,
+          -272.1797,
+          219.7809,
+          -241.8264
+        ],
+        "Fe_gas": [
+          415.47,
+          11.29253,
+          6.989707,
+          -1.110305,
+          0.122354,
+          5.689278,
+          423.538,
+          206.3591,
+          415.4716
+        ],
+        "Mg_gas": [
+          147.1,
+          47.60848,
+          -15.40875,
+          2.875965,
+          -0.120806,
+          -27.01764,
+          97.40017,
+          177.2305,
+          147.1002
+        ],
+        "SiO_gas": [
+          -100.42,
+          35.69893,
+          1.731252,
+          -0.509348,
+          0.059404,
+          -1.248055,
+          -114.6019,
+          249.1911,
+          -100.416
+        ],
+        "Na_gas": [
+          107.3,
+          20.80573,
+          0.277206,
+          -0.392086,
+          0.119634,
+          -0.008879,
+          101.0386,
+          178.7095,
+          107.2999
+        ]
+      },
+      "source_mu0_J_mol": {
+        "MgO_silicate": -778396.3843609877,
+        "SiO2_silicate": -1189883.7019743323,
+        "MgSiO3_silicate": -2031770.9292311482,
+        "FeO_silicate": -582018.6133416789,
+        "Na2O_silicate": -880987.0018157645,
+        "Fe_metal": -165525.7449558792,
+        "H2_gas": -390836.2201646308,
+        "CO_gas": -662818.1606452673,
+        "CO2_gas": -1030668.4092785008,
+        "CH4_gas": -672808.9833999571,
+        "O2_gas": -573483.2723555814,
+        "H2O_gas": -792750.489883831,
+        "Fe_gas": -75964.24901098758,
+        "Mg_gas": -260421.4812832868,
+        "SiO_gas": -691555.6671806456,
+        "Na_gas": -312030.0078122014
+      },
+      "source_delta_g_over_rt": [
+        10.52771299222915,
+        7.260736674639682,
+        3.249443914352855,
+        -12.169064234160619,
+        -0.40262502132770506,
+        1.5897635376138297,
+        -17.250599983198285,
+        -4.151116525218795,
+        -24.819095156156735,
+        -5.894503775531312,
+        11.22436523650863,
+        11.834455137989886,
+        10.828933811295123,
+        -1.5259056036776606,
+        12.500076,
+        13.118510638297876,
+        15.769766824999174,
+        14.671154536328222
+      ]
+    },
+    {
+      "id": "isothermal_3000K_1bar",
+      "T_K": 3000.0,
+      "P_bar": 1.0,
+      "shomate": {
+        "MgO_silicate": [
+          -532.61,
+          66.944,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          -580.9944,
+          93.74712,
+          -532.6106
+        ],
+        "SiO2_silicate": [
+          -902.661,
+          85.772,
+          -1.6e-05,
+          4e-06,
+          -3.809081e-07,
+          -1.7e-05,
+          -952.87,
+          113.344,
+          -902.661
+        ],
+        "MgSiO3_silicate": [
+          -1494.86,
+          146.44,
+          -1.499926e-07,
+          6.220145e-08,
+          -8.733222e-09,
+          -3.144171e-08,
+          -1563.306,
+          220.6679,
+          -1494.864
+        ],
+        "FeO_silicate": [
+          -249.5321,
+          68.1992,
+          -4.501232e-10,
+          1.195227e-10,
+          -1.064302e-11,
+          -3.09268e-10,
+          -281.4326,
+          137.8377,
+          -249.5321
+        ],
+        "Na2O_silicate": [
+          -372.84,
+          104.6,
+          9.909135e-10,
+          -6.022074e-10,
+          1.113058e-10,
+          2.362827e-11,
+          -404.0296,
+          218.1902,
+          -372.8434
+        ],
+        "Fe_metal": [
+          12.4,
+          46.024,
+          -1.884667e-08,
+          6.09475e-09,
+          -6.640301e-10,
+          -8.246121e-09,
+          -10.80543,
+          72.54094,
+          12.39502
+        ],
+        "H2_gas": [
+          0.0,
+          43.41356,
+          -4.293079,
+          1.272428,
+          -0.096876,
+          -20.533862,
+          -38.515158,
+          162.081354,
+          0.0
+        ],
+        "CO_gas": [
+          -110.53,
+          35.1507,
+          1.300095,
+          -0.205921,
+          0.01355,
+          -3.28278,
+          -127.8375,
+          231.712,
+          -110.5271
+        ],
+        "CO2_gas": [
+          -393.51,
+          58.16639,
+          2.720074,
+          -0.492289,
+          0.038844,
+          -6.447293,
+          -425.9186,
+          263.6125,
+          -393.5224
+        ],
+        "CH4_gas": [
+          -74.873,
+          85.81217,
+          11.26467,
+          -2.114146,
+          0.13819,
+          -26.42221,
+          -153.5327,
+          224.4143,
+          -74.8731
+        ],
+        "O2_gas": [
+          0.0,
+          20.91111,
+          10.72071,
+          -2.020498,
+          0.146449,
+          9.245722,
+          5.337651,
+          237.6185,
+          0.0
+        ],
+        "H2O_gas": [
+          -241.83,
+          41.96426,
+          8.622053,
+          -1.49978,
+          0.098119,
+          -11.15764,
+          -272.1797,
+          219.7809,
+          -241.8264
+        ],
+        "Fe_gas": [
+          415.47,
+          11.29253,
+          6.989707,
+          -1.110305,
+          0.122354,
+          5.689278,
+          423.538,
+          206.3591,
+          415.4716
+        ],
+        "Mg_gas": [
+          147.1,
+          47.60848,
+          -15.40875,
+          2.875965,
+          -0.120806,
+          -27.01764,
+          97.40017,
+          177.2305,
+          147.1002
+        ],
+        "SiO_gas": [
+          -100.42,
+          35.69893,
+          1.731252,
+          -0.509348,
+          0.059404,
+          -1.248055,
+          -114.6019,
+          249.1911,
+          -100.416
+        ],
+        "Na_gas": [
+          107.3,
+          20.80573,
+          0.277206,
+          -0.392086,
+          0.119634,
+          -0.008879,
+          101.0386,
+          178.7095,
+          107.2999
+        ]
+      },
+      "source_mu0_J_mol": {
+        "MgO_silicate": -882039.6631577939,
+        "SiO2_silicate": -1318276.4602664602,
+        "MgSiO3_silicate": -2268628.0501984246,
+        "FeO_silicate": -715121.5375903915,
+        "Na2O_silicate": -1089541.3361865573,
+        "Fe_metal": -242038.86585774308,
+        "H2_gas": -519933.3986991577,
+        "CO_gas": -837843.3884258582,
+        "CO2_gas": -1243164.1431910524,
+        "CH4_gas": -889868.3422711643,
+        "O2_gas": -755384.5646637385,
+        "H2O_gas": -974793.5002459241,
+        "Fe_gas": -227113.0581844598,
+        "Mg_gas": -386659.9605184298,
+        "SiO_gas": -878431.7954042413,
+        "Na_gas": -441533.99162479886
+      },
+      "source_delta_g_over_rt": [
+        7.583180239613331,
+        4.946720308128334,
+        2.7386787702119815,
+        -7.426604453289333,
+        0.9687147967637791,
+        0.9310119059363331,
+        -13.064402903714978,
+        -1.1076471485963726,
+        -24.461374885451523,
+        -3.0937184501624255,
+        4.422662940485118,
+        4.718181066428655,
+        2.4917378061472557,
+        -6.864301288740203,
+        12.500076,
+        13.355000000000002,
+        15.712104334212729,
+        14.613492045541777
+      ]
+    }
+  ]
+}

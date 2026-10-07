@@ -1,11 +1,12 @@
 """Phase-aware thermodynamic potential functions."""
 
-import jax.numpy as jnp
 from typing import Optional
+
+import jax.numpy as jnp
+from jax.scipy.special import logsumexp
 
 from exogibbs.thermo.models import ChemicalSetup
 from exogibbs.utils.constants import R_gas_constant_si
-from jax.scipy.special import logsumexp
 
 
 def gibbs_energies(
@@ -48,8 +49,15 @@ def gibbs_energies(
         raise ValueError("temperatures and pressures must be 1D arrays.")
     if temperatures.shape[0] != pressures.shape[0]:
         raise ValueError("temperatures and pressures must have the same length.")
-    if ln_ngas.ndim != 2 or ln_ngas.shape[0] != temperatures.shape[0]:
-        raise ValueError("ln_ngas must have shape (N, K_gas).")
+    gas_species_count = int(chem_gas.formula_matrix.shape[1])
+    expected_gas_shape = (temperatures.shape[0], gas_species_count)
+    if ln_ngas.shape != expected_gas_shape:
+        raise ValueError(
+            f"ln_ngas must have shape {expected_gas_shape}, got {ln_ngas.shape}."
+        )
+
+    if (chem_cond is None) != (ln_ncond is None):
+        raise ValueError("chem_cond and ln_ncond must be provided together.")
 
     if nomalize:
         RT = jnp.ones_like(temperatures)
@@ -57,20 +65,34 @@ def gibbs_energies(
         RT = R_gas_constant_si * temperatures
 
     ln_ntot = logsumexp(ln_ngas, axis=1)
+    ln_mole_fractions = ln_ngas - ln_ntot[:, None]
+    ln_mole_fractions = jnp.where(
+        jnp.isneginf(ln_ngas),
+        0.0,
+        ln_mole_fractions,
+    )
     hvector_gas = (
         chem_gas.hvector_func(temperatures)
         + jnp.log(pressures)[:, None]
-        + ln_ngas
-        - ln_ntot[:, None]
+        + ln_mole_fractions
     )
     g_gas = jnp.sum(jnp.exp(ln_ngas) * hvector_gas, axis=1) * RT
+    g_gas = jnp.where(jnp.isneginf(ln_ntot), jnp.nan, g_gas)
 
     if chem_cond is None or ln_ncond is None:
         return g_gas
 
     ln_ncond = jnp.asarray(ln_ncond)
-    if ln_ncond.ndim != 2 or ln_ncond.shape[0] != temperatures.shape[0]:
-        raise ValueError("ln_ncond must have shape (N, K_cond).")
+    condensate_species_count = int(chem_cond.formula_matrix.shape[1])
+    expected_condensate_shape = (
+        temperatures.shape[0],
+        condensate_species_count,
+    )
+    if ln_ncond.shape != expected_condensate_shape:
+        raise ValueError(
+            "ln_ncond must have shape "
+            f"{expected_condensate_shape}, got {ln_ncond.shape}."
+        )
 
     hvector_cond = chem_cond.hvector_func(temperatures)
     g_cond = jnp.sum(jnp.exp(ln_ncond) * hvector_cond, axis=1) * RT

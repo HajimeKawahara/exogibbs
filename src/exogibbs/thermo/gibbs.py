@@ -9,31 +9,32 @@ from exogibbs.utils.interpolation import interp1d
 
 from exogibbs.utils.constants import R_gas_constant_si
 
-_INF_STRINGS = {"inf", "Inf", "INFINITE"}
-_NINF_STRINGS = {"-inf", "-Inf", "-INFINITE"}
+_INF_STRINGS = {"inf", "+inf", "infinity", "+infinity", "infinite", "+infinite"}
+_NINF_STRINGS = {"-inf", "-infinity", "-infinite"}
 EPS = 1e-20
 LOG_EPS = jnp.log(EPS)
 
 
 def _coerce_to_float(a):
-    """convert "inf" string to np.inf and -inf"""
-    a = np.asarray(a, dtype=object)
+    """Convert numeric and infinity strings to floating-point values."""
 
-    is_str = np.vectorize(lambda x: isinstance(x, str))
-    str_mask = is_str(a)
+    values = np.asarray(a, dtype=object)
 
-    if str_mask.any():
-        strs = a[str_mask]
-        lower = np.char.lower(strs.astype(str))
+    def convert(value):
+        if not isinstance(value, str):
+            return value
+        normalized = value.strip().lower()
+        if normalized in _INF_STRINGS:
+            return np.inf
+        if normalized in _NINF_STRINGS:
+            return -np.inf
+        try:
+            return float(normalized)
+        except ValueError:
+            return np.nan
 
-        # inf / -inf
-        a[str_mask & np.isin(lower, list(_INF_STRINGS))] = np.inf
-        a[str_mask & np.isin(lower, list(_NINF_STRINGS))] = -np.inf
-
-        other_mask = str_mask & ~np.isin(lower, list(_INF_STRINGS | _NINF_STRINGS))
-        a[other_mask] = np.nan
-
-    return a.astype(np.float64)
+    converted = [convert(value) for value in values.ravel()]
+    return np.asarray(converted, dtype=np.float64).reshape(values.shape)
 
 
 def extract_and_pad_gibbs_data(

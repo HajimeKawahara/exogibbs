@@ -1,0 +1,52 @@
+{
+  "audit": "subneptune_taxonomy_provider_pr_audit_20260911_en.md",
+  "implementation_commit": "925f2358c02ebf29d3c947bcb529b2653278f7ba",
+  "exoeos_commit": "0c85dfe28353bf70d7d687e49689e74db556c4b0",
+  "doc_ExoGibbs_commit": "33bc10718f6fc2c404d18a8fb74c360639c58e2f",
+  "original_numerical_records_unchanged": true,
+  "original_archive": "../20260911",
+  "fresh_replay_command": "PYTHONPATH=src:/home/kawahara/exoeos/src JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu python results/subneptune_taxonomy/20260911/verify.py --exoeos-checkout /home/kawahara/exoeos --runtime /tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64 --worker-python /tmp/exoeos-pr3-env/bin/python --output results/subneptune_taxonomy/20260911_audit_fix/revalidated_archive.json",
+  "provider_tests": {
+    "command": "PYTHONPATH=src:/home/kawahara/exoeos/src JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 pytest tests/unittests/examples/metal_silicate_hydrogen_test.py tests/unittests/examples/metal_silicate_native_test.py tests/unittests/interop tests/unittests/examples/metal_silicate_full_potential_test.py tests/unittests/examples/metal_silicate_melts_coupled_test.py tests/unittests/examples/metal_silicate_melts_archive_test.py -q --junitxml=/tmp/exogibbs-audit-provider.xml",
+    "result": "88 passed in 38.75s",
+    "skipped": 0
+  },
+  "documentation": {
+    "command": "./update_doc.sh -D sphinx_gallery_conf.plot_gallery=0",
+    "result": "build succeeded, 86 warnings",
+    "new_page_warnings": 0,
+    "japanese": "TeX structural and math/command checks passed; full Japanese PDF not built because XeLaTeX and required packages are unavailable."
+  },
+  "code_sha256": {
+    ".github/workflows/main.yml": "6fbd85bf7ceb8212776bbdee7cabdf2cc7ffb66a9d770e9cce8466650d2f9e38",
+    "examples/metal_silicate/revalidate_archive.py": "20524e7b12d28a2a3daa0dab99e93258a1ac7262fc3142d6c03cba0bab8050b4",
+    "examples/metal_silicate/revalidate_melts_archive.py": "c5196797f6e3b20db43182798a6a5109e6d66d7efe66ea6009b7afccca4b02d4",
+    "examples/metal_silicate/sulfide.py": "076c29e34b9a7c9fe58e732938a7e7c066c076e603e6e3edfad57d1b2a4a86d6"
+  },
+  "github_full_suite": {
+    "head_commit": "925f2358c02ebf29d3c947bcb529b2653278f7ba",
+    "job_url": "https://github.com/HajimeKawahara/exogibbs/actions/runs/34565653460/job/103157124685",
+    "result": "1313 passed, 18 skipped, 573 warnings in 783.38s",
+    "collection_count": 1331,
+    "note": "Ordinary optional-dependency job; the separate pinned provider job passed 88 tests with zero skips."
+  },
+  "full_suite": {
+    "command": "PYTHONPATH=src:/home/kawahara/exoeos/src JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 pytest tests/unittests -q --junitxml=/tmp/exogibbs-audit-full.xml",
+    "result": "1330 passed, 1 skipped, 24 warnings in 1265.77s (0:21:05)",
+    "collection_count": 1331,
+    "skips": [
+      {
+        "type": "pytest.skip",
+        "message": "setuptools-scm generated version module is unavailable"
+      }
+    ],
+    "collection_note": "All new regression files existed before full-suite collection."
+  },
+  "file_sha256": {
+    "README_ja.md": "8e0754ef911de8a7c6ee0c358fbc5e8285e030233cdc6d85392301abb7a8eee7",
+    "github_provider_ci.json": "77d4c0cb65cd0e39424f1f0f7cedebb313917e066599488fbc7d402fde1bbc60",
+    "pytest_full.log": "2e2790ceeafaa2af483f823ac77d66d4e54a84a5d41a7b53f8dddbcb26399aae",
+    "pytest_provider.log": "1171691e0a08cc0bd00a9ec75d7b9e75203542f945c7c6de293e95822b576d90",
+    "revalidated_archive.json": "cf6199e6803a45aed2a11f5330f95827dec25babb6566772336f564f141bf2ab"
+  }
+}

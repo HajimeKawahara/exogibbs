@@ -1,0 +1,203 @@
+{
+  "command": [
+    "examples/metal_silicate/run_m2_solid_global.py",
+    "--saved-physical-audit",
+    "/tmp/stage2-expanded-physical-results-20260927/janaf_250_physical.json",
+    "--exoeos-checkout",
+    "/tmp/stage2-solid-eos-20260927",
+    "--runtime",
+    "/tmp/exoeos-pr3-melts/runtime/alphamelts-py-2.3.2-ubuntu_22_04-x86_64",
+    "--python",
+    "/tmp/exoeos-pr3-env/bin/python",
+    "--max-nodes",
+    "5000",
+    "--output-directory",
+    "/tmp/stage2-solid-janaf250-frozen"
+  ],
+  "source_path": "/tmp/stage2-expanded-physical-results-20260927/janaf_250_physical.json",
+  "source_sha256": "7ccb55f29e22a46e9520a61c3285fd871c69473f2ee08951ac350a0ee6a205e5",
+  "liquid_model": "published",
+  "gibbs_commit": "d7e44371cee1ce8cdda0e2f86b76798909b20032",
+  "exoeos_commit": "113ae4d306aea81c86f78267b1d9074030bda3f1",
+  "source_hashes": {
+    "examples/metal_silicate/run_m2_solid_global.py": "9a616e097acb32e287ac2eb544bc33922fb8deb32ec23228d90f519d5a113cb8",
+    "examples/metal_silicate/m2_solid_global.py": "b29545dc2603a5cbd87128a48ac97f2877cac601800a464e1e4e721edbad979e",
+    "examples/metal_silicate/m2_liquid_global.py": "1698ee5784054a5d0590ba7ca3678ecc7327ed09b56e3368fd906945731050a0"
+  },
+  "provider_hashes": {
+    "examples/melts_solid_mixing.py": "df51c0597b6aecd96e6a03874b61727520eb4c72eff240cb2bd655d671eacb20",
+    "examples/m2_solid_mixing/parameters.json": "abf8e929122bba24d81d3505310dea95f6f6f65f8655e4b804171341b057d808",
+    "examples/melts_liquid_evaluator.py": "9f0248b0b6eb1f8b2ec338f0b374e4af83738813f57569fcee02c6534023c436"
+  },
+  "max_nodes": 5000,
+  "new_pressure_root": false,
+  "fresh_native_standard_states": true,
+  "completed": true,
+  "elapsed_seconds": 252.16390585899353,
+  "phases": [
+    {
+      "phase": "hornblende",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 15.023289270999392,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "biotite",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 13.414402013633682,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "garnet",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 1.1450600960228277,
+      "node_count": 3,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "alkali-feldspar",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 2.4310897967619858,
+      "node_count": 3,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "kalsilite",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 8.395402432686582,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "leucite",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 1.17668478178762,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "alloy-solid",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 0.229346407814021,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "alloy-liquid",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 0.044063104049612146,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "cummingtonite",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 9.851045018232748,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "olivine",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 0.001680913718177476,
+      "node_count": 9,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "nepheline",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 4.6654114120715455,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "clinoamphibole",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 4.006168956613091,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "orthoamphibole",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 3.6364685121931437,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "melilite",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 1.886236689369907,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "ortho-oxide",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 0.9438222382490604,
+      "node_count": 3,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "rhm-oxide",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 0.09673057331766034,
+      "node_count": 59,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "plagioclase",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 1.9316251970999498,
+      "node_count": 1,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "clinopyroxene",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 0.0072130329361661605,
+      "node_count": 515,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "orthopyroxene",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 0.00273806244512595,
+      "node_count": 735,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    },
+    {
+      "phase": "spinel",
+      "formal_global_insertion_bound_accepted": true,
+      "lower_bound_rt_per_formula_unit": 0.007074483570600416,
+      "node_count": 311,
+      "unresolved_box_count": 0,
+      "bound_within_requested_tolerance": true
+    }
+  ],
+  "declared_models": 20,
+  "accepted_models": 20,
+  "native_binary_error_bound_certified": false,
+  "global_empirical_stability_certified": false
+}

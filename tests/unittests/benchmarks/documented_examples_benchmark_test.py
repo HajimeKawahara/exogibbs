@@ -72,7 +72,7 @@ def test_manifest_covers_every_documented_example() -> None:
             for artifact in case.input_artifacts
         )
 
-    assert sum(len(case.expected_phases) for case in CASES) == 14
+    assert sum(len(case.expected_phases) for case in CASES) == 16
 
 
 @pytest.mark.parametrize(
@@ -244,6 +244,26 @@ def test_timing_collector_aggregates_and_restores_hooks(
                 "cumulative_function_evaluations": 7,
                 "round_count": 2,
                 "termination_reason": "accepted",
+                "rounds": (
+                    {
+                        "selected_normalized_initializer": (
+                            "capacity_regularized"
+                        ),
+                        "regularized_normalized_initializer_attempt_count": 1,
+                        "regularized_normalized_initializer_function_evaluations": 3,
+                        "unregularized_normalized_initializer_attempt_count": 0,
+                        "unregularized_normalized_initializer_function_evaluations": 0,
+                        "raw_normalized_initializer_retry_count": 0,
+                    },
+                    {
+                        "selected_normalized_initializer": "unregularized",
+                        "regularized_normalized_initializer_attempt_count": 0,
+                        "regularized_normalized_initializer_function_evaluations": 0,
+                        "unregularized_normalized_initializer_attempt_count": 1,
+                        "unregularized_normalized_initializer_function_evaluations": 4,
+                        "raw_normalized_initializer_retry_count": 1,
+                    },
+                ),
             }
         },
     )
@@ -323,6 +343,30 @@ def test_timing_collector_aggregates_and_restores_hooks(
     assert summary["zero_barrier"]["host_wall_seconds"] == 1.0
     assert summary["zero_barrier"]["function_evaluations"] == 7
     assert summary["zero_barrier"]["calls"][0]["active_set_round_count"] == 2
+    assert summary["zero_barrier"]["calls"][0][
+        "initial_support_indices"
+    ] == (2,)
+    assert summary["zero_barrier"]["calls"][0][
+        "final_support_indices"
+    ] == (2,)
+    assert summary["zero_barrier"]["calls"][0][
+        "selected_normalized_initializers"
+    ] == ("capacity_regularized", "unregularized")
+    assert summary["zero_barrier"]["calls"][0][
+        "regularized_normalized_initializer_attempt_count"
+    ] == 1
+    assert summary["zero_barrier"]["calls"][0][
+        "regularized_normalized_initializer_function_evaluations"
+    ] == 3
+    assert summary["zero_barrier"]["calls"][0][
+        "unregularized_normalized_initializer_attempt_count"
+    ] == 1
+    assert summary["zero_barrier"]["calls"][0][
+        "unregularized_normalized_initializer_function_evaluations"
+    ] == 4
+    assert summary["zero_barrier"]["calls"][0][
+        "raw_normalized_initializer_retry_count"
+    ] == 1
     solver_budget = summary["solver_budget"]
     assert solver_budget["schema"] == SOLVER_BUDGET_SCHEMA
     assert solver_budget["wall_seconds"] == 7.0

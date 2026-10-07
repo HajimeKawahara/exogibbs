@@ -46,8 +46,8 @@ def test_equilibrium_profile_jit_under_grad():
     assert jnp.isfinite(g)
 
 
-def test_equilibrium_forward_mode_jvp_is_explicitly_unsupported():
-    """The gas solver's custom VJP intentionally supports reverse mode only."""
+def test_equilibrium_forward_mode_jvp_matches_reverse_mode():
+    """The public gas equilibrium API supports consistent forward autodiff."""
 
     setup = chemsetup()
     b = setup.element_vector_reference
@@ -55,5 +55,16 @@ def test_equilibrium_forward_mode_jvp_is_explicitly_unsupported():
     def f(temperature):
         return jnp.sum(equilibrium(setup, temperature, 1.0, b).ln_n)
 
-    with pytest.raises(TypeError, match="forward-mode autodiff"):
-        jax.jvp(f, (300.0,), (1.0,))
+    _value, forward_derivative = jax.jvp(f, (300.0,), (1.0,))
+    reverse_derivative = jax.grad(f)(300.0)
+    compiled_derivative = jax.jit(
+        lambda temperature: jax.jvp(
+            f, (temperature,), (jnp.ones_like(temperature),)
+        )[1]
+    )(300.0)
+
+    assert jnp.isfinite(forward_derivative)
+    assert forward_derivative == pytest.approx(
+        reverse_derivative, rel=1.0e-10, abs=1.0e-10
+    )
+    assert compiled_derivative == pytest.approx(forward_derivative)

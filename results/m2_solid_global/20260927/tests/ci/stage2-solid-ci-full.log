@@ -1,0 +1,860 @@
+pytest	Set up job	﻿2026-09-27T04:42:33.3322501Z Current runner version: '2.337.0'
+pytest	Set up job	2026-09-27T04:42:33.3350366Z ##[group]Runner Image Provisioner
+pytest	Set up job	2026-09-27T04:42:33.3351402Z Hosted Compute Agent
+pytest	Set up job	2026-09-27T04:42:33.3352023Z Version: 20260828.587
+pytest	Set up job	2026-09-27T04:42:33.3352724Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+pytest	Set up job	2026-09-27T04:42:33.3353585Z Build Date: 2026-08-28T16:44:25Z
+pytest	Set up job	2026-09-27T04:42:33.3354297Z Worker ID: {a8405b0a-d5f3-4da3-b390-6c23b5d88003}
+pytest	Set up job	2026-09-27T04:42:33.3355185Z Azure Region: northcentralus
+pytest	Set up job	2026-09-27T04:42:33.3355834Z ##[endgroup]
+pytest	Set up job	2026-09-27T04:42:33.3357203Z ##[group]Operating System
+pytest	Set up job	2026-09-27T04:42:33.3357884Z Ubuntu
+pytest	Set up job	2026-09-27T04:42:33.3358693Z 24.04.5
+pytest	Set up job	2026-09-27T04:42:33.3359334Z LTS
+pytest	Set up job	2026-09-27T04:42:33.3359901Z ##[endgroup]
+pytest	Set up job	2026-09-27T04:42:33.3360468Z ##[group]Runner Image
+pytest	Set up job	2026-09-27T04:42:33.3361156Z Image: ubuntu-24.04
+pytest	Set up job	2026-09-27T04:42:33.3361796Z Version: 20260920.314.1
+pytest	Set up job	2026-09-27T04:42:33.3362975Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260920.314/images/ubuntu/Ubuntu2404-Readme.md
+pytest	Set up job	2026-09-27T04:42:33.3364816Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260920.314
+pytest	Set up job	2026-09-27T04:42:33.3365911Z ##[endgroup]
+pytest	Set up job	2026-09-27T04:42:33.3367316Z ##[group]GITHUB_TOKEN Permissions
+pytest	Set up job	2026-09-27T04:42:33.3369722Z Checks: write
+pytest	Set up job	2026-09-27T04:42:33.3370365Z Contents: read
+pytest	Set up job	2026-09-27T04:42:33.3371054Z Metadata: read
+pytest	Set up job	2026-09-27T04:42:33.3371653Z PullRequests: write
+pytest	Set up job	2026-09-27T04:42:33.3372272Z ##[endgroup]
+pytest	Set up job	2026-09-27T04:42:33.3374420Z Secret source: Actions
+pytest	Set up job	2026-09-27T04:42:33.3375420Z Cache mode: write
+pytest	Set up job	2026-09-27T04:42:33.3376281Z Prepare workflow directory
+pytest	Set up job	2026-09-27T04:42:33.3793242Z Prepare all required actions
+pytest	Set up job	2026-09-27T04:42:33.3860212Z Getting action download info
+pytest	Set up job	2026-09-27T04:42:33.6480503Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+pytest	Set up job	2026-09-27T04:42:33.7487784Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+pytest	Set up job	2026-09-27T04:42:33.8387741Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+pytest	Set up job	2026-09-27T04:42:33.9510840Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+pytest	Set up job	2026-09-27T04:42:34.2706928Z Download action repository 'EnricoMi/publish-unit-test-result-action@v2' (SHA:d0a4676d0e0b938bc201470d88276b7c74c712b3)
+pytest	Set up job	2026-09-27T04:42:34.8199308Z Complete job name: pytest
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	﻿2026-09-27T04:42:34.8704871Z ##[group]Pull down action image 'ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0'
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:34.8810811Z ##[command]/usr/bin/docker pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.3251779Z v2.24.0: Pulling from enricomi/publish-unit-test-result-action
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4132139Z 9b70e313681f: Pulling fs layer
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4133335Z 352f17d06b0d: Pulling fs layer
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4134308Z 294fc1a4747b: Pulling fs layer
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4135278Z 074f4a30e8b8: Pulling fs layer
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4136303Z 849a71fe3c5c: Pulling fs layer
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4137326Z 96b937d31921: Pulling fs layer
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4138508Z 61a2c2c67880: Pulling fs layer
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4139603Z 9bffe9dde7f3: Pulling fs layer
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4140576Z 992632f797a1: Pulling fs layer
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4141672Z 074f4a30e8b8: Waiting
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4142766Z 849a71fe3c5c: Waiting
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4143810Z 96b937d31921: Waiting
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4144846Z 61a2c2c67880: Waiting
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4146251Z 9bffe9dde7f3: Waiting
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.4147411Z 992632f797a1: Waiting
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.5140398Z 352f17d06b0d: Verifying Checksum
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.5142038Z 352f17d06b0d: Download complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.5330615Z 9b70e313681f: Verifying Checksum
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.5334167Z 9b70e313681f: Download complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.5670079Z 294fc1a4747b: Verifying Checksum
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.5672373Z 294fc1a4747b: Download complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.6051005Z 074f4a30e8b8: Verifying Checksum
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.6053478Z 074f4a30e8b8: Download complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.6222548Z 849a71fe3c5c: Verifying Checksum
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.6224464Z 849a71fe3c5c: Download complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.6509750Z 96b937d31921: Verifying Checksum
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.6511785Z 96b937d31921: Download complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.6521221Z 9b70e313681f: Pull complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.7122021Z 9bffe9dde7f3: Verifying Checksum
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.7123696Z 9bffe9dde7f3: Download complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.7390486Z 992632f797a1: Verifying Checksum
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.7733942Z 992632f797a1: Download complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.7735529Z 61a2c2c67880: Verifying Checksum
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.7737399Z 61a2c2c67880: Download complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:35.9004868Z 352f17d06b0d: Pull complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:36.5709661Z 294fc1a4747b: Pull complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:36.5796279Z 074f4a30e8b8: Pull complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:36.5920688Z 849a71fe3c5c: Pull complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:36.5998104Z 96b937d31921: Pull complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:37.5200888Z 61a2c2c67880: Pull complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:37.5337522Z 9bffe9dde7f3: Pull complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:37.5405893Z 992632f797a1: Pull complete
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:37.5439211Z Digest: sha256:4b0f12ca591495ab7c177753bc4142f1b679f7f95df9595f19c31a986021001d
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:37.5448862Z Status: Downloaded newer image for ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:37.5456230Z ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0
+pytest	Pull ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0	2026-09-27T04:42:37.5490441Z ##[endgroup]
+pytest	Checkout (with full history & tags for setuptools-scm)	﻿2026-09-27T04:42:37.5800422Z ##[group]Run actions/checkout@v4
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5800982Z with:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5801209Z   fetch-depth: 0
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5801468Z   repository: HajimeKawahara/exogibbs
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5803887Z   token: ***
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5804111Z   ssh-strict: true
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5804339Z   ssh-user: git
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5804564Z   persist-credentials: true
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5804821Z   clean: true
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5805048Z   sparse-checkout-cone-mode: true
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5805328Z   fetch-tags: false
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5805552Z   show-progress: true
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5805769Z   lfs: false
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5805966Z   submodules: false
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5806188Z   set-safe-directory: true
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5806443Z   allow-unsafe-pr-checkout: false
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.5806875Z ##[endgroup]
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.6879018Z Syncing repository: HajimeKawahara/exogibbs
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.6880981Z ##[group]Getting Git version info
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.6881662Z Working directory is '/home/runner/work/exogibbs/exogibbs'
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.6882717Z [command]/usr/bin/git version
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.6921897Z git version 2.55.0
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.6942165Z ##[endgroup]
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.6956185Z Temporarily overriding HOME='/home/runner/work/_temp/0bf61701-06e8-4614-89e4-7a00dc823176' before making global git config changes
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.6957599Z Adding repository directory to the temporary git global config as a safe directory
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.6961285Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/exogibbs/exogibbs
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7012087Z Deleting the contents of '/home/runner/work/exogibbs/exogibbs'
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7016622Z ##[group]Initializing the repository
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7022292Z [command]/usr/bin/git init /home/runner/work/exogibbs/exogibbs
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7106217Z hint: Using 'master' as the name for the initial branch. This default branch name
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7107519Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7108828Z hint: to use in all of your new repositories, which will suppress this warning,
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7109818Z hint: call:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7110351Z hint:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7110862Z hint: 	git config --global init.defaultBranch <name>
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7111387Z hint:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7111896Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7112801Z hint: 'development'. The just-created branch can be renamed via this command:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7114650Z hint:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7115003Z hint: 	git branch -m <name>
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7115382Z hint:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7115905Z hint: Disable this message with "git config set advice.defaultBranchName false"
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7116834Z Initialized empty Git repository in /home/runner/work/exogibbs/exogibbs/.git/
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7126590Z [command]/usr/bin/git remote add origin https://github.com/HajimeKawahara/exogibbs
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7167862Z ##[endgroup]
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7169035Z ##[group]Disabling automatic garbage collection
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7172691Z [command]/usr/bin/git config --local gc.auto 0
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7206617Z ##[endgroup]
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7207547Z ##[group]Setting up auth
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7214857Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7250135Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7592761Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7638898Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7899261Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.7937619Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.8185496Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.8229062Z ##[endgroup]
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.8229743Z ##[group]Fetching the repository
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:37.8239177Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +cc68e3a5af4c5142757212c4a74f8b5ee09fb96f:refs/remotes/pull/235/merge
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6820553Z From https://github.com/HajimeKawahara/exogibbs
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6821682Z  * [new branch]      develop                                  -> origin/develop
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6822599Z  * [new branch]      docs/cns-reference                       -> origin/docs/cns-reference
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6823355Z  * [new branch]      docs/subneptune-validation               -> origin/docs/subneptune-validation
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6824123Z  * [new branch]      examples/restore-documented-cns          -> origin/examples/restore-documented-cns
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6824819Z  * [new branch]      feat/cns-foundation                      -> origin/feat/cns-foundation
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6825424Z  * [new branch]      feat/cns-he-source                       -> origin/feat/cns-he-source
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6826190Z  * [new branch]      feat/cns-melts-carbon                    -> origin/feat/cns-melts-carbon
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6827109Z  * [new branch]      feat/cns-reduced-source                  -> origin/feat/cns-reduced-source
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6827899Z  * [new branch]      feat/cns-source-scans                    -> origin/feat/cns-source-scans
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6828926Z  * [new branch]      feat/finite-hydrogen-gas-exchange        -> origin/feat/finite-hydrogen-gas-exchange
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6830213Z  * [new branch]      feat/fixed-phase-local-equilibrium       -> origin/feat/fixed-phase-local-equilibrium
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6831283Z  * [new branch]      feat/m1-boundary-contract                -> origin/feat/m1-boundary-contract
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6832279Z  * [new branch]      feat/m1-chemistry-connection             -> origin/feat/m1-chemistry-connection
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6833253Z  * [new branch]      feat/m2-common-gas-contact               -> origin/feat/m2-common-gas-contact
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6834391Z  * [new branch]      feat/m2-common-gibbs                     -> origin/feat/m2-common-gibbs
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6835153Z  * [new branch]      feat/m2-common-reference-transfer        -> origin/feat/m2-common-reference-transfer
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6835849Z  * [new branch]      feat/m2-constrained-metal-selection      -> origin/feat/m2-constrained-metal-selection
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6836518Z  * [new branch]      feat/m2-expanded-contact                 -> origin/feat/m2-expanded-contact
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6837242Z  * [new branch]      feat/m2-finite-background-condensates    -> origin/feat/m2-finite-background-condensates
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6837931Z  * [new branch]      feat/m2-finite-background-gas            -> origin/feat/m2-finite-background-gas
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6838949Z  * [new branch]      feat/m2-global-stability                 -> origin/feat/m2-global-stability
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6839976Z  * [new branch]      feat/m2-host-stability                   -> origin/feat/m2-host-stability
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6840963Z  * [new branch]      feat/m2-host-stability-search            -> origin/feat/m2-host-stability-search
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6842112Z  * [new branch]      feat/m2-incipient-metal-diagnostics      -> origin/feat/m2-incipient-metal-diagnostics
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6843075Z  * [new branch]      feat/m2-local-convexity                  -> origin/feat/m2-local-convexity
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6843646Z  * [new branch]      feat/m2-metal-selection                  -> origin/feat/m2-metal-selection
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6844699Z  * [new branch]      feat/m2-omitted-gas-screen               -> origin/feat/m2-omitted-gas-screen
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6845708Z  * [new branch]      feat/m2-oxygen-standard-scenario         -> origin/feat/m2-oxygen-standard-scenario
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6846969Z  * [new branch]      feat/m2-physical-integration             -> origin/feat/m2-physical-integration
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6848067Z  * [new branch]      feat/m2-solid-model-bounds               -> origin/feat/m2-solid-model-bounds
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6849268Z  * [new branch]      feat/m2-standards-hydrogen-audit         -> origin/feat/m2-standards-hydrogen-audit
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6850108Z  * [new branch]      feat/metal-silicate-reference            -> origin/feat/metal-silicate-reference
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6850810Z  * [new branch]      feat/native-metal-equilibrium-reference  -> origin/feat/native-metal-equilibrium-reference
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6851506Z  * [new branch]      feat/solution-activity-adapter           -> origin/feat/solution-activity-adapter
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6852142Z  * [new branch]      feat/subneptune-finite-sulfide           -> origin/feat/subneptune-finite-sulfide
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6852768Z  * [new branch]      feat/subneptune-hydrogen-closure         -> origin/feat/subneptune-hydrogen-closure
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6853388Z  * [new branch]      feat/subneptune-melts-coupling           -> origin/feat/subneptune-melts-coupling
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6854034Z  * [new branch]      feat/subneptune-sulfur-carbon-source     -> origin/feat/subneptune-sulfur-carbon-source
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6854676Z  * [new branch]      fix/cns-default-seed-scale               -> origin/fix/cns-default-seed-scale
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6855290Z  * [new branch]      fix/m1-contact-inventory-bounds          -> origin/fix/m1-contact-inventory-bounds
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6855945Z  * [new branch]      fix/m1-retained-column-convergence       -> origin/fix/m1-retained-column-convergence
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6856556Z  * [new branch]      fix/m1-zero-condensate                   -> origin/fix/m1-zero-condensate
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6857692Z  * [new branch]      fix/m2-atmosphere-scalar-gradient        -> origin/fix/m2-atmosphere-scalar-gradient
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6858865Z  * [new branch]      fix/m2-metal-selection-develop           -> origin/fix/m2-metal-selection-develop
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6859877Z  * [new branch]      fix/m2-published-liquid-audit            -> origin/fix/m2-published-liquid-audit
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6860810Z  * [new branch]      fix/m2-selected-host-stability           -> origin/fix/m2-selected-host-stability
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6862115Z  * [new branch]      fix/optimizer-support-search             -> origin/fix/optimizer-support-search
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6863232Z  * [new branch]      integrate/m2-metal-selection-develop     -> origin/integrate/m2-metal-selection-develop
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6864382Z  * [new branch]      integrate/optimizer-stack-develop        -> origin/integrate/optimizer-stack-develop
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6865526Z  * [new branch]      integrate/support-contracts-develop      -> origin/integrate/support-contracts-develop
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6866656Z  * [new branch]      integration/m2-readiness-develop         -> origin/integration/m2-readiness-develop
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6867727Z  * [new branch]      log_domain_rainout_warm_start            -> origin/log_domain_rainout_warm_start
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6868707Z  * [new branch]      main                                     -> origin/main
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6869706Z  * [new branch]      perf/m2-canonical-interior-seed          -> origin/perf/m2-canonical-interior-seed
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6870715Z  * [new branch]      perf/m2-warm-atmosphere                  -> origin/perf/m2-warm-atmosphere
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6871730Z  * [new branch]      refactor/exact-attempt-contracts         -> origin/refactor/exact-attempt-contracts
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6872879Z  * [new branch]      refactor/explicit-support-initialization -> origin/refactor/explicit-support-initialization
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6874382Z  * [new branch]      refactor/finite-barrier-lifecycle-contracts -> origin/refactor/finite-barrier-lifecycle-contracts
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6875572Z  * [new branch]      refactor/optimizer-exact-contract        -> origin/refactor/optimizer-exact-contract
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6876596Z  * [new branch]      refactor/optimizer-gas-seed              -> origin/refactor/optimizer-gas-seed
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6877531Z  * [new branch]      refactor/post-v06-audit                  -> origin/refactor/post-v06-audit
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6878761Z  * [new branch]      test/optimizer-documented-acceptance     -> origin/test/optimizer-documented-acceptance
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6879853Z  * [new branch]      validation/m2-saved-source-seed          -> origin/validation/m2-saved-source-seed
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6880669Z  * [new tag]         v0.1.0                                   -> v0.1.0
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6881285Z  * [new tag]         v0.2.0                                   -> v0.2.0
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6881816Z  * [new tag]         v0.2.1                                   -> v0.2.1
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6882180Z  * [new tag]         v0.2.2                                   -> v0.2.2
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6882522Z  * [new tag]         v0.2.3                                   -> v0.2.3
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6882861Z  * [new tag]         v0.2.4                                   -> v0.2.4
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6883203Z  * [new tag]         v0.3.0                                   -> v0.3.0
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6883554Z  * [new tag]         v0.3.1                                   -> v0.3.1
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6883899Z  * [new tag]         v0.3.2                                   -> v0.3.2
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6884680Z  * [new tag]         v0.3.3                                   -> v0.3.3
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6885053Z  * [new tag]         v0.3.4                                   -> v0.3.4
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6885402Z  * [new tag]         v0.3.5                                   -> v0.3.5
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6885746Z  * [new tag]         v0.3.6                                   -> v0.3.6
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6886094Z  * [new tag]         v0.3.7                                   -> v0.3.7
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6886593Z  * [new tag]         v0.3.8                                   -> v0.3.8
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6887025Z  * [new tag]         v0.3.9                                   -> v0.3.9
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6887477Z  * [new tag]         v0.4.0                                   -> v0.4.0
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6888049Z  * [new tag]         v0.5.0                                   -> v0.5.0
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6888971Z  * [new tag]         v0.6.0                                   -> v0.6.0
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6889653Z  * [new ref]         cc68e3a5af4c5142757212c4a74f8b5ee09fb96f -> pull/235/merge
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6891482Z ##[endgroup]
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6892099Z ##[group]Determining the checkout info
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6892742Z ##[endgroup]
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6893115Z [command]/usr/bin/git sparse-checkout disable
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6911140Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6953672Z ##[group]Checking out the ref
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.6954312Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/235/merge
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9989345Z Note: switching to 'refs/remotes/pull/235/merge'.
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9989781Z 
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9990087Z You are in 'detached HEAD' state. You can look around, make experimental
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9990831Z changes and commit them, and you can discard any commits you make in this
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9991524Z state without impacting any branches by switching back to a branch.
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9991805Z 
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9992003Z If you want to create a new branch to retain commits you create, you may
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9992454Z do so (now or later) by using -c with the switch command. Example:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9992705Z 
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9992822Z   git switch -c <new-branch-name>
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9992999Z 
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9993341Z Or undo this operation with:
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9993511Z 
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9993600Z   git switch -
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9993730Z 
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9993945Z Turn off this advice by setting config variable advice.detachedHead to false
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9994253Z 
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:39.9994610Z HEAD is now at cc68e3a Merge 1af5821e3c7b8abcf0e8ebdc985ad1440d600021 into 90afae96efdb4a9597a0edb58325ef7d56b6ae41
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:40.0025288Z ##[endgroup]
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:40.0081026Z [command]/usr/bin/git log -1 --format=%H
+pytest	Checkout (with full history & tags for setuptools-scm)	2026-09-27T04:42:40.0112791Z cc68e3a5af4c5142757212c4a74f8b5ee09fb96f
+pytest	Set up Python 3.11	﻿2026-09-27T04:42:40.0360970Z ##[group]Run actions/setup-python@v5
+pytest	Set up Python 3.11	2026-09-27T04:42:40.0361265Z with:
+pytest	Set up Python 3.11	2026-09-27T04:42:40.0361476Z   python-version: 3.11
+pytest	Set up Python 3.11	2026-09-27T04:42:40.0361703Z   check-latest: false
+pytest	Set up Python 3.11	2026-09-27T04:42:40.0363948Z   token: ***
+pytest	Set up Python 3.11	2026-09-27T04:42:40.0364166Z   update-environment: true
+pytest	Set up Python 3.11	2026-09-27T04:42:40.0364419Z   allow-prereleases: false
+pytest	Set up Python 3.11	2026-09-27T04:42:40.0364650Z   freethreaded: false
+pytest	Set up Python 3.11	2026-09-27T04:42:40.0364874Z ##[endgroup]
+pytest	Set up Python 3.11	2026-09-27T04:42:40.1707721Z ##[group]Installed versions
+pytest	Set up Python 3.11	2026-09-27T04:42:40.1806204Z (node:2306) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+pytest	Set up Python 3.11	2026-09-27T04:42:40.1807197Z (Use `node --trace-deprecation ...` to show where the warning was created)
+pytest	Set up Python 3.11	2026-09-27T04:42:40.1807880Z Successfully set up CPython (3.11.16)
+pytest	Set up Python 3.11	2026-09-27T04:42:40.1808591Z ##[endgroup]
+pytest	Install package and test deps	﻿2026-09-27T04:42:40.1977570Z ##[group]Run python -m pip install --upgrade pip wheel
+pytest	Install package and test deps	2026-09-27T04:42:40.1978103Z ^[[36;1mpython -m pip install --upgrade pip wheel^[[0m
+pytest	Install package and test deps	2026-09-27T04:42:40.1978627Z ^[[36;1mpip install -e .^[[0m
+pytest	Install package and test deps	2026-09-27T04:42:40.1978918Z ^[[36;1mpip install pytest matplotlib==3.9.1^[[0m
+pytest	Install package and test deps	2026-09-27T04:42:40.1979275Z ^[[36;1m# if using extras: pip install -e .[test]^[[0m
+pytest	Install package and test deps	2026-09-27T04:42:40.2226388Z shell: /usr/bin/bash -e {0}
+pytest	Install package and test deps	2026-09-27T04:42:40.2226714Z env:
+pytest	Install package and test deps	2026-09-27T04:42:40.2227013Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Install package and test deps	2026-09-27T04:42:40.2227515Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+pytest	Install package and test deps	2026-09-27T04:42:40.2227967Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Install package and test deps	2026-09-27T04:42:40.2228581Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Install package and test deps	2026-09-27T04:42:40.2228983Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Install package and test deps	2026-09-27T04:42:40.2229372Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+pytest	Install package and test deps	2026-09-27T04:42:40.2229704Z ##[endgroup]
+pytest	Install package and test deps	2026-09-27T04:42:40.7229103Z Requirement already satisfied: pip in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (26.2.1)
+pytest	Install package and test deps	2026-09-27T04:42:40.8174476Z Collecting wheel
+pytest	Install package and test deps	2026-09-27T04:42:40.8658170Z   Downloading wheel-0.48.0-py3-none-any.whl.metadata (2.3 kB)
+pytest	Install package and test deps	2026-09-27T04:42:40.8801050Z Collecting packaging>=24.0 (from wheel)
+pytest	Install package and test deps	2026-09-27T04:42:40.8840160Z   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+pytest	Install package and test deps	2026-09-27T04:42:40.8907430Z Downloading wheel-0.48.0-py3-none-any.whl (33 kB)
+pytest	Install package and test deps	2026-09-27T04:42:40.9006626Z Downloading packaging-26.3-py3-none-any.whl (129 kB)
+pytest	Install package and test deps	2026-09-27T04:42:40.9414928Z Installing collected packages: packaging, wheel
+pytest	Install package and test deps	2026-09-27T04:42:41.0517458Z 
+pytest	Install package and test deps	2026-09-27T04:42:41.0539493Z Successfully installed packaging-26.3 wheel-0.48.0
+pytest	Install package and test deps	2026-09-27T04:42:41.4101751Z Obtaining file:///home/runner/work/exogibbs/exogibbs
+pytest	Install package and test deps	2026-09-27T04:42:41.4118091Z   Installing build dependencies: started
+pytest	Install package and test deps	2026-09-27T04:42:42.1383506Z   Installing build dependencies: finished with status 'done'
+pytest	Install package and test deps	2026-09-27T04:42:42.1389488Z   Checking if build backend supports build_editable: started
+pytest	Install package and test deps	2026-09-27T04:42:42.4845384Z   Checking if build backend supports build_editable: finished with status 'done'
+pytest	Install package and test deps	2026-09-27T04:42:42.4852626Z   Getting requirements to build editable: started
+pytest	Install package and test deps	2026-09-27T04:42:43.8733774Z   Getting requirements to build editable: finished with status 'done'
+pytest	Install package and test deps	2026-09-27T04:42:43.8743203Z   Preparing editable metadata (pyproject.toml): started
+pytest	Install package and test deps	2026-09-27T04:42:44.3794239Z   Preparing editable metadata (pyproject.toml): finished with status 'done'
+pytest	Install package and test deps	2026-09-27T04:42:44.4513219Z Collecting jax>=0.4.30 (from exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:44.4954726Z   Downloading jax-0.10.2-py3-none-any.whl.metadata (13 kB)
+pytest	Install package and test deps	2026-09-27T04:42:44.6796483Z Collecting numpy (from exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:44.6836581Z   Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+pytest	Install package and test deps	2026-09-27T04:42:44.7838470Z Collecting scipy (from exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:44.7875397Z   Downloading scipy-1.17.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (62 kB)
+pytest	Install package and test deps	2026-09-27T04:42:44.8309055Z Collecting tqdm (from exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:44.8345933Z   Downloading tqdm-4.70.1-py3-none-any.whl.metadata (57 kB)
+pytest	Install package and test deps	2026-09-27T04:42:44.9320737Z Collecting pandas (from exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:44.9358536Z   Downloading pandas-3.0.6-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (79 kB)
+pytest	Install package and test deps	2026-09-27T04:42:44.9874074Z Collecting xarray (from exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:44.9915499Z   Downloading xarray-2026.7.0-py3-none-any.whl.metadata (12 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.0238438Z Collecting thermochem (from exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:45.0277709Z   Downloading thermochem-0.9.0-py2.py3-none-any.whl.metadata (3.3 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.0688893Z Collecting jaxlib<=0.10.2,>=0.10.1 (from jax>=0.4.30->exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:45.0739553Z   Downloading jaxlib-0.10.2-cp311-cp311-manylinux_2_27_x86_64.whl.metadata (1.3 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.0957949Z Collecting ml_dtypes>=0.5.0 (from jax>=0.4.30->exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:45.1003302Z   Downloading ml_dtypes-0.6.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (8.8 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.1130489Z Collecting opt_einsum (from jax>=0.4.30->exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:45.1179223Z   Downloading opt_einsum-3.4.0-py3-none-any.whl.metadata (6.3 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.1350459Z Collecting python-dateutil>=2.8.2 (from pandas->exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:45.1384128Z   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.1500941Z Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas->exogibbs==0.5.1.dev236+gcc68e3a5a)
+pytest	Install package and test deps	2026-09-27T04:42:45.1534504Z   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.1617471Z Requirement already satisfied: packaging>=24.2 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from xarray->exogibbs==0.5.1.dev236+gcc68e3a5a) (26.3)
+pytest	Install package and test deps	2026-09-27T04:42:45.1685808Z Downloading jax-0.10.2-py3-none-any.whl (3.2 MB)
+pytest	Install package and test deps	2026-09-27T04:42:45.1868201Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.2/3.2 MB 208.8 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:42:45.1926363Z Downloading jaxlib-0.10.2-cp311-cp311-manylinux_2_27_x86_64.whl (85.4 MB)
+pytest	Install package and test deps	2026-09-27T04:42:45.5415014Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 85.4/85.4 MB 246.1 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:42:45.5459055Z Downloading ml_dtypes-0.6.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (412 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.5526976Z Downloading numpy-2.4.6-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.9 MB)
+pytest	Install package and test deps	2026-09-27T04:42:45.6048630Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.9/16.9 MB 335.5 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:42:45.6087149Z Downloading scipy-1.17.1-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (35.3 MB)
+pytest	Install package and test deps	2026-09-27T04:42:45.7121786Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.3/35.3 MB 347.7 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:42:45.7157210Z Downloading opt_einsum-3.4.0-py3-none-any.whl (71 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.7209175Z Downloading pandas-3.0.6-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (11.1 MB)
+pytest	Install package and test deps	2026-09-27T04:42:45.7551980Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.1/11.1 MB 341.7 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:42:45.7587751Z Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.7646607Z Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.7700836Z Downloading thermochem-0.9.0-py2.py3-none-any.whl (420 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.7771911Z Downloading tqdm-4.70.1-py3-none-any.whl (80 kB)
+pytest	Install package and test deps	2026-09-27T04:42:45.7821569Z Downloading xarray-2026.7.0-py3-none-any.whl (1.4 MB)
+pytest	Install package and test deps	2026-09-27T04:42:45.7890891Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 257.3 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:42:45.9853578Z Building wheels for collected packages: exogibbs
+pytest	Install package and test deps	2026-09-27T04:42:45.9861572Z   Building editable for exogibbs (pyproject.toml): started
+pytest	Install package and test deps	2026-09-27T04:42:46.6809659Z   Building editable for exogibbs (pyproject.toml): finished with status 'done'
+pytest	Install package and test deps	2026-09-27T04:42:46.6814661Z   Created wheel for exogibbs: filename=exogibbs-0.5.1.dev236+gcc68e3a5a-0.editable-py3-none-any.whl size=16129 sha256=39d4ff231460460a35a5925144a4307023d50d151b9c09c6f8aebe794fc92e88
+pytest	Install package and test deps	2026-09-27T04:42:46.6816021Z   Stored in directory: /tmp/pip-ephem-wheel-cache-30hwypit/wheels/11/cf/87/1e2d95fbbe059ae472e006ab9c7668d0e08bbf79bf9b32682a
+pytest	Install package and test deps	2026-09-27T04:42:46.6836910Z Successfully built exogibbs
+pytest	Install package and test deps	2026-09-27T04:42:46.7493170Z Installing collected packages: tqdm, six, opt_einsum, numpy, scipy, python-dateutil, ml_dtypes, pandas, jaxlib, xarray, thermochem, jax, exogibbs
+pytest	Install package and test deps	2026-09-27T04:43:01.3452652Z 
+pytest	Install package and test deps	2026-09-27T04:43:01.3466125Z Successfully installed exogibbs-0.5.1.dev236+gcc68e3a5a jax-0.10.2 jaxlib-0.10.2 ml_dtypes-0.6.0 numpy-2.4.6 opt_einsum-3.4.0 pandas-3.0.6 python-dateutil-2.9.0.post0 scipy-1.17.1 six-1.17.0 thermochem-0.9.0 tqdm-4.70.1 xarray-2026.7.0
+pytest	Install package and test deps	2026-09-27T04:43:01.8089770Z Collecting pytest
+pytest	Install package and test deps	2026-09-27T04:43:01.8535573Z   Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+pytest	Install package and test deps	2026-09-27T04:43:01.9787013Z Collecting matplotlib==3.9.1
+pytest	Install package and test deps	2026-09-27T04:43:01.9836818Z   Downloading matplotlib-3.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (11 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.0422152Z Collecting contourpy>=1.0.1 (from matplotlib==3.9.1)
+pytest	Install package and test deps	2026-09-27T04:43:02.0462066Z   Downloading contourpy-1.3.3-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (5.5 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.0570752Z Collecting cycler>=0.10 (from matplotlib==3.9.1)
+pytest	Install package and test deps	2026-09-27T04:43:02.0608633Z   Downloading cycler-0.12.1-py3-none-any.whl.metadata (3.8 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.1797721Z Collecting fonttools>=4.22.0 (from matplotlib==3.9.1)
+pytest	Install package and test deps	2026-09-27T04:43:02.1837833Z   Downloading fonttools-4.66.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (129 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.2585747Z Collecting kiwisolver>=1.3.1 (from matplotlib==3.9.1)
+pytest	Install package and test deps	2026-09-27T04:43:02.2625886Z   Downloading kiwisolver-1.5.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.2 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.2663220Z Requirement already satisfied: numpy>=1.23 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from matplotlib==3.9.1) (2.4.6)
+pytest	Install package and test deps	2026-09-27T04:43:02.2666912Z Requirement already satisfied: packaging>=20.0 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from matplotlib==3.9.1) (26.3)
+pytest	Install package and test deps	2026-09-27T04:43:02.4129807Z Collecting pillow>=8 (from matplotlib==3.9.1)
+pytest	Install package and test deps	2026-09-27T04:43:02.4170002Z   Downloading pillow-12.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.4374270Z Collecting pyparsing>=2.3.1 (from matplotlib==3.9.1)
+pytest	Install package and test deps	2026-09-27T04:43:02.4430508Z   Downloading pyparsing-3.3.3-py3-none-any.whl.metadata (5.9 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.4462886Z Requirement already satisfied: python-dateutil>=2.7 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from matplotlib==3.9.1) (2.9.0.post0)
+pytest	Install package and test deps	2026-09-27T04:43:02.4531158Z Collecting iniconfig>=1.0.1 (from pytest)
+pytest	Install package and test deps	2026-09-27T04:43:02.4565951Z   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.4662161Z Collecting pluggy<2,>=1.5 (from pytest)
+pytest	Install package and test deps	2026-09-27T04:43:02.4698974Z   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.4847872Z Collecting pygments>=2.7.2 (from pytest)
+pytest	Install package and test deps	2026-09-27T04:43:02.4886260Z   Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.4959917Z Requirement already satisfied: six>=1.5 in /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages (from python-dateutil>=2.7->matplotlib==3.9.1) (1.17.0)
+pytest	Install package and test deps	2026-09-27T04:43:02.4970910Z WARNING: The candidate selected for download or install is a yanked version: 'matplotlib' candidate (version 3.9.1 at https://files.pythonhosted.org/packages/b8/63/cef838d92c1918ae28afd12b8aeaa9c104a0686cf6447aa0546f7c6dd1f0/matplotlib-3.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (from https://pypi.org/simple/matplotlib/) (requires-python:>=3.9))
+pytest	Install package and test deps	2026-09-27T04:43:02.4974468Z Reason for being yanked: The Windows wheels, under some conditions, caused segfaults in unrelated user code.  Due to this we deleted the Windows wheels to prevent these segfaults, however this caused greater disruption as pip then began to try (and fail) to build 3.9.1 from the sdist on Windows which impacted far more users.  Yanking the whole release is the only tool available to eliminate these failures without changes to on the user side.  The sdist, OSX wheel, and manylinux wheels are all functional and there are no critical bugs in the release.   Downstream packagers should not yank their builds of Matplotlib 3.9.1.  See https://github.com/matplotlib/matplotlib/issues/28551 for details.
+pytest	Install package and test deps	2026-09-27T04:43:02.5029234Z Downloading matplotlib-3.9.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (8.3 MB)
+pytest	Install package and test deps	2026-09-27T04:43:02.5719164Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.3/8.3 MB 129.4 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:43:02.5759688Z Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.5820362Z Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.5876385Z Downloading contourpy-1.3.3-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (355 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.5936155Z Downloading cycler-0.12.1-py3-none-any.whl (8.3 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.5989953Z Downloading fonttools-4.66.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (5.4 MB)
+pytest	Install package and test deps	2026-09-27T04:43:02.6222660Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.4/5.4 MB 245.6 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:43:02.6257811Z Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.6309897Z Downloading kiwisolver-1.5.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.4 MB)
+pytest	Install package and test deps	2026-09-27T04:43:02.6384444Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 234.1 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:43:02.6420199Z Downloading pillow-12.3.0-cp311-cp311-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.9 MB)
+pytest	Install package and test deps	2026-09-27T04:43:02.6647314Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 325.3 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:43:02.6690027Z Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+pytest	Install package and test deps	2026-09-27T04:43:02.6752057Z    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 248.2 MB/s  0:00:00
+pytest	Install package and test deps	2026-09-27T04:43:02.6787439Z Downloading pyparsing-3.3.3-py3-none-any.whl (126 kB)
+pytest	Install package and test deps	2026-09-27T04:43:02.7894852Z Installing collected packages: pyparsing, pygments, pluggy, pillow, kiwisolver, iniconfig, fonttools, cycler, contourpy, pytest, matplotlib
+pytest	Install package and test deps	2026-09-27T04:43:06.1503311Z 
+pytest	Install package and test deps	2026-09-27T04:43:06.1519267Z Successfully installed contourpy-1.3.3 cycler-0.12.1 fonttools-4.66.0 iniconfig-2.3.0 kiwisolver-1.5.1 matplotlib-3.9.1 pillow-12.3.0 pluggy-1.6.0 pygments-2.21.0 pyparsing-3.3.3 pytest-9.1.1
+pytest	Run tests and generate XML report	﻿2026-09-27T04:43:06.2249206Z ##[group]Run mkdir -p results
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2249584Z ^[[36;1mmkdir -p results^[[0m
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2249931Z ^[[36;1mpytest tests/unittests --junit-xml results/pytest.xml^[[0m
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2319610Z shell: /usr/bin/bash -e {0}
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2319888Z env:
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2320178Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2320643Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2321072Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2321457Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2321835Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2322211Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+pytest	Run tests and generate XML report	2026-09-27T04:43:06.2322537Z ##[endgroup]
+pytest	Run tests and generate XML report	2026-09-27T04:43:12.1537593Z ============================= test session starts ==============================
+pytest	Run tests and generate XML report	2026-09-27T04:43:12.1538158Z platform linux -- Python 3.11.16, pytest-9.1.1, pluggy-1.6.0
+pytest	Run tests and generate XML report	2026-09-27T04:43:12.1538900Z rootdir: /home/runner/work/exogibbs/exogibbs
+pytest	Run tests and generate XML report	2026-09-27T04:43:12.1539219Z configfile: pyproject.toml
+pytest	Run tests and generate XML report	2026-09-27T04:43:12.1539466Z collected 1940 items
+pytest	Run tests and generate XML report	2026-09-27T04:43:12.1539601Z 
+pytest	Run tests and generate XML report	2026-09-27T04:43:12.4259497Z tests/unittests/api/chemistry_bvector_test.py .                          [  0%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:14.1115564Z tests/unittests/api/chemsetup_smoke_test.py ........                     [  0%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:15.9900170Z tests/unittests/api/condensate_equilibrium_profile_test.py ............. [  1%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:47.1593956Z ....................................................                     [  3%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:47.2061760Z tests/unittests/api/condensate_equilibrium_test.py ..................... [  4%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:47.2082356Z ..                                                                       [  5%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:50.1910388Z tests/unittests/api/condensate_production_route_contract_test.py ..      [  5%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:50.7151238Z tests/unittests/api/condensate_rainout_profile_test.py ................. [  5%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:50.8210340Z ...........                                                              [  6%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:54.2954188Z tests/unittests/api/equilibrium_api_test.py ...................          [  7%]
+pytest	Run tests and generate XML report	2026-09-27T04:43:57.4598762Z tests/unittests/api/equilibrium_jit_grad_test.py ..                      [  7%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:00.1963271Z tests/unittests/api/equilibrium_profile_test.py ..............           [  8%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:08.0202229Z tests/unittests/api/public_import_contract_test.py ........              [  8%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:08.0216271Z tests/unittests/api/version_test.py ..                                   [  8%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:10.7769267Z tests/unittests/applications/magma_gas/solve_test.py ...                 [  9%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:13.8327654Z tests/unittests/architecture/dependency_boundaries_test.py ...........   [  9%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:15.1321855Z tests/unittests/benchmarks/curated_profiles_test.py .....                [  9%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:15.1652162Z tests/unittests/benchmarks/documented_acceptance_test.py ............... [ 10%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:15.1956230Z ...................                                                      [ 11%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:15.7321087Z tests/unittests/benchmarks/documented_all_examples_test.py .......       [ 11%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.2792613Z tests/unittests/benchmarks/documented_curated_check_test.py ............ [ 12%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.2855633Z ..                                                                       [ 12%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.3452458Z tests/unittests/benchmarks/documented_examples_benchmark_test.py ....... [ 13%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.3813369Z .........................                                                [ 14%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.3879306Z tests/unittests/benchmarks/documented_examples_exoeos_test.py .....      [ 14%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.3995615Z tests/unittests/benchmarks/documented_examples_inline_test.py .......... [ 15%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.4872692Z .........                                                                [ 15%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.4923651Z tests/unittests/benchmarks/documented_production_comparison_test.py .... [ 15%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.4955236Z ..                                                                       [ 15%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.5204390Z tests/unittests/benchmarks/documented_provenance_test.py .               [ 15%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.5268630Z tests/unittests/benchmarks/fastchem4_comparison_test.py .......          [ 16%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:16.6029185Z tests/unittests/benchmarks/fastchem4_examples_test.py .................. [ 17%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:17.3757091Z ..........                                                               [ 17%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:17.3915786Z tests/unittests/benchmarks/fastchem4_executable_test.py ................ [ 18%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:17.4169060Z ...........                                                              [ 19%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:17.4424577Z tests/unittests/benchmarks/fastchem4_runner_test.py .................... [ 20%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:17.4497566Z .....                                                                    [ 20%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:53.6208736Z tests/unittests/benchmarks/fe_fes_rainout_demo_test.py .....             [ 20%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:53.6227284Z tests/unittests/benchmarks/fixed_support_v1_archive_test.py ..           [ 20%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:53.6231829Z tests/unittests/benchmarks/fixed_support_v2_production_profile_test.py . [ 20%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:53.6378738Z .....                                                                    [ 21%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:54.1199292Z tests/unittests/benchmarks/ito_2025_comparison_test.py ................. [ 21%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:55.5323485Z ...........                                                              [ 22%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:55.6563380Z tests/unittests/benchmarks/ldwarf_repeated_benchmark_test.py ........    [ 22%]
+pytest	Run tests and generate XML report	2026-09-27T04:44:55.6705300Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py ....... [ 23%]
+pytest	Run tests and generate XML report	2026-09-27T04:45:46.3600583Z .......                                                                  [ 23%]
+pytest	Run tests and generate XML report	2026-09-27T04:45:53.1531741Z tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py ...... [ 23%]
+pytest	Run tests and generate XML report	2026-09-27T04:45:57.1405032Z ........................                                                 [ 25%]
+pytest	Run tests and generate XML report	2026-09-27T04:45:57.1455573Z tests/unittests/benchmarks/run_profile_test.py ......                    [ 25%]
+pytest	Run tests and generate XML report	2026-09-27T04:47:46.6486815Z tests/unittests/benchmarks/solar_metal_sulfide_initializer_test.py ...   [ 25%]
+pytest	Run tests and generate XML report	2026-09-27T04:47:46.6706835Z tests/unittests/benchmarks/visscher_2010_silicate_competition_test.py .. [ 25%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:25.6121821Z ........                                                                 [ 26%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:50.0435480Z tests/unittests/benchmarks/visscher_morley_condensation_test.py ........ [ 26%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:50.0517761Z ..                                                                       [ 26%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:50.0552938Z tests/unittests/condensates/fixed_support_payload_test.py ...            [ 26%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:50.0718514Z tests/unittests/condensates/initialization_policy_test.py .............. [ 27%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:50.0856486Z ..............                                                           [ 28%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:50.0979978Z tests/unittests/condensates/native_bundle_test.py ................       [ 29%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:50.1010367Z tests/unittests/condensates/support_selection_policy_test.py ....        [ 29%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:51.3558955Z tests/unittests/equilibrium/condensate/acceptance_test.py ........       [ 29%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:51.3676412Z tests/unittests/equilibrium/condensate/amount_gauge_test.py .......      [ 30%]
+pytest	Run tests and generate XML report	2026-09-27T04:48:55.2690704Z tests/unittests/equilibrium/condensate/fixed_support/autodiff_test.py .. [ 30%]
+pytest	Run tests and generate XML report	2026-09-27T04:49:30.6781214Z ..........                                                               [ 30%]
+pytest	Run tests and generate XML report	2026-09-27T04:49:30.6794535Z tests/unittests/equilibrium/condensate/fixed_support/boundary_consistency_test.py . [ 30%]
+pytest	Run tests and generate XML report	2026-09-27T04:49:30.7729157Z .................                                                        [ 31%]
+pytest	Run tests and generate XML report	2026-09-27T04:49:31.0723812Z tests/unittests/equilibrium/condensate/fixed_support/continuation_test.py . [ 31%]
+pytest	Run tests and generate XML report	2026-09-27T04:50:39.4708834Z ..............                                                           [ 32%]
+pytest	Run tests and generate XML report	2026-09-27T04:50:40.7999474Z tests/unittests/equilibrium/condensate/fixed_support/controller_test.py . [ 32%]
+pytest	Run tests and generate XML report	2026-09-27T04:51:45.0114770Z ..............                                                           [ 33%]
+pytest	Run tests and generate XML report	2026-09-27T04:51:45.0514040Z tests/unittests/equilibrium/condensate/fixed_support/ito_2025_trace_oxygen_test.py . [ 33%]
+pytest	Run tests and generate XML report	2026-09-27T04:51:45.2340551Z .....                                                                    [ 33%]
+pytest	Run tests and generate XML report	2026-09-27T04:51:52.6579762Z tests/unittests/equilibrium/condensate/fixed_support/m1_test.py ......   [ 33%]
+pytest	Run tests and generate XML report	2026-09-27T04:51:53.6938850Z tests/unittests/equilibrium/condensate/fixed_support/problem_test.py ... [ 33%]
+pytest	Run tests and generate XML report	2026-09-27T04:51:54.3025723Z .                                                                        [ 34%]
+pytest	Run tests and generate XML report	2026-09-27T04:52:15.0754158Z tests/unittests/equilibrium/condensate/fixed_support/profile_test.py ... [ 34%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:09.2113864Z .......................                                                  [ 35%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:09.2117302Z tests/unittests/equilibrium/condensate/fixed_support/restoration_test.py . [ 35%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:27.9852542Z ...........                                                              [ 35%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:28.0067374Z tests/unittests/equilibrium/condensate/fixed_support/rocky_raccoon_trace_mg_test.py . [ 36%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:28.0620015Z .                                                                        [ 36%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:43.5513960Z tests/unittests/equilibrium/condensate/fixed_support/soc_test.py ....... [ 36%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:45.9111599Z .....                                                                    [ 36%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:45.9122259Z tests/unittests/equilibrium/condensate/fixed_support/zero_barrier_attempt_test.py . [ 36%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:45.9219127Z .........                                                                [ 37%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:45.9232163Z tests/unittests/equilibrium/condensate/fixed_support/zero_barrier_contracts_test.py . [ 37%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:45.9340310Z ........                                                                 [ 37%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:45.9346048Z tests/unittests/equilibrium/condensate/fixed_support/zero_barrier_initialization_stages_test.py . [ 37%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:45.9389909Z .....                                                                    [ 37%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:45.9395780Z tests/unittests/equilibrium/condensate/fixed_support/zero_barrier_test.py . [ 38%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:46.0825856Z ........................................................................ [ 41%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:46.9544208Z ...................................................................      [ 45%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:47.0738639Z tests/unittests/equilibrium/condensate/initialization_test.py .......... [ 45%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:49.9928182Z ..............                                                           [ 46%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:49.9987630Z tests/unittests/equilibrium/condensate/inventory_bridge_test.py ......   [ 46%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:50.0030747Z tests/unittests/equilibrium/condensate/lifecycle_contract_test.py ...... [ 47%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:50.0070570Z ....                                                                     [ 47%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:50.8864324Z tests/unittests/equilibrium/condensate/lifecycle_initialization_test.py . [ 47%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:50.9966451Z ....                                                                     [ 47%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:50.9985662Z tests/unittests/equilibrium/condensate/policy_test.py ..                 [ 47%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:51.0046550Z tests/unittests/equilibrium/condensate/rainout_numerics_test.py .....    [ 47%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:51.0062917Z tests/unittests/equilibrium/condensate/results_test.py .                 [ 47%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:51.0122605Z tests/unittests/equilibrium/condensate/support_geometry_test.py ........ [ 48%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:51.0307639Z ..............                                                           [ 49%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:54.9114694Z tests/unittests/equilibrium/gas/fugacity_test.py ...........             [ 49%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:55.3181978Z tests/unittests/equilibrium/gas/grid/service_test.py ................... [ 50%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:59.5057045Z ....s..s.....s..s..........                                              [ 52%]
+pytest	Run tests and generate XML report	2026-09-27T04:53:59.7166950Z tests/unittests/equilibrium/gas/kernel/equations_test.py .               [ 52%]
+pytest	Run tests and generate XML report	2026-09-27T04:54:00.5195988Z tests/unittests/equilibrium/gas/kernel/hcosystem_test.py .               [ 52%]
+pytest	Run tests and generate XML report	2026-09-27T04:54:07.8116414Z tests/unittests/equilibrium/gas/kernel/solver_test.py .........          [ 52%]
+pytest	Run tests and generate XML report	2026-09-27T04:54:13.0898750Z tests/unittests/equilibrium/gas/kernel/vmap_test.py ..                   [ 52%]
+pytest	Run tests and generate XML report	2026-09-27T04:54:13.1858046Z tests/unittests/examples/exoeos_pure_fugacity_test.py .....              [ 52%]
+pytest	Run tests and generate XML report	2026-09-27T04:54:42.6932907Z tests/unittests/examples/m1_boundary_contract_test.py ...............    [ 53%]
+pytest	Run tests and generate XML report	2026-09-27T04:54:46.6897069Z tests/unittests/examples/m1_chemistry_test.py .......................... [ 55%]
+pytest	Run tests and generate XML report	2026-09-27T04:54:59.0064879Z ........................................................................ [ 58%]
+pytest	Run tests and generate XML report	2026-09-27T04:55:01.3190835Z ...................                                                      [ 59%]
+pytest	Run tests and generate XML report	2026-09-27T04:58:35.9423066Z tests/unittests/examples/m1_thermochemical_control_test.py ............. [ 60%]
+pytest	Run tests and generate XML report	2026-09-27T05:01:30.0242100Z .....                                                                    [ 60%]
+pytest	Run tests and generate XML report	2026-09-27T05:02:01.8342013Z tests/unittests/examples/m2_atmosphere_test.py .................         [ 61%]
+pytest	Run tests and generate XML report	2026-09-27T05:02:59.9014555Z tests/unittests/examples/m2_finite_gas_test.py .....ss...ssss            [ 62%]
+pytest	Run tests and generate XML report	2026-09-27T05:02:59.9893460Z tests/unittests/examples/m2_host_stability_test.py ..................... [ 63%]
+pytest	Run tests and generate XML report	2026-09-27T05:02:59.9897525Z                                                                          [ 63%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:00.0147708Z tests/unittests/examples/m2_janaf_test.py ..................             [ 64%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:00.1675912Z tests/unittests/examples/m2_liquid_global_test.py ...........            [ 64%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:00.1743636Z tests/unittests/examples/m2_omitted_gas_test.py ........                 [ 65%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:00.4334019Z tests/unittests/examples/m2_solid_global_test.py .............           [ 65%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:02.0936095Z tests/unittests/examples/metal_silicate_archive_test.py ................ [ 66%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:02.1527652Z ......                                                                   [ 67%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:14.7879892Z tests/unittests/examples/metal_silicate_cns_inventory_test.py .......... [ 67%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:14.7912716Z ....                                                                     [ 67%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:25.5707058Z tests/unittests/examples/metal_silicate_cns_support_test.py ............ [ 68%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:48.9049656Z ...............................                                          [ 70%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:51.8948795Z tests/unittests/examples/metal_silicate_common_gas_test.py ....ss.....   [ 70%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:56.0177032Z tests/unittests/examples/metal_silicate_common_gibbs_test.py ..........s [ 71%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:57.4097068Z ............                                                             [ 71%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:59.4457612Z tests/unittests/examples/metal_silicate_expanded_contact_test.py ..s     [ 71%]
+pytest	Run tests and generate XML report	2026-09-27T05:03:59.6247991Z tests/unittests/examples/metal_silicate_full_potential_test.py .......   [ 72%]
+pytest	Run tests and generate XML report	2026-09-27T05:04:46.5050154Z tests/unittests/examples/metal_silicate_gas_exchange_test.py ........... [ 72%]
+pytest	Run tests and generate XML report	2026-09-27T05:04:46.5141351Z ......                                                                   [ 73%]
+pytest	Run tests and generate XML report	2026-09-27T05:04:55.5033946Z tests/unittests/examples/metal_silicate_helium_source_test.py .......... [ 73%]
+pytest	Run tests and generate XML report	2026-09-27T05:04:56.1766628Z ............                                                             [ 74%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:00.5946755Z tests/unittests/examples/metal_silicate_hydrogen_test.py .....s..sss     [ 74%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:22.0594000Z tests/unittests/examples/metal_silicate_local_test.py ................   [ 75%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:22.0627719Z tests/unittests/examples/metal_silicate_melts_archive_test.py ssss       [ 75%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:22.3129081Z tests/unittests/examples/metal_silicate_melts_coupled_test.py .......... [ 76%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:24.4458118Z ..............ss                                                         [ 77%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:27.4223195Z tests/unittests/examples/metal_silicate_native_test.py ..ssssss          [ 77%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:27.4766485Z tests/unittests/examples/metal_silicate_phase_selection_test.py ........ [ 78%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:31.2690497Z ..............s..................                                        [ 79%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:31.2842167Z tests/unittests/examples/metal_silicate_reference_test.py .............. [ 80%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:31.2880173Z ....                                                                     [ 80%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:31.2971419Z tests/unittests/examples/metal_silicate_scenarios_test.py ...........    [ 81%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:34.4560632Z tests/unittests/examples/metal_silicate_source_test.py ...............   [ 82%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:34.5996615Z tests/unittests/examples/metal_silicate_standards_audit_test.py ........ [ 82%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:34.6044200Z ....s                                                                    [ 82%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:35.0537248Z tests/unittests/examples/metal_silicate_sulfide_test.py ................ [ 83%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:35.1983687Z ...............                                                          [ 84%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:38.8464616Z tests/unittests/examples/metal_silicate_sulfur_source_test.py .......... [ 84%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:39.6845948Z .....                                                                    [ 85%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:39.7604489Z tests/unittests/examples/vjp_retrieval_common_test.py ......             [ 85%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:41.9484357Z tests/unittests/examples/vjp_retrieval_condensate_test.py ..........     [ 85%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:46.3632781Z tests/unittests/experimental/magma_gas/float32_test.py .                 [ 85%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:46.9797645Z tests/unittests/experimental/magma_gas/meltyq_basis_test.py ...........  [ 86%]
+pytest	Run tests and generate XML report	2026-09-27T05:05:48.0566286Z tests/unittests/experimental/magma_gas/setup_test.py ........            [ 86%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:32.6600813Z tests/unittests/experimental/magma_gas/solve_test.py .................   [ 87%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:34.5479914Z tests/unittests/interop/exoeos_solution_test.py ........................ [ 89%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:34.5863736Z ..........                                                               [ 89%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:35.8933459Z tests/unittests/interop/exoeos_test.py ...........                       [ 90%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:35.8954359Z tests/unittests/io/distribution_policy_test.py ...                       [ 90%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:35.8999811Z tests/unittests/io/formula_matrix_reference_vs_computed_test.py .        [ 90%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:35.9072368Z tests/unittests/io/load_data_test.py ........                            [ 90%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:36.3018072Z tests/unittests/presets/fastchem4_preset_test.py ............            [ 91%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:37.1924750Z tests/unittests/presets/fastchem_cond_test.py .....                      [ 91%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:38.4620605Z tests/unittests/presets/fastchem_test.py ........                        [ 92%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:40.6030316Z tests/unittests/presets/magma_gas_test.py ..                             [ 92%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:41.1081439Z tests/unittests/solubility/meltyq_test.py .............................. [ 93%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:41.9984001Z ..........................                                               [ 95%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:42.0653276Z tests/unittests/thermo/composition_test.py ................              [ 95%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:42.1887644Z tests/unittests/thermo/fugacity_helper_test.py ....                      [ 96%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:43.0039423Z tests/unittests/thermo/gibbs_test.py ......                              [ 96%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:43.8253739Z tests/unittests/thermo/oxygen_fugacity_test.py ............              [ 96%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:45.6532503Z tests/unittests/thermo/potential_test.py .......                         [ 97%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:45.6551462Z tests/unittests/thermo/stoichiometry_test.py ..                          [ 97%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:46.7522996Z tests/unittests/utils/interpolation_test.py ............................ [ 98%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.1587672Z ....                                                                     [ 99%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.1619231Z tests/unittests/utils/nameparser_test.py .....                           [ 99%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4710018Z tests/unittests/utils/nonzeromath_test.py ....                           [ 99%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4985654Z tests/unittests/utils/units_test.py .........                            [100%]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4986203Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4986367Z =============================== warnings summary ===============================
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4987055Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4988047Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4989115Z     ParserElement.enablePackrat()
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4989303Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4989490Z tests/unittests/benchmarks/curated_profiles_test.py: 25 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4990362Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4991197Z     parse = parser.parseString(pattern)
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4991391Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4991560Z tests/unittests/benchmarks/curated_profiles_test.py: 25 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4992371Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4993095Z     parser.resetCache()
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4993236Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4993542Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4994407Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2010: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4995116Z     p.space          = oneOf(self._space_widths)("space")
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4995333Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4995936Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4996807Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2012: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4997472Z     p.style_literal  = oneOf(
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4997627Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4997911Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4998977Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2020: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4999739Z     )("sym").leaveWhitespace()
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.4999927Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5000216Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5001063Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2024: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5002127Z     p.start_group    = Optional(r"\math" + oneOf(self._fontnames)("font")) + "{"
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5002426Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5002706Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5003540Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2027: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5004203Z     p.delim          = oneOf(self._delims)
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5004396Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5004578Z tests/unittests/benchmarks/curated_profiles_test.py: 47 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5005352Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:1984: PyparsingDeprecationWarning: 'setName' deprecated - use 'set_name'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5006022Z     val.setName(key)
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5006165Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5006333Z tests/unittests/benchmarks/curated_profiles_test.py: 44 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5007133Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:1987: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5007876Z     val.setParseAction(getattr(self, key))
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5008085Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5008381Z tests/unittests/benchmarks/curated_profiles_test.py: 16 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5009173Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:1748: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5009913Z     return Empty().setParseAction(raise_error)
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5010119Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5010399Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5011334Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2088: PyparsingDeprecationWarning: 'endQuoteChar' argument is deprecated, use 'end_quote_char'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5012167Z     p.text = cmd(r"\text", QuotedString('{', '\\', endQuoteChar="}"))
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5012424Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5012705Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5013551Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2097: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5014295Z     + OneOrMore(oneOf(["_", "^"]) - p.placeable)("subsuper")
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5014532Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5014814Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5015765Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2146: PyparsingDeprecationWarning: 'unquoteResults' argument is deprecated, use 'unquote_results'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5016764Z     p.math_string   = QuotedString('$', '\\', unquoteResults=False)
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5017015Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5017296Z tests/unittests/benchmarks/curated_profiles_test.py::test_plot_curated_family_renders_display_name
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5018207Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2147: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5019118Z     p.non_math      = Regex(r"(?:(?:\\[$])|[^$])*").leaveWhitespace()
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5019367Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5019542Z tests/unittests/benchmarks/curated_profiles_test.py: 14 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5019974Z tests/unittests/benchmarks/fastchem4_examples_test.py: 16 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5020410Z tests/unittests/benchmarks/ito_2025_comparison_test.py: 62 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5021198Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2170: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5022077Z     result = self._expression.parseString(s)
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5022275Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5022449Z tests/unittests/benchmarks/curated_profiles_test.py: 14 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5022877Z tests/unittests/benchmarks/fastchem4_examples_test.py: 16 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5023299Z tests/unittests/benchmarks/ito_2025_comparison_test.py: 62 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5024074Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2197: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5024886Z     return self._math_expression.parseString(toks[0][1:-1], parseAll=True)
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5025173Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5025345Z tests/unittests/benchmarks/curated_profiles_test.py: 14 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5025770Z tests/unittests/benchmarks/fastchem4_examples_test.py: 16 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5026199Z tests/unittests/benchmarks/ito_2025_comparison_test.py: 62 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5026976Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/pyparsing/util.py:466: PyparsingDeprecationWarning: 'parseAll' argument is deprecated, use 'parse_all'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5027680Z     return fn(self, *args, **kwargs)
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5027854Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5028018Z tests/unittests/benchmarks/curated_profiles_test.py: 14 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5028539Z tests/unittests/benchmarks/fastchem4_examples_test.py: 16 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5028968Z tests/unittests/benchmarks/ito_2025_comparison_test.py: 62 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5029736Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/matplotlib/_mathtext.py:2178: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5030439Z     ParserElement.resetCache()
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5030598Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5031105Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1186_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5032137Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1342_nonconvective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5033152Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5034148Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5035138Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5036128Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5040067Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/scipy/optimize/_lsq/trf.py:527: RuntimeWarning: overflow encountered in dot
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5041008Z     cost_new = 0.5 * np.dot(f_new, f_new)
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5041276Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5042021Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5043689Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5045217Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:47.5046331Z   /home/runner/work/exogibbs/exogibbs/src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier.py:3057: RuntimeWarning: invalid value encountered in multiply
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4021815Z     weighted_linear_gas = linear_gas_formula * gas[None, :]
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4022255Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4023024Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4024539Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4026007Z tests/unittests/benchmarks/rocky_raccoon_boundary_corpus_test.py::test_public_rainout_certifies_warm_boundary[default_column_step_1372_convective_warm_parent]
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4027518Z   /home/runner/work/exogibbs/exogibbs/src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier.py:3064: RuntimeWarning: invalid value encountered in matmul
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4028733Z     * (linear_gas_formula @ gas)
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4029001Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4029314Z tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4030488Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/scipy/optimize/_lsq/common.py:115: RuntimeWarning: overflow encountered in power
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4031461Z     phi_prime = -np.sum(suf ** 2 / denom**3) / p_norm
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4031759Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4032058Z tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py: 12 warnings
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4033211Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/scipy/optimize/_lsq/common.py:154: RuntimeWarning: divide by zero encountered in scalar divide
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4034166Z     ratio = phi / phi_prime
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4034370Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4034969Z tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py::test_public_trace_depletion_uses_optimizer_directed_support_release
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4036235Z tests/unittests/benchmarks/rocky_raccoon_trace_mg_example_test.py::test_public_trace_depletion_uses_optimizer_directed_support_release
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4037545Z   /opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/site-packages/scipy/optimize/_lsq/trf.py:353: RuntimeWarning: overflow encountered in dot
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4038596Z     cost_new = 0.5 * np.dot(f_new, f_new)
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4038854Z 
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4039138Z -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4039837Z -- generated xml file: /home/runner/work/exogibbs/exogibbs/results/pytest.xml --
+pytest	Run tests and generate XML report	2026-09-27T05:06:51.4040514Z ========= 1908 passed, 32 skipped, 573 warnings in 1421.05s (0:23:41) ==========
+pytest	Upload Unit Test Results	﻿2026-09-27T05:06:56.3369324Z ##[group]Run actions/upload-artifact@v4
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3369621Z with:
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3369836Z   name: Unit Test Results (Python 3.11)
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3370099Z   path: results/*.xml
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3370331Z   if-no-files-found: warn
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3370760Z   compression-level: 6
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3370979Z   overwrite: false
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3371206Z   include-hidden-files: false
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3371444Z env:
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3371698Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3372136Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3372555Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3372928Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3373301Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3373682Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.3374044Z ##[endgroup]
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.5043453Z (node:2955) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.5044444Z (Use `node --trace-deprecation ...` to show where the warning was created)
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.5108798Z With the provided path, there will be 1 file uploaded
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.5110698Z Artifact name is valid!
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.5111755Z Root directory input is valid!
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.7526491Z Beginning upload of artifact content to blob storage
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.7763400Z (node:2955) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.9363176Z Uploaded bytes 36799
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.9700380Z Finished uploading artifact content to blob storage!
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.9701780Z SHA256 digest of uploaded artifact zip is 67e74b5774ea9ca5ac36f0b307cca0c73f75ed2f3e53e0aae9270517a69e3fc3
+pytest	Upload Unit Test Results	2026-09-27T05:06:56.9703481Z Finalizing artifact upload
+pytest	Upload Unit Test Results	2026-09-27T05:06:57.1777252Z Artifact Unit Test Results (Python 3.11).zip successfully finalized. Artifact ID 10924460310
+pytest	Upload Unit Test Results	2026-09-27T05:06:57.1778783Z Artifact Unit Test Results (Python 3.11) has been successfully uploaded! Final size is 36799 bytes. Artifact ID is 10924460310
+pytest	Upload Unit Test Results	2026-09-27T05:06:57.1785631Z Artifact download URL: https://github.com/HajimeKawahara/exogibbs/actions/runs/36295087392/artifacts/10924460310
+pytest	Download Artifacts	﻿2026-09-27T05:06:57.1952389Z ##[group]Run actions/download-artifact@v4
+pytest	Download Artifacts	2026-09-27T05:06:57.1952729Z with:
+pytest	Download Artifacts	2026-09-27T05:06:57.1952940Z   path: artifacts
+pytest	Download Artifacts	2026-09-27T05:06:57.1953161Z   merge-multiple: false
+pytest	Download Artifacts	2026-09-27T05:06:57.1953413Z   repository: HajimeKawahara/exogibbs
+pytest	Download Artifacts	2026-09-27T05:06:57.1953681Z   run-id: 36295087392
+pytest	Download Artifacts	2026-09-27T05:06:57.1953898Z env:
+pytest	Download Artifacts	2026-09-27T05:06:57.1954159Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Download Artifacts	2026-09-27T05:06:57.1954593Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+pytest	Download Artifacts	2026-09-27T05:06:57.1955026Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Download Artifacts	2026-09-27T05:06:57.1955416Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Download Artifacts	2026-09-27T05:06:57.1955801Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Download Artifacts	2026-09-27T05:06:57.1956195Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+pytest	Download Artifacts	2026-09-27T05:06:57.1956522Z ##[endgroup]
+pytest	Download Artifacts	2026-09-27T05:06:57.3662750Z (node:2968) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+pytest	Download Artifacts	2026-09-27T05:06:57.3663717Z (Use `node --trace-deprecation ...` to show where the warning was created)
+pytest	Download Artifacts	2026-09-27T05:06:57.4761268Z Found 3 artifact(s)
+pytest	Download Artifacts	2026-09-27T05:06:57.4762254Z No input name, artifact-ids or pattern filtered specified, downloading all artifacts
+pytest	Download Artifacts	2026-09-27T05:06:57.4763171Z An extra directory with the artifact name will be created for each download
+pytest	Download Artifacts	2026-09-27T05:06:57.4763849Z Preparing to download the following artifacts:
+pytest	Download Artifacts	2026-09-27T05:06:57.4764978Z - Unit Test Results (Python 3.11) (ID: 10924460310, Size: 36799, Expected Digest: sha256:67e74b5774ea9ca5ac36f0b307cca0c73f75ed2f3e53e0aae9270517a69e3fc3)
+pytest	Download Artifacts	2026-09-27T05:06:57.4766625Z - Pinned ExoEOS Integration Results (ID: 10923597787, Size: 5861, Expected Digest: sha256:828f048d2df49e5ae3d6682eccaed4a59d4e7b95a324af8ba8a1e75a92d7f23a)
+pytest	Download Artifacts	2026-09-27T05:06:57.4768049Z - Documentation HTML (ID: 10923582601, Size: 14259889, Expected Digest: sha256:0cfa90bca752b3e13bf8619b54ff7ca4571b1c83053a23cf1e2a6e1abbeeab6b)
+pytest	Download Artifacts	2026-09-27T05:06:57.6374753Z Redirecting to blob download url: https://productionresultssa18.blob.core.windows.net/actions-results/3d10c971-5784-43fc-8b0d-30da172e5741/workflow-job-run-2bc25a7f-4d17-58ce-a6b6-c0002388dbde/artifacts/a5ccd453cc8a9b068f38a58fd2fc13042fda69399f7679a3ec9fa4fae3720e8b.zip
+pytest	Download Artifacts	2026-09-27T05:06:57.6376392Z Starting download of artifact to: /home/runner/work/exogibbs/exogibbs/artifacts/Unit Test Results (Python 3.11)
+pytest	Download Artifacts	2026-09-27T05:06:57.6646397Z Redirecting to blob download url: https://productionresultssa18.blob.core.windows.net/actions-results/3d10c971-5784-43fc-8b0d-30da172e5741/workflow-job-run-a9e2e9c7-fc8c-581e-afb3-78fa6b296571/artifacts/f2ce3414c07c97f2282d80e73988fc0d4960775b26dba860e1ea70ca4630cc71.zip
+pytest	Download Artifacts	2026-09-27T05:06:57.6648715Z Starting download of artifact to: /home/runner/work/exogibbs/exogibbs/artifacts/Pinned ExoEOS Integration Results
+pytest	Download Artifacts	2026-09-27T05:06:57.6742420Z Redirecting to blob download url: https://productionresultssa18.blob.core.windows.net/actions-results/3d10c971-5784-43fc-8b0d-30da172e5741/workflow-job-run-8c0a1b9f-07df-5f16-b9ef-d951ffc97f97/artifacts/d7a042d1134085bbc506f1d273e750050bff765f446819563e8401e7ca4d6a94.zip
+pytest	Download Artifacts	2026-09-27T05:06:57.6744669Z Starting download of artifact to: /home/runner/work/exogibbs/exogibbs/artifacts/Documentation HTML
+pytest	Download Artifacts	2026-09-27T05:06:57.7382222Z (node:2968) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+pytest	Download Artifacts	2026-09-27T05:06:57.7582511Z SHA256 digest of downloaded artifact is 67e74b5774ea9ca5ac36f0b307cca0c73f75ed2f3e53e0aae9270517a69e3fc3
+pytest	Download Artifacts	2026-09-27T05:06:57.7583218Z Artifact download completed successfully.
+pytest	Download Artifacts	2026-09-27T05:06:57.7794415Z SHA256 digest of downloaded artifact is 828f048d2df49e5ae3d6682eccaed4a59d4e7b95a324af8ba8a1e75a92d7f23a
+pytest	Download Artifacts	2026-09-27T05:06:57.7795030Z Artifact download completed successfully.
+pytest	Download Artifacts	2026-09-27T05:06:58.3662704Z SHA256 digest of downloaded artifact is 0cfa90bca752b3e13bf8619b54ff7ca4571b1c83053a23cf1e2a6e1abbeeab6b
+pytest	Download Artifacts	2026-09-27T05:06:58.3664145Z Artifact download completed successfully.
+pytest	Download Artifacts	2026-09-27T05:06:58.3664630Z Total of 3 artifact(s) downloaded
+pytest	Download Artifacts	2026-09-27T05:06:58.3671111Z Download artifact has finished successfully
+pytest	Publish Unit Test Results	﻿2026-09-27T05:06:58.3902422Z ##[group]Run EnricoMi/publish-unit-test-result-action@v2
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3902832Z with:
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3903072Z   files: artifacts/**/*.xml
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3905465Z   github_token: ***
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3905729Z   github_retries: 10
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3905978Z   ssl_verify: true
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3906224Z   check_name: Test Results
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3906492Z   comment_mode: always
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3906738Z   fail_on: test failures
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3907007Z   action_fail: false
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3907267Z   action_fail_on_inconclusive: false
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3907559Z   time_unit: seconds
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3907802Z   report_suite_logs: none
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3908054Z   ignore_runs: false
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3908485Z   check_run: true
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3908811Z   job_summary: true
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3909059Z   compare_to_earlier_commit: true
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3909350Z   pull_request_build: merge
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3909655Z   check_run_annotations: all tests, skipped tests
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3910021Z   seconds_between_github_reads: 0.25
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3910434Z   seconds_between_github_writes: 2.0
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3910825Z   json_thousands_separator:  
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3911110Z   json_suite_details: false
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3911383Z   json_test_case_results: false
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3911672Z   search_pull_requests: false
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3911937Z env:
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3912227Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3912909Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib/pkgconfig
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3913370Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3913777Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3914177Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.16/x64
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3914579Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.16/x64/lib
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.3914930Z ##[endgroup]
+pytest	Publish Unit Test Results	2026-09-27T05:06:58.4037676Z ##[command]/usr/bin/docker run --name ghcrioenricomipublishunittestresultactionv2240_56095c --label 80b1a3 --workdir /github/workspace --rm -e "pythonLocation" -e "PKG_CONFIG_PATH" -e "Python_ROOT_DIR" -e "Python2_ROOT_DIR" -e "Python3_ROOT_DIR" -e "LD_LIBRARY_PATH" -e "INPUT_FILES" -e "INPUT_GITHUB_TOKEN" -e "INPUT_GITHUB_TOKEN_ACTOR" -e "INPUT_GITHUB_RETRIES" -e "INPUT_SSL_VERIFY" -e "INPUT_COMMIT" -e "INPUT_CHECK_NAME" -e "INPUT_COMMENT_TITLE" -e "INPUT_COMMENT_MODE" -e "INPUT_FAIL_ON" -e "INPUT_ACTION_FAIL" -e "INPUT_ACTION_FAIL_ON_INCONCLUSIVE" -e "INPUT_JUNIT_FILES" -e "INPUT_NUNIT_FILES" -e "INPUT_XUNIT_FILES" -e "INPUT_TRX_FILES" -e "INPUT_TIME_UNIT" -e "INPUT_TEST_FILE_PREFIX" -e "INPUT_REPORT_INDIVIDUAL_RUNS" -e "INPUT_REPORT_SUITE_LOGS" -e "INPUT_DEDUPLICATE_CLASSES_BY_FILE_NAME" -e "INPUT_LARGE_FILES" -e "INPUT_IGNORE_RUNS" -e "INPUT_CHECK_RUN" -e "INPUT_JOB_SUMMARY" -e "INPUT_COMPARE_TO_EARLIER_COMMIT" -e "INPUT_PULL_REQUEST_BUILD" -e "INPUT_EVENT_FILE" -e "INPUT_EVENT_NAME" -e "INPUT_TEST_CHANGES_LIMIT" -e "INPUT_CHECK_RUN_ANNOTATIONS" -e "INPUT_CHECK_RUN_ANNOTATIONS_BRANCH" -e "INPUT_SECONDS_BETWEEN_GITHUB_READS" -e "INPUT_SECONDS_BETWEEN_GITHUB_WRITES" -e "INPUT_SECONDARY_RATE_LIMIT_WAIT_SECONDS" -e "INPUT_JSON_FILE" -e "INPUT_JSON_THOUSANDS_SEPARATOR" -e "INPUT_JSON_SUITE_DETAILS" -e "INPUT_JSON_TEST_CASE_RESULTS" -e "INPUT_SEARCH_PULL_REQUESTS" -e "HOME" -e "GITHUB_JOB" -e "GITHUB_REF" -e "GITHUB_SHA" -e "GITHUB_REPOSITORY" -e "GITHUB_REPOSITORY_OWNER" -e "GITHUB_REPOSITORY_OWNER_ID" -e "GITHUB_RUN_ID" -e "GITHUB_RUN_NUMBER" -e "GITHUB_RETENTION_DAYS" -e "GITHUB_RUN_ATTEMPT" -e "GITHUB_ACTOR_ID" -e "GITHUB_ACTOR" -e "GITHUB_WORKFLOW" -e "GITHUB_HEAD_REF" -e "GITHUB_BASE_REF" -e "GITHUB_EVENT_NAME" -e "GITHUB_SERVER_URL" -e "GITHUB_API_URL" -e "GITHUB_GRAPHQL_URL" -e "GITHUB_REF_NAME" -e "GITHUB_REF_PROTECTED" -e "GITHUB_REF_TYPE" -e "GITHUB_WORKFLOW_REF" -e "GITHUB_WORKFLOW_SHA" -e "GITHUB_REPOSITORY_ID" -e "GITHUB_TRIGGERING_ACTOR" -e "GITHUB_WORKSPACE" -e "GITHUB_ACTION" -e "GITHUB_EVENT_PATH" -e "GITHUB_ACTION_REPOSITORY" -e "GITHUB_ACTION_REF" -e "GITHUB_PATH" -e "GITHUB_ENV" -e "GITHUB_STEP_SUMMARY" -e "GITHUB_STATE" -e "GITHUB_OUTPUT" -e "GITHUB_ARTIFACTS" -e "GITHUB_ARTIFACTS_LIST" -e "RUNNER_OS" -e "RUNNER_ARCH" -e "RUNNER_NAME" -e "RUNNER_ENVIRONMENT" -e "RUNNER_TOOL_CACHE" -e "RUNNER_TEMP" -e "RUNNER_WORKSPACE" -e "ACTIONS_RUNTIME_URL" -e "ACTIONS_RUNTIME_TOKEN" -e "ACTIONS_CACHE_URL" -e "ACTIONS_RESULTS_URL" -e "ACTIONS_CACHE_MODE" -e "ACTIONS_ORCHESTRATION_ID" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp":"/github/runner_temp" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "/home/runner/work/exogibbs/exogibbs":"/github/workspace" ghcr.io/enricomi/publish-unit-test-result-action:v2.24.0
+pytest	Publish Unit Test Results	2026-09-27T05:06:59.2184833Z 2026-09-27 05:06:59 +0000 - publish -  INFO - Available memory to read files: 14.5 GiB
+pytest	Publish Unit Test Results	2026-09-27T05:06:59.2255441Z 2026-09-27 05:06:59 +0000 - publish -  INFO - Reading files artifacts/**/*.xml (2 files, 370.9 KiB)
+pytest	Publish Unit Test Results	2026-09-27T05:06:59.2339702Z 2026-09-27 05:06:59 +0000 - publish -  INFO - Detected 2 JUnit XML files (370.9 KiB)
+pytest	Publish Unit Test Results	2026-09-27T05:06:59.2341739Z 2026-09-27 05:06:59 +0000 - publish -  INFO - Finished reading 2 files in 0.01 seconds
+pytest	Publish Unit Test Results	2026-09-27T05:06:59.5713223Z 2026-09-27 05:06:59 +0000 - publish -  INFO - Publishing success results for commit 1af5821e3c7b8abcf0e8ebdc985ad1440d600021
+pytest	Publish Unit Test Results	2026-09-27T05:07:01.1013635Z 2026-09-27 05:07:01 +0000 - publish -  INFO - Created check https://github.com/HajimeKawahara/exogibbs/runs/108555568973
+pytest	Publish Unit Test Results	2026-09-27T05:07:01.1034402Z 2026-09-27 05:07:01 +0000 - publish -  INFO - Created job summary
+pytest	Publish Unit Test Results	2026-09-27T05:07:01.7431254Z 2026-09-27 05:07:01 +0000 - publish -  INFO - There is no pull request for commit 1af5821e3c7b8abcf0e8ebdc985ad1440d600021
+pytest	Post Set up Python 3.11	﻿2026-09-27T05:07:01.8818965Z Post job cleanup.
+pytest	Post Set up Python 3.11	2026-09-27T05:07:02.0063839Z (node:3097) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+pytest	Post Set up Python 3.11	2026-09-27T05:07:02.0064726Z (Use `node --trace-deprecation ...` to show where the warning was created)
+pytest	Post Checkout (with full history & tags for setuptools-scm)	﻿2026-09-27T05:07:02.0286098Z Post job cleanup.
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1280707Z [command]/usr/bin/git version
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1326933Z git version 2.55.0
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1367447Z Temporarily overriding HOME='/home/runner/work/_temp/52cd5164-be54-49b4-bb6e-678a2d690bcb' before making global git config changes
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1368629Z Adding repository directory to the temporary git global config as a safe directory
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1373742Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/exogibbs/exogibbs
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1416666Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1453346Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1719914Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1751170Z http.https://github.com/.extraheader
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1763278Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.1850213Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.2121123Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+pytest	Post Checkout (with full history & tags for setuptools-scm)	2026-09-27T05:07:02.2164459Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+pytest	Complete job	﻿2026-09-27T05:07:02.2587052Z Cleaning up orphan processes
+pytest	Complete job	2026-09-27T05:07:02.2954953Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

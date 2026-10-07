@@ -129,6 +129,73 @@ def _map_element_vector_to_fastchem_order(
     ]
 
 
+def _normalize_number_densities_to_element_inventory_gauge(
+    setup: ChemicalSetup,
+    number_densities: Array,
+    element_vector: Array,
+) -> Tuple[Array, Array]:
+    """Convert absolute number densities to the setup's amount gauge."""
+
+    if setup.elements is None:
+        raise ValueError("setup.elements is required for amount-gauge normalization.")
+    formula_matrix = np.asarray(setup.formula_matrix, dtype=np.float64)
+    densities = np.asarray(number_densities, dtype=np.float64)
+    target = np.asarray(element_vector, dtype=np.float64)
+    expected_density_shape = (formula_matrix.shape[1],)
+    expected_target_shape = (formula_matrix.shape[0],)
+    if densities.shape != expected_density_shape:
+        raise ValueError(
+            "number_densities must have one value per species: "
+            f"expected {expected_density_shape}, got {densities.shape}."
+        )
+    if target.shape != expected_target_shape or len(setup.elements) != target.shape[0]:
+        raise ValueError("element_vector must have one value per formula-matrix row.")
+    if not np.all(np.isfinite(densities)) or np.any(densities < 0.0):
+        raise ValueError("number_densities must be finite and non-negative.")
+    if not np.all(np.isfinite(target)):
+        raise ValueError("element_vector must contain only finite values.")
+
+    physical_rows = np.asarray(
+        [element not in {"e-", "electron"} for element in setup.elements],
+        dtype=bool,
+    )
+    if np.any(target[physical_rows] < 0.0):
+        raise ValueError("Non-charge element amounts must be non-negative.")
+    positive_rows = physical_rows & (target > 0.0)
+    if not np.any(positive_rows):
+        raise ValueError("element_vector must contain a positive non-charge amount.")
+
+    with np.errstate(invalid="ignore", over="ignore", divide="ignore"):
+        source_inventory = formula_matrix @ densities
+        source_total = float(np.sum(source_inventory[positive_rows]))
+        target_total = float(np.sum(target[positive_rows]))
+        gauge_scale = target_total / source_total
+        amounts = densities * gauge_scale
+    if (
+        not np.all(np.isfinite(source_inventory))
+        or not np.isfinite(source_total)
+        or source_total <= 0.0
+        or not np.isfinite(target_total)
+        or target_total <= 0.0
+        or not np.isfinite(gauge_scale)
+        or gauge_scale <= 0.0
+        or not np.all(np.isfinite(amounts))
+    ):
+        raise ValueError("Unable to convert number densities to a finite amount gauge.")
+
+    log_floor = np.log(1.0e-300)
+    with np.errstate(divide="ignore"):
+        log_amounts = np.maximum(
+            np.log(densities) + np.log(gauge_scale),
+            log_floor,
+        )
+    output_dtype = jnp.result_type(jnp.asarray(setup.formula_matrix), jnp.float32)
+    return (
+        jnp.asarray(amounts, dtype=output_dtype),
+        jnp.asarray(log_amounts, dtype=output_dtype),
+    )
+
+
 def _build_fastchem_outputs(
     setup: ChemicalSetup,
     temperature_axis: Array,
@@ -158,7 +225,8 @@ def _create_fastchem_point_solver(
         import pyfastchem
     except ImportError as exc:
         raise ImportError(
-            "FastChem-backed grid generation requires the optional 'pyfastchem' package."
+            "FastChem-backed grid generation and verification require the optional "
+            "'pyfastchem' package. Install it with `pip install \"exogibbs[fastchem]\"`."
         ) from exc
 
     if setup.metadata is None or "fastchem" not in setup.metadata.get("source", "").lower():
@@ -207,10 +275,17 @@ def _create_fastchem_point_solver(
                 f"{pyfastchem.FASTCHEM_MSG[fastchem_flag]}"
             )
 
-        n = jnp.asarray(np.asarray(output_data.number_densities, dtype=float)[0][species_indices])
+        physical_number_densities = np.asarray(
+            output_data.number_densities,
+            dtype=float,
+        )[0][species_indices]
+        n, ln_n = _normalize_number_densities_to_element_inventory_gauge(
+            setup,
+            physical_number_densities,
+            element_vector,
+        )
         ntot = jnp.asarray(jnp.sum(n))
         x = n / jnp.clip(ntot, 1e-300)
-        ln_n = jnp.log(jnp.clip(n, 1e-300))
         return ln_n, n, x, ntot
 
     return solve_point, species_indices
@@ -337,7 +412,7 @@ def build_equilibrium_grid(
     *,
     source: EquilibriumGridSource = "exogibbs",
     options: Optional[EquilibriumOptions] = None,
-    verify_exogibbs_against_fastchem: bool = True,
+    verify_exogibbs_against_fastchem: bool = False,
     verification_abundance_floor: float = _FASTCHEM_COMPARISON_ABUNDANCE_FLOOR,
     verification_tolerance_percent: float = _FASTCHEM_COMPARISON_TOLERANCE_PERCENT,
     setup_builder: Optional[Callable[[], ChemicalSetup]] = None,
@@ -346,7 +421,7 @@ def build_equilibrium_grid(
 
     The composition axis is explicitly ``log10(Z/Zsun)`` for an H/He atmosphere.
     When ``source="exogibbs"``, verification against FastChem at the same grid
-    points is enabled by default for supported presets.
+    points is available as an explicit opt-in for supported presets.
     """
     setup = setup_builder() if setup_builder is not None else _resolve_preset_builder(preset_name)()
     opts = options or EquilibriumOptions()

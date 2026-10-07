@@ -20,6 +20,7 @@ from exogibbs.equilibrium.gas.types import (
     EquilibriumOptions,
     EquilibriumResult,
 )
+from exogibbs.thermo.fugacity import LogFugacityCoefficientFunction
 
 __all__ = (
     "DefaultEquilibriumInitializer",
@@ -30,6 +31,7 @@ __all__ = (
     "EquilibriumResult",
     "GridEquilibriumInitializer",
     "LearnedEquilibriumInitializer",
+    "LogFugacityCoefficientFunction",
     "equilibrium",
     "equilibrium_profile",
 )

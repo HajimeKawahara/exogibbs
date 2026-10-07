@@ -21,6 +21,10 @@ from exogibbs.equilibrium.gas.types import (
     EquilibriumResult,
     ThermoState,
 )
+from exogibbs.thermo.fugacity import (
+    LogFugacityCoefficientFunction,
+    effective_gas_hvector,
+)
 from exogibbs.thermo.models import ChemicalSetup
 
 
@@ -28,6 +32,15 @@ def ln_normalized_pressure(pressure: float, reference_pressure: float) -> Array:
     """Return log pressure normalized by the reference pressure."""
 
     return jnp.log(pressure / reference_pressure)
+
+
+def _effective_equilibrium_tolerance(
+    requested: float,
+    dtype: jnp.dtype,
+) -> float:
+    """Return a convergence tolerance resolvable in the solver dtype."""
+
+    return max(requested, 8.0 * float(jnp.finfo(dtype).eps))
 
 
 def equilibrium(
@@ -41,8 +54,13 @@ def equilibrium(
     initializer: Optional[EquilibriumInitializer] = None,
     options: Optional[EquilibriumOptions] = None,
     return_diagnostics: bool = False,
+    lnphi_func: Optional[LogFugacityCoefficientFunction] = None,
 ) -> Union[EquilibriumResult, Tuple[EquilibriumResult, Mapping[str, Array]]]:
-    """Compute gas-only equilibrium at one temperature and pressure."""
+    """Compute gas-only equilibrium at one temperature and pressure.
+
+    ``lnphi_func`` supplies pure-component ``ln(phi)`` values in gas-species
+    order and is called as ``lnphi_func(T, P, None)`` with pressure in bar.
+    """
 
     opts = options or EquilibriumOptions()
     formula_matrix = setup.formula_matrix
@@ -72,14 +90,35 @@ def equilibrium(
         species_count,
     )
     state = ThermoState(T, ln_normalized_pressure(P, Pref), b)
+    hvector = effective_gas_hvector(
+        setup,
+        T,
+        P,
+        lnphi_func,
+        mole_fractions=None,
+    )
+    solver_dtype = jnp.result_type(
+        ln_nk_init,
+        ln_ntot_init,
+        formula_matrix,
+        hvector,
+        b,
+        state.temperature,
+        state.ln_normalized_pressure,
+        jnp.float32,
+    )
+    epsilon_crit = _effective_equilibrium_tolerance(
+        opts.epsilon_crit,
+        solver_dtype,
+    )
     if return_diagnostics:
         ln_n, diagnostics = minimize_gibbs_with_diagnostics(
             state,
             ln_nk_init,
             ln_ntot_init,
             formula_matrix,
-            setup.hvector_func,
-            epsilon_crit=opts.epsilon_crit,
+            hvector,
+            epsilon_crit=epsilon_crit,
             max_iter=opts.max_iter,
         )
     else:
@@ -88,8 +127,8 @@ def equilibrium(
             ln_nk_init,
             ln_ntot_init,
             formula_matrix,
-            setup.hvector_func,
-            epsilon_crit=opts.epsilon_crit,
+            hvector,
+            epsilon_crit=epsilon_crit,
             max_iter=opts.max_iter,
         )
         diagnostics = None

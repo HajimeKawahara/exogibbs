@@ -431,6 +431,44 @@ def run_fastchem4_l_dwarf(
     }
 
 
+def run_rocky_raccoon_trace_mg(
+    collector: TimingCollector,
+    smoke_layers: int | None,
+) -> dict[str, Any]:
+    """Run the documented positive trace-Mg rainout layer."""
+
+    del smoke_layers
+    from examples.comparisons import demo_rocky_raccoon_trace_mg as example
+
+    with collector.phase(
+        "build_rocky_raccoon_trace_mg_setup",
+        category="setup",
+    ):
+        setup = example.build_reduced_setup()
+    with collector.phase(
+        "solve_rocky_raccoon_trace_mg",
+        category="solver",
+    ):
+        profile = example.solve_trace_mg_profile(setup)
+
+    summary = _profile_summary(profile)
+    physical_audit = _profile_physical_audit(profile)
+    trace_mg_audit = example.audit_trace_mg_profile(setup, profile)
+    return {
+        "output_layer_count": summary["layer_count"],
+        "profiles": {"trace_mg": summary},
+        "physical_audits": {"trace_mg": physical_audit},
+        "trace_mg_audit": trace_mg_audit,
+        "all_layers_converged": bool(
+            summary["all_layers_converged"]
+            and physical_audit[
+                "all_layers_finite_and_physically_accepted"
+            ]
+            and trace_mg_audit["accepted"]
+        ),
+    }
+
+
 WORKLOADS: dict[
     str,
     Callable[[TimingCollector, int | None], dict[str, Any]],
@@ -440,6 +478,7 @@ WORKLOADS: dict[
     "run_ito_2025_rainout": run_ito_2025_rainout,
     "run_fe_fes_rainout": run_fe_fes_rainout,
     "run_fastchem4_l_dwarf": run_fastchem4_l_dwarf,
+    "run_rocky_raccoon_trace_mg": run_rocky_raccoon_trace_mg,
 }
 
 

@@ -1,0 +1,724 @@
+{
+  "assessment_id": "m2_saved_native_fastchem_condensate_reference_comparison_v1",
+  "temperature_K": 2173.15,
+  "pressure_bar": 267.20283416157343,
+  "scope": "New standard comparison using preserved native candidate evaluations, not new native runs or calibrated phase boundaries. Native unit endmember compositions include any internal ordering. FastChem pure condensates have no pressure correction. Formula equality does not establish model equivalence.",
+  "source_archive": "https://github.com/HajimeKawahara/exogibbs/tree/c32a45ff3f2152c73d2269bb3566b8f4ae63cc7c/results/m2_stability_search/20260927/explicit_coordinates",
+  "source_file_sha256": {
+    "fresh_host_assessment.json": "fa39c52c5b78c4f67b0e5c14b88b58762495916e3c3a0578cb66ec7787070462",
+    "phase_00_olivine.json": "63cada5bd3925e34a76342aff2add5f100196893ea497228f64b187ba0af7c89",
+    "phase_01_sphene.json": "f8d7e87aa3d4e399b43ca2287852b965abab0820820e0fe65f8a9a17d7403396",
+    "phase_02_garnet.json": "63aa160a3ac0e9b984642026df9d41ccb1cabd36ce943165125a340819e10c70",
+    "phase_03_melilite.json": "2c158cf1d88591afbb60ddf4ffd33f9047f4bb590536bf2ba89e917cbfdb3ae8",
+    "phase_04_orthopyroxene.json": "a2bb0ddc13edc4849228e4282454c893702283d16cb2e169ddd961c4410eb0e9",
+    "phase_05_clinopyroxene.json": "79aa29f92dd4489a9a27780b55d2b99968ae3fed9e63ae03a50d85805a636e4f",
+    "phase_06_aenigmatite.json": "30893f66eba3c2bc5800ff8550c11be416111115ecab85c19924d00f4f1d091a",
+    "phase_07_cummingtonite.json": "59a85cd580d50302016981bb40f8e240ce8626d49fc35f963512aa78a6bbc158",
+    "phase_08_clinoamphibole.json": "25305577a1ce8ff8da3c5142b080a12192dde079187c29292d853e5b6ea9d5eb",
+    "phase_09_orthoamphibole.json": "5e3a6824b9d05954d47b6b0aa816c7a475c02fb49749430831a078a895e318aa",
+    "phase_10_hornblende.json": "077986c2ed7b4ff77a3d111e9506fd57e9515eed11fa2e2c0c892ec6726c6809",
+    "phase_11_biotite.json": "268202fcae631dab5f80315f13a640a17dff313b5396e755a0a6249347eaa633",
+    "phase_12_muscovite.json": "1ea63e0f2c4abdbca212a7eb0faa0995671438a0575f20330282676f579a7756",
+    "phase_13_alkali-feldspar.json": "256fd48f680655b5921f8d97d44ea4941c142ade008af52b39fc8d19c012181e",
+    "phase_14_plagioclase.json": "db7c150a0361369812af49e528d9cf627cf5960ab0b321109ea159d14d8a96fc",
+    "phase_15_quartz.json": "36627531504361f64250a6b5d7b054efa83c634ab6bd15665e632b5c488674ef",
+    "phase_16_tridymite.json": "3a661041f20a8c386f24a1fcabb66e6c786a005930936e92111232b9b64ef0bc",
+    "phase_17_cristobalite.json": "c00802a2ce80c671357ab91f47e5c81099e8dcc141502034e0cf4bb048d5a277",
+    "phase_18_nepheline.json": "de850df06178e212312f8733cf1bf8b9294b9b64a5e1162d8330f297cb71ca55",
+    "phase_19_kalsilite.json": "e6ec29a4ea44fc402b9309537832f7e36b21df5dcfe62eb9dd1ecd98f969df2d",
+    "phase_20_leucite.json": "8fd2be760b281dc38584d75dcd79c20e3cfb2f18e2d90f9507188812b73f35ed",
+    "phase_21_corundum.json": "3fdd703aefaad4dbfac0931972a89056f8125bbd49dd921c7b5b451bdbc6e7dd",
+    "phase_22_sillimanite.json": "bdbda54722005f3eb2fde97d432e189c424fb2c15d56d917d5ad52910c38debb",
+    "phase_23_rutile.json": "c6b127a851c00d52d0a05e505c4926bc9ad155bb87407be52ca6b183a090dbf4",
+    "phase_24_perovskite.json": "d3793de6900ff610ff1cf2beb866d8fa4a0bc72f5667a64b5fc4074d87f18ed9",
+    "phase_25_spinel.json": "50f0ccebc05da03e702c5e890e242c87de1764425a4874de72b78092d7da875b",
+    "phase_26_rhm-oxide.json": "bfa144b4f039f764d48fc44c35e6508578cd7eb6fd91c759c57eb682648aff4c",
+    "phase_27_ortho-oxide.json": "9b75e36459b17da118dcc7891fc8673fab361cb8e9ad6c012be42596a75fc350",
+    "phase_28_whitlockite.json": "01da9a64e46aef05544359509d8e4f6f64407a77819575b388b7ffb44322fb3f",
+    "phase_29_apatite.json": "5caf0ebc56af5b251c4a862bf523a393631105e356fbb19b7429d36eda9bc907",
+    "phase_30_water.json": "826a20fa741ee3df1c02882ca55c01d566839b2843a252d3ddad58ca4e1f2b20",
+    "phase_31_alloy-solid.json": "ed446dbff209e62e2c2e9d215db43771a911f0e0af9d563aded0cb0ae3480df7",
+    "phase_32_alloy-liquid.json": "74a1a6a0bb490ec9f9b9ec1564e34604842b74a440e45ce914d4b09cb1b8e110"
+  },
+  "evaluator_sha256": "ec6dc160386ce241cd9bb575e382cccb1fcdf57eb364395a9b7c18632e7bd4ab",
+  "fastchem_table_sha256": "566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467",
+  "source_gauge_rt": [
+    -4.541156769990245,
+    -17.981569671633338,
+    -8.447040806194867,
+    -12.545856175800804,
+    1.8153736403492466,
+    -1.9681779289064742,
+    -15.353074494571606,
+    -4.379438618738327,
+    -11.597353506134155,
+    -17.168085958521534,
+    1.5049974757449087,
+    -1.796602415797923,
+    -4.9278073514325245
+  ],
+  "comparisons": [
+    {
+      "fastchem_header": "Fe2SiO4(s) Fayalite : Fe 2 Si 1 O 4 # Sharp&Huebner, 1990 (refit).",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        6000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "olivine",
+      "native_coordinates": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "fastchem_condensate": "Fe2SiO4(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -122.800471108269,
+      "fastchem_gibbs_rt_per_formula": -123.30857668643434,
+      "fastchem_minus_native_rt_per_formula": -0.5081055781653419,
+      "fastchem_minus_native_rt_per_atom": -0.07258651116647741,
+      "native_source_file": "phase_00_olivine.json",
+      "candidate_formula_scale": 1.0000000000000575
+    },
+    {
+      "fastchem_header": "Mg2SiO4(s,l) Magnesium Silicate, Forsterite : Mg 2 O 4 Si 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        2171.0,
+        4000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "olivine",
+      "native_coordinates": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "fastchem_condensate": "Mg2SiO4(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -152.63570296613793,
+      "fastchem_gibbs_rt_per_formula": -153.02964025010422,
+      "fastchem_minus_native_rt_per_formula": -0.3939372839662951,
+      "fastchem_minus_native_rt_per_atom": -0.05627675485232787,
+      "native_source_file": "phase_00_olivine.json",
+      "candidate_formula_scale": 0.9999999999999245
+    },
+    {
+      "fastchem_header": "Ca2Al2SiO7(s) Gehlenite : Ca 2 Al 2 Si 1 O 7 # Sharp&Huebner, 1990 (refit).",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        6000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "melilite",
+      "native_coordinates": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "fastchem_condensate": "Ca2Al2SiO7(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -280.0958426556764,
+      "fastchem_gibbs_rt_per_formula": -279.3118533554955,
+      "fastchem_minus_native_rt_per_formula": 0.783989300180906,
+      "fastchem_minus_native_rt_per_atom": 0.06533244168174217,
+      "native_source_file": "phase_03_melilite.json",
+      "candidate_formula_scale": 1.0000000000000266
+    },
+    {
+      "fastchem_header": "MgSiO3(s,l) Magnesium Silicate, Enstatite : Mg 1 O 3 Si 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        1850.0,
+        3000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "orthopyroxene",
+      "native_coordinates": [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fastchem_condensate": "MgSiO3(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -108.5496095395976,
+      "fastchem_gibbs_rt_per_formula": -109.12405741058777,
+      "fastchem_minus_native_rt_per_formula": -0.5744478709901699,
+      "fastchem_minus_native_rt_per_atom": -0.11488957419803399,
+      "native_source_file": "phase_04_orthopyroxene.json",
+      "candidate_formula_scale": 1.9999999999998752
+    },
+    {
+      "fastchem_header": "MgSiO3(s,l) Magnesium Silicate, Enstatite : Mg 1 O 3 Si 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        1850.0,
+        3000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "clinopyroxene",
+      "native_coordinates": [
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fastchem_condensate": "MgSiO3(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -108.54996009106314,
+      "fastchem_gibbs_rt_per_formula": -109.12405741058777,
+      "fastchem_minus_native_rt_per_formula": -0.5740973195246255,
+      "fastchem_minus_native_rt_per_atom": -0.1148194639049251,
+      "native_source_file": "phase_05_clinopyroxene.json",
+      "candidate_formula_scale": 1.9999999999998752
+    },
+    {
+      "fastchem_header": "NaAlSi3O8(s) Albite : Na 1 Al 1 Si 3 O 8 # Sharp&Huebner, 1990 (refit).",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        6000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "alkali-feldspar",
+      "native_coordinates": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "fastchem_condensate": "NaAlSi3O8(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -281.0411934162043,
+      "fastchem_gibbs_rt_per_formula": -280.08531665243515,
+      "fastchem_minus_native_rt_per_formula": 0.9558767637691403,
+      "fastchem_minus_native_rt_per_atom": 0.07352898182839541,
+      "native_source_file": "phase_13_alkali-feldspar.json",
+      "candidate_formula_scale": 0.9999999999999095
+    },
+    {
+      "fastchem_header": "CaAl2Si2O8(s) Anorthite : Ca 1 Al 2 Si 2 O 8 # Sharp&Huebner, 1990 (refit).",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        6000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "alkali-feldspar",
+      "native_coordinates": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "fastchem_condensate": "CaAl2Si2O8(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -295.24252192227357,
+      "fastchem_gibbs_rt_per_formula": -288.2299866004779,
+      "fastchem_minus_native_rt_per_formula": 7.012535321795667,
+      "fastchem_minus_native_rt_per_atom": 0.5394257939842821,
+      "native_source_file": "phase_13_alkali-feldspar.json",
+      "candidate_formula_scale": 0.9999999999999994
+    },
+    {
+      "fastchem_header": "KAlSi3O8(s) Microcline : K 1 Al 1 Si 3 O 8 # Sharp&Huebner, 1990 (refit).",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        6000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "alkali-feldspar",
+      "native_coordinates": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "fastchem_condensate": "KAlSi3O8(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -283.3245127907518,
+      "fastchem_gibbs_rt_per_formula": -283.321061145916,
+      "fastchem_minus_native_rt_per_formula": 0.0034516448357635454,
+      "fastchem_minus_native_rt_per_atom": 0.00026551114121258043,
+      "native_source_file": "phase_13_alkali-feldspar.json",
+      "candidate_formula_scale": 0.9999999999999181
+    },
+    {
+      "fastchem_header": "NaAlSi3O8(s) Albite : Na 1 Al 1 Si 3 O 8 # Sharp&Huebner, 1990 (refit).",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        6000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "plagioclase",
+      "native_coordinates": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "fastchem_condensate": "NaAlSi3O8(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -281.0411934162043,
+      "fastchem_gibbs_rt_per_formula": -280.08531665243515,
+      "fastchem_minus_native_rt_per_formula": 0.9558767637691403,
+      "fastchem_minus_native_rt_per_atom": 0.07352898182839541,
+      "native_source_file": "phase_14_plagioclase.json",
+      "candidate_formula_scale": 0.9999999999999095
+    },
+    {
+      "fastchem_header": "CaAl2Si2O8(s) Anorthite : Ca 1 Al 2 Si 2 O 8 # Sharp&Huebner, 1990 (refit).",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        6000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "plagioclase",
+      "native_coordinates": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "fastchem_condensate": "CaAl2Si2O8(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -296.32102427264863,
+      "fastchem_gibbs_rt_per_formula": -288.2299866004779,
+      "fastchem_minus_native_rt_per_formula": 8.091037672170728,
+      "fastchem_minus_native_rt_per_atom": 0.6223875132439022,
+      "native_source_file": "phase_14_plagioclase.json",
+      "candidate_formula_scale": 0.9999999999999994
+    },
+    {
+      "fastchem_header": "KAlSi3O8(s) Microcline : K 1 Al 1 Si 3 O 8 # Sharp&Huebner, 1990 (refit).",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        6000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "plagioclase",
+      "native_coordinates": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "fastchem_condensate": "KAlSi3O8(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -282.64475954061515,
+      "fastchem_gibbs_rt_per_formula": -283.321061145916,
+      "fastchem_minus_native_rt_per_formula": -0.6763016053008641,
+      "fastchem_minus_native_rt_per_atom": -0.05202320040775878,
+      "native_source_file": "phase_14_plagioclase.json",
+      "candidate_formula_scale": 0.9999999999999181
+    },
+    {
+      "fastchem_header": "SiO2(s,l) Silicon Dioxide : Si 1 O 2 # Barin, Thermochemical Data of Pure Substances, Third Edition, VCH Publishers, 1993.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        1996.0,
+        3000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "quartz",
+      "native_coordinates": [
+        1.0
+      ],
+      "fastchem_condensate": "SiO2(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -63.931281036697804,
+      "fastchem_gibbs_rt_per_formula": -64.06418705054438,
+      "fastchem_minus_native_rt_per_formula": -0.13290601384657208,
+      "fastchem_minus_native_rt_per_atom": -0.04430200461552403,
+      "native_source_file": "phase_15_quartz.json",
+      "candidate_formula_scale": 0.9999999999999778
+    },
+    {
+      "fastchem_header": "SiO2(s,l) Silicon Dioxide : Si 1 O 2 # Barin, Thermochemical Data of Pure Substances, Third Edition, VCH Publishers, 1993.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        1996.0,
+        3000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "tridymite",
+      "native_coordinates": [
+        1.0
+      ],
+      "fastchem_condensate": "SiO2(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -64.1173129903332,
+      "fastchem_gibbs_rt_per_formula": -64.06418705054438,
+      "fastchem_minus_native_rt_per_formula": 0.053125939788827736,
+      "fastchem_minus_native_rt_per_atom": 0.017708646596275912,
+      "native_source_file": "phase_16_tridymite.json",
+      "candidate_formula_scale": 0.9999999999999778
+    },
+    {
+      "fastchem_header": "SiO2(s,l) Silicon Dioxide : Si 1 O 2 # Barin, Thermochemical Data of Pure Substances, Third Edition, VCH Publishers, 1993.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        1996.0,
+        3000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "cristobalite",
+      "native_coordinates": [
+        1.0
+      ],
+      "fastchem_condensate": "SiO2(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -63.99966741398199,
+      "fastchem_gibbs_rt_per_formula": -64.06418705054438,
+      "fastchem_minus_native_rt_per_formula": -0.06451963656238746,
+      "fastchem_minus_native_rt_per_atom": -0.02150654552079582,
+      "native_source_file": "phase_17_cristobalite.json",
+      "candidate_formula_scale": 0.9999999999999778
+    },
+    {
+      "fastchem_header": "Al2O3(s,l) Aluminum Oxide, Corundum : Al 2 O 3 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        2327.0,
+        4000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "corundum",
+      "native_coordinates": [
+        1.0
+      ],
+      "fastchem_condensate": "Al2O3(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -113.73451461464605,
+      "fastchem_gibbs_rt_per_formula": -113.79836017385482,
+      "fastchem_minus_native_rt_per_formula": -0.06384555920877233,
+      "fastchem_minus_native_rt_per_atom": -0.012769111841754466,
+      "native_source_file": "phase_21_corundum.json",
+      "candidate_formula_scale": 0.9999999999999947
+    },
+    {
+      "fastchem_header": "Al2SiO5(s) Aluminum Silicate, Kyanite : Al 2 O 5 Si 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        3000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "sillimanite",
+      "native_coordinates": [
+        1.0
+      ],
+      "fastchem_condensate": "Al2SiO5(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -177.66205792750117,
+      "fastchem_gibbs_rt_per_formula": -177.12852964476116,
+      "fastchem_minus_native_rt_per_formula": 0.5335282827400079,
+      "fastchem_minus_native_rt_per_atom": 0.06669103534250098,
+      "native_source_file": "phase_22_sillimanite.json",
+      "candidate_formula_scale": 0.9999999999999721
+    },
+    {
+      "fastchem_header": "TiO2(s,l) Titanium Oxide, Rutile : O 2 Ti 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        2130.0,
+        4000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "rutile",
+      "native_coordinates": [
+        1.0
+      ],
+      "fastchem_condensate": "TiO2(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -68.14969772133027,
+      "fastchem_gibbs_rt_per_formula": -67.70519272923559,
+      "fastchem_minus_native_rt_per_formula": 0.44450499209467864,
+      "fastchem_minus_native_rt_per_atom": 0.1481683306982262,
+      "native_source_file": "phase_23_rutile.json",
+      "candidate_formula_scale": 1.0000000000000355
+    },
+    {
+      "fastchem_header": "CaTiO3(s) Perovskite : Ca 1 Ti 1 O 3 # Sharp&Huebner, 1990 (refit).",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        6000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "perovskite",
+      "native_coordinates": [
+        1.0
+      ],
+      "fastchem_condensate": "CaTiO3(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -119.5606611347372,
+      "fastchem_gibbs_rt_per_formula": -118.86355706907008,
+      "fastchem_minus_native_rt_per_formula": 0.6971040656671192,
+      "fastchem_minus_native_rt_per_atom": 0.13942081313342386,
+      "native_source_file": "phase_24_perovskite.json",
+      "candidate_formula_scale": 1.0000000000000715
+    },
+    {
+      "fastchem_header": "Fe3O4(s) Iron Oxide, Magnetite : Fe 3 O 4 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        3000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "spinel",
+      "native_coordinates": [
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "fastchem_condensate": "Fe3O4(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -106.20644136014417,
+      "fastchem_gibbs_rt_per_formula": -106.38989938008562,
+      "fastchem_minus_native_rt_per_formula": -0.1834580199414546,
+      "fastchem_minus_native_rt_per_atom": -0.026208288563064945,
+      "native_source_file": "phase_25_spinel.json",
+      "candidate_formula_scale": 1.0000000000000093
+    },
+    {
+      "fastchem_header": "MgAl2O4(s,l) Magnesium Aluminum Oxide, Spinel : Al 2 Mg 1 O 4 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        2408.0,
+        4000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "spinel",
+      "native_coordinates": [
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "fastchem_condensate": "MgAl2O4(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -158.72466863635833,
+      "fastchem_gibbs_rt_per_formula": -159.39293111128393,
+      "fastchem_minus_native_rt_per_formula": -0.6682624749255979,
+      "fastchem_minus_native_rt_per_atom": -0.09546606784651399,
+      "native_source_file": "phase_25_spinel.json",
+      "candidate_formula_scale": 0.9999999999999785
+    },
+    {
+      "fastchem_header": "MgTiO3(s,l) Magnesium Titanium Oxide, Geikielite : Mg 1 O 3 Ti 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        1953.0,
+        4000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "rhm-oxide",
+      "native_coordinates": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fastchem_condensate": "MgTiO3(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -111.88073612555586,
+      "fastchem_gibbs_rt_per_formula": -112.47074243744373,
+      "fastchem_minus_native_rt_per_formula": -0.5900063118878762,
+      "fastchem_minus_native_rt_per_atom": -0.11800126237757524,
+      "native_source_file": "phase_26_rhm-oxide.json",
+      "candidate_formula_scale": 0.9999999999999897
+    },
+    {
+      "fastchem_header": "Fe2O3(s) Iron Oxide, Hematite : Fe 2 O 3 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "s",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        2500.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "rhm-oxide",
+      "native_coordinates": [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      "fastchem_condensate": "Fe2O3(s)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -74.57907166871118,
+      "fastchem_gibbs_rt_per_formula": -74.6816691373487,
+      "fastchem_minus_native_rt_per_formula": -0.10259746863752639,
+      "fastchem_minus_native_rt_per_atom": -0.020519493727505278,
+      "native_source_file": "phase_26_rhm-oxide.json",
+      "candidate_formula_scale": 0.9999999999999482
+    },
+    {
+      "fastchem_header": "Al2O3(s,l) Aluminum Oxide, Corundum : Al 2 O 3 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "s",
+      "fastchem_segment_upper_temperatures_K": [
+        2327.0,
+        4000.0
+      ],
+      "fastchem_selected_segment": 0,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "rhm-oxide",
+      "native_coordinates": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "fastchem_condensate": "Al2O3(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -112.62762042839366,
+      "fastchem_gibbs_rt_per_formula": -113.79836017385482,
+      "fastchem_minus_native_rt_per_formula": -1.1707397454611623,
+      "fastchem_minus_native_rt_per_atom": -0.23414794909223247,
+      "native_source_file": "phase_26_rhm-oxide.json",
+      "candidate_formula_scale": 0.9999999999999947
+    },
+    {
+      "fastchem_header": "MgTi2O5(s,l) Magnesium Titanium Oxide : Mg 1 O 5 Ti 2 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        1963.0,
+        4000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "ortho-oxide",
+      "native_coordinates": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "fastchem_condensate": "MgTi2O5(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -179.12250024409076,
+      "fastchem_gibbs_rt_per_formula": -181.23595271317603,
+      "fastchem_minus_native_rt_per_formula": -2.1134524690852743,
+      "fastchem_minus_native_rt_per_atom": -0.2641815586356593,
+      "native_source_file": "phase_27_ortho-oxide.json",
+      "candidate_formula_scale": 1.0000000000000073
+    },
+    {
+      "fastchem_header": "Fe(s,l) Iron : Fe 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        1809.0,
+        4000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "alloy-solid",
+      "native_coordinates": [
+        1.0
+      ],
+      "fastchem_condensate": "Fe(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -7.886289589129353,
+      "fastchem_gibbs_rt_per_formula": -8.08388396904347,
+      "fastchem_minus_native_rt_per_formula": -0.19759437991411666,
+      "fastchem_minus_native_rt_per_atom": -0.19759437991411666,
+      "native_source_file": "phase_31_alloy-solid.json",
+      "candidate_formula_scale": 0.9999999999999258
+    },
+    {
+      "fastchem_header": "Fe(s,l) Iron : Fe 1 # Chase, M. et al., JANAF thermochemical tables, 1998.",
+      "fastchem_phase_code": "sl",
+      "fastchem_selected_branch": "l",
+      "fastchem_segment_upper_temperatures_K": [
+        1809.0,
+        4000.0
+      ],
+      "fastchem_selected_segment": 1,
+      "comparison_kind": "equal_stoichiometry_different_constitutive_models",
+      "phase_identity_verified": false,
+      "native_phase": "alloy-liquid",
+      "native_coordinates": [
+        1.0
+      ],
+      "fastchem_condensate": "Fe(s,l)",
+      "eligible_at_T": true,
+      "native_gibbs_rt_per_formula": -8.071526807219884,
+      "fastchem_gibbs_rt_per_formula": -8.08388396904347,
+      "fastchem_minus_native_rt_per_formula": -0.012357161823585372,
+      "fastchem_minus_native_rt_per_atom": -0.012357161823585372,
+      "native_source_file": "phase_32_alloy-liquid.json",
+      "candidate_formula_scale": 0.9999999999999258
+    }
+  ]
+}

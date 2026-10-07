@@ -1,0 +1,103 @@
+{
+  "commit": "b814b38dd0311a8009df60863e4d0dd3f1fb2e63",
+  "collection_count": 1821,
+  "results": [
+    {
+      "shard": 0,
+      "exit_code": 0,
+      "expected_tests": 18,
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "shard": 1,
+      "exit_code": 0,
+      "expected_tests": 192,
+      "tests": 192,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "shard": 2,
+      "exit_code": 0,
+      "expected_tests": 150,
+      "tests": 150,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "shard": 3,
+      "exit_code": 0,
+      "expected_tests": 318,
+      "tests": 318,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "shard": 4,
+      "exit_code": 0,
+      "expected_tests": 180,
+      "tests": 180,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "shard": 5,
+      "exit_code": 0,
+      "expected_tests": 285,
+      "tests": 285,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "shard": 6,
+      "exit_code": 0,
+      "expected_tests": 441,
+      "tests": 441,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "shard": 7,
+      "exit_code": 0,
+      "expected_tests": 237,
+      "tests": 237,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "passed": true,
+  "exoeos_revision": "4e3983a832a15f91fbad6d5e6f874a27a0bc7011",
+  "collection_manifest_sha256": "bb820e910314da7d40055e0b0f0c63f1d427c5489f09b7d6026f90a0e3b3d90a",
+  "junit_sha256": {
+    "shard_1.xml": "1b7d951a148929dfb1c289cfcf00ae128b8f915f588ad96cfcad972d6bd8987d",
+    "shard_7.xml": "dbad38ad38cf30de89572545bd866881f1f63ba1d7226129806b838478b39bae",
+    "shard_3.xml": "0e197daa04c6dd7c55067fea3ee1a49b535fbc7129e209ec80c06ce72c776281",
+    "shard_0.xml": "47286b054d6aea786d98c781c1e29a3272bd3abee8c2cf60f891b5d407d752c6",
+    "shard_5.xml": "1afb059904d65f173777817478968682126b76384aee3379f7f51024c17cb3eb",
+    "shard_4.xml": "95aed1415048bf5f86d11e0b640a08d4d3d45f7f46494262bcf88975cdf220d2",
+    "shard_2.xml": "43fe6fc93674923e08673d284929acb9fefefd7d426b438657c0da7c64d7bf2d",
+    "shard_6.xml": "8a40c1e613fa7a497f8463e1827683bdd4ef1dc96a3c6b69581c86ed01cd405f"
+  },
+  "skips": [
+    {
+      "test": "tests.unittests.api.version_test.test_package_version_matches_scm_generated_module",
+      "reason": "setuptools-scm generated version module is unavailable"
+    }
+  ],
+  "docs": {
+    "exit": 0,
+    "warnings": 127,
+    "new_page_warnings": 0,
+    "note": "Existing duplicate API targets and M1 gallery title warnings remain. Additional gallery pages repeat the pre-existing M1 title warning."
+  }
+}

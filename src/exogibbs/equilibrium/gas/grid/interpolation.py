@@ -113,11 +113,15 @@ def _h_he_metallicity_scale_from_log10_z_over_z_sun(
     b_ref = _require_h_he_reference_abundance_setup(setup)
     z_sun = compute_reference_physical_metal_mass_fraction(setup)
     target_z = z_sun * jnp.asarray(10.0**log10_z_over_z_sun, dtype=b_ref.dtype)
-    if float(target_z) >= 1.0:
+    if not isinstance(target_z, core.Tracer) and float(target_z) >= 1.0:
         raise ValueError(
             "Target physical metallicity requires Z >= 1, which is not valid for an H/He atmosphere."
         )
-    return (target_z * (1.0 - z_sun)) / jnp.clip(z_sun * (1.0 - target_z), 1e-300)
+    scale = (target_z * (1.0 - z_sun)) / jnp.clip(
+        z_sun * (1.0 - target_z),
+        1e-300,
+    )
+    return jnp.where(target_z < 1.0, scale, jnp.nan)
 
 
 def validate_equilibrium_grid_compatibility(

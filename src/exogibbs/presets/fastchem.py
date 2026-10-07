@@ -51,20 +51,24 @@ def chemsetup(
     float_dtype = setup_float_dtype()
     path_fastchem_data = get_data_filepath(path)
     # molecules species
+    with open(path_fastchem_data, "r", encoding="utf-8") as stream:
+        text = stream.read()
     acoeff_molecule, components_molecule, source_records_molecule = _parse_fastchem_coeffs_with_metadata(
-        open(path_fastchem_data, "r", encoding="utf-8").read(),
+        text,
         source_file=path,
     )
     
     # elements and element species
     if species_defalt_elements:
-        print("restricting species to those composed of the default elements only.")
-        if element_file is not None:
+        if not silent:
+            print("restricting species to those composed of the default elements only.")
+        if element_file is not None and not silent:
             print("WARNING: element_file is ignored when species_defalt_elements is True.")
         elements = _default_elements()
         element_vector_ref = _elements_ref_AAG21(float_dtype)
     elif element_file is not None:
-        print("setting reference element vector from the provided element file:", element_file)
+        if not silent:
+            print("setting reference element vector from the provided element file:", element_file)
         import pandas as pd
         element_df = pd.read_csv(
             get_data_filepath(element_file),
@@ -85,7 +89,8 @@ def chemsetup(
             dtype=float_dtype,
         )
     else:
-        print("setting elements from the species in the logK data.")
+        if not silent:
+            print("setting elements from the species in the logK data.")
         elements = _set_elements_with_adding_Ge(components_molecule)
         element_vector_ref = []
     
@@ -148,7 +153,9 @@ def chemsetup(
             "dataset": "gas",
             "fastchem_logk_file": path,
             "fastchem_element_file": (
-                element_file if element_file is not None else "fastchem/element_abundances/asplund_2020.dat"
+                "fastchem/element_abundances/asplund_2020.dat"
+                if species_defalt_elements
+                else element_file
             ),
             "fastchem_species_default_elements": str(species_defalt_elements),
             "fastchem_logk_source_records": source_records_molecule,

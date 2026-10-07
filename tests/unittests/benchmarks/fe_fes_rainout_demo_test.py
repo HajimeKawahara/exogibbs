@@ -95,6 +95,7 @@ def test_reduced_setup_uses_the_exact_h_fe_s_catalog(demo, setup) -> None:
     ]
 
 
+@pytest.mark.scientific
 def test_local_and_rainout_profiles_resolve_the_fe_fes_contrast(
     demo,
     setup,
@@ -137,6 +138,7 @@ def test_local_and_rainout_profiles_resolve_the_fe_fes_contrast(
     )
 
 
+@pytest.mark.scientific
 def test_profiles_conserve_each_target_and_rainout_handoffs_are_adjacent(
     demo,
     setup,

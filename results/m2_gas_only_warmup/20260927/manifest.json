@@ -1,0 +1,92 @@
+{
+  "scope": "Preserved local performance control, not a source minimization or a pressure root.",
+  "benchmark_provider_head": "f2a87cea3cd93729c88e146409e7ea0e0238ca54",
+  "delivery_code_head": "2be11a8308143cb86439a1b3e7ff731420f66987",
+  "delivery_verification": "After rebasing onto selected-host audit plus the existing oxygen scenario, git diff confirms all src/exogibbs files and m2_atmosphere/m2_finite_gas/m2_scenarios exactly match the measured prototype. Audit-only changes and keyword argument order are outside the measured parcel execution.",
+  "files": [
+    {
+      "file": "surface/execution.json",
+      "original_path": "/tmp/stage2-gas-only-warmup-benchmark/execution.json",
+      "sha256": "37666b780899eefde7a6f05340b58dfe63327dd2e77342017d77e452a3d4b435",
+      "size_bytes": 405
+    },
+    {
+      "file": "surface/janaf_condensed_true.json",
+      "original_path": "/tmp/stage2-gas-only-warmup-benchmark/janaf_condensed_true.json",
+      "sha256": "9355b5c7701968ebc9c6e9345b1541389c532b9b2d323d5d1683e7115621d0e3",
+      "size_bytes": 21830
+    },
+    {
+      "file": "surface/janaf_condensed_true.log",
+      "original_path": "/tmp/stage2-gas-only-warmup-benchmark/janaf_condensed_true.log",
+      "sha256": "4e18676ac672cacf12f1ea868810b170f34f9cdd1fef325e653227b8a82467e3",
+      "size_bytes": 365
+    },
+    {
+      "file": "surface/janaf_true.json",
+      "original_path": "/tmp/stage2-gas-only-warmup-benchmark/janaf_true.json",
+      "sha256": "f6d7be980f91d82acbcf8f1dca78688c937868d7e7a88d79ec2a67b950851acb",
+      "size_bytes": 17659
+    },
+    {
+      "file": "surface/janaf_true.log",
+      "original_path": "/tmp/stage2-gas-only-warmup-benchmark/janaf_true.log",
+      "sha256": "b945453abaf90c8d42fd961b21a311d177f5fe401e5d606c3a004074b68f2f5f",
+      "size_bytes": 355
+    },
+    {
+      "file": "cloud1000/execution.json",
+      "original_path": "/tmp/stage2-gas-only-warmup-benchmark-cloud1000/execution.json",
+      "sha256": "fae9e6e4992d99fcdc3f195bd371c471b78374ce70e4fccdca2b089453b28856",
+      "size_bytes": 210
+    },
+    {
+      "file": "cloud1000/janaf_condensed_true.json",
+      "original_path": "/tmp/stage2-gas-only-warmup-benchmark-cloud1000/janaf_condensed_true.json",
+      "sha256": "eca75f409d8988197e569b8bbccf360c2d0037b3cb34ee771c3bdf8b2df8f9ed",
+      "size_bytes": 22488
+    },
+    {
+      "file": "cloud1000/janaf_condensed_true.log",
+      "original_path": "/tmp/stage2-gas-only-warmup-benchmark-cloud1000/janaf_condensed_true.log",
+      "sha256": "8f49dd2c292b24d20c6c804f2a8b7f5c4fc90d9411b1f620035b472cd333aff3",
+      "size_bytes": 368
+    },
+    {
+      "file": "benchmark.py",
+      "original_path": "/tmp/stage2-gas-only-warmup-benchmark.py",
+      "sha256": "8b1009634021dbce3fdeb29e1fb65cef159e655da783a333360aec517c9ef462",
+      "size_bytes": 6642
+    },
+    {
+      "file": "comparison.json",
+      "original_path": "/tmp/stage2-gas-only-warmup-comparison.json",
+      "sha256": "a62ee3d30d306250bc3f16a20ddbcb9de9a47bc94b4625bd1499fde485e04ad3",
+      "size_bytes": 3982
+    },
+    {
+      "file": "lifecycle_tests.log",
+      "original_path": "/tmp/stage2-gas-only-warmup-tests.log",
+      "sha256": "2c2009bc960ccea21d1938959814b8d9067ace5778ee777354de149a84082797",
+      "size_bytes": 180
+    },
+    {
+      "file": "m2_atmosphere_tests.log",
+      "original_path": "/tmp/stage2-gas-only-warmup-m2-tests.log",
+      "sha256": "c2381ca08289acd5e47918960b1b5c62313038e049e0ec6e56ae229e81a340e0",
+      "size_bytes": 110
+    },
+    {
+      "file": "parent_integration_tests.log",
+      "original_path": "/tmp/stage2-selected-audit-oxygen-merge-tests.log",
+      "sha256": "25a9665096fbf63710efcf795c8532db1c1d972bafc7e6a768f5e799ed3b1439",
+      "size_bytes": 99
+    },
+    {
+      "file": "scenario_smoke.json",
+      "original_path": "/tmp/stage2-gas-only-warmup-scenario-smoke.json",
+      "sha256": "d87e78f3514977be28adb243ed82803e2d147540b9e7a323cfb3cbecd1cd28af",
+      "size_bytes": 935
+    }
+  ]
+}

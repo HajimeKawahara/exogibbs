@@ -16,6 +16,7 @@ import argparse
 import os
 from pathlib import Path
 import sys
+from typing import Sequence
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
@@ -61,6 +62,9 @@ GAS_LOGK_FILE = DATA_ROOT / "logK" / "logK_wo_ions.dat"
 TEMPERATURE_K = 3000.0
 PRESSURES_BAR = np.logspace(-8.0, 2.0, 41)
 MAJOR_GAS_THRESHOLD = 1.0e-8
+GAS_AGREEMENT_TOLERANCE_DEX = 1.0e-3
+ELEMENT_BUDGET_TOLERANCE = 2.0e-4
+TOTAL_GAS_RELATIVE_TOLERANCE = 1.0e-8
 PLOT_FLOOR = 1.0e-30
 PLOT_SPECIES = (
     "H2",
@@ -160,6 +164,77 @@ def _validate_comparison_contract(*, setup, fastchem) -> None:
         )
 
 
+def _validate_release_metrics(layer_rows: Sequence[dict]) -> None:
+    """Require the reported gas comparison to meet the release criteria."""
+
+    if not layer_rows:
+        raise RuntimeError("The gas comparison produced no layers.")
+    finite_flags = [row["gas"]["finite"] for row in layer_rows]
+    if not all(type(value) is bool and value for value in finite_flags):
+        raise RuntimeError("The gas comparison contains non-finite amounts.")
+    jaccard = np.asarray(
+        [row["gas"]["major_set_jaccard"] for row in layer_rows],
+        dtype=np.float64,
+    )
+    gas_difference = np.asarray(
+        [row["gas"]["max_absolute_log10_ratio"] for row in layer_rows],
+        dtype=np.float64,
+    )
+    exogibbs_budget = np.asarray(
+        [row["exogibbs_budget"] for row in layer_rows],
+        dtype=np.float64,
+    )
+    fastchem_budget = np.asarray(
+        [row["fastchem_budget"] for row in layer_rows],
+        dtype=np.float64,
+    )
+    total_gas_difference = np.asarray(
+        [row["total_gas_relative_difference"] for row in layer_rows],
+        dtype=np.float64,
+    )
+    reported = np.concatenate(
+        (
+            jaccard,
+            gas_difference,
+            exogibbs_budget,
+            fastchem_budget,
+            total_gas_difference,
+        )
+    )
+    if not np.all(np.isfinite(reported)):
+        raise RuntimeError("The gas comparison produced non-finite metrics.")
+    if np.min(jaccard) < 1.0:
+        raise RuntimeError(
+            "FastChem and ExoGibbs disagree on the major-gas set: "
+            f"minimum Jaccard={np.min(jaccard):.6g}."
+        )
+    maximum_gas_difference = float(np.max(gas_difference))
+    if maximum_gas_difference > GAS_AGREEMENT_TOLERANCE_DEX:
+        raise RuntimeError(
+            "FastChem and ExoGibbs gas abundances differ by "
+            f"{maximum_gas_difference:.6g} dex; limit "
+            f"{GAS_AGREEMENT_TOLERANCE_DEX:.1e} dex."
+        )
+    maximum_budget_residual = float(
+        np.max(np.concatenate((exogibbs_budget, fastchem_budget)))
+    )
+    if maximum_budget_residual > ELEMENT_BUDGET_TOLERANCE:
+        raise RuntimeError(
+            "The elemental-budget residual is "
+            f"{maximum_budget_residual:.6g}; limit "
+            f"{ELEMENT_BUDGET_TOLERANCE:.1e}."
+        )
+    maximum_total_gas_difference = float(
+        np.max(np.abs(total_gas_difference))
+    )
+    if maximum_total_gas_difference > TOTAL_GAS_RELATIVE_TOLERANCE:
+        raise RuntimeError(
+            "FastChem and ExoGibbs total gas amounts differ by "
+            f"{maximum_total_gas_difference:.6g}; limit "
+            f"{TOTAL_GAS_RELATIVE_TOLERANCE:.1e}."
+        )
+
+
 def _print_summary(
     *,
     setup,
@@ -216,11 +291,16 @@ def _print_summary(
             }
         )
 
+    _validate_release_metrics(layer_rows)
     worst = max(
         layer_rows,
         key=lambda row: row["gas"]["max_absolute_log10_ratio"],
     )
-    worst_species = worst["gas"]["top_rows"][0]["name"]
+    worst_species = (
+        worst["gas"]["top_rows"][0]["name"]
+        if worst["gas"]["top_rows"]
+        else "(none)"
+    )
     print("Gas-only comparison")
     print(f"  temperature: {TEMPERATURE_K:g} K")
     print(
@@ -257,6 +337,12 @@ def _print_summary(
         "  maximum relative elemental-budget residual (ExoGibbs/FastChem): "
         f"{max(row['exogibbs_budget'] for row in layer_rows):.3g}/"
         f"{max(row['fastchem_budget'] for row in layer_rows):.3g}"
+    )
+    print(
+        "  release gate: passed "
+        f"(gas <= {GAS_AGREEMENT_TOLERANCE_DEX:.1e} dex; "
+        f"total gas <= {TOTAL_GAS_RELATIVE_TOLERANCE:.1e}; "
+        f"budget <= {ELEMENT_BUDGET_TOLERANCE:.1e}; exact major set)"
     )
 
 
@@ -351,11 +437,17 @@ def _plot_comparison(
 
 def main() -> None:
     args = _parse_args()
+    executable_path = args.fastchem_executable.resolve(strict=True)
+    if not executable_path.is_file() or not os.access(executable_path, os.X_OK):
+        raise ValueError(
+            f"FastChem executable is not an executable file: {executable_path}."
+        )
+    args.output.unlink(missing_ok=True)
     temperatures = np.full(PRESSURES_BAR.shape, TEMPERATURE_K)
 
     # 1. Run FastChem as an independent gas-only process.
     fastchem = run_fastchem_executable(
-        executable=args.fastchem_executable,
+        executable=executable_path,
         temperatures=temperatures,
         pressures=PRESSURES_BAR,
         element_abundance_file=ELEMENT_FILE,

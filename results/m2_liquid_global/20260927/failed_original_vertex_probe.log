@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/tmp/stage2-global-stability-20260927/examples/metal_silicate/run_m2_liquid_global.py", line 93, in <module>
+    main()
+  File "/tmp/stage2-global-stability-20260927/examples/metal_silicate/run_m2_liquid_global.py", line 70, in main
+    receipt = evaluate(point.tolist())
+  File "/tmp/stage2-global-stability-20260927/examples/metal_silicate/run_m2_liquid_global.py", line 41, in evaluate
+    return evaluator.evaluate_liquid(request["T_K"], request["P_Pa"], n, runtime=args.runtime,
+  File "/tmp/stage2-global-eos-20260927/examples/melts_liquid_evaluator.py", line 453, in evaluate_liquid
+    raise RuntimeError(process.stdout[-4000:] + process.stderr[-4000:])
+RuntimeError: 
+alphaMELTS for Python version 2.3.2 (Jul 21 2026 17:06:24)
+Setting calculation mode to rhyolite-MELTS 1.0.2
+
+Processed line... log fo2 path: none Traceback (most recent call last):
+  File "/tmp/stage2-global-eos-20260927/examples/melts_liquid_evaluator.py", line 546, in <module>
+    main()
+  File "/tmp/stage2-global-eos-20260927/examples/melts_liquid_evaluator.py", line 535, in main
+    result = _worker(args.runtime.resolve(), request) if args.worker else evaluate_liquid(
+  File "/tmp/stage2-global-eos-20260927/examples/melts_liquid_evaluator.py", line 292, in _worker
+    require_match(returned_n, n, "phase endmember amounts")
+  File "/tmp/stage2-global-eos-20260927/examples/melts_liquid_evaluator.py", line 97, in require_match
+    raise ValueError(f"Backend changed or failed to reproduce {label}.")
+ValueError: Backend changed or failed to reproduce phase endmember amounts.
+

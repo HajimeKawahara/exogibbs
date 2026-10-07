@@ -34,6 +34,12 @@ demonstrations:
   independent local equilibria and as a dependent bottom-to-top rainout scan.
   Retained iron forms FeS and removes H2S at low temperature; rainout depletes
   iron first, suppressing FeS and leaving H2S in the gas.
+- `demo_rocky_raccoon_trace_mg.py` solves one Rocky Raccoon-like deep layer
+  with a positive trace Mg inventory. It exercises the public condensate
+  profile route without neutral atomic reference gases or a free electron
+  species and audits the Mg split, element budget, and charge constraint. The
+  physical audit is stored as
+  `results/rocky_raccoon_trace_mg/trace_mg_audit.json`.
 
 The historical entry points `comparison_with_fastchem.py`,
 `comparison_with_fastchem_extended.py`, and
@@ -100,6 +106,9 @@ python examples/comparisons/comparison_with_ito_2025_rainout.py \
 
 python examples/comparisons/demo_fe_fes_rainout.py
 
+JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 \
+  python examples/comparisons/demo_rocky_raccoon_trace_mg.py
+
 python examples/comparisons/comparison_with_fastchem_initializer.py \
   --fastchem-executable /path/to/fastchem
 
@@ -110,6 +119,22 @@ python examples/comparisons/comparison_with_ykcode.py
 
 PNG files are written under `results/` by default. Add `--show` to display the
 Matplotlib window.
+
+The current FastChem 4, Ito, and Visscher/Morley comparison entry points fail
+with a nonzero exit status when their release checks fail. The gas-only
+FastChem check requires identical major-species sets, gas agreement within
+`1e-3` dex, total-gas agreement within `1e-8`, and element-budget residuals
+within `2e-4`. The condensate check requires identical major-gas and active-
+condensate sets and gas and condensate agreement within `1e-3` dex. The
+L-dwarf view applies the same major-gas and `1e-3` dex gate to its separate
+gas-only overlay. The Ito one-grid check requires every requested layer to
+complete and converge; its rainout counterpart also requires every recorded
+stability, FastChem convergence, and FastChem element-conservation check to
+pass. The literature
+examples enforce their stated vapor-pressure, phase-allocation, saturation,
+and element-budget criteria; an optional FastChem comparison additionally
+requires identical condensation brackets and key-gas agreement within
+`1e-3` dex. Non-finite compared amounts or metrics also fail these gates.
 
 The Ito comparison excludes Layer 1 because the ground calculation uses a
 different magma-interface and water-solubility system. Target Layer `i >= 2`
@@ -168,6 +193,6 @@ and neither result is used as input to the other solve. Their separation shows
 the local gas-phase response to equilibrium sequestration rather than rainout
 or cloud transport.
 
-The examples are for inspection and visualization. Use
-`benchmarks/fastchem4/run_production_comparison.py` when provenance,
-preflight checks, and machine-readable metrics are required.
+The figures remain intended for inspection and visualization. Use
+`benchmarks/fastchem4/run_production_comparison.py` when additional
+provenance, preflight checks, and machine-readable metrics are required.
