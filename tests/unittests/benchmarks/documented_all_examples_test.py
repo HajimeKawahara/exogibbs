@@ -33,7 +33,7 @@ def test_every_public_script_and_all_expensive_configurations_are_covered():
     covered.add("examples/plot_exoeos_pure_fugacity.py")
     assert public <= covered, f"Unexecuted entry points: {public - covered}"
     assert len(curated) == 10
-    assert sum(job.script.startswith("examples/comparisons/") for job in jobs) == 13
+    assert sum(job.script.startswith("examples/comparisons/") for job in jobs) == 15
     assert {alias for alias in run_all.ALIASES.values()} <= {job.name for job in jobs}
     assert {job.arguments for job in jobs if job.script.endswith("/native.py")} == {
         ("--case", f"{kind}_{temperature}")
@@ -57,6 +57,22 @@ def test_every_public_script_and_all_expensive_configurations_are_covered():
         "inline_condensate_profile", "inline_solubility", "inline_magma_gas_interface",
         "inline_ideal_solution_adapter", "inline_ja_magma_gas_interface",
     }
+
+
+def test_solubility_job_creates_both_figures_in_its_output_directory(tmp_path):
+    job = next(job for job in run_all.build_jobs() if job.name == "solubility_laws")
+    output = tmp_path / "comparison"
+    assert run_all.run_jobs(
+        (job,), output=output, resources={},
+        environment=dict(os.environ, MPLBACKEND="Agg"), platform="cpu",
+        full_selection=False,
+    ) == 0
+    summary = json.loads((output / "summary.json").read_text())
+    assert summary["jobs"][0]["status"] == "PASS"
+    assert not summary["full_acceptance"]
+    directory = output / job.name
+    assert (directory / "solubility_laws.png").read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    assert (directory / "solubility_laws.pdf").read_bytes().startswith(b"%PDF-")
 
 
 @pytest.mark.parametrize("quick", [False, True])
