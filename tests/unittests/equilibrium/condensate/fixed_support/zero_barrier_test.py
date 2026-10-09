@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -18,6 +19,25 @@ from exogibbs.equilibrium.condensate.fixed_support.zero_barrier import (
     _solve_reduced_log_domain_support_branches,
     polish_zero_barrier_active_support,
 )
+
+
+@pytest.mark.parametrize("initializer", ("cold", "warm"))
+def test_trace_inventory_dual_initializer_passes_exact_parcel_audits(initializer):
+    """A scaled optimizer stop must still resolve physical dual feasibility."""
+    path = Path(__file__).with_name("data") / ("m2_dual_precision_" + initializer + ".npz")
+    with np.load(path, allow_pickle=False) as saved:
+        arguments = {name: saved[name] for name in saved.files}
+    result = polish_zero_barrier_active_support(**arguments)
+    report = result.report
+    dual = report["zero_barrier_dual_support_oracle"]
+    assert dual["applied"] and dual["dual_feasibility_passed"]
+    assert dual["minimum_condensate_driving"] >= -1e-10
+    assert result.accepted
+    assert report["budget_scaled_max_abs"] <= 1e-8
+    assert report["gas_stationarity_max_abs"] <= 1e-8
+    assert report["active_condensate_driving_max_abs"] <= 1e-8
+    assert report["inactive_condensate_violation_max_abs"] <= 1e-8
+    assert report["nonnegative_condensate_amounts"]
 
 
 def _disable_dual_support_oracle(

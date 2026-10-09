@@ -398,7 +398,7 @@ def _select_support_with_zero_barrier_dual(
             callback=remember_major_iteration,
             options={
                 "disp": False,
-                "ftol": 1.0e-12,
+                "ftol": 1.0e-15,
                 "maxiter": _DUAL_SUPPORT_ORACLE_ITERATION_LIMIT,
             },
         )

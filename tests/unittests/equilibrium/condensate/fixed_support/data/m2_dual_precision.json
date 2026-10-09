@@ -1,0 +1,22 @@
+{
+  "schema": "m2_dual_precision_regression_provenance_v1",
+  "temperature_K": 1000.0,
+  "pressure_bar": 8.989407066435973,
+  "base_pressure_bar": 450.0,
+  "layer_index": 162,
+  "physical_exogibbs_commit": "a5895d081df646e0529d27e46cd2835188d0a925",
+  "physical_exoeos_commit": "6f3bfdc94336e6bad3106c819281944178e7f015",
+  "production_retry_sha256": "7c4cdd6debde86d81675a4a70e290bc8b2a43c3986756e4febcad4a51614f522",
+  "capture_script_sha256": "df2c68eaa790552e133081a7c5497b3c8f02266df76b9d17a9d188f89b5a0e5c",
+  "files": {
+    "m2_dual_precision_cold.npz": {
+      "sha256": "a962e890f17fb039c9fba70f08d85498a5c77b51fcb83a6f1ad1e494bdb7a6e5",
+      "captured_polish_call": 1
+    },
+    "m2_dual_precision_warm.npz": {
+      "sha256": "85dfad0388a91fb259e69eba84f8f4098ea5aa671281303181992f858b4c88d6",
+      "captured_polish_call": 3
+    }
+  },
+  "scope": "Exact zero-barrier inputs from a failed retained parcel, replayed with the byte-identical caller-gauge donor. The first EOS iteration has zero fugacity correction. The fixtures test local numerical acceptance, not a pressure root or material validation."
+}
