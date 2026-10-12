@@ -1,0 +1,28 @@
+{
+  "scope": "Frozen initializer and standard-source arrays; no new pressure root or material result.",
+  "case": "h2he_20_hold_2000",
+  "source_pressure_bar": 450.0,
+  "layer_index": 154,
+  "temperature_K": 1000.0,
+  "pressure_bar": 6.431587106948225,
+  "physical_exogibbs": "a5895d081df646e0529d27e46cd2835188d0a925",
+  "previous_numerical_exogibbs": "c9a686300d5a9bd12560843535fc55d3fc664e61",
+  "original_capture": {
+    "path": "/home/kawahara/exoinventory/.m2-runtime/runs-source-fix/high-h-local-20261013/parcel_candidate/polish_0002_inputs.json",
+    "sha256": "b6626516646c84d9da7c34a3c9075e047249fb5ec926d3d177235bd8da29db82"
+  },
+  "original_high_h_manifest_sha256": "aefdf3c0b652af0da2c03e38c7fab9c0482c63d33a1ccc89e94933d3fd9e4e25",
+  "capture_script": {
+    "path": "/home/kawahara/exoinventory/.m2-runtime/runs-source-fix/high-h-local-20261013/parcel_candidate_probe.py",
+    "sha256": "389654233ce9da810c8dc9e6cc61b9152988032f6e2f847f0205a78846b8ef1f"
+  },
+  "before": {
+    "dual_applied": false,
+    "minimum_condensate_driving": -2.65288235823391e-10
+  },
+  "after": {
+    "exact_parcel_accepted": true,
+    "provider_feasibility_tolerance": 1e-10
+  },
+  "array_file": "m2_high_h_hold_warm.json"
+}

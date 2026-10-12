@@ -470,6 +470,30 @@ def _select_support_with_zero_barrier_dual(
             boundary_evaluations += 1
         if function_evaluation_budget is not None:
             function_evaluation_budget.consume(boundary_evaluations)
+    feasibility_shift = 0.0
+    feasibility_evaluations = 0
+    # With nonnegative formulas, lowering every potential improves condensate
+    # feasibility. Aim halfway inside its existing tolerance to leave roundoff
+    # room; the gas boundary may then fail, so both original gates still apply.
+    # This is only an initializer for the independently audited exact solve.
+    if (
+        abs(normalization) <= feasibility_tolerance
+        and -selection_tolerance <= float(np.min(driving)) < -feasibility_tolerance
+        and np.all(condensate_atoms > 0.0)
+        and _function_evaluation_call_limit(
+            max_function_evaluations - objective_evaluations - boundary_evaluations,
+            function_evaluation_budget,
+        ) > 0
+    ):
+        feasibility_shift = float(np.max(
+            (-driving - 0.5 * feasibility_tolerance) / condensate_atoms
+        ))
+        potential = np.nextafter(potential - feasibility_shift, -np.inf)
+        normalization = float(logsumexp(ag.T @ potential - gamma))
+        driving = hcond - ac.T @ potential
+        feasibility_evaluations = 1
+        if function_evaluation_budget is not None:
+            function_evaluation_budget.consume(feasibility_evaluations)
     finite_solution = bool(
         np.all(np.isfinite(optimization.x))
         and np.all(np.isfinite(potential))
@@ -504,7 +528,11 @@ def _select_support_with_zero_barrier_dual(
             "optimizer_message": str(optimization.message),
             "optimizer_iterations": int(optimization.nit),
             "optimizer_function_evaluations": int(objective_evaluations),
-            "function_evaluations": int(objective_evaluations + boundary_evaluations),
+            "function_evaluations": int(
+                objective_evaluations + boundary_evaluations + feasibility_evaluations
+            ),
+            "condensate_feasibility_evaluations": feasibility_evaluations,
+            "condensate_feasibility_potential_shift": feasibility_shift,
             "boundary_normalization_evaluations": boundary_evaluations,
             "boundary_normalization_potential_shift": boundary_shift,
             "gas_normalization_before_correction": normalization_before,
