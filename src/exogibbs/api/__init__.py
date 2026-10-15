@@ -17,7 +17,6 @@ _MODULE_EXPORTS: Final = {
     "equilibrium_grid": ".equilibrium_grid",
     "gas": ".gas",
     "magma_gas": ".magma_gas",
-    "multiphase": ".multiphase",
 }
 
 _ATTRIBUTE_EXPORTS: Final = {
@@ -121,7 +120,6 @@ __all__ = [
     "equilibrium_grid",
     "gas",
     "magma_gas",
-    "multiphase",
     "get_default_equilibrium_grid_path",
     "build_equilibrium_grid",
     "build_h_he_element_vector_from_log10_z_over_z_sun",

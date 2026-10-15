@@ -1,92 +1,16 @@
-"""Optional ExoEOS adapters for gas fugacity, activities and full phase G."""
+"""Optional ExoEOS adapters for gas fugacity and solution activities."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Optional, Sequence
+from typing import Any, Callable, Mapping, Optional, Sequence
 
 import jax.numpy as jnp
-import numpy as np
 
 from exogibbs.thermo.fugacity import LogFugacityCoefficientFunction
 from exogibbs.utils.units import convert_pressure
 
-if TYPE_CHECKING:
-    from exogibbs.api.multiphase import Phase
-
 
 _UNSPECIFIED_SPECIES_POLICIES = ("error", "ideal")
-
-
-def _magma_basis(elements, components):
-    """Load the optional provider and map its atom rows by name, never position."""
-    try:
-        from exoeos import magma
-    except ImportError as exc:
-        raise ImportError("Native multiphase adapters require ExoEOS magma.") from exc
-    elements = _validate_species(elements, label="elements")
-    matrix = np.asarray(magma.element_matrix(components))
-    omitted = [name for name, row in zip(magma.ELEMENTS, matrix)
-               if name not in elements and np.any(row != 0)]
-    if omitted:
-        raise ValueError(f"elements omits atoms in the phase: {omitted}.")
-    mapped = np.zeros((len(elements), len(components)))
-    for index, name in enumerate(elements):
-        if name in magma.ELEMENTS:
-            mapped[index] = matrix[magma.ELEMENTS.index(name)]
-    return magma, mapped
-
-
-def make_magma_liquid_phase(
-    *, elements: Sequence[str], components: Sequence[str], name: str = "liquid",
-) -> Phase:
-    """Return a multiphase Phase using native full liquid G, unchanged in SI.
-
-    Supply one complete native liquid basis, optionally reordered. This does
-    not add ideal/excess mixing or the old empirical water correction. The
-    twelve-component hydrous basis does not include H2 or He dissolution.
-    ExoEOS owns all standards and its positive-composition derivative domain.
-    No material coefficient is exposed by this fixed provider callback.
-    """
-    from exogibbs.api.multiphase import Phase
-
-    components = _validate_species(components, label="components")
-    magma, matrix = _magma_basis(elements, components)
-    bases = (magma.COMPONENTS, magma.TERNARY_COMPONENTS, magma.CMAS_COMPONENTS,
-             magma.CMFAS_COMPONENTS, magma.FERRIC_COMPONENTS,
-             magma.DRY11_COMPONENTS, magma.HYDROUS_COMPONENTS)
-    matches = [basis for basis in bases if set(basis) == set(components)]
-    if not matches:
-        raise ValueError("components must be a complete supported native liquid basis.")
-    order = np.asarray([components.index(component) for component in matches[0]])
-
-    def gibbs_j(temperature_k, pressure_pa, amounts_mol, parameters):
-        return magma.liquid_gibbs(temperature_k, pressure_pa, amounts_mol[order])
-
-    return Phase(name, components, matrix, gibbs_j,
-                 domain="ExoEOS native liquid; positive component derivative domain",
-                 standard_state="ExoEOS magma native MELTS full liquid G")
-
-
-def make_magma_pure_phase(
-    *, elements: Sequence[str], component: str, molar_gibbs_j: Callable,
-    name: str,
-) -> Phase:
-    """Wrap a caller-selected native molar g(T_K, P_Pa) as n*g in joules.
-
-    The caller owns selection of the thermodynamic phase matching component.
-    This accepts pure phases, not signed-coordinate native solid solutions.
-    """
-    from exogibbs.api.multiphase import Phase
-
-    _, matrix = _magma_basis(elements, (component,))
-    if not callable(molar_gibbs_j):
-        raise ValueError("molar_gibbs_j must be callable.")
-
-    def gibbs_j(temperature_k, pressure_pa, amounts_mol, parameters):
-        return amounts_mol[0] * molar_gibbs_j(temperature_k, pressure_pa)
-
-    return Phase(name, (component,), matrix, gibbs_j,
-                 standard_state="caller-selected ExoEOS native molar G")
 
 
 def _load_state_tp() -> Any:
