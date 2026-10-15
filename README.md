@@ -109,6 +109,10 @@ v0.4 acceptance points.
 
 ## Documentation
 
+The [experimental MCEG metadata](mceg/README.md) records assumptions, scientific
+scope and evidence for the H2 solubility law. It uses the frozen MCEG v0.1 format
+and adds no package dependency.
+
 Install the pinned documentation dependencies and build the HTML pages with:
 
 ```bash
