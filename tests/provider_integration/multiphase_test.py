@@ -98,3 +98,29 @@ def test_missing_provider_does_not_break_core_import(monkeypatch):
     monkeypatch.setitem(sys.modules, "exoeos", None)
     with pytest.raises(ImportError, match="require ExoEOS magma"):
         make_magma_liquid_phase(elements=("Mg", "Si", "O"), components=("SiO2", "Mg2SiO4"))
+
+
+def test_native_phase_appears_and_disappears_without_an_amount_floor(magma):
+    elements = ("Mg", "Si", "O")
+    liquid = make_magma_liquid_phase(elements=elements, components=magma.COMPONENTS)
+    crystal = make_magma_pure_phase(elements=elements, component="Mg2SiO4",
+                                   molar_gibbs_j=magma.forsterite_gibbs, name="forsterite")
+    problem = mp.Problem(elements, (liquid, crystal))
+    for temperature, initial in [(2000., [.25, .75, 0.]), (2200., [.25, .45, .3])]:
+        result = mp.solve(problem, temperature_k=temperature, pressure_pa=1e5,
+                           element_amounts_mol=[1.5, 1., 3.5], init=initial)
+        assert result.converged and result.local_kkt_valid and result.minimum_valid
+        assert result.stability_status == "unresolved"  # No native liquid global bound.
+        assert np.isnan(result.insertion_lower[0])
+        if temperature == 2200.:
+            assert result.amounts_mol[-1] == 0.
+            assert result.insertion_lower[-1] > .39
+            np.testing.assert_allclose(result.amounts_mol[:2], [.25, .75], atol=1e-12)
+        else:
+            def reaction(solid):
+                x = (.75-solid)/(1.-solid)
+                return float(magma.forsterite_gibbs(temperature, 1e5)
+                             - magma.liquid_standard_gibbs(temperature, 1e5)[1]
+                             - magma.R*temperature*np.log(x) - magma.W*(1-x)**2)
+            reference = brentq(reaction, 0., .75-1e-10, xtol=1e-14)
+            np.testing.assert_allclose(result.amounts_mol[-1], reference, atol=1e-9)

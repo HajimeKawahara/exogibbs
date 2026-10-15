@@ -40,6 +40,12 @@ class Phase:
     The callback includes standards, mixing, excess and pressure terms once.
     It must support JAX derivatives on the selected component face. All phases
     receive the same explicit dynamic parameters PyTree.
+
+    An optional insertion_lower_bound_j_mol(T, P, element_dual, parameters,
+    allowed_components) returns a global lower bound on G(x)-dual @ A @ x
+    in J/mol components, on sum(x)=1 and the declared domain. The last argument
+    is a static tuple of indices allowed by the element budget. NaN means
+    unavailable. The provider/caller owns the validity of this bound.
     """
 
     name: str
@@ -49,6 +55,7 @@ class Phase:
     domain_matrix: Any = ()
     domain: str = "nonnegative component amounts"
     standard_state: str = "caller supplied"
+    insertion_lower_bound_j_mol: Any = None
 
     def __post_init__(self):
         if not isinstance(self.name, str) or not self.name:
@@ -64,6 +71,9 @@ class Phase:
         ))
         if not callable(self.gibbs_j):
             raise ValueError("gibbs_j must be a callable extensive scalar.")
+        if (self.insertion_lower_bound_j_mol is not None
+                and not callable(self.insertion_lower_bound_j_mol)):
+            raise ValueError("insertion_lower_bound_j_mol must be callable or None.")
         if not self.domain or not self.standard_state:
             raise ValueError("Declare the phase domain and standard state.")
 
@@ -143,13 +153,17 @@ class Options:
     kkt_tolerance: float = 1e-8
     curvature_tolerance: float = 1e-9
     support_tolerance: float = 1e-12
+    max_supports: int = 32
 
     def __post_init__(self):
-        for name in ("max_iterations", "max_backtracks"):
+        integers = ("max_iterations", "max_backtracks", "max_supports")
+        for name in integers:
             value = getattr(self, name)
             if not isinstance(value, int) or value <= 0:
                 raise ValueError(f"{name} must be a positive integer.")
-        for field in fields(self)[2:]:
+        for field in fields(self):
+            if field.name in integers:
+                continue
             value = getattr(self, field.name)
             if not np.isfinite(value) or value <= 0:
                 raise ValueError(f"{field.name} must be positive and finite.")
