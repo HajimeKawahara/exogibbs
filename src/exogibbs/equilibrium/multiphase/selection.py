@@ -9,13 +9,13 @@ import jax.numpy as jnp
 import numpy as np
 from scipy.optimize import linprog
 
-from .solve import _geometry, solve_fixed_support
+from .solve import _geometry, _primal
 from .types import Options, Phase, Problem, R_SCALE, Support
 
 
 @lru_cache(maxsize=64)
 def _solver(problem, support, options):
-    return jax.jit(partial(solve_fixed_support, problem, support=support, options=options))
+    return jax.jit(partial(_primal, problem, support=support, options=options))
 
 
 def _seed(problem, support, budget, initial):
