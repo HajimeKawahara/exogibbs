@@ -250,6 +250,47 @@ jobs:
           name: Pinned ExoEOS Integration Results
           path: results/provider.xml
 
+  native-multiphase:
+    name: Native multiphase wheel integration
+    runs-on: ubuntu-latest
+    env:
+      JAX_PLATFORMS: cpu
+      JAX_ENABLE_X64: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: HajimeKawahara/exoeos
+          ref: d7681db4393fd85904846b083013230d81d45d4e
+          path: providers/exoeos
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build and install wheels
+        run: |
+          python -m pip wheel --no-deps . ./providers/exoeos -w wheels
+          python -m pip install wheels/*.whl pytest 'jax[cpu]==0.4.30' 'numpy==1.26.4' 'scipy==1.13.1'
+      - name: Verify wheel imports and native connection without skips
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import exogibbs, exoeos
+          for module in (exogibbs, exoeos):
+              source = Path(module.__file__).resolve()
+              print(source)
+              assert Path.cwd() not in source.parents
+          PY
+          python -m pytest tests/unittests/equilibrium/multiphase tests/provider_integration/multiphase_test.py --junitxml=results/native-multiphase.xml
+          python - <<'PY'
+          from xml.etree import ElementTree
+          report = ElementTree.parse('results/native-multiphase.xml')
+          assert report.findall('.//testcase')
+          assert not report.findall('.//skipped')
+          PY
+
   docs:
     name: Build documentation
     runs-on: ubuntu-latest
