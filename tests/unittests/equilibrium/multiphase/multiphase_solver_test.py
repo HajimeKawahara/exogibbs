@@ -30,6 +30,10 @@ def run(problem, *, budget=(1.,), init=(.3, .7), parameters=None,
         support=None, options=mp.Options()):
     if parameters is None:
         parameters = jnp.zeros(2)
+    if support is None and np.shape(budget) == (len(problem.elements),):
+        reachable = ~np.any(problem.atom_matrix[np.asarray(budget) == 0] > 0, axis=0)
+        if np.any(reachable):
+            support = mp.Support(tuple(np.flatnonzero(reachable)))
     return mp.solve(problem, temperature_k=1200., pressure_pa=1e5,
                     element_amounts_mol=budget, init=init, parameters=parameters,
                     support=support, options=options)

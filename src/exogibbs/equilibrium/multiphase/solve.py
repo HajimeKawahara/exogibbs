@@ -159,12 +159,11 @@ def solve(
     element_amounts_mol: Any, init: Any, parameters: Any = (),
     support: Optional[Support] = None, options: Options = Options(),
 ) -> Result:
-    """Host convenience solve with exact removal of zero-budget components.
+    """Select component/phase supports and audit their insertion stability.
 
-    R1/R2 selects all reachable components unless a Support is supplied.
-    It does not search phase supports or activate domain bounds (R3).
-    Supply a feasible interior init for the chosen support. Use
-    solve_fixed_support for JIT; this entry inspects b on the host.
+    This host entry is not JIT/vmap/AD compatible. An explicit Support keeps
+    the fixed-face behavior; omit it to search supports and active domains.
+    Use solve_fixed_support with the returned support for JAX transforms.
     """
     budget = np.asarray(element_amounts_mol, dtype=float)
     if (budget.shape != (len(problem.elements),) or not np.all(np.isfinite(budget))
@@ -172,7 +171,11 @@ def solve(
         raise ValueError("element_amounts_mol must be finite, nonnegative and nonzero.")
     reachable = ~np.any(problem.atom_matrix[budget == 0] > 0, axis=0)
     if support is None:
-        support = Support(tuple(np.flatnonzero(reachable)))
+        from .selection import select
+
+        return select(problem, temperature_k=temperature_k, pressure_pa=pressure_pa,
+                      element_amounts_mol=budget, parameters=parameters, init=init,
+                      reachable=reachable, options=options)
     elif any(i >= len(reachable) or not reachable[i] for i in support.components):
         raise ValueError("Support contains components forbidden by a zero element budget.")
     return solve_fixed_support(
