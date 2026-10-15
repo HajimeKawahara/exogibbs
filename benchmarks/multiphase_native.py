@@ -1,4 +1,4 @@
-"""Measure the small native R2 primal using installed public provider APIs.
+"""Measure native phase selection and implicit derivatives via public APIs.
 
 Run with JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu. This is a two-phase numerical
 benchmark, not adoption of a planetary M2 material recipe.
@@ -44,9 +44,41 @@ def main():
         jax.block_until_ready(result)
     runtime_seconds = (time.perf_counter() - started) / 20
     assert result.converged and result.minimum_valid and result.support_valid
+    selected_states = []
+    for temperature in (2000., 2200.):
+        selected = multiphase.solve(problem, temperature_k=temperature, pressure_pa=1e5,
+                                     element_amounts_mol=inputs[2], init=inputs[3])
+        assert selected.converged and selected.local_kkt_valid and selected.minimum_valid
+        selected_states.append({
+            "temperature_k": temperature,
+            "amounts_mol": np.asarray(selected.amounts_mol).tolist(),
+            "support": list(map(int, selected.support.components)),
+            "stability_status": selected.stability_status,
+            "pure_insertion_lower": float(selected.insertion_lower[1]),
+            "liquid_global_bound_available": bool(np.isfinite(selected.insertion_lower[0])),
+        })
+
+    def amounts(theta):
+        t, p, silica, forsterite = theta
+        initial = jnp.array([silica, .6*forsterite, .4*forsterite])
+        return solve(t, p, jnp.asarray(problem.atom_matrix) @ initial, initial).amounts_mol
+
+    theta = jnp.array([2000., 1e5, .25, .75])
+    jacobian = jax.jit(jax.jacfwd(amounts))(theta)
+    finite_errors = []
+    for factor in (1., .5):
+        finite = []
+        for i, step in enumerate(factor*np.array([.1, 1000., .001, .001])):
+            delta = jnp.zeros(4).at[i].set(step)
+            finite.append((amounts(theta+delta)-amounts(theta-delta))/(2*step))
+        finite_errors.append(float(np.max(np.abs(np.asarray(finite).T-jacobian))))
+    direction, cotangent = jnp.array([2., 200., .02, -.01]), jnp.array([.1, -.2, .3])
+    forward = jax.jvp(amounts, (theta,), (direction,))[1]
+    reverse = jax.vjp(amounts, theta)[1](cotangent)[0]
+    expected_budget_jacobian = np.column_stack((np.zeros((3, 2)), problem.atom_matrix[:, :2]))
     print(json.dumps({
         "model_id": "exoeos-native-binary-liquid-forsterite",
-        "scope": "R2 fixed support; no phase selection or M2 material adoption",
+        "scope": "R3/R4 small native reference; no M2 material adoption or planetary derivative",
         "python": platform.python_version(), "jax": jax.__version__,
         "jax_x64": jax.config.jax_enable_x64,
         "devices": [str(device) for device in jax.devices()],
@@ -62,6 +94,16 @@ def main():
         "stationarity_error": float(result.stationarity_error),
         "minimum_curvature": float(result.minimum_curvature),
         "stability_status": result.stability_status,
+        "phase_selection": selected_states,
+        "implicit_derivative": {
+            "valid": bool(result.derivative_valid),
+            "input_order": ["T_K", "P_Pa", "total_SiO2_mol", "total_Mg2SiO4_mol"],
+            "amount_jacobian": np.asarray(jacobian).tolist(),
+            "refined_fd_max_absolute_errors": finite_errors,
+            "jvp_vjp_transpose_error": float(abs(forward @ cotangent - direction @ reverse)),
+            "conservation_jacobian_error": float(np.max(np.abs(
+                problem.atom_matrix @ jacobian - expected_budget_jacobian))),
+        },
         "first_call_seconds": first_seconds, "warm_call_mean_seconds": runtime_seconds,
         "warm_repetitions": 20,
         "max_rss_kib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,

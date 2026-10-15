@@ -124,3 +124,51 @@ def test_native_phase_appears_and_disappears_without_an_amount_floor(magma):
                              - magma.R*temperature*np.log(x) - magma.W*(1-x)**2)
             reference = brentq(reaction, 0., .75-1e-10, xtol=1e-14)
             np.testing.assert_allclose(result.amounts_mol[-1], reference, atol=1e-9)
+
+
+def test_native_implicit_temperature_pressure_and_compatible_inventory_derivatives(magma):
+    elements = ("Mg", "Si", "O")
+    liquid = make_magma_liquid_phase(elements=elements, components=magma.COMPONENTS)
+    crystal = make_magma_pure_phase(elements=elements, component="Mg2SiO4",
+                                   molar_gibbs_j=magma.forsterite_gibbs, name="forsterite")
+    problem = mp.Problem(elements, (liquid, crystal))
+    atoms = jnp.asarray(problem.atom_matrix)
+
+    def fixed(theta):
+        t, p, silica, forsterite = theta
+        initial = jnp.array([silica, .6*forsterite, .4*forsterite])
+        return mp.solve_fixed_support(problem, temperature_k=t, pressure_pa=p,
+                                      element_amounts_mol=atoms @ initial, init=initial,
+                                      support=mp.Support((0, 1, 2)))
+
+    point = jnp.array([2000., 1e5, .25, .75])
+    assert fixed(point).derivative_valid
+    amounts = jax.jit(lambda x: fixed(x).amounts_mol)
+    jac = jax.jit(jax.jacfwd(amounts))(point)
+    steps = np.array([.1, 1e3, 1e-3, 1e-3])
+    for factor in (1., .5):
+        for i, step in enumerate(steps*factor):
+            delta = jnp.zeros(4).at[i].set(step)
+            finite = (amounts(point+delta)-amounts(point-delta))/(2*step)
+            np.testing.assert_allclose(finite, jac[:, i], rtol=3e-6, atol=1e-10)
+    np.testing.assert_allclose(atoms @ jac[:, :2], 0., atol=1e-12)
+    np.testing.assert_allclose(atoms @ jac[:, 2:], atoms[:, :2], atol=1e-12)
+    direction, cotangent = jnp.array([2., 200., .02, -.01]), jnp.array([.1, -.2, .3])
+    tangent = jax.jvp(amounts, (point,), (direction,))[1]
+    reverse = jax.vjp(amounts, point)[1](cotangent)[0]
+    np.testing.assert_allclose(tangent @ cotangent, direction @ reverse, atol=1e-12)
+
+
+def test_native_temperature_branch_is_invalid_for_ordinary_implicit_derivatives(magma):
+    liquid = make_magma_liquid_phase(elements=("Mg", "Si", "O"), components=magma.COMPONENTS)
+    problem = mp.Problem(("Mg", "Si", "O"), (liquid,))
+
+    def fixed(temperature):
+        return mp.solve_fixed_support(problem, temperature_k=temperature, pressure_pa=1e5,
+                                      element_amounts_mol=[1.5, 1., 3.5], init=[.25, .75],
+                                      support=mp.Support((0, 1)))
+
+    assert fixed(1480.).local_kkt_valid
+    assert not fixed(1480.).derivative_valid
+    assert fixed(1481.).derivative_valid
+    assert np.isnan(jax.grad(lambda t: fixed(t).gibbs_j)(1480.))

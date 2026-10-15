@@ -101,7 +101,7 @@ def test_zero_budget_removal_and_whole_absent_phase_are_exact():
     assert jnp.isnan(result.element_potentials_j_mol[1])
     assert jnp.all(jnp.isnan(result.insertion_lower))
     assert jnp.all(jnp.isnan(result.incipient_compositions[1]))
-    assert result.stability_status == "unchecked" and not result.derivative_valid
+    assert result.stability_status == "unchecked" and result.derivative_valid
 
 
 def test_zero_component_in_present_phase_and_redundant_elements():
@@ -128,7 +128,7 @@ def test_nonconvex_stationary_maximum_is_not_accepted():
     assert abs(float(result.amounts_mol[0]) - .5) == pytest.approx(np.sqrt(.05), abs=1e-8)
 
 
-def test_jit_dynamic_inputs_parameters_and_explicit_derivative_failure():
+def test_jit_dynamic_inputs_parameters_and_implicit_derivatives():
     problem = binary()
     support = mp.Support((0, 1))
 
@@ -144,10 +144,13 @@ def test_jit_dynamic_inputs_parameters_and_explicit_derivative_failure():
     second = solve(jnp.array([3.]), jnp.array([0., 1.]))
     np.testing.assert_allclose(first.amounts_mol, [.5, .5], atol=1e-12)
     np.testing.assert_allclose(second.amounts_mol, 3 * jax.nn.softmax(jnp.array([0., -1.])), atol=1e-12)
-    with pytest.raises(NotImplementedError, match="R4"):
-        jax.jacfwd(lambda b: solve(b, jnp.zeros(2)).amounts_mol)(jnp.array([1.]))
-    with pytest.raises(NotImplementedError, match="R4"):
-        jax.grad(lambda p: solve(jnp.array([1.]), p).gibbs_j)(jnp.zeros(2))
+    assert first.derivative_valid and second.derivative_valid
+    np.testing.assert_allclose(
+        jax.jacfwd(lambda b: solve(b, jnp.zeros(2)).amounts_mol)(jnp.array([1.])), [[.5], [.5]],
+    )
+    np.testing.assert_allclose(
+        jax.grad(lambda p: solve(jnp.array([1.]), p).gibbs_j)(jnp.zeros(2)), R*1200*np.array([.5, .5]),
+    )
 
 
 @pytest.mark.parametrize("budget", [(-1.,), (0.,), (np.nan,), (1., 2.)])
