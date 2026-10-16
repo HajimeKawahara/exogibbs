@@ -9,12 +9,15 @@ would omit the atomic heat capacities. It does not differentiate a minimized
 Gibbs energy or require second derivatives of equilibrium composition.
 
 This is an **opt-in change of thermochemical model**. Of the 539 species in the
-ion-inclusive FastChem4 gas table with its default elemental set, 34 use explicitly identified NASA9 replacements
+ion-inclusive FastChem4 gas table with its default elemental set, 35 use explicitly identified NASA9 replacements
 for both chemical potentials and caloric properties. Diacetyl peroxide
 (``C4H6O4``) is omitted because its reconstructed heat capacity becomes negative
 and the NASA source has no matching species. The resulting 538-species setup
 retains every conservation row. The original FastChem4 preset remains
 unchanged. Using its chemistry with the replacement entropy is inconsistent.
+The replacements include both ``Ni1+`` and ``Co1+``: the latter was added
+after the :doc:`ni_co_ionization_audit` identified an ionization discrepancy
+that the original heat-capacity check did not detect.
 
 .. code-block:: python
 
@@ -52,10 +55,16 @@ All adjacent atmospheric points must share the same conserved elemental
 amounts. Chemistry convergence, conservation, and finite state checks remain
 the caller's responsibility.
 
-Comparison with the unmodified network
---------------------------------------
+Historical comparison with the unmodified network
+--------------------------------------------------
 
-An 80-state comparison used temperatures 1500, 2200, 3000, and 4500 K;
+The following results describe the earlier **34-replacement model**, before
+``Co1+`` was replaced. They have not been recomputed for the current
+35-replacement model. Its updated chemical and caloric functions are covered
+by the unit tests; these historical equilibrium statistics do not validate
+its convergence or abundance changes.
+
+The historical 80-state comparison used temperatures 1500, 2200, 3000, and 4500 K;
 pressures 1e-5, 0.01, 1, and 100 bar; and ``(log_metal_scale, C/O)`` pairs
 ``(0, 0.6)``, ``(-1, 0.3)``, ``(-1, 1.2)``, ``(1, 0.3)``, ``(1, 1.2)``.
 The solver used ``epsilon_crit=1e-14`` and at most 2000 iterations. It converged
@@ -73,7 +82,7 @@ common valid states. Its largest original mole fraction was 6.92e-39 on
 this grid. These small omission effects do not justify untested abundance
 patterns or a larger temperature range.
 
-The 34 NASA replacements have a measurable effect: on 73 common valid states,
+The original 34 NASA replacements had a measurable effect: on 73 common valid states,
 the maximum change of any mole fraction was 1.163e-5, and the maximum relative
 change of mean molecular weight was 8.35e-6. Electron mole fraction changed by
 up to **11.75 percent relative**. The replacement model therefore needs its
@@ -81,8 +90,9 @@ own matched TCE/RCE comparison; it is not a numerically interchangeable
 version of the original FastChem4 chemistry. In particular, an H-minus
 opacity calculation must use the matching electron abundance.
 
-Run ``PYTHONPATH=src python examples/audit_rce_thermodynamics.py`` to reproduce
-the comparison. The recorded grid, per-state convergence and conservation
+Run ``PYTHONPATH=src python examples/audit_rce_thermodynamics.py`` to run
+the comparison with the current 35-replacement model. The historical recorded
+grid, per-state convergence and conservation
 diagnostics, and gated comparisons are in
 ``results/rce_thermodynamics_audit.json``. No observational data are required.
 

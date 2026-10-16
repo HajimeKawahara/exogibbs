@@ -79,6 +79,11 @@ def build_jobs() -> tuple[Job, ...]:
         ("solubility_laws_exoeos.png", "solubility_laws_exoeos.pdf"),
     ))
     jobs.append(Job(
+        "ni_co_ionization", comparison + "compare_ni_co_ionization.py",
+        ("--output-dir", "{output}"),
+        artifacts=("comparison.csv", "comparison.png", "partition_functions.png"),
+    ))
+    jobs.append(Job(
         "fastchem4_production_comparison", "benchmarks/fastchem4/run_production_comparison.py",
         ("--fastchem-executable", "{fastchem}", "--fastchem-source-root", "{fastchem_source}",
          "--fastchem-version-label", "4.0.3 (ae67cbd)", "--jax-platform", "{platform}",

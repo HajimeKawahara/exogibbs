@@ -81,6 +81,7 @@ Contents
 
    v0_4_fastchem4_validation_demo
    fastchem4_production_comparison
+   ni_co_ionization_audit
 
 License & Attribution
 ---------------------
