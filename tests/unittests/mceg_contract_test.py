@@ -7,7 +7,7 @@ from pathlib import Path
 
 def test_h2_evidence_matches_selected_source_files() -> None:
     root = Path(__file__).resolve().parents[2]
-    receipt = json.loads((root / "results/mceg/h2_tests_9990fdc.json").read_text())
+    receipt = json.loads((root / "results/mceg/h2_tests_47ecf87_r5.json").read_text())
     for name, expected in receipt["selected_file_sha256"].items():
         actual = hashlib.sha256((root / name).read_bytes()).hexdigest()
         assert actual == expected, f"Review MCEG evidence after changing {name}"

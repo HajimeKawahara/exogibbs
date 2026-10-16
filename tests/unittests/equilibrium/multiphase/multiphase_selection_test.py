@@ -178,3 +178,25 @@ def test_nonconvex_insertion_finds_negative_witness_without_promoting_a_trial():
     assert result.insertion_upper[1] < -.019
     assert np.isnan(result.insertion_lower[1])
     assert result.stability_status == "unstable"
+
+
+def test_disappearing_phase_preserves_trace_species_in_finite_phase():
+    from exogibbs.equilibrium.multiphase.selection import _neighbors
+    phase = mp.Phase("gas", ("major", "trace"), [[1., 1.]], lambda t, p, n, data: n.sum())
+    solid = mp.Phase("solid", ("s",), [[1.]], lambda t, p, n, data: n[0])
+    problem = mp.Problem(("X",), (phase, solid))
+    faces = list(_neighbors(problem, mp.Support((0, 1, 2)), np.array([1., 1e-40, 1e-30]),
+                            np.zeros(0), np.zeros(0), mp.Options()))
+    assert faces == [mp.Support((0, 1))]
+
+
+def test_boundary_warm_start_is_blended_into_a_new_interior():
+    from exogibbs.equilibrium.multiphase.selection import _seed
+    phase = mp.Phase("solution", ("A", "B", "trace"), [[1., 1., 1.]],
+                     lambda t, p, n, data: n.sum(), [[.1, -.9, .1]])
+    problem = mp.Problem(("X",), (phase,))
+    initial = np.array([.9, .1, 1e-40])
+    seed = _seed(problem, mp.Support((0, 1, 2)), np.ones(1), initial)
+    assert np.all(seed > 0) and np.all(problem.domain_matrix @ seed > 0)
+    np.testing.assert_allclose(seed.sum(), 1., atol=1e-15)
+    assert np.max(np.abs(seed-initial)) < 1e-4

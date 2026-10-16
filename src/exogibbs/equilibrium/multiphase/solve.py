@@ -6,7 +6,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from .kernel import minimize
+from .kernel import minimize, scaled_basis
 from .types import Options, Problem, R_SCALE, Result, Support
 
 
@@ -138,7 +138,14 @@ def _primal(
     total = jnp.sum(budget)
     target = jnp.concatenate((budget / total, jnp.zeros(len(active)))) / row_scale
     q = initial[indices] / total
-    q = q + jnp.asarray(inverse) @ (target - jnp.asarray(matrix) @ q)
+    row_basis = np.linalg.svd(matrix, full_matrices=False)[2][:rank]
+    row = jnp.asarray(row_basis)
+    # A relative correction preserves positive trace species when a feasible
+    # warm start differs from the ledger only by floating-point summation.
+    weights = jnp.where(jnp.all(q > 0), q, jnp.ones_like(q))
+    weighted = row * weights
+    q = q + weighted.T @ jnp.linalg.solve(
+        weighted @ row.T, row @ jnp.asarray(inverse) @ (target-jnp.asarray(matrix) @ q))
     sections = problem.component_slices
     energy = _energy(problem, indices)
 
@@ -155,15 +162,15 @@ def _primal(
 
     q, iterations, line_search_failed = minimize(
         lambda x: energy(x, temperature, pressure, parameters), q,
-        jnp.asarray(tangent), inequalities, valid_input, options,
+        jnp.asarray(tangent), row, inequalities, valid_input, options,
     )
     value, gradient = jax.value_and_grad(energy)(q, temperature, pressure, parameters)
     hessian = jax.hessian(energy)(q, temperature, pressure, parameters)
     dual = (jnp.asarray(inverse).T @ gradient) / row_scale
     raw_matrix = jnp.asarray(matrix) * jnp.asarray(row_scale)[:, None]
     stationarity = jnp.max(jnp.abs(gradient - raw_matrix.T @ dual))
-    curvature = (jnp.linalg.eigvalsh(jnp.asarray(tangent).T @ hessian
-                                    @ jnp.asarray(tangent))[0]
+    scale, basis = scaled_basis(q, row)
+    curvature = (jnp.linalg.eigvalsh(basis.T @ (scale[:, None] * hessian * scale[None, :]) @ basis)[0]
                  if tangent.shape[1] else jnp.asarray(jnp.inf))
     physical = _physical_state(problem, support, energy, q, temperature, pressure, budget, parameters)
     residual = physical[-1]

@@ -4,7 +4,14 @@ import jax
 import jax.numpy as jnp
 
 
-def minimize(energy, initial, tangent, inequalities, valid_input, options):
+def scaled_basis(q, row_basis):
+    """Congruence-scaled equality tangent, retaining arbitrarily dilute species."""
+    scale = jnp.sqrt(jnp.where(q > 0, q, 1.))
+    orthogonal, _ = jnp.linalg.qr((row_basis * scale).T, mode="complete")
+    return scale, orthogonal[:, row_basis.shape[0]:]
+
+
+def minimize(energy, initial, tangent, row_basis, inequalities, valid_input, options):
     """JAX-only primal; static null-space coordinates enforce the equalities."""
     value_grad = jax.value_and_grad(energy)
     hessian = jax.hessian(energy)
@@ -13,15 +20,21 @@ def minimize(energy, initial, tangent, inequalities, valid_input, options):
 
     def diagnostics(q):
         value, gradient = value_grad(q)
-        reduced_gradient = tangent.T @ gradient
-        reduced_hessian = tangent.T @ hessian(q) @ tangent
+        scale, basis = scaled_basis(q, row_basis)
+        directions = scale[:, None] * basis
+        # Remove the conserved linear gauge before scaling. Otherwise its
+        # roundoff can dominate a trace species' physically tiny direction.
+        projected_gradient = gradient-row_basis.T @ (row_basis @ gradient)
+        reduced_gradient = directions.T @ projected_gradient
+        scaled_hessian = scale[:, None] * hessian(q) * scale[None, :]
+        reduced_hessian = basis.T @ scaled_hessian @ basis
         eigenvalues, eigenvectors = jnp.linalg.eigh(reduced_hessian)
-        return value, reduced_gradient, eigenvalues, eigenvectors
+        return value, reduced_gradient, eigenvalues, eigenvectors, directions, tangent.T @ gradient
 
     def condition(state):
         q, iteration, failed = state
-        value, gradient, eigenvalues, _ = diagnostics(q)
-        unfinished = ((jnp.linalg.norm(gradient) > options.stationarity_tolerance)
+        value, gradient, eigenvalues, _, _, residual = diagnostics(q)
+        unfinished = ((jnp.linalg.norm(residual) > options.stationarity_tolerance)
                       | (eigenvalues[0] < -options.curvature_tolerance))
         return (valid_input & ~failed & (iteration < options.max_iterations)
                 & jnp.isfinite(value) & jnp.all(jnp.isfinite(gradient))
@@ -29,17 +42,17 @@ def minimize(energy, initial, tangent, inequalities, valid_input, options):
 
     def step(state):
         q, iteration, _ = state
-        value, gradient, eigenvalues, eigenvectors = diagnostics(q)
+        value, gradient, eigenvalues, eigenvectors, directions, residual = diagnostics(q)
         # Regularize the full Hessian only for the direction, never the energy
         # or final curvature audit. This ensures descent in nonconvex regions.
         shift = jnp.maximum(0., 1e-8 - eigenvalues[0])
         direction = -eigenvectors @ ((eigenvectors.T @ gradient) / (eigenvalues + shift))
-        saddle = ((jnp.linalg.norm(gradient) <= options.stationarity_tolerance)
+        saddle = ((jnp.linalg.norm(residual) <= options.stationarity_tolerance)
                   & (eigenvalues[0] < -options.curvature_tolerance))
         negative_direction = eigenvectors[:, 0]
         negative_direction *= jnp.where(gradient @ negative_direction > 0, -1., 1.)
         direction = jnp.where(saddle, negative_direction, direction)
-        full_direction = tangent @ direction
+        full_direction = directions @ direction
         slack = inequalities @ q
         change = inequalities @ full_direction
         ratios = jnp.where(change < 0, -slack / jnp.where(change < 0, change, -1.), jnp.inf)
