@@ -1,0 +1,136 @@
+{
+  "description": "Offline reference excerpt for Ni and Co first ionization.",
+  "temperature_K": [
+    1000,
+    2000,
+    3000,
+    4000,
+    5000,
+    6000
+  ],
+  "elements": {
+    "Ni": {
+      "ionization_energy_eV": 7.639878,
+      "ionization_energy_uncertainty_eV": 1.7e-05,
+      "nist_reference_codes": [
+        "L12369"
+      ],
+      "partition_neutral": [
+        17.1522,
+        22.7024,
+        26.3546,
+        28.9074,
+        30.887,
+        32.636
+      ],
+      "partition_ion": [
+        6.45775,
+        7.39325,
+        8.29948,
+        9.43082,
+        10.8117,
+        12.3743
+      ]
+    },
+    "Co": {
+      "ionization_energy_eV": 7.88101,
+      "ionization_energy_uncertainty_eV": 0.00012,
+      "nist_reference_codes": [
+        "L10545"
+      ],
+      "partition_neutral": [
+        13.6596,
+        19.3026,
+        24.4719,
+        29.1603,
+        33.5878,
+        38.0487
+      ],
+      "partition_ion": [
+        11.4174,
+        16.0926,
+        20.9531,
+        25.5564,
+        29.8901,
+        34.0491
+      ]
+    }
+  },
+  "sources": {
+    "ionization_energies": {
+      "bundled_source_path": "exojax/src/exojax/data/atom/NIST_Atomic_Ionization_Energies.txt",
+      "sha256": "f01db474ba40f8f72f24ffb256c0aef0a155ca88756c336f1ddb87a474620e9a",
+      "name": "NIST Atomic Spectra Database, Ionization Energies",
+      "url": "https://physics.nist.gov/PhysRefData/ASD/ionEnergy.html",
+      "snapshot": "January 2022, as stated in the bundled source header",
+      "source_lines_1based": {
+        "Ni": 386,
+        "Co": 359
+      }
+    },
+    "partition_functions": {
+      "bundled_source_path": "exojax/src/exojax/data/atom/barklem_collet_2016_pff.txt",
+      "sha256": "6c7910298838addf3c366f5d86985f1a64c866cef5ce65613e9a126fef312650",
+      "name": "Barklem & Collet (2016), A&A 588, A96, Table 8",
+      "doi": "10.1051/0004-6361/201526961",
+      "url": "https://doi.org/10.1051/0004-6361/201526961",
+      "source_lines_1based": {
+        "Ni_I": 83,
+        "Ni_II": 84,
+        "Co_I": 80,
+        "Co_II": 81
+      },
+      "temperature_grid_source": {
+        "bundled_source_path": "exojax/src/exojax/database/core_atom/io.py",
+        "sha256": "326a58bdade305c1a2e28b894c6defdf996f88734ce4771a4056cfc61e82228a",
+        "function": "load_pf_Barklem2016",
+        "variable": "pfT_str"
+      }
+    },
+    "nasa9_Co_ion": {
+      "name": "NASA CEA thermodynamic database",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "source_path": "data/thermo.inp",
+      "note": "Same full source snapshot as src/exogibbs/data/nasa9/fastchem4_hot.json; only the Co+ 1000-6000 K interval is copied here."
+    },
+    "janaf": {
+      "url": "https://janaf.nist.gov/",
+      "tables": [
+        "Ni-005",
+        "Ni-006",
+        "Co-005",
+        "Co-006",
+        "D-020"
+      ],
+      "accessed": "2026-10-16",
+      "note": "Adjacent tab-delimited files retain selected original rows from /tables/<id>.txt; source URLs are in the headers. Formation energies are kJ/mol, entropy and heat capacity are J/mol/K, standard pressure is 1 bar."
+    }
+  },
+  "notes": [
+    "Partition functions are copied at exact tabulated temperatures; no interpolation is used.",
+    "The Saha electron-spin factor 2 is separate from the atomic partition-function ratio.",
+    "Ionization energies retain the historical bundled NIST snapshot; they are not claimed to be the latest values."
+  ],
+  "nasa9_Co_ion": {
+    "source_name": "Co+",
+    "bounds_K": [
+      1000.0,
+      6000.0
+    ],
+    "coefficients": [
+      2907386.174,
+      -8619.70575,
+      11.88134934,
+      -0.00351064742,
+      5.74800468e-07,
+      -2.534065135e-11,
+      2.976607469e-16,
+      197741.9221,
+      -60.9653344
+    ],
+    "reference": "Sugar,1985. Gordon,1999.",
+    "source_line_1based": 4192,
+    "mass_u": 58.9326514
+  }
+}
