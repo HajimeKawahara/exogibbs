@@ -28,7 +28,12 @@ def _seed(problem, support, budget, initial):
     rows = rows[np.any(rows != 0, axis=1)]
     rows /= np.linalg.norm(rows, axis=1)[:, None]
     q = initial[indices] / budget.sum()
-    q += inverse @ (target - matrix @ q)
+    if np.all(q > 0):
+        row = np.linalg.svd(matrix, full_matrices=False)[2][:np.linalg.matrix_rank(matrix)]
+        weighted = row*q
+        q += weighted.T @ np.linalg.solve(weighted @ row.T, row @ inverse @ (target-matrix @ q))
+    else:
+        q += inverse @ (target - matrix @ q)
     if np.max(np.abs(matrix @ q - target)) < 1e-12 and np.all(rows @ q > 0):
         full = np.zeros_like(initial, dtype=float)
         full[indices] = q * budget.sum()
@@ -41,20 +46,30 @@ def _seed(problem, support, budget, initial):
                  bounds=[(None, None)] * len(indices) + [(0., 1.)], method="highs")
     if not lp.success:
         return None
+    interior = lp.x[:-1]
+    # Keep a boundary warm start close to its original composition. A small
+    # feasible convex blend initializes a new face; it is not an amount floor.
+    slack, margin = rows @ q, rows @ interior
+    if (np.all(np.isfinite(q)) and np.max(np.abs(matrix @ q-target)) < 1e-12
+            and np.all(slack >= -1e-12) and np.all(margin > 0)):
+        required = np.max(np.where(slack < 0, -slack/np.maximum(margin-slack, 1e-300), 0.))
+        weight = min(1., max(1e-4, 1.01*required))
+        interior = (1-weight)*q+weight*interior
     full = np.zeros_like(initial, dtype=float)
-    full[indices] = lp.x[:-1] * budget.sum()
+    full[indices] = interior * budget.sum()
     return full
 
 
 def _neighbors(problem, support, amounts, slack, multipliers, options):
     """Suggest faces; only a fresh constrained solve can accept a deletion."""
     indices = np.asarray(support.components)
-    tiny = amounts[indices] <= options.support_tolerance
-    if np.any(tiny) and not np.all(tiny):
-        kept = tuple(indices[~tiny])
-        active = tuple(i for i in support.active_constraints
-                       if np.any(problem.domain_matrix[i, list(kept)]))
-        yield Support(kept, active)
+    # Prefer whole vanishing phases before component faces. Dilute species
+    # inside a finite phase can have arbitrarily small equilibrium amounts.
+    vanished = {i for section in problem.component_slices
+                if np.sum(amounts[section]) <= options.support_tolerance
+                for i in indices if section.start <= i < section.stop}
+    tiny = (np.asarray([i in vanished for i in indices]) if vanished
+            else amounts[indices] <= options.support_tolerance)
     for i, row in enumerate(problem.domain_matrix):
         if i in support.active_constraints:
             if multipliers[i] < -options.kkt_tolerance:
@@ -66,6 +81,12 @@ def _neighbors(problem, support, amounts, slack, multipliers, options):
             except ValueError:
                 continue
             yield candidate
+
+    if np.any(tiny) and not np.all(tiny):
+        kept = tuple(indices[~tiny])
+        active = tuple(i for i in support.active_constraints
+                       if np.any(problem.domain_matrix[i, list(kept)]))
+        yield Support(kept, active)
 
 
 def _search(problem, budget, initial, reachable, temperature, pressure, parameters, options):
@@ -123,6 +144,20 @@ def _insertion(phase, temperature, pressure, potentials, parameters, allowed, cu
         candidates.append(current / current.sum())
     atoms = np.asarray(phase.atom_matrix)
     domain = np.asarray(phase.domain_matrix).reshape((-1, count))
+    if phase.insertion_lower_bound_j_mol is not None:
+        lower = float(phase.insertion_lower_bound_j_mol(
+            temperature, pressure, jnp.asarray(potentials), parameters, tuple(np.flatnonzero(allowed)),
+        )) / (R_SCALE * temperature)
+        if np.isfinite(lower) and lower >= -options.kkt_tolerance:
+            values = [(float((phase.gibbs_j(temperature, pressure, jnp.asarray(x), parameters)
+                              - potentials @ (atoms @ x)) / (R_SCALE * temperature)), x)
+                      for x in candidates if np.all(domain @ x >= -1e-12)]
+            values = [(v, x) for v, x in values if np.isfinite(v)]
+            if values:
+                upper, composition = min(values, key=lambda item: item[0])
+                if lower > upper + options.kkt_tolerance:
+                    raise ValueError(f"{phase.name}: insertion lower bound contradicts an evaluated trial.")
+                return lower, upper, composition
     # Feasible vertices and interior starts expose negative trials without
     # interpreting positive local minima as global lower bounds.
     for index in np.flatnonzero(allowed) if count > 1 else ():

@@ -185,7 +185,8 @@ class Result:
 
     KKT and minimum checks concern only the declared face, not insertion in
     omitted components or phases.
-    Residuals and curvature use G/(R_SCALE*T*sum(b)) and q=n/sum(b).
+    Residuals use G/(R_SCALE*T*sum(b)) and q=n/sum(b). Curvature
+    uses the square-root-q-scaled equality tangent (inertia is preserved).
     Undefined chemical potentials and unevaluated insertion bounds are NaN.
     Element potentials use a row-scaled minimum-norm gauge if elemental rows
     are redundant; rows absent from the support are undefined. minimum_valid

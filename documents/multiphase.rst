@@ -257,3 +257,37 @@ native liquid/forsterite equilibria with an independent analytic-potential
 root, and checks full-G extensivity and step-refined thermodynamic derivatives.
 The native integration job uses provider wheels at a separately pinned ExoEOS
 revision; the historical M2 provider pin and evidence are unchanged.
+
+Trace species and retained atmospheres
+-------------------------------------
+
+The primal uses a positive amount-weighted feasibility correction and a
+square-root amount scaling of its equality tangent. These operations retain
+positive trace species without composition floors. ``minimum_curvature`` is
+measured in this scaled tangent; congruence preserves the inertia of the
+physical Hessian. Conservation and stationarity tolerances are unchanged.
+The implicit derivative audit still rejects ill-conditioned physical systems.
+
+A valid global insertion lower bound can establish stability without repeated
+local insertion minimizations. An evaluated feasible upper trial is retained
+and checked against that lower bound. Missing bounds remain unresolved.
+
+``exogibbs.api.condensate.audit`` independently reconstructs elemental
+conservation, gas chemical potentials and pure-condensate insertion from
+primitive mol amounts. It assumes ideal gas and retained pure condensates.
+It accepts an explicit common elemental gauge for cross-phase G comparisons,
+handles exact-zero element budgets, and enforces temperature eligibility.
+It does not accept a saved solver flag or saved dual as evidence.
+
+The packaged ``thermo.young2023`` and ``thermo.janaf_atomic`` functions expose
+pinned standards needed by the M2 native recipe. The former retains its frozen
+2350 K Shomate branches; the latter retains its 2100--2400 K interpolation
+range. These functions do not define phase assemblages or improve empirical
+cross-phase calibration. ``thermo.ideal_gibbs`` supplies the full ideal-gas
+scalar in K/Pa/mol and its analytic normalized insertion lower bound.
+
+``examples/metal_silicate/run_m2_native_proof.py`` remains a separate proof
+workflow. It consumes a newly serialized primitive source, repairs feasibility
+with exact arithmetic, and recomputes liquid/alloy, gas/cloud and all 33 native
+mineral competitor bounds. It may use a pinned provider checkout and native
+binary; neither is needed by the Inventory forward calculation.

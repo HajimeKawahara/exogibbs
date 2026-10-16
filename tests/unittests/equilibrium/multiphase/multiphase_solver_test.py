@@ -218,3 +218,37 @@ r = m.solve(p, temperature_k=1000., pressure_pa=1e5, element_amounts_mol=[2.], i
 assert r.local_kkt_valid and r.amounts_mol[0] == 2.
 '''
     subprocess.run([sys.executable, "-c", code], env=os.environ.copy(), check=True)
+
+
+def test_relative_projection_and_curvature_keep_trace_gas():
+    """A feasible 1e-40 species must survive budget projection and Newton steps."""
+    standard = jnp.array([0., 100., 80.])
+    def gas(t, p, n, parameters):
+        return R*t*jnp.sum(n*(standard+jnp.log(n/jnp.sum(n))))
+    phase = mp.Phase("gas", ("A", "B", "C"), [[1., 1., 2.]], gas)
+    problem = mp.Problem(("X",), (phase,))
+    result = mp.solve_fixed_support(problem, temperature_k=1000., pressure_pa=1e5,
+        element_amounts_mol=jnp.array([3.]), support=mp.Support((0, 1, 2)),
+        init=jnp.array([3.+1e-14, 1e-40, 1e-32]), options=mp.Options(max_iterations=200))
+    assert result.converged and result.local_kkt_valid and result.minimum_valid
+    assert result.amounts_mol[1] > 0 and result.amounts_mol[2] > 0
+    assert float(result.stationarity_error) < 1e-10
+    assert float(result.conservation_error) < 1e-12
+
+
+def test_conserved_gauge_does_not_swamp_trace_newton_residuals():
+    """Known ideal equilibrium on thirteen elements and a 45-decade amount range."""
+    rng = np.random.default_rng(17)
+    atoms = np.c_[np.eye(13), rng.integers(0, 4, size=(13, 40))]
+    expected = np.r_[np.ones(13), np.geomspace(1e-3, 1e-45, 40)]
+    dual = np.linspace(-100., 30., 13)
+    standards = atoms.T @ dual-np.log(expected/expected.sum())
+    phase = mp.Phase("gas", tuple(f"s{i}" for i in range(53)), atoms, ideal)
+    problem = mp.Problem(tuple(f"e{i}" for i in range(13)), (phase,))
+    result = mp.solve_fixed_support(problem, temperature_k=1000., pressure_pa=1e5,
+        element_amounts_mol=atoms @ expected, support=mp.Support(tuple(range(53))),
+        init=expected*np.exp(.05*np.sin(np.arange(53))), parameters=jnp.asarray(standards))
+    assert result.converged and result.local_kkt_valid and result.minimum_valid
+    assert float(result.stationarity_error) < 1e-10
+    np.testing.assert_allclose(result.amounts_mol, expected, atol=0., rtol=1e-9)
+    assert not result.derivative_valid

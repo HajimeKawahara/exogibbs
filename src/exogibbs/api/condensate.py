@@ -1,5 +1,6 @@
 """Canonical public API for gas-plus-condensate equilibrium."""
 
+from exogibbs.equilibrium.condensate.audit import audit
 from exogibbs.equilibrium.condensate.initialization import (
     DefaultCondensateEquilibriumInitializer,
     FixedSupportCondensateEquilibriumGrid,
@@ -56,6 +57,7 @@ __all__ = (
     "FixedSupportCondensateEquilibriumGrid",
     "GridCondensateEquilibriumInitializer",
     "LogFugacityCoefficientFunction",
+    "audit",
     "build_condensate_chemical_setup",
     "regauge_gas_only_warm_start",
     "solve",
