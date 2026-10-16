@@ -286,8 +286,9 @@ def solve_control(
         cached[key] = value
         return value
 
-    # Cloud-bearing atom coordinates can differ greatly in chemical sensitivity.
-    root = least_squares(lambda x: evaluate(x)[0], initial, diff_step=1e-5, x_scale="jac",
+    # Second-order differences resolve the stiff parcel response near the root;
+    # first-order differences can stagnate before the independent residual gates.
+    root = least_squares(lambda x: evaluate(x)[0], initial, jac="3-point", diff_step=1e-5, x_scale="jac",
                          bounds=(-650.0, upper_bounds), method="dogbox",
                          xtol=1e-11, ftol=1e-11, gtol=1e-11, max_nfev=max_nfev)
     cached.clear()
