@@ -4,9 +4,13 @@ from dataclasses import replace
 
 import jax
 import jax.numpy as jnp
-from jax.experimental import enable_x64
 import numpy as np
 import pytest
+
+try:
+    from jax import enable_x64
+except ImportError:  # Support older JAX releases.
+    from jax.experimental import enable_x64
 
 from exogibbs.api.gas import solve
 from exogibbs.presets import fastchem4, fastchem4_nasa9_ions

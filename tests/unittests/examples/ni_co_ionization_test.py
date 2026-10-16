@@ -3,9 +3,13 @@
 import importlib.util
 from pathlib import Path
 
-from jax.experimental import enable_x64
 import numpy as np
 import pytest
+
+try:
+    from jax import enable_x64
+except ImportError:  # Support older JAX releases.
+    from jax.experimental import enable_x64
 
 from exogibbs.equilibrium.gas.kernel.equations import _compute_gk
 from exogibbs.io.load_data import get_data_filepath
@@ -31,7 +35,7 @@ def rows(comparison):
 @pytest.mark.parametrize("element", ["Ni", "Co"])
 def test_pressure_and_electron_conventions_satisfy_reaction_equilibrium(comparison, element):
     temperature = 3000.0
-    with enable_x64():
+    with enable_x64(True):
         setup = fastchem4.chemsetup(path=comparison.FASTCHEM_PATH, silent=True)
         indices = [setup.species.index(name) for name in (element + "1", element + "1+", "e1-")]
         hvector = np.asarray(setup.hvector_func(temperature))[indices]

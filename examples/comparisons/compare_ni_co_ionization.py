@@ -11,8 +11,12 @@ import json
 from pathlib import Path
 import sys
 
-from jax.experimental import enable_x64
 import numpy as np
+
+try:
+    from jax import enable_x64
+except ImportError:  # Support older JAX releases.
+    from jax.experimental import enable_x64
 
 from exogibbs.io.load_data import get_data_filepath, load_JANAF_rawtxt
 from exogibbs.presets import fastchem, fastchem4
@@ -82,7 +86,7 @@ def compute_comparison() -> list[dict]:
     )
     electron_g = _janaf_formation_g("D-020.txt", temperature)
     rows = []
-    with enable_x64():
+    with enable_x64(True):
         setup = fastchem4.chemsetup(path=FASTCHEM_PATH, silent=True)
         hvector = np.asarray(setup.hvector_func(temperature))
         for element in ("Ni", "Co"):
