@@ -109,7 +109,7 @@ References
 * Dasgupta, R. et al. (2022), doi:10.1016/j.gca.2022.09.012.
 
 Sun--Yao water comparison
-------------------------
+-------------------------
 
 ``h2o_sun_yao2026`` adds the water branch of Sun & Yao (2026),
 `doi:10.1016/j.epsl.2026.120115 <https://doi.org/10.1016/j.epsl.2026.120115>`_.
