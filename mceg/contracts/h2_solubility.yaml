@@ -6,7 +6,7 @@ model:
     a later formulation recorded in upstream metadata.
   implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
-    revision: 9990fdc2f4bd8423bdfc0cefdc1fbb8325cfe55f
+    revision: 748f9da6a7f13e9082fa42ab61caca907c39fe5b
     entry_points:
     - exogibbs.solubility.h2_hirschmann2012
 assumptions:
@@ -368,11 +368,11 @@ evidence:
 - id: provider_test_run
   kind: numerical_test
   result: passed
-  summary: The selected provider tests passed in the adoption run (8 tests).
+  summary: The selected provider tests passed in the maintenance run (8 tests).
   sources:
-  - results/mceg/h2_tests_9990fdc.json
-  - results/mceg/h2_tests_9990fdc.xml
-  scope: Only the recorded test selectors at implementation revision 9990fdc2f4bd8423bdfc0cefdc1fbb8325cfe55f.
+  - results/mceg/h2_tests_748f9da.json
+  - results/mceg/h2_tests_748f9da.xml
+  scope: Only the recorded test selectors at implementation revision 748f9da6a7f13e9082fa42ab61caca907c39fe5b.
     Source hashes and execution environment are preserved in the receipt; these checks do not establish
     physical accuracy.
 limitations:
