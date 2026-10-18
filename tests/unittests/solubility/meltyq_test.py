@@ -316,6 +316,9 @@ def test_metadata_records_native_bases_and_provenance() -> None:
 
 def test_package_exports_are_explicit_and_unique() -> None:
     expected_exports = (
+        "SUN_YAO2026_WATER_METADATA",
+        "h2o_sun_yao2026",
+        "h2o_sun_yao2026_terms",
         "MELTYQ_SOLUBILITY_METADATA",
         "SolubilityMetadata",
         "ch4_ardia2013",
@@ -327,7 +330,7 @@ def test_package_exports_are_explicit_and_unique() -> None:
     )
 
     assert solubility.__all__ == expected_exports
-    assert meltyq.__all__ == expected_exports
+    assert meltyq.__all__ == expected_exports[3:]
 
 
 def test_legacy_meltyq_module_reexports_general_volatile_laws() -> None:

@@ -1,0 +1,368 @@
+{
+  "record_format": "provider_owned_h2_execution_v0.1",
+  "executed_at_utc": "2026-10-17T23:37:27.900666+00:00",
+  "case_id": "h2_solubility_1700K_7500bar",
+  "case_sha256": "166299fcc82608ffdd55e5e1770a56e4c9ec8e94c9ac0da7b4f3cc5783123ccd",
+  "runner_sha256": "17dcdbbed4faffe42e937efaef335d0674ccd0be667f9906640c67b7d6bce407",
+  "helper_sha256": {
+    "examples/h2_solubility/run.py": "4f56b0a827e2a8dd6f090e17eb84c1b154970718bf4f3ab4842da3c465366ff5",
+    "examples/provider_workflow/run.py": "14f45122c289cb713cf199bd8f055576dca0d35f5086bf536249202870f23401"
+  },
+  "baseline_contract_sha256": {
+    "contracts/zhang_duan_h2.yaml": "514ff6ae813f059ef37e93ea46f9818eceb8a4dac555bdc891e5c2b91683ebd6",
+    "contracts/h2_solubility.yaml": "0737387f49933628845d6758e9c7a96ac0894b19715d0578dcc59a8c291d2eda"
+  },
+  "providers": {
+    "exoeos": {
+      "audited_revision": "d7681db4393fd85904846b083013230d81d45d4e",
+      "checkout_revision": "9dc71506264b220fbd496259060cb67a95c1d11c",
+      "selected_files_match_audit": true,
+      "selected_file_sha256": {
+        "src/exoeos/__init__.py": "b53b3a90a57cbec34b794fd084379aed6e45526e38ee574ec6483e7e79d78592",
+        "src/exoeos/zhang_duan.py": "bacbb5d7d1295258fa3d888067bb8060450a01a4bbfa8a40eb499483a3bee986",
+        "src/exoeos/helmholtz.py": "75d7ab3a68781c73e8d8197c05151f0a8adb076595bcfad296a544f00860318e",
+        "src/exoeos/constants.py": "69e57fe70ad4ea775f2d97722548276c87d3a91c76eb6be8f1be43ac30f83fa4",
+        "src/exoeos/_arrays.py": "020679ce40515c27ce0bf31f5b71b1f737737d4a5ebc0301198a9e2bcbedf507",
+        "src/exoeos/state.py": "76968b4d4c64a0a585a2554ed824f92346ad0e5a67289a4b6d0623b20905ee54",
+        "tests/unittests/zhang_duan_test.py": "40153705cf2f2bc4ad258fc1eef9c70eac02e8c20354ec6c310dbf716de84844",
+        "documents/thermodynamic_state_contract.md": "6cde3050a8b2b1242e879d9bd4ea3e2bee1d607ceaaa2d203d4f83f5e6d15d67",
+        "documents/tutorials/zhang_duan_eos.rst": "d3f8f7f615e8b0e371916d7dde32c3f21e3fe5252cbdf54ca8c6c94b907e615c"
+      },
+      "repository": "https://github.com/HajimeKawahara/exoeos",
+      "contract_path": "mceg/contracts/zhang_duan_h2.yaml",
+      "contract_sha256": "719edf0917d0216edfeab23c35fb36a7957270e27e50c669ee4b5930fbc74903",
+      "execution_path": "results/mceg/h2_tests_d7681db.json",
+      "execution_sha256": "88cdfa19344c854fb5a36dc0ca032c8e5e63845ba63dbd481506bc020562ebe5",
+      "reference_checks": {
+        "schema_valid": true,
+        "local_files_complete": true,
+        "local_file_sha256": {
+          "src/exoeos/zhang_duan.py": "bacbb5d7d1295258fa3d888067bb8060450a01a4bbfa8a40eb499483a3bee986",
+          "documents/thermodynamic_state_contract.md": "6cde3050a8b2b1242e879d9bd4ea3e2bee1d607ceaaa2d203d4f83f5e6d15d67",
+          "documents/tutorials/zhang_duan_eos.rst": "d3f8f7f615e8b0e371916d7dde32c3f21e3fe5252cbdf54ca8c6c94b907e615c"
+        },
+        "missing": [],
+        "external_not_checked": [
+          "https://doi.org/10.1016/j.gca.2009.01.021",
+          "https://github.com/HajimeKawahara/exoeos/blob/d7681db4393fd85904846b083013230d81d45d4e/tests/unittests/zhang_duan_test.py#L268-L294",
+          "https://github.com/HajimeKawahara/mceg/blob/ffcfb23cc7f135a3d8c505b4c1f5af8a5327986e/docs/en/h2_solubility.md#verification"
+        ],
+        "fragments_checked": false,
+        "opaque_not_checked": [
+          "results/mceg/h2_tests_d7681db.json",
+          "results/mceg/h2_tests_d7681db.xml"
+        ],
+        "entry_point_symbols_checked": false
+      }
+    },
+    "exogibbs": {
+      "audited_revision": "c2d3e8b0490d4ae502720940ea220a21a3146a56",
+      "checkout_revision": "c2d3e8b0490d4ae502720940ea220a21a3146a56",
+      "selected_files_match_audit": true,
+      "selected_file_sha256": {
+        "src/exogibbs/solubility/__init__.py": "8800e1d54f0f23bc49f38b1d3efa71eeb313fc4b9d879a181eef8dcfcc5e5342",
+        "src/exogibbs/solubility/volatile.py": "8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da",
+        "src/exogibbs/interop/exoeos.py": "03a624ffbcfd404f81d498c350a20627335e50772ef07b8596b6dc2e1043afcb",
+        "src/exogibbs/utils/units.py": "5cb53d0c444c90de9d8f697641d83f28275a6e661bd0197e44a6ca66a9fd1efd",
+        "src/exogibbs/thermo/fugacity.py": "85348725ac895bec2cd653520cf795de5e10aa9d1b1d9afed1d9205b1480e31e",
+        "tests/unittests/solubility/meltyq_test.py": "4d105accc5b8e66605942f2596ed70ca546f94091fe9775cfbd9da680a28f0fd",
+        "tests/unittests/examples/solubility_comparison_test.py": "7ac13e8ffda60350928bddbd74f0c58b366821adf976566a8a0b60809cbb9676",
+        "examples/comparisons/compare_solubility_laws.py": "496b3884319675b4a907bfc661f4e0c8a8136d302425a413961ab6241b667114"
+      },
+      "repository": "https://github.com/HajimeKawahara/exogibbs",
+      "contract_path": "mceg/contracts/h2_solubility.yaml",
+      "contract_sha256": "29f4f049a9a563f14ee23c4031e26d7c021c0d6db8efa3c437978462a120e027",
+      "execution_path": "results/mceg/h2_tests_c2d3e8b.json",
+      "execution_sha256": "40fc17151ed4f6941bf04ebb2462e619184a134593d81a56354281a43f71b6c1",
+      "reference_checks": {
+        "schema_valid": true,
+        "local_files_complete": true,
+        "local_file_sha256": {
+          "src/exogibbs/solubility/volatile.py": "8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da"
+        },
+        "missing": [],
+        "external_not_checked": [
+          "https://arxiv.org/html/2408.17056v1#S2.SS3",
+          "https://doi.org/10.1007/s00410-025-02272-y",
+          "https://doi.org/10.1016/j.epsl.2012.06.031",
+          "https://doi.org/10.3847/1538-4357/ad7461",
+          "https://doi.org/10.48550/arXiv.2605.08752",
+          "https://experts.umn.edu/en/publications/solubility-of-molecular-hydrogen-in-silicate-melts-and-consequenc/",
+          "https://github.com/HajimeKawahara/exogibbs/blob/6b4cef45d2a6f1eb1462afd6cb6d3f1c77dba8ea/tests/unittests/solubility/meltyq_test.py#L28-L91",
+          "https://github.com/HajimeKawahara/mceg/blob/ffcfb23cc7f135a3d8c505b4c1f5af8a5327986e/docs/en/h2_solubility.md#verification",
+          "https://link.springer.com/article/10.1007/s00410-025-02272-y",
+          "https://link.springer.com/article/10.1007/s00410-025-02272-y#Fig5",
+          "https://link.springer.com/article/10.1007/s00410-025-02272-y#Fig8"
+        ],
+        "fragments_checked": false,
+        "opaque_not_checked": [
+          "Shelby JE (1994). Protonic species in vitreous silica. Journal of Non-Crystalline Solids 179:138-147.",
+          "results/mceg/h2_tests_c2d3e8b.json",
+          "results/mceg/h2_tests_c2d3e8b.xml"
+        ],
+        "entry_point_symbols_checked": false
+      }
+    }
+  },
+  "inputs": {
+    "temperature_K": 1700.0,
+    "total_pressure_bar": 7500.0,
+    "gas_mole_fractions": {
+      "H2": 1.0
+    },
+    "phase_selector": "vapor",
+    "melt_composition": "unknown"
+  },
+  "outputs": {
+    "lnphi_H2": 0.8136428217801572,
+    "phi_H2": 2.2561116480162458,
+    "fugacity_H2_bar": 16920.837360121845,
+    "dissolved_H2_mole_fraction": 0.10681051751547334,
+    "ideal_fugacity_control_mole_fraction": 0.04734274458863315
+  },
+  "environment": {
+    "python": "3.10.9",
+    "backend": "cpu",
+    "dtype": "float64",
+    "jax_enable_x64": true,
+    "versions": {
+      "jax": "0.6.2",
+      "jaxlib": "0.6.2",
+      "numpy": "2.0.2"
+    }
+  },
+  "numerical_checks": [
+    {
+      "id": "adapter_matches_direct_eos_lnphi",
+      "actual": 0.8136428217801572,
+      "expected": 0.8136428217801572,
+      "rtol": 1e-12,
+      "atol": 1e-14,
+      "passed": true
+    },
+    {
+      "id": "eos_pressure_round_trip_Pa",
+      "actual": 749999999.9999998,
+      "expected": 750000000.0,
+      "rtol": 1e-10,
+      "atol": 1e-14,
+      "passed": true
+    },
+    {
+      "id": "law_uses_fugacity_and_actual_pressure",
+      "actual": 0.10681051751547334,
+      "expected": 0.10681051751547334,
+      "rtol": 1e-12,
+      "atol": 1e-14,
+      "passed": true
+    },
+    {
+      "id": "ideal_control_uses_actual_pressure",
+      "actual": 0.04734274458863315,
+      "expected": 0.04734274458863315,
+      "rtol": 1e-12,
+      "atol": 1e-14,
+      "passed": true
+    }
+  ],
+  "assessment_method": "manual",
+  "assessments": [
+    {
+      "id": "eos_temperature",
+      "subject": "eos",
+      "scope": "Temperature projection of reported pure-H2 PVT comparison data.",
+      "classification": "extrapolation",
+      "value": 1700.0,
+      "reported_range": {
+        "lower": 250.0,
+        "upper": 423.0,
+        "unit": "K"
+      },
+      "reason": "The case exceeds the Table 5 experimental-data temperature envelope. This does not assert a fundamental EOS limit or a fugacity error bound.",
+      "evidence": [
+        {
+          "provider": "exoeos",
+          "contract": "mceg/contracts/zhang_duan_h2.yaml",
+          "evidence": "reported_domain"
+        }
+      ]
+    },
+    {
+      "id": "eos_pressure",
+      "subject": "eos",
+      "scope": "Pressure projection of reported pure-H2 PVT comparison data.",
+      "classification": "extrapolation",
+      "value": 750.0,
+      "reported_range": {
+        "lower": 2.0,
+        "upper": 700.0,
+        "unit": "MPa"
+      },
+      "reason": "The case exceeds the reported pure-H2 pressure envelope.",
+      "evidence": [
+        {
+          "provider": "exoeos",
+          "contract": "mceg/contracts/zhang_duan_h2.yaml",
+          "evidence": "reported_domain"
+        }
+      ]
+    },
+    {
+      "id": "solubility_metadata_temperature",
+      "subject": "solubility",
+      "scope": "Temperature interval recorded by upstream metadata.",
+      "classification": "within_reported_range",
+      "value": 1700.0,
+      "reported_range": {
+        "lower": 1673.0,
+        "upper": 1773.0,
+        "unit": "K"
+      },
+      "reason": "Inclusion does not establish joint physical applicability. The upper bound differs from Seo's basaltic interval; the original run table is still uninspected.",
+      "evidence": [
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "metadata_temperature"
+        }
+      ]
+    },
+    {
+      "id": "solubility_formulation_temperature",
+      "subject": "solubility",
+      "scope": "Basaltic-melt temperature interval reported in the secondary source Seo before Eq. 6.",
+      "classification": "within_reported_range",
+      "value": 1700.0,
+      "reported_range": {
+        "lower": 1673.0,
+        "upper": 1723.0,
+        "unit": "K"
+      },
+      "reason": "The case also lies inside this narrower source-specific interval. The two source intervals are retained separately, without changing upstream metadata. Comparison with the original experimental table is not complete.",
+      "evidence": [
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "formulation_temperature"
+        },
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "temperature_crosscheck"
+        }
+      ]
+    },
+    {
+      "id": "solubility_total_pressure",
+      "subject": "solubility",
+      "scope": "Total-pressure interval, not a hydrogen-fugacity interval.",
+      "classification": "within_reported_range",
+      "value": 0.75,
+      "reported_range": {
+        "lower": 0.7,
+        "upper": 3.0,
+        "unit": "GPa"
+      },
+      "reason": "Metadata and Seo include this total pressure. The original abstract also directly confirms the study-wide 0.7 to 3 GPa envelope, without resolving the material-specific runs or the joint calibration domain.",
+      "evidence": [
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "metadata_pressure"
+        },
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "experimental_pressure"
+        },
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "formulation"
+        }
+      ]
+    },
+    {
+      "id": "solubility_fugacity",
+      "subject": "solubility",
+      "scope": "Experimental support for the hydrogen fugacity supplied in this run.",
+      "classification": "unknown",
+      "reason": "The experimental fugacity coverage was not established in this audit. The original abstract describes controlled fugacity but provides no numeric fugacity interval. Total pressure cannot replace that missing evidence.",
+      "evidence": [
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "experimental_materials"
+        }
+      ]
+    },
+    {
+      "id": "melt_composition",
+      "subject": "solubility",
+      "scope": "Match between the example's melt and the formulation's basaltic melt.",
+      "classification": "unknown",
+      "reason": "The example specifies no actual melt composition. The callable does not check composition; the basaltic formulation is still used as an explicit assumption.",
+      "evidence": [
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "formulation"
+        },
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "experimental_materials"
+        }
+      ]
+    },
+    {
+      "id": "calibration_accuracy",
+      "subject": "solubility",
+      "scope": "Accuracy of the retained older calibration for this pure-H2 case.",
+      "classification": "unknown",
+      "reason": "The 2025 recalibration challenges the older concentration scale. It does not establish a uniform correction for this run; no factor-of-ten correction is applied. The new coefficient was calibrated in haplogranitic glass, and the earlier silica-glass calibration ancestry remains incompletely inspected.",
+      "evidence": [
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "calibration_update"
+        },
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "infrared_recalibration"
+        },
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "historical_calibration"
+        }
+      ]
+    },
+    {
+      "id": "combined_accuracy",
+      "subject": "connection",
+      "scope": "Experimental accuracy and uncertainty of the final dissolved H2 mole fraction.",
+      "classification": "unknown",
+      "reason": "No measurement comparison for this complete connection at these inputs was established. Successful execution and in-range projections do not supply one.",
+      "evidence": [
+        {
+          "provider": "exoeos",
+          "contract": "mceg/contracts/zhang_duan_h2.yaml",
+          "evidence": "reported_domain"
+        },
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "experimental_fit"
+        },
+        {
+          "provider": "exogibbs",
+          "contract": "mceg/contracts/h2_solubility.yaml",
+          "evidence": "infrared_recalibration"
+        }
+      ]
+    }
+  ],
+  "physical_validation": "unknown"
+}

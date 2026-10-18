@@ -107,3 +107,49 @@ References
 * Yoshioka, T. et al. (2019), doi:10.1016/j.gca.2019.06.007.
 * Ardia, P. et al. (2013), doi:10.1016/j.gca.2013.03.028.
 * Dasgupta, R. et al. (2022), doi:10.1016/j.gca.2022.09.012.
+
+Sun--Yao water comparison
+-------------------------
+
+``h2o_sun_yao2026`` adds the water branch of Sun & Yao (2026),
+`doi:10.1016/j.epsl.2026.120115 <https://doi.org/10.1016/j.epsl.2026.120115>`_.
+The implementation follows Eq. 7 and Table 1 as transcribed by
+`MAGEMin_C.jl at 47e2d12 <https://github.com/ComputationalThermodynamics/MAGEMin_C.jl/blob/47e2d12bfec0f799acf030b285fa3b1e8eb32098/julia/TE_saturation_models.jl>`_
+(GPL-3.0, ComputationalThermodynamics contributors). The original MATLAB
+program and experiment-level calibration table have not been independently
+replayed. This is a conditional comparison model, with that provenance
+limitation preserved; it does not replace a default equilibrium model.
+
+.. code-block:: python
+
+   from exogibbs.solubility import h2o_sun_yao2026
+
+   w = h2o_sun_yao2026(
+       water_partial_pressure_bar=20., temperature_k=2173.15,
+       melt_pressure_bar=440., x_na2o=.002, x_al2o3=.025,
+   )
+
+The return value is a mass fraction, after dividing source wt% by 100.
+Both molecular and hydroxyl terms count as H2O equivalent; hydroxyl is not
+an extra elemental-H or molecular-H2 inventory. T uses K; both pressures
+use bar. The total pressure in the coefficients must not be replaced by
+water partial pressure. Na2O and Al2O3 are fractions of the entire
+volatile-free oxide mole inventory, not fractions normalized to Na+Al.
+Callers must declare their iron-redox normalization. The C-free binary
+mass basis is water mass divided by dry-plus-water mass; a multisolute
+extension needs an explicit consumer convention.
+
+``h2o_sun_yao2026_terms`` returns two capacities C and pressure exponents a,
+ordered molecular H2O then hydroxyl, with ``w=sum(C*p_water**a)``.
+The capacities retain T, total-pressure and composition derivatives.
+An extensive thermodynamic continuation belongs in ExoEOS; the auxiliary
+law alone supplies neither host chemical potentials nor a Gibbs scalar.
+
+``SUN_YAO2026_WATER_METADATA`` records the joint H2O--CO2 dataset envelope:
+933.15--2197.15 K and 1 bar--6 GPa over 2090 experiments. These are marginal
+ranges, not a validated rectangle for every melt, partial pressure or
+water-only experiment. No H2/He-rich-fluid or 2173 K BSE validation follows
+from them. The CO2 branch is not implemented. Nonphysical inputs and
+predicted mass fractions at or above one return NaN; extrapolations are
+never clipped into an accepted result. The pre-existing MELTYQ metadata
+and compatibility imports retain their original meanings.
