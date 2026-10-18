@@ -99,45 +99,15 @@ retired solver.
 See :doc:`../condensate_profile` for the profile method contract and v2
 lifecycle diagnostics.
 
-NASA Ni/Co Ionization
----------------------
+Reviewed Gas Thermochemistry
+----------------------------
 
-To correct the JANAF-derived Ni+ and Co+ ionization data, explicitly select
-``fastchem4_nasa9_ions``:
-
-.. code-block:: python
-
-   from exogibbs.api.gas import solve
-   from exogibbs.presets.fastchem4_nasa9_ions import chemsetup
-
-   setup = chemsetup(silent=True)
-   result = solve(setup, T=3000.0, P=0.01, b=setup.element_vector_reference)
-
-This preset starts from the **ion-inclusive** ``FastChem4/logK/logK.dat`` and
-retains all 539 default species. Only Ni1+ and Co1+ receive NASA CEA reaction
-Gibbs energies, including the neutral atom and electron reference terms.
-The other species, elemental abundances and stoichiometry retain their
-FastChem4 values. The original ``fastchem4.chemsetup()`` remains available
-for comparisons; its default is still the table without ions.
-
-The replacement interval is **1000--6000 K**. Scalar and array temperatures
-are supported, and the resulting functions are JAX differentiable. Values
-outside this interval return NaN, with no fallback or extrapolation. This
-domain describes the NASA replacement data, not an independent validation
-of every retained FastChem species.
-
-The optional ``path``, ``species_default_elements`` and ``element_file``
-arguments select the underlying FastChem network and abundances as in the
-original preset. A network missing Ni, Ni+, Co, Co+ or the electron is rejected.
-Metadata records the NASA source, replacement identities and temperature
-interval, and keeps the replaced FastChem records separately from the active
-FastChem records.
-
-This two-ion preset is distinct from
-:doc:`../standard_thermodynamics`: that model changes 35 species, omits one,
-provides consistent absolute entropy and heat capacity, and has a narrower
-1500--4500 K domain. Both now use NASA data for Ni+ and Co+.
-See :doc:`../ni_co_ionization_audit` for the discrepancy and independent checks.
+For gas-only calculations with reviewed atomic-ion and major-molecule source
+choices, use :doc:`curated` on **1500--4000 K**, with ``ions=True`` or
+``ions=False``. That page also describes migration from the retired Ni/Co-only
+preset. The :doc:`../ni_co_ionization_audit` retains the original discrepancy
+and independent checks. The separate :doc:`../standard_thermodynamics` model
+continues to provide absolute entropy and heat capacity on **1500--4500 K**.
 
 Packaged Data
 -------------
