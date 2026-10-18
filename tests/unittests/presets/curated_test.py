@@ -73,9 +73,11 @@ def test_source_choices_and_unreviewed_species_are_explicit(setup, data):
     assert len(changed) == 70
     retained = [name for name in setup.species if name not in changed]
     t = jnp.array([1601., 2527., 3997.])
-    np.testing.assert_array_equal(
+    # Separate JIT graphs can round the same inherited constants differently.
+    np.testing.assert_allclose(
         setup.hvector_func(t)[:, [setup.species.index(s) for s in retained]],
         base.hvector_func(t)[:, [base.species.index(s) for s in retained]],
+        atol=1e-12, rtol=0,
     )
 
 
