@@ -318,7 +318,7 @@ does not implement. The ordinary ``solve`` behavior and transformed
 ``solve_fixed_support`` derivative contract remain unchanged.
 
 Optional interior stationarity refinement
-----------------------------------------
+-----------------------------------------
 
 ``Options(max_refinement_iterations=40)`` enables a bounded correction after
 the ordinary feasible Newton iterations. The default is zero. This is useful
