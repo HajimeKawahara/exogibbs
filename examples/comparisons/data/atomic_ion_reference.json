@@ -1,0 +1,953 @@
+{
+  "description": "Offline atomic-ion audit reference, not a production thermodynamic preset.",
+  "temperature_K": [1000, 1500, 2000, 3000, 4000, 5000, 6000],
+  "standard_pressure_Pa": 100000,
+  "sources": {
+    "partition_functions": {
+      "bundled_source_path": "exojax/src/exojax/data/atom/barklem_collet_2016_pff.txt",
+      "sha256": "6c7910298838addf3c366f5d86985f1a64c866cef5ce65613e9a126fef312650",
+      "name": "Barklem & Collet (2016), A&A 588, A96, Table 8",
+      "doi": "10.1051/0004-6361/201526961",
+      "url": "https://doi.org/10.1051/0004-6361/201526961",
+      "temperature_grid_source": {
+        "bundled_source_path": "exojax/src/exojax/database/core_atom/io.py",
+        "sha256": "283dc7163b7d381e2b0d258995adcebfaadadb7daacc9dca5c9bbdbc72853b58",
+        "function": "load_pf_Barklem2016",
+        "variable": "pfT_str"
+      },
+      "excerpt_origin": "Local ExoJAX snapshot; no ExoJAX import or runtime dependency."
+    },
+    "ionization_energies": {
+      "bundled_source_path": "exojax/src/exojax/data/atom/NIST_Atomic_Ionization_Energies.txt",
+      "sha256": "f01db474ba40f8f72f24ffb256c0aef0a155ca88756c336f1ddb87a474620e9a",
+      "name": "NIST Atomic Spectra Database, Ionization Energies",
+      "url": "https://physics.nist.gov/PhysRefData/ASD/ionEnergy.html",
+      "snapshot": "January 2022, as stated in the bundled source header",
+      "excerpt_origin": "Local ExoJAX snapshot; no ExoJAX import or runtime dependency."
+    },
+    "anion_spectroscopy": {
+      "name": "Ning and Lu (2022), J. Phys. Chem. Ref. Data 51, 021502",
+      "doi": "10.1063/5.0080243",
+      "url": "https://info.phys.tsinghua.edu.cn/henucl/ning/148.pdf",
+      "sha256": "5504c5ac167a70ec591b4292ee1563b241c1743240309a32af330536fbec9c8d",
+      "location": "Table 3, printed p. 12; Table 4, printed p. 14; footnotes pp. 13 and 17; Sections 4.1, 4.2, 5 and 6.",
+      "inspection": "Tables 3 and 4 checked against PDF images; sections and footnotes read. Earlier experimental papers cited by the review were not independently reaudited."
+    },
+    "nasa9": {
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "existing_excerpt": "src/exogibbs/data/nasa9/fastchem4_hot.json",
+      "existing_excerpt_sha256": "85e677bdf08a340b045567affac60e09a480fae1556a8704bc52fe66cd9e1338",
+      "license": "Apache-2.0; see src/exogibbs/data/nasa9/LICENSE.txt and NOTICE.txt.",
+      "note": "Only additional atomic-ion records are copied below; existing coefficients are reused. All selected coefficients were compared with the full pinned source."
+    }
+  },
+  "atoms": {
+    "Al": {
+      "ionization_energy_eV": 5.985769,
+      "ionization_energy_uncertainty_eV": 3e-06,
+      "nist_source_line_1based": 86,
+      "nist_energy_entry": "5.985769",
+      "nist_reference_codes": ["L7215", "L10321"],
+      "partition_neutral": [5.40445, 5.5924, 5.69023, 5.79075, 5.84273, 5.87971, 5.9258],
+      "partition_neutral_source_line_1based": 38,
+      "partition_cation": [1.0, 1.0, 1.0, 1.0, 1.00001, 1.00018, 1.00112],
+      "partition_cation_source_line_1based": 39
+    },
+    "Ar": {
+      "ionization_energy_eV": 15.7596119,
+      "ionization_energy_uncertainty_eV": 5e-07,
+      "nist_source_line_1based": 161,
+      "nist_energy_entry": "15.7596119",
+      "nist_reference_codes": ["L9217"],
+      "partition_neutral": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "partition_neutral_source_line_1based": 53,
+      "partition_cation": [4.25504, 4.5067, 4.7142, 5.00667, 5.19515, 5.32478, 5.41892],
+      "partition_cation_source_line_1based": 54
+    },
+    "C": {
+      "ionization_energy_eV": 11.260288,
+      "ionization_energy_uncertainty_eV": 1.1e-06,
+      "nist_source_line_1based": 23,
+      "nist_energy_entry": "11.2602880",
+      "nist_reference_codes": ["L20057"],
+      "partition_neutral": [8.62742, 8.74962, 8.81441, 8.91124, 9.03328, 9.19239, 9.37771],
+      "partition_neutral_source_line_1based": 17,
+      "partition_cation": [5.65121, 5.76395, 5.82163, 5.88018, 5.9098, 5.92772, 5.94003],
+      "partition_cation_source_line_1based": 18
+    },
+    "Ca": {
+      "ionization_energy_eV": 6.11315547,
+      "ionization_energy_uncertainty_eV": 2.5e-07,
+      "nist_source_line_1based": 198,
+      "nist_energy_entry": "6.11315547",
+      "nist_reference_codes": ["L8900"],
+      "partition_neutral": [1.0, 1.0, 1.00016, 1.00701, 1.04991, 1.17173, 1.41809],
+      "partition_neutral_source_line_1based": 59,
+      "partition_cation": [2.0, 2.00002, 2.00053, 2.01415, 2.07348, 2.19899, 2.3895],
+      "partition_cation_source_line_1based": 60
+    },
+    "Cl": {
+      "ionization_energy_eV": 12.967633,
+      "ionization_energy_uncertainty_eV": 1.6e-05,
+      "nist_source_line_1based": 144,
+      "nist_energy_entry": "12.967633",
+      "nist_reference_codes": ["L19191"],
+      "partition_neutral": [4.56202, 4.85805, 5.06021, 5.31, 5.45617, 5.55158, 5.61864],
+      "partition_neutral_source_line_1based": 50,
+      "partition_cation": [6.3407, 6.92357, 7.30791, 7.78751, 8.11015, 8.38153, 8.63347],
+      "partition_cation_source_line_1based": 51
+    },
+    "Co": {
+      "ionization_energy_eV": 7.88101,
+      "ionization_energy_uncertainty_eV": 0.00012,
+      "nist_source_line_1based": 359,
+      "nist_energy_entry": "7.88101",
+      "nist_reference_codes": ["L10545"],
+      "partition_neutral": [13.6596, 16.5302, 19.3026, 24.4719, 29.1603, 33.5878, 38.0487],
+      "partition_neutral_source_line_1based": 80,
+      "partition_cation": [11.4174, 13.6781, 16.0926, 20.9531, 25.5564, 29.8901, 34.0491],
+      "partition_cation_source_line_1based": 81
+    },
+    "Cr": {
+      "ionization_energy_eV": 6.76651,
+      "ionization_energy_uncertainty_eV": 4e-05,
+      "nist_source_line_1based": 284,
+      "nist_energy_entry": "6.76651",
+      "nist_reference_codes": ["L7185", "L2832"],
+      "partition_neutral": [7.00032, 7.01429, 7.0962, 7.65435, 8.76169, 10.3912, 12.668],
+      "partition_neutral_source_line_1based": 71,
+      "partition_cation": [6.0, 6.00023, 6.00445, 6.08747, 6.41191, 7.10899, 8.26418],
+      "partition_cation_source_line_1based": 72
+    },
+    "Cu": {
+      "ionization_energy_eV": 7.72638,
+      "ionization_energy_uncertainty_eV": 4e-06,
+      "nist_source_line_1based": 414,
+      "nist_energy_entry": "7.726380",
+      "nist_reference_codes": ["L14897"],
+      "partition_neutral": [2.0, 2.00014, 2.00219, 2.03485, 2.141, 2.32883, 2.58362],
+      "partition_neutral_source_line_1based": 86,
+      "partition_cation": [1.0, 1.0, 1.0, 1.00032, 1.00491, 1.02534, 1.07605],
+      "partition_cation_source_line_1based": 87
+    },
+    "F": {
+      "ionization_energy_eV": 17.42282,
+      "ionization_energy_uncertainty_eV": 5e-05,
+      "nist_source_line_1based": 44,
+      "nist_energy_entry": "17.42282",
+      "nist_reference_codes": ["L7481", "L526"],
+      "partition_neutral": [5.1183, 5.35742, 5.49552, 5.64768, 5.72946, 5.78047, 5.81531],
+      "partition_neutral_source_line_1based": 26,
+      "partition_cation": [7.33106, 7.78825, 8.05046, 8.3383, 8.49494, 8.60049, 8.6872],
+      "partition_cation_source_line_1based": 27
+    },
+    "Fe": {
+      "ionization_energy_eV": 7.9024681,
+      "ionization_energy_uncertainty_eV": 1.2e-06,
+      "nist_source_line_1based": 333,
+      "nist_energy_entry": "7.9024681",
+      "nist_reference_codes": ["L7743c109"],
+      "partition_neutral": [15.7458, 17.9439, 19.4564, 21.9554, 24.613, 27.794, 31.7409],
+      "partition_neutral_source_line_1based": 77,
+      "partition_cation": [19.6073, 24.2668, 28.1685, 34.3147, 39.1534, 43.4176, 47.5631],
+      "partition_cation_source_line_1based": 78
+    },
+    "Ge": {
+      "ionization_energy_eV": 7.899435,
+      "ionization_energy_uncertainty_eV": 1.2e-05,
+      "nist_source_line_1based": 504,
+      "nist_energy_entry": "7.899435",
+      "nist_reference_codes": ["L3935", "L12369"],
+      "partition_neutral": [3.00389, 4.05685, 4.85267, 6.00402, 6.85479, 7.54124, 8.11904],
+      "partition_neutral_source_line_1based": 95,
+      "partition_cation": [2.31467, 2.73438, 3.1219, 3.71392, 4.1184, 4.40558, 4.61838],
+      "partition_cation_source_line_1based": 96
+    },
+    "H": {
+      "ionization_energy_eV": 13.598434599702,
+      "ionization_energy_uncertainty_eV": 1.2e-11,
+      "nist_source_line_1based": 8,
+      "nist_energy_entry": "(13.598434599702)",
+      "nist_reference_codes": ["HDEL"],
+      "partition_neutral": [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+      "partition_neutral_source_line_1based": 1,
+      "partition_cation": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "partition_cation_source_line_1based": 2
+    },
+    "He": {
+      "ionization_energy_eV": 24.587389011,
+      "ionization_energy_uncertainty_eV": 2.5e-08,
+      "nist_source_line_1based": 9,
+      "nist_energy_entry": "24.587389011",
+      "nist_reference_codes": ["L17714"],
+      "partition_neutral": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "partition_neutral_source_line_1based": 5,
+      "partition_cation": [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0],
+      "partition_cation_source_line_1based": 6
+    },
+    "K": {
+      "ionization_energy_eV": 4.34066373,
+      "ionization_energy_uncertainty_eV": 9e-08,
+      "nist_source_line_1based": 179,
+      "nist_energy_entry": "4.34066373",
+      "nist_reference_codes": ["L5451", "L5783", "L7185"],
+      "partition_neutral": [2.0, 2.00002, 2.00052, 2.01222, 2.06702, 2.22592, 2.61039],
+      "partition_neutral_source_line_1based": 56,
+      "partition_cation": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "partition_cation_source_line_1based": 57
+    },
+    "Mg": {
+      "ionization_energy_eV": 7.646236,
+      "ionization_energy_uncertainty_eV": 4e-06,
+      "nist_source_line_1based": 74,
+      "nist_energy_entry": "7.646236",
+      "nist_reference_codes": ["L10635", "L6969"],
+      "partition_neutral": [1.0, 1.0, 1.0, 1.00025, 1.00344, 1.01678, 1.04919],
+      "partition_neutral_source_line_1based": 35,
+      "partition_cation": [2.0, 2.0, 2.0, 2.0, 2.00002, 2.00021, 2.00114],
+      "partition_cation_source_line_1based": 36
+    },
+    "Mn": {
+      "ionization_energy_eV": 7.434038,
+      "ionization_energy_uncertainty_eV": 1.2e-06,
+      "nist_source_line_1based": 308,
+      "nist_energy_entry": "7.4340380",
+      "nist_reference_codes": ["L19057"],
+      "partition_neutral": [6.0, 6.0, 6.00016, 6.0114, 6.1024, 6.40187, 7.04416],
+      "partition_neutral_source_line_1based": 74,
+      "partition_cation": [7.00001, 7.00059, 7.00619, 7.0764, 7.30191, 7.73916, 8.42391],
+      "partition_cation_source_line_1based": 75
+    },
+    "N": {
+      "ionization_energy_eV": 14.53413,
+      "ionization_energy_uncertainty_eV": 4e-05,
+      "nist_source_line_1based": 29,
+      "nist_energy_entry": "14.53413",
+      "nist_reference_codes": ["L1411"],
+      "partition_neutral": [4.0, 4.0, 4.00001, 4.001, 4.01011, 4.04106, 4.10545],
+      "partition_neutral_source_line_1based": 20,
+      "partition_cation": [7.93938, 8.27362, 8.44784, 8.63, 8.73842, 8.83464, 8.93835],
+      "partition_cation_source_line_1based": 21
+    },
+    "Na": {
+      "ionization_energy_eV": 5.13907696,
+      "ionization_energy_uncertainty_eV": 2.5e-07,
+      "nist_source_line_1based": 63,
+      "nist_energy_entry": "5.13907696",
+      "nist_reference_codes": ["L10921", "L9648"],
+      "partition_neutral": [2.0, 2.0, 2.00003, 2.00178, 2.01488, 2.06447, 2.21609],
+      "partition_neutral_source_line_1based": 32,
+      "partition_cation": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "partition_cation_source_line_1based": 33
+    },
+    "Ne": {
+      "ionization_energy_eV": 21.564541,
+      "ionization_energy_uncertainty_eV": 7e-06,
+      "nist_source_line_1based": 53,
+      "nist_energy_entry": "21.564541",
+      "nist_reference_codes": ["L8826", "L1407"],
+      "partition_neutral": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "partition_neutral_source_line_1based": 29,
+      "partition_cation": [4.65078, 4.94617, 5.14086, 5.37562, 5.51054, 5.59776, 5.65869],
+      "partition_cation_source_line_1based": 30
+    },
+    "Ni": {
+      "ionization_energy_eV": 7.639878,
+      "ionization_energy_uncertainty_eV": 1.7e-05,
+      "nist_source_line_1based": 386,
+      "nist_energy_entry": "7.639878",
+      "nist_reference_codes": ["L12369"],
+      "partition_neutral": [17.1522, 20.2198, 22.7024, 26.3546, 28.9074, 30.887, 32.636],
+      "partition_neutral_source_line_1based": 83,
+      "partition_cation": [6.45775, 6.9475, 7.39325, 8.29948, 9.43082, 10.8117, 12.3743],
+      "partition_cation_source_line_1based": 84
+    },
+    "O": {
+      "ionization_energy_eV": 13.618055,
+      "ionization_energy_uncertainty_eV": 7e-06,
+      "nist_source_line_1based": 36,
+      "nist_energy_entry": "13.618055",
+      "nist_reference_codes": ["L74", "L3760"],
+      "partition_neutral": [8.11056, 8.38189, 8.52662, 8.68009, 8.77224, 8.85532, 8.94697],
+      "partition_neutral_source_line_1based": 23,
+      "partition_cation": [4.0, 4.0, 4.0, 4.00003, 4.00065, 4.00451, 4.01649],
+      "partition_cation_source_line_1based": 24
+    },
+    "P": {
+      "ionization_energy_eV": 10.486686,
+      "ionization_energy_uncertainty_eV": 1.5e-05,
+      "nist_source_line_1based": 113,
+      "nist_energy_entry": "10.486686",
+      "nist_reference_codes": ["L5148"],
+      "partition_neutral": [4.0, 4.00018, 4.00281, 4.04361, 4.17459, 4.40682, 4.72181],
+      "partition_neutral_source_line_1based": 44,
+      "partition_cation": [5.91254, 6.75056, 7.24083, 7.83534, 8.25633, 8.61991, 8.9519],
+      "partition_cation_source_line_1based": 45
+    },
+    "S": {
+      "ionization_energy_eV": 10.36001,
+      "ionization_energy_uncertainty_eV": 0.00012,
+      "nist_source_line_1based": 128,
+      "nist_energy_entry": "10.36001",
+      "nist_reference_codes": ["L7237"],
+      "partition_neutral": [7.13511, 7.62947, 7.92472, 8.30016, 8.59592, 8.87684, 9.15036],
+      "partition_neutral_source_line_1based": 47,
+      "partition_cation": [4.0, 4.00001, 4.00023, 4.00804, 4.04842, 4.14369, 4.29938],
+      "partition_cation_source_line_1based": 48
+    },
+    "Si": {
+      "ionization_energy_eV": 8.15168,
+      "ionization_energy_uncertainty_eV": 3e-05,
+      "nist_source_line_1based": 99,
+      "nist_energy_entry": "8.15168",
+      "nist_reference_codes": ["L5815"],
+      "partition_neutral": [7.31255, 7.83467, 8.15051, 8.62816, 9.05525, 9.45211, 9.81774],
+      "partition_neutral_source_line_1based": 41,
+      "partition_cation": [4.64605, 5.03682, 5.25334, 5.48529, 5.6074, 5.68276, 5.73421],
+      "partition_cation_source_line_1based": 42
+    },
+    "Ti": {
+      "ionization_energy_eV": 6.82812,
+      "ionization_energy_uncertainty_eV": 1.2e-05,
+      "nist_source_line_1based": 239,
+      "nist_energy_entry": "6.828120",
+      "nist_reference_codes": ["L17996"],
+      "partition_neutral": [15.6413, 17.2197, 18.3409, 20.8195, 24.4001, 29.4388, 36.1533],
+      "partition_neutral_source_line_1based": 65,
+      "partition_cation": [26.6683, 32.879, 37.3391, 44.0264, 49.789, 55.4152, 61.0536],
+      "partition_cation_source_line_1based": 66
+    },
+    "V": {
+      "ionization_energy_eV": 6.746187,
+      "ionization_energy_uncertainty_eV": 2.1e-05,
+      "nist_source_line_1based": 261,
+      "nist_energy_entry": "6.746187",
+      "nist_reference_codes": ["L17712", "L20010"],
+      "partition_neutral": [19.5769, 24.3502, 28.3232, 34.792, 40.7579, 47.5479, 55.9454],
+      "partition_neutral_source_line_1based": 68,
+      "partition_cation": [19.3859, 22.7984, 25.9804, 31.8263, 37.4225, 43.3174, 49.7643],
+      "partition_cation_source_line_1based": 69
+    },
+    "Zn": {
+      "ionization_energy_eV": 9.394197,
+      "ionization_energy_uncertainty_eV": 6e-06,
+      "nist_source_line_1based": 443,
+      "nist_energy_entry": "9.394197",
+      "nist_reference_codes": ["L13951"],
+      "partition_neutral": [1.0, 1.0, 1.0, 1.0, 1.00007, 1.00075, 1.00363],
+      "partition_neutral_source_line_1based": 89,
+      "partition_cation": [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.00005],
+      "partition_cation_source_line_1based": 90
+    }
+  },
+  "anions": {
+    "Al": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.43283,
+      "electron_affinity_uncertainty_eV": 5e-05,
+      "method": "LPT",
+      "table3_reference_numbers": "202",
+      "levels": [
+        ["3P0", 0, 1, 0, "Table 3"],
+        ["3P1", 22.7, 3, 0.3, "202"],
+        ["3P2", 68.4, 5, 0.3, "202"],
+        ["1D2", 2678, 5, 81, "112"]
+      ]
+    },
+    "C": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 1.2621226,
+      "electron_affinity_uncertainty_eV": 1.2e-06,
+      "method": "LPM",
+      "table3_reference_numbers": "7",
+      "levels": [
+        ["4S3/2", 0, 4, 0, "Table 3"],
+        ["2D3/2", 9914, 4, 8, "3,8; footnote b"],
+        ["2D5/2", 9917, 6, 8, "3,8; footnote b"]
+      ]
+    },
+    "Ca": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.02455,
+      "electron_affinity_uncertainty_eV": 0.0001,
+      "method": "LPT",
+      "table3_reference_numbers": "24",
+      "levels": [
+        ["2P1/2", 0, 2, 0, "Table 3"],
+        ["2P3/2", 39.24, 4, 0.11, "88"]
+      ]
+    },
+    "Cl": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 3.612725,
+      "electron_affinity_uncertainty_eV": 2.8e-05,
+      "method": "LPT",
+      "table3_reference_numbers": "204",
+      "levels": [
+        ["1S0", 0, 1, 0, "Table 3"]
+      ]
+    },
+    "Co": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.662255,
+      "electron_affinity_uncertainty_eV": 4.7e-05,
+      "method": "SEVI",
+      "table3_reference_numbers": "209",
+      "levels": [
+        ["3F4", 0, 9, 0, "Table 3"],
+        ["3F3", 920.9, 7, 0.6, "209"],
+        ["3F2", 1550.3, 5, 0.9, "209"]
+      ]
+    },
+    "Cr": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.675928,
+      "electron_affinity_uncertainty_eV": 2.7e-05,
+      "method": "SEVI",
+      "table3_reference_numbers": "206",
+      "levels": [
+        ["6S5/2", 0, 6, 0, "Table 3"]
+      ]
+    },
+    "Cu": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 1.23578,
+      "electron_affinity_uncertainty_eV": 4e-05,
+      "method": "LPT",
+      "table3_reference_numbers": "140",
+      "levels": [
+        ["1S0", 0, 1, 0, "Table 3"]
+      ]
+    },
+    "F": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 3.4011898,
+      "electron_affinity_uncertainty_eV": 2.4e-06,
+      "method": "LPT/LPM",
+      "table3_reference_numbers": "200,201",
+      "levels": [
+        ["1S0", 0, 1, 0, "Table 3"]
+      ]
+    },
+    "Fe": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.153236,
+      "electron_affinity_uncertainty_eV": 3.4e-05,
+      "method": "SEVI",
+      "table3_reference_numbers": "208",
+      "levels": [
+        ["4F9/2", 0, 10, 0, "Table 3"],
+        ["4F7/2", 520.9, 8, 1.1, "208"],
+        ["4F5/2", 901.0, 6, 1.4, "208"],
+        ["4F3/2", 1160.8, 4, 1.5, "208"]
+      ]
+    },
+    "Ge": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 1.2326764,
+      "electron_affinity_uncertainty_eV": 1.2e-06,
+      "method": "LPM",
+      "table3_reference_numbers": "210",
+      "levels": [
+        ["4S3/2", 0, 4, 0, "Table 3"],
+        ["2D3/2", 6704.3, 4, 0.9, "220"],
+        ["2D5/2", 6896.9, 6, 0.6, "220"]
+      ]
+    },
+    "H": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.754203832,
+      "electron_affinity_uncertainty_eV": 4e-09,
+      "method": "Calc.",
+      "table3_reference_numbers": "3,82",
+      "levels": [
+        ["1S0", 0, 1, 0, "Table 3"]
+      ]
+    },
+    "K": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.501459,
+      "electron_affinity_uncertainty_eV": 1.3e-05,
+      "method": "LPT",
+      "table3_reference_numbers": "205",
+      "levels": [
+        ["1S0", 0, 1, 0, "Table 3"]
+      ]
+    },
+    "Na": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.547926,
+      "electron_affinity_uncertainty_eV": 2.5e-05,
+      "method": "LPT",
+      "table3_reference_numbers": "3",
+      "levels": [
+        ["1S0", 0, 1, 0, "Table 3"]
+      ]
+    },
+    "Ni": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 1.157368,
+      "electron_affinity_uncertainty_eV": 5.8e-05,
+      "method": "SEVI",
+      "table3_reference_numbers": "206",
+      "levels": [
+        ["2D5/2", 0, 6, 0, "Table 3"],
+        ["2D3/2", 1485, 4, 3, "137"]
+      ]
+    },
+    "O": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 1.4611136,
+      "electron_affinity_uncertainty_eV": 9e-07,
+      "method": "LPM",
+      "table3_reference_numbers": "29",
+      "levels": [
+        ["2P3/2", 0, 4, 0, "Table 3"],
+        ["2P1/2", 177.09, 2, 0.02, "98"]
+      ]
+    },
+    "P": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.746609,
+      "electron_affinity_uncertainty_eV": 9e-06,
+      "method": "LPM",
+      "table3_reference_numbers": "203",
+      "levels": [
+        ["3P2", 0, 5, 0, "Table 3"],
+        ["3P1", 180.887, 3, 0.005, "203"],
+        ["3P0", 263.863, 1, 0.007, "203"]
+      ]
+    },
+    "S": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 2.0771042,
+      "electron_affinity_uncertainty_eV": 6e-07,
+      "method": "LPM",
+      "table3_reference_numbers": "63",
+      "levels": [
+        ["2P3/2", 0, 4, 0, "Table 3"],
+        ["2P1/2", 483.5352, 2, 0.0034, "222"]
+      ]
+    },
+    "Si": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 1.3895212,
+      "electron_affinity_uncertainty_eV": 7e-07,
+      "method": "LPM",
+      "table3_reference_numbers": "29",
+      "levels": [
+        ["4S3/2", 0, 4, 0, "Table 3"],
+        ["2D3/2", 6954.81, 4, 0.21, "220"],
+        ["2D5/2", 6968.89, 6, 0.16, "220"],
+        ["2P1/2,3/2", 10973, 6, 41, "221"]
+      ]
+    },
+    "Ti": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.07554,
+      "electron_affinity_uncertainty_eV": 5e-05,
+      "method": "SEVI",
+      "table3_reference_numbers": "48",
+      "levels": [
+        ["4F3/2", 0, 4, 0, "Table 3"],
+        ["4F5/2", 70.0, 6, 0.6, "48"],
+        ["4F7/2", 165.4, 8, 0.6, "48"],
+        ["4F9/2", 285.2, 10, 1.3, "48"]
+      ]
+    },
+    "V": {
+      "status": "bound_state_reference",
+      "electron_affinity_eV": 0.52766,
+      "electron_affinity_uncertainty_eV": 0.0002,
+      "method": "SEVI",
+      "table3_reference_numbers": "207",
+      "levels": [
+        ["5D0", 0, 1, 0, "Table 3"],
+        ["5D1", 35.5, 3, 2.1, "207"],
+        ["5D2", 103.4, 5, 1.8, "207"],
+        ["5D3", 203.8, 7, 1.7, "207"],
+        ["5D4", 330.1, 9, 1.6, "207"]
+      ]
+    },
+    "N": {
+      "status": "no_stable_bound_anion",
+      "electron_affinity_eV": null,
+      "table3_entry": "<0",
+      "table3_reference_numbers": "3",
+      "levels": []
+    },
+    "Zn": {
+      "status": "no_stable_bound_anion",
+      "electron_affinity_eV": null,
+      "table3_entry": "<0",
+      "table3_reference_numbers": "3,90",
+      "levels": []
+    }
+  },
+  "anion_level_columns": ["term", "energy_cm-1", "degeneracy_2J_plus_1", "uncertainty_cm-1", "table4_reference_numbers"],
+  "notes": [
+    "Exact Barklem-Collet temperature nodes; electronic degeneracies exclude nuclear spin.",
+    "NIST ionization energies are the bundled January 2022 snapshot, not a claim of latest values.",
+    "Anion partition functions use the listed bound levels only; completeness is an assumption. Table 5 continuum resonances are excluded.",
+    "Si- unresolved 2P levels share one energy and combined degeneracy 6. C- fine-structure splitting is estimated (Table 4 footnote b).",
+    "H electron affinity is theoretical and refers to neutral F=0. Hyperfine and isotope corrections are neglected at these temperatures; this is not precision isotope thermodynamics.",
+    "Quoted energy uncertainties are retained as source metadata, not propagated confidence intervals for Kp.",
+    "The heavy-particle translational mass ratio is set to one, as in the existing Ni/Co audit."
+  ],
+  "nasa9_supplement": {
+    "Al1+": {
+      "source_name": "AL+",
+      "source_line_1based": 120,
+      "reference": "Kaufman,1991b. Moore,1971. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        -4181.18325,
+        -9.94855727,
+        2.548615878,
+        -5.87876004e-05,
+        3.132291294e-08,
+        -7.74889463e-12,
+        7.27444769e-16,
+        109101.1485,
+        3.48866729
+      ]
+    },
+    "Al1-": {
+      "source_name": "AL-",
+      "source_line_1based": 131,
+      "reference": "Chase,1998 p65 6/83. EA:Hotop,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        633981.432,
+        -2383.438463,
+        5.46997113,
+        -0.001299840355,
+        2.88830547e-07,
+        -3.25324051e-11,
+        1.472436088e-15,
+        47803.0654,
+        -15.36906816
+      ]
+    },
+    "C1-": {
+      "source_name": "C-",
+      "source_line_1based": 1976,
+      "reference": "Hotop,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        4.25317572,
+        0.000577818648,
+        2.499999424,
+        2.836136231e-10,
+        -7.32725342e-14,
+        9.47850781e-18,
+        -4.83048732e-22,
+        70012.1717,
+        4.879624211
+      ]
+    },
+    "Ca1+": {
+      "source_name": "Ca+",
+      "source_line_1based": 3901,
+      "reference": "Sugar,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        3747070.82,
+        -11747.07738,
+        16.72546969,
+        -0.00833479771,
+        2.394593294e-06,
+        -2.988243468e-10,
+        1.356563002e-14,
+        166432.9088,
+        -95.8282126
+      ]
+    },
+    "Cl1+": {
+      "source_name": "CL+",
+      "source_line_1based": 4095,
+      "reference": "Moore,1971. Moore,1970a. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        40564.0948,
+        -49.6016572,
+        3.10165363,
+        -0.000586873829,
+        2.252039316e-07,
+        -3.29970302e-11,
+        1.708780842e-15,
+        165298.2337,
+        2.574942598
+      ]
+    },
+    "F1+": {
+      "source_name": "F+",
+      "source_line_1based": 4750,
+      "reference": "Moore,1971. Moore,1970a. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        16496.35664,
+        133.7351478,
+        2.332522942,
+        0.0001215277877,
+        -4.8010377e-08,
+        9.02722515e-12,
+        -5.47066494e-16,
+        211074.5327,
+        6.62581709
+      ]
+    },
+    "Fe1+": {
+      "source_name": "Fe+",
+      "source_line_1based": 4855,
+      "reference": "Sugar,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        -817645.009,
+        1925.359408,
+        1.717387154,
+        0.000338533898,
+        -9.81353312e-08,
+        2.228179208e-11,
+        -1.483964439e-15,
+        128635.2466,
+        15.00256262
+      ]
+    },
+    "H1+": {
+      "source_name": "H+",
+      "source_line_1based": 5394,
+      "reference": "IP(H): Moore,1972. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [0.0, 0.0, 2.5, 0.0, 0.0, 0.0, 0.0, 184021.4877, -1.140646644]
+    },
+    "H1-": {
+      "source_name": "H-",
+      "source_line_1based": 5405,
+      "reference": "Hotop,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [0.0, 0.0, 2.5, 0.0, 0.0, 0.0, 0.0, 15976.15494, -1.139013868]
+    },
+    "He1+": {
+      "source_name": "He+",
+      "source_line_1based": 5908,
+      "reference": "Moore,1971; Moore,1970a. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [0.0, 0.0, 2.5, 0.0, 0.0, 0.0, 0.0, 285323.3739, 1.621665557]
+    },
+    "Mn1+": {
+      "source_name": "Mn+",
+      "source_line_1based": 7004,
+      "reference": "Sugar,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        647131.41,
+        -2403.796253,
+        5.93771575,
+        -0.002341014594,
+        7.46416564e-07,
+        -9.07596973e-11,
+        4.467879847e-15,
+        134990.2108,
+        -17.02666341
+      ]
+    },
+    "N1+": {
+      "source_name": "N+",
+      "source_line_1based": 7126,
+      "reference": "Moore,1975. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        290497.0374,
+        -855.790861,
+        3.47738929,
+        -0.000528826719,
+        1.352350307e-07,
+        -1.389834122e-11,
+        5.046166279e-16,
+        231080.9984,
+        -1.994146545
+      ]
+    },
+    "Ne1+": {
+      "source_name": "Ne+",
+      "source_line_1based": 7852,
+      "reference": "Moore,1971. Moore,1970a. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        -111274.2658,
+        476.569797,
+        2.196650531,
+        0.0001102593151,
+        -2.287564425e-08,
+        2.510218183e-12,
+        -1.126646096e-16,
+        247253.6944,
+        7.46614054
+      ]
+    },
+    "Ni1-": {
+      "source_name": "Ni-",
+      "source_line_1based": 7885,
+      "reference": "Hotop,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        -543342.48,
+        1182.64533,
+        2.12644124,
+        3.73045594e-05,
+        6.95360843e-09,
+        -1.945719381e-12,
+        1.271571579e-16,
+        28547.59122,
+        10.43462235
+      ]
+    },
+    "O1+": {
+      "source_name": "O+",
+      "source_line_1based": 7950,
+      "reference": "Martin,W.C.,1993. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        -216651.3208,
+        666.545615,
+        1.702064364,
+        0.000471499281,
+        -1.427131823e-07,
+        2.016595903e-11,
+        -9.107157762e-16,
+        183719.1966,
+        10.05690382
+      ]
+    },
+    "O1-": {
+      "source_name": "O-",
+      "source_line_1based": 7961,
+      "reference": "Gurvich,1989 pt1 p93. Hotop,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        9769.36318,
+        7.15960478,
+        2.494961726,
+        1.968240938e-06,
+        -4.30417485e-10,
+        4.91208308e-14,
+        -2.271600083e-18,
+        11495.54438,
+        4.83703644
+      ]
+    },
+    "P1+": {
+      "source_name": "P+",
+      "source_line_1based": 8078,
+      "reference": "Martin,W.C.,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        -559424.936,
+        1722.576545,
+        0.843038109,
+        0.000628736894,
+        -6.31719546e-08,
+        -1.810842484e-12,
+        4.31811257e-16,
+        149049.3431,
+        18.45275207
+      ]
+    },
+    "P1-": {
+      "source_name": "P-",
+      "source_line_1based": 8089,
+      "reference": "Hotop,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        15434.88016,
+        9.49500934,
+        2.493170861,
+        2.700167711e-06,
+        -5.94921039e-10,
+        6.82376629e-14,
+        -3.16695991e-18,
+        27975.72693,
+        6.246793872
+      ]
+    },
+    "Si1-": {
+      "source_name": "Si-",
+      "source_line_1based": 9403,
+      "reference": "Chase,1998 p1887 3/83. EA:Hotop,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        -6162070.1,
+        18833.10402,
+        -18.9930245,
+        0.01111021657,
+        -2.535790208e-06,
+        2.699962923e-10,
+        -1.105062911e-14,
+        -83140.8931,
+        159.5298253
+      ]
+    },
+    "Ti1+": {
+      "source_name": "Ti+",
+      "source_line_1based": 10244,
+      "reference": "Sugar,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        -768546.308,
+        2545.8681,
+        0.342386278,
+        0.000709990136,
+        2.706231875e-08,
+        -2.3716601e-11,
+        1.895443077e-15,
+        119882.1489,
+        24.8479915
+      ]
+    },
+    "V1+": {
+      "source_name": "V+",
+      "source_line_1based": 10678,
+      "reference": "Sugar,1985. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        2347072.054,
+        -9021.19719,
+        14.77349798,
+        -0.00689189688,
+        1.968884877e-06,
+        -2.539798544e-10,
+        1.226783122e-14,
+        195835.1444,
+        -78.5559293
+      ]
+    },
+    "Zn1+": {
+      "source_name": "Zn+",
+      "source_line_1based": 10900,
+      "reference": "Sugar,1995. Gordon,1999.",
+      "bounds_K": [1000.0, 6000.0],
+      "coefficients": [
+        -343617.946,
+        956.735524,
+        1.511478952,
+        0.000461346796,
+        -8.78680098e-08,
+        7.55856778e-13,
+        1.168827311e-15,
+        118532.1933,
+        13.0074267
+      ]
+    }
+  },
+  "nasa9_unavailable": ["Ca1-", "Zn1-"],
+  "janaf_cu_crosscheck": {
+    "sources": ["https://janaf.nist.gov/tables/Cu-005.html", "https://janaf.nist.gov/tables/Cu-006.html"],
+    "inspection": "Selected HTML table nodes read on 2026-10-18; Cu(g) and Cu+(g), 1 bar. Tab-delimited download returned HTTP 403.",
+    "temperature_K": [1000, 1500, 2000, 3000, 4000, 5000, 6000],
+    "neutral_delta_f_G_kJ_mol": [206.898, 146.011, 90.533, 0, 0, 0, 0],
+    "cation_delta_f_G_kJ_mol": [871.116, 756.957, 644.692, 433.618, 307.436, 178.228, 47.213],
+    "note": "JANAF electron formation G is zero. Neutral Cu formation G becomes zero when gas is the elemental reference; use the same T on both tables."
+  }
+}

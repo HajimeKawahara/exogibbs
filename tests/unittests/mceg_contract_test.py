@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 
-RECEIPT = "results/mceg/h2_tests_748f9da.json"
+RECEIPT = "results/mceg/h2_tests_c2d3e8b.json"
 
 
 def test_h2_evidence_matches_selected_source_files() -> None:

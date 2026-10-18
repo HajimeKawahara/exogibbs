@@ -1,0 +1,501 @@
+{
+  "scope": "35 neutral molecules from the pinned ion-inclusive FastChem4 network; decisions are a source-adoption proposal, not runtime preset changes.",
+  "atomic_policy": "The user approved the preceding atomic-ion source policy. This molecule study does not alter that policy.",
+  "status_definition": {
+    "prefer": "Preferred source combination within the documented comparison scope; not complete physical validation.",
+    "prefer_conditionally": "Preferred improvement with a named unresolved thermal, isotope or source limitation.",
+    "retain_provisionally": "Keep the existing source lineage because the evidence does not resolve a better replacement; not an endorsement of universal accuracy."
+  },
+  "choices": {
+    "H2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "JANAF, CEA and FastChem are close; the small fit and ground-energy differences are separable.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "H2O": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "Small ground-energy change; differences at the upper temperatures are thermal functions and the FastChem fit.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "CO": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "JANAF/CEA ground atomization energies differ from ATcT; BC uses a different D0. The thermal curves are close after anchoring.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "CO2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "Ground-energy and fit differences are small; upper-temperature caloric functions also differ.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "CH4": {
+      "thermal_source": "janaf",
+      "energy_source": "atct",
+      "selected_source": "JANAF thermal functions + ATcT 1.172 D0",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; table nodes only in this study",
+      "difference_cause": "A large high-temperature difference remains after equalizing D0; the CEA Cp also exceeds the JANAF value substantially at 6000 K.",
+      "reason": "Retain the current thermal-source lineage while updating the independently evaluated energy. A newer polynomial or compilation date does not resolve the thermal-model disagreement.",
+      "follow_up": "Priority: independent rovibrational partition audit above 3000 K, then a continuous thermodynamically consistent representation of the chosen table."
+    },
+    "N2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "The old JANAF/CEA atomization threshold differs from the ATcT nitrogen-atom evaluation; the thermal shapes are close.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "NH3": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "Both the atomization energy and upper-temperature thermal functions differ; ATcT is an energy anchor, not a partition function.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "HCN": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "JANAF and CEA use different formation enthalpies. Most of their low-temperature Kp discrepancy vanishes at a common atomization energy.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "HNC": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "The existing source is Goos/Burcat 2023, not JANAF. Its HNC isomer must not be matched to the JANAF HCN table.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Audit the high-temperature HCN/HNC state assignment before any combined-isomer partition replacement."
+    },
+    "H2S": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Updated sulfur-atom thermochemistry changes the balanced atomization energy; a thermal-function difference remains.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "SH": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "The existing source is Lodders 2004. The old JANAF HS formation columns do not combine consistently with the other atom tables; BC also neglects molecular spin-orbit coupling.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Review resolved fine structure and high-temperature partition completeness; do not use the old JANAF formation columns as a reference."
+    },
+    "S2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "ATcT revises the S atom and S2 energies together; agreement between older JANAF/CEA/BC values is not an independent energy validation.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "SO": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Different atomization energies dominate the low-temperature disagreement with BC; thermal-function differences remain.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "SO2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "The updated S-atom anchor matters even when the molecular formation enthalpy changes little; old FastChem fit residuals also contribute.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "SO3": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Sulfur and oxygen atomic anchors must accompany the molecular enthalpy update; the original fit and thermal-function contributions differ.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "CS": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Different formation/atomization energies dominate the JANAF/CEA low-temperature difference; BC is not an independent gold standard.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "CS2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Energy correction does not remove the high-temperature thermal-function discrepancy between JANAF and CEA.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Resolve the upper-temperature thermal-function difference before claiming high-temperature accuracy."
+    },
+    "COS": {
+      "thermal_source": "janaf",
+      "energy_source": "janaf",
+      "selected_source": "JANAF thermal functions and D0",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; table nodes only in this study",
+      "difference_cause": "The CEA/JANAF difference at low temperature is mainly the assigned atomization energy. No independent COS energy was pinned in the reviewed ATcT 1.172 excerpt.",
+      "reason": "Retain the traceable JANAF baseline instead of endorsing a different unverified formation enthalpy.",
+      "follow_up": "Review COS and its atomic anchors in a newer single ATcT network version; then fit the retained thermal table."
+    },
+    "TiO": {
+      "thermal_source": "janaf",
+      "energy_source": "barklem_collet",
+      "selected_source": "JANAF thermal functions + BC D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; table nodes only in this study",
+      "difference_cause": "JANAF and CEA differ in D0 and electronic-state thermal populations; the BC adopted D0 has a 0.061 eV quoted uncertainty.",
+      "reason": "Use the evaluated BC threshold with the existing JANAF thermal lineage; preserve the distinction between fine-structure thermal populations and a scalar energy update.",
+      "follow_up": "Compare normalized ExoMol/Toto partitions, including isotopologues and nuclear spin, and resolve excited-state completeness before high-precision use."
+    },
+    "VO": {
+      "thermal_source": "janaf",
+      "energy_source": "spectroscopy",
+      "selected_source": "JANAF thermal functions + Merriles 2020 D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; table nodes only in this study",
+      "difference_cause": "The old CEA atomization energy is about 0.20 eV below the 2020 direct measurement; thermal differences remain at equal D0.",
+      "reason": "Adopt D0 = 6.545 +/- 0.002 eV from resonant three-photon ionization. Retain JANAF thermal functions pending a normalized modern partition comparison.",
+      "follow_up": "Validate modern VO state populations and construct a continuous representation; the measured D0 uncertainty is not the uncertainty of Kp."
+    },
+    "SiO": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "The old Si/O atomic and molecular energies differ across compilations; thermal curves are much closer after a common D0.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset."
+    },
+    "AlH": {
+      "thermal_source": "fastchem",
+      "energy_source": "janaf",
+      "selected_source": "Retain FastChem / JANAF",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "CEA and JANAF thresholds differ by about 0.11 eV; BC gives 2.949 +/- 0.130 eV, which does not resolve that choice.",
+      "reason": "No inspected independent evidence justifies replacing the present energy and thermal fit.",
+      "follow_up": "Reassess the primary AlH dissociation measurement and caloric derivatives before upgrading the source."
+    },
+    "CaH": {
+      "thermal_source": "nasa9",
+      "energy_source": "nasa9",
+      "selected_source": "Retain CEA source; use original NASA9 curves",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "FastChem already cites NASA. BC D0 = 2.281 eV conflicts with the approximately 1.69 eV CEA value; a 2017 potential study fixes De = 14300 cm^-1 and cannot measure an accurate D0.",
+      "reason": "Keep the existing energy lineage and continuous source curves. The later potential work supports rejecting an automatic BC substitution, without establishing a precision D0.",
+      "follow_up": "Trace the BC input energy and obtain a primary D0 assessment; distinguish De from the zero-point-corrected D0."
+    },
+    "CoH": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations."
+    },
+    "CrH": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations."
+    },
+    "CuH": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations."
+    },
+    "FeH": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error. The 2012 high-level calculation gives D0 about 1.86 eV, conflicting with BC 1.497 eV.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations."
+    },
+    "GeH": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations."
+    },
+    "KH": {
+      "thermal_source": "fastchem",
+      "energy_source": "janaf",
+      "selected_source": "Retain FastChem / JANAF",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "JANAF, CEA and BC adopt different D0 values; BC 1.7708 eV has no quoted uncertainty in this table.",
+      "reason": "The comparison does not resolve the independent energy choice; retain the present curve instead of selecting by residual or publication date.",
+      "follow_up": "Trace the primary KH dissociation measurements and K atomic partition cutoff; this is an unresolved source choice."
+    },
+    "MgH": {
+      "thermal_source": "fastchem",
+      "energy_source": "spectroscopy",
+      "selected_source": "FastChem / BC thermal fit + spectroscopic D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "FastChem reproduces BC D0 = 1.271 eV. Direct spectroscopy gives 24MgH D0 = 1.28517 eV; CEA uses about 1.364 eV.",
+      "reason": "Retain the tested BC-derived thermal shape and update only its known D0 contribution using the inspected 2007 measurement.",
+      "follow_up": "Extract the 2013 refinement consistently and assess isotopic averaging and high-temperature bound/quasibound states; the quoted isotopologue precision does not describe this hybrid."
+    },
+    "MnH": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations."
+    },
+    "NaH": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error. CEA uses a different D0; BC adopts 1.886 +/- 0.003 eV.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations."
+    },
+    "NiH": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations."
+    },
+    "TiH": {
+      "thermal_source": "fastchem",
+      "energy_source": "burrows",
+      "selected_source": "Retain FastChem / Burrows 2005 within review window",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        1200,
+        4800
+      ],
+      "temperature_scope": "1200-4800 K review window; published molecular Q nodes at 200 K spacing",
+      "difference_cause": "BC and Burrows have nearly equal D0 but different state sums. Burrows resolves ground-state spin components, estimates some excited states, and truncates the Ti atomic sum.",
+      "reason": "Retain the specialized source provisionally; the BC difference is not explained by a scalar D0 update.",
+      "follow_up": "Reconstruct the Burrows molecular and Ti atomic sums before extending the temperature domain or replacing the thermal source."
+    },
+    "ZnH": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations."
+    }
+  }
+}

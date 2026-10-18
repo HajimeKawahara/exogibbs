@@ -51,6 +51,10 @@ include src/exogibbs/data/nasa9/README.md
 include src/exogibbs/data/nasa9/LICENSE.txt
 include src/exogibbs/data/nasa9/NOTICE.txt
 
+# Versioned, reviewed gas thermochemistry
+include src/exogibbs/data/curated/gas_v1.json
+include src/exogibbs/data/curated/README.rst
+
 # Pinned absolute standard-state references for multiphase connections
 include src/exogibbs/data/young2023/standard_states.json
 include src/exogibbs/data/janaf/atomic.json

@@ -45,6 +45,10 @@ def build_jobs() -> tuple[Job, ...]:
     """Cover public example scripts; aliases share their canonical execution."""
     jobs = []
     comparison = "examples/comparisons/"
+    jobs.append(Job(
+        "sun_yao_water", comparison + "compare_sun_yao_water.py",
+        ("--output", "{output}"), artifacts=("water_curves.png", "water_curves.csv"),
+    ))
     for name, script, flag, resources in (
         ("fastchem4_gas", "comparison_with_fastchem4_gas", "--output", ("fastchem",)),
         ("fastchem_initializer", "comparison_with_fastchem_initializer", "--output", ("fastchem",)),
@@ -83,6 +87,19 @@ def build_jobs() -> tuple[Job, ...]:
         ("--output-dir", "{output}"),
         artifacts=("comparison.csv", "comparison.png", "partition_functions.png"),
     ))
+    for script in ("audit_atomic_ions", "select_atomic_ions", "select_major_molecules"):
+        jobs.append(Job(script, comparison + script + ".py", ("--output-dir", "{output}"),
+                        artifacts=("receipt.json",)))
+    for name, script in (("gas_thermochemistry_impact", "compare_gas_thermochemistry"),
+                         ("curated_gas_validation", "validate_curated_preset")):
+        jobs.append(Job(name, comparison + script + ".py",
+                        ("--output-dir", "{output}", "--fastchem-executable", "{fastchem}"),
+                        ("fastchem",), ("receipt.json", "diagnostics.csv", "fastchem_parity.csv")))
+    jobs.append(Job("build_curated_gas", comparison + "build_curated_preset.py",
+                    ("--output", "{output}/gas_v1.json"), artifacts=("gas_v1.json",)))
+    jobs.append(Job("curated_atmosphere", comparison + "demo_curated_atmosphere.py",
+                    ("--output-dir", "{output}"),
+                    artifacts=("receipt.json", "summary.csv", "isothermal.png", "inverted.png")))
     jobs.append(Job(
         "fastchem4_production_comparison", "benchmarks/fastchem4/run_production_comparison.py",
         ("--fastchem-executable", "{fastchem}", "--fastchem-source-root", "{fastchem_source}",

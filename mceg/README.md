@@ -4,7 +4,56 @@
 applicability, claims and scoped evidence. This checkout pilots its frozen
 `schema_version: "0.1"` with the
 [H2 solubility law](contracts/h2_solubility.yaml). MCEG is not an ExoGibbs
-runtime or test dependency; the scientific implementation is unchanged.
+runtime or test dependency; numerical implementations remain owned by ExoGibbs.
+
+The [atomic-ion reference contract](contracts/atomic_ion_reference.yaml) records
+the separate gas-only audit of 49 FastChem4 atomic ions. Its
+[report](../documents/atomic_ion_audit.rst),
+[numerical receipt](../results/atomic_ion_audit/receipt.json) and
+[test receipt](../results/atomic_ion_audit/tests.json) describe the pinned sources,
+47 numerical references and two anions without a stable bound-state reference.
+The audit uses the standard library; the existing MCEG v0.1 schema needs no
+extension. The sections below describe the original H2 pilot workflow.
+
+The [atomic-ion adoption contract](contracts/atomic_ion_adoption.yaml) records
+the subsequent [49-species source choices](../documents/atomic_ion_adoption.rst):
+43 NASA9 thermal models with spectroscopic threshold updates, four partition
+models, and two exclusions. The [new receipt](../results/atomic_ion_adoption/receipt.json)
+and [test record](../results/atomic_ion_adoption/tests.json) keep this study
+separate from the original audit. The CDS original has now been compared with
+the local partition copy. The choices are not a production preset; continuous
+partition representations and application-specific validation remain necessary.
+
+The [major-molecule adoption contract](contracts/major_molecule_adoption.yaml)
+records [35 neutral-molecule source decisions](../documents/major_molecule_adoption.rst)
+following approval of the atomic policy. It distinguishes energy anchors from
+thermal functions and retains unresolved source choices explicitly. The
+[adoption table](../results/major_molecule_adoption/adoption_table.csv),
+[numerical receipt](../results/major_molecule_adoption/receipt.json) and
+[test record](../results/major_molecule_adoption/tests.json) are offline study
+artifacts. Neither this study nor its contract installs a runtime preset.
+
+The [gas-composition impact contract](contracts/gas_thermochemistry_impact.yaml)
+records the subsequent [fixed-network comparison](../documents/gas_thermochemistry_impact.rst)
+of the approved atomic and molecular choices. Its
+[receipt](../results/gas_thermochemistry_impact/receipt.json) distinguishes
+numerical verification, optional independent FastChem execution, and the limited
+physical evidence. All five models share the same 537 species and elemental
+budget. The [standalone FastChem run](../results/gas_thermochemistry_impact/fastchem_parity.csv)
+now verifies all 100 cases using the
+[pinned v4.0.3 build](../results/gas_thermochemistry_impact/fastchem_build.json).
+This is implementation evidence; the complete hybrid's physical accuracy
+remains unestablished.
+
+The [curated gas contract](contracts/curated_gas.yaml) records the subsequent
+[continuous runtime preset](../documents/presets/curated.rst),
+`curated-gas-v1`, on 1500--4000 K. Its
+[validation receipt](../results/curated_gas_validation/receipt.json) covers
+the 537-species ion-inclusive and 421-species neutral networks, continuous
+source representations and independent equilibrium comparisons. Runtime
+code consumes pinned numerical JSON only; MCEG remains an optional development
+tool. Earlier source-study contracts and their archived results are historical
+evidence and are not rewritten by this implementation.
 
 ## Ownership and references
 
@@ -20,21 +69,19 @@ immutable commit URLs. The partial primary-source inspection and differing
 source-specific temperature intervals are preserved without new scientific claims.
 
 The implementation revision is
-`748f9da6a7f13e9082fa42ab61caca907c39fe5b`, the develop snapshot reviewed before
-this maintenance update. Since the original audit, the adapter gained a magma
-derivative-domain callback. Its pure-H2 callback and scalar input conversion
-are unchanged; the solubility and unit-conversion files are byte-identical.
-The scoped tests were rerun with ExoEOS main at
-`50f3a20ecca5fdc8b422a8869ccf2e5d02a8fc01`.
+`c2d3e8b0490d4ae502720940ea220a21a3146a56`. Sun--Yao water adds public exports and changes the
+export-list test; the H2 scalar, metadata, fugacity conversion and adapter
+remain byte-identical to the previous H2 receipt. The eight scoped tests were
+freshly rerun with ExoEOS `9dc71506264b220fbd496259060cb67a95c1d11c`. No H2 scientific declaration,
+applicability assessment or consumer case input changed.
 
-[The current receipt](../results/mceg/h2_tests_748f9da.json) and
-[JUnit report](../results/mceg/h2_tests_748f9da.xml) preserve eight passing tests,
-the environment, selected source hashes and the ExoEOS dependency used in the
-connection test. Both providers' selected files were checked against Git objects
-at their recorded revisions. The [adoption run](../results/mceg/h2_tests_9990fdc.json)
-and [intermediate run](../results/mceg/h2_tests_47ecf87_r5.json) remain historical
-evidence; the current numerical claim links to `provider_test_run`. The
-implementation revision is distinct from the commit publishing the contract.
+[The current receipt](../results/mceg/h2_tests_c2d3e8b.json) and
+[JUnit report](../results/mceg/h2_tests_c2d3e8b.xml) preserve eight passing tests,
+the actual environment/imports and selected source hashes checked against Git
+objects. The [previous receipt](../results/mceg/h2_tests_748f9da.json) and older
+records retain their original scope. This refresh validates the unchanged H2
+connection; it supplies no empirical evidence for the new Sun--Yao water law.
+The implementation revision is distinct from the commit publishing the contract.
 
 ## Validation and review
 
