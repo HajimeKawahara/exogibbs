@@ -111,6 +111,8 @@ def equilibrium(
         opts.epsilon_crit,
         solver_dtype,
     )
+    relative_charge = bool((getattr(setup, "metadata", None) or {}).get(
+        "relative_charge_convergence", False))
     if return_diagnostics:
         ln_n, diagnostics = minimize_gibbs_with_diagnostics(
             state,
@@ -120,6 +122,7 @@ def equilibrium(
             hvector,
             epsilon_crit=epsilon_crit,
             max_iter=opts.max_iter,
+            relative_charge=relative_charge,
         )
     else:
         ln_n = minimize_gibbs(
@@ -130,6 +133,7 @@ def equilibrium(
             hvector,
             epsilon_crit=epsilon_crit,
             max_iter=opts.max_iter,
+            relative_charge=relative_charge,
         )
         diagnostics = None
 

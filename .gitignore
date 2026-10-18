@@ -174,7 +174,14 @@ cython_debug/
 .pypirc
 
 # Generated comparison artifacts are not repository sources.
-/results/
+/results/*
+# Keep source-audit and adoption evidence referenced by the MCEG contracts.
+!/results/atomic_ion_audit/
+!/results/atomic_ion_adoption/
+!/results/major_molecule_adoption/
+!/results/gas_thermochemistry_impact/
+!/results/curated_gas_validation/
+!/results/curated_atmosphere/
 /volatiles_artifacts/
 
 # Local external checkouts and scratch workspaces.

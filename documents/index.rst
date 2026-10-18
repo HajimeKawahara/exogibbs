@@ -22,6 +22,7 @@ Contents
    :maxdepth: 1
    :caption: PRESETS:
 
+   presets/curated.rst
    presets/ykb4.rst
    presets/fastchem.rst
    presets/fastchem4.rst
@@ -82,6 +83,10 @@ Contents
    v0_4_fastchem4_validation_demo
    fastchem4_production_comparison
    ni_co_ionization_audit
+   atomic_ion_audit
+   atomic_ion_adoption
+   major_molecule_adoption
+   gas_thermochemistry_impact
 
 License & Attribution
 ---------------------

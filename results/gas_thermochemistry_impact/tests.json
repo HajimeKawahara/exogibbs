@@ -1,0 +1,93 @@
+{
+  "status": "passed",
+  "timestamp_utc": "2026-10-18T03:36:33.469599+00:00",
+  "command": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 .venv/bin/python -m pytest -q tests/unittests/examples/gas_thermochemistry_impact_test.py tests/unittests/examples/major_molecule_adoption_test.py tests/unittests/examples/atomic_ion_adoption_test.py tests/unittests/examples/atomic_ion_audit_test.py tests/unittests/examples/ni_co_ionization_test.py tests/unittests/presets/fastchem4_nasa9_ions_test.py tests/unittests/benchmarks/fastchem4_executable_test.py --junitxml=results/gas_thermochemistry_impact/tests.xml",
+  "python": "3.12.3",
+  "packages": {
+    "pytest": "9.1.1",
+    "jax": "0.11.2",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "pydantic": "2.14.1",
+    "PyYAML": "6.0.3",
+    "sphinx": "7.4.7"
+  },
+  "counts": {
+    "tests": 82,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "scope": "Eleven study test cases, 44 preceding source-adoption tests, and 27 standalone-adapter tests. The study tests verify archived FastChem solutions offline; no executable or MCEG test dependency. The full package suite was not run.",
+  "selected_file_sha256": {
+    "examples/comparisons/compare_gas_thermochemistry.py": "f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/select_atomic_ions.py": "431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/data/atomic_ion_adoption.json": "5e58687bb3165cf130c92481b273e7daecc7189401d8400ea6f87fa0845d9976",
+    "examples/comparisons/data/atomic_ion_reference.json": "c37925bd132592f9f742d73ace1409032ea0c67911c240ac06b17be34a2b33dc",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "examples/comparisons/data/major_molecule_adoption.json": "2836795c24a7990d9e8b01b896102b405167119d2f72ff0e54dcc8b551abac92",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/nasa9/fastchem4_hot.json": "85e677bdf08a340b045567affac60e09a480fae1556a8704bc52fe66cd9e1338",
+    "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+    "src/exogibbs/equilibrium/gas/kernel/solver.py": "b9bfe6bb227e725e0406507335002c2f5f23a6952adc2eee79b7cafa369cd914",
+    "src/exogibbs/presets/fastchem4.py": "9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76",
+    "benchmarks/fastchem4/fastchem_executable.py": "b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99",
+    "tests/unittests/examples/gas_thermochemistry_impact_test.py": "c66efe93e971f38e0cf373ffcc17203d7e4091e4c2fa757eb6f1c896cfd0af78",
+    "tests/unittests/examples/major_molecule_adoption_test.py": "d3b3a67d506a3af2b3ebb29dd7493a13bc4df4a84d58614af24e674a98919a37",
+    "tests/unittests/examples/atomic_ion_adoption_test.py": "6ea410ec75cd26a2e3f7c6ad9e312464f8b438d3fe7e6e830695b3f69c3151fc",
+    "tests/unittests/examples/atomic_ion_audit_test.py": "9167a39a21e31af0c8f628942b4f3e8531cbe6ad8b1d0ba798c75f7f9a1edc76",
+    "tests/unittests/examples/ni_co_ionization_test.py": "02986fba894f6a0633141327402a3df0d3ac7e73ed52386052bfade037f103e6",
+    "tests/unittests/presets/fastchem4_nasa9_ions_test.py": "a89aca96348f34646a38b7d46031a7535b8a6a4a1d45e8eb7a0f0ca3631f40a7",
+    "tests/unittests/benchmarks/fastchem4_executable_test.py": "74f5f368fecef0c87901fd195167d7d358f256b400df98b6d54026a54b696fa6",
+    "mceg/contracts/gas_thermochemistry_impact.yaml": "473b8f86de2ba584ca91297465513a11652c472998dd9892624f99042060774c",
+    "results/gas_thermochemistry_impact/fastchem_build.json": "198060de70993d46d2d1a6f4f962a7b5fd9a68966c2f153f6fd2a113400e1446"
+  },
+  "junit_sha256": "1d97e067dd271bd08ede00e0d98cbcb517453dec9568c9c6d99a1147ea13b512",
+  "mceg": {
+    "repository": "https://github.com/HajimeKawahara/mceg",
+    "revision": "d7a6958d483721b4863ca2928955554b7930a5f1",
+    "structural_validation": "passed",
+    "contract": "mceg/contracts/gas_thermochemistry_impact.yaml",
+    "scope": "Structure only; no runtime or test dependency.",
+    "command": "PYTHONPATH=/home/kawahara/mceg/src .venv/bin/python -m mceg mceg/contracts/gas_thermochemistry_impact.yaml"
+  },
+  "fastchem": {
+    "status": "passed",
+    "cases": 100,
+    "version": "4.0.3",
+    "source_revision": "ae67cbd559bc64a3233a1cee6030b8e6b50520de",
+    "build_receipt": "results/gas_thermochemistry_impact/fastchem_build.json",
+    "run_command": "OMP_NUM_THREADS=5 .venv/bin/python examples/comparisons/compare_gas_thermochemistry.py --fastchem-executable /tmp/exogibbs_fastchem4 --fastchem-version-label '4.0.3 (ae67cbd)'",
+    "chemistry_accuracy": 1e-10,
+    "element_conservation_accuracy": 1e-10,
+    "max_chemistry_iterations": 80000,
+    "max_internal_iterations": 20000,
+    "maxima": {
+      "max_abs_dex_x_ge_1e_minus12": 9.45530549513456e-07,
+      "electron_dex": 9.009296729900524e-07,
+      "Hminus_dex": 9.009246966642708e-07,
+      "total_amount_relative_difference": 4.8899106985800245e-11,
+      "element_relative_residual": 5.749124179769862e-11,
+      "charge_relative_residual": 2.7468959843403363e-11,
+      "mass_action_max_abs_ln": 5.735785180149833e-10,
+      "all_species_abs_dex": 7.88830124998985e-06
+    },
+    "scope": "Executed standalone benchmark, separately from the offline unit tests. Identical thermochemistry checks implementation, not physical accuracy."
+  },
+  "run_receipt_sha256": "517481634f5254692d9dc4a921302056ea4342ecff9609df7d26d5cfc9a455d4",
+  "documentation": {
+    "status": "passed",
+    "command": "PATH=\"$PWD/.venv/bin:$PATH\" JAX_PLATFORMS=cpu ./update_doc.sh -D plot_gallery=0",
+    "warning_count": 2032,
+    "changed_page_warning_count": 0,
+    "scope": "HTML built; gallery examples were not rerun. Existing warnings elsewhere remain.",
+    "source_sha256": {
+      "documents/gas_thermochemistry_impact.rst": "18fbd291cec42e529853d98a622293fa97f92d281ae1d2b4967c093364800b18",
+      "documents/index.rst": "d8b3d7ae9674104615928d9502b180c63fa0b3819d0d34b3831cca9d7d345a14",
+      "mceg/README.md": "1e7d91f65d6b5dc6637d9a861fab32c0e63834da0f85df7fa49cc4e1e1154306"
+    }
+  },
+  "run_receipt_path": "results/gas_thermochemistry_impact/receipt_before_curated.json"
+}

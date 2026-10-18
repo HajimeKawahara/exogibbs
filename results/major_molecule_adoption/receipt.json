@@ -1,0 +1,51 @@
+{
+  "command": "python3 examples/comparisons/select_major_molecules.py",
+  "base_revision": "4020f7916849dd357bcd9de3f5c5e84beac5a605",
+  "python": "3.12.3",
+  "species_count": 35,
+  "comparison_rows": 350,
+  "temperature_K": [
+    300,
+    500,
+    700,
+    1000,
+    1500,
+    2000,
+    3000,
+    4000,
+    5000,
+    6000
+  ],
+  "standard_pressure_Pa": 100000.0,
+  "selection_counts": {
+    "CEA thermal functions + ATcT 1.172 D0": 17,
+    "JANAF thermal functions + ATcT 1.172 D0": 1,
+    "JANAF thermal functions and D0": 1,
+    "JANAF thermal functions + BC D0": 1,
+    "JANAF thermal functions + Merriles 2020 D0": 1,
+    "Retain FastChem / JANAF": 2,
+    "Retain CEA source; use original NASA9 curves": 1,
+    "Retain FastChem / Barklem-Collet 2016": 9,
+    "FastChem / BC thermal fit + spectroscopic D0": 1,
+    "Retain FastChem / Burrows 2005 within review window": 1
+  },
+  "status_counts": {
+    "prefer": 14,
+    "retain_provisionally": 15,
+    "prefer_conditionally": 6
+  },
+  "bc_partition_reconstruction_max_abs_dex": 0.004909901546227502,
+  "selected_file_sha256": {
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "examples/comparisons/data/major_molecule_adoption.json": "2836795c24a7990d9e8b01b896102b405167119d2f72ff0e54dcc8b551abac92",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c"
+  },
+  "output_sha256": {
+    "comparison.csv": "c76506aa3575f0a202f104efd775ea8eef3fbacbe88231656d3586fb52021364",
+    "decisions.csv": "e09e55602232ebccaa291878ce3e3febd25a7a9f5826aff112c743a6b9c40328",
+    "adoption_table.csv": "b4dfbff9ea270888736329ac885be73cf10273487e599f1e5f0a2728c4506530"
+  },
+  "interpretation": "Source-selection study, not a production preset or physical validation. Maxima are sampled symmetric Kp ratios, not abundance errors or uncertainties. Common NASA neutral thermal anchors are used for adopted NASA/JANAF candidates. Retained FastChem curves are formation-K models; their source agreement is not independent validation. ATcT 1.172 is a reviewed snapshot, not the latest release."
+}

@@ -1,0 +1,117 @@
+{
+  "status": "passed",
+  "recorded_at_utc": "2026-10-18T09:56:55.238279+00:00",
+  "source": "documents/presets/curated.rst",
+  "source_sha256": "5b2f26fe371d36d08a160cddb1591ebae89948dc836aa5e02683a1e94ac6ac40",
+  "method": "Each usage example was executed independently after the shared imports. Solver wrappers checked convergence, finite log amounts, normalized mole fractions, species membership and the selected elemental budget.",
+  "shared_imports_sha256": "08899bb4dcaf2f419e375d400d92301301cc37a6c3fe5e4727e7998f181c6611",
+  "examples": [
+    {
+      "block": 1,
+      "code_sha256": "d2e13f179aa87bb5dc083ab467737c085b0d569ff3c695f62214afdf800cfa45",
+      "status": "passed",
+      "calls": [],
+      "stdout": ""
+    },
+    {
+      "block": 2,
+      "code_sha256": "952765947624579b700d05d75954100b882f3d0f3d0966f8ebd8dec76a5cbb06",
+      "status": "passed",
+      "calls": [
+        {
+          "api": "solve",
+          "ions": true,
+          "shape": [
+            537
+          ],
+          "all_converged": true,
+          "C_over_O": 0.5888436553555907
+        }
+      ],
+      "stdout": "True\n1.094208389333653e-06\n1.8348657252879663e-10\ncurated-gas-v1 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38\n"
+    },
+    {
+      "block": 3,
+      "code_sha256": "a4b1171d3c483634b22c1eeb5f1d37f3298344220e3aa7432af92606f74df7d2",
+      "status": "passed",
+      "calls": [
+        {
+          "api": "solve",
+          "ions": false,
+          "shape": [
+            421
+          ],
+          "all_converged": true,
+          "C_over_O": 0.5888436553555907
+        }
+      ],
+      "stdout": "True\n0.00023759827001214757\n(421,)\n"
+    },
+    {
+      "block": 4,
+      "code_sha256": "c8f6344616813ed22a94b7e475a9bb09a25472a5a0e3faa03e783ad7dc3a6de1",
+      "status": "passed",
+      "calls": [
+        {
+          "api": "solve_profile",
+          "ions": true,
+          "shape": [
+            5,
+            537
+          ],
+          "all_converged": true,
+          "C_over_O": 0.5888436553555907
+        },
+        {
+          "api": "solve_profile",
+          "ions": false,
+          "shape": [
+            5,
+            421
+          ],
+          "all_converged": true,
+          "C_over_O": 0.5888436553555907
+        }
+      ],
+      "stdout": "True True\n(5, 537)\n[1.81476562e-16 5.25066321e-11 2.41562023e-04 2.55289193e-04\n 2.95242802e-04]\nFalse True\n(5, 421)\n[1.81546509e-16 5.25111130e-11 2.41562234e-04 2.55289305e-04\n 2.95242454e-04]\n"
+    },
+    {
+      "block": 5,
+      "code_sha256": "162e3c6e61e5486af0d0bf6dca93433d1efc2586a5a2fdde51f68411ed5261f2",
+      "status": "passed",
+      "calls": [
+        {
+          "api": "solve",
+          "ions": true,
+          "shape": [
+            537
+          ],
+          "all_converged": true,
+          "C_over_O": 0.7999999999999999
+        },
+        {
+          "api": "solve",
+          "ions": false,
+          "shape": [
+            421
+          ],
+          "all_converged": true,
+          "C_over_O": 0.7999999999999999
+        }
+      ],
+      "stdout": "True True\n9.266300968440817e-05\nFalse True\n9.266307768707005e-05\n"
+    },
+    {
+      "block": 6,
+      "code_sha256": "0fe1395b993f7eb1a2c59cdb85f89b76dc376646bbf740cefa03ec1ac53e9d22",
+      "status": "passed",
+      "calls": [],
+      "stdout": "True (537,) (3, 537) (537,)\n{'thermal_source': 'nasa9', 'energy_source': 'atct', 'selected_source': 'CEA thermal functions + ATcT 1.172 D0', 'status': 'prefer', 'review_bounds_K': [300, 6000], 'temperature_scope': '300-6000 K at ten comparison nodes; CEA source 200-6000 K', 'difference_cause': 'Small ground-energy change; differences at the upper temperatures are thermal functions and the FastChem fit.', 'reason': 'Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.', 'follow_up': 'Check caloric derivatives, interval joins and application abundances when implementing the preset.', 'name': 'H2O', 'source_group': 'molecular'}\n(1500.0, 4000.0) 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38\nFalse (421,) (3, 421) (421,)\n{'thermal_source': 'nasa9', 'energy_source': 'atct', 'selected_source': 'CEA thermal functions + ATcT 1.172 D0', 'status': 'prefer', 'review_bounds_K': [300, 6000], 'temperature_scope': '300-6000 K at ten comparison nodes; CEA source 200-6000 K', 'difference_cause': 'Small ground-energy change; differences at the upper temperatures are thermal functions and the FastChem fit.', 'reason': 'Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.', 'follow_up': 'Check caloric derivatives, interval joins and application abundances when implementing the preset.', 'name': 'H2O', 'source_group': 'molecular'}\n(1500.0, 4000.0) 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38\n"
+    }
+  ],
+  "registered_jobs": 86,
+  "comparison_script_jobs": 24,
+  "runtime_changed": false,
+  "source_sha256_at_execution": "91f98ce692ba29ca19394bd87893a0fa71e1c51523b641b276e6cf88165c2f17",
+  "post_execution_markup_change": "Extended two RST heading underlines by one character each. All seven Python blocks are byte-identical to the executed versions."
+}

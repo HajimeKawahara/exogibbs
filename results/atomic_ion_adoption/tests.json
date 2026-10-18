@@ -1,0 +1,75 @@
+{
+  "status": "passed",
+  "timestamp_utc": "2026-10-18T00:33:25.552240+00:00",
+  "command": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 .venv/bin/python -m pytest -q tests/unittests/examples/atomic_ion_adoption_test.py tests/unittests/examples/atomic_ion_audit_test.py tests/unittests/examples/ni_co_ionization_test.py tests/unittests/presets/fastchem4_nasa9_ions_test.py --junitxml=results/atomic_ion_adoption/tests.xml",
+  "python": "3.12.3",
+  "packages": {
+    "pytest": "9.1.1",
+    "jax": "0.11.2",
+    "numpy": "2.5.4",
+    "pydantic": "2.14.1",
+    "PyYAML": "6.0.3",
+    "sphinx": "7.4.7"
+  },
+  "counts": {
+    "tests": 32,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "selected_file_sha256": {
+    "examples/comparisons/select_atomic_ions.py": "431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/data/atomic_ion_adoption.json": "5e58687bb3165cf130c92481b273e7daecc7189401d8400ea6f87fa0845d9976",
+    "examples/comparisons/data/atomic_ion_reference.json": "c37925bd132592f9f742d73ace1409032ea0c67911c240ac06b17be34a2b33dc",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/nasa9/fastchem4_hot.json": "85e677bdf08a340b045567affac60e09a480fae1556a8704bc52fe66cd9e1338",
+    "tests/unittests/examples/atomic_ion_adoption_test.py": "6ea410ec75cd26a2e3f7c6ad9e312464f8b438d3fe7e6e830695b3f69c3151fc",
+    "tests/unittests/examples/atomic_ion_audit_test.py": "9167a39a21e31af0c8f628942b4f3e8531cbe6ad8b1d0ba798c75f7f9a1edc76",
+    "tests/unittests/examples/ni_co_ionization_test.py": "02986fba894f6a0633141327402a3df0d3ac7e73ed52386052bfade037f103e6",
+    "tests/unittests/presets/fastchem4_nasa9_ions_test.py": "a89aca96348f34646a38b7d46031a7535b8a6a4a1d45e8eb7a0f0ca3631f40a7",
+    "src/exogibbs/thermo/standard.py": "b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1",
+    "src/exogibbs/presets/fastchem4_nasa9_ions.py": "597f8f7b6e30694ddd2b4dad17a69a134ef2b09ffb2d8dec3810a78cbad905e9",
+    "mceg/contracts/atomic_ion_adoption.yaml": "e30087e6f980404db5651d734360d885001b408f6173f2b9e6af24e5a0cb6ec4",
+    "mceg/contracts/atomic_ion_reference.yaml": "caa3afdf0cb660ba565c6661ca7ced69082eaded15e4a67e095c3f30a8c2ff27"
+  },
+  "junit_sha256": "c73cbea0289ac8c9616ac41b6e30fdf8c5c8f12891ebe440cb778ab098671894",
+  "scope": "Six new adoption regressions and 26 prior audit/preset tests. The full package suite was not run; no physical-validation claim.",
+  "caloric_check": {
+    "species_count": 43,
+    "temperature_range_K": [
+      1000,
+      6000
+    ],
+    "method": "All endpoints and real stationary points of each NASA9 Cp curve.",
+    "minimum_cp_over_R": 2.494366571273205,
+    "species_at_minimum": "Ca1+"
+  },
+  "mceg": {
+    "repository": "https://github.com/HajimeKawahara/mceg",
+    "revision": "d7a6958d483721b4863ca2928955554b7930a5f1",
+    "structural_validation": "passed",
+    "contracts": [
+      "mceg/contracts/atomic_ion_reference.yaml",
+      "mceg/contracts/atomic_ion_adoption.yaml"
+    ],
+    "command_template": "PYTHONPATH=/home/kawahara/mceg/src .venv/bin/python -m mceg CONTRACT",
+    "scope": "Structure and internal evidence links only; no scientific validation or MCEG runtime dependency."
+  },
+  "documentation": {
+    "status": "passed",
+    "command": "PATH=\"$PWD/.venv/bin:$PATH\" JAX_PLATFORMS=cpu ./update_doc.sh -D plot_gallery=0",
+    "warning_count": 2032,
+    "changed_page_warning_count": 0,
+    "scope": "HTML build completed. Gallery examples were not reexecuted. Warnings remain in other documentation, including duplicate API objects and existing headings.",
+    "source_sha256": {
+      "documents/atomic_ion_adoption.rst": "c19f84fd34bfba83ba605e3278caae6f5506c684a8c913b40b644ad6bf6c6f9d",
+      "documents/atomic_ion_audit.rst": "6bec8c60ce2a02b0ac1de18f8974b1f401a04b5c737c509a33a11c0813f37d50",
+      "documents/index.rst": "ce9eef393f670051733539b1ebdd0b086cdcdd9b990528f4a485ad2ee6107a3d"
+    }
+  },
+  "final_metadata_checks": {
+    "passed": 2,
+    "scope": "Evidence hash and contract-reference tests rerun after contract metadata updates."
+  }
+}

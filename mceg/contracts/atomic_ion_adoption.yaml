@@ -1,0 +1,164 @@
+schema_version: '0.1'
+model:
+  id: exogibbs.atomic_ion_adoption.v1
+  name: Species-specific atomic-ion source adoption
+  description: A source-selection study for 49 gas-phase atomic ions, using 43 threshold-updated
+    NASA9 models and four spectroscopic partition models, with two unbound anions excluded.
+    The selection is not a production preset or an assertion of global optimality.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
+    entry_points:
+    - examples/comparisons/select_atomic_ions.py:compute_adoption
+assumptions:
+- statement: The ideal-gas LTE reference uses electron spin two, no nuclear-spin factors,
+    negligible heavy-particle translational mass ratios, and the listed bound levels only.
+  evidence: [reference_model]
+- statement: NASA thermal populations are retained where the audit supports them; independently
+    adopted spectroscopic thresholds replace assigned ground-state reaction energies.
+    Updating b1 changes enthalpy but leaves the source entropy and heat capacity unchanged.
+  evidence: [energy_convention, implementation]
+- statement: N- and Zn- are excluded as stable species under the adopted bound-state evaluation.
+  evidence: [anion_evaluation]
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Seven-node source comparison with continuous NASA candidate curves.
+  conditions:
+  - The comparison temperatures are 1000, 1500, 2000, 3000, 4000, 5000 and 6000 K.
+  - The 43 NASA intervals span 1000-6000 K; the four partition selections are table-node-only.
+  - Dimensionless Kp uses standard pressure 100000 Pa, not a specified actual gas pressure.
+  evidence: [comparison_run, reference_model]
+- kind: scientific_applicability
+  status: unknown
+  description: No general atmosphere temperature-density domain or equilibrium-abundance accuracy
+    is established. Na and K need particular review of high excited states at the upper temperatures.
+  conditions: []
+  evidence: [primary_partitions, reference_model, comparison_run]
+claims:
+- id: energy_correction
+  kind: theoretical
+  status: supported
+  statement: Replacing an ion's b1 by b1 plus q E/kB minus the source reaction H0/R_NASA
+    anchors the ground-state energy and shifts ln Kp by minus delta_b1/T.
+  scope: NASA coefficient convention R_NASA = 8.314510 J/mol/K, modern spectroscopic E/kB,
+    charge q = +1 for ionization or -1 for attachment, with neutral and electron anchors retained.
+  evidence: [energy_convention]
+- id: completed_comparison
+  kind: numerical_verification
+  status: supported
+  statement: All 49 source choices were recorded with reproducible seven-node comparisons.
+  scope: Source selection only; matching the four adopted partition models to their own reference
+    is explicitly marked as construction, not independent verification.
+  evidence: [comparison_run, test_run]
+- id: physical_accuracy
+  kind: physical_validation
+  status: unknown
+  statement: Physical accuracy of the selected hybrid model and its equilibrium abundances is unestablished.
+  scope: No experiment or observation validates the complete selection.
+  evidence: [reference_model, comparison_run]
+evidence:
+- id: implementation
+  kind: implementation
+  summary: Offline standard-library selection study with explicit species exceptions, not residual-based selection.
+  sources:
+  - examples/comparisons/select_atomic_ions.py
+  - examples/comparisons/data/atomic_ion_adoption.json
+  - documents/atomic_ion_adoption.rst
+  scope: Working-tree file hashes identify the actual model; no ExoGibbs runtime data or MCEG dependency is changed.
+- id: reference_model
+  kind: theory
+  summary: Spectroscopic ideal-gas reference and its pinned IE, EA and level inventories.
+  sources:
+  - mceg/contracts/atomic_ion_reference.yaml
+  - examples/comparisons/audit_atomic_ions.py
+  - examples/comparisons/data/atomic_ion_reference.json
+  - documents/atomic_ion_audit.rst
+  scope: The prior audit's reaction conventions and limitations apply. The NIST IE snapshot is January 2022,
+    not a claim of the latest ASD values. This follow-up closes the CDS transcription gap separately.
+- id: energy_convention
+  kind: theory
+  summary: NASA assigned ground enthalpies and original gas constant determine the independent b1 correction.
+  sources:
+  - https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf
+  - https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp
+  - examples/comparisons/data/atomic_ion_adoption.json
+  - documents/atomic_ion_adoption.rst
+  scope: NASA/TP-2002-211556 Eqs. 2-3, assigned enthalpies, Appendix A and Table C1.
+    The 75 source records supply Hf(298.15) and H(298.15)-H(0); the update is not fitted to residuals.
+  provenance:
+    role: primary
+    location: NASA report and pinned CEA thermo.inp, with record line numbers in the excerpt.
+    inspection: inspected
+    note: Source R is also confirmed by the constant-Cp H+, H- and electron coefficients.
+- id: primary_partitions
+  kind: literature
+  summary: Original CDS Table 8 numerical partition functions and published finite-level limitations.
+  sources:
+  - https://doi.org/10.1051/0004-6361/201526961
+  - https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table8.dat
+  - examples/comparisons/data/atomic_ion_adoption.json
+  scope: All 11928 original numerical values match the local ExoJAX copy; all 378 selected values
+    match the audit fixture at temperatures confirmed by the CDS header. Only selected excerpts are vendored.
+  provenance:
+    role: primary
+    location: Table 8 and its temperature header; full-table hash and selected line numbers in the fixture.
+    inspection: inspected
+    note: This verifies transcription, not the accuracy or completeness of all underlying energy levels.
+- id: local_partitions
+  kind: implementation
+  summary: Previously excerpted neutral/cation partitions checked against the original CDS publication table.
+  sources:
+  - examples/comparisons/data/atomic_ion_reference.json
+  - examples/comparisons/data/atomic_ion_adoption.json
+  scope: 54 records at seven nodes; no ExoJAX runtime import.
+  provenance:
+    role: secondary
+    location: Pinned ExoJAX partition copy used by the original audit.
+    inspection: inspected
+    note: The original audit's unchecked CDS-to-ExoJAX link is now compared numerically.
+    derived_from:
+    - evidence: primary_partitions
+      comparison: consistent
+      note: All 284 by 42 tabulated values agree; all selected values and temperatures also agree.
+- id: anion_evaluation
+  kind: literature
+  summary: Evaluated electron affinities and bound levels, including nonbinding N and Zn.
+  sources:
+  - https://doi.org/10.1063/5.0080243
+  - https://info.phys.tsinghua.edu.cn/henucl/ning/148.pdf
+  - examples/comparisons/data/atomic_ion_reference.json
+  scope: Ning and Lu (2022), Tables 3-4. Selected entries were checked against PDF images in the original audit;
+    older experiments were not individually reaudited. H EA and some unresolved levels involve theory.
+- id: comparison_run
+  kind: benchmark
+  result: passed
+  summary: Completed species-by-species comparison and recorded 43 NASA, four partition and two exclusion decisions.
+  sources:
+  - results/atomic_ion_adoption/receipt.json
+  - results/atomic_ion_adoption/decisions.csv
+  - results/atomic_ion_adoption/comparison.csv
+  scope: The 39 selected NASA cases excluding Na and K have sampled maximum symmetric factor 1.01316.
+    Na and K reach approximately 1.0383 and 1.0702. These are comparisons, not uncertainty estimates.
+- id: test_run
+  kind: numerical_test
+  result: passed
+  summary: All 32 targeted tests passed, including source transcription, energy convention, caloric invariance and choice scope.
+  sources:
+  - tests/unittests/examples/atomic_ion_adoption_test.py
+  - results/atomic_ion_adoption/tests.json
+  scope: Six new adoption tests plus 26 existing audit and ion-preset tests. Analytic Cp minima are checked
+    over 1000-6000 K for the 43 selected NASA ion curves; no whole-package pass is claimed.
+limitations:
+- statement: The four spectroscopic selections need continuous representations and derivative checks
+    before production use; their agreement with the reference is by construction.
+  evidence: [implementation, reference_model]
+- statement: Na and K retain provisional NASA thermal functions because the reference difference is mainly
+    a neutral-partition issue; a density-dependent cutoff assessment is required for the application.
+  evidence: [primary_partitions, comparison_run]
+- statement: Updating b1 preserves the source caloric functions but does not validate the complete hybrid
+    caloric model, molecular equilibria or abundances. A production preset must use a common reference gauge.
+  evidence: [energy_convention, reference_model]
+- statement: Threshold uncertainties are metadata, not propagated uncertainty bands. Seven-node agreement
+    does not bound between-node discrepancies, and shared source ancestry limits independence.
+  evidence: [reference_model, comparison_run]
