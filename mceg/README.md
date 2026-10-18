@@ -55,6 +55,20 @@ code consumes pinned numerical JSON only; MCEG remains an optional development
 tool. Earlier source-study contracts and their archived results are historical
 evidence and are not rewritten by this implementation.
 
+The curated receipt has a separate offline consistency check:
+
+```bash
+PYTHONPATH=src python -m pytest -q tests/unittests/examples/curated_receipt_test.py
+```
+
+It checks the complete recorded input/output hash lists, the 70 completed
+FastChem comparisons, and the contract's implementation hash. The FastChem
+binary and MCEG are unnecessary for this check. A changed input requires review
+and a new numerical receipt; updating hashes alone does not establish a new
+passing run. Earlier test receipts remain historical execution records.
+These checks establish recorded-file consistency, not physical accuracy or
+coverage of new compositions and conditions.
+
 ## Ownership and references
 
 ExoGibbs owns the solubility contract and ExoEOS owns the pure-H2 EOS contract.
