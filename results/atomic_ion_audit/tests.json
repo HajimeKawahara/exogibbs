@@ -1,0 +1,58 @@
+{
+  "description": "Scoped atomic-ion audit verification; not a whole-package or physical-validation pass.",
+  "python": "3.12.3",
+  "yaml": "6.0.1",
+  "mceg_revision": "d7a6958d483721b4863ca2928955554b7930a5f1",
+  "selected_file_sha256": {
+    "tests/unittests/examples/atomic_ion_audit_test.py": "9167a39a21e31af0c8f628942b4f3e8531cbe6ad8b1d0ba798c75f7f9a1edc76",
+    "results/ni_co_ionization/comparison.csv": "a095805df426e853fca3a892274a0144df469b54a3dcae9d40cc217783205e71",
+    "mceg/contracts/atomic_ion_reference.yaml": "5410b53d3e01902d36a28f0326225a8e4d5c2c1f6ae614a827282ab4f6e7582e"
+  },
+  "manual_yaml_review": "YAML parsed; local paths (except the test receipt being written), evidence IDs, domain conditions and implementation hash checked. This is not full MCEG schema validation.",
+  "tests_run": 7,
+  "tests_passed": 7,
+  "checks": [
+    {
+      "name": "targeted",
+      "command": "python3 -m unittest discover -s tests/unittests/examples -p atomic_ion_audit_test.py -v",
+      "status": "passed",
+      "exit_code": 0,
+      "output": "test_anion_levels_are_bound_and_nasa_is_not_a_blanket_improvement (atomic_ion_audit_test.AtomicIonAuditTest.test_anion_levels_are_bound_and_nasa_is_not_a_blanket_improvement) ... ok\ntest_copper_discrepancy_is_already_in_janaf (atomic_ion_audit_test.AtomicIonAuditTest.test_copper_discrepancy_is_already_in_janaf) ... ok\ntest_coverage_keeps_unbound_and_missing_data_distinct (atomic_ion_audit_test.AtomicIonAuditTest.test_coverage_keeps_unbound_and_missing_data_distinct) ... ok\ntest_evidence_hashes_and_contract_reference (atomic_ion_audit_test.AtomicIonAuditTest.test_evidence_hashes_and_contract_reference) ... ok\ntest_hydrogen_spin_pressure_and_reaction_directions (atomic_ion_audit_test.AtomicIonAuditTest.test_hydrogen_spin_pressure_and_reaction_directions) ... ok\ntest_rejects_unaudited_domains_and_wrong_electron_sign (atomic_ion_audit_test.AtomicIonAuditTest.test_rejects_unaudited_domains_and_wrong_electron_sign) ... ok\ntest_reproduces_previous_ni_co_audit (atomic_ion_audit_test.AtomicIonAuditTest.test_reproduces_previous_ni_co_audit) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.005s\n\nOK\n"
+    },
+    {
+      "name": "pytest",
+      "command": "python3 -m pytest tests/unittests",
+      "status": "not_run",
+      "exit_code": 1,
+      "output": "/usr/bin/python3: No module named pytest\n"
+    },
+    {
+      "name": "mceg",
+      "command": "PYTHONPATH=/home/kawahara/mceg/src python3 -m mceg mceg/contracts/atomic_ion_reference.yaml",
+      "status": "not_run",
+      "exit_code": 1,
+      "output": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 189, in _run_module_as_main\n  File \"<frozen runpy>\", line 148, in _get_module_details\n  File \"<frozen runpy>\", line 112, in _get_module_details\n  File \"/home/kawahara/mceg/src/mceg/__init__.py\", line 3, in <module>\n    from .schema import Contract\n  File \"/home/kawahara/mceg/src/mceg/schema.py\", line 5, in <module>\n    from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator\nModuleNotFoundError: No module named 'pydantic'\n"
+    },
+    {
+      "name": "documentation",
+      "command": "./update_doc.sh",
+      "status": "not_run",
+      "exit_code": 127,
+      "output": "./update_doc.sh: line 8: python: command not found\n"
+    },
+    {
+      "name": "diff",
+      "command": "git diff --check",
+      "status": "passed",
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "documentation_followup": {
+    "command": "python3 -m sphinx --version",
+    "status": "not_run",
+    "exit_code": 1,
+    "output": "/usr/bin/python3: No module named sphinx\n"
+  },
+  "note": "MCEG CLI, pytest and Sphinx could not start because their dependencies are absent. No dependencies were installed and no MCEG code was changed."
+}

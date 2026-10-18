@@ -42,7 +42,10 @@ class EquilibriumOptions:
     """Solver and profile scheduling options for gas equilibrium.
 
     The solver floors ``epsilon_crit`` at eight machine epsilons in its
-    effective floating-point dtype.
+    effective floating-point dtype. Setups that enable
+    ``metadata["relative_charge_convergence"]`` (including curated gas)
+    also require signed constraints to close to this relative tolerance,
+    normalized by absolute carrier amount plus absolute requested budget.
     """
 
     epsilon_crit: float = 1.0e-10

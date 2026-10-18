@@ -1,0 +1,183 @@
+schema_version: '0.1'
+model:
+  id: exogibbs.gas_thermochemistry_impact.v1
+  name: Fixed-network gas thermochemistry abundance comparison
+  description: Apply the approved atomic and molecular source choices on one
+    537-species ideal-gas network, separating atomic, molecular and combined
+    abundance effects. An additional atomic-reference calculation probes the
+    remaining ionic thermal differences. This is a study, not a production preset.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    entry_points:
+    - examples/comparisons/compare_gas_thermochemistry.py:build_study
+    - examples/comparisons/compare_gas_thermochemistry.py:run_exogibbs
+assumptions:
+- statement: All five models have the same 537 species, formula matrix, normalized
+    27-element solar budget and zero charge budget. N- and Zn- are removed from
+    every model; their exclusion is not part of the measured thermochemical effect.
+  evidence: [implementation, run, source_choices]
+- statement: Gas formation Kp is dimensionless at 1 bar. Neutral atoms and electrons
+    have zero reference h; each other species has h equal to minus ln Kp. Signed
+    electron stoichiometry preserves ionization and attachment pressure powers.
+  evidence: [implementation, tests]
+- statement: Equilibrium is ideal and gas-only, without condensation, external
+    ionization, density-dependent state truncation or isotope resolution.
+  evidence: [implementation, source_choices]
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: One solar composition at four reviewed temperature nodes and five pressures.
+  conditions:
+  - Temperatures are 1500, 2000, 3000 and 4000 K; pressures are 1e-6, 1e-4, 0.01, 1 and 100 bar.
+  - Packaged Asplund 2021 abundances are read explicitly; C/O is 0.5888436554.
+  - No interpolation, extrapolation, fallback or species-set change between models.
+  evidence: [run, implementation]
+- kind: scientific_applicability
+  status: unknown
+  description: The sampled grid is not a validated temperature-density or atmospheric domain.
+  conditions: []
+  evidence: [source_choices, physical_comparison]
+claims:
+- id: controlled_source_impact
+  kind: numerical_verification
+  status: supported
+  statement: One hundred ExoGibbs calculations quantify source effects with fixed
+    species and budgets. Electrons and H- decrease by about 10.7 percent at
+    4000 K and 1 bar; HCN increases by about 68.7 percent at 1500 K and 100 bar.
+  scope: Sampled ideal-gas mole fractions. Ratios are not physical errors or opacity
+    effects. Full log amounts preserve trace species separately from the 1e-12
+    reporting threshold. Atomic-only and molecular-only runs provide attribution.
+  evidence: [implementation, run, tests]
+- id: numerical_closure
+  kind: numerical_verification
+  status: supported
+  statement: All cases pass explicit convergence, relative elemental and relative
+    charge checks, and all-species mass-action checks. Maximum residuals are
+    1.82e-6, 2.13e-6 and 1.43e-12 respectively for the last three checks.
+  scope: CPU float64, cold initialization and epsilon_crit 1e-13. The default-tolerance
+    preliminary run failed relative charge checks in weakly ionized gas despite
+    reporting convergence; its amounts are excluded from the reported study.
+  evidence: [run, tests]
+- id: fastchem_implementation_agreement
+  kind: numerical_verification
+  status: supported
+  statement: Independent FastChem v4.0.3 execution agrees at all 100 cases. The
+    maximum mole-fraction difference for species above 1e-12 is 9.46e-7 dex;
+    electron and H- differences are each at most 9.01e-7 dex over every point.
+  scope: Identical species, budgets and node-specific constants. All 537 species,
+    including traces, agree within 7.89e-6 dex. This verifies equilibrium
+    implementation, not physical accuracy of the shared thermochemical inputs.
+  evidence: [fastchem_protocol, fastchem_run, tests]
+- id: hybrid_physical_accuracy
+  kind: physical_validation
+  status: unknown
+  statement: Physical accuracy of the complete adopted mixture remains unestablished.
+  scope: Atomic reference substitutions change electrons by at most 0.0214 percent
+    and H- by at most 0.1016 percent on this grid, but share thresholds and four
+    adopted partition models. Molecular source disagreements remain unresolved;
+    no independent whole-mixture observation or experiment is used.
+  evidence: [physical_comparison, source_choices]
+evidence:
+- id: implementation
+  kind: implementation
+  summary: A study-only example applies exact-node constants through the existing
+    ChemicalSetup and public gas solver. No ExoGibbs runtime or MCEG code is changed.
+  sources:
+  - examples/comparisons/compare_gas_thermochemistry.py
+  - documents/gas_thermochemistry_impact.rst
+  scope: MCEG remains optional external model documentation, with no runtime or test import.
+- id: source_choices
+  kind: implementation
+  summary: User-approved atomic and major-molecule decisions, including conditional
+    choices and provisional retentions, evaluated from pinned local excerpts.
+  sources:
+  - mceg/contracts/atomic_ion_adoption.yaml
+  - mceg/contracts/major_molecule_adoption.yaml
+  - examples/comparisons/select_atomic_ions.py
+  - examples/comparisons/select_major_molecules.py
+  scope: Forty-seven bound ions and 35 molecules are covered; 23 molecular constants
+    change and 12 retain their existing fits. Other species retain baseline data.
+- id: run
+  kind: benchmark
+  result: passed
+  summary: One hundred ExoGibbs equilibria and 328 source-constant comparisons are
+    recorded with exact catalogs, budgets, model arrays and file hashes.
+  sources:
+  - results/gas_thermochemistry_impact/receipt.json
+  - results/gas_thermochemistry_impact/diagnostics.csv
+  - results/gas_thermochemistry_impact/equilibria.npz
+  - results/gas_thermochemistry_impact/equilibrium_constants.csv
+  - results/gas_thermochemistry_impact/abundances.csv
+  - results/gas_thermochemistry_impact/species_summary.csv
+  scope: Numerical closure and source sensitivity, not proof that every changed
+    abundance is physically more accurate. The recorded ExoGibbs results are
+    unchanged by the subsequent independent FastChem comparison.
+- id: fastchem_protocol
+  kind: implementation
+  summary: Export the identical catalog and node-specific constants for independent
+    FastChem execution; never use FastChem output to initialize ExoGibbs.
+  sources:
+  - examples/comparisons/compare_gas_thermochemistry.py:run_fastchem
+  - benchmarks/fastchem4/fastchem_executable.py
+  - benchmarks/fastchem4/README.md
+  scope: Constants transported as five-coefficient fits are valid at one temperature
+    only. Enforced gates are 1e-3 dex for species above 1e-12, electrons and H-, plus
+    relative charge/element and total-amount checks.
+- id: fastchem_run
+  kind: benchmark
+  result: passed
+  summary: All 100 independent standalone comparisons passed using the unmodified
+    FastChem v4.0.3 source at ae67cbd559bc64a3233a1cee6030b8e6b50520de.
+  sources:
+  - results/gas_thermochemistry_impact/fastchem_build.json
+  - results/gas_thermochemistry_impact/fastchem_parity.csv
+  - results/gas_thermochemistry_impact/receipt.json
+  - results/gas_thermochemistry_impact/equilibria.npz
+  scope: The source checkout was clean and its original gas and abundance files
+    matched the packaged bytes. Compiler, build command, executable SHA256 and
+    each generated single-temperature input hash are recorded. FastChem maximum
+    relative element/charge residuals are 5.75e-11 and 2.75e-11; its all-species
+    mass-action residual is at most 5.74e-10 in natural-log units, including output
+    rounding. No runtime dependency is introduced.
+- id: physical_comparison
+  kind: literature
+  summary: Spectroscopic thresholds and level-based atomic partitions provide an
+    external thermodynamic comparator; molecular BC comparisons separate energy
+    differences from remaining thermal differences where data exist.
+  sources:
+  - examples/comparisons/data/atomic_ion_reference.json
+  - examples/comparisons/data/major_molecule_reference.json
+  - documents/atomic_ion_audit.rst
+  - documents/major_molecule_adoption.rst
+  - results/gas_thermochemistry_impact/equilibrium_constants.csv
+  scope: External to FastChem fits, not uniformly independent of adopted inputs.
+    Four ionic models match by construction; ten BC molecular thermal models are
+    inherited. Updated thresholds are shared in the atomic comparison. Primary
+    sources and their inspection limits are preserved in the preceding contracts.
+- id: tests
+  kind: numerical_test
+  result: passed
+  summary: All 82 targeted tests passed, including eleven study cases and the
+    preceding source-adoption and standalone-adapter regression tests.
+  sources:
+  - tests/unittests/examples/gas_thermochemistry_impact_test.py
+  - results/gas_thermochemistry_impact/tests.json
+  - results/gas_thermochemistry_impact/tests.xml
+  scope: Independent scalar charge-neutrality comparison, source/pressure conventions,
+    immutable network, domain guards, archived closure and provenance. Offline
+    checks also replay the archived independent FastChem solutions without an
+    executable dependency; no whole-package test pass is inferred.
+limitations:
+- statement: Only one elemental composition and twenty thermodynamic points are
+    sampled. Carbon-rich mixtures, other metallicities and cooler atmospheres
+    require additional calculations with valid source coverage.
+  evidence: [run, source_choices]
+- statement: Changes in trace hydrides can be large even with unchanged molecular
+    constants because corrected metal ionization changes the available neutral atoms.
+    Ratios without absolute abundances do not quantify opacity consequences.
+  evidence: [run]
+- statement: Remaining TiO, TiH, CaH, CH4 and FeH source questions and molecular
+    caloric checks are not resolved by atomic-reference or FastChem agreement.
+    Correlated thermochemical uncertainties have not been propagated.
+  evidence: [physical_comparison, source_choices]

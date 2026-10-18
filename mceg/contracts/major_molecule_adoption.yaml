@@ -1,0 +1,182 @@
+schema_version: '0.1'
+model:
+  id: exogibbs.major_molecule_adoption.v1
+  name: Species-specific major-molecule source adoption
+  description: An offline source-selection study of 35 neutral gas molecules following
+    approval of the atomic-ion policy. Ground-state atomization energies and thermal
+    functions are selected separately. Fourteen choices are preferred, six conditional,
+    and fifteen retained provisionally. This is not a production preset.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    entry_points:
+    - examples/comparisons/select_major_molecules.py:compute_adoption
+assumptions:
+- statement: Dimensionless ideal-gas formation Kp refers to neutral constituent atoms
+    and standard pressure 100000 Pa. BC dissociation pK is tabulated in Pa and its
+    diatomic formation log10 Kp is 5 minus the tabulated log10 pK.
+  evidence: [primary_partitions, implementation]
+- statement: Balanced ground-state atomization energies can be combined with separately
+    selected thermal functions. Adopted CEA and JANAF candidates share the same CEA
+    neutral-atom thermal anchors; a scalar enthalpy update preserves molecular entropy and Cp.
+  evidence: [energy_convention, implementation]
+- statement: No MCEG runtime or test dependency is introduced. Source retentions and
+    conditional decisions are scientific judgements, not an automatic residual ranking.
+  evidence: [implementation, adoption_choices]
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Ten-node comparison from 300 to 6000 K, with a narrower TiH review window.
+  conditions:
+  - Temperatures are 300, 500, 700, 1000, 1500, 2000, 3000, 4000, 5000 and 6000 K.
+  - JANAF candidates are table-node models; CEA source intervals start at 200 or 300 K
+    and are truncated to 6000 K for this study. No below-grid or above-source extrapolation.
+  - TiH selection is restricted to a 1200-4800 K review window, based on the source Q table;
+    this does not validate every temperature in that interval.
+  evidence: [comparison_run, thermal_sources, hydride_reviews]
+- kind: scientific_applicability
+  status: unknown
+  description: No complete temperature-density range or abundance-accuracy domain is established.
+    Gas-only selection does not impose stability against condensation.
+  conditions: []
+  evidence: [adoption_choices, primary_partitions]
+claims:
+- id: energy_update
+  kind: theoretical
+  status: supported
+  statement: Replacing a NASA molecular b1 by b1 plus D0_source/R_NASA minus D0_adopted/R
+    anchors the balanced reaction and shifts ln Kp by minus delta_b1/T without changing Cp or S.
+  scope: Source R_NASA is 8.314510 J/mol/K; assigned H0 comes from the source header.
+    ATcT Hf0 values are not directly inserted into CEA's assigned enthalpy gauge.
+  evidence: [energy_convention, implementation]
+- id: source_selection
+  kind: numerical_verification
+  status: supported
+  statement: All 35 choices have explicit sources, review temperatures, difference causes,
+    reasons and follow-ups, supported by 350 reproducible comparison rows.
+  scope: Sampled source comparison; maxima are symmetric Kp ratios, not abundance errors
+    or uncertainty intervals. Agreement with a retained source is not independent validation.
+  evidence: [adoption_choices, comparison_run, test_run]
+- id: physical_accuracy
+  kind: physical_validation
+  status: unknown
+  statement: Physical accuracy of the complete molecular/atomic hybrid and its abundances
+    is unestablished, including the unresolved high-temperature CH4 thermal difference.
+  scope: No experiment or atmosphere calculation validates the complete proposed network.
+  evidence: [adoption_choices, thermal_sources, hydride_reviews]
+evidence:
+- id: implementation
+  kind: implementation
+  summary: Standard-library calculation from offline excerpts and explicit source choices.
+  sources:
+  - examples/comparisons/select_major_molecules.py
+  - examples/comparisons/audit_atomic_ions.py
+  - examples/comparisons/data/major_molecule_reference.json
+  - examples/comparisons/data/major_molecule_adoption.json
+  scope: Working-tree hashes identify the evaluated files; runtime data and preset code are unchanged.
+- id: adoption_choices
+  kind: implementation
+  summary: Species-specific table distinguishing preferred, conditional and provisional choices.
+  sources:
+  - documents/major_molecule_adoption.rst
+  - results/major_molecule_adoption/adoption_table.csv
+  - results/major_molecule_adoption/decisions.csv
+  - mceg/contracts/atomic_ion_adoption.yaml
+  scope: The preceding atomic policy was approved by the user; these molecular decisions
+    are a new source-adoption proposal. Provisional retention is not proof of optimality.
+- id: energy_convention
+  kind: theory
+  summary: NASA assigned enthalpy convention and the balanced ATcT ground-state atomization construction.
+  sources:
+  - https://ntrs.nasa.gov/citations/20020085330
+  - https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php
+  - documents/major_molecule_adoption.rst
+  scope: ATcT 1.172 is an inspected snapshot, not the latest release. It supplies 18 molecule
+    and six atomic enthalpies, not full-temperature thermal functions. Displayed uncertainties
+    are correlated; no covariance propagation or complete network reaudit was performed.
+  provenance:
+    role: primary
+    location: NASA report and ATcT gas-phase entries with identifiers in the reference fixture.
+    inspection: inspected
+    note: The later ATcT 1.228 network must be reviewed consistently before production adoption.
+- id: thermal_sources
+  kind: literature
+  summary: Pinned CEA coefficient records and identified NIST-JANAF gas tables.
+  sources:
+  - https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp
+  - https://janaf.nist.gov/
+  - examples/comparisons/data/major_molecule_reference.json
+  scope: 26 CEA molecule records and 32 JANAF tables, including ten atoms. Original header
+    citations and evaluation dates are retained. The underlying monographs were not all reaudited.
+    Old HS formation columns fail the balanced H/S consistency comparison and are not used as a reference.
+  provenance:
+    role: primary
+    location: Pinned coefficient file and exact JANAF table URLs in the fixture.
+    inspection: inspected
+    note: The CEA original has a full-file hash; JANAF excerpts were retrieved as text,
+      without asserting an original-HTML hash. Shared ancestry limits independence.
+- id: primary_partitions
+  kind: literature
+  summary: BC 2016 dissociation energies, molecular/atomic partition functions and equilibrium constants.
+  sources:
+  - https://doi.org/10.1051/0004-6361/201526961
+  - https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table1.dat
+  - https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table6.dat
+  - https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table7.dat
+  - https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table8.dat
+  scope: 24 diatomics at ten temperatures; the actual temperature header controls the
+    700 K node. Molecular spin-orbit and density-dependent level dissolution are omitted
+    in the general source calculation; underlying D0 measurements were not all reaudited.
+  provenance:
+    role: primary
+    location: Paper equations 1 and 7, Tables 1, 6, 7 and 8, and CDS ReadMe.
+    inspection: inspected
+    note: Reconstructing the pressure constant from Q leaves a maximum residual of
+      0.00491 dex. Source constant and rounding contributions are not fully resolved.
+- id: hydride_reviews
+  kind: literature
+  summary: Selected VO and MgH spectroscopy and the CaH, FeH and TiH limitations.
+  sources:
+  - https://doi.org/10.1063/5.0014006
+  - https://doi.org/10.1021/jp075704a
+  - https://doi.org/10.1021/jp406680r
+  - https://doi.org/10.22036/pcr.2017.75313.1355
+  - https://doi.org/10.1063/1.4767771
+  - https://arxiv.org/pdf/astro-ph/0411680
+  scope: VO and MgH thresholds and the FeH theoretical counterexample were inspected
+    through author abstracts. CaH fixed De and TiH state-sum details were inspected in
+    the full papers. The 2013 MgH D0/isotope refinement and full experimental systematic
+    error analyses remain follow-ups; abstract De is not used as D0.
+- id: comparison_run
+  kind: benchmark
+  result: passed
+  summary: All 350 source comparisons and 35 explicit decisions were generated offline.
+  sources:
+  - results/major_molecule_adoption/receipt.json
+  - results/major_molecule_adoption/comparison.csv
+  scope: Common-energy CH4 CEA/JANAF ratio reaches about 2.94 at 6000 K; the CaH
+    original-source discrepancy exceeds 1e9 at 300 K. These findings do not rank physical accuracy.
+- id: test_run
+  kind: numerical_test
+  result: passed
+  summary: All 44 targeted tests passed, including 12 new checks of identity, reference gauges,
+    pressure conversion, source calorics, domain guards, conflicting evidence and receipt hashes.
+  sources:
+  - tests/unittests/examples/major_molecule_adoption_test.py
+  - results/major_molecule_adoption/tests.json
+  scope: Twelve molecular-study tests and 32 prior atomic-ion/preset tests. The test
+    receipt records actual execution; no full-package pass is inferred.
+limitations:
+- statement: The preferred combinations are a defensible inspected-source proposal, not
+    a claim of globally optimal or fully current thermochemical data. Conditional retentions
+    and their next discriminating checks remain explicit in every affected table row.
+  evidence: [adoption_choices, energy_convention]
+- statement: JANAF table selections need continuous representations. Retained FastChem
+    formation curves need caloric checks; source agreement alone does not establish derivative accuracy.
+  evidence: [implementation, thermal_sources]
+- statement: An isotope-specific MgH D0 does not confer that precision on a bulk-species
+    model. Modern line-list partitions require spin, isotope and state-completeness normalization.
+  evidence: [hydride_reviews, adoption_choices]
+- statement: The complete hybrid network needs temperature-density and abundance validation,
+    including high-lying atomic populations and gas/condensate applicability.
+  evidence: [adoption_choices, primary_partitions]

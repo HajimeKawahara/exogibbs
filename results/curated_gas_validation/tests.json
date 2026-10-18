@@ -1,0 +1,130 @@
+{
+  "status": "passed_with_optional_skips",
+  "recorded_at_utc": "2026-10-18T04:48:18.921578+00:00",
+  "environment": {
+    "python": "3.12.3",
+    "pytest": "9.1.1",
+    "jax": "0.11.2",
+    "backend": "cpu",
+    "jax_enable_x64": true
+  },
+  "coverage": {
+    "collected": 2577,
+    "passed": 2462,
+    "skipped": 115,
+    "failed": 0,
+    "not_completed": 0
+  },
+  "coverage_policy": "Every collected case is accounted for by the non-scientific and scientific partitions. A later targeted execution supersedes an earlier result for the same case. No single uninterrupted full-suite pass is claimed.",
+  "executions": [
+    {
+      "command": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 .venv/bin/python -m pytest -q tests/unittests -m 'not scientific'",
+      "status": "failed",
+      "counts": {
+        "tests": 2356,
+        "failures": 1,
+        "errors": 0,
+        "skipped": 115,
+        "passed": 2240
+      },
+      "seconds": 487.443,
+      "junit": "results/curated_gas_validation/unit_tests.xml",
+      "junit_sha256": "80be299c3b49222db2c90e5b5f1a68993c0aa614f239092a0578e09102209835",
+      "skip_reasons": {
+        "could not import 'pyfastchem': No module named 'pyfastchem'": 4,
+        "could not import 'exoeos': No module named 'exoeos'": 111
+      },
+      "follow_up": "The only failure was the preceding impact study receipt pinning the earlier solver hash. All seven study artifacts were reproduced byte-for-byte with the current solver and FastChem executable. The execution receipt was refreshed; all eleven impact tests then passed in impact_tests.xml. No numerical result or test assertion was changed."
+    },
+    {
+      "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 .venv/bin/python -m pytest -q tests/unittests -m scientific",
+      "status": "passed",
+      "counts": {
+        "tests": 221,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": 221
+      },
+      "seconds": 724.241,
+      "junit": "results/curated_gas_validation/scientific_tests.xml",
+      "junit_sha256": "f658038f8fe6fac1d967fb3c7539e8c617e11018740e4d672b4887dde2c9bcd2",
+      "skip_reasons": {}
+    },
+    {
+      "command": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 .venv/bin/python -m pytest -q tests/unittests/presets/curated_test.py tests/unittests/equilibrium/gas/kernel/charge_test.py",
+      "status": "passed",
+      "counts": {
+        "tests": 18,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": 18
+      },
+      "seconds": 27.375,
+      "junit": "results/curated_gas_validation/preset_tests.xml",
+      "junit_sha256": "4ad93fd30babb38d289bba146514370e62048210d9349f1bbaac1ac467403a02",
+      "skip_reasons": {}
+    },
+    {
+      "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 .venv/bin/python -m pytest -q tests/unittests/examples/gas_thermochemistry_impact_test.py",
+      "status": "passed",
+      "counts": {
+        "tests": 11,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": 11
+      },
+      "seconds": 2.18,
+      "junit": "results/curated_gas_validation/impact_tests.xml",
+      "junit_sha256": "03259f8e9e7982b32d5e8f285f2c69c17a440f72921109a709d437df58f04e3b",
+      "skip_reasons": {}
+    }
+  ],
+  "earlier_interrupted_execution": {
+    "command": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 .venv/bin/python -m pytest -q tests/unittests",
+    "status": "interrupted",
+    "counts": {
+      "tests": 512,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 512
+    },
+    "seconds": 771.062,
+    "junit": "results/curated_gas_validation/full_suite_interrupted.xml",
+    "junit_sha256": "f0b669d0b1eb7605582ba4e506fe92f323bbb04dee9a069616672bfdd835ca64",
+    "skip_reasons": {},
+    "reason": "Interrupted after 512 passing cases when a scientific condensate test became slow. The suite was subsequently partitioned by the existing scientific marker; scientific checks used one BLAS/OpenMP thread."
+  },
+  "impact_study_revalidation": {
+    "equilibrium_cases": 100,
+    "independent_fastchem_cases": 100,
+    "all_seven_output_artifacts_byte_identical": true,
+    "previous_receipt": "results/gas_thermochemistry_impact/receipt_before_curated.json",
+    "previous_receipt_sha256": "517481634f5254692d9dc4a921302056ea4342ecff9609df7d26d5cfc9a455d4",
+    "current_receipt": "results/gas_thermochemistry_impact/receipt.json",
+    "current_receipt_sha256": "c320237a3c822761eb653bcfee90548af5e32288797b9754545e760d3322a57e",
+    "previous_solver_sha256": "b9bfe6bb227e725e0406507335002c2f5f23a6952adc2eee79b7cafa369cd914",
+    "current_solver_sha256": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0"
+  },
+  "selected_file_sha256": {
+    "examples/comparisons/validate_curated_preset.py": "b5323dc6fd006046b7ab8c657aed9c94975d81e89807a3c5f8b5a52c064577b8",
+    "examples/comparisons/build_curated_preset.py": "830a9aa25f96aaced9cba859995375d4c7f6d2ef57b2e8bf1c60d17f58d8341a",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "examples/comparisons/data/curated_continuous_reference.json": "42e5e8da8eb60b74213f7a8a6ff4894d67b5216e513247eb03b9c796bbc4aa25",
+    "src/exogibbs/presets/curated.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+    "src/exogibbs/equilibrium/gas/kernel/solver.py": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+    "src/exogibbs/equilibrium/gas/solve.py": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95",
+    "src/exogibbs/equilibrium/gas/types.py": "ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543",
+    "tests/unittests/presets/curated_test.py": "1d42ef4df59d571bba6df23e73cbb1cbce84466aefcbd03adb4758d1d557dac2",
+    "tests/unittests/equilibrium/gas/kernel/charge_test.py": "ebd86564200fe3edb8076567d95f71c090e9db8d26a149f5043907a9cc6c07ab",
+    "tests/unittests/examples/gas_thermochemistry_impact_test.py": "c66efe93e971f38e0cf373ffcc17203d7e4091e4c2fa757eb6f1c896cfd0af78",
+    "benchmarks/documented_examples/run_all.py": "49b79ff62420bea02a6bf95900480f194012833155656c362ac47508a6e739b6",
+    "tests/unittests/benchmarks/documented_all_examples_test.py": "3c2849a303f8b49fe1d60442b0bed21943999d5ec22713f8dcb50e7f9396f8a5",
+    "documents/presets/curated.rst": "4c6e2d3f1af38159a29455fac32d2a8d74c5ea5c6e52c884b3aa003d7994fff0",
+    "mceg/contracts/curated_gas.yaml": "53710483c93c7b9cd175ea794642bf38b9175c6aae84f4d3a808eee11bf5f9be"
+  },
+  "scope": "Regression and implementation verification. Optional pyfastchem/exoeos tests are skipped when their packages are unavailable. Standalone FastChem verification is recorded separately. These tests do not establish whole-mixture physical accuracy."
+}

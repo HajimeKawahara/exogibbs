@@ -1,0 +1,168 @@
+schema_version: '0.1'
+model:
+  id: exogibbs.atomic_ion_reference.v1
+  name: Spectroscopic statistical reference for the atomic-ion audit
+  description: Ideal-gas first ionization and electron attachment at exact partition-function table nodes.
+    This is an audit reference, not a production preset or an MCEG thermodynamic evaluator.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    entry_points:
+    - examples/comparisons/audit_atomic_ions.py:reference_log_kp
+assumptions:
+- statement: Classical ideal-gas translational statistics and LTE internal populations apply.
+    The electron spin degeneracy is two; atomic partition functions exclude nuclear-spin weights.
+  evidence: [statistical_model, atomic_partitions]
+- statement: Heavy-particle translational mass ratios are approximated by one.
+    Isotope and hyperfine corrections to the adopted threshold energies are neglected.
+  evidence: [implementation, anion_spectroscopy]
+- statement: Negative-ion partition sums contain only the listed bound levels.
+    N- and Zn- have no stable bound-anion reference and receive no numerical reference Kp.
+  evidence: [anion_spectroscopy, implementation]
+- statement: Source uncertainties are retained as metadata, not propagated into Kp confidence intervals.
+  evidence: [implementation, ionization_energies, anion_spectroscopy]
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Exact tabulated temperatures, without interpolation or extrapolation.
+  conditions:
+  - Temperatures are 1000, 1500, 2000, 3000, 4000, 5000 and 6000 K.
+  - The reference covers 27 singly positive ions and 20 bound singly negative ions.
+  - Kp is dimensionless with standard pressure 100000 Pa; this is not the actual gas pressure.
+  evidence: [implementation, comparison_run]
+- kind: scientific_applicability
+  status: unknown
+  description: Joint temperature-density applicability and physical accuracy in a specified atmosphere
+    are unestablished. The finite level inventory omits density-dependent dissolution of excited states.
+  conditions: []
+  evidence: [atomic_partitions, anion_spectroscopy, statistical_model]
+claims:
+- id: reaction_conventions
+  kind: theoretical
+  status: supported
+  statement: Ionization and attachment use opposite electron translational factors and a common
+    dimensionless partial-pressure convention.
+  scope: A -> A+ + e- and A + e- -> A-, under the recorded ideal-gas assumptions.
+  evidence: [statistical_model]
+- id: numerical_reproduction
+  kind: numerical_verification
+  status: supported
+  statement: The selected offline regression checks passed and the 49-species comparison was executed.
+  scope: Seven temperature nodes; 47 numerical references and two explicit unbound cases.
+    A passing execution is not a claim that the FastChem or NASA comparators agree with the reference.
+  evidence: [test_run, comparison_run]
+- id: physical_accuracy
+  kind: physical_validation
+  status: unknown
+  statement: Physical accuracy of this reference and a resulting equilibrium composition is unknown.
+  scope: No laboratory equilibrium experiment or atmospheric observation was reproduced.
+  evidence: [atomic_partitions, anion_spectroscopy, comparison_run]
+evidence:
+- id: implementation
+  kind: implementation
+  summary: Standard-library audit and pinned numerical excerpts; no MCEG or ExoJAX import.
+  sources:
+  - examples/comparisons/audit_atomic_ions.py
+  - examples/comparisons/data/atomic_ion_reference.json
+  - results/atomic_ion_audit/receipt.json
+  scope: Selected file hashes identify the actual working-tree implementation and data; base Git HEAD
+    alone does not identify the newly added audit.
+- id: statistical_model
+  kind: theory
+  summary: Ideal-gas mass action with finite internal partition functions, electron spin two and 1 bar standard pressure.
+  sources:
+  - documents/atomic_ion_audit.rst
+  - https://arxiv.org/pdf/1602.03304
+  scope: Equations in the audit report; Barklem and Collet Eq. 6 and discussion of finite level sums
+    support the partition convention, not the physical accuracy of this combined reference.
+- id: atomic_partitions
+  kind: literature
+  summary: Barklem and Collet (2016) Table 8 neutral and positive-ion partitions, copied from the pinned ExoJAX snapshot.
+  sources:
+  - https://doi.org/10.1051/0004-6361/201526961
+  - examples/comparisons/data/atomic_ion_reference.json
+  scope: 54 selected atomic records at seven exact nodes. The article's Eq. 6 and truncation discussion
+    were read; the original run did not independently compare the CDS numerical table with the ExoJAX copy.
+    The subsequent mceg/contracts/atomic_ion_adoption.yaml records the completed source comparison.
+  provenance:
+    role: secondary
+    location: ExoJAX barklem_collet_2016_pff.txt; source hash and per-record line numbers in the excerpt.
+    inspection: inspected
+    note: Local values and temperature-grid definition were inspected. This verifies the local extraction,
+      not the entire publication-to-ExoJAX transcription or completeness of the underlying energy levels.
+- id: ionization_energies
+  kind: literature
+  summary: First ionization thresholds and quoted uncertainties from the bundled January 2022 NIST ASD snapshot.
+  sources:
+  - https://physics.nist.gov/PhysRefData/ASD/ionEnergy.html
+  - examples/comparisons/data/atomic_ion_reference.json
+  scope: 27 neutral thresholds, with source line numbers and NIST reference codes.
+    The historical snapshot is not asserted to contain the latest evaluations.
+- id: anion_spectroscopy
+  kind: literature
+  summary: Ning and Lu (2022) recommended electron affinities and bound-level energies, including N and Zn nonbinding classifications.
+  sources:
+  - https://doi.org/10.1063/5.0080243
+  - https://info.phys.tsinghua.edu.cn/henucl/ning/148.pdf
+  - examples/comparisons/data/atomic_ion_reference.json
+  scope: Tables 3 and 4 for the 22 negative-ion cases; Table 5 continuum resonances excluded.
+    H affinity is theoretical; unresolved Si- levels are grouped. Completeness of the observed level list is assumed.
+  provenance:
+    role: secondary
+    location: Tables 3 and 4, printed pp. 12 and 14; footnotes pp. 13 and 17; Sections 4.1, 4.2, 5 and 6.
+    inspection: inspected
+    note: Selected table values checked against PDF images. The paper is an evaluated compilation;
+      its earlier experimental references were not individually reaudited. The full PDF hash is recorded.
+- id: comparators
+  kind: implementation
+  summary: Unmodified FastChem4 logK coefficients and pinned NASA CEA 1000-6000 K coefficients.
+  sources:
+  - src/exogibbs/data/FastChem4/logK/logK.dat
+  - src/exogibbs/data/nasa9/fastchem4_hot.json
+  - examples/comparisons/data/atomic_ion_reference.json
+  - https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp
+  scope: Default 27 elements, 49 atomic ions; 46 JANAF-labelled fits, two Hoeijmakers-labelled Ge fits
+    and the Kurucz/NIST-labelled Ca- fit. NASA has no selected Ca- or Zn- record.
+    Existing NASA coefficients were checked against the full pinned source; 22 additional ion records were excerpted.
+- id: copper_janaf
+  kind: literature
+  summary: The public JANAF Cu and Cu+ tables reproduce the large Cu+ discrepancy already present before FastChem fitting.
+  sources:
+  - https://janaf.nist.gov/tables/Cu-005.html
+  - https://janaf.nist.gov/tables/Cu-006.html
+  - examples/comparisons/data/atomic_ion_reference.json
+  scope: Formation Gibbs energies at the seven audit nodes. The fit agrees within about 0.6 percent;
+    the deeper origin of the JANAF discrepancy has not been determined.
+- id: comparison_run
+  kind: benchmark
+  result: passed
+  summary: Completed offline evaluation with recorded input and output hashes.
+  sources:
+  - results/atomic_ion_audit/receipt.json
+  - results/atomic_ion_audit/comparison.csv
+  - results/atomic_ion_audit/summary.csv
+  scope: Completion and reproducibility only. Ten FastChem species exceed a symmetric factor-1.1
+    review threshold, including four exceeding factor two; these thresholds are not confidence intervals.
+- id: test_run
+  kind: numerical_test
+  result: passed
+  summary: Seven targeted standard-library regression tests passed.
+  sources:
+  - tests/unittests/examples/atomic_ion_audit_test.py
+  - results/atomic_ion_audit/tests.json
+  scope: Coverage, Ni/Co reproduction, hydrogen reaction conventions, Cu/JANAF comparison,
+    bound-level checks, invalid domains and evidence hashes. No whole-package test pass is claimed.
+limitations:
+- statement: Finite atomic level lists and omitted density effects prevent a general pressure-domain claim,
+    particularly for alkalis at high temperature. LTE and ideal-gas assumptions require application-specific review.
+  evidence: [atomic_partitions, statistical_model]
+- statement: Agreement at seven nodes does not bound deviations between nodes or outside 1000-6000 K.
+    The factor-1.1 category means agreement with this reference, not validated thermodynamics.
+  evidence: [comparison_run]
+- statement: NASA and FastChem share some source ancestry. NASA improves several cations but is worse
+    for C- and Ge-; it is not a universal replacement. The original run did not resolve Ca- and several
+    smaller discrepancies; species choices and threshold updates are recorded in the separate adoption contract.
+  evidence: [comparators, comparison_run]
+- statement: No production coefficients, species inventory, caloric properties or equilibrium abundances
+    were changed or validated. A future preset must preserve a common atomic/electron reference convention.
+  evidence: [implementation, comparison_run]
