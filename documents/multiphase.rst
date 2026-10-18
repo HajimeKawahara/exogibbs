@@ -259,7 +259,7 @@ The native integration job uses provider wheels at a separately pinned ExoEOS
 revision; the historical M2 provider pin and evidence are unchanged.
 
 Trace species and retained atmospheres
--------------------------------------
+--------------------------------------
 
 The primal uses a positive amount-weighted feasibility correction and a
 square-root amount scaling of its equality tangent. These operations retain
