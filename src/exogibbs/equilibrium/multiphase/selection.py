@@ -1,8 +1,9 @@
 """Bounded host support search; all Gibbs minimizations use the JAX kernel."""
 
 from collections import deque
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from functools import lru_cache, partial
+from typing import Any, Tuple
 
 import jax
 import jax.numpy as jnp
@@ -10,7 +11,7 @@ import numpy as np
 from scipy.optimize import linprog
 
 from .solve import _geometry, _primal
-from .types import Options, Phase, Problem, R_SCALE, Support
+from .types import Options, Phase, Problem, R_SCALE, Result, Support
 
 
 @lru_cache(maxsize=64)
@@ -252,3 +253,89 @@ def select(problem, *, temperature_k, pressure_pa, element_amounts_mol, paramete
     return audit_stability(problem, best, temperature_k=temperature, pressure_pa=pressure,
                            element_amounts_mol=element_amounts_mol, parameters=parameters,
                            options=options)
+
+
+@dataclass(frozen=True)
+class PurePhaseUpdateResult:
+    """Host search trace; ``result`` is the lowest accepted state visited.
+
+    Attempts retain failed/non-descending proposals. ``stop_reason`` describes
+    only the bounded pure-phase update, not global phase stability. Inspect
+    ``result.stability_status`` and all original result diagnostics separately.
+    """
+
+    result: Result
+    attempts: Tuple[Result, ...]
+    inserted_phases: Tuple[str, ...]
+    stop_reason: str
+
+
+def solve_with_pure_phase_updates(
+    problem: Problem, *, temperature_k: Any, pressure_pa: Any,
+    element_amounts_mol: Any, init: Any, parameters: Any = (),
+    options: Options = Options(), max_updates: int = 4,
+) -> PurePhaseUpdateResult:
+    """Solve, then reinsert negative omitted one-component phases, boundedly.
+
+    Ordinary ``solve`` remains unchanged. This opt-in host workflow uses the
+    exact live insertion cost of an absent pure phase, obtains a conserving
+    interior seed through the existing feasibility routine, and repeats the
+    existing support search. Only a fresh valid lower-G result is accepted.
+    No component is removed by a small-amount cutoff, no amount floor is
+    imposed, and positive local solution-phase minima never become bounds.
+
+    A negative insertion in a present phase may require phase splitting;
+    that remains unresolved. The returned trace also distinguishes exhausted
+    update budgets, infeasible seeds and failed proposals from stability.
+    This Python search entry point is not a transformed derivative API.
+    """
+    from .solve import solve
+
+    if not isinstance(max_updates, int) or isinstance(max_updates, bool) or max_updates < 0:
+        raise ValueError("max_updates must be a nonnegative integer.")
+    arguments = dict(temperature_k=temperature_k, pressure_pa=pressure_pa,
+                     element_amounts_mol=element_amounts_mol, parameters=parameters,
+                     options=options)
+    best = solve(problem, init=init, **arguments)
+    attempts, inserted = [best], []
+    budget = np.asarray(element_amounts_mol, dtype=float)
+    valid = lambda r: bool(r.converged and r.local_kkt_valid and r.minimum_valid)
+    reason = "invalid_initial" if not valid(best) else "no_negative_absent_pure_phase"
+    if valid(best):
+        for update in range(max_updates+1):
+            candidates = []
+            for i, (phase, section) in enumerate(zip(problem.phases, problem.component_slices)):
+                if len(phase.components) != 1 or section.start in best.support.components:
+                    continue
+                atoms = np.asarray(phase.atom_matrix)[:, 0]
+                if np.any(atoms[budget == 0] > 0):
+                    continue
+                # Recompute from the live standards and dual, not saved bounds.
+                cost = float((phase.gibbs_j(temperature_k, pressure_pa, jnp.ones(1), parameters)
+                              - best.element_potentials_j_mol @ atoms)/(R_SCALE*temperature_k))
+                if np.isfinite(cost) and cost < -options.kkt_tolerance:
+                    candidates.append((cost, i, section.start))
+            if not candidates:
+                reason = "no_negative_absent_pure_phase"
+                break
+            if update == max_updates:
+                reason = "update_limit"
+                break
+            _, phase_index, component = min(candidates)
+            support = Support(tuple(sorted((*best.support.components, component))),
+                              best.support.active_constraints)
+            seed = _seed(problem, support, budget, np.asarray(best.amounts_mol))
+            if seed is None:
+                reason = "infeasible_insertion"
+                break
+            trial = solve(problem, init=seed, **arguments)
+            attempts.append(trial)
+            inserted.append(problem.phases[phase_index].name)
+            if not valid(trial):
+                reason = "invalid_trial"
+                break
+            if float(trial.gibbs_j) >= float(best.gibbs_j):
+                reason = "no_descent"
+                break
+            best = trial
+    return PurePhaseUpdateResult(best, tuple(attempts), tuple(inserted), reason)

@@ -291,3 +291,28 @@ workflow. It consumes a newly serialized primitive source, repairs feasibility
 with exact arithmetic, and recomputes liquid/alloy, gas/cloud and all 33 native
 mineral competitor bounds. It may use a pinned provider checkout and native
 binary; neither is needed by the Inventory forward calculation.
+
+Optional pure-phase updates
+---------------------------
+
+``solve_with_pure_phase_updates`` adds a bounded host workflow around the
+existing solver. A converged fixed-support minimum can omit a favorable
+one-component phase when the support-search budget is exhausted. This API
+recomputes each absent pure phase's insertion cost from the current standards
+and elemental potentials, opens the most negative candidate with the existing
+linear feasibility routine, and solves again. It accepts only a valid lower-G
+state and retains all proposed solve results.
+
+The returned ``PurePhaseUpdateResult`` contains ``result``, ``attempts``,
+``inserted_phases`` and ``stop_reason``. The default maximum is four updates;
+zero reports the initial solve and any unresolved negative pure phase.
+``update_limit``, ``infeasible_insertion``, ``invalid_initial``, ``invalid_trial``
+and ``no_descent`` are explicit stopping conditions, not stability claims.
+Even ``no_negative_absent_pure_phase`` concerns only those pure phases;
+inspect ``result.stability_status`` and the original diagnostics separately.
+
+No amount floor or new Gibbs minimizer is introduced. Positive local minima
+of nonconvex solution phases do not supply global insertion bounds. Negative
+insertion into a present phase may require phase splitting, which this API
+does not implement. The ordinary ``solve`` behavior and transformed
+``solve_fixed_support`` derivative contract remain unchanged.
