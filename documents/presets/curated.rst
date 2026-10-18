@@ -7,6 +7,23 @@ The first dataset, ``curated-gas-v1``, covers **1500--4000 K** and uses a standa
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
 
+Migration from the Ni/Co-only preset
+------------------------------------
+
+The ``fastchem4_nasa9_ions`` preset introduced in
+`PR #280 <https://github.com/HajimeKawahara/exogibbs/pull/280>`_ has been removed.
+Use ``curated.chemsetup(ions=True)`` for reviewed gas-only thermochemistry, or
+``ions=False`` for its neutral-only approximation, as shown below.
+
+This changes the model: the former preset replaced only Ni+ and Co+ with
+original NASA9 data in a 539-species network on 1000--6000 K. Curated uses
+**1500--4000 K**, updates the Ni+ ionization threshold, adopts a partition
+model for Co+, and excludes N- and Zn- from its 537-species ion-inclusive
+network. It also applies the other reviewed source choices documented below.
+There is no compatibility alias or extension of the curated temperature range.
+The :doc:`../ni_co_ionization_audit`, its reference data and regression tests
+remain available; historical test records describe their original revisions.
+
 Usage
 -----
 

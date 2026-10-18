@@ -177,17 +177,17 @@ cannot be independently reproduced from the image alone: they depend on
 the pressure-temperature profile, abundances and self-consistent electrons,
 and are not simply the K ratio. Those atmospheric calculations were not run.
 
-For chemistry calculations needing only the two corrections, use the new
-``exogibbs.presets.fastchem4_nasa9_ions.chemsetup()`` preset. It retains all
-539 species in the default ion-inclusive FastChem4 network and replaces
-only the Ni1+ and Co1+ reaction chemical potentials with NASA9 values.
-It supports 1000--6000 K and returns NaN outside that interval. The neutral
-and electron reference contributions are included before converting to the
-original FastChem atomic gauge. See :doc:`presets/fastchem4` for usage.
+`PR #280 <https://github.com/HajimeKawahara/exogibbs/pull/280>`_ introduced
+``fastchem4_nasa9_ions``, a 539-species preset replacing only Ni1+ and Co1+
+with NASA9 reaction potentials on 1000--6000 K. That preset and its dedicated
+API tests have been retired in favor of :doc:`presets/curated`, which applies
+the subsequent atomic-ion and major-molecule decisions on 1500--4000 K.
+The old implementation remains available in the linked PR's history.
 
-Regression tests check the independent NASA ionization constants, preservation
-of all other chemical potentials, JAX derivatives, temperature bounds and a
-charge-neutral metal/ion/electron equilibrium against its analytic solution.
+This audit evaluates the original source data directly and remains
+reproducible without the retired preset. Its regression tests retain the
+independent NASA values, Saha conventions and JANAF discrepancy checks.
+The shared NASA data and the separate caloric model remain available.
 
 Reproduction and sources
 ------------------------

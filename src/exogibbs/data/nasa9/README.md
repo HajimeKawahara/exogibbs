@@ -20,13 +20,9 @@ natural-element thermochemical data and tabulated atomic weights, not a
 resolved isotopologue model. Historical constants introduce small differences
 from statistical functions evaluated using current SI constants.
 
-The `exogibbs.presets.fastchem4_nasa9_ions.chemsetup()` chemistry preset uses
-the Ni, Ni+, Co, Co+, and electron records from this same excerpt. It replaces
-only the Ni+/Co+ ionization reactions, retains all 539 default gas species,
-and supports **1000–6000 K**. The remaining FastChem fits are unchanged; this
-interval does not validate their thermochemistry. Out-of-domain values return
-NaN. Absolute NASA Gibbs energies are transformed to FastChem's atomic
-reference gauge, including the electron contribution.
+The Ni/Co ionization audit uses the Ni, Ni+, Co, Co+, and electron records
+directly. It remains reproducible after retirement of the two-ion chemistry
+preset; the shared NASA data are retained for the audit and caloric model.
 
 The separate optional caloric model, `prepare_fastchem_thermodynamics()`,
 combines these data with the already packaged FastChem4
