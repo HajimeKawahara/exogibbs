@@ -1,5 +1,7 @@
 """A converged face can still omit a favorable pure phase."""
 
+from dataclasses import replace
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -54,3 +56,16 @@ def test_update_limit_contract():
     for invalid in (-1,1.5,True):
         with pytest.raises(ValueError,match="max_updates"):
             mp.solve_with_pure_phase_updates(problem(),max_updates=invalid,**arguments())
+
+
+def test_zero_budget_potential_does_not_hide_reachable_competitor():
+    phases = tuple(replace(p, atom_matrix=[[1.], [0.]]) for p in problem().phases)
+    unavailable = mp.Phase("unavailable", ("B",), [[0.], [1.]],
+        lambda t, p, n, args: -100*R*t*n[0])
+    data = arguments()
+    data.update(element_amounts_mol=np.array([3.,0.]), init=np.array([3.,0.,0.]))
+    result = mp.solve_with_pure_phase_updates(mp.Problem(("A","B"), phases+(unavailable,)), **data)
+    assert result.inserted_phases == ("competitor",)
+    assert result.stop_reason == "no_negative_absent_pure_phase"
+    assert np.isnan(result.result.element_potentials_j_mol[1])
+    np.testing.assert_allclose(result.result.amounts_mol,[0.,3.,0.],atol=1e-12)

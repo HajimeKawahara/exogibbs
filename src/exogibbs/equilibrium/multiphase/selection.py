@@ -304,6 +304,9 @@ def solve_with_pure_phase_updates(
     if valid(best):
         for update in range(max_updates+1):
             candidates = []
+            # A zero-budget element has no identified potential. Its NaN
+            # must not contaminate a reachable pure phase's zero atom entry.
+            potentials = jnp.where(jnp.asarray(budget) > 0, best.element_potentials_j_mol, 0.)
             for i, (phase, section) in enumerate(zip(problem.phases, problem.component_slices)):
                 if len(phase.components) != 1 or section.start in best.support.components:
                     continue
@@ -312,7 +315,7 @@ def solve_with_pure_phase_updates(
                     continue
                 # Recompute from the live standards and dual, not saved bounds.
                 cost = float((phase.gibbs_j(temperature_k, pressure_pa, jnp.ones(1), parameters)
-                              - best.element_potentials_j_mol @ atoms)/(R_SCALE*temperature_k))
+                              - potentials @ atoms)/(R_SCALE*temperature_k))
                 if np.isfinite(cost) and cost < -options.kkt_tolerance:
                     candidates.append((cost, i, section.start))
             if not candidates:
