@@ -69,21 +69,19 @@ immutable commit URLs. The partial primary-source inspection and differing
 source-specific temperature intervals are preserved without new scientific claims.
 
 The implementation revision is
-`748f9da6a7f13e9082fa42ab61caca907c39fe5b`, the develop snapshot reviewed before
-this maintenance update. Since the original audit, the adapter gained a magma
-derivative-domain callback. Its pure-H2 callback and scalar input conversion
-are unchanged; the solubility and unit-conversion files are byte-identical.
-The scoped tests were rerun with ExoEOS main at
-`50f3a20ecca5fdc8b422a8869ccf2e5d02a8fc01`.
+`c2d3e8b0490d4ae502720940ea220a21a3146a56`. Sun--Yao water adds public exports and changes the
+export-list test; the H2 scalar, metadata, fugacity conversion and adapter
+remain byte-identical to the previous H2 receipt. The eight scoped tests were
+freshly rerun with ExoEOS `9dc71506264b220fbd496259060cb67a95c1d11c`. No H2 scientific declaration,
+applicability assessment or consumer case input changed.
 
-[The current receipt](../results/mceg/h2_tests_748f9da.json) and
-[JUnit report](../results/mceg/h2_tests_748f9da.xml) preserve eight passing tests,
-the environment, selected source hashes and the ExoEOS dependency used in the
-connection test. Both providers' selected files were checked against Git objects
-at their recorded revisions. The [adoption run](../results/mceg/h2_tests_9990fdc.json)
-and [intermediate run](../results/mceg/h2_tests_47ecf87_r5.json) remain historical
-evidence; the current numerical claim links to `provider_test_run`. The
-implementation revision is distinct from the commit publishing the contract.
+[The current receipt](../results/mceg/h2_tests_c2d3e8b.json) and
+[JUnit report](../results/mceg/h2_tests_c2d3e8b.xml) preserve eight passing tests,
+the actual environment/imports and selected source hashes checked against Git
+objects. The [previous receipt](../results/mceg/h2_tests_748f9da.json) and older
+records retain their original scope. This refresh validates the unchanged H2
+connection; it supplies no empirical evidence for the new Sun--Yao water law.
+The implementation revision is distinct from the commit publishing the contract.
 
 ## Validation and review
 

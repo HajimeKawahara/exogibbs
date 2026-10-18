@@ -45,6 +45,10 @@ def build_jobs() -> tuple[Job, ...]:
     """Cover public example scripts; aliases share their canonical execution."""
     jobs = []
     comparison = "examples/comparisons/"
+    jobs.append(Job(
+        "sun_yao_water", comparison + "compare_sun_yao_water.py",
+        ("--output", "{output}"), artifacts=("water_curves.png", "water_curves.csv"),
+    ))
     for name, script, flag, resources in (
         ("fastchem4_gas", "comparison_with_fastchem4_gas", "--output", ("fastchem",)),
         ("fastchem_initializer", "comparison_with_fastchem_initializer", "--output", ("fastchem",)),

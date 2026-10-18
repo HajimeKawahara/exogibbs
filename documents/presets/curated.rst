@@ -7,21 +7,46 @@ The first dataset, ``curated-gas-v1``, covers **1500--4000 K** and uses a standa
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
 
-Quick start
------------
+Usage
+-----
 
-Enable float64 before constructing the setup. The explicit tolerance below
-matches the validation runs, including trace-element abundances.
+Run these shared imports first, then any example below independently.
+Enable float64 before constructing a setup. Temperatures are in K and pressures
+are in bar. The explicit tolerance matches the validation runs, including
+trace-element abundances.
 
 .. code-block:: python
 
    import jax
    jax.config.update("jax_enable_x64", True)
 
-   from exogibbs.api.gas import EquilibriumOptions, solve
+   import jax.numpy as jnp
+
+   from exogibbs.api.gas import EquilibriumOptions, solve, solve_profile
    from exogibbs.presets.curated import chemsetup
 
-   setup = chemsetup()
+All construction modes
+^^^^^^^^^^^^^^^^^^^^^^
+
+``ions`` is the only public factory option and must be a Python ``bool``.
+These are all supported construction forms:
+
+.. code-block:: python
+
+   default_setup = chemsetup()            # 537 species; ions included
+   ion_setup = chemsetup(ions=True)       # Same as the default
+   neutral_setup = chemsetup(ions=False)  # 421 neutral species
+
+The curated dataset has no ``path`` or ``extended`` option. Both networks use
+the same 1500--4000 K interval. Legacy FastChem datasets remain available
+through their own preset factories.
+
+Single state with ions
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+   setup = chemsetup(ions=True)
    result, diagnostics = solve(
        setup, T=2517.0, P=0.01,
        b=setup.element_vector_reference,
@@ -30,7 +55,85 @@ matches the validation runs, including trace-element abundances.
    )
    print(diagnostics["converged"])
    print(result.x[setup.species.index("e1-")])
+   print(result.x[setup.species.index("H1-")])
    print(setup.metadata["dataset"], setup.metadata["data_sha256"])
+
+Single state without ions
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+   setup = chemsetup(ions=False)
+   result, diagnostics = solve(
+       setup, T=2517.0, P=0.01,
+       b=setup.element_vector_reference,
+       options=EquilibriumOptions(epsilon_crit=1e-13),
+       return_diagnostics=True,
+   )
+   print(diagnostics["converged"])
+   print(result.x[setup.species.index("H2O1")])
+   print(result.x.shape)  # (421,)
+
+The neutral network contains neither ``e1-`` nor ``H1-``. It has no charge row,
+so use its own ``element_vector_reference`` rather than the ion-inclusive
+budget. Choosing ``ions=False`` changes the equilibrium calculation, not just
+which species are displayed.
+
+Vertical profile with either network
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+   temperature = jnp.array([4000., 3500., 2500., 3000., 3500.])
+   pressure = jnp.logspace(-6., 2., 5)
+   for ions in (True, False):
+       setup = chemsetup(ions=ions)
+       result, diagnostics = solve_profile(
+           setup, T=temperature, P=pressure,
+           b=setup.element_vector_reference,
+           options=EquilibriumOptions(epsilon_crit=1e-13, method="vmap_cold"),
+           return_diagnostics=True,
+       )
+       print(ions, jnp.all(diagnostics["converged"]))
+       print(result.x.shape)  # (5, 537) with ions; (5, 421) without ions
+       print(result.x[:, setup.species.index("H2O1")])
+
+Change elemental composition with either network
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This example sets C/O to 0.8, keeps zero net charge, and normalizes the nuclear
+budget. It is an API example, not an independent validation of that composition.
+
+.. code-block:: python
+
+   for ions in (True, False):
+       setup = chemsetup(ions=ions)
+       b = setup.element_vector_reference
+       b = b.at[setup.elements.index("C")].set(
+           0.8 * b[setup.elements.index("O")]
+       )
+       b = b / jnp.sum(b)
+       result, diagnostics = solve(
+           setup, T=2517.0, P=0.01, b=b,
+           options=EquilibriumOptions(epsilon_crit=1e-13),
+           return_diagnostics=True,
+       )
+       print(ions, diagnostics["converged"])
+       print(result.x[setup.species.index("H2O1")])
+
+Thermochemistry and provenance with either network
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: python
+
+   for ions in (True, False):
+       setup = chemsetup(ions=ions)
+       h = setup.hvector_func(3000.)
+       h_grid = setup.hvector_func(jnp.array([1500., 2517., 4000.]))
+       dh_dT = jax.jacfwd(setup.hvector_func)(3000.)
+       print(ions, h.shape, h_grid.shape, dh_dT.shape)
+       print(setup.metadata["species_provenance"]["H2O1"])
+       print(setup.metadata["temperature_range_K"], setup.metadata["data_sha256"])
 
 The reference abundance vector reads the packaged Asplund, Amarsi & Grevesse
 (2021) file explicitly, normalizes the nuclear abundances to one, and appends
@@ -254,7 +357,8 @@ Artifacts and reproduction
 * :download:`MCEG model contract <../../mceg/contracts/curated_gas.yaml>`.
 * :download:`Wheel/sdist and isolated-import verification <../../results/curated_gas_validation/packaging.json>`.
 * :download:`Initial preset regression record <../../results/curated_gas_validation/tests.json>`
-  and :download:`full PR test run, including the atmosphere demo <../../results/curated_gas_validation/pr_tests.json>`.
+  and :download:`initial full PR test run, including the atmosphere demo <../../results/curated_gas_validation/pr_tests.json>`.
+* :download:`Full regression and usage checks after integrating PR #283 <../../results/curated_gas_validation/merge_tests.json>`.
 
 Reproduce the offline checks in a scratch directory::
 
