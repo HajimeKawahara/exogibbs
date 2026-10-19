@@ -152,7 +152,13 @@ class Support:
 
 @dataclass(frozen=True)
 class Options:
-    """Dimensionless numerical tolerances; use JAX x64 for these defaults."""
+    """Dimensionless numerical tolerances; use JAX x64 for these defaults.
+
+    ``max_refinement_iterations=0`` preserves the ordinary feasible Newton
+    path. A positive budget enables log-amount stationarity refinement on
+    interior domain faces only. It changes neither physical bounds nor the
+    final conservation, KKT, curvature and derivative acceptance criteria.
+    """
 
     max_iterations: int = 100
     max_backtracks: int = 50
@@ -163,15 +169,20 @@ class Options:
     support_tolerance: float = 1e-12
     max_supports: int = 32
     derivative_rcond: float = 1e-10
+    max_refinement_iterations: int = 0
 
     def __post_init__(self):
+        if (not isinstance(self.max_refinement_iterations, int)
+                or isinstance(self.max_refinement_iterations, bool)
+                or self.max_refinement_iterations < 0):
+            raise ValueError("max_refinement_iterations must be a nonnegative integer.")
         integers = ("max_iterations", "max_backtracks", "max_supports")
         for name in integers:
             value = getattr(self, name)
             if not isinstance(value, int) or value <= 0:
                 raise ValueError(f"{name} must be a positive integer.")
         for field in fields(self):
-            if field.name in integers:
+            if field.name in integers or field.name == "max_refinement_iterations":
                 continue
             value = getattr(self, field.name)
             if not np.isfinite(value) or value <= 0:

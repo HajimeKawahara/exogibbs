@@ -6,7 +6,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from .kernel import minimize, scaled_basis
+from .kernel import minimize, refine_stationarity, scaled_basis
 from .types import Options, Problem, R_SCALE, Result, Support
 
 
@@ -164,6 +164,13 @@ def _primal(
         lambda x: energy(x, temperature, pressure, parameters), q,
         jnp.asarray(tangent), row, inequalities, valid_input, options,
     )
+    if options.max_refinement_iterations and not len(active):
+        q, refinement_iterations, refined = refine_stationarity(
+            lambda x: energy(x, temperature, pressure, parameters), q,
+            row, row @ jnp.asarray(inverse) @ target, inequalities, valid_input, options,
+        )
+        iterations += refinement_iterations
+        line_search_failed &= ~refined
     value, gradient = jax.value_and_grad(energy)(q, temperature, pressure, parameters)
     hessian = jax.hessian(energy)(q, temperature, pressure, parameters)
     dual = (jnp.asarray(inverse).T @ gradient) / row_scale

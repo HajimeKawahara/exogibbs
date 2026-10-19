@@ -316,3 +316,26 @@ of nonconvex solution phases do not supply global insertion bounds. Negative
 insertion into a present phase may require phase splitting, which this API
 does not implement. The ordinary ``solve`` behavior and transformed
 ``solve_fixed_support`` derivative contract remain unchanged.
+
+Optional interior stationarity refinement
+-----------------------------------------
+
+``Options(max_refinement_iterations=40)`` enables a bounded correction after
+the ordinary feasible Newton iterations. The default is zero. This is useful
+when the square-root-scaled reduced coordinates lose the relative update of
+extremely dilute species while the extensive energy has already settled.
+
+The correction solves the original KKT equations in log amounts and conserved
+potentials. Its amount block is ``H @ diag(q)``; it never adds a species floor
+or removes a component. A residual line search keeps every inactive physical
+inequality strict and bounds multiplicative changes. Intermediate conservation
+residuals are allowed during this numerical correction. The candidate replaces
+the original state only after stationarity and the equality residual pass, with
+no increase in G beyond floating-point roundoff. The final independent atom,
+KKT, curvature, support and derivative gates remain unchanged.
+
+Only supports without active physical domain rows use this correction. Active
+domain faces retain the ordinary feasible solver. Exhausted or singular
+corrections preserve the original iterate and do not become convergence claims.
+The option is available to both the host search and fixed-support JAX solves;
+it does not change the implicit derivative equations or certify global phases.
