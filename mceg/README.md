@@ -71,6 +71,15 @@ coverage of new compositions and conditions.
 
 ## Ownership and references
 
+The [2026-10-19 Hirschmann literature review](reviews/h2_literature_update/README.md)
+records inspection of the original published regression and material-specific
+run bounds. Its [offline replay result](../results/mceg/h2_literature_update.json)
+preserves earlier evidence and unknown physical support. The archived baseline
+and authored review live here; MCEG provides optional generic tooling only.
+Replay requires MCEG `0.2.0rc2` or later and does not require the private PDF,
+ExoEOS, or an installed ExoGibbs package. This review retains its historical
+implementation identity and does not replace the current numerical receipt.
+
 ExoGibbs owns the solubility contract and ExoEOS owns the pure-H2 EOS contract.
 The fixed 1700 K, 7500 bar connection, manual applicability assessments and
 combined execution record remain a consumer example in MCEG. Neither provider's

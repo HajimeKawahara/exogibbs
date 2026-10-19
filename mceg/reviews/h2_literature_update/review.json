@@ -1,0 +1,223 @@
+{
+  "format": "h2_full_text_review_v1",
+  "reviewed_on": "2026-10-19",
+  "baseline_sha256": "d3ff5eb3015d1b0e8e122e8293cdf0e72967ad6e1f884ecca4bcc7b59a6714a0",
+  "context": "h2-1750K-7500bar",
+  "private_source": {
+    "doi": "https://doi.org/10.1016/j.epsl.2012.06.031",
+    "sha256": "f9e52005a851477934a2b00b3cc65d3ef015ab0aefa2c20f110f6cbd00ad1853",
+    "access": "User-supplied PDF obtained through institutional authorization. Not licensed for repository redistribution. The PDF, extracted text, page images and local path are not included.",
+    "inspection": "Scoped manual reading of Tables 1-2, Sections 2.3-2.4, 3.1-3.2 and 4, Figure 4, and the supporting-information notice. Equations, figure labels and table units were also checked on rendered pages. Supplementary data and Shelby (1994) were not supplied or inspected. Replaying this review does not repeat source inspection."
+  },
+  "private_source_evidence": [
+    "experimental_fit_full_text",
+    "experimental_runs_full_text",
+    "calibration_adoption_full_text"
+  ],
+  "evidence": [
+    {
+      "id": "experimental_fit_full_text",
+      "kind": "literature",
+      "summary": "The basalt regression printed in Hirschmann (2012), Figure 4, is ln K = -11.403 - 0.76 P(GPa), with K = X_H2/f_H2 and f_H2 in bar.",
+      "sources": ["https://doi.org/10.1016/j.epsl.2012.06.031"],
+      "scope": "Published regression, concentration convention and reference conditions only. This is not an independent reconstruction of the fit or validation of its inherited calibration, fugacity model or application to another melt.",
+      "provenance": {
+        "role": "primary",
+        "location": "Printed p. 40, Table 2 heading and footnote c; p. 42, Section 4, Eq. 6; p. 43, Figure 4 label and caption (PDF pages 3, 5, 6).",
+        "inspection": "inspected",
+        "note": "Read on 2026-10-19. X_H2 uses an oxide-component mole basis including H2O. Exponentiating the printed basalt regression gives X_H2 = f_H2_bar * exp(-11.403 - 0.76 * P_GPa); no additional pressure-reference shift is applied to this empirical line. The general thermodynamic Eq. 6 uses T0 = 1400 degC (1673.15 K), P0 = 100 kPa, and enthalpy and volume terms. The authors could not calibrate the enthalpy term from their temperature spread; absence of temperature in the adopted regression does not establish temperature independence. Figure 4 attributes calculated fugacities to Zhang and Duan (2009) and compositions to supplementary data, neither reconstructed here."
+      }
+    },
+    {
+      "id": "experimental_runs_full_text",
+      "kind": "literature",
+      "summary": "Table 1 separates basalt + COH runs at 1400-1450 degC and 0.7-3 GPa from andesite + OH runs at 1400-1500 degC and 1-3 GPa.",
+      "sources": ["https://doi.org/10.1016/j.epsl.2012.06.031"],
+      "scope": "Marginal envelopes of the two Table 1 series, plus explicitly identified exclusions; not a continuous joint calibration domain or a complete machine-readable run inventory.",
+      "provenance": {
+        "role": "primary",
+        "location": "Printed p. 39, Table 1; p. 40, Table 2; p. 42, Section 3.1 continuation (PDF pages 2, 3, 5).",
+        "inspection": "inspected",
+        "note": "Read on 2026-10-19. Adding 273.15 gives basalt 1673.15-1723.15 K and andesite 1673.15-1773.15 K. Basalt A697/A711 are the 1450 degC runs, both at 1.5 GPa. Andesite A950/A949 are at 1500 degC, at 2/2.5 GPa. Section 3.1 excludes black andesite glasses A882/A950 from thermodynamic calibration; retained A949 still reaches 1500 degC. Table 2 marks basalt B340 H2 as n.d.; no numeric concentration is inferred. Total melt pressure is distinct from the calculated H2 fugacity. Buffers and material labels were read, but detailed compositions require the missing supplementary data."
+      }
+    },
+    {
+      "id": "calibration_adoption_full_text",
+      "kind": "literature",
+      "summary": "Hirschmann (2012) explicitly adopts a SiO2-glass infrared calibration from Shelby (1994) because an aluminosilicate calibration was unavailable.",
+      "sources": ["https://doi.org/10.1016/j.epsl.2012.06.031"],
+      "scope": "Directly inspected adoption and the authors' uncertainty discussion. The earlier calibration's numeric value, definition, original determination and transferability remain unaudited.",
+      "provenance": {
+        "role": "primary",
+        "location": "Printed p. 40, Section 2.4; p. 42, Section 3.2 and Figure 3; p. 47, Shelby reference (PDF pages 3, 5, 10).",
+        "inspection": "inspected",
+        "note": "Read on 2026-10-19. Section 2.4 attributes the adopted integrated absorption coefficient to Shelby; it does not print the 0.26 value reported by the later paper. Section 3.2 warns of potentially greater than 100% uncertainty from silica-to-mafic transfer, then suggests perhaps +/-50% from the SIMS/FTIR comparison. These are the authors' estimates, not an uncertainty model for the implemented function. No universal correction using the 2025 coefficient is established.",
+        "derived_from": [
+          {
+            "evidence": "original_calibration",
+            "comparison": "not_checked",
+            "note": "The adoption in 2012 is now directly inspected. Shelby (1994) itself remains uninspected, including coefficient convention and calibration transfer."
+          }
+        ]
+      }
+    },
+    {
+      "id": "formulation_full_text",
+      "kind": "literature",
+      "summary": "Seo (2024), Eq. 6 reproduces the published basalt regression; the preceding temperature interval agrees with basalt Table 1 values at whole-kelvin precision.",
+      "sources": ["https://arxiv.org/html/2408.17056v1#S2.SS3"],
+      "scope": "Expression, bar/GPa units, reported mole-fraction output, and basalt temperature envelope only. No downstream melt-composition or concentration-conversion audit.",
+      "provenance": {
+        "role": "secondary",
+        "location": "arXiv:2408.17056v1, Section II.3, Eq. 6, variable definitions and preceding paragraph.",
+        "inspection": "inspected",
+        "note": "Re-read on 2026-10-19 and compared with the supplied 2012 full text. The original explicitly defines the oxide-component basis; Seo calls the result a mole fraction. Equating atmospheric pressure with actual melt pressure remains a boundary-model assumption.",
+        "derived_from": [
+          {
+            "evidence": "experimental_fit_full_text",
+            "comparison": "consistent",
+            "note": "Exponentiation of the printed Figure 4 basalt line gives Seo Eq. 6 with the same numeric coefficients and bar/GPa conventions. This closes formula transcription only, not independent regression or physical validation."
+          },
+          {
+            "evidence": "experimental_runs_full_text",
+            "comparison": "consistent",
+            "note": "Seo's 1673-1723 K matches the basalt envelope when converted temperatures are rounded to integer kelvin. The 0.15 K difference is retained in separate Conditions and is not evidence of experimental temperature precision."
+          }
+        ]
+      }
+    },
+    {
+      "id": "implementation_full_text",
+      "kind": "implementation",
+      "summary": "The pinned ExoGibbs callable agrees with Seo Eq. 6 and the original published basalt regression.",
+      "sources": ["https://github.com/HajimeKawahara/exogibbs/blob/6b4cef45d2a6f1eb1462afd6cb6d3f1c77dba8ea/src/exogibbs/solubility/volatile.py#L237-L254"],
+      "scope": "Formula transcription and input units of the pinned callable only; no newly executed solver test or physical comparison.",
+      "provenance": {
+        "role": "implementation",
+        "location": "volatile.py, h2_hirschmann2012, lines 237-254 at the pinned Git revision.",
+        "inspection": "inspected",
+        "note": "Re-read from the pinned local Git object on 2026-10-19. The implementation and numeric coefficients are unchanged.",
+        "derived_from": [
+          {
+            "evidence": "formulation_full_text",
+            "comparison": "consistent",
+            "note": "The callable uses f_H2_bar * exp(-11.403 - 0.76 * melt_pressure_GPa). Its lack of temperature/composition arguments does not broaden the experimental scope."
+          }
+        ]
+      }
+    },
+    {
+      "id": "metadata_temperature_full_text",
+      "kind": "implementation",
+      "summary": "The metadata upper bound of 1773 K reaches the andesite series; the implemented coefficients describe basalt, whose Table 1 upper temperature is 1723.15 K.",
+      "sources": ["https://github.com/HajimeKawahara/exogibbs/blob/6b4cef45d2a6f1eb1462afd6cb6d3f1c77dba8ea/src/exogibbs/solubility/volatile.py#L68-L88"],
+      "scope": "Material scope of the temperature metadata associated with the basalt callable. No claim about the provider author's intention and no provider edit.",
+      "provenance": {
+        "role": "implementation",
+        "location": "MELTYQ_SOLUBILITY_METADATA, h2_hirschmann2012, calibration_temperature_k at the pinned revision.",
+        "inspection": "inspected",
+        "note": "Re-read on 2026-10-19. The numerical difference now has a material-specific explanation, but metadata still does not distinguish the two series. Whole-kelvin rounding does not explain the 50 K difference.",
+        "derived_from": [
+          {
+            "evidence": "experimental_runs_full_text",
+            "comparison": "discrepancy",
+            "note": "1773 K agrees with the rounded study-wide/andesite maximum, not the basalt maximum. Retain the discrepancy for the basalt callable until the provider's intended metadata scope is reviewed."
+          }
+        ]
+      }
+    }
+  ],
+  "conditions": [
+    {
+      "id": "temperature_basalt_full_text",
+      "kind": "range",
+      "quantity": "temperature",
+      "interval": {"lower": 1673.15, "upper": 1723.15, "unit": "K"},
+      "coverage": "marginal",
+      "scope": "Table 1 basalt + COH temperature envelope, converted from degC. No interpolation, material matching or uncertainty tolerance is inferred.",
+      "evidence": ["experimental_runs_full_text"]
+    },
+    {
+      "id": "temperature_andesite_full_text",
+      "kind": "range",
+      "quantity": "temperature",
+      "interval": {"lower": 1673.15, "upper": 1773.15, "unit": "K"},
+      "coverage": "marginal",
+      "scope": "Table 1 andesite + OH temperature envelope; A949 retains the upper bound after A950 is excluded. This does not extend the basalt law.",
+      "evidence": ["experimental_runs_full_text"]
+    },
+    {
+      "id": "pressure_basalt_full_text",
+      "kind": "range",
+      "quantity": "melt_total_pressure",
+      "interval": {"lower": 0.7, "upper": 3.0, "unit": "GPa"},
+      "coverage": "marginal",
+      "scope": "Table 1 basalt + COH total-pressure envelope only, not hydrogen fugacity or a joint T/P domain.",
+      "evidence": ["experimental_runs_full_text"]
+    },
+    {
+      "id": "pressure_andesite_full_text",
+      "kind": "range",
+      "quantity": "melt_total_pressure",
+      "interval": {"lower": 1.0, "upper": 3.0, "unit": "GPa"},
+      "coverage": "marginal",
+      "scope": "Table 1 andesite + OH total-pressure envelope only; the study-wide 0.7 GPa minimum belongs to basalt.",
+      "evidence": ["experimental_runs_full_text"]
+    }
+  ],
+  "physical_assessment_reasons": [
+    "The published coefficient ancestry is now inspected; the retained physical_accuracy proposition still lacks a specified observable and tolerance.",
+    "The requested 1750 K is above the basalt Table 1 envelope. The andesite temperature envelope includes it, but 7500 bar is below the andesite pressure envelope; the two materials cannot be combined into one applicability rectangle.",
+    "Melt composition and hydrogen fugacity are unspecified. Published f_H2 values are model-derived; supplementary compositions and the underlying fugacity calculation have not been reconstructed.",
+    "The adopted Shelby calibration and its transfer remain unresolved. Published calibration data and a consistent formula transcription do not independently validate this calculation; no new measurement comparison or correction was made."
+  ],
+  "follow_ups": [
+    {
+      "id": "reconstruct-original-fit",
+      "target_kind": "evidence",
+      "target": "experimental_fit_full_text",
+      "action": "Obtain the supplementary compositions and reconstruct the basalt regression and its measurement dependencies.",
+      "requires": ["Authorized supplementary data, concentration conversion details, run inclusion rules, and Zhang and Duan (2009) fluid-fugacity calculations with buffer inputs."],
+      "completion": "Reconstruct oxide-basis X_H2, f_H2 and the regression, retaining non-detections and exclusions. Distinguish fit reproduction from validation using independent measurements.",
+      "sources": ["https://doi.org/10.1016/j.epsl.2012.06.031"]
+    },
+    {
+      "id": "inspect-inherited-calibration",
+      "target_kind": "evidence",
+      "target": "calibration_adoption_full_text",
+      "action": "Inspect Shelby (1994) and reconcile the integrated/peak absorption conventions before considering a concentration correction.",
+      "requires": ["Authorized Shelby full text and calibration definitions; evidence for transferring coefficients between silica, haplogranitic and basaltic glasses."],
+      "completion": "Record the directly inspected coefficient, units and measurement convention, then assess transferability separately. Preserve unknown where the comparison remains unsupported.",
+      "sources": ["https://doi.org/10.1016/j.epsl.2012.06.031", "https://doi.org/10.1007/s00410-025-02272-y"]
+    },
+    {
+      "id": "review-provider-temperature-scope",
+      "target_kind": "evidence",
+      "target": "metadata_temperature_full_text",
+      "action": "Review whether the provider metadata describes all experiments or the basalt law's experimental subset.",
+      "requires": ["The provider's metadata convention and the inspected material-specific Table 1 bounds."],
+      "completion": "Publish a separately reviewed provider revision or an explicit study-wide scope; retain the old implementation and assessments. Do not treat andesite coverage as support for basalt coefficients.",
+      "sources": ["https://doi.org/10.1016/j.epsl.2012.06.031"]
+    }
+  ],
+  "trace_comparisons": {
+    "experimental_fit": "experimental_fit_full_text",
+    "experimental_temperature": "experimental_runs_full_text",
+    "formulation": "formulation_full_text",
+    "implementation": "implementation_full_text",
+    "metadata_temperature": "metadata_temperature_full_text",
+    "historical_calibration": "calibration_adoption_full_text"
+  },
+  "follow_up_resolutions": [
+    {
+      "follow_up": "inspect-original-fit",
+      "evidence": ["experimental_fit_full_text", "formulation_full_text"],
+      "note": "Published regression, concentration convention, reference conditions and transformation to Seo inspected. Independent reconstruction remains a separate task: reconstruct-original-fit."
+    },
+    {
+      "follow_up": "inspect-original-runs",
+      "evidence": ["experimental_runs_full_text", "formulation_full_text"],
+      "note": "Table 1 material-specific temperatures and pressures inspected, with exclusions read in Section 3.1. A complete structured sample inventory and supplementary compositions are not supplied."
+    }
+  ]
+}
