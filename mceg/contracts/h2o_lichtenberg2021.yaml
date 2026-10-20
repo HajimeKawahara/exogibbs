@@ -1,0 +1,283 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.h2o_lichtenberg2021.v1
+  name: Lichtenberg H2O partial-pressure law
+  description: Temperature-independent empirical water mass fraction as a power of H2O partial pressure.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 7dc3ce1183c0b3d74e24cde502f638cac3625b83
+    entry_points:
+    - exogibbs.solubility.h2o_lichtenberg2021
+assumptions:
+- statement: w_H2O = 1.033e-6 * (p_H2O / Pa)**(1/1.747).
+  evidence:
+  - implementation
+- statement: H2O mass fraction; no mass-to-mole conversion is performed.
+  evidence:
+  - implementation
+- statement: The named driving partial pressure or fugacity is distinct from total melt pressure.
+    Unit scaling alone does not convert partial pressure into fugacity.
+  evidence:
+  - implementation
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Inspected numerical API and caller obligations; not a physical validation domain.
+  conditions:
+  - Finite nonnegative driving pressure/fugacity in the stated native unit. Broadcast-compatible JAX
+    inputs are accepted; no clipping to reported calibration ranges is performed.
+  - Zero driving pressure gives zero concentration; the fractional-power derivative is singular at
+    zero. Positive interiors are needed for finite derivatives.
+  evidence:
+  - implementation
+- kind: scientific_applicability
+  status: unknown
+  description: Composition-specific physical accuracy and joint applicability remain unestablished
+    by this survey.
+  conditions: []
+  evidence:
+  - upstream_model
+  - implementation
+claims:
+- id: numerical_verification
+  revision: '1'
+  kind: numerical_verification
+  statement: The selected module passes its literal-formula, zero/invalid-input and interior derivative
+    checks. CO/N logarithmic variants and Sun-Yao composition response are covered only where explicitly
+    tested. Counts include shared controls, not a separate experimental sample count.
+  scope: Only the selected tests, their asserted tolerances and the recorded CPU/x64 environment.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The model has quantitatively established physical accuracy for the intended melt/fluid
+    composition and conditions.
+  scope: Requires independent empirical data and explicit composition, reference-state and driving-quantity
+    conventions; not established by this survey.
+evidence:
+- id: upstream_model
+  kind: literature
+  summary: Cited model origin and retained source-review boundary.
+  sources:
+  - https://doi.org/10.1029/2020JE006711
+  scope: The provider attributes Eq. 9 and Table 1 to a compilation of petrological data. The original
+    compilation and its underlying experiments were not re-inspected; the DOI fetch returned HTTP
+    403 in this survey.
+  provenance:
+    role: secondary
+    location: Citations and source descriptions in the selected provider code/guide.
+    inspection: not_inspected
+    note: The provider attributes Eq. 9 and Table 1 to a compilation of petrological data. The original
+      compilation and its underlying experiments were not re-inspected; the DOI fetch returned HTTP
+      403 in this survey.
+- id: implementation
+  kind: implementation
+  summary: Temperature-independent empirical water mass fraction as a power of H2O partial pressure.
+  sources:
+  - src/exogibbs/__init__.py
+  - src/exogibbs/solubility/__init__.py
+  - src/exogibbs/solubility/volatile.py
+  - src/exogibbs/solubility/meltyq.py
+  - src/exogibbs/solubility/sun_yao2026.py
+  - documents/solubility.rst
+  scope: Inspected selected implementation, conventions and caller domains at revision 7dc3ce1183c0b3d74e24cde502f638cac3625b83.
+  subject: survey_20261020
+  provenance:
+    role: implementation
+    location: Selected provider source files and guide.
+    inspection: inspected
+    note: Code and declarations were read; an empirical calibration or external source replay is not
+      inferred.
+    derived_from:
+    - evidence: upstream_model
+      comparison: not_checked
+      note: Original-source scientific equivalence is not established by this implementation survey.
+- id: test_run
+  kind: numerical_test
+  summary: 56 selected tests passed.
+  sources:
+  - tests/unittests/solubility/meltyq_test.py
+  - results/mceg/20261020_model_survey/receipt.json
+  - results/mceg/20261020_model_survey/tests.xml
+  - results/mceg/20261020_model_survey/tests.log
+  scope: The selected module passes its literal-formula, zero/invalid-input and interior derivative
+    checks. CO/N logarithmic variants and Sun-Yao composition response are covered only where explicitly
+    tested. Counts include shared controls, not a separate experimental sample count.
+  result: passed
+  subject: survey_20261020
+  context: test_environment
+  artifacts:
+  - source: results/mceg/20261020_model_survey/receipt.json
+    sha256: 8e56fec883a5e85af4950163e9679ab3e5f4417d65bbdf2fd10fe775aa250b08
+  - source: results/mceg/20261020_model_survey/tests.xml
+    sha256: 755b648a452d21234c8823918866da6c155ccef65dc4cb28f516ede2893be560
+  - source: results/mceg/20261020_model_survey/tests.log
+    sha256: fe9b3c8b8d4ad52f6c6f1d6ae84a6233fed5c266c690b03583c91a787fff38ea
+  provenance:
+    role: primary
+    location: results/mceg/20261020_model_survey/receipt.json and tests.xml
+    inspection: inspected
+    note: Fresh local pytest execution; tests consume stored references where applicable. No external
+      reference program or experiment was rerun.
+- id: reported_metadata
+  kind: implementation
+  summary: Provider-reported calibration marginals and concentration conventions.
+  sources:
+  - src/exogibbs/solubility/volatile.py
+  scope: The metadata was inspected; its original experimental/formulation scope was not independently
+    audited.
+  subject: survey_20261020
+  provenance:
+    role: secondary
+    location: SolubilityMetadata record for h2o_lichtenberg2021
+    inspection: inspected
+    note: The provider attributes Eq. 9 and Table 1 to a compilation of petrological data. The original
+      compilation and its underlying experiments were not re-inspected; the DOI fetch returned HTTP
+      403 in this survey.
+    derived_from:
+    - evidence: upstream_model
+      comparison: not_checked
+      note: Retain the source-review gap; metadata is not a validated application domain.
+limitations:
+- statement: Reported calibration intervals are marginal metadata; they do not establish a jointly
+    validated temperature/pressure/composition rectangle.
+  evidence:
+  - implementation
+- statement: The auxiliary law supplies no full Gibbs scalar or host chemical potentials and does
+    not select an equilibrium model.
+  evidence:
+  - implementation
+- statement: The raw extrapolated law is not capped at unit concentration; a finite result can exceed
+    the physical fraction domain.
+  evidence:
+  - implementation
+- statement: Temperature and total melt pressure are absent from the numerical API, but remain needed
+    to assess the reported calibration context.
+  evidence:
+  - implementation
+subjects:
+- id: survey_20261020
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 7dc3ce1183c0b3d74e24cde502f638cac3625b83
+    entry_points:
+    - exogibbs.solubility.h2o_lichtenberg2021
+  selected_files:
+    src/exogibbs/__init__.py: 5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16
+    src/exogibbs/solubility/__init__.py: 8800e1d54f0f23bc49f38b1d3efa71eeb313fc4b9d879a181eef8dcfcc5e5342
+    src/exogibbs/solubility/volatile.py: 8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da
+    src/exogibbs/solubility/meltyq.py: 51157df00ae182446ff4376345fc9e83acdf03697a27d79a299cb8b9f027c292
+    src/exogibbs/solubility/sun_yao2026.py: 965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb
+    tests/conftest.py: 1f1263b8a14c1f6d6cd39f18406cb9aff3739f50dac92498aadbc300c2e70da3
+    pyproject.toml: 8facf3e2da5febba94b2314f058d01c739907605d95ec376ab39e09911b7aa35
+    documents/solubility.rst: 033372b260f36fb79aaf49a4855e0784a21254b1a6d873669e66df492a77f805
+    tests/unittests/solubility/meltyq_test.py: 4d105accc5b8e66605942f2596ed70ca546f94091fe9775cfbd9da680a28f0fd
+contexts:
+- id: test_environment
+  scope: Actual local test environment; test files and fixtures define individual calculation inputs.
+  settings:
+    python: 3.12.7
+    jax: 0.6.2
+    jaxlib: 0.6.2
+    numpy: 2.1.0
+    scipy: 1.14.1
+    pytest: 8.3.3
+    backend: cpu
+    x64: true
+    test_selection: tests/unittests/solubility/meltyq_test.py
+conditions:
+- id: reported_temperature
+  revision: '1'
+  kind: range
+  quantity: temperature
+  interval:
+    lower: 973.0
+    upper: 1723.0
+    unit: K
+  coverage: marginal
+  scope: Provider-reported marginal only; no rectangular, material-specific or empirical accuracy
+    conclusion.
+  evidence:
+  - reported_metadata
+- id: reported_melt_pressure
+  revision: '1'
+  kind: range
+  quantity: melt_total_pressure
+  interval:
+    lower: 0.0001
+    upper: 0.8
+    unit: GPa
+  coverage: marginal
+  scope: Provider-reported marginal only; no rectangular, material-specific or empirical accuracy
+    conclusion.
+  evidence:
+  - reported_metadata
+- id: formula_samples
+  revision: '1'
+  kind: samples
+  samples:
+  - id: formula_0
+    scope: Exact inputs from the executed literal-formula regression, not a laboratory experiment.
+    quantities:
+      water_partial_pressure:
+        value: 10000000.0
+        unit: Pa
+    settings: {}
+  scope: Only these joint numerical inputs; no Cartesian product, interpolation support or calibration
+    is inferred. Extra context coordinates are not checked.
+  evidence:
+  - test_run
+assessments:
+- id: numerical_review
+  kind: evidence_support
+  claim: numerical_verification
+  claim_revision: '1'
+  subject: survey_20261020
+  context: test_environment
+  method:
+    id: review_selected_pytest
+    revision: '1'
+    description: Read actual test outcomes and selected file pins; limit support to those numerical
+      assertions.
+  evidence:
+  - test_run
+  reasons:
+  - 56 tests in the selected modules; see the shared receipt for per-module counts.
+  - Selected files matched Git at execution and were unchanged afterward. Other revisions, environments
+    and empirical accuracy need separate review.
+  status: supported
+  origin: reviewed
+- id: physical_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: survey_20261020
+  context: test_environment
+  method:
+    id: review_empirical_support
+    revision: '1'
+    description: Separate numerical verification from experimental or observational support.
+  evidence:
+  - upstream_model
+  - implementation
+  reasons:
+  - The provider attributes Eq. 9 and Table 1 to a compilation of petrological data. The original
+    compilation and its underlying experiments were not re-inspected; the DOI fetch returned HTTP
+    403 in this survey.
+  - Numerical agreement and membership in metadata intervals do not establish physical accuracy.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: empirical_scope
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Inspect the original model equations and relevant material-specific data; record a separate
+    empirical assessment for a declared application.
+  requires:
+  - Original source passages, equations and coefficient tables with inspection locations.
+  - Explicit T/P, composition basis, gas driving quantity, standard states and uncertainty criteria.
+  - Reproducible comparison against independent observations or experiments, when available.
+  completion: A new scoped assessment cites inspected evidence and states its remaining gaps; a numerical
+    pass alone does not complete this task.
+  sources:
+  - https://doi.org/10.1029/2020JE006711

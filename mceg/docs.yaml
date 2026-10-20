@@ -1,0 +1,10 @@
+# Paths are relative to this configuration file.
+source_root: ../documents
+output: ../documents/mceg/_generated
+contracts:
+  - provider: exogibbs
+    root: ..
+    paths:
+      - mceg/contracts/*.yaml
+cases:
+  - ../examples/comparisons/mceg/h2-solubility.yaml

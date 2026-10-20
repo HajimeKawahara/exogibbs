@@ -1,0 +1,307 @@
+inventory_version: '0.1'
+scope: 2026-10-20 solubility/magma inventory at 7dc3ce1183c0b3d74e24cde502f638cac3625b83. Scan all packaged
+  source/data and four explicitly listed archived study scripts. Solubility laws, existing contracts
+  and located preset/buffer/connection families are mapped. Other files remain unreviewed, not implicitly
+  support-only. Other examples and downloaded inputs are outside scope.
+source_roots:
+- src/exogibbs
+- examples/comparisons/audit_atomic_ions.py
+- examples/comparisons/select_atomic_ions.py
+- examples/comparisons/select_major_molecules.py
+- examples/comparisons/compare_gas_thermochemistry.py
+contract_roots:
+- mceg/contracts
+files:
+  examples/comparisons/audit_atomic_ions.py:
+    sha256: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  examples/comparisons/compare_gas_thermochemistry.py:
+    sha256: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  examples/comparisons/select_atomic_ions.py:
+    sha256: 431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  examples/comparisons/select_major_molecules.py:
+    sha256: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/applications/magma_gas/models/meltyq/basis.py:
+    sha256: da5c78c4a56f711865551f0f9948473acba5963d228bdc9e5e914c66da712f4b
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/applications/magma_gas/models/meltyq/model.py:
+    sha256: 404753812060d5b4e34512a925c67993896f03481d36950b3fd96d07bf508b63
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/applications/magma_gas/models/meltyq/setup.py:
+    sha256: ae68a73f51ae074d528e7804e16b19b9e673c95272257be140a05b1b78387715
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/data/curated/gas_v1.json:
+    sha256: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/data/young2023/standard_states.json:
+    sha256: 58f3316689b53eaae31e903be46174d68f0a21defe155fd38f3db5edd35df5c0
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/presets/curated.py:
+    sha256: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/presets/fastchem.py:
+    sha256: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/presets/fastchem4.py:
+    sha256: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/presets/fastchem4_cond.py:
+    sha256: 705e6e1230f9bbcedd7a8e2f6859a1c834ef6599d99926445d9b5396e4849639
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/presets/fastchem_cond.py:
+    sha256: 14593a71b0c23650a4b0c25dbbf4dcf2125a13bd52e9503f7faf683839af9357
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/presets/ykb4.py:
+    sha256: 86e0a7670635245034a1cbc2164a856634ee7372df9fc38606d961fe626ddd4a
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/solubility/__init__.py:
+    sha256: 8800e1d54f0f23bc49f38b1d3efa71eeb313fc4b9d879a181eef8dcfcc5e5342
+    role: support
+    note: Public solubility re-exports; scientific definitions are bound at volatile.py and sun_yao2026.py.
+  src/exogibbs/solubility/meltyq.py:
+    sha256: 51157df00ae182446ff4376345fc9e83acdf03697a27d79a299cb8b9f027c292
+    role: support
+    note: Backward-compatible re-exports; no additional empirical law.
+  src/exogibbs/solubility/sun_yao2026.py:
+    sha256: 965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/solubility/volatile.py:
+    sha256: 8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/thermo/oxygen_fugacity.py:
+    sha256: ff86e298974c199e62e5807542a189bb788f804bb0966b11aaa5b9141150d311
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+  src/exogibbs/thermo/young2023.py:
+    sha256: fad14a9b778821851639072faa16270f5a333be7a03b7ad25e24e6220b74ed14
+    role: model
+    note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
+      inventory, not physical validation or exhaustive variant review.
+models:
+- id: exogibbs.h2_solubility
+  description: Auxiliary solubility law h2_solubility; linear/log entry points share the same scientific
+    identity.
+  bindings:
+  - path: src/exogibbs/solubility/volatile.py
+    symbol: h2_hirschmann2012
+  contracts:
+  - path: mceg/contracts/h2_solubility.yaml
+    model_id: exogibbs.h2_hirschmann2012
+- id: exogibbs.h2o_lichtenberg2021
+  description: Auxiliary solubility law h2o_lichtenberg2021; linear/log entry points share the same
+    scientific identity.
+  bindings:
+  - path: src/exogibbs/solubility/volatile.py
+    symbol: h2o_lichtenberg2021
+  contracts:
+  - path: mceg/contracts/h2o_lichtenberg2021.yaml
+    model_id: exogibbs.h2o_lichtenberg2021.v1
+- id: exogibbs.co2_lichtenberg2021
+  description: Auxiliary solubility law co2_lichtenberg2021; linear/log entry points share the same
+    scientific identity.
+  bindings:
+  - path: src/exogibbs/solubility/volatile.py
+    symbol: co2_lichtenberg2021
+  contracts:
+  - path: mceg/contracts/co2_lichtenberg2021.yaml
+    model_id: exogibbs.co2_lichtenberg2021.v1
+- id: exogibbs.co_yoshioka2019
+  description: Auxiliary solubility law co_yoshioka2019; linear/log entry points share the same scientific
+    identity.
+  bindings:
+  - path: src/exogibbs/solubility/volatile.py
+    symbol: co_yoshioka2019
+  - path: src/exogibbs/solubility/volatile.py
+    symbol: ln_co_yoshioka2019
+  contracts:
+  - path: mceg/contracts/co_yoshioka2019.yaml
+    model_id: exogibbs.co_yoshioka2019.v1
+- id: exogibbs.ch4_ardia2013
+  description: Auxiliary solubility law ch4_ardia2013; linear/log entry points share the same scientific
+    identity.
+  bindings:
+  - path: src/exogibbs/solubility/volatile.py
+    symbol: ch4_ardia2013
+  contracts:
+  - path: mceg/contracts/ch4_ardia2013.yaml
+    model_id: exogibbs.ch4_ardia2013.v1
+- id: exogibbs.n2_dasgupta2022
+  description: Auxiliary solubility law n2_dasgupta2022; linear/log entry points share the same scientific
+    identity.
+  bindings:
+  - path: src/exogibbs/solubility/volatile.py
+    symbol: n2_dasgupta2022
+  - path: src/exogibbs/solubility/volatile.py
+    symbol: ln_n2_dasgupta2022
+  contracts:
+  - path: mceg/contracts/n2_dasgupta2022.yaml
+    model_id: exogibbs.n2_dasgupta2022.v1
+- id: exogibbs.h2o_sun_yao2026
+  description: Sun-Yao water law and its two composition-dependent capacity terms.
+  bindings:
+  - path: src/exogibbs/solubility/sun_yao2026.py
+    symbol: h2o_sun_yao2026
+  - path: src/exogibbs/solubility/sun_yao2026.py
+    symbol: h2o_sun_yao2026_terms
+  contracts:
+  - path: mceg/contracts/h2o_sun_yao2026.yaml
+    model_id: exogibbs.h2o_sun_yao2026.v1
+- id: exogibbs.atomic_ion_reference
+  description: Existing archived source study atomic_ion_reference; numerical evidence is not refreshed
+    by coverage.
+  bindings:
+  - path: examples/comparisons/audit_atomic_ions.py
+    symbol: reference_log_kp
+  contracts:
+  - path: mceg/contracts/atomic_ion_reference.yaml
+    model_id: exogibbs.atomic_ion_reference.v1
+- id: exogibbs.atomic_ion_adoption
+  description: Existing archived source study atomic_ion_adoption; numerical evidence is not refreshed
+    by coverage.
+  bindings:
+  - path: examples/comparisons/select_atomic_ions.py
+    symbol: compute_adoption
+  contracts:
+  - path: mceg/contracts/atomic_ion_adoption.yaml
+    model_id: exogibbs.atomic_ion_adoption.v1
+- id: exogibbs.major_molecule_adoption
+  description: Existing archived source study major_molecule_adoption; numerical evidence is not refreshed
+    by coverage.
+  bindings:
+  - path: examples/comparisons/select_major_molecules.py
+    symbol: compute_adoption
+  contracts:
+  - path: mceg/contracts/major_molecule_adoption.yaml
+    model_id: exogibbs.major_molecule_adoption.v1
+- id: exogibbs.gas_thermochemistry_impact
+  description: Existing archived source study gas_thermochemistry_impact; numerical evidence is not
+    refreshed by coverage.
+  bindings:
+  - path: examples/comparisons/compare_gas_thermochemistry.py
+    symbol: build_study
+  - path: examples/comparisons/compare_gas_thermochemistry.py
+    symbol: run_exogibbs
+  contracts:
+  - path: mceg/contracts/gas_thermochemistry_impact.yaml
+    model_id: exogibbs.gas_thermochemistry_impact.v1
+- id: exogibbs.curated_gas.ions_true
+  description: Curated-gas source choices with ions=True; shared family contract.
+  bindings:
+  - path: src/exogibbs/presets/curated.py
+    symbol: chemsetup
+    settings:
+      ions: true
+  - path: src/exogibbs/data/curated/gas_v1.json
+  contracts:
+  - path: mceg/contracts/curated_gas.yaml
+    model_id: exogibbs.curated_gas.v1
+- id: exogibbs.curated_gas.ions_false
+  description: Curated-gas source choices with ions=False; shared family contract.
+  bindings:
+  - path: src/exogibbs/presets/curated.py
+    symbol: chemsetup
+    settings:
+      ions: false
+  - path: src/exogibbs/data/curated/gas_v1.json
+  contracts:
+  - path: mceg/contracts/curated_gas.yaml
+    model_id: exogibbs.curated_gas.v1
+- id: exogibbs.presets.fastchem
+  description: Located fastchem preset; species/source options and data variants need separate review.
+  bindings:
+  - path: src/exogibbs/presets/fastchem.py
+    symbol: chemsetup
+  contracts: []
+- id: exogibbs.presets.fastchem4
+  description: Located fastchem4 preset; species/source options and data variants need separate review.
+  bindings:
+  - path: src/exogibbs/presets/fastchem4.py
+    symbol: chemsetup
+  contracts: []
+- id: exogibbs.presets.ykb4
+  description: Located ykb4 preset; species/source options and data variants need separate review.
+  bindings:
+  - path: src/exogibbs/presets/ykb4.py
+    symbol: chemsetup
+  contracts: []
+- id: exogibbs.presets.fastchem_cond
+  description: Located fastchem_cond preset; species/source options and data variants need separate
+    review.
+  bindings:
+  - path: src/exogibbs/presets/fastchem_cond.py
+    symbol: chemsetup
+  contracts: []
+- id: exogibbs.presets.fastchem4_cond
+  description: Located fastchem4_cond preset; species/source options and data variants need separate
+    review.
+  bindings:
+  - path: src/exogibbs/presets/fastchem4_cond.py
+    symbol: chemsetup
+  contracts: []
+- id: exogibbs.meltyq_magma_gas
+  description: Coupled MELTYQ magma-gas boundary, basis conversions and chemical setup; individual solubility
+    contracts do not cover the connection.
+  bindings:
+  - path: src/exogibbs/applications/magma_gas/models/meltyq/model.py
+    symbol: MeltyqMagmaGasModel
+  - path: src/exogibbs/applications/magma_gas/models/meltyq/basis.py
+  - path: src/exogibbs/applications/magma_gas/models/meltyq/setup.py
+    symbol: prepare_meltyq_chemistry
+  contracts: []
+- id: exogibbs.oxygen_fugacity_iw
+  description: Hirschmann IW oxygen buffer with pressure-selected iron polymorphs; not covered by a
+    solubility contract.
+  bindings:
+  - path: src/exogibbs/thermo/oxygen_fugacity.py
+    symbol: log10_oxygen_fugacity_iw_hirschmann2021
+  - path: src/exogibbs/thermo/oxygen_fugacity.py
+    symbol: delta_iw_hirschmann2021
+  contracts: []
+- id: exogibbs.young2023_standards
+  description: Young source standard-potential family and supplementary gas standards; not a full equilibrium
+    model.
+  bindings:
+  - path: src/exogibbs/thermo/young2023.py
+    symbol: standard_potentials_rt
+  - path: src/exogibbs/thermo/young2023.py
+    symbol: supplementary_gas_standard_rt
+  - path: src/exogibbs/data/young2023/standard_states.json
+  contracts: []

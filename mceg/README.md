@@ -6,6 +6,11 @@ applicability, claims and scoped evidence. This checkout pilots its frozen
 [H2 solubility law](contracts/h2_solubility.yaml). MCEG is not an ExoGibbs
 runtime or test dependency; numerical implementations remain owned by ExoGibbs.
 
+The [2026-10-20 model inventory](model_inventory.md) adds v0.2 contracts for the
+solubility/magma survey, with separate numerical and physical Assessments and
+fresh receipts. The new records use the companion MCEG volatile-quantity
+extension. Existing H2 and source-study histories retain their original scope.
+
 The [atomic-ion reference contract](contracts/atomic_ion_reference.yaml) records
 the separate gas-only audit of 49 FastChem4 atomic ions. Its
 [report](../documents/atomic_ion_audit.rst),
@@ -169,3 +174,19 @@ claim remains `unknown`.
 The JSON receipt is a pilot artifact, not a v0.1 schema extension. These files
 are checkout metadata; wheel-level discovery and automated scientific
 applicability decisions remain outside this pilot.
+
+## Inventory coverage
+
+The [machine-readable inventory](models.yaml) maps code and model choices to
+contracts, including known uncontracted families. `mceg coverage .` checks these
+links and reports new/changed or unreviewed source files without importing this
+package. The current partial inventory intentionally returns exit code 1.
+See the [inventory notes](model_inventory.md#machine-readable-inventory-and-coverage)
+for baseline counts, mutation checks and the limits of implicit-model detection.
+
+## Models and evidence HTML
+
+Run `python -m mceg docs --config mceg/docs.yaml` to generate RST only, or
+`./update_doc.sh` from the repository root to regenerate and build HTML.
+See [the documentation build guide](../documents/mceg/build.rst) for installation,
+input selection and output locations. Generated files are ignored by Git.
