@@ -43,6 +43,7 @@ Contents
    subneptune_sulfur.rst
    cns_inventory.rst
    subneptune_sulfide.rst
+   mceg/index
 
 .. toctree::
    :maxdepth: 1

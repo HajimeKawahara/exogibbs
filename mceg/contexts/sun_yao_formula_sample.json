@@ -1,0 +1,23 @@
+{
+  "id": "sun_yao_formula_sample",
+  "scope": "One executed formula-test sample; no empirical applicability conclusion.",
+  "quantities": {
+    "temperature": {
+      "value": 2173.15,
+      "unit": "K"
+    },
+    "melt_total_pressure": {
+      "value": 439.785,
+      "unit": "bar"
+    },
+    "water_partial_pressure": {
+      "value": 26.0,
+      "unit": "bar"
+    }
+  },
+  "settings": {
+    "x_na2o": 0.002,
+    "x_al2o3": 0.025,
+    "oxide_basis": "volatile_free_mole_fraction"
+  }
+}

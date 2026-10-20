@@ -1,0 +1,190 @@
+{
+  "recorded_at_utc": "2026-10-20T00:06:40.849514+00:00",
+  "scope": "Registration and source-review coverage only; mutations used temporary copies and did not execute provider implementations.",
+  "command": "python -m mceg coverage /path/to/exogibbs --json",
+  "inventory_sha256": "fadc4eed3941b5793e958c2e338d3b677b856f7ecac1050762621c26d5d9e068",
+  "mceg_coverage_source_sha256": "5290b6ed000194f31695f29a9c81113bc85c0d42cf2ba3342fef9308df46df69",
+  "mceg_cli_source_sha256": "26b310e67091550fc1dc94f9907da5076aa0edf4c18b5e45c7c8877843d7d3e5",
+  "baseline_sha256": "d558f5babe6ed5714555ebf9913aa322b4dc15809a4c17575c48b67c51efd457",
+  "baseline_exit_code": 1,
+  "baseline_diagnostics": {
+    "uncontracted_model": 8,
+    "unreviewed_file": 188
+  },
+  "python": "3.12.7 | packaged by Anaconda, Inc. | (main, Oct  4 2024, 13:27:36) [GCC 11.2.0]",
+  "scenarios": [
+    {
+      "case": "missing_variant_contract_link",
+      "path": "mceg/models.yaml",
+      "operation": "Clear contracts for exogibbs.co_yoshioka2019; retain all other model mappings and the original contract.",
+      "expected_new_diagnostics": [
+        "uncontracted_model"
+      ],
+      "exit_code": 1,
+      "new_diagnostics": [
+        {
+          "kind": "uncontracted_model",
+          "path": null,
+          "model": "exogibbs.co_yoshioka2019",
+          "message": "No contract is linked to this model"
+        },
+        {
+          "kind": "unlisted_contract",
+          "path": "mceg/contracts/co_yoshioka2019.yaml",
+          "model": null,
+          "message": "Add this contract to the model inventory"
+        }
+      ],
+      "matched_expectation": true
+    },
+    {
+      "case": "missing_contract_file",
+      "path": "mceg/contracts/co_yoshioka2019.yaml",
+      "operation": "Remove the linked contract file.",
+      "expected_new_diagnostics": [
+        "contract_mismatch",
+        "invalid_contract"
+      ],
+      "exit_code": 1,
+      "new_diagnostics": [
+        {
+          "kind": "contract_mismatch",
+          "path": "mceg/contracts/co_yoshioka2019.yaml",
+          "model": "exogibbs.co_yoshioka2019",
+          "message": "Expected model.id 'exogibbs.co_yoshioka2019.v1'; found None"
+        },
+        {
+          "kind": "invalid_contract",
+          "path": "mceg/contracts/co_yoshioka2019.yaml",
+          "model": null,
+          "message": "[Errno 2] No such file or directory: '/tmp/mceg-coverage-20261020/validation/exogibbs/mceg/contracts/co_yoshioka2019.yaml'"
+        }
+      ],
+      "matched_expectation": true
+    },
+    {
+      "case": "wrong_contract_identity",
+      "path": "mceg/contracts/co_yoshioka2019.yaml",
+      "operation": "Replace contract model.id with coverage_fixture.unexpected.",
+      "expected_new_diagnostics": [
+        "contract_mismatch"
+      ],
+      "exit_code": 1,
+      "new_diagnostics": [
+        {
+          "kind": "contract_mismatch",
+          "path": "mceg/contracts/co_yoshioka2019.yaml",
+          "model": "exogibbs.co_yoshioka2019",
+          "message": "Expected model.id 'exogibbs.co_yoshioka2019.v1'; found 'coverage_fixture.unexpected'"
+        }
+      ],
+      "matched_expectation": true
+    },
+    {
+      "case": "new_branch_in_registered_function",
+      "path": "src/exogibbs/solubility/volatile.py",
+      "operation": "Insert a synthetic carbon_monoxide_fugacity_bar == -987654321 branch returning 0.0 in co_yoshioka2019; do not execute it.",
+      "expected_new_diagnostics": [
+        "changed_file"
+      ],
+      "exit_code": 1,
+      "new_diagnostics": [
+        {
+          "kind": "changed_file",
+          "path": "src/exogibbs/solubility/volatile.py",
+          "model": null,
+          "message": "Review changed code/data and affected model boundaries"
+        }
+      ],
+      "matched_expectation": true
+    },
+    {
+      "case": "renamed_bound_function",
+      "path": "src/exogibbs/solubility/volatile.py",
+      "operation": "Rename the local definition co_yoshioka2019.",
+      "expected_new_diagnostics": [
+        "changed_file",
+        "missing_symbol"
+      ],
+      "exit_code": 1,
+      "new_diagnostics": [
+        {
+          "kind": "changed_file",
+          "path": "src/exogibbs/solubility/volatile.py",
+          "model": null,
+          "message": "Review changed code/data and affected model boundaries"
+        },
+        {
+          "kind": "missing_symbol",
+          "path": "src/exogibbs/solubility/volatile.py",
+          "model": "exogibbs.co_yoshioka2019",
+          "message": "No local Python definition for co_yoshioka2019"
+        }
+      ],
+      "matched_expectation": true
+    },
+    {
+      "case": "new_untracked_model_file",
+      "path": "src/exogibbs/coverage_probe.py",
+      "operation": "Add a new source file, absent from the inventory and all contract manifests.",
+      "expected_new_diagnostics": [
+        "unreviewed_file"
+      ],
+      "exit_code": 1,
+      "new_diagnostics": [
+        {
+          "kind": "unreviewed_file",
+          "path": "src/exogibbs/coverage_probe.py",
+          "model": null,
+          "message": "Classify this file and review its model bindings"
+        }
+      ],
+      "matched_expectation": true
+    },
+    {
+      "case": "changed_coefficient_data",
+      "path": "src/exogibbs/data/curated/gas_v1.json",
+      "operation": "Add a synthetic numeric coefficient to a reviewed packaged data file.",
+      "expected_new_diagnostics": [
+        "changed_file"
+      ],
+      "exit_code": 1,
+      "new_diagnostics": [
+        {
+          "kind": "changed_file",
+          "path": "src/exogibbs/data/curated/gas_v1.json",
+          "model": null,
+          "message": "Review changed code/data and affected model boundaries"
+        }
+      ],
+      "matched_expectation": true
+    },
+    {
+      "case": "contract_not_in_inventory",
+      "path": "mceg/contracts/coverage_probe.yaml",
+      "operation": "Add a valid contract file with no inventory link.",
+      "expected_new_diagnostics": [
+        "unlisted_contract"
+      ],
+      "exit_code": 1,
+      "new_diagnostics": [
+        {
+          "kind": "unlisted_contract",
+          "path": "mceg/contracts/coverage_probe.yaml",
+          "model": null,
+          "message": "Add this contract to the model inventory"
+        }
+      ],
+      "matched_expectation": true
+    },
+    {
+      "case": "limit_omitted_shared_variant",
+      "path": "mceg/models.yaml",
+      "operation": "Delete one entire variant row while its file and family contract remain mapped. No new diagnostic is possible; review inventory diffs.",
+      "expected_new_diagnostics": [],
+      "exit_code": 1,
+      "new_diagnostics": [],
+      "matched_expectation": true
+    }
+  ]
+}

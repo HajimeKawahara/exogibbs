@@ -1,0 +1,3063 @@
+{
+  "status": "gaps",
+  "scope": "2026-10-20 solubility/magma inventory at 7dc3ce1183c0b3d74e24cde502f638cac3625b83. Scan all packaged source/data and four explicitly listed archived study scripts. Solubility laws, existing contracts and located preset/buffer/connection families are mapped. Other files remain unreviewed, not implicitly support-only. Other examples and downloaded inputs are outside scope.",
+  "source_roots": [
+    "src/exogibbs",
+    "examples/comparisons/audit_atomic_ions.py",
+    "examples/comparisons/select_atomic_ions.py",
+    "examples/comparisons/select_major_molecules.py",
+    "examples/comparisons/compare_gas_thermochemistry.py"
+  ],
+  "contract_roots": [
+    "mceg/contracts"
+  ],
+  "summary": {
+    "source_files": 209,
+    "current_files": 21,
+    "files_needing_review": 188,
+    "models": 21,
+    "registered_models": 13,
+    "uncontracted_models": 8,
+    "invalid_models": 0,
+    "discovered_contracts": 12,
+    "issues": 196
+  },
+  "files": [
+    {
+      "path": "examples/comparisons/audit_atomic_ions.py",
+      "status": "current",
+      "role": "model",
+      "expected": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+      "actual": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468"
+    },
+    {
+      "path": "examples/comparisons/compare_gas_thermochemistry.py",
+      "status": "current",
+      "role": "model",
+      "expected": "f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228",
+      "actual": "f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228"
+    },
+    {
+      "path": "examples/comparisons/select_atomic_ions.py",
+      "status": "current",
+      "role": "model",
+      "expected": "431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f",
+      "actual": "431cb72b91b50ea044f54deb5be261608fd577a2705355108951ec7fc179012f"
+    },
+    {
+      "path": "examples/comparisons/select_major_molecules.py",
+      "status": "current",
+      "role": "model",
+      "expected": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+      "actual": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4"
+    },
+    {
+      "path": "src/exogibbs/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16"
+    },
+    {
+      "path": "src/exogibbs/api/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "b50e66690ae01674e930f9495b111c7ea66bbd5b544d93b041261b3498b90b02"
+    },
+    {
+      "path": "src/exogibbs/api/chemistry.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "015434f7a6a9598f42d553a5b6248426ab96f085e0fe51bf1b1b09889556b245"
+    },
+    {
+      "path": "src/exogibbs/api/condensate.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "1cd23725e0f4b116f40ac8acc7a3f18c1a38516ad1485624578a5981f9e812c6"
+    },
+    {
+      "path": "src/exogibbs/api/condensate_equilibrium.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "4728089809677c966b824ff294e5bbc370253802223feb764d6b71db49586eae"
+    },
+    {
+      "path": "src/exogibbs/api/equilibrium.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "b9d5ede80d806865936ed61d9328d82062b5795f10ee0715d3f60b5c41b28979"
+    },
+    {
+      "path": "src/exogibbs/api/equilibrium_grid.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "f8ff52135c213ba2106311c74f3cc9a4cb64e2e574f158a02dfc7cdc60ab8c0a"
+    },
+    {
+      "path": "src/exogibbs/api/gas.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba"
+    },
+    {
+      "path": "src/exogibbs/api/magma_gas.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ca39382377e6e04e61ef55fc816c82717971f32bbfc2f71487466357d01b0ee7"
+    },
+    {
+      "path": "src/exogibbs/api/multiphase.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "fb9f8022d22ebc10b732a30e7fa983e57ec8f51ddae6c3c6eff22f65704c7643"
+    },
+    {
+      "path": "src/exogibbs/api/potential.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "0ea5fda5ada240fbb25da87763044f22a09277bcf0d6993fe18109493a908f65"
+    },
+    {
+      "path": "src/exogibbs/applications/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "417f4a90875307080838eef42b0ea00bc6a7d52240b0bb4b688b5a5bba28f7a1"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "c1f43293acae59e606534487866b2f7ee2ae6e7f653dd7cfa801f7aa8f9038cd"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/_root.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "934f48468482f55dbda2e4d11f99e0ed2ef16a8086e4283c4939b3e3e2d77046"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/models/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "973dd0704afcf676ad9e85c083ccf56202050215314fe5e2f5f79be1b4dec4d8"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/models/meltyq/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "9f5d22c45a3a0d863f537ae89d7d177a147422c9cedde6027a4ae14d3a7820a9"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/models/meltyq/basis.py",
+      "status": "current",
+      "role": "model",
+      "expected": "da5c78c4a56f711865551f0f9948473acba5963d228bdc9e5e914c66da712f4b",
+      "actual": "da5c78c4a56f711865551f0f9948473acba5963d228bdc9e5e914c66da712f4b"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/models/meltyq/model.py",
+      "status": "current",
+      "role": "model",
+      "expected": "404753812060d5b4e34512a925c67993896f03481d36950b3fd96d07bf508b63",
+      "actual": "404753812060d5b4e34512a925c67993896f03481d36950b3fd96d07bf508b63"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/models/meltyq/setup.py",
+      "status": "current",
+      "role": "model",
+      "expected": "ae68a73f51ae074d528e7804e16b19b9e673c95272257be140a05b1b78387715",
+      "actual": "ae68a73f51ae074d528e7804e16b19b9e673c95272257be140a05b1b78387715"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/models/meltyq/types.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "a9aedc2ff85f03433dc26520b2afb384d7cf8aa9755106a18272f3a93af7c433"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/solve.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "6dea215851904647b3250adeb014316b58d1b929f990f977c91a14bad24521d5"
+    },
+    {
+      "path": "src/exogibbs/applications/magma_gas/types.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "21b9d39a341b3273263b21c8259577ffdc102da86c366cd536232f0c29901da8"
+    },
+    {
+      "path": "src/exogibbs/condensates/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "172587367ebfb2ffc4eb27ec90261ae58e907cc8a22a04ac19e80845d8bff4f0"
+    },
+    {
+      "path": "src/exogibbs/condensates/fixed_support_payload.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "5e73965c049260f46b94cabcb1856a53195c2fa21762e7e066517e96c893efbd"
+    },
+    {
+      "path": "src/exogibbs/condensates/fixed_support_v2_policy.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "46ca615156e406f7e5405fa81295b387ccb4e5cd1881bba7cc1d908e12d2113f"
+    },
+    {
+      "path": "src/exogibbs/condensates/initialization_policy.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "cf49a39817c54f211d5667ea4c96229040b560491aed53d53efd6b9ab9904b2b"
+    },
+    {
+      "path": "src/exogibbs/condensates/native_bundle.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "903ab6ad2aed9654c9a886ecff645a6d5e82f27918f0f079dad7b682c326a965"
+    },
+    {
+      "path": "src/exogibbs/condensates/support_selection_policy.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "92d873aedcbbcd1dcac586c321e532624de6e2acadaa39e087ddd82c650153ca"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/README.md",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "0f1aabca2eb2596a8dcdf4b556894cdd92c31750ca78e21ddfe2684433a7b117"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2009.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "31a4785be7190f99ea764938a4bff6cab86772b4640ef10d6f45d2458c71b973"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2009_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "53f2505690bd4e325fffd610f37963d819d348983a5df848cbbd010bbf906b4d"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2009_full.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "20f409776f073b2ecb8ee88a96222bacd4361dbb4080044b3f0c3eff1f62e0cc"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2021_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "eb119f39f7a0c0d178a4296a06fc841c02773d4281851bec6c8936123d932964"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2021_full.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "b832604413c71a5a0c09d380e66b8c9bb7aca48b9a8af1e93757024767e4d1ea"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2003.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "c7367eb834f38f97bf2baa96a250fd0a438d81a0888250cb395d69055e5b313e"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2003_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "8afaf8b5a27c86b773bfcb31fa0494eafd0beb3ba7d71ba69fcbdef391179a8d"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2003_full.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "74af7c95892455b2352e9a11f03a2b43262e4f6303f148fd6373ac8a999f9dc1"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2025.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ba3037a3c22ec01141ab19565b850a219895693751127fabcb0889f05d593741"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2025_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "d83c72b83558d8c0a361771f921fefbb9fb484b78024ba9a6b820ba8e7fe6963"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2025_full.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "0ec4046d78e2db62bdc78eba4a3b4527daf43952cc786e7ba7c1e527ce60413e"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/logK/logK.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/logK/logK_condensates.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/logK/logK_condensates_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "514c96d25474c18b6b9aff2c5a010282d98ccb4eead0c5134ca8ed9cc47d14c7"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/logK/logK_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "c89505344db24ed8d253e509c1825b02e01810a1f086d70c3e0b2d8f854c38a3"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/logK/logK_extended_wo_ions.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "140cc5394868ca8b0950b45c7048fa8bee359e53601bbdf9ac0a9762a9bf21e5"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/logK/logK_hoeijmakers2019.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "9f706e4456c317a09614d674264fbba12df51d5581bb9abedf81afad84907a68"
+    },
+    {
+      "path": "src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606"
+    },
+    {
+      "path": "src/exogibbs/data/curated/README.rst",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "db64a85f27e9e421131aaeec0a41a116107bc75312023c478557518a98bfc140"
+    },
+    {
+      "path": "src/exogibbs/data/curated/gas_v1.json",
+      "status": "current",
+      "role": "model",
+      "expected": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+      "actual": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/README.md",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "45cf5317c48bdf430c0b09057ede114c41e9c113c4dba958878c787c8a2bbea5"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/element_abundances/README.TXT",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ce29dfaeeb65e7343c0f04b8a86b3e9ab9fef9ed84310340d321323023a02cd7"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/element_abundances/asplund_2009.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "31a4785be7190f99ea764938a4bff6cab86772b4640ef10d6f45d2458c71b973"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/element_abundances/asplund_2009_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "39ce98e580c04b74ee3186cab2b84c41a357172cf8acbfd629b174a7e4057a4c"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/element_abundances/asplund_2020.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "3260f51b83a347587ba40cd6bb29a46a79c413ac8a72300d5f70200afb7b84a3"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/element_abundances/asplund_2020_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "efe8dc135a521ccc005932a865317d0949396bafd25940b984ee59df77807049"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/element_abundances/lodders_2003.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "c7367eb834f38f97bf2baa96a250fd0a438d81a0888250cb395d69055e5b313e"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/element_abundances/lodders_2003_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "0b00dc099e510651c348404f31a7cf30425cae6bcdf0fc89a4e10e77d16bd1a8"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/logK/README.TXT",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "45c88c13e1665d26d6a2fd507f5fd04805fad6a93bce542895d820a5c832b35a"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/logK/logK.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "dbf4d53afe7b68ac9504560843b90d304f04b8570ae4ab89bc88289455b78806"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/logK/logK_condensates.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "c853a104385d627a5b35e9a0409fb1163d30596a08cca5b1368b9abe37f5635f"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/logK/logK_extended.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "9bc4f8dd1d7d4cd29c4b7b33ab7bb00bb3f16d5fe39dedea5465939532064a3d"
+    },
+    {
+      "path": "src/exogibbs/data/fastchem/logK/logK_wo_ions.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "9163e3de71bce3b05e9c2e4dd4f535c4ce156f7066cdcaec117777ade468af4e"
+    },
+    {
+      "path": "src/exogibbs/data/grids/fastchem/grid_exogibbs.nc",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "52088ee748caf3069455c543eb7abe457d525501eed6b3b10b04a00cdfc1100c"
+    },
+    {
+      "path": "src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "82b722ae0557fcdb0dd4224be32435fa1ca914e6b437cb948d8e1e9e8cb5b701"
+    },
+    {
+      "path": "src/exogibbs/data/janaf/atomic.json",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "4a9d51e8dd58f513b334b5025f0de49476ec5359e1ca811f9e9fd3daab829518"
+    },
+    {
+      "path": "src/exogibbs/data/nasa9/LICENSE.txt",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "a60026be9384468d074c19425e552f1bb4a6f507f805e55a96fad586716168ed"
+    },
+    {
+      "path": "src/exogibbs/data/nasa9/NOTICE.txt",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "03b64364559d540d97615c31675a69e8eb1965e30de8859a2f8c5c9a38ecb55e"
+    },
+    {
+      "path": "src/exogibbs/data/nasa9/README.md",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "1800573138d64f24fa1d01f89383527c14f183a4e8525f9ee09c0b8a555d714a"
+    },
+    {
+      "path": "src/exogibbs/data/nasa9/fastchem4_hot.json",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "85e677bdf08a340b045567affac60e09a480fae1556a8704bc52fe66cd9e1338"
+    },
+    {
+      "path": "src/exogibbs/data/sharp_huebner/README.md",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "a35de2bc9f3624c0b76aec0e9a62e5eb1d91cfa0476a784046b381fb49aa35ff"
+    },
+    {
+      "path": "src/exogibbs/data/sharp_huebner/condcoeff.csv",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "f81439e34ee876a6c8a483f53240482fd03708cc7f712e87029b2ab2ab7eeab6"
+    },
+    {
+      "path": "src/exogibbs/data/sharp_huebner/condcoeff_melilite.csv",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "bb9821b7738b3293088e89fd32b783d0d4ff885e30e74235a15feaab1f3e8317"
+    },
+    {
+      "path": "src/exogibbs/data/sharp_huebner/gascoeff.csv",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ddf169228fb48b9c67fec7505937a6b3b916739b481da09ecce597deb262e081"
+    },
+    {
+      "path": "src/exogibbs/data/sharp_huebner/metallicity.csv",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "1372ab03a447903f157534e37278cfe917c6ae03c83113640e58a9e59b651081"
+    },
+    {
+      "path": "src/exogibbs/data/test/janaf_raw_sample.txt",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "b9b84b958680b43dde53f9eb9de4a8c859ce31246f7626e070e88e7c3130d500"
+    },
+    {
+      "path": "src/exogibbs/data/test/matrix_v3.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "fc139799fede08be18a4aeaef86b1c58fb5105aefc5330bce9602e3c80833182"
+    },
+    {
+      "path": "src/exogibbs/data/test/testdata.dat",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "03247c56b88beefc39b083a7b4512fe91d32dbcebe953f622264ffc0d635998f"
+    },
+    {
+      "path": "src/exogibbs/data/ykb4/gibbs_matrices.npz",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "2a23ba342773165e384124ad1521b7e6ffdc89b8226bd0d1e4713c2547d03dbf"
+    },
+    {
+      "path": "src/exogibbs/data/ykb4/molecule_names.csv",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "d141b9de2a5e24ddbb6fd81dbe6bfb338d58457e47a4b994f993421d48bde24a"
+    },
+    {
+      "path": "src/exogibbs/data/young2023/standard_states.json",
+      "status": "current",
+      "role": "model",
+      "expected": "58f3316689b53eaae31e903be46174d68f0a21defe155fd38f3db5edd35df5c0",
+      "actual": "58f3316689b53eaae31e903be46174d68f0a21defe155fd38f3db5edd35df5c0"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "63a05e6341d70e90ab683936f8fb02604804d0ef6a807e7f6c13df2e62f9d058"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "1b0680b4c0841f749f017392e0e93b275f2eb315a41d99bc64e58685dfeb5a35"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/acceptance.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "eec671d6826e45ad49011f1ddb4c86f5d21d73448f8d8d0bb82ace38bf565c6f"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/amount_gauge.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "644025eccf0db960b3b9ef008d8b172bf25755c000c5f1b2e81b161c964b6f66"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/audit.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "81f646e7576bfd61f222f74bd7c7a9292f335900f29a192a37606ae1ebe24674"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "39b754248deefbd94adbdcfd0bcf83baf06d7037092da19169a8e17b4e1e5c51"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/autodiff.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "3517dd8458cd0957c2e829db6baca975105cc8a75c9445299e67f13dcf590377"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/batch.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "f9f6df6e150bca66f563d759b6d1c597a5861d51701b0a7d4cd3abce3a8a2b43"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/continuation.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "dafead03bd26ef4d81394ac3526ce6dbf80ee4843321df6df3c21e4ce0679cf4"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/controller.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "de831ac8981e4e001817bd583dba3335800be661d21b7f1c8bffae48262b6950"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/filter.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "730d89d620d6919000dfc0555a473e1a1ca5c580d2c6c0d3a50f4d7df1309f81"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/linear_solver.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "85dcc656d15432f41f66f99c5804c9cae2c6f5cb5fb167e0161d39532c676ed8"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/normal.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "6e556ea8b0869bffc3646db6a427aa52adf71ab7089e26daac4b638c2e66f443"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/problem.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "f5052961aeea57f899cb0b6373b6a368296da5d846a43ab77c2f3fa8adda49c1"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/restoration.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "86aa3dde2e5dcff2989e77f4fc65e96f876d83aff8f844d582559490f7e1685f"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/return_map.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e23b9c7ff2a8b88676e3c75fdbc348be4c39bb51d484877ad65e919913552d47"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/soc.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "8df2974594f39f0e4b6b58ae9507c45201ddf26401b112f7933c760a397539c7"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/types.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e7a60fa905034edb1ab4685e9b85d2d81c59b45edeb10f9f67b75f4308ac7b76"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ed090f5acf07891cb14e8fee31c5bb908a318596199da1aff3282cf71fbddf00"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier_attempt.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "52f3694e8495ec908629263d48ebf98bd8b36217be7d5079c460c253557d0e49"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier_contracts.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "3ee76cb50878795ebeab955e796ebc9e782fe050980de08d504ff7ce9e55336a"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/initialization.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "b591105ab59fd96e0ffbec2230ad0d768a64e93c63300057fea5c93cb29f2424"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/inventory_bridge.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "bb38b050cd41888178b8c66c2434833856235931cdcd4540ab6e55347fe76626"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/lifecycle.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "65d1e412fc1f9fe5e0f97dc2318301d8f61fc34c50c4a0c60efce9a6a220db78"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/policy.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "bafcec53de35ede0e640fe2b463a918b5be79551c77422701f99d0420dd44094"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/profile.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "4fe03228f62826a8c5fe3e9f26144429229a051218f6d2b8c1bf8dfc3d1ba719"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/results.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "b43a8cda902bddd4a05a5e3ab1c1ccc53f813fc32d44da9168cc0e4357b2a4d1"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/setup.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "1b4cc1f200364794dd900e61a681e9f9bc88e8d6aca59bf73492fbc3d922e60c"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/solve.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "90bbd200fdbc82b61484f92e263afa2a6f350be55145f40ec92d9fbf26a16a22"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/support.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ee4d11e55e284a33e06077e98702f3069779aefa434f65d32561660107919f86"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/support_geometry.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "495bd3380f97b30c9e77a8a3e956994119e468bcbc784f8bb6ef2bb7e23ba232"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/condensate/types.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "3024ec1f998a5b2ebbc6c75906de50ce792bf473e727cbd22c4d792e5259ac04"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/grid/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/grid/build.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/grid/initialization.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/grid/interpolation.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/grid/service.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/grid/storage.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/grid/types.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/initialization.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/kernel/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/kernel/autodiff.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/kernel/diagnostics.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/kernel/equations.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/kernel/sensitivities.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/kernel/solver.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/profile.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/solve.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/gas/types.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/multiphase/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "2653a62ccf45aba4fa715482fce432be1f53801696e703f9b14c5cca74694825"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/multiphase/implicit.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "4bfcc1522090c4fbe5ee12a68af8203b6c0f124d860da260abd1fe71e336d268"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/multiphase/kernel.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "8f0bca9814e373a912e93e3af539ea1a86359bf256e46ed38cb77f5b383b4688"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/multiphase/selection.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "14679cc476a03107482fe96fbc66e6be99fb5fd50e6493fb96cf16b513af230c"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/multiphase/solve.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e2d78c15390836b9e0339ca0982e336af2c7243391f55a7f074be83357a47d0f"
+    },
+    {
+      "path": "src/exogibbs/equilibrium/multiphase/types.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "8ad67625904e13b174812f36fa38734bec6584cf5bbc9e5fb388a844476d27ab"
+    },
+    {
+      "path": "src/exogibbs/exogibbs_version.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "5c5991f1c16d31b7efe4e982aabb601ee7ac58a36ca25d4ec0d4650dde71f71e"
+    },
+    {
+      "path": "src/exogibbs/experimental/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "06ef85d98b7a53c868349d3c30ec3e1a4b932c656ed71f04598d6aefb13813aa"
+    },
+    {
+      "path": "src/exogibbs/experimental/condensate.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "0787bde6b61749d11f6c36045af41d042bf2fa3ff393b4998fbea26da2306ce2"
+    },
+    {
+      "path": "src/exogibbs/experimental/magma_gas/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "df0f84650638bc8f8379c9753c7290d1a843ed04f85e848053fdacbfbd740dca"
+    },
+    {
+      "path": "src/exogibbs/experimental/magma_gas/meltyq_basis.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "cc71de3b06249cead9ed0347dfee1f7498018d2ff5826f42f9cefeb254fd1b6c"
+    },
+    {
+      "path": "src/exogibbs/experimental/magma_gas/setup.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "d735fbeeacce1218f2cb6412de081555fcc4ab5312c2130bb2f918ad5ab4ec9d"
+    },
+    {
+      "path": "src/exogibbs/experimental/magma_gas/solve.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ef6bbd2a5e1f41a48add40279b50e4512b4990c4cbcfc2e0a2788142d00d1623"
+    },
+    {
+      "path": "src/exogibbs/experimental/magma_gas/types.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "142db7f379f253324cd29492571286568c5e5b5941ebe94f632ca01580065bbd"
+    },
+    {
+      "path": "src/exogibbs/interop/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "f699e7c5285b4741b6f0854c74bcbb407e28c6a85533808a68b98104560490b6"
+    },
+    {
+      "path": "src/exogibbs/interop/exoeos.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "03a624ffbcfd404f81d498c350a20627335e50772ef07b8596b6dc2e1043afcb"
+    },
+    {
+      "path": "src/exogibbs/io/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/exogibbs/io/load_data.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e6c9333d71a5179b20b9d71847c175028c02628f00b1475c00c7ead9761fe7ac"
+    },
+    {
+      "path": "src/exogibbs/math/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/exogibbs/math/nonzeromath.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "de71acd378a30e59e6f0dc03d4263df7b464b090c094746dd0ccbb8c81fa9d02"
+    },
+    {
+      "path": "src/exogibbs/optimize/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/exogibbs/optimize/core.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e495c36d360cb1aa308f237c360630770dd8f2f57a13367b1ba9a8b0266fd6f3"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "4d6705812c6567ce14be5a90757838d8549eb6bb3baae1e884f434180a4226af"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/continuation.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "1fabe62e505bf5d3ba300a0a0068c1af40213cad6fc77e578e2e3153c95378a5"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/controller.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "3f74bd8485510000d2dfa6aa67559a35d88ccbb5e983cfad7d8b458ea5d4fe50"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/filter.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "ecc171b5956c5fae6cd24994dc4b7e2ce8c406afdb3a011541bc8f9415605892"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/linear_solver.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "b7b92c7ec0503deab629495de96596d57d541a7e1cfbbf92ace82301c41ed0dc"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/normal.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "d498442d7df2bfda054dbef3453861ceb93c7b0f4f79a4516c15ecb3c58d1516"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/problem.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "29f837ae6ad891db38e076fd37cd4578e3b98b0eea144aa292d1ee2a12da4fef"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/restoration.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "a72b3c64fd13ed62878b1b5233b007cf053a3e5597eff1c53bcc837e2fe771c3"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/return_map.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "6032e18659dfa8445f48216c3229698646b1eebc9c8b775931a1e01d50daec08"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/soc.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "a0ec03db32010a7c36ce0de07fc506d7d2c2bf7551c1f71c6cd84d43ce8c7e48"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2/types.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "7fbe8be59f15d0ca1d4542856ca547971bda74c159ea79ffddb949aef8a49cb0"
+    },
+    {
+      "path": "src/exogibbs/optimize/fixed_support_v2_profile.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "c87cd72b83153b0d8b61cf10e747f1dc866fee05e8f13daf8dabfd94180e073c"
+    },
+    {
+      "path": "src/exogibbs/optimize/minimize.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "921c6b00ac21ca4872147db21bd4d0099f7c2b079dbca62625d1ae804bb78ae8"
+    },
+    {
+      "path": "src/exogibbs/optimize/stepsize.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "4796c4c231d20ef4f0c88fb27335c17ebd2b479497214450f7fe33c79d7a9765"
+    },
+    {
+      "path": "src/exogibbs/optimize/vjpgibbs.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "d378d40302762a39ceb030cb384024785320b335cb2d733955b8226a575a56a3"
+    },
+    {
+      "path": "src/exogibbs/presets/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/exogibbs/presets/_condensate.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "f2a9b2ed7e36584243fe66a5acd0a6c7ef724df1980b2a81226625bbeefc1edf"
+    },
+    {
+      "path": "src/exogibbs/presets/curated.py",
+      "status": "current",
+      "role": "model",
+      "expected": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+      "actual": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546"
+    },
+    {
+      "path": "src/exogibbs/presets/fastchem.py",
+      "status": "current",
+      "role": "model",
+      "expected": "c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3",
+      "actual": "c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3"
+    },
+    {
+      "path": "src/exogibbs/presets/fastchem4.py",
+      "status": "current",
+      "role": "model",
+      "expected": "9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76",
+      "actual": "9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76"
+    },
+    {
+      "path": "src/exogibbs/presets/fastchem4_cond.py",
+      "status": "current",
+      "role": "model",
+      "expected": "705e6e1230f9bbcedd7a8e2f6859a1c834ef6599d99926445d9b5396e4849639",
+      "actual": "705e6e1230f9bbcedd7a8e2f6859a1c834ef6599d99926445d9b5396e4849639"
+    },
+    {
+      "path": "src/exogibbs/presets/fastchem_cond.py",
+      "status": "current",
+      "role": "model",
+      "expected": "14593a71b0c23650a4b0c25dbbf4dcf2125a13bd52e9503f7faf683839af9357",
+      "actual": "14593a71b0c23650a4b0c25dbbf4dcf2125a13bd52e9503f7faf683839af9357"
+    },
+    {
+      "path": "src/exogibbs/presets/magma_gas.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "638ab65fb7a0fa3c03dbc5bd46c9135932c24d68c04ddaed3552f36d07df9ef0"
+    },
+    {
+      "path": "src/exogibbs/presets/ykb4.py",
+      "status": "current",
+      "role": "model",
+      "expected": "86e0a7670635245034a1cbc2164a856634ee7372df9fc38606d961fe626ddd4a",
+      "actual": "86e0a7670635245034a1cbc2164a856634ee7372df9fc38606d961fe626ddd4a"
+    },
+    {
+      "path": "src/exogibbs/solubility/__init__.py",
+      "status": "current",
+      "role": "support",
+      "expected": "8800e1d54f0f23bc49f38b1d3efa71eeb313fc4b9d879a181eef8dcfcc5e5342",
+      "actual": "8800e1d54f0f23bc49f38b1d3efa71eeb313fc4b9d879a181eef8dcfcc5e5342"
+    },
+    {
+      "path": "src/exogibbs/solubility/meltyq.py",
+      "status": "current",
+      "role": "support",
+      "expected": "51157df00ae182446ff4376345fc9e83acdf03697a27d79a299cb8b9f027c292",
+      "actual": "51157df00ae182446ff4376345fc9e83acdf03697a27d79a299cb8b9f027c292"
+    },
+    {
+      "path": "src/exogibbs/solubility/sun_yao2026.py",
+      "status": "current",
+      "role": "model",
+      "expected": "965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb",
+      "actual": "965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb"
+    },
+    {
+      "path": "src/exogibbs/solubility/volatile.py",
+      "status": "current",
+      "role": "model",
+      "expected": "8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da",
+      "actual": "8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da"
+    },
+    {
+      "path": "src/exogibbs/test/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/exogibbs/test/analytic_hcosystem.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e3b937db694554041844257a61b24bf13770c96a5bee1d799865d630a6d055e7"
+    },
+    {
+      "path": "src/exogibbs/test/analytic_hsystem.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "056e7a6e61f323f28a71592caa08ce410f95c06c9205d6a78ed9224c6c781954"
+    },
+    {
+      "path": "src/exogibbs/test/generate_gibbs.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "711a7674d7ed826a19a7ac4f659cddec0bb321875867d5a92dad62b9a1db0e18"
+    },
+    {
+      "path": "src/exogibbs/test/reference_data.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "c956ecd888bf3e10b3aa54445a9f435e03b7d37f12d0b8339cf9e082e0197ce8"
+    },
+    {
+      "path": "src/exogibbs/thermo/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/exogibbs/thermo/composition.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "77d4fe5c05f7adc3ce9f98f0761aabecd21ded9d75e13be9d445a7482073fa8f"
+    },
+    {
+      "path": "src/exogibbs/thermo/fugacity.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "85348725ac895bec2cd653520cf795de5e10aa9d1b1d9afed1d9205b1480e31e"
+    },
+    {
+      "path": "src/exogibbs/thermo/gibbs.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "89797eea4862c5f72f9422691d0fe947e06c3427f31cf8bdc6bb78e38740dc71"
+    },
+    {
+      "path": "src/exogibbs/thermo/ideal_gibbs.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "8fcd8f9cedda2ee6f84922e1e3e568f4e1fa0ac189513db18c1d5b73988b2731"
+    },
+    {
+      "path": "src/exogibbs/thermo/janaf_atomic.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "bc54939e872bac5b1adc82713ae5df1bb504edf3ccc2779bff77cbfa0bf1f9ae"
+    },
+    {
+      "path": "src/exogibbs/thermo/models.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48"
+    },
+    {
+      "path": "src/exogibbs/thermo/oxygen_fugacity.py",
+      "status": "current",
+      "role": "model",
+      "expected": "ff86e298974c199e62e5807542a189bb788f804bb0966b11aaa5b9141150d311",
+      "actual": "ff86e298974c199e62e5807542a189bb788f804bb0966b11aaa5b9141150d311"
+    },
+    {
+      "path": "src/exogibbs/thermo/potential.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "027e142a6e8158219eaa9690f2cd15d23a606b919000e387e3708405d4a231c4"
+    },
+    {
+      "path": "src/exogibbs/thermo/standard.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1"
+    },
+    {
+      "path": "src/exogibbs/thermo/stoichiometry.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "8b3dc769db8e89859ddff3fad26a724a41faec2f1b5b99d96d435799554fd254"
+    },
+    {
+      "path": "src/exogibbs/thermo/young2023.py",
+      "status": "current",
+      "role": "model",
+      "expected": "fad14a9b778821851639072faa16270f5a333be7a03b7ad25e24e6220b74ed14",
+      "actual": "fad14a9b778821851639072faa16270f5a333be7a03b7ad25e24e6220b74ed14"
+    },
+    {
+      "path": "src/exogibbs/utils/__init__.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src/exogibbs/utils/constants.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "006f1d727a4b5442c72431b0f8bf132f7a9570b1dc9d197512171c77a4d2dc1b"
+    },
+    {
+      "path": "src/exogibbs/utils/elements.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "cf7714ca683370ee9607d7c9b183e3e49ebeb611c0d62aac35ac239e6d9225dd"
+    },
+    {
+      "path": "src/exogibbs/utils/fastchem_parity.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "6c88bca8effd17c3fd27dc364a0e0677bc14cc4b547919b0aa59ae0481a5115d"
+    },
+    {
+      "path": "src/exogibbs/utils/interpolation.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "f8a564dcf8dd1c39acf8df6e313b5a458e7b2078a6e599e5ebe24825495e0f06"
+    },
+    {
+      "path": "src/exogibbs/utils/nameparser.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "81dc8b6916a8b213ed074f9afc7c0d2fa19d4c1bb5bf7bacfea96ea5af4f876a"
+    },
+    {
+      "path": "src/exogibbs/utils/units.py",
+      "status": "needs_review",
+      "role": null,
+      "expected": null,
+      "actual": "5cb53d0c444c90de9d8f697641d83f28275a6e661bd0197e44a6ca66a9fd1efd"
+    }
+  ],
+  "models": [
+    {
+      "id": "exogibbs.h2_solubility",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/solubility/volatile.py",
+          "symbol": "h2_hirschmann2012",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/h2_solubility.yaml",
+          "model_id": "exogibbs.h2_hirschmann2012"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.h2o_lichtenberg2021",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/solubility/volatile.py",
+          "symbol": "h2o_lichtenberg2021",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/h2o_lichtenberg2021.yaml",
+          "model_id": "exogibbs.h2o_lichtenberg2021.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.co2_lichtenberg2021",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/solubility/volatile.py",
+          "symbol": "co2_lichtenberg2021",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/co2_lichtenberg2021.yaml",
+          "model_id": "exogibbs.co2_lichtenberg2021.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.co_yoshioka2019",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/solubility/volatile.py",
+          "symbol": "co_yoshioka2019",
+          "settings": {}
+        },
+        {
+          "path": "src/exogibbs/solubility/volatile.py",
+          "symbol": "ln_co_yoshioka2019",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/co_yoshioka2019.yaml",
+          "model_id": "exogibbs.co_yoshioka2019.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.ch4_ardia2013",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/solubility/volatile.py",
+          "symbol": "ch4_ardia2013",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/ch4_ardia2013.yaml",
+          "model_id": "exogibbs.ch4_ardia2013.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.n2_dasgupta2022",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/solubility/volatile.py",
+          "symbol": "n2_dasgupta2022",
+          "settings": {}
+        },
+        {
+          "path": "src/exogibbs/solubility/volatile.py",
+          "symbol": "ln_n2_dasgupta2022",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/n2_dasgupta2022.yaml",
+          "model_id": "exogibbs.n2_dasgupta2022.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.h2o_sun_yao2026",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/solubility/sun_yao2026.py",
+          "symbol": "h2o_sun_yao2026",
+          "settings": {}
+        },
+        {
+          "path": "src/exogibbs/solubility/sun_yao2026.py",
+          "symbol": "h2o_sun_yao2026_terms",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/h2o_sun_yao2026.yaml",
+          "model_id": "exogibbs.h2o_sun_yao2026.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.atomic_ion_reference",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "examples/comparisons/audit_atomic_ions.py",
+          "symbol": "reference_log_kp",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/atomic_ion_reference.yaml",
+          "model_id": "exogibbs.atomic_ion_reference.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.atomic_ion_adoption",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "examples/comparisons/select_atomic_ions.py",
+          "symbol": "compute_adoption",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/atomic_ion_adoption.yaml",
+          "model_id": "exogibbs.atomic_ion_adoption.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.major_molecule_adoption",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "examples/comparisons/select_major_molecules.py",
+          "symbol": "compute_adoption",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/major_molecule_adoption.yaml",
+          "model_id": "exogibbs.major_molecule_adoption.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.gas_thermochemistry_impact",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "examples/comparisons/compare_gas_thermochemistry.py",
+          "symbol": "build_study",
+          "settings": {}
+        },
+        {
+          "path": "examples/comparisons/compare_gas_thermochemistry.py",
+          "symbol": "run_exogibbs",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/gas_thermochemistry_impact.yaml",
+          "model_id": "exogibbs.gas_thermochemistry_impact.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.curated_gas.ions_true",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/presets/curated.py",
+          "symbol": "chemsetup",
+          "settings": {
+            "ions": true
+          }
+        },
+        {
+          "path": "src/exogibbs/data/curated/gas_v1.json",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/curated_gas.yaml",
+          "model_id": "exogibbs.curated_gas.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.curated_gas.ions_false",
+      "registration": "registered",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/presets/curated.py",
+          "symbol": "chemsetup",
+          "settings": {
+            "ions": false
+          }
+        },
+        {
+          "path": "src/exogibbs/data/curated/gas_v1.json",
+          "settings": {}
+        }
+      ],
+      "contracts": [
+        {
+          "path": "mceg/contracts/curated_gas.yaml",
+          "model_id": "exogibbs.curated_gas.v1"
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.presets.fastchem",
+      "registration": "uncontracted",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/presets/fastchem.py",
+          "symbol": "chemsetup",
+          "settings": {}
+        }
+      ],
+      "contracts": []
+    },
+    {
+      "id": "exogibbs.presets.fastchem4",
+      "registration": "uncontracted",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/presets/fastchem4.py",
+          "symbol": "chemsetup",
+          "settings": {}
+        }
+      ],
+      "contracts": []
+    },
+    {
+      "id": "exogibbs.presets.ykb4",
+      "registration": "uncontracted",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/presets/ykb4.py",
+          "symbol": "chemsetup",
+          "settings": {}
+        }
+      ],
+      "contracts": []
+    },
+    {
+      "id": "exogibbs.presets.fastchem_cond",
+      "registration": "uncontracted",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/presets/fastchem_cond.py",
+          "symbol": "chemsetup",
+          "settings": {}
+        }
+      ],
+      "contracts": []
+    },
+    {
+      "id": "exogibbs.presets.fastchem4_cond",
+      "registration": "uncontracted",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/presets/fastchem4_cond.py",
+          "symbol": "chemsetup",
+          "settings": {}
+        }
+      ],
+      "contracts": []
+    },
+    {
+      "id": "exogibbs.meltyq_magma_gas",
+      "registration": "uncontracted",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/applications/magma_gas/models/meltyq/model.py",
+          "symbol": "MeltyqMagmaGasModel",
+          "settings": {}
+        },
+        {
+          "path": "src/exogibbs/applications/magma_gas/models/meltyq/basis.py",
+          "settings": {}
+        },
+        {
+          "path": "src/exogibbs/applications/magma_gas/models/meltyq/setup.py",
+          "symbol": "prepare_meltyq_chemistry",
+          "settings": {}
+        }
+      ],
+      "contracts": []
+    },
+    {
+      "id": "exogibbs.oxygen_fugacity_iw",
+      "registration": "uncontracted",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/thermo/oxygen_fugacity.py",
+          "symbol": "log10_oxygen_fugacity_iw_hirschmann2021",
+          "settings": {}
+        },
+        {
+          "path": "src/exogibbs/thermo/oxygen_fugacity.py",
+          "symbol": "delta_iw_hirschmann2021",
+          "settings": {}
+        }
+      ],
+      "contracts": []
+    },
+    {
+      "id": "exogibbs.young2023_standards",
+      "registration": "uncontracted",
+      "source_status": "current",
+      "bindings": [
+        {
+          "path": "src/exogibbs/thermo/young2023.py",
+          "symbol": "standard_potentials_rt",
+          "settings": {}
+        },
+        {
+          "path": "src/exogibbs/thermo/young2023.py",
+          "symbol": "supplementary_gas_standard_rt",
+          "settings": {}
+        },
+        {
+          "path": "src/exogibbs/data/young2023/standard_states.json",
+          "settings": {}
+        }
+      ],
+      "contracts": []
+    }
+  ],
+  "issues": [
+    {
+      "kind": "uncontracted_model",
+      "path": null,
+      "model": "exogibbs.meltyq_magma_gas",
+      "message": "No contract is linked to this model"
+    },
+    {
+      "kind": "uncontracted_model",
+      "path": null,
+      "model": "exogibbs.oxygen_fugacity_iw",
+      "message": "No contract is linked to this model"
+    },
+    {
+      "kind": "uncontracted_model",
+      "path": null,
+      "model": "exogibbs.presets.fastchem",
+      "message": "No contract is linked to this model"
+    },
+    {
+      "kind": "uncontracted_model",
+      "path": null,
+      "model": "exogibbs.presets.fastchem4",
+      "message": "No contract is linked to this model"
+    },
+    {
+      "kind": "uncontracted_model",
+      "path": null,
+      "model": "exogibbs.presets.fastchem4_cond",
+      "message": "No contract is linked to this model"
+    },
+    {
+      "kind": "uncontracted_model",
+      "path": null,
+      "model": "exogibbs.presets.fastchem_cond",
+      "message": "No contract is linked to this model"
+    },
+    {
+      "kind": "uncontracted_model",
+      "path": null,
+      "model": "exogibbs.presets.ykb4",
+      "message": "No contract is linked to this model"
+    },
+    {
+      "kind": "uncontracted_model",
+      "path": null,
+      "model": "exogibbs.young2023_standards",
+      "message": "No contract is linked to this model"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/chemistry.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/condensate.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/condensate_equilibrium.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/equilibrium.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/equilibrium_grid.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/gas.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/magma_gas.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/multiphase.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/api/potential.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/applications/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/applications/magma_gas/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/applications/magma_gas/_root.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/applications/magma_gas/models/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/applications/magma_gas/models/meltyq/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/applications/magma_gas/models/meltyq/types.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/applications/magma_gas/solve.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/applications/magma_gas/types.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/condensates/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/condensates/fixed_support_payload.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/condensates/fixed_support_v2_policy.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/condensates/initialization_policy.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/condensates/native_bundle.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/condensates/support_selection_policy.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/README.md",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2009.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2009_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2009_full.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2021_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/asplund_2021_full.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2003.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2003_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2003_full.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2025.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2025_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/element_abundances/lodders_2025_full.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/logK/logK.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/logK/logK_condensates.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/logK/logK_condensates_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/logK/logK_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/logK/logK_extended_wo_ions.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/logK/logK_hoeijmakers2019.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/curated/README.rst",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/README.md",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/element_abundances/README.TXT",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/element_abundances/asplund_2009.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/element_abundances/asplund_2009_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/element_abundances/asplund_2020.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/element_abundances/asplund_2020_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/element_abundances/lodders_2003.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/element_abundances/lodders_2003_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/logK/README.TXT",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/logK/logK.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/logK/logK_condensates.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/logK/logK_extended.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/fastchem/logK/logK_wo_ions.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/grids/fastchem/grid_exogibbs.nc",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/grids/fastchem_extended/grid_exogibbs_extended.nc",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/janaf/atomic.json",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/nasa9/LICENSE.txt",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/nasa9/NOTICE.txt",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/nasa9/README.md",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/nasa9/fastchem4_hot.json",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/sharp_huebner/README.md",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/sharp_huebner/condcoeff.csv",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/sharp_huebner/condcoeff_melilite.csv",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/sharp_huebner/gascoeff.csv",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/sharp_huebner/metallicity.csv",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/test/janaf_raw_sample.txt",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/test/matrix_v3.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/test/testdata.dat",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/ykb4/gibbs_matrices.npz",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/data/ykb4/molecule_names.csv",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/acceptance.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/amount_gauge.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/audit.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/autodiff.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/batch.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/continuation.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/controller.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/filter.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/linear_solver.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/normal.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/problem.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/restoration.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/return_map.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/soc.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/types.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier_attempt.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier_contracts.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/initialization.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/inventory_bridge.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/lifecycle.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/policy.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/profile.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/results.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/setup.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/solve.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/support.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/support_geometry.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/condensate/types.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/grid/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/grid/build.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/grid/initialization.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/grid/interpolation.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/grid/service.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/grid/storage.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/grid/types.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/initialization.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/kernel/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/kernel/autodiff.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/kernel/diagnostics.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/kernel/equations.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/kernel/sensitivities.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/kernel/solver.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/profile.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/solve.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/gas/types.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/multiphase/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/multiphase/implicit.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/multiphase/kernel.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/multiphase/selection.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/multiphase/solve.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/equilibrium/multiphase/types.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/exogibbs_version.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/experimental/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/experimental/condensate.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/experimental/magma_gas/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/experimental/magma_gas/meltyq_basis.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/experimental/magma_gas/setup.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/experimental/magma_gas/solve.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/experimental/magma_gas/types.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/interop/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/interop/exoeos.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/io/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/io/load_data.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/math/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/math/nonzeromath.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/core.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/continuation.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/controller.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/filter.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/linear_solver.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/normal.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/problem.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/restoration.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/return_map.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/soc.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2/types.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/fixed_support_v2_profile.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/minimize.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/stepsize.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/optimize/vjpgibbs.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/presets/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/presets/_condensate.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/presets/magma_gas.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/test/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/test/analytic_hcosystem.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/test/analytic_hsystem.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/test/generate_gibbs.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/test/reference_data.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/composition.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/fugacity.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/gibbs.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/ideal_gibbs.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/janaf_atomic.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/models.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/potential.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/standard.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/thermo/stoichiometry.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/utils/__init__.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/utils/constants.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/utils/elements.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/utils/fastchem_parity.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/utils/interpolation.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/utils/nameparser.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    },
+    {
+      "kind": "unreviewed_file",
+      "path": "src/exogibbs/utils/units.py",
+      "model": null,
+      "message": "Classify this file and review its model bindings"
+    }
+  ]
+}

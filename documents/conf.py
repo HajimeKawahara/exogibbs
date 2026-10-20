@@ -78,6 +78,7 @@ release = "0.7.0"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
+    "sphinx.ext.graphviz",
     "sphinxemoji.sphinxemoji",
     "sphinx_gallery.gen_gallery",
 ]
@@ -100,7 +101,9 @@ html_theme = "sphinx_rtd_theme"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+html_static_path = ["_static", "mceg/_generated/_static"]
+html_css_files = ["mceg.css"]
+graphviz_output_format = "svg"
 html_logo = "_static/exogibbs_logo.png"
 
 # html_theme_options = {
