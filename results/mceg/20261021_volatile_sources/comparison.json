@@ -1,0 +1,443 @@
+{
+  "review_date": "2026-10-21",
+  "provider_revision": "e817ec96d92b6439aabe4bdcc17c8fbe877b8e57",
+  "scope": "Formula comparisons only; no laboratory data, Julia or MATLAB execution.",
+  "relative_tolerance": 2e-12,
+  "absolute_tolerance": 0.0,
+  "environment": {
+    "python": "3.12.7",
+    "jax": "0.6.2",
+    "numpy": "2.1.0",
+    "backend": "cpu",
+    "x64": true
+  },
+  "selected_file_sha256": {
+    "src/exogibbs/solubility/volatile.py": "8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da",
+    "src/exogibbs/solubility/sun_yao2026.py": "965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb",
+    "mceg/reviews/volatile_source_review_20261021.py": "a36814e39d862bc09eebff24ac9c26596cf409bb6e67ccaa6cfab8f4bb32bc01"
+  },
+  "counts": {
+    "total": 29,
+    "consistent": 19,
+    "discrepant": 10
+  },
+  "comparisons": [
+    {
+      "model": "h2o_lichtenberg2021",
+      "reference": "lichtenberg2021",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "partial_pressure_pa": 100000.0
+      },
+      "output_basis": "species_mass_fraction",
+      "reference_value": 0.0007518817589971264,
+      "implementation_value": 0.0007518817589971265,
+      "implementation_over_reference": 1.0000000000000002,
+      "agrees": true
+    },
+    {
+      "model": "h2o_lichtenberg2021",
+      "reference": "lichtenberg2021",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "partial_pressure_pa": 1000000.0
+      },
+      "output_basis": "species_mass_fraction",
+      "reference_value": 0.002809049512772995,
+      "implementation_value": 0.0028090495127729973,
+      "implementation_over_reference": 1.0000000000000007,
+      "agrees": true
+    },
+    {
+      "model": "h2o_lichtenberg2021",
+      "reference": "lichtenberg2021",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "partial_pressure_pa": 10000000.0
+      },
+      "output_basis": "species_mass_fraction",
+      "reference_value": 0.010494680939906091,
+      "implementation_value": 0.010494680939906098,
+      "implementation_over_reference": 1.0000000000000007,
+      "agrees": true
+    },
+    {
+      "model": "h2o_lichtenberg2021",
+      "reference": "lichtenberg2021",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "partial_pressure_pa": 100000000.0
+      },
+      "output_basis": "species_mass_fraction",
+      "reference_value": 0.03920839683658822,
+      "implementation_value": 0.03920839683658818,
+      "implementation_over_reference": 0.9999999999999989,
+      "agrees": true
+    },
+    {
+      "model": "co2_lichtenberg2021",
+      "reference": "lichtenberg2021",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "partial_pressure_pa": 100000.0
+      },
+      "output_basis": "species_mass_fraction",
+      "reference_value": 1.9495336743396492e-08,
+      "implementation_value": 1.9495336743396522e-08,
+      "implementation_over_reference": 1.0000000000000016,
+      "agrees": true
+    },
+    {
+      "model": "co2_lichtenberg2021",
+      "reference": "lichtenberg2021",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "partial_pressure_pa": 1000000.0
+      },
+      "output_basis": "species_mass_fraction",
+      "reference_value": 4.903328221622925e-07,
+      "implementation_value": 4.903328221622926e-07,
+      "implementation_over_reference": 1.0000000000000002,
+      "agrees": true
+    },
+    {
+      "model": "co2_lichtenberg2021",
+      "reference": "lichtenberg2021",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "partial_pressure_pa": 10000000.0
+      },
+      "output_basis": "species_mass_fraction",
+      "reference_value": 1.2332501851812131e-05,
+      "implementation_value": 1.233250185181212e-05,
+      "implementation_over_reference": 0.999999999999999,
+      "agrees": true
+    },
+    {
+      "model": "co2_lichtenberg2021",
+      "reference": "lichtenberg2021",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "partial_pressure_pa": 100000000.0
+      },
+      "output_basis": "species_mass_fraction",
+      "reference_value": 0.00031017830145298745,
+      "implementation_value": 0.0003101783014529868,
+      "implementation_over_reference": 0.9999999999999979,
+      "agrees": true
+    },
+    {
+      "model": "ch4_ardia2013",
+      "reference": "seo2024",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "methane_fugacity_gpa": 0.1,
+        "melt_pressure_gpa": 0.7
+      },
+      "output_basis": "CH4_mole_fraction",
+      "reference_value": 1.2844625373438787e-05,
+      "implementation_value": 1.2844625373438802e-05,
+      "implementation_over_reference": 1.000000000000001,
+      "agrees": true
+    },
+    {
+      "model": "ch4_ardia2013",
+      "reference": "meltyq2026_A4",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "methane_fugacity_gpa": 0.1,
+        "melt_pressure_gpa": 0.7
+      },
+      "output_basis": "CH4_mole_fraction",
+      "reference_value": 0.128446253734388,
+      "implementation_value": 1.2844625373438802e-05,
+      "implementation_over_reference": 0.00010000000000000002,
+      "agrees": false
+    },
+    {
+      "model": "ch4_ardia2013",
+      "reference": "seo2024",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "methane_fugacity_gpa": 0.3,
+        "melt_pressure_gpa": 1.5
+      },
+      "output_basis": "CH4_mole_fraction",
+      "reference_value": 8.42781675785728e-06,
+      "implementation_value": 8.427816757857278e-06,
+      "implementation_over_reference": 0.9999999999999998,
+      "agrees": true
+    },
+    {
+      "model": "ch4_ardia2013",
+      "reference": "meltyq2026_A4",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "methane_fugacity_gpa": 0.3,
+        "melt_pressure_gpa": 1.5
+      },
+      "output_basis": "CH4_mole_fraction",
+      "reference_value": 0.08427816757857279,
+      "implementation_value": 8.427816757857278e-06,
+      "implementation_over_reference": 9.999999999999999e-05,
+      "agrees": false
+    },
+    {
+      "model": "ch4_ardia2013",
+      "reference": "seo2024",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "methane_fugacity_gpa": 1.0,
+        "melt_pressure_gpa": 3.0
+      },
+      "output_basis": "CH4_mole_fraction",
+      "reference_value": 1.625004456052794e-06,
+      "implementation_value": 1.625004456052794e-06,
+      "implementation_over_reference": 1.0,
+      "agrees": true
+    },
+    {
+      "model": "ch4_ardia2013",
+      "reference": "meltyq2026_A4",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "methane_fugacity_gpa": 1.0,
+        "melt_pressure_gpa": 3.0
+      },
+      "output_basis": "CH4_mole_fraction",
+      "reference_value": 0.01625004456052794,
+      "implementation_value": 1.625004456052794e-06,
+      "implementation_over_reference": 9.999999999999999e-05,
+      "agrees": false
+    },
+    {
+      "model": "co_yoshioka2019",
+      "reference": "yoshioka2019_abstract",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "carbon_monoxide_fugacity_bar": 1000.0
+      },
+      "output_basis": "elemental_C_mass_fraction",
+      "reference_value": 1.584893192461114e-05,
+      "implementation_value": 1.584893192461113e-05,
+      "implementation_over_reference": 0.9999999999999993,
+      "agrees": true
+    },
+    {
+      "model": "co_yoshioka2019",
+      "reference": "meltyq2026_A5",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "carbon_monoxide_fugacity_bar": 1000.0
+      },
+      "output_basis": "numeric_fraction_with_conflicting_species_label",
+      "reference_value": 1e-08,
+      "implementation_value": 1.584893192461113e-05,
+      "implementation_over_reference": 1584.8931924611131,
+      "agrees": false
+    },
+    {
+      "model": "co_yoshioka2019",
+      "reference": "yoshioka2019_abstract",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "carbon_monoxide_fugacity_bar": 10000.0
+      },
+      "output_basis": "elemental_C_mass_fraction",
+      "reference_value": 0.0001,
+      "implementation_value": 9.999999999999999e-05,
+      "implementation_over_reference": 0.9999999999999999,
+      "agrees": true
+    },
+    {
+      "model": "co_yoshioka2019",
+      "reference": "meltyq2026_A5",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "carbon_monoxide_fugacity_bar": 10000.0
+      },
+      "output_basis": "numeric_fraction_with_conflicting_species_label",
+      "reference_value": 6.30957344480193e-08,
+      "implementation_value": 9.999999999999999e-05,
+      "implementation_over_reference": 1584.893192461114,
+      "agrees": false
+    },
+    {
+      "model": "co_yoshioka2019",
+      "reference": "yoshioka2019_abstract",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "carbon_monoxide_fugacity_bar": 100000.0
+      },
+      "output_basis": "elemental_C_mass_fraction",
+      "reference_value": 0.000630957344480193,
+      "implementation_value": 0.0006309573444801933,
+      "implementation_over_reference": 1.0000000000000004,
+      "agrees": true
+    },
+    {
+      "model": "co_yoshioka2019",
+      "reference": "meltyq2026_A5",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "carbon_monoxide_fugacity_bar": 100000.0
+      },
+      "output_basis": "numeric_fraction_with_conflicting_species_label",
+      "reference_value": 3.981071705534969e-07,
+      "implementation_value": 0.0006309573444801933,
+      "implementation_over_reference": 1584.893192461115,
+      "agrees": false
+    },
+    {
+      "model": "co_yoshioka2019",
+      "reference": "yoshioka_thesis2018",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "carbon_monoxide_fugacity_bar": 1000.0
+      },
+      "output_basis": "elemental_C_mass_fraction",
+      "reference_value": 1.2882495516931337e-05,
+      "implementation_value": 1.584893192461113e-05,
+      "implementation_over_reference": 1.2302687708123816,
+      "agrees": false
+    },
+    {
+      "model": "co_yoshioka2019",
+      "reference": "yoshioka_thesis2018",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "carbon_monoxide_fugacity_bar": 100000.0
+      },
+      "output_basis": "elemental_C_mass_fraction",
+      "reference_value": 0.0011748975549395304,
+      "implementation_value": 0.0006309573444801933,
+      "implementation_over_reference": 0.5370317963702524,
+      "agrees": false
+    },
+    {
+      "model": "n2_dasgupta2022",
+      "reference": "meltyq2026_A6",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "nitrogen_partial_pressure_gpa": 0.1,
+        "temperature_k": 1873.0,
+        "melt_pressure_gpa": 0.5,
+        "delta_iw": -2.0,
+        "x_sio2": 0.56,
+        "x_al2o3": 0.11,
+        "x_tio2": 0.01
+      },
+      "output_basis": "elemental_N_mass_fraction",
+      "reference_value": 7.823599227350667e-05,
+      "implementation_value": 0.00011285694625789113,
+      "implementation_over_reference": 1.442519523026594,
+      "agrees": false
+    },
+    {
+      "model": "n2_dasgupta2022",
+      "reference": "meltyq2026_A6",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "nitrogen_partial_pressure_gpa": 0.1,
+        "temperature_k": 1873.0,
+        "melt_pressure_gpa": 1.0,
+        "delta_iw": -2.0,
+        "x_sio2": 0.56,
+        "x_al2o3": 0.11,
+        "x_tio2": 0.01
+      },
+      "output_basis": "elemental_N_mass_fraction",
+      "reference_value": 0.00022249697044545471,
+      "implementation_value": 0.0002224969704454547,
+      "implementation_over_reference": 0.9999999999999999,
+      "agrees": true
+    },
+    {
+      "model": "n2_dasgupta2022",
+      "reference": "meltyq2026_A6",
+      "purpose": "alternative_expression",
+      "inputs": {
+        "nitrogen_partial_pressure_gpa": 0.1,
+        "temperature_k": 1873.0,
+        "melt_pressure_gpa": 2.0,
+        "delta_iw": -2.0,
+        "x_sio2": 0.56,
+        "x_al2o3": 0.11,
+        "x_tio2": 0.01
+      },
+      "output_basis": "elemental_N_mass_fraction",
+      "reference_value": 0.004301867184486488,
+      "implementation_value": 0.0007122088887304602,
+      "implementation_over_reference": 0.16555808401032174,
+      "agrees": false
+    },
+    {
+      "model": "h2o_sun_yao2026",
+      "reference": "magemin_pinned",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "water_partial_pressure_bar": 1.0,
+        "temperature_k": 1373.0,
+        "melt_pressure_bar": 1000.0,
+        "x_na2o": 0.03,
+        "x_al2o3": 0.1
+      },
+      "output_basis": "H2O_equivalent_mass_fraction",
+      "reference_value": 0.0007796489575224205,
+      "implementation_value": 0.0007796489575224205,
+      "implementation_over_reference": 1.0,
+      "agrees": true
+    },
+    {
+      "model": "h2o_sun_yao2026",
+      "reference": "magemin_pinned",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "water_partial_pressure_bar": 100.0,
+        "temperature_k": 1673.0,
+        "melt_pressure_bar": 3000.0,
+        "x_na2o": 0.05,
+        "x_al2o3": 0.15
+      },
+      "output_basis": "H2O_equivalent_mass_fraction",
+      "reference_value": 0.008569654899817519,
+      "implementation_value": 0.008569654899817515,
+      "implementation_over_reference": 0.9999999999999996,
+      "agrees": true
+    },
+    {
+      "model": "h2o_sun_yao2026",
+      "reference": "magemin_pinned",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "water_partial_pressure_bar": 500.0,
+        "temperature_k": 1873.0,
+        "melt_pressure_bar": 10000.0,
+        "x_na2o": 0.01,
+        "x_al2o3": 0.08
+      },
+      "output_basis": "H2O_equivalent_mass_fraction",
+      "reference_value": 0.0158568460565143,
+      "implementation_value": 0.015856846056514304,
+      "implementation_over_reference": 1.0000000000000002,
+      "agrees": true
+    },
+    {
+      "model": "h2o_sun_yao2026",
+      "reference": "magemin_pinned",
+      "purpose": "adopted_expression",
+      "inputs": {
+        "water_partial_pressure_bar": 2000.0,
+        "temperature_k": 2173.15,
+        "melt_pressure_bar": 20000.0,
+        "x_na2o": 0.002,
+        "x_al2o3": 0.025
+      },
+      "output_basis": "H2O_equivalent_mass_fraction",
+      "reference_value": 0.03879584553140427,
+      "implementation_value": 0.03879584553140428,
+      "implementation_over_reference": 1.0000000000000002,
+      "agrees": true
+    }
+  ]
+}

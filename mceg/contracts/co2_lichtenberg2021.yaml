@@ -51,6 +51,13 @@ claims:
     composition and conditions.
   scope: Requires independent empirical data and explicit composition, reference-state and driving-quantity
     conventions; not established by this survey.
+- id: source_formula_agreement_20261021
+  revision: '1'
+  kind: numerical_verification
+  statement: The implementation agrees with the specified inspected reference expression at the recorded
+    samples.
+  scope: Four positive partial pressures compared with Lichtenberg Eq. 9/Table 1 after ppmw-to-mass-fraction
+    conversion; no experiment replay.
 evidence:
 - id: upstream_model
   kind: literature
@@ -132,6 +139,68 @@ evidence:
     - evidence: upstream_model
       comparison: not_checked
       note: Retain the source-review gap; metadata is not a validated application domain.
+- id: lichtenberg2021_20261021
+  kind: literature
+  summary: Published H2O and CO2 power-law compilation inspected.
+  sources:
+  - https://doi.org/10.1029/2020JE006711
+  - https://ora.ox.ac.uk/objects/uuid:fe730f0a-22f5-4b41-b387-4b21aaea6fd8/files/r1544bp515
+  scope: Primary evidence for the published fit, not for the underlying experiments. Eq. 9 uses surface
+    partial pressure in Pa; Fig. 2 gives melt abundance in ppmw. Table 1 gives H2O alpha=1.033, beta=1.747
+    and CO2 alpha=1.937e-9, beta=0.714. The tabulated alpha heading is not a general dimensional formula
+    for nonunit beta.
+  provenance:
+    role: primary
+    location: 'Printed/PDF pp. 6-7: Eq. 9, Table 1 and Fig. 2.'
+    inspection: inspected
+    note: Retrieved 2026-10-21; SHA-256 dcd3348966038c8e46320fbbfe7c8924d1419fd963abdb459c22500d8a2930b7.
+      Primary evidence for the published fit, not for the underlying experiments. Eq. 9 uses surface
+      partial pressure in Pa; Fig. 2 gives melt abundance in ppmw. Table 1 gives H2O alpha=1.033,
+      beta=1.747 and CO2 alpha=1.937e-9, beta=0.714. The tabulated alpha heading is not a general
+      dimensional formula for nonunit beta.
+- id: source_comparison_20261021
+  kind: implementation
+  summary: 'Invert Eq. 9 and multiply ppmw by 1e-6: w_CO2=1.937e-15*p_CO2[Pa]**(1/0.714), matching
+    the implementation.'
+  sources:
+  - src/exogibbs/solubility/volatile.py
+  - documents/mceg/volatile_sources.rst
+  scope: Four positive partial pressures compared with Lichtenberg Eq. 9/Table 1 after ppmw-to-mass-fraction
+    conversion; no experiment replay.
+  subject: survey_20261020
+  provenance:
+    role: implementation
+    location: Selected source passages and unchanged implementation; see the linked source locations.
+    inspection: inspected
+    note: 'Invert Eq. 9 and multiply ppmw by 1e-6: w_CO2=1.937e-15*p_CO2[Pa]**(1/0.714), matching
+      the implementation.'
+    derived_from:
+    - evidence: lichtenberg2021_20261021
+      comparison: consistent
+      note: 'Invert Eq. 9 and multiply ppmw by 1e-6: w_CO2=1.937e-15*p_CO2[Pa]**(1/0.714), matching
+        the implementation.'
+- id: source_comparison_run_20261021
+  kind: numerical_test
+  summary: 4/4 scoped formula comparisons agree.
+  sources:
+  - mceg/reviews/volatile_source_review_20261021.py
+  - results/mceg/20261021_volatile_sources/comparison.json
+  scope: Four positive partial pressures compared with Lichtenberg Eq. 9/Table 1 after ppmw-to-mass-fraction
+    conversion; no experiment replay.
+  result: passed
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  artifacts:
+  - source: mceg/reviews/volatile_source_review_20261021.py
+    sha256: a36814e39d862bc09eebff24ac9c26596cf409bb6e67ccaa6cfab8f4bb32bc01
+  - source: results/mceg/20261021_volatile_sources/comparison.json
+    sha256: 4770a809637e050c53d68d8a962d84f973a7f55fe146cf78eb03cdd62b59fec0
+  provenance:
+    role: primary
+    location: 'results/mceg/20261021_volatile_sources/comparison.json: comparisons with model=co2_lichtenberg2021.'
+    inspection: inspected
+    note: Fresh CPU/x64 execution of explicit reference expressions. Alternative-expression mismatches
+      remain in the report; no experimental rows or external runtime were replayed.
 limitations:
 - statement: Reported calibration intervals are marginal metadata; they do not establish a jointly
     validated temperature/pressure/composition rectangle.
@@ -179,6 +248,14 @@ contexts:
     backend: cpu
     x64: true
     test_selection: tests/unittests/solubility/meltyq_test.py
+- id: source_review_environment_20261021
+  scope: Offline scalar reference comparisons; joint input samples are in the saved report.
+  settings:
+    python: 3.12.7
+    jax: 0.6.2
+    numpy: 2.1.0
+    backend: cpu
+    x64: true
 conditions:
 - id: reported_temperature
   revision: '1'
@@ -260,6 +337,53 @@ assessments:
   - Numerical agreement and membership in metadata intervals do not establish physical accuracy.
   status: unknown
   origin: reviewed
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: source_formula_review_20261021
+  claim: source_formula_agreement_20261021
+  claim_revision: '1'
+  evidence:
+  - lichtenberg2021_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: supported
+  reasons:
+  - 4/4 scoped formula comparisons agree.
+  - Four positive partial pressures compared with Lichtenberg Eq. 9/Table 1 after ppmw-to-mass-fraction
+    conversion; no experiment replay.
+  - 'Invert Eq. 9 and multiply ppmw by 1e-6: w_CO2=1.937e-15*p_CO2[Pa]**(1/0.714), matching the implementation.'
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: physical_source_review_20261021
+  claim: physical_accuracy
+  claim_revision: '1'
+  evidence:
+  - lichtenberg2021_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: unknown
+  reasons:
+  - 'Invert Eq. 9 and multiply ppmw by 1e-6: w_CO2=1.937e-15*p_CO2[Pa]**(1/0.714), matching the implementation.'
+  - The published fit has been inspected; its underlying experiments have not been independently replayed.
+  - Formula agreement does not measure errors against observations. Existing marginal T/P metadata
+    and the historical empirical_scope task remain unchanged.
+  - Inspect the CO2 datasets cited in Table 1 (Mysen 1975, Stolper and Holloway 1988, Pan 1991, Blank
+    1993, Dixon 1995) for a chosen melt composition and joint T/P conditions; define uncertainty and
+    compare independent observations.
 follow_ups:
 - id: empirical_scope
   target_kind: claim
@@ -275,3 +399,39 @@ follow_ups:
     pass alone does not complete this task.
   sources:
   - https://doi.org/10.1029/2020JE006711
+- id: available_source_comparison_20261021
+  target_kind: evidence
+  target: upstream_model
+  action: Inspect the publicly retrievable source material and record the exact completed comparison
+    scope.
+  requires:
+  - Source locations, units, definitions and any version differences.
+  - A reproducible scoped comparison and explicit access gaps.
+  completion: New evidence identifies the inspected material, comparison results and remaining full-text
+    or empirical work.
+  sources:
+  - https://doi.org/10.1029/2020JE006711
+  - https://ora.ox.ac.uk/objects/uuid:fe730f0a-22f5-4b41-b387-4b21aaea6fd8/files/r1544bp515
+- id: remaining_source_work_20261021
+  target_kind: assessment
+  target: physical_source_review_20261021
+  action: Inspect the CO2 datasets cited in Table 1 (Mysen 1975, Stolper and Holloway 1988, Pan 1991,
+    Blank 1993, Dixon 1995) for a chosen melt composition and joint T/P conditions; define uncertainty
+    and compare independent observations.
+  requires:
+  - The identified original source or dataset and explicit comparison locations.
+  - A declared application with joint conditions, concentration basis and error criteria.
+  completion: Append a scoped assessment with the comparison results and remaining limitations; preserve
+    this source review.
+  sources:
+  - https://doi.org/10.1029/2020JE006711
+  - https://ora.ox.ac.uk/objects/uuid:fe730f0a-22f5-4b41-b387-4b21aaea6fd8/files/r1544bp515
+follow_up_resolutions:
+- follow_up: available_source_comparison_20261021
+  evidence:
+  - lichtenberg2021_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  note: 'Completed only the available-material review: Four positive partial pressures compared with
+    Lichtenberg Eq. 9/Table 1 after ppmw-to-mass-fraction conversion; no experiment replay. Underlying
+    experimental validation remains open. The separate empirical_scope follow-up is not resolved.'

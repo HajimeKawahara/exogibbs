@@ -63,6 +63,13 @@ claims:
     composition and conditions.
   scope: Requires independent empirical data and explicit composition, reference-state and driving-quantity
     conventions; not established by this survey.
+- id: source_formula_agreement_20261021
+  revision: '1'
+  kind: numerical_verification
+  statement: The implementation agrees with the specified inspected reference expression at the recorded
+    samples.
+  scope: Three diagnostics against literal MELTYQ A6; two discrepancies and a 1 GPa coincidence. No
+    original Dasgupta Eq. 10 comparison is claimed.
 evidence:
 - id: upstream_model
   kind: literature
@@ -148,6 +155,86 @@ evidence:
     - evidence: upstream_model
       comparison: not_checked
       note: Retain the source-review gap; metadata is not a validated application domain.
+- id: meltyq2026_20261021
+  kind: literature
+  summary: Later compilation inspected for unit and pressure-expression differences.
+  sources:
+  - https://doi.org/10.48550/arXiv.2605.08752
+  - https://arxiv.org/pdf/2605.08752v1
+  scope: 'Primary evidence only for what this compilation prints: A4 labels CH4 fugacity in bar, A5
+    labels CO fugacity in GPa and output as CO mass fraction, and A6 uses P_total/T rather than sqrt(P_total)/T.
+    These statements do not replace the cited experimental papers.'
+  provenance:
+    role: primary
+    location: 'arXiv v1, printed/PDF p. 17: Appendix A, Eqs. A4-A6.'
+    inspection: inspected
+    note: 'Retrieved 2026-10-21; SHA-256 ff53e7caa294aef02fdc6b62bb473ded06fe5cca312843c0b9568ee9ecc3f43e.
+      Primary evidence only for what this compilation prints: A4 labels CH4 fugacity in bar, A5 labels
+      CO fugacity in GPa and output as CO mass fraction, and A6 uses P_total/T rather than sqrt(P_total)/T.
+      These statements do not replace the cited experimental papers.'
+- id: original_fulltext_20261021
+  kind: literature
+  summary: Original full-text gap retained after public-source retrieval attempts.
+  sources:
+  - https://doi.org/10.1016/j.gca.2022.09.012
+  scope: The publisher full-text/PDF request returned HTTP 403; the author publication page links
+    back to that publisher. A candidate publisher manuscript endpoint did not resolve in this environment.
+    Original Eq. 10 and regression data remain unavailable.
+  provenance:
+    role: primary
+    location: Obtain Dasgupta et al. (2022) Eq. 10 and regression definitions. Resolve total P versus
+      sqrt(P), nitrogen partial pressure versus fugacity, ppm basis, delta-IW and composition conventions;
+      then inspect joint calibration conditions and uncertainty.
+    inspection: not_inspected
+    note: The publisher full-text/PDF request returned HTTP 403; the author publication page links
+      back to that publisher. A candidate publisher manuscript endpoint did not resolve in this environment.
+      Original Eq. 10 and regression data remain unavailable.
+- id: source_comparison_20261021
+  kind: implementation
+  summary: Inspected A6 uses total P/T, while ExoGibbs uses sqrt(total P)/T. The expressions differ
+    at 0.5 and 2 GPa and coincide at 1 GPa. Original Dasgupta Eq. 10 was not obtained, so this review
+    cannot decide which expression it supports.
+  sources:
+  - src/exogibbs/solubility/volatile.py
+  - documents/mceg/volatile_sources.rst
+  scope: Three diagnostics against literal MELTYQ A6; two discrepancies and a 1 GPa coincidence. No
+    original Dasgupta Eq. 10 comparison is claimed.
+  subject: survey_20261020
+  provenance:
+    role: implementation
+    location: Selected source passages and unchanged implementation; see the linked source locations.
+    inspection: inspected
+    note: Inspected A6 uses total P/T, while ExoGibbs uses sqrt(total P)/T. The expressions differ
+      at 0.5 and 2 GPa and coincide at 1 GPa. Original Dasgupta Eq. 10 was not obtained, so this review
+      cannot decide which expression it supports.
+    derived_from:
+    - evidence: meltyq2026_20261021
+      comparison: discrepancy
+      note: Inspected A6 uses total P/T, while ExoGibbs uses sqrt(total P)/T. The expressions differ
+        at 0.5 and 2 GPa and coincide at 1 GPa. Original Dasgupta Eq. 10 was not obtained, so this
+        review cannot decide which expression it supports.
+- id: source_comparison_run_20261021
+  kind: numerical_test
+  summary: 1/3 scoped formula comparisons agree.
+  sources:
+  - mceg/reviews/volatile_source_review_20261021.py
+  - results/mceg/20261021_volatile_sources/comparison.json
+  scope: Three diagnostics against literal MELTYQ A6; two discrepancies and a 1 GPa coincidence. No
+    original Dasgupta Eq. 10 comparison is claimed.
+  result: failed
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  artifacts:
+  - source: mceg/reviews/volatile_source_review_20261021.py
+    sha256: a36814e39d862bc09eebff24ac9c26596cf409bb6e67ccaa6cfab8f4bb32bc01
+  - source: results/mceg/20261021_volatile_sources/comparison.json
+    sha256: 4770a809637e050c53d68d8a962d84f973a7f55fe146cf78eb03cdd62b59fec0
+  provenance:
+    role: primary
+    location: 'results/mceg/20261021_volatile_sources/comparison.json: comparisons with model=n2_dasgupta2022.'
+    inspection: inspected
+    note: Fresh CPU/x64 execution of explicit reference expressions. Alternative-expression mismatches
+      remain in the report; no experimental rows or external runtime were replayed.
 limitations:
 - statement: Reported calibration intervals are marginal metadata; they do not establish a jointly
     validated temperature/pressure/composition rectangle.
@@ -192,6 +279,14 @@ contexts:
     backend: cpu
     x64: true
     test_selection: tests/unittests/solubility/meltyq_test.py
+- id: source_review_environment_20261021
+  scope: Offline scalar reference comparisons; joint input samples are in the saved report.
+  settings:
+    python: 3.12.7
+    jax: 0.6.2
+    numpy: 2.1.0
+    backend: cpu
+    x64: true
 conditions:
 - id: reported_temperature
   revision: '1'
@@ -284,6 +379,60 @@ assessments:
   - Numerical agreement and membership in metadata intervals do not establish physical accuracy.
   status: unknown
   origin: reviewed
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: source_formula_review_20261021
+  claim: source_formula_agreement_20261021
+  claim_revision: '1'
+  evidence:
+  - meltyq2026_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: unknown
+  reasons:
+  - 1/3 scoped formula comparisons agree.
+  - Three diagnostics against literal MELTYQ A6; two discrepancies and a 1 GPa coincidence. No original
+    Dasgupta Eq. 10 comparison is claimed.
+  - Inspected A6 uses total P/T, while ExoGibbs uses sqrt(total P)/T. The expressions differ at 0.5
+    and 2 GPa and coincide at 1 GPa. Original Dasgupta Eq. 10 was not obtained, so this review cannot
+    decide which expression it supports.
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: physical_source_review_20261021
+  claim: physical_accuracy
+  claim_revision: '1'
+  evidence:
+  - meltyq2026_20261021
+  - original_fulltext_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: unknown
+  reasons:
+  - Inspected A6 uses total P/T, while ExoGibbs uses sqrt(total P)/T. The expressions differ at 0.5
+    and 2 GPa and coincide at 1 GPa. Original Dasgupta Eq. 10 was not obtained, so this review cannot
+    decide which expression it supports.
+  - The publisher full-text/PDF request returned HTTP 403; the author publication page links back
+    to that publisher. A candidate publisher manuscript endpoint did not resolve in this environment. Original
+    Eq. 10 and regression data remain unavailable.
+  - Formula agreement does not measure errors against observations. Existing marginal T/P metadata
+    and the historical empirical_scope task remain unchanged.
+  - Obtain Dasgupta et al. (2022) Eq. 10 and regression definitions. Resolve total P versus sqrt(P),
+    nitrogen partial pressure versus fugacity, ppm basis, delta-IW and composition conventions; then
+    inspect joint calibration conditions and uncertainty.
 follow_ups:
 - id: empirical_scope
   target_kind: claim
@@ -299,3 +448,40 @@ follow_ups:
     pass alone does not complete this task.
   sources:
   - https://doi.org/10.1016/j.gca.2022.09.012
+- id: available_source_comparison_20261021
+  target_kind: evidence
+  target: upstream_model
+  action: Inspect the publicly retrievable source material and record the exact completed comparison
+    scope.
+  requires:
+  - Source locations, units, definitions and any version differences.
+  - A reproducible scoped comparison and explicit access gaps.
+  completion: New evidence identifies the inspected material, comparison results and remaining full-text
+    or empirical work.
+  sources:
+  - https://doi.org/10.48550/arXiv.2605.08752
+  - https://arxiv.org/pdf/2605.08752v1
+- id: remaining_source_work_20261021
+  target_kind: assessment
+  target: physical_source_review_20261021
+  action: Obtain Dasgupta et al. (2022) Eq. 10 and regression definitions. Resolve total P versus
+    sqrt(P), nitrogen partial pressure versus fugacity, ppm basis, delta-IW and composition conventions;
+    then inspect joint calibration conditions and uncertainty.
+  requires:
+  - The identified original source or dataset and explicit comparison locations.
+  - A declared application with joint conditions, concentration basis and error criteria.
+  completion: Append a scoped assessment with the comparison results and remaining limitations; preserve
+    this source review.
+  sources:
+  - https://doi.org/10.1016/j.gca.2022.09.012
+follow_up_resolutions:
+- follow_up: available_source_comparison_20261021
+  evidence:
+  - meltyq2026_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  note: 'Completed only the available-material review: Three diagnostics against literal MELTYQ A6;
+    two discrepancies and a 1 GPa coincidence. No original Dasgupta Eq. 10 comparison is claimed.
+    The publisher full-text/PDF request returned HTTP 403; the author publication page links back
+    to that publisher. A candidate publisher manuscript endpoint did not resolve in this environment. Original
+    Eq. 10 and regression data remain unavailable. The separate empirical_scope follow-up is not resolved.'
