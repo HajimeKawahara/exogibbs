@@ -1,5 +1,9 @@
 # Equilibrium architecture refactor handoff
 
+> Historical handoff from 2026-07-27, retained as design history. Its worktree
+> instructions and two-mode description apply to that checkpoint only. For the
+> current three equilibrium modes, see [Equilibrium Solver APIs](equilibrium_solvers.rst).
+
 ## 1. Purpose
 
 This document is the handoff for the refactor that follows the fixed-support

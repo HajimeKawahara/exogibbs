@@ -1,15 +1,51 @@
-Gas and Condensate Solver APIs
-==============================
+Equilibrium Solver APIs
+======================
 
-ExoGibbs exposes two parallel public solver modules:
+ExoGibbs provides three equilibrium modes. Select the public module that
+matches the phases and thermodynamic inputs of the problem.
 
-* :mod:`exogibbs.api.gas` for gas-only equilibrium;
-* :mod:`exogibbs.api.condensate` for gas-plus-condensate equilibrium.
+.. list-table:: Public equilibrium modes
+   :header-rows: 1
+   :widths: 18 22 30 30
 
-Both accept temperature ``T``, pressure ``P``, an elemental abundance vector
-``b``, and an optional reference pressure ``Pref``.  They deliberately have
-different result and execution contracts because condensate support discovery
-is a host-side lifecycle rather than one fixed numerical solve.
+   * - Mode
+     - Public module
+     - Inputs and units
+     - Execution and derivatives
+   * - Gas only
+     - :mod:`exogibbs.api.gas`
+     - ``ChemicalSetup``; ``T`` in K, ``P`` and ``Pref`` in bar; elemental
+       abundances ``b``
+     - JAX point/profile solves; implicit JVP and VJP on a converged root
+   * - Gas and pure condensates
+     - :mod:`exogibbs.api.condensate`
+     - ``CondensateChemicalSetup``; the same temperature, pressure and
+       elemental-abundance conventions as gas
+     - Host support discovery and rainout; JIT/AD are limited to the
+       fixed-support kernel, outside the full lifecycle.
+   * - Multiphase, including solution phases
+     - :mod:`exogibbs.api.multiphase`
+     - ``Problem`` and full phase Gibbs callbacks; K, Pa, mol, and J
+     - Host phase search; ``solve_fixed_support`` provides JIT and implicit
+       JVP/VJP on a fixed face
+
+For gas and condensate calculations, returned amounts use the same amount
+basis as ``b``; presets typically supply relative elemental abundances.
+Gas mole fractions are normalized separately. Multiphase instead takes an
+absolute elemental ledger in mol and returns component/phase amounts in mol.
+Its phase callbacks include all standard, mixing, excess and pressure terms.
+See :doc:`multiphase` for its local-minimum and phase-stability contracts.
+
+These modes have distinct result types and acceptance criteria. Condensate
+support discovery uses the gas solver for initialization and gas-only outcomes.
+The public :mod:`exogibbs.api.magma_gas` interface is an application over the
+gas solver; see :doc:`magma_gas_interface` for its outer boundary-model solve.
+
+New code should import ``exogibbs.api.gas``, ``exogibbs.api.condensate`` or
+``exogibbs.api.multiphase``. Older equilibrium API paths and ``exogibbs.optimize``
+remain compatibility entry points in v0.7. Internal ``exogibbs.equilibrium``
+modules are implementation details. The former example-local M1/M2 solvers
+are retired; their historical checkout is documented in :doc:`multiphase`.
 
 Gas Quick Start
 ---------------
