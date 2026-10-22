@@ -1,11 +1,25 @@
 Plagioclase exsolution: a multiphase tutorial
 =============================================
 
-Exsolution separates a solid solution into phases with different compositions.
-Labradorite provides a geological motivation: its fine intergrowths contain
-Na-rich and Ca-rich plagioclase. Crystal ordering and the resulting structures
-are described by `Götz, Kleebe, and Kolb (2022)
-<https://doi.org/10.5194/ejm-34-393-2022>`_.
+The blue sheen of this labradorite is a visible clue to structure inside the
+crystal. A mineral you can hold offers a starting point for understanding why
+one solid solution can separate into two phases.
+
+.. figure:: _static/labradorite.png
+   :alt: Labradorite specimen with a bright blue sheen across its dark surface
+   :width: 280px
+   :align: center
+
+   Labradorite specimen and photograph supplied by Hajime Kawahara via
+   `PR #293 <https://github.com/HajimeKawahara/exogibbs/pull/293>`_.
+
+Labradorite's iridescence, called labradorescence, arises from optical
+interference in fine layers with different compositions. The internal
+structure and its connection to the optical effect are described by
+`Götz, Kleebe, and Kolb (2022) <https://doi.org/10.5194/ejm-34-393-2022>`_.
+This leads to the thermodynamic question explored here: **when can a solid
+solution lower its Gibbs energy by separating into phases with different
+compositions?** Such separation is called exsolution.
 
 This tutorial uses a **teaching regular-solution model**, with an illustrative
 interaction energy. It demonstrates equilibrium partitioning through the
