@@ -20,6 +20,12 @@ Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: RELEASES:
+
+   release_notes
+
+.. toctree::
+   :maxdepth: 1
    :caption: EQUILIBRIUM:
 
    equilibrium_solvers.rst
