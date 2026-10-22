@@ -74,7 +74,7 @@ Contents
    :maxdepth: 1
    :caption: API:
 
-   exogibbs/index.rst
+   api.rst
 
 .. toctree::
    :maxdepth: 1

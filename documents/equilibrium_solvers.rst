@@ -1,5 +1,5 @@
 Equilibrium Solver APIs
-======================
+=======================
 
 ExoGibbs provides three equilibrium modes. Select the public module that
 matches the phases and thermodynamic inputs of the problem.
