@@ -49,3 +49,33 @@ def test_update_doc_generates_before_html_and_stops_on_invalid_inputs(tmp_path, 
         assert calls[position + 1][:4] == ["-m", "sphinx", "-M", "clean"]
         assert calls[position + 2][:4] == ["-m", "sphinx", "-M", "html"]
         assert calls[position + 2][-2:] == ["-W", "--keep-going"]
+
+
+def test_update_doc_options_are_accepted_by_installed_sphinx(tmp_path):
+    """Check CLI compatibility without loading optional Sphinx builders."""
+    pytest.importorskip("sphinx")
+    script = tmp_path / "update_doc.sh"
+    shutil.copyfile(ROOT / "update_doc.sh", script)
+    binary = tmp_path / "bin"
+    binary.mkdir()
+    python = binary / "python"
+    python.write_text(
+        f"#!{sys.executable}\n"
+        "import json, sys\n"
+        "if sys.argv[1:5] == ['-m', 'sphinx', '-M', 'html']:\n"
+        "    from sphinx.cmd.build import get_parser\n"
+        "    args = get_parser().parse_args(['-b', 'html', *sys.argv[5:]])\n"
+        "    print(json.dumps(vars(args)))\n"
+    )
+    python.chmod(0o755)
+    env = {**os.environ, "PATH": str(binary) + os.pathsep + os.environ.get("PATH", "")}
+    result = subprocess.run(
+        ["bash", str(script), "-W", "--keep-going"], cwd=tmp_path.parent,
+        env=env, capture_output=True, text=True, timeout=60,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    args = json.loads(result.stdout)
+    assert args["freshenv"]
+    assert args["force_all"]
+    assert args["warningiserror"]
+    assert args["keep_going"]
