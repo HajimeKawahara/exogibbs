@@ -64,6 +64,14 @@ claims:
     composition and conditions.
   scope: Requires independent empirical data and explicit composition, reference-state and driving-quantity
     conventions; not established by this survey.
+- id: source_formula_agreement_20261021
+  revision: '1'
+  kind: numerical_verification
+  statement: The implementation agrees with the specified inspected reference expression at the recorded
+    samples.
+  scope: Four positive-interior H2O samples of a scalar transcription of the pinned Julia branch,
+    using independently supplied dry oxide fractions. No Julia execution, CO2 branch or original-paper
+    validation.
 evidence:
 - id: upstream_model
   kind: literature
@@ -150,6 +158,88 @@ evidence:
     - evidence: upstream_model
       comparison: not_checked
       note: Retain the source-review gap; metadata is not a validated application domain.
+- id: magemin_pinned_20261021
+  kind: implementation
+  summary: Pinned public MAGEMin H2O implementation inspected.
+  sources:
+  - https://github.com/ComputationalThermodynamics/MAGEMin_C.jl/blob/47e2d12bfec0f799acf030b285fa3b1e8eb32098/julia/TE_saturation_models.jl
+  scope: Direct source for the port comparison only. Ten H2O coefficients, T in K, both pressures
+    in bar, volatile-free oxide mole fractions and wt% output were inspected. Neither Julia nor the
+    original MATLAB code was executed; paper Eq. 7/Table 1 and 2090 experiments remain uninspected.
+  provenance:
+    role: primary
+    location: 'Commit 47e2d12bfec0f799acf030b285fa3b1e8eb32098: lines 655-689, 744-811 (_SY26_a and
+      volatile_saturation_SY26 H2O branch).'
+    inspection: inspected
+    note: Retrieved 2026-10-21; SHA-256 14d80bb0df7b7588a7b1905f284c9f1572620bde912473e66e4544f6fff088de.
+      Direct source for the port comparison only. Ten H2O coefficients, T in K, both pressures in
+      bar, volatile-free oxide mole fractions and wt% output were inspected. Neither Julia nor the
+      original MATLAB code was executed; paper Eq. 7/Table 1 and 2090 experiments remain uninspected.
+- id: original_fulltext_20261021
+  kind: literature
+  summary: Original full-text gap retained after public-source retrieval attempts.
+  sources:
+  - https://doi.org/10.1016/j.epsl.2026.120115
+  scope: The publisher full-text page returned HTTP 403. The pinned public Julia file was obtained
+    through GitHub, but original paper Eq. 7/Table 1, MATLAB program and experimental dataset were
+    not inspected.
+  provenance:
+    role: primary
+    location: Obtain Sun and Yao (2026) Eq. 7, Table 1 and calibration data; compare the ten H2O coefficients
+      and concentration denominator with the pinned port. Check joint water-specific composition/T/P
+      support instead of using the full H2O-CO2 dataset envelope.
+    inspection: not_inspected
+    note: The publisher full-text page returned HTTP 403. The pinned public Julia file was obtained
+      through GitHub, but original paper Eq. 7/Table 1, MATLAB program and experimental dataset were
+      not inspected.
+- id: source_comparison_20261021
+  kind: implementation
+  summary: All ten H2O coefficients and the positive-interior expression match the pinned port after
+    dividing wt% by 100. ExoGibbs additionally returns zero at zero water pressure and rejects p_H2O>P_total
+    or w>=1; full API equivalence is not asserted.
+  sources:
+  - src/exogibbs/solubility/sun_yao2026.py
+  - documents/mceg/volatile_sources.rst
+  scope: Four positive-interior H2O samples of a scalar transcription of the pinned Julia branch,
+    using independently supplied dry oxide fractions. No Julia execution, CO2 branch or original-paper
+    validation.
+  subject: survey_20261020
+  provenance:
+    role: implementation
+    location: Selected source passages and unchanged implementation; see the linked source locations.
+    inspection: inspected
+    note: All ten H2O coefficients and the positive-interior expression match the pinned port after
+      dividing wt% by 100. ExoGibbs additionally returns zero at zero water pressure and rejects p_H2O>P_total
+      or w>=1; full API equivalence is not asserted.
+    derived_from:
+    - evidence: magemin_pinned_20261021
+      comparison: consistent
+      note: All ten H2O coefficients and the positive-interior expression match the pinned port after
+        dividing wt% by 100. ExoGibbs additionally returns zero at zero water pressure and rejects
+        p_H2O>P_total or w>=1; full API equivalence is not asserted.
+- id: source_comparison_run_20261021
+  kind: numerical_test
+  summary: 4/4 scoped formula comparisons agree.
+  sources:
+  - mceg/reviews/volatile_source_review_20261021.py
+  - results/mceg/20261021_volatile_sources/comparison.json
+  scope: Four positive-interior H2O samples of a scalar transcription of the pinned Julia branch,
+    using independently supplied dry oxide fractions. No Julia execution, CO2 branch or original-paper
+    validation.
+  result: passed
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  artifacts:
+  - source: mceg/reviews/volatile_source_review_20261021.py
+    sha256: a36814e39d862bc09eebff24ac9c26596cf409bb6e67ccaa6cfab8f4bb32bc01
+  - source: results/mceg/20261021_volatile_sources/comparison.json
+    sha256: 4770a809637e050c53d68d8a962d84f973a7f55fe146cf78eb03cdd62b59fec0
+  provenance:
+    role: primary
+    location: 'results/mceg/20261021_volatile_sources/comparison.json: comparisons with model=h2o_sun_yao2026.'
+    inspection: inspected
+    note: Fresh CPU/x64 execution of explicit reference expressions. Alternative-expression mismatches
+      remain in the report; no experimental rows or external runtime were replayed.
 limitations:
 - statement: Reported calibration intervals are marginal metadata; they do not establish a jointly
     validated temperature/pressure/composition rectangle.
@@ -198,6 +288,14 @@ contexts:
     backend: cpu
     x64: true
     test_selection: tests/unittests/solubility/sun_yao2026_test.py
+- id: source_review_environment_20261021
+  scope: Offline scalar reference comparisons; joint input samples are in the saved report.
+  settings:
+    python: 3.12.7
+    jax: 0.6.2
+    numpy: 2.1.0
+    backend: cpu
+    x64: true
 conditions:
 - id: reported_temperature
   revision: '1'
@@ -353,6 +451,59 @@ assessments:
   - Numerical agreement and membership in metadata intervals do not establish physical accuracy.
   status: unknown
   origin: reviewed
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: source_formula_review_20261021
+  claim: source_formula_agreement_20261021
+  claim_revision: '1'
+  evidence:
+  - magemin_pinned_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: supported
+  reasons:
+  - 4/4 scoped formula comparisons agree.
+  - Four positive-interior H2O samples of a scalar transcription of the pinned Julia branch, using
+    independently supplied dry oxide fractions. No Julia execution, CO2 branch or original-paper validation.
+  - All ten H2O coefficients and the positive-interior expression match the pinned port after dividing
+    wt% by 100. ExoGibbs additionally returns zero at zero water pressure and rejects p_H2O>P_total
+    or w>=1; full API equivalence is not asserted.
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: physical_source_review_20261021
+  claim: physical_accuracy
+  claim_revision: '1'
+  evidence:
+  - magemin_pinned_20261021
+  - original_fulltext_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: unknown
+  reasons:
+  - All ten H2O coefficients and the positive-interior expression match the pinned port after dividing
+    wt% by 100. ExoGibbs additionally returns zero at zero water pressure and rejects p_H2O>P_total
+    or w>=1; full API equivalence is not asserted.
+  - The publisher full-text page returned HTTP 403. The pinned public Julia file was obtained through
+    GitHub, but original paper Eq. 7/Table 1, MATLAB program and experimental dataset were not inspected.
+  - Formula agreement does not measure errors against observations. Existing marginal T/P metadata
+    and the historical empirical_scope task remain unchanged.
+  - Obtain Sun and Yao (2026) Eq. 7, Table 1 and calibration data; compare the ten H2O coefficients
+    and concentration denominator with the pinned port. Check joint water-specific composition/T/P
+    support instead of using the full H2O-CO2 dataset envelope.
 follow_ups:
 - id: empirical_scope
   target_kind: claim
@@ -369,3 +520,40 @@ follow_ups:
   sources:
   - https://doi.org/10.1016/j.epsl.2026.120115
   - https://github.com/ComputationalThermodynamics/MAGEMin_C.jl/blob/47e2d12bfec0f799acf030b285fa3b1e8eb32098/julia/TE_saturation_models.jl
+- id: available_source_comparison_20261021
+  target_kind: evidence
+  target: upstream_model
+  action: Inspect the publicly retrievable source material and record the exact completed comparison
+    scope.
+  requires:
+  - Source locations, units, definitions and any version differences.
+  - A reproducible scoped comparison and explicit access gaps.
+  completion: New evidence identifies the inspected material, comparison results and remaining full-text
+    or empirical work.
+  sources:
+  - https://github.com/ComputationalThermodynamics/MAGEMin_C.jl/blob/47e2d12bfec0f799acf030b285fa3b1e8eb32098/julia/TE_saturation_models.jl
+- id: remaining_source_work_20261021
+  target_kind: assessment
+  target: physical_source_review_20261021
+  action: Obtain Sun and Yao (2026) Eq. 7, Table 1 and calibration data; compare the ten H2O coefficients
+    and concentration denominator with the pinned port. Check joint water-specific composition/T/P
+    support instead of using the full H2O-CO2 dataset envelope.
+  requires:
+  - The identified original source or dataset and explicit comparison locations.
+  - A declared application with joint conditions, concentration basis and error criteria.
+  completion: Append a scoped assessment with the comparison results and remaining limitations; preserve
+    this source review.
+  sources:
+  - https://doi.org/10.1016/j.epsl.2026.120115
+follow_up_resolutions:
+- follow_up: available_source_comparison_20261021
+  evidence:
+  - magemin_pinned_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  note: 'Completed only the available-material review: Four positive-interior H2O samples of a scalar
+    transcription of the pinned Julia branch, using independently supplied dry oxide fractions. No
+    Julia execution, CO2 branch or original-paper validation. The publisher full-text page returned
+    HTTP 403. The pinned public Julia file was obtained through GitHub, but original paper Eq. 7/Table
+    1, MATLAB program and experimental dataset were not inspected. The separate empirical_scope follow-up
+    is not resolved.'

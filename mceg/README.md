@@ -11,6 +11,11 @@ solubility/magma survey, with separate numerical and physical Assessments and
 fresh receipts. The new records use the companion MCEG volatile-quantity
 extension. Existing H2 and source-study histories retain their original scope.
 
+The [2026-10-21 source review](../documents/mceg/volatile_sources.rst) adds
+inspected passages, formula comparisons and remaining access gaps for those
+six contracts. Use `physical_source_review_20261021` for the updated assessment;
+the older assessment IDs retain their historical scope.
+
 The [atomic-ion reference contract](contracts/atomic_ion_reference.yaml) records
 the separate gas-only audit of 49 FastChem4 atomic ions. Its
 [report](../documents/atomic_ion_audit.rst),

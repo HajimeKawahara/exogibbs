@@ -235,3 +235,6 @@ tmp.sh
 
 # Retain the model inventory coverage survey.
 !/results/mceg/20261020_coverage/
+
+# Retain the offline volatile-source comparison, without downloaded papers.
+!/results/mceg/20261021_volatile_sources/

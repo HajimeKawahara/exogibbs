@@ -56,6 +56,13 @@ claims:
     composition and conditions.
   scope: Requires independent empirical data and explicit composition, reference-state and driving-quantity
     conventions; not established by this survey.
+- id: source_formula_agreement_20261021
+  revision: '1'
+  kind: numerical_verification
+  statement: The implementation agrees with the specified inspected reference expression at the recorded
+    samples.
+  scope: Three samples of the published abstract coefficients with the provider bar convention. This
+    does not establish equivalence to the full published Eq. 6.
 evidence:
 - id: upstream_model
   kind: literature
@@ -141,6 +148,129 @@ evidence:
     - evidence: upstream_model
       comparison: not_checked
       note: Retain the source-review gap; metadata is not a validated application domain.
+- id: yoshioka2019_abstract_20261021
+  kind: literature
+  summary: Published-paper abstract preserved by an author institution.
+  sources:
+  - https://doi.org/10.1016/j.gca.2019.06.007
+  - https://researchers.mq.edu.au/en/publications/carbon-solubility-in-silicate-melts-in-equilibrium-with-a-co-cosu/
+  scope: The abstract reports log10(c_CO[wt% C])=-5.20+0.80*log10(f_CO). It does not state the fugacity
+    unit. This inspection covers the abstract only, not the published Eq. 6 or run table.
+  provenance:
+    role: primary
+    location: 'Abstract: MORB regression and definition of c_CO as wt% carbon.'
+    inspection: inspected
+    note: Retrieved 2026-10-21; SHA-256 8dd457f2ac8e0f110cdbe228edfbb7e2eee1955e91dc3b982fec7642971910f8.
+      The abstract reports log10(c_CO[wt% C])=-5.20+0.80*log10(f_CO). It does not state the fugacity
+      unit. This inspection covers the abstract only, not the published Eq. 6 or run table.
+- id: yoshioka_thesis2018_20261021
+  kind: literature
+  summary: 'Author dissertation: an earlier, different CO regression.'
+  sources:
+  - https://epub.uni-bayreuth.de/id/eprint/4056/
+  - https://epub.uni-bayreuth.de/id/eprint/4056/1/thesis_Yoshioka_revision20181120.pdf
+  scope: Table 6.3 defines log f_CO using bar. Eq. 2 has intercept -5.83 and slope 0.98 in wt% reduced
+    carbon, unlike the published abstract (-5.20, 0.80). This earlier version is not a substitute
+    for the final paper.
+  provenance:
+    role: primary
+    location: 'Chapter 6: printed p. 81/PDF p. 85, Table 6.3 footnote; printed p. 87/PDF p. 91, Eq.
+      2.'
+    inspection: inspected
+    note: Retrieved 2026-10-21; SHA-256 4350bf05a5640ea795c2680896cf51866a638fb31827fd96bf4f7a334af8d94d.
+      Table 6.3 defines log f_CO using bar. Eq. 2 has intercept -5.83 and slope 0.98 in wt% reduced
+      carbon, unlike the published abstract (-5.20, 0.80). This earlier version is not a substitute
+      for the final paper.
+- id: meltyq2026_20261021
+  kind: literature
+  summary: Later compilation inspected for unit and pressure-expression differences.
+  sources:
+  - https://doi.org/10.48550/arXiv.2605.08752
+  - https://arxiv.org/pdf/2605.08752v1
+  scope: 'Primary evidence only for what this compilation prints: A4 labels CH4 fugacity in bar, A5
+    labels CO fugacity in GPa and output as CO mass fraction, and A6 uses P_total/T rather than sqrt(P_total)/T.
+    These statements do not replace the cited experimental papers.'
+  provenance:
+    role: primary
+    location: 'arXiv v1, printed/PDF p. 17: Appendix A, Eqs. A4-A6.'
+    inspection: inspected
+    note: 'Retrieved 2026-10-21; SHA-256 ff53e7caa294aef02fdc6b62bb473ded06fe5cca312843c0b9568ee9ecc3f43e.
+      Primary evidence only for what this compilation prints: A4 labels CH4 fugacity in bar, A5 labels
+      CO fugacity in GPa and output as CO mass fraction, and A6 uses P_total/T rather than sqrt(P_total)/T.
+      These statements do not replace the cited experimental papers.'
+- id: original_fulltext_20261021
+  kind: literature
+  summary: Original full-text gap retained after public-source retrieval attempts.
+  sources:
+  - https://doi.org/10.1016/j.gca.2019.06.007
+  scope: The publisher PDF request returned HTTP 403. The published abstract and an earlier author
+    thesis were obtained. They have different regressions; the thesis cannot close the final-paper
+    unit/run-table gap.
+  provenance:
+    role: primary
+    location: Obtain the published Yoshioka et al. (2019) Eq. 6 and its run-table fugacity definition.
+      Confirm bar and the MORB reduced-carbon basis, and explain the coefficient change from thesis
+      Eq. 2 before any empirical assessment.
+    inspection: not_inspected
+    note: The publisher PDF request returned HTTP 403. The published abstract and an earlier author
+      thesis were obtained. They have different regressions; the thesis cannot close the final-paper
+      unit/run-table gap.
+- id: source_comparison_20261021
+  kind: implementation
+  summary: The published abstract confirms the MORB coefficients and wt% elemental-C basis, yielding
+    mass-fraction intercept -7.20. Numerical samples retain the provider bar convention; the final
+    paper fugacity unit is still unverified.
+  sources:
+  - src/exogibbs/solubility/volatile.py
+  - documents/mceg/volatile_sources.rst
+  scope: Three samples of the published abstract coefficients with the provider bar convention. This
+    does not establish equivalence to the full published Eq. 6.
+  subject: survey_20261020
+  provenance:
+    role: implementation
+    location: Selected source passages and unchanged implementation; see the linked source locations.
+    inspection: inspected
+    note: The published abstract confirms the MORB coefficients and wt% elemental-C basis, yielding
+      mass-fraction intercept -7.20. Numerical samples retain the provider bar convention; the final
+      paper fugacity unit is still unverified.
+    derived_from:
+    - evidence: yoshioka2019_abstract_20261021
+      comparison: consistent
+      note: The published abstract confirms the MORB coefficients and wt% elemental-C basis, yielding
+        mass-fraction intercept -7.20. Numerical samples retain the provider bar convention; the final
+        paper fugacity unit is still unverified.
+    - evidence: yoshioka_thesis2018_20261021
+      comparison: discrepancy
+      note: The earlier thesis Eq. 2 uses (-5.83, 0.98), whereas the published abstract and implementation
+        use (-5.20, 0.80) before converting wt% to fraction. Do not replace the adopted coefficients
+        with the thesis fit.
+    - evidence: meltyq2026_20261021
+      comparison: discrepancy
+      note: Literal A5 with GPa is smaller than the implementation by 10**3.2 at the same physical
+        fugacity. Its CO mass-fraction label also differs from the published abstract elemental-C
+        basis; the numerical ratio alone does not reconcile these species bases.
+- id: source_comparison_run_20261021
+  kind: numerical_test
+  summary: 3/3 scoped formula comparisons agree.
+  sources:
+  - mceg/reviews/volatile_source_review_20261021.py
+  - results/mceg/20261021_volatile_sources/comparison.json
+  scope: Three samples of the published abstract coefficients with the provider bar convention. This
+    does not establish equivalence to the full published Eq. 6.
+  result: passed
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  artifacts:
+  - source: mceg/reviews/volatile_source_review_20261021.py
+    sha256: a36814e39d862bc09eebff24ac9c26596cf409bb6e67ccaa6cfab8f4bb32bc01
+  - source: results/mceg/20261021_volatile_sources/comparison.json
+    sha256: 4770a809637e050c53d68d8a962d84f973a7f55fe146cf78eb03cdd62b59fec0
+  provenance:
+    role: primary
+    location: 'results/mceg/20261021_volatile_sources/comparison.json: comparisons with model=co_yoshioka2019.'
+    inspection: inspected
+    note: Fresh CPU/x64 execution of explicit reference expressions. Alternative-expression mismatches
+      remain in the report; no experimental rows or external runtime were replayed.
 limitations:
 - statement: Reported calibration intervals are marginal metadata; they do not establish a jointly
     validated temperature/pressure/composition rectangle.
@@ -189,6 +319,14 @@ contexts:
     backend: cpu
     x64: true
     test_selection: tests/unittests/solubility/meltyq_test.py
+- id: source_review_environment_20261021
+  scope: Offline scalar reference comparisons; joint input samples are in the saved report.
+  settings:
+    python: 3.12.7
+    jax: 0.6.2
+    numpy: 2.1.0
+    backend: cpu
+    x64: true
 conditions:
 - id: reported_temperature
   revision: '1'
@@ -271,6 +409,62 @@ assessments:
   - Numerical agreement and membership in metadata intervals do not establish physical accuracy.
   status: unknown
   origin: reviewed
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: source_formula_review_20261021
+  claim: source_formula_agreement_20261021
+  claim_revision: '1'
+  evidence:
+  - yoshioka2019_abstract_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: supported
+  reasons:
+  - 3/3 scoped formula comparisons agree.
+  - Three samples of the published abstract coefficients with the provider bar convention. This does
+    not establish equivalence to the full published Eq. 6.
+  - The published abstract confirms the MORB coefficients and wt% elemental-C basis, yielding mass-fraction
+    intercept -7.20. Numerical samples retain the provider bar convention; the final paper fugacity
+    unit is still unverified.
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: physical_source_review_20261021
+  claim: physical_accuracy
+  claim_revision: '1'
+  evidence:
+  - yoshioka2019_abstract_20261021
+  - yoshioka_thesis2018_20261021
+  - meltyq2026_20261021
+  - original_fulltext_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: unknown
+  reasons:
+  - The published abstract confirms the MORB coefficients and wt% elemental-C basis, yielding mass-fraction
+    intercept -7.20. Numerical samples retain the provider bar convention; the final paper fugacity
+    unit is still unverified.
+  - The publisher PDF request returned HTTP 403. The published abstract and an earlier author thesis
+    were obtained. They have different regressions; the thesis cannot close the final-paper unit/run-table
+    gap.
+  - Formula agreement does not measure errors against observations. Existing marginal T/P metadata
+    and the historical empirical_scope task remain unchanged.
+  - Obtain the published Yoshioka et al. (2019) Eq. 6 and its run-table fugacity definition. Confirm
+    bar and the MORB reduced-carbon basis, and explain the coefficient change from thesis Eq. 2 before
+    any empirical assessment.
 follow_ups:
 - id: empirical_scope
   target_kind: claim
@@ -286,3 +480,40 @@ follow_ups:
     pass alone does not complete this task.
   sources:
   - https://doi.org/10.1016/j.gca.2019.06.007
+- id: available_source_comparison_20261021
+  target_kind: evidence
+  target: upstream_model
+  action: Inspect the publicly retrievable source material and record the exact completed comparison
+    scope.
+  requires:
+  - Source locations, units, definitions and any version differences.
+  - A reproducible scoped comparison and explicit access gaps.
+  completion: New evidence identifies the inspected material, comparison results and remaining full-text
+    or empirical work.
+  sources:
+  - https://doi.org/10.1016/j.gca.2019.06.007
+  - https://researchers.mq.edu.au/en/publications/carbon-solubility-in-silicate-melts-in-equilibrium-with-a-co-cosu/
+- id: remaining_source_work_20261021
+  target_kind: assessment
+  target: physical_source_review_20261021
+  action: Obtain the published Yoshioka et al. (2019) Eq. 6 and its run-table fugacity definition.
+    Confirm bar and the MORB reduced-carbon basis, and explain the coefficient change from thesis
+    Eq. 2 before any empirical assessment.
+  requires:
+  - The identified original source or dataset and explicit comparison locations.
+  - A declared application with joint conditions, concentration basis and error criteria.
+  completion: Append a scoped assessment with the comparison results and remaining limitations; preserve
+    this source review.
+  sources:
+  - https://doi.org/10.1016/j.gca.2019.06.007
+follow_up_resolutions:
+- follow_up: available_source_comparison_20261021
+  evidence:
+  - yoshioka2019_abstract_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  note: 'Completed only the available-material review: Three samples of the published abstract coefficients
+    with the provider bar convention. This does not establish equivalence to the full published Eq.
+    6. The publisher PDF request returned HTTP 403. The published abstract and an earlier author thesis
+    were obtained. They have different regressions; the thesis cannot close the final-paper unit/run-table
+    gap. The separate empirical_scope follow-up is not resolved.'
