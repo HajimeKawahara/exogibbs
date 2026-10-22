@@ -5,7 +5,7 @@ workflows. The JSON reference data and validation records in this directory
 retain their original content. Current calculations use
 `exogibbs.api.multiphase`; see the [multiphase guide](../../documents/multiphase.rst).
 
-The last checkout before removal is
+A pre-removal checkout containing the complete legacy workflows is
 [`64325fd347b2f1d77237ce5afae4aa43b2e97d08`](https://github.com/HajimeKawahara/exogibbs/tree/64325fd347b2f1d77237ce5afae4aa43b2e97d08/examples/metal_silicate).
 It contains the old code, tests, instructions and material-specific proof
 workflows. For a recorded calculation, use its recorded source commit and

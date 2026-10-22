@@ -15,6 +15,21 @@ provider example is needed for a synthetic problem.
 Minimal use
 -----------
 
+For a complete two-phase calculation, run:
+
+.. code-block:: console
+
+   python examples/multiphase_equilibrium.py
+
+The :download:`standalone example <../examples/multiphase_equilibrium.py>`
+equilibrates an ideal binary liquid with a pure solid on a caller-selected
+support and checks elemental conservation and local-minimum flags. Its
+analytic coexistence amounts are
+``[1, 1, 2]`` mol for ``[X(l), Y(l), X(s)]``. It needs no external provider.
+The phase-stability status is ``unchecked``: ``solve_fixed_support`` does not
+search phases or audit insertion. The host ``solve`` entry below additionally
+performs phase search and insertion audits.
+
 .. code-block:: python
 
    import jax
@@ -367,7 +382,7 @@ including the S1 recipe, use ``exogibbs.api.multiphase``. The packaged
 thermochemistry, solubility laws and ExoEOS adapters remain available.
 
 Reproduce an older M2 calculation with its recorded ExoGibbs commit and provider
-versions. The last checkout before this removal is
+versions. A pre-removal checkout containing the complete legacy workflows is
 `64325fd347b2f1d77237ce5afae4aa43b2e97d08
 <https://github.com/HajimeKawahara/exogibbs/tree/64325fd347b2f1d77237ce5afae4aa43b2e97d08/examples/metal_silicate>`_.
 For example, prepare a separate source checkout with:

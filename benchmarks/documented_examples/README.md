@@ -2,7 +2,7 @@
 
 ## Execute the documented examples
 
-The acceptance runner executes **51 fresh jobs** from the current English
+The acceptance runner executes **52 fresh jobs** from the current English
 manual and an explicitly selected Japanese manual checkout. It is separate
 from `run_all_gpu.csh`, which measures six solver workloads and compiler modes.
 
@@ -42,6 +42,8 @@ removes the 35 legacy metal/silicate jobs and their MELTS/GCE/M2 command-line
 resource options. Use the [historical checkout](../../examples/metal_silicate/README.md)
 for those calculations and their original benchmark runner. Current multiphase
 solver tests and native-provider integration tests remain separate checks.
+The provider-free ``multiphase_equilibrium`` job exercises the public API on
+an ideal solution coexisting with a pure solid.
 
 The scope is executable scientific examples, rather than development commands
 such as pytest, documentation builds, or performance measurements. The
