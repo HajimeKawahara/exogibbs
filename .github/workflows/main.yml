@@ -38,7 +38,7 @@ jobs:
           if [[ "$EVENT_NAME" != "pull_request" ]]; then
             echo "scientific=true" >> "$GITHUB_OUTPUT"
           elif git diff --quiet "$BASE_SHA...$HEAD_SHA" -- \
-            examples benchmarks src/exogibbs/data \
+            examples benchmarks src/exogibbs \
             tests/unittests/examples tests/unittests/benchmarks \
             .github/workflows/main.yml pyproject.toml; then
             echo "scientific=false" >> "$GITHUB_OUTPUT"
