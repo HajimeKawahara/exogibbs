@@ -157,7 +157,6 @@ jobs:
           import exogibbs
           from exoeos.ma_fe_si_o_h import MaFeSiOHLiquid
           from exoeos.solution_gibbs import total_solution_state
-          from exoeos.ma_interval import ma_alloy_curvature_lower_bound
 
           root = Path.cwd()
           provider = root / "providers/exoeos"
@@ -171,16 +170,6 @@ jobs:
               assert actual == expected.resolve(), (actual, expected)
           assert exoeos.MaFeSiOHLiquid is MaFeSiOHLiquid
           assert exoeos.total_solution_state is total_solution_state
-          assert callable(ma_alloy_curvature_lower_bound)
-          assert (provider / "examples/melts_liquid_mixing.py").is_file()
-          assert (provider / "examples/melts_water_reconstruction.py").is_file()
-          assert (provider / "examples/melts_solid_mixing.py").is_file()
-          assert (provider / "examples/m2_material/associate_reference.py").is_file()
-          assert (provider / "examples/m2_material/hydrogen_oxygen_sources.json").is_file()
-          assert (provider / "examples/m2_material/potassium_reference.py").is_file()
-          assert (provider / "examples/m2_material/helium_dissolution.py").is_file()
-          assert (provider / "examples/m2_material/sodium_metal.py").is_file()
-          assert (provider / "examples/m2_material/major_gas_eos.py").is_file()
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
           ).resolve()
@@ -192,38 +181,6 @@ jobs:
         run: |
           mkdir -p results
           tests=(
-            tests/unittests/examples/metal_silicate_hydrogen_test.py
-            tests/unittests/examples/metal_silicate_native_test.py
-            tests/unittests/examples/metal_silicate_full_potential_test.py
-            tests/unittests/examples/metal_silicate_common_gibbs_test.py
-            tests/unittests/examples/metal_silicate_common_gas_test.py
-            tests/unittests/examples/m2_atmosphere_test.py
-            tests/unittests/examples/m2_gas_eos_test.py
-            tests/unittests/examples/m2_gas_global_test.py
-            tests/unittests/examples/m2_finite_gas_test.py
-            tests/unittests/examples/m2_phosphorus_test.py
-            tests/unittests/examples/m2_associated_test.py
-            tests/unittests/examples/m2_potassium_test.py
-            tests/unittests/examples/m2_sodium_test.py
-            tests/unittests/examples/m2_sodium_global_test.py
-            tests/unittests/examples/m2_host_stability_test.py
-            tests/unittests/examples/metal_silicate_standards_audit_test.py
-            tests/unittests/examples/m2_helium_test.py
-            tests/unittests/examples/m2_water_global_test.py
-            tests/unittests/examples/m2_water_binding_test.py
-            tests/unittests/examples/m2_host_standards_test.py
-            tests/unittests/examples/m2_associated_global_test.py
-            tests/unittests/examples/m2_extended_common_plane_test.py
-            tests/unittests/examples/m2_helium_global_test.py
-            tests/unittests/examples/m2_common_plane_test.py
-            tests/unittests/examples/m2_common_plane_binding_test.py
-            tests/unittests/examples/m2_alloy_insertion_bound_test.py
-            tests/unittests/examples/m2_solid_global_test.py
-            tests/unittests/examples/m2_liquid_global_test.py
-            tests/unittests/examples/metal_silicate_expanded_contact_test.py
-            tests/unittests/examples/metal_silicate_phase_selection_test.py
-            tests/unittests/examples/metal_silicate_melts_coupled_test.py
-            tests/unittests/examples/metal_silicate_melts_archive_test.py
             tests/unittests/examples/solubility_comparison_test.py
             tests/unittests/interop
           )

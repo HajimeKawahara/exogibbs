@@ -37,6 +37,12 @@ nk_result = res.x #mixing ratio
 
 ## v0.7 release highlights
 
+Version 0.7 retires the example-local metal--silicate solvers and M1/M2
+workflows. Use `exogibbs.api.multiphase` for current multiphase calculations.
+The [multiphase guide](documents/multiphase.rst) identifies the historical
+checkout for reproducing old M2 runs; reference data and validation records
+are preserved.
+
 Version 0.7 strengthens fail-closed condensate validation. Candidate solutions
 with non-finite gas amounts or non-finite or negative condensate amounts are
 rejected, and inactive-phase closure no longer accepts non-finite driving

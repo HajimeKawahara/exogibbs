@@ -37,12 +37,6 @@ Contents
    solubility.rst
    magma_gas_interface.rst
    multiphase.rst
-   metal_silicate_reference.rst
-   subneptune_hydrogen.rst
-   subneptune_melts.rst
-   subneptune_sulfur.rst
-   cns_inventory.rst
-   subneptune_sulfide.rst
    mceg/index
 
 .. toctree::
