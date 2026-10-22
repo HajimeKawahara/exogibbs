@@ -30,6 +30,11 @@ The phase-stability status is ``unchecked``: ``solve_fixed_support`` does not
 search phases or audit insertion. The host ``solve`` entry below additionally
 performs phase search and insertion audits.
 
+For two coexisting solid solutions, see :doc:`plagioclase_exsolution`.
+That tutorial uses an illustrative Ab--An regular solution to explain
+exsolution, common tangents, and the distinction between a minimum on a
+declared support and stability against phase separation.
+
 .. code-block:: python
 
    import jax

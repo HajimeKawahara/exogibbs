@@ -25,6 +25,7 @@ Contents
    equilibrium_solvers.rst
    condensate_profile.rst
    multiphase.rst
+   plagioclase_exsolution
 
 .. toctree::
    :maxdepth: 1
