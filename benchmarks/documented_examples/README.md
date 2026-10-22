@@ -2,7 +2,7 @@
 
 ## Execute the documented examples
 
-The acceptance runner executes **52 fresh jobs** from the current English
+The acceptance runner executes **53 fresh jobs** from the current English
 manual and an explicitly selected Japanese manual checkout. It is separate
 from `run_all_gpu.csh`, which measures six solver workloads and compiler modes.
 
@@ -24,6 +24,7 @@ same resource options.
 
 | Category | Jobs | Execution and acceptance |
 | --- | ---: | --- |
+| Multiphase tutorials | 2 | Public fixed-support examples: an ideal liquid with a pure solid, and exsolution in an illustrative Ab--An regular solution. Check conservation and local numerical diagnostics; the exsolution example also requires lower G than its homogeneous reference and a generated figure. |
 | Comparisons and gas-data checks | 26 | All comparison programs, both FastChem4 profiles, both full 855-layer Ito comparisons, and the optional Visscher/Morley FastChem comparison. The programs' scientific gates must pass. The pinned FastChem production CLI additionally runs all four documented temperature points, requires its clean reference checkout and byte-identical thermochemical inputs, and must report `comparison_completed=true`. |
 | Curated condensate demos | 10 | Run each actual plotting program and independently audit every layer, inventory, and generated figure. Internally caught numerical failures still fail the job. |
 | ExoEOS pure fugacity | 1 | Execute the gallery example with independent element and chemical stationarity checks. Missing optional ExoEOS is a failure. |
@@ -44,6 +45,9 @@ for those calculations and their original benchmark runner. Current multiphase
 solver tests and native-provider integration tests remain separate checks.
 The provider-free ``multiphase_equilibrium`` job exercises the public API on
 an ideal solution coexisting with a pure solid.
+The ``plagioclase_exsolution`` job compares homogeneous and exsolved Ab--An
+solid solutions in an illustrative regular-solution model and saves its
+free-energy plot.
 
 The scope is executable scientific examples, rather than development commands
 such as pytest, documentation builds, or performance measurements. The

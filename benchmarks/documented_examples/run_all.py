@@ -44,6 +44,11 @@ def build_jobs() -> tuple[Job, ...]:
     """Cover public example scripts; aliases share their canonical execution."""
     jobs = []
     jobs.append(Job("multiphase_equilibrium", "examples/multiphase_equilibrium.py"))
+    jobs.append(Job(
+        "plagioclase_exsolution", "examples/plagioclase_exsolution.py",
+        ("--output", "{output}/plagioclase_exsolution.png"),
+        artifacts=("plagioclase_exsolution.png",),
+    ))
     comparison = "examples/comparisons/"
     jobs.append(Job(
         "sun_yao_water", comparison + "compare_sun_yao_water.py",
