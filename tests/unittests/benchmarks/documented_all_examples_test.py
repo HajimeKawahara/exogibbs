@@ -35,18 +35,9 @@ def test_every_public_script_and_all_expensive_configurations_are_covered():
     assert len(curated) == 10
     assert sum(job.script.startswith("examples/comparisons/") for job in jobs) == 24
     assert {alias for alias in run_all.ALIASES.values()} <= {job.name for job in jobs}
-    assert {job.arguments for job in jobs if job.script.endswith("/native.py")} == {
-        ("--case", f"{kind}_{temperature}")
-        for kind in ("source_full", "completed_dry") for temperature in (2350, 3000)
-    }
-    assert {job.arguments[1] for job in jobs if job.script.endswith("/gas_exchange.py")} == {
-        "source_full_2350", "source_full_3000"
-    }
-    assert {"metal_independent_reference", "metal_source_extraction", "metal_thermochemistry"} <= {
-        job.name for job in jobs
-    }
-    assert "examples/metal_silicate/local.py" not in public
-    assert "examples/metal_silicate/source.py" not in public
+    assert all((run_all.ROOT / job.script).is_file() for job in jobs)
+    assert not any(job.script.startswith("examples/metal_silicate/") for job in jobs)
+    assert not any((run_all.ROOT / "examples/metal_silicate").rglob("*.py"))
     retrievals = [job for job in jobs if job.name.startswith("retrieval_")]
     assert len(retrievals) == 4
     assert all("--quick" not in job.arguments for job in retrievals)

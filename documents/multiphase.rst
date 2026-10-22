@@ -15,6 +15,21 @@ provider example is needed for a synthetic problem.
 Minimal use
 -----------
 
+For a complete two-phase calculation, run:
+
+.. code-block:: console
+
+   python examples/multiphase_equilibrium.py
+
+The :download:`standalone example <../examples/multiphase_equilibrium.py>`
+equilibrates an ideal binary liquid with a pure solid on a caller-selected
+support and checks elemental conservation and local-minimum flags. Its
+analytic coexistence amounts are
+``[1, 1, 2]`` mol for ``[X(l), Y(l), X(s)]``. It needs no external provider.
+The phase-stability status is ``unchecked``: ``solve_fixed_support`` does not
+search phases or audit insertion. The host ``solve`` entry below additionally
+performs phase search and insertion audits.
+
 .. code-block:: python
 
    import jax
@@ -286,11 +301,9 @@ range. These functions do not define phase assemblages or improve empirical
 cross-phase calibration. ``thermo.ideal_gibbs`` supplies the full ideal-gas
 scalar in K/Pa/mol and its analytic normalized insertion lower bound.
 
-``examples/metal_silicate/run_m2_native_proof.py`` remains a separate proof
-workflow. It consumes a newly serialized primitive source, repairs feasibility
-with exact arithmetic, and recomputes liquid/alloy, gas/cloud and all 33 native
-mineral competitor bounds. It may use a pinned provider checkout and native
-binary; neither is needed by the Inventory forward calculation.
+The earlier material-specific M2 proof workflows are retained in the historical
+checkout described below. The current solver accepts caller-supplied insertion
+bounds through ``Phase.insertion_lower_bound_j_mol``.
 
 Optional pure-phase updates
 ---------------------------
@@ -339,3 +352,48 @@ domain faces retain the ordinary feasible solver. Exhausted or singular
 corrections preserve the original iterate and do not become convergence claims.
 The option is available to both the host search and fixed-support JAX solves;
 it does not change the implicit derivative equations or certify global phases.
+
+Optional activity adapter
+-------------------------
+
+``make_solution_lngamma_func`` remains available for callers that need excess
+activities. This adapter takes pressure in bar and returns component-ordered
+``ln(gamma)``; the full-G phase adapters above take pressure in Pa.
+
+.. code-block:: python
+
+   from exoeos import IdealSolution
+   from exogibbs.interop.exoeos import make_solution_lngamma_func
+
+   lngamma = make_solution_lngamma_func(
+       source_components=("Fe", "Si", "O"),
+       model=IdealSolution(),
+       model_components=("Fe", "Si", "O"),
+   )
+   # T in K, P in bar, normalized fractions in consumer order.
+   values = lngamma(3000.0, 1.0, [0.9, 0.08, 0.02])
+
+Retired metal--silicate examples
+--------------------------------
+
+Version 0.7 removes the example-local metal--silicate solvers, M1/M2 runners,
+material-specific proof workflows and their dedicated tests. Current consumers,
+including the S1 recipe, use ``exogibbs.api.multiphase``. The packaged
+thermochemistry, solubility laws and ExoEOS adapters remain available.
+
+Reproduce an older M2 calculation with its recorded ExoGibbs commit and provider
+versions. A pre-removal checkout containing the complete legacy workflows is
+`64325fd347b2f1d77237ce5afae4aa43b2e97d08
+<https://github.com/HajimeKawahara/exogibbs/tree/64325fd347b2f1d77237ce5afae4aa43b2e97d08/examples/metal_silicate>`_.
+For example, prepare a separate source checkout with:
+
+.. code-block:: console
+
+   git worktree add --detach ../exogibbs-legacy-m2 64325fd347b2f1d77237ce5afae4aa43b2e97d08
+
+Select that checkout's ``src`` on ``PYTHONPATH`` when replaying its workflows.
+Old ExoInventory runners that import ``examples/metal_silicate`` must point to
+the historical checkout. Current releases do not provide compatibility shims
+for those example modules. Frozen JSON data, validation records and archived
+results retain their original content; they do not establish results for a
+new material model or state.

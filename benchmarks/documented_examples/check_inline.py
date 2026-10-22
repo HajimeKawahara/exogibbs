@@ -24,7 +24,7 @@ CASES = {
     "condensate_profile": {"document": "documents/condensate_profile.rst", "blocks": (3, 4), "kind": "profile"},
     "solubility": {"document": "documents/solubility.rst", "blocks": (0,), "kind": "solubility"},
     "magma_gas_interface": {"document": "documents/magma_gas_interface.rst", "blocks": (0,), "kind": "magma"},
-    "ideal_solution_adapter": {"document": "documents/metal_silicate_reference.rst", "blocks": (0,), "kind": "adapter"},
+    "ideal_solution_adapter": {"document": "documents/multiphase.rst", "blocks": (2,), "kind": "adapter"},
 }
 JAPANESE_CASES = {
     "ja_magma_gas_interface": {"document": "ja/magma_gas_interface.tex", "blocks": (0,), "kind": "legacy_magma"},

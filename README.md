@@ -6,6 +6,19 @@ Differentiable Thermochemical Equilibrium, powered by JAX.
 The optimization scheme is based on the Lagrange multiplier, similar to [NASA/CEA algorithm](https://ntrs.nasa.gov/api/citations/19950013764/downloads/19950013764.pdf).
 The terminology follows Smith and Missen, [Chemical Reaction Equilibrium Analysis](https://aiche.onlinelibrary.wiley.com/doi/10.1002/aic.690310127) (1983, Wiley-Interscience).
 
+## Equilibrium modes
+
+| Mode | Public API | Thermodynamic inputs |
+| --- | --- | --- |
+| Gas only | `exogibbs.api.gas` | Gas standard thermochemistry |
+| Gas and pure condensates | `exogibbs.api.condensate` | Gas and pure-condensate standard thermochemistry |
+| Multiphase, including solution phases | `exogibbs.api.multiphase` | Full extensive Gibbs energy for each phase |
+
+The [solver guide](documents/equilibrium_solvers.rst) compares units, amount
+conventions, execution and derivative support. The
+[magma--gas interface](documents/magma_gas_interface.rst) is an application
+over the gas solver.
+
 ## Basic Use
 
 ```python
@@ -36,6 +49,12 @@ nk_result = res.x #mixing ratio
 - fastchem4_cond: number of condensate species: 219
 
 ## v0.7 release highlights
+
+Version 0.7 retires the example-local metal--silicate solvers and M1/M2
+workflows. Use `exogibbs.api.multiphase` for current multiphase calculations.
+The [multiphase guide](documents/multiphase.rst) identifies the historical
+checkout for reproducing old M2 runs; reference data and validation records
+are preserved.
 
 Version 0.7 strengthens fail-closed condensate validation. Candidate solutions
 with non-finite gas amounts or non-finite or negative condensate amounts are
