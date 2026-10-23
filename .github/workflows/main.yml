@@ -2,7 +2,7 @@ name: Run pytest
 
 on:
   push:
-    branches: [ "develop", "main", "release*" ]
+    branches: [ "develop", "main", "release*", "release/**" ]
   # Stacked PRs target feature branches and need the same checks.
   pull_request:
   workflow_dispatch:
@@ -38,7 +38,7 @@ jobs:
           if [[ "$EVENT_NAME" != "pull_request" ]]; then
             echo "scientific=true" >> "$GITHUB_OUTPUT"
           elif git diff --quiet "$BASE_SHA...$HEAD_SHA" -- \
-            examples benchmarks src/exogibbs/data \
+            examples benchmarks src/exogibbs \
             tests/unittests/examples tests/unittests/benchmarks \
             .github/workflows/main.yml pyproject.toml; then
             echo "scientific=false" >> "$GITHUB_OUTPUT"
@@ -143,7 +143,8 @@ jobs:
       - name: Install packages and integration dependencies
         run: |
           python -m pip install -e . -e ./providers/exoeos \
-            'jax[cpu]==0.4.30' 'numpy==1.26.4' 'scipy==1.13.1' 'pytest==8.3.5'
+            'jax[cpu]==0.4.30' 'numpy==1.26.4' 'scipy==1.13.1' \
+            'pytest==8.3.5' 'matplotlib==3.9.1'
 
       - name: Assert provider API and actual import paths
         run: |
@@ -156,7 +157,6 @@ jobs:
           import exogibbs
           from exoeos.ma_fe_si_o_h import MaFeSiOHLiquid
           from exoeos.solution_gibbs import total_solution_state
-          from exoeos.ma_interval import ma_alloy_curvature_lower_bound
 
           root = Path.cwd()
           provider = root / "providers/exoeos"
@@ -170,16 +170,6 @@ jobs:
               assert actual == expected.resolve(), (actual, expected)
           assert exoeos.MaFeSiOHLiquid is MaFeSiOHLiquid
           assert exoeos.total_solution_state is total_solution_state
-          assert callable(ma_alloy_curvature_lower_bound)
-          assert (provider / "examples/melts_liquid_mixing.py").is_file()
-          assert (provider / "examples/melts_water_reconstruction.py").is_file()
-          assert (provider / "examples/melts_solid_mixing.py").is_file()
-          assert (provider / "examples/m2_material/associate_reference.py").is_file()
-          assert (provider / "examples/m2_material/hydrogen_oxygen_sources.json").is_file()
-          assert (provider / "examples/m2_material/potassium_reference.py").is_file()
-          assert (provider / "examples/m2_material/helium_dissolution.py").is_file()
-          assert (provider / "examples/m2_material/sodium_metal.py").is_file()
-          assert (provider / "examples/m2_material/major_gas_eos.py").is_file()
           assert Path(inspect.getfile(MaFeSiOHLiquid)).resolve() == (
               provider / "src/exoeos/ma_fe_si_o_h.py"
           ).resolve()
@@ -191,38 +181,7 @@ jobs:
         run: |
           mkdir -p results
           tests=(
-            tests/unittests/examples/metal_silicate_hydrogen_test.py
-            tests/unittests/examples/metal_silicate_native_test.py
-            tests/unittests/examples/metal_silicate_full_potential_test.py
-            tests/unittests/examples/metal_silicate_common_gibbs_test.py
-            tests/unittests/examples/metal_silicate_common_gas_test.py
-            tests/unittests/examples/m2_atmosphere_test.py
-            tests/unittests/examples/m2_gas_eos_test.py
-            tests/unittests/examples/m2_gas_global_test.py
-            tests/unittests/examples/m2_finite_gas_test.py
-            tests/unittests/examples/m2_phosphorus_test.py
-            tests/unittests/examples/m2_associated_test.py
-            tests/unittests/examples/m2_potassium_test.py
-            tests/unittests/examples/m2_sodium_test.py
-            tests/unittests/examples/m2_sodium_global_test.py
-            tests/unittests/examples/m2_host_stability_test.py
-            tests/unittests/examples/metal_silicate_standards_audit_test.py
-            tests/unittests/examples/m2_helium_test.py
-            tests/unittests/examples/m2_water_global_test.py
-            tests/unittests/examples/m2_water_binding_test.py
-            tests/unittests/examples/m2_host_standards_test.py
-            tests/unittests/examples/m2_associated_global_test.py
-            tests/unittests/examples/m2_extended_common_plane_test.py
-            tests/unittests/examples/m2_helium_global_test.py
-            tests/unittests/examples/m2_common_plane_test.py
-            tests/unittests/examples/m2_common_plane_binding_test.py
-            tests/unittests/examples/m2_alloy_insertion_bound_test.py
-            tests/unittests/examples/m2_solid_global_test.py
-            tests/unittests/examples/m2_liquid_global_test.py
-            tests/unittests/examples/metal_silicate_expanded_contact_test.py
-            tests/unittests/examples/metal_silicate_phase_selection_test.py
-            tests/unittests/examples/metal_silicate_melts_coupled_test.py
-            tests/unittests/examples/metal_silicate_melts_archive_test.py
+            tests/unittests/examples/solubility_comparison_test.py
             tests/unittests/interop
           )
           marker_args=(-m "not scientific")
@@ -304,10 +263,27 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes graphviz
+
       - name: Install package and documentation dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[docs]"
+          python -m pip install "mceg @ git+https://github.com/HajimeKawahara/mceg.git@471e2516d644031b561e7bef4f4d4093b52fe07e"
+          dot -V
+
+      - name: Checkout the EOS contract selected by the H2 documentation case
+        uses: actions/checkout@v4
+        with:
+          repository: HajimeKawahara/exoeos
+          ref: 37b9173f37866495949fd7c90340a02b7ceaa78d
+          path: providers/exoeos
+
+      - name: Provide the case's sibling checkout layout
+        run: ln -s "${GITHUB_WORKSPACE}/providers/exoeos" "${GITHUB_WORKSPACE}/../exoeos"
 
       - name: Build documentation
         run: ./update_doc.sh

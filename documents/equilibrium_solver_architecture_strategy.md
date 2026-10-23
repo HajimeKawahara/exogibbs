@@ -1,10 +1,14 @@
 # Equilibrium solver architecture refactoring strategy
 
+> Historical strategy from 2026-07-27, retained as design history. Runtime paths
+> and lifecycle descriptions below refer to that checkpoint. For the current
+> three equilibrium modes, see [Equilibrium Solver APIs](equilibrium_solvers.rst).
+
 ## 0. Status and scope
 
 | Item | Value |
 |---|---|
-| Status | Working architecture decision; implementation has not started |
+| Status | Historical architecture decision; superseded by the current solver guide |
 | Audit date | 2026-07-27 |
 | Audited branch | `refactor2` |
 | Audited source | `fab1c6b40713` |

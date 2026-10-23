@@ -1,0 +1,416 @@
+schema_version: '0.1'
+model:
+  id: exogibbs.h2_hirschmann2012
+  name: H2 solubility law retained for MELTYQ compatibility
+  description: Empirical dissolved-H2 mole-fraction law with Hirschmann (2012) experimental ancestry and
+    a later formulation recorded in upstream metadata.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: c2d3e8b0490d4ae502720940ea220a21a3146a56
+    entry_points:
+    - exogibbs.solubility.h2_hirschmann2012
+assumptions:
+- statement: X_H2 = f_H2_bar * exp(-11.403 - 0.76 * P_melt_GPa), where X_H2 is dissolved H2 mole fraction.
+    Fugacity and actual melt pressure are distinct inputs; the formula does not set them equal.
+  evidence:
+  - implementation
+  - equations
+- statement: The function has no temperature or melt-composition arguments. Their absence does not establish
+    temperature or composition independence outside the source model's calibration conditions.
+  evidence:
+  - implementation
+  - reported_domain
+domains:
+- kind: scientific_applicability
+  status: documented
+  description: Calibration bounds recorded in upstream metadata; containment in these intervals alone
+    is not evidence that a complete state is calibrated.
+  conditions:
+  - Reported calibration temperatures span 1673 to 1773 K.
+  - Reported calibration total pressures span 0.7 to 3.0 GPa.
+  evidence:
+  - reported_domain
+  - metadata_temperature
+  - metadata_pressure
+- kind: scientific_applicability
+  status: documented
+  description: Scope reported in the secondary source Seo (2024), before Eq. 6. Original experimental
+    tables have not been checked against this statement; these are reported bounds, not independently
+    established calibration limits.
+  conditions:
+  - Basaltic silicate; reported experimental temperatures span 1673 to 1723 K.
+  - Reported experimental pressures span 7000 to 30000 bar (0.7 to 3.0 GPa).
+  evidence:
+  - formulation
+  - formulation_temperature
+- kind: scientific_applicability
+  status: documented
+  description: Study-wide pressure envelope directly reported in the original abstract. The abstract does
+    not resolve pressure coverage for each material or provide a joint calibration domain for the implemented
+    basaltic law.
+  conditions:
+  - Hirschmann (2012) reports experiments from 0.7 to 3 GPa overall.
+  - Synthetic basalt plus COH and synthetic andesite plus OH are separate series.
+  evidence:
+  - experimental_pressure
+  - experimental_materials
+- kind: scientific_applicability
+  status: unknown
+  description: Joint temperature, pressure, H2 fugacity and melt-composition coverage, including the required
+    redox/speciation conditions and state-specific accuracy of this implementation, are unknown in this
+    audit.
+  conditions: []
+  evidence:
+  - reported_domain
+  - formulation
+  - literature
+  - calibration_update
+  - experimental_fit
+- kind: numerical_evaluation
+  status: documented
+  description: Accepted argument domain, with no experimental-range enforcement or output clipping.
+  conditions:
+  - H2 fugacity is finite and nonnegative, in bar.
+  - Actual melt pressure is finite and nonnegative, in GPa.
+  - Array inputs must broadcast together.
+  evidence:
+  - implementation
+claims:
+- id: fixed_pressure_linearity
+  kind: theoretical
+  status: supported
+  statement: At fixed melt pressure the specified formula is linear in H2 fugacity and vanishes at zero
+    fugacity.
+  scope: Algebraic property of the empirical formula; not proof of physical Henry-law behavior everywhere.
+  evidence:
+  - equations
+- id: formula_evaluation
+  kind: numerical_verification
+  status: supported
+  statement: Upstream scalar and broadcast comparisons with reference formula values passed.
+  scope: Scalar f_H2 = 1000 bar and P_melt = 1 GPa gives approximately 0.0052200686751357186; broadcast
+    inputs use 100 and 1000 bar with 0.7, 1 and 3 GPa. These are numerical reference values.
+  evidence:
+  - provider_test_run
+- id: physical_accuracy
+  kind: physical_validation
+  status: unknown
+  statement: The physical accuracy of this implemented law at a specified state is unknown in this audit.
+  scope: No experiment or observation was reproduced here. Experimental ancestry and metadata intervals
+    do not establish the accuracy of an EOS-to-law calculation.
+  evidence:
+  - literature
+  - calibration_update
+evidence:
+- id: implementation
+  kind: implementation
+  summary: Source specifies the formula, native units, mole-fraction basis and invalid-input mask.
+  sources:
+  - src/exogibbs/solubility/volatile.py#L237-L254
+  scope: This function only; no equilibrium solver, temperature check or fraction clipping.
+  provenance:
+    role: implementation
+    location: volatile.py at the pinned revision, h2_hirschmann2012, lines 237-254.
+    inspection: inspected
+    note: The expression, fugacity in bar, actual melt pressure in GPa, and mole-fraction output were
+      inspected.
+    derived_from:
+    - evidence: formulation
+      comparison: consistent
+      note: The expression and units match Seo Eq. 6. Seo's atmospheric pressure is supplied as actual
+        melt pressure in this boundary calculation. This compares formula transcription, not the original
+        experimental fit.
+- id: equations
+  kind: theory
+  summary: Direct algebra of the implemented exponential pressure factor gives fixed-pressure linearity.
+  sources:
+  - src/exogibbs/solubility/volatile.py#L237-L254
+  scope: Mathematical consequence of the recorded formula, not a physical validation result.
+- id: reported_domain
+  kind: implementation
+  summary: SolubilityMetadata records temperature and total-pressure calibration bounds.
+  sources:
+  - src/exogibbs/solubility/volatile.py#L68-L88
+  scope: Recorded marginal intervals; no joint fugacity or composition domain is provided.
+- id: metadata_temperature
+  kind: implementation
+  summary: ExoGibbs metadata records a calibration temperature interval of 1673 to 1773 K.
+  sources:
+  - src/exogibbs/solubility/volatile.py#L68-L88
+  scope: Temperature metadata associated with this callable; the metadata does not separate experimental
+    materials.
+  provenance:
+    role: implementation
+    location: MELTYQ_SOLUBILITY_METADATA, h2_hirschmann2012, calibration_temperature_k.
+    inspection: inspected
+    note: Both endpoints and the recorded formulation reference were read directly.
+    derived_from:
+    - evidence: formulation_temperature
+      comparison: discrepancy
+      note: The lower bound and K units match, but the metadata upper bound is 1773 K while Seo reports
+        1723 K for basaltic silicate. This is a recorded scope/value difference, not a finding that either
+        source has a typo. The original material-specific runs remain unchecked.
+- id: metadata_pressure
+  kind: implementation
+  summary: ExoGibbs metadata records total pressures of 0.7 to 3.0 GPa.
+  sources:
+  - src/exogibbs/solubility/volatile.py#L68-L88
+  scope: Numeric total-pressure envelope only, compared with the study-wide original abstract; no material-specific
+    applicability claim.
+  provenance:
+    role: implementation
+    location: MELTYQ_SOLUBILITY_METADATA, h2_hirschmann2012, calibration_total_pressure_gpa.
+    inspection: inspected
+    note: The metadata interval and experimental DOI were read directly.
+    derived_from:
+    - evidence: experimental_pressure
+      comparison: consistent
+      note: Both report 0.7 to 3 GPa total pressure. This agreement is limited to the study-wide numeric
+        envelope. It does not show that every basalt run, fugacity, or composition used by the law is
+        covered.
+- id: experimental_pressure
+  kind: literature
+  summary: Hirschmann et al. (2012) reports an overall experimental pressure interval of 0.7 to 3 GPa.
+  sources:
+  - https://doi.org/10.1016/j.epsl.2012.06.031
+  - https://experts.umn.edu/en/publications/solubility-of-molecular-hydrogen-in-silicate-melts-and-consequenc/
+  scope: Study-wide total-pressure envelope reported by the authors, not a run-table audit or a fugacity
+    interval.
+  provenance:
+    role: primary
+    location: Original article abstract, first sentence, as reproduced by Experts@Minnesota.
+    inspection: inspected
+    note: Read on 2026-10-15; inspection is complete for this abstract statement only.
+- id: experimental_materials
+  kind: literature
+  summary: The original abstract distinguishes synthetic basalt plus COH from synthetic andesite plus
+    OH, with controlled H2 fugacity.
+  sources:
+  - https://doi.org/10.1016/j.epsl.2012.06.031
+  - https://experts.umn.edu/en/publications/solubility-of-molecular-hydrogen-in-silicate-melts-and-consequenc/
+  scope: Experimental-series identities only; exact compositions, buffers, and individual run conditions
+    remain uninspected.
+  provenance:
+    role: primary
+    location: Original article abstract, experimental-series description.
+    inspection: inspected
+    note: The author-institution abstract was read; it does not identify this example's unspecified melt
+      or establish pure-H2 coverage.
+- id: literature
+  kind: literature
+  summary: Metadata traces experiments to Hirschmann (2012), formulation to Seo (2024), Eq. 6, and implementation
+    to Ito and Changeat (2026), Eq. A3.
+  sources:
+  - src/exogibbs/solubility/volatile.py#L68-L88
+  - https://doi.org/10.1016/j.epsl.2012.06.031
+  - https://doi.org/10.3847/1538-4357/ad7461
+  - https://doi.org/10.48550/arXiv.2605.08752
+  scope: Provenance recorded by the implementation; the function name alone is not the full ancestry.
+- id: formulation
+  kind: literature
+  summary: Seo (2024), Eq. 6 gives X_H2 = f_H2_bar * exp(-11.403 - 0.76 * P_GPa) for basaltic silicate.
+  sources:
+  - https://arxiv.org/html/2408.17056v1#S2.SS3
+  - https://doi.org/10.3847/1538-4357/ad7461
+  scope: Adopted expression, units, and mole-fraction basis; the original fit and derivation of the two
+    numeric coefficients have not been reconstructed.
+  provenance:
+    role: secondary
+    location: arXiv:2408.17056v1, Section II.3, Eq. 6 and its variable definitions.
+    inspection: inspected
+    note: Directly read expression; fugacity is in bar and pressure in GPa. The preceding paragraph reports
+      7000 to 30000 bar and cites Hirschmann (2012).
+    derived_from:
+    - evidence: experimental_fit
+      comparison: not_checked
+      note: The original fit, concentration convention, reference state, and any temperature approximation
+        needed to obtain -11.403 and 0.76 have not been inspected. Agreement with code does not close
+        this link.
+- id: experimental_fit
+  kind: literature
+  summary: The experimental ancestry is identified, but the original fit underlying Seo Eq. 6 is uninspected.
+  sources:
+  - https://doi.org/10.1016/j.epsl.2012.06.031
+  scope: Origin and transformations of the empirical coefficients, including units and concentration basis;
+    unknown here.
+  provenance:
+    role: primary
+    location: unknown; the relevant original equation, fit parameters, and supporting table have not been
+      inspected.
+    inspection: not_inspected
+    note: Full text was not obtained on 2026-10-15. Publisher HTML/PDF requests returned HTTP 403; the
+      public article API returned metadata only and its FULL view required authentication. The accessible
+      abstract is insufficient.
+- id: formulation_temperature
+  kind: literature
+  summary: Seo (2024) reports 1673 to 1723 K for the basaltic H2 solubility experiments cited before Eq.
+    6.
+  sources:
+  - https://arxiv.org/html/2408.17056v1#S2.SS3
+  scope: The temperature interval reported for basaltic H2 experiments, not the origin of the formula
+    coefficients.
+  provenance:
+    role: secondary
+    location: arXiv:2408.17056v1, Section II.3, paragraph immediately before Eq. 6.
+    inspection: inspected
+    note: The paragraph and its citation to Hirschmann et al. (2012) were directly inspected.
+    derived_from:
+    - evidence: experimental_temperature
+      comparison: not_checked
+      note: Seo attributes the interval to Hirschmann experiments. The original experimental table and
+        basalt-specific run selection have not been checked, so transcription accuracy and scope preservation
+        are unknown.
+- id: experimental_temperature
+  kind: literature
+  summary: Hirschmann et al. (2012) is the identified original experimental source; its basalt-specific
+    temperature coverage has not been audited.
+  sources:
+  - https://doi.org/10.1016/j.epsl.2012.06.031
+  - https://experts.umn.edu/en/publications/solubility-of-molecular-hydrogen-in-silicate-melts-and-consequenc/
+  scope: Basalt-specific experimental temperature coverage; no numeric bounds are asserted from an uninspected
+    table.
+  provenance:
+    role: primary
+    location: unknown; the original basalt-specific run table or passage has not been located.
+    inspection: not_inspected
+    note: The author-institution abstract identifies separate basalt and andesite experimental series.
+      That does not constitute inspection of the original temperature data relevant to this evidence item.
+- id: temperature_crosscheck
+  kind: literature
+  summary: Chaudhari (2025), Fig. 8 describes selected older runs at mostly 1400 degC, with two basalt
+    runs at 1450 degC and two andesite runs at 1500 degC.
+  sources:
+  - https://link.springer.com/article/10.1007/s00410-025-02272-y#Fig8
+  scope: Secondary description of the Fe-FeO-H2O-buffer subset shown in Fig. 8, not the full original
+    run inventory.
+  provenance:
+    role: secondary
+    location: Chaudhari et al. (2025), Fig. 8 caption.
+    inspection: inspected
+    note: Adding 273.15 gives 1673.15, 1723.15, and 1773.15 K. Material-specific subsets could explain
+      the differing upper bounds, but that explanation is an inference pending the original table, not
+      a confirmed correction.
+    derived_from:
+    - evidence: experimental_temperature
+      comparison: not_checked
+      note: The caption was read, but its selection of Hirschmann runs has not been checked against the
+        original table.
+- id: calibration_update
+  kind: literature
+  summary: Upstream metadata cites Chaudhari (2025) as reporting potential overestimation from the older
+    infrared calibration and retains this law for compatibility.
+  sources:
+  - src/exogibbs/solubility/volatile.py#L80-L87
+  - https://doi.org/10.1007/s00410-025-02272-y
+  scope: A recorded calibration caveat, not a quantified correction to any specific computed result.
+- id: infrared_recalibration
+  kind: experiment
+  summary: Chaudhari (2025) reports a new H2 infrared extinction coefficient of 2.12 +/- 0.05 L mol^-1
+    cm^-1 from haplogranitic glasses.
+  sources:
+  - https://link.springer.com/article/10.1007/s00410-025-02272-y#Fig5
+  scope: New calibration using oxidation and Karl Fischer titration. The methods, reported regression,
+    and limitations were read, not independently fitted. Transfer from haplogranitic to basaltic or andesitic
+    glasses can introduce systematic error; this is not direct validation of the example's melt.
+  provenance:
+    role: primary
+    location: Results, Infrared spectra and infrared extinction coefficients; Fig. 5 and Discussion, Comparison
+      to previous studies.
+    inspection: inspected
+    note: This paper is primary for its new calibration, but secondary for its account of the 2012 calibration
+      history.
+- id: historical_calibration
+  kind: literature
+  summary: Chaudhari (2025) attributes the older concentration scale to a silica-glass coefficient of
+    0.26 L mol^-1 cm^-1 from Shelby (1994), used by Hirschmann (2012).
+  sources:
+  - https://link.springer.com/article/10.1007/s00410-025-02272-y
+  scope: Secondary report of an inherited calibration. The later paper reports agreement after recalculation
+    for comparable Fe-FeO-H2O-buffer conditions; this does not establish a correction for the pure-H2
+    example.
+  provenance:
+    role: secondary
+    location: Introduction; Discussion, Comparison to previous studies; Fig. 8; reference entry for Shelby
+      (1994).
+    inspection: inspected
+    note: The older coefficient's original determination and its adoption in 2012 have not been directly
+      checked.
+    derived_from:
+    - evidence: original_calibration
+      comparison: not_checked
+      note: The historical attribution comes from the 2025 paper; neither the original coefficient nor
+        its transfer between glasses has been verified here.
+- id: original_calibration
+  kind: literature
+  summary: Shelby (1994), Protonic species in vitreous silica, is the candidate earlier calibration source
+    identified by Chaudhari (2025).
+  sources:
+  - Shelby JE (1994). Protonic species in vitreous silica. Journal of Non-Crystalline Solids 179:138-147.
+  - https://link.springer.com/article/10.1007/s00410-025-02272-y
+  scope: Original determination of the older infrared coefficient; its primary-source status and derivation
+    have not been confirmed directly.
+  provenance:
+    role: unknown
+    location: unknown; only the bibliographic entry and attribution in Chaudhari (2025) were inspected.
+    inspection: not_inspected
+    note: A candidate earlier source is retained without inventing an inspected passage or a verified
+      numeric value.
+- id: numerical_tests
+  kind: numerical_test
+  result: passed
+  summary: test_meltyq_laws_match_independent_reference_values and test_laws_broadcast_array_inputs passed.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/blob/6b4cef45d2a6f1eb1462afd6cb6d3f1c77dba8ea/tests/unittests/solubility/meltyq_test.py#L28-L91
+  - https://github.com/HajimeKawahara/mceg/blob/ffcfb23cc7f135a3d8c505b4c1f5af8a5327986e/docs/en/h2_solubility.md#verification
+  scope: Formula references at rtol = 1e-6; included in an 8-test upstream run using Python 3.12.7, JAX
+    0.6.2, NumPy 2.1.0, pytest 8.3.3, CPU and x64. Historical execution at upstream revision 6b4cef45d2a6f1eb1462afd6cb6d3f1c77dba8ea;
+    not the new pilot run.
+- id: provider_test_run
+  kind: numerical_test
+  result: passed
+  summary: The selected provider tests passed in the maintenance run (8 tests).
+  sources:
+  - results/mceg/h2_tests_c2d3e8b.json
+  - results/mceg/h2_tests_c2d3e8b.xml
+  scope: Only the recorded test selectors at implementation revision c2d3e8b0490d4ae502720940ea220a21a3146a56.
+    Source hashes and execution environment are preserved in the receipt; these checks do not establish
+    physical accuracy.
+limitations:
+- statement: Seo is a secondary source for experimental coverage; its temperature statement has not been
+    checked against the original experimental records.
+  evidence:
+  - formulation_temperature
+  - experimental_temperature
+- statement: Formula agreement between code and Seo does not verify the empirical coefficients against
+    the original fit.
+  evidence:
+  - implementation
+  - formulation
+  - experimental_fit
+- statement: The metadata upper temperature is 1773 K, whereas the Eq. 6 source states 1723 K; these source-scoped
+    bounds must not be silently combined.
+  evidence:
+  - metadata_temperature
+  - formulation_temperature
+  - temperature_crosscheck
+- statement: Missing temperature and composition arguments prevent the function from checking those applicability
+    conditions.
+  evidence:
+  - implementation
+  - reported_domain
+- statement: Values above one are not clipped; a numerically returned value need not be a physically admissible
+    mole fraction.
+  evidence:
+  - implementation
+- statement: The retained calibration has a documented later caveat; no replacement law or correction
+    factor is established here.
+  evidence:
+  - calibration_update
+  - infrared_recalibration
+  - historical_calibration
+- statement: Reaching an original experiment does not audit inherited analytical calibration or justify
+    transferring it between different glasses.
+  evidence:
+  - historical_calibration
+  - original_calibration
+  - infrared_recalibration

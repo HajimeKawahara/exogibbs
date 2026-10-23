@@ -99,6 +99,16 @@ retired solver.
 See :doc:`../condensate_profile` for the profile method contract and v2
 lifecycle diagnostics.
 
+Reviewed Gas Thermochemistry
+----------------------------
+
+For gas-only calculations with reviewed atomic-ion and major-molecule source
+choices, use :doc:`curated` on **1500--4000 K**, with ``ions=True`` or
+``ions=False``. That page also describes migration from the retired Ni/Co-only
+preset. The :doc:`../ni_co_ionization_audit` retains the original discrepancy
+and independent checks. The separate :doc:`../standard_thermodynamics` model
+continues to provide absolute entropy and heat capacity on **1500--4500 K**.
+
 Packaged Data
 -------------
 The default gas setup reads:

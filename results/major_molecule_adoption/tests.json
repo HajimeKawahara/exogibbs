@@ -1,0 +1,56 @@
+{
+  "status": "passed",
+  "timestamp_utc": "2026-10-18T02:28:19.436695+00:00",
+  "command": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 .venv/bin/python -m pytest -q tests/unittests/examples/major_molecule_adoption_test.py tests/unittests/examples/atomic_ion_adoption_test.py tests/unittests/examples/atomic_ion_audit_test.py tests/unittests/examples/ni_co_ionization_test.py tests/unittests/presets/fastchem4_nasa9_ions_test.py --junitxml=results/major_molecule_adoption/tests.xml",
+  "python": "3.12.3",
+  "packages": {
+    "pytest": "9.1.1",
+    "jax": "0.11.2",
+    "numpy": "2.5.4",
+    "pydantic": "2.14.1",
+    "PyYAML": "6.0.3",
+    "sphinx": "7.4.7"
+  },
+  "counts": {
+    "tests": 44,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "scope": "12 new molecular-study tests and 32 prior atomic-ion/preset tests. The full package suite was not run; no physical-validation claim.",
+  "selected_file_sha256": {
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "examples/comparisons/data/major_molecule_adoption.json": "2836795c24a7990d9e8b01b896102b405167119d2f72ff0e54dcc8b551abac92",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/unittests/examples/major_molecule_adoption_test.py": "d3b3a67d506a3af2b3ebb29dd7493a13bc4df4a84d58614af24e674a98919a37",
+    "tests/unittests/examples/atomic_ion_adoption_test.py": "6ea410ec75cd26a2e3f7c6ad9e312464f8b438d3fe7e6e830695b3f69c3151fc",
+    "tests/unittests/examples/atomic_ion_audit_test.py": "9167a39a21e31af0c8f628942b4f3e8531cbe6ad8b1d0ba798c75f7f9a1edc76",
+    "tests/unittests/examples/ni_co_ionization_test.py": "02986fba894f6a0633141327402a3df0d3ac7e73ed52386052bfade037f103e6",
+    "tests/unittests/presets/fastchem4_nasa9_ions_test.py": "a89aca96348f34646a38b7d46031a7535b8a6a4a1d45e8eb7a0f0ca3631f40a7",
+    "src/exogibbs/thermo/standard.py": "b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1",
+    "src/exogibbs/presets/fastchem4_nasa9_ions.py": "597f8f7b6e30694ddd2b4dad17a69a134ef2b09ffb2d8dec3810a78cbad905e9",
+    "mceg/contracts/major_molecule_adoption.yaml": "07149c6d2c10676863b4f1db77e9d6802b03ff2b35dfc855b9d3cd2654ec55aa"
+  },
+  "junit_sha256": "669889a92ed2110e754339855c04e5420b46f70626d9dd37653c77ef6edc9259",
+  "mceg": {
+    "repository": "https://github.com/HajimeKawahara/mceg",
+    "revision": "d7a6958d483721b4863ca2928955554b7930a5f1",
+    "structural_validation": "passed",
+    "contract": "mceg/contracts/major_molecule_adoption.yaml",
+    "command": "PYTHONPATH=/home/kawahara/mceg/src .venv/bin/python -m mceg mceg/contracts/major_molecule_adoption.yaml",
+    "scope": "Structure only; no MCEG runtime or test dependency."
+  },
+  "documentation": {
+    "status": "passed",
+    "command": "PATH=\"$PWD/.venv/bin:$PATH\" JAX_PLATFORMS=cpu ./update_doc.sh -D plot_gallery=0",
+    "warning_count": 2032,
+    "changed_page_warning_count": 0,
+    "scope": "HTML build completed. Gallery examples were not reexecuted. Existing warnings remain elsewhere; the new adoption page has no warnings.",
+    "source_sha256": {
+      "documents/major_molecule_adoption.rst": "dedd29371d787410b90f8b46cc5b9e25d9b0d996c5001c545b21f645682dec87",
+      "documents/index.rst": "b8761471b24d394ce36d03e06768d90d839525407cd20c381dda3e3bc30050fc"
+    }
+  }
+}

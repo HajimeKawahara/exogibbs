@@ -741,7 +741,7 @@ def _minimize_gibbs_cond_fun(carry):
     return (epsilon > epsilon_crit) & (counter < max_iter)
 
 
-def _minimize_gibbs_body_fun(carry):
+def _minimize_gibbs_body_fun(carry, *, relative_charge=False):
     (
         ln_nk,
         ln_ntot,
@@ -767,6 +767,7 @@ def _minimize_gibbs_body_fun(carry):
         hvector,
         gk,
         An,
+        relative_charge=relative_charge,
     )
     # Keep cond/body at module scope and thread solver context through the
     # carry so repeated calls reuse the same while_loop callable identities.
@@ -785,6 +786,9 @@ def _minimize_gibbs_body_fun(carry):
         epsilon_crit,
         max_iter,
     )
+
+_minimize_gibbs_charge_body_fun = partial(_minimize_gibbs_body_fun, relative_charge=True)
+
 
 def solve_gibbs_iteration_equations(
     nk: jnp.ndarray,
@@ -904,9 +908,11 @@ def _prepare_iteration_system(
     return nk, ntot, resn, bmatrix, rhs, scalar_rhs
 
 
-def _solve_iteration_system(bmatrix, rhs, An, resn):
+def _solve_iteration_system(bmatrix, rhs, An, resn, regularization_scale=None):
     jitter = jnp.asarray(_CHO_EPS, dtype=bmatrix.dtype)
     eye = jnp.eye(bmatrix.shape[0], dtype=bmatrix.dtype)
+    if regularization_scale is not None:
+        eye = regularization_scale[:, None] * eye
     c_factor, lower = cho_factor(bmatrix + jitter * eye)
 
     rhs_pair = jnp.stack((rhs, An), axis=1)
@@ -957,6 +963,8 @@ def _evaluate_iteration_state(
     lam,
     at_pi,
     pi_vector,
+    *,
+    relative_charge=False,
 ):
     nk = jnp.exp(ln_nk)
     ntot = jnp.exp(ln_ntot)
@@ -964,6 +972,12 @@ def _evaluate_iteration_state(
     gk = gk_prev + lam * (at_pi - gk_prev)
     An = formula_matrix @ nk
     epsilon = compute_residuals_with_at_pi(nk, ntot, b, gk, An, at_pi)
+    if relative_charge:
+        # Absolute residuals can hide an imbalance among trace charge carriers.
+        signed = jnp.any(formula_matrix < 0, axis=1)
+        scale = jnp.abs(formula_matrix) @ nk + jnp.abs(b)
+        relative = jnp.abs(An - b) / jnp.where(scale > 0, scale, 1.)
+        epsilon = jnp.maximum(epsilon, jnp.max(jnp.where(signed, relative, 0.)))
     return gk, An, epsilon
 
 def update_all(
@@ -976,11 +990,19 @@ def update_all(
     hvector,
     gk,
     An,
+    *,
+    relative_charge=False,
 ):
     _, _, resn, bmatrix, rhs, scalar_rhs = _prepare_iteration_system(
         ln_nk, ln_ntot, formula_matrix, b, gk, An
     )
-    binv_rhs, binv_an, schur_safe = _solve_iteration_system(bmatrix, rhs, An, resn)
+    scale = None
+    if relative_charge:
+        # A fixed absolute diagonal shift overwhelms weak charge constraints.
+        diagonal = jnp.diag(bmatrix)
+        signed = jnp.any(formula_matrix < 0, axis=1)
+        scale = jnp.where(signed & (diagonal > 0), diagonal, 1.)
+    binv_rhs, binv_an, schur_safe = _solve_iteration_system(bmatrix, rhs, An, resn, scale)
     pi_vector, delta_ln_ntot = _finish_iteration_solve(
         binv_rhs, binv_an, An, scalar_rhs, schur_safe
     )
@@ -999,6 +1021,7 @@ def update_all(
         lam,
         at_pi,
         pi_vector,
+        relative_charge=relative_charge,
     )
     return ln_nk, ln_ntot, epsilon, gk, An
 
@@ -1165,6 +1188,8 @@ def minimize_gibbs_core(
     hvector_func,
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
+    *,
+    relative_charge: bool = False,
 ) -> Tuple[jnp.ndarray, float, int, jnp.ndarray]:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
@@ -1213,7 +1238,7 @@ def minimize_gibbs_core(
     )
     ln_nk, ln_tot, _, _, epsilon, counter, _, _, _, _, _, _, _ = while_loop(
         _minimize_gibbs_cond_fun,
-        _minimize_gibbs_body_fun,
+        _minimize_gibbs_charge_body_fun if relative_charge else _minimize_gibbs_body_fun,
         init_carry,
     )
     return ln_nk, ln_tot, counter, epsilon
@@ -1268,7 +1293,7 @@ def minimize_gibbs_core_with_source_trace(
 
 # Keep the transformed solver at module scope so repeated calls reuse the same
 # Python callable identity instead of rebuilding a new custom_jvp closure.
-@partial(custom_jvp, nondiff_argnums=(3, 5, 6))
+@partial(custom_jvp, nondiff_argnums=(3, 5, 6, 7))
 def _minimize_gibbs_solve(
     state: ThermoState,
     ln_nk0: jnp.ndarray,
@@ -1277,6 +1302,7 @@ def _minimize_gibbs_solve(
     hvector: jnp.ndarray,
     epsilon_crit: float,
     max_iter: int,
+    relative_charge: bool,
 ) -> Tuple[jnp.ndarray, jnp.ndarray, jnp.ndarray, jnp.ndarray]:
     return minimize_gibbs_core(
         state,
@@ -1286,6 +1312,7 @@ def _minimize_gibbs_solve(
         hvector,
         epsilon_crit,
         max_iter,
+        relative_charge=relative_charge,
     )
 
 
@@ -1369,6 +1396,7 @@ def _minimize_gibbs_solve_jvp(
     formula_matrix: jnp.ndarray,
     epsilon_crit: float,
     max_iter: int,
+    relative_charge: bool,
     primals,
     tangents,
 ):
@@ -1382,6 +1410,7 @@ def _minimize_gibbs_solve_jvp(
         hvector,
         epsilon_crit,
         max_iter,
+        relative_charge=relative_charge,
     )
     ln_nk_dot = _solve_implicit_gibbs_tangent(
         ln_nk,
@@ -1417,6 +1446,8 @@ def minimize_gibbs(
     hvector_func: Union[Callable[[float], jnp.ndarray], jnp.ndarray],
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
+    *,
+    relative_charge: bool = False,
 ) -> jnp.ndarray:
     """Compute log(number of species) by minimizing the Gibbs energy using the Lagrange multipliers method.
 
@@ -1450,6 +1481,7 @@ def minimize_gibbs(
         hvector,
         epsilon_crit,
         max_iter,
+        relative_charge,
     )[0]
 
 
@@ -1461,6 +1493,8 @@ def minimize_gibbs_with_diagnostics(
     hvector_func: Union[Callable[[float], jnp.ndarray], jnp.ndarray],
     epsilon_crit: float = 1.0e-11,
     max_iter: int = 1000,
+    *,
+    relative_charge: bool = False,
 ) -> Tuple[jnp.ndarray, Dict[str, jnp.ndarray]]:
     """Return composition and diagnostics from one Gibbs minimization.
 
@@ -1478,6 +1512,7 @@ def minimize_gibbs_with_diagnostics(
         hvector,
         epsilon_crit,
         max_iter,
+        relative_charge,
     )
     epsilon_crit_used = jnp.asarray(epsilon_crit, dtype=final_residual.dtype)
     max_iter_used = jnp.asarray(max_iter, dtype=n_iter.dtype)

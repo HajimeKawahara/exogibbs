@@ -1,0 +1,36 @@
+format: mceg_documentation_case_v1
+id: h2-solubility
+title: Pure-H2 EOS to dissolved hydrogen at 1700 K
+description: A fixed-input connection from the pure-H2 EOS to the retained H2 solubility law at 1700
+  K and 7500 bar. Combined physical accuracy remains unknown; no case-specific assessment is selected.
+  This does not solve coupled gas-magma equilibrium.
+inputs:
+  temperature_K: 1700.0
+  total_pressure_bar: 7500.0
+  melt_composition: unknown
+providers:
+  exogibbs: ../../..
+  exoeos: ../../../../exoeos
+components:
+  eos:
+    provider: exoeos
+    model_id: exoeos.zhang_duan_h2
+    path: mceg/contracts/zhang_duan_h2.yaml
+    sha256: 719edf0917d0216edfeab23c35fb36a7957270e27e50c669ee4b5930fbc74903
+    settings:
+      phase_selector: vapor
+      H2_mole_fraction: 1.0
+  solubility:
+    provider: exogibbs
+    model_id: exogibbs.h2_hirschmann2012
+    path: mceg/contracts/h2_solubility.yaml
+    sha256: 29f4f049a9a563f14ee23c4031e26d7c021c0d6db8efa3c437978462a120e027
+    settings:
+      melt_composition: unknown
+connections:
+- consumer: solubility
+  dependency: eos
+  quantity: hydrogen_fugacity
+  description: exogibbs.interop.exoeos.make_pure_lnphi_func converts bar to Pa for the pure-H2 EOS.
+    f_H2_bar = exp(lnphi_H2) * P_bar for x_H2 = 1. Melt pressure is separately P_bar / 10000 in GPa.
+    Temperature enters the EOS; the solubility function has no temperature or composition argument.

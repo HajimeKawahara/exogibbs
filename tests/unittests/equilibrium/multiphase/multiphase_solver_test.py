@@ -30,6 +30,10 @@ def run(problem, *, budget=(1.,), init=(.3, .7), parameters=None,
         support=None, options=mp.Options()):
     if parameters is None:
         parameters = jnp.zeros(2)
+    if support is None and np.shape(budget) == (len(problem.elements),):
+        reachable = ~np.any(problem.atom_matrix[np.asarray(budget) == 0] > 0, axis=0)
+        if np.any(reachable):
+            support = mp.Support(tuple(np.flatnonzero(reachable)))
     return mp.solve(problem, temperature_k=1200., pressure_pa=1e5,
                     element_amounts_mol=budget, init=init, parameters=parameters,
                     support=support, options=options)
@@ -97,7 +101,7 @@ def test_zero_budget_removal_and_whole_absent_phase_are_exact():
     assert jnp.isnan(result.element_potentials_j_mol[1])
     assert jnp.all(jnp.isnan(result.insertion_lower))
     assert jnp.all(jnp.isnan(result.incipient_compositions[1]))
-    assert result.stability_status == "unchecked" and not result.derivative_valid
+    assert result.stability_status == "unchecked" and result.derivative_valid
 
 
 def test_zero_component_in_present_phase_and_redundant_elements():
@@ -124,7 +128,7 @@ def test_nonconvex_stationary_maximum_is_not_accepted():
     assert abs(float(result.amounts_mol[0]) - .5) == pytest.approx(np.sqrt(.05), abs=1e-8)
 
 
-def test_jit_dynamic_inputs_parameters_and_explicit_derivative_failure():
+def test_jit_dynamic_inputs_parameters_and_implicit_derivatives():
     problem = binary()
     support = mp.Support((0, 1))
 
@@ -140,10 +144,13 @@ def test_jit_dynamic_inputs_parameters_and_explicit_derivative_failure():
     second = solve(jnp.array([3.]), jnp.array([0., 1.]))
     np.testing.assert_allclose(first.amounts_mol, [.5, .5], atol=1e-12)
     np.testing.assert_allclose(second.amounts_mol, 3 * jax.nn.softmax(jnp.array([0., -1.])), atol=1e-12)
-    with pytest.raises(NotImplementedError, match="R4"):
-        jax.jacfwd(lambda b: solve(b, jnp.zeros(2)).amounts_mol)(jnp.array([1.]))
-    with pytest.raises(NotImplementedError, match="R4"):
-        jax.grad(lambda p: solve(jnp.array([1.]), p).gibbs_j)(jnp.zeros(2))
+    assert first.derivative_valid and second.derivative_valid
+    np.testing.assert_allclose(
+        jax.jacfwd(lambda b: solve(b, jnp.zeros(2)).amounts_mol)(jnp.array([1.])), [[.5], [.5]],
+    )
+    np.testing.assert_allclose(
+        jax.grad(lambda p: solve(jnp.array([1.]), p).gibbs_j)(jnp.zeros(2)), R*1200*np.array([.5, .5]),
+    )
 
 
 @pytest.mark.parametrize("budget", [(-1.,), (0.,), (np.nan,), (1., 2.)])
@@ -211,3 +218,37 @@ r = m.solve(p, temperature_k=1000., pressure_pa=1e5, element_amounts_mol=[2.], i
 assert r.local_kkt_valid and r.amounts_mol[0] == 2.
 '''
     subprocess.run([sys.executable, "-c", code], env=os.environ.copy(), check=True)
+
+
+def test_relative_projection_and_curvature_keep_trace_gas():
+    """A feasible 1e-40 species must survive budget projection and Newton steps."""
+    standard = jnp.array([0., 100., 80.])
+    def gas(t, p, n, parameters):
+        return R*t*jnp.sum(n*(standard+jnp.log(n/jnp.sum(n))))
+    phase = mp.Phase("gas", ("A", "B", "C"), [[1., 1., 2.]], gas)
+    problem = mp.Problem(("X",), (phase,))
+    result = mp.solve_fixed_support(problem, temperature_k=1000., pressure_pa=1e5,
+        element_amounts_mol=jnp.array([3.]), support=mp.Support((0, 1, 2)),
+        init=jnp.array([3.+1e-14, 1e-40, 1e-32]), options=mp.Options(max_iterations=200))
+    assert result.converged and result.local_kkt_valid and result.minimum_valid
+    assert result.amounts_mol[1] > 0 and result.amounts_mol[2] > 0
+    assert float(result.stationarity_error) < 1e-10
+    assert float(result.conservation_error) < 1e-12
+
+
+def test_conserved_gauge_does_not_swamp_trace_newton_residuals():
+    """Known ideal equilibrium on thirteen elements and a 45-decade amount range."""
+    rng = np.random.default_rng(17)
+    atoms = np.c_[np.eye(13), rng.integers(0, 4, size=(13, 40))]
+    expected = np.r_[np.ones(13), np.geomspace(1e-3, 1e-45, 40)]
+    dual = np.linspace(-100., 30., 13)
+    standards = atoms.T @ dual-np.log(expected/expected.sum())
+    phase = mp.Phase("gas", tuple(f"s{i}" for i in range(53)), atoms, ideal)
+    problem = mp.Problem(tuple(f"e{i}" for i in range(13)), (phase,))
+    result = mp.solve_fixed_support(problem, temperature_k=1000., pressure_pa=1e5,
+        element_amounts_mol=atoms @ expected, support=mp.Support(tuple(range(53))),
+        init=expected*np.exp(.05*np.sin(np.arange(53))), parameters=jnp.asarray(standards))
+    assert result.converged and result.local_kkt_valid and result.minimum_valid
+    assert float(result.stationarity_error) < 1e-10
+    np.testing.assert_allclose(result.amounts_mol, expected, atol=0., rtol=1e-9)
+    assert not result.derivative_valid

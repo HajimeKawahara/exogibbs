@@ -20,28 +20,36 @@ Contents
 
 .. toctree::
    :maxdepth: 1
-   :caption: PRESETS:
+   :caption: RELEASES:
 
+   release_notes
+
+.. toctree::
+   :maxdepth: 1
+   :caption: EQUILIBRIUM:
+
+   equilibrium_solvers.rst
+   condensate_profile.rst
+   multiphase.rst
+   plagioclase_exsolution
+
+.. toctree::
+   :maxdepth: 1
+   :caption: THERMODYNAMICS AND PRESETS:
+
+   presets/curated.rst
    presets/ykb4.rst
    presets/fastchem.rst
    presets/fastchem4.rst
-   equilibrium_solvers.rst
-   condensate_profile.rst
    standard_thermodynamics.rst
 
 .. toctree::
    :maxdepth: 1
-   :caption: AUXILIARY:
+   :caption: APPLICATIONS AND MODEL EVIDENCE:
 
    solubility.rst
    magma_gas_interface.rst
-   multiphase.rst
-   metal_silicate_reference.rst
-   subneptune_hydrogen.rst
-   subneptune_melts.rst
-   subneptune_sulfur.rst
-   cns_inventory.rst
-   subneptune_sulfide.rst
+   mceg/index
 
 .. toctree::
    :maxdepth: 1
@@ -73,7 +81,7 @@ Contents
    :maxdepth: 1
    :caption: API:
 
-   exogibbs/index.rst
+   api.rst
 
 .. toctree::
    :maxdepth: 1
@@ -81,6 +89,11 @@ Contents
 
    v0_4_fastchem4_validation_demo
    fastchem4_production_comparison
+   ni_co_ionization_audit
+   atomic_ion_audit
+   atomic_ion_adoption
+   major_molecule_adoption
+   gas_thermochemistry_impact
 
 License & Attribution
 ---------------------

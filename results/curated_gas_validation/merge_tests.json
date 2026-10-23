@@ -1,0 +1,83 @@
+{
+  "status": "passed_with_optional_skips",
+  "recorded_at_utc": "2026-10-18T10:16:42.766271+00:00",
+  "integration": {
+    "previous_pr_head": "646dffe2c090f62a1c808e68aaed4543d1ed81a2",
+    "merged_develop": "ba3af6614799c30367a8a52851451830521f2572",
+    "pull_requests": [
+      283,
+      284
+    ],
+    "conflict_resolution": "Keep both Sun-Yao and curated examples: 24 comparison-script jobs and 86 total jobs.",
+    "preset_solver_and_packaged_thermochemistry_changed": false
+  },
+  "environment": {
+    "python": "3.12.3",
+    "pytest": "9.1.1",
+    "jax": "0.11.2",
+    "backend": "cpu",
+    "jax_enable_x64": true,
+    "OPENBLAS_NUM_THREADS": 1,
+    "OMP_NUM_THREADS": 1,
+    "MKL_NUM_THREADS": 1
+  },
+  "execution": {
+    "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 .venv/bin/python -m pytest -q tests/unittests --junitxml=results/curated_gas_validation/merge_tests.xml",
+    "exit_code": 0,
+    "counts": {
+      "tests": 2600,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 115,
+      "passed": 2485
+    },
+    "seconds": 1178.925,
+    "stdout_summary": "2485 passed, 115 skipped, 586 warnings in 1178.95s (0:19:38)",
+    "junit": "results/curated_gas_validation/merge_tests.xml",
+    "junit_sha256": "f53cd97b1c3d5aec0c013ae5c6ed3176158c04331d858c6c325a108e585b995a",
+    "skip_reasons": {
+      "could not import 'pyfastchem': No module named 'pyfastchem'": 4,
+      "could not import 'exoeos': No module named 'exoeos'": 111
+    }
+  },
+  "coverage_policy": "One uninterrupted full tests/unittests execution after integrating PR #283, including all scientific regressions. Earlier PR records are preserved as historical evidence.",
+  "usage_checks": {
+    "path": "results/curated_gas_validation/merge_usage.json",
+    "sha256": "8f27a2a3a72e1557b1fb1cf2864f77b6542a3baa91b05aaaea5449ed05863852",
+    "independent_examples_passed": 6,
+    "shared_import_blocks": 1
+  },
+  "selected_file_sha256": {
+    "benchmarks/documented_examples/README.md": "a31f773c0029e880bb84526ae5fa80b43de48458cf34619bf9195c70601d8be9",
+    "benchmarks/documented_examples/run_all.py": "4f7f659db3e85ef1211069dd5ac6811c97ff3a01e8cc92e9a2e17be098463949",
+    "documents/presets/curated.rst": "5b2f26fe371d36d08a160cddb1591ebae89948dc836aa5e02683a1e94ac6ac40",
+    "documents/solubility.rst": "033372b260f36fb79aaf49a4855e0784a21254b1a6d873669e66df492a77f805",
+    "examples/comparisons/compare_sun_yao_water.py": "a2f2a114cd974f52bafb5276e2ba5f2bcb78dc1750c29b6b8f8784a000ffedfa",
+    "mceg/README.md": "e240cf24b40537782cc72637114f40ce1f852001b4adddcda9de2d5b09d05119",
+    "mceg/contracts/h2_solubility.yaml": "29f4f049a9a563f14ee23c4031e26d7c021c0d6db8efa3c437978462a120e027",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "src/exogibbs/equilibrium/gas/kernel/solver.py": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+    "src/exogibbs/equilibrium/gas/solve.py": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95",
+    "src/exogibbs/equilibrium/gas/types.py": "ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543",
+    "src/exogibbs/presets/curated.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+    "src/exogibbs/solubility/__init__.py": "8800e1d54f0f23bc49f38b1d3efa71eeb313fc4b9d879a181eef8dcfcc5e5342",
+    "src/exogibbs/solubility/sun_yao2026.py": "965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb",
+    "tests/unittests/benchmarks/documented_all_examples_test.py": "d04910415a08a5f05547d486e677be34b70b39138408bb360c84face11fe8c87",
+    "tests/unittests/mceg_contract_test.py": "a74fff9ac47bedec59736e676bcf478089555db58793742b495d398a2b1b10f6",
+    "tests/unittests/solubility/meltyq_test.py": "4d105accc5b8e66605942f2596ed70ca546f94091fe9775cfbd9da680a28f0fd",
+    "tests/unittests/solubility/sun_yao2026_test.py": "7b66c5ddc954414f27a9fff4685b424e083dcddad404dce69ea750324d1afba3"
+  },
+  "unchanged_scientific_evidence": {
+    "results/curated_atmosphere/receipt.json": "59577b96cf7c0afa1da2ee762c07ab4dc1a7d385560ed35afb5e3fe041e150f8",
+    "results/curated_gas_validation/receipt.json": "99eee0918f551106ef80f84a1ca0b010d9c18e70f1bba712b73529ced7d69b89",
+    "results/gas_thermochemistry_impact/receipt.json": "c320237a3c822761eb653bcfee90548af5e32288797b9754545e760d3322a57e"
+  },
+  "scope": "Regression and usage verification. The curated runtime and archived atmospheric calculations are unchanged. Optional integrations are skipped when packages are absent; no new whole-mixture physical validation is claimed.",
+  "post_test_documentation_changes": {
+    "documents/presets/curated.rst": {
+      "tested_sha256": "91f98ce692ba29ca19394bd87893a0fa71e1c51523b641b276e6cf88165c2f17",
+      "final_sha256": "5b2f26fe371d36d08a160cddb1591ebae89948dc836aa5e02683a1e94ac6ac40",
+      "reason": "Extended two RST heading underlines by one character each. All seven Python blocks are byte-identical to the executed versions."
+    }
+  }
+}

@@ -174,7 +174,14 @@ cython_debug/
 .pypirc
 
 # Generated comparison artifacts are not repository sources.
-/results/
+/results/*
+# Keep source-audit and adoption evidence referenced by the MCEG contracts.
+!/results/atomic_ion_audit/
+!/results/atomic_ion_adoption/
+!/results/major_molecule_adoption/
+!/results/gas_thermochemistry_impact/
+!/results/curated_gas_validation/
+!/results/curated_atmosphere/
 /volatiles_artifacts/
 
 # Local external checkouts and scratch workspaces.
@@ -209,6 +216,7 @@ cython_debug/
 /.codex
 /.vscode/
 /documents/_build/
+/documents/mceg/_generated/
 /documents/examples/
 /documents/sg_execution_times.rst
 /documents/backreferences/
@@ -218,3 +226,15 @@ codex_log.txt
 audit_findings.txt
 cp.sh
 tmp.sh
+
+# Retain only the new model-survey directory under the existing MCEG archive.
+!/results/mceg/
+/results/mceg/*
+!/results/mceg/20261020_model_survey/
+!/results/mceg/20261020_model_survey/tests.log
+
+# Retain the model inventory coverage survey.
+!/results/mceg/20261020_coverage/
+
+# Retain the offline volatile-source comparison, without downloaded papers.
+!/results/mceg/20261021_volatile_sources/

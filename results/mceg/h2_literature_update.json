@@ -1,0 +1,165 @@
+{
+  "format": "h2_literature_update_trial_v1",
+  "review_sha256": "c033905a5290453153973d54a9c5eb02694b629adf6dd5bfe207a517e6f5d474",
+  "generator_sha256": "6495ddb5d694ecc38813ab6fdc604eaedff4e9482d4eff88e76428bf08e27661",
+  "baseline_sha256": "d3ff5eb3015d1b0e8e122e8293cdf0e72967ad6e1f884ecca4bcc7b59a6714a0",
+  "private_pdf_sha256": "f9e52005a851477934a2b00b3cc65d3ef015ab0aefa2c20f110f6cbd00ad1853",
+  "source_inspection_repeated_by_replay": false,
+  "historical_records_preserved": {
+    "claims": true,
+    "evidence": true,
+    "subjects": true,
+    "contexts": true,
+    "conditions": true,
+    "assessments": true,
+    "follow_ups": true,
+    "follow_up_resolutions": true
+  },
+  "v01_restoration_equal": true,
+  "trace_comparisons": [
+    {
+      "prior_evidence": "experimental_fit",
+      "reviewed_evidence": "experimental_fit_full_text",
+      "prior_audit_complete": false,
+      "reviewed_audit_complete": true,
+      "remaining_issues": []
+    },
+    {
+      "prior_evidence": "experimental_temperature",
+      "reviewed_evidence": "experimental_runs_full_text",
+      "prior_audit_complete": false,
+      "reviewed_audit_complete": true,
+      "remaining_issues": []
+    },
+    {
+      "prior_evidence": "formulation",
+      "reviewed_evidence": "formulation_full_text",
+      "prior_audit_complete": false,
+      "reviewed_audit_complete": true,
+      "remaining_issues": []
+    },
+    {
+      "prior_evidence": "implementation",
+      "reviewed_evidence": "implementation_full_text",
+      "prior_audit_complete": false,
+      "reviewed_audit_complete": true,
+      "remaining_issues": []
+    },
+    {
+      "prior_evidence": "metadata_temperature",
+      "reviewed_evidence": "metadata_temperature_full_text",
+      "prior_audit_complete": false,
+      "reviewed_audit_complete": false,
+      "remaining_issues": [
+        {
+          "evidence": "metadata_temperature_full_text",
+          "upstream": "experimental_runs_full_text",
+          "issue": "comparison_discrepancy"
+        }
+      ]
+    },
+    {
+      "prior_evidence": "historical_calibration",
+      "reviewed_evidence": "calibration_adoption_full_text",
+      "prior_audit_complete": false,
+      "reviewed_audit_complete": false,
+      "remaining_issues": [
+        {
+          "evidence": "calibration_adoption_full_text",
+          "upstream": "original_calibration",
+          "issue": "comparison_not_checked"
+        },
+        {
+          "evidence": "original_calibration",
+          "issue": "unknown_source_role"
+        },
+        {
+          "evidence": "original_calibration",
+          "issue": "source_not_fully_inspected"
+        },
+        {
+          "evidence": "original_calibration",
+          "issue": "primary_source_not_identified"
+        }
+      ]
+    }
+  ],
+  "new_range_assessments": [
+    {
+      "condition": "temperature_basalt_full_text",
+      "context": "h2-1750K-7500bar",
+      "classification": "outside_reported_range"
+    },
+    {
+      "condition": "temperature_andesite_full_text",
+      "context": "h2-1750K-7500bar",
+      "classification": "within_reported_range"
+    },
+    {
+      "condition": "pressure_basalt_full_text",
+      "context": "h2-1750K-7500bar",
+      "classification": "within_reported_range"
+    },
+    {
+      "condition": "pressure_andesite_full_text",
+      "context": "h2-1750K-7500bar",
+      "classification": "outside_reported_range"
+    }
+  ],
+  "physical_assessments": [
+    {
+      "id": "imported:physical_accuracy",
+      "context": "imported:physical_accuracy",
+      "status": "unknown",
+      "origin": "imported_v0.1_declaration"
+    },
+    {
+      "id": "physical_accuracy:full_text:2026-10-19",
+      "context": "h2-1750K-7500bar",
+      "status": "unknown",
+      "origin": "reviewed"
+    }
+  ],
+  "selected_assessment_audit": {
+    "assessment": "physical_accuracy:full_text:2026-10-19",
+    "check": {
+      "name": "source_audit",
+      "status": "UNKNOWN",
+      "message": "5/7 evidence records have complete declared source traces",
+      "details": [
+        "calibration_adoption_full_text: comparison_not_checked",
+        "original_calibration: primary_source_not_identified",
+        "original_calibration: source_not_fully_inspected",
+        "original_calibration: unknown_source_role"
+      ]
+    },
+    "audited_evidence": [
+      "infrared_recalibration",
+      "original_calibration",
+      "experimental_fit_full_text",
+      "experimental_runs_full_text",
+      "calibration_adoption_full_text",
+      "formulation_full_text",
+      "implementation_full_text"
+    ]
+  },
+  "follow_up_resolutions": [
+    {
+      "follow_up": "inspect-original-fit",
+      "evidence": [
+        "experimental_fit_full_text",
+        "formulation_full_text"
+      ],
+      "note": "Published regression, concentration convention, reference conditions and transformation to Seo inspected. Independent reconstruction remains a separate task: reconstruct-original-fit."
+    },
+    {
+      "follow_up": "inspect-original-runs",
+      "evidence": [
+        "experimental_runs_full_text",
+        "formulation_full_text"
+      ],
+      "note": "Table 1 material-specific temperatures and pressures inspected, with exclusions read in Section 3.1. A complete structured sample inventory and supplementary compositions are not supplied."
+    }
+  ],
+  "interpretation": "The selected assessment audits only its evidence dependencies, retaining the unresolved calibration and unknown physical support. Authored completion records direct finished inspection tasks to new evidence; historical sources and assessments are unchanged. Material matching and evidence supersession are not inferred. The PDF hash identifies private bytes, not access rights or independent attestation."
+}

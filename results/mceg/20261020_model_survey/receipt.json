@@ -1,0 +1,87 @@
+{
+  "audited_revision": "7dc3ce1183c0b3d74e24cde502f638cac3625b83",
+  "provider": "exogibbs",
+  "started_utc": "2026-10-19T22:58:02.616866+00:00",
+  "python": "3.12.7",
+  "executable": "/home/kawahara/miniconda3/bin/python",
+  "versions": {
+    "jax": "0.6.2",
+    "jaxlib": "0.6.2",
+    "numpy": "2.1.0",
+    "scipy": "1.14.1",
+    "pytest": "8.3.3"
+  },
+  "provider_import": "/home/kawahara/exogibbs/src/exogibbs/__init__.py",
+  "backend": "cpu",
+  "x64": true,
+  "selected_file_sha256": {
+    "documents/solubility.rst": "033372b260f36fb79aaf49a4855e0784a21254b1a6d873669e66df492a77f805",
+    "pyproject.toml": "8facf3e2da5febba94b2314f058d01c739907605d95ec376ab39e09911b7aa35",
+    "src/exogibbs/__init__.py": "5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16",
+    "src/exogibbs/solubility/__init__.py": "8800e1d54f0f23bc49f38b1d3efa71eeb313fc4b9d879a181eef8dcfcc5e5342",
+    "src/exogibbs/solubility/meltyq.py": "51157df00ae182446ff4376345fc9e83acdf03697a27d79a299cb8b9f027c292",
+    "src/exogibbs/solubility/sun_yao2026.py": "965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb",
+    "src/exogibbs/solubility/volatile.py": "8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da",
+    "tests/conftest.py": "1f1263b8a14c1f6d6cd39f18406cb9aff3739f50dac92498aadbc300c2e70da3",
+    "tests/unittests/solubility/meltyq_test.py": "4d105accc5b8e66605942f2596ed70ca546f94091fe9775cfbd9da680a28f0fd",
+    "tests/unittests/solubility/sun_yao2026_test.py": "7b66c5ddc954414f27a9fff4685b424e083dcddad404dce69ea750324d1afba3"
+  },
+  "selected_files_match_git": true,
+  "environment": {
+    "PYTHONPATH": "/home/kawahara/exogibbs/src",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1"
+  },
+  "scope": "Selected source, test and fixture hashes only; not a complete dependency manifest. Numerical verification, not physical validation.",
+  "runs": [
+    {
+      "selection": "tests/unittests/solubility/meltyq_test.py",
+      "command": [
+        "/home/kawahara/miniconda3/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/unittests/solubility/meltyq_test.py",
+        "--junitxml=/tmp/mceg-model-survey-20261020/exogibbs/results/mceg/20261020_model_survey/run_0.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.281,
+      "counts": {
+        "tests": 56,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "selection": "tests/unittests/solubility/sun_yao2026_test.py",
+      "command": [
+        "/home/kawahara/miniconda3/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/unittests/solubility/sun_yao2026_test.py",
+        "--junitxml=/tmp/mceg-model-survey-20261020/exogibbs/results/mceg/20261020_model_survey/run_1.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.444,
+      "counts": {
+        "tests": 16,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "completed_utc": "2026-10-19T22:58:07.483285+00:00",
+  "files_unchanged_during_run": true,
+  "artifacts": {
+    "results/mceg/20261020_model_survey/tests.xml": "755b648a452d21234c8823918866da6c155ccef65dc4cb28f516ede2893be560",
+    "results/mceg/20261020_model_survey/tests.log": "fe9b3c8b8d4ad52f6c6f1d6ae84a6233fed5c266c690b03583c91a787fff38ea"
+  }
+}

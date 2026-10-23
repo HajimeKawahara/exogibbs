@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "wheel": "exogibbs-0.5.1.dev421+g4020f7916.d20261018-py3-none-any.whl",
+  "sdist": "exogibbs-0.5.1.dev421+g4020f7916.d20261018.tar.gz",
+  "wheel_sha256": "eedbeccdf314bd230d099de445f4b9f9b568ac6e27910419240e41fcc9cc0619",
+  "sdist_sha256": "5891c9dab0affc7664de745c708a6dbf9b22b129e91081055a6d636cd072b0cd",
+  "packaged_files": [
+    "exogibbs/presets/curated.py",
+    "exogibbs/data/curated/gas_v1.json",
+    "exogibbs/data/curated/README.rst"
+  ],
+  "installed_import_path": "/tmp/exogibbs_curated_installed/exogibbs/presets/curated.py",
+  "blocked_runtime_imports": [
+    "audit_atomic_ions",
+    "build_curated_preset",
+    "mceg",
+    "pyfastchem",
+    "select_atomic_ions",
+    "select_major_molecules"
+  ],
+  "ion_species": 537,
+  "neutral_species": 421,
+  "default_trace_charge_relative_error": 1.2144430238355381e-14,
+  "build_dependencies": "Cached setuptools 84.0.0, setuptools_scm 10.3.4 and vcs_versioning 2.6.0 extracted into /tmp; no network or environment install."
+}

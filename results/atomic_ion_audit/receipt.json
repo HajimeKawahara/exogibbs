@@ -1,0 +1,29 @@
+{
+  "command": "python3 examples/comparisons/audit_atomic_ions.py",
+  "base_revision": "4020f7916849dd357bcd9de3f5c5e84beac5a605",
+  "implementation_identity": "Selected file hashes include uncommitted audit additions.",
+  "python": "3.12.3",
+  "temperature_K": [
+    1000,
+    1500,
+    2000,
+    3000,
+    4000,
+    5000,
+    6000
+  ],
+  "standard_pressure_Pa": 100000.0,
+  "species_count": 49,
+  "numerical_reference_count": 47,
+  "selected_file_sha256": {
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/data/atomic_ion_reference.json": "c37925bd132592f9f742d73ace1409032ea0c67911c240ac06b17be34a2b33dc",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/nasa9/fastchem4_hot.json": "85e677bdf08a340b045567affac60e09a480fae1556a8704bc52fe66cd9e1338"
+  },
+  "output_sha256": {
+    "comparison.csv": "60ceef63376aeb74e69372398d3f5ea3e253ab756c40493adf1b1b0bdb3f486f",
+    "summary.csv": "da3f630ca69b37870273d81834b42e152efcb6336a26bd7a8da1bbfe3e757986"
+  },
+  "interpretation": "Factor 1.1 and factor 2 are review thresholds, not uncertainty bounds or physical validation. Maxima apply only to sampled temperatures."
+}

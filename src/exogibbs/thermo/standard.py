@@ -1,6 +1,6 @@
 """An explicit FastChem4/NASA9 gas model with consistent standard entropy.
 
-This opt-in model changes 34 chemical potentials and excludes diacetyl peroxide.
+This opt-in model changes 35 chemical potentials and excludes diacetyl peroxide.
 It does not change the original FastChem preset. See the packaged NASA9 README
 for identities, provenance, and the restricted 1500--4500 K evaluation domain.
 """
@@ -23,7 +23,7 @@ from exogibbs.thermo.models import ChemicalSetup
 _FASTCHEM_PATH = "FastChem4/logK/logK.dat"
 _FASTCHEM_SHA256 = "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c"
 _NASA_PATH = "nasa9/fastchem4_hot.json"
-_NASA_SHA256 = "420b32fb834ed24f62fe18b63d5879ea287afe36b468203d30af36709f6bcc36"
+_NASA_SHA256 = "85e677bdf08a340b045567affac60e09a480fae1556a8704bc52fe66cd9e1338"
 
 
 @dataclass(frozen=True)
@@ -54,6 +54,15 @@ class StandardThermodynamics:
     standard_entropy_r: Callable
     standard_cp_r: Callable
     metadata: Mapping
+
+
+def _load_nasa9_data() -> dict:
+    """Load the packaged NASA9 excerpt after verifying its pinned bytes."""
+    with open(get_data_filepath(_NASA_PATH), "rb") as stream:
+        nasa_bytes = stream.read()
+    if sha256(nasa_bytes).hexdigest() != _NASA_SHA256:
+        raise ValueError("Thermochemical data differ from the validated pinned sources")
+    return json.loads(nasa_bytes)
 
 
 def _nasa9(temperature, coefficients):
@@ -94,7 +103,7 @@ def prepare_fastchem_thermodynamics(
     """Prepare the explicitly modified 538-species FastChem4/NASA9 model.
 
     ``temperature_range`` may restrict, but cannot extend, 1500--4500 K.
-    Thirty-four named NASA records replace inconsistent gas fits in both
+    Thirty-five named NASA records replace inconsistent gas fits in both
     chemistry and caloric properties. Diacetyl peroxide (C4H6O4) is omitted
     because no identity-matched NASA record was found. Metadata records both
     changes. This is a defined thermochemical approximation, not a claim that
@@ -108,13 +117,11 @@ def prepare_fastchem_thermodynamics(
     if bounds.shape != (2,) or not np.all(np.isfinite(bounds)) or not (1500 <= bounds[0] < bounds[1] <= 4500):
         raise ValueError("temperature_range must be an increasing subset of [1500, 4500] K")
     temperature_range = tuple(float(x) for x in bounds)
-    with open(get_data_filepath(_NASA_PATH), "rb") as stream:
-        nasa_bytes = stream.read()
+    data = _load_nasa9_data()
     with open(get_data_filepath(_FASTCHEM_PATH), "rb") as stream:
         fastchem_bytes = stream.read()
-    if sha256(nasa_bytes).hexdigest() != _NASA_SHA256 or sha256(fastchem_bytes).hexdigest() != _FASTCHEM_SHA256:
+    if sha256(fastchem_bytes).hexdigest() != _FASTCHEM_SHA256:
         raise ValueError("Thermochemical data differ from the validated pinned sources")
-    data = json.loads(nasa_bytes)
     baseline = chemsetup(path=_FASTCHEM_PATH, silent=True)
     elements = baseline.elements
     retained = np.array([i for i, name in enumerate(baseline.species) if name not in data["excluded_species"]])

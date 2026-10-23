@@ -1,0 +1,60 @@
+{
+  "janaf": {
+    "CH4": {
+      "max_abs_log10_K_error": 5.470642114721593e-05,
+      "max_abs_H_error_J_mol": 4.8777075000689365,
+      "max_abs_S_error_J_mol_K": 0.0010360000001128356,
+      "max_abs_Cp_error_J_mol_K": 0.01698933333463515,
+      "withheld_nodes": 22
+    },
+    "COS": {
+      "max_abs_log10_K_error": 4.2432027125648966e-05,
+      "max_abs_H_error_J_mol": 4.774720000481466,
+      "max_abs_S_error_J_mol_K": 0.00207850000020926,
+      "max_abs_Cp_error_J_mol_K": 0.021676000000695694,
+      "withheld_nodes": 22
+    },
+    "TiO": {
+      "max_abs_log10_K_error": 3.4818931171264076e-05,
+      "max_abs_H_error_J_mol": 8.747395832964685,
+      "max_abs_S_error_J_mol_K": 0.002723999999886928,
+      "max_abs_Cp_error_J_mol_K": 0.030970666665396607,
+      "withheld_nodes": 22
+    },
+    "VO": {
+      "max_abs_log10_K_error": 5.154427142191541e-05,
+      "max_abs_H_error_J_mol": 6.4012800006894395,
+      "max_abs_S_error_J_mol_K": 0.0034480000000485234,
+      "max_abs_Cp_error_J_mol_K": 0.03484533333314488,
+      "withheld_nodes": 22
+    }
+  },
+  "partitions": {
+    "C_I": {
+      "max_relative_table_error": 1.8255252598464722e-07,
+      "max_leave_one_out_log10_Q_error": 3.18992209520265e-07,
+      "positive_weights": true
+    },
+    "Ca_I": {
+      "max_relative_table_error": 3.922777596088167e-06,
+      "max_leave_one_out_log10_Q_error": 1.707407835909139e-06,
+      "positive_weights": true
+    },
+    "Co_I": {
+      "max_relative_table_error": 2.220446049250313e-16,
+      "max_leave_one_out_log10_Q_error": 5.528750413729968e-05,
+      "positive_weights": true
+    },
+    "Co_II": {
+      "max_relative_table_error": 2.220446049250313e-16,
+      "max_leave_one_out_log10_Q_error": 1.0609428692281358e-05,
+      "positive_weights": true
+    },
+    "Ge_I": {
+      "max_relative_table_error": 4.440892098500626e-16,
+      "max_leave_one_out_log10_Q_error": 8.020828345862111e-07,
+      "positive_weights": true
+    }
+  },
+  "interpretation": "Representation checks against adopted sources; leave-one-out fits probe interpolation stability, not physical accuracy."
+}

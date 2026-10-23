@@ -1,0 +1,2220 @@
+{
+  "id": "curated-gas-v1",
+  "temperature_range_K": [
+    1500.0,
+    4000.0
+  ],
+  "standard_pressure_bar": 1.0,
+  "baseline": {
+    "path": "FastChem4/logK/logK.dat",
+    "sha256": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c"
+  },
+  "abundances": {
+    "path": "FastChem4/element_abundances/asplund_2021.dat",
+    "sha256": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+    "normalization": "sum of nuclear abundances equals one; zero net charge"
+  },
+  "source_sha256": {
+    "examples/comparisons/data/atomic_ion_reference.json": "c37925bd132592f9f742d73ace1409032ea0c67911c240ac06b17be34a2b33dc",
+    "examples/comparisons/data/atomic_ion_adoption.json": "5e58687bb3165cf130c92481b273e7daecc7189401d8400ea6f87fa0845d9976",
+    "src/exogibbs/data/nasa9/fastchem4_hot.json": "85e677bdf08a340b045567affac60e09a480fae1556a8704bc52fe66cd9e1338",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "examples/comparisons/data/major_molecule_adoption.json": "2836795c24a7990d9e8b01b896102b405167119d2f72ff0e54dcc8b551abac92",
+    "examples/comparisons/data/curated_continuous_reference.json": "42e5e8da8eb60b74213f7a8a6ff4894d67b5216e513247eb03b9c796bbc4aa25"
+  },
+  "sources": {
+    "atomic": {
+      "partition_functions": {
+        "bundled_source_path": "exojax/src/exojax/data/atom/barklem_collet_2016_pff.txt",
+        "sha256": "6c7910298838addf3c366f5d86985f1a64c866cef5ce65613e9a126fef312650",
+        "name": "Barklem & Collet (2016), A&A 588, A96, Table 8",
+        "doi": "10.1051/0004-6361/201526961",
+        "url": "https://doi.org/10.1051/0004-6361/201526961",
+        "temperature_grid_source": {
+          "bundled_source_path": "exojax/src/exojax/database/core_atom/io.py",
+          "sha256": "283dc7163b7d381e2b0d258995adcebfaadadb7daacc9dca5c9bbdbc72853b58",
+          "function": "load_pf_Barklem2016",
+          "variable": "pfT_str"
+        },
+        "excerpt_origin": "Local ExoJAX snapshot; no ExoJAX import or runtime dependency."
+      },
+      "ionization_energies": {
+        "bundled_source_path": "exojax/src/exojax/data/atom/NIST_Atomic_Ionization_Energies.txt",
+        "sha256": "f01db474ba40f8f72f24ffb256c0aef0a155ca88756c336f1ddb87a474620e9a",
+        "name": "NIST Atomic Spectra Database, Ionization Energies",
+        "url": "https://physics.nist.gov/PhysRefData/ASD/ionEnergy.html",
+        "snapshot": "January 2022, as stated in the bundled source header",
+        "excerpt_origin": "Local ExoJAX snapshot; no ExoJAX import or runtime dependency."
+      },
+      "anion_spectroscopy": {
+        "name": "Ning and Lu (2022), J. Phys. Chem. Ref. Data 51, 021502",
+        "doi": "10.1063/5.0080243",
+        "url": "https://info.phys.tsinghua.edu.cn/henucl/ning/148.pdf",
+        "sha256": "5504c5ac167a70ec591b4292ee1563b241c1743240309a32af330536fbec9c8d",
+        "location": "Table 3, printed p. 12; Table 4, printed p. 14; footnotes pp. 13 and 17; Sections 4.1, 4.2, 5 and 6.",
+        "inspection": "Tables 3 and 4 checked against PDF images; sections and footnotes read. Earlier experimental papers cited by the review were not independently reaudited."
+      },
+      "nasa9": {
+        "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+        "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+        "existing_excerpt": "src/exogibbs/data/nasa9/fastchem4_hot.json",
+        "existing_excerpt_sha256": "85e677bdf08a340b045567affac60e09a480fae1556a8704bc52fe66cd9e1338",
+        "license": "Apache-2.0; see src/exogibbs/data/nasa9/LICENSE.txt and NOTICE.txt.",
+        "note": "Only additional atomic-ion records are copied below; existing coefficients are reused. All selected coefficients were compared with the full pinned source."
+      }
+    },
+    "atomic_thresholds": {
+      "nasa9": {
+        "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+        "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+        "existing_excerpt": "src/exogibbs/data/nasa9/fastchem4_hot.json",
+        "existing_excerpt_sha256": "85e677bdf08a340b045567affac60e09a480fae1556a8704bc52fe66cd9e1338",
+        "license": "Apache-2.0; see src/exogibbs/data/nasa9/LICENSE.txt and NOTICE.txt.",
+        "note": "Assigned enthalpies and masses for 75 atomic/electron records are excerpted below. Coefficients remain in the existing NASA file and atomic-ion reference fixture.",
+        "format": "NASA/TP-2002-211556, Table C1: record 2 columns 66-80 are Hf(298.15); interval record columns 66-80 are H(298.15)-H(0).",
+        "format_url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf"
+      },
+      "partition_functions": {
+        "url": "https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table8.dat",
+        "doi": "10.26093/cds/vizier.35880096",
+        "sha256": "c08800be067ccbbcc5486c61085569da153fbebcaccfd4bef3d3e203240846be",
+        "readme_sha256": "e7a3b2c930971bed0945e50ba45e0d94dbb3030aca0391bc10968016c17c242a",
+        "exojax_sha256": "6c7910298838addf3c366f5d86985f1a64c866cef5ce65613e9a126fef312650",
+        "comparison": "All 284 records and 42 columns match the local ExoJAX copy numerically; all 378 selected values match the original audit fixture at the CDS header temperatures.",
+        "record_count": 284,
+        "temperature_column_count": 42,
+        "matched_value_count": 11928,
+        "selected_matched_value_count": 378
+      }
+    },
+    "molecular": {
+      "fastchem": {
+        "path": "src/exogibbs/data/FastChem4/logK/logK.dat",
+        "sha256": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c"
+      },
+      "nasa9": {
+        "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+        "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363"
+      },
+      "bc_table1": {
+        "url": "https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table1.dat",
+        "sha256": "85f17e00e029a8046b5eb9660f92618a443295e4ba4af601faa7b9b92266b5fc"
+      },
+      "bc_table6": {
+        "url": "https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table6.dat",
+        "sha256": "d37f8956a9623ab5446dc033bf4a0875304a137a02f5149057ec0aa234012adf"
+      },
+      "bc_table7": {
+        "url": "https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table7.dat",
+        "sha256": "5282b947328269d1936844ed5b088c3f7f9d56a1c45af8ce242992f86f2b9d5c"
+      },
+      "bc_table8": {
+        "url": "https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table8.dat",
+        "sha256": "c08800be067ccbbcc5486c61085569da153fbebcaccfd4bef3d3e203240846be"
+      },
+      "bc_readme": {
+        "url": "https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/ReadMe",
+        "sha256": "e7a3b2c930971bed0945e50ba45e0d94dbb3030aca0391bc10968016c17c242a",
+        "note": "Table 7 uses log10 dissociation pK in Pa. The actual table headers give 700 K; the column prose says 750 K. Use the headers."
+      },
+      "bc_paper": {
+        "url": "https://doi.org/10.1051/0004-6361/201526961",
+        "inspected_url": "https://arxiv.org/pdf/1602.03304",
+        "scope": "Equations 1 and 7, Sections 2.1 and 3; nuclear-spin products excluded, molecular spin-orbit neglected. Underlying D0 experiments not all independently reaudited."
+      }
+    },
+    "partitions": {
+      "url": "https://cdsarc.cds.unistra.fr/ftp/J/A+A/588/A96/table8.dat",
+      "doi": "10.1051/0004-6361/201526961",
+      "sha256": "c08800be067ccbbcc5486c61085569da153fbebcaccfd4bef3d3e203240846be"
+    },
+    "janaf": {
+      "CH4": {
+        "table_id": "C-067",
+        "url": "https://janaf.nist.gov/tables/C-067.html",
+        "evaluation_note": "March 1961 (1 bar)"
+      },
+      "COS": {
+        "table_id": "C-094",
+        "url": "https://janaf.nist.gov/tables/C-094.html",
+        "evaluation_note": "March 1961 (1 bar)"
+      },
+      "TiO": {
+        "table_id": "O-022",
+        "url": "https://janaf.nist.gov/tables/O-022.html",
+        "evaluation_note": "December 1973 (1 bar)"
+      },
+      "VO": {
+        "table_id": "O-026",
+        "url": "https://janaf.nist.gov/tables/O-026.html",
+        "evaluation_note": "December 1973 (1 bar)"
+      }
+    },
+    "atct": {
+      "version": "1.172",
+      "source_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "note": "Pinned evaluated thermochemical network, not a claim of the latest ATcT version. Gas ground states and natural isotopic abundance; HCN and HNC are separate. Values are displayed precision; no covariance matrix or full-temperature thermodynamic functions. COS was not verified in this excerpt. Later 1.228 entries were discovered but not used to mix network versions."
+    },
+    "spectroscopy": {
+      "VO": {
+        "dissociation_eV": 6.545,
+        "reported_uncertainty_eV": 0.002,
+        "url": "https://doi.org/10.1063/5.0014006",
+        "inspected_url": "https://pubmed.ncbi.nlm.nih.gov/32668947/",
+        "inspection": "Author abstract indexed at PubMed; four R3PI intermediate states. Full experimental/systematic-error analysis not reaudited.",
+        "citation": "Merriles et al. (2020), J. Chem. Phys. 153, 024303"
+      },
+      "MgH": {
+        "dissociation_eV": 1.28517,
+        "reported_uncertainty_eV": 6e-05,
+        "isotopologue": "24Mg1H",
+        "url": "https://doi.org/10.1021/jp075704a",
+        "inspection": "Primary author abstract: D0 = 10365.6 +/- 0.5 cm^-1, distinct from De = 11104.7 cm^-1. Representative-isotopologue energy; uncertainty does not cover the natural-abundance hybrid.",
+        "citation": "Shayesteh et al. (2007), J. Phys. Chem. A 111, 12495-12505",
+        "followup_url": "https://doi.org/10.1021/jp406680r",
+        "followup_note": "Henderson et al. (2013) refine De to 11104.25 +/- 0.8 cm^-1. The checked 2007 D0 is retained at this stage; the 2013 full D0/isotopologue extraction remains open, rather than substituting De for D0."
+      },
+      "CaH_review": {
+        "url": "https://doi.org/10.22036/pcr.2017.75313.1355",
+        "inspected_url": "https://scispace.com/pdf/empirical-potential-energy-curve-for-the-ground-state-of-cah-3ospkiop7a.pdf",
+        "scope": "Shayesteh and Ghazizadeh (2017), pp. 647 and 651: De fixed at 14300 cm^-1; data cannot determine an accurate dissociation energy. This is not a measured D0. Supports rejection of an automatic switch to BC D0 = 2.281 eV."
+      },
+      "FeH_review": {
+        "url": "https://doi.org/10.1063/1.4767771",
+        "inspected_url": "https://pubmed.ncbi.nlm.nih.gov/23267482/",
+        "scope": "DeYonker and Allen (2012), author abstract: computed D0 = 1.86 eV. A conflicting theoretical value, not grounds to declare BC D0 = 1.497 eV experimentally validated."
+      }
+    }
+  },
+  "excluded_species": {
+    "N1-": "The adopted evaluation gives no stable bound anion; a formal fit is insufficient for inclusion.",
+    "Zn1-": "The adopted evaluation gives no stable bound anion; a formal fit is insufficient for inclusion."
+  },
+  "decisions": {
+    "Al1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 5.985769,
+      "source_group": "atomic"
+    },
+    "Al1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 0.43283,
+      "source_group": "atomic"
+    },
+    "Ar1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 15.7596119,
+      "source_group": "atomic"
+    },
+    "C1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 11.260288,
+      "source_group": "atomic"
+    },
+    "C1-": {
+      "family": "spectroscopic_partition",
+      "condition": "continuous_partition_representation_1500_4000_K",
+      "status": "prefer",
+      "reason": "NASA has an incompatible low-temperature partition weight; use evaluated bound levels and EA. FastChem is a close comparator.",
+      "threshold_eV": 1.2621226,
+      "source_group": "atomic"
+    },
+    "Ca1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 6.11315547,
+      "source_group": "atomic"
+    },
+    "Ca1-": {
+      "family": "spectroscopic_partition",
+      "condition": "continuous_partition_representation_1500_4000_K",
+      "status": "prefer",
+      "reason": "No NASA record; FastChem differs by factor 2.44. Use evaluated bound levels and EA.",
+      "threshold_eV": 0.02455,
+      "source_group": "atomic"
+    },
+    "Cl1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 12.967633,
+      "source_group": "atomic"
+    },
+    "Cl1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 3.612725,
+      "source_group": "atomic"
+    },
+    "Co1+": {
+      "family": "spectroscopic_partition",
+      "condition": "continuous_partition_representation_1500_4000_K",
+      "status": "prefer",
+      "reason": "Updating the threshold leaves a cation partition discrepancy; use NIST IE and CDS neutral/cation partitions.",
+      "threshold_eV": 7.88101,
+      "source_group": "atomic"
+    },
+    "Co1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 0.662255,
+      "source_group": "atomic"
+    },
+    "Cr1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 6.76651,
+      "source_group": "atomic"
+    },
+    "Cr1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 0.675928,
+      "source_group": "atomic"
+    },
+    "Cu1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 7.72638,
+      "source_group": "atomic"
+    },
+    "Cu1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 1.23578,
+      "source_group": "atomic"
+    },
+    "F1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 17.42282,
+      "source_group": "atomic"
+    },
+    "F1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 3.4011898,
+      "source_group": "atomic"
+    },
+    "Fe1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 7.9024681,
+      "source_group": "atomic"
+    },
+    "Fe1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 0.153236,
+      "source_group": "atomic"
+    },
+    "Ge1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 7.899435,
+      "source_group": "atomic"
+    },
+    "Ge1-": {
+      "family": "spectroscopic_partition",
+      "condition": "continuous_partition_representation_1500_4000_K",
+      "status": "prefer",
+      "reason": "Updating EA does not repair the NASA partition discrepancy; use evaluated bound levels and EA.",
+      "threshold_eV": 1.2326764,
+      "source_group": "atomic"
+    },
+    "H1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 13.598434599702,
+      "source_group": "atomic"
+    },
+    "H1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 0.754203832,
+      "source_group": "atomic"
+    },
+    "He1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 24.587389011,
+      "source_group": "atomic"
+    },
+    "K1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "high_temperature_density_review",
+      "status": "prefer_conditionally",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy. Upper-temperature differences originate mainly in the neutral partition; review level dissolution for the application.",
+      "threshold_eV": 4.34066373,
+      "source_group": "atomic"
+    },
+    "K1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "high_temperature_density_review",
+      "status": "prefer_conditionally",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy. Upper-temperature differences originate mainly in the neutral partition; review level dissolution for the application.",
+      "threshold_eV": 0.501459,
+      "source_group": "atomic"
+    },
+    "Mg1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 7.646236,
+      "source_group": "atomic"
+    },
+    "Mn1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 7.434038,
+      "source_group": "atomic"
+    },
+    "N1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 14.53413,
+      "source_group": "atomic"
+    },
+    "Na1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "high_temperature_density_review",
+      "status": "prefer_conditionally",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy. Upper-temperature differences originate mainly in the neutral partition; review level dissolution for the application.",
+      "threshold_eV": 5.13907696,
+      "source_group": "atomic"
+    },
+    "Na1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "high_temperature_density_review",
+      "status": "prefer_conditionally",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy. Upper-temperature differences originate mainly in the neutral partition; review level dissolution for the application.",
+      "threshold_eV": 0.547926,
+      "source_group": "atomic"
+    },
+    "Ne1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 21.564541,
+      "source_group": "atomic"
+    },
+    "Ni1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 7.639878,
+      "source_group": "atomic"
+    },
+    "Ni1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 1.157368,
+      "source_group": "atomic"
+    },
+    "O1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 13.618055,
+      "source_group": "atomic"
+    },
+    "O1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 1.4611136,
+      "source_group": "atomic"
+    },
+    "P1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 10.486686,
+      "source_group": "atomic"
+    },
+    "P1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 0.746609,
+      "source_group": "atomic"
+    },
+    "S1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 10.36001,
+      "source_group": "atomic"
+    },
+    "S1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 2.0771042,
+      "source_group": "atomic"
+    },
+    "Si1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 8.15168,
+      "source_group": "atomic"
+    },
+    "Si1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 1.3895212,
+      "source_group": "atomic"
+    },
+    "Ti1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 6.82812,
+      "source_group": "atomic"
+    },
+    "Ti1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 0.07554,
+      "source_group": "atomic"
+    },
+    "V1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 6.746187,
+      "source_group": "atomic"
+    },
+    "V1-": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 0.52766,
+      "source_group": "atomic"
+    },
+    "Zn1+": {
+      "family": "nasa9_threshold_updated",
+      "condition": "candidate_1000_6000_K",
+      "status": "prefer",
+      "reason": "Retain smooth NASA thermal functions and replace the ground-state threshold using spectroscopy.",
+      "threshold_eV": 9.394197,
+      "source_group": "atomic"
+    },
+    "H2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "JANAF, CEA and FastChem are close; the small fit and ground-energy differences are separable.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "H2",
+      "source_group": "molecular"
+    },
+    "H2O1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "Small ground-energy change; differences at the upper temperatures are thermal functions and the FastChem fit.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "H2O",
+      "source_group": "molecular"
+    },
+    "C1O1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "JANAF/CEA ground atomization energies differ from ATcT; BC uses a different D0. The thermal curves are close after anchoring.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "CO",
+      "source_group": "molecular"
+    },
+    "C1O2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "Ground-energy and fit differences are small; upper-temperature caloric functions also differ.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "CO2",
+      "source_group": "molecular"
+    },
+    "C1H4": {
+      "thermal_source": "janaf",
+      "energy_source": "atct",
+      "selected_source": "JANAF thermal functions + ATcT 1.172 D0",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; table nodes only in this study",
+      "difference_cause": "A large high-temperature difference remains after equalizing D0; the CEA Cp also exceeds the JANAF value substantially at 6000 K.",
+      "reason": "Retain the current thermal-source lineage while updating the independently evaluated energy. A newer polynomial or compilation date does not resolve the thermal-model disagreement.",
+      "follow_up": "Priority: independent rovibrational partition audit above 3000 K, then a continuous thermodynamically consistent representation of the chosen table.",
+      "name": "CH4",
+      "source_group": "molecular"
+    },
+    "N2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "The old JANAF/CEA atomization threshold differs from the ATcT nitrogen-atom evaluation; the thermal shapes are close.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "N2",
+      "source_group": "molecular"
+    },
+    "H3N1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 200-6000 K",
+      "difference_cause": "Both the atomization energy and upper-temperature thermal functions differ; ATcT is an energy anchor, not a partition function.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "NH3",
+      "source_group": "molecular"
+    },
+    "C1H1N1_hcn": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "JANAF and CEA use different formation enthalpies. Most of their low-temperature Kp discrepancy vanishes at a common atomization energy.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "HCN",
+      "source_group": "molecular"
+    },
+    "C1H1N1_hnc": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "The existing source is Goos/Burcat 2023, not JANAF. Its HNC isomer must not be matched to the JANAF HCN table.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Audit the high-temperature HCN/HNC state assignment before any combined-isomer partition replacement.",
+      "name": "HNC",
+      "source_group": "molecular"
+    },
+    "H2S1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Updated sulfur-atom thermochemistry changes the balanced atomization energy; a thermal-function difference remains.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "H2S",
+      "source_group": "molecular"
+    },
+    "H1S1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "The existing source is Lodders 2004. The old JANAF HS formation columns do not combine consistently with the other atom tables; BC also neglects molecular spin-orbit coupling.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Review resolved fine structure and high-temperature partition completeness; do not use the old JANAF formation columns as a reference.",
+      "name": "SH",
+      "source_group": "molecular"
+    },
+    "S2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "ATcT revises the S atom and S2 energies together; agreement between older JANAF/CEA/BC values is not an independent energy validation.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "S2",
+      "source_group": "molecular"
+    },
+    "O1S1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Different atomization energies dominate the low-temperature disagreement with BC; thermal-function differences remain.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "SO",
+      "source_group": "molecular"
+    },
+    "O2S1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "The updated S-atom anchor matters even when the molecular formation enthalpy changes little; old FastChem fit residuals also contribute.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "SO2",
+      "source_group": "molecular"
+    },
+    "O3S1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Sulfur and oxygen atomic anchors must accompany the molecular enthalpy update; the original fit and thermal-function contributions differ.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "SO3",
+      "source_group": "molecular"
+    },
+    "C1S1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Different formation/atomization energies dominate the JANAF/CEA low-temperature difference; BC is not an independent gold standard.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "CS",
+      "source_group": "molecular"
+    },
+    "C1S2": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "Energy correction does not remove the high-temperature thermal-function discrepancy between JANAF and CEA.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Resolve the upper-temperature thermal-function difference before claiming high-temperature accuracy.",
+      "name": "CS2",
+      "source_group": "molecular"
+    },
+    "C1O1S1": {
+      "thermal_source": "janaf",
+      "energy_source": "janaf",
+      "selected_source": "JANAF thermal functions and D0",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; table nodes only in this study",
+      "difference_cause": "The CEA/JANAF difference at low temperature is mainly the assigned atomization energy. No independent COS energy was pinned in the reviewed ATcT 1.172 excerpt.",
+      "reason": "Retain the traceable JANAF baseline instead of endorsing a different unverified formation enthalpy.",
+      "follow_up": "Review COS and its atomic anchors in a newer single ATcT network version; then fit the retained thermal table.",
+      "name": "COS",
+      "source_group": "molecular"
+    },
+    "O1Ti1": {
+      "thermal_source": "janaf",
+      "energy_source": "barklem_collet",
+      "selected_source": "JANAF thermal functions + BC D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; table nodes only in this study",
+      "difference_cause": "JANAF and CEA differ in D0 and electronic-state thermal populations; the BC adopted D0 has a 0.061 eV quoted uncertainty.",
+      "reason": "Use the evaluated BC threshold with the existing JANAF thermal lineage; preserve the distinction between fine-structure thermal populations and a scalar energy update.",
+      "follow_up": "Compare normalized ExoMol/Toto partitions, including isotopologues and nuclear spin, and resolve excited-state completeness before high-precision use.",
+      "name": "TiO",
+      "source_group": "molecular"
+    },
+    "O1V1": {
+      "thermal_source": "janaf",
+      "energy_source": "spectroscopy",
+      "selected_source": "JANAF thermal functions + Merriles 2020 D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; table nodes only in this study",
+      "difference_cause": "The old CEA atomization energy is about 0.20 eV below the 2020 direct measurement; thermal differences remain at equal D0.",
+      "reason": "Adopt D0 = 6.545 +/- 0.002 eV from resonant three-photon ionization. Retain JANAF thermal functions pending a normalized modern partition comparison.",
+      "follow_up": "Validate modern VO state populations and construct a continuous representation; the measured D0 uncertainty is not the uncertainty of Kp.",
+      "name": "VO",
+      "source_group": "molecular"
+    },
+    "O1Si1": {
+      "thermal_source": "nasa9",
+      "energy_source": "atct",
+      "selected_source": "CEA thermal functions + ATcT 1.172 D0",
+      "status": "prefer",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "The old Si/O atomic and molecular energies differ across compilations; thermal curves are much closer after a common D0.",
+      "reason": "Use the evaluated balanced ATcT atomization energy with continuous CEA thermal functions. This is a practical source choice, not proof that CEA is more accurate than JANAF at every temperature.",
+      "follow_up": "Check caloric derivatives, interval joins and application abundances when implementing the preset.",
+      "name": "SiO",
+      "source_group": "molecular"
+    },
+    "Al1H1": {
+      "thermal_source": "fastchem",
+      "energy_source": "janaf",
+      "selected_source": "Retain FastChem / JANAF",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "CEA and JANAF thresholds differ by about 0.11 eV; BC gives 2.949 +/- 0.130 eV, which does not resolve that choice.",
+      "reason": "No inspected independent evidence justifies replacing the present energy and thermal fit.",
+      "follow_up": "Reassess the primary AlH dissociation measurement and caloric derivatives before upgrading the source.",
+      "name": "AlH",
+      "source_group": "molecular"
+    },
+    "Ca1H1": {
+      "thermal_source": "nasa9",
+      "energy_source": "nasa9",
+      "selected_source": "Retain CEA source; use original NASA9 curves",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes; CEA source 300-6000 K",
+      "difference_cause": "FastChem already cites NASA. BC D0 = 2.281 eV conflicts with the approximately 1.69 eV CEA value; a 2017 potential study fixes De = 14300 cm^-1 and cannot measure an accurate D0.",
+      "reason": "Keep the existing energy lineage and continuous source curves. The later potential work supports rejecting an automatic BC substitution, without establishing a precision D0.",
+      "follow_up": "Trace the BC input energy and obtain a primary D0 assessment; distinguish De from the zero-point-corrected D0.",
+      "name": "CaH",
+      "source_group": "molecular"
+    },
+    "Co1H1": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations.",
+      "name": "CoH",
+      "source_group": "molecular"
+    },
+    "Cr1H1": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations.",
+      "name": "CrH",
+      "source_group": "molecular"
+    },
+    "Cu1H1": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations.",
+      "name": "CuH",
+      "source_group": "molecular"
+    },
+    "Fe1H1": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error. The 2012 high-level calculation gives D0 about 1.86 eV, conflicting with BC 1.497 eV.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations.",
+      "name": "FeH",
+      "source_group": "molecular"
+    },
+    "Ge1H1": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations.",
+      "name": "GeH",
+      "source_group": "molecular"
+    },
+    "H1K1": {
+      "thermal_source": "fastchem",
+      "energy_source": "janaf",
+      "selected_source": "Retain FastChem / JANAF",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "JANAF, CEA and BC adopt different D0 values; BC 1.7708 eV has no quoted uncertainty in this table.",
+      "reason": "The comparison does not resolve the independent energy choice; retain the present curve instead of selecting by residual or publication date.",
+      "follow_up": "Trace the primary KH dissociation measurements and K atomic partition cutoff; this is an unresolved source choice.",
+      "name": "KH",
+      "source_group": "molecular"
+    },
+    "H1Mg1": {
+      "thermal_source": "fastchem",
+      "energy_source": "spectroscopy",
+      "selected_source": "FastChem / BC thermal fit + spectroscopic D0",
+      "status": "prefer_conditionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "FastChem reproduces BC D0 = 1.271 eV. Direct spectroscopy gives 24MgH D0 = 1.28517 eV; CEA uses about 1.364 eV.",
+      "reason": "Retain the tested BC-derived thermal shape and update only its known D0 contribution using the inspected 2007 measurement.",
+      "follow_up": "Extract the 2013 refinement consistently and assess isotopic averaging and high-temperature bound/quasibound states; the quoted isotopologue precision does not describe this hybrid.",
+      "name": "MgH",
+      "source_group": "molecular"
+    },
+    "H1Mn1": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations.",
+      "name": "MnH",
+      "source_group": "molecular"
+    },
+    "H1Na1": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error. CEA uses a different D0; BC adopts 1.886 +/- 0.003 eV.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations.",
+      "name": "NaH",
+      "source_group": "molecular"
+    },
+    "H1Ni1": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations.",
+      "name": "NiH",
+      "source_group": "molecular"
+    },
+    "H1Ti1": {
+      "thermal_source": "fastchem",
+      "energy_source": "burrows",
+      "selected_source": "Retain FastChem / Burrows 2005 within review window",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        1200,
+        4800
+      ],
+      "temperature_scope": "1200-4800 K review window; published molecular Q nodes at 200 K spacing",
+      "difference_cause": "BC and Burrows have nearly equal D0 but different state sums. Burrows resolves ground-state spin components, estimates some excited states, and truncates the Ti atomic sum.",
+      "reason": "Retain the specialized source provisionally; the BC difference is not explained by a scalar D0 update.",
+      "follow_up": "Reconstruct the Burrows molecular and Ti atomic sums before extending the temperature domain or replacing the thermal source.",
+      "name": "TiH",
+      "source_group": "molecular"
+    },
+    "H1Zn1": {
+      "thermal_source": "fastchem",
+      "energy_source": "barklem_collet",
+      "selected_source": "Retain FastChem / Barklem-Collet 2016",
+      "status": "retain_provisionally",
+      "review_bounds_K": [
+        300,
+        6000
+      ],
+      "temperature_scope": "300-6000 K at ten comparison nodes",
+      "difference_cause": "The existing FastChem source is already BC 2016; the ten-node comparison measures the additional fit error.",
+      "reason": "Keep the reproducible BC-derived formation curve; no inspected alternative establishes a better complete model. Source reproduction alone does not validate the inherited D0 or partition sum.",
+      "follow_up": "Audit the original D0 measurement and low-lying electronic states; assess caloric derivatives and density-dependent atomic populations.",
+      "name": "ZnH",
+      "source_group": "molecular"
+    }
+  },
+  "nasa9_reactions": {
+    "Al1+": [
+      25027.02613,
+      -126.72374486999999,
+      2.6917093729999997,
+      -0.00013615991560000001,
+      4.661746556e-08,
+      -6.751727604e-12,
+      2.2211694259999996e-16,
+      70123.27887090837,
+      -14.833065105
+    ],
+    "Al1-": [
+      663189.64138,
+      -2500.2136506,
+      0.6130646250000003,
+      -0.0013772126702,
+      3.0412509962000003e-07,
+      -3.1535238074e-11,
+      9.671082616e-16,
+      10410.329985217995,
+      -10.249176074999998
+    ],
+    "Ar1+": [
+      -383616.64538475,
+      816.2618966107,
+      2.3012732270000003,
+      -4.9130623584e-06,
+      1.2039032048599999e-08,
+      -2.1832312704240002e-12,
+      1.264415321364e-16,
+      177181.6826902311,
+      -8.152484870000002
+    ],
+    "C1+": [
+      141464.77271000002,
+      -206.0716039,
+      2.397338831,
+      0.00030725568651,
+      -1.6445763203000002e-07,
+      2.7291322896e-11,
+      -1.5175631918999999e-15,
+      132249.44472524308,
+      -11.786946143000002
+    ],
+    "Ca1+": [
+      -3800270.4200000004,
+      9739.349239999998,
+      -6.083025979999999,
+      0.00270293934,
+      1.0134365799999996e-07,
+      -1.779168085e-10,
+      1.7580963288e-14,
+      7101.649941841431,
+      53.402270659999985
+    ],
+    "Cl1+": [
+      210357.3878,
+      -657.7743032,
+      3.4729895399999995,
+      -0.0007176105324,
+      2.5165276756e-07,
+      -3.5839534975e-11,
+      1.8340720151e-15,
+      154619.31885769154,
+      -17.990641745
+    ],
+    "Cl1-": [
+      169793.293,
+      -608.172646,
+      -2.12866409,
+      -0.0001307367034,
+      2.644883596e-08,
+      -2.842504775e-12,
+      1.252911731e-16,
+      -38023.54070111884,
+      7.076682160000001
+    ],
+    "Co1-": [
+      -1955980.722,
+      5519.145887000001,
+      -7.741568662,
+      0.001646933644,
+      -2.2175103270000001e-07,
+      1.4207549700000006e-12,
+      7.53340178e-16,
+      -43378.7304067322,
+      50.64942413
+    ],
+    "Cr1+": [
+      14544538.68,
+      -44654.247409999996,
+      54.649464769999994,
+      -0.0288119405,
+      7.676480414e-06,
+      -9.54170982e-10,
+      4.4004079274e-14,
+      361454.1431421209,
+      -384.21250564
+    ],
+    "Cr1-": [
+      11202207.89,
+      -34011.6369,
+      36.5706217,
+      -0.02110296902,
+      5.51818014e-06,
+      -7.17360171e-10,
+      3.505127367e-14,
+      208115.7335141296,
+      -268.16047908999997
+    ],
+    "Cu1+": [
+      -4489533.426999999,
+      15721.119190000001,
+      -19.11974577,
+      0.01467538544,
+      -5.027161513e-06,
+      7.83709062e-10,
+      -4.385463585e-14,
+      -7655.648789601459,
+      137.99421006
+    ],
+    "Cu1-": [
+      -2308090.411,
+      8503.261,
+      -14.67859102,
+      0.00846713652,
+      -2.887821016e-06,
+      4.27065918e-10,
+      -2.304265084e-14,
+      -66581.70129296018,
+      95.34379387
+    ],
+    "F1+": [
+      1761.2943800000012,
+      52.2358742,
+      2.3881511230000005,
+      0.00010032568744,
+      -4.346345838e-08,
+      8.516272277e-12,
+      -5.2372754753e-16,
+      201941.9282827276,
+      -10.573705790000002
+    ],
+    "F1-": [
+      -14735.06226,
+      -81.4992736,
+      -2.444371819,
+      -2.120210026e-05,
+      4.54691862e-09,
+      -5.10952873e-13,
+      2.333894647e-17,
+      -39094.364266795856,
+      9.50698431
+    ],
+    "Fe1+": [
+      1137278.673,
+      -4811.801692,
+      9.703798123999999,
+      -0.0040402695519999995,
+      1.0181513407999999e-06,
+      -1.3215309352e-10,
+      6.539613743e-15,
+      120754.01760565829,
+      -61.768048220000004
+    ],
+    "Fe1-": [
+      1831142.8189,
+      -5912.233193,
+      4.899347422,
+      -0.0041507840435,
+      1.0668665304e-06,
+      -1.4884339211e-10,
+      7.7669394879e-15,
+      35283.80906189594,
+      -40.67531009
+    ],
+    "Ge1+": [
+      -1388319.1859999998,
+      1247.5724800000003,
+      3.9231365609999997,
+      -0.0014236091299999996,
+      3.9795875469999997e-07,
+      -4.8290123150000004e-11,
+      2.1632593326e-15,
+      80372.34030193937,
+      -20.476445650000002
+    ],
+    "H1+": [
+      -60.7877425,
+      0.1819354417,
+      2.499788183,
+      1.226512864e-07,
+      -3.73287633e-11,
+      5.68774456e-15,
+      -3.410210197e-19,
+      157802.1247451926,
+      -12.413267107000001
+    ],
+    "H1-": [
+      -60.7877425,
+      0.1819354417,
+      -2.500211817,
+      1.226512864e-07,
+      -3.73287633e-11,
+      5.68774456e-15,
+      -3.410210197e-19,
+      -8753.328015985033,
+      11.029990149000001
+    ],
+    "He1+": [
+      0.0,
+      0.0,
+      2.5,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      285324.8014029282,
+      -11.027870657000001
+    ],
+    "K1+": [
+      3566422.36,
+      -10852.89825,
+      15.54134898,
+      -0.00800980135,
+      2.696681041e-06,
+      -4.71529415e-10,
+      2.97689735e-14,
+      119083.4846221458,
+      -104.75892019999999
+    ],
+    "K1-": [
+      3566422.36,
+      -10852.89825,
+      10.54134898,
+      -0.00800980135,
+      2.696681041e-06,
+      -4.71529415e-10,
+      2.97689735e-14,
+      62892.983622126725,
+      -81.31725363
+    ],
+    "Mg1+": [
+      517335.56679,
+      -1924.9360968,
+      5.321040351000001,
+      -0.00205961451426,
+      7.75702433686e-07,
+      -1.3750821255600002e-10,
+      7.9804716208e-15,
+      100528.18770755417,
+      -30.46541936
+    ],
+    "Mn1+": [
+      641276.25418,
+      -3287.655097,
+      8.4742023758,
+      -0.005044735281,
+      2.071388562e-06,
+      -3.7802002629999996e-10,
+      2.3704215547e-14,
+      105567.50006979001,
+      -51.672887630000005
+    ],
+    "N1+": [
+      201732.02359999996,
+      -748.6677109999999,
+      3.6152010029999997,
+      -0.0008204987271,
+      3.081865407e-07,
+      -5.4024920019999994e-11,
+      3.1818441989e-15,
+      173362.98227049026,
+      -18.580190291
+    ],
+    "Na1+": [
+      -952572.338,
+      2623.807254,
+      -0.1625966200000004,
+      0.001210218586,
+      -2.306301844e-07,
+      1.249597843e-11,
+      -7.22677119e-16,
+      42690.70559821084,
+      7.02720345
+    ],
+    "Na1-": [
+      -952572.338,
+      2623.807254,
+      -5.162596619,
+      0.001210218586,
+      -2.306301844e-07,
+      1.249597843e-11,
+      -7.22677119e-16,
+      -23304.2233779526,
+      30.468899640000004
+    ],
+    "Ne1+": [
+      -111274.2658,
+      476.569797,
+      2.1966505309999995,
+      0.0001102593151,
+      -2.287564425e-08,
+      2.510218183e-12,
+      -1.126646096e-16,
+      247255.14073831952,
+      -7.609994420000001
+    ],
+    "Ni1+": [
+      -3468173.099,
+      9077.938538999999,
+      -5.939816304,
+      0.00278684874727,
+      -7.854663631e-08,
+      -6.003480101e-11,
+      5.27983148518e-15,
+      29326.790294030383,
+      49.97702316000001
+    ],
+    "Ni1-": [
+      -49516.25899999996,
+      89.73533900000007,
+      -2.7840437739999997,
+      5.329527767e-05,
+      1.742774912e-08,
+      -6.5705145910000006e-12,
+      1.7164581008000001e-16,
+      -14083.716521620283,
+      12.47823899
+    ],
+    "O1+": [
+      -478553.34699999995,
+      1396.417818,
+      0.8848870939999998,
+      0.000899632717,
+      -2.463236417e-07,
+      2.960426336e-11,
+      -1.1832196059e-15,
+      149050.41601819333,
+      -0.9959498850000003
+    ],
+    "O1-": [
+      -252132.66301999998,
+      737.03180778,
+      -3.322215544,
+      0.000430101676938,
+      -1.04040876885e-07,
+      9.487425160799999e-12,
+      -2.74775429783e-16,
+      -21683.36871890251,
+      17.225807215
+    ],
+    "P1+": [
+      -1821219.578,
+      6282.414735,
+      -5.5750412009999994,
+      0.005010138354,
+      -1.5174581786e-06,
+      2.01267433816e-10,
+      -9.778417613e-15,
+      82887.39572139877,
+      45.89168778
+    ],
+    "P1-": [
+      -1246359.76184,
+      4569.333199340001,
+      -8.924908449,
+      0.004384101627711,
+      -1.454881145039e-06,
+      2.031465139629e-10,
+      -1.021339582991e-14,
+      -36697.45871590139,
+      57.127354062
+    ],
+    "S1+": [
+      1831643.163,
+      -5495.701918,
+      8.394932434000001,
+      -0.002903361395,
+      6.41323275136e-07,
+      -5.476962575e-11,
+      1.3372412544e-15,
+      155187.74195408061,
+      -55.18571158
+    ],
+    "S1-": [
+      488154.790692,
+      -1297.4232002,
+      -1.3551633409999997,
+      -0.00034286326769999997,
+      -9.574766304e-09,
+      1.0442316687999998e-11,
+      -8.451432927999999e-16,
+      -15673.343954939493,
+      2.7002505919999997
+    ],
+    "Si1+": [
+      676123.7873,
+      -2289.2512365000002,
+      5.501173956000001,
+      -0.0017450902926,
+      4.2267440387000003e-07,
+      -4.7671771621e-11,
+      2.0366605579000003e-15,
+      108862.67023236089,
+      -33.27322571
+    ],
+    "Si1-": [
+      -5545140.215,
+      16592.420093,
+      -21.048162568000002,
+      0.009400160248999999,
+      -2.125018792e-06,
+      2.244074445e-10,
+      -9.161113757e-15,
+      -121983.66014921942,
+      144.45395693
+    ],
+    "Ti1+": [
+      -598067.6366,
+      1472.0152970000001,
+      1.6604312640000003,
+      0.00048546550079999997,
+      -2.8210746605e-07,
+      3.36836718e-11,
+      -1.031927937e-15,
+      69446.43098156815,
+      -4.277134420000003
+    ],
+    "Ti1-": [
+      193889.8478,
+      -1071.272389128,
+      -1.184200437,
+      -0.000223547727996,
+      -3.0939778729549996e-07,
+      5.742744482291e-11,
+      -2.928666684294e-15,
+      5551.430849906274,
+      2.316322509999999
+    ],
+    "V1+": [
+      1146681.754,
+      -3994.191890000001,
+      6.685192040000002,
+      -0.0018475707800000001,
+      4.80337502e-07,
+      -7.538760360000001e-11,
+      4.154817354e-15,
+      103457.12485113094,
+      -42.59337834
+    ],
+    "V1-": [
+      -1174389.2957000001,
+      5029.101634097,
+      -10.590299391999999,
+      0.005045225227883999,
+      -1.4887613499508001e-06,
+      1.7861806101334e-10,
+      -8.114254678796e-15,
+      -36292.86932796878,
+      67.38207568
+    ],
+    "Zn1+": [
+      -168058.7971,
+      458.32160000000005,
+      2.04209266,
+      0.0002004659173,
+      -3.1596058999999996e-08,
+      -1.967479271e-12,
+      7.4215873019999995e-16,
+      106049.64694200041,
+      -7.67447119
+    ],
+    "H2": [
+      560691.2255149999,
+      -836.7866031166001,
+      -2.0250591019999997,
+      0.0012524944265728,
+      -3.741462765266e-07,
+      5.937762748912e-11,
+      -3.6076761420394e-15,
+      -45609.8506590026,
+      -1.3063912149999999
+    ],
+    "H2O1": [
+      772948.494315,
+      -1682.4624881166,
+      -3.671490124,
+      0.0027203770455728003,
+      -7.873681649266e-07,
+      1.0371436911911998e-10,
+      -5.0955664017393996e-15,
+      -98721.89359696866,
+      -6.413806420999999
+    ],
+    "C1O1": [
+      328931.346,
+      -1386.7855172,
+      -0.04650747700000046,
+      0.00019701204800000007,
+      -1.3793827940000001e-07,
+      2.058967901e-11,
+      -9.525926577e-16,
+      -120523.59383510696,
+      -17.336219963
+    ],
+    "C1O2": [
+      -277194.1633,
+      -500.9999281999999,
+      -0.9888757370000008,
+      0.0010993421992,
+      -3.7656651592e-07,
+      4.6013733638e-11,
+      -1.5541863853999998e-15,
+      -191070.55907227818,
+      -29.320823158
+    ],
+    "N2": [
+      410182.3783999999,
+      -2025.002773,
+      1.3425726459999998,
+      -0.0011973125662,
+      4.950836879e-07,
+      -9.948421245e-11,
+      6.416409528e-15,
+      -101059.13028033916,
+      -25.596863282
+    ],
+    "H3N1": [
+      2363442.1579725,
+      -7933.225283674899,
+      2.8506382720000016,
+      -0.0006893227122408,
+      2.083645512101e-07,
+      -3.757859199632e-11,
+      2.3439344549409e-15,
+      -89462.3029752738,
+      -68.143962195
+    ],
+    "C1H1N1_hcn": [
+      1276977.1236575,
+      -4511.380181758299,
+      2.230430359,
+      -0.0005417607258135999,
+      1.0598405123669999e-07,
+      -2.1225845205439995e-11,
+      1.3695289629803e-15,
+      -124789.8938040336,
+      -48.604827867000004
+    ],
+    "C1H1N1_hnc": [
+      1238879.5056575,
+      -3983.5896317583,
+      1.6095755990000002,
+      -0.0002980185718136,
+      3.185300403669998e-08,
+      -1.1662870239439995e-11,
+      9.568096110802998e-16,
+      -120194.07045182819,
+      -43.232845966999996
+    ],
+    "H2S1": [
+      1915343.123515,
+      -6722.4951871166,
+      3.9028934900000003,
+      -0.0013499387364272,
+      2.1369499710940002e-07,
+      -1.2138485660880001e-11,
+      1.269876003606e-16,
+      -45404.95387753153,
+      -58.190768906
+    ],
+    "H1S1": [
+      2167995.2922575,
+      -6615.8006825583,
+      5.439452586999999,
+      -0.0027032266157136,
+      6.527234633727e-07,
+      -7.513192060544e-11,
+      3.0602538643803005e-15,
+      73.61014618268018,
+      -52.851359523
+    ],
+    "S2": [
+      954967.67012,
+      -2246.112728,
+      -0.06738016299999972,
+      0.0012266424790000003,
+      -6.54054095728e-07,
+      1.193755568e-10,
+      -7.2052833792e-15,
+      -36414.32784898076,
+      -16.605651950000002
+    ],
+    "O1S1": [
+      -1219888.1042,
+      3404.916155,
+      -5.1140509640000005,
+      0.002842487662,
+      -7.685763712639999e-07,
+      9.736761208e-11,
+      -4.6371595643e-15,
+      -84450.04843122649,
+      21.225993274999997
+    ],
+    "O2S1": [
+      -151143.58500000002,
+      -804.31214,
+      -0.27668002599999997,
+      0.00027653506800000006,
+      -1.52295290364e-07,
+      2.2969387899999998e-11,
+      -1.0573249137999999e-15,
+      -124946.631551838,
+      -30.81739233
+    ],
+    "O3S1": [
+      -516973.9777,
+      -550.2361979999998,
+      -0.24715607600000022,
+      0.0005208912630000001,
+      -2.2779317366399998e-07,
+      2.8156609549999992e-11,
+      -1.1718183996999998e-15,
+      -169306.50549717297,
+      -50.14384608500001
+    ],
+    "C1S1": [
+      -357619.3498,
+      728.4180188000003,
+      -2.1951581009999996,
+      0.001532686801,
+      -5.904735508640001e-07,
+      8.362284494e-11,
+      -3.0408748226e-15,
+      -90465.32390272815,
+      -0.9851137680000015
+    ],
+    "C1S2": [
+      -290657.11879999994,
+      305.3618268,
+      -2.143804896,
+      0.002452146352,
+      -1.085151917728e-06,
+      1.8553147419e-10,
+      -1.02500512842e-14,
+      -141430.04878506047,
+      -19.670007488000003
+    ],
+    "O1Si1": [
+      178514.4426,
+      -1542.8034949,
+      1.6051265920000002,
+      -0.00127733112029,
+      3.427423881e-07,
+      -4.942066906e-11,
+      3.2302648203000003e-15,
+      -87341.33466656698,
+      -26.967417808
+    ],
+    "Ca1H1": [
+      -10244354.5567425,
+      30093.668305441697,
+      -34.836162307,
+      0.0185057760112864,
+      -4.611897663763301e-06,
+      4.6322046804456e-10,
+      -1.4911805673019698e-14,
+      -211799.28735,
+      239.857707377
+    ]
+  },
+  "janaf_reactions": {
+    "C1H4": {
+      "knots_K": [
+        1500.0,
+        2000.0,
+        3000.0,
+        4000.0
+      ],
+      "coefficients": [
+        [
+          -39866.37684512479,
+          -16823.87743190908,
+          -867.5244969231829,
+          61.226145738820605,
+          -4.705655890874709,
+          0.24806173220758865
+        ],
+        [
+          -57501.0102223769,
+          -36785.66060688289,
+          -2838.397510919574,
+          358.30136836863744,
+          -54.9544435584271,
+          6.083776625973542
+        ],
+        [
+          -96815.63763874318,
+          -41576.95041471997,
+          -2032.3823009044916,
+          198.88537310759625,
+          -27.03121179595746,
+          3.1621606680407695
+        ]
+      ],
+      "background_nasa9": [
+        128670.49623,
+        -171.22511543320002,
+        -12.646891655,
+        0.0003357975001456,
+        -1.7435858905320002e-07,
+        2.9050929268240002e-11,
+        -1.6435464690787999e-15,
+        -196195.28958564374,
+        -2.33728031
+      ],
+      "table_id": "C-067"
+    },
+    "C1O1S1": {
+      "knots_K": [
+        1500.0,
+        2000.0,
+        3000.0,
+        4000.0
+      ],
+      "coefficients": [
+        [
+          -47880.604951041794,
+          -18980.84184724533,
+          -603.4464960343709,
+          60.09107538808104,
+          -8.689677651628472,
+          1.0774398471749578
+        ],
+        [
+          -67412.41445673787,
+          -40073.666249040936,
+          -1858.147749232596,
+          284.32384732108744,
+          -59.11386250361875,
+          8.779881918165529
+        ],
+        [
+          -109110.23858827577,
+          -43129.546245966514,
+          -1272.0605631093922,
+          132.05904583678603,
+          -18.822623564002242,
+          1.9243576806111378
+        ]
+      ],
+      "background_nasa9": [
+        352436.1,
+        -880.9110622000001,
+        -7.221725773,
+        0.000383641288,
+        -2.79450419264e-07,
+        4.801357847e-11,
+        -2.7188328793e-15,
+        -159197.56174932295,
+        -19.057637433
+      ],
+      "table_id": "C-094"
+    },
+    "O1Ti1": {
+      "knots_K": [
+        1500.0,
+        2000.0,
+        3000.0,
+        4000.0
+      ],
+      "coefficients": [
+        [
+          -46163.416401919276,
+          -17550.86368196484,
+          -384.05969774018496,
+          41.24590075743083,
+          -6.148924151508595,
+          0.6539809305245399
+        ],
+        [
+          -64062.588824087856,
+          -36433.14233425266,
+          -1162.7029242867932,
+          183.8262719865544,
+          -44.14997699693663,
+          6.7252291861401545
+        ],
+        [
+          -101512.03255845155,
+          -38350.04312892363,
+          -808.8716784473469,
+          74.07273666187382,
+          -15.845882776779831,
+          2.9115932616192595
+        ]
+      ],
+      "background_nasa9": [
+        -91423.3548,
+        -343.9806,
+        -4.499132284,
+        0.00020360880080000002,
+        -4.127802442e-07,
+        6.683857713e-11,
+        -3.1998748437e-15,
+        -78274.84181214054,
+        -16.736355145
+      ],
+      "table_id": "O-022"
+    },
+    "O1V1": {
+      "knots_K": [
+        1500.0,
+        2000.0,
+        3000.0,
+        4000.0
+      ],
+      "coefficients": [
+        [
+          -45557.1234601489,
+          -17242.72590834538,
+          -372.55364244109745,
+          38.314262103305055,
+          -4.374906914690371,
+          0.04760780720914681
+        ],
+        [
+          -63138.41604793955,
+          -35780.30399108075,
+          -1133.5368781889322,
+          175.46734331109326,
+          -40.72221487822594,
+          5.94345887836414
+        ],
+        [
+          -99911.568329898,
+          -37654.147282646416,
+          -792.0335487413653,
+          71.80259596064741,
+          -14.312410250290327,
+          2.44553788595033
+        ]
+      ],
+      "background_nasa9": [
+        -1462292.3262,
+        5756.877503,
+        -13.90548321,
+        0.005472459535999999,
+        -1.5921578344e-06,
+        1.8803055513e-10,
+        -8.3855176957e-15,
+        -111161.8649566017,
+        48.351321735
+      ],
+      "table_id": "O-026"
+    }
+  },
+  "partition_functions": {
+    "C_I": {
+      "excitation_K": [
+        0.0,
+        1.0,
+        53.84361377424347,
+        56.033215102886004,
+        14279.798553443505,
+        14860.500027465378,
+        35717.65572882617,
+        37170.14788077837,
+        67587.19441375199,
+        70335.69140929288,
+        144138.47307006552,
+        150000.0
+      ],
+      "weights": [
+        1.0,
+        1.0681198126036282,
+        3.013723090264448,
+        3.9181274781736706,
+        1.4721753888174016,
+        3.5571998097674817,
+        1.8875976169540791,
+        0.510011050166006,
+        5.857739375761729,
+        15.555283318483399,
+        3923.1668953725634,
+        3940.498734252753
+      ],
+      "representation": "positive_Boltzmann_fit_to_BC2016_table8"
+    },
+    "Ca_I": {
+      "excitation_K": [
+        0.0,
+        21273.331165554107,
+        22138.43123814678,
+        30453.52565814865,
+        31691.94699670355,
+        59969.49517848216,
+        62408.211251132525,
+        76172.54130832465,
+        79270.16953131309
+      ],
+      "weights": [
+        1.0,
+        0.11669016279936227,
+        9.798921017396598,
+        13.053220617008233,
+        11.170342462483987,
+        135.30889521640182,
+        662.0884680326404,
+        1422.1091969327638,
+        539.1297274084222
+      ],
+      "representation": "positive_Boltzmann_fit_to_BC2016_table8"
+    },
+    "Co_I": {
+      "excitation_K": [
+        0.0,
+        1.0,
+        1359.4176448461785,
+        1532.0993511492989,
+        4318.986243229963,
+        5065.556791843797,
+        8850.87030263466,
+        10802.957979825576,
+        23038.711420980562,
+        27021.132863484178,
+        43595.298629732104,
+        51131.08693329532,
+        70335.69140929288,
+        89339.5607779992
+      ],
+      "weights": [
+        10.0,
+        0.07670130876654949,
+        8.398257252952883,
+        5.540212102592616,
+        13.589276606503804,
+        7.1734399322809645,
+        19.44575039075124,
+        5.246634162868662,
+        29.733457630939114,
+        93.82309246687419,
+        368.27428120639127,
+        138.54321027198583,
+        872.7573727281299,
+        1167.7041871740892
+      ],
+      "representation": "positive_Boltzmann_fit_to_BC2016_table8"
+    },
+    "Co_II": {
+      "excitation_K": [
+        0.0,
+        1.0,
+        1306.2958906175515,
+        1594.40361603305,
+        2785.845701756256,
+        3682.4465573546563,
+        5485.925086469059,
+        7251.523634578183,
+        13721.789061609845,
+        16748.173408040522,
+        29263.497919770714,
+        35717.65572882617,
+        59969.49517848216,
+        76172.54130832465
+      ],
+      "weights": [
+        9.0,
+        0.0019769033399744157,
+        3.8007948710351154,
+        5.124591893816698,
+        3.0406878065457605,
+        2.766641238386531,
+        18.872172054394824,
+        14.484001289775536,
+        0.33569140355913935,
+        37.07020988661537,
+        23.25575624981416,
+        105.29943257438917,
+        78.78567384103492,
+        355.2819212737766
+      ],
+      "representation": "positive_Boltzmann_fit_to_BC2016_table8"
+    },
+    "Ge_I": {
+      "excitation_K": [
+        0.0,
+        1.0,
+        747.6232047944078,
+        809.6651686961303,
+        2025.1925573653564,
+        2107.548922466641,
+        9975.163040720698,
+        10380.812452347587,
+        23975.602346413245,
+        30453.52565814865,
+        55374.23111264661,
+        62408.211251132525,
+        82493.76572705191,
+        92972.63826421769
+      ],
+      "weights": [
+        1.0,
+        0.0019628333824612456,
+        0.16555802888791177,
+        2.858178335400752,
+        4.459984524873653,
+        0.5173550552156307,
+        1.245981100973991,
+        3.7818636877935106,
+        0.8531492780585737,
+        0.33930874942830747,
+        1.559300220392397,
+        45.40020767272823,
+        649.9495648934209,
+        1998.5426764767217
+      ],
+      "representation": "positive_Boltzmann_fit_to_BC2016_table8"
+    },
+    "C_anion": {
+      "excitation_K": [
+        0.0,
+        14264.033963573998,
+        14268.35029420651
+      ],
+      "weights": [
+        4,
+        4,
+        6
+      ],
+      "representation": "evaluated_bound_spectroscopic_levels"
+    },
+    "Ca_anion": {
+      "excitation_K": [
+        0.0,
+        56.45760467325436
+      ],
+      "weights": [
+        2,
+        4
+      ],
+      "representation": "evaluated_bound_spectroscopic_levels"
+    },
+    "Ge_anion": {
+      "excitation_K": [
+        0.0,
+        9645.991819849622,
+        9923.10024645688
+      ],
+      "weights": [
+        4,
+        4,
+        6
+      ],
+      "representation": "evaluated_bound_spectroscopic_levels"
+    }
+  },
+  "partition_reactions": {
+    "C1-": {
+      "neutral": "C_I",
+      "ion": "C_anion",
+      "charge": -1,
+      "threshold_K": 14646.324583317906
+    },
+    "Ca1-": {
+      "neutral": "Ca_I",
+      "ion": "Ca_anion",
+      "charge": -1,
+      "threshold_K": 284.8909198840545
+    },
+    "Co1+": {
+      "neutral": "Co_I",
+      "ion": "Co_II",
+      "charge": 1,
+      "threshold_K": 91455.32336111741
+    },
+    "Ge1-": {
+      "neutral": "Ge_I",
+      "ion": "Ge_anion",
+      "charge": -1,
+      "threshold_K": 14304.615621807116
+    }
+  },
+  "logk_energy_shifts_K": {
+    "H1Mg1": 164.43602178236506
+  },
+  "interpretation": "A versioned source-adoption model, not a whole-mixture physical validation. Unreviewed species retain their pinned FastChem fits. Atomic translation uses unit heavy-particle mass ratios and electron spin two, as in the approved audit. Partition fit terms are numerical basis functions, not measured new levels."
+}

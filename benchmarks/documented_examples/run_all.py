@@ -26,7 +26,6 @@ ALIASES = {
     "examples/comparisons/comparison_with_fastchem.py": "fastchem4_gas",
     "examples/comparisons/comparison_with_fastchem_extended.py": "fastchem4_gas",
     "examples/comparisons/comparison_with_fastchem_cond.py": "fastchem4_validation",
-    "results/subneptune_taxonomy/20260911/verify.py": "metal_archive_revalidation",
 }
 
 
@@ -44,7 +43,17 @@ class Job:
 def build_jobs() -> tuple[Job, ...]:
     """Cover public example scripts; aliases share their canonical execution."""
     jobs = []
+    jobs.append(Job("multiphase_equilibrium", "examples/multiphase_equilibrium.py"))
+    jobs.append(Job(
+        "plagioclase_exsolution", "examples/plagioclase_exsolution.py",
+        ("--output", "{output}/plagioclase_exsolution.png"),
+        artifacts=("plagioclase_exsolution.png",),
+    ))
     comparison = "examples/comparisons/"
+    jobs.append(Job(
+        "sun_yao_water", comparison + "compare_sun_yao_water.py",
+        ("--output", "{output}"), artifacts=("water_curves.png", "water_curves.csv"),
+    ))
     for name, script, flag, resources in (
         ("fastchem4_gas", "comparison_with_fastchem4_gas", "--output", ("fastchem",)),
         ("fastchem_initializer", "comparison_with_fastchem_initializer", "--output", ("fastchem",)),
@@ -68,6 +77,34 @@ def build_jobs() -> tuple[Job, ...]:
             ("--profile", profile, "--fastchem-executable", "{fastchem}", "--output", "{output}/comparison.png"),
             ("fastchem",), ("comparison.png",),
         ))
+    jobs.append(Job(
+        "solubility_laws", comparison + "compare_solubility_laws.py",
+        ("--output-dir", "{output}"),
+        artifacts=("solubility_laws.png", "solubility_laws.pdf"),
+    ))
+    jobs.append(Job(
+        "solubility_laws_exoeos", comparison + "compare_solubility_laws.py",
+        ("--output-dir", "{output}", "--exoeos"), ("exoeos",),
+        ("solubility_laws_exoeos.png", "solubility_laws_exoeos.pdf"),
+    ))
+    jobs.append(Job(
+        "ni_co_ionization", comparison + "compare_ni_co_ionization.py",
+        ("--output-dir", "{output}"),
+        artifacts=("comparison.csv", "comparison.png", "partition_functions.png"),
+    ))
+    for script in ("audit_atomic_ions", "select_atomic_ions", "select_major_molecules"):
+        jobs.append(Job(script, comparison + script + ".py", ("--output-dir", "{output}"),
+                        artifacts=("receipt.json",)))
+    for name, script in (("gas_thermochemistry_impact", "compare_gas_thermochemistry"),
+                         ("curated_gas_validation", "validate_curated_preset")):
+        jobs.append(Job(name, comparison + script + ".py",
+                        ("--output-dir", "{output}", "--fastchem-executable", "{fastchem}"),
+                        ("fastchem",), ("receipt.json", "diagnostics.csv", "fastchem_parity.csv")))
+    jobs.append(Job("build_curated_gas", comparison + "build_curated_preset.py",
+                    ("--output", "{output}/gas_v1.json"), artifacts=("gas_v1.json",)))
+    jobs.append(Job("curated_atmosphere", comparison + "demo_curated_atmosphere.py",
+                    ("--output-dir", "{output}"),
+                    artifacts=("receipt.json", "summary.csv", "isothermal.png", "inverted.png")))
     jobs.append(Job(
         "fastchem4_production_comparison", "benchmarks/fastchem4/run_production_comparison.py",
         ("--fastchem-executable", "{fastchem}", "--fastchem-source-root", "{fastchem_source}",
@@ -105,147 +142,6 @@ def build_jobs() -> tuple[Job, ...]:
         ("--output", "{output}/rce_thermodynamics_audit.json"),
         artifacts=("rce_thermodynamics_audit.json",),
     ))
-    metal = "examples/metal_silicate/"
-    jobs.append(Job("metal_thermochemistry", metal + "reference.py"))
-    jobs.append(Job(
-        "metal_independent_reference", metal + "generate_equilibrium_reference.py",
-        ("--output", "{output}/equilibrium_reference.json"), artifacts=("equilibrium_reference.json",),
-    ))
-    jobs.append(Job(
-        "metal_source_extraction", metal + "extract_reference.py",
-        ("--gce-checkout", "{gce}", "--check"), ("gce",),
-    ))
-    for kind in ("source_full", "completed_dry"):
-        for temperature in (2350, 3000):
-            case = f"{kind}_{temperature}"
-            jobs.append(Job(
-                "metal_" + case, metal + "native.py", ("--case", case),
-                ("exoeos",) if kind == "completed_dry" else (),
-            ))
-    for temperature in (2350, 3000):
-        jobs.append(Job(
-            f"metal_gas_exchange_{temperature}", metal + "gas_exchange.py",
-            ("--case", f"source_full_{temperature}", "--output", "{output}/equilibrium.json"),
-            artifacts=("equilibrium.json",),
-        ))
-    for scale in (1, 0):
-        jobs.append(Job("metal_hydrogen_" + str(scale), metal + "hydrogen.py",
-                        ("--hydrogen-scale", str(scale)), ("exoeos",)))
-    for name in ("sulfur_source", "sulfide", "cns_inventory"):
-        jobs.append(Job("metal_" + name, metal + name + ".py"))
-    jobs.append(Job(
-        "metal_sulfur_extraction", metal + "extract_sulfur_reference.py",
-        ("{gce}", "--output", "{output}/sulfur_reference.json"), ("gce",),
-        ("sulfur_reference.json",),
-    ))
-    jobs.append(Job(
-        "metal_m1_chemistry", metal + "m1_chemistry.py",
-        ("--pressure-bar", "100", "--point", "1400", "0.1", "--output", "{output}/chemistry.json"),
-        artifacts=("chemistry.json",),
-    ))
-    jobs.append(Job(
-        "metal_m1_boundary", metal + "m1_boundary_validation.py",
-        ("--output", "{output}/boundary.json"), artifacts=("boundary.json",),
-    ))
-    native_arguments = ("--exoeos-checkout", "{exoeos_checkout}", "--runtime", "{melts_runtime}",
-                        "--python", "{melts_python}", "--output", "{output}/equilibrium.json")
-    native_resources = ("exoeos", "exoeos_checkout", "melts_runtime", "melts_python")
-    for branch in ("present", "absent"):
-        jobs.append(Job(
-            "metal_melts_" + branch, metal + "run_melts_reference.py",
-            native_arguments + (("--metal-absent",) if branch == "absent" else ()),
-            native_resources, ("equilibrium.json",),
-        ))
-    jobs.append(Job(
-        "metal_common_gibbs", metal + "run_bse_common_gibbs.py",
-        native_arguments + ("--inventory", "{bse_inventory}", "--metal-absent"),
-        native_resources + ("bse_inventory",), ("equilibrium.json",),
-    ))
-    jobs.append(Job(
-        "metal_phase_selection", metal + "run_metal_selection.py",
-        ("--exoeos-checkout", "{exoeos_checkout}", "--output", "{output}/reference.json"),
-        ("exoeos", "exoeos_checkout"), ("reference.json",),
-    ))
-    jobs.append(Job(
-        "metal_bse_phase_selection", metal + "run_metal_selection.py",
-        ("--exoeos-checkout", "{exoeos_checkout}", "--bse-inventory", "{bse_inventory}",
-         "--runtime", "{melts_runtime}", "--python", "{melts_python}",
-         "--gas-model", "m1_shared", "--output", "{output}/selection.json"),
-        native_resources + ("bse_inventory",), ("selection.json",),
-    ))
-    jobs.append(Job(
-        "metal_standards_audit", metal + "m2_standards_audit.py",
-        ("--inventory", "{bse_inventory}", "--exoeos-checkout", "{exoeos_checkout}",
-         "--runtime", "{melts_runtime}", "--python", "{melts_python}",
-         "--output", "{output}/standards_audit.json"),
-        native_resources + ("bse_inventory",), ("standards_audit.json",),
-    ))
-    jobs.append(Job(
-        "metal_m2_contact", metal + "run_m2_contact.py",
-        ("--inventory", "{bse_inventory}", "--exoeos-checkout", "{exoeos_checkout}",
-         "--runtime", "{melts_runtime}", "--python", "{melts_python}",
-         "--output", "{output}/contact.json"),
-        native_resources + ("bse_inventory",), ("contact.json",),
-    ))
-    for metal_mode in ("suppressed", "select"):
-        jobs.append(Job(
-            "metal_m2_retained_" + metal_mode, metal + "run_m2_contact.py",
-            ("--inventory", "{bse_inventory}", "--exoeos-checkout", "{exoeos_checkout}",
-             "--runtime", "{melts_runtime}", "--python", "{melts_python}",
-             "--gas-model", "m1_retained", "--metal-mode", metal_mode,
-             "--output", "{output}/contact.json"),
-            native_resources + ("bse_inventory",), ("contact.json",),
-        ))
-    jobs.append(Job(
-        "metal_m2_host_stability", metal + "run_m2_host_stability.py",
-        native_arguments + ("--source-json", str(ROOT / "results/m2_expanded_contact/20260924/contact.json")),
-        native_resources, ("equilibrium.json",),
-    ))
-    jobs.append(Job(
-        "metal_m2_liquid_global", metal + "run_m2_liquid_global.py",
-        ("--saved-physical-audit", str(ROOT / "results/m2_liquid_global/20260927/central/source_physical_audit.json"),
-         "--exoeos-checkout", "{exoeos_checkout}", "--runtime", "{melts_runtime}",
-         "--python", "{melts_python}", "--output-directory", "{output}/liquid-bound"),
-        native_resources, ("liquid-bound/assessment.json", "liquid-bound/summary.json"),
-    ))
-    jobs.append(Job(
-        "metal_m2_solid_global", metal + "run_m2_solid_global.py",
-        ("--saved-physical-audit", str(ROOT / "results/m2_liquid_global/20260927/central/source_physical_audit.json"),
-         "--exoeos-checkout", "{exoeos_checkout}", "--runtime", "{melts_runtime}",
-         "--python", "{melts_python}", "--output-directory", "{output}/solid-bound"),
-        native_resources, ("solid-bound/summary.json",),
-    ))
-    jobs.append(Job(
-        "metal_m2_alloy_insertion_bound", metal + "run_m2_alloy_insertion_bound.py",
-        ("--saved-closure", "{m2_closure}", "--saved-physical-audit", "{m2_physical_audit}",
-         "--exoeos-checkout", "{exoeos_checkout}", "--output", "{output}/alloy_bound.json"),
-        ("exoeos", "exoeos_checkout", "m2_closure", "m2_physical_audit"), ("alloy_bound.json",),
-    ))
-    jobs.append(Job(
-        "metal_m2_common_plane", metal + "run_m2_common_plane.py",
-        ("--evidence-binding", "{m2_evidence_binding}", "--alloy-bound", "{m2_alloy_bound}",
-         "--exoeos-checkout", "{exoeos_checkout}", "--output", "{output}/common_plane.json"),
-        ("exoeos", "exoeos_checkout", "m2_evidence_binding", "m2_alloy_bound"), ("common_plane.json",),
-    ))
-    jobs.append(Job(
-        "metal_m2_water_global", metal + "run_m2_water_global.py",
-        ("--saved-closure", "{m2_closure}", "--saved-physical-audit", "{m2_physical_audit}",
-         "--exoeos-checkout", "{exoeos_checkout}", "--output", "{output}/water_bound.json"),
-        ("exoeos", "exoeos_checkout", "m2_closure", "m2_physical_audit"), ("water_bound.json",),
-    ))
-    jobs.append(Job(
-        "metal_m2_omitted_gas", metal + "run_m2_omitted_gas.py",
-        ("--source", str(ROOT / "results/m2_expanded_contact/20260924/contact.json"),
-         "--mole-fraction-target", "1e-8", "--output", "{output}/screen.json"),
-        artifacts=("screen.json",),
-    ))
-    jobs.append(Job(
-        "metal_archive_revalidation", metal + "revalidate_archive.py",
-        ("--archive", str(ROOT / "results/subneptune_taxonomy/20260911"),
-         "--exoeos-checkout", "{exoeos_checkout}", "--runtime", "{melts_runtime}",
-         "--worker-python", "{melts_python}", "--output", "{output}/revalidated.json"),
-        native_resources, ("revalidated.json",),
-    ))
     for case in ("gas_no_grid", "gas_grid", "condensate_fixed_support", "condensate_grid"):
         jobs.append(Job(
             "retrieval_" + case, f"examples/retrievals/exojax_nuts_{case}.py",
@@ -277,16 +173,14 @@ def resource_errors(job: Job, values: dict[str, str]) -> list[str]:
             errors.append(f"Missing {name} input; supply its command-line option.")
             continue
         path = Path(value)
-        if name in {"fastchem", "melts_python"} and (not path.is_file() or not os.access(path, os.X_OK)):
+        if name == "fastchem" and (not path.is_file() or not os.access(path, os.X_OK)):
             errors.append(f"{name} executable is unavailable: {path}")
-        elif name in {"ito", "bse_inventory", "m2_closure", "m2_physical_audit", "m2_evidence_binding", "m2_alloy_bound"} and not path.is_file():
+        elif name == "ito" and not path.is_file():
             errors.append(f"{name} file is unavailable: {path}")
-        elif name not in {"fastchem", "melts_python", "ito", "bse_inventory", "m2_closure", "m2_physical_audit", "m2_evidence_binding", "m2_alloy_bound"} and not path.is_dir():
+        elif name not in {"fastchem", "ito"} and not path.is_dir():
             errors.append(f"{name} directory is unavailable: {path}")
         elif name == "exoeos" and not (path / "exoeos/__init__.py").is_file():
             errors.append(f"ExoEOS source is unavailable: {path}")
-        elif name == "melts_runtime" and not (path / "libalphamelts.so").is_file():
-            errors.append(f"MELTS native library is unavailable: {path}")
         elif name == "japanese_docs" and not (path / "ja/magma_gas_interface.tex").is_file():
             errors.append(f"Japanese documentation checkout is unavailable: {path}")
         elif name == "co":
@@ -431,16 +325,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--fastchem-executable", default=os.environ.get("EXOGIBBS_FASTCHEM_EXECUTABLE"))
     parser.add_argument("--fastchem-source-root", default=os.environ.get("EXOGIBBS_FASTCHEM_SOURCE_ROOT", ROOT / "FastChem"))
     parser.add_argument("--co-database", default=os.environ.get("EXOJAX_CO_DATABASE"))
-    parser.add_argument("--gce-checkout", default=os.environ.get("EXOGIBBS_GCE_CHECKOUT"))
     parser.add_argument("--ito-input", default=os.environ.get("EXOGIBBS_ITO_INPUT", str(ROOT / "external_data/Ito_2025.xlsx")))
     parser.add_argument("--exoeos-source", type=Path, default=os.environ.get("EXOGIBBS_EXOEOS_SOURCE", ROOT.parent / "exoeos/src"))
-    parser.add_argument("--melts-runtime", default=os.environ.get("EXOGIBBS_MELTS_RUNTIME"))
-    parser.add_argument("--melts-python", default=os.environ.get("EXOGIBBS_MELTS_PYTHON"))
-    parser.add_argument("--bse-inventory", default=os.environ.get("EXOGIBBS_BSE_INVENTORY"))
-    parser.add_argument("--m2-closure", help="Accepted saved pressure root for the supplementary alloy bound.")
-    parser.add_argument("--m2-physical-audit", help="Physical audit bound to the exact saved pressure root.")
-    parser.add_argument("--m2-evidence-binding", help="Verified single-root phase evidence binding for the common-plane gap.")
-    parser.add_argument("--m2-alloy-bound", help="Saved fixed-element-plane alloy interval bound.")
     parser.add_argument("--japanese-docs", type=Path, default=os.environ.get("EXOGIBBS_JAPANESE_DOCS", ROOT / "doc_ExoGibbs"))
     parser.add_argument("--output-directory", type=Path)
     parser.add_argument("--case", action="append")
@@ -467,13 +353,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     resources = {name: str(Path(value).expanduser().absolute()) if value else ""
                  for name, value in (("fastchem", args.fastchem_executable), ("co", args.co_database),
                                      ("fastchem_source", args.fastchem_source_root),
-                                     ("gce", args.gce_checkout), ("ito", args.ito_input),
-                                     ("exoeos", args.exoeos_source),
+                                     ("ito", args.ito_input), ("exoeos", args.exoeos_source),
                                      ("exoeos_checkout", args.exoeos_source.resolve().parent),
-                                     ("melts_runtime", args.melts_runtime), ("melts_python", args.melts_python),
-                                     ("m2_closure", args.m2_closure), ("m2_physical_audit", args.m2_physical_audit),
-                                     ("m2_evidence_binding", args.m2_evidence_binding), ("m2_alloy_bound", args.m2_alloy_bound),
-                                     ("bse_inventory", args.bse_inventory), ("japanese_docs", args.japanese_docs))}
+                                     ("japanese_docs", args.japanese_docs))}
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     output = (args.output_directory or ROOT / "results/all_documented_examples" / f"{stamp}_{os.getpid()}").resolve()
     environment = dict(os.environ)

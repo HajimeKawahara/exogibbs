@@ -71,7 +71,7 @@ def test_gauge_preserves_unmodified_reaction_thermochemistry(thermo):
         baseline.hvector_func(temperature)[:, old_indices], rtol=2e-14, atol=2e-13,
     )
     assert thermo.hvector_func is thermo.chemical_setup.hvector_func
-    assert len(thermo.metadata["nasa_replacements"]) == 34
+    assert len(thermo.metadata["nasa_replacements"]) == 35
     assert set(thermo.metadata["excluded_species"]) == {"C4H6O4"}
     assert "C4H6O4" in baseline.species and "C4H6O4" not in thermo.species
     # Every restored gauge contribution is the same conserved elemental sum.
@@ -79,6 +79,23 @@ def test_gauge_preserves_unmodified_reaction_thermochemistry(thermo):
     g = thermo.standard_gibbs_rt(temperature)
     restored = g[:, atom_indices] @ thermo.chemical_setup.formula_matrix
     np.testing.assert_allclose(g - thermo.hvector_func(temperature), restored, rtol=1e-13, atol=1e-13)
+
+
+def test_cobalt_ionization_and_caloric_properties_use_nasa9(thermo):
+    # Independent audit of the Co, Co+, and electron NASA CEA records at 1 bar.
+    temperatures = jnp.array([2000.0, 3000.0, 4000.0])
+    neutral, ion, electron = [thermo.species.index(name) for name in ("Co1", "Co1+", "e1-")]
+    expected_log10_kp = [-17.810278600177238, -10.755751699191713, -7.130066708413326]
+    for evaluate in (thermo.hvector_func, thermo.standard_gibbs_rt):
+        g = evaluate(temperatures)
+        log10_kp = (g[:, neutral] - g[:, ion] - g[:, electron]) / jnp.log(10.0)
+        np.testing.assert_allclose(log10_kp, expected_log10_kp, rtol=0, atol=1e-12)
+    np.testing.assert_allclose(
+        thermo.standard_cp_r(temperatures)[:, ion],
+        [3.3782874016503994, 3.3123318842711216, 3.5167518111813987],
+        rtol=0, atol=1e-12,
+    )
+    assert thermo.metadata["nasa_replacements"]["Co1+"] == "Co+"
 
 
 def test_domain_and_preparation_fail_closed(thermo):

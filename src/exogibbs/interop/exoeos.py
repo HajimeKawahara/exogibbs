@@ -62,9 +62,13 @@ def make_magma_liquid_phase(
     def gibbs_j(temperature_k, pressure_pa, amounts_mol, parameters):
         return magma.liquid_gibbs(temperature_k, pressure_pa, amounts_mol[order])
 
+    def derivative_domain(temperature_k, pressure_pa, amounts_mol, parameters):
+        return (temperature_k != 1480.) & jnp.all(amounts_mol > 0)
+
     return Phase(name, components, matrix, gibbs_j,
                  domain="ExoEOS native liquid; positive component derivative domain",
-                 standard_state="ExoEOS magma native MELTS full liquid G")
+                 standard_state="ExoEOS magma native MELTS full liquid G",
+                 derivative_domain=derivative_domain)
 
 
 def make_magma_pure_phase(

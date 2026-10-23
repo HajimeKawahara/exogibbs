@@ -1,0 +1,477 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.ch4_ardia2013.v1
+  name: Ardia CH4 law in the Seo formulation
+  description: Methane mole fraction driven by CH4 fugacity and a separate total melt pressure.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 7dc3ce1183c0b3d74e24cde502f638cac3625b83
+    entry_points:
+    - exogibbs.solubility.ch4_ardia2013
+assumptions:
+- statement: x_CH4 = (f_CH4/GPa) * exp(-7.63 - 1.9*(P_melt/GPa)).
+  evidence:
+  - implementation
+- statement: CH4 mole fraction; the formulation uses GPa fugacity, not bar.
+  evidence:
+  - implementation
+- statement: The named driving partial pressure or fugacity is distinct from total melt pressure.
+    Unit scaling alone does not convert partial pressure into fugacity.
+  evidence:
+  - implementation
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Inspected numerical API and caller obligations; not a physical validation domain.
+  conditions:
+  - Finite nonnegative driving pressure/fugacity in the stated native unit. Broadcast-compatible JAX
+    inputs are accepted; no clipping to reported calibration ranges is performed.
+  - Separate nonnegative finite total melt pressure in GPa. Temperature is calibration context, not
+    a function input.
+  evidence:
+  - implementation
+- kind: scientific_applicability
+  status: unknown
+  description: Composition-specific physical accuracy and joint applicability remain unestablished
+    by this survey.
+  conditions: []
+  evidence:
+  - upstream_model
+  - implementation
+claims:
+- id: numerical_verification
+  revision: '1'
+  kind: numerical_verification
+  statement: The selected module passes its literal-formula, zero/invalid-input and interior derivative
+    checks. CO/N logarithmic variants and Sun-Yao composition response are covered only where explicitly
+    tested. Counts include shared controls, not a separate experimental sample count.
+  scope: Only the selected tests, their asserted tolerances and the recorded CPU/x64 environment.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The model has quantitatively established physical accuracy for the intended melt/fluid
+    composition and conditions.
+  scope: Requires independent empirical data and explicit composition, reference-state and driving-quantity
+    conventions; not established by this survey.
+- id: source_formula_agreement_20261021
+  revision: '1'
+  kind: numerical_verification
+  statement: The implementation agrees with the specified inspected reference expression at the recorded
+    samples.
+  scope: Three positive samples of Seo arXiv v1 Eq. 17; the source is a later formulation, not an
+    independent validation of Ardia experiments.
+evidence:
+- id: upstream_model
+  kind: literature
+  summary: Cited model origin and retained source-review boundary.
+  sources:
+  - https://doi.org/10.1016/j.gca.2013.03.028
+  - https://doi.org/10.3847/1538-4357/ad7461
+  scope: The provider distinguishes the Ardia experiments from Seo Eq. 17 and the conflicting later
+    MELTYQ unit label. No fresh comparison of those original equations or experiments was completed.
+  provenance:
+    role: secondary
+    location: Citations and source descriptions in the selected provider code/guide.
+    inspection: not_inspected
+    note: The provider distinguishes the Ardia experiments from Seo Eq. 17 and the conflicting later
+      MELTYQ unit label. No fresh comparison of those original equations or experiments was completed.
+- id: implementation
+  kind: implementation
+  summary: Methane mole fraction driven by CH4 fugacity and a separate total melt pressure.
+  sources:
+  - src/exogibbs/__init__.py
+  - src/exogibbs/solubility/__init__.py
+  - src/exogibbs/solubility/volatile.py
+  - src/exogibbs/solubility/meltyq.py
+  - src/exogibbs/solubility/sun_yao2026.py
+  - documents/solubility.rst
+  scope: Inspected selected implementation, conventions and caller domains at revision 7dc3ce1183c0b3d74e24cde502f638cac3625b83.
+  subject: survey_20261020
+  provenance:
+    role: implementation
+    location: Selected provider source files and guide.
+    inspection: inspected
+    note: Code and declarations were read; an empirical calibration or external source replay is not
+      inferred.
+    derived_from:
+    - evidence: upstream_model
+      comparison: not_checked
+      note: Original-source scientific equivalence is not established by this implementation survey.
+- id: test_run
+  kind: numerical_test
+  summary: 56 selected tests passed.
+  sources:
+  - tests/unittests/solubility/meltyq_test.py
+  - results/mceg/20261020_model_survey/receipt.json
+  - results/mceg/20261020_model_survey/tests.xml
+  - results/mceg/20261020_model_survey/tests.log
+  scope: The selected module passes its literal-formula, zero/invalid-input and interior derivative
+    checks. CO/N logarithmic variants and Sun-Yao composition response are covered only where explicitly
+    tested. Counts include shared controls, not a separate experimental sample count.
+  result: passed
+  subject: survey_20261020
+  context: test_environment
+  artifacts:
+  - source: results/mceg/20261020_model_survey/receipt.json
+    sha256: 8e56fec883a5e85af4950163e9679ab3e5f4417d65bbdf2fd10fe775aa250b08
+  - source: results/mceg/20261020_model_survey/tests.xml
+    sha256: 755b648a452d21234c8823918866da6c155ccef65dc4cb28f516ede2893be560
+  - source: results/mceg/20261020_model_survey/tests.log
+    sha256: fe9b3c8b8d4ad52f6c6f1d6ae84a6233fed5c266c690b03583c91a787fff38ea
+  provenance:
+    role: primary
+    location: results/mceg/20261020_model_survey/receipt.json and tests.xml
+    inspection: inspected
+    note: Fresh local pytest execution; tests consume stored references where applicable. No external
+      reference program or experiment was rerun.
+- id: reported_metadata
+  kind: implementation
+  summary: Provider-reported calibration marginals and concentration conventions.
+  sources:
+  - src/exogibbs/solubility/volatile.py
+  scope: The metadata was inspected; its original experimental/formulation scope was not independently
+    audited.
+  subject: survey_20261020
+  provenance:
+    role: secondary
+    location: SolubilityMetadata record for ch4_ardia2013
+    inspection: inspected
+    note: The provider distinguishes the Ardia experiments from Seo Eq. 17 and the conflicting later
+      MELTYQ unit label. No fresh comparison of those original equations or experiments was completed.
+    derived_from:
+    - evidence: upstream_model
+      comparison: not_checked
+      note: Retain the source-review gap; metadata is not a validated application domain.
+- id: seo2024_20261021
+  kind: literature
+  summary: Author preprint of the CH4 formulation used by ExoGibbs.
+  sources:
+  - https://doi.org/10.3847/1538-4357/ad7461
+  - https://arxiv.org/pdf/2408.17056v1
+  scope: Eq. 17 gives CH4 mole fraction as f_CH4[GPa] * exp(-7.63 - 1.9*P[GPa]). Temperature dependence
+    is omitted; the stated Ardia experimental range is 1673-1723 K and 0.7-3 GPa. This is not a fresh
+    inspection of the Ardia experiments.
+  provenance:
+    role: primary
+    location: 'arXiv v1, printed/PDF p. 9: Section 2.3, Eq. 17 and adjacent Ardia attribution.'
+    inspection: inspected
+    note: Retrieved 2026-10-21; SHA-256 fdb7708dd63e965a654abe9039064a4787f7dfd2be8a597cbb536774630dceb1.
+      Eq. 17 gives CH4 mole fraction as f_CH4[GPa] * exp(-7.63 - 1.9*P[GPa]). Temperature dependence
+      is omitted; the stated Ardia experimental range is 1673-1723 K and 0.7-3 GPa. This is not a
+      fresh inspection of the Ardia experiments.
+- id: meltyq2026_20261021
+  kind: literature
+  summary: Later compilation inspected for unit and pressure-expression differences.
+  sources:
+  - https://doi.org/10.48550/arXiv.2605.08752
+  - https://arxiv.org/pdf/2605.08752v1
+  scope: 'Primary evidence only for what this compilation prints: A4 labels CH4 fugacity in bar, A5
+    labels CO fugacity in GPa and output as CO mass fraction, and A6 uses P_total/T rather than sqrt(P_total)/T.
+    These statements do not replace the cited experimental papers.'
+  provenance:
+    role: primary
+    location: 'arXiv v1, printed/PDF p. 17: Appendix A, Eqs. A4-A6.'
+    inspection: inspected
+    note: 'Retrieved 2026-10-21; SHA-256 ff53e7caa294aef02fdc6b62bb473ded06fe5cca312843c0b9568ee9ecc3f43e.
+      Primary evidence only for what this compilation prints: A4 labels CH4 fugacity in bar, A5 labels
+      CO fugacity in GPa and output as CO mass fraction, and A6 uses P_total/T rather than sqrt(P_total)/T.
+      These statements do not replace the cited experimental papers.'
+- id: original_fulltext_20261021
+  kind: literature
+  summary: Original full-text gap retained after public-source retrieval attempts.
+  sources:
+  - https://doi.org/10.1016/j.gca.2013.03.028
+  scope: The publisher PDF request returned HTTP 403. Seo Eq. 17 was inspected, but Ardia full text,
+    experimental runs and the derivation of the temperature-independent simplification were not.
+  provenance:
+    role: primary
+    location: Obtain Ardia et al. (2013) full text and run data. Compare its thermodynamic solubility
+      equation and concentration basis with Seo Eq. 17, then assess errors for a declared haplobasalt
+      application.
+    inspection: not_inspected
+    note: The publisher PDF request returned HTTP 403. Seo Eq. 17 was inspected, but Ardia full text,
+      experimental runs and the derivation of the temperature-independent simplification were not.
+- id: source_comparison_20261021
+  kind: implementation
+  summary: The implementation matches Seo Eq. 17, including both GPa units and the CH4 mole-fraction
+    output.
+  sources:
+  - src/exogibbs/solubility/volatile.py
+  - documents/mceg/volatile_sources.rst
+  scope: Three positive samples of Seo arXiv v1 Eq. 17; the source is a later formulation, not an
+    independent validation of Ardia experiments.
+  subject: survey_20261020
+  provenance:
+    role: implementation
+    location: Selected source passages and unchanged implementation; see the linked source locations.
+    inspection: inspected
+    note: The implementation matches Seo Eq. 17, including both GPa units and the CH4 mole-fraction
+      output.
+    derived_from:
+    - evidence: seo2024_20261021
+      comparison: consistent
+      note: The implementation matches Seo Eq. 17, including both GPa units and the CH4 mole-fraction
+        output.
+    - evidence: meltyq2026_20261021
+      comparison: discrepancy
+      note: At the same physical fugacity, literal A4 with bar gives 10000 times the implementation/Seo
+        result. ExoGibbs follows Seo GPa. No correction to the experimental model is inferred.
+- id: source_comparison_run_20261021
+  kind: numerical_test
+  summary: 3/3 scoped formula comparisons agree.
+  sources:
+  - mceg/reviews/volatile_source_review_20261021.py
+  - results/mceg/20261021_volatile_sources/comparison.json
+  scope: Three positive samples of Seo arXiv v1 Eq. 17; the source is a later formulation, not an
+    independent validation of Ardia experiments.
+  result: passed
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  artifacts:
+  - source: mceg/reviews/volatile_source_review_20261021.py
+    sha256: a36814e39d862bc09eebff24ac9c26596cf409bb6e67ccaa6cfab8f4bb32bc01
+  - source: results/mceg/20261021_volatile_sources/comparison.json
+    sha256: 4770a809637e050c53d68d8a962d84f973a7f55fe146cf78eb03cdd62b59fec0
+  provenance:
+    role: primary
+    location: 'results/mceg/20261021_volatile_sources/comparison.json: comparisons with model=ch4_ardia2013.'
+    inspection: inspected
+    note: Fresh CPU/x64 execution of explicit reference expressions. Alternative-expression mismatches
+      remain in the report; no experimental rows or external runtime were replayed.
+limitations:
+- statement: Reported calibration intervals are marginal metadata; they do not establish a jointly
+    validated temperature/pressure/composition rectangle.
+  evidence:
+  - implementation
+- statement: The auxiliary law supplies no full Gibbs scalar or host chemical potentials and does
+    not select an equilibrium model.
+  evidence:
+  - implementation
+- statement: The raw extrapolated law is not capped at unit concentration; a finite result can exceed
+    the physical fraction domain.
+  evidence:
+  - implementation
+subjects:
+- id: survey_20261020
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: 7dc3ce1183c0b3d74e24cde502f638cac3625b83
+    entry_points:
+    - exogibbs.solubility.ch4_ardia2013
+  selected_files:
+    src/exogibbs/__init__.py: 5ea0dc26c879dd9e7bf1a1274b3b44c41780920fae01bbdedceb2e30528a3e16
+    src/exogibbs/solubility/__init__.py: 8800e1d54f0f23bc49f38b1d3efa71eeb313fc4b9d879a181eef8dcfcc5e5342
+    src/exogibbs/solubility/volatile.py: 8b5982cfb5dcf53ab662d5c5dd77ee76e58190263990bdb20212e296088956da
+    src/exogibbs/solubility/meltyq.py: 51157df00ae182446ff4376345fc9e83acdf03697a27d79a299cb8b9f027c292
+    src/exogibbs/solubility/sun_yao2026.py: 965fc7ef776b4b93000b149177f38070b86720d1668c586f67878fcf68726eeb
+    tests/conftest.py: 1f1263b8a14c1f6d6cd39f18406cb9aff3739f50dac92498aadbc300c2e70da3
+    pyproject.toml: 8facf3e2da5febba94b2314f058d01c739907605d95ec376ab39e09911b7aa35
+    documents/solubility.rst: 033372b260f36fb79aaf49a4855e0784a21254b1a6d873669e66df492a77f805
+    tests/unittests/solubility/meltyq_test.py: 4d105accc5b8e66605942f2596ed70ca546f94091fe9775cfbd9da680a28f0fd
+contexts:
+- id: test_environment
+  scope: Actual local test environment; test files and fixtures define individual calculation inputs.
+  settings:
+    python: 3.12.7
+    jax: 0.6.2
+    jaxlib: 0.6.2
+    numpy: 2.1.0
+    scipy: 1.14.1
+    pytest: 8.3.3
+    backend: cpu
+    x64: true
+    test_selection: tests/unittests/solubility/meltyq_test.py
+- id: source_review_environment_20261021
+  scope: Offline scalar reference comparisons; joint input samples are in the saved report.
+  settings:
+    python: 3.12.7
+    jax: 0.6.2
+    numpy: 2.1.0
+    backend: cpu
+    x64: true
+conditions:
+- id: reported_temperature
+  revision: '1'
+  kind: range
+  quantity: temperature
+  interval:
+    lower: 1673.0
+    upper: 1723.0
+    unit: K
+  coverage: marginal
+  scope: Provider-reported marginal only; no rectangular, material-specific or empirical accuracy
+    conclusion.
+  evidence:
+  - reported_metadata
+- id: reported_melt_pressure
+  revision: '1'
+  kind: range
+  quantity: melt_total_pressure
+  interval:
+    lower: 0.7
+    upper: 3.0
+    unit: GPa
+  coverage: marginal
+  scope: Provider-reported marginal only; no rectangular, material-specific or empirical accuracy
+    conclusion.
+  evidence:
+  - reported_metadata
+- id: formula_samples
+  revision: '1'
+  kind: samples
+  samples:
+  - id: formula_0
+    scope: Exact inputs from the executed literal-formula regression, not a laboratory experiment.
+    quantities:
+      methane_fugacity:
+        value: 1.0
+        unit: GPa
+      melt_total_pressure:
+        value: 1.0
+        unit: GPa
+    settings: {}
+  scope: Only these joint numerical inputs; no Cartesian product, interpolation support or calibration
+    is inferred. Extra context coordinates are not checked.
+  evidence:
+  - test_run
+assessments:
+- id: numerical_review
+  kind: evidence_support
+  claim: numerical_verification
+  claim_revision: '1'
+  subject: survey_20261020
+  context: test_environment
+  method:
+    id: review_selected_pytest
+    revision: '1'
+    description: Read actual test outcomes and selected file pins; limit support to those numerical
+      assertions.
+  evidence:
+  - test_run
+  reasons:
+  - 56 tests in the selected modules; see the shared receipt for per-module counts.
+  - Selected files matched Git at execution and were unchanged afterward. Other revisions, environments
+    and empirical accuracy need separate review.
+  status: supported
+  origin: reviewed
+- id: physical_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: survey_20261020
+  context: test_environment
+  method:
+    id: review_empirical_support
+    revision: '1'
+    description: Separate numerical verification from experimental or observational support.
+  evidence:
+  - upstream_model
+  - implementation
+  reasons:
+  - The provider distinguishes the Ardia experiments from Seo Eq. 17 and the conflicting later MELTYQ
+    unit label. No fresh comparison of those original equations or experiments was completed.
+  - Numerical agreement and membership in metadata intervals do not establish physical accuracy.
+  status: unknown
+  origin: reviewed
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: source_formula_review_20261021
+  claim: source_formula_agreement_20261021
+  claim_revision: '1'
+  evidence:
+  - seo2024_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: supported
+  reasons:
+  - 3/3 scoped formula comparisons agree.
+  - Three positive samples of Seo arXiv v1 Eq. 17; the source is a later formulation, not an independent
+    validation of Ardia experiments.
+  - The implementation matches Seo Eq. 17, including both GPa units and the CH4 mole-fraction output.
+- kind: evidence_support
+  subject: survey_20261020
+  context: source_review_environment_20261021
+  method:
+    id: inspect_sources_and_replay
+    revision: '1'
+    description: Inspect source equations, units and versions, then replay selected scalar expressions;
+      retain missing full texts and empirical gaps.
+  origin: reviewed
+  id: physical_source_review_20261021
+  claim: physical_accuracy
+  claim_revision: '1'
+  evidence:
+  - seo2024_20261021
+  - meltyq2026_20261021
+  - original_fulltext_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  status: unknown
+  reasons:
+  - The implementation matches Seo Eq. 17, including both GPa units and the CH4 mole-fraction output.
+  - The publisher PDF request returned HTTP 403. Seo Eq. 17 was inspected, but Ardia full text, experimental
+    runs and the derivation of the temperature-independent simplification were not.
+  - Formula agreement does not measure errors against observations. Existing marginal T/P metadata
+    and the historical empirical_scope task remain unchanged.
+  - Obtain Ardia et al. (2013) full text and run data. Compare its thermodynamic solubility equation
+    and concentration basis with Seo Eq. 17, then assess errors for a declared haplobasalt application.
+follow_ups:
+- id: empirical_scope
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Inspect the original model equations and relevant material-specific data; record a separate
+    empirical assessment for a declared application.
+  requires:
+  - Original source passages, equations and coefficient tables with inspection locations.
+  - Explicit T/P, composition basis, gas driving quantity, standard states and uncertainty criteria.
+  - Reproducible comparison against independent observations or experiments, when available.
+  completion: A new scoped assessment cites inspected evidence and states its remaining gaps; a numerical
+    pass alone does not complete this task.
+  sources:
+  - https://doi.org/10.1016/j.gca.2013.03.028
+  - https://doi.org/10.3847/1538-4357/ad7461
+- id: available_source_comparison_20261021
+  target_kind: evidence
+  target: upstream_model
+  action: Inspect the publicly retrievable source material and record the exact completed comparison
+    scope.
+  requires:
+  - Source locations, units, definitions and any version differences.
+  - A reproducible scoped comparison and explicit access gaps.
+  completion: New evidence identifies the inspected material, comparison results and remaining full-text
+    or empirical work.
+  sources:
+  - https://doi.org/10.3847/1538-4357/ad7461
+  - https://arxiv.org/pdf/2408.17056v1
+- id: remaining_source_work_20261021
+  target_kind: assessment
+  target: physical_source_review_20261021
+  action: Obtain Ardia et al. (2013) full text and run data. Compare its thermodynamic solubility
+    equation and concentration basis with Seo Eq. 17, then assess errors for a declared haplobasalt
+    application.
+  requires:
+  - The identified original source or dataset and explicit comparison locations.
+  - A declared application with joint conditions, concentration basis and error criteria.
+  completion: Append a scoped assessment with the comparison results and remaining limitations; preserve
+    this source review.
+  sources:
+  - https://doi.org/10.1016/j.gca.2013.03.028
+follow_up_resolutions:
+- follow_up: available_source_comparison_20261021
+  evidence:
+  - seo2024_20261021
+  - source_comparison_20261021
+  - source_comparison_run_20261021
+  note: 'Completed only the available-material review: Three positive samples of Seo arXiv v1 Eq.
+    17; the source is a later formulation, not an independent validation of Ardia experiments. The
+    publisher PDF request returned HTTP 403. Seo Eq. 17 was inspected, but Ardia full text, experimental
+    runs and the derivation of the temperature-independent simplification were not. The separate empirical_scope
+    follow-up is not resolved.'

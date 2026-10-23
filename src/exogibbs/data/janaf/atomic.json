@@ -1,0 +1,313 @@
+{
+  "reference": "NIST-JANAF Thermochemical Tables, Fourth Edition (Chase, 1998), online atomic gas tables",
+  "accessed": "2026-09-27",
+  "extraction": "Numeric excerpts transcribed from the linked primary HTML/TXT tables; not byte copies of downloads.",
+  "pressure_standard_bar": 1.0,
+  "enthalpy_reference_temperature_K": 298.15,
+  "common_R_J_mol_K": 8.31446261815324,
+  "column_order": [
+    "temperature_K",
+    "entropy_J_mol_K",
+    "negative_g_minus_h298_over_t_J_mol_K",
+    "enthalpy_increment_kJ_mol"
+  ],
+  "evaluation_temperature_interval_K": [
+    2100.0,
+    2400.0
+  ],
+  "rows": {
+    "Al": {
+      "url": "https://janaf.nist.gov/tables/Al-005.html",
+      "species": "Al(g)",
+      "formation_enthalpy_298_kJ_mol": 329.699,
+      "entropy_298_J_mol_K": 164.553,
+      "data": [
+        [
+          2100,
+          205.419,
+          187.513,
+          37.603
+        ],
+        [
+          2200,
+          206.386,
+          188.349,
+          39.682
+        ],
+        [
+          2300,
+          207.311,
+          189.153,
+          41.762
+        ],
+        [
+          2400,
+          208.196,
+          189.928,
+          43.841
+        ]
+      ]
+    },
+    "Ca": {
+      "url": "https://janaf.nist.gov/tables/Ca-006.html",
+      "species": "Ca(g)",
+      "formation_enthalpy_298_kJ_mol": 177.8,
+      "entropy_298_J_mol_K": 154.886,
+      "data": [
+        [
+          2100,
+          195.489,
+          177.629,
+          37.504
+        ],
+        [
+          2200,
+          196.47,
+          178.464,
+          39.615
+        ],
+        [
+          2300,
+          197.415,
+          179.267,
+          41.74
+        ],
+        [
+          2400,
+          198.328,
+          180.043,
+          43.885
+        ]
+      ]
+    },
+    "K": {
+      "url": "https://janaf.nist.gov/tables/K-005.html",
+      "species": "K(g)",
+      "formation_enthalpy_298_kJ_mol": 89.0,
+      "entropy_298_J_mol_K": 160.34,
+      "data": [
+        [
+          2100,
+          200.949,
+          183.084,
+          37.516
+        ],
+        [
+          2200,
+          201.931,
+          183.919,
+          39.627
+        ],
+        [
+          2300,
+          202.874,
+          184.723,
+          41.748
+        ],
+        [
+          2400,
+          203.783,
+          185.498,
+          43.884
+        ]
+      ]
+    },
+    "Ti": {
+      "url": "https://janaf.nist.gov/tables/Ti-006.html",
+      "species": "Ti(g)",
+      "formation_enthalpy_298_kJ_mol": 473.629,
+      "entropy_298_J_mol_K": 180.297,
+      "data": [
+        [
+          2100,
+          224.028,
+          204.769,
+          40.443
+        ],
+        [
+          2200,
+          225.208,
+          205.672,
+          42.979
+        ],
+        [
+          2300,
+          226.361,
+          206.546,
+          45.573
+        ],
+        [
+          2400,
+          227.489,
+          207.396,
+          48.225
+        ]
+      ]
+    },
+    "Cr": {
+      "url": "https://janaf.nist.gov/tables/Cr-005.html",
+      "species": "Cr(g)",
+      "formation_enthalpy_298_kJ_mol": 397.48,
+      "entropy_298_J_mol_K": 174.311,
+      "data": [
+        [
+          2100,
+          215.84,
+          197.201,
+          39.142
+        ],
+        [
+          2200,
+          217.024,
+          198.075,
+          41.688
+        ],
+        [
+          2300,
+          218.186,
+          198.925,
+          44.301
+        ],
+        [
+          2400,
+          219.328,
+          199.751,
+          46.984
+        ]
+      ]
+    },
+    "P": {
+      "url": "https://janaf.nist.gov/tables/P-008.html",
+      "species": "P(g)",
+      "formation_enthalpy_298_kJ_mol": 316.39,
+      "entropy_298_J_mol_K": 163.198,
+      "data": [
+        [
+          2100,
+          203.85,
+          185.948,
+          37.595
+        ],
+        [
+          2200,
+          204.845,
+          186.784,
+          39.734
+        ],
+        [
+          2300,
+          205.803,
+          187.59,
+          41.89
+        ],
+        [
+          2400,
+          206.729,
+          188.369,
+          44.065
+        ]
+      ]
+    },
+    "Mg": {
+      "url": "https://janaf.nist.gov/tables/Mg-005.html",
+      "species": "Mg(g)",
+      "formation_enthalpy_298_kJ_mol": 147.1,
+      "entropy_298_J_mol_K": 148.648,
+      "data": [
+        [
+          2100,
+          189.224,
+          171.389,
+          37.454
+        ],
+        [
+          2200,
+          190.192,
+          172.222,
+          39.533
+        ],
+        [
+          2300,
+          191.116,
+          173.023,
+          41.613
+        ],
+        [
+          2400,
+          192.002,
+          173.796,
+          43.694
+        ]
+      ]
+    },
+    "Fe": {
+      "url": "https://janaf.nist.gov/tables/Fe-008.html",
+      "species": "Fe(g)",
+      "formation_enthalpy_298_kJ_mol": 415.471,
+      "entropy_298_J_mol_K": 180.488,
+      "data": [
+        [
+          2100,
+          226.698,
+          206.866,
+          41.646
+        ],
+        [
+          2200,
+          227.797,
+          207.793,
+          44.009
+        ],
+        [
+          2300,
+          228.86,
+          208.685,
+          46.401
+        ],
+        [
+          2400,
+          229.89,
+          209.548,
+          48.822
+        ]
+      ]
+    },
+    "Na": {
+      "url": "https://janaf.nist.gov/tables/Na-005.html",
+      "species": "Na(g)",
+      "formation_enthalpy_298_kJ_mol": 107.3,
+      "entropy_298_J_mol_K": 153.667,
+      "data": [
+        [
+          2100,
+          194.246,
+          176.408,
+          37.459
+        ],
+        [
+          2200,
+          195.215,
+          177.241,
+          39.541
+        ],
+        [
+          2300,
+          196.141,
+          178.043,
+          41.626
+        ],
+        [
+          2400,
+          197.029,
+          178.816,
+          43.713
+        ]
+      ]
+    }
+  },
+  "limitations": [
+    "No reported empirical uncertainty is supplied by these numeric excerpts.",
+    "The four high-temperature rows bound only this implementation's interpolation domain, not the material domain of the coupled BSE model.",
+    "Phosphorus formation enthalpy follows the JANAF white-phosphorus reference at 298.15 K; no phase-specific MELTS recalibration is inferred."
+  ]
+}

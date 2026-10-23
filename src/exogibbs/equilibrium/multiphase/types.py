@@ -40,6 +40,17 @@ class Phase:
     The callback includes standards, mixing, excess and pressure terms once.
     It must support JAX derivatives on the selected component face. All phases
     receive the same explicit dynamic parameters PyTree.
+
+    An optional insertion_lower_bound_j_mol(T, P, element_dual, parameters,
+    allowed_components) returns a global lower bound on G(x)-dual @ A @ x
+    in J/mol components, on sum(x)=1 and the declared domain. The last argument
+    is a static tuple of indices allowed by the element budget. NaN means
+    unavailable. The provider/caller owns the validity of this bound.
+
+    Optional derivative_domain(T, P, n, parameters) is a JAX scalar predicate
+    for a smooth material branch. Without it the caller asserts smoothness
+    on the selected face. An absent solution's lower-bound callback must also
+    support JAX when used by solve_fixed_support's derivative audit.
     """
 
     name: str
@@ -49,6 +60,8 @@ class Phase:
     domain_matrix: Any = ()
     domain: str = "nonnegative component amounts"
     standard_state: str = "caller supplied"
+    insertion_lower_bound_j_mol: Any = None
+    derivative_domain: Any = None
 
     def __post_init__(self):
         if not isinstance(self.name, str) or not self.name:
@@ -64,6 +77,11 @@ class Phase:
         ))
         if not callable(self.gibbs_j):
             raise ValueError("gibbs_j must be a callable extensive scalar.")
+        if (self.insertion_lower_bound_j_mol is not None
+                and not callable(self.insertion_lower_bound_j_mol)):
+            raise ValueError("insertion_lower_bound_j_mol must be callable or None.")
+        if self.derivative_domain is not None and not callable(self.derivative_domain):
+            raise ValueError("derivative_domain must be callable or None.")
         if not self.domain or not self.standard_state:
             raise ValueError("Declare the phase domain and standard state.")
 
@@ -134,7 +152,13 @@ class Support:
 
 @dataclass(frozen=True)
 class Options:
-    """Dimensionless numerical tolerances; use JAX x64 for these defaults."""
+    """Dimensionless numerical tolerances; use JAX x64 for these defaults.
+
+    ``max_refinement_iterations=0`` preserves the ordinary feasible Newton
+    path. A positive budget enables log-amount stationarity refinement on
+    interior domain faces only. It changes neither physical bounds nor the
+    final conservation, KKT, curvature and derivative acceptance criteria.
+    """
 
     max_iterations: int = 100
     max_backtracks: int = 50
@@ -143,13 +167,23 @@ class Options:
     kkt_tolerance: float = 1e-8
     curvature_tolerance: float = 1e-9
     support_tolerance: float = 1e-12
+    max_supports: int = 32
+    derivative_rcond: float = 1e-10
+    max_refinement_iterations: int = 0
 
     def __post_init__(self):
-        for name in ("max_iterations", "max_backtracks"):
+        if (not isinstance(self.max_refinement_iterations, int)
+                or isinstance(self.max_refinement_iterations, bool)
+                or self.max_refinement_iterations < 0):
+            raise ValueError("max_refinement_iterations must be a nonnegative integer.")
+        integers = ("max_iterations", "max_backtracks", "max_supports")
+        for name in integers:
             value = getattr(self, name)
             if not isinstance(value, int) or value <= 0:
                 raise ValueError(f"{name} must be a positive integer.")
-        for field in fields(self)[2:]:
+        for field in fields(self):
+            if field.name in integers or field.name == "max_refinement_iterations":
+                continue
             value = getattr(self, field.name)
             if not np.isfinite(value) or value <= 0:
                 raise ValueError(f"{field.name} must be positive and finite.")
@@ -162,12 +196,15 @@ class Result:
 
     KKT and minimum checks concern only the declared face, not insertion in
     omitted components or phases.
-    Residuals and curvature use G/(R_SCALE*T*sum(b)) and q=n/sum(b).
+    Residuals use G/(R_SCALE*T*sum(b)) and q=n/sum(b). Curvature
+    uses the square-root-q-scaled equality tangent (inertia is preserved).
     Undefined chemical potentials and unevaluated insertion bounds are NaN.
     Element potentials use a row-scaled minimum-norm gauge if elemental rows
     are redundant; rows absent from the support are undefined. minimum_valid
     requires strict positive tangent curvature (or no free directions), not
-    just semidefiniteness. Global stability remains unchecked.
+    just semidefiniteness. The host insertion audit reports global stability
+    separately. derivative_valid is checked by solve_fixed_support; the host
+    search/proof entry points do not provide transformed derivatives.
     """
 
     amounts_mol: Any

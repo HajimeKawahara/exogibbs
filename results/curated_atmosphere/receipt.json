@@ -1,0 +1,117 @@
+{
+  "dataset": "curated-gas-v1",
+  "backend": "cpu",
+  "dtype": "float64",
+  "epsilon_crit": 1e-13,
+  "relative_charge_convergence": "enabled for every model",
+  "cases_passed": 966,
+  "audits": [
+    {
+      "profile": "isothermal",
+      "model": "curated",
+      "layers": 161,
+      "element_relative_residual": 3.1432799331834487e-06,
+      "charge_relative_residual": 6.616890908570774e-14,
+      "mass_action_max_abs_ln": 1.2718714970105793e-12
+    },
+    {
+      "profile": "isothermal",
+      "model": "fastchem4",
+      "layers": 161,
+      "element_relative_residual": 2.8751627873282386e-06,
+      "charge_relative_residual": 5.433892064431899e-14,
+      "mass_action_max_abs_ln": 1.2398970739013748e-12
+    },
+    {
+      "profile": "isothermal",
+      "model": "fastchem3",
+      "layers": 161,
+      "element_relative_residual": 2.3183537883175473e-06,
+      "charge_relative_residual": 4.531637452632854e-14,
+      "mass_action_max_abs_ln": 9.734435479913373e-13
+    },
+    {
+      "profile": "inverted",
+      "model": "curated",
+      "layers": 161,
+      "element_relative_residual": 2.9094842930369865e-06,
+      "charge_relative_residual": 2.1278411453731737e-14,
+      "mass_action_max_abs_ln": 1.3180567748349858e-12
+    },
+    {
+      "profile": "inverted",
+      "model": "fastchem4",
+      "layers": 161,
+      "element_relative_residual": 2.6607478757202596e-06,
+      "charge_relative_residual": 3.506783839142762e-14,
+      "mass_action_max_abs_ln": 1.0516032489249483e-12
+    },
+    {
+      "profile": "inverted",
+      "model": "fastchem3",
+      "layers": 161,
+      "element_relative_residual": 2.7366542726337485e-06,
+      "charge_relative_residual": 9.324140890552093e-14,
+      "mass_action_max_abs_ln": 1.6466827901240322e-12
+    }
+  ],
+  "species_counts": {
+    "curated": 537,
+    "fastchem4": 537,
+    "fastchem3": 523
+  },
+  "temperature_profiles": {
+    "isothermal": {
+      "temperature_K": 4000.0
+    },
+    "inverted": {
+      "log10_pressure_bar": [
+        -6.0,
+        -4.0,
+        -2.0,
+        0.0,
+        2.0
+      ],
+      "temperature_K": [
+        4000.0,
+        3500.0,
+        2500.0,
+        3000.0,
+        3500.0
+      ],
+      "interpolation": "linear in log10 pressure"
+    }
+  },
+  "ranking": {
+    "statistic": "maximum absolute log10 abundance ratio over shared species",
+    "minimum_mole_fraction_in_either_model": 1e-12
+  },
+  "comparison_scope": {
+    "fastchem4": "Thermochemistry-only comparison on the identical 537-species network; N- and Zn- removed.",
+    "fastchem3": "Legacy 523-species catalog versus curated 537: includes catalog and thermochemistry changes.",
+    "shared": "Same normalized Asplund 2021 file budget, T(P), solver, convergence mode and tolerance."
+  },
+  "interpretation": "Illustrative ideal-gas source sensitivity; no atmospheric retrieval, radiative-convective solution or physical accuracy claim.",
+  "selected_file_sha256": {
+    "examples/comparisons/demo_curated_atmosphere.py": "d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e",
+    "src/exogibbs/presets/curated.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "src/exogibbs/data/fastchem/logK/logK.dat": "dbf4d53afe7b68ac9504560843b90d304f04b8570ae4ab89bc88289455b78806",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+    "src/exogibbs/equilibrium/gas/kernel/solver.py": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0"
+  },
+  "output_sha256": {
+    "isothermal_curated.npz": "bda80cb4d6472cc8f57c8cce4621cf22305f3c042514cb3c38405f737e256bad",
+    "isothermal_fastchem4.npz": "3d9b634bd894a53b92e79a906e847b889fff8245376bf620ace1e53ee232f9bb",
+    "isothermal_fastchem3.npz": "c46d8d04319a01062d11015992d3f254f99e79ccce2c4b393fa450995de3e55a",
+    "isothermal.png": "dfdf25923167013d96e3b40cbe5c7f84377bcc7be4cd00474e87bf50fb5c1f95",
+    "isothermal.pdf": "8745bc4f2a45eadd9bd28d00071e2d24602c4fd97da1ad4b887c9089799bcb26",
+    "inverted_curated.npz": "462e87d027f2939534dbfc078e94f05ef58e83bab975dea956ccfa3e65b766fc",
+    "inverted_fastchem4.npz": "59fe9c16acf8d469430118c2762c3b567f66cc2d9960c6f6c24b40f916aafb36",
+    "inverted_fastchem3.npz": "4b576526350b07f4693f0489f44643299bfc4cd14fe698ac2420fbc6d18b02bc",
+    "inverted.png": "1ac5b9081609316662bd06049b6caf1160b51ad23ac617bca0dc7cbaf534c4e3",
+    "inverted.pdf": "93a03d878fbbb0efcda44fe7659439bc59cb159bffb414bb86e2eb5556ab7ab5",
+    "summary.csv": "7d0ac308988b43bd253dbd65606faa49eaefa192a97a6c6cd94130c0c8d2b409"
+  }
+}

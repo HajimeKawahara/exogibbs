@@ -1,4 +1,7 @@
-"""Compare the opt-in hot gas model with the original FastChem4 chemistry.
+"""Audit hot gas thermochemistry
+=============================
+
+Compare the opt-in hot gas model with the original FastChem4 chemistry.
 
 Run with JAX x64 on CPU; no data download or ExoJAX installation is needed.
 The coarse grid is a model comparison, not a certificate for retrieval priors.

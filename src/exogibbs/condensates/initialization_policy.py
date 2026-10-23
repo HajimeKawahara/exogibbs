@@ -153,6 +153,9 @@ def _seed_budget_log_fractions(
         log_burden, sign = logsumexp(
             terms, b=np.sign(formula), axis=1, return_sign=True
         )
+    # Some SciPy versions return a nonzero sign for an all-zero sum.
+    # A log magnitude of -inf has zero burden regardless of that sign.
+    sign[np.isneginf(log_burden)] = 0.0
     # Neither logarithms nor rounded linear products preserve exact signed
     # cancellation. Contract signed rows exactly before taking logarithms.
     signed_rows = np.any(formula > 0.0, axis=1) & np.any(formula < 0.0, axis=1)
