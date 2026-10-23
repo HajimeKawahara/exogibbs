@@ -134,6 +134,10 @@ def summarize(profile: str, species: tuple, logx: dict, temperature: np.ndarray,
 
 def plot_profile(name: str, species: tuple, logx: dict, temperature: np.ndarray,
                  pressure: np.ndarray, output: Path) -> None:
+    # Keep the translucent solid line visible around overlapping dark dashes.
+    appearance = {"curated": {"lw": 4., "alpha": .3, "zorder": 2},
+                  "new": {"lw": 1.8, "alpha": 1., "zorder": 4},
+                  "original": {"lw": 1.8, "alpha": 1., "zorder": 3}}
     fig, axes = plt.subplots(2, 3, figsize=(13.5, 9.6), sharey=True, layout="constrained")
     fig.get_layout_engine().set(rect=(0., .13, 1., .87))
     title = "4000 K isothermal column" if name == "isothermal" else "Prescribed temperature inversion"
@@ -150,7 +154,7 @@ def plot_profile(name: str, species: tuple, logx: dict, temperature: np.ndarray,
             label, color = SPECIES[s]
             for model in MODELS:
                 ax.plot(np.exp(logx[model][:, species.index(s)]), pressure, STYLES[model],
-                        color=color, lw=1.8, label=label if model == "curated" else None)
+                        color=color, **appearance[model], label=label if model == "curated" else None)
         ax.set(xscale="log", xlabel="Mole fraction", title=title)
         ax.legend(fontsize=10)
     for ax, names, percent in ((axes[1, 0], ("Cu1", "Ni1", "Co1"), False),
@@ -167,7 +171,7 @@ def plot_profile(name: str, species: tuple, logx: dict, temperature: np.ndarray,
         if not percent:
             ax.set_xscale("log")
         ax.legend(fontsize=10)
-    fig.legend(handles=[Line2D([], [], color=".25", ls=STYLES[m], label=LABELS[m]) for m in MODELS],
+    fig.legend(handles=[Line2D([], [], color=".25", ls=STYLES[m], **appearance[m], label=LABELS[m]) for m in MODELS],
                loc="lower center", bbox_to_anchor=(.5, .055), ncol=3, fontsize=10)
     fig.text(.5, .015, "Ratio panels: dashed = new FastChem / default; dotted = original FastChem / default.\n"
              "ExoGibbs solver for every curve; prescribed ideal-gas columns, without condensation or photoionization.",

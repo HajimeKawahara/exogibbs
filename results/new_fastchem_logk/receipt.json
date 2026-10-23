@@ -823,7 +823,7 @@
     4000.0
   ],
   "selected_file_sha256": {
-    "examples/comparisons/compare_new_fastchem_logk.py": "6b51f0bfd78aac5d2893b545d15952c983160eb0721deefca48e905a4e5b45f0",
+    "examples/comparisons/compare_new_fastchem_logk.py": "d5cf79374e03a3ff8a4d89660d44370b74bd95e2deff94db5d79b204df9eafda",
     "examples/comparisons/demo_curated_atmosphere.py": "d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e",
     "src/exogibbs/presets/curated.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
     "src/exogibbs/presets/fastchem.py": "c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3",
@@ -841,13 +841,13 @@
   "output_sha256": {
     "equilibrium_constants.csv": "55f5aac09aaf0578235fab118a6d04156630687127c08ae479a0de12f39d4910",
     "inverted.npz": "20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191",
-    "inverted.pdf": "34ab2d6406252fe5735a7423369d9e3bf0106347ce2f4f02010bde9d97607650",
-    "inverted.png": "ee0e3f9a7debab89083191e1d0e7e95aebb6fcef8d543d5b2a35f0c481d4b308",
+    "inverted.pdf": "928488927a8c7573880e640edd13bbc5d4244e344b3389c7a24ce48c40f4afa4",
+    "inverted.png": "7b625bd96d1ad497023d6dc1bf3fed42ee1f262d23aec3162a846d4ec868d3a9",
     "ion_constants.pdf": "451605e4b7881b09557ea5da54f62142eb5b0c219577b092a033ddb9a999b8f9",
     "ion_constants.png": "1a17573021bf2619471c593ae431231e9e9d5a1cd3c149352121f8981f688ebb",
     "isothermal.npz": "5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b",
-    "isothermal.pdf": "670a820898bb2844bf629ef3e15ce0aebe1e888269ad19a226ed0934d10c397f",
-    "isothermal.png": "8e585b25a138caf9ad9828ffb03b4db169ba6d66db85de86ea47576969efc8e3",
+    "isothermal.pdf": "3dc808e3e6cecb8d466526bd6781985cafd4ee7c7ca2dca81a2c9e203a4da8d2",
+    "isothermal.png": "e100d521fe9572d4798417565397da1fbd581986e6bdf69708d4f7fd4e1a7ee7",
     "logK.zip": "f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c",
     "plotted_abundances.csv": "c9e2d4f8e5ec8bf4d4c68ca662c6cac85af828ec3e4caf6675e8838d69c6aa94",
     "residuals.pdf": "e587b3c099599607c4819a9850b3eb422acf6b59dc73be11e0abcca7ff51d638",
