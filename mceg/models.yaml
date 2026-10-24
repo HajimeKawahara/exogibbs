@@ -2,16 +2,27 @@ inventory_version: '0.1'
 scope: 2026-10-20 solubility/magma inventory at 7dc3ce1183c0b3d74e24cde502f638cac3625b83. Scan all packaged
   source/data and four explicitly listed archived study scripts. Solubility laws, existing contracts
   and located preset/buffer/connection families are mapped. Other files remain unreviewed, not implicitly
-  support-only. Other examples and downloaded inputs are outside scope.
+  support-only. The 2026-10-24 extension registers the preliminary FastChem comparison
+  and its molecular-attribution review. Other examples and downloaded inputs are outside scope.
 source_roots:
 - src/exogibbs
 - examples/comparisons/audit_atomic_ions.py
 - examples/comparisons/select_atomic_ions.py
 - examples/comparisons/select_major_molecules.py
 - examples/comparisons/compare_gas_thermochemistry.py
+- examples/comparisons/compare_new_fastchem_logk.py
+- mceg/reviews/new_fastchem_logk_20261024.py
 contract_roots:
 - mceg/contracts
 files:
+  examples/comparisons/compare_new_fastchem_logk.py:
+    sha256: 59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88
+    role: model
+    note: Fixed-network preliminary FastChem versus curated comparison; not a new runtime preset.
+  mceg/reviews/new_fastchem_logk_20261024.py:
+    sha256: 183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70
+    role: support
+    note: Five-sample mass-action attribution; no spectra or retrieval execution.
   examples/comparisons/audit_atomic_ions.py:
     sha256: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     role: model
@@ -116,6 +127,14 @@ files:
     note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
       inventory, not physical validation or exhaustive variant review.
 models:
+- id: exogibbs.new_fastchem_logk_comparison
+  description: Preliminary-data source sensitivity with molecular attribution and an unexecuted retrieval follow-up.
+  bindings:
+  - path: examples/comparisons/compare_new_fastchem_logk.py
+    symbol: comparison_setups
+  contracts:
+  - path: mceg/contracts/new_fastchem_logk.yaml
+    model_id: exogibbs.new_fastchem_logk_comparison.v1
 - id: exogibbs.h2_solubility
   description: Auxiliary solubility law h2_solubility; linear/log entry points share the same scientific
     identity.

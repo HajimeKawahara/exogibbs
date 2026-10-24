@@ -1,0 +1,150 @@
+{
+  "format": "mceg_explanation_v1",
+  "context": null,
+  "contracts": [
+    {
+      "path": "/home/kawahara/exogibbs/mceg/contracts/new_fastchem_logk.yaml",
+      "model": "exogibbs.new_fastchem_logk_comparison.v1",
+      "schema_version": "0.2",
+      "view": "assessment",
+      "items": [
+        {
+          "id": "retrieval_metallicity_effect_review",
+          "record": {
+            "id": "retrieval_metallicity_effect_review",
+            "subject": "comparison_snapshot",
+            "context": "retrieval_planning",
+            "method": {
+              "id": "review_recorded_comparison",
+              "revision": "1",
+              "description": "Inspect the pinned source scope and archived numerical criteria; do not promote missing downstream or physical evidence."
+            },
+            "evidence": [
+              "retrieval_not_run",
+              "retrieval_literature",
+              "attribution_execution"
+            ],
+            "reasons": [
+              "The spectrum-to-parameter step is unexecuted. A trace-species abundance ratio alone does not determine retrieval bias or its statistical significance."
+            ],
+            "kind": "evidence_support",
+            "claim": "retrieval_metallicity_effect",
+            "claim_revision": "1",
+            "status": "unknown",
+            "origin": "reviewed"
+          },
+          "subject": {
+            "id": "comparison_snapshot",
+            "implementation": {
+              "repository": "https://github.com/HajimeKawahara/exogibbs",
+              "revision": "sha256:f5a54f928b525840527670f31ed4a6f49c1fcc81fc0b4c743ae5e43a066f988f",
+              "entry_points": [
+                "examples/comparisons/compare_new_fastchem_logk.py:comparison_setups",
+                "mceg/reviews/new_fastchem_logk_20261024.py:attribution"
+              ]
+            },
+            "selected_files": {
+              "examples/comparisons/compare_new_fastchem_logk.py": "59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88",
+              "examples/comparisons/demo_curated_atmosphere.py": "d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e",
+              "src/exogibbs/presets/curated.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+              "src/exogibbs/presets/fastchem.py": "c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3",
+              "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+              "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+              "src/exogibbs/equilibrium/gas/kernel/solver.py": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+              "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+              "src/exogibbs/data/FastChem4/logK/logK_condensates.dat": "566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467",
+              "src/exogibbs/data/FastChem4/logK/logK_condensates_extended.dat": "514c96d25474c18b6b9aff2c5a010282d98ccb4eead0c5134ca8ed9cc47d14c7",
+              "src/exogibbs/data/FastChem4/logK/logK_extended.dat": "c89505344db24ed8d253e509c1825b02e01810a1f086d70c3e0b2d8f854c38a3",
+              "src/exogibbs/data/FastChem4/logK/logK_extended_wo_ions.dat": "140cc5394868ca8b0950b45c7048fa8bee359e53601bbdf9ac0a9762a9bf21e5",
+              "src/exogibbs/data/FastChem4/logK/logK_hoeijmakers2019.dat": "9f706e4456c317a09614d674264fbba12df51d5581bb9abedf81afad84907a68",
+              "src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat": "3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606",
+              "mceg/reviews/new_fastchem_logk_20261024.py": "183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70",
+              "results/new_fastchem_logk/receipt.json": "b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4",
+              "results/new_fastchem_logk/logK.zip": "f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c",
+              "results/new_fastchem_logk/isothermal.npz": "5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b",
+              "results/new_fastchem_logk/inverted.npz": "20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191",
+              "results/major_molecule_adoption/decisions.csv": "e09e55602232ebccaa291878ce3e3febd25a7a9f5826aff112c743a6b9c40328"
+            }
+          },
+          "context": {
+            "id": "retrieval_planning",
+            "scope": "Planning context only; observing and retrieval configurations remain unspecified.",
+            "quantities": {},
+            "settings": {
+              "execution": "not_run"
+            }
+          },
+          "claim": {
+            "id": "retrieval_metallicity_effect",
+            "revision": "1",
+            "statement": "Changing only the thermochemical table changes inferred metallicity under a specified observing and retrieval configuration.",
+            "kind": "numerical_verification",
+            "scope": "A downstream application hypothesis. No planet, wavelength coverage, opacity set, noise model, priors or detection threshold has been selected. Define these and revise this claim before a quantitative assessment."
+          },
+          "recorded_follow_ups": [
+            {
+              "id": "controlled_cross_retrieval",
+              "target_kind": "claim",
+              "target": "retrieval_metallicity_effect",
+              "revision": "1",
+              "action": "Define the consumer observing/retrieval configuration, revise the quantitative claim, and cross-retrieve common synthetic spectra while changing only the thermochemical table.",
+              "requires": [
+                "Temperature/pressure structure and composition within the reviewed data domain; wavelength range, resolution, line opacities, clouds and geometry.",
+                "Fixed noise/covariance realization, random seeds, priors, fitted parameters and sampler convergence criteria.",
+                "Both table directions plus same-table injection/recovery controls; a declared reporting threshold before interpretation."
+              ],
+              "completion": "Archive spectra, posterior samples and convergence checks. Report Delta[M/H] in dex, C/O and temperature shifts, and shifts relative to posterior widths. Add a new context-bound assessment. Synthetic recovery establishes sensitivity for that experiment, not real-atmosphere accuracy.",
+              "sources": [
+                "https://github.com/HajimeKawahara/exogibbs/issues/297",
+                "https://doi.org/10.3847/1538-4357/ac6dcd"
+              ]
+            }
+          ],
+          "suggested_steps": [
+            {
+              "action": "Review the claim's scope and evidence for the intended implementation and conditions.",
+              "requires": [],
+              "completion": "Record a separate scoped support Assessment; preserve the earlier declaration and execution results."
+            }
+          ],
+          "next_commands": [
+            "mceg explain /home/kawahara/exogibbs/mceg/contracts/new_fastchem_logk.yaml --evidence retrieval_not_run",
+            "mceg explain /home/kawahara/exogibbs/mceg/contracts/new_fastchem_logk.yaml --evidence retrieval_literature",
+            "mceg explain /home/kawahara/exogibbs/mceg/contracts/new_fastchem_logk.yaml --evidence attribution_execution"
+          ]
+        },
+        {
+          "name": "source_audit",
+          "status": "UNKNOWN",
+          "message": "2/3 evidence records have complete declared source traces",
+          "details": [
+            "retrieval_literature: source_not_fully_inspected"
+          ],
+          "suggested_steps": [
+            {
+              "action": "Select an evidence ID below to see the source, recorded access/inspection notes and upstream comparisons.",
+              "requires": [],
+              "completion": "Complete the scoped inspection and comparisons; obtaining a document alone does not complete the audit."
+            }
+          ]
+        }
+      ],
+      "audit_scope": {
+        "kind": "assessment",
+        "assessment": "retrieval_metallicity_effect_review",
+        "subject": "comparison_snapshot",
+        "context": "retrieval_planning"
+      },
+      "audited_evidence": [
+        "attribution_execution",
+        "retrieval_literature",
+        "retrieval_not_run"
+      ],
+      "evidence_gaps": {
+        "retrieval_literature": [
+          "source_not_fully_inspected"
+        ]
+      }
+    }
+  ]
+}

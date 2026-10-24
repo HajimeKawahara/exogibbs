@@ -1,0 +1,72 @@
+{
+  "recorded_at_utc": "2026-10-24T00:00:30.349957+00:00",
+  "scope": "Regression validation of the #297 comparison/MCEG addition; no spectrum, retrieval or physical uncertainty inference.",
+  "working_tree_base_revision": "1cf987fcc702b7bdf454e526aadfedab07dc15b0",
+  "mceg_source_revision": "0f7fd5fce4c310b050fe0d41f82010b7e8385a29",
+  "commands": {
+    "full_tests": "PYTHONPATH=src OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python -m pytest -q tests/unittests --junitxml=results/mceg/new_fastchem_logk_20261024/full_tests.xml",
+    "targeted_tests": "PYTHONPATH=src JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python -m pytest -q tests/unittests/examples/new_fastchem_logk_test.py tests/unittests/mceg_new_fastchem_logk_test.py tests/unittests/presets/curated_test.py tests/unittests/benchmarks/documented_all_examples_test.py",
+    "docs": "./update_doc.sh -D plot_gallery=0",
+    "mceg": "mceg check mceg/contracts/new_fastchem_logk.yaml --assessment ASSESSMENT --root . --json (molecular_attribution_review and atomic_update_scope_review)"
+  },
+  "full_tests": {
+    "tests": 1495,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 578.725,
+    "summary": "1495 passed, 25 warnings in 578.73s (0:09:38)"
+  },
+  "targeted_tests": {
+    "tests": 34,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 15.891
+  },
+  "mceg_checks": {
+    "mceg_check": {
+      "PASS": 5,
+      "FAIL": 0,
+      "UNKNOWN": 0
+    },
+    "mceg_column_check": {
+      "PASS": 5,
+      "FAIL": 0,
+      "UNKNOWN": 0
+    }
+  },
+  "docs": {
+    "result": "passed",
+    "gallery_executed": false,
+    "warnings": [
+      "WARNING: dot command 'dot' cannot be run (needed for graphviz output), check the graphviz_dot setting"
+    ]
+  },
+  "selected_file_sha256": {
+    "examples/comparisons/compare_new_fastchem_logk.py": "59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88",
+    "benchmarks/documented_examples/run_all.py": "020d9a83c801b71852d9dee44dfc1b4a45c66c40413b59752135ebab06e2ed63",
+    "tests/unittests/benchmarks/documented_all_examples_test.py": "62600208372fe28f005a6de72de7ff07e245cf436b2fedce3776471393599445",
+    "tests/unittests/examples/new_fastchem_logk_test.py": "94e1a879f1d3cc66d85651776b93ed6c7712ad89e09ac14e45d251fd1ae121c9",
+    "tests/unittests/mceg_new_fastchem_logk_test.py": "b93d1f8b62e5464550d53a6b16988a6f7301bcadf28115ea36990383dc0fdc1c",
+    "mceg/contracts/new_fastchem_logk.yaml": "6c410b732feb769491f70fe928c39ec089d96780d6b0afbaa624256c84e543fb",
+    "mceg/reviews/new_fastchem_logk_20261024.py": "183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70",
+    "mceg/models.yaml": "fd93448681290136fb1505772f482baf3dfe0ff96b885f571f4addd771e52dda",
+    "mceg/README.md": "1552a34d7c4793c4e52907c1dc076ddb3da2ff58da6b774af0cc3f88d124060c",
+    "documents/mceg/new_fastchem_logk.rst": "f39714d9c9cf9c382001c0a654568c46cbb8ee1a7bcdbec5f91f1483645f6c9d",
+    "documents/mceg/index.rst": "eae9a0eb142dc744f5f144a159e41fd0bf93fe2c539907cbb68b6c423d10326d"
+  },
+  "artifact_sha256": {
+    "results/mceg/new_fastchem_logk_20261024/attribution.json": "f5e8bb1c4a9e77e556e0d0b0ca44e5df77e8d1f9e5082c57b554f0059fc689d7",
+    "results/mceg/new_fastchem_logk_20261024/attribution.log": "dcb68f9cbb84a294c685d61ca365db70a18430099ac8388a4a914b52872c2e0c",
+    "results/mceg/new_fastchem_logk_20261024/columns.log": "5c4102b47e246dd38cb8edd5b27a95515f29e07c4491c90ee656123afb682ad8",
+    "results/mceg/new_fastchem_logk_20261024/docs.log": "f903be64d7556b6f3fb24669c97989abd3563045a03ce985359385e348037601",
+    "results/mceg/new_fastchem_logk_20261024/full_tests.log": "7130c3413af215c22782e949f81f84394528b456edec9ab0a5cef62ac000e94d",
+    "results/mceg/new_fastchem_logk_20261024/full_tests.xml": "dbc8228e8e77c27148014ec0c8d7be74aa1a7e7ce03f6dc69923ae5e243f387a",
+    "results/mceg/new_fastchem_logk_20261024/mceg_check.json": "e5d12b3b77bf4e881fc516241ed1cf9c1081dc239b5768cde79fef0221bd08ea",
+    "results/mceg/new_fastchem_logk_20261024/mceg_column_check.json": "00a04ac6e79120c6ebca65ace5f951645ef8b40d80506a4a53bf5e94ee5bf428",
+    "results/mceg/new_fastchem_logk_20261024/mceg_explain.json": "912a4fd6ddb38df231ae75efe7e478c48bcb2c49eb3f3726914de13531cf5001",
+    "results/mceg/new_fastchem_logk_20261024/targeted_tests.log": "188056222f2d94f34c36aed08523fa1960f47640a64e06cf5f406f61701f52d4",
+    "results/mceg/new_fastchem_logk_20261024/targeted_tests.xml": "676e867daf99250a9f0950475d42ec05430c44601fd235719f87acbad94c2469"
+  }
+}

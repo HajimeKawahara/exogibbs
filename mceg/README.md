@@ -65,6 +65,16 @@ code consumes pinned numerical JSON only; MCEG remains an optional development
 tool. Earlier source-study contracts and their archived results are historical
 evidence and are not rewritten by this implementation.
 
+The [preliminary FastChem comparison contract](contracts/new_fastchem_logk.yaml)
+adds a v0.2 record for [issue #297](https://github.com/HajimeKawahara/exogibbs/issues/297).
+It records the fixed-network column comparison and
+[five molecular attributions](../results/mceg/new_fastchem_logk_20261024/attribution.json),
+including the HCN energy difference and the coupled SiS response.
+[The guide](../documents/mceg/new_fastchem_logk.rst) separates supported numerical
+claims from unknown physical accuracy and unknown metallicity-retrieval effects.
+An authored cross-retrieval follow-up specifies the missing observation/model
+settings and required posterior comparisons; no retrieval has been executed.
+
 The curated receipt has a separate offline consistency check:
 
 ```bash
