@@ -80,8 +80,42 @@ hashes. At the HCN inverted-column extremum the mole fractions are about 1e-10.
 A 25.5 percent difference there is not a measured metallicity error, an opacity
 change or a one-sigma uncertainty estimate.
 
-Retrieval work to be done
--------------------------
+Public-source inspection
+------------------------
+
+The :download:`2026-10-24 literature review
+<../../mceg/reviews/new_fastchem_logk_public_sources_20261024.json>` records six
+DOIs, public copies, inspected locations and access limits. No additional
+user-supplied paper is required for this reading task.
+
+* `Al-Refaie et al. (2022) <https://doi.org/10.3847/1538-4357/ac6dcd>`_ find
+  consistent posteriors for matched assumptions in their 1500 K experiment.
+  Their large mismatch biases cannot be assigned to our hotter table comparison.
+* `ATcT 1.172 <https://doi.org/10.17038/CSE/2440254>`_ and
+  `JANAF <https://doi.org/10.18434/T42S31>`_ confirm the selected HCN energy
+  entries. The review reconciles the rounded JANAF routes with the archived
+  atomization-energy calculation.
+* `Ruscic (2014) <https://doi.org/10.1002/qua.24605>`_ explains uncertainty
+  conventions and correlation. `Harding et al. (2008)
+  <https://doi.org/10.1063/1.2835612>`_ is an input to the ATcT network, so its
+  agreement is not independent validation of the adopted value.
+* `Andersen et al. (1999) <https://doi.org/10.1063/1.556047>`_ distinguishes
+  ground, excited and metastable anion states. The preliminary fits were not
+  reconstructed from this reference.
+
+The contract retains its earlier abstract-only evidence and assessments, then
+adds inspected evidence and two ``*_public_sources`` assessments. Both retrieved
+metallicity and whole-mixture accuracy remain ``unknown``. The completed
+``inspect_public_references`` task records reading, not physical validation.
+The earlier numerical validation receipt remains historical; checks for this
+addition are under ``results/mceg/new_fastchem_logk_public_sources_20261024/``.
+
+Deferred retrieval proposal
+---------------------------
+
+Spectral calculations and metallicity retrieval are outside the current task
+at the user's request. The proposal below is retained for future use; executing
+it is not required to complete this record.
 
 The authored ``controlled_cross_retrieval`` follow-up requires a declared T/P
 structure, composition, wavelength range, resolution, line opacities, clouds,
@@ -95,12 +129,6 @@ Completion requires spectra and posterior samples, convergence checks,
 posterior widths. A new context-bound assessment then records the measured
 sensitivity. Synthetic recovery alone does not establish real-atmosphere
 accuracy. No placeholder metallicity offset is assigned in the present record.
-
-`Al-Refaie et al. (2022) <https://doi.org/10.3847/1538-4357/ac6dcd>`_ motivate
-this follow-up through catalog-mismatch retrieval experiments. Their reported
-offsets are background evidence, not a measurement for these logK tables on our
-fixed catalog. Shared source ancestry and correlated atomic/molecular energies
-also prevent treating agreement among compilations as independent error bars.
 
 Offline reproduction
 --------------------
@@ -131,7 +159,9 @@ With MCEG 0.2.0rc2 or later available separately:
    mceg check mceg/contracts/new_fastchem_logk.yaml \
      --assessment molecular_attribution_review --root .
    mceg explain mceg/contracts/new_fastchem_logk.yaml \
-     --assessment retrieval_metallicity_effect_review --lang ja
+     --assessment retrieval_metallicity_effect_public_sources --lang ja
+   mceg check mceg/contracts/new_fastchem_logk.yaml \
+     --assessment whole_mixture_accuracy_public_sources --root .
 
-Unknown support in the second command is intentional. Completing a follow-up
+Unknown support in the latter commands is intentional. Completing a follow-up
 or passing structural checks does not automatically promote a scientific claim.

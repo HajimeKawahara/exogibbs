@@ -197,6 +197,61 @@ evidence:
     location: The local retrieval planning record and current experiment scope.
     inspection: inspected
     note: Records absence of a spectrum/retrieval execution; supplies no downstream result.
+- id: retrieval_literature_full_text
+  kind: literature
+  summary: The published Al-Refaie experiment distinguishes matched assumptions from element/condensation
+    mismatch; its results do not quantify the present table sensitivity.
+  sources:
+  - https://doi.org/10.3847/1538-4357/ac6dcd
+  - mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+  scope: Inspected experiment definition and conclusions in the public full text. No retrieval was reproduced.
+  artifacts:
+  - source: mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+    sha256: 89c09476950b8de25ba9480da2e2e754643ceb4c9aa5980814cbb0ea8a8addbe
+  provenance:
+    role: primary
+    location: Table 1; sections 2.2-2.3, 3.2-3.2.1 and 4-5. See the authored review for public-copy hash.
+    inspection: inspected
+    note: Adds full-text context; preserves the earlier abstract-only evidence and assessment.
+- id: thermochemical_sources_inspected
+  kind: literature
+  summary: Public ATcT/JANAF tables and Ruscic/Harding texts clarify HCN energy ancestry and uncertainty
+    conventions.
+  sources:
+  - https://doi.org/10.17038/CSE/2440254
+  - https://doi.org/10.18434/T42S31
+  - https://doi.org/10.1002/qua.24605
+  - https://doi.org/10.1063/1.2835612
+  - mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+  scope: Selected HCN and atomic-reference entries, source dependencies and uncertainty definitions only.
+    Neither the full thermochemical network nor a complete covariance matrix was reconstructed.
+  artifacts:
+  - source: mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+    sha256: 89c09476950b8de25ba9480da2e2e754643ceb4c9aa5980814cbb0ea8a8addbe
+  provenance:
+    role: primary
+    location: Source-specific locations, access limits and the HCN arithmetic cross-check in the authored review.
+    inspection: inspected
+    note: Primary for the named tables' adopted values and the authors' stated methods, not an independent
+      audit of all underlying experiments. Harding's table was read as PDF text, without a visual audit.
+- id: anion_reference_inspected
+  kind: literature
+  summary: Andersen et al. distinguish electron affinities, bound excited terms, metastable states and
+    fine-structure intervals.
+  sources:
+  - https://doi.org/10.1063/1.556047
+  - mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+  scope: Source definitions for atomic-anion modeling; preliminary FastChem coefficient construction
+    and residual-anion attribution remain unverified.
+  artifacts:
+  - source: mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+    sha256: 89c09476950b8de25ba9480da2e2e754643ceb4c9aa5980814cbb0ea8a8addbe
+  provenance:
+    role: primary
+    location: Sections 6-7 and Tables 3-4, pp. 1526-1529; NIST public PDF hash in the authored review.
+    inspection: inspected
+    note: Primary for the compilation's definitions and recommendations; its individual measurements were
+      not re-audited.
 limitations:
 - statement: No condensation, transport, photoionization, non-LTE or spectral calculation is included.
     The two tables differ in molecular source choices as well as remaining atomic-ion fits.
@@ -264,6 +319,12 @@ contexts:
   scope: Planning context only; observing and retrieval configurations remain unspecified.
   settings:
     execution: not_run
+- id: public_source_review
+  scope: Public-source inspection on 2026-10-24. Spectra and metallicity retrieval are excluded from the
+    current task at the user's request; the historical retrieval proposal is deferred.
+  settings:
+    execution: not_run
+    review: mceg/reviews/new_fastchem_logk_public_sources_20261024.json
 conditions:
 - id: molecular_samples
   revision: '1'
@@ -428,6 +489,47 @@ assessments:
     observation or experimental composition comparison is supplied.
   status: unknown
   origin: reviewed
+- id: retrieval_metallicity_effect_public_sources
+  kind: evidence_support
+  claim: retrieval_metallicity_effect
+  claim_revision: '1'
+  subject: comparison_snapshot
+  context: public_source_review
+  method:
+    id: review_public_sources
+    revision: '1'
+    description: Inspect declared source portions and their applicability; preserve historical judgments
+      and distinguish literature context from a new experiment.
+  evidence:
+  - retrieval_literature_full_text
+  - retrieval_not_run
+  - attribution_execution
+  reasons:
+  - Literature supplies no metallicity offset for these tables. The existing abundance result does not
+    determine a spectrum or posterior shift, and retrieval execution is outside this task.
+  status: unknown
+  origin: reviewed
+- id: whole_mixture_accuracy_public_sources
+  kind: evidence_support
+  claim: whole_mixture_accuracy
+  claim_revision: '1'
+  subject: comparison_snapshot
+  context: public_source_review
+  method:
+    id: review_public_sources
+    revision: '1'
+    description: Inspect declared source portions and their applicability; preserve historical judgments
+      and distinguish literature context from a new experiment.
+  evidence:
+  - source_choices
+  - thermochemical_sources_inspected
+  - anion_reference_inspected
+  - column_execution
+  reasons:
+  - Source inspection clarifies the adopted energy and state conventions but supplies no independent
+    whole-mixture physical constraint or calibrated uncertainty for the atmospheric calculation.
+  status: unknown
+  origin: reviewed
 follow_ups:
 - id: controlled_cross_retrieval
   target_kind: claim
@@ -459,3 +561,20 @@ follow_ups:
   - Correlated energy uncertainties and an explicit criterion for the physical quantity being validated.
   completion: Record inspected evidence and a new scoped physical assessment, preserving unknown support
     where independent constraints remain absent.
+- id: inspect_public_references
+  target_kind: evidence
+  target: retrieval_literature
+  action: Inspect the public full text and the five accompanying thermochemical references requested
+    for this comparison.
+  completion: Record DOI, public location, inspected portions, findings and access limits; add scoped
+    assessments without replacing the earlier abstract-only record.
+  sources:
+  - mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+follow_up_resolutions:
+- follow_up: inspect_public_references
+  evidence:
+  - retrieval_literature_full_text
+  - thermochemical_sources_inspected
+  - anion_reference_inspected
+  note: All six public references were inspected within the recorded scopes. This closes source reading
+    only; physical validation remains unknown and the retrieval proposal remains deferred.
