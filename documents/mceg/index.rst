@@ -17,4 +17,5 @@ different scopes. Open the linked model records before reusing a conclusion.
    _generated/cases
    _generated/catalog
    volatile_sources
+   new_fastchem_logk
    build

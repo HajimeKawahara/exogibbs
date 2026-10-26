@@ -105,6 +105,10 @@ def build_jobs() -> tuple[Job, ...]:
     jobs.append(Job("curated_atmosphere", comparison + "demo_curated_atmosphere.py",
                     ("--output-dir", "{output}"),
                     artifacts=("receipt.json", "summary.csv", "isothermal.png", "inverted.png")))
+    jobs.append(Job("new_fastchem_logk", comparison + "compare_new_fastchem_logk.py",
+                    ("--output-dir", "{output}"),
+                    artifacts=("receipt.json", "summary.csv", "isothermal.png", "inverted.png",
+                               "ion_constants.png", "residuals.png")))
     jobs.append(Job(
         "fastchem4_production_comparison", "benchmarks/fastchem4/run_production_comparison.py",
         ("--fastchem-executable", "{fastchem}", "--fastchem-source-root", "{fastchem_source}",

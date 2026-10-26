@@ -1,0 +1,580 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.new_fastchem_logk_comparison.v1
+  name: Preliminary FastChem logK comparison and molecular attribution
+  description: 'Provider-owned record of #297 and the molecular attribution follow-up, with a separate
+    untested metallicity-retrieval hypothesis.'
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:f5a54f928b525840527670f31ed4a6f49c1fcc81fc0b4c743ae5e43a066f988f
+    entry_points:
+    - examples/comparisons/compare_new_fastchem_logk.py:comparison_setups
+    - mceg/reviews/new_fastchem_logk_20261024.py:attribution
+assumptions:
+- statement: Ideal gas-only equilibrium, dimensionless formation Kp at 1 bar and h=-ln(Kp). All curves
+    use the same ExoGibbs solver, normalized Asplund 2021 budget and 537-species network.
+  evidence:
+  - column_execution
+  - source_choices
+- statement: At fixed T,P, molecule ratios factor into Kp ratios and constituent-atom ratios. Neutral-atom
+    reference potentials are a gauge; molecular energy choices can change the equilibrium atom pools.
+  evidence:
+  - attribution_execution
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Two explicitly prescribed solar columns and five selected attribution samples.
+  conditions:
+  - '161 pressures from 1e-6 to 100 bar; a 4000 K isotherm and the #284 prescribed 2500-4000 K inversion.'
+  - Exact profile arrays and elemental budget are in the NPZ artifacts. The sampled columns do not establish
+    a rectangular T/P domain or other metallicities.
+  - The five attribution states are enumerated in attribution.json and molecular_samples.
+  evidence:
+  - column_execution
+  - attribution_execution
+- kind: scientific_applicability
+  status: unknown
+  description: Physical mixture accuracy and downstream spectral/retrieval accuracy are not established.
+  conditions: []
+  evidence:
+  - source_choices
+  - retrieval_not_run
+claims:
+- id: atomic_update_scope
+  revision: '1'
+  kind: numerical_verification
+  statement: Only atomic-ion coefficient records differ between the supplied preliminary tables and the
+    corresponding packaged FastChem 4 tables; catalogs and stoichiometry agree.
+  scope: The three archived files only. The atmospheric calculation uses standard logK.dat with N1- and
+    Zn1- omitted to match curated.
+- id: column_closure
+  revision: '1'
+  kind: numerical_verification
+  statement: Every archived layer/model state converges and satisfies relative element residual <=1e-5,
+    relative charge residual <=1e-12 and absolute ln mass-action residual <=1e-8.
+  scope: Two prescribed 161-layer solar-composition columns and three tables, all solved by ExoGibbs on
+    the same 537-species network. Not an independent FastChem solver comparison.
+- id: molecular_attribution
+  revision: '1'
+  kind: numerical_verification
+  statement: At the five declared samples, the new/curated abundance ratio equals the formation-Kp ratio
+    times the stoichiometric product of constituent-atom mole-fraction ratios, with absolute ln residual
+    <=1e-8.
+  scope: Fixed T and total P. The 2500 K HCN energy-only Kp ratio is within 1 percent of the full ratio.
+    The atomic-product term includes coupled chemistry; it is not an atomic-ion-only intervention.
+- id: retrieval_metallicity_effect
+  revision: '1'
+  kind: numerical_verification
+  statement: Changing only the thermochemical table changes inferred metallicity under a specified observing
+    and retrieval configuration.
+  scope: A downstream application hypothesis. No planet, wavelength coverage, opacity set, noise model,
+    priors or detection threshold has been selected. Define these and revise this claim before a quantitative
+    assessment.
+- id: whole_mixture_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The complete gas model has quantified physical accuracy under the declared atmospheric conditions.
+  scope: Requires independent physical evidence and stated error criteria. Differences between two source
+    choices are neither observational errors nor a one-sigma uncertainty distribution.
+evidence:
+- id: preliminary_inputs
+  kind: implementation
+  summary: Daniel supplied preliminary tables on 2026-10-23; all extracted files match the archived ZIP.
+  sources:
+  - https://github.com/NewStrangeWorlds/FastChem/issues/10#issuecomment-6366561070
+  - results/new_fastchem_logk/logK.zip
+  scope: The comment and supplied bytes were inspected. The underlying NIST level sums and anion source
+    were not independently reconstructed; the update is not represented as an official release.
+  artifacts:
+  - source: results/new_fastchem_logk/logK.zip
+    sha256: f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c
+  provenance:
+    role: primary
+    location: Daniel comment and user-supplied ZIP, with exact file hashes in the column receipt.
+    inspection: inspected
+    note: Source provenance for supplied inputs only; not independent inspection of their underlying atomic
+      data.
+- id: source_choices
+  kind: implementation
+  summary: Curated source choices distinguish molecular energy anchors from thermal functions.
+  sources:
+  - mceg/contracts/atomic_ion_adoption.yaml
+  - mceg/contracts/major_molecule_adoption.yaml
+  - mceg/contracts/curated_gas.yaml
+  - src/exogibbs/data/curated/gas_v1.json
+  - results/major_molecule_adoption/decisions.csv
+  scope: HCN, S2 and H2S use CEA thermal functions plus ATcT 1.172 energies; SiS retains its FastChem
+    constant. Prior source assessments retain their original scopes. Source agreement does not establish
+    independent physical accuracy.
+  provenance:
+    role: primary
+    location: Curated implementation manifest and archived adoption decisions.
+    inspection: inspected
+    note: Inspected local implementation choices and HCN energy values; earlier source contracts retain
+      their own physical-evidence scope.
+- id: column_execution
+  kind: benchmark
+  summary: All 966 layer/model cases passed. The file audit found 47, 79 and 228 changed atomic-ion records.
+  sources:
+  - examples/comparisons/compare_new_fastchem_logk.py
+  - results/new_fastchem_logk/receipt.json
+  - results/new_fastchem_logk/summary.csv
+  - results/mceg/new_fastchem_logk_20261024/columns.log
+  scope: Fresh CPU float64 execution with epsilon_crit=1e-13 and relative-charge convergence. Mole-fraction
+    ratios are source sensitivity, not opacity changes or metallicity errors.
+  subject: comparison_snapshot
+  context: columns
+  result: passed
+  artifacts:
+  - source: results/new_fastchem_logk/receipt.json
+    sha256: b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4
+  - source: results/new_fastchem_logk/summary.csv
+    sha256: 2fa5f1f470f183ad70ab2e65c388ae01a24b225d83764de30b500d68e975cf09
+  - source: results/new_fastchem_logk/isothermal.npz
+    sha256: 5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b
+  - source: results/new_fastchem_logk/inverted.npz
+    sha256: 20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191
+  - source: results/mceg/new_fastchem_logk_20261024/columns.log
+    sha256: 5c4102b47e246dd38cb8edd5b27a95515f29e07c4491c90ee656123afb682ad8
+  provenance:
+    role: primary
+    location: Comparison code, input audit, six closure reports and primitive arrays.
+    inspection: inspected
+    note: Fresh execution inspected for the stated numerical criteria only.
+- id: attribution_execution
+  kind: benchmark
+  summary: Five mass-action decompositions passed. At 2500 K and 0.01 bar, HCN new/curated = 0.75300568
+    x 0.98874048 = 0.74452720.
+  sources:
+  - mceg/reviews/new_fastchem_logk_20261024.py
+  - results/mceg/new_fastchem_logk_20261024/attribution.json
+  - results/mceg/new_fastchem_logk_20261024/attribution.log
+  scope: At 2500 K, the HCN D0 shift is 0.06019568 eV and predicts Kp ratio 0.75622469; the remaining
+    thermal/fit factor is 0.99574331. SiS at 3500 K and 100 bar has identical Kp; its 1.10964313 abundance
+    ratio comes from the atomic product. No retrieval was run.
+  subject: comparison_snapshot
+  context: attribution
+  result: passed
+  artifacts:
+  - source: mceg/reviews/new_fastchem_logk_20261024.py
+    sha256: 183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70
+  - source: results/mceg/new_fastchem_logk_20261024/attribution.json
+    sha256: f5e8bb1c4a9e77e556e0d0b0ca44e5df77e8d1f9e5082c57b554f0059fc689d7
+  - source: results/mceg/new_fastchem_logk_20261024/attribution.log
+    sha256: dcb68f9cbb84a294c685d61ca365db70a18430099ac8388a4a914b52872c2e0c
+  provenance:
+    role: primary
+    location: Attribution code, five-sample report and execution log.
+    inspection: inspected
+    note: Inspected the fixed-T,P identity, HCN energy calculation and replay output.
+- id: retrieval_literature
+  kind: literature
+  summary: Al-Refaie et al. (2022) report biased metallicity retrievals when the chemical element sets
+    do not match.
+  sources:
+  - https://doi.org/10.3847/1538-4357/ac6dcd
+  scope: 'Inspected abstract: about 20 percent metallicity offsets with reported uncertainties below 1
+    percent in some catalog-mismatch experiments. This motivates a follow-up; it does not measure the
+    effect of these logK tables on a fixed network.'
+  provenance:
+    role: primary
+    location: Published article abstract.
+    inspection: partial
+    note: Background on catalog mismatch; no claim that its numerical bias transfers to this fixed-catalog
+      thermochemical comparison.
+- id: retrieval_not_run
+  kind: benchmark
+  summary: No radiative-transfer spectrum or retrieval has been executed for this comparison.
+  sources:
+  - documents/mceg/new_fastchem_logk.rst
+  scope: No Delta[M/H], C/O posterior shift, observational significance or calibrated thermochemical uncertainty
+    has been measured.
+  subject: comparison_snapshot
+  context: retrieval_planning
+  result: not_run
+  provenance:
+    role: primary
+    location: The local retrieval planning record and current experiment scope.
+    inspection: inspected
+    note: Records absence of a spectrum/retrieval execution; supplies no downstream result.
+- id: retrieval_literature_full_text
+  kind: literature
+  summary: The published Al-Refaie experiment distinguishes matched assumptions from element/condensation
+    mismatch; its results do not quantify the present table sensitivity.
+  sources:
+  - https://doi.org/10.3847/1538-4357/ac6dcd
+  - mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+  scope: Inspected experiment definition and conclusions in the public full text. No retrieval was reproduced.
+  artifacts:
+  - source: mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+    sha256: 89c09476950b8de25ba9480da2e2e754643ceb4c9aa5980814cbb0ea8a8addbe
+  provenance:
+    role: primary
+    location: Table 1; sections 2.2-2.3, 3.2-3.2.1 and 4-5. See the authored review for public-copy hash.
+    inspection: inspected
+    note: Adds full-text context; preserves the earlier abstract-only evidence and assessment.
+- id: thermochemical_sources_inspected
+  kind: literature
+  summary: Public ATcT/JANAF tables and Ruscic/Harding texts clarify HCN energy ancestry and uncertainty
+    conventions.
+  sources:
+  - https://doi.org/10.17038/CSE/2440254
+  - https://doi.org/10.18434/T42S31
+  - https://doi.org/10.1002/qua.24605
+  - https://doi.org/10.1063/1.2835612
+  - mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+  scope: Selected HCN and atomic-reference entries, source dependencies and uncertainty definitions only.
+    Neither the full thermochemical network nor a complete covariance matrix was reconstructed.
+  artifacts:
+  - source: mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+    sha256: 89c09476950b8de25ba9480da2e2e754643ceb4c9aa5980814cbb0ea8a8addbe
+  provenance:
+    role: primary
+    location: Source-specific locations, access limits and the HCN arithmetic cross-check in the authored review.
+    inspection: inspected
+    note: Primary for the named tables' adopted values and the authors' stated methods, not an independent
+      audit of all underlying experiments. Harding's table was read as PDF text, without a visual audit.
+- id: anion_reference_inspected
+  kind: literature
+  summary: Andersen et al. distinguish electron affinities, bound excited terms, metastable states and
+    fine-structure intervals.
+  sources:
+  - https://doi.org/10.1063/1.556047
+  - mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+  scope: Source definitions for atomic-anion modeling; preliminary FastChem coefficient construction
+    and residual-anion attribution remain unverified.
+  artifacts:
+  - source: mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+    sha256: 89c09476950b8de25ba9480da2e2e754643ceb4c9aa5980814cbb0ea8a8addbe
+  provenance:
+    role: primary
+    location: Sections 6-7 and Tables 3-4, pp. 1526-1529; NIST public PDF hash in the authored review.
+    inspection: inspected
+    note: Primary for the compilation's definitions and recommendations; its individual measurements were
+      not re-audited.
+limitations:
+- statement: No condensation, transport, photoionization, non-LTE or spectral calculation is included.
+    The two tables differ in molecular source choices as well as remaining atomic-ion fits.
+  evidence:
+  - column_execution
+  - source_choices
+- statement: The HCN maximum in the inverted column occurs at mole fractions about 1e-10. Its 25.5 percent
+    abundance difference is not a 25.5 percent metallicity error and does not demonstrate an observable
+    spectral difference.
+  evidence:
+  - attribution_execution
+  - retrieval_not_run
+- statement: Alternative-table differences are model sensitivity, not a probabilistic uncertainty estimate.
+    Shared source ancestry and correlated atomic/molecular energy anchors prevent treating all agreements
+    as independent evidence.
+  evidence:
+  - source_choices
+  - retrieval_literature
+subjects:
+- id: comparison_snapshot
+  implementation: *id001
+  selected_files:
+    examples/comparisons/compare_new_fastchem_logk.py: 59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88
+    examples/comparisons/demo_curated_atmosphere.py: d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e
+    src/exogibbs/presets/curated.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/FastChem4/logK/logK_condensates.dat: 566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467
+    src/exogibbs/data/FastChem4/logK/logK_condensates_extended.dat: 514c96d25474c18b6b9aff2c5a010282d98ccb4eead0c5134ca8ed9cc47d14c7
+    src/exogibbs/data/FastChem4/logK/logK_extended.dat: c89505344db24ed8d253e509c1825b02e01810a1f086d70c3e0b2d8f854c38a3
+    src/exogibbs/data/FastChem4/logK/logK_extended_wo_ions.dat: 140cc5394868ca8b0950b45c7048fa8bee359e53601bbdf9ac0a9762a9bf21e5
+    src/exogibbs/data/FastChem4/logK/logK_hoeijmakers2019.dat: 9f706e4456c317a09614d674264fbba12df51d5581bb9abedf81afad84907a68
+    src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat: 3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606
+    mceg/reviews/new_fastchem_logk_20261024.py: 183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70
+    results/new_fastchem_logk/receipt.json: b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4
+    results/new_fastchem_logk/logK.zip: f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c
+    results/new_fastchem_logk/isothermal.npz: 5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b
+    results/new_fastchem_logk/inverted.npz: 20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191
+    results/major_molecule_adoption/decisions.csv: e09e55602232ebccaa291878ce3e3febd25a7a9f5826aff112c743a6b9c40328
+contexts:
+- id: columns
+  scope: Actual six column executions; primitive arrays specify all joint states.
+  settings:
+    python: 3.10.9
+    jax: 0.6.2
+    numpy: 2.0.2
+    scipy: 1.15.3
+    backend: cpu
+    dtype: float64
+    epsilon_crit: 1.0e-13
+    relative_charge_convergence: true
+    composition: normalized packaged Asplund 2021, including Ge
+    species: 537
+    working_tree_base_revision: 1cf987fcc702b7bdf454e526aadfedab07dc15b0
+- id: attribution
+  scope: Fresh replay at the five explicitly recorded T/P/profile/species tuples.
+  settings:
+    backend: cpu
+    dtype: float64
+    samples_artifact: results/mceg/new_fastchem_logk_20261024/attribution.json
+- id: retrieval_planning
+  scope: Planning context only; observing and retrieval configurations remain unspecified.
+  settings:
+    execution: not_run
+- id: public_source_review
+  scope: Public-source inspection on 2026-10-24. Spectra and metallicity retrieval are excluded from the
+    current task at the user's request; the historical retrieval proposal is deferred.
+  settings:
+    execution: not_run
+    review: mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+conditions:
+- id: molecular_samples
+  revision: '1'
+  kind: samples
+  samples:
+  - id: sample_0
+    scope: One joint attribution sample.
+    quantities:
+      temperature:
+        value: 4000.0
+        unit: K
+      pressure:
+        value: 70.79457843841388
+        unit: bar
+    settings:
+      profile: isothermal
+      species: C1H1N1_hcn
+  - id: sample_1
+    scope: One joint attribution sample.
+    quantities:
+      temperature:
+        value: 2500.0
+        unit: K
+      pressure:
+        value: 0.01
+        unit: bar
+    settings:
+      profile: inverted
+      species: C1H1N1_hcn
+  - id: sample_2
+    scope: One joint attribution sample.
+    quantities:
+      temperature:
+        value: 2725.0
+        unit: K
+      pressure:
+        value: 0.0035481338923357567
+        unit: bar
+    settings:
+      profile: inverted
+      species: S2
+  - id: sample_3
+    scope: One joint attribution sample.
+    quantities:
+      temperature:
+        value: 2850.0
+        unit: K
+      pressure:
+        value: 0.0019952623149688807
+        unit: bar
+    settings:
+      profile: inverted
+      species: H2S1
+  - id: sample_4
+    scope: One joint attribution sample.
+    quantities:
+      temperature:
+        value: 3500.0
+        unit: K
+      pressure:
+        value: 100.0
+        unit: bar
+    settings:
+      profile: inverted
+      species: S1Si1
+  scope: Only the five enumerated samples; no interpolation or other composition is implied.
+  evidence:
+  - attribution_execution
+assessments:
+- id: atomic_update_scope_review
+  kind: evidence_support
+  claim: atomic_update_scope
+  claim_revision: '1'
+  subject: comparison_snapshot
+  context: columns
+  method:
+    id: review_recorded_comparison
+    revision: '1'
+    description: Inspect the pinned source scope and archived numerical criteria; do not promote missing
+      downstream or physical evidence.
+  evidence:
+  - preliminary_inputs
+  - column_execution
+  reasons:
+  - All three tables were parsed and compared; only atomic-ion fits changed.
+  status: supported
+  origin: reviewed
+- id: column_closure_review
+  kind: evidence_support
+  claim: column_closure
+  claim_revision: '1'
+  subject: comparison_snapshot
+  context: columns
+  method:
+    id: review_recorded_comparison
+    revision: '1'
+    description: Inspect the pinned source scope and archived numerical criteria; do not promote missing
+      downstream or physical evidence.
+  evidence:
+  - column_execution
+  reasons:
+  - All six 161-layer results meet the explicitly declared gates. Coverage is limited to the archived
+    profiles and composition.
+  status: supported
+  origin: reviewed
+- id: molecular_attribution_review
+  kind: evidence_support
+  claim: molecular_attribution
+  claim_revision: '1'
+  subject: comparison_snapshot
+  context: attribution
+  method:
+    id: review_recorded_comparison
+    revision: '1'
+    description: Inspect the pinned source scope and archived numerical criteria; do not promote missing
+      downstream or physical evidence.
+  evidence:
+  - source_choices
+  - attribution_execution
+  reasons:
+  - The independent mass-action identity closes at all five samples. HCN is dominated by its energy/constant
+    choice; SiS illustrates coupled composition effects.
+  status: supported
+  origin: reviewed
+- id: retrieval_metallicity_effect_review
+  kind: evidence_support
+  claim: retrieval_metallicity_effect
+  claim_revision: '1'
+  subject: comparison_snapshot
+  context: retrieval_planning
+  method:
+    id: review_recorded_comparison
+    revision: '1'
+    description: Inspect the pinned source scope and archived numerical criteria; do not promote missing
+      downstream or physical evidence.
+  evidence:
+  - retrieval_not_run
+  - retrieval_literature
+  - attribution_execution
+  reasons:
+  - The spectrum-to-parameter step is unexecuted. A trace-species abundance ratio alone does not determine
+    retrieval bias or its statistical significance.
+  status: unknown
+  origin: reviewed
+- id: whole_mixture_accuracy_review
+  kind: evidence_support
+  claim: whole_mixture_accuracy
+  claim_revision: '1'
+  subject: comparison_snapshot
+  context: columns
+  method:
+    id: review_recorded_comparison
+    revision: '1'
+    description: Inspect the pinned source scope and archived numerical criteria; do not promote missing
+      downstream or physical evidence.
+  evidence:
+  - source_choices
+  - preliminary_inputs
+  - column_execution
+  reasons:
+  - Numerical closure and source agreement do not establish physical accuracy. No independent whole-mixture
+    observation or experimental composition comparison is supplied.
+  status: unknown
+  origin: reviewed
+- id: retrieval_metallicity_effect_public_sources
+  kind: evidence_support
+  claim: retrieval_metallicity_effect
+  claim_revision: '1'
+  subject: comparison_snapshot
+  context: public_source_review
+  method:
+    id: review_public_sources
+    revision: '1'
+    description: Inspect declared source portions and their applicability; preserve historical judgments
+      and distinguish literature context from a new experiment.
+  evidence:
+  - retrieval_literature_full_text
+  - retrieval_not_run
+  - attribution_execution
+  reasons:
+  - Literature supplies no metallicity offset for these tables. The existing abundance result does not
+    determine a spectrum or posterior shift, and retrieval execution is outside this task.
+  status: unknown
+  origin: reviewed
+- id: whole_mixture_accuracy_public_sources
+  kind: evidence_support
+  claim: whole_mixture_accuracy
+  claim_revision: '1'
+  subject: comparison_snapshot
+  context: public_source_review
+  method:
+    id: review_public_sources
+    revision: '1'
+    description: Inspect declared source portions and their applicability; preserve historical judgments
+      and distinguish literature context from a new experiment.
+  evidence:
+  - source_choices
+  - thermochemical_sources_inspected
+  - anion_reference_inspected
+  - column_execution
+  reasons:
+  - Source inspection clarifies the adopted energy and state conventions but supplies no independent
+    whole-mixture physical constraint or calibrated uncertainty for the atmospheric calculation.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: controlled_cross_retrieval
+  target_kind: claim
+  target: retrieval_metallicity_effect
+  revision: '1'
+  action: Define the consumer observing/retrieval configuration, revise the quantitative claim, and cross-retrieve
+    common synthetic spectra while changing only the thermochemical table.
+  requires:
+  - Temperature/pressure structure and composition within the reviewed data domain; wavelength range,
+    resolution, line opacities, clouds and geometry.
+  - Fixed noise/covariance realization, random seeds, priors, fitted parameters and sampler convergence
+    criteria.
+  - Both table directions plus same-table injection/recovery controls; a declared reporting threshold
+    before interpretation.
+  completion: Archive spectra, posterior samples and convergence checks. Report Delta[M/H] in dex, C/O
+    and temperature shifts, and shifts relative to posterior widths. Add a new context-bound assessment.
+    Synthetic recovery establishes sensitivity for that experiment, not real-atmosphere accuracy.
+  sources:
+  - https://github.com/HajimeKawahara/exogibbs/issues/297
+  - https://doi.org/10.3847/1538-4357/ac6dcd
+- id: physical_thermochemistry_review
+  target_kind: claim
+  target: whole_mixture_accuracy
+  revision: '1'
+  action: Review the underlying atomic/molecular sources and independent physical constraints for a declared
+    application.
+  requires:
+  - Primary energy and partition data with species, reference-state and temperature conventions.
+  - Correlated energy uncertainties and an explicit criterion for the physical quantity being validated.
+  completion: Record inspected evidence and a new scoped physical assessment, preserving unknown support
+    where independent constraints remain absent.
+- id: inspect_public_references
+  target_kind: evidence
+  target: retrieval_literature
+  action: Inspect the public full text and the five accompanying thermochemical references requested
+    for this comparison.
+  completion: Record DOI, public location, inspected portions, findings and access limits; add scoped
+    assessments without replacing the earlier abstract-only record.
+  sources:
+  - mceg/reviews/new_fastchem_logk_public_sources_20261024.json
+follow_up_resolutions:
+- follow_up: inspect_public_references
+  evidence:
+  - retrieval_literature_full_text
+  - thermochemical_sources_inspected
+  - anion_reference_inspected
+  note: All six public references were inspected within the recorded scopes. This closes source reading
+    only; physical validation remains unknown and the retrieval proposal remains deferred.

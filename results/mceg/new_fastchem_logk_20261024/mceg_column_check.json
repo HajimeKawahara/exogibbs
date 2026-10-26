@@ -1,0 +1,285 @@
+{
+  "format": "mceg_check_report_v1",
+  "collected": 1,
+  "contracts": [
+    {
+      "path": "/home/kawahara/exogibbs/mceg/contracts/new_fastchem_logk.yaml",
+      "model": "exogibbs.new_fastchem_logk_comparison.v1",
+      "checks": [
+        {
+          "name": "structure",
+          "status": "PASS",
+          "message": "v0.2 structure and local references are consistent",
+          "details": []
+        },
+        {
+          "name": "source_audit",
+          "status": "PASS",
+          "message": "2/2 evidence records have complete declared source traces",
+          "details": []
+        },
+        {
+          "name": "selected_files",
+          "status": "PASS",
+          "message": "20/20 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS",
+          "message": "6/6 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "recorded_support",
+          "status": "PASS",
+          "message": "Stored support: supported; claim=atomic_update_scope; origin=reviewed",
+          "details": [
+            "Recorded judgment only; no new support evaluation.",
+            "All three tables were parsed and compared; only atomic-ion fits changed."
+          ]
+        }
+      ],
+      "declarations": [],
+      "schema_version": "0.2",
+      "audit_scope": {
+        "kind": "assessment",
+        "assessment": "atomic_update_scope_review",
+        "subject": "comparison_snapshot",
+        "context": "columns"
+      },
+      "audited_evidence": [
+        "preliminary_inputs",
+        "column_execution"
+      ],
+      "integrity": {
+        "root": "/home/kawahara/exogibbs",
+        "subject": "comparison_snapshot",
+        "selected_files": [
+          {
+            "source": "examples/comparisons/compare_new_fastchem_logk.py",
+            "expected_sha256": "59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88",
+            "actual_sha256": "59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "examples/comparisons/demo_curated_atmosphere.py",
+            "expected_sha256": "d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e",
+            "actual_sha256": "d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/presets/curated.py",
+            "expected_sha256": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+            "actual_sha256": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/presets/fastchem.py",
+            "expected_sha256": "c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3",
+            "actual_sha256": "c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/curated/gas_v1.json",
+            "expected_sha256": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+            "actual_sha256": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat",
+            "expected_sha256": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+            "actual_sha256": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/gas/kernel/solver.py",
+            "expected_sha256": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+            "actual_sha256": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/logK/logK.dat",
+            "expected_sha256": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+            "actual_sha256": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/logK/logK_condensates.dat",
+            "expected_sha256": "566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467",
+            "actual_sha256": "566b029470a9affb361dc4e891aa8c4918baeff0f93cf07e804d57e2ebac8467",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/logK/logK_condensates_extended.dat",
+            "expected_sha256": "514c96d25474c18b6b9aff2c5a010282d98ccb4eead0c5134ca8ed9cc47d14c7",
+            "actual_sha256": "514c96d25474c18b6b9aff2c5a010282d98ccb4eead0c5134ca8ed9cc47d14c7",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/logK/logK_extended.dat",
+            "expected_sha256": "c89505344db24ed8d253e509c1825b02e01810a1f086d70c3e0b2d8f854c38a3",
+            "actual_sha256": "c89505344db24ed8d253e509c1825b02e01810a1f086d70c3e0b2d8f854c38a3",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/logK/logK_extended_wo_ions.dat",
+            "expected_sha256": "140cc5394868ca8b0950b45c7048fa8bee359e53601bbdf9ac0a9762a9bf21e5",
+            "actual_sha256": "140cc5394868ca8b0950b45c7048fa8bee359e53601bbdf9ac0a9762a9bf21e5",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/logK/logK_hoeijmakers2019.dat",
+            "expected_sha256": "9f706e4456c317a09614d674264fbba12df51d5581bb9abedf81afad84907a68",
+            "actual_sha256": "9f706e4456c317a09614d674264fbba12df51d5581bb9abedf81afad84907a68",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat",
+            "expected_sha256": "3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606",
+            "actual_sha256": "3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/new_fastchem_logk_20261024.py",
+            "expected_sha256": "183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70",
+            "actual_sha256": "183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "results/new_fastchem_logk/receipt.json",
+            "expected_sha256": "b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4",
+            "actual_sha256": "b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "results/new_fastchem_logk/logK.zip",
+            "expected_sha256": "f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c",
+            "actual_sha256": "f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "results/new_fastchem_logk/isothermal.npz",
+            "expected_sha256": "5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b",
+            "actual_sha256": "5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "results/new_fastchem_logk/inverted.npz",
+            "expected_sha256": "20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191",
+            "actual_sha256": "20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "results/major_molecule_adoption/decisions.csv",
+            "expected_sha256": "e09e55602232ebccaa291878ce3e3febd25a7a9f5826aff112c743a6b9c40328",
+            "actual_sha256": "e09e55602232ebccaa291878ce3e3febd25a7a9f5826aff112c743a6b9c40328",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ],
+        "artifact_hashes": [
+          {
+            "evidence": "preliminary_inputs",
+            "source": "results/new_fastchem_logk/logK.zip",
+            "expected_sha256": "f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c",
+            "actual_sha256": "f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "evidence": "column_execution",
+            "source": "results/new_fastchem_logk/receipt.json",
+            "expected_sha256": "b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4",
+            "actual_sha256": "b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "evidence": "column_execution",
+            "source": "results/new_fastchem_logk/summary.csv",
+            "expected_sha256": "2fa5f1f470f183ad70ab2e65c388ae01a24b225d83764de30b500d68e975cf09",
+            "actual_sha256": "2fa5f1f470f183ad70ab2e65c388ae01a24b225d83764de30b500d68e975cf09",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "evidence": "column_execution",
+            "source": "results/new_fastchem_logk/isothermal.npz",
+            "expected_sha256": "5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b",
+            "actual_sha256": "5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "evidence": "column_execution",
+            "source": "results/new_fastchem_logk/inverted.npz",
+            "expected_sha256": "20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191",
+            "actual_sha256": "20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "evidence": "column_execution",
+            "source": "results/mceg/new_fastchem_logk_20261024/columns.log",
+            "expected_sha256": "5c4102b47e246dd38cb8edd5b27a95515f29e07c4491c90ee656123afb682ad8",
+            "actual_sha256": "5c4102b47e246dd38cb8edd5b27a95515f29e07c4491c90ee656123afb682ad8",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ]
+      },
+      "assessments": [
+        {
+          "id": "atomic_update_scope_review",
+          "subject": "comparison_snapshot",
+          "context": "columns",
+          "method": {
+            "id": "review_recorded_comparison",
+            "revision": "1",
+            "description": "Inspect the pinned source scope and archived numerical criteria; do not promote missing downstream or physical evidence."
+          },
+          "evidence": [
+            "preliminary_inputs",
+            "column_execution"
+          ],
+          "reasons": [
+            "All three tables were parsed and compared; only atomic-ion fits changed."
+          ],
+          "kind": "evidence_support",
+          "claim": "atomic_update_scope",
+          "claim_revision": "1",
+          "status": "supported",
+          "origin": "reviewed"
+        }
+      ]
+    }
+  ],
+  "context": null,
+  "context_source": null,
+  "summary": {
+    "PASS": 5,
+    "FAIL": 0,
+    "UNKNOWN": 0
+  },
+  "explain_command": "mceg explain mceg/contracts/new_fastchem_logk.yaml --assessment atomic_update_scope_review --root ."
+}
