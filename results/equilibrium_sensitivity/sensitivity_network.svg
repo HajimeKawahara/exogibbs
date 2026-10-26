@@ -10,7 +10,7 @@
 <title>responses</title>
 <polygon fill="white" stroke="transparent" points="-4,4 -4,-872 1652.32,-872 1652.32,4 -4,4"/>
 <text text-anchor="middle" x="824.16" y="-851.2" font-family="DejaVu Sans" font-size="16.00">Local equilibrium responses: controls &#45;&gt; species amounts</text>
-<text text-anchor="middle" x="824.16" y="-833.2" font-family="DejaVu Sans" font-size="16.00">Blue = positive; orange dashed = negative; labels = d ln(n) / d ln(q)</text>
+<text text-anchor="middle" x="824.16" y="-833.2" font-family="DejaVu Sans" font-size="16.00">Blue = positive; orange dashed = negative; labels = d ln(n) / d ln(control)</text>
 <text text-anchor="middle" x="824.16" y="-815.2" font-family="DejaVu Sans" font-size="16.00">|response| &gt;= 0.15 shown; width = 0.7 + 1.3 min(|response|, 3). Display pruning only; arrows are not reaction paths.</text>
 <g id="clust1" class="cluster">
 <title>cluster_0</title>

@@ -1,0 +1,29 @@
+digraph response {
+graph [rankdir=LR, bgcolor=white, nodesep=0.5, ranksep=0.8,
+fontname="DejaVu Sans", fontsize=16, labelloc=t, label="Direct physical controls at 1000 K, P = 1 bar; elemental budgets fixed\nEdges: d ln(n_i) / d ln(T or P); blue positive, orange dashed negative\nWidth = 0.8 + 0.12 min(|response|, 25); all ten responses shown"];
+node [fontname="DejaVu Sans", fontsize=13, style=filled, margin="0.15,0.09"];
+edge [fontname="DejaVu Sans", fontsize=12, arrowsize=0.75];
+subgraph cluster_0 {
+label="Bipartite response graph";
+color="#d0d5db"; style=rounded; margin=20;
+"p0_T" [label="T", shape=box, fillcolor="#eef2f6"];
+"p0_P" [label="P", shape=box, fillcolor="#eef2f6"];
+"p0_H2" [label="H2", shape=ellipse, fillcolor="#fff9e8"];
+"p0_H2O" [label="H2O", shape=ellipse, fillcolor="#fff9e8"];
+"p0_CO" [label="CO", shape=ellipse, fillcolor="#fff9e8"];
+"p0_CO2" [label="CO2", shape=ellipse, fillcolor="#fff9e8"];
+"p0_CH4" [label="CH4", shape=ellipse, fillcolor="#eee7f5", color="#6a3d9a", penwidth=2.3, fontname="DejaVu Sans Bold"];
+{rank=same; "p0_T"; "p0_P";}
+{rank=same; "p0_H2"; "p0_H2O"; "p0_CO"; "p0_CO2"; "p0_CH4";}
+"p0_T" -> "p0_H2" [label="+0.80494", color="#2166ac", fontcolor="#2166ac", style=solid, penwidth=0.897];
+"p0_T" -> "p0_H2O" [label="-3.3236", color="#c65d16", fontcolor="#c65d16", style=dashed, penwidth=1.199];
+"p0_T" -> "p0_CO" [label="+6.3133", color="#2166ac", fontcolor="#2166ac", style=solid, penwidth=1.558];
+"p0_T" -> "p0_CO2" [label="-2.0034", color="#c65d16", fontcolor="#c65d16", style=dashed, penwidth=1.040];
+"p0_T" -> "p0_CH4" [label="-15.97", color="#c65d16", fontcolor="#c65d16", style=dashed, penwidth=2.716];
+"p0_P" -> "p0_H2" [label="-0.061068", color="#c65d16", fontcolor="#c65d16", style=dashed, penwidth=0.807];
+"p0_P" -> "p0_H2O" [label="+0.26362", color="#2166ac", fontcolor="#2166ac", style=solid, penwidth=0.832];
+"p0_P" -> "p0_CO" [label="-0.43854", color="#c65d16", fontcolor="#c65d16", style=dashed, penwidth=0.853];
+"p0_P" -> "p0_CO2" [label="-0.11385", color="#c65d16", fontcolor="#c65d16", style=dashed, penwidth=0.814];
+"p0_P" -> "p0_CH4" [label="+1.185", color="#2166ac", fontcolor="#2166ac", style=solid, penwidth=0.942];
+}
+}

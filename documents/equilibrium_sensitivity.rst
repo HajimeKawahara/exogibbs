@@ -119,6 +119,104 @@ The example checks this against direct differentiation of temperature at all
 :math:`\Delta\nu=(-2,0)`. These decompositions isolate the selected
 equilibrium conditions, not unique molecular pathways.
 
+Temperature, pressure and two kinds of reduction
+------------------------------------------------
+
+The original graph is bipartite: inputs connect to responding species, with
+no species-to-species paths. Replacing the inputs by temperature and pressure
+gives another bipartite graph. At 1000 K a small 0.1% increase in temperature
+produces approximately a 1.60% decrease in methane amount; a 1% pressure
+increase produces approximately a 1.19% increase. Each is a local first-order
+estimate with the other physical input and all elemental amounts fixed.
+
+.. figure:: ../results/equilibrium_sensitivity/physical_controls.png
+   :alt: Temperature and pressure responses of all five species at 1000 K.
+   :width: 70%
+
+   Direct physical controls. All ten amount responses are shown. Edge widths
+   use ``0.8 + 0.12 min(abs(response), 25)`` and labels retain the coefficients.
+
+To explain these responses, introduce the already logarithmic coordinates
+
+.. math::
+
+   q_r=\ln K_r(T)-\Delta\nu_r\ln(P/P^\circ),\qquad S^T\ln x=q.
+
+Pressure changes the activity balance; it does **not** change the ideal-gas
+standard equilibrium constant :math:`K(T)`. The resulting graph has three
+visual layers, :math:`(T,P)\to q_r\to n_i`. Its underlying graph is still
+bipartite, with :math:`\{T,P,n_i\}` opposite :math:`\{q_r\}`. The first-stage
+weights are :math:`\partial q_r/\partial\ln(T,P)` and the second-stage weights
+are :math:`R_{ir}=\partial\ln n_i/\partial q_r`, not derivatives of
+:math:`\ln q_r`. Each path contribution is the product of its two weights.
+
+**Exact response collapse** eliminates the intermediate coordinates by adding
+all signed path products. With :math:`u=(\ln T,\ln P)` and
+:math:`B_{r\alpha}=\partial q_r/\partial u_\alpha`, the collapsed matrix is
+:math:`D=RB`. It equals direct AD of :math:`\ln n` with respect to :math:`u`.
+The example checks this for all five species at 800, 1000 and 1200 K, and also
+checks central finite differences in both physical inputs. An ordinary
+NetworkX node contraction alone does not preserve these derivative weights.
+
+**Dominant-contribution selection** first chooses a target species (here CH4)
+and input, then keeps the largest absolute path contributions until at least
+99% of their absolute sum is retained. For omitted paths :math:`O`,
+
+.. math::
+
+   |D_{i\alpha}-D^{\rm kept}_{i\alpha}|
+   \le \sum_{r\in O}|R_{ir}B_{r\alpha}|.
+
+The JSON records the retained indices, signed omitted response, this error
+bound, and the actual relative error (undefined when the full response is
+zero). Retention of 100% preserves every nonzero path, including tiny ones.
+
+.. list-table:: Methane responses and the 99% selection at 1 bar
+   :header-rows: 1
+
+   * - T (K)
+     - Temperature response
+     - Pressure response
+     - Retained thermal paths
+     - Thermal response error
+   * - 800
+     - -0.367748
+     - +0.023610
+     - q1, q2
+     - 0%
+   * - 1000
+     - -15.969675
+     - +1.185042
+     - q1
+     - 0.4469%
+   * - 1200
+     - -22.523203
+     - +1.975102
+     - q1
+     - 0.1023%
+
+.. figure:: ../results/equilibrium_sensitivity/methane_reduction.png
+   :alt: Full methane path decomposition, approximate contribution selection and exact signed response collapse at 1000 K.
+
+   Separate views of the same local response. At 1000 K the thermal path
+   contributions are -16.041047 through q1 and +0.071372 through q2. Keeping
+   q1 captures 99.557% of their absolute sum. The exact collapsed edge includes
+   both paths and is -15.969675. Do not add the direct edge to the factored
+   edges: those are alternative representations of the same response.
+
+Positive and negative contributions can cancel. For example, the contributions
+``[100, -99, 0.5]`` sum to 1.5; keeping the first two retains 99.75% of the
+absolute sum but gives 1.0, a 33.3% relative error. Thus a 99% retention rule
+does not guarantee a 1% relative error to the signed response. The displayed
+error and omitted bound are essential, particularly near a zero response.
+
+The pressure contribution through q2 is zero because :math:`\Delta\nu_2=0`,
+so the single q1 path reproduces pressure responses exactly in this basis.
+The water-gas-shift condition still affects the coupled equilibrium and
+:math:`R_{:,1}`. Selection simplifies the **response display**; it never removes
+species or constraints from the equilibrium solve. Individual path rankings
+depend on the chosen reaction basis and state, and are not kinetic pathways.
+
 Reproduce and check
 -------------------
 
@@ -126,12 +224,16 @@ With ExoGibbs, Matplotlib, NetworkX and Graphviz's ``dot`` available, run offlin
 
    JAX_ENABLE_X64=1 JAX_PLATFORMS=cpu MPLBACKEND=Agg \
      python examples/equilibrium_sensitivity.py
-   pytest tests/unittests/examples/equilibrium_sensitivity_test.py
+   pytest tests/unittests/examples/equilibrium_sensitivity*_test.py
 
 Outputs go to ``results/equilibrium_sensitivity/``: PNG/PDF figures, the network
 in SVG/DOT, complete coefficients in ``response_matrices.csv``, and numerical
 checks and input definitions in ``validation.json``. Species/control indices
 in the CSV follow the orders recorded in the JSON. Re-running regenerates them.
+``physical_controls`` in the JSON contains the complete physical responses,
+path products and both reductions at the three representative temperatures.
+The two new graphs are also exported as ``physical_controls`` and
+``methane_reduction`` PNG/PDF/SVG/DOT files by the same command.
 
 The example checks convergence before interpreting any solution. At the three
 network states it compares AD against central log-parameter differences with

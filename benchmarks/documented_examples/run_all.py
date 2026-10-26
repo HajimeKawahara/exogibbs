@@ -53,7 +53,8 @@ def build_jobs() -> tuple[Job, ...]:
         "equilibrium_sensitivity", "examples/equilibrium_sensitivity.py",
         ("--output", "{output}"),
         artifacts=("temperature_response.png", "sensitivity_network.png",
-                   "response_matrix.png", "response_matrices.csv", "validation.json"),
+                   "response_matrix.png", "physical_controls.png", "methane_reduction.png",
+                   "response_matrices.csv", "validation.json"),
     ))
     comparison = "examples/comparisons/"
     jobs.append(Job(

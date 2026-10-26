@@ -36,6 +36,7 @@ SPECIES = ("H2", "H2O", "CO", "CO2", "CH4")
 CONTROLS = ("H", "C", "O", "K1", "K2")
 BUDGET = np.array([1.0, 0.03, 0.06])
 PRESSURE_BAR = 1.0
+PATH_RETENTION = 0.99
 # Products minus reactants: methanation and water-gas shift, respectively.
 REACTIONS = np.array([[-3., 1.], [1., -1.], [-1., -1.], [0., 1.], [1., 0.]])
 LOGK_LIFT = -REACTIONS @ np.linalg.inv(REACTIONS.T @ REACTIONS)
@@ -125,6 +126,84 @@ def validate_response(
     }
 
 
+def reduce_contributions(values: np.ndarray, retention: float = PATH_RETENTION) -> dict:
+    """Keep the largest signed contributions until their absolute sum is covered.
+
+    The omitted absolute sum bounds the response error. It does not bound
+    relative error to the signed total when contributions cancel.
+    """
+    values = np.asarray(values, dtype=float)
+    if values.ndim != 1 or not values.size or not np.all(np.isfinite(values)):
+        raise ValueError("values must be a nonempty finite 1D array.")
+    if not np.isfinite(retention) or not 0. < retention <= 1.:
+        raise ValueError("retention must be finite and in (0, 1].")
+    magnitude = np.abs(values)
+    total_absolute = float(magnitude.sum())
+    order = np.argsort(-magnitude, kind="stable")
+    if retention == 1.:
+        # A tiny nonzero path may be lost to rounding in a cumulative sum.
+        count = int(np.count_nonzero(magnitude))
+    else:
+        count = (min(len(values), int(np.searchsorted(
+            np.cumsum(magnitude[order]), retention * total_absolute)) + 1)
+            if total_absolute else 0)
+    selected, omitted = order[:count], order[count:]
+    full, retained = float(values.sum()), float(values[selected].sum())
+    return {
+        "indices": selected.tolist(), "full": full, "retained": retained,
+        "omitted": float(values[omitted].sum()),
+        "bound": float(magnitude[omitted].sum()),
+        "retained_absolute_fraction": float(magnitude[selected].sum() / total_absolute)
+        if total_absolute else 1.,
+        "relative_error": abs(full - retained) / abs(full) if full else None,
+    }
+
+
+def physical_control_analysis(
+    setup: ChemicalSetup, state: Callable, temperature: float,
+    response: np.ndarray, retention: float = PATH_RETENTION,
+) -> dict:
+    """Validate exact T/P response collapse and select methane contributions.
+
+    Intermediate coordinates are already logarithmic:
+    q = ln(K(T)) - delta_nu * ln(P/Pref). Edges into q are dq/dln(T or P),
+    while edges out of q are dln(n)/dq. Pressure does not change ideal-gas K.
+    """
+    def physical(log_controls):
+        return state(jnp.zeros(5), temperature * jnp.exp(log_controls[0]),
+                     PRESSURE_BAR * jnp.exp(log_controls[1]))
+
+    nominal, diagnostics = physical(jnp.zeros(2))
+    require_converged(nominal, diagnostics)
+    direct = np.asarray(jax.jacrev(lambda z: physical(z)[0].ln_n)(jnp.zeros(2)))
+    thermal_drive = np.asarray(jax.jacrev(
+        lambda logt: -jnp.asarray(REACTIONS).T @ setup.hvector_func(
+            temperature * jnp.exp(logt))
+    )(0.))
+    drive = np.column_stack((thermal_drive, -REACTIONS.sum(axis=0)))
+    reaction_response = np.asarray(response)[:, 3:]
+    contributions = reaction_response[:, :, None] * drive[None, :, :]
+    np.testing.assert_allclose(contributions.sum(axis=1), direct, atol=2.e-9, rtol=2.e-9)
+    step = 1.e-5
+    differences = []
+    for direction in np.eye(2):
+        plus, dp = physical(jnp.asarray(step * direction))
+        minus, dm = physical(jnp.asarray(-step * direction))
+        require_converged(plus, dp)
+        require_converged(minus, dm)
+        differences.append(np.asarray((plus.ln_n - minus.ln_n) / (2 * step)))
+    finite_difference = np.stack(differences, axis=1)
+    np.testing.assert_allclose(direct, finite_difference, atol=2.e-6, rtol=2.e-6)
+    return {
+        "physical_response": direct.tolist(), "reaction_response": reaction_response.tolist(),
+        "drive_response": drive.tolist(), "contributions": contributions.tolist(),
+        "reductions": {name: reduce_contributions(contributions[4, :, j], retention)
+                       for j, name in enumerate(("T", "P"))},
+        "max_finite_difference_error": float(np.max(np.abs(direct - finite_difference))),
+        "max_chain_error": float(np.max(np.abs(direct - contributions.sum(axis=1)))),
+    }
+
+
 def run(output: Path) -> dict:
     """Compute, validate and render the fixed gas-only concept demonstration."""
     if not jax.config.x64_enabled:
@@ -137,6 +216,7 @@ def run(output: Path) -> dict:
     logk_derivative = jax.jit(jax.jacrev(lambda t: -jnp.asarray(REACTIONS).T @ setup.hvector_func(t)))
     temperatures = np.linspace(600., 1600., 51)
     amounts, responses, contributions, snapshots = [], [], [], []
+    physical_snapshots = []
     checks = []
     max_thermal_error = 0.0
     max_budget_error = 0.0
@@ -157,7 +237,10 @@ def run(output: Path) -> dict:
         contributions.append(contribution)
         if temperature in (800., 1000., 1200.):
             checks.append(validate_response(setup, state, temperature, response))
-            snapshots.append({"temperature": temperature, "amounts": n, "response": response})
+            physical = physical_control_analysis(setup, state, temperature, response)
+            physical_snapshots.append({"temperature_K": temperature, **physical})
+            snapshots.append({"temperature": temperature, "amounts": n,
+                              "response": response, **physical})
 
     # A dilute comparison shows why the enriched pedagogical mixture was chosen.
     dilute_budget = np.array([1., 2.7e-4, 4.9e-4])
@@ -181,6 +264,14 @@ def run(output: Path) -> dict:
         "checks": checks,
         "snapshots": [{"temperature_K": s["temperature"], "amounts": s["amounts"].tolist(),
                        "response": s["response"].tolist()} for s in snapshots],
+        "physical_controls": {
+            "controls": ["T", "P"], "retention": PATH_RETENTION,
+            "equilibrium_drive": "q = ln K(T) - delta_nu ln(P/Pref)",
+            "finite_difference_log_step": 1.e-5,
+            "snapshots": physical_snapshots,
+            "cancellation_example": {"contributions": [100., -99., .5],
+                                     **reduce_contributions(np.array([100., -99., .5]))},
+        },
         "dilute_comparison": {"budget_H_C_O": dilute_budget.tolist(), "temperature_K": 1200.,
                               "CH4_response": dilute_response[-1].tolist()},
     }
@@ -190,9 +281,10 @@ def run(output: Path) -> dict:
             for i in range(5) for j in range(5)]
     np.savetxt(output / "response_matrices.csv", rows, delimiter=",",
                header="temperature_K,species_index,control_index,amount,response", comments="")
-    from _equilibrium_sensitivity_plot import render_figures
+    from _equilibrium_sensitivity_plot import render_figures, render_physical_controls
     render_figures(output, temperatures, np.asarray(amounts), np.asarray(responses),
                    np.asarray(contributions), snapshots)
+    render_physical_controls(output, snapshots, PATH_RETENTION)
     return report
 
 
