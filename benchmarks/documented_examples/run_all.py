@@ -49,6 +49,12 @@ def build_jobs() -> tuple[Job, ...]:
         ("--output", "{output}/plagioclase_exsolution.png"),
         artifacts=("plagioclase_exsolution.png",),
     ))
+    jobs.append(Job(
+        "equilibrium_sensitivity", "examples/equilibrium_sensitivity.py",
+        ("--output", "{output}"),
+        artifacts=("temperature_response.png", "sensitivity_network.png",
+                   "response_matrix.png", "response_matrices.csv", "validation.json"),
+    ))
     comparison = "examples/comparisons/"
     jobs.append(Job(
         "sun_yao_water", comparison + "compare_sun_yao_water.py",
