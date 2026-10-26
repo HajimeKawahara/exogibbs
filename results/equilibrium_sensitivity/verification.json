@@ -1,0 +1,78 @@
+{
+  "implementation_and_figures_commit": "8fb80e4dcee5cc48b0d9362793066c55ef605f30",
+  "tested_code_commit": "db9160fd17f762c40f364b2a50d5033829ddab0f",
+  "unit_tests": {
+    "full_benchmarks": {
+      "summary": "308 passed, 24 warnings in 291.17s (0:04:51)",
+      "log_sha256": "b26254b9b3a654718530a3429f3c5342aab2fab9cee4756c1f2cd081d4ad3bb8"
+    },
+    "full_equilibrium": {
+      "summary": "510 passed, 1 warning in 341.49s (0:05:41)",
+      "log_sha256": "156f7c0562070e42eda1aed301daa1e876a753d0aef5c07180d1747780d26df8"
+    },
+    "full_remaining": {
+      "summary": "678 passed in 151.85s (0:02:31)",
+      "log_sha256": "97af7b329da740508140c23ac7c43cf82c0ac00daad5308b41bcd0891d1afbf3"
+    },
+    "focused_sensitivity": {
+      "summary": "12 passed in 3.60s",
+      "log_sha256": "25f31d04d14bf23b878fb19519cae5dedea2feeaa828ae22a14c46a87c1953dc"
+    },
+    "documented_runner_tests": {
+      "summary": "8 passed in 3.04s",
+      "log_sha256": "b3230ef2226e8ff190e4e34da3beb9cfaa9366c6574851ae1bb8a04ea2ebf965"
+    },
+    "final_integration_tests": {
+      "summary": "52 passed in 6.25s",
+      "log_sha256": "ad888ff86cac4a6a0b2166df98af71b35b85f912b483b87dfc58513e1ee52c4c"
+    }
+  },
+  "test_environment": {
+    "JAX_PLATFORMS": "cpu",
+    "JAX_ENABLE_X64": "1",
+    "MPLBACKEND": "Agg",
+    "optional_networkx": "Existing NetworkX 3.4.2 exposed through a temporary Python path; original PYTHONPATH preserved."
+  },
+  "full_suite_summary": "1496 passed, no skips; complete suite in three disjoint offline partitions",
+  "full_suite_commands": [
+    "pytest tests/unittests/benchmarks",
+    "pytest tests/unittests/equilibrium",
+    "pytest tests/unittests --ignore=tests/unittests/benchmarks --ignore=tests/unittests/equilibrium"
+  ],
+  "documented_example": {
+    "name": "equilibrium_sensitivity",
+    "status": "PASS",
+    "exit_code": 0,
+    "missing_artifacts": [],
+    "artifact_errors": [],
+    "overall_runner_status": "FAIL",
+    "full_acceptance": false,
+    "coverage_errors": [
+      "Uncovered or unavailable documented script: examples/metal_silicate/reference.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/extract_reference.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/native.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/native.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/gas_exchange.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/generate_equilibrium_reference.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/hydrogen.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/sulfur_source.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/sulfide.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/run_melts_reference.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/cns_inventory.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)",
+      "Uncovered or unavailable documented script: examples/metal_silicate/m1_chemistry.py (/tmp/doc-exogibbs-mca/ja/metal_silicate_reference.tex)"
+    ],
+    "note": "The selected new example passes. Global manual coverage still flags existing retired metal_silicate commands; no full example-suite acceptance is claimed."
+  },
+  "documentation": {
+    "update_doc_script": "Attempted; MCEG pre-step failed on Contract hash mismatch: exoeos:mceg/contracts/zhang_duan_h2.yaml",
+    "sphinx_command": "python -m sphinx -M html documents documents/_build -E -a -D plot_gallery=0",
+    "sphinx_environment": "Existing /tmp/mceg-provider-docs-env, Sphinx 7.4.7; no installations.",
+    "sphinx_result": "build succeeded, 114 warnings",
+    "new_sensitivity_page_warnings": 0,
+    "sphinx_log_sha256": "b10557be924d64e4c02460f42288a5e650bab160e869554099ecbe14111c2611",
+    "final_navigation_rebuild": "build succeeded, 3 warnings in existing gallery index pages; no sensitivity warnings",
+    "final_navigation_log_sha256": "67a216770afee1fae81b81f82c8c6f5c7b90e2563d841aea3a4a5807bc5ee963",
+    "japanese_documentation_commit": "d745837dccb9840101e0c6d80d05865cd2a7c1d9",
+    "japanese_pdf": "116 pages, seven new pages visually checked; 18 warning lines identical to baseline."
+  }
+}
