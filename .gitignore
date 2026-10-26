@@ -182,6 +182,7 @@ cython_debug/
 !/results/gas_thermochemistry_impact/
 !/results/curated_gas_validation/
 !/results/curated_atmosphere/
+!/results/equilibrium_sensitivity/
 /volatiles_artifacts/
 
 # Local external checkouts and scratch workspaces.

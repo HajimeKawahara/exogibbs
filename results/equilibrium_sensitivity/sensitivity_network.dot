@@ -1,0 +1,119 @@
+digraph responses {
+graph [rankdir=LR, bgcolor="white",
+fontname="DejaVu Sans", fontsize=16, labelloc=t, nodesep=0.34, ranksep=1.0,
+label="Local equilibrium responses: controls -> species amounts\nBlue = positive; orange dashed = negative; labels = d ln(n) / d ln(q)\n|response| >= 0.15 shown; width = 0.7 + 1.3 min(|response|, 3). Display pruning only; arrows are not reaction paths."];
+node [fontname="DejaVu Sans", fontsize=11, margin="0.10,0.07", style=filled];
+edge [fontname="DejaVu Sans", fontsize=10, arrowsize=0.65];
+subgraph cluster_0 {
+label="800 K | 14/25 responses shown";
+color="#d0d5db"; style=rounded; margin=18;
+"s0_H" [label="b_H", shape=box, fillcolor="#eef2f6"];
+"s0_C" [label="b_C", shape=box, fillcolor="#eef2f6"];
+"s0_O" [label="b_O", shape=box, fillcolor="#eef2f6"];
+"s0_K1" [label="K1", shape=box, fillcolor="#eef2f6"];
+"s0_K2" [label="K2", shape=box, fillcolor="#eef2f6"];
+"s0_H2" [label="H2\nx = 8.10e-01", shape=ellipse, fillcolor="#fff9e8"];
+"s0_H2O" [label="H2O\nx = 1.26e-01", shape=ellipse, fillcolor="#fff9e8"];
+"s0_CO" [label="CO\nx = 4.61e-04", shape=ellipse, fillcolor="#fff9e8"];
+"s0_CO2" [label="CO2\nx = 3.06e-04", shape=ellipse, fillcolor="#fff9e8"];
+"s0_CH4" [label="CH4\nx = 6.30e-02", shape=ellipse, fillcolor="#eee7f5", color="#6a3d9a", penwidth=2.5, fontname="DejaVu Sans Bold"];
+{ rank=same; "s0_H"; "s0_C"; "s0_O"; "s0_K1"; "s0_K2"; }
+"s0_K2" -> "s0_K1" -> "s0_O" -> "s0_C" -> "s0_H" [style=invis, weight=100];
+{ rank=same; "s0_H2"; "s0_H2O"; "s0_CO"; "s0_CO2"; "s0_CH4"; }
+"s0_CH4" -> "s0_CO2" -> "s0_CO" -> "s0_H2O" -> "s0_H2" [style=invis, weight=100];
+"s0_H" -> "s0_H2" [style=invis, weight=1000, minlen=3];
+"s0_C" -> "s0_H2O" [style=invis, weight=1000, minlen=3];
+"s0_O" -> "s0_CO" [style=invis, weight=1000, minlen=3];
+"s0_K1" -> "s0_CO2" [style=invis, weight=1000, minlen=3];
+"s0_K2" -> "s0_CH4" [style=invis, weight=1000, minlen=3];
+"s0_H" -> "s0_H2" [label="+1.30", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.40];
+"s0_H" -> "s0_CO" [label="-1.75", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=2.97];
+"s0_H" -> "s0_CO2" [label="-3.03", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=4.60];
+"s0_C" -> "s0_H2" [label="-0.15", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=0.90];
+"s0_C" -> "s0_CO" [label="+1.32", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.41];
+"s0_C" -> "s0_CO2" [label="+1.46", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.60];
+"s0_C" -> "s0_CH4" [label="+1.00", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.99];
+"s0_O" -> "s0_H2" [label="-0.15", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=0.90];
+"s0_O" -> "s0_H2O" [label="+0.99", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.99];
+"s0_O" -> "s0_CO" [label="+1.43", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.55];
+"s0_O" -> "s0_CO2" [label="+2.57", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=4.04];
+"s0_K1" -> "s0_CO" [label="-0.97", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=1.97];
+"s0_K1" -> "s0_CO2" [label="-0.96", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=1.95];
+"s0_K2" -> "s0_CO2" [label="+0.98", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.98];
+}
+subgraph cluster_1 {
+label="1000 K | 16/25 responses shown";
+color="#d0d5db"; style=rounded; margin=18;
+"s1_H" [label="b_H", shape=box, fillcolor="#eef2f6"];
+"s1_C" [label="b_C", shape=box, fillcolor="#eef2f6"];
+"s1_O" [label="b_O", shape=box, fillcolor="#eef2f6"];
+"s1_K1" [label="K1", shape=box, fillcolor="#eef2f6"];
+"s1_K2" [label="K2", shape=box, fillcolor="#eef2f6"];
+"s1_H2" [label="H2\nx = 8.73e-01", shape=ellipse, fillcolor="#fff9e8"];
+"s1_H2O" [label="H2O\nx = 6.87e-02", shape=ellipse, fillcolor="#fff9e8"];
+"s1_CO" [label="CO\nx = 3.90e-02", shape=ellipse, fillcolor="#fff9e8"];
+"s1_CO2" [label="CO2\nx = 4.45e-03", shape=ellipse, fillcolor="#fff9e8"];
+"s1_CH4" [label="CH4\nx = 1.49e-02", shape=ellipse, fillcolor="#eee7f5", color="#6a3d9a", penwidth=2.5, fontname="DejaVu Sans Bold"];
+{ rank=same; "s1_H"; "s1_C"; "s1_O"; "s1_K1"; "s1_K2"; }
+"s1_K2" -> "s1_K1" -> "s1_O" -> "s1_C" -> "s1_H" [style=invis, weight=100];
+{ rank=same; "s1_H2"; "s1_H2O"; "s1_CO"; "s1_CO2"; "s1_CH4"; }
+"s1_CH4" -> "s1_CO2" -> "s1_CO" -> "s1_H2O" -> "s1_H2" [style=invis, weight=100];
+"s1_H" -> "s1_H2" [style=invis, weight=1000, minlen=3];
+"s1_C" -> "s1_H2O" [style=invis, weight=1000, minlen=3];
+"s1_O" -> "s1_CO" [style=invis, weight=1000, minlen=3];
+"s1_K1" -> "s1_CO2" [style=invis, weight=1000, minlen=3];
+"s1_K2" -> "s1_CH4" [style=invis, weight=1000, minlen=3];
+"s1_H" -> "s1_H2" [label="+1.06", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.08];
+"s1_H" -> "s1_H2O" [label="+0.25", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.02];
+"s1_H" -> "s1_CO" [label="-0.21", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=0.97];
+"s1_H" -> "s1_CO2" [label="-1.02", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=2.03];
+"s1_H" -> "s1_CH4" [label="+0.85", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.80];
+"s1_C" -> "s1_H2O" [label="-0.56", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=1.43];
+"s1_C" -> "s1_CO" [label="+0.91", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.88];
+"s1_C" -> "s1_CO2" [label="+0.35", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.16];
+"s1_C" -> "s1_CH4" [label="+1.43", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.56];
+"s1_O" -> "s1_H2O" [label="+1.31", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.41];
+"s1_O" -> "s1_CO" [label="+0.30", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.08];
+"s1_O" -> "s1_CO2" [label="+1.67", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.87];
+"s1_O" -> "s1_CH4" [label="-1.27", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=2.36];
+"s1_K1" -> "s1_CO" [label="-0.22", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=0.99];
+"s1_K1" -> "s1_CH4" [label="+0.59", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.47];
+"s1_K2" -> "s1_CO2" [label="+0.85", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.80];
+}
+"s0_H2" -> "s1_H" [style=invis, minlen=2, weight=100];
+subgraph cluster_2 {
+label="1200 K | 11/25 responses shown";
+color="#d0d5db"; style=rounded; margin=18;
+"s2_H" [label="b_H", shape=box, fillcolor="#eef2f6"];
+"s2_C" [label="b_C", shape=box, fillcolor="#eef2f6"];
+"s2_O" [label="b_O", shape=box, fillcolor="#eef2f6"];
+"s2_K1" [label="K1", shape=box, fillcolor="#eef2f6"];
+"s2_K2" [label="K2", shape=box, fillcolor="#eef2f6"];
+"s2_H2" [label="H2\nx = 8.89e-01", shape=ellipse, fillcolor="#fff9e8"];
+"s2_H2O" [label="H2O\nx = 5.45e-02", shape=ellipse, fillcolor="#fff9e8"];
+"s2_CO" [label="CO\nx = 5.39e-02", shape=ellipse, fillcolor="#fff9e8"];
+"s2_CO2" [label="CO2\nx = 2.43e-03", shape=ellipse, fillcolor="#fff9e8"];
+"s2_CH4" [label="CH4\nx = 2.93e-04", shape=ellipse, fillcolor="#eee7f5", color="#6a3d9a", penwidth=2.5, fontname="DejaVu Sans Bold"];
+{ rank=same; "s2_H"; "s2_C"; "s2_O"; "s2_K1"; "s2_K2"; }
+"s2_K2" -> "s2_K1" -> "s2_O" -> "s2_C" -> "s2_H" [style=invis, weight=100];
+{ rank=same; "s2_H2"; "s2_H2O"; "s2_CO"; "s2_CO2"; "s2_CH4"; }
+"s2_CH4" -> "s2_CO2" -> "s2_CO" -> "s2_H2O" -> "s2_H2" [style=invis, weight=100];
+"s2_H" -> "s2_H2" [style=invis, weight=1000, minlen=3];
+"s2_C" -> "s2_H2O" [style=invis, weight=1000, minlen=3];
+"s2_O" -> "s2_CO" [style=invis, weight=1000, minlen=3];
+"s2_K1" -> "s2_CO2" [style=invis, weight=1000, minlen=3];
+"s2_K2" -> "s2_CH4" [style=invis, weight=1000, minlen=3];
+"s2_H" -> "s2_H2" [label="+1.06", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.08];
+"s2_H" -> "s2_CO2" [label="-0.97", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=1.96];
+"s2_H" -> "s2_CH4" [label="+1.27", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.36];
+"s2_C" -> "s2_H2O" [label="-1.03", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=2.03];
+"s2_C" -> "s2_CO" [label="+1.04", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=2.05];
+"s2_C" -> "s2_CH4" [label="+2.14", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=3.48];
+"s2_O" -> "s2_H2O" [label="+1.98", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=3.27];
+"s2_O" -> "s2_CO2" [label="+2.02", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=3.32];
+"s2_O" -> "s2_CH4" [label="-2.41", color="#c65d16", fontcolor="#c65d16", style=dashed, constraint=false, penwidth=3.84];
+"s2_K1" -> "s2_CH4" [label="+0.99", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.98];
+"s2_K2" -> "s2_CO2" [label="+0.92", color="#2166ac", fontcolor="#2166ac", style=solid, constraint=false, penwidth=1.89];
+}
+"s1_H2" -> "s2_H" [style=invis, minlen=2, weight=100];
+}
