@@ -1,30 +1,23 @@
 {
-  "implementation_and_figures_commit": "8fb80e4dcee5cc48b0d9362793066c55ef605f30",
-  "tested_code_commit": "db9160fd17f762c40f364b2a50d5033829ddab0f",
+  "implementation_and_figures_commit": "ae0e962cc6c2f93515b6c0d87fdcfdd88262a1ba",
+  "scope": "Original gas sensitivity example plus physical T/P controls, exact collapse and target-specific path selection.",
+  "tested_code_commit": "ae0e962cc6c2f93515b6c0d87fdcfdd88262a1ba",
   "unit_tests": {
     "full_benchmarks": {
-      "summary": "308 passed, 24 warnings in 291.17s (0:04:51)",
-      "log_sha256": "b26254b9b3a654718530a3429f3c5342aab2fab9cee4756c1f2cd081d4ad3bb8"
+      "summary": "308 passed, 24 warnings in 301.90s (0:05:01)",
+      "log_sha256": "c54b4ef6e1ca7cfb51f280a43f3541710a4407e050f79f66d82c6103ce92afce"
     },
     "full_equilibrium": {
-      "summary": "510 passed, 1 warning in 341.49s (0:05:41)",
-      "log_sha256": "156f7c0562070e42eda1aed301daa1e876a753d0aef5c07180d1747780d26df8"
+      "summary": "510 passed, 1 warning in 343.10s (0:05:43)",
+      "log_sha256": "ee36c40cc020b23543f6528cf1ceef09c38775872d5506080b8dd30609082b40"
     },
     "full_remaining": {
-      "summary": "678 passed in 151.85s (0:02:31)",
-      "log_sha256": "97af7b329da740508140c23ac7c43cf82c0ac00daad5308b41bcd0891d1afbf3"
-    },
-    "focused_sensitivity": {
-      "summary": "12 passed in 3.60s",
-      "log_sha256": "25f31d04d14bf23b878fb19519cae5dedea2feeaa828ae22a14c46a87c1953dc"
-    },
-    "documented_runner_tests": {
-      "summary": "8 passed in 3.04s",
-      "log_sha256": "b3230ef2226e8ff190e4e34da3beb9cfaa9366c6574851ae1bb8a04ea2ebf965"
+      "summary": "700 passed in 152.27s (0:02:32)",
+      "log_sha256": "5f06352728e77c9aa24b129fadb0bcc6297784b4d7ffa6eb83e209e869e45647"
     },
     "final_integration_tests": {
-      "summary": "52 passed in 6.25s",
-      "log_sha256": "ad888ff86cac4a6a0b2166df98af71b35b85f912b483b87dfc58513e1ee52c4c"
+      "summary": "74 passed in 7.30s",
+      "log_sha256": "db58bafccc21c81929f2b8ebb88b44651961dd6287adc2a7bc02a6257b0b22b9"
     }
   },
   "test_environment": {
@@ -33,7 +26,7 @@
     "MPLBACKEND": "Agg",
     "optional_networkx": "Existing NetworkX 3.4.2 exposed through a temporary Python path; original PYTHONPATH preserved."
   },
-  "full_suite_summary": "1496 passed, no skips; complete suite in three disjoint offline partitions",
+  "full_suite_summary": "1518 passed, no skips; complete suite in three disjoint offline partitions",
   "full_suite_commands": [
     "pytest tests/unittests/benchmarks",
     "pytest tests/unittests/equilibrium",
@@ -69,10 +62,8 @@
     "sphinx_environment": "Existing /tmp/mceg-provider-docs-env, Sphinx 7.4.7; no installations.",
     "sphinx_result": "build succeeded, 114 warnings",
     "new_sensitivity_page_warnings": 0,
-    "sphinx_log_sha256": "b10557be924d64e4c02460f42288a5e650bab160e869554099ecbe14111c2611",
-    "final_navigation_rebuild": "build succeeded, 3 warnings in existing gallery index pages; no sensitivity warnings",
-    "final_navigation_log_sha256": "67a216770afee1fae81b81f82c8c6f5c7b90e2563d841aea3a4a5807bc5ee963",
-    "japanese_documentation_commit": "d745837dccb9840101e0c6d80d05865cd2a7c1d9",
-    "japanese_pdf": "116 pages, seven new pages visually checked; 18 warning lines identical to baseline."
+    "sphinx_log_sha256": "201d10f03e330e3e56d8626267466342752d4c64989b3369173432c2dd703746",
+    "japanese_documentation_commit": "d59227321079da3191d474085c37133255ece022",
+    "japanese_pdf": "119 pages, expanded sensitivity chapter visually checked; 18 warning lines identical to the 116-page baseline."
   }
 }
