@@ -32,6 +32,7 @@ Contents
    condensate_profile.rst
    multiphase.rst
    plagioclase_exsolution
+   equilibrium_sensitivity
 
 .. toctree::
    :maxdepth: 1
@@ -60,7 +61,6 @@ Contents
    ito_2025_rainout_comparison
    fe_fes_rainout_demo
    comparison_example_lineage
-   equilibrium_sensitivity
    rocky_raccoon_trace_mg
 
 .. toctree::
