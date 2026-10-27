@@ -8,8 +8,8 @@ model:
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:f5a54f928b525840527670f31ed4a6f49c1fcc81fc0b4c743ae5e43a066f988f
     entry_points:
-    - examples/comparisons/compare_new_fastchem_logk.py:comparison_setups
-    - mceg/reviews/new_fastchem_logk_20261024.py:attribution
+    - tests/data/validation/new_fastchem_logk/source/compare_new_fastchem_logk.py:comparison_setups
+    - tests/data/validation/new_fastchem_logk/source/new_fastchem_logk_20261024.py:attribution
 assumptions:
 - statement: Ideal gas-only equilibrium, dimensionless formation Kp at 1 bar and h=-ln(Kp). All curves
     use the same ExoGibbs solver, normalized Asplund 2021 budget and 537-species network.
@@ -82,11 +82,11 @@ evidence:
   summary: Daniel supplied preliminary tables on 2026-10-23; all extracted files match the archived ZIP.
   sources:
   - https://github.com/NewStrangeWorlds/FastChem/issues/10#issuecomment-6366561070
-  - results/new_fastchem_logk/logK.zip
+  - tests/data/validation/new_fastchem_logk/logK.zip
   scope: The comment and supplied bytes were inspected. The underlying NIST level sums and anion source
     were not independently reconstructed; the update is not represented as an official release.
   artifacts:
-  - source: results/new_fastchem_logk/logK.zip
+  - source: tests/data/validation/new_fastchem_logk/logK.zip
     sha256: f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c
   provenance:
     role: primary
@@ -102,7 +102,7 @@ evidence:
   - mceg/contracts/major_molecule_adoption.yaml
   - mceg/contracts/curated_gas.yaml
   - src/exogibbs/data/curated/gas_v1.json
-  - results/major_molecule_adoption/decisions.csv
+  - tests/data/validation/major_molecule_adoption/decisions.csv
   scope: HCN, S2 and H2S use CEA thermal functions plus ATcT 1.172 energies; SiS retains its FastChem
     constant. Prior source assessments retain their original scopes. Source agreement does not establish
     independent physical accuracy.
@@ -116,25 +116,25 @@ evidence:
   kind: benchmark
   summary: All 966 layer/model cases passed. The file audit found 47, 79 and 228 changed atomic-ion records.
   sources:
-  - examples/comparisons/compare_new_fastchem_logk.py
-  - results/new_fastchem_logk/receipt.json
-  - results/new_fastchem_logk/summary.csv
-  - results/mceg/new_fastchem_logk_20261024/columns.log
+  - tests/data/validation/new_fastchem_logk/source/compare_new_fastchem_logk.py
+  - tests/data/validation/new_fastchem_logk/receipt.json
+  - tests/data/validation/new_fastchem_logk/summary.csv
+  - tests/data/validation/mceg/new_fastchem_logk_20261024/columns.log
   scope: Fresh CPU float64 execution with epsilon_crit=1e-13 and relative-charge convergence. Mole-fraction
     ratios are source sensitivity, not opacity changes or metallicity errors.
   subject: comparison_snapshot
   context: columns
   result: passed
   artifacts:
-  - source: results/new_fastchem_logk/receipt.json
+  - source: tests/data/validation/new_fastchem_logk/receipt.json
     sha256: b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4
-  - source: results/new_fastchem_logk/summary.csv
+  - source: tests/data/validation/new_fastchem_logk/summary.csv
     sha256: 2fa5f1f470f183ad70ab2e65c388ae01a24b225d83764de30b500d68e975cf09
-  - source: results/new_fastchem_logk/isothermal.npz
+  - source: tests/data/validation/new_fastchem_logk/isothermal.npz
     sha256: 5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b
-  - source: results/new_fastchem_logk/inverted.npz
+  - source: tests/data/validation/new_fastchem_logk/inverted.npz
     sha256: 20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191
-  - source: results/mceg/new_fastchem_logk_20261024/columns.log
+  - source: tests/data/validation/mceg/new_fastchem_logk_20261024/columns.log
     sha256: 5c4102b47e246dd38cb8edd5b27a95515f29e07c4491c90ee656123afb682ad8
   provenance:
     role: primary
@@ -146,9 +146,9 @@ evidence:
   summary: Five mass-action decompositions passed. At 2500 K and 0.01 bar, HCN new/curated = 0.75300568
     x 0.98874048 = 0.74452720.
   sources:
-  - mceg/reviews/new_fastchem_logk_20261024.py
-  - results/mceg/new_fastchem_logk_20261024/attribution.json
-  - results/mceg/new_fastchem_logk_20261024/attribution.log
+  - tests/data/validation/new_fastchem_logk/source/new_fastchem_logk_20261024.py
+  - tests/data/validation/mceg/new_fastchem_logk_20261024/attribution.json
+  - tests/data/validation/mceg/new_fastchem_logk_20261024/attribution.log
   scope: At 2500 K, the HCN D0 shift is 0.06019568 eV and predicts Kp ratio 0.75622469; the remaining
     thermal/fit factor is 0.99574331. SiS at 3500 K and 100 bar has identical Kp; its 1.10964313 abundance
     ratio comes from the atomic product. No retrieval was run.
@@ -156,11 +156,11 @@ evidence:
   context: attribution
   result: passed
   artifacts:
-  - source: mceg/reviews/new_fastchem_logk_20261024.py
+  - source: tests/data/validation/new_fastchem_logk/source/new_fastchem_logk_20261024.py
     sha256: 183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70
-  - source: results/mceg/new_fastchem_logk_20261024/attribution.json
+  - source: tests/data/validation/mceg/new_fastchem_logk_20261024/attribution.json
     sha256: f5e8bb1c4a9e77e556e0d0b0ca44e5df77e8d1f9e5082c57b554f0059fc689d7
-  - source: results/mceg/new_fastchem_logk_20261024/attribution.log
+  - source: tests/data/validation/mceg/new_fastchem_logk_20261024/attribution.log
     sha256: dcb68f9cbb84a294c685d61ca365db70a18430099ac8388a4a914b52872c2e0c
   provenance:
     role: primary
@@ -274,7 +274,7 @@ subjects:
 - id: comparison_snapshot
   implementation: *id001
   selected_files:
-    examples/comparisons/compare_new_fastchem_logk.py: 59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88
+    tests/data/validation/new_fastchem_logk/source/compare_new_fastchem_logk.py: 59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88
     examples/comparisons/demo_curated_atmosphere.py: d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e
     src/exogibbs/presets/curated.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
     src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
@@ -288,12 +288,12 @@ subjects:
     src/exogibbs/data/FastChem4/logK/logK_extended_wo_ions.dat: 140cc5394868ca8b0950b45c7048fa8bee359e53601bbdf9ac0a9762a9bf21e5
     src/exogibbs/data/FastChem4/logK/logK_hoeijmakers2019.dat: 9f706e4456c317a09614d674264fbba12df51d5581bb9abedf81afad84907a68
     src/exogibbs/data/FastChem4/logK/logK_wo_ions.dat: 3d0f79d0e14577da5406279516165d8d7a74b952c9c485c8762397e2fb892606
-    mceg/reviews/new_fastchem_logk_20261024.py: 183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70
-    results/new_fastchem_logk/receipt.json: b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4
-    results/new_fastchem_logk/logK.zip: f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c
-    results/new_fastchem_logk/isothermal.npz: 5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b
-    results/new_fastchem_logk/inverted.npz: 20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191
-    results/major_molecule_adoption/decisions.csv: e09e55602232ebccaa291878ce3e3febd25a7a9f5826aff112c743a6b9c40328
+    tests/data/validation/new_fastchem_logk/source/new_fastchem_logk_20261024.py: 183f28789617e11b83bfce0483a347098949efe714c5cea63eabaa8d53564c70
+    tests/data/validation/new_fastchem_logk/receipt.json: b00bfabfa86421e9d9791aab8aa690229a3ff5d6fcb72cc2d5b61fad3db550e4
+    tests/data/validation/new_fastchem_logk/logK.zip: f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c
+    tests/data/validation/new_fastchem_logk/isothermal.npz: 5f59a8d4d10e324cd03eaffbcd1cbca9c255e28ba8a4c037bc5ea6893483514b
+    tests/data/validation/new_fastchem_logk/inverted.npz: 20ed8258a6e2442803f8a2ea167313f9ab9dfea2683d0c34c87d2ef0f0176191
+    tests/data/validation/major_molecule_adoption/decisions.csv: e09e55602232ebccaa291878ce3e3febd25a7a9f5826aff112c743a6b9c40328
 contexts:
 - id: columns
   scope: Actual six column executions; primitive arrays specify all joint states.
@@ -314,7 +314,7 @@ contexts:
   settings:
     backend: cpu
     dtype: float64
-    samples_artifact: results/mceg/new_fastchem_logk_20261024/attribution.json
+    samples_artifact: tests/data/validation/mceg/new_fastchem_logk_20261024/attribution.json
 - id: retrieval_planning
   scope: Planning context only; observing and retrieval configurations remain unspecified.
   settings:

@@ -40,7 +40,7 @@ class AtomicIonAuditTest(unittest.TestCase):
         self.assertIsNotNone(self.by_key["Ca1-", 1000]["log10_Kp_reference"])
 
     def test_reproduces_previous_ni_co_audit(self):
-        path = ROOT / "results/ni_co_ionization/comparison.csv"
+        path = ROOT / "tests/data/validation/ni_co_ionization/comparison.csv"
         with path.open() as stream:
             for old in csv.DictReader(stream):
                 new = self.by_key[old["element"] + "1+", float(old["temperature_K"])]
@@ -98,7 +98,7 @@ class AtomicIonAuditTest(unittest.TestCase):
             audit.read_fastchem_ions("H1+ Hydrogen : H 1 e- 1 # source\n1 2 3 4 5", {"H"})
 
     def test_evidence_hashes_and_contract_reference(self):
-        result_dir = ROOT / "results/atomic_ion_audit"
+        result_dir = ROOT / "tests/data/validation/atomic_ion_audit"
         receipt = json.loads((result_dir / "receipt.json").read_text())
         for name, expected in receipt["selected_file_sha256"].items():
             self.assertEqual(hashlib.sha256((ROOT / name).read_bytes()).hexdigest(), expected,
@@ -109,8 +109,8 @@ class AtomicIonAuditTest(unittest.TestCase):
         contract = (ROOT / "mceg/contracts/atomic_ion_reference.yaml").read_text()
         script_hash = receipt["selected_file_sha256"][str(SCRIPT.relative_to(ROOT))]
         self.assertIn("revision: sha256:" + script_hash, contract)
-        self.assertIn("results/atomic_ion_audit/receipt.json", contract)
-        self.assertIn("results/atomic_ion_audit/tests.json", contract)
+        self.assertIn("tests/data/validation/atomic_ion_audit/receipt.json", contract)
+        self.assertIn("tests/data/validation/atomic_ion_audit/tests.json", contract)
         self.assertIn("kind: physical_validation\n  status: unknown", contract)
 
 

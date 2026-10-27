@@ -296,7 +296,7 @@ The no-argument ``fastchem4.chemsetup()`` excludes ions, so it is deliberately
 not the charge-inclusive baseline. All **966 layer/model calculations** pass
 element, charge and mass-action checks.
 
-.. figure:: ../../results/curated_atmosphere/isothermal.png
+.. figure:: ../../tests/data/validation/curated_atmosphere/isothermal.png
    :width: 100%
 
    Isothermal column. Pressure increases downward. Absolute mole fractions
@@ -341,7 +341,7 @@ between neutral and ionized species, while charge neutrality couples electrons
 to the entire network. Source-adoption reasons are in :doc:`../atomic_ion_adoption`;
 an abundance ratio is not an independent measurement of thermochemical accuracy.
 
-.. figure:: ../../results/curated_atmosphere/inverted.png
+.. figure:: ../../tests/data/validation/curated_atmosphere/inverted.png
    :width: 100%
 
    Prescribed temperature inversion. The largest electron and H- reductions
@@ -354,28 +354,28 @@ Reproduce both figures and the full primitive arrays offline::
    JAX_PLATFORMS=cpu python examples/comparisons/demo_curated_atmosphere.py \
        --output-dir /tmp/exogibbs_curated_atmosphere
 
-The :download:`column receipt <../../results/curated_atmosphere/receipt.json>`
+The :download:`column receipt <../../tests/data/validation/curated_atmosphere/receipt.json>`
 records the profiles, catalogs, closure diagnostics and input/output hashes.
-The :download:`per-species extrema <../../results/curated_atmosphere/summary.csv>`
+The :download:`per-species extrema <../../tests/data/validation/curated_atmosphere/summary.csv>`
 include both legacy baselines. PDF figures are available for
-:download:`the isothermal column <../../results/curated_atmosphere/isothermal.pdf>`
-and :download:`the inverted column <../../results/curated_atmosphere/inverted.pdf>`.
+:download:`the isothermal column <../../tests/data/validation/curated_atmosphere/isothermal.pdf>`
+and :download:`the inverted column <../../tests/data/validation/curated_atmosphere/inverted.pdf>`.
 
 Artifacts and reproduction
 --------------------------
 
-* :download:`Validation receipt <../../results/curated_gas_validation/receipt.json>`
-  and :download:`thermal representation checks <../../results/curated_gas_validation/thermal_checks.json>`.
-* :download:`Solver diagnostics <../../results/curated_gas_validation/diagnostics.csv>`,
-  :download:`default-tolerance charge checks <../../results/curated_gas_validation/default_charge.csv>`,
-  and :download:`independent FastChem comparison <../../results/curated_gas_validation/fastchem_parity.csv>`.
-* :download:`Ion-inclusive arrays <../../results/curated_gas_validation/ions.npz>`
-  and :download:`neutral arrays <../../results/curated_gas_validation/neutral.npz>`.
+* :download:`Validation receipt <../../tests/data/validation/curated_gas_validation/receipt.json>`
+  and :download:`thermal representation checks <../../tests/data/validation/curated_gas_validation/thermal_checks.json>`.
+* :download:`Solver diagnostics <../../tests/data/validation/curated_gas_validation/diagnostics.csv>`,
+  :download:`default-tolerance charge checks <../../tests/data/validation/curated_gas_validation/default_charge.csv>`,
+  and :download:`independent FastChem comparison <../../tests/data/validation/curated_gas_validation/fastchem_parity.csv>`.
+* :download:`Ion-inclusive arrays <../../tests/data/validation/curated_gas_validation/ions.npz>`
+  and :download:`neutral arrays <../../tests/data/validation/curated_gas_validation/neutral.npz>`.
 * :download:`MCEG model contract <../../mceg/contracts/curated_gas.yaml>`.
-* :download:`Wheel/sdist and isolated-import verification <../../results/curated_gas_validation/packaging.json>`.
-* :download:`Initial preset regression record <../../results/curated_gas_validation/tests.json>`
-  and :download:`initial full PR test run, including the atmosphere demo <../../results/curated_gas_validation/pr_tests.json>`.
-* :download:`Full regression and usage checks after integrating PR #283 <../../results/curated_gas_validation/merge_tests.json>`.
+* :download:`Wheel/sdist and isolated-import verification <../../tests/data/validation/curated_gas_validation/packaging.json>`.
+* :download:`Initial preset regression record <../../tests/data/validation/curated_gas_validation/tests.json>`
+  and :download:`initial full PR test run, including the atmosphere demo <../../tests/data/validation/curated_gas_validation/pr_tests.json>`.
+* :download:`Full regression and usage checks after integrating PR #283 <../../tests/data/validation/curated_gas_validation/merge_tests.json>`.
 
 Reproduce the offline checks in a scratch directory::
 

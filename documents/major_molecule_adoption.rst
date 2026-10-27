@@ -57,16 +57,16 @@ selected source, temperature scope, difference mechanism, reason and follow-up.
 The short source names refer to the pinned records described below.
 
 .. csv-table:: Species-specific decisions
-   :file: ../results/major_molecule_adoption/adoption_table.csv
+   :file: ../tests/data/validation/major_molecule_adoption/adoption_table.csv
    :header-rows: 1
    :widths: 5, 13, 14, 12, 9, 18, 18, 15
 
 Download the :download:`adoption table
-<../results/major_molecule_adoption/adoption_table.csv>`,
+<../tests/data/validation/major_molecule_adoption/adoption_table.csv>`,
 :download:`numerical decision summary
-<../results/major_molecule_adoption/decisions.csv>` and
+<../tests/data/validation/major_molecule_adoption/decisions.csv>` and
 :download:`350 temperature comparisons
-<../results/major_molecule_adoption/comparison.csv>`.
+<../tests/data/validation/major_molecule_adoption/comparison.csv>`.
 
 What the comparisons establish
 -------------------------------
@@ -232,9 +232,9 @@ The comparison is offline and uses the Python standard library:
    python3 examples/comparisons/select_major_molecules.py
    python -m pytest -q tests/unittests/examples/major_molecule_adoption_test.py
 
-The :download:`run receipt <../results/major_molecule_adoption/receipt.json>`
+The :download:`run receipt <../tests/data/validation/major_molecule_adoption/receipt.json>`
 identifies the evaluated working-tree files and outputs. The
-:download:`test receipt <../results/major_molecule_adoption/tests.json>`
+:download:`test receipt <../tests/data/validation/major_molecule_adoption/tests.json>`
 records the executed verification scope. Optional structural validation uses
 the independent MCEG checkout:
 

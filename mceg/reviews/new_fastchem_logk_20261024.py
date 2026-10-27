@@ -26,7 +26,7 @@ from scipy.special import logsumexp
 from examples.comparisons.compare_new_fastchem_logk import comparison_setups
 
 
-RESULTS = ROOT / "results/new_fastchem_logk"
+RESULTS = ROOT / "tests/data/validation/new_fastchem_logk"
 SAMPLES = (("isothermal", "C1H1N1_hcn", 70.79457843841388),
            ("inverted", "C1H1N1_hcn", .01),
            ("inverted", "S2", 10.**-2.45),
@@ -76,7 +76,7 @@ def attribution() -> dict:
                          "new_x": float(np.exp(logx["new"][j])),
                          "curated_x": float(np.exp(logx["curated"][j])),
                          "ln_factorization_residual": residual, "atomic_ratios": atoms})
-    with (ROOT / "results/major_molecule_adoption/decisions.csv").open() as stream:
+    with (ROOT / "tests/data/validation/major_molecule_adoption/decisions.csv").open() as stream:
         hcn = next(row for row in csv.DictReader(stream) if row["species"] == "HCN")
     delta_d0 = float(hcn["adopted_D0_eV"]) - float(hcn["janaf_source_D0_eV"])
     energy_only = float(np.exp(-delta_d0 / (8.617333262145e-5 * 2500.)))
@@ -106,7 +106,7 @@ def main() -> None:
     paths = [ROOT / p for p in comparison_receipt["selected_file_sha256"]]
     paths.extend([Path(__file__), RESULTS / "receipt.json", RESULTS / "logK.zip",
                   RESULTS / "isothermal.npz", RESULTS / "inverted.npz",
-                  ROOT / "results/major_molecule_adoption/decisions.csv"])
+                  ROOT / "tests/data/validation/major_molecule_adoption/decisions.csv"])
     report["selected_file_sha256"] = {
         str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
     args.output.parent.mkdir(parents=True, exist_ok=True)

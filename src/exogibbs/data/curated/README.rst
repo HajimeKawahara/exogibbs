@@ -24,7 +24,7 @@ The ``decisions`` entries preserve the adoption studies' source-specific
 review scopes and follow-up descriptions. The dataset-level
 ``temperature_range_K`` defines this runtime version's narrower domain.
 Continuous representation and solver checks are recorded separately in
-``results/curated_gas_validation`` in the source repository. The complete
+``tests/data/validation/curated_gas_validation`` in the source repository. The complete
 mixture's physical accuracy is not established by these checks.
 
 Continuous representations

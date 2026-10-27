@@ -25,7 +25,7 @@ the uncertainty sign.
 The [replay script](update.py) uses the
 v0.2 records and evaluator, including the explicit task completions added in
 package rc2. The
-[saved result](../../../results/mceg/h2_literature_update.json) records the
+[saved result](../../../tests/data/validation/mceg/h2_literature_update.json) records the
 actual before/after traces, assessments and completed tasks. The initial trial
 identified the workflow gaps described below; the replay now exercises the
 first two fixes. The original contracts, provider code, computed

@@ -41,7 +41,7 @@ def data():
 
 
 def test_catalog_and_solar_budget_match_approved_study(setup, neutral):
-    with np.load(ROOT / "results/gas_thermochemistry_impact/equilibria.npz") as archive:
+    with np.load(ROOT / "tests/data/validation/gas_thermochemistry_impact/equilibria.npz") as archive:
         assert setup.species == tuple(archive["species"])
         assert setup.elements == tuple(archive["elements"])
         np.testing.assert_array_equal(setup.formula_matrix, archive["formula_matrix"])
@@ -82,7 +82,7 @@ def test_source_choices_and_unreviewed_species_are_explicit(setup, data):
 
 
 def test_continuous_constants_reproduce_approved_nodes(setup):
-    with np.load(ROOT / "results/gas_thermochemistry_impact/equilibria.npz") as archive:
+    with np.load(ROOT / "tests/data/validation/gas_thermochemistry_impact/equilibria.npz") as archive:
         actual = np.asarray(setup.hvector_func(archive["temperature_K"]))
         expected = archive["h"][3]
     # Rounded Ca partition values require a small positive thermal contribution.
@@ -181,7 +181,7 @@ def test_equilibrium_closure_and_archived_fastchem_comparison(setup, neutral, io
     if ions:
         charge = a[-1]
         assert np.max(np.abs(n@charge)/(n@np.abs(charge))) < 1e-12
-        with np.load(ROOT / "results/gas_thermochemistry_impact/equilibria.npz") as archive:
+        with np.load(ROOT / "tests/data/validation/gas_thermochemistry_impact/equilibria.npz") as archive:
             reference = archive["fastchem_ln_n"][3]
         selected = np.isin(np.asarray(temperatures), [1500., 2000., 3000., 4000.])
         logx = np.asarray(result.ln_n)[selected] - np.log(n.sum(axis=-1))[selected, None]

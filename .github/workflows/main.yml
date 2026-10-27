@@ -39,7 +39,7 @@ jobs:
             echo "scientific=true" >> "$GITHUB_OUTPUT"
           elif git diff --quiet "$BASE_SHA...$HEAD_SHA" -- \
             examples benchmarks src/exogibbs \
-            tests/unittests/examples tests/unittests/benchmarks \
+            tests/unittests/examples tests/unittests/benchmarks tests/data \
             .github/workflows/main.yml pyproject.toml; then
             echo "scientific=false" >> "$GITHUB_OUTPUT"
           else

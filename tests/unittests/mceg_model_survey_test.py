@@ -7,14 +7,17 @@ import xml.etree.ElementTree as ET
 
 
 ROOT = Path(__file__).resolve().parents[2]
-RECEIPT = ROOT / "results/mceg/20261020_model_survey/receipt.json"
+RECEIPT = ROOT / "tests/data/validation/mceg/20261020_model_survey/receipt.json"
 
 
 def test_model_survey_selected_files_and_artifacts() -> None:
     receipt = json.loads(RECEIPT.read_text())
-    for name, expected in {**receipt["selected_file_sha256"], **receipt["artifacts"]}.items():
+    for name, expected in receipt["selected_file_sha256"].items():
         actual = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
         assert actual == expected, f"Review model-survey evidence after changing {name}"
+    for name, expected in receipt["artifacts"].items():
+        path = ROOT / "tests/data/validation" / Path(name).relative_to("results")
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == expected, name
 
 
 def test_model_survey_receipt_agrees_with_junit() -> None:
