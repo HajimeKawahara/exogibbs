@@ -248,10 +248,13 @@ step :math:`10^{-4}` and an independently assembled linear response system:
    [C\ R]=I_5.
 
 The first block is differentiated elemental conservation; the second is
-differentiated mass action. Tests also verify energy-reference invariance,
-:math:`C\mathbf{1}=\mathbf{1}` for common amount scaling, and the pressure
-identity above. A dilute comparison with :math:`b=(1,2.7\,10^{-4},4.9\,10^{-4})`
-at 1200 K retains a much weaker water-gas-shift response of methane.
+differentiated mass action. The focused tests reuse these independent checks
+and the T/P finite-difference and chain-rule checks at 800, 1000 and 1200 K.
+They also check atom-conserving log-K controls, selected contributions and their
+cancellation error, graph edge semantics, exact collapse and per-input selection.
+The example itself checks :math:`C\mathbf{1}=\mathbf{1}` for common amount scaling.
+A dilute comparison with :math:`b=(1,2.7\,10^{-4},4.9\,10^{-4})` at 1200 K
+retains a much weaker water-gas-shift response of methane.
 
 This small system establishes the interpretation before moving to H-C-O-N
 and HCN: add independent equilibria, retain the same conservation checks,

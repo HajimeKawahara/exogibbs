@@ -4,20 +4,20 @@
   "tested_code_commit": "ae0e962cc6c2f93515b6c0d87fdcfdd88262a1ba",
   "unit_tests": {
     "full_benchmarks": {
-      "summary": "308 passed, 24 warnings in 301.90s (0:05:01)",
-      "log_sha256": "c54b4ef6e1ca7cfb51f280a43f3541710a4407e050f79f66d82c6103ce92afce"
+      "summary": "308 passed, 24 warnings in 280.51s (0:04:40)",
+      "log_sha256": "1f82218f590bb18bffdf6068a9199e6620e2661bcc3bddf651e2c56f4b7fdb28"
     },
     "full_equilibrium": {
-      "summary": "510 passed, 1 warning in 343.10s (0:05:43)",
-      "log_sha256": "ee36c40cc020b23543f6528cf1ceef09c38775872d5506080b8dd30609082b40"
+      "summary": "510 passed, 1 warning in 339.21s (0:05:39)",
+      "log_sha256": "b18702c318280ffd2dd5fffb7d68b0ed6a8f0e8deb730eb0943ae20eb74d8a53"
     },
     "full_remaining": {
-      "summary": "700 passed in 152.27s (0:02:32)",
-      "log_sha256": "5f06352728e77c9aa24b129fadb0bcc6297784b4d7ffa6eb83e209e869e45647"
+      "summary": "674 passed in 146.29s (0:02:26)",
+      "log_sha256": "ad76f842ca7412ab2e07a49d57a8b74dc7e53db8075b633a18297d65e4f12504"
     },
-    "final_integration_tests": {
-      "summary": "74 passed in 7.30s",
-      "log_sha256": "db58bafccc21c81929f2b8ebb88b44651961dd6287adc2a7bc02a6257b0b22b9"
+    "focused_example_tests": {
+      "summary": "8 passed in 3.35s",
+      "log_sha256": "30c36dbc542c51e237248402945166824f73d3f11b6774e7db13845285038407"
     }
   },
   "test_environment": {
@@ -26,7 +26,7 @@
     "MPLBACKEND": "Agg",
     "optional_networkx": "Existing NetworkX 3.4.2 exposed through a temporary Python path; original PYTHONPATH preserved."
   },
-  "full_suite_summary": "1518 passed, no skips; complete suite in three disjoint offline partitions",
+  "full_suite_summary": "1492 passed, no skips; complete suite in three disjoint offline partitions",
   "full_suite_commands": [
     "pytest tests/unittests/benchmarks",
     "pytest tests/unittests/equilibrium",
@@ -57,13 +57,20 @@
     "note": "The selected new example passes. Global manual coverage still flags existing retired metal_silicate commands; no full example-suite acceptance is claimed."
   },
   "documentation": {
-    "update_doc_script": "Attempted; MCEG pre-step failed on Contract hash mismatch: exoeos:mceg/contracts/zhang_duan_h2.yaml",
+    "update_doc_script": "Latest attempt in the existing Sphinx environment failed because mceg.__main__ is unavailable; Sphinx HTML was built directly. The previous verification records the earlier MCEG contract hash mismatch.",
     "sphinx_command": "python -m sphinx -M html documents documents/_build -E -a -D plot_gallery=0",
     "sphinx_environment": "Existing /tmp/mceg-provider-docs-env, Sphinx 7.4.7; no installations.",
     "sphinx_result": "build succeeded, 114 warnings",
     "new_sensitivity_page_warnings": 0,
-    "sphinx_log_sha256": "201d10f03e330e3e56d8626267466342752d4c64989b3369173432c2dd703746",
+    "sphinx_log_sha256": "ee3e59f246f257383bda66ae0a9190e5092831f214387968a2e70b4e3b2a2831",
     "japanese_documentation_commit": "d59227321079da3191d474085c37133255ece022",
-    "japanese_pdf": "119 pages, expanded sensitivity chapter visually checked; 18 warning lines identical to the 116-page baseline."
-  }
+    "japanese_pdf": "119 pages, expanded sensitivity chapter visually checked; 18 warning lines identical to the 116-page baseline.",
+    "sensitivity_source_sha256": "98fb5c56b0d63ffa8012b60b464ecf9597be3ad5dc9b7f5e4487269735cae3bc"
+  },
+  "regression_test_scope": "8 focused cases (5 numerical, 3 graph), reduced from 34; numerical implementation and figures unchanged.",
+  "test_source_sha256": {
+    "tests/unittests/examples/equilibrium_sensitivity_plot_test.py": "a0cd512b71f5cc253d70698729dd01d8e9cf91a47a2f20dda758f626cb9c9fa3",
+    "tests/unittests/examples/equilibrium_sensitivity_test.py": "f116572407ed7b6d0e85fe4535da7b8cb2461e07891b347b8c82873fb90be86e"
+  },
+  "previous_verification_commit": "a782b40697084e48eb04dc7bc034ade7e33185ce"
 }

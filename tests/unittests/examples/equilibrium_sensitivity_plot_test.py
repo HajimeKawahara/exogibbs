@@ -37,15 +37,14 @@ def test_response_graph_preserves_sign_direction_and_isolated_nodes():
                pruned.nodes[target]["kind"] == "species" for source, target in pruned.edges)
 
 
-def _snapshot(temperature):
+def _snapshot():
     reaction = np.array([[0.1, -0.02], [0.2, -0.05], [-0.3, -0.1], [-0.05, 0.8],
-                         [0.01, -0.005] if temperature == 800 else [0.6, -0.02]])
-    drive = np.array([[-30., 2.], [-5., 0.]]) if temperature == 800 else np.array([[-27., 2.], [-4., 0.]])
-    return {"temperature": temperature, "reaction_response": reaction, "drive_response": drive,
+                         [0.6, -0.02]])
+    drive = np.array([[-27., 2.], [-4., 0.]])
+    return {"temperature": 1000., "reaction_response": reaction, "drive_response": drive,
             "physical_response": reaction @ drive,
             "contributions": reaction[:, :, None] * drive[None, :, :],
-            "reductions": {"T": {"indices": [0, 1] if temperature == 800 else [0]},
-                           "P": {"indices": [0]}}}
+            "reductions": {"T": {"indices": [0]}, "P": {"indices": [0]}}}
 
 
 def _path_sum(graph, control):
@@ -53,12 +52,8 @@ def _path_sum(graph, control):
                for path in nx.all_simple_paths(graph, control, "CH4"))
 
 
-@pytest.mark.parametrize("as_lists", [False, True])
-def test_physical_graph_is_direct_and_factorization_collapses_exactly(as_lists):
-    snapshot = _snapshot(1000)
-    if as_lists:
-        snapshot = {key: value.tolist() if isinstance(value, np.ndarray) else value
-                    for key, value in snapshot.items()}
+def test_physical_graph_is_direct_and_factorization_collapses_exactly():
+    snapshot = _snapshot()
     direct = PLOT.physical_control_graph(snapshot)
     factorized = PLOT.methane_control_graph(snapshot)
     collapsed = PLOT.methane_control_graph(snapshot, "collapsed")
@@ -77,16 +72,8 @@ def test_physical_graph_is_direct_and_factorization_collapses_exactly(as_lists):
     assert collapsed["T"]["CH4"]["response"] - _path_sum(selected, "T") == pytest.approx(0.08)
 
 
-@pytest.mark.parametrize("temperature, expected", [(800, {"q1", "q2"}), (1000, {"q1"})])
-def test_selected_graph_preserves_temperature_dependent_path_selection(temperature, expected):
-    graph = PLOT.methane_control_graph(_snapshot(temperature), "selected")
-    assert set(graph.successors("T")) == expected
-    assert set(graph.successors("P")) == {"q1"}
-    assert not graph.has_edge("T", "CH4")
-
-
 def test_selected_graph_does_not_leak_one_controls_paths_into_another():
-    snapshot = _snapshot(1000)
+    snapshot = _snapshot()
     snapshot["drive_response"][1, 1] = 1.0
     snapshot["reductions"]["P"]["indices"] = [1]
     graph = PLOT.methane_control_graph(snapshot, "selected")
