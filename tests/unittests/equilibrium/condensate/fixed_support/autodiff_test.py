@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from exogibbs.equilibrium.condensate.fixed_support.autodiff import (
@@ -452,9 +453,11 @@ def test_fixed_support_jvp_matches_analytic_and_finite_difference():
     )
     finite_difference = (plus - minus) / (2.0 * step)
 
-    assert tangent == pytest.approx(expected, rel=1.0e-10, abs=1.0e-11)
-    assert tangent == pytest.approx(
-        finite_difference, rel=1.0e-7, abs=1.0e-8
+    assert np.asarray(tangent) == pytest.approx(
+        np.asarray(expected), rel=1.0e-10, abs=1.0e-11
+    )
+    assert np.asarray(tangent) == pytest.approx(
+        np.asarray(finite_difference), rel=1.0e-7, abs=1.0e-8
     )
 
 
@@ -484,8 +487,8 @@ def test_fixed_support_generated_vjp_satisfies_adjoint_identity():
         for cotangent, tangent in zip(input_cotangents, direction)
     )
 
-    assert jnp.vdot(output_cotangent, output_tangent) == pytest.approx(
-        input_pairing, rel=1.0e-11, abs=1.0e-11
+    assert float(jnp.vdot(output_cotangent, output_tangent)) == pytest.approx(
+        float(input_pairing), rel=1.0e-11, abs=1.0e-11
     )
 
 

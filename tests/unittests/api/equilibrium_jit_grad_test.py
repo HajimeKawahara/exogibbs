@@ -64,7 +64,7 @@ def test_equilibrium_forward_mode_jvp_matches_reverse_mode():
     )(300.0)
 
     assert jnp.isfinite(forward_derivative)
-    assert forward_derivative == pytest.approx(
-        reverse_derivative, rel=1.0e-10, abs=1.0e-10
+    assert float(forward_derivative) == pytest.approx(
+        float(reverse_derivative), rel=1.0e-10, abs=1.0e-10
     )
-    assert compiled_derivative == pytest.approx(forward_derivative)
+    assert float(compiled_derivative) == pytest.approx(float(forward_derivative))

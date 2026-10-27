@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from exogibbs.equilibrium.condensate.fixed_support.filter import (
@@ -88,8 +89,8 @@ def test_normal_reduced_direction_matches_dense_kkt():
         residual_jacobian(problem, state), -residual_vector(residual)
     )
     assert int(result.status) == TerminalStatus.NOT_TERMINATED
-    assert _flatten_direction(result.direction) == pytest.approx(
-        dense, abs=2.0e-11
+    assert np.asarray(_flatten_direction(result.direction)) == pytest.approx(
+        np.asarray(dense), abs=2.0e-11
     )
     assert float(result.diagnostics.relative_residual) < 1.0e-12
 

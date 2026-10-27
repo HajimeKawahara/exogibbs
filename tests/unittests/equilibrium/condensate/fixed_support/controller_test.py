@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from exogibbs.equilibrium.condensate.fixed_support.controller import (
@@ -261,7 +262,9 @@ def test_dual_only_normal_step_is_not_rejected_by_roundoff():
     assert int(result.mode) == SolverMode.NORMAL
     assert int(result.terminal_status) == TerminalStatus.NOT_TERMINATED
     assert int(result.normal_iteration_count) == 1
-    assert result.original_state.lambda_ == pytest.approx(jnp.zeros((1,)), abs=1.0e-14)
+    assert np.asarray(result.original_state.lambda_) == pytest.approx(
+        np.zeros((1,)), abs=1.0e-14
+    )
 
 
 def test_restoration_entry_and_next_step_do_not_mix_or_reinitialize():

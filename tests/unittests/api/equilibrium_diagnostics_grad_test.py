@@ -54,7 +54,9 @@ def test_diagnostics_preserve_jvp_vjp_and_independent_finite_differences():
 
     _, tangent = jax.jvp(objective, (point,), (direction,))
     gradient = jax.jit(jax.grad(objective))(point)
-    assert tangent == pytest.approx(jnp.vdot(gradient, direction), rel=1e-10)
+    assert float(tangent) == pytest.approx(
+        float(jnp.vdot(gradient, direction)), rel=1e-10
+    )
     for step in (1e-3, 3e-4):
         plus, plus_diagnostics = run(point + step * direction)
         minus, minus_diagnostics = run(point - step * direction)
@@ -63,7 +65,9 @@ def test_diagnostics_preserve_jvp_vjp_and_independent_finite_differences():
         finite_difference = jnp.sum((plus.x - minus.x) * jnp.array([0.3, 1.0, 2.0])) / (
             2 * step
         )
-        assert tangent == pytest.approx(finite_difference, rel=1e-6, abs=1e-10)
+        assert float(tangent) == pytest.approx(
+            float(finite_difference), rel=1e-6, abs=1e-10
+        )
 
     diagnostic_derivative = jax.grad(lambda p: jnp.sum(run(p)[1]["final_residual"]))(
         point

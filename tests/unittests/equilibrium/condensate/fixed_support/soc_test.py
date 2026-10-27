@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from exogibbs.equilibrium.condensate.fixed_support.controller import (
@@ -165,7 +166,9 @@ def test_generic_rhs_reduced_direction_matches_dense_full_kkt():
     )
 
     assert int(result.status) == TerminalStatus.NOT_TERMINATED
-    assert _flatten(result.direction) == pytest.approx(dense, abs=2.0e-11)
+    assert np.asarray(_flatten(result.direction)) == pytest.approx(
+        np.asarray(dense), abs=2.0e-11
+    )
 
 
 def test_soc_uses_current_origin_and_separates_alpha_roles():
