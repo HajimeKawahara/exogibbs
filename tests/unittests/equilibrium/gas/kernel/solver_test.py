@@ -1,8 +1,10 @@
-import pytest
 import jax
 import jax.numpy as jnp
+import numpy as np
+import pytest
 from jax import config
 from jax import jacrev
+
 from exogibbs.equilibrium.gas.kernel.equations import (
     _A_diagn_At,
     compute_ln_normalized_pressure,
@@ -219,7 +221,9 @@ def test_minimize_gibbs_jvp_matches_analytic_h_system(h_system_setup):
         + inventory_tangent[0] * inventory_jacobian
     )
 
-    assert tangent == pytest.approx(expected, rel=1.0e-10, abs=1.0e-11)
+    assert np.asarray(tangent) == pytest.approx(
+        np.asarray(expected), rel=1.0e-10, abs=1.0e-11
+    )
 
 
 def test_minimize_gibbs_jvp_is_jittable_vmappable_and_adjoint_consistent(
@@ -264,8 +268,8 @@ def test_minimize_gibbs_jvp_is_jittable_vmappable_and_adjoint_consistent(
     (input_cotangent,) = pullback(output_cotangent)
 
     assert jnp.all(jnp.isfinite(tangents))
-    assert jnp.vdot(output_cotangent, output_tangent) == pytest.approx(
-        jnp.vdot(input_cotangent, direction),
+    assert float(jnp.vdot(output_cotangent, output_tangent)) == pytest.approx(
+        float(jnp.vdot(input_cotangent, direction)),
         rel=1.0e-11,
         abs=1.0e-11,
     )

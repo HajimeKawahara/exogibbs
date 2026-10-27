@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from exogibbs.equilibrium.condensate.fixed_support.problem import (
@@ -83,8 +84,8 @@ def test_canonical_residual_matches_direct_formulas_and_qtot_convention(
     assert residual.complementarity == pytest.approx(
         state.r + state.rho - state.epsilon
     )
-    assert residual.total_density == pytest.approx(
-        [jnp.sum(amounts.gas) - amounts.total_gas]
+    assert np.asarray(residual.total_density) == pytest.approx(
+        np.asarray([jnp.sum(amounts.gas) - amounts.total_gas])
     )
 
     trial = state._replace(qtot=state.qtot + 0.17)
@@ -162,7 +163,9 @@ def test_residual_linearization_and_objective_derivative_match_jax(
         tangent,
     )[1]
 
-    assert actual == pytest.approx(current + jacobian_direction, abs=1.0e-14)
+    assert np.asarray(actual) == pytest.approx(
+        np.asarray(current + jacobian_direction), abs=1.0e-14
+    )
     dense_direction = jnp.concatenate(
         [
             direction.q,
@@ -172,12 +175,12 @@ def test_residual_linearization_and_objective_derivative_match_jax(
             jnp.asarray([direction.qtot]),
         ]
     )
-    assert residual_jacobian(problem, state) @ dense_direction == pytest.approx(
-        jacobian_direction, abs=1.0e-14
-    )
-    assert barrier_objective_directional_derivative(
-        problem, state, direction
-    ) == pytest.approx(objective_jvp, abs=1.0e-14)
+    assert np.asarray(
+        residual_jacobian(problem, state) @ dense_direction
+    ) == pytest.approx(np.asarray(jacobian_direction), abs=1.0e-14)
+    assert float(
+        barrier_objective_directional_derivative(problem, state, direction)
+    ) == pytest.approx(float(objective_jvp), abs=1.0e-14)
 
 
 def test_coordinate_maps_and_amount_equality_jacobian(deterministic_fixture):

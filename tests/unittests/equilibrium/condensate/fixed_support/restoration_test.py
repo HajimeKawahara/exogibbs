@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 
 from exogibbs.equilibrium.condensate.fixed_support.filter import empty_filter
@@ -171,7 +172,9 @@ def test_restoration_schur_direction_matches_dense_kkt():
     )
 
     assert int(result.status) == TerminalStatus.NOT_TERMINATED
-    assert _flat_direction(result.direction) == pytest.approx(dense, abs=2.0e-11)
+    assert np.asarray(_flat_direction(result.direction)) == pytest.approx(
+        np.asarray(dense), abs=2.0e-11
+    )
     assert float(result.diagnostics.relative_schur_residual) < 1.0e-12
     assert float(result.diagnostics.full_kkt_residual_norm) < 1.0e-10
 
@@ -205,7 +208,7 @@ def test_restoration_merit_derivative_and_fraction_to_boundary_contracts():
     )
     alpha = jnp.minimum(alpha_primal, alpha_dual)
 
-    assert predicted == pytest.approx(actual, abs=1.0e-12)
+    assert float(predicted) == pytest.approx(float(actual), abs=1.0e-12)
     assert jnp.all(state.x + alpha * direction.x > 0.0)
     assert jnp.all(
         state.positive_slack + alpha * direction.positive_slack > 0.0
@@ -347,8 +350,8 @@ def test_restoration_trace_amounts_do_not_overflow_schur_elimination():
     expected_push = (
         config.restoration.interior_push_fraction * state.variable_scales[0]
     )
-    assert state.x[0] == pytest.approx(
-        expected_push, rel=1.0e-15
+    assert float(state.x[0]) == pytest.approx(
+        float(expected_push), rel=1.0e-15
     )
     assert state.x[0] > config.restoration.representation_floor
     assert jnp.all(jnp.isfinite(state.lower_bound_dual_x))
