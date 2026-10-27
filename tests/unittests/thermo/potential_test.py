@@ -88,7 +88,9 @@ def test_gibbs_energies_handles_zero_species_amount():
     )
 
     assert jnp.isfinite(result[0])
-    assert result[0] == pytest.approx(1.0 + jnp.log(2.0), abs=1.0e-12)
+    assert float(result[0]) == pytest.approx(
+        float(1.0 + jnp.log(2.0)), abs=1.0e-12
+    )
 
 
 def test_gibbs_energies_remains_finite_for_large_log_amounts():
