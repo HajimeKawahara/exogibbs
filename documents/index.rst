@@ -32,6 +32,7 @@ Contents
    condensate_profile.rst
    multiphase.rst
    plagioclase_exsolution
+   equilibrium_sensitivity
 
 .. toctree::
    :maxdepth: 1

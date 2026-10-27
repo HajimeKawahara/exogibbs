@@ -1,0 +1,66 @@
+// Diagram-only artifact; numerical solver and example outputs are unchanged.
+// Numerical source: a782b40697084e48eb04dc7bc034ade7e33185ce, validation.json.
+// Reproduce: dot -Tpng -Gdpi=150 reaction_neighborhoods.dot -o reaction_neighborhoods.png
+// Full species-reaction incidence graph for the two selected reactions.
+// Each highlighted neighborhood is selected by nx.ego_graph(G, r, radius=1).
+// Shared species remain shared in G; copies in the named views preserve their original identities.
+digraph reactions {
+graph [rankdir=LR, compound=true, newrank=true, bgcolor=white, nodesep=0.42, ranksep=0.65, pad=0.22,
+fontname="DejaVu Sans", fontsize=17, labelloc=t, label="From the full reaction graph to named components\nGray edges: signed stoichiometry | Select each reaction and its immediate species neighbors"];
+node [fontname="DejaVu Sans", fontsize=16, margin="0.13,0.08", style=filled, color="#374151", penwidth=1.2];
+edge [fontname="DejaVu Sans", fontsize=14, arrowsize=0.75];
+subgraph cluster_full {
+graph [label="A. Full structure\n5 species + 2 reaction conditions", color="#d0d5db", style=rounded, margin=22];
+full_H2 [label="H2", shape=ellipse, fillcolor="#ffffff"];
+full_H2O [label="H2O", shape=ellipse, fillcolor="#ffffff"];
+full_CO [label="CO", shape=ellipse, fillcolor="#ffffff"];
+full_CO2 [label="CO2", shape=ellipse, fillcolor="#ffffff"];
+full_CH4 [label="CH4", shape=ellipse, fillcolor="#eee7f5", color="#6a3d9a", penwidth=2.3, fontname="DejaVu Sans Bold"];
+full_r1 [label="r1", shape=box, style="rounded,filled", fillcolor="#fff9e8"];
+full_r2 [label="r2", shape=box, style="rounded,filled", fillcolor="#fff9e8"];
+full_H2 -> full_r1 [dir=none, label="-3", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+full_H2 -> full_r2 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+full_H2O -> full_r1 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+full_H2O -> full_r2 [dir=none, label="-1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+full_CO -> full_r1 [dir=none, label="-1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+full_CO -> full_r2 [dir=none, label="-1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+full_CO2 -> full_r2 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+full_CH4 -> full_r1 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+{rank=same; full_H2; full_H2O; full_CO; full_CO2; full_CH4;}
+{rank=same; full_r1; full_r2;}
+}
+subgraph cluster_q1 {
+graph [label="q1 | Methanation\nq1 = ln K1(T) + 2 ln(P/P0)", fontname="DejaVu Sans Bold", fontsize=18, color="#374151", style="rounded,filled", fillcolor="#fff9e8", margin=22];
+q1_balance [label="r1\nbalance", shape=box, style="rounded,filled", fillcolor="#fff9e8"];
+q1_H2 [label="H2", shape=ellipse, fillcolor="#ffffff"];
+q1_H2 -> q1_balance [dir=none, label="-3", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+q1_H2O [label="H2O", shape=ellipse, fillcolor="#ffffff"];
+q1_balance -> q1_H2O [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+q1_CO [label="CO", shape=ellipse, fillcolor="#ffffff"];
+q1_CO -> q1_balance [dir=none, label="-1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+q1_CH4 [label="CH4", shape=ellipse, fillcolor="#eee7f5", color="#6a3d9a", penwidth=2.3, fontname="DejaVu Sans Bold"];
+q1_balance -> q1_CH4 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+{rank=same; q1_H2; q1_CO;}
+{rank=same; q1_H2O; q1_CH4;}
+}
+full_r1 -> q1_H2 [lhead=cluster_q1, color="#6b7280", fontcolor="#6b7280", penwidth=1.7, label="select neighbors\nand name", minlen=2];
+subgraph cluster_q2 {
+graph [label="q2 | Water-gas shift\nq2 = ln K2(T)", fontname="DejaVu Sans Bold", fontsize=18, color="#374151", style="rounded,filled", fillcolor="#fff9e8", margin=22];
+q2_balance [label="r2\nbalance", shape=box, style="rounded,filled", fillcolor="#fff9e8"];
+q2_H2 [label="H2", shape=ellipse, fillcolor="#ffffff"];
+q2_balance -> q2_H2 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+q2_H2O [label="H2O", shape=ellipse, fillcolor="#ffffff"];
+q2_H2O -> q2_balance [dir=none, label="-1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+q2_CO [label="CO", shape=ellipse, fillcolor="#ffffff"];
+q2_CO -> q2_balance [dir=none, label="-1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+q2_CO2 [label="CO2", shape=ellipse, fillcolor="#ffffff"];
+q2_balance -> q2_CO2 [dir=none, label="+1", color="#6b7280", fontcolor="#6b7280", penwidth=1.5];
+{rank=same; q2_H2O; q2_CO;}
+{rank=same; q2_H2; q2_CO2;}
+}
+full_r2 -> q2_H2O [lhead=cluster_q2, color="#6b7280", fontcolor="#6b7280", penwidth=1.7, label="select neighbors\nand name", minlen=2];
+{rank=same; q1_H2; q1_CO; q2_H2O; q2_CO;}
+{rank=same; q1_balance; q2_balance;}
+{rank=same; q1_H2O; q1_CH4; q2_H2; q2_CO2;}
+q1_balance -> q2_balance [style=invis, weight=100];
+}
