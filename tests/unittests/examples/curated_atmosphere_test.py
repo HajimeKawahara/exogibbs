@@ -16,7 +16,7 @@ from exogibbs.presets import fastchem
 
 
 ROOT = Path(__file__).resolve().parents[3]
-RESULTS = ROOT / "results/curated_atmosphere"
+RESULTS = ROOT / "tests/data/validation/curated_atmosphere"
 SPEC = importlib.util.spec_from_file_location("curated_atmosphere", ROOT / "examples/comparisons/demo_curated_atmosphere.py")
 demo = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(demo)

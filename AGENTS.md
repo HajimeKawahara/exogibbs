@@ -4,8 +4,9 @@
 - Source lives under `src/exogibbs/` in focused modules: `io/`, `thermo/`, `equilibrium/`, `optimize/`, `api/`, `presets/`, `utils/`.
 - Shared datasets: `src/exogibbs/data/` (must also be listed in `MANIFEST.in`).
 - Tests mirror the package tree in `tests/unittests/` (e.g., `tests/unittests/equilibrium/gibbs_test.py`).
+- Shared offline validation fixtures: `tests/data/validation/`.
 - Workflow demos: `examples/`; long‑form docs (Sphinx‑ready): `documents/`.
-- Ignore transient build outputs; if results must be stored, use `results/`.
+- Ignore transient build outputs; write generated runs to the ignored `results/` directory.
 
 ## Build, Test, and Development Commands
 - Install (editable, with local extras): `python -m pip install -e .`

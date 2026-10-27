@@ -16,7 +16,7 @@ from mceg.schema_v02 import Context
 
 ROOT = Path(__file__).resolve().parents[2]
 HERE = ROOT / "mceg/reviews/h2_literature_update"
-RESULT = ROOT / "results/mceg/h2_literature_update.json"
+RESULT = ROOT / "tests/data/validation/mceg/h2_literature_update.json"
 TRIAL = runpy.run_path(str(HERE / "update.py"))
 
 

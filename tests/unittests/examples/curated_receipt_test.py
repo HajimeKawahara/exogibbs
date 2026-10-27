@@ -10,9 +10,9 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
-RESULTS = Path("results/curated_gas_validation")
+RESULTS = Path("tests/data/validation/curated_gas_validation")
 CONTRACT = Path("mceg/contracts/curated_gas.yaml")
-BUILD = Path("results/gas_thermochemistry_impact/fastchem_build.json")
+BUILD = Path("tests/data/validation/gas_thermochemistry_impact/fastchem_build.json")
 INPUTS = (
     "examples/comparisons/validate_curated_preset.py",
     "examples/comparisons/build_curated_preset.py",

@@ -70,7 +70,7 @@ high-temperature assessment described below.
    V, NASA + IE, NASA + EA
    Zn, NASA + IE, Exclude
 
-The :download:`49-row decision table <../results/atomic_ion_adoption/decisions.csv>`
+The :download:`49-row decision table <../tests/data/validation/atomic_ion_adoption/decisions.csv>`
 includes each threshold, enthalpy-constant shift, sampled comparison and reason.
 
 Energy update and numerical evidence
@@ -175,9 +175,9 @@ not been propagated into confidence intervals for equilibrium abundances.
    python -m pytest -q tests/unittests/examples/atomic_ion_adoption_test.py
    PYTHONPATH=/path/to/mceg/src python -m mceg mceg/contracts/atomic_ion_adoption.yaml
 
-The :download:`comparison <../results/atomic_ion_adoption/comparison.csv>`,
-:download:`execution receipt <../results/atomic_ion_adoption/receipt.json>` and
-:download:`test receipt <../results/atomic_ion_adoption/tests.json>` record the
+The :download:`comparison <../tests/data/validation/atomic_ion_adoption/comparison.csv>`,
+:download:`execution receipt <../tests/data/validation/atomic_ion_adoption/receipt.json>` and
+:download:`test receipt <../tests/data/validation/atomic_ion_adoption/tests.json>` record the
 evaluated files and verification scope. MCEG validation checks structure only;
 the physical-validation claim remains ``unknown``.
 

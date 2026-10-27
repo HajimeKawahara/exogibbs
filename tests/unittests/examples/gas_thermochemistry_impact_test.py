@@ -19,7 +19,7 @@ from exogibbs.thermo.models import ChemicalSetup
 
 
 ROOT = Path(__file__).resolve().parents[3]
-RESULTS = ROOT / "results/gas_thermochemistry_impact"
+RESULTS = ROOT / "tests/data/validation/gas_thermochemistry_impact"
 
 
 def _load(name):

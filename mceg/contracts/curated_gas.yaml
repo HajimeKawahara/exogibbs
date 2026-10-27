@@ -122,7 +122,7 @@ evidence:
   sources:
   - examples/comparisons/build_curated_preset.py
   - examples/comparisons/data/curated_continuous_reference.json
-  - results/curated_gas_validation/thermal_checks.json
+  - tests/data/validation/curated_gas_validation/thermal_checks.json
   scope: C2 JANAF free energy and smooth partition sums; fit terms and leave-one-out stability are not new spectroscopy.
 - id: verification
   kind: benchmark
@@ -130,19 +130,19 @@ evidence:
   summary: Two networks, 70 equilibrium cases and 70 independent FastChem comparisons.
   sources:
   - examples/comparisons/validate_curated_preset.py
-  - results/curated_gas_validation/receipt.json
-  - results/curated_gas_validation/diagnostics.csv
-  - results/curated_gas_validation/default_charge.csv
-  - results/curated_gas_validation/fastchem_parity.csv
-  - results/curated_gas_validation/ions.npz
-  - results/curated_gas_validation/neutral.npz
+  - tests/data/validation/curated_gas_validation/receipt.json
+  - tests/data/validation/curated_gas_validation/diagnostics.csv
+  - tests/data/validation/curated_gas_validation/default_charge.csv
+  - tests/data/validation/curated_gas_validation/fastchem_parity.csv
+  - tests/data/validation/curated_gas_validation/ions.npz
+  - tests/data/validation/curated_gas_validation/neutral.npz
   scope: CPU float64, identical numerical inputs and independent initialization. Artifact, implementation and input hashes are recorded.
 - id: fastchem_build
   kind: implementation
   summary: The existing unmodified FastChem v4.0.3 standalone build is reused as an optional comparator.
   sources:
-  - results/gas_thermochemistry_impact/fastchem_build.json
-  - results/curated_gas_validation/receipt.json
+  - tests/data/validation/gas_thermochemistry_impact/fastchem_build.json
+  - tests/data/validation/curated_gas_validation/receipt.json
   scope: Executable hashes match; FastChem and its source checkout are not packaged runtime dependencies.
 - id: tests
   kind: implementation
@@ -151,8 +151,8 @@ evidence:
   sources:
   - tests/unittests/presets/curated_test.py
   - tests/unittests/equilibrium/gas/kernel/charge_test.py
-  - results/curated_gas_validation/tests.json
-  - results/curated_gas_validation/pr_tests.json
+  - tests/data/validation/curated_gas_validation/tests.json
+  - tests/data/validation/curated_gas_validation/pr_tests.json
   scope: Source comparison and implementation verification; external MCEG and FastChem installations are unnecessary.
 - id: atmosphere_demo
   kind: benchmark
@@ -162,10 +162,10 @@ evidence:
   sources:
   - examples/comparisons/demo_curated_atmosphere.py
   - tests/unittests/examples/curated_atmosphere_test.py
-  - results/curated_atmosphere/receipt.json
-  - results/curated_atmosphere/summary.csv
-  - results/curated_atmosphere/isothermal.png
-  - results/curated_atmosphere/inverted.png
+  - tests/data/validation/curated_atmosphere/receipt.json
+  - tests/data/validation/curated_atmosphere/summary.csv
+  - tests/data/validation/curated_atmosphere/isothermal.png
+  - tests/data/validation/curated_atmosphere/inverted.png
   scope: Source sensitivity under fixed numerical conditions. Ranking requires
     mole fraction at least 1e-12 in either model; trace-species ratios do not
     measure opacity changes or experimental accuracy.

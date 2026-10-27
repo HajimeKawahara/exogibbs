@@ -255,7 +255,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as temporary:
         directory = args.input_dir or Path(temporary)
         if args.input_dir is None:
-            shutil.copyfile(ROOT / "results/new_fastchem_logk/logK.zip", directory / "logK.zip")
+            shutil.copyfile(ROOT / "tests/data/validation/new_fastchem_logk/logK.zip", directory / "logK.zip")
             with zipfile.ZipFile(directory / "logK.zip") as archive:
                 for filename in ("logK.dat", "logK_extended.dat", "logK_hoeijmakers2019.dat"):
                     (directory / filename).write_bytes(archive.read(filename))

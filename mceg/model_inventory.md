@@ -63,9 +63,9 @@ host chemical potentials or extensive Gibbs scalar.
 ## Reading and maintaining these records
 
 The contracts use v0.2 with separate numerical and physical Assessments. The
-shared [receipt](../results/mceg/20261020_model_survey/receipt.json),
-[JUnit report](../results/mceg/20261020_model_survey/tests.xml) and
-[execution log](../results/mceg/20261020_model_survey/tests.log) record fresh
+shared [receipt](../tests/data/validation/mceg/20261020_model_survey/receipt.json),
+[JUnit report](../tests/data/validation/mceg/20261020_model_survey/tests.xml) and
+[execution log](../tests/data/validation/mceg/20261020_model_survey/tests.log) record fresh
 CPU/x64 runs against explicit local source paths. Each contract pins its selected
 source/test/fixture files and the shared artifacts. The receipt's commands and
 environment describe how to repeat each module; use a new output directory.
@@ -121,8 +121,8 @@ choices. Of 209 scanned files, 21 match reviewed classifications and 188
 remain unreviewed. Exit code **1** is expected. Remaining families and files are
 work items, not evidence of physical failure; this is not complete model coverage.
 
-See the [baseline report](../results/mceg/20261020_coverage/baseline.json) and
-[mutation receipt](../results/mceg/20261020_coverage/mutations.json). Eight mutations
+See the [baseline report](../tests/data/validation/mceg/20261020_coverage/baseline.json) and
+[mutation receipt](../tests/data/validation/mceg/20261020_coverage/mutations.json). Eight mutations
 on a temporary copy produced the expected new diagnostics: a missing model link,
 a missing contract, a wrong contract ID, a new formula branch, a renamed function,
 a new source file, changed coefficient data, and an unlisted contract. A ninth

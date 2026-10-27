@@ -9,7 +9,7 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-REPORT = ROOT / "results/mceg/20261021_volatile_sources/comparison.json"
+REPORT = ROOT / "tests/data/validation/mceg/20261021_volatile_sources/comparison.json"
 
 
 def test_source_review_pins_and_numerical_replay():

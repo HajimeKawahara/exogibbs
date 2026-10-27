@@ -70,7 +70,7 @@ basis, its orientation and normalization; this basis is kept fixed throughout.
 Reading the figures
 -------------------
 
-.. figure:: ../results/equilibrium_sensitivity/temperature_response.png
+.. figure:: _static/equilibrium_sensitivity/temperature_response.png
    :alt: Composition, methane budget responses, equilibrium-constant responses and thermal contributions versus temperature.
 
    Methane is carbon limited at low temperature. Near 1000 K, oxygen competition
@@ -83,7 +83,7 @@ the :math:`K_1` and :math:`K_2` responses are +0.593 and -0.017.
 At 1200 K the O response reaches -2.415 and the :math:`K_1` response +0.988.
 These are calculated local coefficients for this restricted model.
 
-.. figure:: ../results/equilibrium_sensitivity/sensitivity_network.png
+.. figure:: _static/equilibrium_sensitivity/sensitivity_network.png
    :alt: Signed bipartite response networks at 800, 1000 and 1200 K.
 
    Boxes are controls; ellipses are responding species. Blue solid arrows
@@ -101,7 +101,7 @@ absolute redistribution. This graph does not justify deleting reactions or
 species from future solves, nor does it estimate uncertainty without input
 uncertainties and their correlations.
 
-.. figure:: ../results/equilibrium_sensitivity/response_matrix.png
+.. figure:: _static/equilibrium_sensitivity/response_matrix.png
    :alt: All 25 response coefficients at 1000 K, including small values omitted from the graph.
 
    The complete response matrix retains the weak edges and their signs.
@@ -129,7 +129,7 @@ produces approximately a 1.60% decrease in methane amount; a 1% pressure
 increase produces approximately a 1.19% increase. Each is a local first-order
 estimate with the other physical input and all elemental amounts fixed.
 
-.. figure:: ../results/equilibrium_sensitivity/physical_controls.png
+.. figure:: _static/equilibrium_sensitivity/physical_controls.png
    :alt: Temperature and pressure responses of all five species at 1000 K.
    :width: 70%
 
@@ -195,7 +195,7 @@ zero). Retention of 100% preserves every nonzero path, including tiny ones.
      - q1
      - 0.1023%
 
-.. figure:: ../results/equilibrium_sensitivity/methane_reduction.png
+.. figure:: _static/equilibrium_sensitivity/methane_reduction.png
    :alt: Full methane path decomposition, approximate contribution selection and exact signed response collapse at 1000 K.
 
    Separate views of the same local response. At 1000 K the thermal path
@@ -219,6 +219,20 @@ depend on the chosen reaction basis and state, and are not kinetic pathways.
 
 Reproduce and check
 -------------------
+
+The recorded :download:`numerical checks
+<../tests/data/validation/equilibrium_sensitivity/validation.json>`,
+:download:`complete coefficients
+<../tests/data/validation/equilibrium_sensitivity/response_matrices.csv>` and
+:download:`final verification receipt
+<../tests/data/validation/equilibrium_sensitivity/verification.json>` preserve
+the evidence published with PR #299. Its additional
+:download:`reaction neighborhoods <_static/equilibrium_sensitivity/reaction_neighborhoods.png>`
+and :download:`explicit q-input diagram <_static/equilibrium_sensitivity/reaction_modules.png>`
+retain their original Graphviz sources:
+:download:`neighborhoods <_static/equilibrium_sensitivity/reaction_neighborhoods.dot>`
+and :download:`q-input ports <_static/equilibrium_sensitivity/reaction_modules.dot>`.
+Render the latter with ``neato -n2`` as specified in its source.
 
 With ExoGibbs, Matplotlib, NetworkX and Graphviz's ``dot`` available, run offline::
 

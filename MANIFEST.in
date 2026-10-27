@@ -68,3 +68,7 @@ recursive-exclude src/exogibbs/data/sharp_huebner *
 
 # Documentation submodule is published separately
 prune doc_ExoGibbs
+
+# Generated runs stay local; offline regression fixtures ship with the source.
+prune results
+recursive-include tests/data/validation *

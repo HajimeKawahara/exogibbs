@@ -15,7 +15,7 @@ from exogibbs.presets import fastchem4
 
 
 ROOT = Path(__file__).resolve().parents[3]
-RESULTS = ROOT / "results/new_fastchem_logk"
+RESULTS = ROOT / "tests/data/validation/new_fastchem_logk"
 SPEC = importlib.util.spec_from_file_location(
     "new_fastchem_logk", ROOT / "examples/comparisons/compare_new_fastchem_logk.py")
 study = importlib.util.module_from_spec(SPEC)
@@ -79,7 +79,7 @@ def test_saved_columns_pass_independent_closure(inputs, profile, model):
         study.require_closure(study.closure(setups[model], data[f"ln_n_{model}"],
                                             data["temperature_K"], data["pressure_bar"]))
         if model == "curated":
-            with np.load(ROOT / "results/curated_atmosphere" / f"{profile}_curated.npz") as old:
+            with np.load(ROOT / "tests/data/validation/curated_atmosphere" / f"{profile}_curated.npz") as old:
                 logx = data["ln_n_curated"] - logsumexp(data["ln_n_curated"], axis=-1)[:, None]
                 eligible = np.maximum(logx, old["logx"]) >= np.log(study.SIGNIFICANT_X)
                 # Historical JAX outputs differ at ppm scale for trace elements;
@@ -91,6 +91,13 @@ def test_receipt_matches_archived_inputs_and_results():
     receipt = json.loads((RESULTS / "receipt.json").read_text())
     assert receipt["cases_passed"] == 966
     for path, digest in receipt["selected_file_sha256"].items():
-        assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == digest
+        content = (ROOT / path).read_bytes()
+        if path == "examples/comparisons/compare_new_fastchem_logk.py":
+            archived = (RESULTS / "source/compare_new_fastchem_logk.py").read_bytes()
+            assert content == archived.replace(
+                b'"results/new_fastchem_logk/logK.zip"',
+                b'"tests/data/validation/new_fastchem_logk/logK.zip"')
+            content = archived
+        assert hashlib.sha256(content).hexdigest() == digest
     for path, digest in receipt["output_sha256"].items():
         assert hashlib.sha256((RESULTS / path).read_bytes()).hexdigest() == digest

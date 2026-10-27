@@ -74,7 +74,7 @@ atoms. This atomic-product factor includes the response of the whole network;
 it does not isolate an intervention on atomic-ion coefficients.
 
 The :download:`attribution report
-<../../results/mceg/new_fastchem_logk_20261024/attribution.json>` records all five
+<../../tests/data/validation/mceg/new_fastchem_logk_20261024/attribution.json>` records all five
 samples, absolute mole fractions, atom factors, residuals and selected-file
 hashes. At the HCN inverted-column extremum the mole fractions are about 1e-10.
 A 25.5 percent difference there is not a measured metallicity error, an opacity
@@ -108,7 +108,7 @@ adds inspected evidence and two ``*_public_sources`` assessments. Both retrieved
 metallicity and whole-mixture accuracy remain ``unknown``. The completed
 ``inspect_public_references`` task records reading, not physical validation.
 The earlier numerical validation receipt remains historical; checks for this
-addition are under ``results/mceg/new_fastchem_logk_public_sources_20261024/``.
+addition are under ``tests/data/validation/mceg/new_fastchem_logk_public_sources_20261024/``.
 
 Deferred retrieval proposal
 ---------------------------
@@ -133,9 +133,14 @@ accuracy. No placeholder metallicity offset is assigned in the present record.
 Offline reproduction
 --------------------
 
-The inputs, figures and primitive arrays are under ``results/new_fastchem_logk``.
-The :download:`column receipt <../../results/new_fastchem_logk/receipt.json>`
+The inputs, figures and primitive arrays are under ``tests/data/validation/new_fastchem_logk``.
+The :download:`column receipt <../../tests/data/validation/new_fastchem_logk/receipt.json>`
 records conditions, all six closure audits and input/output hashes.
+
+The original scripts pinned by those records are preserved under
+``tests/data/validation/new_fastchem_logk/source/``. The comparison contract
+continues to describe that historical snapshot. Current replay scripts use
+the relocated fixture paths; tests verify that this is their only change.
 
 .. code-block:: bash
 

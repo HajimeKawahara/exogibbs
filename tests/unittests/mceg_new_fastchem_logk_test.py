@@ -10,13 +10,29 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-REPORT = ROOT / "results/mceg/new_fastchem_logk_20261024/attribution.json"
+REPORT = ROOT / "tests/data/validation/mceg/new_fastchem_logk_20261024/attribution.json"
 
 
 def test_attribution_selected_inputs_remain_pinned():
     saved = json.loads(REPORT.read_text())
     for name, expected in saved["selected_file_sha256"].items():
-        assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
+        if name.startswith("results/"):
+            path = ROOT / "tests/data/validation" / Path(name).relative_to("results")
+        elif name in {"examples/comparisons/compare_new_fastchem_logk.py",
+                       "mceg/reviews/new_fastchem_logk_20261024.py"}:
+            path = ROOT / "tests/data/validation/new_fastchem_logk/source" / Path(name).name
+            # Numerical code stays byte-identical; only archived input paths move.
+            relocated = path.read_bytes().replace(
+                b'"results/new_fastchem_logk/logK.zip"',
+                b'"tests/data/validation/new_fastchem_logk/logK.zip"').replace(
+                b'RESULTS = ROOT / "results/new_fastchem_logk"',
+                b'RESULTS = ROOT / "tests/data/validation/new_fastchem_logk"').replace(
+                b'"results/major_molecule_adoption/decisions.csv"',
+                b'"tests/data/validation/major_molecule_adoption/decisions.csv"')
+            assert (ROOT / name).read_bytes() == relocated, name
+        else:
+            path = ROOT / name
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == expected, name
 
 
 def test_five_sample_attribution_replays_with_mass_action():
