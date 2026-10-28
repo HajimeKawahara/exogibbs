@@ -11,11 +11,17 @@ the selected connection; it is not a coupled atmosphere--interior solution.
 Recorded numerical checks, source inspections and physical support have
 different scopes. Open the linked model records before reusing a conclusion.
 
+For an ordinary ExoGibbs installation, start with
+:doc:`optional_inspection` to find the records for your setup and inspect known
+HCN differences with optional MCEG tooling.
+
 .. toctree::
    :maxdepth: 1
 
    _generated/cases
    _generated/catalog
+   optional_inspection
    volatile_sources
    new_fastchem_logk
+   fastchem_hcn_followup
    build

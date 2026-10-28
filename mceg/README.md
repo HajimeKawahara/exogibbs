@@ -6,6 +6,13 @@ applicability, claims and scoped evidence. This checkout pilots its frozen
 [H2 solubility law](contracts/h2_solubility.yaml). MCEG is not an ExoGibbs
 runtime or test dependency; numerical implementations remain owned by ExoGibbs.
 
+For installed-package and species lookup, see the
+[optional inspection guide](../documents/mceg/optional_inspection.rst).
+`python mceg/build_catalog.py` copies the canonical curated/HCN records and small
+study artifacts into a committed wheel catalog. Both this builder and
+`exogibbs.provenance.describe(setup)` work without MCEG. The catalog is a dated
+evidence snapshot; matching declared metadata does not validate a user's run.
+
 Saved evidence lives in [the offline validation fixtures](../tests/data/validation/README.rst).
 Historical records retain their original `results/` paths and hashes; the
 fixture guide explains how to resolve those paths after the relocation.

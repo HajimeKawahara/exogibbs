@@ -55,6 +55,9 @@ include src/exogibbs/data/nasa9/NOTICE.txt
 include src/exogibbs/data/curated/gas_v1.json
 include src/exogibbs/data/curated/README.rst
 
+# Optional scientific records; reading them never requires MCEG at runtime.
+recursive-include src/exogibbs/data/mceg *.json *.yaml
+
 # Pinned absolute standard-state references for multiphase connections
 include src/exogibbs/data/young2023/standard_states.json
 include src/exogibbs/data/janaf/atomic.json

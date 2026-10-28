@@ -1,0 +1,112 @@
+{
+  "review_date": "2026-10-28",
+  "scope": "Source and coefficient audit for the preliminary HCN update; no production thermochemistry change, independent FastChem solve, spectrum or retrieval.",
+  "provider_statement": {
+    "url": "https://github.com/NewStrangeWorlds/FastChem/issues/10#issuecomment-6439534232",
+    "author": "Daniel Kitzmann",
+    "date": "2026-10-27T10:29:48Z",
+    "inspection": "Provider comment and supplied table headers inspected.",
+    "summary": "The provider reports similar heat capacities across compilations and an HCN refit using Goos/Burcat. The tables retain the previous ion update and await approval for an official repository change.",
+    "historical_measurement_claim": "The provider attributes JANAF's HCN formation enthalpy to an 1886 measurement. The original measurement and that attribution were not independently inspected here.",
+    "limit": "The exact input database bytes, fitting temperature grid, weights and atomic-reference construction were not supplied. A source-family citation does not identify a reproducible fit recipe."
+  },
+  "supplied_archives": {
+    "previous": {
+      "path": "fastchem_new_logK/logK.zip",
+      "sha256": "f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c"
+    },
+    "hcn_update": {
+      "path": "fastchem_new_logK_hcn/logK_hcn.zip",
+      "sha256": "1eb830a1f3e1fa9b4034c6ed2e2c63652c324a709f63665c2e029df10d28159f"
+    },
+    "extracted_bytes_match_archives": true,
+    "file_audits": [
+      {
+        "filename": "logK.dat",
+        "new_sha256": "3697abccf664aa5f531103b6c7aac6e77efcd4366f8b69d46b7e6ea29a10e0c5",
+        "old_and_new_records": 511,
+        "changed_coefficients": ["C1H1N1_hcn"],
+        "added": [],
+        "removed": [],
+        "changed_stoichiometry": []
+      },
+      {
+        "filename": "logK_extended.dat",
+        "new_sha256": "ac26c8ce3ae0a90a8b3e6de2205440d2e82c53d8c57127e8ba19cd41285191cb",
+        "old_and_new_records": 800,
+        "changed_coefficients": ["C1H1N1_hcn"],
+        "added": [],
+        "removed": [],
+        "changed_stoichiometry": []
+      },
+      {
+        "filename": "logK_hoeijmakers2019.dat",
+        "new_sha256": "6ee0fe65acf88b80621d2e3bab82ba32828835bf789cacb42c9687955d3d122b",
+        "old_and_new_records": 678,
+        "changed_coefficients_on_common_identifiers": [],
+        "added": ["C1H1N1_hcn"],
+        "removed": ["C1H1N1_1"],
+        "reviewed_alias": {"C1H1N1_1": "C1H1N1_hcn"},
+        "alias_evidence": "Both headers explicitly identify Hydrogen_Cyanide_HCN with C:H:N = 1:1:1. Old/new coefficients match the respective standard-file HCN records. HNC remains the distinct, unchanged C1H1N1_2 record.",
+        "changed_stoichiometry_after_reviewed_alias": []
+      }
+    ],
+    "interpretation": "Only the HCN coefficient record changes after the explicit Hoeijmakers alias is applied. Raw identifier catalogs do change in that file; formula matching alone would incorrectly conflate HCN and HNC."
+  },
+  "public_burcat_source": {
+    "url": "https://respecth.elte.hu/burcat/BURCAT.THR.txt",
+    "index_url": "https://respecth.elte.hu/burcat.php",
+    "report_doi": "10.2172/925269",
+    "version_scope": "The mirror index identifies a 23 July 2023 copy; the file header says species were last added on 3 January 2023. The DOI identifies the 2005 report, not these 2023 bytes.",
+    "inspection": "Public file header, ATcT code definitions and HCN/HNC entries inspected with the web reader. No original-response byte hash or claim of identity with the provider's private input copy.",
+    "location": "BURCAT.THR header and ATcT A code definition; HCN CAS 74-90-8 entry, web-reader lines 2988-2999, followed by the separate HNC entry.",
+    "selected_hcn_hf298_kJ_mol": 129.799,
+    "selected_hcn_reported_uncertainty_kJ_mol": 0.38,
+    "selected_hcn_reference": "ATcT A; NASA7 record header is HCN ATcT/A.",
+    "atct_a_definition": "Unpublished ATcT v1.25 results based on Core (Argonne) Thermochemical Network v1.049, May 2005.",
+    "parenthetical_hcn_hf298_kJ_mol": 129.29,
+    "parenthetical_hcn_reported_uncertainty_kJ_mol": 0.09,
+    "parenthetical_hcn_reference": "ATcT C 2011; listed for comparison, not the selected polynomial's energy.",
+    "thermal_reference": "Gurvich 1991 molecular constants.",
+    "interpretation": "A database-wide 2023 date does not mean every species energy was updated in 2023. This entry shares ATcT ancestry with curated, so their agreement is not independent validation."
+  },
+  "current_curated_reference": {
+    "implementation": "src/exogibbs/data/curated/gas_v1.json:decisions.C1H1N1_hcn",
+    "selection": "CEA thermal functions plus ATcT 1.172 balanced atomization energy.",
+    "hcn_hf298_kJ_mol": 129.293,
+    "atct_doi": "10.17038/CSE/2440254",
+    "reference_excerpt": "examples/comparisons/data/major_molecule_reference.json",
+    "burcat_minus_curated_hf298_kJ_mol": 0.506,
+    "hypothetical_energy_only_K_ratio_at_2500_K": 0.9759507795197516,
+    "hypothesis_scope": "The displayed energy difference is a plausible contributor to the remaining offset. The energy-only ratio assumes identical thermal functions and atomic references; it is not an attribution of the whole supplied fit or proof of which Burcat copy was used."
+  },
+  "coefficient_diagnostics": {
+    "convention": "L = ln(Kp) = a1/T + a2 ln(T) + a3 + a4 T + a5 T^2; molecular formation from neutral atoms; dimensionless Kp at 1 bar.",
+    "range_K": [1500, 4000],
+    "nodes": 251,
+    "delta_definition": "HCN update minus previous preliminary table.",
+    "delta_lnK_fit": {
+      "form": "A/T + B, ordinary least squares on 251 uniformly spaced temperature nodes",
+      "A_K": 632.195089827253,
+      "B": -0.0018820831719579614,
+      "max_absolute_lnK_residual": 0.0010760948406709492,
+      "effective_formation_enthalpy_shift_kJ_mol": -5.256362441748724
+    },
+    "derived_reaction_heat_capacity": {
+      "formula": "Delta Cp = R [Delta a2 + 2 Delta a4 T + 6 Delta a5 T^2]",
+      "minimum_J_mol_K": -0.07134177002593083,
+      "maximum_J_mol_K": 0.1155254450635422
+    },
+    "selected_K_ratios": [
+      {"temperature_K": 1500, "previous_over_curated": 0.6352885580166039, "hcn_update_over_curated": 0.96752060577377},
+      {"temperature_K": 2500, "previous_over_curated": 0.7530056813726144, "hcn_update_over_curated": 0.9673632060981938},
+      {"temperature_K": 4000, "previous_over_curated": 0.8429369645503231, "hcn_update_over_curated": 0.9860748708662153}
+    ],
+    "interpretation": "The supplied change is predominantly an energy offset, with a small change of the fit-derived reaction Cp. These are derivatives of fitted formation constants, not independent calorimetry. The coefficient a1 alone is not an atomization energy because all five coefficients change."
+  },
+  "remaining_limits": [
+    "The broad HCN source discrepancy is substantially reduced, not eliminated. Catalog integrity and numerical agreement do not establish physical accuracy.",
+    "The supplied preliminary coefficient set is identified exactly; the external fitting inputs and procedure remain a separate unresolved provenance task.",
+    "No numerical abundance response, spectrum, metallicity bias or correlated physical uncertainty is established by this source-only audit."
+  ]
+}

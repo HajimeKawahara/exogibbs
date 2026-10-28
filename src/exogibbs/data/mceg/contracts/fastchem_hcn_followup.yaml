@@ -1,0 +1,185 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.fastchem_hcn_followup.v1
+  name: Preliminary FastChem HCN refit and database discrepancy follow-up
+  description: Separate producer diagnosis, verified table changes, numerical consequences and unresolved physical accuracy.
+  implementation: &implementation
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:996b36aa6cfffab5a1640ac5d2467f076a62c11f443262847f5f32b33ae7a861
+    entry_points: [mceg/reviews/fastchem_hcn_20261028.py]
+assumptions:
+- statement: All equilibria use ExoGibbs, a common 537-species network, normalized Asplund 2021 abundances and dimensionless formation Kp at 1 bar.
+  evidence: [comparison_execution]
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Two prescribed columns; no rectangular-domain or other-composition coverage is inferred.
+  conditions:
+  - 161 pressures from 1e-6 to 100 bar; 4000 K isotherm and prescribed 2500-4000 K inversion from PRs 284 and 298.
+  - Curated, previous preliminary and revised preliminary tables; only standard logK.dat is used for atmospheric solves.
+  evidence: [comparison_execution]
+- kind: scientific_applicability
+  status: unknown
+  description: Independent whole-mixture physical accuracy and downstream retrieval effects remain unestablished.
+  conditions: []
+  evidence: [producer_report, comparison_execution]
+claims:
+- id: hcn_refit_scope
+  revision: '1'
+  kind: numerical_verification
+  statement: Relative to the preceding preliminary archive, only the HCN coefficients change after the explicit Hoeijmakers identifier mapping.
+  scope: Three supplied files; C1H1N1_1 maps to C1H1N1_hcn only in the Hoeijmakers file, with equal composition and catalog size.
+- id: column_closure_and_hcn_factorization
+  revision: '1'
+  kind: numerical_verification
+  statement: All 966 cases satisfy the declared closure gates and HCN abundance ratios factor into formation-Kp and constituent-atom ratios.
+  scope: Element residual <=1e-5, charge residual <=1e-12, mass-action and HCN factorization absolute ln residual <=1e-8 on the recorded profiles.
+- id: whole_mixture_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The complete gas model has quantified physical accuracy under the declared atmospheric conditions.
+  scope: Requires independent physical evidence and error criteria; database agreement is not a calibrated uncertainty distribution.
+evidence:
+- id: producer_report
+  kind: literature
+  summary: Daniel reports an HCN refit using Goos and Burcat data and discusses limitations in the older thermochemical inputs.
+  sources:
+  - https://github.com/NewStrangeWorlds/FastChem/issues/10#issuecomment-6439534232
+  scope: Records the producer's explanation and preliminary-release status; underlying measurements and the exact input/fit procedure have not been independently reconstructed.
+  provenance:
+    role: primary
+    location: Producer comment dated 2026-10-27.
+    inspection: partial
+    note: The comment was read; its underlying source and fitting claims remain only partially verified.
+- id: source_audit
+  kind: literature
+  summary: A public Burcat HCN entry uses Hf298=129.799 kJ/mol, while curated uses ATcT 1.172 with Hf298=129.293 kJ/mol.
+  sources:
+  - mceg/reviews/fastchem_hcn_sources_20261028.json
+  - https://respecth.elte.hu/burcat/BURCAT.THR.txt
+  - https://doi.org/10.17038/CSE/2440254
+  scope: Inspected public entries, archive identities and an explicit HCN/HNC distinction. The public Burcat copy is not established as the producer's exact input; its energy difference is a hypothesis for part of the residual.
+  artifacts:
+  - source: mceg/reviews/fastchem_hcn_sources_20261028.json
+    sha256: e81d67d7fdc2eca27bfaf18e27cce32296c969d8aa8441bb8d6e9e015820f369
+  provenance:
+    role: primary
+    location: Authored source review, with public-file and molecular-entry locations.
+    inspection: inspected
+    note: Inspection applies to the stated records; underlying historical measurements and the exact producer fitting recipe were not reconstructed.
+- id: comparison_execution
+  kind: benchmark
+  summary: Three input audits and 966 layer/model cases pass; maximum HCN factorization residual is 1.81355e-13.
+  sources:
+  - mceg/reviews/fastchem_hcn_20261028.py
+  - tests/data/validation/new_fastchem_hcn/summary.json
+  - tests/data/validation/new_fastchem_hcn/logK_hcn.zip
+  scope: Current default versus previous and revised preliminary coefficients. All curves use one solver; this does not independently validate the source data.
+  subject: hcn_comparison_snapshot
+  context: prescribed_columns
+  result: passed
+  artifacts:
+  - source: tests/data/validation/new_fastchem_hcn/summary.json
+    sha256: 86ecb4a9d827d24fb29ebdd23ecc038184a15bc6073e76063491bb929c9841a6
+  - source: tests/data/validation/new_fastchem_hcn/logK_hcn.zip
+    sha256: 1eb830a1f3e1fa9b4034c6ed2e2c63652c324a709f63665c2e029df10d28159f
+  provenance:
+    role: primary
+    location: Executed comparison summary, explicit identifier mapping, closure residuals and input hashes.
+    inspection: inspected
+    note: Numerical evidence and artifact identity, not reconstruction of the producer's fit.
+limitations:
+- statement: HCN agreement improves but other molecular differences remain. Fitting and source-version differences are not resolved by closeness to curated alone.
+  evidence: [comparison_execution, producer_report]
+- statement: The archived summary identifies generated arrays by hash; regenerating full arrays requires running the provider comparison. No spectrum or retrieval was run.
+  evidence: [comparison_execution]
+subjects:
+- id: hcn_comparison_snapshot
+  implementation: *implementation
+  selected_files:
+    mceg/reviews/fastchem_hcn_20261028.py: 996b36aa6cfffab5a1640ac5d2467f076a62c11f443262847f5f32b33ae7a861
+    tests/data/validation/new_fastchem_logk/logK.zip: f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c
+    tests/data/validation/new_fastchem_hcn/logK_hcn.zip: 1eb830a1f3e1fa9b4034c6ed2e2c63652c324a709f63665c2e029df10d28159f
+    examples/comparisons/compare_new_fastchem_logk.py: 72323f7f6eaf9cbcda3cb8721ca22a13f80a677bfbf216da5f9336d0b35ba81f
+    examples/comparisons/demo_curated_atmosphere.py: d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e
+    src/exogibbs/presets/curated.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+contexts:
+- id: prescribed_columns
+  scope: Fresh execution on the exact profiles in the comparison report; physical accuracy and retrieval are not evaluated.
+  settings:
+    backend: cpu
+    dtype: float64
+    python: 3.10.9
+    jax: 0.6.2
+    numpy: 2.0.2
+    species: 537
+    composition: normalized Asplund 2021, including Ge
+    baseline_revision: 4258624c1b015eeaae4967e8e84e8af25f15c116
+assessments:
+- id: hcn_refit_scope_review
+  kind: evidence_support
+  claim: hcn_refit_scope
+  claim_revision: '1'
+  subject: hcn_comparison_snapshot
+  context: prescribed_columns
+  method: &method
+    id: review_hcn_comparison
+    revision: '1'
+    description: Inspect the pinned input audit and numerical gates separately from source adoption and physical accuracy.
+  evidence: [comparison_execution, source_audit]
+  reasons: [The parsed three-file audit isolates HCN after the explicit identity mapping; no other coefficient or composition changes occur.]
+  status: supported
+  origin: reviewed
+- id: column_closure_and_hcn_factorization_review
+  kind: evidence_support
+  claim: column_closure_and_hcn_factorization
+  claim_revision: '1'
+  subject: hcn_comparison_snapshot
+  context: prescribed_columns
+  method: *method
+  evidence: [comparison_execution]
+  reasons: [All recorded numerical gates pass; coverage is limited to these prescribed profiles and the shared species network.]
+  status: supported
+  origin: reviewed
+- id: whole_mixture_accuracy_review
+  kind: evidence_support
+  claim: whole_mixture_accuracy
+  claim_revision: '1'
+  subject: hcn_comparison_snapshot
+  context: prescribed_columns
+  method: *method
+  evidence: [producer_report, comparison_execution, source_audit]
+  reasons: [Closer HCN agreement and solver closure supply no independent whole-mixture physical constraint or calibrated correlated uncertainty.]
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: compare_revised_hcn
+  target_kind: claim
+  target: hcn_refit_scope
+  revision: '1'
+  action: Audit the revised archive and compare the earlier and revised tables against the current default.
+  completion: Record identity mapping, coefficient changes, numerical closure and HCN abundance attribution in a new execution.
+  sources: [https://github.com/HajimeKawahara/exogibbs/pull/298]
+- id: reconstruct_hcn_refit
+  target_kind: evidence
+  target: producer_report
+  action: Identify the exact Goos/Burcat source snapshot and reproduce the HCN fitting procedure.
+  requires: [Source file and version, molecular and atomic reference conventions, fitting interval and weights, coefficient generation recipe]
+  completion: Separate source-version changes from thermal-function and fitting residuals using the documented inputs; add inspected evidence and a new assessment.
+  sources: [https://github.com/NewStrangeWorlds/FastChem/issues/10#issuecomment-6439534232]
+- id: physical_covariance_review
+  target_kind: claim
+  target: whole_mixture_accuracy
+  revision: '1'
+  action: Review independent physical constraints and the correlated uncertainties of energy anchors and thermal functions for a declared application.
+  requires: [Independent experimental or observational evidence, Relevant covariance and source ancestry, A stated physical error criterion]
+  completion: Record a scoped physical assessment; retain unknown where independent constraints remain absent. Retrieval is outside this task.
+follow_up_resolutions:
+- follow_up: compare_revised_hcn
+  evidence: [comparison_execution]
+  note: The coefficient audit and numerical comparison are complete; exact fit reconstruction, default adoption and physical validation are separate decisions.
