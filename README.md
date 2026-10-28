@@ -55,6 +55,11 @@ Other packaged presets include [YKB4](documents/presets/ykb4.rst),
 Install `exogibbs[fastchem]` for the optional FastChem grid backend or comparison
 tools; the native solvers and packaged data do not require `pyfastchem`.
 
+To inspect scientific support and known thermochemical differences, start with
+[`exogibbs.provenance.describe(chem)`](documents/mceg/optional_inspection.rst).
+MCEG is optional: calculations and provenance lookup work without it, while
+its species-level report explains the bundled HCN comparison and open questions.
+
 ## Learn more
 
 - [Documentation](documents/index.rst) and [public API](documents/api.rst).

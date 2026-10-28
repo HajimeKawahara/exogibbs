@@ -201,6 +201,11 @@ The model combines :doc:`../atomic_ion_adoption` and
   ``inherited_unreviewed``. The 27 atoms and electron define the zero reference
   gauge. This is not a claim that all 537 species have been independently audited.
 
+For known thermochemical differences and optional MCEG inspection, see
+:doc:`../mceg/optional_inspection`. ``exogibbs.provenance.describe(setup)``
+provides a record lookup without requiring MCEG. The current HCN comparison
+records dataset-choice sensitivity; its physical accuracy remains unestablished.
+
 Use ``setup.metadata["species_provenance"][species]`` for a species decision,
 ``["sources"]`` for source references, and ``["abundances"]`` for the reference
 composition file and hash. The per-species adoption records retain the earlier

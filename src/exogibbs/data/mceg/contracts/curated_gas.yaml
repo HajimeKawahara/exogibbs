@@ -1,0 +1,182 @@
+schema_version: '0.1'
+model:
+  id: exogibbs.curated_gas.v1
+  name: Curated gas thermochemistry version 1
+  description: Continuous native gas preset implementing the approved atomic-ion
+    and major-molecule source choices, with explicit ion-inclusive and neutral
+    networks and a restricted 1500--4000 K evaluation domain.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    entry_points:
+    - src/exogibbs/presets/curated.py:chemsetup
+assumptions:
+- statement: Ideal gas-only equilibrium uses dimensionless formation constants
+    at 1 bar, with zero neutral-atom/electron h and signed electron stoichiometry.
+  evidence: [implementation, source_choices, verification]
+- statement: The 537-species network includes 27 nuclear elements and charge.
+    The neutral option retains exactly 421 neutral species and removes charge.
+    N- and Zn- are excluded under the adopted stable-bound-state policy.
+  evidence: [implementation, source_choices, tests]
+- statement: Positive fitted partition sums approximate the adopted BC tables;
+    their excitation terms are numerical basis functions, not measured levels.
+    Electron spin two and unit heavy-particle translational mass ratios follow
+    the approved atomic reference convention.
+  evidence: [representation, source_choices]
+- statement: The supplied reference budget explicitly reads the packaged
+    Asplund 2021 file, including Ge, and normalizes the nuclear abundances to one.
+    Other elemental compositions do not inherit this numerical validation.
+  evidence: [implementation, verification]
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Continuous h on 1500--4000 K with scalar/array JAX evaluation.
+  conditions:
+  - Values outside the interval or at nonfinite temperatures return NaN.
+  - Validation uses float64 and epsilon_crit 1e-13 at seven temperatures and five pressures per network.
+  - The seven temperatures are 1500, 1735, 2000, 2517, 3000, 3973 and 4000 K.
+  - The five pressures are 1e-6, 1e-4, 0.01, 1 and 100 bar.
+  evidence: [implementation, verification, tests]
+- kind: scientific_applicability
+  status: unknown
+  description: No whole-mixture physical validation or universal atmospheric domain is claimed.
+  conditions: []
+  evidence: [source_choices, implementation]
+claims:
+- id: continuous_representation
+  kind: numerical_verification
+  status: supported
+  statement: The source choices have continuous representations with tested
+    temperature derivatives. JANAF withheld-node constant errors are below
+    6e-5 dex and heat-capacity errors below 0.04 J mol^-1 K^-1.
+  scope: Four JANAF molecules, 22 unused table rows each. Five partition fits
+    reproduce adopted table values within 4e-6 relative; leave-one-out log10-Q
+    errors are below 6e-5. These are representation checks, not independent
+    physical validation. The three anion sums use evaluated bound levels.
+  evidence: [representation, tests]
+- id: equilibrium_verification
+  kind: numerical_verification
+  status: supported
+  statement: Both fixed networks pass numerical closure and independent
+    FastChem comparisons at all 70 sampled conditions, including new temperatures.
+  scope: All-species abundance differences are below 1e-3 dex; explicit element,
+    charge and mass-action gates apply. The independent solver receives the same
+    constants and composition but never supplies initialization to ExoGibbs.
+  evidence: [verification, fastchem_build, tests]
+- id: trace_charge_closure
+  kind: numerical_verification
+  status: supported
+  statement: The ion-inclusive curated setup enables a gas stopping criterion with relative signed-constraint
+    closure, and diagonal regularization scaled for signed constraints resolves weak-ionization
+    cases previously hidden by an absolute residual.
+  scope: The numerical mode is opt-in through setup metadata; existing presets
+    and condensate initializers retain their prior path. Analytic three-species
+    regressions and the original 20 ion-inclusive
+    solar conditions pass at the default tolerance in float64. The broader
+    abundance validation explicitly uses epsilon_crit 1e-13 for trace elements.
+  evidence: [implementation, tests, verification]
+- id: hybrid_physical_accuracy
+  kind: physical_validation
+  status: unknown
+  statement: The physical accuracy of the complete adopted mixture remains unestablished.
+  scope: Source-adoption evidence is inherited with its limitations. No independent
+    whole-mixture observation, opacity calculation or experimental composition
+    measurement is introduced by continuous interpolation or FastChem agreement.
+  evidence: [source_choices]
+- id: prescribed_atmosphere_sensitivity
+  kind: numerical_verification
+  status: supported
+  statement: Two 161-layer prescribed columns compare curated, FastChem 4 and
+    legacy FastChem 3 thermochemistry, with all 966 layer/model cases passing
+    independent elemental, charge and mass-action closure gates.
+  scope: Solar Asplund 2021 budget, 1e-6--100 bar, one 4000 K isothermal column
+    and one prescribed 2500--4000 K temperature inversion. FastChem 4 shares
+    the exact 537-species catalog; the legacy FastChem 3 comparison retains
+    its 523 species and therefore includes catalog effects. All models use
+    the same relative-charge mode and tolerance. No atmospheric, opacity or
+    whole-mixture physical validation, or global maximum search, is claimed.
+  evidence: [atmosphere_demo]
+evidence:
+- id: implementation
+  kind: implementation
+  summary: Native ChemicalSetup construction, pinned packaged numerical data and gas convergence corrections.
+  sources:
+  - src/exogibbs/presets/curated.py
+  - src/exogibbs/data/curated/gas_v1.json
+  - src/exogibbs/data/curated/README.rst
+  - src/exogibbs/equilibrium/gas/kernel/solver.py
+  - documents/presets/curated.rst
+  scope: MCEG remains optional development documentation, with no runtime or test import.
+- id: source_choices
+  kind: implementation
+  summary: Approved atomic and molecular adoption decisions and prior controlled composition comparison.
+  sources:
+  - mceg/contracts/atomic_ion_adoption.yaml
+  - mceg/contracts/major_molecule_adoption.yaml
+  - mceg/contracts/gas_thermochemistry_impact.yaml
+  scope: Prior contracts and archives retain their historical study scope; the new preset does not rewrite their results.
+- id: representation
+  kind: benchmark
+  result: passed
+  summary: Offline thermodynamically consistent JANAF fits and positive partition representations with withheld-point checks.
+  sources:
+  - examples/comparisons/build_curated_preset.py
+  - examples/comparisons/data/curated_continuous_reference.json
+  - tests/data/validation/curated_gas_validation/thermal_checks.json
+  scope: C2 JANAF free energy and smooth partition sums; fit terms and leave-one-out stability are not new spectroscopy.
+- id: verification
+  kind: benchmark
+  result: passed
+  summary: Two networks, 70 equilibrium cases and 70 independent FastChem comparisons.
+  sources:
+  - examples/comparisons/validate_curated_preset.py
+  - tests/data/validation/curated_gas_validation/receipt.json
+  - tests/data/validation/curated_gas_validation/diagnostics.csv
+  - tests/data/validation/curated_gas_validation/default_charge.csv
+  - tests/data/validation/curated_gas_validation/fastchem_parity.csv
+  - tests/data/validation/curated_gas_validation/ions.npz
+  - tests/data/validation/curated_gas_validation/neutral.npz
+  scope: CPU float64, identical numerical inputs and independent initialization. Artifact, implementation and input hashes are recorded.
+- id: fastchem_build
+  kind: implementation
+  summary: The existing unmodified FastChem v4.0.3 standalone build is reused as an optional comparator.
+  sources:
+  - tests/data/validation/gas_thermochemistry_impact/fastchem_build.json
+  - tests/data/validation/curated_gas_validation/receipt.json
+  scope: Executable hashes match; FastChem and its source checkout are not packaged runtime dependencies.
+- id: tests
+  kind: implementation
+  summary: Deterministic tests cover approved nodes, withheld JANAF values and derivatives,
+    network membership, source provenance, bounds, charge closure and archived solver agreement.
+  sources:
+  - tests/unittests/presets/curated_test.py
+  - tests/unittests/equilibrium/gas/kernel/charge_test.py
+  - tests/data/validation/curated_gas_validation/tests.json
+  - tests/data/validation/curated_gas_validation/pr_tests.json
+  scope: Source comparison and implementation verification; external MCEG and FastChem installations are unnecessary.
+- id: atmosphere_demo
+  kind: benchmark
+  result: passed
+  summary: Offline prescribed atmosphere columns show large neutral Cu/Ni
+    changes together with absolute abundances and electron/H- responses.
+  sources:
+  - examples/comparisons/demo_curated_atmosphere.py
+  - tests/unittests/examples/curated_atmosphere_test.py
+  - tests/data/validation/curated_atmosphere/receipt.json
+  - tests/data/validation/curated_atmosphere/summary.csv
+  - tests/data/validation/curated_atmosphere/isothermal.png
+  - tests/data/validation/curated_atmosphere/inverted.png
+  scope: Source sensitivity under fixed numerical conditions. Ranking requires
+    mole fraction at least 1e-12 in either model; trace-species ratios do not
+    measure opacity changes or experimental accuracy.
+limitations:
+- statement: Conditional and provisional molecule choices retain their documented
+    physical limitations. 427 species retain pinned FastChem constants without
+    independent source-adoption audits.
+  evidence: [source_choices, implementation]
+- statement: Condensation, rainout, external ionization, density-dependent state
+    dissolution and isotope resolution are omitted.
+  evidence: [source_choices]
+- statement: Source agreement, positive fitted partition weights and independent
+    numerical solver agreement do not establish whole-mixture physical accuracy.
+  evidence: [representation, verification]
