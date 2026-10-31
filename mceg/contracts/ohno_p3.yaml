@@ -1,0 +1,189 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.ohno_p3.v1
+  name: Public GGChem phosphorus comparison in Ohno's figure format
+  description: Native mixed-source database selections, matched ExoGibbs calculations and controlled source, species and elemental-background comparisons at declared public conditions.
+  implementation: &implementation
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:6f2c51dca637095c36702033ff3d5b46b7bbaaf7b772a43d4e449b5d377fb2a5
+    entry_points:
+    - mceg/reviews/ohno_ggchem_20261031.py
+    - mceg/reviews/ohno_exogibbs_20261031.py
+    - mceg/reviews/plot_ohno_p3_20261031.py
+assumptions:
+- statement: Matched solver comparisons use identical native species identities, elemental budgets and formation constants; function evaluation is shared, while equilibrium solvers are independent.
+  evidence: [numerical_execution]
+- statement: Controls change only the stated source function, gas identities or elemental background; common identities require both matching exported names and elemental compositions.
+  evidence: [numerical_execution]
+- statement: All calculations are neutral ideal gas mixtures; ions, electrons, condensates, rainout and kinetic quenching are excluded.
+  evidence: [source_selection, numerical_execution]
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Eight ExoGibbs profiles and four matched native GGChem profiles, each with 121 temperatures at 0.001 bar.
+  conditions:
+  - The logarithmic temperature samples span 200-3000 K; 100-200 K is not evaluated.
+  - Seven-element H/He/C/N/O/P/S controls and all 27 elements in the pinned Asplund 2021 file use the same abundance values.
+  - Native source selection retains its per-element stoichiometric cap of 16 and later-file overwrite rules.
+  - ExoGibbs gates require elemental relative residual below 1e-5 and absolute log mass-action residual below 1e-8, in addition to convergence.
+  - Native comparisons require maximum absolute difference in natural log mole fraction below 2e-5, including trace species.
+  evidence: [source_selection, numerical_execution]
+- kind: scientific_applicability
+  status: unknown
+  description: Source fit validity over the numerical interval, complete species and phase coverage, and physical accuracy remain unestablished.
+  conditions: []
+  evidence: [source_selection, numerical_execution]
+claims:
+- id: matched_numerical_closure
+  revision: '1'
+  kind: numerical_verification
+  statement: All 968 ExoGibbs samples pass primitive closure gates, and all four matched native profiles agree within 6.69e-8 in natural log mole fraction.
+  scope: Explicit sampled states and identical neutral gas inputs; shared function evaluation is not independently validated by solver agreement.
+- id: source_species_background_effects
+  revision: '1'
+  kind: numerical_verification
+  statement: Thermochemical selection, available gas identities and elemental background each materially change the sampled phosphorus allocation.
+  scope: Declared public mixed-source selections, seven-element one-factor controls and the seven-to-27-element comparison; Ohno's unavailable original inputs are not reconstructed.
+- id: phosphorus_physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The selected thermochemical data quantitatively establish the physical phosphorus reservoir in the intended cold atmospheres.
+  scope: Requires independently supported energy anchors and source intervals, adequate gases and phases, and application-specific validation.
+evidence:
+- id: source_selection
+  kind: literature
+  summary: Pinned public GGChem source and coefficient-free manifests record the source priority, native species selection, source hashes and output-only instrumentation.
+  sources:
+  - https://github.com/pw31/GGchem/tree/65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b
+  - tests/data/validation/ohno_p3/native_manifest.json
+  - tests/data/validation/ohno_p3/native27_manifest.json
+  scope: Native representation and selection audit; the dispol format does not retain original fit intervals, and historical source evaluations are not fully inspected.
+  artifacts:
+  - source: tests/data/validation/ohno_p3/native_manifest.json
+    sha256: feda8e6f0175029ee5087882e0d7e19c754e2f59d08f542a2a5f7e4b24eab356
+  - source: tests/data/validation/ohno_p3/native27_manifest.json
+    sha256: 559ea22f73f10bf3c2633cff69447d739b21383212a219848afd7157d724c3bc
+  provenance:
+    role: primary
+    location: Pinned init_chemistry, read_parameter, smchem16 and demo_sweep sources, and native exported species/source manifests.
+    inspection: partial
+    note: The JANAF-based baseline is a three-file mixed selection; full Burcat is read last in the alternative. These labels do not denote pure database exports.
+- id: numerical_execution
+  kind: benchmark
+  result: passed
+  summary: All 968 ExoGibbs samples pass elemental and log mass-action closure; four full native GGChem profiles agree with matched ExoGibbs results, and controls separate source, species and background effects.
+  sources:
+  - mceg/reviews/ohno_ggchem_20261031.py
+  - mceg/reviews/ohno_exogibbs_20261031.py
+  - mceg/reviews/plot_ohno_p3_20261031.py
+  - tests/data/validation/ohno_p3/summary.json.gz
+  scope: Provider-owned execution. The compact receipt archives every P curve and numerical maxima; all-species primitive densities and constants are regenerated locally under results/ohno_p3 and are not redistributed.
+  subject: ohno_public_snapshot
+  context: declared_gas_comparison
+  artifacts:
+  - source: tests/data/validation/ohno_p3/summary.json.gz
+    sha256: 64ed5c98629dbd05220677c512b92b41d8c4655d15df106129f3070b5b9fdacf
+  - source: documents/_static/ohno_p3_expanded_elements.png
+    sha256: 325d49772f909ac0cbd32607c874bb6f93f1d7ba286a1566a6bc39bca21efbd2
+  - source: documents/_static/ohno_p3_database_comparison.png
+    sha256: 1d56430ba8b1ff6899f425e8d04b05878f8df3ca4d109dcb5d45b0b0e234ebb7
+  - source: documents/_static/ohno_exogibbs_controls.png
+    sha256: a096f827545dead9c09fff0b4b47400f7f1d6c724aa237dd295074aa6d3925da
+  provenance:
+    role: primary
+    location: Executed closure gates, native solver differences, controlled P-atom fractions, and byte-identical native standard outputs with and without diagnostic writes.
+    inspection: inspected
+    note: Independent equilibrium solvers share the native thermochemical function values at the exact sampled temperatures; common JANAF control duplicates baseline physical conditions.
+limitations:
+- statement: Ohno's exact revision, source selections, abundances and phase settings are unavailable; the figure format and qualitative contrast are reproduced under declared public inputs only.
+  evidence: [source_selection, numerical_execution]
+- statement: The 200-3000 K sampling interval is not a validated physical domain for every source fit; no production curated preset is extrapolated by this experiment.
+  evidence: [source_selection]
+- statement: P4O9 is absent from both native selections and was only a separate CEA-derived addition in the earlier research model; P4S3 is present in both native selections.
+  evidence: [source_selection]
+- statement: The two-gas removal experiment is distinct from restricting the whole network to common species and does not establish that adding H3PO4 and HPO2 alone closes the production network.
+  evidence: [numerical_execution]
+subjects:
+- id: ohno_public_snapshot
+  implementation: *implementation
+  selected_files:
+    mceg/reviews/ohno_ggchem_20261031.py: 44dcf829524441a8a21d0a52506c345eb5a837ad271e9b039b4b235065a425c5
+    mceg/reviews/ohno_exogibbs_20261031.py: 6f2c51dca637095c36702033ff3d5b46b7bbaaf7b772a43d4e449b5d377fb2a5
+    mceg/reviews/plot_ohno_p3_20261031.py: 887e1b2bdc6125011042ff659b6954685375a843771f10549a4d9ea2348d9292
+    src/exogibbs/api/gas.py: 9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+contexts:
+- id: declared_gas_comparison
+  scope: Neutral gas equilibrium at declared temperature knots and pressure, with source and network interventions held distinct from physical validation.
+  settings:
+    pressure_bar: 0.001
+    reference_pressure_bar: 1.0
+    lower_sampled_temperature_K: 200.0
+    upper_sampled_temperature_K: 3000.0
+    samples_per_profile: 121
+    condensation: false
+    ions: false
+    abundance_source: Asplund 2021
+assessments:
+- id: ohno_numerical_review
+  kind: evidence_support
+  claim: matched_numerical_closure
+  claim_revision: '1'
+  subject: ohno_public_snapshot
+  context: declared_gas_comparison
+  method: &method
+    id: native_source_and_controlled_comparison
+    revision: '1'
+    description: Inspect native selection, primitive closure, matched-input equilibrium solvers and controlled interventions without transferring numerical support to physical accuracy.
+  evidence: [numerical_execution]
+  reasons:
+  - All 968 ExoGibbs samples pass; maximum elemental relative residual is 4.42e-8, log mass-action residual is 9.10e-12, and matched native log mole fraction difference is 6.69e-8.
+  - Four native profiles pass closure, and their standard output is byte-identical with and without diagnostic-only source writes.
+  status: supported
+  origin: reviewed
+- id: ohno_sensitivity_review
+  kind: evidence_support
+  claim: source_species_background_effects
+  claim_revision: '1'
+  subject: ohno_public_snapshot
+  context: declared_gas_comparison
+  method: *method
+  evidence: [numerical_execution]
+  reasons:
+  - At 992.851 K in the seven-element network, substituting only baseline P4O6 into full Burcat gives 99.19 percent of P atoms in P4O6 despite all additional gas competitors.
+  - At 504.500 K, omitting H3PO4 and HPO2 increases Burcat P4O10 allocation from 63.41 to 94.39 percent in the seven-element network.
+  - Expanding from seven to 27 elements changes one carrier by up to 12.95 percentage points in the baseline and 23.23 percentage points with Burcat priority, while the qualitative source contrast persists.
+  status: supported
+  origin: reviewed
+- id: ohno_physical_review
+  kind: evidence_support
+  claim: phosphorus_physical_accuracy
+  claim_revision: '1'
+  subject: ohno_public_snapshot
+  context: declared_gas_comparison
+  method: *method
+  evidence: [source_selection, numerical_execution]
+  reasons:
+  - Independent thermochemical constraints, per-record source validity bounds and sufficient species or phase coverage are not established; numerical solver agreement cannot resolve a shared physical error.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: assess_source_anchors_and_phases
+  target_kind: claim
+  target: phosphorus_physical_accuracy
+  revision: '1'
+  action: Resolve source evaluations and validity intervals for competing P oxides and acids, then test candidate gases and phases at declared application conditions before production adoption.
+  requires: [Original source evaluations, Reference-state and phase checks, Independent energy constraints, Application conditions]
+  completion: Record independently supported source choices and controlled network effects; retain unknown where physical evidence is insufficient.
+- id: compare_original_ohno_inputs
+  target_kind: evidence
+  target: source_selection
+  action: If the original input snapshot becomes available, run it alongside the declared public comparison.
+  requires: [Original GGChem revision, Selected source files, Species and element lists, Abundances and phase settings]
+  completion: Compare curves with original settings and isolate any remaining changes from the declared public run.

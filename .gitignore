@@ -176,6 +176,8 @@ cython_debug/
 # Generated comparison artifacts are not repository sources.
 /results/
 /volatiles_artifacts/
+# Regenerated source-restricted research coefficients stay local.
+/tests/data/validation/phosphorus_cold/thermo.json
 
 # Local external checkouts and scratch workspaces.
 /.databases/
