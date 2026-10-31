@@ -24,4 +24,7 @@ HCN differences with optional MCEG tooling.
    volatile_sources
    new_fastchem_logk
    fastchem_hcn_followup
+   ohno_p3
+   phosphorus_provenance
+   phosphorus_cold_validation
    build

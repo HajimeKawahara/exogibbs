@@ -1,0 +1,501 @@
+{
+  "review_date": "2026-10-31",
+  "scope": "Low-temperature gas identity, source provenance and coverage audit. P4O6 choice is retained from the preceding review; no production dataset or source coefficients are changed.",
+  "validity": {
+    "calculation_range_K": [
+      200,
+      1500
+    ],
+    "selected_missing_gas_NASA9_intervals_K": [
+      [
+        50,
+        200
+      ],
+      [
+        200,
+        1000
+      ],
+      [
+        1000,
+        6000
+      ]
+    ],
+    "corresponding_NASA7_range_K": [
+      200,
+      6000
+    ],
+    "physical_validation": "Not established across either interval. Bounds describe representations of thermochemical models, not measurements throughout the range.",
+    "source_error_model": "Reported +/- estimates and intermethod spreads are not calibrated probability distributions. No covariance model is supplied."
+  },
+  "species": {
+    "H3PO4": {
+      "identity": "gas O=P(OH)3, not liquid/solid phosphoric acid",
+      "selected_hf298_kJ_mol": -1118.709552,
+      "selected_source": "goos_burcat_g3b3",
+      "reported_uncertainty_kJ_mol": 8.368,
+      "thermal_function_evidence": "Burcat record supplies computed frequencies and three estimated OH torsional barriers, 1200,1200,1450 cm^-1. The reported Cp fit residual 0.17% at 400 K measures polynomial fitting, not physical model accuracy.",
+      "alternatives": [
+        {
+          "hf298_kJ_mol": -1139.76344,
+          "offset_from_selected_kJ_mol": -21.053888,
+          "source": "khalfa_2015",
+          "inspection": "Numerical value -272.41 kcal/mol directly inspected in Burcat comment; primary paper numerical table not inspected.",
+          "reported_uncertainty_kJ_mol": null
+        },
+        {
+          "hf298_kJ_mol": -1126.96,
+          "offset_from_selected_kJ_mol": -8.250448,
+          "source": "saab_2017",
+          "inspection": "Primary author manuscript section II.D inspected; liquid Hf plus COSMO-RS vaporization estimate, not a gas measurement.",
+          "reported_uncertainty_kJ_mol": 2.9
+        },
+        {
+          "hf298_kJ_mol": -1141.4,
+          "offset_from_selected_kJ_mol": -22.690448,
+          "source": "alexeev_2005",
+          "inspection": "Value quoted by Saab2017; original and erratum numerical contents not inspected; not eligible as a calibrated reference.",
+          "reported_uncertainty_kJ_mol": null
+        }
+      ],
+      "decision": "Keep selected research anchor explicit and run controlled alternatives. Independent calculations support an approximately 8-23 kJ/mol source spread, not an established best value. Do not interpret +/-2.90 of the liquid-derived estimate as total gas uncertainty."
+    },
+    "HPO2": {
+      "identity": "gas HOPO; GGChem/NASA9 HPO2 and newer NASA7 HOPO refer to the same species",
+      "selected_hf298_kJ_mol": -468.608,
+      "selected_source": "haworth_bacskay_2002",
+      "uncertainty_annotations": {
+        "NASA9_kcal_mol": 1.5,
+        "NASA7_kcal_mol": 2.0,
+        "resolution": "Annotation discrepancy preserved; do not choose the smaller value as a validated error bar."
+      },
+      "thermal_function_evidence": "Burcat computed frequencies and an estimated 2000 cm^-1 OH torsional barrier; NASA7 Cp fit residual 0.30% at 400 K. These do not independently validate entropy.",
+      "alternatives": [
+        {
+          "hf298_kJ_mol": -444.3408,
+          "offset_from_selected_kJ_mol": 24.2672,
+          "source": "burcat_g3b3",
+          "inspection": "Alternative -106.2 +/-2 kcal/mol inspected in Burcat comments.",
+          "reported_uncertainty_kJ_mol": 8.368
+        },
+        {
+          "hf298_kJ_mol": -462.7504,
+          "offset_from_selected_kJ_mol": 5.8576,
+          "source": "hildenbrand_lau_1994",
+          "inspection": "Publisher-deposited abstract inspected via Crossref; -110.6 kcal/mol, third-law analysis of measured gas equilibria. Full paper uncertainty and temperature range not inspected.",
+          "reported_uncertainty_kJ_mol": null
+        }
+      ],
+      "decision": "Independent equilibrium experiment is much closer to the selected Haworth anchor than the unused G3B3 alternative. The +24.2672 kJ/mol G3B3 offset is a source stress test, not a symmetric uncertainty or a recommended replacement."
+    },
+    "HPO3": {
+      "identity": "gas HOPO2; distinct from HOPO/HPO2",
+      "selected_hf298_kJ_mol": -713.7904,
+      "selected_source": "haworth_bacskay_2002",
+      "reported_uncertainty_kJ_mol": 8.368,
+      "alternatives": [
+        {
+          "hf298_kJ_mol": -692.0336,
+          "offset_from_selected_kJ_mol": 21.7568,
+          "source": "burcat_g3b3",
+          "inspection": "Alternative -165.4 kcal/mol inspected in Burcat comments.",
+          "reported_uncertainty_kJ_mol": null
+        },
+        {
+          "hf298_kJ_mol": -706.2592,
+          "offset_from_selected_kJ_mol": 7.5312,
+          "source": "hildenbrand_lau_1994",
+          "inspection": "Publisher-deposited abstract inspected via Crossref; -168.8 kcal/mol. Full paper uncertainty not inspected.",
+          "reported_uncertainty_kJ_mol": null
+        }
+      ]
+    },
+    "H3PO3_phosphorous": {
+      "identity": "P(OH)3, separate isomer",
+      "selected_hf298_kJ_mol": -771.019152,
+      "selected_source": "goos_burcat_g3b3",
+      "reported_uncertainty_kJ_mol": 8.368
+    },
+    "H3PO3_phosphonic": {
+      "identity": "O=PH(OH)2, separate isomer",
+      "selected_hf298_kJ_mol": -820.75436,
+      "selected_source": "goos_burcat_g3b3",
+      "reported_uncertainty_kJ_mol": null,
+      "limitation": "No uncertainty assigned from a different isomer."
+    },
+    "HPO": {
+      "identity": "gas HPO; existing CEA anchor is not the Burcat/Haworth anchor",
+      "selected_hf298_kJ_mol": -56.868759,
+      "alternatives": [
+        {
+          "hf298_kJ_mol": -93.7216,
+          "offset_from_selected_kJ_mol": -36.852841,
+          "source": "haworth_bacskay_2002",
+          "inspection": "Pinned Burcat NASA9 header -22.4 +/-1 kcal/mol.",
+          "reported_uncertainty_kJ_mol": 4.184
+        },
+        {
+          "hf298_kJ_mol": -143.0928,
+          "offset_from_selected_kJ_mol": -86.224041,
+          "source": "hildenbrand_lau_1994",
+          "inspection": "Publisher-deposited abstract -34.2 kcal/mol.",
+          "reported_uncertainty_kJ_mol": null
+        }
+      ],
+      "decision": "Unresolved disagreement; do not silently swap source or interpret full source agreement as established."
+    },
+    "PH3": {
+      "selected_hf298_kJ_mol": 5.439,
+      "alternate_burcat_g3b3_kJ_mol": 11.786,
+      "independent_compilation_value_in_saab2017_table1_kJ_mol": 5.47,
+      "independent_compilation_uncertainty_kJ_mol": 1.7,
+      "decision": "Keep the measured-data-derived CEA choice explicit. Burcat G3B3 availability is not a reason to replace every selected P species."
+    },
+    "P4S3": {
+      "availability": "Absent from both pinned NASA9 source files; represented in native GGChem comparison. This remains a separate network coverage gap."
+    },
+    "HPO4": {
+      "identity": "Neutral HPO4, labelled phosphoric acid biradical in the source; candidate for numerical coverage only.",
+      "source_annotation": "The NASA7 comment states SIGMA=1 and STATWT=2 for neutral HPO4 (48 electrons).",
+      "inspection": "Directly inspected in results/p4o9_audit/BURCAT.THR.txt, lines 32726-32729; the matching pinned NASA9 candidate is at source line 21699.",
+      "limitation": "The original electronic-state calculation and meaning of the statistical-weight annotation were not recovered. The even-electron composition makes this annotation a data-quality question requiring review, not a verified physical electronic-state assignment.",
+      "decision": "Retain the original record only for the declared finite-catalog sensitivity test; do not interpret identity-reviewed candidates as physically vetted thermochemistry or silently correct the entropy."
+    }
+  },
+  "sources": [
+    {
+      "id": "goos_burcat_g3b3",
+      "citation": "Elke Goos G3B3 Stuttgart, as attributed by the H3PO4/H3PO3 Burcat records",
+      "inspection": "Database comments and coefficients inspected; a separate original computational report with reproducible raw output was not recovered.",
+      "url": "https://respecth.elte.hu/burcat/BURCAT.THR.txt"
+    },
+    {
+      "id": "burcat_g3b3",
+      "citation": "Burcat G3B3 calculations as attributed in individual records",
+      "inspection": "Database primary record inspected; original calculation files not recovered.",
+      "url": "https://respecth.elte.hu/burcat/BURCAT.THR.txt"
+    },
+    {
+      "id": "haworth_bacskay_2002",
+      "doi": "10.1063/1.1521760",
+      "url": "https://doi.org/10.1063/1.1521760",
+      "citation": "Heats of formation of phosphorus compounds determined by current methods of computational quantum chemistry, JCP117,11175-11187",
+      "inspection": "Bibliographic identity and database quotation verified; original numerical tables and complete uncertainty derivation not inspected."
+    },
+    {
+      "id": "khalfa_2015",
+      "doi": "10.1021/acs.jpca.5b07071",
+      "url": "https://doi.org/10.1021/acs.jpca.5b07071",
+      "citation": "Quantum Chemical Study of the Thermochemical Properties of Organophosphorous Compounds",
+      "inspection": "Publisher supporting information PDF/XLSX inspected; CBS-QB3 method, atomic reference choices, geometries and group-additivity material available. Main numerical H3PO4 table not recovered.",
+      "artifacts": [
+        {
+          "path": "results/phosphorus_cold_validation/jp5b07071_si_001.pdf",
+          "sha256": "6d8e94979e140b0604fa663c846f27f6d01aea64daab4fd7c15197124b88d4bf"
+        },
+        {
+          "path": "results/phosphorus_cold_validation/jp5b07071_si_002.xlsx",
+          "sha256": "dae74aef2954993041de5444e06c99f08b1007c628043501dd21987e156b1424"
+        }
+      ],
+      "supporting_information": [
+        "https://doi.org/10.1021/acs.jpca.5b07071.s001",
+        "https://doi.org/10.1021/acs.jpca.5b07071.s002"
+      ],
+      "license": "CC BY-NC 4.0 as stated by ACS Figshare metadata"
+    },
+    {
+      "id": "hildenbrand_lau_1994",
+      "doi": "10.1063/1.466782",
+      "url": "https://doi.org/10.1063/1.466782",
+      "citation": "Thermochemical properties of gaseous POBr and some H-P-O species, JCP100,8373-8376",
+      "inspection": "Publisher-deposited abstract inspected via https://api.crossref.org/works/10.1063/1.466782; full paper not recovered.",
+      "artifact": {
+        "path": "results/phosphorus_cold_validation/hildenbrand_crossref.json",
+        "sha256": "ff8dfdae877d431fc86832e3ee58ef7caeddd1e539bcd0ad2d06ceeecd8b1258"
+      },
+      "method": "Effusion beams from reaction of H2O or Br2 with Ca2P2O7, mass-spectral species identification and third-law analysis of reaction equilibria.",
+      "limitation": "Do not infer error bars or a verified cold measurement range from this abstract."
+    },
+    {
+      "id": "saab_2017",
+      "doi": "10.1063/1.4986953",
+      "url": "https://arxiv.org/pdf/1702.04379v5",
+      "citation": "Facing the challenge of predicting the standard formation enthalpies of n-butyl-phosphate species with ab initio methods",
+      "inspection": "Primary author manuscript, Table I, Table III, section II.D and bibliography inspected.",
+      "artifact": {
+        "path": "results/phosphorus_cold_validation/saab2017.pdf",
+        "sha256": "cefdc1151f2ba765455cad8d877ae5e7de49c80c4ab1c2167ab5660fbb855b0a"
+      },
+      "finding": "No experimental gas-phase H3PO4 formation enthalpy reported there. Adds COSMO-RS vaporization 144.7 kJ/mol to liquid -1271.66 +/-2.90. Table III validation errors are 6.5,5.2 and21 kJ/mol for butanol, water and TBP respectively; these are not H3PO4-specific bounds."
+    },
+    {
+      "id": "alexeev_2005",
+      "doi": "10.1002/qua.20359",
+      "url": "https://doi.org/10.1002/qua.20359",
+      "citation": "Accurate heats of formation and acidities for H3PO4, H2SO4, and H2CO3 from ab initio electronic structure calculations",
+      "erratum_doi": "10.1002/qua.20698",
+      "inspection": "Original bibliographic/method information verified; -1141.4 kJ/mol quoted in Saab2017. Erratum existence independently verified via publisher-deposited Crossref metadata, but corrected tables not inspected.",
+      "erratum_artifact": {
+        "path": "results/phosphorus_cold_validation/alexeev_erratum_crossref.json",
+        "sha256": "cd249685f1b4cbd90c66592ec593a491474d87b88d4764643c620466433684eb"
+      }
+    },
+    {
+      "id": "nist_h3po4",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C7664382&Mask=FFF",
+      "inspection": "Condensed-phase thermochemistry and gas acidity are available; no neutral gas formation enthalpy benchmark identified. Gas acidity is not a substitute for neutral gas Hf."
+    },
+    {
+      "id": "lee_2024",
+      "doi": "10.3847/1538-4357/ad8915",
+      "url": "https://arxiv.org/pdf/2409.06802v2",
+      "inspection": "Section2.1 and chemical-network discussion inspected.",
+      "finding": "Uses NASA/Burcat for consistency with prior atmosphere models; this is shared source ancestry, not independent validation of H3PO4/HOPO thermal functions. The independent G4 P4O6 calculation is covered in the earlier source review."
+    }
+  ],
+  "coverage": {
+    "counts": {
+      "selected": 28,
+      "candidate": 29,
+      "alternate_anchor": 7,
+      "excluded_isotope": 1
+    },
+    "candidate_ids": [
+      "CH2PH",
+      "CH5OP",
+      "CH3PH2",
+      "CH6P",
+      "CH6P2",
+      "C2H7PO3",
+      "C2H7P__occ0",
+      "C2H7P__occ1",
+      "C2H5PH3",
+      "C3H9PO3",
+      "C3H9PO4",
+      "C3H9P__occ0",
+      "C3H9P__occ1",
+      "C3N3P",
+      "C4H11P",
+      "C5H11O2N2P",
+      "C6H7P",
+      "C6H15PO3",
+      "C6H15P",
+      "C10H15O3PS2",
+      "C18H15P",
+      "H2PO",
+      "H3PO__occ0",
+      "H3PO__occ1",
+      "PO3",
+      "HPO4",
+      "P2H",
+      "P2H2",
+      "P2H4"
+    ],
+    "excluded_isotope": {
+      "PT": "Tritium phosphorous; source H3 denotes isotope mass, not three H atoms."
+    },
+    "alternate_anchor_mapping": {
+      "PC": "CP",
+      "HPO": "HPO",
+      "PH2": "PH2",
+      "PH3": "PH3",
+      "PO2": "PO2",
+      "PS": "PS",
+      "P4": "P4"
+    },
+    "reproduction": "python -m mceg.reviews.phosphorus_cold_source_audit_20261031",
+    "artifact": {
+      "path": "results/phosphorus_cold_validation/p_candidate_records.json",
+      "sha256": "bbc8818dce977d655cff46258c0b15d92a4266a1b94c97e21170f897b4d82861"
+    },
+    "meaning": "29 available additional gas identities, not proof of chemical completeness. Isomers retain independent records."
+  },
+  "representation_checks": {
+    "description": "Same chemical identities, unchanged anchors; differences reflect NASA7/NASA9 fit representations and rounded GGChem atom-subtracted coefficients. Fit bounds are not physical validation.",
+    "input_sha256": {
+      "tests/data/validation/phosphorus_cold/thermo.json": "0d2c38ec5511f7d61b33eeddd681d15c7418a7317ba55fbed6eca1cb0616c3e6",
+      "results/p4o9_audit/BURCAT.THR.txt": "42a597ff852d1a2995f81d4fdca069f3cdcaef77ead5e3c66e02e80ed6699101",
+      "results/ohno_p3/GGchem-65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/dispol_BURCAT.dat": "9e198df6a4a669af376bcc23e767baa3a1e9a5354f97d948e5280784de273554"
+    },
+    "records": [
+      {
+        "species": "HPO2",
+        "nasa7_name": "HOPO",
+        "nasa7_line": 28388,
+        "nasa7_record_sha256": "4c3b1191b5c76fc0e3fc6ebedc9e4812d9403dd118c307ff92c7f8704bfead53",
+        "nasa7_bounds_K": [
+          200.0,
+          6000.0
+        ],
+        "nasa9_bounds_K": [
+          [
+            50.0,
+            200.0
+          ],
+          [
+            200.0,
+            1000.0
+          ],
+          [
+            1000.0,
+            6000.0
+          ]
+        ],
+        "max_abs_nasa9_minus_nasa7_200_1500_K": {
+          "g_RT": 0.0037580449564416085,
+          "s_R": 0.007748328951088013,
+          "cp_R": 0.019892407305793114
+        },
+        "nasa7_h298_kJ_mol": -468.6080003149175,
+        "ggchem_name": "HPO2",
+        "ggchem_line": 4158,
+        "ggchem_matches_raw_minus_atoms_at_print_precision": true,
+        "ggchem_max_coefficient_absolute_difference": 0.0004000000189989805
+      },
+      {
+        "species": "HPO3",
+        "nasa7_name": "HOPO2",
+        "nasa7_line": 28447,
+        "nasa7_record_sha256": "dff48ac2e1e0e6960cd7831cf7aa3546bd5d0fd1fc93ae5917bf5b43ef428c4c",
+        "nasa7_bounds_K": [
+          200.0,
+          6000.0
+        ],
+        "nasa9_bounds_K": [
+          [
+            50.0,
+            200.0
+          ],
+          [
+            200.0,
+            1000.0
+          ],
+          [
+            1000.0,
+            6000.0
+          ]
+        ],
+        "max_abs_nasa9_minus_nasa7_200_1500_K": {
+          "g_RT": 0.0032921257827069894,
+          "s_R": 0.0117910209896408,
+          "cp_R": 0.03155054650730271
+        },
+        "nasa7_h298_kJ_mol": -713.790399620268,
+        "ggchem_name": "HPO3",
+        "ggchem_line": 4170,
+        "ggchem_matches_raw_minus_atoms_at_print_precision": true,
+        "ggchem_max_coefficient_absolute_difference": 0.0003000000142492354
+      },
+      {
+        "species": "H3PO4",
+        "nasa7_name": "H3PO4",
+        "nasa7_line": 28824,
+        "nasa7_record_sha256": "636f172f81e2e440775406c74480a8a833b1facfe2f20e219a2768041fe35efc",
+        "nasa7_bounds_K": [
+          200.0,
+          6000.0
+        ],
+        "nasa9_bounds_K": [
+          [
+            50.0,
+            200.0
+          ],
+          [
+            200.0,
+            1000.0
+          ],
+          [
+            1000.0,
+            6000.0
+          ]
+        ],
+        "max_abs_nasa9_minus_nasa7_200_1500_K": {
+          "g_RT": 0.0033841880618865616,
+          "s_R": 0.007209704969049824,
+          "cp_R": 0.02004653139600343
+        },
+        "nasa7_h298_kJ_mol": -1118.709547596072,
+        "ggchem_name": "H3PO4",
+        "ggchem_line": 4234,
+        "ggchem_matches_raw_minus_atoms_at_print_precision": true,
+        "ggchem_max_coefficient_absolute_difference": 0.00020000000949949026
+      },
+      {
+        "species": "H3PO3_phosphorous",
+        "nasa7_name": "H3PO3  [P(OH)3]",
+        "nasa7_line": 28789,
+        "nasa7_record_sha256": "651297a78ad1d19ae8aa7b2626dd9df7fa8b0791c432c46dd67b632b2393dba5",
+        "nasa7_bounds_K": [
+          200.0,
+          6000.0
+        ],
+        "nasa9_bounds_K": [
+          [
+            50.0,
+            200.0
+          ],
+          [
+            200.0,
+            1000.0
+          ],
+          [
+            1000.0,
+            6000.0
+          ]
+        ],
+        "max_abs_nasa9_minus_nasa7_200_1500_K": {
+          "g_RT": 0.003258572792731229,
+          "s_R": 0.008042509770525896,
+          "cp_R": 0.026406998171024654
+        },
+        "nasa7_h298_kJ_mol": -771.0191520357423,
+        "ggchem_name": "H3PO3",
+        "ggchem_line": 4230,
+        "ggchem_matches_raw_minus_atoms_at_print_precision": true,
+        "ggchem_max_coefficient_absolute_difference": 0.0002999999560415745
+      },
+      {
+        "species": "H3PO3_phosphonic",
+        "nasa7_name": "H3PO3  O=PH(OH)2",
+        "nasa7_line": 28799,
+        "nasa7_record_sha256": "b45a024026e21582d612c6291b7e784d899e588c536ab8f20761b04fdfc2d051",
+        "nasa7_bounds_K": [
+          200.0,
+          6000.0
+        ],
+        "nasa9_bounds_K": [
+          [
+            50.0,
+            200.0
+          ],
+          [
+            200.0,
+            1000.0
+          ],
+          [
+            1000.0,
+            6000.0
+          ]
+        ],
+        "max_abs_nasa9_minus_nasa7_200_1500_K": {
+          "g_RT": 0.0063119059324492355,
+          "s_R": 0.014445636095771874,
+          "cp_R": 0.03252104854289328
+        },
+        "nasa7_h298_kJ_mol": -820.7543585871666,
+        "ggchem_name": "H3PO3:1",
+        "ggchem_line": 4232,
+        "ggchem_matches_raw_minus_atoms_at_print_precision": true,
+        "ggchem_max_coefficient_absolute_difference": 0.00020000000949949026
+      }
+    ]
+  },
+  "open_validation_items": [
+    "Recover Haworth/Bacskay original numerical tables and uncertainty definitions.",
+    "Recover Alexeev2005 original and erratum before treating its H3PO4 value as a reference.",
+    "Resolve H3PO4 thermal-function uncertainty from low-frequency torsions and conformers, beyond formation enthalpy shifts.",
+    "Treat condensates, aqueous chemistry and missing P4S3 separately from gas-network closure.",
+    "Investigate HPO anchor disagreement if it influences an intended application."
+  ],
+  "policy": "Preserve source identity per species and allow explicit research alternatives. No blanket switch to Burcat is justified. Current H3PO4/HOPO availability improves a declared gas network but does not justify a validated low-temperature production preset."
+}

@@ -1,0 +1,21 @@
+H He C N O P S
+dispol_BarklemCollet.dat ! dispol_file
+dispol_StockKitzmann_withoutTsuji.dat ! dispol_file2
+dispol_WoitkeRefit.dat ! dispol_file3
+dispol_BURCAT.dat ! dispol_file4
+0 ! abund_pick
+abundances.dat
+.false. ! model_eqcond
+.false. ! remove_condensates
+.false. ! useDatabase
+.true. ! output_dispol
+.true. ! initchem_info
+1 ! model_dim
+.true. ! model_pconst
+3000. ! Tmax
+200. ! Tmin
+.001 ! pmax
+.001 ! pmin
+31 ! Npoints
+1.e10 ! Tfast
+-2 ! verbose

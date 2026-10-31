@@ -1,0 +1,430 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.phosphorus_cold_validation.v1
+  name: Cold phosphorus network, source sensitivity and phase checks
+  description: Validate declared gas networks and pure-phase insertion calculations, compare independently executed solvers, and separate numerical support from physical source accuracy.
+  implementation: &implementation
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:356a39b39d41cb6320e78002f2a1130b4038fe867ab6eaa0a493f21f7e6449d3
+    entry_points:
+    - mceg/reviews/phosphorus_cold_validation_20261031.py
+    - mceg/reviews/phosphorus_cold_ggchem_validation_20261031.py
+    - mceg/reviews/phosphorus_cold_source_audit_20261031.py
+    - mceg/reviews/phosphorus_cold_phases_20261031.py
+    - mceg/reviews/phosphorus_native_phase_reference_20261031.py
+    - mceg/reviews/phosphorus_native_phase_export_20261031.py
+    - mceg/reviews/phosphorus_cold_condensate_comparison_20261031.py
+assumptions:
+- statement: The NASA9 gas comparisons preserve every shared species function, elemental abundance and reference convention; P4O6 remains fixed while each removal, candidate addition or energy offset is applied separately.
+  evidence: [gas_execution, source_audit]
+- statement: Energy-anchor interventions retain baseline entropy and heat capacity and are sensitivity scenarios, not complete alternate source functions or statistical uncertainty bounds.
+  evidence: [gas_execution, source_audit]
+- statement: Pure condensed phases have unit activity and negligible condensed-volume pressure corrections; positive ln saturation identifies an insertion descent direction but does not determine the final multiphase mixture.
+  evidence: [phase_execution]
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: NASA9 gas networks and source-bounded pure-phase insertion on explicit pressure, temperature and composition samples.
+  conditions:
+  - The gas grid uses 200, 300, 400, 500, 600, 800, 1000 and 1500 K at 1e-6, 0.001 and 1 bar, with solar and 100-times selected heavy-element abundances relative to hydrogen.
+  - Baseline and four species-removal models each use 48 states; ten energy probes each use 16 states at 0.001 bar; the 29-species expansion uses 48 states, totaling 448 gas states.
+  - Every gas sample requires convergence, finite abundances, maximum relative elemental residual below 1e-5 and absolute log mass-action residual below 1e-8, including trace species.
+  - Original NASA9 intervals are retained; the gas evaluator is restricted to the shared 200-1500 K interval and condensed-phase evaluations outside each record's intervals are absent rather than extrapolated.
+  evidence: [gas_execution, phase_execution, source_audit]
+- kind: numerical_evaluation
+  status: documented
+  description: A distinct native GGChem seven-element equilibrium-condensation comparison using Burcat-priority gas records and the native condensed catalog.
+  conditions:
+  - The native profile has 31 temperature samples from 200 to 3000 K at 0.001 bar with solar H/He/C/N/O/P/S abundances, 1156 gases and 22 retained condensed phases.
+  - The matched ExoGibbs comparison independently solves those 31 gas-plus-condensate states from cold starts using directly exported native thermochemical functions.
+  - The native gas-only and condensation profiles share the same gas thermochemical selection; native dispol fit intervals are not independently certified.
+  - The interrupted 27-element trajectory is excluded from completed-profile support.
+  evidence: [native_condensation_execution, matched_condensation_execution]
+- kind: scientific_applicability
+  status: unknown
+  description: Exact low-temperature energy anchors, complete gas and phase coverage, and application-specific atmospheric accuracy remain unestablished.
+  conditions: []
+  evidence: [source_audit, gas_execution, phase_execution, native_condensation_execution]
+claims:
+- id: cold_gas_numerical_closure
+  revision: '1'
+  kind: numerical_verification
+  statement: All 448 declared ExoGibbs gas states pass independent elemental-conservation and all-species mass-action gates.
+  scope: The sampled 78-gas networks, isolated interventions and 107-gas expansion using pinned NASA9 functions; no continuous-domain or physical accuracy claim.
+- id: cold_gas_solver_agreement
+  revision: '1'
+  kind: numerical_verification
+  statement: Independently executed ExoGibbs and GGChem calculations agree for all declared matched NASA9 gas inputs, including trace species.
+  scope: Identical gas identities, original functions, reference conventions, elemental budgets and sampled temperatures and pressures; source accuracy is not established by solver agreement.
+- id: finite_catalog_and_source_response
+  revision: '1'
+  kind: numerical_verification
+  statement: Adding 29 identity-reviewed candidate gases changes the largest sampled single-carrier P allocation by less than 0.00486 percentage points, while isolated energy-anchor alternatives materially change the cold phosphorus allocation.
+  scope: Only the two pinned NASA9 source catalogs and declared H/He/C/N/O/P/S conditions; this is finite-catalog convergence, not completeness across all chemistry or phases.
+- id: source_bounded_phase_insertion
+  revision: '1'
+  kind: numerical_verification
+  statement: Source-bounded pure-phase insertion checks identify sampled gas equilibria with positive phosphorus-condensate saturation.
+  scope: The 29 retained CEA pure-phase records, including six P phases, evaluated only inside their original intervals; positive affinity disproves gas-only stability for the selected functions but does not solve phase amounts.
+- id: native_seven_element_condensation
+  revision: '1'
+  kind: numerical_verification
+  statement: The completed native seven-element gas and equilibrium-condensation profiles demonstrate removal of phosphorus from the gas under the declared native source selection.
+  scope: The 31-state native GGChem comparison; no extrapolation to the unfinished 27-element profile or independent physical validation of native fit intervals.
+- id: cold_network_physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The selected thermochemical data and complete phase network quantitatively predict the phosphorus reservoir in the intended cold atmospheres.
+  scope: Requires independently supported molecular and condensed-phase energies, adequate species coverage and atmospheric conditions; numerical closure and catalog convergence are insufficient.
+- id: matched_gas_condensate_solver_agreement
+  revision: '1'
+  kind: numerical_verification
+  statement: ExoGibbs and native GGChem agree on gas and condensed-phase equilibria at all 31 declared seven-element states using identical exported thermochemical functions.
+  scope: Independent ExoGibbs cold starts with 1156 gases and 22 pure phases at the native temperature knots; shared function values are not independently evaluated or physically validated by this comparison.
+evidence:
+- id: source_audit
+  kind: literature
+  summary: Source inspection distinguishes H3PO4 and HOPO identities, computed and measured energy anchors, polynomial representation ranges, source alternatives and remaining phase or experimental gaps.
+  sources:
+  - documents/mceg/phosphorus_cold_validation.rst
+  - mceg/reviews/phosphorus_cold_sources_20261031.json
+  - mceg/reviews/phosphorus_cold_source_audit_20261031.py
+  - https://doi.org/10.1063/1.1521760
+  - https://doi.org/10.1063/1.466782
+  - https://doi.org/10.1021/acs.jpca.5b07071
+  scope: Inspected source statements and selected records; source intervals describe representations and original experimental or computational details are not all independently reconstructed.
+  artifacts:
+  - source: documents/mceg/phosphorus_cold_validation.rst
+    sha256: 45814fd6e58be021ebb00a10771409f16c33092affcc0b05e02f9057d8fd7648
+  - source: mceg/reviews/phosphorus_cold_sources_20261031.json
+    sha256: f1f3885b01a35b0e286b28b35bf7865f5c10062ad293b97ab9916f80a6fc408a
+  provenance:
+    role: secondary
+    location: The authored source record lists inspected source locations, direct versus indirect support and original source hashes.
+    inspection: partial
+    note: Alternative anchors and isotope or isomer identities are retained explicitly; a plausible gas record is not a complete low-temperature physical validation.
+- id: gas_execution
+  kind: benchmark
+  result: passed
+  summary: All 448 ExoGibbs states pass; candidate expansion, independent removals and energy probes retain shared background functions and export per-state primitive closure.
+  sources:
+  - mceg/reviews/phosphorus_cold_validation_20261031.py
+  - tests/data/validation/phosphorus_cold_validation/gas_summary.json.gz
+  scope: Provider-owned execution on the explicit sampled inputs; the coefficient-free receipt retains all P curves, numerical residuals, species identities and input hashes.
+  subject: cold_gas_validation_snapshot
+  context: nasa9_cold_grid
+  artifacts:
+  - source: tests/data/validation/phosphorus_cold_validation/gas_summary.json.gz
+    sha256: 76a65c4cf6b3696e51302c97324d860b97317d9d850ea1b764292d0efe941d93
+  provenance:
+    role: primary
+    location: Executed cold starts, self-seeded refinement, elemental residuals, trace-species mass action and controlled source or catalog differences.
+    inspection: inspected
+    note: The base and expanded networks contain 78 and 107 gases respectively; all original source functions and the fixed P4O6 choice are preserved except for explicitly labelled probes.
+- id: matched_gas_execution
+  kind: benchmark
+  result: passed
+  summary: All 448 matched GGChem states pass; independent NASA9 evaluation agrees within 9.10e-13 in ln K and every gas abundance agrees within 4.16e-9 in natural log mole fraction.
+  sources:
+  - mceg/reviews/phosphorus_cold_ggchem_validation_20261031.py
+  - mceg/reviews/phosphorus_ggchem_reference.py
+  - tests/data/validation/phosphorus_cold_validation/ggchem_comparison.json.gz
+  scope: The new 448-state matched-input calculation uses a Fortran NASA9 adapter and pinned unmodified SMCHEM16; GGChem receives no ExoGibbs solution, seed or neighboring-temperature continuation.
+  subject: cold_gas_validation_snapshot
+  context: nasa9_cold_grid
+  artifacts:
+  - source: tests/data/validation/phosphorus_cold_validation/ggchem_comparison.json.gz
+    sha256: 83e01a8cf935145933bac8e09f4d7ce7ea849f70b0e21700ce0e6b396c77446f
+  provenance:
+    role: primary
+    location: New-grid independent function evaluations, all-species log abundances, elemental residuals, mass action and total pressure closure.
+    inspection: inspected
+    note: Shared molecular source records can share physical errors; independent evaluators and solvers establish numerical consistency only.
+- id: phase_execution
+  kind: benchmark
+  result: passed
+  summary: Pure-phase affinities use reconstructed absolute elemental chemical potentials, original NASA9 condensed functions and explicit valid-range masks.
+  sources:
+  - mceg/reviews/phosphorus_cold_phases_20261031.py
+  - tests/data/validation/phosphorus_cold_validation/phase_summary.json.gz
+  scope: Conditional insertion into accepted gas solutions; all unavailable phase/temperature evaluations remain null, and shifted gas scenarios retain the unchanged condensed functions explicitly.
+  subject: cold_phase_validation_snapshot
+  context: nasa9_cold_grid
+  artifacts:
+  - source: tests/data/validation/phosphorus_cold_validation/phase_summary.json.gz
+    sha256: 34e3ad95b902538cae265a17f837a0568647fe8f0b750ef30a4024ee31556d45
+  provenance:
+    role: primary
+    location: Source-bounded phase evaluation, independent reconstruction of elemental potentials and positive saturation checks.
+    inspection: inspected
+    note: This is a phase-stability screen, not a multiphase equilibrium solver or validation of all missing condensed phases.
+- id: native_condensation_execution
+  kind: benchmark
+  result: passed
+  summary: A completed native seven-element GGChem profile compares gas-only and equilibrium-condensation conditions with the same 1156 gas records and 22 candidate condensed phases.
+  sources:
+  - tests/data/validation/phosphorus_cold_validation/native7_phase_receipt.json
+  - https://github.com/pw31/GGchem/tree/65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b
+  scope: Native GGChem execution only; source fit bounds are not certified, and the interrupted 27-element run is excluded from completed-profile evidence.
+  subject: native_condensation_snapshot
+  context: native_seven_element_grid
+  artifacts:
+  - source: tests/data/validation/phosphorus_cold_validation/native7_phase_receipt.json
+    sha256: f4db7f591bfa2b46a5d714de6e486702c0f47af79a383d8b2463637e9320d5b4
+  provenance:
+    role: primary
+    location: Matched native gas records, gas-only and condensation outputs, total element accounting and phase saturation checks.
+    inspection: inspected
+    note: The independently executed matched ExoGibbs calculation has separate evidence and is not inferred from this native run.
+- id: matched_condensation_execution
+  kind: benchmark
+  result: passed
+  summary: All 31 independent ExoGibbs gas-plus-condensate states pass conservation, log mass action, active and inactive phase-affinity gates and matched native abundance comparisons.
+  sources:
+  - mceg/reviews/phosphorus_cold_condensate_comparison_20261031.py
+  - mceg/reviews/phosphorus_native_phase_export_20261031.py
+  - tests/data/validation/phosphorus_cold_validation/condensate_comparison.json.gz
+  - tests/data/validation/phosphorus_cold_validation/direct_phase_function_receipt.json
+  scope: Native gas and phase functions are exported directly at the sampled temperatures, including native melting and NH4SH formula-unit conventions; native equilibria are used for scoring only, not ExoGibbs initialization.
+  subject: matched_condensation_snapshot
+  context: native_seven_element_grid
+  artifacts:
+  - source: tests/data/validation/phosphorus_cold_validation/condensate_comparison.json.gz
+    sha256: 6a9401fcfc0a5e8cd633ed933089636ec6877faa1ec4a21b5180d53eb552cf9d
+  - source: tests/data/validation/phosphorus_cold_validation/direct_phase_function_receipt.json
+    sha256: cb5c895180739ecc31df3114d8dce7842b141f4804a759abbbf056f570a963e3
+  provenance:
+    role: primary
+    location: ExoGibbs independent cold solves, full trace-element accounting, gas log mass action, phase affinities, and native gas and condensate comparisons.
+    inspection: inspected
+    note: Native printed trace densities are floored. Full reference log mole fractions are reconstructed from native atomic partial pressures and the shared gas constants; independently printed values are also compared above log mole fraction -600. Shared thermochemical evaluation is not independently validated.
+limitations:
+- statement: The 29-gas expansion exhausts the reviewed candidates in two pinned catalogs for these elements, not all possible molecules or background species; P4S3 and gases absent from those catalogs are not covered by this convergence test.
+  evidence: [source_audit, gas_execution]
+- statement: H3PO4 and HOPO energy differences materially affect abundances; anchor-only probes keep thermal functions fixed and do not supply complete alternative thermochemistry or calibrated error bars.
+  evidence: [source_audit, gas_execution]
+- statement: Source-bounded phase insertion cannot establish final condensate amounts, complete phase competition or a rainout profile; native condensation is equilibrium with retained total elemental inventory.
+  evidence: [phase_execution, native_condensation_execution]
+- statement: Native GGChem fit intervals are not retained in dispol files, and the 27-element condensation trajectory did not complete the low-temperature range.
+  evidence: [native_condensation_execution]
+- statement: No production curated dataset, default choice or 1500-4000 K evaluation domain is changed by this research validation.
+  evidence: [source_audit, gas_execution]
+subjects:
+- id: cold_gas_validation_snapshot
+  implementation: *implementation
+  selected_files:
+    mceg/reviews/phosphorus_cold_20261030.py: f771039ac7fd7fe3a02baeaeedb4e467c72660230eec32909da418b6d0aed6e2
+    mceg/reviews/phosphorus_cold_ggchem_validation_20261031.py: f9b89ca26b5eebc2ead938100840a24eb7a447afc7b78a50601a40424aeca3a1
+    mceg/reviews/phosphorus_cold_source_audit_20261031.py: 7a997bd5fee2dc8c7967e87fb2ede53cbe5523a3fa933aba53096844f442d7b8
+    mceg/reviews/phosphorus_cold_validation_20261031.py: 356a39b39d41cb6320e78002f2a1130b4038fe867ab6eaa0a493f21f7e6449d3
+    mceg/reviews/phosphorus_ggchem_driver.f90: c4462b873e100912fed55a4ef7f533c2b36ab2943c68853b994e2487527fd75f
+    mceg/reviews/phosphorus_ggchem_reference.py: 7e10bb8080c1b7128896ba33a981b436a4c282695bebc272007ee85ddacfe006
+    src/exogibbs/api/gas.py: 9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    tests/data/validation/phosphorus_cold/ggchem_build.json: 83a571774437c70cb8cac086538226ed11bdefe3f6813a42b9dd13ba715a2283
+    tests/data/validation/phosphorus_cold/ggchem_source.zip: a31522d39d0c1a815845f712d94ea6cdee9292db2e11e55eb4b44a340637faf5
+    tests/data/validation/phosphorus_cold/thermo.json: 0d2c38ec5511f7d61b33eeddd681d15c7418a7317ba55fbed6eca1cb0616c3e6
+    tests/data/validation/phosphorus_cold_validation/gas_summary.json.gz: 76a65c4cf6b3696e51302c97324d860b97317d9d850ea1b764292d0efe941d93
+    tests/data/validation/phosphorus_cold_validation/ggchem_comparison.json.gz: 83e01a8cf935145933bac8e09f4d7ce7ea849f70b0e21700ce0e6b396c77446f
+- id: cold_phase_validation_snapshot
+  implementation: *implementation
+  selected_files:
+    mceg/reviews/phosphorus_cold_20261030.py: f771039ac7fd7fe3a02baeaeedb4e467c72660230eec32909da418b6d0aed6e2
+    mceg/reviews/phosphorus_cold_phases_20261031.py: 23488aa594598ab756ae8765c403ea580a69c3c903ecb4d25cd86fde4fe407db
+    mceg/reviews/phosphorus_cold_validation_20261031.py: 356a39b39d41cb6320e78002f2a1130b4038fe867ab6eaa0a493f21f7e6449d3
+    tests/data/validation/phosphorus_cold/thermo.json: 0d2c38ec5511f7d61b33eeddd681d15c7418a7317ba55fbed6eca1cb0616c3e6
+    tests/data/validation/phosphorus_cold_validation/gas_summary.json.gz: 76a65c4cf6b3696e51302c97324d860b97317d9d850ea1b764292d0efe941d93
+    tests/data/validation/phosphorus_cold_validation/phase_summary.json.gz: 34e3ad95b902538cae265a17f837a0568647fe8f0b750ef30a4024ee31556d45
+- id: native_condensation_snapshot
+  implementation:
+    repository: https://github.com/pw31/GGchem
+    revision: 65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b
+    entry_points: [src16/demo_sweep.f, src16/equil_cond.f]
+  selected_files:
+    tests/data/validation/phosphorus_cold_validation/abundances.dat: 0d262f6daa42909a1fe0d4e1303d760fce8c15006d3a22d9d2bfcb7e92ec9356
+    tests/data/validation/phosphorus_cold_validation/native7_gas.in: 0134794fdb273d6cca358050708c392081aaade82fe4248c57b5272d1bd48e31
+    tests/data/validation/phosphorus_cold_validation/native7_condensed.in: 83803dc9b6fc1df30a76e96f541ce9730348244166dffbebcb3cae1232e6bbf0
+    mceg/reviews/phosphorus_native_phase_reference_20261031.py: 21d877cdf6b150119e489c5c33f8e920afaa57e042e6e0f8ba37c0e4e42d110c
+    tests/data/validation/phosphorus_cold_validation/native27_phase_attempt.json: 40ea8ebc8b55afd07a396d36cdfa254262ec83d6d1323eece01a182142c39921
+    tests/data/validation/phosphorus_cold_validation/native7_phase_receipt.json: f4db7f591bfa2b46a5d714de6e486702c0f47af79a383d8b2463637e9320d5b4
+- id: matched_condensation_snapshot
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:7d4fd162d203fb4284c3245aa7b051505aed5978d2c034b06900399ef1e8f8db
+    entry_points: [mceg/reviews/phosphorus_cold_condensate_comparison_20261031.py]
+  selected_files:
+    tests/data/validation/phosphorus_cold_validation/abundances.dat: 0d262f6daa42909a1fe0d4e1303d760fce8c15006d3a22d9d2bfcb7e92ec9356
+    tests/data/validation/phosphorus_cold_validation/native7_gas.in: 0134794fdb273d6cca358050708c392081aaade82fe4248c57b5272d1bd48e31
+    tests/data/validation/phosphorus_cold_validation/native7_condensed.in: 83803dc9b6fc1df30a76e96f541ce9730348244166dffbebcb3cae1232e6bbf0
+    mceg/reviews/phosphorus_cold_condensate_comparison_20261031.py: 7d4fd162d203fb4284c3245aa7b051505aed5978d2c034b06900399ef1e8f8db
+    mceg/reviews/phosphorus_native_phase_export_20261031.py: 49d28d9608d34f20a65365447457a5a1c948b6c227217fe44785299770aa37be
+    mceg/reviews/phosphorus_native_phase_reference_20261031.py: 21d877cdf6b150119e489c5c33f8e920afaa57e042e6e0f8ba37c0e4e42d110c
+    src/exogibbs/api/condensate.py: 1cd23725e0f4b116f40ac8acc7a3f18c1a38516ad1485624578a5981f9e812c6
+    src/exogibbs/equilibrium/condensate/__init__.py: 1b0680b4c0841f749f017392e0e93b275f2eb315a41d99bc64e58685dfeb5a35
+    src/exogibbs/equilibrium/condensate/acceptance.py: eec671d6826e45ad49011f1ddb4c86f5d21d73448f8d8d0bb82ace38bf565c6f
+    src/exogibbs/equilibrium/condensate/amount_gauge.py: 644025eccf0db960b3b9ef008d8b172bf25755c000c5f1b2e81b161c964b6f66
+    src/exogibbs/equilibrium/condensate/audit.py: 81f646e7576bfd61f222f74bd7c7a9292f335900f29a192a37606ae1ebe24674
+    src/exogibbs/equilibrium/condensate/fixed_support/__init__.py: 39b754248deefbd94adbdcfd0bcf83baf06d7037092da19169a8e17b4e1e5c51
+    src/exogibbs/equilibrium/condensate/fixed_support/autodiff.py: 3517dd8458cd0957c2e829db6baca975105cc8a75c9445299e67f13dcf590377
+    src/exogibbs/equilibrium/condensate/fixed_support/batch.py: f9f6df6e150bca66f563d759b6d1c597a5861d51701b0a7d4cd3abce3a8a2b43
+    src/exogibbs/equilibrium/condensate/fixed_support/continuation.py: dafead03bd26ef4d81394ac3526ce6dbf80ee4843321df6df3c21e4ce0679cf4
+    src/exogibbs/equilibrium/condensate/fixed_support/controller.py: de831ac8981e4e001817bd583dba3335800be661d21b7f1c8bffae48262b6950
+    src/exogibbs/equilibrium/condensate/fixed_support/filter.py: 730d89d620d6919000dfc0555a473e1a1ca5c580d2c6c0d3a50f4d7df1309f81
+    src/exogibbs/equilibrium/condensate/fixed_support/linear_solver.py: 85dcc656d15432f41f66f99c5804c9cae2c6f5cb5fb167e0161d39532c676ed8
+    src/exogibbs/equilibrium/condensate/fixed_support/normal.py: 6e556ea8b0869bffc3646db6a427aa52adf71ab7089e26daac4b638c2e66f443
+    src/exogibbs/equilibrium/condensate/fixed_support/problem.py: f5052961aeea57f899cb0b6373b6a368296da5d846a43ab77c2f3fa8adda49c1
+    src/exogibbs/equilibrium/condensate/fixed_support/restoration.py: 86aa3dde2e5dcff2989e77f4fc65e96f876d83aff8f844d582559490f7e1685f
+    src/exogibbs/equilibrium/condensate/fixed_support/return_map.py: e23b9c7ff2a8b88676e3c75fdbc348be4c39bb51d484877ad65e919913552d47
+    src/exogibbs/equilibrium/condensate/fixed_support/soc.py: 8df2974594f39f0e4b6b58ae9507c45201ddf26401b112f7933c760a397539c7
+    src/exogibbs/equilibrium/condensate/fixed_support/types.py: e7a60fa905034edb1ab4685e9b85d2d81c59b45edeb10f9f67b75f4308ac7b76
+    src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier.py: ed090f5acf07891cb14e8fee31c5bb908a318596199da1aff3282cf71fbddf00
+    src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier_attempt.py: 52f3694e8495ec908629263d48ebf98bd8b36217be7d5079c460c253557d0e49
+    src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier_contracts.py: 3ee76cb50878795ebeab955e796ebc9e782fe050980de08d504ff7ce9e55336a
+    src/exogibbs/equilibrium/condensate/initialization.py: b591105ab59fd96e0ffbec2230ad0d768a64e93c63300057fea5c93cb29f2424
+    src/exogibbs/equilibrium/condensate/inventory_bridge.py: bb38b050cd41888178b8c66c2434833856235931cdcd4540ab6e55347fe76626
+    src/exogibbs/equilibrium/condensate/lifecycle.py: 65d1e412fc1f9fe5e0f97dc2318301d8f61fc34c50c4a0c60efce9a6a220db78
+    src/exogibbs/equilibrium/condensate/policy.py: bafcec53de35ede0e640fe2b463a918b5be79551c77422701f99d0420dd44094
+    src/exogibbs/equilibrium/condensate/profile.py: 4fe03228f62826a8c5fe3e9f26144429229a051218f6d2b8c1bf8dfc3d1ba719
+    src/exogibbs/equilibrium/condensate/results.py: b43a8cda902bddd4a05a5e3ab1c1ccc53f813fc32d44da9168cc0e4357b2a4d1
+    src/exogibbs/equilibrium/condensate/setup.py: 1b4cc1f200364794dd900e61a681e9f9bc88e8d6aca59bf73492fbc3d922e60c
+    src/exogibbs/equilibrium/condensate/solve.py: 90bbd200fdbc82b61484f92e263afa2a6f350be55145f40ec92d9fbf26a16a22
+    src/exogibbs/equilibrium/condensate/support.py: ee4d11e55e284a33e06077e98702f3069779aefa434f65d32561660107919f86
+    src/exogibbs/equilibrium/condensate/support_geometry.py: 495bd3380f97b30c9e77a8a3e956994119e468bcbc784f8bb6ef2bb7e23ba232
+    src/exogibbs/equilibrium/condensate/types.py: 3024ec1f998a5b2ebbc6c75906de50ce792bf473e727cbd22c4d792e5259ac04
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    tests/data/validation/phosphorus_cold_validation/condensate_comparison.json.gz: 6a9401fcfc0a5e8cd633ed933089636ec6877faa1ec4a21b5180d53eb552cf9d
+    tests/data/validation/phosphorus_cold_validation/direct_phase_function_receipt.json: cb5c895180739ecc31df3114d8dce7842b141f4804a759abbbf056f570a963e3
+    tests/data/validation/phosphorus_cold_validation/native7_phase_receipt.json: f4db7f591bfa2b46a5d714de6e486702c0f47af79a383d8b2463637e9320d5b4
+contexts:
+- id: nasa9_cold_grid
+  scope: The explicit seven-element NASA9 gas conditions, catalog and source interventions, with source-bounded phase insertion at those same states.
+  settings:
+    temperature_samples_K: '200, 300, 400, 500, 600, 800, 1000, 1500'
+    pressure_samples_bar: '1e-6, 0.001, 1'
+    selected_heavy_element_multipliers: '1, 100'
+    energy_probe_pressure_bar: 0.001
+    standard_pressure_bar: 1.0
+    sampled_gas_states: 448
+    gas_condensation: false
+- id: native_seven_element_grid
+  scope: Matched native GGChem gas-only and equilibrium-condensation profiles, plus independent ExoGibbs condensation solves with directly exported native thermochemistry and retained elemental inventory.
+  settings:
+    temperature_lower_K: 200.0
+    temperature_upper_K: 3000.0
+    samples_per_profile: 31
+    pressure_bar: 0.001
+    elements: 'H He C N O P S'
+    metallicity: 1.0
+    rainout: false
+assessments:
+- id: cold_validation_numerical_review
+  kind: evidence_support
+  claim: cold_gas_numerical_closure
+  claim_revision: '1'
+  subject: cold_gas_validation_snapshot
+  context: nasa9_cold_grid
+  method: &method
+    id: cold_network_source_and_execution_review
+    revision: '1'
+    description: Inspect input identities, explicit intervention scopes and primitive acceptance gates; keep source accuracy and complete phase coverage separate from numerical support.
+  evidence: [gas_execution]
+  reasons: [All 448 accepted states meet the unchanged conservation and trace mass-action gates.]
+  status: supported
+  origin: reviewed
+- id: cold_validation_solver_review
+  kind: evidence_support
+  claim: cold_gas_solver_agreement
+  claim_revision: '1'
+  subject: cold_gas_validation_snapshot
+  context: nasa9_cold_grid
+  method: *method
+  evidence: [matched_gas_execution]
+  reasons:
+  - All 448 states pass the declared 1e-8 log-constant and mass-action gates, 1e-5 log-abundance gate, 1e-8 elemental gate and 1e-12 total-pressure gate.
+  - The maximum all-species absolute log mole-fraction difference is 4.159858235652791e-9, including trace gases; thermochemical function evaluation is independent.
+  status: supported
+  origin: reviewed
+- id: cold_validation_catalog_review
+  kind: evidence_support
+  claim: finite_catalog_and_source_response
+  claim_revision: '1'
+  subject: cold_gas_validation_snapshot
+  context: nasa9_cold_grid
+  method: *method
+  evidence: [gas_execution]
+  reasons:
+  - The 107-gas expansion changes a single P carrier by at most 4.8593e-5 of the P inventory, whereas the recorded H3PO4 and HOPO anchor alternatives cause much larger sampled changes.
+  status: supported
+  origin: reviewed
+- id: cold_validation_phase_review
+  kind: evidence_support
+  claim: source_bounded_phase_insertion
+  claim_revision: '1'
+  subject: cold_phase_validation_snapshot
+  context: nasa9_cold_grid
+  method: *method
+  evidence: [phase_execution]
+  reasons:
+  - Positive phosphorus-phase affinities occur in 18 of 48 baseline states in the source-bounded screen; an out-of-range phase is not treated as stable or absent, and positive affinity alone does not determine its final amount.
+  status: supported
+  origin: reviewed
+- id: cold_validation_native_condensation_review
+  kind: evidence_support
+  claim: native_seven_element_condensation
+  claim_revision: '1'
+  subject: native_condensation_snapshot
+  context: native_seven_element_grid
+  method: *method
+  evidence: [native_condensation_execution]
+  reasons:
+  - Both native seven-element profiles completed 31 sampled states and pass the recorded element gates; the condensed profile also passes the phase saturation gates; the incomplete 27-element profile is excluded.
+  status: supported
+  origin: reviewed
+- id: cold_validation_physical_review
+  kind: evidence_support
+  claim: cold_network_physical_accuracy
+  claim_revision: '1'
+  subject: cold_gas_validation_snapshot
+  context: nasa9_cold_grid
+  method: *method
+  evidence: [source_audit, gas_execution]
+  reasons:
+  - Independent gas energy anchors, source-specific physical validity, omitted phases and application-specific constraints remain unresolved despite numerical closure and finite-catalog convergence.
+  - Supersaturation and native condensation show that gas-only abundances cannot in general be interpreted as the final cold equilibrium reservoir.
+  status: unknown
+  origin: reviewed
+- id: cold_validation_condensate_solver_review
+  kind: evidence_support
+  claim: matched_gas_condensate_solver_agreement
+  claim_revision: '1'
+  subject: matched_condensation_snapshot
+  context: native_seven_element_grid
+  method: *method
+  evidence: [matched_condensation_execution]
+  reasons:
+  - All 31 states pass unchanged gates on elemental residual, gas mass action, active and inactive phase affinities, nonnegative phase amounts and finite log gas amounts.
+  - Maximum reconstructed all-gas log mole-fraction difference is 5.86124e-9; independently printed gas values agree within 2.36967e-9 above the declared trace floor, and condensate elemental allocation differs by at most 1.08808e-10.
+  status: supported
+  origin: reviewed
+follow_ups:
+- id: resolve_cold_gas_energy_anchors
+  target_kind: claim
+  target: cold_network_physical_accuracy
+  revision: '1'
+  action: Reconcile H3PO4, HOPO and HPO energy anchors against independently inspected experimental and computational evidence on a common reference basis.
+  requires: [Original experimental or computational details, Common elemental references, Thermal functions and valid intervals, Source-specific uncertainty]
+  completion: Record independently justified molecular choices and residual uncertainty without treating model sensitivity as a statistical error distribution.
+- id: establish_complete_cold_phase_comparison
+  target_kind: claim
+  target: cold_network_physical_accuracy
+  revision: '1'
+  action: Complete an application-specific gas and condensed-phase comparison, including missing phosphates and relevant elemental backgrounds, before offering a production cold preset.
+  requires: [Identity-matched phase records, Common gas and condensed thermochemistry, Completed solver comparisons, Declared atmospheric and rainout assumptions]
+  completion: Establish numerical and physical support separately for the final declared network and domain, or retain explicit unknown applicability.

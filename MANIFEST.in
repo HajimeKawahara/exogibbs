@@ -75,3 +75,5 @@ prune doc_ExoGibbs
 # Generated runs stay local; offline regression fixtures ship with the source.
 prune results
 recursive-include tests/data/validation *
+# Keep source-only GGChem fixtures, but exclude regenerated restricted tables.
+exclude tests/data/validation/phosphorus_cold/thermo.json

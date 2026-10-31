@@ -1,0 +1,44 @@
+{
+  "method": "Unit atomic partial pressures; molecular p/bar=exp(native lnK_bar). Phase h/RT=-lnS except NH4SH=-2lnS.",
+  "native_equilibrium_solver_called": false,
+  "native_melting_corrections_enabled": true,
+  "maximum_abs_difference_from_condensed_state_reconstruction_RT": 2.8417161956895143e-09,
+  "comparison_threshold_RT": 1e-07,
+  "source_revision": "65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b",
+  "source_archive_sha256": "4eb41336b01919f101496473c15e1d31ff9242422e220f00910d6aa73e0044cd",
+  "dust_data_sha256": "1e13f9378ba44f527d53cd27be0e0ccd0374aaabdc2bfde820b4d757545f84ce",
+  "original_source_sha256": {
+    "supersat.f": "6e5b85a3391ac76fc7f394cd7557af44e3d74b455ece3faf532ed493aeceafc2",
+    "init_dustchem.f": "dc63c9e8ef1d68aaf55fb13e6dcd6aba94472ff713ff603ee611bfc08f97ffb2",
+    "init_chemistry.f": "256be0f85d9f35b07cd3386167dfc9e9c16f70f3d70ca767376d9508a22833b9",
+    "read_parameter.f": "8e7b658a81e9f5b227a7a8893eb6d815c29597072ff2e0e8885c0a73642446fa"
+  },
+  "driver_sha256": "af1be250bfc9801d98df1a9fd2e88df316d0f60d171a4adaf1141105b655a860",
+  "script_sha256": "49d28d9608d34f20a65365447457a5a1c948b6c227217fe44785299770aa37be",
+  "binary_sha256": "47390b538eaaf3297963c5a21486e3a3a300a564573c8496c02902b4dcf1920b",
+  "native_input_sha256": {
+    "input.in": "83803dc9b6fc1df30a76e96f541ce9730348244166dffbebcb3cae1232e6bbf0",
+    "abundances.dat": "0d262f6daa42909a1fe0d4e1303d760fce8c15006d3a22d9d2bfcb7e92ec9356",
+    "unit_atom_input.dat": "3c84e53dc986e6958fe7c572c0cfd32e7cea1ca0f4e096c323c149bb96d8dece",
+    "unit_atom_phases.dat": "5e8ba4701ba2f7555492797f05df4bb246ab906f169e8dce9ac4f8895360b9fd"
+  },
+  "reproduction_crosscheck": {
+    "frozen_comparison_input_sha256": "f77bf9a83df587c8ac7d68781b2ca6d62fb01b9acd891671454c9b6dba1d3937",
+    "reproduced_input_sha256": "d2d1839f28fdd3672601ef55400f874838e033eee9be70e2d4dc5b1d16cd494e",
+    "maximum_absolute_array_differences": {
+      "temperature_K": 0.0,
+      "gas_formula_matrix": 0.0,
+      "gas_lnK_bar": 0.0,
+      "budget": 0.0,
+      "condensate_formula_matrix": 0.0,
+      "condensate_hvector_RT": 0.0,
+      "native_condensed_gas_logx": 0.0,
+      "native_condensed_amounts_per_H": 0.0,
+      "native_condensed_gas_amounts_per_H": 0.0
+    },
+    "bootstrap_script": "mceg/reviews/phosphorus_native_phase_reference_20261031.py",
+    "bootstrap_script_sha256": "21d877cdf6b150119e489c5c33f8e920afaa57e042e6e0f8ba37c0e4e42d110c",
+    "optional_native27_absent_check_passed": true,
+    "archived_native27_attempt_unchanged": true
+  }
+}

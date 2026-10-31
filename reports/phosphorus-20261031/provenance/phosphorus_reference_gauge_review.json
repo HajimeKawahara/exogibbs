@@ -1,0 +1,159 @@
+{
+  "format": "mceg_check_report_v1",
+  "collected": 1,
+  "contracts": [
+    {
+      "path": "/home/kawahara/exogibbs/mceg/contracts/phosphorus_provenance.yaml",
+      "model": "exogibbs.phosphorus_provenance.v1",
+      "checks": [
+        {
+          "name": "structure",
+          "status": "PASS",
+          "message": "v0.2 structure and local references are consistent",
+          "details": []
+        },
+        {
+          "name": "source_audit",
+          "status": "PASS",
+          "message": "1/1 evidence records have complete declared source traces",
+          "details": []
+        },
+        {
+          "name": "selected_files",
+          "status": "PASS",
+          "message": "8/8 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS",
+          "message": "1/1 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "recorded_support",
+          "status": "PASS",
+          "message": "Stored support: supported; claim=consistent_elemental_reference_invariance; origin=reviewed",
+          "details": [
+            "Recorded judgment only; no new support evaluation.",
+            "The extra term is constant because A n equals the conserved elemental budget, so a consistent elemental-reference transformation cannot change the fixed-budget equilibrium minimizer."
+          ]
+        }
+      ],
+      "declarations": [],
+      "schema_version": "0.2",
+      "audit_scope": {
+        "kind": "assessment",
+        "assessment": "phosphorus_reference_gauge_review",
+        "subject": "phosphorus_source_review_snapshot",
+        "context": "declared_source_review"
+      },
+      "audited_evidence": [
+        "reference_gauge_derivation"
+      ],
+      "integrity": {
+        "root": "/home/kawahara/exogibbs",
+        "subject": "phosphorus_source_review_snapshot",
+        "selected_files": [
+          {
+            "source": "src/exogibbs/data/curated/gas_v1.json",
+            "expected_sha256": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+            "actual_sha256": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/presets/curated.py",
+            "expected_sha256": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+            "actual_sha256": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/logK/logK.dat",
+            "expected_sha256": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+            "actual_sha256": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/ohno_p3/native_manifest.json",
+            "expected_sha256": "feda8e6f0175029ee5087882e0d7e19c754e2f59d08f542a2a5f7e4b24eab356",
+            "actual_sha256": "feda8e6f0175029ee5087882e0d7e19c754e2f59d08f542a2a5f7e4b24eab356",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/ohno_p3/native27_manifest.json",
+            "expected_sha256": "559ea22f73f10bf3c2633cff69447d739b21383212a219848afd7157d724c3bc",
+            "actual_sha256": "559ea22f73f10bf3c2633cff69447d739b21383212a219848afd7157d724c3bc",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/ohno_p3/summary.json.gz",
+            "expected_sha256": "64ed5c98629dbd05220677c512b92b41d8c4655d15df106129f3070b5b9fdacf",
+            "actual_sha256": "64ed5c98629dbd05220677c512b92b41d8c4655d15df106129f3070b5b9fdacf",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_provenance_20261031.json",
+            "expected_sha256": "b7be8467d7d36d1bea6fe8dc73065a71ec69f92e5ceb0d2c4133421a4f899c3f",
+            "actual_sha256": "b7be8467d7d36d1bea6fe8dc73065a71ec69f92e5ceb0d2c4133421a4f899c3f",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "documents/mceg/phosphorus_provenance.rst",
+            "expected_sha256": "5712a259dc4bd60ab66f18a1f47ceb7e60769c608eba7153303ee74c2025073c",
+            "actual_sha256": "5712a259dc4bd60ab66f18a1f47ceb7e60769c608eba7153303ee74c2025073c",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ],
+        "artifact_hashes": [
+          {
+            "evidence": "reference_gauge_derivation",
+            "source": "documents/mceg/phosphorus_provenance.rst",
+            "expected_sha256": "5712a259dc4bd60ab66f18a1f47ceb7e60769c608eba7153303ee74c2025073c",
+            "actual_sha256": "5712a259dc4bd60ab66f18a1f47ceb7e60769c608eba7153303ee74c2025073c",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ]
+      },
+      "assessments": [
+        {
+          "id": "phosphorus_reference_gauge_review",
+          "subject": "phosphorus_source_review_snapshot",
+          "context": "declared_source_review",
+          "method": {
+            "id": "inspected_source_and_scope_review",
+            "revision": "1",
+            "description": "Inspect the written derivation and recorded source scopes; keep incomplete historical ancestry and physical accuracy separate from a provisional software decision."
+          },
+          "evidence": [
+            "reference_gauge_derivation"
+          ],
+          "reasons": [
+            "The extra term is constant because A n equals the conserved elemental budget, so a consistent elemental-reference transformation cannot change the fixed-budget equilibrium minimizer."
+          ],
+          "kind": "evidence_support",
+          "claim": "consistent_elemental_reference_invariance",
+          "claim_revision": "1",
+          "status": "supported",
+          "origin": "reviewed"
+        }
+      ]
+    }
+  ],
+  "context": null,
+  "context_source": null,
+  "summary": {
+    "PASS": 5,
+    "FAIL": 0,
+    "UNKNOWN": 0
+  },
+  "explain_command": "mceg explain mceg/contracts/phosphorus_provenance.yaml --assessment phosphorus_reference_gauge_review --root ."
+}
