@@ -1,0 +1,84 @@
+{
+  "contract": "mceg/contracts/phosphorus_cold_validation.yaml",
+  "contract_sha256": "96381f76d0811c7e5377d5a1a9655aeea4e56705b1d9228438608cdc60b0374c",
+  "scope": "Recorded evidence review and frozen artifact integrity; MCEG does not independently rerun scientific calculations.",
+  "assessments": {
+    "cold_validation_numerical_review": {
+      "recorded_status": "supported",
+      "checks": {
+        "PASS": 5,
+        "FAIL": 0,
+        "UNKNOWN": 0
+      },
+      "check_path": "results/phosphorus_cold_validation/mceg_numerical_check.json",
+      "explain_path": "results/phosphorus_cold_validation/mceg_numerical_explain.txt"
+    },
+    "cold_validation_solver_review": {
+      "recorded_status": "supported",
+      "checks": {
+        "PASS": 5,
+        "FAIL": 0,
+        "UNKNOWN": 0
+      },
+      "check_path": "results/phosphorus_cold_validation/mceg_solver_check.json",
+      "explain_path": "results/phosphorus_cold_validation/mceg_solver_explain.txt"
+    },
+    "cold_validation_catalog_review": {
+      "recorded_status": "supported",
+      "checks": {
+        "PASS": 5,
+        "FAIL": 0,
+        "UNKNOWN": 0
+      },
+      "check_path": "results/phosphorus_cold_validation/mceg_catalog_check.json",
+      "explain_path": "results/phosphorus_cold_validation/mceg_catalog_explain.txt"
+    },
+    "cold_validation_phase_review": {
+      "recorded_status": "supported",
+      "checks": {
+        "PASS": 5,
+        "FAIL": 0,
+        "UNKNOWN": 0
+      },
+      "check_path": "results/phosphorus_cold_validation/mceg_phase_check.json",
+      "explain_path": "results/phosphorus_cold_validation/mceg_phase_explain.txt"
+    },
+    "cold_validation_native_condensation_review": {
+      "recorded_status": "supported",
+      "checks": {
+        "PASS": 5,
+        "FAIL": 0,
+        "UNKNOWN": 0
+      },
+      "check_path": "results/phosphorus_cold_validation/mceg_native_condensation_check.json",
+      "explain_path": "results/phosphorus_cold_validation/mceg_native_condensation_explain.txt"
+    },
+    "cold_validation_physical_review": {
+      "recorded_status": "unknown",
+      "checks": {
+        "PASS": 3,
+        "FAIL": 0,
+        "UNKNOWN": 2
+      },
+      "check_path": "results/phosphorus_cold_validation/mceg_physical_check.json",
+      "explain_path": "results/phosphorus_cold_validation/mceg_physical_explain.txt"
+    },
+    "cold_validation_condensate_solver_review": {
+      "recorded_status": "supported",
+      "checks": {
+        "PASS": 5,
+        "FAIL": 0,
+        "UNKNOWN": 0
+      },
+      "check_path": "results/phosphorus_cold_validation/mceg_condensate_solver_check.json",
+      "explain_path": "results/phosphorus_cold_validation/mceg_condensate_solver_explain.txt"
+    }
+  },
+  "subject_selected_file_counts": {
+    "cold_gas_validation_snapshot": 18,
+    "cold_phase_validation_snapshot": 6,
+    "native_condensation_snapshot": 6,
+    "matched_condensation_snapshot": 44
+  },
+  "evidence_artifact_count": 8
+}

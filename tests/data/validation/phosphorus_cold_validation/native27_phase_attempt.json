@@ -1,0 +1,12 @@
+{
+  "status": "incomplete_interrupted",
+  "reason": "The native 27-element condensation trajectory was interrupted after partial high-temperature output; excluded from validated low-temperature results.",
+  "expected_samples": 121,
+  "completed_samples": 45,
+  "completed_temperature_range_K": [
+    1111.444531,
+    3000.0
+  ],
+  "termination_exit_code": 130,
+  "output_sha256": "881ab622882e90cbf8da6cd2e279f1d92713975bd47511b75d5c89e8b201630f"
+}
