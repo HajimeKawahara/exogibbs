@@ -9,7 +9,7 @@ import jax
 import numpy as np
 import pytest
 
-from _phosphorus_test_data import synthetic_data
+from ._phosphorus_test_data import synthetic_data
 
 
 ROOT = Path(__file__).resolve().parents[2]

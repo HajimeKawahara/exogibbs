@@ -4,6 +4,7 @@
 - Source lives under `src/exogibbs/` in focused modules: `io/`, `thermo/`, `equilibrium/`, `optimize/`, `api/`, `presets/`, `utils/`.
 - Shared datasets: `src/exogibbs/data/` (must also be listed in `MANIFEST.in`).
 - Tests mirror the package tree in `tests/unittests/` (e.g., `tests/unittests/equilibrium/gibbs_test.py`).
+- Offline review-script and archived-evidence checks live in `tests/model_evidence/`, outside the package unit suite. Optional tests that import external MCEG live in `tests/model_contracts/`.
 - Shared offline validation fixtures: `tests/data/validation/`.
 - Workflow demos: `examples/`; long‑form docs (Sphinx‑ready): `documents/`.
 - Ignore transient build outputs; write generated runs to the ignored `results/` directory.
@@ -11,6 +12,7 @@
 ## Build, Test, and Development Commands
 - Install (editable, with local extras): `python -m pip install -e .`
 - Run tests: `pytest tests/unittests` or a subpackage (e.g., `pytest tests/unittests/thermo`).
+- Run offline model-evidence checks separately: `pytest tests/model_evidence` (no MCEG installation required).
 - Build distributions: `python -m pip install build && python -m build` (creates sdist + wheel in `dist/`).
 - Update documentation artifacts after doc changes: `./update_doc.sh`.
 

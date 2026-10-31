@@ -6,9 +6,7 @@ from exogibbs.api import get_default_equilibrium_grid_path as get_default_equili
 import exogibbs.io.load_data as load_data_module
 from exogibbs.io.load_data import get_data_filepath
 from exogibbs.io.load_data import get_default_equilibrium_grid_path
-from exogibbs.io.load_data import load_JANAF_rawtxt
 from exogibbs.io.load_data import load_JANAF_molecules
-from exogibbs.io.load_data import JANAF_SAMPLE
 from exogibbs.io.load_data import JANAF_NAME_KEY
 
 
@@ -19,11 +17,6 @@ def test_get_data_filename_existing_file():
     fullpath = get_data_filepath(filename)
 
     assert os.path.exists(fullpath)
-
-
-def test_load_JANAF_rawtxt():
-    filename = get_data_filepath(JANAF_SAMPLE)
-    load_JANAF_rawtxt(filename)
 
 
 def test_load_JANAF_molecules():

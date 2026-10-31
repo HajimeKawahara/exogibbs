@@ -153,7 +153,7 @@ the relocated fixture paths; tests verify that this is their only change.
 
    PYTHONPATH=src JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 python -m pytest -q \
      tests/unittests/examples/new_fastchem_logk_test.py \
-     tests/unittests/mceg_new_fastchem_logk_test.py
+     tests/model_evidence/new_fastchem_logk_test.py
 
 The attribution replay reads the checked-in column arrays. It creates new
 evidence for the five decompositions, not a new atmosphere or retrieval solve.
