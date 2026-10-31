@@ -1,0 +1,282 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.phosphorus_provenance.v1
+  name: Phosphorus source provenance and provisional selection review
+  description: Inspect the conflicting P4O6 energy anchors, distinguish source preference from physical validation, and preserve the scope of the existing cold phosphorus calculations.
+  implementation: &implementation
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:b7be8467d7d36d1bea6fe8dc73065a71ec69f92e5ceb0d2c4133421a4f899c3f
+    entry_points:
+    - mceg/reviews/phosphorus_provenance_20261031.json
+    - documents/mceg/phosphorus_provenance.rst
+assumptions:
+- statement: A consistent elemental reference transformation is applied to every participating species at the same temperature, pressure and fixed elemental budget.
+  evidence: [reference_gauge_derivation]
+- statement: Reported formation enthalpies refer to gas P4O6 per mole of P4O6; historical condensed-phase measurements require their stated phase and reference corrections.
+  evidence: [official_janaf, nasa_gurvich_record, current_burcat]
+domains:
+- kind: scientific_applicability
+  status: unknown
+  description: The exact P4O6 energy and the quantitative accuracy of the complete cold phosphorus network remain unestablished; no production temperature range is extended by this review.
+  conditions: []
+  evidence: [official_janaf, current_burcat, gurvich_original, lee_2024, review_record]
+claims:
+- id: consistent_elemental_reference_invariance
+  revision: '1'
+  kind: theoretical
+  statement: Adding the same element-linear reference function to every species changes total Gibbs energy by a composition-independent constant at fixed elemental inventory and leaves the equilibrium minimizer unchanged.
+  scope: Fixed temperature and pressure, fixed elemental inventory, and a consistent transformation of all species; this does not excuse inconsistent source mixing or physical phase changes.
+- id: p4o6_quantitative_physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The selected Gurvich-derived P4O6 formation enthalpy and thermal functions quantitatively describe the real gas within their stated uncertainty and temperature range.
+  scope: Requires independently evaluated molecular energy, thermal functions and uncertainty; a provisional preference for the less negative energy family is a weaker conclusion.
+- id: complete_cold_phosphorus_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The selected thermochemistry and species network accurately predict the phosphorus reservoir in the intended cold atmospheres.
+  scope: Requires suitable gases and phases, independently supported thermochemical functions and application-specific validation; solver agreement and a source preference are insufficient.
+evidence:
+- id: reference_gauge_derivation
+  kind: theory
+  summary: For elemental stoichiometry A and conserved budget b, adding A-transpose times c to species chemical potentials adds c-transpose times b to total Gibbs energy; balanced reaction energies are unchanged.
+  sources: [documents/mceg/phosphorus_provenance.rst]
+  scope: Algebraic invariance at fixed elemental inventory, not evidence that the two historical data evaluations are physically equivalent.
+  artifacts:
+  - source: documents/mceg/phosphorus_provenance.rst
+    sha256: 5712a259dc4bd60ab66f18a1f47ceb7e60769c608eba7153303ee74c2025073c
+  provenance:
+    role: primary
+    location: Reference-state derivation in the accompanying review.
+    inspection: inspected
+    note: The proof is independent of the historical source dispute and makes no claim to reconstruct an uninspected calorimetric evaluation.
+- id: original_janaf_anchors
+  kind: literature
+  summary: JANAF attributes the liquid formation anchor to Koerner and Daniels (1952) and the gas conversion to a vaporization enthalpy from Farr (1950).
+  sources:
+  - https://doi.org/10.1063/1.1700148
+  - Farr (1950), as cited in JANAF fourth edition, printed page 1803.
+  scope: Bibliographic identification from the inspected JANAF notes; the original experimental papers were not fully inspected.
+  provenance:
+    role: primary
+    location: Original liquid calorimetry and vaporization measurements cited by JANAF.
+    inspection: not_inspected
+    note: The experimental attribution is known, but original measurements, product characterization and uncertainty propagation were not reconstructed.
+- id: official_janaf
+  kind: literature
+  summary: The official gas table gives Hf298=-2214.307 kJ/mol; the printed notes identify a December 1962 evaluation based on a liquid calorimetric anchor plus 11.46 kcal/mol vaporization enthalpy.
+  sources:
+  - https://janaf.nist.gov/tables/O-087.html
+  - https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf
+  scope: Direct inspection of the official table and printed page 1803, including phase and evaluation date; publication in 1998 is not a new evaluation date.
+  provenance:
+    role: secondary
+    location: O-087 and fourth-edition oxygen volume, printed page 1803.
+    inspection: inspected
+    note: The compiled value and its documented derivation are verified; the original calorimetry is not independently re-evaluated.
+    derived_from:
+    - evidence: original_janaf_anchors
+      comparison: not_checked
+      note: JANAF explicitly cites the two experimental inputs, but their original full texts were not inspected.
+- id: hartley_1963
+  kind: literature
+  summary: The original publisher abstract questions whether the red-phosphorus and nitric-oxide combustion products had been conclusively identified as only P4O6 and P4O10.
+  sources: [https://www.nature.com/articles/198476a0]
+  scope: Directly inspected abstract supports a specific criticism of the older experiment; the full calorimetric analysis and conversion to the Gurvich value were not inspected.
+  provenance:
+    role: primary
+    location: Hartley and McCoubrey, Nature 198, 476 (1963), publisher abstract.
+    inspection: partial
+    note: Abstract access is not inspection of all experimental details and does not establish the exact modern -1606 kJ/mol recommendation.
+- id: gurvich_original
+  kind: literature
+  summary: NASA and Burcat identify the selected P4O6 enthalpy with Gurvich et al. (1989); the original species evaluation pages were not recovered.
+  sources:
+  - Gurvich et al. (1989), part 1 page 413 and part 2 page 266, as cited by NASA/TP-2002-211556.
+  scope: The precise locator is verified in NASA; experimental selection, weighting and uncertainty in the original Gurvich evaluation remain uninspected.
+  provenance:
+    role: secondary
+    location: Original Gurvich thermochemical evaluation of P4O6.
+    inspection: not_inspected
+    note: Later papers attribute the less negative evaluation to Hartley and McCoubrey, but that attribution is not substituted for direct inspection of these pages.
+- id: nasa_gurvich_record
+  kind: literature
+  summary: NASA/TP-2002-211556 selects -1606.000 kJ/mol for gas P4O6 and supplies precise Gurvich (1989) page references.
+  sources: [https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf]
+  scope: Direct inspection of the compiled enthalpy and source locator; NASA and Burcat agreement is not independent experimental confirmation because both cite Gurvich.
+  provenance:
+    role: secondary
+    location: NASA/TP-2002-211556, printed pages 27 and 172.
+    inspection: inspected
+    note: The record fixes the selected energy and source identity without exposing the original evaluation procedure.
+    derived_from:
+    - evidence: gurvich_original
+      comparison: not_checked
+      note: The cited Gurvich pages were not available for a direct numerical or methodological comparison.
+- id: current_burcat
+  kind: literature
+  summary: The inspected P4O6 record selects the Gurvich -1606 +/-40 kJ/mol anchor, labels the JANAF value erroneous, and retains an older Lewis alternative in its comments.
+  sources:
+  - https://respecth.elte.hu/burcat/BURCAT.THR.txt
+  - https://github.com/pw31/GGchem/tree/65bbb8f9ca3d6c0b4e58cb7dd3862322452d0d4b/data/BURCAT
+  scope: Inspected current mirror and concrete 2016/2023 snapshots; their selected P4O6 coefficients agree, but the exact source file used for the FastChem fit is not established.
+  provenance:
+    role: secondary
+    location: P4O6 tpis89 gas record and source comments in BURCAT.THR and BURCAT_NEW.THR.
+    inspection: inspected
+    note: The evaluator's rejection of JANAF is reported as an attributed judgment, not treated as independent proof of the selected value.
+    derived_from:
+    - evidence: gurvich_original
+      comparison: not_checked
+      note: Gurvich is explicitly cited, but its original evaluation pages were not directly inspected.
+- id: lee_2024
+  kind: theory
+  summary: Lee et al. independently calculate gas P4O6 Hf298=-1659 kJ/mol at the G4 level, much closer to the Gurvich energy family than to JANAF, while adopting NASA/Burcat values in their atmospheric network for consistency with prior work.
+  sources:
+  - https://doi.org/10.3847/1538-4357/ad8915
+  - https://arxiv.org/html/2409.06802v2
+  scope: Inspected Appendix A.2 and Table 2 molecular calculation; network adoption is not an additional independent energy determination, and the calculation does not establish the exact -1606 kJ/mol value or its quoted uncertainty.
+  provenance:
+    role: primary
+    location: Lee et al. (2024), author manuscript v2 Appendix A.2 and Table 2; section 2.1.1 for adopted network sources.
+    inspection: inspected
+    note: The directly read table distinguishes formation enthalpy -1659 from Gibbs formation energy -1531 kJ/mol; a computational result is not an experimental calibration.
+- id: morgon_2012
+  kind: theory
+  summary: Morgon's original abstract reports a composite-theory P4O6 formation enthalpy of -1706.3 kJ/mol, supporting a less negative energy family while identifying P4O6 as a difficult case.
+  sources: [https://onlinelibrary.wiley.com/doi/10.1002/qua.24178]
+  scope: Publisher abstract only; the complete calculation and a calibrated P4O6 uncertainty were not inspected.
+  provenance:
+    role: primary
+    location: Morgon (2012), publisher abstract.
+    inspection: partial
+    note: General method performance is not assigned as the uncertainty of this exceptional molecule.
+- id: review_record
+  kind: literature
+  summary: The local source review separates documented source assignments, incomplete historical lineage, provisional species-specific preference, and unresolved physical accuracy.
+  sources:
+  - mceg/reviews/phosphorus_provenance_20261031.json
+  - documents/mceg/phosphorus_provenance.rst
+  - mceg/contracts/ohno_p3.yaml
+  scope: Source and policy synthesis; earlier numerical evidence remains scoped to the existing Ohno contract and is not reclassified as physical validation here.
+  artifacts:
+  - source: mceg/reviews/phosphorus_provenance_20261031.json
+    sha256: b7be8467d7d36d1bea6fe8dc73065a71ec69f92e5ceb0d2c4133421a4f899c3f
+  - source: documents/mceg/phosphorus_provenance.rst
+    sha256: 5712a259dc4bd60ab66f18a1f47ceb7e60769c608eba7153303ee74c2025073c
+  provenance:
+    role: secondary
+    location: Source records and decision rationale in the accompanying review artifact and document.
+    inspection: inspected
+    note: A provisional P4O6 choice is a documented software decision, not a new thermochemical measurement or blanket database endorsement.
+    derived_from:
+    - evidence: official_janaf
+      comparison: consistent
+      note: The review retains the official gas value, phase correction and historical evaluation date.
+    - evidence: current_burcat
+      comparison: consistent
+      note: The review attributes the selected energy and source criticism to the inspected Burcat record.
+    - evidence: nasa_gurvich_record
+      comparison: consistent
+      note: The review preserves the NASA energy and precise original-source locator without claiming those original pages were inspected.
+    - evidence: hartley_1963
+      comparison: not_checked
+      note: The abstract criticism is retained, but the full experimental derivation remains unavailable.
+    - evidence: lee_2024
+      comparison: consistent
+      note: The review uses the directly inspected theoretical formation enthalpy, separately from the paper's network source choice.
+    - evidence: morgon_2012
+      comparison: not_checked
+      note: The reported abstract value is retained with the limitation that the full computational analysis was not inspected.
+limitations:
+- statement: The original Gurvich evaluation and the full historical calorimetric papers were not recovered; precise reconstruction of the selected -1606 kJ/mol value and its uncertainty remains open.
+  evidence: [original_janaf_anchors, hartley_1963, gurvich_original]
+- statement: Independent calculations support a substantially less negative P4O6 energy than JANAF, but neither establishes the exact Gurvich value or a calibrated physical error distribution.
+  evidence: [lee_2024, morgon_2012, current_burcat]
+- statement: H3PO4 and HPO2 inclusion is a separate species-coverage question; the current comparison does not show that their selected thermochemistry is physically accurate, and P4S3 uses the same inherited source in both native selections.
+  evidence: [review_record]
+- statement: Retaining the existing Burcat-family P4O6 source is a provisional species-specific choice; it neither selects all Burcat records nor extends curated-gas-v1 below its 1500 K boundary.
+  evidence: [review_record]
+subjects:
+- id: phosphorus_source_review_snapshot
+  implementation: *implementation
+  selected_files:
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/presets/curated.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    tests/data/validation/ohno_p3/native_manifest.json: feda8e6f0175029ee5087882e0d7e19c754e2f59d08f542a2a5f7e4b24eab356
+    tests/data/validation/ohno_p3/native27_manifest.json: 559ea22f73f10bf3c2633cff69447d739b21383212a219848afd7157d724c3bc
+    tests/data/validation/ohno_p3/summary.json.gz: 64ed5c98629dbd05220677c512b92b41d8c4655d15df106129f3070b5b9fdacf
+    mceg/reviews/phosphorus_provenance_20261031.json: b7be8467d7d36d1bea6fe8dc73065a71ec69f92e5ceb0d2c4133421a4f899c3f
+    documents/mceg/phosphorus_provenance.rst: 5712a259dc4bd60ab66f18a1f47ceb7e60769c608eba7153303ee74c2025073c
+contexts:
+- id: declared_source_review
+  scope: Source inspection and a reference-state derivation, with no production coefficient changes or new equilibrium calculation.
+  settings:
+    review_date: '2026-10-31'
+    species: P4O6
+    phase: gas
+    nominal_anchor_temperature_K: 298.15
+    production_default_changed: false
+assessments:
+- id: phosphorus_reference_gauge_review
+  kind: evidence_support
+  claim: consistent_elemental_reference_invariance
+  claim_revision: '1'
+  subject: phosphorus_source_review_snapshot
+  context: declared_source_review
+  method: &method
+    id: inspected_source_and_scope_review
+    revision: '1'
+    description: Inspect the written derivation and recorded source scopes; keep incomplete historical ancestry and physical accuracy separate from a provisional software decision.
+  evidence: [reference_gauge_derivation]
+  reasons:
+  - The extra term is constant because A n equals the conserved elemental budget, so a consistent elemental-reference transformation cannot change the fixed-budget equilibrium minimizer.
+  status: supported
+  origin: reviewed
+- id: phosphorus_anchor_physical_review
+  kind: evidence_support
+  claim: p4o6_quantitative_physical_accuracy
+  claim_revision: '1'
+  subject: phosphorus_source_review_snapshot
+  context: declared_source_review
+  method: *method
+  evidence: [review_record]
+  reasons:
+  - The inspected experimental criticism and independent calculations favor a less negative energy family, but do not establish the exact Gurvich anchor, its uncertainty or all thermal functions.
+  - NASA and Burcat share the same evaluated Gurvich source, whose original pages remain uninspected.
+  status: unknown
+  origin: reviewed
+- id: phosphorus_cold_physical_review
+  kind: evidence_support
+  claim: complete_cold_phosphorus_accuracy
+  claim_revision: '1'
+  subject: phosphorus_source_review_snapshot
+  context: declared_source_review
+  method: *method
+  evidence: [review_record]
+  reasons:
+  - Gas identities, phase coverage, source-specific temperature intervals and independent application constraints remain incomplete; existing numerical agreement cannot validate shared physical inputs.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: inspect_original_p4o6_evaluations
+  target_kind: evidence
+  target: gurvich_original
+  action: Obtain the cited Gurvich pages and original calorimetric analyses, reconstruct their phase and reference corrections, and document the selected experimental weights and uncertainty.
+  requires: [Gurvich 1989 part 1 page 413 and part 2 page 266, Original calorimetric papers, Phase and reference-state conventions]
+  completion: Record inspected primary evaluations and explicit numerical comparisons; retain unresolved links instead of promoting citation knowledge to full inspection.
+- id: validate_p4o6_energy_and_thermal_functions
+  target_kind: claim
+  target: p4o6_quantitative_physical_accuracy
+  revision: '1'
+  action: Compare independently evaluated measurements and high-level calculations on a common reference basis, including thermal functions and uncertainty, before treating the provisional source choice as quantitative physical validation.
+  requires: [Independent energy constraints, Common molecular and elemental references, Thermal functions and validity intervals, Defensible uncertainty analysis]
+  completion: Support a stated molecular energy and interval independently of database agreement, or retain unknown with the remaining discrepancy documented.
+- id: assess_cold_network_before_production
+  target_kind: claim
+  target: complete_cold_phosphorus_accuracy
+  revision: '1'
+  action: Independently review missing cold gases and relevant phases, then validate an explicitly versioned low-temperature network without extrapolating curated-gas-v1.
+  requires: [H3PO4 and HOPO gas data, Competing phases, Common source validity domain, Application conditions and independent constraints]
+  completion: Record separate numerical and physical assessments for a declared network and domain before any production adoption.

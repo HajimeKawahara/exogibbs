@@ -1,0 +1,421 @@
+{
+  "format": "mceg_check_report_v1",
+  "collected": 1,
+  "contracts": [
+    {
+      "path": "/home/kawahara/exogibbs/mceg/contracts/phosphorus_cold_validation.yaml",
+      "model": "exogibbs.phosphorus_cold_validation.v1",
+      "checks": [
+        {
+          "name": "structure",
+          "status": "PASS",
+          "message": "v0.2 structure and local references are consistent",
+          "details": []
+        },
+        {
+          "name": "source_audit",
+          "status": "PASS",
+          "message": "1/1 evidence records have complete declared source traces",
+          "details": []
+        },
+        {
+          "name": "selected_files",
+          "status": "PASS",
+          "message": "44/44 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS",
+          "message": "2/2 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "recorded_support",
+          "status": "PASS",
+          "message": "Stored support: supported; claim=matched_gas_condensate_solver_agreement; origin=reviewed",
+          "details": [
+            "Recorded judgment only; no new support evaluation.",
+            "All 31 states pass unchanged gates on elemental residual, gas mass action, active and inactive phase affinities, nonnegative phase amounts and finite log gas amounts.",
+            "Maximum reconstructed all-gas log mole-fraction difference is 5.86124e-9; independently printed gas values agree within 2.36967e-9 above the declared trace floor, and condensate elemental allocation differs by at most 1.08808e-10."
+          ]
+        }
+      ],
+      "declarations": [],
+      "schema_version": "0.2",
+      "audit_scope": {
+        "kind": "assessment",
+        "assessment": "cold_validation_condensate_solver_review",
+        "subject": "matched_condensation_snapshot",
+        "context": "native_seven_element_grid"
+      },
+      "audited_evidence": [
+        "matched_condensation_execution"
+      ],
+      "integrity": {
+        "root": "/home/kawahara/exogibbs",
+        "subject": "matched_condensation_snapshot",
+        "selected_files": [
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/abundances.dat",
+            "expected_sha256": "0d262f6daa42909a1fe0d4e1303d760fce8c15006d3a22d9d2bfcb7e92ec9356",
+            "actual_sha256": "0d262f6daa42909a1fe0d4e1303d760fce8c15006d3a22d9d2bfcb7e92ec9356",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/native7_gas.in",
+            "expected_sha256": "0134794fdb273d6cca358050708c392081aaade82fe4248c57b5272d1bd48e31",
+            "actual_sha256": "0134794fdb273d6cca358050708c392081aaade82fe4248c57b5272d1bd48e31",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/native7_condensed.in",
+            "expected_sha256": "83803dc9b6fc1df30a76e96f541ce9730348244166dffbebcb3cae1232e6bbf0",
+            "actual_sha256": "83803dc9b6fc1df30a76e96f541ce9730348244166dffbebcb3cae1232e6bbf0",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_cold_condensate_comparison_20261031.py",
+            "expected_sha256": "7d4fd162d203fb4284c3245aa7b051505aed5978d2c034b06900399ef1e8f8db",
+            "actual_sha256": "7d4fd162d203fb4284c3245aa7b051505aed5978d2c034b06900399ef1e8f8db",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_native_phase_export_20261031.py",
+            "expected_sha256": "49d28d9608d34f20a65365447457a5a1c948b6c227217fe44785299770aa37be",
+            "actual_sha256": "49d28d9608d34f20a65365447457a5a1c948b6c227217fe44785299770aa37be",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_native_phase_reference_20261031.py",
+            "expected_sha256": "21d877cdf6b150119e489c5c33f8e920afaa57e042e6e0f8ba37c0e4e42d110c",
+            "actual_sha256": "21d877cdf6b150119e489c5c33f8e920afaa57e042e6e0f8ba37c0e4e42d110c",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/api/condensate.py",
+            "expected_sha256": "1cd23725e0f4b116f40ac8acc7a3f18c1a38516ad1485624578a5981f9e812c6",
+            "actual_sha256": "1cd23725e0f4b116f40ac8acc7a3f18c1a38516ad1485624578a5981f9e812c6",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/__init__.py",
+            "expected_sha256": "1b0680b4c0841f749f017392e0e93b275f2eb315a41d99bc64e58685dfeb5a35",
+            "actual_sha256": "1b0680b4c0841f749f017392e0e93b275f2eb315a41d99bc64e58685dfeb5a35",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/acceptance.py",
+            "expected_sha256": "eec671d6826e45ad49011f1ddb4c86f5d21d73448f8d8d0bb82ace38bf565c6f",
+            "actual_sha256": "eec671d6826e45ad49011f1ddb4c86f5d21d73448f8d8d0bb82ace38bf565c6f",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/amount_gauge.py",
+            "expected_sha256": "644025eccf0db960b3b9ef008d8b172bf25755c000c5f1b2e81b161c964b6f66",
+            "actual_sha256": "644025eccf0db960b3b9ef008d8b172bf25755c000c5f1b2e81b161c964b6f66",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/audit.py",
+            "expected_sha256": "81f646e7576bfd61f222f74bd7c7a9292f335900f29a192a37606ae1ebe24674",
+            "actual_sha256": "81f646e7576bfd61f222f74bd7c7a9292f335900f29a192a37606ae1ebe24674",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/__init__.py",
+            "expected_sha256": "39b754248deefbd94adbdcfd0bcf83baf06d7037092da19169a8e17b4e1e5c51",
+            "actual_sha256": "39b754248deefbd94adbdcfd0bcf83baf06d7037092da19169a8e17b4e1e5c51",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/autodiff.py",
+            "expected_sha256": "3517dd8458cd0957c2e829db6baca975105cc8a75c9445299e67f13dcf590377",
+            "actual_sha256": "3517dd8458cd0957c2e829db6baca975105cc8a75c9445299e67f13dcf590377",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/batch.py",
+            "expected_sha256": "f9f6df6e150bca66f563d759b6d1c597a5861d51701b0a7d4cd3abce3a8a2b43",
+            "actual_sha256": "f9f6df6e150bca66f563d759b6d1c597a5861d51701b0a7d4cd3abce3a8a2b43",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/continuation.py",
+            "expected_sha256": "dafead03bd26ef4d81394ac3526ce6dbf80ee4843321df6df3c21e4ce0679cf4",
+            "actual_sha256": "dafead03bd26ef4d81394ac3526ce6dbf80ee4843321df6df3c21e4ce0679cf4",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/controller.py",
+            "expected_sha256": "de831ac8981e4e001817bd583dba3335800be661d21b7f1c8bffae48262b6950",
+            "actual_sha256": "de831ac8981e4e001817bd583dba3335800be661d21b7f1c8bffae48262b6950",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/filter.py",
+            "expected_sha256": "730d89d620d6919000dfc0555a473e1a1ca5c580d2c6c0d3a50f4d7df1309f81",
+            "actual_sha256": "730d89d620d6919000dfc0555a473e1a1ca5c580d2c6c0d3a50f4d7df1309f81",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/linear_solver.py",
+            "expected_sha256": "85dcc656d15432f41f66f99c5804c9cae2c6f5cb5fb167e0161d39532c676ed8",
+            "actual_sha256": "85dcc656d15432f41f66f99c5804c9cae2c6f5cb5fb167e0161d39532c676ed8",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/normal.py",
+            "expected_sha256": "6e556ea8b0869bffc3646db6a427aa52adf71ab7089e26daac4b638c2e66f443",
+            "actual_sha256": "6e556ea8b0869bffc3646db6a427aa52adf71ab7089e26daac4b638c2e66f443",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/problem.py",
+            "expected_sha256": "f5052961aeea57f899cb0b6373b6a368296da5d846a43ab77c2f3fa8adda49c1",
+            "actual_sha256": "f5052961aeea57f899cb0b6373b6a368296da5d846a43ab77c2f3fa8adda49c1",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/restoration.py",
+            "expected_sha256": "86aa3dde2e5dcff2989e77f4fc65e96f876d83aff8f844d582559490f7e1685f",
+            "actual_sha256": "86aa3dde2e5dcff2989e77f4fc65e96f876d83aff8f844d582559490f7e1685f",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/return_map.py",
+            "expected_sha256": "e23b9c7ff2a8b88676e3c75fdbc348be4c39bb51d484877ad65e919913552d47",
+            "actual_sha256": "e23b9c7ff2a8b88676e3c75fdbc348be4c39bb51d484877ad65e919913552d47",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/soc.py",
+            "expected_sha256": "8df2974594f39f0e4b6b58ae9507c45201ddf26401b112f7933c760a397539c7",
+            "actual_sha256": "8df2974594f39f0e4b6b58ae9507c45201ddf26401b112f7933c760a397539c7",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/types.py",
+            "expected_sha256": "e7a60fa905034edb1ab4685e9b85d2d81c59b45edeb10f9f67b75f4308ac7b76",
+            "actual_sha256": "e7a60fa905034edb1ab4685e9b85d2d81c59b45edeb10f9f67b75f4308ac7b76",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier.py",
+            "expected_sha256": "ed090f5acf07891cb14e8fee31c5bb908a318596199da1aff3282cf71fbddf00",
+            "actual_sha256": "ed090f5acf07891cb14e8fee31c5bb908a318596199da1aff3282cf71fbddf00",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier_attempt.py",
+            "expected_sha256": "52f3694e8495ec908629263d48ebf98bd8b36217be7d5079c460c253557d0e49",
+            "actual_sha256": "52f3694e8495ec908629263d48ebf98bd8b36217be7d5079c460c253557d0e49",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/fixed_support/zero_barrier_contracts.py",
+            "expected_sha256": "3ee76cb50878795ebeab955e796ebc9e782fe050980de08d504ff7ce9e55336a",
+            "actual_sha256": "3ee76cb50878795ebeab955e796ebc9e782fe050980de08d504ff7ce9e55336a",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/initialization.py",
+            "expected_sha256": "b591105ab59fd96e0ffbec2230ad0d768a64e93c63300057fea5c93cb29f2424",
+            "actual_sha256": "b591105ab59fd96e0ffbec2230ad0d768a64e93c63300057fea5c93cb29f2424",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/inventory_bridge.py",
+            "expected_sha256": "bb38b050cd41888178b8c66c2434833856235931cdcd4540ab6e55347fe76626",
+            "actual_sha256": "bb38b050cd41888178b8c66c2434833856235931cdcd4540ab6e55347fe76626",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/lifecycle.py",
+            "expected_sha256": "65d1e412fc1f9fe5e0f97dc2318301d8f61fc34c50c4a0c60efce9a6a220db78",
+            "actual_sha256": "65d1e412fc1f9fe5e0f97dc2318301d8f61fc34c50c4a0c60efce9a6a220db78",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/policy.py",
+            "expected_sha256": "bafcec53de35ede0e640fe2b463a918b5be79551c77422701f99d0420dd44094",
+            "actual_sha256": "bafcec53de35ede0e640fe2b463a918b5be79551c77422701f99d0420dd44094",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/profile.py",
+            "expected_sha256": "4fe03228f62826a8c5fe3e9f26144429229a051218f6d2b8c1bf8dfc3d1ba719",
+            "actual_sha256": "4fe03228f62826a8c5fe3e9f26144429229a051218f6d2b8c1bf8dfc3d1ba719",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/results.py",
+            "expected_sha256": "b43a8cda902bddd4a05a5e3ab1c1ccc53f813fc32d44da9168cc0e4357b2a4d1",
+            "actual_sha256": "b43a8cda902bddd4a05a5e3ab1c1ccc53f813fc32d44da9168cc0e4357b2a4d1",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/setup.py",
+            "expected_sha256": "1b4cc1f200364794dd900e61a681e9f9bc88e8d6aca59bf73492fbc3d922e60c",
+            "actual_sha256": "1b4cc1f200364794dd900e61a681e9f9bc88e8d6aca59bf73492fbc3d922e60c",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/solve.py",
+            "expected_sha256": "90bbd200fdbc82b61484f92e263afa2a6f350be55145f40ec92d9fbf26a16a22",
+            "actual_sha256": "90bbd200fdbc82b61484f92e263afa2a6f350be55145f40ec92d9fbf26a16a22",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/support.py",
+            "expected_sha256": "ee4d11e55e284a33e06077e98702f3069779aefa434f65d32561660107919f86",
+            "actual_sha256": "ee4d11e55e284a33e06077e98702f3069779aefa434f65d32561660107919f86",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/support_geometry.py",
+            "expected_sha256": "495bd3380f97b30c9e77a8a3e956994119e468bcbc784f8bb6ef2bb7e23ba232",
+            "actual_sha256": "495bd3380f97b30c9e77a8a3e956994119e468bcbc784f8bb6ef2bb7e23ba232",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/condensate/types.py",
+            "expected_sha256": "3024ec1f998a5b2ebbc6c75906de50ce792bf473e727cbd22c4d792e5259ac04",
+            "actual_sha256": "3024ec1f998a5b2ebbc6c75906de50ce792bf473e727cbd22c4d792e5259ac04",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/gas/kernel/solver.py",
+            "expected_sha256": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+            "actual_sha256": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/gas/solve.py",
+            "expected_sha256": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95",
+            "actual_sha256": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/thermo/models.py",
+            "expected_sha256": "33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48",
+            "actual_sha256": "33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/condensate_comparison.json.gz",
+            "expected_sha256": "6a9401fcfc0a5e8cd633ed933089636ec6877faa1ec4a21b5180d53eb552cf9d",
+            "actual_sha256": "6a9401fcfc0a5e8cd633ed933089636ec6877faa1ec4a21b5180d53eb552cf9d",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/direct_phase_function_receipt.json",
+            "expected_sha256": "cb5c895180739ecc31df3114d8dce7842b141f4804a759abbbf056f570a963e3",
+            "actual_sha256": "cb5c895180739ecc31df3114d8dce7842b141f4804a759abbbf056f570a963e3",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/native7_phase_receipt.json",
+            "expected_sha256": "f4db7f591bfa2b46a5d714de6e486702c0f47af79a383d8b2463637e9320d5b4",
+            "actual_sha256": "f4db7f591bfa2b46a5d714de6e486702c0f47af79a383d8b2463637e9320d5b4",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ],
+        "artifact_hashes": [
+          {
+            "evidence": "matched_condensation_execution",
+            "source": "tests/data/validation/phosphorus_cold_validation/condensate_comparison.json.gz",
+            "expected_sha256": "6a9401fcfc0a5e8cd633ed933089636ec6877faa1ec4a21b5180d53eb552cf9d",
+            "actual_sha256": "6a9401fcfc0a5e8cd633ed933089636ec6877faa1ec4a21b5180d53eb552cf9d",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "evidence": "matched_condensation_execution",
+            "source": "tests/data/validation/phosphorus_cold_validation/direct_phase_function_receipt.json",
+            "expected_sha256": "cb5c895180739ecc31df3114d8dce7842b141f4804a759abbbf056f570a963e3",
+            "actual_sha256": "cb5c895180739ecc31df3114d8dce7842b141f4804a759abbbf056f570a963e3",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ]
+      },
+      "assessments": [
+        {
+          "id": "cold_validation_condensate_solver_review",
+          "subject": "matched_condensation_snapshot",
+          "context": "native_seven_element_grid",
+          "method": {
+            "id": "cold_network_source_and_execution_review",
+            "revision": "1",
+            "description": "Inspect input identities, explicit intervention scopes and primitive acceptance gates; keep source accuracy and complete phase coverage separate from numerical support."
+          },
+          "evidence": [
+            "matched_condensation_execution"
+          ],
+          "reasons": [
+            "All 31 states pass unchanged gates on elemental residual, gas mass action, active and inactive phase affinities, nonnegative phase amounts and finite log gas amounts.",
+            "Maximum reconstructed all-gas log mole-fraction difference is 5.86124e-9; independently printed gas values agree within 2.36967e-9 above the declared trace floor, and condensate elemental allocation differs by at most 1.08808e-10."
+          ],
+          "kind": "evidence_support",
+          "claim": "matched_gas_condensate_solver_agreement",
+          "claim_revision": "1",
+          "status": "supported",
+          "origin": "reviewed"
+        }
+      ]
+    }
+  ],
+  "context": null,
+  "context_source": null,
+  "summary": {
+    "PASS": 5,
+    "FAIL": 0,
+    "UNKNOWN": 0
+  },
+  "explain_command": "mceg explain mceg/contracts/phosphorus_cold_validation.yaml --assessment cold_validation_condensate_solver_review --root ."
+}

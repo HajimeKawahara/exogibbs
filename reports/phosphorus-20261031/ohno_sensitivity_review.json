@@ -1,0 +1,194 @@
+{
+  "path": "/home/kawahara/exogibbs/mceg/contracts/ohno_p3.yaml",
+  "model": "exogibbs.ohno_p3.v1",
+  "checks": [
+    {
+      "name": "structure",
+      "status": "PASS",
+      "message": "v0.2 structure and local references are consistent",
+      "details": []
+    },
+    {
+      "name": "source_audit",
+      "status": "PASS",
+      "message": "1/1 evidence records have complete declared source traces",
+      "details": []
+    },
+    {
+      "name": "selected_files",
+      "status": "PASS",
+      "message": "11/11 recorded hashes match",
+      "details": []
+    },
+    {
+      "name": "artifact_hashes",
+      "status": "PASS",
+      "message": "4/4 recorded hashes match",
+      "details": []
+    },
+    {
+      "name": "recorded_support",
+      "status": "PASS",
+      "message": "Stored support: supported; claim=source_species_background_effects; origin=reviewed",
+      "details": [
+        "Recorded judgment only; no new support evaluation.",
+        "At 992.851 K in the seven-element network, substituting only baseline P4O6 into full Burcat gives 99.19 percent of P atoms in P4O6 despite all additional gas competitors.",
+        "At 504.500 K, omitting H3PO4 and HPO2 increases Burcat P4O10 allocation from 63.41 to 94.39 percent in the seven-element network.",
+        "Expanding from seven to 27 elements changes one carrier by up to 12.95 percentage points in the baseline and 23.23 percentage points with Burcat priority, while the qualitative source contrast persists."
+      ]
+    }
+  ],
+  "declarations": [],
+  "schema_version": "0.2",
+  "audit_scope": {
+    "kind": "assessment",
+    "assessment": "ohno_sensitivity_review",
+    "subject": "ohno_public_snapshot",
+    "context": "declared_gas_comparison"
+  },
+  "audited_evidence": [
+    "numerical_execution"
+  ],
+  "integrity": {
+    "root": "/home/kawahara/exogibbs",
+    "subject": "ohno_public_snapshot",
+    "selected_files": [
+      {
+        "source": "mceg/reviews/ohno_ggchem_20261031.py",
+        "expected_sha256": "44dcf829524441a8a21d0a52506c345eb5a837ad271e9b039b4b235065a425c5",
+        "actual_sha256": "44dcf829524441a8a21d0a52506c345eb5a837ad271e9b039b4b235065a425c5",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "mceg/reviews/ohno_exogibbs_20261031.py",
+        "expected_sha256": "6f2c51dca637095c36702033ff3d5b46b7bbaaf7b772a43d4e449b5d377fb2a5",
+        "actual_sha256": "6f2c51dca637095c36702033ff3d5b46b7bbaaf7b772a43d4e449b5d377fb2a5",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "mceg/reviews/plot_ohno_p3_20261031.py",
+        "expected_sha256": "887e1b2bdc6125011042ff659b6954685375a843771f10549a4d9ea2348d9292",
+        "actual_sha256": "887e1b2bdc6125011042ff659b6954685375a843771f10549a4d9ea2348d9292",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "src/exogibbs/api/gas.py",
+        "expected_sha256": "9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba",
+        "actual_sha256": "9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "src/exogibbs/equilibrium/gas/profile.py",
+        "expected_sha256": "a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f",
+        "actual_sha256": "a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "src/exogibbs/equilibrium/gas/solve.py",
+        "expected_sha256": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95",
+        "actual_sha256": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "src/exogibbs/equilibrium/gas/types.py",
+        "expected_sha256": "ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543",
+        "actual_sha256": "ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "src/exogibbs/equilibrium/gas/initialization.py",
+        "expected_sha256": "dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3",
+        "actual_sha256": "dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "src/exogibbs/equilibrium/gas/kernel/solver.py",
+        "expected_sha256": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+        "actual_sha256": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "src/exogibbs/thermo/models.py",
+        "expected_sha256": "33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48",
+        "actual_sha256": "33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "source": "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat",
+        "expected_sha256": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+        "actual_sha256": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      }
+    ],
+    "artifact_hashes": [
+      {
+        "evidence": "numerical_execution",
+        "source": "tests/data/validation/ohno_p3/summary.json.gz",
+        "expected_sha256": "64ed5c98629dbd05220677c512b92b41d8c4655d15df106129f3070b5b9fdacf",
+        "actual_sha256": "64ed5c98629dbd05220677c512b92b41d8c4655d15df106129f3070b5b9fdacf",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "evidence": "numerical_execution",
+        "source": "documents/_static/ohno_p3_expanded_elements.png",
+        "expected_sha256": "325d49772f909ac0cbd32607c874bb6f93f1d7ba286a1566a6bc39bca21efbd2",
+        "actual_sha256": "325d49772f909ac0cbd32607c874bb6f93f1d7ba286a1566a6bc39bca21efbd2",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "evidence": "numerical_execution",
+        "source": "documents/_static/ohno_p3_database_comparison.png",
+        "expected_sha256": "1d56430ba8b1ff6899f425e8d04b05878f8df3ca4d109dcb5d45b0b0e234ebb7",
+        "actual_sha256": "1d56430ba8b1ff6899f425e8d04b05878f8df3ca4d109dcb5d45b0b0e234ebb7",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      },
+      {
+        "evidence": "numerical_execution",
+        "source": "documents/_static/ohno_exogibbs_controls.png",
+        "expected_sha256": "a096f827545dead9c09fff0b4b47400f7f1d6c724aa237dd295074aa6d3925da",
+        "actual_sha256": "a096f827545dead9c09fff0b4b47400f7f1d6c724aa237dd295074aa6d3925da",
+        "status": "PASS",
+        "message": "SHA-256 matches"
+      }
+    ]
+  },
+  "assessments": [
+    {
+      "id": "ohno_sensitivity_review",
+      "subject": "ohno_public_snapshot",
+      "context": "declared_gas_comparison",
+      "method": {
+        "id": "native_source_and_controlled_comparison",
+        "revision": "1",
+        "description": "Inspect native selection, primitive closure, matched-input equilibrium solvers and controlled interventions without transferring numerical support to physical accuracy."
+      },
+      "evidence": [
+        "numerical_execution"
+      ],
+      "reasons": [
+        "At 992.851 K in the seven-element network, substituting only baseline P4O6 into full Burcat gives 99.19 percent of P atoms in P4O6 despite all additional gas competitors.",
+        "At 504.500 K, omitting H3PO4 and HPO2 increases Burcat P4O10 allocation from 63.41 to 94.39 percent in the seven-element network.",
+        "Expanding from seven to 27 elements changes one carrier by up to 12.95 percentage points in the baseline and 23.23 percentage points with Burcat priority, while the qualitative source contrast persists."
+      ],
+      "kind": "evidence_support",
+      "claim": "source_species_background_effects",
+      "claim_revision": "1",
+      "status": "supported",
+      "origin": "reviewed"
+    }
+  ]
+}

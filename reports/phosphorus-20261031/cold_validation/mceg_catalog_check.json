@@ -1,0 +1,229 @@
+{
+  "format": "mceg_check_report_v1",
+  "collected": 1,
+  "contracts": [
+    {
+      "path": "/home/kawahara/exogibbs/mceg/contracts/phosphorus_cold_validation.yaml",
+      "model": "exogibbs.phosphorus_cold_validation.v1",
+      "checks": [
+        {
+          "name": "structure",
+          "status": "PASS",
+          "message": "v0.2 structure and local references are consistent",
+          "details": []
+        },
+        {
+          "name": "source_audit",
+          "status": "PASS",
+          "message": "1/1 evidence records have complete declared source traces",
+          "details": []
+        },
+        {
+          "name": "selected_files",
+          "status": "PASS",
+          "message": "18/18 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS",
+          "message": "1/1 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "recorded_support",
+          "status": "PASS",
+          "message": "Stored support: supported; claim=finite_catalog_and_source_response; origin=reviewed",
+          "details": [
+            "Recorded judgment only; no new support evaluation.",
+            "The 107-gas expansion changes a single P carrier by at most 4.8593e-5 of the P inventory, whereas the recorded H3PO4 and HOPO anchor alternatives cause much larger sampled changes."
+          ]
+        }
+      ],
+      "declarations": [],
+      "schema_version": "0.2",
+      "audit_scope": {
+        "kind": "assessment",
+        "assessment": "cold_validation_catalog_review",
+        "subject": "cold_gas_validation_snapshot",
+        "context": "nasa9_cold_grid"
+      },
+      "audited_evidence": [
+        "gas_execution"
+      ],
+      "integrity": {
+        "root": "/home/kawahara/exogibbs",
+        "subject": "cold_gas_validation_snapshot",
+        "selected_files": [
+          {
+            "source": "mceg/reviews/phosphorus_cold_20261030.py",
+            "expected_sha256": "f771039ac7fd7fe3a02baeaeedb4e467c72660230eec32909da418b6d0aed6e2",
+            "actual_sha256": "f771039ac7fd7fe3a02baeaeedb4e467c72660230eec32909da418b6d0aed6e2",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_cold_ggchem_validation_20261031.py",
+            "expected_sha256": "f9b89ca26b5eebc2ead938100840a24eb7a447afc7b78a50601a40424aeca3a1",
+            "actual_sha256": "f9b89ca26b5eebc2ead938100840a24eb7a447afc7b78a50601a40424aeca3a1",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_cold_source_audit_20261031.py",
+            "expected_sha256": "7a997bd5fee2dc8c7967e87fb2ede53cbe5523a3fa933aba53096844f442d7b8",
+            "actual_sha256": "7a997bd5fee2dc8c7967e87fb2ede53cbe5523a3fa933aba53096844f442d7b8",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_cold_validation_20261031.py",
+            "expected_sha256": "356a39b39d41cb6320e78002f2a1130b4038fe867ab6eaa0a493f21f7e6449d3",
+            "actual_sha256": "356a39b39d41cb6320e78002f2a1130b4038fe867ab6eaa0a493f21f7e6449d3",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_ggchem_driver.f90",
+            "expected_sha256": "c4462b873e100912fed55a4ef7f533c2b36ab2943c68853b994e2487527fd75f",
+            "actual_sha256": "c4462b873e100912fed55a4ef7f533c2b36ab2943c68853b994e2487527fd75f",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_ggchem_reference.py",
+            "expected_sha256": "7e10bb8080c1b7128896ba33a981b436a4c282695bebc272007ee85ddacfe006",
+            "actual_sha256": "7e10bb8080c1b7128896ba33a981b436a4c282695bebc272007ee85ddacfe006",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/api/gas.py",
+            "expected_sha256": "9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba",
+            "actual_sha256": "9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat",
+            "expected_sha256": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+            "actual_sha256": "06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/gas/kernel/solver.py",
+            "expected_sha256": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+            "actual_sha256": "aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/gas/profile.py",
+            "expected_sha256": "a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f",
+            "actual_sha256": "a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/equilibrium/gas/solve.py",
+            "expected_sha256": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95",
+            "actual_sha256": "609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/thermo/models.py",
+            "expected_sha256": "33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48",
+            "actual_sha256": "33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "src/exogibbs/thermo/standard.py",
+            "expected_sha256": "b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1",
+            "actual_sha256": "b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold/ggchem_build.json",
+            "expected_sha256": "83a571774437c70cb8cac086538226ed11bdefe3f6813a42b9dd13ba715a2283",
+            "actual_sha256": "83a571774437c70cb8cac086538226ed11bdefe3f6813a42b9dd13ba715a2283",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold/ggchem_source.zip",
+            "expected_sha256": "a31522d39d0c1a815845f712d94ea6cdee9292db2e11e55eb4b44a340637faf5",
+            "actual_sha256": "a31522d39d0c1a815845f712d94ea6cdee9292db2e11e55eb4b44a340637faf5",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold/thermo.json",
+            "expected_sha256": "0d2c38ec5511f7d61b33eeddd681d15c7418a7317ba55fbed6eca1cb0616c3e6",
+            "actual_sha256": "0d2c38ec5511f7d61b33eeddd681d15c7418a7317ba55fbed6eca1cb0616c3e6",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/gas_summary.json.gz",
+            "expected_sha256": "76a65c4cf6b3696e51302c97324d860b97317d9d850ea1b764292d0efe941d93",
+            "actual_sha256": "76a65c4cf6b3696e51302c97324d860b97317d9d850ea1b764292d0efe941d93",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/ggchem_comparison.json.gz",
+            "expected_sha256": "83e01a8cf935145933bac8e09f4d7ce7ea849f70b0e21700ce0e6b396c77446f",
+            "actual_sha256": "83e01a8cf935145933bac8e09f4d7ce7ea849f70b0e21700ce0e6b396c77446f",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ],
+        "artifact_hashes": [
+          {
+            "evidence": "gas_execution",
+            "source": "tests/data/validation/phosphorus_cold_validation/gas_summary.json.gz",
+            "expected_sha256": "76a65c4cf6b3696e51302c97324d860b97317d9d850ea1b764292d0efe941d93",
+            "actual_sha256": "76a65c4cf6b3696e51302c97324d860b97317d9d850ea1b764292d0efe941d93",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ]
+      },
+      "assessments": [
+        {
+          "id": "cold_validation_catalog_review",
+          "subject": "cold_gas_validation_snapshot",
+          "context": "nasa9_cold_grid",
+          "method": {
+            "id": "cold_network_source_and_execution_review",
+            "revision": "1",
+            "description": "Inspect input identities, explicit intervention scopes and primitive acceptance gates; keep source accuracy and complete phase coverage separate from numerical support."
+          },
+          "evidence": [
+            "gas_execution"
+          ],
+          "reasons": [
+            "The 107-gas expansion changes a single P carrier by at most 4.8593e-5 of the P inventory, whereas the recorded H3PO4 and HOPO anchor alternatives cause much larger sampled changes."
+          ],
+          "kind": "evidence_support",
+          "claim": "finite_catalog_and_source_response",
+          "claim_revision": "1",
+          "status": "supported",
+          "origin": "reviewed"
+        }
+      ]
+    }
+  ],
+  "context": null,
+  "context_source": null,
+  "summary": {
+    "PASS": 5,
+    "FAIL": 0,
+    "UNKNOWN": 0
+  },
+  "explain_command": "mceg explain mceg/contracts/phosphorus_cold_validation.yaml --assessment cold_validation_catalog_review --root ."
+}

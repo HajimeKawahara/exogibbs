@@ -1,0 +1,145 @@
+{
+  "format": "mceg_check_report_v1",
+  "collected": 1,
+  "contracts": [
+    {
+      "path": "/home/kawahara/exogibbs/mceg/contracts/phosphorus_cold_validation.yaml",
+      "model": "exogibbs.phosphorus_cold_validation.v1",
+      "checks": [
+        {
+          "name": "structure",
+          "status": "PASS",
+          "message": "v0.2 structure and local references are consistent",
+          "details": []
+        },
+        {
+          "name": "source_audit",
+          "status": "PASS",
+          "message": "1/1 evidence records have complete declared source traces",
+          "details": []
+        },
+        {
+          "name": "selected_files",
+          "status": "PASS",
+          "message": "6/6 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "artifact_hashes",
+          "status": "PASS",
+          "message": "1/1 recorded hashes match",
+          "details": []
+        },
+        {
+          "name": "recorded_support",
+          "status": "PASS",
+          "message": "Stored support: supported; claim=native_seven_element_condensation; origin=reviewed",
+          "details": [
+            "Recorded judgment only; no new support evaluation.",
+            "Both native seven-element profiles completed 31 sampled states and pass the recorded element gates; the condensed profile also passes the phase saturation gates; the incomplete 27-element profile is excluded."
+          ]
+        }
+      ],
+      "declarations": [],
+      "schema_version": "0.2",
+      "audit_scope": {
+        "kind": "assessment",
+        "assessment": "cold_validation_native_condensation_review",
+        "subject": "native_condensation_snapshot",
+        "context": "native_seven_element_grid"
+      },
+      "audited_evidence": [
+        "native_condensation_execution"
+      ],
+      "integrity": {
+        "root": "/home/kawahara/exogibbs",
+        "subject": "native_condensation_snapshot",
+        "selected_files": [
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/abundances.dat",
+            "expected_sha256": "0d262f6daa42909a1fe0d4e1303d760fce8c15006d3a22d9d2bfcb7e92ec9356",
+            "actual_sha256": "0d262f6daa42909a1fe0d4e1303d760fce8c15006d3a22d9d2bfcb7e92ec9356",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/native7_gas.in",
+            "expected_sha256": "0134794fdb273d6cca358050708c392081aaade82fe4248c57b5272d1bd48e31",
+            "actual_sha256": "0134794fdb273d6cca358050708c392081aaade82fe4248c57b5272d1bd48e31",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/native7_condensed.in",
+            "expected_sha256": "83803dc9b6fc1df30a76e96f541ce9730348244166dffbebcb3cae1232e6bbf0",
+            "actual_sha256": "83803dc9b6fc1df30a76e96f541ce9730348244166dffbebcb3cae1232e6bbf0",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "mceg/reviews/phosphorus_native_phase_reference_20261031.py",
+            "expected_sha256": "21d877cdf6b150119e489c5c33f8e920afaa57e042e6e0f8ba37c0e4e42d110c",
+            "actual_sha256": "21d877cdf6b150119e489c5c33f8e920afaa57e042e6e0f8ba37c0e4e42d110c",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/native27_phase_attempt.json",
+            "expected_sha256": "40ea8ebc8b55afd07a396d36cdfa254262ec83d6d1323eece01a182142c39921",
+            "actual_sha256": "40ea8ebc8b55afd07a396d36cdfa254262ec83d6d1323eece01a182142c39921",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          },
+          {
+            "source": "tests/data/validation/phosphorus_cold_validation/native7_phase_receipt.json",
+            "expected_sha256": "f4db7f591bfa2b46a5d714de6e486702c0f47af79a383d8b2463637e9320d5b4",
+            "actual_sha256": "f4db7f591bfa2b46a5d714de6e486702c0f47af79a383d8b2463637e9320d5b4",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ],
+        "artifact_hashes": [
+          {
+            "evidence": "native_condensation_execution",
+            "source": "tests/data/validation/phosphorus_cold_validation/native7_phase_receipt.json",
+            "expected_sha256": "f4db7f591bfa2b46a5d714de6e486702c0f47af79a383d8b2463637e9320d5b4",
+            "actual_sha256": "f4db7f591bfa2b46a5d714de6e486702c0f47af79a383d8b2463637e9320d5b4",
+            "status": "PASS",
+            "message": "SHA-256 matches"
+          }
+        ]
+      },
+      "assessments": [
+        {
+          "id": "cold_validation_native_condensation_review",
+          "subject": "native_condensation_snapshot",
+          "context": "native_seven_element_grid",
+          "method": {
+            "id": "cold_network_source_and_execution_review",
+            "revision": "1",
+            "description": "Inspect input identities, explicit intervention scopes and primitive acceptance gates; keep source accuracy and complete phase coverage separate from numerical support."
+          },
+          "evidence": [
+            "native_condensation_execution"
+          ],
+          "reasons": [
+            "Both native seven-element profiles completed 31 sampled states and pass the recorded element gates; the condensed profile also passes the phase saturation gates; the incomplete 27-element profile is excluded."
+          ],
+          "kind": "evidence_support",
+          "claim": "native_seven_element_condensation",
+          "claim_revision": "1",
+          "status": "supported",
+          "origin": "reviewed"
+        }
+      ]
+    }
+  ],
+  "context": null,
+  "context_source": null,
+  "summary": {
+    "PASS": 5,
+    "FAIL": 0,
+    "UNKNOWN": 0
+  },
+  "explain_command": "mceg explain mceg/contracts/phosphorus_cold_validation.yaml --assessment cold_validation_native_condensation_review --root ."
+}
