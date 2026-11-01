@@ -1,0 +1,209 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.s2o_source_investigation.v1
+  name: SSO identity, JANAF column error and source investigation
+  description: Scoped L0-L3 source diagnosis with no production adoption; retain current fit pending energy and
+    application review.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:20d0807e7254b2827e2e3e4e51b1012527327de407298507296ca3fa2f9a46b0
+    entry_points:
+    - mceg/reviews/s2o_source_investigation.py
+assumptions:
+- statement: Formation K uses 2 neutral gas S atoms plus one neutral gas O atom at 1 bar; elemental formation quantities
+    are converted consistently.
+  evidence:
+  - source_inspection
+  - offline_execution
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Discrete source comparisons, not validated atmospheric conditions.
+  conditions:
+  - 500, 1000, 1500 and 3000 K; no pressure/composition equilibrium network executed.
+  - Curated values below 1500 K remain missing; reference tables are not extrapolated.
+  evidence:
+  - offline_execution
+- kind: scientific_applicability
+  status: unknown
+  description: High-temperature thermal functions and atmospheric abundance accuracy remain unestablished.
+  conditions: []
+  evidence:
+  - source_inspection
+claims:
+- id: source_diagnosis
+  revision: '1'
+  kind: numerical_verification
+  statement: The SSO formation-column disagreement is present in official JANAF and is identified as an error by
+    Lodders 2004; it is distinct from disagreement between molecular energy evaluations.
+  scope: SSO identity and four sampled nodes, not an explanation of the original arithmetic mechanism or all source
+    ancestry.
+- id: numerical_replay
+  revision: '1'
+  kind: numerical_verification
+  statement: The archived source comparison, matched official records and molecular energy/thermal decomposition
+    reproduce offline.
+  scope: Four exact nodes, archived data and script hashes; curated K values reused from baseline-001, no new equilibrium
+    solve.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The selected thermochemistry quantitatively describes SSO and its atmospheric abundance in the intended
+    applications.
+  scope: Requires original-source and uncertainty review, thermal-state verification and fixed-network application
+    tests.
+evidence:
+- id: source_inspection
+  kind: literature
+  summary: Official JANAF p1727, NASA Appendix D p184, Lodders sections 2.2.1-2.2.2 and Tables 4-5, and ATcT 1.172
+    SSO identity and provenance were inspected.
+  sources:
+  - tests/data/validation/s2o_source_investigation/20261102/sources.json
+  - documents/mceg/s2o_source_investigation.rst
+  scope: Underlying Gurvich, Berkowitz, Norwood and Karton original accounts remain incompletely inspected; NASA
+    and Lodders share thermal ancestry and ATcT shares experimental constraints. No adoption change.
+  subject: s2o_20261102
+  context: source_nodes
+  artifacts:
+  - source: tests/data/validation/s2o_source_investigation/20261102/sources.json
+    sha256: 14dd339624b00ab95a205578ebd43c801e016796a9a1fb204b5becf037c1283d
+  - source: documents/mceg/s2o_source_investigation.rst
+    sha256: a30ccade25034168fe02ef1fe0d8170a173406484443c96e06da78da3f1b79c0
+  provenance:
+    role: primary
+    location: documents/mceg/s2o_source_investigation.rst
+    inspection: inspected
+    note: Underlying Gurvich, Berkowitz, Norwood and Karton original accounts remain incompletely inspected; NASA
+      and Lodders share thermal ancestry and ATcT shares experimental constraints. No adoption change.
+- id: offline_execution
+  kind: numerical_test
+  summary: Three fresh JANAF records, eighteen printed NASA coefficients and four temperature samples reproduce;
+    the 1500 K raw-column residual is 4.468655846141134 dex.
+  sources:
+  - tests/data/validation/s2o_source_investigation/20261102/comparison.json
+  - tests/data/validation/s2o_source_investigation/20261102/receipt.json
+  scope: Source comparison only. The ATcT atomization value 851.124 kJ/mol uses rounded correlated inputs; it has
+    no derived independent uncertainty. Abundance effects not run.
+  subject: s2o_20261102
+  context: source_nodes
+  artifacts:
+  - source: tests/data/validation/s2o_source_investigation/20261102/comparison.json
+    sha256: 3eba12fb95abd4bd86ae01e33f6545d4ef644f097471c24a9fc498e5f5600c1c
+  - source: tests/data/validation/s2o_source_investigation/20261102/receipt.json
+    sha256: 37060536b71c5e00d5343019bd9a1442bdbd781b53b044d265af633a223924d1
+  provenance:
+    role: primary
+    location: documents/mceg/s2o_source_investigation.rst
+    inspection: inspected
+    note: Source comparison only. The ATcT atomization value 851.124 kJ/mol uses rounded correlated inputs; it has
+      no derived independent uncertainty. Abundance effects not run.
+  result: passed
+subjects:
+- id: s2o_20261102
+  implementation: *id001
+  selected_files:
+    mceg/reviews/s2o_source_investigation.py: 20d0807e7254b2827e2e3e4e51b1012527327de407298507296ca3fa2f9a46b0
+    mceg/reviews/gas_source_comparison.py: f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/s2o_source_investigation/20261102/sources.json: 14dd339624b00ab95a205578ebd43c801e016796a9a1fb204b5becf037c1283d
+    tests/data/validation/s2o_source_investigation/20261102/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/s2o_source_investigation/20261102/O-011.txt: 862d4855c61c24c3b9968287dfe65a3bd371f362438e156cd702ce79bb8009a2
+    tests/data/validation/s2o_source_investigation/20261102/S-006.txt: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
+    tests/data/validation/s2o_source_investigation/20261102/nasa-s2o.txt: a81474cd9255740d4314c4588a1d1a33086077af1e33182d628dfd6521fd7ec3
+contexts:
+- id: source_nodes
+  scope: SSO gas-atom formation constants and molecular source diagnostics.
+  settings:
+    standard_pressure_bar: 1
+    temperatures_K: 500, 1000, 1500, 3000
+    reaction: 2 S(g) + O(g) -> SSO(g)
+    baseline: gas_source_comparison/baseline-001
+    network: No abundance network solved; baseline curated values refer to 421 neutral species
+    atomic_reference_policy: Native JANAF/NASA for source ratios; fixed JANAF atoms only for the explicitly labelled
+      Lodders diagnostic
+    equilibrium_impact: not_run
+assessments:
+- id: source_diagnosis_review
+  kind: evidence_support
+  claim: source_diagnosis
+  claim_revision: '1'
+  subject: s2o_20261102
+  context: source_nodes
+  method: &id002
+    id: s2o_source_review
+    revision: '1'
+    description: Inspect identity, source genealogy and numerical decomposition separately from complete physical
+      support.
+  evidence:
+  - source_inspection
+  - offline_execution
+  reasons:
+  - Official downloads reproduce the frozen entries and Lodders explicitly documents the erroneous columns. This
+    does not prove the historical arithmetic mechanism.
+  status: supported
+  origin: reviewed
+- id: numerical_replay_review
+  kind: evidence_support
+  claim: numerical_replay
+  claim_revision: '1'
+  subject: s2o_20261102
+  context: source_nodes
+  method: *id002
+  evidence:
+  - offline_execution
+  reasons:
+  - Archived comparison is regenerated with verified input hashes; the source-data and implementation scopes remain
+    explicit.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: s2o_20261102
+  context: source_nodes
+  method: *id002
+  evidence:
+  - source_inspection
+  - offline_execution
+  reasons:
+  - Original experiment and thermal model details, correlated energy uncertainty and atmosphere-specific evidence
+    remain incomplete; no fixed-network substitution has been run.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: complete_energy_and_thermal_review
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Inspect original Gurvich and experimental/theoretical references and reconcile the balanced ATcT energy
+    with its correlated atomic anchors.
+  requires:
+  - Original Gurvich, Berkowitz, Norwood and Karton source passages
+  - Uncertainty definitions and covariance
+  - Thermal and electronic-state model details and original FastChem fitting inputs
+  completion: Add a scoped candidate-energy and thermal assessment; do not promote mixed-network physical accuracy
+    from a single-source review.
+- id: quantify_application_impact
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Run a one-species SSO replacement only after selecting the justified candidate.
+  requires:
+  - Fixed 537-species ion-inclusive network and T/P/elemental budget
+  - Element and charge conservation and mass-action residuals
+  - Absolute abundances and sulfur/oxygen allocation
+  completion: Archive a separate context and execution receipt for finite replacements; retain failed or unrun points
+    explicitly.
+limitations:
+- statement: A publication error and reproducible database differences do not establish the accuracy of the retained
+    fit, a new ATcT thermal model, or atmosphere-wide physical accuracy.
+  evidence:
+  - source_inspection
+  - offline_execution
+- statement: Full downloaded publications remain unarchived; their hashes document inspected bytes. Only selected
+    tables, transcribed facts and the NASA record are needed for offline replay.
+  evidence:
+  - source_inspection
