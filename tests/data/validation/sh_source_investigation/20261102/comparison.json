@@ -1,0 +1,68 @@
+{
+  "schema_version": "1",
+  "species_id": "H1S1",
+  "reaction": "H(g) + S(g) -> SH(g)",
+  "standard_pressure_Pa": 100000,
+  "energy_nasa_D0_over_R_K": 42008.1008983091,
+  "energy_atct_D0_over_R_K": 42101.81897212642,
+  "energy_atct_D0_kJ_mol": 350.0539999999999,
+  "samples": [
+    {
+      "temperature_K": 500,
+      "ln_K_janaf_hs": 74.93051909810364,
+      "ln_K_nasa": 74.2911987559388,
+      "janaf_over_nasa": 1.8951923591421342,
+      "raw_minus_reconstructed_dex": 0.9504951853339015,
+      "delta_reaction_H298_over_R_K": -315.1729453178232,
+      "delta_reaction_thermal_H_over_R_K": -1.4996923433080838,
+      "delta_reaction_S_over_R": 0.005975066842580645,
+      "reconstructed_delta_ln_K": 0.6393203421648431,
+      "atct_energy_shift_ln_K": 0.18743614763463848,
+      "predicted_curated_over_nasa": null
+    },
+    {
+      "temperature_K": 1000,
+      "ln_K_janaf_hs": 31.5886921454867,
+      "ln_K_nasa": 31.267463342013233,
+      "janaf_over_nasa": 1.3788210238447012,
+      "raw_minus_reconstructed_dex": 1.5299227333313357,
+      "delta_reaction_H298_over_R_K": -315.1729453178232,
+      "delta_reaction_thermal_H_over_R_K": -4.865297633429691,
+      "delta_reaction_S_over_R": 0.0011905605222111149,
+      "reconstructed_delta_ln_K": 0.321228803473464,
+      "atct_energy_shift_ln_K": 0.09371807381731924,
+      "predicted_curated_over_nasa": null
+    },
+    {
+      "temperature_K": 1500,
+      "ln_K_janaf_hs": 16.936071493771443,
+      "ln_K_nasa": 16.722062547320697,
+      "janaf_over_nasa": 1.2386337361195965,
+      "raw_minus_reconstructed_dex": 2.234327923070567,
+      "delta_reaction_H298_over_R_K": -315.1729453178232,
+      "delta_reaction_thermal_H_over_R_K": -9.361723969417199,
+      "delta_reaction_S_over_R": -0.002347499740739778,
+      "reconstructed_delta_ln_K": 0.2140089464507538,
+      "atct_energy_shift_ln_K": 0.062478715878212826,
+      "predicted_curated_over_nasa": 1.0644718023292676
+    },
+    {
+      "temperature_K": 3000,
+      "ln_K_janaf_hs": 2.053850916279618,
+      "ln_K_nasa": 1.9531494899855275,
+      "janaf_over_nasa": 1.1059463859520353,
+      "raw_minus_reconstructed_dex": 3.086536846544287,
+      "delta_reaction_H298_over_R_K": -315.1729453178232,
+      "delta_reaction_thermal_H_over_R_K": -67.64458114685385,
+      "delta_reaction_S_over_R": -0.02690441586079828,
+      "reconstructed_delta_ln_K": 0.10070142629409407,
+      "atct_energy_shift_ln_K": 0.031239357939106413,
+      "predicted_curated_over_nasa": 1.0317324276813575
+    }
+  ],
+  "limitations": [
+    "NASA/JANAF delta terms use the baseline common R scale, not a new energy evaluation.",
+    "Predicted curated ratio uses the existing balanced ATcT energy shift; no second correction is applied.",
+    "No abundance solves or physical error bounds; historical transfer arithmetic remains unidentified."
+  ]
+}
