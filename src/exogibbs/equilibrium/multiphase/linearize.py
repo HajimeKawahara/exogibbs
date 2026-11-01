@@ -172,7 +172,7 @@ def linearize_fixed_support(
     reasons = tuple(key for key, passed in checks.items() if not passed)
     valid = not reasons
     zeros = (jnp.zeros(()), jnp.zeros(()), jnp.zeros_like(jnp.asarray(b)),
-             jax.tree_util.tree_map(lambda x: jnp.zeros_like(jnp.asarray(x, dtype=float)), parameters))
+             jax.tree_util.tree_map(lambda x: jnp.zeros_like(jnp.asarray(x)), parameters))
     # Keep the normalization fixed at the anchor. db enters the constraints,
     # never an extra change of the amount gauge in the physical output map.
     def physical(u, temperature, pressure, params):

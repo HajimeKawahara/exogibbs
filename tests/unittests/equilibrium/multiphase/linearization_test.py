@@ -158,3 +158,16 @@ def test_malformed_material_contracts_fail_explicitly(kind):
     with pytest.raises(ValueError,match=match):
         mp.linearize_fixed_support(mp.Problem(('X',),(phase,)),temperature_k=1400.,pressure_pa=1e5,
             element_amounts_mol=[2.],amounts_mol=n,support=SUPPORT,parameters=params)
+
+
+
+def test_vjp_preserves_floating_parameter_dtype():
+    lin=linearization(standards=jnp.zeros(2,dtype=jnp.float32))
+    assert lin.derivative_valid
+    direction=(jnp.array(1.),jnp.array(0.),jnp.array([.1]),jnp.zeros(2,dtype=jnp.float32))
+    pushed=lin.jvp(*direction)
+    cotangent=jax.tree_util.tree_map(jnp.ones_like,pushed)
+    pulled=lin.vjp(cotangent)
+    assert pulled[3].dtype == jnp.float32
+    np.testing.assert_allclose(sum(jnp.vdot(x,y) for x,y in zip(pulled,direction)),
+        sum(jnp.sum(x) for x in pushed),rtol=1e-6)
