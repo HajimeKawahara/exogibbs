@@ -1,0 +1,31 @@
+CEA – Chemical Equilibrium with Applications
+
+Copyright (c) 2025, United States Government as represented by the Administrator of the National Aeronautics and Space Administration
+Licensed under the Apache License, Version 2.0.
+
+## Data
+
+### NASA CEA thermodynamic and transport databases
+- Paths: data/thermo.inp, data/trans.inp, data/thermo.lib, data/trans.lib
+- Source/References: NASA TP-2002-211556: https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf
+
+### NASA RP-1311 example inputs/outputs
+- Paths: samples/*.inp, samples/*.out, source/bind/python/cea/samples/*.out
+- Source/References: NASA RP-1311 Part 2: https://ntrs.nasa.gov/api/citations/19960044559/downloads/19960044559.pdf
+
+## ExoGibbs comparison baseline modifications
+
+This directory contains selected neutral-gas NASA9 coefficient records in
+inputs.json, exported and reformatted from the existing local modified copy
+VULCAN/thermo/NASA9/nasa9_2002_E.txt. That full local source has SHA256
+1ec5fe226af698ef6c900537d30c2a640b31f83483d3f6f51c47c813f8d009ee.
+It has not been verified against a new official NASA download. The 47 records
+(94 coefficient intervals) overlapping the existing ExoGibbs major-molecule
+fixture agree in coefficients with that official-source-derived fixture;
+this does not establish provenance or equivalence for the complete local copy.
+The packaged NASA CEA license and attribution above are preserved here.
+
+inputs.json also contains selected JANAF values from the packaged YKB4 tables
+and the existing ExoGibbs major-molecule fixture. Their source metadata and
+the incomplete acquisition provenance of YKB4 are recorded separately in
+inputs.json; NASA attribution does not imply NASA authorship of JANAF data.
