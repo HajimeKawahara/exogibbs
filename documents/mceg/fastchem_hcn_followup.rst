@@ -206,7 +206,7 @@ From the repository root, regenerate the comparison with the vendored inputs:
 
    OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 \
      python mceg/reviews/fastchem_hcn_20261028.py
-   python -m pytest -q tests/unittests/mceg_fastchem_hcn_test.py
+   python -m pytest -q tests/model_evidence/fastchem_hcn_test.py
 
 With MCEG 0.2 available separately, inspect the scoped records:
 

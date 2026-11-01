@@ -81,7 +81,7 @@ mceg mceg/contracts/*.yaml
 mceg check . --assessment numerical_review --root .
 mceg explain . --assessment physical_review
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest -q -p no:cacheprovider \
-  tests/unittests/mceg_model_survey_test.py
+  tests/model_evidence/model_survey_test.py
 ```
 
 The common numerical selector applies only to these new contracts. A numerical

@@ -147,14 +147,20 @@ PYTHONPATH=/path/to/mceg/src python -m mceg \
 ```
 
 Structure does not establish reference availability, source inspection,
-numerical correctness or scientific applicability. The ordinary provider suite
+numerical correctness or scientific applicability. The offline model-evidence suite
 checks the recorded local file hashes and the contract/guide references without
 importing MCEG. The reference check targets this pilot's fixed text layout;
 it does not parse or validate general YAML:
 
 ```bash
-PYTHONPATH=src python -m pytest -q tests/unittests/mceg_contract_test.py
+PYTHONPATH=src python -m pytest -q tests/model_evidence
 ```
+
+These checks cover review scripts and archived evidence, including studies that
+do not change `src/exogibbs/`. They run separately from `tests/unittests` in CI;
+package API and runtime-independence checks remain in the unit suite. Tests that
+import external MCEG remain optional under `tests/model_contracts/`. Historical
+receipts retain the test paths and hashes used when they were recorded.
 
 The receipt records the exact numerical test selection. Its optional ExoEOS
 connection check needs the audited ExoEOS checkout on PYTHONPATH. No ExoEOS or
