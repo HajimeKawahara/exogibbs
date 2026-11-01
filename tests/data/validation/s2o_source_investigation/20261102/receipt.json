@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-11-01T23:53:49.154511+00:00",
+  "command": "python mceg/reviews/s2o_source_investigation.py --output-dir results/s2o-source/replay-002",
+  "python": "3.12.7",
+  "input_sha256": {
+    "mceg/reviews/s2o_source_investigation.py": "20d0807e7254b2827e2e3e4e51b1012527327de407298507296ca3fa2f9a46b0",
+    "mceg/reviews/gas_source_comparison.py": "f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/s2o_source_investigation/20261102/sources.json": "14dd339624b00ab95a205578ebd43c801e016796a9a1fb204b5becf037c1283d",
+    "tests/data/validation/s2o_source_investigation/20261102/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/s2o_source_investigation/20261102/O-011.txt": "862d4855c61c24c3b9968287dfe65a3bd371f362438e156cd702ce79bb8009a2",
+    "tests/data/validation/s2o_source_investigation/20261102/S-006.txt": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+    "tests/data/validation/s2o_source_investigation/20261102/nasa-s2o.txt": "a81474cd9255740d4314c4588a1d1a33086077af1e33182d628dfd6521fd7ec3"
+  },
+  "output_sha256": {
+    "tests/data/validation/s2o_source_investigation/20261102/comparison.json": "3eba12fb95abd4bd86ae01e33f6545d4ef644f097471c24a9fc498e5f5600c1c"
+  }
+}
