@@ -41,7 +41,9 @@
     "tests/data/validation/sh_source_investigation/20261102/nasa_sh_appendix_d.txt": "8449438630468f5042426a56bf3e6d62b47b5f683eec549e6deaea6403cee11c",
     "tests/model_evidence/sh_source_investigation_test.py": "729e9b1d483a79e1972779835c964b35cac7bdcbdccec82457ee056a31317f90",
     "tests/data/validation/sh_source_investigation/20261102/comparison.json": "b22b94874e28f83486d34fdaa67379a3fc979d2456afa28f6ca6c388ad1b2f8f",
-    "documents/mceg/sh_source_investigation.rst": "844f03448e799e5bfb6c8e1eff4a734bb6d6938d034b78b9c83325ac3dda9d5a"
+    "documents/mceg/sh_source_investigation.rst": "844f03448e799e5bfb6c8e1eff4a734bb6d6938d034b78b9c83325ac3dda9d5a",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468"
   },
   "limitations": [
     "Source inspection does not establish physical accuracy or abundance changes.",

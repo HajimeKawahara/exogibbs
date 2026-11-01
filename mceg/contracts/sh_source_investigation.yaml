@@ -89,7 +89,7 @@ evidence:
   - source: tests/data/validation/sh_source_investigation/20261102/comparison.json
     sha256: b22b94874e28f83486d34fdaa67379a3fc979d2456afa28f6ca6c388ad1b2f8f
   - source: tests/data/validation/sh_source_investigation/20261102/receipt.json
-    sha256: 71434b18c849440b5b131e4fca846fda40a136491f699b174807247f42dbcbde
+    sha256: 102cac8479b6ef87845fd4dcf881a3c7a8b55aa6ce48dedbae0f06f2a430266e
   provenance:
     role: primary
     location: Offline review script, comparison.json and targeted tests.
@@ -123,6 +123,8 @@ subjects:
     tests/data/validation/sh_source_investigation/20261102/S-006.txt: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
     tests/data/validation/sh_source_investigation/20261102/nasa_sh_appendix_d.txt: 8449438630468f5042426a56bf3e6d62b47b5f683eec549e6deaea6403cee11c
     tests/model_evidence/sh_source_investigation_test.py: 729e9b1d483a79e1972779835c964b35cac7bdcbdccec82457ee056a31317f90
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
 contexts:
 - id: source_samples
   scope: SH source identity, formation-column diagnosis and source-energy comparison.
