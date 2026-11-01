@@ -1,0 +1,174 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.gas_source_comparison.v1
+  name: Pinned JANAF, NASA and curated gas-source comparison
+  description: Reproducible screening baseline with explicit missing values, provisional mappings and source-review limits; no source adoption.
+  implementation: &implementation
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
+    entry_points: [mceg/reviews/gas_source_comparison.py]
+assumptions:
+- statement: Compare dimensionless formation Kp from neutral gas atoms at a 1 bar standard pressure, using each raw source's own atomic references.
+  evidence: [frozen_inputs, baseline_execution]
+- statement: The historical table's current curated label denotes the implementation and data pinned by this subject, not a moving preset alias.
+  evidence: [frozen_inputs]
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Discrete screening samples; missing values remain missing and no continuous-domain accuracy is inferred.
+  conditions:
+  - 93 included molecules, 14 excluded candidates and 70 provisional molecular mappings.
+  - Temperatures 500, 1000, 1500 and 3000 K; the table is the 1500 K projection.
+  - Curated results are evaluated only within its fitted 1500-4000 K range.
+  evidence: [frozen_inputs, baseline_execution]
+- kind: scientific_applicability
+  status: unknown
+  description: Molecular identities, source ancestry and independent physical accuracy are not established by a reproducible comparison.
+  conditions: []
+  evidence: [frozen_inputs, baseline_execution]
+claims:
+- id: baseline_replay
+  revision: '1'
+  kind: numerical_verification
+  statement: The portable comparison reproduces the frozen historical expectations and the archived comparison and table under its declared replay tolerances.
+  scope: Fixed baseline-001 inputs and sampled temperatures. Historical ratios agree within 1e-10 dex; archived numeric results use absolute tolerance 2e-11 and relative tolerance 2e-12. Metadata, tables, basis labels, grades and major-molecule flags match exactly.
+- id: source_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The compared thermochemical sources have independently established molecular identities, source ancestry and quantified physical accuracy for the sampled species and conditions.
+  scope: Requires independent source inspection and physical constraints; database agreement is not a calibrated uncertainty or adoption criterion.
+evidence:
+- id: frozen_inputs
+  kind: implementation
+  summary: Selected source records and annotations preserve 93 mappings, 14 exclusions and the historical expectations without upgrading provisional identity or source-review status.
+  sources:
+  - tests/data/validation/gas_source_comparison/baseline-001/inputs.json
+  - tests/data/validation/gas_source_comparison/baseline-001/README.rst
+  - https://github.com/HajimeKawahara/exogibbs/issues/308
+  scope: Local NASA acquisition remains unverified despite agreement of 94 coefficient intervals with an existing official-derived reference fixture. Seventy curated entries are inherited_unreviewed; annotations do not prove exact upstream versions or ATcT ancestry.
+  subject: baseline_001
+  context: screening_samples
+  artifacts:
+  - source: tests/data/validation/gas_source_comparison/baseline-001/inputs.json
+    sha256: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+  provenance:
+    role: implementation
+    location: Frozen local input selection and historical screening expectations.
+    inspection: partial
+    note: Preserves recorded identifiers and limitations; 70 provisional mappings have not received independent molecular-identity confirmation.
+- id: baseline_execution
+  kind: numerical_test
+  summary: Fresh portable execution reproduces all 93 historical rows with a maximum difference of 9.450773497121645e-15 dex; archived replay passes for 372 sampled records and all display tables.
+  sources:
+  - mceg/reviews/gas_source_comparison.py
+  - tests/data/validation/gas_source_comparison/baseline-001/comparison.json
+  - tests/data/validation/gas_source_comparison/baseline-001/receipt.json
+  - tests/data/validation/gas_source_comparison/baseline-001/table.csv
+  - tests/data/validation/gas_source_comparison/baseline-001/table.rst
+  - tests/data/validation/gas_source_comparison/baseline-001/table.md
+  scope: Fresh portable execution is distinct from the historical scratch probe. Reproduction does not validate the physical sources or choose a production source.
+  subject: baseline_001
+  context: screening_samples
+  result: passed
+  artifacts:
+  - source: tests/data/validation/gas_source_comparison/baseline-001/comparison.json
+    sha256: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+  - source: tests/data/validation/gas_source_comparison/baseline-001/table.csv
+    sha256: add7e0285f8ba6d5be73b37518cdcb5c5f8c06393867c822371d4f9f72948660
+  - source: tests/data/validation/gas_source_comparison/baseline-001/table.rst
+    sha256: c20257508790fac3626dfc2990e731347a01328e1fdf147d4c8ead1e0c2335a3
+  - source: tests/data/validation/gas_source_comparison/baseline-001/table.md
+    sha256: bcce582b80e8f55bbf00a894ba2de5e3836af2ed220697a59f29b91f916656d2
+  - source: tests/data/validation/gas_source_comparison/baseline-001/receipt.json
+    sha256: b7fd476232e6fc45eab545758ab19baf346b51e08a62f6bf16af21eb7c923e3d
+  provenance:
+    role: primary
+    location: ExoGibbs execution receipt and generated comparison artifacts.
+    inspection: inspected
+    note: Successful historical replay and fresh archived replay inspected; numerical agreement does not authenticate the original acquisitions or resolve provisional mappings.
+subjects:
+- id: baseline_001
+  implementation: *implementation
+  selected_files:
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/ykb4/gibbs_matrices.npz: 2a23ba342773165e384124ad1521b7e6ffdc89b8226bd0d1e4713c2547d03dbf
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/presets/curated.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    mceg/reviews/gas_source_comparison.py: f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+contexts:
+- id: screening_samples
+  scope: Formation-Kp source comparisons at four discrete temperatures, with a 1500 K screening table and explicit missing data.
+  settings:
+    backend: cpu
+    dtype: float64
+    python: 3.12.7
+    numpy: 2.1.0
+    jax: 0.6.2
+    jaxlib: 0.6.2
+    baseline_id: baseline-001
+    baseline_revision: f37556abc89a699598e7d67a29ec2159ad2c1a3c
+    temperatures_K: '500, 1000, 1500, 3000'
+    table_temperature_K: 1500
+    standard_pressure_bar: 1
+    included_molecules: 93
+    excluded_candidates: 14
+    provisional_mappings: 70
+    historical_ratio_tolerance_dex: 1.0e-10
+    archived_numeric_absolute_tolerance: 2.0e-11
+    archived_numeric_relative_tolerance: 2.0e-12
+    grade_rule: 'F=max(r,1/r); green F<2; yellow 2<=F<10; red F>=10; use unrounded ratios'
+    major_flag_rule: 'Frozen major-molecule membership and r<=0.9 or r>=1.1 in each ratio column'
+assessments:
+- id: baseline_replay_review
+  kind: evidence_support
+  claim: baseline_replay
+  claim_revision: '1'
+  subject: baseline_001
+  context: screening_samples
+  method: &method
+    id: review_gas_source_baseline
+    revision: '1'
+    description: Inspect fixed identities, replay criteria, generated values and receipt separately from source provenance and physical support.
+  evidence: [frozen_inputs, baseline_execution]
+  reasons: [All 93 historical ratios reproduce within 1e-10 dex; the archived 372-sample report and generated tables pass replay with the declared tolerances and exact display rules.]
+  status: supported
+  origin: reviewed
+- id: source_accuracy_review
+  kind: evidence_support
+  claim: source_accuracy
+  claim_revision: '1'
+  subject: baseline_001
+  context: screening_samples
+  method: *method
+  evidence: [frozen_inputs, baseline_execution]
+  reasons: [Numerical agreement cannot authenticate local source acquisition, resolve provisional molecular identities or establish independent physical accuracy.]
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: inspect_molecular_identity_and_sources
+  target_kind: evidence
+  target: frozen_inputs
+  action: Inspect unresolved molecular identities and exact source ancestry before attributing or adopting a discrepancy.
+  requires: [Identified source version and acquisition, molecular isomer/phase/composition/charge, atomic and molecular reference conventions, energy-anchor and thermal-function ancestry]
+  completion: Add inspected source evidence and a scoped assessment for the reviewed molecules; preserve unreviewed mappings and inherited annotations elsewhere.
+- id: quantify_physical_accuracy
+  target_kind: claim
+  target: source_accuracy
+  revision: '1'
+  action: Assess physical accuracy for a declared molecular and application scope using independent constraints.
+  requires: [Independent measurements or observations, a physical error criterion, shared-source dependencies and uncertainties]
+  completion: Add a scoped physical assessment; retain unknown support wherever independent constraints remain absent.
+limitations:
+- statement: Numerical colors and the atmospheric-major 10% marker describe disagreement only. They do not authorize source adoption or establish physical error bounds.
+  evidence: [baseline_execution]
+- statement: The rightmost basis labels preserve recorded curated annotations, including explicit ATcT corrections and inherited_unreviewed entries; missing ancestry is not equivalent to no correction.
+  evidence: [frozen_inputs]
+- statement: No molecular investigation, abundance solve or downstream atmospheric prediction is performed by this baseline.
+  evidence: [baseline_execution]
