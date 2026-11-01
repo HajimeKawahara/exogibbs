@@ -378,6 +378,113 @@ activities. This adapter takes pressure in bar and returns component-ordered
    # T in K, P in bar, normalized fractions in consumer order.
    values = lngamma(3000.0, 1.0, [0.9, 0.08, 0.02])
 
+Local linearization of a supplied equilibrium
+---------------------------------------------
+
+``multiphase.linearize_fixed_support`` computes a reusable first-order operator
+at a supplied equilibrium. It re-evaluates the material callbacks, elemental
+balance, stationarity, domain margins, constrained curvature and the condition
+of the log-amount KKT system. It does not run a minimizer or a phase search.
+Construction is a host operation; its ``jvp`` and ``vjp`` methods can be JIT
+compiled after construction.
+
+This API serves a different, narrower purpose than the transformed
+``solve_fixed_support`` entry: it differentiates a *declared local branch*.
+The absence of competing phases is not certified, and
+``diagnostics["excluded_phase_stability_checked"]`` is always false. Keep the
+state's independent phase-stability assessment alongside this result. Existing
+``solve_fixed_support`` acceptance criteria and ``Result.derivative_valid``
+are unchanged.
+
+The first release requires positive elemental budgets, independent elemental
+and active-domain rows, and positive amounts on exactly the declared support.
+Every component of a present solution must be included. Active homogeneous
+domain faces are supported when their multipliers are strictly positive;
+a zero multiplier is a rejected transition. Present phases' optional
+``derivative_domain`` callbacks must accept the state. Zero budgets, redundant
+rows and partial solution faces require a future explicit contract.
+
+For fixed anchor normalization ``N0 = sum(b)``, let ``q = n / N0`` and
+``u = log(n)``. With ``B`` containing the elemental and active-domain rows,
+``lambda`` the corresponding potentials, and ``H`` the Hessian of ``G/(RT)``,
+the response solves
+
+.. math::
+
+   \begin{bmatrix}
+       H\,\mathrm{diag}(q) & -B^{\mathsf T} \\
+       S^{-1}B\,\mathrm{diag}(q) & 0
+   \end{bmatrix}
+   \begin{bmatrix}\mathrm{d}u\\\mathrm{d}\lambda\end{bmatrix}
+   =
+   \begin{bmatrix}-\mathrm{d}_{\theta}\mu\\
+       S^{-1}(\mathrm{d}b/N_0,0)\end{bmatrix}.
+
+``S`` scales each constraint by its anchor amount magnitude. JAX differentiates
+the original full-G callbacks for ``H`` and the temperature, pressure and
+material-parameter terms. No species is removed or raised to an abundance
+floor. A positive trace below the old amount-coordinate derivative threshold
+can have a regular log-coordinate operator. The operator must still pass the
+same configured KKT, conservation and curvature tolerances, and its reciprocal
+condition number must exceed ``Options.derivative_rcond``.
+
+.. code-block:: python
+
+   import jax
+   import jax.numpy as jnp
+   from exogibbs.api import multiphase
+
+   linear = multiphase.linearize_fixed_support(
+       problem,
+       temperature_k=temperature,
+       pressure_pa=pressure,
+       element_amounts_mol=budget,
+       amounts_mol=state.amounts_mol,
+       support=state.support,
+       parameters=parameters,
+   )
+   if not linear.derivative_valid:
+       raise ValueError(linear.rejection_reasons)
+
+   zero_parameters = jax.tree_util.tree_map(jnp.zeros_like, parameters)
+   direction = linear.jvp(0.0, 0.0, budget_direction, zero_parameters)
+   dn = direction.amounts_mol
+   dlogn = direction.log_amounts
+   assert jnp.allclose(problem.atom_matrix @ dn, budget_direction)
+
+The direction uses K, Pa, mol atoms and the material parameters' own units.
+``parameters`` are independent explicit inputs. When a consumer constructs
+standards or other parameters as functions of temperature or pressure, it
+must pass that construction's derivative as ``dparameters`` as well. Dynamic
+parameter leaves must have floating-point dtype; capture integer indices or
+other static configuration in the callback. Material branch predicates must
+return scalar booleans. The Gibbs value and its derivatives must be finite.
+The fixed
+anchor normalization is not differentiated a second time.
+
+``EquilibriumTangent`` contains derivatives of the eight physical fields at
+the start of ``Result`` plus ``log_amounts``. Arrays retain the Problem's
+ordering and absolute amount scale. Excluded amounts and their log-response
+entries are zero. Undefined excluded chemical potentials have zero tangent
+entries, which must not be interpreted as physical potentials.
+
+``linear.linear_residual(dT, dP, db, dparameters)`` reports the maximum
+absolute scaled KKT residual divided by ``max(1, max(abs(rhs)))`` for a
+direction. This nonlinear diagnostic is separate from the linear output
+tuple; a small value does not replace baseline acceptance.
+
+For a scalar objective, form a cotangent with the same tuple structure and
+use ``linear.vjp(cotangent)``. It returns cotangents for temperature, pressure,
+elemental budgets and the parameter PyTree. The transpose is of the same
+operator used by ``jvp``. No higher-order derivative contract is provided:
+the baseline and its matrix are fixed during application of the operator.
+
+Numerically rejected baselines retain ``rejection_reasons`` and diagnostics;
+both response modes return NaNs, including otherwise zero response columns.
+Unsupported structural inputs raise ``ValueError``. A valid local response
+does not establish a finite step size across a phase change or guarantee
+that the equilibrium is the globally preferred phase assemblage.
+
 Retired metal--silicate examples
 --------------------------------
 
