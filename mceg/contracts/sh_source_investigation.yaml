@@ -1,0 +1,204 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.sh_source_investigation.v1
+  name: SH source investigation and conditional retention
+  description: 'Per-molecule follow-up to issues #308 and #309; no production thermochemistry change.'
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:50412460dc837ac658f3d2e157fd013c97961e57b2a945a2e1dcf1b871642379
+    entry_points:
+    - mceg/reviews/sh_source_investigation.py
+assumptions:
+- statement: Neutral SH ideal gas, X 2Pi ground state; H(g)+S(g)->SH(g), p0=1 bar.
+  evidence:
+  - inspected_sources
+- statement: ATcT is an energy network with correlated atomic and molecular values; its energy update does not replace NASA thermal functions.
+  evidence:
+  - inspected_sources
+  - offline_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Four discrete source comparison temperatures; no extrapolation.
+  conditions:
+  - 500, 1000, 1500, 3000 K; curated absent below 1500 K.
+  evidence:
+  - offline_replay
+- kind: scientific_applicability
+  status: unknown
+  description: High-temperature thermal completeness and application abundance accuracy remain unknown.
+  conditions: []
+  evidence:
+  - inspected_sources
+claims:
+- id: source_diagnosis
+  revision: '1'
+  kind: theoretical
+  statement: Atom-subtracted formation-G and H/S values must agree for a consistent thermochemical table; the archived SH columns violate this identity, consistent with the published JANAF defect.
+  scope: SH only; Lodders 2004 pp359-361 and fresh JANAF H/S tables. Does not identify the historic arithmetic bug.
+- id: numerical_replay
+  revision: '1'
+  kind: numerical_verification
+  statement: Official selected JANAF nodes match the frozen baseline and the balanced existing ATcT shift reproduces curated SH values.
+  scope: 500, 1000, 1500, 3000 K source comparisons; curated only at 1500 and 3000 K.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The adopted SH thermal and energy functions have quantified physical accuracy and validated abundance effects over the curated application range.
+  scope: 1500-4000 K; requires fine-structure and excited-state thermal completeness, correlated uncertainties and fixed-network abundance calculations.
+evidence:
+- id: inspected_sources
+  kind: literature
+  summary: JANAF p1306 and H-046; Lodders 2004 pp359-361; NASA Appendix D SH; Continetti institutional preprint pp8-9; ATcT 1.172 SH and H entries.
+  sources:
+  - tests/data/validation/sh_source_investigation/20261102/sources.json
+  - https://doi.org/10.1063/1.1611178
+  - https://janaf.nist.gov/tables/H-046.html
+  - https://ntrs.nasa.gov/citations/20020085330
+  - https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=344
+  scope: Confirms the identified SH records and published column error. Original Gurvich tables and Zhou full text remain uninspected; underlying experimental evidence is partly shared.
+  subject: sh_20261102
+  context: source_samples
+  artifacts:
+  - source: tests/data/validation/sh_source_investigation/20261102/sources.json
+    sha256: bb1e3ad810640db804594b3ffb1c315280db8548b0e221e1ef0010321a86e9f5
+  - source: tests/data/validation/sh_source_investigation/20261102/H-046.txt
+    sha256: 7fd41d2fe547008df5e989a0e88c697a168ca4c201bada4ed2da38e09d6d77ce
+  - source: tests/data/validation/sh_source_investigation/20261102/H-001.txt
+    sha256: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+  - source: tests/data/validation/sh_source_investigation/20261102/S-006.txt
+    sha256: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
+  provenance:
+    role: primary
+    location: Source locations and acquisition hashes in sources.json.
+    inspection: partial
+    note: Fresh official tables and listed source passages inspected; not a complete independent uncertainty audit.
+- id: offline_replay
+  kind: numerical_test
+  summary: 12 official JANAF molecular/atomic nodes match baseline; four H/S source comparisons decompose exactly; balanced ATcT shift matches two direct curated evaluations.
+  sources:
+  - mceg/reviews/sh_source_investigation.py
+  - tests/data/validation/sh_source_investigation/20261102/comparison.json
+  - tests/model_evidence/sh_source_investigation_test.py
+  - tests/data/validation/sh_source_investigation/20261102/receipt.json
+  scope: Offline selected-sample reproduction only; no abundance solves.
+  subject: sh_20261102
+  context: source_samples
+  result: passed
+  artifacts:
+  - source: tests/data/validation/sh_source_investigation/20261102/comparison.json
+    sha256: b22b94874e28f83486d34fdaa67379a3fc979d2456afa28f6ca6c388ad1b2f8f
+  - source: tests/data/validation/sh_source_investigation/20261102/receipt.json
+    sha256: 71434b18c849440b5b131e4fca846fda40a136491f699b174807247f42dbcbde
+  provenance:
+    role: primary
+    location: Offline review script, comparison.json and targeted tests.
+    inspection: inspected
+    note: Fresh official nodes, reaction decomposition and direct curated energy-shift reproduction passed.
+- id: reaction_identity
+  kind: theory
+  summary: At fixed T and a common elemental reference, the reference-element Gibbs energies cancel in Gf(SH)-Gf(H)-Gf(S); it must equal the H298 plus sensible H minus TS reaction quantity.
+  sources:
+  - documents/mceg/sh_source_investigation.rst
+  scope: Algebraic consistency, not proof of the historic transfer algorithm or physical accuracy.
+  subject: sh_20261102
+  context: source_samples
+  provenance:
+    role: primary
+    location: Reaction identity in the numerical diagnosis and review script.
+    inspection: inspected
+    note: Algebraic cancellation checked independently of any source-adoption judgment.
+subjects:
+- id: sh_20261102
+  implementation: *id001
+  selected_files:
+    mceg/reviews/sh_source_investigation.py: 50412460dc837ac658f3d2e157fd013c97961e57b2a945a2e1dcf1b871642379
+    mceg/reviews/gas_source_comparison.py: f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/sh_source_investigation/20261102/sources.json: bb1e3ad810640db804594b3ffb1c315280db8548b0e221e1ef0010321a86e9f5
+    tests/data/validation/sh_source_investigation/20261102/H-046.txt: 7fd41d2fe547008df5e989a0e88c697a168ca4c201bada4ed2da38e09d6d77ce
+    tests/data/validation/sh_source_investigation/20261102/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+    tests/data/validation/sh_source_investigation/20261102/S-006.txt: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
+    tests/data/validation/sh_source_investigation/20261102/nasa_sh_appendix_d.txt: 8449438630468f5042426a56bf3e6d62b47b5f683eec549e6deaea6403cee11c
+    tests/model_evidence/sh_source_investigation_test.py: 729e9b1d483a79e1972779835c964b35cac7bdcbdccec82457ee056a31317f90
+contexts:
+- id: source_samples
+  scope: SH source identity, formation-column diagnosis and source-energy comparison.
+  settings:
+    reaction: H(g) + S(g) -> SH(g)
+    standard_pressure_Pa: 100000
+    temperatures_K: 500,1000,1500,3000
+    baseline_id: baseline-001
+    baseline_revision: be1e52726a1700cec180ee0a0380240276feefed
+    production_network: unchanged; no equilibrium calculation
+    pressure_and_composition: not applicable to source-only ideal-gas thermochemical comparison
+    dtype: float64
+    comparison_absolute_tolerance: 2.0e-11
+    comparison_relative_tolerance: 2.0e-12
+assessments:
+- id: source_diagnosis_review
+  kind: evidence_support
+  claim: source_diagnosis
+  claim_revision: '1'
+  subject: sh_20261102
+  context: source_samples
+  method: &id002
+    id: sh_source_review
+    revision: '1'
+    description: Separate published source defects, balanced energy comparisons and remaining physical uncertainty.
+  evidence:
+  - inspected_sources
+  - reaction_identity
+  - offline_replay
+  reasons:
+  - Lodders explicitly identifies the old SH columns as erroneous; the fresh official tables reproduce the frozen discrepancy.
+  status: supported
+  origin: reviewed
+- id: numerical_replay_review
+  kind: evidence_support
+  claim: numerical_replay
+  claim_revision: '1'
+  subject: sh_20261102
+  context: source_samples
+  method: *id002
+  evidence:
+  - offline_replay
+  reasons:
+  - Selected-node and reaction decomposition checks pass; the existing balanced correction matches direct curated evaluation.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: sh_20261102
+  context: source_samples
+  method: *id002
+  evidence:
+  - inspected_sources
+  reasons:
+  - The source investigation supplies no full high-temperature uncertainty model or abundance experiment.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: complete_thermal_and_uncertainty_review
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Inspect original Gurvich state sums and Zhou full text; quantify high-temperature and correlated reaction uncertainty before application claims.
+  requires:
+  - Original Gurvich 1989 v1 p296 / v2 p179
+  - Zhou 2005 full text
+  - State-resolved partition sums and covariance-aware D0 uncertainty
+  - Fixed-network abundance comparison if proposing a source replacement
+  completion: Add scoped physical and abundance evidence; do not infer it from source ratios.
+limitations:
+- statement: The reviewed disposition is conditional retention, not a new adoption or whole-mixture validation.
+  evidence:
+  - inspected_sources
+  - offline_replay
+- statement: The publication error is documented, but its exact historical computational mechanism remains unknown.
+  evidence:
+  - inspected_sources
