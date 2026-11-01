@@ -1,0 +1,203 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.c2h_source_review.v1
+  name: Ethynyl source investigation
+  description: Identity and energy/thermal attribution for C2H; no production adoption.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    entry_points:
+    - mceg/reviews/c2h_source_review.py
+assumptions:
+- statement: Compare 2 C(g) + H(g) -> CCH(g) at standard pressure 1 bar using each source atomic references.
+  evidence:
+  - source_review
+  - numerical_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Four exact screening nodes with a 298.15 K decomposition reference.
+  conditions:
+  - 500, 1000, 1500, 3000 K; curated is missing below 1500 K.
+  evidence:
+  - numerical_replay
+- kind: scientific_applicability
+  status: unknown
+  description: No high-temperature uncertainty bound or abundance validation.
+  conditions: []
+  evidence:
+  - source_review
+claims:
+- id: identity_attribution
+  revision: '1'
+  kind: numerical_verification
+  statement: The identified ethynyl records reproduce the frozen C2H discrepancy, which separates into an old energy
+    anchor and a non-negligible thermal residual.
+  scope: Only selected source records and four nodes; not a new adoption.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: A replacement C2H thermal and energy model has quantified accuracy over 1500-4000 K.
+  scope: Requires complete source inspection and thermal validation.
+- id: abundance_impact
+  revision: '1'
+  kind: physical_validation
+  statement: A C2H substitution has a validated effect on atmospheric equilibrium composition.
+  scope: Fixed 537-species network and explicit elemental budget required.
+evidence:
+- id: source_review
+  kind: literature
+  summary: Identified source versions, phase, ground state, energy anchors and spectroscopy with explicit access
+    gaps.
+  sources:
+  - tests/data/validation/c2h_source_review/20261102/sources.json
+  - tests/data/validation/c2h_source_review/20261102/literature.json
+  - documents/mceg/c2h_source_review.rst
+  scope: C2H record only; literature, numerical and physical conclusions remain separate.
+  subject: c2h_20261102
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/c2h_source_review/20261102/sources.json
+    sha256: caca02ff6f9c52b8d6444ca3260fe2bc3dc500892e47836007676158a23ce5cf
+  - source: tests/data/validation/c2h_source_review/20261102/literature.json
+    sha256: 2754eb691526157d3cd0bc0ffbafcb3f337938e135daf182bb36d53f525548c3
+  provenance:
+    role: secondary
+    location: Fixed review packet and linked primary sources.
+    inspection: partial
+    note: Full-text gaps are recorded in literature.json; no claims of full source independence.
+- id: numerical_replay
+  kind: numerical_test
+  summary: Four-node independent H/S/Cp evaluation and reaction decomposition reproduce the frozen C2H ratios.
+  sources:
+  - tests/data/validation/c2h_source_review/20261102/comparison.json
+  - tests/data/validation/c2h_source_review/20261102/receipt.json
+  - mceg/reviews/c2h_source_review.py
+  scope: C2H record only; literature, numerical and physical conclusions remain separate.
+  subject: c2h_20261102
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/c2h_source_review/20261102/comparison.json
+    sha256: fd9b304479b2e70074a3d9aac243000953f80118214f4f21c1c732f115ee4deb
+  - source: tests/data/validation/c2h_source_review/20261102/receipt.json
+    sha256: b239ff93f389cb26eaecc4fd87a04e776d2844ac6da6e23cb75d0dc3c20a3396
+  provenance:
+    role: primary
+    location: Fixed review packet and linked primary sources.
+    inspection: inspected
+    note: Full-text gaps are recorded in literature.json; no claims of full source independence.
+  result: passed
+subjects:
+- id: c2h_20261102
+  implementation: *id001
+  selected_files:
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/c2h_source_review/20261102/literature.json: 2754eb691526157d3cd0bc0ffbafcb3f337938e135daf182bb36d53f525548c3
+    tests/data/validation/c2h_source_review/20261102/C-003.txt: df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4
+    tests/data/validation/c2h_source_review/20261102/sources.json: caca02ff6f9c52b8d6444ca3260fe2bc3dc500892e47836007676158a23ce5cf
+    tests/data/validation/c2h_source_review/20261102/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
+    tests/data/validation/c2h_source_review/20261102/C-124.txt: 3a31125c006b558f7425c7a11fd3a734c691d09d84f1f8ea1deccf9115acb404
+    tests/data/validation/c2h_source_review/20261102/README.rst: 6dcdd398f62823af8f6e3a8b585fb36bbf046ee925806f613fd599a31a42a718
+    tests/data/validation/c2h_source_review/20261102/nasa_selected_records.txt: 2d7c62c06fe7f94c719bd5f12cda550f2d2ef04f75499e917e4e7b01bf38f156
+contexts:
+- id: source_comparison
+  scope: Offline standard-state property comparison, not an atmosphere or equilibrium mixture.
+  settings:
+    standard_pressure_bar: 1
+    reaction: 2 C(g) + H(g) -> CCH(g)
+    temperatures_K: 500, 1000, 1500, 3000
+    reference_temperature_K: 298.15
+    gas_constant_J_mol_K: 8.31446261815324
+    network: baseline-001 source records; no equilibrium network solved
+    elemental_budget: not applicable to property comparison
+assessments:
+- id: identity_attribution_review
+  kind: evidence_support
+  claim: identity_attribution
+  claim_revision: '1'
+  subject: c2h_20261102
+  context: source_comparison
+  method:
+    id: review_c2h
+    revision: '1'
+    description: Inspect identity, ancestry and reaction decomposition separately from model adoption and abundance
+      impact.
+  evidence:
+  - source_review
+  - numerical_replay
+  reasons:
+  - Official JANAF nodes and NASA selected coefficients match baseline; Gibbs decomposition closes within 2e-11
+    in ln K.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: c2h_20261102
+  context: source_comparison
+  method:
+    id: review_c2h
+    revision: '1'
+    description: Inspect identity, ancestry and reaction decomposition separately from model adoption and abundance
+      impact.
+  evidence:
+  - source_review
+  - numerical_replay
+  reasons:
+  - ATcT supports an energy anchor, not high-temperature Cp/S; original paper access and vibronic evaluation remain
+    incomplete.
+  status: unknown
+  origin: reviewed
+- id: abundance_impact_review
+  kind: evidence_support
+  claim: abundance_impact
+  claim_revision: '1'
+  subject: c2h_20261102
+  context: source_comparison
+  method:
+    id: review_c2h
+    revision: '1'
+    description: Inspect identity, ancestry and reaction decomposition separately from model adoption and abundance
+      impact.
+  evidence:
+  - source_review
+  - numerical_replay
+  reasons:
+  - No equilibrium substitution has been run; formation-K ratios are not abundance ratios.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: resolve_physical_accuracy
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Inspect remaining original papers and construct a consistent candidate thermal/energy model.
+  requires:
+  - Ervin numerical tables and uncertainty definition
+  - Peric vibronic model details
+  - Balanced atomic/molecular energy and covariance
+  completion: Record thermal applicability and energy uncertainty without treating a diagnostic energy shift as
+    adoption.
+- id: resolve_abundance_impact
+  target_kind: claim
+  target: abundance_impact
+  revision: '1'
+  action: Run one-species finite substitution after candidate review.
+  requires:
+  - Fixed 537-species network and elemental budgets
+  - Residual checks and cold-start verification
+  completion: Archive abundance, log abundance, absolute changes and elemental shares under a new subject/context.
+limitations:
+- statement: NASA, Jacox and ATcT share experimental ancestors. Agreement is not independent replication.
+  evidence:
+  - source_review
+- statement: Record identity and attribution do not establish full local database provenance or physical accuracy
+    of the curated mixture.
+  evidence:
+  - source_review
+  - numerical_replay

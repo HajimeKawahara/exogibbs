@@ -1,0 +1,110 @@
+{
+  "search_date": "2026-11-02",
+  "search_queries": [
+    "C2H ethynyl JANAF enthalpy of formation",
+    "C2H Ervin 1990 Jacox 1998 Peric 1990 Kanamori 1988",
+    "ATcT 1.172 CCH Mordaunt 1994"
+  ],
+  "downloads": [
+    {
+      "file": "janaf-carbon.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+      "sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+      "retrieved": "2026-11-02",
+      "archived": false,
+      "inspection": "inspected; C2H printed p672 (PDF page124)"
+    },
+    {
+      "file": "C-124.txt",
+      "url": "https://janaf.nist.gov/tables/C-124.txt",
+      "sha256": "3a31125c006b558f7425c7a11fd3a734c691d09d84f1f8ea1deccf9115acb404",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "inspected numerical table"
+    },
+    {
+      "file": "C-003.txt",
+      "url": "https://janaf.nist.gov/tables/C-003.txt",
+      "sha256": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "inspected numerical table"
+    },
+    {
+      "file": "H-001.txt",
+      "url": "https://janaf.nist.gov/tables/H-001.txt",
+      "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "inspected numerical table"
+    },
+    {
+      "file": "nasa2002.pdf",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "retrieved": "2026-11-02",
+      "archived": false,
+      "inspection": "Appendix D C p74, H p126, C2H p88; all 72 coefficients match baseline; Appendix E citation bibliography"
+    },
+    {
+      "file": "atct-c2h.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=103",
+      "sha256": "ccae6bcc55d7982886829b87f6d95d35957f6aa4530781ee542d7de3d9f144e8",
+      "retrieved": "2026-11-02",
+      "archived": false,
+      "inspection": "CCH identity, energy anchors, provenance and covariance notes"
+    },
+    {
+      "file": "atct-h.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=19",
+      "sha256": "fa02862feca3d9ff38a350af05778ad6480f03c3ecd2c47c351d95d74247a205",
+      "retrieved": "2026-11-02",
+      "archived": false,
+      "inspection": "ATcT 1.172 neutral gas atom energy and confidence definition"
+    },
+    {
+      "file": "atct-c.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=20",
+      "sha256": "861430fc78974b598d5e94d9b321666f5d3d88c9cf40c3012db5e9039fe1121a",
+      "retrieved": "2026-11-02",
+      "archived": false,
+      "inspection": "ATcT 1.172 neutral gas atom energy and confidence definition"
+    },
+    {
+      "file": "nasa_selected_records.txt",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "sha256": "2d7c62c06fe7f94c719bd5f12cda550f2d2ef04f75499e917e4e7b01bf38f156",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Selected C, C2H and H records, pdftotext -layout extraction with outside whitespace stripped; digest is of extraction, parent PDF hash recorded separately"
+    }
+  ],
+  "identity": {
+    "name": "ethynyl",
+    "structure": "H-C-C, linear",
+    "charge": 0,
+    "phase": "gas",
+    "ground_state": "X 2Sigma+",
+    "cas": "2122-48-7",
+    "isotopes": "ordinary elemental thermochemical species; not an isotope-resolved model",
+    "note": "Same intended radical; thermal populations and old estimated constants are not identical."
+  },
+  "atct_1_172": {
+    "CCH": {
+      "hf0_kJ_mol": 563.73,
+      "hf298_kJ_mol": 567.85,
+      "uncertainty_kJ_mol": 0.15
+    },
+    "C": {
+      "hf0_kJ_mol": 711.381,
+      "hf298_kJ_mol": 716.866,
+      "uncertainty_kJ_mol": 0.039
+    },
+    "H": {
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998
+    },
+    "uncertainty_definition": "estimated 95% confidence limits; correlations prohibit independent quadrature",
+    "use": "energy evidence only; no new runtime adoption or high-temperature thermal validation"
+  }
+}
