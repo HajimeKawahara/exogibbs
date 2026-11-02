@@ -23,6 +23,75 @@ dimensionless formation Kp at 1 bar. Scalar/array temperatures, JAX derivatives,
 537 species with ions and ``ions=False`` (421 neutral species) are supported.
 Values outside the interval are NaN. MCEG and FastChem are optional tools.
 
+Why the existing curated factory is unchanged
+---------------------------------------------
+
+The separate factory is a compatibility and evidence-versioning decision for
+this PR. ``curated.chemsetup()`` identifies the pinned ``curated-gas-v1``
+dataset. Its saved abundances, comparisons and MCEG assessments refer to those
+exact constants. Replacing C2H under the same dataset identity would silently
+change existing calculations and attach historical evidence to a different
+model. The new identity makes the choice explicit and keeps the old calculation
+reproducible.
+
+The C2H source review **conditionally prefers the correction**. Retaining the
+old default does not endorse its 1967 JANAF estimate. The existing curated
+dataset already contains conditional source choices, so unresolved physical
+uncertainty alone does not require a separate factory. Here the scientific
+limits qualify the new choice, while the factory split controls migration.
+
+Moving the default to the corrected data is technically possible. That would
+be an explicit transition to a new curated dataset version, with the old
+version still reproducible, updated metadata/catalog bindings and validation
+for the supported modes. The current abundance comparison covers ions=True;
+neutral-mode abundance comparisons remain a follow-up. Complete atmospheric
+validation is not an established prerequisite for changing the default.
+
+Differences between the presets
+-------------------------------
+
+.. list-table:: Implementation and evidence differences
+   :header-rows: 1
+
+   * - Item
+     - ``curated.chemsetup()``
+     - ``curated_c2h.chemsetup()``
+   * - Dataset identity
+     - ``curated-gas-v1``
+     - ``curated-c2h-v1``, with a pinned reference to its base
+   * - C2H thermal functions
+     - Inherited FastChem fit to JANAF, whose C2H evaluation dates to 1967
+     - NASA2002 CCH/C/H reaction coefficients
+   * - C2H energy anchor
+     - Inherited JANAF-based fit
+     - Balanced ATcT 1.172 atomization energy, 1075.066 kJ/mol
+   * - C2H review status
+     - ``inherited_unreviewed``
+     - ``prefer_conditionally``
+   * - Other species' formation functions
+     - Original curated choices
+     - Identical to the original curated choices
+   * - Species, solver and reference element budget
+     - 537 species with ions; 421 without ions
+     - Identical network, solver and budget for the same ``ions`` choice
+   * - Temperature and standard pressure
+     - 1500--4000 K; 1 bar
+     - 1500--4000 K; 1 bar
+   * - Abundance evidence
+     - Historical curated and HCN comparison records
+     - New 75-pair C2H substitution study; historical results are not rebound
+
+Relative to the old curated fit, **both C2H thermal functions and its energy
+anchor change**. The energy-only shift described below is the second step,
+from raw NASA coefficients to the NASA/ATcT candidate. All other entries of
+the formation vector h(T) are unchanged; their equilibrium abundances can
+still change because the molecules share conserved elements.
+
+For C2H, K(corrected)/K(curated) is 0.001898625 at 1500 K and 0.08910022 at
+3000 K (about 1/527 and 1/11.2). These ratios compare formation constants,
+not mole fractions. The abundance table below shows the result of solving
+the coupled equilibrium equations.
+
 Source choice
 -------------
 

@@ -24,3 +24,11 @@ Replay into a new directory::
 Add ``--fastchem-executable /path/to/fastchem`` for independent checks.
 Without it, that check is ``not_run``. Ordinary evidence tests need neither
 FastChem nor MCEG. Numerical agreement does not validate physical atmospheres.
+
+The archived bytes are verified with their recorded SHA-256 hashes. Rebuilding
+the coefficient arrays permits only last-bit roundoff: Python 3.12 changed
+float summation, so Python 3.11 can serialize the same sum differently.
+All remaining rebuilt fields are compared exactly. Mole fractions are checked
+against their saved log fractions separately from the logsumexp reconstruction,
+avoiding amplification of an already accepted logarithmic rounding difference.
+These checks do not change source constants or conservation/mass-action bounds.

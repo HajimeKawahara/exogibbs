@@ -1,6 +1,7 @@
 """Verify the archived C2H substitution without an external solver or MCEG."""
 
 import json
+from math import fsum
 from pathlib import Path
 import runpy
 import sys
@@ -16,10 +17,26 @@ from gas_source_comparison import file_hash
 DATA = ROOT / "tests/data/validation/c2h_equilibrium_impact/20261102"
 
 
-def test_correction_rebuild_and_archived_execution_hashes():
+def sequential_sum(values):
+    total = 0
+    for value in values:
+        total += value
+    return total
+
+
+@pytest.mark.parametrize("summation", [sum, sequential_sum, fsum],
+                         ids=["native", "sequential", "compensated"])
+def test_correction_rebuild_and_archived_execution_hashes(monkeypatch, summation):
     builder = runpy.run_path(str(ROOT / "mceg/reviews/build_c2h_correction.py"))
-    expected = (ROOT / "src/exogibbs/data/curated/c2h_v1.json").read_text()
-    assert json.dumps(builder["build_data"](), indent=2, allow_nan=False)+"\n" == expected
+    monkeypatch.setitem(builder["build_data"].__globals__, "sum", summation)
+    rebuilt = builder["build_data"]()
+    expected = json.loads((ROOT / "src/exogibbs/data/curated/c2h_v1.json").read_text())
+    # Python 3.12 changed float summation. Check coefficients numerically;
+    # metadata and the pinned source/output bytes below still match exactly.
+    for key in ("nasa9_reaction_coefficients", "raw_nasa9_reaction_coefficients"):
+        np.testing.assert_allclose(rebuilt.pop(key), expected.pop(key),
+                                   rtol=4*np.finfo(float).eps, atol=0)
+    assert rebuilt == expected
     receipt = json.loads((DATA / "receipt.json").read_text())
     assert receipt["result"] == "passed"
     for name, digest in receipt["selected_file_sha256"].items():
@@ -35,7 +52,8 @@ def test_full_archive_retains_fixed_network_budgets_and_all_amounts():
         np.testing.assert_allclose(saved["n"], np.exp(saved["ln_n"]), atol=0, rtol=1e-14)
         logx = saved["ln_n"]-logsumexp(saved["ln_n"], axis=-1, keepdims=True)
         np.testing.assert_allclose(saved["ln_x"], logx, atol=1e-13, rtol=0)
-        np.testing.assert_allclose(saved["x"], np.exp(logx), atol=0, rtol=1e-14)
+        # Verify exp separately from logsumexp's already-bounded roundoff.
+        np.testing.assert_allclose(saved["x"], np.exp(saved["ln_x"]), atol=0, rtol=1e-14)
         np.testing.assert_allclose(saved["delta_log10_x"], (logx[1]-logx[0])/np.log(10), atol=1e-13)
         index = list(saved["species"]).index("C2H1")
         np.testing.assert_allclose(np.delete(saved["h"][1]-saved["h"][0], index, axis=-1), 0, atol=1e-12)
