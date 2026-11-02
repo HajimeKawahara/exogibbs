@@ -113,6 +113,34 @@
       "location": "Identity, bibliography and ground/excited vibrational state sections",
       "inspection": "inspected",
       "archive": null
+    },
+    {
+      "local_file": "ref/refs_exogibbs_202611-2/Berkcwitz_1977.pdf",
+      "doi": "10.1063/1.434135",
+      "url": "https://doi.org/10.1063/1.434135",
+      "sha256": "01ddd2444dee7427ab868b60d1a123c3ba5c37f864ca50ed828371b8b1cd4aae",
+      "bytes": 753913,
+      "pages": 5,
+      "provided_date_JST": "2026-11-02",
+      "inspection": "Supplied publisher PDF read; relevant numerical passages visually checked.",
+      "location": "Printed pp2183-2186; PDF pp2-5 (publisher cover p1). Abstract p2183 and threshold cycle p2185 visually checked.",
+      "archived": false,
+      "id": "berkowitz1977",
+      "archive": null
+    },
+    {
+      "local_file": "ref/refs_exogibbs_202611-2/norwood_1989.pdf",
+      "doi": "10.1016/S0009-2614(89)87110-6",
+      "url": "https://doi.org/10.1016/S0009-2614(89)87110-6",
+      "sha256": "0c633bc6ead2bd20d77506e18828ee2436579454b229022ad94dda273b0d474c",
+      "bytes": 483349,
+      "pages": 6,
+      "provided_date_JST": "2026-11-02",
+      "inspection": "Supplied publisher PDF read; relevant numerical passages visually checked.",
+      "location": "Printed pp145-150; sections 4.1-4.2, pp148-149, Tables 1-2. SO threshold/state assignment p148 visually checked.",
+      "archived": false,
+      "id": "norwood1989",
+      "archive": null
     }
   ],
   "lodders2004": {
@@ -218,11 +246,13 @@
     },
     {
       "reference": "Berkowitz, Eland and Appelman (1977), Photoionization mass spectrometry and heat of formation of S2O, JCP66,2183-2186",
-      "status": "Quoted threshold and bibliography inspected through Lodders and ATcT; original full text not inspected"
+      "status": "Supplied full paper inspected; fragment cycle and its thermal-correction assumption verified. Abstract/body threshold error bars differ; both retained.",
+      "doi": "10.1063/1.434135"
     },
     {
       "reference": "Norwood and Ng (1989), Photoion-photoelectron coincidence spectroscopy of the transient molecules SO and S2O, CPL156,145-150",
-      "status": "Bibliography and quoted SO threshold inspected through Lodders; original full text not inspected"
+      "status": "Supplied full paper inspected; SO adiabatic threshold and ionic states confirmed. This supplies an auxiliary ionization energy, not an independent SSO atomization measurement.",
+      "doi": "10.1016/S0009-2614(89)87110-6"
     },
     {
       "reference": "Grant et al. (2009), Heats of Formation of the H1,2OmSn (m,n=0-3) Molecules from Electronic Structure Calculations",
@@ -233,5 +263,50 @@
       "reference": "Gurvich et al. (1989), vol1 part1 p293 part2 p178",
       "status": "NASA and Lodders source attribution inspected; original pages not inspected"
     }
-  ]
+  ],
+  "primary_experiments": {
+    "berkowitz1977": {
+      "observed_fragment_onset_angstrom": 905.4,
+      "observed_fragment_onset_uncertainty_angstrom": 0.5,
+      "reported_observed_fragment_onset_eV": 13.69,
+      "reported_observed_fragment_onset_uncertainty_eV": 0.008,
+      "internal_energy_correction_eV": 0.051,
+      "internal_energy_temperature_K": 300,
+      "thermal_correction_assumption": "All vibrational and three rotational degrees of freedom contribute to dissociative ionization; the paper adds the mean internal energy to the observed onset.",
+      "reported_0K_fragment_threshold_eV": 13.745,
+      "abstract_threshold_uncertainty_eV": 0.006,
+      "body_threshold_uncertainty_eV": 0.01,
+      "uncertainty_note": "Abstract p2183 and body p2185 give different error bars. Both are preserved without selecting a statistical confidence convention or assuming a typographical cause.",
+      "auxiliary_SO_ionization_eV": 10.29,
+      "reported_fragment_dissociation_0K_eV": 3.455,
+      "reported_fragment_dissociation_uncertainty_eV": 0.01,
+      "reported_formation_enthalpy_0K_kcal_mol": -12.75,
+      "reported_formation_enthalpy_uncertainty_kcal_mol": 0.25,
+      "formation_enthalpy_auxiliary_source": "JANAF 1968, reference 13; no new harmonized molecular/atomic formation energy is inferred from this quotation.",
+      "parent_SSO_ionization_eV": 10.58,
+      "parent_SSO_ionization_uncertainty_eV": 0.01,
+      "parent_threshold_note": "SSO parent-ion threshold is not the SO ionization energy subtracted in the fragment cycle.",
+      "contamination_checks": "SO2 and SOCl2 fragment thresholds/yields and lack of free SO signal are examined in section III.B; original intensities are not re-reduced here."
+    },
+    "norwood1989": {
+      "SO_adiabatic_ionization_eV": 10.294,
+      "SO_adiabatic_ionization_uncertainty_eV": 0.004,
+      "SO_ion_product_state": "X2Pi3/2",
+      "SO_vertical_ionization_eV": 10.305,
+      "SO_upper_spin_orbit_ionization_eV": 10.34,
+      "SO_upper_spin_orbit_ionization_uncertainty_eV": 0.005,
+      "SO_ion_spin_orbit_splitting_cm_inverse": 371,
+      "SO_ion_spin_orbit_splitting_uncertainty_cm_inverse": 20,
+      "SSO_adiabatic_ionization_eV": 10.584,
+      "SSO_adiabatic_ionization_uncertainty_eV": 0.005,
+      "SSO_ion_product_state": "X2Aprime",
+      "limitations": "Tables 1-2 describe SO+ and SSO+ vibrational/electronic states; they do not establish a neutral SSO high-temperature partition function. Quoted uncertainties have no stated statistical confidence level."
+    },
+    "interpretation": [
+      "The 1977 0 K threshold minus the 1989 SO adiabatic ionization energy gives 3.451 eV for SSO -> S + SO, the cycle used by Lodders 2004. Do not subtract SSO parent ionization or add the 0.051 eV thermal correction twice.",
+      "The fragment energy is not total atomization to 2 S + O. Full modern atomization requires consistent auxiliary SO/atomic energies and their correlations.",
+      "Lodders, Gurvich and ATcT share the 1977 experimental ancestry; the two newly inspected papers do not independently validate three thermochemical evaluations.",
+      "Primary experimental access gaps are closed. The Gurvich thermal inventory, original fit inputs and remaining modern theoretical/numerical provenance are still incomplete."
+    ]
+  }
 }

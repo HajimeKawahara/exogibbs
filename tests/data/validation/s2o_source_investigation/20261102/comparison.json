@@ -80,6 +80,16 @@
   ],
   "atct_atomization_0K_kJ_mol_from_rounded_values": 851.1239999999999,
   "atct_minus_lodders_atomization_kJ_mol": 1.12399999999991,
+  "primary_experiment_cycle": {
+    "reaction": "SSO(g) -> S(g) + SO(g)",
+    "observed_onset_from_wavelength_eV": 13.693858894764773,
+    "threshold_with_reported_internal_energy_correction_eV": 13.744858894764773,
+    "original_fragment_dissociation_0K_eV": 3.455,
+    "fragment_dissociation_with_norwood_SO_threshold_eV": 3.4509999999999987,
+    "SO_threshold_update_changes_fragment_dissociation_eV": -0.004000000000001336,
+    "original_reported_formation_enthalpy_0K_kJ_mol": -53.346000000000004,
+    "scope": "Reported 0 K threshold already includes the thermal correction; fragment dissociation is not total atomization. No new energy adopted."
+  },
   "assessment": {
     "source_diagnosis": "supported",
     "production_decision": "retain_pending_energy_and_application_review",

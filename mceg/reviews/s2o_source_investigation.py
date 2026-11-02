@@ -34,6 +34,31 @@ def read_janaf(path: Path) -> dict:
                 samples=list(rows.values()))
 
 
+def experimental_cycle(sources: dict) -> dict:
+    """Replay the fragment threshold cycle, without assigning a new uncertainty."""
+    experiment = sources["primary_experiments"]
+    berkowitz = experiment["berkowitz1977"]
+    norwood = experiment["norwood1989"]
+    hc_eV_angstrom = 6.62607015e-34 * 299792458 / 1.602176634e-19 * 1e10
+    onset = hc_eV_angstrom / berkowitz["observed_fragment_onset_angstrom"]
+    threshold = berkowitz["reported_0K_fragment_threshold_eV"]
+    original = threshold - berkowitz["auxiliary_SO_ionization_eV"]
+    updated = threshold - norwood["SO_adiabatic_ionization_eV"]
+    return dict(
+        reaction="SSO(g) -> S(g) + SO(g)",
+        observed_onset_from_wavelength_eV=onset,
+        threshold_with_reported_internal_energy_correction_eV=(
+            onset + berkowitz["internal_energy_correction_eV"]),
+        original_fragment_dissociation_0K_eV=original,
+        fragment_dissociation_with_norwood_SO_threshold_eV=updated,
+        SO_threshold_update_changes_fragment_dissociation_eV=updated-original,
+        original_reported_formation_enthalpy_0K_kJ_mol=(
+            berkowitz["reported_formation_enthalpy_0K_kcal_mol"] * 4.184),
+        scope="Reported 0 K threshold already includes the thermal correction; "
+              "fragment dissociation is not total atomization. No new energy adopted.",
+    )
+
+
 def investigate() -> dict:
     """Separate the formation-column error from source and energy differences."""
     inputs = load_inputs()
@@ -96,6 +121,7 @@ def investigate() -> dict:
                 official_nasa_matching_coefficients=len(printed),samples=samples,
                 atct_atomization_0K_kJ_mol_from_rounded_values=d0,
                 atct_minus_lodders_atomization_kJ_mol=d0-lodders["atomization_energy_0K_kJ_mol"],
+                primary_experiment_cycle=experimental_cycle(sources),
                 assessment=dict(source_diagnosis="supported",production_decision="retain_pending_energy_and_application_review",
                                 full_physical_accuracy="unknown",equilibrium_abundance_impact="not_run"))
 

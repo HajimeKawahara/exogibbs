@@ -37,8 +37,8 @@ formation G and log K columns in JANAF editions 3 and 4, while retaining the
 the old -56.484 kJ/mol anchor with -55.390 +/- 1.10 kJ/mol and uses Gurvich
 thermal functions. The uncertainty's confidence level is not specified there.
 Its energy evaluation combines Berkowitz, Eland and Appelman (1977) and
-Norwood and Ng (1989). These underlying papers are bibliographically identified
-but their full experimental accounts have not been inspected here. NASA and
+Norwood and Ng (1989). Their supplied full papers have now been inspected,
+including the threshold cycle and its reference states described below. NASA and
 Lodders consequently share thermal ancestry; database agreement is not an
 independent experimental constraint.
 
@@ -95,6 +95,44 @@ new production model. Residual differences involving the inherited fit and
 its original fitting inputs have not been uniquely attributed. A green
 NASA ratio cannot validate either source's physical accuracy.
 
+Supplied primary photoionization papers
+---------------------------------------
+
+`Berkowitz, Eland and Appelman (1977)
+<https://doi.org/10.1063/1.434135>`_ identify bent S-S-O and distinguish
+parent-ion production from the SO+ fragment channel. Section III.B (p2185)
+uses the observed fragment onset at 905.4 +/- 0.5 Angstrom and adds 0.051 eV
+of mean internal energy at 300 K. This assumes that all vibrational and
+three rotational degrees of freedom contribute to dissociative ionization.
+The resulting reported 0 K threshold is 13.745 eV. A wavelength conversion
+with current exact constants gives 13.744859 eV after the same correction,
+consistent with the printed rounding; this is a reproduction of the reported
+reduction, not an independent test of that thermal assumption.
+
+The original abstract (p2183) quotes a threshold uncertainty of 0.006 eV,
+whereas section III.B gives 0.01 eV. Both page images were checked. The
+record preserves both values without assigning a cause or confidence level.
+Subtracting the then-used SO ionization energy of 10.29 eV gives the
+reported D0(S-SO) = 3.455 eV. The associated formation enthalpy is explicitly
+at 0 K: -12.75 +/- 0.25 kcal/mol, using JANAF 1968 auxiliary values.
+It is not an independently established modern formation-energy anchor.
+
+`Norwood and Ng (1989)
+<https://doi.org/10.1016/S0009-2614(89)87110-6>`_, section 4.1 (p148),
+identify the SO adiabatic ionization energy to SO+(X2Pi3/2) as
+10.294 +/- 0.004 eV. This differs from the vertical value of 10.305 eV
+and the upper spin-orbit component at 10.340 eV. The 10.584 eV SSO
+parent-ion threshold in section 4.2 is a different process. Their Tables
+1--2 describe ionic states and do not supply a neutral SSO thermal model.
+
+The two primary papers therefore reproduce the cycle used by Lodders:
+``13.745 - 10.294 = 3.451 eV`` for ``SSO -> S + SO``. The 0.051 eV
+correction is already included in 13.745 and must not be added again.
+This fragment dissociation energy is distinct from atomization to 2 S + O;
+the latter also needs a consistent SO/atomic reference. The original SSO
+measurement is shared by subsequent compilations and ATcT, so inspecting
+both papers does not create independent confirmations of each evaluation.
+
 Modern energy constraint and remaining work
 -------------------------------------------
 
@@ -115,9 +153,10 @@ The publisher abstract of Grant et al. (2009),
 `DOI 10.1021/jp905847e <https://doi.org/10.1021/jp905847e>`_, identifies a
 CCSD(T)/CBS study with core-valence, relativistic, spin-orbit and zero-point
 corrections. Its SSO numerical tables were not inspected and are not adopted.
-Next steps are to inspect the Gurvich and primary experimental/theoretical
-records, reconcile their balanced energy anchors and correlated uncertainties,
-then test a single SSO replacement on the fixed ion-inclusive network with
+The Berkowitz and Norwood full-text access gaps are now closed. Next steps
+are to inspect the Gurvich thermal inventory and remaining theoretical
+records, reconcile balanced energy anchors and correlated uncertainties,
+then test a scoped SSO candidate on the fixed ion-inclusive network with
 conservation and mass-action residuals. No atmosphere, spectrum, condensate
 or mixture-wide physical validation follows from this source review.
 

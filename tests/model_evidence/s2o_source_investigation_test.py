@@ -47,6 +47,17 @@ def test_s2o_atct_energy_uses_both_sulfur_atoms_and_preserves_unknowns():
     assert result["assessment"]["equilibrium_abundance_impact"] == "not_run"
 
 
+def test_fragment_cycle_uses_so_ionization_and_applies_thermal_correction_once():
+    cycle = STUDY["investigate"]()["primary_experiment_cycle"]
+    assert cycle["observed_onset_from_wavelength_eV"] == pytest.approx(13.6938588948)
+    assert cycle["threshold_with_reported_internal_energy_correction_eV"] == pytest.approx(
+        13.745, abs=0.0002)
+    assert cycle["original_fragment_dissociation_0K_eV"] == pytest.approx(3.455)
+    assert cycle["fragment_dissociation_with_norwood_SO_threshold_eV"] == pytest.approx(3.451)
+    assert cycle["SO_threshold_update_changes_fragment_dissociation_eV"] == pytest.approx(-0.004)
+    assert cycle["original_reported_formation_enthalpy_0K_kJ_mol"] == pytest.approx(-53.346)
+
+
 def test_s2o_hash_check_rejects_changed_official_record():
     changed = deepcopy(json.loads((SNAPSHOT / "receipt.json").read_text())["input_sha256"])
     key = str((SNAPSHOT / "O-011.txt").relative_to(ROOT))
