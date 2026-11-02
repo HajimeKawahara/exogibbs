@@ -1,0 +1,82 @@
+{
+  "temperatures_K": [
+    1500,
+    2000,
+    2500,
+    3000,
+    4000
+  ],
+  "tsuji1973": {
+    "printed_page": 420,
+    "table": 4,
+    "printed_row": "C3H 4.0791E01 -2.1762E01 9.3377E-01 -1.3863E-01 7.4549E-03",
+    "coefficients": [
+      40.791,
+      -21.762,
+      0.93377,
+      -0.13863,
+      0.0074549
+    ],
+    "half_last_digit_bounds": [
+      0.0005,
+      0.0005,
+      5e-06,
+      5e-06,
+      5e-08
+    ],
+    "rounding_assumption": "Each displayed coefficient is rounded to nearest last displayed decimal; this bound is not a physical uncertainty.",
+    "definition": "log10 Kp(dissociation)=sum(a_i*(5040/T)^i); pressures in dyn/cm2; reaction C3H -> 3 C + H.",
+    "identity": "Formula C3H only in inspected Table 4; no isomer, electronic-state or isotope construction recovered."
+  },
+  "atct_1_172": {
+    "linear": {
+      "formula": "CCCH",
+      "atct_id": "53590-28-6*0",
+      "hf0_kJ_mol": 718.75,
+      "hf298_kJ_mol": 723.1,
+      "uncertainty_kJ_mol": 0.71
+    },
+    "cyclic": {
+      "formula": "CH(CC)",
+      "atct_id": "119178-99-3*0",
+      "hf0_kJ_mol": 711.24,
+      "hf298_kJ_mol": 715.37,
+      "uncertainty_kJ_mol": 0.71
+    },
+    "atoms": {
+      "C": {
+        "hf0_kJ_mol": 711.381,
+        "hf298_kJ_mol": 716.866,
+        "uncertainty_kJ_mol": 0.039
+      },
+      "H": {
+        "hf0_kJ_mol": 216.034,
+        "hf298_kJ_mol": 217.998,
+        "reported_uncertainty_kJ_mol": 0.0,
+        "actual_uncertainty_note": "Less than 0.0005, not exactly zero."
+      }
+    },
+    "uncertainty_definition": "Estimated 95% confidence limits; covariance required for reaction uncertainties.",
+    "reported_correlations": {
+      "linear_cyclic": 0.324,
+      "linear_C": 0.144
+    },
+    "reaction_uncertainty": "not_calculated; rounded source correlations are not a full covariance matrix"
+  },
+  "burcat2005": {
+    "record": "C3H Radical CC-CH; A 7/05",
+    "source": "ANL author-hosted PDF, Table 4 p102 and Table 5 p321",
+    "original_R_J_mol_K": 8.314472,
+    "hf298_header_J_mol": 719392.776,
+    "hf0_rounded_kcal_mol": 170.67,
+    "common_R_evaluation": "Use baseline gas constant for all evaluated H/Cp; do not claim exact reproduction of the rounded formation-energy labels.",
+    "sign_check": "The inspected Table5 high-temperature a7 is -5.784616800D-17; preserve that printed sign.",
+    "pressure": "No S/G/K comparison made: the standard-pressure convention is not independently established from the inspected record. H and Cp of ideal gases are pressure-independent."
+  },
+  "excluded_identity_matches": [
+    "C3H+ and C3H- charged species",
+    "HCCCH (C3H2), also called propynylidene",
+    "CH2CCH (C3H3), propargyl",
+    "cyclic CH(CC), a distinct C3H isomer"
+  ]
+}

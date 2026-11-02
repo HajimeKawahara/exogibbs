@@ -1,0 +1,27 @@
+{
+  "decision": "Prefer the modern ATcT energy evaluation for explicitly identified linear CCCH; retain inherited production coefficients operationally until identity and high-temperature thermal construction are reconciled.",
+  "identity": {
+    "current": "C3H1; label 2-Proynylidene, neutral gas, C3H stoichiometry. Neither typo nor formula uniquely proves the represented isomer.",
+    "tsuji1973": "Table 4 formula C3H; paper links older C/H/N/O energies to Tsuji 1964 and describes estimated structures where data were absent.",
+    "modern_linear": "ATcT CCCH differs from HCCCH(C3H2). CDMS identifies linear ground X2Pi_r.",
+    "modern_cyclic": "ATcT CH(CC) lower H0 by 7.51kJ/mol; distinct species, not an energy correction to the linear species."
+  },
+  "source_lineage": {
+    "tsuji": "Numerical agreement supports FastChem annotation. It does not recover exact fitting procedure or original state sum.",
+    "burcat": "A 7/05 G3B3 energy; Jacox 2005 plus calculated frequencies; tabulated low bent-rotor model with sigma 1 and weight 2. Historical alternative sigma 4 and 3 are explicitly noted. This is a candidate, not a validated Renner-Teller partition.",
+    "atct": "Thermochemical network mixes experiment and theory; Costes 2006/2009 crossed beams, Garcia 2018 photoelectron spectroscopy and Aguilera-Iparraguirre 2008 theory are ancestors. Not independent confirmations of ATcT. Costes 2006 uncertainty was enlarged in the ATcT network; full original papers not read in this review."
+  },
+  "thermal_constraints": {
+    "cdms": "Low vibrational Sigma component at 27.20 cm-1 above lowest Pi1/2 rotational state; v0 and one excited component catalog does not establish a complete 1500-4000 K partition.",
+    "burcat_vs_current": "Compare only ideal-gas H/Cp using common NASA atomic functions. Large caloric disagreement establishes that modern molecular energy alone cannot resolve the thermal representation. No candidate abundance response or probabilistic uncertainty inferred.",
+    "isotopes": "FastChem/Tsuji isotope-state convention unrecovered; Burcat mass 37.04004 is a natural-average convention; CDMS main isotopic species cannot be substituted without normalization review."
+  },
+  "follow_ups": [
+    "Recover Tsuji 1964 C3H geometry, multiplicity, atomization energy and original structural inputs.",
+    "Reconcile linear Renner-Teller/vibronic states and cyclic thermodynamics, including ground reference, nuclear-spin weights, isotope convention and completeness through 4000 K.",
+    "Inspect full Costes/Garcia/Aguilera-Iparraguirre papers if adopting an energy/thermal candidate; preserve their shared ATcT ancestry.",
+    "Only then construct a named consistent candidate and rerun equilibrium with one well-defined species replacement; cyclic isomer addition requires a separate network identity."
+  ],
+  "production_changed": false,
+  "equilibrium_substitution": "not_run"
+}
