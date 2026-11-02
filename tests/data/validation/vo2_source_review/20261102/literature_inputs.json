@@ -1,0 +1,182 @@
+{
+  "identity": {
+    "id": "O2V1",
+    "name": "VO2",
+    "phase": "neutral ideal gas",
+    "structure": "bent dioxo O-V-O, C2v",
+    "ground_state": "X 2A1",
+    "excluded": "Condensed VO2/V2O4, charged VO2, peroxo/superoxo isomers",
+    "isotope_convention": "Legacy natural-element molar mass 82.9403; no isotope-specific partition function adopted"
+  },
+  "nasa_headers": {
+    "V": {
+      "hf298_J_mol": 517267.064,
+      "h298_minus_h0_J_mol": 7907.064,
+      "official_minimum_temperature_K": 300.0,
+      "source_line_1based": 10667
+    },
+    "O": {
+      "hf298_J_mol": 249175.003,
+      "h298_minus_h0_J_mol": 6725.403,
+      "official_minimum_temperature_K": 200.0,
+      "source_line_1based": 7928
+    },
+    "VO2": {
+      "hf298_J_mol": -232697.655,
+      "h298_minus_h0_J_mol": 10622.449,
+      "official_minimum_temperature_K": 300.0,
+      "source_line_1based": 10727
+    }
+  },
+  "janaf_evaluation": {
+    "date": "December 1973 (1 bar conversion)",
+    "source_pdf_page_1based": 47,
+    "printed_page": 1763,
+    "hf0_kJ_mol": -230.561,
+    "hf298_kJ_mol": -232.63,
+    "hf_stated_uncertainty_kJ_mol": 41.8,
+    "S298_J_mol_K": 265.269,
+    "S298_stated_uncertainty_J_mol_K": 5.9,
+    "uncertainty_definition": "Published limits; not reinterpreted as one standard deviation",
+    "vibrations_cm-1": [
+      970,
+      300,
+      930
+    ],
+    "symmetry_number": 2,
+    "point_group": "C2v",
+    "bond_length_angstrom": 1.589,
+    "bond_angle_degrees": 110,
+    "electronic_levels_cm-1": [
+      0
+    ],
+    "electronic_weights": [
+      2
+    ],
+    "frequency_geometry_status": "Estimated frequencies and geometry; constant ground electronic weight 2 adopted",
+    "printed_nodes": {
+      "298.15": [
+        43.907,
+        265.269,
+        0,
+        -232.63
+      ],
+      "500": [
+        50.311,
+        289.646,
+        9.573,
+        -234.412
+      ],
+      "1000": [
+        55.708,
+        326.665,
+        36.429,
+        -238.38
+      ],
+      "1500": [
+        57.039,
+        349.554,
+        64.678,
+        -244.192
+      ],
+      "3000": [
+        57.902,
+        389.454,
+        151.093,
+        -302.368
+      ]
+    },
+    "hypothetical_excited_state_note": "The text discusses V++ atomic levels (ground weight4, 620cm^-1 weight6, next~14800cm^-1), then estimates that including a VO2 state at620cm^-1 weight6 WOULD increase S298 by1.06cal/mol/K. This is an uncertainty illustration, not an adopted molecular level list."
+  },
+  "literature_energies": [
+    {
+      "source": "Balducci_Gigli_Guido1983",
+      "quantity": "total_atomization_D0",
+      "value_kJ_mol": 1177,
+      "stated_uncertainty_kJ_mol": 18,
+      "reference_temperature_K": 0,
+      "molecular_hf298_kJ_mol": -174,
+      "hf298_stated_uncertainty_kJ_mol": 14,
+      "access": "Publisher-deposited abstract; full text unavailable",
+      "caution": "Original atomic references, thermal functions and error covariances not reconstructed"
+    },
+    {
+      "source": "Gunina_Lopatin_Shugurov2012",
+      "quantity": "molecular_hf298",
+      "value_kJ_mol": -185,
+      "stated_uncertainty_kJ_mol": 15,
+      "reference_temperature_K": 298,
+      "access": "Primary abstract; full text unavailable",
+      "caution": "Critical reevaluation of literature, not an independent new VO2 formation measurement"
+    },
+    {
+      "source": "Osina_Gorokhov_MSU_online",
+      "quantity": "total_atomization_D0",
+      "value_kJ_mol": 1166,
+      "stated_uncertainty_kJ_mol": 12,
+      "reference_temperature_K": 0,
+      "molecular_hf298_kJ_mol": -160.259,
+      "hf298_stated_uncertainty_kJ_mol": 12.3,
+      "access": "Expert online reevaluation, full text",
+      "caution": "Reanalyzes Balducci 1983 with updated auxiliary data; not an independent experiment"
+    }
+  ],
+  "kim2014": {
+    "doi": "10.1063/1.4861667",
+    "locator": "Table III, p034307-5; Section V D, p034307-8",
+    "EA_eV": 1.8357,
+    "EA_uncertainty_eV": 0.0005,
+    "electronic_levels_eV": [
+      0,
+      0.1845,
+      0.813
+    ],
+    "level_uncertainties_eV": [
+      0,
+      0.0008,
+      0.0005
+    ],
+    "electronic_weights": [
+      2,
+      2,
+      2
+    ],
+    "state_labels": [
+      "X2A1",
+      "A2B1",
+      "B2A1"
+    ],
+    "v1_cm-1": [
+      960,
+      952,
+      943
+    ],
+    "v1_uncertainties_cm-1": [
+      3,
+      6,
+      5
+    ],
+    "v2_cm-1": [
+      291,
+      306,
+      385
+    ],
+    "v2_uncertainties_cm-1": [
+      2,
+      6,
+      4
+    ],
+    "uncertainty_definition": "Peak position errors from Gaussian width sigma; not physical complete-partition error",
+    "v3": "Not observed by photodetachment",
+    "assignment_status": "Challenged by Hendrickx and Tran 2014, reaffirmed by Kim et al. 2014 reply; full claim and access limits in literature.json"
+  },
+  "constants": {
+    "second_radiation_constant_cm_K": 1.4387768775039338,
+    "electronvolt_J_mol": 96485.33212331001
+  },
+  "limits": [
+    "Electronic-level-only comparison holds state-specific rovibrational factors identical; it is not a complete partition function or replacement model.",
+    "Later formation enthalpies and atomization energies are not interchangeable without their shared atomic references and thermal increments.",
+    "Raw NASA comparison is a diagnostic; production data are unchanged."
+  ]
+}

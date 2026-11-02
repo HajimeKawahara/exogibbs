@@ -1,0 +1,271 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.vo2_source_review.v1
+  name: Gaseous vanadium dioxide source investigation
+  description: Audit VO2 reaction conventions and literature evidence without adopting a new thermal model.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:5978481d4793db2143471cd24a83bb8137e78b42fc756303246699b5e4b9d901
+    entry_points:
+    - mceg/reviews/vo2_source_review.py
+assumptions:
+- statement: VO2 denotes neutral bent dioxo gas, not condensed VO2/V2O4 or charged/peroxo species.
+  evidence:
+  - literature_review
+- statement: Reaction comparisons retain both V and O atomic references; electronic-only sums are diagnostic and
+    omit state-specific rovibrational factors.
+  evidence:
+  - source_replay
+  - literature_review
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Pinned source nodes, fit grid and existing75-case gas archive.
+  conditions:
+  - Source nodes500,1000,1500,3000,4000K; no curated extrapolation below1500K.
+  - NASA298.15K decomposition uses the local200K extension; the official V and VO2 records start at300K.
+  - Current fit1500-4000K; electronic-only diagnostics1500,3000,4000K.
+  - 'Saved537-species grid: T1500/2000/2500/3000/4000K, P1e-6/1e-4/0.01/1/100bar, C/Oreference/1/1.5; condensation
+    omitted.'
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete thermal and atmospheric accuracy are not established.
+  conditions: []
+  evidence:
+  - literature_review
+  - source_replay
+claims:
+- id: source_attribution
+  revision: '1'
+  kind: numerical_verification
+  statement: Fresh official tables reproduce the source comparison; the thermal difference survives energy alignment,
+    and the saved gas grid establishes a finite vanadium footprint.
+  scope: Neutral gaseous VO2; V(g) + 2 O(g) -> VO2(g), standard pressure1bar; no source adoption or new equilibrium
+    substitution.
+- id: conditional_energy_preference
+  revision: '1'
+  kind: theoretical
+  statement: Later all-gas thermochemical evidence favours reassessing JANAF toward weaker VO2 binding; a unique
+    complete replacement is not yet selected.
+  scope: Directional energy preference with unresolved common atomic references, covariance and thermal model;
+    not an exact recommended D0.
+- id: complete_thermal_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: A complete VO2 energy and thermal representation has quantified physical accuracy over1500-4000K.
+  scope: Requires consistent energy evaluation and state-specific rovibrational and electronic completeness.
+- id: atmospheric_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: A VO2 thermochemistry replacement improves atmospheric abundance or spectral accuracy.
+  scope: Requires a selected candidate and physical benchmarks including relevant condensed phases.
+evidence:
+- id: literature_review
+  kind: literature
+  summary: Inspect JANAF primary pages, primary abstracts and resolved spectroscopy, preserving evaluation ancestry
+    and access limits.
+  sources:
+  - tests/data/validation/vo2_source_review/20261102/sources.json
+  - tests/data/validation/vo2_source_review/20261102/literature.json
+  - tests/data/validation/vo2_source_review/20261102/literature_inputs.json
+  scope: Neutral gaseous VO2; V(g) + 2 O(g) -> VO2(g), standard pressure1bar; no source adoption or new equilibrium
+    substitution.
+  subject: vo2_sources_20261102
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/vo2_source_review/20261102/sources.json
+    sha256: 54a3cd01dd09559ab810d68528e943e8ae1a8f03b232fc4b8d594d1f4a2705d6
+  - source: tests/data/validation/vo2_source_review/20261102/literature.json
+    sha256: e60b67fe486629d25608b80b596e53e0323639bad0011f78f44dffab8314aa6e
+  - source: tests/data/validation/vo2_source_review/20261102/literature_inputs.json
+    sha256: 90a802adb9ac5deb5983887d2b2ba4f800fbfdc5cfbf1baa350a070b477be973
+  provenance:
+    role: secondary
+    location: Fixed VO2 source packet and explicitly identified primary material
+    inspection: partial
+    note: Primary inspection, secondary reevaluation and unavailable originals remain distinct.
+- id: source_replay
+  kind: numerical_test
+  summary: Replay balanced source properties, printed nodes, current fit, electronic-only moments and all75 archived
+    gas cases.
+  sources:
+  - tests/data/validation/vo2_source_review/20261102/comparison.json
+  scope: Neutral gaseous VO2; V(g) + 2 O(g) -> VO2(g), standard pressure1bar; no source adoption or new equilibrium
+    substitution.
+  subject: vo2_sources_20261102
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/vo2_source_review/20261102/comparison.json
+    sha256: 009254741ce35d8e5eed00f04d2f87b320dc8c27bce2fa8a0e39cab3304d5cff
+  provenance:
+    role: primary
+    location: Fixed VO2 source packet and explicitly identified primary material
+    inspection: inspected
+    note: Primary inspection, secondary reevaluation and unavailable originals remain distinct.
+  result: passed
+- id: energy_reasoning
+  kind: theory
+  summary: Compare primary all-gas atomization evidence with JANAF while retaining shared experimental ancestry,
+    differing auxiliary data and uncertainty conventions.
+  sources:
+  - tests/data/validation/vo2_source_review/20261102/literature.json
+  - tests/data/validation/vo2_source_review/20261102/literature_inputs.json
+  - tests/data/validation/vo2_source_review/20261102/comparison.json
+  scope: Neutral gaseous VO2; V(g) + 2 O(g) -> VO2(g), standard pressure1bar; no source adoption or new equilibrium
+    substitution.
+  subject: vo2_sources_20261102
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/vo2_source_review/20261102/literature.json
+    sha256: e60b67fe486629d25608b80b596e53e0323639bad0011f78f44dffab8314aa6e
+  - source: tests/data/validation/vo2_source_review/20261102/literature_inputs.json
+    sha256: 90a802adb9ac5deb5983887d2b2ba4f800fbfdc5cfbf1baa350a070b477be973
+  - source: tests/data/validation/vo2_source_review/20261102/comparison.json
+    sha256: 009254741ce35d8e5eed00f04d2f87b320dc8c27bce2fa8a0e39cab3304d5cff
+  provenance:
+    role: secondary
+    location: Fixed VO2 source packet and explicitly identified primary material
+    inspection: partial
+    note: Primary inspection, secondary reevaluation and unavailable originals remain distinct.
+subjects:
+- id: vo2_sources_20261102
+  implementation: *id001
+  selected_files:
+    mceg/reviews/vo2_source_review.py: 5978481d4793db2143471cd24a83bb8137e78b42fc756303246699b5e4b9d901
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
+    tests/model_evidence/vo2_source_review_test.py: 86987005b2d3e8a145049c9beb6333dab574a64c95b2e8d5ae75aa2318ebaa5f
+    tests/data/validation/vo2_source_review/20261102/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
+    tests/data/validation/vo2_source_review/20261102/O-076.txt: a96061b26b9d078924505ecdab54b980631bd5883ef6d3a814651ee4066ab121
+    tests/data/validation/vo2_source_review/20261102/README.rst: 9058d2ae6bb1c66b973a9f833b39b5e801b0a1acf15d5043207a1c520b42ee0f
+    tests/data/validation/vo2_source_review/20261102/V-005.txt: 4d69eb5d7ccbad1c8c9bc836ae2c9cee09433ade3e659ee18e259bc5a9ac7f02
+    tests/data/validation/vo2_source_review/20261102/comparison.json: 009254741ce35d8e5eed00f04d2f87b320dc8c27bce2fa8a0e39cab3304d5cff
+    tests/data/validation/vo2_source_review/20261102/janaf_vo2_printed_1763.pdf: e7ff198d5e90afd40b34f2d9d82cbe2b551aa502e80015727122a1e71a2c17fa
+    tests/data/validation/vo2_source_review/20261102/janaf_vo2_references_printed_1815.pdf: 5875cf82442aa91167ad868fea60893aaad4e44a223b999a877d6c6110e98b18
+    tests/data/validation/vo2_source_review/20261102/literature.json: e60b67fe486629d25608b80b596e53e0323639bad0011f78f44dffab8314aa6e
+    tests/data/validation/vo2_source_review/20261102/literature_inputs.json: 90a802adb9ac5deb5983887d2b2ba4f800fbfdc5cfbf1baa350a070b477be973
+    tests/data/validation/vo2_source_review/20261102/nasa_selected_records.txt: 6ab43e54c485dbcad98fda045dae146a090a5a930f846a9d7f10dd32d82c862e
+    tests/data/validation/vo2_source_review/20261102/sources.json: 54a3cd01dd09559ab810d68528e943e8ae1a8f03b232fc4b8d594d1f4a2705d6
+contexts:
+- id: source_comparison
+  scope: Neutral gaseous VO2; V(g) + 2 O(g) -> VO2(g), standard pressure1bar; no source adoption or new equilibrium
+    substitution.
+  settings:
+    standard_pressure_bar: 1
+    reaction: V(g) + 2 O(g) -> VO2(g)
+    reference_temperature_K: 298.15
+    gas_constant_J_mol_K: 8.31446261815324
+    temperatures_K: 500, 1000, 1500, 3000, 4000
+    partition_scope: Electronic levels only, identical state rovibrational factors; no complete Q or adoption
+    grid_dataset: curated-c2h-v1, fixed existing75cases with537species
+    elemental_budget: Asplund2021; vary C/H alone for C/O before normalization
+    equilibrium_source_substitution: not_run
+assessments:
+- id: source_attribution_review
+  kind: evidence_support
+  claim: source_attribution
+  claim_revision: '1'
+  subject: vo2_sources_20261102
+  context: source_comparison
+  method: &id002
+    id: review_vo2_sources
+    revision: '1'
+    description: Separate numerical attribution, directional energy preference, complete thermal accuracy and
+      physical atmosphere validation.
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - Fresh tables reproduce exact baseline nodes; current fit maximum lnK error is0.006291 over1500-4000K. All75
+    saved grid cases converged; maxVresidual5.76e-9. These are numerical checks only.
+  status: supported
+  origin: reviewed
+- id: conditional_energy_preference_review
+  kind: evidence_support
+  claim: conditional_energy_preference
+  claim_revision: '1'
+  subject: vo2_sources_20261102
+  context: source_comparison
+  method: *id002
+  evidence:
+  - literature_review
+  - source_replay
+  - energy_reasoning
+  reasons:
+  - Balducci1983 primary abstract reports D0=1177+-18 kJ/mol compared with JANAF1236.342; related later reevaluations
+    favour weaker binding but share ancestry and unresolved reference/thermal corrections. RawNASA retains nearly
+    the same old molecular formation energy.
+  status: supported
+  origin: reviewed
+- id: complete_thermal_accuracy_review
+  kind: evidence_support
+  claim: complete_thermal_accuracy
+  claim_revision: '1'
+  subject: vo2_sources_20261102
+  context: source_comparison
+  method: *id002
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - The JANAF ground-only model omits the low states resolved in2014 spectroscopy; the assignment dispute and
+    state-specific rovibrational and higher-state completeness remain. Original1983/2012 reaction data and Gurvich1982
+    volume are not fully inspected.
+  status: unknown
+  origin: reviewed
+- id: atmospheric_accuracy_review
+  kind: evidence_support
+  claim: atmospheric_accuracy
+  claim_revision: '1'
+  subject: vo2_sources_20261102
+  context: source_comparison
+  method: *id002
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - The reused gas-only footprint omits condensation; no VO2 source substitution or independent physical atmosphere
+    benchmark was run.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: reconcile_energy_and_thermal_sources
+  target_kind: claim
+  target: complete_thermal_accuracy
+  revision: '1'
+  action: Reconstruct original equilibrium evaluations with common atomic and VO references, then choose a complete
+    thermal representation.
+  requires:
+  - Balducci1983 and Gunina2012 full reaction data, auxiliary thermochemistry and covariance
+  - Original Gurvich1982 source details
+  - Resolved electronic and rovibrational model with state completeness and caloric checks
+  completion: Justify a consistent candidate and its1500-4000K applicability before finite substitution or production
+    adoption.
+- id: physical_atmosphere_validation
+  target_kind: claim
+  target: atmospheric_accuracy
+  revision: '1'
+  action: Test a selected VO2 candidate in the intended atmosphere.
+  requires:
+  - VO2-only finite substitution with numerical checks
+  - Appropriate condensation and physical abundance/spectral benchmark
+  completion: Separate mixture sensitivity from independently demonstrated physical accuracy.
+limitations:
+- statement: Source uncertainty labels are not converted to a common confidence level or treated as independent
+    measurements.
+  evidence:
+  - literature_review
+- statement: JANAF adopts a constant electronic ground weight of2. Its atomic analogy and hypothetical excited-state
+    discussion are not an adopted molecular level list; the2024assumed4kJuncertainty does not supersede the primary41.8kJlimit.
+  evidence:
+  - literature_review
+- statement: No exact replacement energy, complete partition function or atmospheric improvement is certified.
+  evidence:
+  - literature_review
+  - source_replay

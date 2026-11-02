@@ -1,0 +1,92 @@
+{
+  "retrieved_utc": "2026-11-02",
+  "search_terms": [
+    "VO2 gas enthalpy formation thermochemistry JANAF",
+    "VO2 Balducci Gigli Guido 1983",
+    "VO2 Kim Weichman2014 electronic states",
+    "Gaseous vanadium molybdate tungstates2012",
+    "Vanadium oxide clusters substellar atmospheres2024"
+  ],
+  "downloads": [
+    {
+      "file": "O-076.txt",
+      "url": "https://janaf.nist.gov/tables/O-076.txt",
+      "sha256": "a96061b26b9d078924505ecdab54b980631bd5883ef6d3a814651ee4066ab121",
+      "archived": true
+    },
+    {
+      "file": "V-005.txt",
+      "url": "https://janaf.nist.gov/tables/V-005.txt",
+      "sha256": "4d69eb5d7ccbad1c8c9bc836ae2c9cee09433ade3e659ee18e259bc5a9ac7f02",
+      "archived": true
+    },
+    {
+      "file": "O-001.txt",
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "archived": true
+    },
+    {
+      "file": "janaf_vo2_printed_1763.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf",
+      "sha256": "e7ff198d5e90afd40b34f2d9d82cbe2b551aa502e80015727122a1e71a2c17fa",
+      "archived": true,
+      "parent_sha256": "6c786ff5ec1c66c7c9bed29e0c358843ca677bccd8e09a7a19e5db3584ae5d3c",
+      "extraction": "pdfseparate -f N -l N",
+      "source_pdf_page_1based": 47
+    },
+    {
+      "file": "janaf_vo2_references_printed_1815.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf",
+      "sha256": "5875cf82442aa91167ad868fea60893aaad4e44a223b999a877d6c6110e98b18",
+      "archived": true,
+      "parent_sha256": "6c786ff5ec1c66c7c9bed29e0c358843ca677bccd8e09a7a19e5db3584ae5d3c",
+      "extraction": "pdfseparate -f N -l N",
+      "source_pdf_page_1based": 99
+    },
+    {
+      "file": "nasa_selected_records.txt",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "6ab43e54c485dbcad98fda045dae146a090a5a930f846a9d7f10dd32d82c862e",
+      "archived": true,
+      "parent_sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "extraction": "Complete V, O and VO2 records; CRLF normalized to LF",
+      "scope": "Selected coefficients only; official VO2 lower bound300K differs from frozen local200K"
+    },
+    {
+      "file": "kim2014.pdf",
+      "url": "https://bromine.cchem.berkeley.edu/grppub/sevi29.pdf",
+      "sha256": "b28ef414cf284949b2212fd34b5339e6021d068585a43721bacffa70ed2c4542",
+      "archived": false,
+      "scope": "Inspected research download; factual transcriptions and access limits retained in literature packet"
+    },
+    {
+      "file": "gurvich-web.html",
+      "url": "https://www.chem.msu.ru/rus/tsiv/V/print-VO2.html",
+      "sha256": "9c29ba805db72d4aa5bde2e7d0352af94ed66bb34f410e9798ee7884a0053101",
+      "archived": false,
+      "scope": "Inspected research download; factual transcriptions and access limits retained in literature packet"
+    },
+    {
+      "file": "doi1983.json",
+      "url": "https://api.crossref.org/works/10.1063/1.445682",
+      "sha256": "b2ee8488cffcd5cf16588da953b3c64936db8c3a53eb5b0e319082c050117110",
+      "archived": false,
+      "scope": "Inspected research download; factual transcriptions and access limits retained in literature packet"
+    },
+    {
+      "file": "gunina2012.html",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22497535/",
+      "sha256": "575d61b5f81fb2e53fa66f81e78f1646b0fdccfc894005b93c7f4ebd8f4bcc6b",
+      "archived": false,
+      "scope": "Inspected research download; factual transcriptions and access limits retained in literature packet"
+    },
+    {
+      "file": "lecoq-arxiv.pdf",
+      "url": "https://arxiv.org/pdf/2401.02784",
+      "sha256": "463ab6351dc8d14513ba32d201fcf9f0e764cbbf2116fcc3cd95f06bc6f28b14",
+      "archived": false,
+      "scope": "Inspected research download; factual transcriptions and access limits retained in literature packet"
+    }
+  ]
+}
