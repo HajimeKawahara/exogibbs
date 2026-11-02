@@ -17,8 +17,9 @@ C/O = 0.5888436553555908. Its mole fraction there is only
 8.56902e-9: a small total abundance can still control a trace element's
 allocation. This is a finite **gas-only** grid, with condensation omitted,
 not a statement about the dominant observable species in a real atmosphere.
-The audit replays all 75 saved cases and records all V-bearing species at
-that point. No new source-substitution equilibrium calculation is claimed.
+The original source audit replays all 75 saved cases. The later finite
+diagnostics below solve four explicitly defined VO2 variants on the same
+network and budgets; these remain separate from a production adoption.
 
 Identity and source lineage
 ---------------------------
@@ -184,7 +185,7 @@ The 538 cm^-1 bend differs strongly from the later resolved 291(2) cm^-1
 ground-state bend. Table IV gives H(1500)-H(298.15) = **63.590 kJ/mol**,
 1.088 kJ/mol below JANAF. These historical assumptions must be reconsidered
 when reducing the measured equilibria with a modern thermal model.
-The audit compares enthalpy increments only: Table IV does not explicitly
+The original source audit compares enthalpy increments only: Table IV does not explicitly
 state standard pressure, so its reconstructed entropy is kept in its
 printed convention without imposing a pressure-normalized Q ratio.
 
@@ -255,6 +256,156 @@ replacement K. State-specific rotation and vibration, anharmonicity, higher
 states and isotope conventions still need treatment. The saved electronic
 enthalpy, entropy and heat capacity moments make that limitation testable.
 
+Independent reduction of the published equilibria
+-------------------------------------------------
+
+The new packet transcribes Table I equilibrium constants, retaining the
+printed signs, half-last-digit subscripts and individual reaction heats.
+These are published equilibria after instrumental corrections; the original
+ion-intensity readings and calibration covariance are unavailable. The
+unweighted second-law fits give 169.519 +/- 4.218 and -86.978 +/- 3.088
+kJ/mol for reactions 1 and 2, reproducing the printed slopes and standard
+errors. Reaction 3 instead gives 81.482 +/- 4.150 against the printed
+82.0 +/- 2.9. Weighting, grouping, unrounded observations or a printing
+difference remain unresolved. The printed reaction-2 average temperature
+is 1046 K, while its observations imply a harmonic mean of 2046.165 K.
+Neither discrepancy is silently corrected or used to discard observations.
+
+Reaction 2 provides a route that does not require EuO:
+``D0(VO2) = 2*D0(VO) + delta_r H0(2)``. Current curated VO already uses
+`Merriles et al. (2020) <https://doi.org/10.1063/5.0014006>`_, with
+D0(VO) = 6.545(2) eV to the lowest atomic levels V(4F3/2) + O(3P2).
+The accepted manuscript describes a conservatively assigned error limit,
+not a one-sigma uncertainty. Keeping the old selected reaction heat of
+-74 kJ/mol would give **1188.993 kJ/mol**, rather than 1177. This isolates
+the auxiliary-energy update; it does not update the old thermal reduction.
+
+We therefore also replay all 21 printed reaction-2 constants using
+``delta_r H0 = -R*T*ln(K) + T*delta_r Phi``, where
+``Phi = -(G-H0)/T``. VO2 uses the original Table IV; V and VO use current
+official JANAF thermal functions with their H298 reference converted to H0.
+The exact historical JANAF pages remain unverified. Table IV's unspecified
+pressure convention is evaluated in separate 1 atm and 1 bar branches.
+Every reaction has zero change in molecule count, so a pressure conversion
+cancels only when all species use the same standard pressure.
+
+With the 1 atm assumption, 20 of the 21 printed reaction heats are
+reproduced within 0.056 kJ/mol. At **2087 K**, the printed ln(K) = 5.51
+gives -73.763 kJ/mol rather than the printed -74.8. Both original entries
+were visually rechecked and retained. The mean reaction heat is -73.720
+kJ/mol in this branch, or -73.496 for the 1 bar assumption.
+
+.. list-table:: Conditional modern-VO reanchoring and partial thermal changes
+   :header-rows: 1
+
+   * - Calculation
+     - D0, Table IV assumed 1 atm (kJ/mol)
+     - D0, Table IV assumed 1 bar (kJ/mol)
+   * - Published constants and original VO2 thermal table
+     - 1189.273
+     - 1189.497
+   * - Partial vibration and electronic update
+     - 1174.658
+     - 1174.883
+
+The vibration diagnostic replaces 983 and 538 cm^-1 with 960 and
+291 cm^-1, retaining the unobserved 1034 cm^-1 antisymmetric stretch.
+Its partition function excludes zero-point energy, so the reference stays
+at v=0. This lowers the inferred reaction heat by a mean 9.348 kJ/mol.
+Adding the three doublets with identical rovibrational factors lowers it
+by another 5.267 kJ/mol. These are changes to the experimental reduction,
+separate from the curated-grid interventions below. Geometry, rotation,
+state-specific vibration, anharmonicity and higher states are still
+incomplete. The roughly 1175 kJ/mol result is **not an adopted energy or
+an uncertainty interval**, and no new combined error bar is assigned.
+
+There is also a substantive consistency failure: reducing the measured
+second-law slope with the same partial thermal model shifts its inferred
+H0 upward by 6.607 kJ/mol, from -73.900 to -67.292 kJ/mol. The partial
+third-law mean instead moves downward to -88.335 kJ/mol in the 1 atm
+branch, leaving a **21.042 kJ/mol discrepancy**. The old functions nearly
+closed these two estimates. The partial model therefore cannot be
+promoted using its third-law value alone. Resolving the full thermal
+description, observational calibration/systematics and fitting assumptions
+is necessary; this calculation does not identify which is responsible.
+
+The remaining EuO-dependent paths require the auxiliary originals
+`Murad and Hildenbrand (1976) <https://doi.org/10.1063/1.433498>`_ and
+`Balducci et al. (1977) <https://doi.org/10.1063/1.434559>`_. Their
+publisher-registered metadata are verified, but their full texts are not
+inspected. Gunina's main article will provide a comparison of reductions
+and shared references when it arrives; its absence alone does not prevent
+an independently justified future adoption.
+
+Finite energy and electronic-state diagnostics
+----------------------------------------------
+
+The missing Gunina main text does not prevent a numerical sensitivity
+study. We compare the current model with three VO2-only interventions:
+
+* **Energy only:** add 59.342 kJ/mol to both G and H, preserving S and Cp.
+  This is the historical gap between JANAF D0 = 1236.342 and Balducci's
+  1177 kJ/mol. It is a source-gap diagnostic, not a common-reference
+  reevaluation or a precisely assigned new D0 for the finite-temperature
+  curated fit. No fit is extrapolated to 0 K.
+* **Electronic only:** add the three-state electronic contribution,
+  normalized by the existing ground weight 2. All states are assumed to
+  share their rovibrational factor. This is not a complete thermal model.
+* **Combined:** apply both interventions, retaining every other species'
+  free energy, the formula matrix and elemental budget.
+
+Writing the isolated electronic ratio as q, the corrections are
+``delta G = delta E - R*T*ln(q)`` and
+``delta H = delta E + mean(electronic energy)``. S and Cp are derived from
+the same expression, including the electronic energy variance. Automatic
+derivatives verify caloric consistency; the tests also prevent counting the
+ground doublet twice. The implementation is confined to a review script,
+without a new public API or preset.
+
+The four endpoints use 75 conditions each: five temperatures from 1500 to
+4000 K, five pressures from 1e-6 to 100 bar, and reference C/O, 1 and 1.5.
+Only C/H is varied between C/O cases before budget normalization. All
+537 species, including ions, remain present. Each of the 300 endpoint
+solves is repeated from a cold start at a tighter tolerance.
+
+.. list-table:: Vanadium allocation at 1500 K, 100 bar, reference C/O
+   :header-rows: 1
+
+   * - Diagnostic
+     - V in VO2, %
+     - V in VO, %
+     - Atomic V, %
+   * - Current
+     - 62.7841
+     - 36.3578
+     - 0.857946
+   * - Energy only
+     - 1.42709
+     - 96.3003
+     - 2.27240
+   * - Electronic only
+     - 67.6892
+     - 31.5658
+     - 0.744868
+   * - Combined
+     - 1.76607
+     - 95.9691
+     - 2.26459
+
+At this point the VO2 mole fraction changes from 8.56902e-9 to
+1.94775e-10 in the energy-only diagnostic. The energy intervention
+dominates the isolated electronic contribution here, and VO receives most
+of the released vanadium. A formation-K ratio is not an abundance ratio:
+all equilibria are solved again with the fixed elemental budget.
+
+All 600 cold solves pass element, charge and mass-action diagnostics.
+The tighter tolerance changes mole fractions by at most 9.17e-14 and
+log mole fractions by 2.38e-5. At the displayed point all four endpoints
+agree with standalone FastChem within 6.80e-9 dex. Complete species arrays,
+caloric corrections and tracked abundance extrema are archived. These
+checks establish numerical consistency, not a measured atmospheric
+response or an uncertainty interval. Condensation remains omitted.
+
 Reproduction and MCEG
 ---------------------
 
@@ -270,13 +421,23 @@ production coefficients are unchanged.
 .. code-block:: bash
 
    python mceg/reviews/vo2_source_review.py
-   pytest -q tests/model_evidence/vo2_source_review_test.py
+   python mceg/reviews/vo2_balducci_reduction.py
+   pytest -q tests/model_evidence/vo2*_test.py
    python -m mceg check mceg/contracts/vo2_source_review.yaml \
      --assessment source_attribution_review --root . --plain
 
-The contract separates supported numerical source attribution and a
-conditional preference for weaker binding from **unknown** complete thermal
-accuracy and atmospheric accuracy. The next adoption decision requires a
-consistent energy network and a complete thermal model, followed by a
-VO2-only finite substitution and physical tests appropriate to the intended
-atmosphere, including relevant condensed phases.
+Separate ``vo2_balducci_reduction`` and ``vo2_equilibrium_impact`` packets
+under ``tests/data/validation/`` contain the raw-table replay and finite
+diagnostics. Their READMEs describe regeneration; the archived checks do
+not require a network connection or standalone FastChem installation.
+
+The contract keeps six assessments: numerical source attribution,
+conditional energy preference, raw-equilibrium reduction and finite
+sensitivity are supported within their stated scopes. Complete thermal
+accuracy and atmospheric accuracy remain **unknown**. The finite-diagnostic
+follow-up is resolved. Production selection, remaining source/thermal
+reconciliation, inspection of the incoming Gunina article and independent
+physical validation have separate follow-ups. A production candidate needs
+consistent energy and thermal functions with justified applicability and
+uncertainty. Numerical agreement alone does not establish atmospheric
+accuracy, especially where condensation matters.

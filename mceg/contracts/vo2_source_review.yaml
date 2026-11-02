@@ -2,12 +2,15 @@ schema_version: '0.2'
 model:
   id: exogibbs.vo2_source_review.v1
   name: Gaseous vanadium dioxide source investigation
-  description: Audit VO2 reaction conventions and literature evidence without adopting a new thermal model.
-  implementation: &id001
+  description: Audit VO2 sources, independently reduce raw equilibrium data and isolate energy/electronic sensitivities
+    without changing production thermochemistry.
+  implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
-    revision: sha256:ff1182a665c28132cfa242d656e274f8e82a8d74f5c510d228f561f6efada751
+    revision: sha256:9eb51c1b5557b1bc993bd44c69f08af40a212f50f289502c2ebf8de43fdb698e
     entry_points:
     - mceg/reviews/vo2_source_review.py
+    - mceg/reviews/vo2_balducci_reduction.py
+    - mceg/reviews/vo2_equilibrium_impact.py
 assumptions:
 - statement: VO2 denotes neutral bent dioxo gas, not condensed VO2/V2O4 or charged/peroxo species.
   evidence:
@@ -36,6 +39,36 @@ domains:
   evidence:
   - literature_review
   - source_replay
+- kind: numerical_evaluation
+  status: documented
+  description: Current curated-c2h-v1 and energy-only, electronic-only and combined diagnostics; no adopted D0,
+    complete thermal replacement or physical abundance validation.
+  conditions:
+  - 'standard_pressure_bar: 1'
+  - 'species_count: 537'
+  - 'cases_per_endpoint: 75'
+  - 'endpoint_solves: 300'
+  - 'tighter_cold_solves: 300'
+  - 'temperature_K: 1500, 2000, 2500, 3000, 4000'
+  - 'pressure_bar: 1e-6, 1e-4, 0.01, 1, 100'
+  - 'C_over_O: reference, 1, 1.5; vary C/H only before normalization'
+  - 'energy_shift_J_mol: 59342.0'
+  - 'electronic_scope: Three doublets relative to ground weight 2, identical state rovibrational factors'
+  - 'condensation: omitted'
+  evidence:
+  - finite_sensitivity_replay
+- kind: numerical_evaluation
+  status: documented
+  description: Balducci Table I reactions and limited thermal/reference diagnostics; not a new experiment, complete
+    absolute reevaluation or calibrated combined uncertainty.
+  conditions:
+  - 'reaction_focus: VO2(g) + V(g) -> 2 VO(g)'
+  - 'measured_temperature_K: 1913-2282 across the three original reaction paths'
+  - 'modern_VO_anchor_eV: 6.545'
+  - 'atomic_limit: Lowest fine-structure separated-atom levels'
+  - 'adoption: none'
+  evidence:
+  - raw_equilibrium_reduction_replay
 claims:
 - id: source_attribution
   revision: '1'
@@ -61,6 +94,20 @@ claims:
   kind: physical_validation
   statement: A VO2 thermochemistry replacement improves atmospheric abundance or spectral accuracy.
   scope: Requires a selected candidate and physical benchmarks including relevant condensed phases.
+- id: finite_sensitivity
+  revision: '1'
+  kind: numerical_verification
+  statement: Four explicitly defined VO2-only variants isolate energy and electronic-state responses on the fixed
+    75-case gas grid, with conserved budgets and independent numerical checks.
+  scope: Current curated-c2h-v1 and energy-only, electronic-only and combined diagnostics; no adopted D0, complete
+    thermal replacement or physical abundance validation.
+- id: raw_equilibrium_reduction
+  revision: '1'
+  kind: numerical_verification
+  statement: Raw printed equilibrium constants reproduce scoped second-law checks and explicitly conditional reference
+    and thermal reevaluations; unresolved printed-data residuals remain visible.
+  scope: Balducci Table I reactions and limited thermal/reference diagnostics; not a new experiment, complete
+    absolute reevaluation or calibrated combined uncertainty.
 evidence:
 - id: literature_review
   kind: literature
@@ -131,9 +178,89 @@ evidence:
     location: Fixed VO2 source packet and explicitly identified primary material
     inspection: partial
     note: Primary inspection, secondary reevaluation and unavailable originals remain distinct.
+- id: finite_sensitivity_replay
+  kind: numerical_test
+  summary: Four explicitly defined VO2-only variants isolate energy and electronic-state responses on the fixed
+    75-case gas grid, with conserved budgets and independent numerical checks.
+  sources:
+  - tests/data/validation/vo2_equilibrium_impact/20261102/README.rst
+  - tests/data/validation/vo2_equilibrium_impact/20261102/diagnostics.json
+  - tests/data/validation/vo2_equilibrium_impact/20261102/equilibria.npz
+  - tests/data/validation/vo2_equilibrium_impact/20261102/inputs.json
+  - tests/data/validation/vo2_equilibrium_impact/20261102/receipt.json
+  - tests/data/validation/vo2_equilibrium_impact/20261102/summary.json
+  scope: Current curated-c2h-v1 and energy-only, electronic-only and combined diagnostics; no adopted D0, complete
+    thermal replacement or physical abundance validation.
+  subject: vo2_equilibrium_impact_20261102
+  context: finite_gas_grid
+  artifacts:
+  - source: tests/data/validation/vo2_equilibrium_impact/20261102/README.rst
+    sha256: 3369f8593192c58219a107e9fdb50a51bb585fbccfb5482390ba16bad585cebf
+  - source: tests/data/validation/vo2_equilibrium_impact/20261102/diagnostics.json
+    sha256: e276ea6413181cb10f0ff72e94550210c3c5789ec1e97e82ab93367aaa6b5022
+  - source: tests/data/validation/vo2_equilibrium_impact/20261102/equilibria.npz
+    sha256: 6f58f378fa1ded923bcdf3fb3df51a7e7ccfdacc6d50080116845e2d1dfb5295
+  - source: tests/data/validation/vo2_equilibrium_impact/20261102/inputs.json
+    sha256: ace0f060563e36875ea4b651abdf0f6736b2cd84813e75fcb8813cd22835a05a
+  - source: tests/data/validation/vo2_equilibrium_impact/20261102/receipt.json
+    sha256: 03d87fb0adcabf8af8dc769f0f48ef690dffa12c04b2a1ed8f43a90d1f978869
+  - source: tests/data/validation/vo2_equilibrium_impact/20261102/summary.json
+    sha256: d029c3246e60bf3bb01c0d898a9e8f218f3effc81ef0e8143fd4ffe3b7d8935b
+  result: passed
+  provenance:
+    role: primary
+    inspection: inspected
+    location: tests/data/validation/vo2_equilibrium_impact/20261102
+    note: The authored numerical audit and archived outputs are inspected; physical source completeness and accuracy
+      are separate questions.
+- id: raw_equilibrium_reduction_replay
+  kind: numerical_test
+  summary: Raw printed equilibrium constants reproduce scoped second-law checks and explicitly conditional reference
+    and thermal reevaluations; unresolved printed-data residuals remain visible.
+  sources:
+  - tests/data/validation/vo2_balducci_reduction/20261102/O-026.txt
+  - tests/data/validation/vo2_balducci_reduction/20261102/README.rst
+  - tests/data/validation/vo2_balducci_reduction/20261102/comparison.json
+  - tests/data/validation/vo2_balducci_reduction/20261102/inputs.json
+  - tests/data/validation/vo2_balducci_reduction/20261102/receipt.json
+  - tests/data/validation/vo2_balducci_reduction/20261102/reference_audit.json
+  - tests/data/validation/vo2_balducci_reduction/20261102/sources.json
+  - tests/data/validation/vo2_balducci_reduction/20261102/table_I.csv
+  scope: Balducci Table I reactions and limited thermal/reference diagnostics; not a new experiment, complete
+    absolute reevaluation or calibrated combined uncertainty.
+  subject: vo2_balducci_reduction_20261102
+  context: experimental_reduction
+  artifacts:
+  - source: tests/data/validation/vo2_balducci_reduction/20261102/O-026.txt
+    sha256: 88369ab3325b6ee6561fbda52124e48407645d6f77cbd75877e0c4597f73a552
+  - source: tests/data/validation/vo2_balducci_reduction/20261102/README.rst
+    sha256: 9de46a93c3fc864184a77a9f8c6e3a67ed9fdd8ef821f880dd24749a63f8e021
+  - source: tests/data/validation/vo2_balducci_reduction/20261102/comparison.json
+    sha256: 6b0fe81a863a5d40a3b4893a8a0efc47b6976c2ff7ee11673a8305f55c9c8d12
+  - source: tests/data/validation/vo2_balducci_reduction/20261102/inputs.json
+    sha256: 706cb349181d54a65b4557b25c37d836ba27bac54408ed812fa5373f5a915292
+  - source: tests/data/validation/vo2_balducci_reduction/20261102/receipt.json
+    sha256: 7d4ecddb57f4fdf3a6486ad2a213e2b86f8038aa970cd5749b4eb603b8690af4
+  - source: tests/data/validation/vo2_balducci_reduction/20261102/reference_audit.json
+    sha256: e59ee6a3c644df38c298a59a24f54872d23ce0ee07fc5fd68a5c572b0652d44f
+  - source: tests/data/validation/vo2_balducci_reduction/20261102/sources.json
+    sha256: 21b16d82a0b078579579263d1986f8276fc1c6c6c14646b47bcf197ddf74feee
+  - source: tests/data/validation/vo2_balducci_reduction/20261102/table_I.csv
+    sha256: b0c7a6d3f2dc20af220edcf2baedc5cf61621c0ea260f7982676bed3d174701a
+  result: passed
+  provenance:
+    role: primary
+    inspection: inspected
+    location: tests/data/validation/vo2_balducci_reduction/20261102
+    note: The authored numerical audit and archived outputs are inspected; physical source completeness and accuracy
+      are separate questions.
 subjects:
 - id: vo2_sources_20261102
-  implementation: *id001
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:ff1182a665c28132cfa242d656e274f8e82a8d74f5c510d228f561f6efada751
+    entry_points:
+    - mceg/reviews/vo2_source_review.py
   selected_files:
     mceg/reviews/vo2_source_review.py: ff1182a665c28132cfa242d656e274f8e82a8d74f5c510d228f561f6efada751
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
@@ -154,6 +281,78 @@ subjects:
     tests/data/validation/vo2_source_review/20261102/literature_inputs.json: 49d500e99a8a0ad58533aeb3c90792ff74f9bc458d838f41b591436e23d32182
     tests/data/validation/vo2_source_review/20261102/nasa_selected_records.txt: 6ab43e54c485dbcad98fda045dae146a090a5a930f846a9d7f10dd32d82c862e
     tests/data/validation/vo2_source_review/20261102/sources.json: 4c0e8caaac4ca24b863306546a1b6aa0ddb1bfa0ae06373d800506d6e89f2d88
+- id: vo2_equilibrium_impact_20261102
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:2ce7117e5f0c5aee203f663530d2ad5fe1b1909b577596495e11fba5d60485be
+    entry_points:
+    - mceg/reviews/vo2_equilibrium_impact.py
+  selected_files:
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/vo2_equilibrium_impact.py: 2ce7117e5f0c5aee203f663530d2ad5fe1b1909b577596495e11fba5d60485be
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/autodiff.py: 15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/sensitivities.py: ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    src/exogibbs/presets/curated.py: 14b6fb44b0380ea0aee97cb9e8096e05d5ebcc691f4f6ef4d8ab97c2593940f1
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
+    tests/data/validation/vo2_equilibrium_impact/20261102/README.rst: 3369f8593192c58219a107e9fdb50a51bb585fbccfb5482390ba16bad585cebf
+    tests/data/validation/vo2_equilibrium_impact/20261102/diagnostics.json: e276ea6413181cb10f0ff72e94550210c3c5789ec1e97e82ab93367aaa6b5022
+    tests/data/validation/vo2_equilibrium_impact/20261102/equilibria.npz: 6f58f378fa1ded923bcdf3fb3df51a7e7ccfdacc6d50080116845e2d1dfb5295
+    tests/data/validation/vo2_equilibrium_impact/20261102/inputs.json: ace0f060563e36875ea4b651abdf0f6736b2cd84813e75fcb8813cd22835a05a
+    tests/data/validation/vo2_equilibrium_impact/20261102/receipt.json: 03d87fb0adcabf8af8dc769f0f48ef690dffa12c04b2a1ed8f43a90d1f978869
+    tests/data/validation/vo2_equilibrium_impact/20261102/summary.json: d029c3246e60bf3bb01c0d898a9e8f218f3effc81ef0e8143fd4ffe3b7d8935b
+    tests/model_evidence/vo2_equilibrium_impact_test.py: 01aa1edd5bbe8726661c8db0e2f9cf75152ac731911a60670cbd21c6b0a8cdb0
+- id: vo2_balducci_reduction_20261102
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:6a365c93722cc5d282a4724f11226b33d5c560be102cac8a720bf14b416be96b
+    entry_points:
+    - mceg/reviews/vo2_balducci_reduction.py
+  selected_files:
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/vo2_balducci_reduction.py: 6a365c93722cc5d282a4724f11226b33d5c560be102cac8a720bf14b416be96b
+    mceg/reviews/vo2_source_review.py: ff1182a665c28132cfa242d656e274f8e82a8d74f5c510d228f561f6efada751
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/vo2_balducci_reduction/20261102/O-026.txt: 88369ab3325b6ee6561fbda52124e48407645d6f77cbd75877e0c4597f73a552
+    tests/data/validation/vo2_balducci_reduction/20261102/README.rst: 9de46a93c3fc864184a77a9f8c6e3a67ed9fdd8ef821f880dd24749a63f8e021
+    tests/data/validation/vo2_balducci_reduction/20261102/comparison.json: 6b0fe81a863a5d40a3b4893a8a0efc47b6976c2ff7ee11673a8305f55c9c8d12
+    tests/data/validation/vo2_balducci_reduction/20261102/inputs.json: 706cb349181d54a65b4557b25c37d836ba27bac54408ed812fa5373f5a915292
+    tests/data/validation/vo2_balducci_reduction/20261102/receipt.json: 7d4ecddb57f4fdf3a6486ad2a213e2b86f8038aa970cd5749b4eb603b8690af4
+    tests/data/validation/vo2_balducci_reduction/20261102/reference_audit.json: e59ee6a3c644df38c298a59a24f54872d23ce0ee07fc5fd68a5c572b0652d44f
+    tests/data/validation/vo2_balducci_reduction/20261102/sources.json: 21b16d82a0b078579579263d1986f8276fc1c6c6c14646b47bcf197ddf74feee
+    tests/data/validation/vo2_balducci_reduction/20261102/table_I.csv: b0c7a6d3f2dc20af220edcf2baedc5cf61621c0ea260f7982676bed3d174701a
+    tests/data/validation/vo2_source_review/20261102/V-005.txt: 4d69eb5d7ccbad1c8c9bc836ae2c9cee09433ade3e659ee18e259bc5a9ac7f02
+    tests/data/validation/vo2_source_review/20261102/literature_inputs.json: 49d500e99a8a0ad58533aeb3c90792ff74f9bc458d838f41b591436e23d32182
+    tests/model_evidence/vo2_balducci_reduction_test.py: 86961ce43094a4ac47989c24be1f99df0a831e9ba058b40792ad94a83b3258b4
 contexts:
 - id: source_comparison
   scope: Neutral gaseous VO2; V(g) + 2 O(g) -> VO2(g), standard pressure1bar; no source adoption or new equilibrium
@@ -168,6 +367,30 @@ contexts:
     grid_dataset: curated-c2h-v1, fixed existing75cases with537species
     elemental_budget: Asplund2021; vary C/H alone for C/O before normalization
     equilibrium_source_substitution: not_run
+- id: finite_gas_grid
+  scope: Current curated-c2h-v1 and energy-only, electronic-only and combined diagnostics; no adopted D0, complete
+    thermal replacement or physical abundance validation.
+  settings:
+    standard_pressure_bar: 1
+    species_count: 537
+    cases_per_endpoint: 75
+    endpoint_solves: 300
+    tighter_cold_solves: 300
+    temperature_K: 1500, 2000, 2500, 3000, 4000
+    pressure_bar: 1e-6, 1e-4, 0.01, 1, 100
+    C_over_O: reference, 1, 1.5; vary C/H only before normalization
+    energy_shift_J_mol: 59342.0
+    electronic_scope: Three doublets relative to ground weight 2, identical state rovibrational factors
+    condensation: omitted
+- id: experimental_reduction
+  scope: Balducci Table I reactions and limited thermal/reference diagnostics; not a new experiment, complete
+    absolute reevaluation or calibrated combined uncertainty.
+  settings:
+    reaction_focus: VO2(g) + V(g) -> 2 VO(g)
+    measured_temperature_K: 1913-2282 across the three original reaction paths
+    modern_VO_anchor_eV: 6.545
+    atomic_limit: Lowest fine-structure separated-atom levels
+    adoption: none
 assessments:
 - id: source_attribution_review
   kind: evidence_support
@@ -175,7 +398,7 @@ assessments:
   claim_revision: '1'
   subject: vo2_sources_20261102
   context: source_comparison
-  method: &id002
+  method: &id001
     id: review_vo2_sources
     revision: '2'
     description: Separate numerical attribution, directional energy preference, complete thermal accuracy and
@@ -194,7 +417,7 @@ assessments:
   claim_revision: '1'
   subject: vo2_sources_20261102
   context: source_comparison
-  method: *id002
+  method: *id001
   evidence:
   - literature_review
   - source_replay
@@ -211,7 +434,7 @@ assessments:
   claim_revision: '1'
   subject: vo2_sources_20261102
   context: source_comparison
-  method: *id002
+  method: *id001
   evidence:
   - literature_review
   - source_replay
@@ -228,38 +451,114 @@ assessments:
   claim_revision: '1'
   subject: vo2_sources_20261102
   context: source_comparison
-  method: *id002
+  method: *id001
   evidence:
   - literature_review
   - source_replay
   reasons:
-  - The reused gas-only footprint omits condensation; no VO2 source substitution or independent physical atmosphere
-    benchmark was run.
+  - The separate finite diagnostics establish numerical sensitivity only. No independent physical atmosphere benchmark
+    or condensation calculation validates the response.
   status: unknown
   origin: reviewed
+- id: finite_sensitivity_review
+  kind: evidence_support
+  claim: finite_sensitivity
+  claim_revision: '1'
+  subject: vo2_equilibrium_impact_20261102
+  context: finite_gas_grid
+  method:
+    id: review_vo2_equilibrium_impact
+    revision: '1'
+    description: Verify archived calculations and explicit diagnostic boundaries without promoting numerical success
+      to physical accuracy.
+  evidence:
+  - finite_sensitivity_replay
+  reasons:
+  - Four explicitly defined VO2-only variants isolate energy and electronic-state responses on the fixed 75-case
+    gas grid, with conserved budgets and independent numerical checks.
+  - Current curated-c2h-v1 and energy-only, electronic-only and combined diagnostics; no adopted D0, complete
+    thermal replacement or physical abundance validation.
+  status: supported
+  origin: reviewed
+- id: raw_equilibrium_reduction_review
+  kind: evidence_support
+  claim: raw_equilibrium_reduction
+  claim_revision: '1'
+  subject: vo2_balducci_reduction_20261102
+  context: experimental_reduction
+  method:
+    id: review_vo2_balducci_reduction
+    revision: '1'
+    description: Verify archived calculations and explicit diagnostic boundaries without promoting numerical success
+      to physical accuracy.
+  evidence:
+  - raw_equilibrium_reduction_replay
+  reasons:
+  - Raw printed equilibrium constants reproduce scoped second-law checks and explicitly conditional reference
+    and thermal reevaluations; unresolved printed-data residuals remain visible.
+  - Balducci Table I reactions and limited thermal/reference diagnostics; not a new experiment, complete absolute
+    reevaluation or calibrated combined uncertainty.
+  status: supported
+  origin: reviewed
 follow_ups:
+- id: run_finite_diagnostics
+  target_kind: claim
+  target: finite_sensitivity
+  revision: '1'
+  action: Evaluate explicit energy and electronic interventions before selecting a complete replacement.
+  requires:
+  - Fixed network and budgets
+  - Thermodynamically consistent named diagnostic interventions
+  completion: Archive all endpoints, tighter solves, conservation and independent solver checks; do not infer
+    physical accuracy.
 - id: reconcile_energy_and_thermal_sources
   target_kind: claim
   target: complete_thermal_accuracy
   revision: '1'
-  action: Reconstruct original equilibrium evaluations with common atomic and VO references, then choose a complete
-    thermal representation.
+  action: Resolve residuals in the raw equilibrium reduction and complete the common-reference energy and thermal
+    evaluation.
   requires:
-  - Gunina2012 main article; modern re-reduction of inspected Balducci1983 reaction data with original auxiliary
-    EuO/VO references and covariance
-  - Original Gurvich1982 source details
-  - Resolved electronic and rovibrational model with state completeness and caloric checks
-  completion: Justify a consistent candidate and its1500-4000K applicability before finite substitution or production
-    adoption.
+  - The roughly 21 kJ/mol second-law/third-law inconsistency under the partial thermal update
+  - Original reaction-3 weighting/error procedure and the inconsistent reaction-2 2087 K entry
+  - Consistent VO/V and VO2 thermal functions, rotational structure, antisymmetric stretch and higher-state coverage
+  - Explicit handling of shared references and original uncertainty definitions; no independent-error pooling
+  - Original Gurvich1982 details and EuO auxiliary evaluations where those paths are used
+  completion: Justify a traceable energy and thermal candidate with applicability limits. Exploratory finite diagnostics
+    may precede this completion.
+- id: inspect_gunina_when_available
+  target_kind: claim
+  target: complete_thermal_accuracy
+  revision: '1'
+  action: Inspect the incoming Gunina2012 main article and compare its reevaluation with the independent reduction.
+  requires:
+  - Gunina2012 main text
+  - Derivation of -185 +/- 15 kJ/mol, auxiliary references, thermal corrections, uncertainty definition and reused
+    experiments
+  - Mapping of supporting-information reaction numbers to the main text
+  - How the reevaluation treats second-law/third-law consistency after thermal changes
+  completion: Explain agreement or disagreement without averaging shared experiments. Availability is not the
+    sole prerequisite for independently justified adoption.
+- id: decide_production_candidate
+  target_kind: claim
+  target: complete_thermal_accuracy
+  revision: '1'
+  action: Assess an independently justified candidate separately from diagnostic success.
+  requires:
+  - Consistent D0/De, zero-point and atomic references
+  - Traceable energy reasoning and scoped uncertainty
+  - Consistent continuous G/H/S/Cp and assessed omitted-state limitations
+  - Finite sensitivity and numerical checks
+  completion: Record the reason for adoption or retention and its applicability. A missing later paper alone is
+    not a veto; current source gaps remain material.
 - id: physical_atmosphere_validation
   target_kind: claim
   target: atmospheric_accuracy
   revision: '1'
-  action: Test a selected VO2 candidate in the intended atmosphere.
+  action: Test a selected candidate against an appropriate independent physical atmosphere benchmark.
   requires:
-  - VO2-only finite substitution with numerical checks
-  - Appropriate condensation and physical abundance/spectral benchmark
-  completion: Separate mixture sensitivity from independently demonstrated physical accuracy.
+  - Defined observable and physical reference
+  - Relevant condensed phases and atmospheric conditions
+  completion: Assess physical accuracy independently of conserved gas-only sensitivities.
 limitations:
 - statement: Source uncertainty labels are not converted to a common confidence level or treated as independent
     measurements.
@@ -279,3 +578,24 @@ limitations:
   evidence:
   - literature_review
   - energy_reasoning
+- statement: The +59.342 kJ/mol source-gap perturbation is not a modern common-reference adopted D0. Current VO
+    uses Merriles2020 spectroscopy; its separate reanchoring must not be confused with the historical-gap diagnostic.
+  evidence:
+  - finite_sensitivity_replay
+  - raw_equilibrium_reduction_replay
+- statement: The electronic-only factor assumes identical state rovibrational factors. Four diagnostic endpoints
+    do not establish a complete thermal replacement or a probability distribution for abundance.
+  evidence:
+  - finite_sensitivity_replay
+- statement: Printed-data inconsistencies and pressure/thermal assumptions are retained explicitly in the raw
+    reduction. The partial thermal model produces a roughly 21 kJ/mol second-law/third-law discrepancy; its third-law
+    energy cannot be adopted alone. The Gunina main text and some auxiliary originals remain unavailable.
+  evidence:
+  - raw_equilibrium_reduction_replay
+  - literature_review
+follow_up_resolutions:
+- follow_up: run_finite_diagnostics
+  evidence:
+  - finite_sensitivity_replay
+  note: Four endpoints at 75 conditions plus 300 tighter cold solves and four standalone FastChem comparisons
+    are archived. Production selection and physical accuracy remain separate.
