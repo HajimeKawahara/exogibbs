@@ -102,7 +102,7 @@ evidence:
   - source: tests/data/validation/sh_source_investigation/20261102/receipt.json
     sha256: 102cac8479b6ef87845fd4dcf881a3c7a8b55aa6ce48dedbae0f06f2a430266e
   - source: tests/data/validation/sh_source_investigation/20261102/merge_revalidation.json
-    sha256: f4e6534e1b4614f9372d089433f6aaa402ae56f983bf67b18d5e380a19584a7d
+    sha256: 65c9ae7db782e92a59a1c0aa52c1a1fd22ead2f065eb0c14e5868dca38ca6617
   provenance:
     role: primary
     location: Offline review script, comparison.json and targeted tests.
@@ -127,7 +127,7 @@ subjects:
 - id: sh_20261102
   implementation: *id001
   selected_files:
-    documents/mceg/sh_source_investigation.rst: 6f0e3780ea667938df79011cff713a701fb820ea2d4d619d303de581a0a98138
+    documents/mceg/sh_source_investigation.rst: 6ea02e7896642a01e225d985c80b8581e1aaa2112d6d682664f0f08594d6a0c1
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
     examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
@@ -150,7 +150,7 @@ subjects:
     tests/data/validation/sh_source_investigation/20261102/receipt.json: 102cac8479b6ef87845fd4dcf881a3c7a8b55aa6ce48dedbae0f06f2a430266e
     tests/data/validation/sh_source_investigation/20261102/sources.json: bb1e3ad810640db804594b3ffb1c315280db8548b0e221e1ef0010321a86e9f5
     tests/model_evidence/sh_source_investigation_test.py: 729e9b1d483a79e1972779835c964b35cac7bdcbdccec82457ee056a31317f90
-    tests/data/validation/sh_source_investigation/20261102/merge_revalidation.json: f4e6534e1b4614f9372d089433f6aaa402ae56f983bf67b18d5e380a19584a7d
+    tests/data/validation/sh_source_investigation/20261102/merge_revalidation.json: 65c9ae7db782e92a59a1c0aa52c1a1fd22ead2f065eb0c14e5868dca38ca6617
 contexts:
 - id: source_samples
   scope: SH source identity, formation-column diagnosis and source-energy comparison.

@@ -25,7 +25,7 @@
     "sha256": "f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914"
   },
   "selected_file_sha256": {
-    "documents/mceg/sh_source_investigation.rst": "6f0e3780ea667938df79011cff713a701fb820ea2d4d619d303de581a0a98138",
+    "documents/mceg/sh_source_investigation.rst": "6ea02e7896642a01e225d985c80b8581e1aaa2112d6d682664f0f08594d6a0c1",
     "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
     "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
     "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",

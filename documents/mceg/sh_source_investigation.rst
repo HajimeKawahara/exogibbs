@@ -161,7 +161,7 @@ network abundance comparison and numerical diagnostics; source ratios here are
 not abundance errors. The exact historic column-generation bug remains unknown.
 
 Revalidation after the C2H default update
-----------------------------------------
+-----------------------------------------
 
 The develop integration reruns the source replay and direct current-curated
 SH check after #310. All recorded SH values are unchanged. The historical
