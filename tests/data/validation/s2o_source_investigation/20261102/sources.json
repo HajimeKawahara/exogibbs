@@ -1,0 +1,312 @@
+{
+  "snapshot_id": "s2o-20261102",
+  "baseline_sha256": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+  "reaction": "2 S(g) + O(g) -> SSO(g)",
+  "standard_pressure_Pa": 100000,
+  "temperatures_K": [
+    500,
+    1000,
+    1500,
+    3000
+  ],
+  "identity": {
+    "curated_id": "O1S2",
+    "janaf_id": "O-011",
+    "nasa_id": "S2O",
+    "name": "Disulfur monoxide / disulfene oxide",
+    "cas": "20901-21-7",
+    "connectivity": "S-S-O",
+    "phase": "gas",
+    "charge": 0,
+    "ground_state_weight": 1,
+    "point_group": "Cs",
+    "bond_angle_degrees": 118,
+    "isotope_scope": "Unlabelled natural-element thermochemical species; no isotope-specific replacement"
+  },
+  "sources": [
+    {
+      "id": "janaf_s2o",
+      "url": "https://janaf.nist.gov/tables/O-011.txt",
+      "retrieved_date_JST": "2026-11-02",
+      "sha256": "862d4855c61c24c3b9968287dfe65a3bd371f362438e156cd702ce79bb8009a2",
+      "bytes": 3881,
+      "location": "September 1965, 1 bar table",
+      "inspection": "inspected",
+      "archive": "O-011.txt"
+    },
+    {
+      "id": "janaf_o",
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "retrieved_date_JST": "2026-11-02",
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "bytes": 3807,
+      "location": "Atomic O gas table",
+      "inspection": "inspected",
+      "archive": "O-001.txt"
+    },
+    {
+      "id": "janaf_s",
+      "url": "https://janaf.nist.gov/tables/S-006.txt",
+      "retrieved_date_JST": "2026-11-02",
+      "sha256": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+      "bytes": 3804,
+      "location": "Atomic S gas table; shared acquisition with SH review",
+      "inspection": "inspected",
+      "archive": "S-006.txt"
+    },
+    {
+      "id": "janaf_notes",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf",
+      "retrieved_date_JST": "2026-11-02",
+      "sha256": "6c786ff5ec1c66c7c9bed29e0c358843ca677bccd8e09a7a19e5db3584ae5d3c",
+      "bytes": 8225185,
+      "location": "Printed p1727 / PDF p11, visually inspected source notes",
+      "inspection": "inspected",
+      "archive": null
+    },
+    {
+      "id": "lodders2004",
+      "url": "https://solarsystem.wustl.edu/wp-content/uploads/reprints/2004/Lodders%202004%20J%20Phys%20Chem%20Ref%20Data.pdf",
+      "retrieved_date_JST": "2026-11-02",
+      "sha256": "0b9edd5cf4977e6a6db4e9b38890a044adafebf099608e2426b821bc1bcd9a3e",
+      "bytes": 110086,
+      "location": "Sections 2.2.1-2.2.2 p360, Tables 4-5 pp362-363, references p367",
+      "inspection": "inspected",
+      "archive": null
+    },
+    {
+      "id": "nasa2002",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "retrieved_date_JST": "2026-11-02",
+      "sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "bytes": 1619440,
+      "location": "Appendix D printed p184 / PDF p192, S2O record; obtained in shared C2H investigation",
+      "inspection": "inspected",
+      "archive": null
+    },
+    {
+      "id": "atct_sso",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=631",
+      "retrieved_date_JST": "2026-11-02",
+      "sha256": "438d90ba3c2903205397268dbd513573fd5059cdbb5e4a85f79255e63c14e446",
+      "bytes": 53392,
+      "location": "Identity, enthalpies, provenance contributions, correlations and uncertainty definition",
+      "inspection": "inspected",
+      "archive": null
+    },
+    {
+      "id": "atct_index",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "retrieved_date_JST": "2026-11-02",
+      "sha256": "88238bce79e173c2fe6b26ddad22d4423fbea7698c1c472ba9a3145ae895f96f",
+      "bytes": 4105123,
+      "location": "SSO species631, neutral S species153 and neutral O species21 rows",
+      "inspection": "inspected",
+      "archive": null
+    },
+    {
+      "id": "nist_identity",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C20901217&Units=SI&Mask=3FFF",
+      "retrieved_date_JST": "2026-11-02",
+      "sha256": "96689c9af832282f8edbceb15f0fe12e0eafed2e335e4529029ab9cfdd99bb2f",
+      "bytes": 89068,
+      "location": "Identity, bibliography and ground/excited vibrational state sections",
+      "inspection": "inspected",
+      "archive": null
+    },
+    {
+      "local_file": "ref/refs_exogibbs_202611-2/Berkcwitz_1977.pdf",
+      "doi": "10.1063/1.434135",
+      "url": "https://doi.org/10.1063/1.434135",
+      "sha256": "01ddd2444dee7427ab868b60d1a123c3ba5c37f864ca50ed828371b8b1cd4aae",
+      "bytes": 753913,
+      "pages": 5,
+      "provided_date_JST": "2026-11-02",
+      "inspection": "Supplied publisher PDF read; relevant numerical passages visually checked.",
+      "location": "Printed pp2183-2186; PDF pp2-5 (publisher cover p1). Abstract p2183 and threshold cycle p2185 visually checked.",
+      "archived": false,
+      "id": "berkowitz1977",
+      "archive": null
+    },
+    {
+      "local_file": "ref/refs_exogibbs_202611-2/norwood_1989.pdf",
+      "doi": "10.1016/S0009-2614(89)87110-6",
+      "url": "https://doi.org/10.1016/S0009-2614(89)87110-6",
+      "sha256": "0c633bc6ead2bd20d77506e18828ee2436579454b229022ad94dda273b0d474c",
+      "bytes": 483349,
+      "pages": 6,
+      "provided_date_JST": "2026-11-02",
+      "inspection": "Supplied publisher PDF read; relevant numerical passages visually checked.",
+      "location": "Printed pp145-150; sections 4.1-4.2, pp148-149, Tables 1-2. SO threshold/state assignment p148 visually checked.",
+      "archived": false,
+      "id": "norwood1989",
+      "archive": null
+    }
+  ],
+  "lodders2004": {
+    "hf298_kJ_mol": -55.39,
+    "hf0_kJ_mol": -53.35,
+    "atomization_energy_0K_kJ_mol": 850.0,
+    "quoted_uncertainty_kJ_mol": 1.1,
+    "uncertainty_scope": "Quoted uncertainty; confidence level not specified in the inspected paper",
+    "samples": [
+      {
+        "temperature_K": 298.15,
+        "cp_J_mol_K": 44.114,
+        "entropy_J_mol_K": 266.961,
+        "enthalpy_increment_kJ_mol": 0,
+        "formation_enthalpy_kJ_mol": -55.39,
+        "formation_gibbs_kJ_mol": -85.279
+      },
+      {
+        "temperature_K": 500,
+        "cp_J_mol_K": 50.379,
+        "entropy_J_mol_K": 291.427,
+        "enthalpy_increment_kJ_mol": 9.607,
+        "formation_enthalpy_kJ_mol": -65.987,
+        "formation_gibbs_kJ_mol": -102.949
+      },
+      {
+        "temperature_K": 1000,
+        "cp_J_mol_K": 55.656,
+        "entropy_J_mol_K": 328.432,
+        "enthalpy_increment_kJ_mol": 36.449,
+        "formation_enthalpy_kJ_mol": -183.935,
+        "formation_gibbs_kJ_mol": -119.723
+      },
+      {
+        "temperature_K": 1500,
+        "cp_J_mol_K": 57.004,
+        "entropy_J_mol_K": 351.303,
+        "enthalpy_increment_kJ_mol": 64.675,
+        "formation_enthalpy_kJ_mol": -183.725,
+        "formation_gibbs_kJ_mol": -87.684
+      },
+      {
+        "temperature_K": 3000,
+        "cp_J_mol_K": 57.891,
+        "entropy_J_mol_K": 391.188,
+        "enthalpy_increment_kJ_mol": 151.061,
+        "formation_enthalpy_kJ_mol": -187.071,
+        "formation_gibbs_kJ_mol": 9.201
+      }
+    ]
+  },
+  "atct_1_172": {
+    "hf0_kJ_mol": {
+      "SSO": -50.62,
+      "S": 276.83,
+      "O": 246.844
+    },
+    "hf298_kJ_mol": {
+      "SSO": -52.63,
+      "S": 279.08,
+      "O": 249.229
+    },
+    "sso_uncertainty_95pct_kJ_mol": 0.43,
+    "sso_s_correlation": 0.588,
+    "uncertainty_note": "Do not assign an atomization uncertainty by independent quadrature; displayed values are rounded and correlated.",
+    "provenance": {
+      "berkowitz1977_percent": 22.7,
+      "karton2011_reaction9448_8_percent": 7.8,
+      "karton2006_atomization9440_10_percent": 4.5
+    }
+  },
+  "search_log": [
+    {
+      "date_JST": "2026-11-02",
+      "query": "site:janaf.nist.gov S2O disulfur monoxide"
+    },
+    {
+      "date_JST": "2026-11-02",
+      "query": "Lodders 2004 S2O thermochemical sulfur monoxide"
+    },
+    {
+      "date_JST": "2026-11-02",
+      "query": "S2O Berkowitz Eland Appelman 1977 2183 2186 photoionization"
+    },
+    {
+      "date_JST": "2026-11-02",
+      "query": "Norwood Ng 1989 156 145 150 SO photoionization"
+    },
+    {
+      "date_JST": "2026-11-02",
+      "query": "site:atct.anl.gov 1.172 SSO"
+    },
+    {
+      "date_JST": "2026-11-02",
+      "query": "10.1021/jp905847e"
+    }
+  ],
+  "literature_followups": [
+    {
+      "reference": "Blukis and Myers (1965), Disulfur Monoxide. III. Its Infrared Spectrum and Thermodynamic Functions",
+      "doi": "10.1021/j100888a011",
+      "status": "Bibliography and JANAF interpretation inspected; original full text not inspected"
+    },
+    {
+      "reference": "Berkowitz, Eland and Appelman (1977), Photoionization mass spectrometry and heat of formation of S2O, JCP66,2183-2186",
+      "status": "Supplied full paper inspected; fragment cycle and its thermal-correction assumption verified. Abstract/body threshold error bars differ; both retained.",
+      "doi": "10.1063/1.434135"
+    },
+    {
+      "reference": "Norwood and Ng (1989), Photoion-photoelectron coincidence spectroscopy of the transient molecules SO and S2O, CPL156,145-150",
+      "status": "Supplied full paper inspected; SO adiabatic threshold and ionic states confirmed. This supplies an auxiliary ionization energy, not an independent SSO atomization measurement.",
+      "doi": "10.1016/S0009-2614(89)87110-6"
+    },
+    {
+      "reference": "Grant et al. (2009), Heats of Formation of the H1,2OmSn (m,n=0-3) Molecules from Electronic Structure Calculations",
+      "doi": "10.1021/jp905847e",
+      "status": "Publisher abstract inspected; full text and numerical SSO table not inspected, no numerical adoption"
+    },
+    {
+      "reference": "Gurvich et al. (1989), vol1 part1 p293 part2 p178",
+      "status": "NASA and Lodders source attribution inspected; original pages not inspected"
+    }
+  ],
+  "primary_experiments": {
+    "berkowitz1977": {
+      "observed_fragment_onset_angstrom": 905.4,
+      "observed_fragment_onset_uncertainty_angstrom": 0.5,
+      "reported_observed_fragment_onset_eV": 13.69,
+      "reported_observed_fragment_onset_uncertainty_eV": 0.008,
+      "internal_energy_correction_eV": 0.051,
+      "internal_energy_temperature_K": 300,
+      "thermal_correction_assumption": "All vibrational and three rotational degrees of freedom contribute to dissociative ionization; the paper adds the mean internal energy to the observed onset.",
+      "reported_0K_fragment_threshold_eV": 13.745,
+      "abstract_threshold_uncertainty_eV": 0.006,
+      "body_threshold_uncertainty_eV": 0.01,
+      "uncertainty_note": "Abstract p2183 and body p2185 give different error bars. Both are preserved without selecting a statistical confidence convention or assuming a typographical cause.",
+      "auxiliary_SO_ionization_eV": 10.29,
+      "reported_fragment_dissociation_0K_eV": 3.455,
+      "reported_fragment_dissociation_uncertainty_eV": 0.01,
+      "reported_formation_enthalpy_0K_kcal_mol": -12.75,
+      "reported_formation_enthalpy_uncertainty_kcal_mol": 0.25,
+      "formation_enthalpy_auxiliary_source": "JANAF 1968, reference 13; no new harmonized molecular/atomic formation energy is inferred from this quotation.",
+      "parent_SSO_ionization_eV": 10.58,
+      "parent_SSO_ionization_uncertainty_eV": 0.01,
+      "parent_threshold_note": "SSO parent-ion threshold is not the SO ionization energy subtracted in the fragment cycle.",
+      "contamination_checks": "SO2 and SOCl2 fragment thresholds/yields and lack of free SO signal are examined in section III.B; original intensities are not re-reduced here."
+    },
+    "norwood1989": {
+      "SO_adiabatic_ionization_eV": 10.294,
+      "SO_adiabatic_ionization_uncertainty_eV": 0.004,
+      "SO_ion_product_state": "X2Pi3/2",
+      "SO_vertical_ionization_eV": 10.305,
+      "SO_upper_spin_orbit_ionization_eV": 10.34,
+      "SO_upper_spin_orbit_ionization_uncertainty_eV": 0.005,
+      "SO_ion_spin_orbit_splitting_cm_inverse": 371,
+      "SO_ion_spin_orbit_splitting_uncertainty_cm_inverse": 20,
+      "SSO_adiabatic_ionization_eV": 10.584,
+      "SSO_adiabatic_ionization_uncertainty_eV": 0.005,
+      "SSO_ion_product_state": "X2Aprime",
+      "limitations": "Tables 1-2 describe SO+ and SSO+ vibrational/electronic states; they do not establish a neutral SSO high-temperature partition function. Quoted uncertainties have no stated statistical confidence level."
+    },
+    "interpretation": [
+      "The 1977 0 K threshold minus the 1989 SO adiabatic ionization energy gives 3.451 eV for SSO -> S + SO, the cycle used by Lodders 2004. Do not subtract SSO parent ionization or add the 0.051 eV thermal correction twice.",
+      "The fragment energy is not total atomization to 2 S + O. Full modern atomization requires consistent auxiliary SO/atomic energies and their correlations.",
+      "Lodders, Gurvich and ATcT share the 1977 experimental ancestry; the two newly inspected papers do not independently validate three thermochemical evaluations.",
+      "Primary experimental access gaps are closed. The Gurvich thermal inventory, original fit inputs and remaining modern theoretical/numerical provenance are still incomplete."
+    ]
+  }
+}
