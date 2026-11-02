@@ -81,6 +81,27 @@ of its +/-0.01 eV estimate, so it is not a calibrated statistical error bar.
 The local PDF hash and reading locations are retained in the evidence packet;
 the full article and extracted text are not redistributed.
 
+The supplied `Szajna et al. (2011) article
+<https://doi.org/10.12693/APhysPolA.120.417>`_ now supplies the original
+vibrational constants, beyond the earlier rounded two-term quotation.
+Table IV (p. 421) gives the signed coefficients Y10 through Y50 as
+1682.37499, -29.05111, 0.247654, -0.0014152 and -0.00013 cm^-1.
+Evaluating their five-term polynomial at v=0 gives 833.9555817 cm^-1,
+or 0.1033973143 eV, when the potential-zero/Y00 correction is set to zero.
+Together with the printed De=3.16 eV this gives diagnostic D0=3.0566026857 eV.
+The k=3--5 contribution is only 0.00000383 eV relative to the same first two
+coefficients. It cannot explain the approximately 0.108 eV JANAF/NASA gap.
+
+The polynomial reproduces the printed Table II v=0--5 relative terms within
+0.0003 cm^-1, checking the transcribed signs and powers. This is a check of
+the same fitted low-level spectroscopy, not independent validation of an
+absolute potential minimum. Y50 was fixed to White et al. (1993); neither its
+uncertainty nor the coefficient covariance is given. Individual coefficient
+errors cannot supply a complete zero-point or D0 confidence interval.
+Higher terms and the potential-zero convention remain limitations, and the
+polynomial is not extrapolated to dissociation. The Table IV symbol De is a
+centrifugal-distortion constant, distinct from dissociation De in eV.
+
 ExoMol partition functions require a separate convention check: the full
 nuclear-spin weight for 27AlH is 12. Comparing these directly with a
 thermochemical partition function that omits nuclear-spin degeneracy would
@@ -105,6 +126,18 @@ electronic states and their treatment still limit the physical interpretation.
 The separate derivative audit of the current fit also distinguishes its
 approximate caloric derivatives from the tabulated JANAF functions: its
 reaction-Cp discrepancy reaches about 0.70 J/mol/K over the 26 audited nodes.
+
+The supplied `AloHa publisher article <https://doi.org/10.1093/mnras/stad3802>`_
+confirms this scope. Table 1 includes all 47 Szajna (2011) A--X (0--2)
+transitions in its MARVEL input. Section 4 retains the WYLLoT (2018) X-state
+potential parameters, with a refitted Born--Oppenheimer-breakdown correction;
+the revised model is not an independent dissociation-energy determination.
+Section 5.1 specifies X-state v<=22, J<=60 and A-state v<=1, J<=25 for AlH,
+including quasi-bound levels. Continuum absorption is provided separately.
+Shared spectroscopy and a constrained ground-state potential explain why
+agreement with Szajna or WYLLoT cannot be counted as independent evidence.
+No new state-sum convergence or mixture calculation is claimed by this
+full-text update.
 
 Controlled raw-NASA substitution
 --------------------------------
@@ -178,9 +211,12 @@ uncertainty budget remain unavailable.
 This is stronger evidence than the previously inspected, broad Barklem-Collet
 uncertainty alone. It supports the direction of an energy revision, not using
 3.16 eV directly as D0 or endorsing an entire NASA model from one measurement.
-The 1979 access gap and the 3.17/3.16 eV discrepancy are resolved. The Gurvich
-re-evaluation and Luo source details, exact zero-point/reference reconciliation
-and high-temperature state completeness remain open. The original article
+The 1979 access gap and the 3.17/3.16 eV discrepancy are resolved. The supplied
+2011 constants also close the access gap for the displayed higher zero-point
+terms: their contribution is negligible on the original 0.01 eV scale.
+The Gurvich re-evaluation and Luo source details, potential-zero/reference
+reconciliation, complete uncertainty treatment and high-temperature state
+completeness remain open. The original article
 discusses error sources but supplies no confidence-level definition. Empirical potential
 asymptotes fitted mainly to low-lying levels are not independent dissociation
 measurements.

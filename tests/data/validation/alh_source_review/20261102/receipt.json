@@ -2,7 +2,7 @@
   "schema_version": "1",
   "study": "alh-source-review-20261102",
   "execution_kind": "fresh_offline_execution",
-  "executed_at_utc": "2026-11-02T06:56:55.245729+00:00",
+  "executed_at_utc": "2026-11-02T09:21:19.758254+00:00",
   "command": [
     "/home/kawahara/miniconda3/bin/python",
     "mceg/reviews/alh_source_review.py",
@@ -12,18 +12,18 @@
     "tests/data/validation/alh_source_review/20261102/receipt.json"
   ],
   "python": "3.12.7",
-  "base_commit": "f9f4728fa1f2fe4fa702245a1b326953f70a42ed",
+  "base_commit": "76cc162e75900adddd77a3ebfe00decdc7d72478",
   "implementation_identity": "Selected file hashes include uncommitted files; HEAD alone does not identify this execution.",
   "selected_input_sha256": {
-    "mceg/reviews/alh_source_review.py": "4792668d23e19d8dd0d57b75f804f53965e82723410ec26f3281281bd96394a6",
+    "mceg/reviews/alh_source_review.py": "5129788b3c3e777681f85cb5808866c24bef9d84218b88e47e218e3715bb5719",
     "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
     "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
     "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
     "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
     "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
     "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
-    "tests/data/validation/alh_source_review/20261102/sources.json": "19bae0a407a0ef195630e37c260de751103db231a89beda06e3565c2febeb0b0",
-    "tests/data/validation/alh_source_review/20261102/literature.json": "afb1a038b0a4a8805b05e5e75d9543e3295d2809125c406cfd5cd15fa31b4bbd",
+    "tests/data/validation/alh_source_review/20261102/sources.json": "c1bceda9c51bf95fc21e366bc5504f8413ad3aa6b32e29626163283c90e6809d",
+    "tests/data/validation/alh_source_review/20261102/literature.json": "997dde5ceaaa83a7865576e1b2e66dcbe9f4f54ae1a3a3fda274a8c323e64a3e",
     "tests/data/validation/alh_source_review/20261102/Al-056.txt": "517cff9f229e9446ff2217c326a515e5d3bdfe51fff69330605a0a59cbbb2063",
     "tests/data/validation/alh_source_review/20261102/Al-005.txt": "666ec06681fe525b68eab0c2f297bd1be28144bd3bb7ab27cc48fc67dc76e5e7",
     "tests/data/validation/alh_source_review/20261102/Al-001.txt": "ce4bb740c061a75998b3b4262bbdabf76c010360a7eeb73188476005878a1e58",
@@ -35,10 +35,10 @@
     "tests/data/validation/alh_source_review/20261102/nasa_selected_records.txt": "d1d58617a388caba3f59a67fe477901db53a24f43c4ebb2b11d1359f4943cf9d",
     "tests/data/validation/alh_source_review/20261102/exomol_aloha_27AlH.pf": "273b72ffa36b4db7e930393f35175684ad912e8bebcc722bf90a6843cd95f1ab",
     "tests/data/validation/alh_source_review/20261102/exomol_aloha_27AlH.def": "58aa76d593a6033458d9f692e3082f45ec71824e98942e52b4162b10723f7eec",
-    "tests/data/validation/alh_source_review/20261102/dissociation_evidence.json": "47d2b5a816748d2ff51a14dabd7cce5420c4977bacf4108d1c4d5b362e3203e3"
+    "tests/data/validation/alh_source_review/20261102/dissociation_evidence.json": "9397ede32b416d3c5af6fd8cbaa006af5b79a368f38521d0fe98c2aad9345b3a"
   },
   "output_sha256": {
-    "tests/data/validation/alh_source_review/20261102/comparison.json": "5fcedc535e6888cbc20854df3f48022f8bb89725c8f8659301a8698bc1f3c727"
+    "tests/data/validation/alh_source_review/20261102/comparison.json": "5a3e79ddd7545940804cd4e00ce571a4a3c20f48621d9d262c9a6d03737050ae"
   },
   "scope": "AlH energy and thermal-source audit, not a model adoption or equilibrium execution",
   "result": "passed"

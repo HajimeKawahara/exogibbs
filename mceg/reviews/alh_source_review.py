@@ -165,10 +165,29 @@ def spectroscopic_dissociation() -> dict:
     constants = evidence["zero_point_diagnostic"]
     zpe_cm = constants["omega_e_cm-1"]/2 - constants["omega_ex_e_cm-1"]/4
     zpe_ev = zpe_cm*100*6.62607015e-34*299792458/1.602176634e-19
+    szajna = evidence["szajna2011_zero_point_diagnostic"]
+    coefficients = szajna["signed_Yk0_cm-1"]
+    conversion = 100*6.62607015e-34*299792458/1.602176634e-19
+    five_term_cm = math.fsum(value*.5**k for k, value in enumerate(coefficients, 1))
+    two_term_cm = coefficients[0]/2 + coefficients[1]/4
+    term_checks = []
+    for v, observed in enumerate(szajna["X_v0_relative_terms_cm-1"]):
+        calculated = math.fsum(value*((v+.5)**k-.5**k)
+                               for k, value in enumerate(coefficients, 1))
+        term_checks.append({"v": v, "printed_term_cm-1": observed,
+                            "calculated_term_cm-1": calculated,
+                            "residual_cm-1": calculated-observed})
     return {"printed_De_eV": primary["X_De_eV"], "two_term_ZPE_eV": zpe_ev,
             "diagnostic_D0_eV": primary["X_De_eV"]-zpe_ev,
             "additional_fine_structure_correction_eV": 0.,
-            "interpretation": "The original lower X asymptote already includes the stated fine-structure offset. This two-term zero-point conversion is a diagnostic, not a new threshold determination or uncertainty interval."}
+            "interpretation": "The original lower X asymptote already includes the stated fine-structure offset. Preserve the earlier rounded two-term diagnostic; the supplied Szajna coefficients give the separate five-term check below. Neither is a new threshold determination or uncertainty interval.",
+            "szajna2011_five_term": {
+                "ZPE_cm-1": five_term_cm, "ZPE_eV": five_term_cm*conversion,
+                "diagnostic_D0_eV": primary["X_De_eV"]-five_term_cm*conversion,
+                "higher_than_second_order_ZPE_eV": (five_term_cm-two_term_cm)*conversion,
+                "change_from_previous_rounded_two_term_D0_eV": zpe_ev-five_term_cm*conversion,
+                "term_checks": term_checks,
+                "interpretation": "Evaluate sum(Yk0*(v+1/2)^k), k=1..5, with no Y00/potential-zero correction. Y50 was fixed in the paper; coefficient covariance and its uncertainty were not supplied. Low-v term agreement verifies transcription, not an absolute potential zero, high-v completeness or calibrated D0 uncertainty."}}
 
 
 def review() -> dict:

@@ -113,6 +113,18 @@ def test_printed_dissociation_uses_de_and_does_not_double_count_fine_structure(s
     assert diagnostic["diagnostic_D0_eV"]-anchors["JANAF_D0_eV"] == pytest.approx(.1147813953)
 
 
+def test_supplied_szajna_terms_constrain_the_zero_point_correction(report):
+    diagnostic = report["spectroscopic_dissociation"]["szajna2011_five_term"]
+    # Check the coefficient signs/scales against independent printed low-v
+    # terms, rather than treating a polynomial evaluation as new spectroscopy.
+    assert len(diagnostic["term_checks"]) == 6
+    assert max(abs(row["residual_cm-1"]) for row in diagnostic["term_checks"]) < .0003
+    assert diagnostic["ZPE_cm-1"] == pytest.approx(833.9555817375, abs=1e-9)
+    assert diagnostic["diagnostic_D0_eV"] == pytest.approx(3.056602685669383, abs=1e-12)
+    assert diagnostic["higher_than_second_order_ZPE_eV"] == pytest.approx(3.8266777467e-6)
+    assert abs(diagnostic["change_from_previous_rounded_two_term_D0_eV"]) < 5e-6
+
+
 def test_official_janaf_records_reproduce_frozen_nodes(study):
     inputs = baseline.load_inputs()
     for name, identifier in (("ALH", "AlH"), ("AL", "Al"), ("H", "H1")):

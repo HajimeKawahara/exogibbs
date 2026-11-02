@@ -93,8 +93,8 @@
     {
       "file": "dissociation_evidence.json",
       "url": "https://doi.org/10.1063/1.437749",
-      "inspection": "Selected factual quantities and independently written full-text notes from the locally supplied 1979 article, with zero-point/fine-structure diagnostics. Not a raw article download.",
-      "sha256": "47d2b5a816748d2ff51a14dabd7cce5420c4977bacf4108d1c4d5b362e3203e3",
+      "inspection": "Selected factual quantities and independently written notes from supplied 1979/2011 articles, with two-term and five-term zero-point diagnostics. Not raw article text.",
+      "sha256": "9397ede32b416d3c5af6fd8cbaa006af5b79a368f38521d0fe98c2aad9345b3a",
       "retrieved": "2026-11-02",
       "archived": true
     }
@@ -135,6 +135,30 @@
       "archived": false,
       "inspection": "User-provided publisher PDF, six PDF pages including cover. Complete article printed pp 2399-2403 read; printed p 2399 abstract and p 2401 equations/figure/table visually checked.",
       "archive_policy": "The user-provided full article and extracted full text remain local. The repository retains bibliographic metadata, hash, independently written review notes and selected factual quantities only."
+    },
+    {
+      "file": "2011SzajnaAlHActaPhysPolA.pdf",
+      "local_reference": "ref/refs_exogibbs_202611-2/2011SzajnaAlHActaPhysPolA.pdf",
+      "doi": "10.12693/APhysPolA.120.417",
+      "url": "https://doi.org/10.12693/APhysPolA.120.417",
+      "sha256": "24f16a10d4d1796c7eb56b51d59a687249500e8e5c046a65711e50667394ffc4",
+      "size_bytes": 670937,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "Supplied publisher article pp 417-423 read. Tables II and IV on printed pp 420-421 visually checked, including signs, scale factors, 1-sigma notation and fixed-coefficient footnotes.",
+      "archive_policy": "The supplied full article and extracted full text remain local. The repository retains metadata, hashes, selected factual inputs and independently written review notes only."
+    },
+    {
+      "file": "Yurchenko_2024.pdf",
+      "local_reference": "ref/refs_exogibbs_202611-2/Yurchenko_2024.pdf",
+      "doi": "10.1093/mnras/stad3802",
+      "url": "https://doi.org/10.1093/mnras/stad3802",
+      "sha256": "abde58d486f596de9b1c450407fafc5145822f8c45918f2e8e3989255296d0ab",
+      "size_bytes": 5966030,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "Supplied publisher article inspected in Sections 3.1, 4, 4.1, 5 and 5.1. Table 1 on p 9738 and Table 6/Section 5.1 on p 9744 visually checked. This supplements the previously inspected preprint; AlD transition appendices were not transcribed.",
+      "archive_policy": "The supplied full article and extracted full text remain local. The repository retains metadata, hashes, selected factual inputs and independently written review notes only."
     }
   ]
 }

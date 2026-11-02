@@ -30,15 +30,27 @@ old JANAF estimate, without certifying an exact replacement or an entire
 NASA thermal model. Both the printed abstract and body give De=3.16 eV,
 resolving the registered-abstract value 3.17 eV. The X asymptote already
 incorporates the stated Al fine-structure offset; no extra term-center shift
-is applied. The diagnostic two-term zero-point conversion gives D0=3.0566 eV.
-Gurvich/Luo source access, precise zero-point/reference reconciliation and
-thermal completeness remain open. The original +/-0.01 eV estimate has no
-stated confidence level. No production coefficients change.
+is applied. The earlier rounded two-term zero-point diagnostic is preserved.
+The supplied Szajna (2011) Tables II and IV add a five-term check:
+ZPE=0.1033973143 eV and diagnostic D0=3.0566026857 eV under an explicit
+zero-Y00 convention. The k=3--5 contribution is only 3.83e-6 eV, and printed
+v=0--5 spacings are reproduced within 0.0003 cm^-1. Y50 was fixed in the
+original fit; covariance, its uncertainty and the absolute potential zero are
+not determined here. No calibrated D0 uncertainty follows from the coefficient
+errors. Gurvich/Luo source access, reference reconciliation and thermal
+completeness remain open. The original +/-0.01 eV estimate has no stated
+confidence level. No production coefficients change.
 
 The user-provided ``Baltayan_1979.pdf`` remains local under
 ``ref/refs_exogibbs_202611``. Its SHA-256, size and inspected page locations
 are recorded in ``sources.json`` and ``literature.json``; the full article
 and extracted text are not redistributed or needed for offline replay.
+The supplied ``2011SzajnaAlHActaPhysPolA.pdf`` and ``Yurchenko_2024.pdf``
+remain under ``ref/refs_exogibbs_202611-2`` with the same policy. The latter
+is the AloHa publisher article, not the methane paper. Its state limits,
+shared 47 Szajna transitions and constrained WYLLoT X-state potential are
+recorded separately from the earlier preprint inspection. This update does
+not run a new full line-list state sum or equilibrium substitution.
 
 ``receipt.json`` records a fresh offline execution, selected implementation
 and source hashes, output hash, command and environment. Replay into a new

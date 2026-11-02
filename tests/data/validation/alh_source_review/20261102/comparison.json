@@ -370,7 +370,53 @@
     "two_term_ZPE_eV": 0.10339321271791044,
     "diagnostic_D0_eV": 3.0566067872820897,
     "additional_fine_structure_correction_eV": 0.0,
-    "interpretation": "The original lower X asymptote already includes the stated fine-structure offset. This two-term zero-point conversion is a diagnostic, not a new threshold determination or uncertainty interval."
+    "interpretation": "The original lower X asymptote already includes the stated fine-structure offset. Preserve the earlier rounded two-term diagnostic; the supplied Szajna coefficients give the separate five-term check below. Neither is a new threshold determination or uncertainty interval.",
+    "szajna2011_five_term": {
+      "ZPE_cm-1": 833.9555817375,
+      "ZPE_eV": 0.10339731433061716,
+      "diagnostic_D0_eV": 3.056602685669383,
+      "higher_than_second_order_ZPE_eV": 3.826677746682084e-06,
+      "change_from_previous_rounded_two_term_D0_eV": -4.101612706725044e-06,
+      "term_checks": [
+        {
+          "v": 0,
+          "printed_term_cm-1": 0.0,
+          "calculated_term_cm-1": 0.0,
+          "residual_cm-1": 0.0
+        },
+        {
+          "v": 1,
+          "printed_term_cm-1": 1625.069576,
+          "calculated_term_cm-1": 1625.069586375,
+          "residual_cm-1": 1.037499987432966e-05
+        },
+        {
+          "v": 2,
+          "printed_term_cm-1": 3194.214047,
+          "calculated_term_cm-1": 3194.21407295,
+          "residual_cm-1": 2.5950000235752668e-05
+        },
+        {
+          "v": 3,
+          "printed_term_cm-1": 4708.818208,
+          "calculated_term_cm-1": 4708.8183041249995,
+          "residual_cm-1": 9.612499979994027e-05
+        },
+        {
+          "v": 4,
+          "printed_term_cm-1": 6170.19408,
+          "calculated_term_cm-1": 6170.1941595,
+          "residual_cm-1": 7.949999962875154e-05
+        },
+        {
+          "v": 5,
+          "printed_term_cm-1": 7579.56467,
+          "calculated_term_cm-1": 7579.564953874999,
+          "residual_cm-1": 0.0002838749996953993
+        }
+      ],
+      "interpretation": "Evaluate sum(Yk0*(v+1/2)^k), k=1..5, with no Y00/potential-zero correction. Y50 was fixed in the paper; coefficient covariance and its uncertainty were not supplied. Low-v term agreement verifies transcription, not an absolute potential zero, high-v completeness or calibrated D0 uncertainty."
+    }
   },
   "dissociation_anchors": {
     "interpretation": "Balanced 0 K atomization from source thermal anchors, not extrapolated polynomial values or a new measurement. Compare to experiments only after checking De/D0 and atomic asymptotes.",

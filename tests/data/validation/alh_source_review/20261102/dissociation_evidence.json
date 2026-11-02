@@ -84,7 +84,7 @@
     "omega_ex_e_cm-1": 29.05,
     "formula": "G(0) approximately omega_e/2 - omega_ex_e/4; higher Dunham terms omitted.",
     "ZPE_eV": 0.10339321271791044,
-    "limitation": "This two-term spectroscopic zero-point estimate yields D0 about 3.0566 eV, not a newly fitted threshold or complete uncertainty interval. Higher Dunham terms and uncertainty propagation remain unassessed.",
+    "limitation": "Preserved earlier two-term estimate from rounded secondhand constants. The supplied Szajna 2011 Table IV now permits the separate five-term diagnostic below; neither value is an adopted threshold or calibrated uncertainty interval.",
     "D0_from_printed_primary_De_same_asymptote_eV": 3.0566067872820897
   },
   "al_atomic_fine_structure_diagnostic": {
@@ -118,5 +118,57 @@
     "adopted_uncertainty_eV": 0.13,
     "limitation": "The specific original sources behind the Luo AlH entry have not been inspected. Its similarity to JANAF is not proof of common ancestry."
   },
-  "assessment": "The printed primary De=3.16 eV, less an approximately 0.1034 eV zero-point energy, gives diagnostic D0=3.0566 eV. This is about 0.0064 eV above NASA-derived 3.0502 eV and 0.1148 eV above JANAF-derived 2.9418 eV. The original explicitly incorporates the X/A fine-structure offset; no extra term-center shift is applied. The full text strengthens the preference for a NASA-like energy and resolves the 3.17/3.16 metadata discrepancy, but does not certify the exact NASA value, a statistical uncertainty distribution, or high-temperature thermal functions. Do not adopt 3.16 eV directly as D0."
+  "assessment": "The printed Baltayan De=3.16 eV combined with the supplied Szajna five-term vibrational polynomial gives diagnostic ZPE=0.1033973143 eV and D0=3.0566026857 eV, with no second fine-structure subtraction. The additional k=3..5 terms change ZPE by only 3.83e-6 eV relative to the same first two coefficients. This strengthens the existing conclusion that the missing displayed higher terms do not account for the JANAF/NASA energy gap. The polynomial reproduces printed v=0..5 spacings within 0.0003 cm^-1, but relative spectra do not establish the absolute potential zero or a complete uncertainty interval. The energy preference remains directional; neither the exact NASA energy nor its complete thermal model is certified.",
+  "szajna2011_zero_point_diagnostic": {
+    "doi": "10.12693/APhysPolA.120.417",
+    "local_pdf": {
+      "file": "2011SzajnaAlHActaPhysPolA.pdf",
+      "local_reference": "ref/refs_exogibbs_202611-2/2011SzajnaAlHActaPhysPolA.pdf",
+      "doi": "10.12693/APhysPolA.120.417",
+      "url": "https://doi.org/10.12693/APhysPolA.120.417",
+      "sha256": "24f16a10d4d1796c7eb56b51d59a687249500e8e5c046a65711e50667394ffc4",
+      "size_bytes": 670937,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "Supplied publisher article pp 417-423 read. Tables II and IV on printed pp 420-421 visually checked, including signs, scale factors, 1-sigma notation and fixed-coefficient footnotes.",
+      "archive_policy": "The supplied full article and extracted full text remain local. The repository retains metadata, hashes, selected factual inputs and independently written review notes only."
+    },
+    "source_location": "Tables II (p 420) and IV, Section 4.2 (p 421)",
+    "species": "Neutral AlH X1Sigma+, ground isotopologue used by the AlH/AlD spectroscopic fit",
+    "signed_Yk0_cm-1": [
+      1682.37499,
+      -29.05111,
+      0.247654,
+      -0.0014152,
+      -0.00013
+    ],
+    "coefficient_order": "k=1..5; Y20=-omega_e*x_e, Y30=omega_e*y_e, Y40=omega_e*z_e",
+    "reported_coefficient_standard_errors_cm-1": [
+      0.00017,
+      0.00015,
+      4.4e-05,
+      4.4e-06,
+      null
+    ],
+    "fixed_parameter": "Y50=-1.3e-4 cm^-1 was constrained to White, Dulick and Bernath (1993); no uncertainty is supplied for it here.",
+    "X_v0_relative_terms_cm-1": [
+      0.0,
+      1625.069576,
+      3194.214047,
+      4708.818208,
+      6170.19408,
+      7579.56467
+    ],
+    "X_term_standard_errors_cm-1": [
+      0.0,
+      2.2e-05,
+      3.7e-05,
+      9.6e-05,
+      0.00016,
+      0.00052
+    ],
+    "formula": "G(v)=sum(Yk0*(v+1/2)^k), k=1..5; diagnostic sets Y00/potential-zero correction to zero. Table II provides G(v)-G(0), not an absolute potential minimum.",
+    "limitation": "The displayed higher-order terms can now be included and their printed low-v spacings checked. Coefficient covariance, uncertainty of fixed Y50, terms above k=5 and the absolute potential-zero correction are not determined by these tables. Do not propagate diagonal coefficient errors as a complete ZPE or D0 confidence interval, or extrapolate this polynomial to dissociation.",
+    "notation_guard": "Table IV De is the equilibrium centrifugal-distortion constant in cm^-1, not the dissociation energy De in eV."
+  }
 }
