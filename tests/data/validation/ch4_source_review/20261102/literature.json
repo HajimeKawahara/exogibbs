@@ -1,0 +1,150 @@
+{
+  "identity": {
+    "formula": "CH4",
+    "network_id": "C1H4",
+    "phase": "neutral ideal gas",
+    "ground_state": "Tetrahedral singlet, electronic statistical weight 1",
+    "janaf_symmetry_number": 12,
+    "spectroscopic_isotopologue": "12C1H4",
+    "janaf_molar_mass_g_mol": 16.04276,
+    "nasa_molar_mass_g_mol": 16.04246,
+    "spectroscopic_mass_Da": 16.03130013,
+    "nuclear_spin_product": 16,
+    "spin_note": "Four I=1/2 protons give a spin product 2^4=16. Divide spectroscopic Q by 16 to compare with nuclear-spin-free thermochemistry in the high-temperature equilibrium convention. Td state weights 5,5,2,3,3 are already included. Do not additionally divide by rotational symmetry 12 or confuse the HITRAN state-independent gi=1 with the complete spin product. No isotope-resolved equilibrium is modeled."
+  },
+  "printed_janaf": {
+    "page": 615,
+    "evaluation": "March 1961; current table converted to 1 bar",
+    "Hf0_kJ_mol": -66.911,
+    "Hf298_kJ_mol": -74.873,
+    "reported_uncertainty_kJ_mol": 0.34,
+    "S298_J_mol_K": 186.251,
+    "S298_reported_uncertainty_J_mol_K": 0.04,
+    "uncertainty_definition": "Not separately recovered; do not interpret as 95% limits or propagate independently.",
+    "frequencies_cm-1_with_degeneracy": [
+      [
+        2916.5,
+        1
+      ],
+      [
+        1534.0,
+        2
+      ],
+      [
+        3018.7,
+        3
+      ],
+      [
+        1306,
+        3
+      ]
+    ],
+    "thermal_ancestry": [
+      "Stevenson and Ibers (1960): bond distance and force constants",
+      "Jones and McDowell (1959): vibrational frequencies"
+    ],
+    "energy_ancestry": "Rossini (1931) combustion, recomputed with then-accepted formation enthalpies of water and CO2.",
+    "inspected_nodes_K": [
+      0,
+      298.15,
+      300,
+      1500,
+      2000,
+      3000,
+      4000,
+      6000
+    ]
+  },
+  "atct": {
+    "version": "1.172",
+    "CH4_Hf0_kJ_mol": -66.547,
+    "CH4_Hf298_kJ_mol": -74.516,
+    "CH4_uncertainty_kJ_mol": 0.043,
+    "uncertainty_definition": "Estimated 95% confidence limits; correlated network, not propagated as independent errors.",
+    "top_provenance": [
+      {
+        "reference": "Smith (1946), third-law reanalysis",
+        "contribution_percent": 39.8,
+        "reaction": "2H2(g)+C(graphite)->CH4(g)",
+        "T_K": 1165,
+        "deltaG_kJ_mol": 37.521,
+        "input_uncertainty_kJ_mol": 0.068
+      },
+      {
+        "reference": "Schley (2010), combustion",
+        "contribution_percent": 7.1,
+        "reaction": "CH4(g)+2O2(g)->CO2(g)+2H2O(cr,l)",
+        "T_K": 298.15,
+        "deltaH_kJ_mol": -890.578,
+        "input_uncertainty_kJ_mol": 0.078
+      }
+    ],
+    "correlation_CH3": 0.851,
+    "independence_note": "ATcT combines calorimetry, equilibrium and theory. Thermal functions enter third-law reductions; the energy evaluation does not independently validate the full high-temperature thermal curve."
+  },
+  "wenger2008": {
+    "doi": "10.1016/j.jqsrt.2008.06.006",
+    "source": "HAL hal-00277904 v2, Table 4",
+    "method": "Fitted lower polyads plus statistical rotational and Morse extrapolation of high polyads toward dissociation",
+    "range_K": [
+      100,
+      3000
+    ],
+    "nuclear_spin_included": true,
+    "nodes": [
+      {
+        "T_K": 300,
+        "Q": 602.8,
+        "reported_relative_uncertainty_percent": 0.1
+      },
+      {
+        "T_K": 1000,
+        "Q": 8067.4,
+        "reported_relative_uncertainty_percent": 0.1
+      },
+      {
+        "T_K": 1500,
+        "Q": 40580,
+        "reported_relative_uncertainty_percent": 0.1
+      },
+      {
+        "T_K": 2000,
+        "Q": 191000,
+        "reported_relative_uncertainty_percent": 0.9
+      },
+      {
+        "T_K": 2500,
+        "Q": 897000,
+        "reported_relative_uncertainty_percent": 3.8
+      },
+      {
+        "T_K": 3000,
+        "Q": 4190000,
+        "reported_relative_uncertainty_percent": 8.3
+      }
+    ],
+    "uncertainty_note": "At 300 and 1000 K the reported value is less than 0.1%, represented here as an upper bound. These are model-based estimates, not specified confidence intervals. Nikitin (2015) later questions the high-energy statistical approximation; retain this as a historical diagnostic, not a preferred benchmark."
+  },
+  "mm2024": {
+    "doi": "10.1093/mnras/stae148",
+    "states_count": 9155208,
+    "J_max": 60,
+    "published_partition_range_K": [
+      0,
+      2500
+    ],
+    "downloaded_partition_range_K": [
+      1,
+      5000
+    ],
+    "estimated_completeness_limit_K": 2000,
+    "note": "Calculated energies are replaced by MARVEL energies where available. The downloaded file extends to 5000 K, but the published completeness estimate is 2000 K. No all-state caloric validation to 4000 K is established."
+  },
+  "followups": [
+    "Reconcile CH4 TIPS2021 and TIPS2025 arrays against versioned original datasets and generators; investigate truncation, models and publication/file differences without assuming their cause.",
+    "Read Nikitin (2015) and its 2017 corrected Table 4, including convergence to 3000 K. Do not use the insufficiently precise original fitted coefficients.",
+    "Obtain bound-state and near-dissociation coverage with first and second energy moments through 4000 K, using common isotope and spin conventions.",
+    "Then choose a continuous G/H/S/Cp model and evaluate a finite equilibrium substitution."
+  ],
+  "decision": "Retain the existing JANAF molecular thermal functions, NASA atomic thermal functions and balanced ATcT energy operationally. Neither raw NASA nor a wholesale MM/TIPS replacement is justified over 1500-4000 K. The physical accuracy of the existing thermal model remains unknown."
+}

@@ -1,0 +1,123 @@
+{
+  "retrieval_date": "2026-11-02",
+  "downloads": [
+    {
+      "id": "janaf_print",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+      "file": "janaf_ch4_615.pdf",
+      "sha256": "1793f484835571ea092c92cacc9983f597bfb26a956933df21ee26e9d8acd5ff",
+      "retrieved_date": "2026-11-02",
+      "inspection": "Printed page 615, Carbon PDF page 67; March 1961 evaluation. Copied from the official full PDF retrieved in the preceding C2H investigation; this page was visually inspected.",
+      "full_download_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+      "full_download_bytes": 12474349
+    },
+    {
+      "id": "mm_partition",
+      "url": "https://www.exomol.com/db/CH4/12C-1H4/MM/12C-1H4__MM.pf",
+      "file": "exomol_mm.pf",
+      "sha256": "b399c44980d139b11bfb374a033f8c51bb42c12e5ba9bfd1726156b9d441bb7d",
+      "retrieved_date": "2026-11-02",
+      "inspection": "Downloaded table covers 1-5000 K; this does not extend the published completeness estimate of 2000 K.",
+      "full_download_sha256": "b399c44980d139b11bfb374a033f8c51bb42c12e5ba9bfd1726156b9d441bb7d",
+      "full_download_bytes": 125000
+    },
+    {
+      "id": "mm_definition",
+      "url": "https://www.exomol.com/db/CH4/12C-1H4/MM/12C-1H4__MM.def",
+      "file": "exomol_mm.def",
+      "sha256": "c76449071900b94043128a74575912e20801222f49826ab1d5a6026f1bcff5bb",
+      "retrieved_date": "2026-11-02",
+      "inspection": "Version 20240113; maximum temperature 2000 K; 12CH4 mass 16.03130013 Da, Td nuclear weights 5, 5, 2, 3, 3.",
+      "full_download_sha256": "c76449071900b94043128a74575912e20801222f49826ab1d5a6026f1bcff5bb",
+      "full_download_bytes": 14197
+    },
+    {
+      "id": "mm_paper",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/24YuOwKe.pdf",
+      "file": "mm2024_partition_page.pdf",
+      "sha256": "0a52d09909791ee5cc93484340c8b8842440caaa25ad62b44c5d447b5e4856be",
+      "retrieved_date": "2026-11-02",
+      "inspection": "Yurchenko et al. 2024, DOI 10.1093/mnras/stae148, p3725 (PDF page7), section5.2 and Fig4. Full paper inspected; this page extracted with Ghostscript pdfwrite.",
+      "full_download_sha256": "52e81388b0a17b8bde63ab993e03e63839912b1f28130bcd887a92d4a63ee4c2",
+      "full_download_bytes": 1955702
+    },
+    {
+      "id": "hitran_current",
+      "url": "https://hitran.org/data/Q/q32.txt",
+      "file": "hitran_q32_20261102.txt",
+      "sha256": "114694a9c8f5faa79880bb016eff165dabe020b1d96f089d6ef585ca4fb9bc76",
+      "retrieved_date": "2026-11-02",
+      "inspection": "Current official q32 downloaded on 2026-11-02; range 1-2500 K. The official supplementary page labels current tables TIPS2025. Independently matched HAPI TIPS_2025 M=6, I=1 to displayed precision at the inspected 1000, 1500, 2000 and 2500 K nodes.",
+      "full_download_sha256": "114694a9c8f5faa79880bb016eff165dabe020b1d96f089d6ef585ca4fb9bc76",
+      "full_download_bytes": 89998
+    },
+    {
+      "id": "hapi_2021",
+      "url": "https://raw.githubusercontent.com/hitranonline/hapi/5353f4021d4b344eb9dd3484feeab9d483f30faa/hapi/hapi.py",
+      "file": "hapi_tips2021_ch4.txt",
+      "sha256": "83168b056cc621a62137894fdb5b88a21bb0a4fb6a15247319f2a728b6d33c39",
+      "retrieved_date": "2026-11-02",
+      "inspection": "Exact TIPS_2021 M=6, I=1 temperature and Q arrays extracted by AST assignments, without interpolation. Full source not vendored; its content hash and GitHub commit are recorded.",
+      "full_download_sha256": "3b3a18a8b173eda3b3b1c972e2c51dcc9c39054f50f90b7553f93be29cde0b20",
+      "full_download_bytes": 4073469
+    },
+    {
+      "id": "wenger2008",
+      "url": "https://hal.science/hal-00277904v2/document",
+      "file": "wenger2008_table4.pdf",
+      "sha256": "f6e02a38e91f03040f0b725088388379187d37b28bcbea9d6c689ed26d639c65",
+      "retrieved_date": "2026-11-02",
+      "inspection": "Wenger, Champion and Boudon (2008), DOI 10.1016/j.jqsrt.2008.06.006, HAL v2 Table 4; full paper inspected, table excerpt archived.",
+      "full_download_sha256": "3df60ab1c23513346e1f5991e17326fa95eeb8e4a31e4bd3cfc39b745522bb2b",
+      "full_download_bytes": 457261
+    }
+  ],
+  "existing_inputs": {
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "examples/comparisons/data/curated_continuous_reference.json": "42e5e8da8eb60b74213f7a8a6ff4894d67b5216e513247eb03b9c796bbc4aa25",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749"
+  },
+  "hapi_commit_metadata": {
+    "sha": "5353f4021d4b344eb9dd3484feeab9d483f30faa",
+    "html_url": "https://github.com/hitranonline/hapi/commit/5353f4021d4b344eb9dd3484feeab9d483f30faa",
+    "date": "2026-04-23T10:09:40Z"
+  },
+  "additional_inspections": [
+    {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=22",
+      "inspection": "Official species page via browser: formation enthalpies, 95% limits, top provenance and correlations. Direct download returned 403; structured transcription is in literature.json."
+    },
+    {
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25GaViTe.pdf",
+      "sha256": "9e10ce2fc4b90b486768bece3c21f6deaf0d96852ed85fd028e5b545225f1161",
+      "inspection": "Full PDF downloaded and inspected: Table 1 CH4 Tmax=2500 K and section 2 spin conventions. No CH4-specific explanation of the large 2021/2025 difference was located. Not vendored."
+    },
+    {
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25GaViTea.pdf",
+      "inspection": "Browser inspection: this corrigendum concerns lost symmetry labels of 16O14N18O, not CH4."
+    },
+    {
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/S0022407315002794",
+      "inspection": "Publisher abstract and introduction only: Nikitin et al. (2015) question the high-energy statistical extrapolation of Wenger et al. Full numerical tables were not accessed."
+    },
+    {
+      "url": "https://khazna.ku.ac.ae/en/publications/erratum-nikitin-et-al-methane-high-temperature-partition-function/",
+      "inspection": "Author institution erratum abstract: insufficient digits in Table 4 of the 2015 paper; conclusions unchanged. Corrected numerical coefficients were not accessed."
+    }
+  ],
+  "failed_access": [
+    "Fresh direct JANAF C-067.txt download returned 403; use the existing frozen official excerpt and the inspected printed page.",
+    "Nikitin 2015 full paper and corrected 2017 Table 4 were not obtained.",
+    "TIPS2021 PDF URLs returned 404; use the version-labelled official HAPI arrays and the MM2024 reference, not a guessed PDF."
+  ],
+  "search_queries": [
+    "methane partition function high temperature MM 10to10",
+    "The partition sum of methane at high temperature Wenger Champion Boudon",
+    "Methane high-temperature partition function contact transformations variational calculations erratum",
+    "HITRAN TIPS2025 methane partition function",
+    "ATcT 1.172 methane 74-82-8"
+  ]
+}

@@ -22,6 +22,7 @@ HCN differences with optional MCEG tooling.
    _generated/catalog
    optional_inspection
    volatile_sources
+   ch4_source_review
    new_fastchem_logk
    fastchem_hcn_followup
    gas_source_comparison
