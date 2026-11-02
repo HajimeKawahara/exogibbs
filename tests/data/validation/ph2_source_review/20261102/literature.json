@@ -1,0 +1,375 @@
+{
+  "review_date": "2026-11-02",
+  "species": {
+    "formula": "PH2",
+    "model_name": "H2P1",
+    "name": "Phosphino radical",
+    "phase": "gas",
+    "charge": 0,
+    "composition": {
+      "P": 1,
+      "H": 2
+    },
+    "connectivity": "H-P-H",
+    "CAS": "13765-43-0",
+    "InChI": "InChI=1S/H2P/h1H2",
+    "ground_state": "X2B1",
+    "point_group": "C2v",
+    "electronic_multiplicity": 2,
+    "rotational_symmetry_number": 2,
+    "identity_sources": [
+      "janaf_printed1998",
+      "cccbdb_ph2",
+      "jakubek2006"
+    ]
+  },
+  "scope": "Scientific provenance and candidate assessment; no runtime or curated-data adoption.",
+  "sources": [
+    {
+      "id": "janaf_H-079",
+      "url": "https://janaf.nist.gov/tables/H-079.txt",
+      "archived_file": "H-079.txt",
+      "sha256": "3609186fa0bd468de799bb6fe66c9ef48e1718918e76d6b6e600c443e9113cd4",
+      "identity": "H2P1(g)",
+      "role": "PH2 molecular thermal functions and current online formation columns",
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "id": "janaf_H-001",
+      "url": "https://janaf.nist.gov/tables/H-001.txt",
+      "archived_file": "H-001.txt",
+      "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+      "identity": "H1(g)",
+      "role": "Hydrogen atom",
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "id": "janaf_P-008",
+      "url": "https://janaf.nist.gov/tables/P-008.txt",
+      "archived_file": "P-008.txt",
+      "sha256": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
+      "identity": "P1(g)",
+      "role": "Phosphorus atom; P-005 is not the gas atom table",
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "id": "janaf_P-001",
+      "url": "https://janaf.nist.gov/tables/P-001.txt",
+      "archived_file": "P-001.txt",
+      "sha256": "06086a8d0f26ace07c4d0207646987a2cff605380e69b89af9a21da28649c81b",
+      "identity": "P1(ref)",
+      "role": "Elemental phosphorus reference across phase changes",
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "id": "janaf_H-050",
+      "url": "https://janaf.nist.gov/tables/H-050.txt",
+      "archived_file": "H-050.txt",
+      "sha256": "091490382968f81736db19f9cf60cc233e47a5130403e100d9d6a5108f65c9f0",
+      "identity": "H2(ref)",
+      "role": "Elemental hydrogen reference",
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "id": "janaf_printed1998",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Hydrogen.pdf",
+      "title": "NIST-JANAF Thermochemical Tables, Fourth Edition, Hydrogen section",
+      "publication_year": 1998,
+      "printed_page": 1339,
+      "pdf_page_1based": 79,
+      "source_pdf_sha256": "7c06e41eb753635a560e491c41ed04d2a5608fce3a656843b858aefb8e138427",
+      "archived_file": "janaf_ph2_printed_1339.pdf",
+      "sha256": "a0967cb9dac9298eaccc17faf8ea9cef1c78139d5d736f9ca86a8cf9ca51e220",
+      "extraction": "pdfseparate -f 79 -l 79; one original PDF page, without OCR or changes to the contents. Whole-source PDF downloaded for review only.",
+      "inspection": "Page rendered at high resolution and visually inspected; the original scan has no usable embedded text. Sampled rows transcribed in printed_ph2_nodes.json.",
+      "facts": {
+        "table_review_date": "March 1963",
+        "Hf0_kJ_mol": 112.321,
+        "Hf298_kJ_mol": 108.499,
+        "printed_note_Hf0_kJ_mol": 112.3,
+        "printed_note_Hf298_kJ_mol": 108.5,
+        "printed_note_uncertainty_kJ_mol": 96.2,
+        "S298_J_mol_K": 212.652,
+        "ground_state_weight": 2,
+        "rotational_symmetry_number": 2,
+        "point_group": "C2v",
+        "assumed_bond_length_A": 1.419,
+        "assumed_bond_angle_degrees": 93.7,
+        "assumed_vibrational_wavenumbers_cm_inverse": [
+          2327,
+          1020,
+          2322
+        ]
+      },
+      "interpretation": "The energy is an estimate based on assigning PH2 63 percent of the PH3 dissociation energy. Geometry and vibration inputs were estimated by analogy with PH3; this is not a modern measured partition function. The published uncertainty is not supplied with a probability convention. Online and printed formation columns differ, while the sampled molecular thermal columns agree."
+    },
+    {
+      "id": "lodders1999",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.556046.pdf",
+      "doi": "10.1063/1.556046",
+      "authors": [
+        "Katharina Lodders"
+      ],
+      "title": "Revised Thermochemical Properties of Phosphinidene (PH), Phosphine (PH3), Phosphorus Nitride (PN), and Magnesium Phosphate (Mg3P2O8)",
+      "journal": "Journal of Physical and Chemical Reference Data 28, 1705-1712 (1999)",
+      "source_pdf_sha256": "1d8acace213f70a0ede0a923d693deb2ef1d9fbaf48900b46fb3f3211dcca57f",
+      "inspection": "Official NIST-hosted complete PDF downloaded; introduction p1705, Table2 p1706 and reference conversion discussion p1710 read. PDF not vendored.",
+      "short_quote": "only PH2(g) has a corrected table in the 4th edition of the NIST-JANAF Tables.",
+      "quote_note": "Subscripts and typographic parentheses normalized.",
+      "facts": {
+        "reference_change": "JANAF third edition changed the phosphorus reference from red-V to white phosphorus; five compounds initially escaped the change. PH2 was corrected in the printed fourth edition.",
+        "white_minus_redV_formation_enthalpy_per_P_kJ_mol": -17.46,
+        "P_reference_ranges_K": {
+          "white_solid": [
+            298.15,
+            317.3
+          ],
+          "liquid": [
+            317.3,
+            1180.008
+          ],
+          "P2_gas": "Above 1180.008 K; half a mole P2 per mole P atoms."
+        }
+      },
+      "limitations": [
+        "The paper documents the printed-table correction, not the mechanism behind current online H-079 formation columns.",
+        "Online 125.938 minus printed 108.499 is 17.439 kJ/mol; do not silently replace that observed difference with Lodders rounded/contemporary 17.460 correction.",
+        "A reference change must be applied consistently to the atoms and molecules of a balanced reaction."
+      ]
+    },
+    {
+      "id": "nasa2002",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "title": "NASA Glenn Coefficients for Calculating Thermodynamic Properties of Individual Species",
+      "report": "NASA/TP-2002-211556",
+      "source_pdf_sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "archived_file": "nasa_selected_records.txt",
+      "sha256": "72beb17ab272e2b12bf9b3a79416f94cfdb746845b9e07a3b5165f783d1bc187",
+      "inspection": "Official PDF Appendix D text inspected: PH2 printed p169, P p166, H p126. Selected records extracted with each line stripped of leading/trailing layout whitespace. Coefficients retained as printed.",
+      "facts": {
+        "PH2_record": "tpis89",
+        "PH2_Hf298_J_mol": 119553.47,
+        "PH2_H298_minus_H0_J_mol": 9981.571,
+        "PH2_intervals_K": [
+          [
+            200,
+            1000
+          ],
+          [
+            1000,
+            6000
+          ]
+        ],
+        "PH2_reference": "Gurvich, 1989 part1 p422, part2 p273.",
+        "P_reference": "Hf: Cox,1989. Martin,1985. Gordon,1999.",
+        "P_Hf298_J_mol": 316500.0
+      },
+      "limitations": [
+        "The source authenticates the selected polynomial; it is not an independent measurement beyond its source compilation.",
+        "The original Gurvich pages were not recovered, so its experimental selection and reference conversion cannot be reconstructed here.",
+        "The stated polynomial interval does not establish physical accuracy throughout200-6000 K."
+      ]
+    },
+    {
+      "id": "cccbdb_ph2",
+      "url": "https://cccbdb.nist.gov/exp2x.asp?casno=13765430&charge=0",
+      "title": "NIST CCCBDB experimental data for PH2 (Phosphino radical)",
+      "inspection": "Official neutral-species HTML read, including identity, state, thermal table, geometry and bibliography.",
+      "facts": {
+        "ground_state": "2B1",
+        "point_group": "C2v",
+        "Hf298_kJ_mol": 119.55,
+        "Hf0_kJ_mol": 123.4,
+        "quoted_uncertainty_kJ_mol": 6.2,
+        "S298_J_mol_K": 212.61,
+        "Cp298_J_mol_K": 34.45,
+        "H298_minus_H0_kJ_mol": 9.98,
+        "thermochemical_reference": "Gurvich, Veyts, Alcock, Thermodynamic Properties of Individual Substances, Fourth Edition,1989."
+      },
+      "limitations": [
+        "This shares Gurvich ancestry with NASA; agreement is not independent corroboration.",
+        "Uncertainty convention and white/red reference state are not explicitly specified in this page.",
+        "The page attaches a silicon-cluster paper to a PH2 bending frequency; use the PH2 primary spectroscopy instead of that suspect citation."
+      ]
+    },
+    {
+      "id": "burcat_ph2",
+      "url": "https://respecth.elte.hu/burcat/BURCAT.THR.txt",
+      "inspection": "Complete author database mirror downloaded; PH2 commentary at line 32539 and four-line record starting 32545 directly inspected. Snapshot header last additions 3 January 2023, PH2 record A 5/05.",
+      "source_file_sha256": "42a597ff852d1a2995f81d4fdca069f3cdcaef77ead5e3c66e02e80ed6699101",
+      "archived_file": "burcat_ph2_record.txt",
+      "sha256": "7cdd57e26c64a56c6555af29ac9962d7f8a8d7ee272e314e038d6a5186a12424",
+      "facts": {
+        "selected_method": "Burcat G3B3 calculation",
+        "selected_Hf298_kJ_mol": 135.47,
+        "selected_Hf0_kJ_mol": 139.33,
+        "quoted_Hf0_uncertainty_kJ_mol": 8,
+        "interval_K": [
+          200,
+          6000
+        ],
+        "ground_state_weight": 2,
+        "rotational_symmetry_number": 2,
+        "listed_frequencies_cm_inverse": [
+          2383,
+          2371,
+          1154
+        ],
+        "excited_state_origin_cm_inverse": 18276.6,
+        "cited_alternatives_Hf298_kJ_mol": {
+          "Ricca_Bauschlicher1998": 133.18,
+          "Gurvich 1989": 119.553,
+          "JANAF1963": 125.94,
+          "Haworth_Bacskay2002": 131.8
+        },
+        "cited_Haworth_uncertainty_kJ_mol": 4.2
+      },
+      "limitations": [
+        "The selection is G3B3, not a copy of Gurvich. The cited alternatives are not additional measurements in this record.",
+        "White versus red-V phosphorus for the selected calculation is not explicit in the inspected PH2 record; atomic references and thermal model need review before adoption.",
+        "The meanings of listed vibrational frequencies and the full high-temperature electronic treatment are not derived by the comment alone."
+      ]
+    },
+    {
+      "id": "matus2007_2009",
+      "url": "https://pubs.acs.org/doi/10.1021/jp811432s",
+      "doi": "10.1021/jp811432s",
+      "original_doi": "10.1021/jp067892v",
+      "archived_file": "matus2009_ph2_table3.json",
+      "sha256": "22dee30b29b7e1e68039157e3017d046e38be446e7321893022c5197455369cf",
+      "inspection": "Publisher-indexed 2009 correction with full Table 3 and footnotes read; 2007 publisher abstract and supporting-information description read. Direct download HTTP403.",
+      "facts": {
+        "method": "CCSD(T) with complete-basis extrapolation, core-valence and scalar-relativistic corrections and scaled zero-point energies.",
+        "PH2_Hf298_kJ_mol": 133.0512,
+        "estimated_error_bar_kJ_mol": 4.184,
+        "quoted_experimental_Hf298_kJ_mol": 138.4904,
+        "quoted_experimental_uncertainty_kJ_mol": 2.5104
+      },
+      "limitations": [
+        "Correction concerns nitrogen entries; count the 2007 and 2009 versions as one theoretical source.",
+        "The original experimental cycle is not inspected. Reference-state identity for these numbers is not established from the accessible table; do not compare them as fully harmonized atomization energies."
+      ]
+    },
+    {
+      "id": "berkowitz_cho1989",
+      "url": "https://doi.org/10.1063/1.456522",
+      "title": "A photoionization study of PH: PH2 revisited",
+      "journal": "Journal of Chemical Physics 90, 1-6 (1989)",
+      "inspection": "Publisher-registered Crossref abstract and bibliography retrieved; full paper not obtained.",
+      "crossref_response_sha256": "2f44cad7dbe2781b1d5bd4b090d1fd2b0c46fe7547886ca78cb37963caac330f",
+      "facts": {
+        "experiment": "Photoionization of PH2 produced by H+PH3; comparison with earlier benzylphosphine pyrolysis results.",
+        "caution": "The approximately 0.70 eV splitting in the abstract is between PH2+ cation states; it is not the neutral PH2 electronic gap."
+      },
+      "limitations": [
+        "The33.1\u00b10.6kcal/mol formation value is verified as quoted by Matus, not rederived from this experiment.",
+        "The original atom/PH3 anchors, white/red phosphorus reference and statistical interpretation of the uncertainty remain unverified."
+      ]
+    },
+    {
+      "id": "ricca_bauschlicher1998",
+      "url": "https://doi.org/10.1016/S0009-2614(97)01468-1",
+      "primary_repository_url": "https://ntrs.nasa.gov/citations/20020052015",
+      "title": "Accurate heats of formation for PHn, PHn+, and PHn-",
+      "journal": "Chemical Physics Letters 285, 455-458 (1998)",
+      "inspection": "NASA NTRS author abstract and Crossref bibliographic metadata inspected; original full paper not obtained.",
+      "crossref_response_sha256": "9cf526d3f4bce95909b7ecfa3f7d42a75f52d52d34e09845b1587aba8f6a7893",
+      "facts": {
+        "method": "CCSD(T) extrapolated energetics, B3LYP geometry/frequencies, experimental spin-orbit effects; author abstract describes thermal polynomials300-4000 K."
+      },
+      "limitations": [
+        "The 133.18 kJ/mol value is a Burcat quotation, not independently checked in the full primary table."
+      ]
+    },
+    {
+      "id": "haworth_bacskay2002",
+      "url": "https://doi.org/10.1063/1.1521760",
+      "title": "Heats of formation of phosphorus compounds determined by current methods of computational quantum chemistry",
+      "journal": "Journal of Chemical Physics 117, 11175-11187 (2002)",
+      "inspection": "Publisher-registered Crossref abstract and bibliographic metadata inspected; original full paper not obtained.",
+      "crossref_response_sha256": "dc8c16bb5bf13b1a29528603cf13104dc208eefb15c8f564f3046d092670d1b7",
+      "facts": {
+        "method": "Restricted-reference CCSD(T)/CBS atomization with core-valence, relativistic and core-valence basis-set-superposition corrections; B3LYP geometries/frequencies."
+      },
+      "limitations": [
+        "The131.8\u00b14.2kJ/mol species value is verified only in the Burcat citation. Abstract method information is insufficient to reconstruct its phosphorus reference."
+      ]
+    },
+    {
+      "id": "jakubek2006",
+      "url": "https://www.ucl.ac.uk/~ucapsy0/pdf/06JaBuZa.pdf",
+      "doi": "10.1063/1.2168155",
+      "title": "A dispersed fluorescence and ab initio investigation of the X2B1 and A2A1 electronic states of the PH2 molecule",
+      "journal": "Journal of Chemical Physics 124, 094306 (2006)",
+      "inspection": "Author-hosted full PDF parsed through web tool; introduction,Tables II and III, and discussion read. Local download HTTP403; no byte hash available.",
+      "facts": {
+        "neutral_ground_state": "X2B1",
+        "excited_state": "A2A1",
+        "A_state_origin_cm_inverse": 18276.6,
+        "origin_provenance": "TableII quotes earlier observed value.",
+        "measured_ground_bend_cm_inverse": 1102,
+        "bend_quoted_uncertainty_cm_inverse": 3,
+        "measured_ground_symmetric_stretch_cm_inverse": 2298,
+        "stretch_quoted_uncertainty_cm_inverse": 3,
+        "computed_ground_antisymmetric_stretch_cm_inverse": 2314,
+        "ground_equilibrium_bond_length_A": 1.4183,
+        "ground_equilibrium_angle_degrees": 91.81,
+        "geometry_method": "CCSD(T)/cc-pV5Z frozen core; calculated, not a measured structure."
+      },
+      "limitations": [
+        "Provides measured vibronic levels and a coupled-state model, not a full validated 1500-4000 K thermodynamic table.",
+        "Measured fundamentals cannot be inserted as harmonic frequencies without specifying the anharmonic/rovibronic treatment.",
+        "The neutral A-X gap is distinct from PH2+ cation splittings."
+      ]
+    },
+    {
+      "id": "atct1172_search",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "inspection": "Official listing identifies 3286 species and version 1.172 (as of 2024-09-01). Searches within retrieved listing for PH2, H2P, and Phosph returned no matching text. Direct local fetch HTTP403.",
+      "conclusion": "No PH2 anchor identified in this version; no ATcT PH2 energy adopted.",
+      "limitations": [
+        "This is a scoped negative lookup, not proof of absence from every ATcT version or unpublished network.",
+        "The ATcT citation in Matus table footnote l applies to NH3, not PH2."
+      ]
+    }
+  ],
+  "correlations_and_reference_states": [
+    "NASA 2002 and CCCBDB quote the same Gurvich 1989 evaluation; their agreement cannot be counted as two independent energy determinations.",
+    "Current JANAF online and printed fourth-edition values are not interchangeable. Lodders verifies historical red-V to white-P correction in the printed PH2 table. Online formation columns require a separate numerical integrity audit.",
+    "The modern theory values and Matus quoted experiment are promising leads. Their white/red elemental anchors have not been established here; no unqualified numerical ranking against NASA or printed JANAF is justified.",
+    "Matus 2007 and its2009 correction are one study. Burcat references to Ricca and Haworth are quotations rather than new independent data.",
+    "Any replacement must compare the balanced P(g)+2H(g)->PH2(g) reaction using compatible atomic and molecular anchors, not isolated formation enthalpies from unidentified phosphorus gauges.",
+    "No covariance information is available for the inspected non-ATcT values; quoted error bars are not combined into a synthetic uncertainty."
+  ],
+  "recommendation": {
+    "runtime_action": "Retain the current curated PH2 value for this investigation PR; mark the species inherited and unresolved, not validated.",
+    "reason": "The old JANAF estimate has weak energy/thermal support, but online-versus-print reference issues, missing original Gurvich details, and unharmonized modern atomization anchors prevent certification of a replacement. NASA is useful as a controlled alternative, not established scientific truth.",
+    "scientific_priority": "Audit the modern CCSD(T)/CBS and photoionization evidence and its atomic/white-P references before choosing an energy. Combine a selected balanced energy with a separately justified thermal model informed by PH2 spectroscopy.",
+    "required_before_adoption": [
+      "Recover and evaluate the original Berkowitz thermochemical cycle and the Ricca/Haworth/Matus atomic-reference details.",
+      "Harmonize white-P/red-V, 0 K/298 K, and P/H atomic formation references.",
+      "Audit a full temperature-dependent model, including anharmonic vibration and neutral excited-state treatment, over the actual target interval.",
+      "Repeat controlled finite equilibrium perturbations and retain a legacy dataset if a later default change is justified."
+    ],
+    "interpretation_of_current_provenance": "Numerical closeness of the current FastChem PH2 fit to the printed corrected JANAF family can clarify its origin; it does not independently validate the1963 estimated physical energy."
+  },
+  "archived_files": {
+    "H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "H-050.txt": "091490382968f81736db19f9cf60cc233e47a5130403e100d9d6a5108f65c9f0",
+    "H-079.txt": "3609186fa0bd468de799bb6fe66c9ef48e1718918e76d6b6e600c443e9113cd4",
+    "P-001.txt": "06086a8d0f26ace07c4d0207646987a2cff605380e69b89af9a21da28649c81b",
+    "P-008.txt": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
+    "burcat_ph2_record.txt": "7cdd57e26c64a56c6555af29ac9962d7f8a8d7ee272e314e038d6a5186a12424",
+    "janaf_ph2_printed_1339.pdf": "a0967cb9dac9298eaccc17faf8ea9cef1c78139d5d736f9ca86a8cf9ca51e220",
+    "matus2009_ph2_table3.json": "22dee30b29b7e1e68039157e3017d046e38be446e7321893022c5197455369cf",
+    "nasa_selected_records.txt": "72beb17ab272e2b12bf9b3a79416f94cfdb746845b9e07a3b5165f783d1bc187",
+    "printed_ph2_nodes.json": "bb553e89a6ee2e78e4a30ae21c7b6a6d244786f1bc04cfa0825016b8905ac050"
+  },
+  "search_limitations": [
+    "Original Gurvich 1989PH2 pages not recovered.",
+    "Original Berkowitz 1989, Ricca 1998, Haworth 2002 full texts not recovered; access status distinguishes direct evidence from subsequent quotations.",
+    "Matus 2009 publisher-indexed table and Jakubek 2006 author PDF were readable through web search/open but not locally downloadable.",
+    "No exhaustive survey of all post-2009 PH2 energetics or all ATcT versions is claimed.",
+    "Solid high-pressure PH2 phases and ligand fragments named PH2 are outside the neutral gas-radical scope."
+  ]
+}

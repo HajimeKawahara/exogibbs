@@ -1,0 +1,110 @@
+{
+  "schema_version": "1",
+  "review_date": "2026-11-02",
+  "downloads": [
+    {
+      "file": "H-001.txt",
+      "url": "https://janaf.nist.gov/tables/H-001.txt",
+      "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "file": "H-050.txt",
+      "url": "https://janaf.nist.gov/tables/H-050.txt",
+      "sha256": "091490382968f81736db19f9cf60cc233e47a5130403e100d9d6a5108f65c9f0",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "file": "H-079.txt",
+      "url": "https://janaf.nist.gov/tables/H-079.txt",
+      "sha256": "3609186fa0bd468de799bb6fe66c9ef48e1718918e76d6b6e600c443e9113cd4",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "file": "P-001.txt",
+      "url": "https://janaf.nist.gov/tables/P-001.txt",
+      "sha256": "06086a8d0f26ace07c4d0207646987a2cff605380e69b89af9a21da28649c81b",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "file": "P-008.txt",
+      "url": "https://janaf.nist.gov/tables/P-008.txt",
+      "sha256": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Official tab-separated bytes downloaded and identity/header inspected."
+    },
+    {
+      "file": "burcat_ph2_record.txt",
+      "url": "https://respecth.elte.hu/burcat/BURCAT.THR.txt",
+      "sha256": "7cdd57e26c64a56c6555af29ac9962d7f8a8d7ee272e314e038d6a5186a12424",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Complete author database mirror downloaded; PH2 commentary at line 32539 and four-line record starting 32545 directly inspected. Snapshot header last additions 3 January 2023, PH2 record A 5/05."
+    },
+    {
+      "file": "janaf_ph2_printed_1339.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Hydrogen.pdf",
+      "sha256": "a0967cb9dac9298eaccc17faf8ea9cef1c78139d5d736f9ca86a8cf9ca51e220",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Page rendered at high resolution and visually inspected; the original scan has no usable embedded text. Sampled rows transcribed in printed_ph2_nodes.json."
+    },
+    {
+      "file": "matus2009_ph2_table3.json",
+      "url": "https://pubs.acs.org/doi/10.1021/jp811432s",
+      "sha256": "22dee30b29b7e1e68039157e3017d046e38be446e7321893022c5197455369cf",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Publisher-indexed 2009 correction with full Table 3 and footnotes read; 2007 publisher abstract and supporting-information description read. Direct download HTTP403."
+    },
+    {
+      "file": "nasa_selected_records.txt",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "sha256": "72beb17ab272e2b12bf9b3a79416f94cfdb746845b9e07a3b5165f783d1bc187",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Official PDF Appendix D text inspected: PH2 printed p169, P p166, H p126. Selected records extracted with each line stripped of leading/trailing layout whitespace. Coefficients retained as printed."
+    },
+    {
+      "file": "printed_ph2_nodes.json",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Hydrogen.pdf",
+      "sha256": "bb553e89a6ee2e78e4a30ae21c7b6a6d244786f1bc04cfa0825016b8905ac050",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "inspection": "Selected PH2 rows manually transcribed from the archived printed page; source PDF and page identity recorded in the JSON."
+    }
+  ],
+  "identity": {
+    "formula": "PH2",
+    "model_name": "H2P1",
+    "name": "Phosphino radical",
+    "phase": "gas",
+    "charge": 0,
+    "composition": {
+      "P": 1,
+      "H": 2
+    },
+    "connectivity": "H-P-H",
+    "CAS": "13765-43-0",
+    "InChI": "InChI=1S/H2P/h1H2",
+    "ground_state": "X2B1",
+    "point_group": "C2v",
+    "electronic_multiplicity": 2,
+    "rotational_symmetry_number": 2,
+    "identity_sources": [
+      "janaf_printed1998",
+      "cccbdb_ph2",
+      "jakubek2006"
+    ]
+  },
+  "additional_source_provenance": "literature.json records inspected sources, access limits, parent hashes and distinctions between direct evidence and quotations."
+}
