@@ -97,6 +97,22 @@ def test_printed_online_and_elemental_reference_agree(report):
     assert max(abs(row["fit_minus_JANAF_reaction_Cp_J_mol_K"]) for row in fit["samples"]) < .71
 
 
+def test_printed_dissociation_uses_de_and_does_not_double_count_fine_structure(study, report):
+    evidence = json.loads((study["DATA"] / "dissociation_evidence.json").read_text())
+    diagnostic = report["spectroscopic_dissociation"]
+    primary = evidence["baltayan_nedelec1979"]
+    assert primary["publisher_metadata_discrepancy"]["registered_abstract_X_De_eV"] == 3.17
+    assert diagnostic["printed_De_eV"] == 3.16
+    assert primary["atomic_asymptote"]["X_limit_below_A_limit_cm-1"] == 100
+    assert diagnostic["additional_fine_structure_correction_eV"] == 0
+    assert diagnostic["diagnostic_D0_eV"] == pytest.approx(3.0566067872820897)
+    assert diagnostic["diagnostic_D0_eV"] == pytest.approx(
+        evidence["zero_point_diagnostic"]["D0_from_printed_primary_De_same_asymptote_eV"])
+    anchors = report["dissociation_anchors"]
+    assert diagnostic["diagnostic_D0_eV"]-anchors["NASA_header_D0_eV"] == pytest.approx(.0064019269)
+    assert diagnostic["diagnostic_D0_eV"]-anchors["JANAF_D0_eV"] == pytest.approx(.1147813953)
+
+
 def test_official_janaf_records_reproduce_frozen_nodes(study):
     inputs = baseline.load_inputs()
     for name, identifier in (("ALH", "AlH"), ("AL", "Al"), ("H", "H1")):

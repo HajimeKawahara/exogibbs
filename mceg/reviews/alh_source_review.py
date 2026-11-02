@@ -158,6 +158,19 @@ def partition_comparison(tables: dict, inputs: dict, headers: dict, source_r: fl
             "samples": rows}
 
 
+def spectroscopic_dissociation() -> dict:
+    """Convert the printed De without repeating its fine-structure offset."""
+    evidence = json.loads((DATA / "dissociation_evidence.json").read_text())
+    primary = evidence["baltayan_nedelec1979"]
+    constants = evidence["zero_point_diagnostic"]
+    zpe_cm = constants["omega_e_cm-1"]/2 - constants["omega_ex_e_cm-1"]/4
+    zpe_ev = zpe_cm*100*6.62607015e-34*299792458/1.602176634e-19
+    return {"printed_De_eV": primary["X_De_eV"], "two_term_ZPE_eV": zpe_ev,
+            "diagnostic_D0_eV": primary["X_De_eV"]-zpe_ev,
+            "additional_fine_structure_correction_eV": 0.,
+            "interpretation": "The original lower X asymptote already includes the stated fine-structure offset. This two-term zero-point conversion is a diagnostic, not a new threshold determination or uncertainty interval."}
+
+
 def review() -> dict:
     """Separate reaction energy, thermal functions, atomic terms and fit errors."""
     archived_sources()
@@ -245,6 +258,7 @@ def review() -> dict:
             "energy_alignment": "Diagnostic reaction H298 shift only, not a new model adoption",
             "NASA_interval_join_checks": joins,
             "formation_reference_audit": reference_audit(tables),
+            "spectroscopic_dissociation": spectroscopic_dissociation(),
             "dissociation_anchors": {"interpretation": "Balanced 0 K atomization from source thermal anchors, not extrapolated polynomial values or a new measurement. Compare to experiments only after checking De/D0 and atomic asymptotes.",
                                      "JANAF_D0_J_mol": janaf_d0, "JANAF_D0_eV": janaf_d0/ELECTRONVOLT_J_MOL,
                                      "NASA_header_D0_J_mol": nasa_d0, "NASA_header_D0_eV": nasa_d0/ELECTRONVOLT_J_MOL,

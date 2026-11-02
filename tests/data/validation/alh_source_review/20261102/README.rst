@@ -24,11 +24,21 @@ its spread measures numerical stability, not physical uncertainty. The X/A
 bound and quasi-bound model does not establish full electronic completeness.
 
 ``dissociation_evidence.json`` records De/D0 labels and a conditional zero-point
-and fine-structure interpretation. A value near 3.16 eV must not be directly
+and fine-structure interpretation, updated from the supplied 1979 full text. A value near 3.16 eV must not be directly
 adopted as D0. The evidence conditionally favours a NASA-like energy over the
 old JANAF estimate, without certifying an exact replacement or an entire
-NASA thermal model. The original 1979 full-text dissociation limit and the
-Gurvich re-evaluation remain access gaps. No production coefficients change.
+NASA thermal model. Both the printed abstract and body give De=3.16 eV,
+resolving the registered-abstract value 3.17 eV. The X asymptote already
+incorporates the stated Al fine-structure offset; no extra term-center shift
+is applied. The diagnostic two-term zero-point conversion gives D0=3.0566 eV.
+Gurvich/Luo source access, precise zero-point/reference reconciliation and
+thermal completeness remain open. The original +/-0.01 eV estimate has no
+stated confidence level. No production coefficients change.
+
+The user-provided ``Baltayan_1979.pdf`` remains local under
+``ref/refs_exogibbs_202611``. Its SHA-256, size and inspected page locations
+are recorded in ``sources.json`` and ``literature.json``; the full article
+and extracted text are not redistributed or needed for offline replay.
 
 ``receipt.json`` records a fresh offline execution, selected implementation
 and source hashes, output hash, command and environment. Replay into a new

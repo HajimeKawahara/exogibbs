@@ -77,11 +77,23 @@
       "url": "https://doi.org/10.1063/1.437749",
       "metadata_url": "https://api.crossref.org/works/10.1063/1.437749",
       "metadata_sha256": "bd00c9b8cbed78c8dec42b930cb11c4902aee1a57be474ec56ab35a9afd38b83",
-      "title": "Lifetimes and predissociation in (AlH(AlD) A1Π",
+      "title": "Lifetimes and predissociation in AlH(AlD) A1Pi",
       "citation": "P. Baltayan and O. Nedelec, Journal of Chemical Physics 70, 2399–2403 (1979).",
-      "inspection": "Publisher abstract and publisher-registered Crossref abstract inspected. Full article PDF access returned HTTP 403.",
-      "findings": "The primary abstract explicitly reports De(X)=3.17±0.01 eV and De(A)=0.24±0.01 eV from lifetime/predissociation measurements. It does not report D0=3.16 eV.",
-      "limit": "The atomic fine-structure reference, detailed potential construction, and uncertainty definition cannot be certified from this abstract. Later quoted 3.16 eV differs from the primary registered 3.17 eV and is retained as a discrepancy."
+      "inspection": "User-provided publisher PDF, six PDF pages including cover. Complete article printed pp 2399-2403 read; printed p 2399 abstract and p 2401 equations/figure/table visually checked.",
+      "findings": "Both the printed abstract (p 2399) and Section IV (p 2401) report De(X)=3.16+/-0.01 eV and De(A)=0.24+/-0.01 eV. Section IV lowers the X asymptote by 100 cm^-1 relative to A for Al(2P) fine structure; Section V identifies Al(2P)+H(2S) atomic ground terms. The outer potential is inferred from lifetimes/intensity deficits/linewidths with a tunnelling model and spectroscopic RKR/Morse input. The previous registered-abstract value 3.17 eV is a metadata discrepancy resolved in favour of the printed article.",
+      "limit": "The quoted uncertainty has no defined confidence level. High-J lifetimes and approximately 50 cm^-1 level-energy uncertainty dominate the discussed limitations; Fig. 4 errors exclude the latter. The original uses an approximate 100 cm^-1 atomic splitting without explicit J labels. Do not add a term-center correction already inconsistent with its lower-X-limit convention. Full zero-point and Gurvich reference reconciliation remain separate tasks.",
+      "local_pdf": {
+        "file": "Baltayan_1979.pdf",
+        "local_reference": "ref/refs_exogibbs_202611/Baltayan_1979.pdf",
+        "doi": "10.1063/1.437749",
+        "url": "https://doi.org/10.1063/1.437749",
+        "sha256": "56ade3b4747b17dea2b8910bcf982251c283bac97ffcde9d698b15564a936cc9",
+        "size_bytes": 800511,
+        "provided": "2026-11-02",
+        "archived": false,
+        "inspection": "User-provided publisher PDF, six PDF pages including cover. Complete article printed pp 2399-2403 read; printed p 2399 abstract and p 2401 equations/figure/table visually checked.",
+        "archive_policy": "The user-provided full article and extracted full text remain local. The repository retains bibliographic metadata, hash, independently written review notes and selected factual quantities only."
+      }
     },
     {
       "id": "exomol2018",
@@ -133,7 +145,7 @@
       "parent_sha256": "961d41d6dffd56c11348a271cc4040053b8d36bd91afe5e1aad9812a8e3e1727",
       "citation": "Pavlenko et al., MNRAS 516, 5655–5673 (2022).",
       "inspection": "Full repository PDF downloaded; Section 3.3 and nuclear-spin convention read.",
-      "findings": "The atmosphere calculation uses D0=3.16 eV and Q/g_ns. The D0 label conflicts with the De label in the primary abstract and Qin 2021 Table 1.",
+      "findings": "The atmosphere calculation uses D0=3.16 eV and Q/g_ns. The D0 label conflicts with De in the inspected 1979 printed article and Qin 2021 Table 1.",
       "limit": "This is an astrophysical application, not an independent threshold measurement. Its D0 value must not override the De/D0 distinction."
     },
     {
@@ -150,7 +162,7 @@
       "url": "https://physics.nist.gov/PhysRefData/Handbook/Tables/aluminumtable3.htm",
       "inspection": "Official NIST persistent-line level table read on 2026-11-02.",
       "findings": "The Al(3s2 3p 2P) J=1/2 and 3/2 levels are at 0 and 112.061 cm^-1, with electronic weights 2 and 4. The term center is therefore about 0.0093 eV above the lowest level.",
-      "limit": "This diagnoses the scale of a possible atomic reference shift; it does not establish which convention the uninspected 1979 full paper or Gurvich evaluation uses."
+      "limit": "The modern atomic splitting supports interpretation of the lower X asymptote in the 1979 paper. Its approximately 100 cm^-1 offset is already incorporated; neither a second term-center subtraction nor a precise retrospective correction is justified without reconstructing the potential reference. Gurvich remains uninspected."
     },
     {
       "id": "atct1172_lookup",
@@ -164,10 +176,10 @@
     }
   ],
   "scientific_assessment": {
-    "energy": "Conditionally prefer the NASA-side energy over the old JANAF central value. The primary De=3.17±0.01 eV, with an approximately 0.1034 eV zero-point correction, supports D0 near 3.06 eV. The possible atomic fine-structure reference correction is only approximately 0.0093 eV. These scales distinguish NASA-derived 3.0502 eV from JANAF-derived 2.9418 eV, while leaving exact source normalization and uncertainty certification open.",
+    "energy": "The printed primary De=3.16 eV, less an approximately 0.1034 eV zero-point energy, gives diagnostic D0=3.0566 eV. This is about 0.0064 eV above NASA-derived 3.0502 eV and 0.1148 eV above JANAF-derived 2.9418 eV. The original explicitly incorporates the X/A fine-structure offset; no extra term-center shift is applied. The full text strengthens the preference for a NASA-like energy and resolves the 3.17/3.16 metadata discrepancy, but does not certify the exact NASA value, a statistical uncertainty distribution, or high-temperature thermal functions. Do not adopt 3.16 eV directly as D0.",
     "thermal": "AloHa Q/12 provides a useful independent spectral-model check through 5000 K, including derivative diagnostics. Agreement or disagreement must be interpreted with its X/A state coverage, quasi-bound treatment, isotope mass, and original physical constants. A few-percent agreement in Q alone does not certify heat capacity.",
-    "separate_limits": "Access uncertainty: 1979 full article and Gurvich/Luo pages remain unread. Reference uncertainty: the exact atomic dissociation limit needs alignment. Spectroscopic uncertainty: the quoted ±0.01 eV and omitted higher zero-point terms need their definitions. High-temperature model uncertainty: electronic state completeness is not certified. These limits do not erase the directional energy evidence.",
-    "next_action": "Before adopting a precise correction, recover the 1979 and Gurvich evaluations, resolve De/D0 and atomic reference conventions, and review complete thermal state contributions. A NASA energy preference is not automatic endorsement of the full NASA thermal function."
+    "separate_limits": "Access uncertainty: Gurvich/Luo pages remain unread; the 1979 full text is now inspected. Reference uncertainty: lower X dissociation limit and inclusion of fine structure are explicit, but exact reconciliation with Gurvich and the original approximate splitting remains open. Spectroscopic uncertainty: +/-0.01 eV has no stated confidence level, and higher zero-point terms remain unpropagated. High-temperature model uncertainty: electronic-state completeness is not certified.",
+    "next_action": "Recover the Gurvich evaluation and Luo entry, align exact atomic/zero-point references and review thermal state contributions before a precise production correction. The 1979 access gap and 3.17/3.16 discrepancy are resolved; stronger evidence for NASA-like binding does not endorse its entire thermal function."
   },
   "archived_files": {
     "Al-056.txt": "517cff9f229e9446ff2217c326a515e5d3bdfe51fff69330605a0a59cbbb2063",
@@ -181,6 +193,6 @@
     "nasa_selected_records.txt": "d1d58617a388caba3f59a67fe477901db53a24f43c4ebb2b11d1359f4943cf9d",
     "exomol_aloha_27AlH.pf": "273b72ffa36b4db7e930393f35175684ad912e8bebcc722bf90a6843cd95f1ab",
     "exomol_aloha_27AlH.def": "58aa76d593a6033458d9f692e3082f45ec71824e98942e52b4162b10723f7eec",
-    "dissociation_evidence.json": "0c8e6f63a90ca71373cef8f69f66c77ff731547feaa27d5c191e41e6c6f41c02"
+    "dissociation_evidence.json": "47d2b5a816748d2ff51a14dabd7cce5420c4977bacf4108d1c4d5b362e3203e3"
   }
 }

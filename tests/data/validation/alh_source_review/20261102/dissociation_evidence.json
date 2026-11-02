@@ -5,14 +5,43 @@
   "status": "Diagnostic evidence; not an adopted energy or uncertainty distribution.",
   "baltayan_nedelec1979": {
     "doi": "10.1063/1.437749",
-    "inspection": "Publisher-registered Crossref abstract and publisher abstract inspected; complete article PDF returned HTTP 403.",
+    "inspection": "User-provided publisher PDF, six PDF pages including cover. Complete article printed pp 2399-2403 read; printed p 2399 abstract and p 2401 equations/figure/table visually checked.",
     "quantity": "De, measured from the potential minimum",
-    "X_De_eV": 3.17,
+    "X_De_eV": 3.16,
     "X_reported_uncertainty_eV": 0.01,
     "A_De_eV": 0.24,
     "A_reported_uncertainty_eV": 0.01,
-    "uncertainty_definition": "Not established from the abstract.",
-    "parent_crossref_json_sha256": "bd00c9b8cbed78c8dec42b930cb11c4902aee1a57be474ec56ab35a9afd38b83"
+    "uncertainty_definition": "Section IV identifies high-J lifetime precision as the largest uncertainty and high-J level energies (~50 cm^-1) as another contribution. Fig. 4 error bars exclude level-energy uncertainty. The reported +/-0.01 eV has no stated confidence level or probabilistic definition; it must not be treated as a calibrated 1-sigma error.",
+    "parent_crossref_json_sha256": "bd00c9b8cbed78c8dec42b930cb11c4902aee1a57be474ec56ab35a9afd38b83",
+    "local_pdf": {
+      "file": "Baltayan_1979.pdf",
+      "local_reference": "ref/refs_exogibbs_202611/Baltayan_1979.pdf",
+      "doi": "10.1063/1.437749",
+      "url": "https://doi.org/10.1063/1.437749",
+      "sha256": "56ade3b4747b17dea2b8910bcf982251c283bac97ffcde9d698b15564a936cc9",
+      "size_bytes": 800511,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "User-provided publisher PDF, six PDF pages including cover. Complete article printed pp 2399-2403 read; printed p 2399 abstract and p 2401 equations/figure/table visually checked.",
+      "archive_policy": "The user-provided full article and extracted full text remain local. The repository retains bibliographic metadata, hash, independently written review notes and selected factual quantities only."
+    },
+    "printed_locations": [
+      "p 2399: printed abstract",
+      "p 2401: Section IV, Fig. 4, Table III and Section V opening"
+    ],
+    "publisher_metadata_discrepancy": {
+      "registered_abstract_X_De_eV": 3.17,
+      "printed_abstract_and_body_X_De_eV": 3.16,
+      "resolution": "Use the consistent printed abstract and body value 3.16 eV. The previously inspected publisher/Crossref metadata value 3.17 eV is retained only to document the discrepancy; it is not a second measurement."
+    },
+    "atomic_asymptote": {
+      "dissociation_products": "Al(3s2 3p 2P) + H(1s 2S), the atomic ground terms",
+      "X_limit_below_A_limit_cm-1": 100,
+      "basis": "Section IV explicitly lowers the X-state dissociation limit by 100 cm^-1 relative to A for Al(2P) fine structure. Section V identifies the atomic ground terms.",
+      "interpretation": "The lower X asymptote is consistent with Al(2P1/2)+H(2S1/2); the article does not print resolved J labels. Its De(X) already includes the stated fine-structure offset. Do not subtract a term-center correction again.",
+      "additional_fine_structure_correction_applied_eV": 0.0
+    },
+    "method": "Sections II-IV combine pulsed-laser radiative lifetimes, emission intensity deficits extrapolated to zero Ar pressure and diffuse-line widths with a semiclassical tunnelling model. The A-state potential uses RKR spectroscopy between v=0 and v=1, Morse continuation on the inner side and a reconstructed outer barrier; the slow outer tail near r>=5 angstrom yields the dissociation limit. This is a spectroscopic potential inference, not a direct dissociation-threshold measurement."
   },
   "later_quotations": [
     {
@@ -55,9 +84,8 @@
     "omega_ex_e_cm-1": 29.05,
     "formula": "G(0) approximately omega_e/2 - omega_ex_e/4; higher Dunham terms omitted.",
     "ZPE_eV": 0.10339321271791044,
-    "D0_from_primary_abstract_same_asymptote_eV": 3.0666067872820895,
-    "D0_from_later_De_quote_same_asymptote_eV": 3.0566067872820897,
-    "limitation": "This is a convention and scale check, not a replacement for the full spectroscopic zero-point energy."
+    "limitation": "This two-term spectroscopic zero-point estimate yields D0 about 3.0566 eV, not a newly fitted threshold or complete uncertainty interval. Higher Dunham terms and uncertainty propagation remain unassessed.",
+    "D0_from_printed_primary_De_same_asymptote_eV": 3.0566067872820897
   },
   "al_atomic_fine_structure_diagnostic": {
     "source_url": "https://physics.nist.gov/PhysRefData/Handbook/Tables/aluminumtable3.htm",
@@ -76,8 +104,7 @@
       }
     ],
     "term_center_above_lowest_level_eV": 0.009262528840415236,
-    "conditional_D0_from_primary_De_if_term_center_reference_eV": 3.0573442584416743,
-    "interpretation": "The possible term-center correction is about 0.0093 eV. The 1979 abstract does not identify its asymptote convention; this correction is therefore conditional, not applied to the model."
+    "interpretation": "The term-center scale is retained as a convention diagnostic only. The full 1979 paper explicitly places the X limit below A for fine structure, so no additional 0.0093 eV subtraction is applied. Updating its approximate 100 cm^-1 split to the modern 112.061 cm^-1 would require reconstructing the original potential reference and is not done here."
   },
   "barklem_collet2016_table1": {
     "doi": "10.1051/0004-6361/201526961",
@@ -91,5 +118,5 @@
     "adopted_uncertainty_eV": 0.13,
     "limitation": "The specific original sources behind the Luo AlH entry have not been inspected. Its similarity to JANAF is not proof of common ancestry."
   },
-  "assessment": "The primary De result, after an approximately 0.1034 eV zero-point correction, favors a D0 near the NASA-derived 3.0502 eV over the JANAF-derived 2.9418 eV. A possible approximately 0.0093 eV atomic reference shift is too small to explain the roughly 0.11 eV NASA/JANAF difference. This supports a conditional preference for the NASA-side energy, but does not certify its exact value or the complete NASA thermal function. Do not use the later 3.16 eV D0 quotation as an independently verified threshold."
+  "assessment": "The printed primary De=3.16 eV, less an approximately 0.1034 eV zero-point energy, gives diagnostic D0=3.0566 eV. This is about 0.0064 eV above NASA-derived 3.0502 eV and 0.1148 eV above JANAF-derived 2.9418 eV. The original explicitly incorporates the X/A fine-structure offset; no extra term-center shift is applied. The full text strengthens the preference for a NASA-like energy and resolves the 3.17/3.16 metadata discrepancy, but does not certify the exact NASA value, a statistical uncertainty distribution, or high-temperature thermal functions. Do not adopt 3.16 eV directly as D0."
 }

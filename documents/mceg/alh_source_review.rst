@@ -53,13 +53,33 @@ from the lowest vibrational level. They differ by the zero-point energy.
 Atomic fine-structure reference choices must also agree. A value labelled De
 cannot be used as D0 without those conversions.
 
-The publisher-registered abstract of Baltayan and Nedelec (1979),
-`DOI 10.1063/1.437749 <https://doi.org/10.1063/1.437749>`_, explicitly reports
-De(X) = 3.17 +/- 0.01 eV. Later AlH papers quote values near 3.16 eV with
-different labels. The literature packet distinguishes directly inspected
-material from later quotations and records the limits on recovering the
-original dissociation reference. Neither the quoted precision nor a later
-spectral application automatically resolves the thermochemical convention.
+The supplied full text of Baltayan and Nedelec (1979),
+`DOI 10.1063/1.437749 <https://doi.org/10.1063/1.437749>`_, resolves an important
+metadata discrepancy. Both its printed abstract (p. 2399) and Section IV
+(p. 2401) give De(X) = 3.16 +/- 0.01 eV. The previously inspected
+publisher/Crossref abstract says 3.17 eV; the printed article takes precedence.
+Later quotations of 3.16 eV as De agree with it, whereas labelling that value
+D0 remains incorrect.
+
+Section IV places the X-state dissociation limit 100 cm^-1 below the A-state
+limit for Al(2P) fine structure; Section V identifies Al(2P) + H(2S) ground
+atomic terms. The lower X asymptote is consistent with the lowest Al fine-
+structure level, although the article does not print J labels. The stated
+fine-structure offset is already included in De(X): subtracting a further
+term-center correction of about 0.0093 eV would not follow the paper's
+convention. Its approximate 100 cm^-1 offset is not silently replaced by the
+modern 112.061 cm^-1 splitting.
+
+The energy is inferred from a reconstructed potential, combining laser
+lifetimes, emission intensity deficits and diffuse-line widths with a
+semiclassical tunnelling model. Spectroscopic RKR and Morse segments constrain
+the inner potential, while the outer barrier and tail supply the dissociation
+limit. The main stated errors arise from high-J lifetimes and roughly
+50 cm^-1 uncertainty in high-J level energies. Figure 4 excludes the latter
+from its plotted error bars. The paper does not define the confidence level
+of its +/-0.01 eV estimate, so it is not a calibrated statistical error bar.
+The local PDF hash and reading locations are retained in the evidence packet;
+the full article and extracted text are not redistributed.
 
 ExoMol partition functions require a separate convention check: the full
 nuclear-spin weight for 27AlH is 12. Comparing these directly with a
@@ -148,16 +168,20 @@ The available spectroscopy conditionally favours the NASA-like, stronger
 binding energy over the old JANAF value. The reconstructed thermochemical D0
 values are about 3.0502 eV for NASA and 2.9418 eV for JANAF. Converting the
 1979 De value with a spectroscopic zero-point estimate of about 0.1034 eV
-gives approximately 3.067 eV before reconciling the atomic dissociation limit.
-Al fine-structure conventions introduce differences of order 0.01 eV, so
-the experiment does not certify NASA's exact value; they also do not explain
-the much larger separation from the old JANAF threshold.
+gives approximately 3.0566 eV at the paper's stated lower X asymptote. This
+is about 0.0064 eV above NASA and 0.1148 eV above JANAF. The comparison uses
+no additional atomic fine-structure subtraction. The discrepancy from NASA
+is smaller than the reported 0.01 eV scale, but this is not a statistical
+consistency test: the original error definition and a complete zero-point
+uncertainty budget remain unavailable.
 
 This is stronger evidence than the previously inspected, broad Barklem-Collet
 uncertainty alone. It supports the direction of an energy revision, not using
 3.16 eV directly as D0 or endorsing an entire NASA model from one measurement.
-The original 1979 full-text dissociation limit and uncertainty definition, and
-the Gurvich re-evaluation details, remain to be recovered. Empirical potential
+The 1979 access gap and the 3.17/3.16 eV discrepancy are resolved. The Gurvich
+re-evaluation and Luo source details, exact zero-point/reference reconciliation
+and high-temperature state completeness remain open. The original article
+discusses error sources but supplies no confidence-level definition. Empirical potential
 asymptotes fitted mainly to low-lying levels are not independent dissociation
 measurements.
 

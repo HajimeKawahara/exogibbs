@@ -93,8 +93,8 @@
     {
       "file": "dissociation_evidence.json",
       "url": "https://doi.org/10.1063/1.437749",
-      "inspection": "Numerical evidence and explicitly conditional zero-point/fine-structure diagnostics compiled from the inspected sources listed in literature.json. This is a review extract, not a raw source download.",
-      "sha256": "0c8e6f63a90ca71373cef8f69f66c77ff731547feaa27d5c191e41e6c6f41c02",
+      "inspection": "Selected factual quantities and independently written full-text notes from the locally supplied 1979 article, with zero-point/fine-structure diagnostics. Not a raw article download.",
+      "sha256": "47d2b5a816748d2ff51a14dabd7cce5420c4977bacf4108d1c4d5b362e3203e3",
       "retrieved": "2026-11-02",
       "archived": true
     }
@@ -122,5 +122,19 @@
     ],
     "exclusion": "This review does not concern AlH3, AlH ions, or condensed aluminum hydride."
   },
-  "additional_source_provenance": "literature.json records parent hashes, inspection scope, access limits, and distinctions between direct evidence and later quotations."
+  "additional_source_provenance": "literature.json records parent hashes, inspection scope, access limits, and distinctions between direct evidence and later quotations.",
+  "local_sources_not_archived": [
+    {
+      "file": "Baltayan_1979.pdf",
+      "local_reference": "ref/refs_exogibbs_202611/Baltayan_1979.pdf",
+      "doi": "10.1063/1.437749",
+      "url": "https://doi.org/10.1063/1.437749",
+      "sha256": "56ade3b4747b17dea2b8910bcf982251c283bac97ffcde9d698b15564a936cc9",
+      "size_bytes": 800511,
+      "provided": "2026-11-02",
+      "archived": false,
+      "inspection": "User-provided publisher PDF, six PDF pages including cover. Complete article printed pp 2399-2403 read; printed p 2399 abstract and p 2401 equations/figure/table visually checked.",
+      "archive_policy": "The user-provided full article and extracted full text remain local. The repository retains bibliographic metadata, hash, independently written review notes and selected factual quantities only."
+    }
+  ]
 }

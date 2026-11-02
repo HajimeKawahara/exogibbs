@@ -365,6 +365,13 @@
     "max_abs_formation_H_error_kJ_mol": 0.0010000000000616183,
     "max_abs_formation_G_error_kJ_mol": 0.004399999999918691
   },
+  "spectroscopic_dissociation": {
+    "printed_De_eV": 3.16,
+    "two_term_ZPE_eV": 0.10339321271791044,
+    "diagnostic_D0_eV": 3.0566067872820897,
+    "additional_fine_structure_correction_eV": 0.0,
+    "interpretation": "The original lower X asymptote already includes the stated fine-structure offset. This two-term zero-point conversion is a diagnostic, not a new threshold determination or uncertainty interval."
+  },
   "dissociation_anchors": {
     "interpretation": "Balanced 0 K atomization from source thermal anchors, not extrapolated polynomial values or a new measurement. Compare to experiments only after checking De/D0 and atomic asymptotes.",
     "JANAF_D0_J_mol": 283843.0,
