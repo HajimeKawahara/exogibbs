@@ -1,0 +1,454 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.c3_source_review.v1
+  name: Tricarbon source investigation and carbon redistribution
+  description: Audit C3 energy and thermal references, identify AtLast consistency limits, and measure an isolated
+    raw-NASA source substitution.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:7a5c3fe717951bd95787968f188bb96c260c49bf9b6ab99b52ea6157d902739a
+    entry_points:
+    - mceg/reviews/c3_source_review.py
+assumptions:
+- statement: The compared species is neutral linear ground-state C3; cyclic singlet/triplet C3 entries and the C3
+    -> C2 + C dissociation reaction are distinct.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: Balanced ATcT comparison uses C3 and C from the same version; quoted confidence limits and rounded
+    correlations are not independent errors.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: 12C3 has nuclear-spin factor one in the inspected state weights; the inconsistent factor six in the
+    definition file is not applied to its partition function.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: Only C3 thermochemistry changes within each fixed-network source pair; only C/H varies between the
+    C/O settings before normalization.
+  evidence:
+  - finite_substitution
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Exact-node source decomposition, partition/caloric/state diagnostics and 75 paired equilibrium cases.
+  conditions:
+  - Source decomposition at 500, 1000, 1500, 3000 K with 298.15 K reference; curated comparison only within 1500-4000
+    K.
+  - Partition diagnostics use recorded mass, source gas constants, isotope and state coverage; full-state sums are
+    separately reproducible with the external source file.
+  - 'Equilibrium: 1500, 2000, 2500, 3000, 4000 K; 1e-6, 1e-4, 0.01, 1, 100 bar; C/O = 0.5888436553555908, 1, 1.5.'
+  evidence:
+  - source_replay
+  - finite_substitution
+- kind: scientific_applicability
+  status: unknown
+  description: Energy preference and thermal reassessment do not establish a complete replacement or atmospheric
+    accuracy.
+  conditions: []
+  evidence:
+  - literature_review
+  - source_replay
+  - finite_substitution
+claims:
+- id: source_attribution
+  revision: '1'
+  kind: numerical_verification
+  statement: The current C3 fit agrees with JANAF, while energy alignment leaves a substantial JANAF/NASA thermal
+    discrepancy; the archived AtLast files also have reproducible normalization metadata and state-sum consistency
+    issues.
+  scope: Neutral linear gaseous C3, 3 C(g) -> C3(g), standard pressure 1 bar; separate cyclic species and energy/thermal
+    conventions; no production adoption.
+- id: conditional_reference_preference
+  revision: '1'
+  kind: theoretical
+  statement: The balanced ATcT energy and modern spectroscopic diagnostics support an ATcT energy anchor and thermal
+    reassessment, rather than wholesale raw-NASA substitution.
+  scope: Conditional reference-selection reasoning, not experimental certification of an exact thermal function
+    or adoption of the downloaded AtLast table.
+- id: finite_source_sensitivity
+  revision: '1'
+  kind: numerical_verification
+  statement: A C3-only raw-NASA substitution redistributes carbon in the fixed current-curated gas network, with
+    verified constraints and an independent solver comparison.
+  scope: 75 paired ideal-gas conditions, current curated-c2h-v1 versus a raw-NASA C3-only diagnostic, 537 ion-inclusive
+    species.
+- id: complete_thermal_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: A selected replacement C3 model has quantified energy and thermal accuracy throughout 1500-4000 K.
+  scope: Requires a consistent partition/state release, caloric and high-energy convergence, electronic coverage
+    and justified reference conventions.
+- id: atmospheric_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The C3 substitution improves predicted atmospheric composition or spectra.
+  scope: Physical atmosphere accuracy is separate from fixed-model numerical sensitivity.
+evidence:
+- id: literature_review
+  kind: literature
+  summary: Inspect JANAF bending assumptions, NASA ancestry, the versioned ATcT network, supplied AtLast publisher
+    text and Terentyev electronic surfaces, with distinct geometry and zero-point conventions.
+  sources:
+  - tests/data/validation/c3_source_review/20261102/sources.json
+  - tests/data/validation/c3_source_review/20261102/literature.json
+  - tests/data/validation/c3_source_review/20261102/atct_evidence.json
+  scope: Neutral linear gaseous C3, 3 C(g) -> C3(g), standard pressure 1 bar; separate cyclic species and energy/thermal
+    conventions; no production adoption.
+  subject: c3_sources_20261102
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/c3_source_review/20261102/sources.json
+    sha256: 210edfddb80b91d7d14c4404aadc8695ce12752110978471c2d5ee7fa6e7bce8
+  - source: tests/data/validation/c3_source_review/20261102/literature.json
+    sha256: b78d8eef60cb6ca3a51445bfa2e62ac0be45fe656114a34a24da465779951701
+  - source: tests/data/validation/c3_source_review/20261102/atct_evidence.json
+    sha256: ea130d2d2909d061642e4a21e00f3c87a4a7d6463ad1a945cf2d936d7a6797e4
+  provenance:
+    role: secondary
+    location: Fixed C3 source packet, original source records and declared external-state diagnostics.
+    inspection: partial
+    note: Supplied Terentyev full text closes its abstract-only access gap. Optimized electronic and zero-point-corrected
+      gaps are distinct from TD-DFT excitation energies; neither full PDFs nor the external state file are vendored.
+- id: source_replay
+  kind: numerical_test
+  summary: Reproduce source ratios, reference closure, fit/caloric differences, balanced ATcT energies and partition
+    diagnostics; retain separate full-state sum provenance without claiming that offline CI repeats the external-file
+    calculation.
+  sources:
+  - tests/data/validation/c3_source_review/20261102/comparison.json
+  - tests/data/validation/c3_source_review/20261102/receipt.json
+  - tests/data/validation/c3_source_review/20261102/state_sum_checks.json
+  scope: Neutral linear gaseous C3, 3 C(g) -> C3(g), standard pressure 1 bar; separate cyclic species and energy/thermal
+    conventions; no production adoption.
+  subject: c3_sources_20261102
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/c3_source_review/20261102/comparison.json
+    sha256: 4769153edec98a99b48cf0a7fa1d1cd1d2a780750ec05b6727769b9576cc06c0
+  - source: tests/data/validation/c3_source_review/20261102/receipt.json
+    sha256: f51ca8eb2d79d0ca9574e358d63e0ae228298c6b2d687439bb9d71402b7424ee
+  - source: tests/data/validation/c3_source_review/20261102/state_sum_checks.json
+    sha256: 9caa0aac558265732f8227487ff77eed9d0d529c831f9f829b61de4e4a46983c
+  provenance:
+    role: primary
+    location: Fixed C3 source packet, original source records and declared external-state diagnostics.
+    inspection: inspected
+    note: Direct inspections, source quotations and uninspected ancestry remain distinct; the full external state
+      file is not vendored.
+  result: passed
+- id: reference_reasoning
+  kind: theory
+  summary: Conditional synthesis of the evaluated ATcT reaction energy, empirical spectroscopy and legacy bending
+    assumptions; neither a new calorimetric measurement nor validation of complete AtLast/NASA thermal functions.
+  sources:
+  - tests/data/validation/c3_source_review/20261102/atct_evidence.json
+  - tests/data/validation/c3_source_review/20261102/literature.json
+  - tests/data/validation/c3_source_review/20261102/comparison.json
+  scope: Direction of reference selection and thermal reassessment, with unresolved full-model accuracy.
+  subject: c3_sources_20261102
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/c3_source_review/20261102/atct_evidence.json
+    sha256: ea130d2d2909d061642e4a21e00f3c87a4a7d6463ad1a945cf2d936d7a6797e4
+  - source: tests/data/validation/c3_source_review/20261102/literature.json
+    sha256: b78d8eef60cb6ca3a51445bfa2e62ac0be45fe656114a34a24da465779951701
+  - source: tests/data/validation/c3_source_review/20261102/comparison.json
+    sha256: 4769153edec98a99b48cf0a7fa1d1cd1d2a780750ec05b6727769b9576cc06c0
+  provenance:
+    role: secondary
+    location: Fixed C3 source packet, original source records and declared external-state diagnostics.
+    inspection: partial
+    note: Direct inspections, source quotations and uninspected ancestry remain distinct; the full external state
+      file is not vendored.
+- id: finite_substitution
+  kind: numerical_test
+  summary: Replay saved C3 priority evidence and archive 300 accepted cold solves, full species and carbon allocations,
+    tolerance stability and an independent FastChem comparison at the highlighted condition.
+  sources:
+  - tests/data/validation/c3_equilibrium_impact/20261102/receipt.json
+  - tests/data/validation/c3_equilibrium_impact/20261102/summary.json
+  - tests/data/validation/c3_equilibrium_impact/20261102/diagnostics.json
+  - tests/data/validation/c3_equilibrium_impact/20261102/equilibria.npz
+  - tests/data/validation/c3_equilibrium_impact/20261102/prioritization.json
+  scope: 75 paired ideal-gas conditions, current curated-c2h-v1 versus a raw-NASA C3-only diagnostic, 537 ion-inclusive
+    species.
+  subject: c3_substitution_20261102
+  context: fixed_network_sensitivity
+  artifacts:
+  - source: tests/data/validation/c3_equilibrium_impact/20261102/receipt.json
+    sha256: 2d2137de2c243496af673893fbae8522d42ecc155b7784d3fde4984a2f175349
+  - source: tests/data/validation/c3_equilibrium_impact/20261102/summary.json
+    sha256: 438da3f4c7d1eaaf3ea4d4b95c0959956a62e29712b629bebcbed53783fd4627
+  - source: tests/data/validation/c3_equilibrium_impact/20261102/diagnostics.json
+    sha256: 01d2f73c9f9da6bd388052eaacdaadc181acc4fedc91c1f911ca321d0bf66264
+  - source: tests/data/validation/c3_equilibrium_impact/20261102/equilibria.npz
+    sha256: 60e429e01128ed7c059ff4ba94f4c8882a72e390f861fb4671ab03a8e52735ad
+  - source: tests/data/validation/c3_equilibrium_impact/20261102/prioritization.json
+    sha256: 8a56c391af8cb0faac8b63853a24274525b72e2713f3d2248391e519b62cc9ab
+  provenance:
+    role: primary
+    location: Fixed C3 source packet, original source records and declared external-state diagnostics.
+    inspection: inspected
+    note: Direct inspections, source quotations and uninspected ancestry remain distinct; the full external state
+      file is not vendored.
+  result: passed
+subjects:
+- id: c3_sources_20261102
+  implementation: *id001
+  selected_files:
+    mceg/reviews/c3_source_review.py: 7a5c3fe717951bd95787968f188bb96c260c49bf9b6ab99b52ea6157d902739a
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/c3_source_review/20261102/sources.json: 210edfddb80b91d7d14c4404aadc8695ce12752110978471c2d5ee7fa6e7bce8
+    tests/data/validation/c3_source_review/20261102/literature.json: b78d8eef60cb6ca3a51445bfa2e62ac0be45fe656114a34a24da465779951701
+    tests/data/validation/c3_source_review/20261102/C-138.txt: 5594a517653790da521f193d1c16a5b2cfd542e5c94357666ebabcf86bbb6bef
+    tests/data/validation/c3_source_review/20261102/C-003.txt: df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4
+    tests/data/validation/c3_source_review/20261102/C-002.txt: d929a499d9e827487970b654058f81381a652a84d836ec378bff8521cc19a3bf
+    tests/data/validation/c3_source_review/20261102/janaf_c3_printed_686.pdf: 52473971bc75a881ad88d2bc9c21b0b3f6ce24de201b41cc3d59161c7c609d83
+    tests/data/validation/c3_source_review/20261102/printed_c3_nodes.json: 0bba8db8a26c8fd4a9bf5eed143e6b27f886db6e6abc35fffafde2f8c7a674b3
+    tests/data/validation/c3_source_review/20261102/janaf_constants_printed_10.pdf: 2aeb29af2596f48e3148dcdb3cc77b71aeb5168db727741135951e67699cdb5b
+    tests/data/validation/c3_source_review/20261102/nasa_selected_records.txt: f90ba2908303460a2885377f59549c78d7f6132efd662f17824d0b070ce56b9e
+    tests/data/validation/c3_source_review/20261102/atct_evidence.json: ea130d2d2909d061642e4a21e00f3c87a4a7d6463ad1a945cf2d936d7a6797e4
+    tests/data/validation/c3_source_review/20261102/exomol_atlast_12C3.pf: c03455acab83c2e8dc2919a9803445510f1af79bcdb0f52ceb9df63885f9f629
+    tests/data/validation/c3_source_review/20261102/exomol_atlast_12C3.def: 2dd3d1fe9deb5088043d0ecc5f8ac92540c744f2c275976fedde812e1f2a48f9
+    tests/data/validation/c3_source_review/20261102/exomol_atlast_12C3_states_head.txt: 104adcd00f4b2632b1f5430799fd0ed5427af755027308c2d23b962dcac40c59
+    tests/data/validation/c3_source_review/20261102/exomol_http_headers.json: 55cb661cc56a4b38a470d85c48c7c8c4f1e79bbe94add9b57944879be268ba4c
+    tests/data/validation/c3_source_review/20261102/state_sum_checks.json: 9caa0aac558265732f8227487ff77eed9d0d529c831f9f829b61de4e4a46983c
+    tests/data/validation/c3_source_review/20261102/nasa1978_thermal_appendix_21_22.pdf: 8143d8437c0c77d51f448eec0302bb3340952a9bc4b4c8b33c3ece1994182368
+    tests/data/validation/c3_source_review/20261102/historical_entropy_evidence.json: 6c90a1837fdd5cc3326aa7102a9e64cc131c54d348e0f771561a8dc793fff6aa
+    tests/data/validation/c3_source_review/20261102/README.rst: 1359dde04338a4c5459f11c04db9191e0920960530a7f81ce0cff367b7b3ec09
+- id: c3_substitution_20261102
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:c5d8590ec79e2c0f67ac9a8fce56636fb1ce6ca63ee6bc4bfd355e339f82f6f2
+    entry_points:
+    - mceg/reviews/c3_equilibrium_impact.py
+  selected_files:
+    mceg/reviews/c3_equilibrium_impact.py: c5d8590ec79e2c0f67ac9a8fce56636fb1ce6ca63ee6bc4bfd355e339f82f6f2
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    src/exogibbs/presets/curated.py: 14b6fb44b0380ea0aee97cb9e8096e05d5ebcc691f4f6ef4d8ab97c2593940f1
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/autodiff.py: 15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/sensitivities.py: ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+contexts:
+- id: source_comparison
+  scope: Neutral linear gaseous C3, 3 C(g) -> C3(g), standard pressure 1 bar; separate cyclic species and energy/thermal
+    conventions; no production adoption.
+  settings:
+    standard_pressure_bar: 1
+    reaction: 3 C(g) -> C3(g)
+    reference_temperature_K: 298.15
+    gas_constant_J_mol_K: 8.31446261815324
+    temperatures_K: 500, 1000, 1500, 3000
+    ATcT_version: '1.172'
+    partition_convention: 12C3 spin factor one; explicit legacy mass and source-R conventions; ground electronic
+      state only for AtLast.
+    network: Individual source records; no equilibrium mixture
+    elemental_budget: Not applicable to source property comparison
+- id: fixed_network_sensitivity
+  scope: 75 paired ideal-gas conditions, current curated-c2h-v1 versus a raw-NASA C3-only diagnostic, 537 ion-inclusive
+    species.
+  settings:
+    baseline: curated-c2h-v1
+    probe: curated-c2h-v1+raw-nasa-c3-diagnostic
+    standard_pressure_bar: 1
+    network_species: 537
+    ions: true
+    temperatures_K: 1500, 2000, 2500, 3000, 4000
+    pressures_bar: 1e-6, 1e-4, 0.01, 1, 100
+    C_over_O: 0.5888436553555908, 1, 1.5
+    elemental_budget: Asplund 2021 reference; vary only C/H; preserve other element/H ratios before normalization.
+    solver: CPU float64 cold starts at epsilon_crit 1e-13 and 5e-14
+    independent_solver: Standalone FastChem 4.0.3 at C/O=1.5, 2000 K, 1e-6 bar, identical h/A/b at each endpoint.
+    neutral_only: not_run
+assessments:
+- id: source_attribution_review
+  kind: evidence_support
+  claim: source_attribution
+  claim_revision: '1'
+  subject: c3_sources_20261102
+  context: source_comparison
+  method:
+    id: review_c3_sources_and_sensitivity
+    revision: '1'
+    description: Separate balanced energy evidence, thermal state coverage and data consistency from finite-mixture
+      numerical sensitivity.
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - The JANAF fit is reproduced within 0.01104 in ln K. Energy alignment leaves JANAF/NASA K about 0.531 at 1500
+    K and 0.367 at 3000 K; modern partition comparisons and direct state sums identify additional source consistency
+    limits without establishing their historical cause.
+  status: supported
+  origin: reviewed
+- id: conditional_reference_preference_review
+  kind: evidence_support
+  claim: conditional_reference_preference
+  claim_revision: '1'
+  subject: c3_sources_20261102
+  context: source_comparison
+  method:
+    id: review_c3_sources_and_sensitivity
+    revision: '1'
+    description: Separate balanced energy evidence, thermal state coverage and data consistency from finite-mixture
+      numerical sensitivity.
+  evidence:
+  - literature_review
+  - source_replay
+  - reference_reasoning
+  reasons:
+  - Balanced ATcT reaction H0 differs from JANAF by +2.326 kJ/mol and NASA headers by -17.180185 kJ/mol. Modern
+    rovibrational Q challenges the legacy JANAF thermal treatment but does not certify NASA or the inconsistent
+    downloaded AtLast release. Prefer an ATcT anchor and separately justified thermal functions.
+  status: supported
+  origin: reviewed
+- id: finite_source_sensitivity_review
+  kind: evidence_support
+  claim: finite_source_sensitivity
+  claim_revision: '1'
+  subject: c3_substitution_20261102
+  context: fixed_network_sensitivity
+  method:
+    id: review_c3_sources_and_sensitivity
+    revision: '1'
+    description: Separate balanced energy evidence, thermal state coverage and data consistency from finite-mixture
+      numerical sensitivity.
+  evidence:
+  - finite_substitution
+  reasons:
+  - All 300 cold solves pass. Maximum tolerance delta-x is below 9.21e-14 and independent-solver disagreement below
+    9.78e-7 dex. At the highlighted condition C3 carbon share falls from 2.25410% to 1.55547%, with C3H the largest
+    recipient.
+  status: supported
+  origin: reviewed
+- id: complete_thermal_accuracy_review
+  kind: evidence_support
+  claim: complete_thermal_accuracy
+  claim_revision: '1'
+  subject: c3_sources_20261102
+  context: source_comparison
+  method:
+    id: review_c3_sources_and_sensitivity
+    revision: '1'
+    description: Separate balanced energy evidence, thermal state coverage and data consistency from finite-mixture
+      numerical sensitivity.
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - A complete replacement needs consistency between its state and partition data, a verified thermal domain and
+    electronic/high-energy coverage. Stable derivatives and source agreement alone do not provide physical accuracy
+    bounds.
+  - Supplied Terentyev tables separate the linear and triangular triplets and their zero-point corrections; their
+    method-dependent surfaces do not supply a complete hot state inventory. The supplied AtLast copy confirms
+    its ground-state-only scope without resolving the distributed-file mismatch.
+  status: unknown
+  origin: reviewed
+- id: atmospheric_accuracy_review
+  kind: evidence_support
+  claim: atmospheric_accuracy
+  claim_revision: '1'
+  subject: c3_substitution_20261102
+  context: fixed_network_sensitivity
+  method:
+    id: review_c3_sources_and_sensitivity
+    revision: '1'
+    description: Separate balanced energy evidence, thermal state coverage and data consistency from finite-mixture
+      numerical sensitivity.
+  evidence:
+  - finite_substitution
+  reasons:
+  - The fixed gas-network diagnostic verifies composition sensitivity; neither observations, condensation nor nonequilibrium
+    atmospheric processes were evaluated.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: construct_consistent_thermal_candidate
+  target_kind: claim
+  target: complete_thermal_accuracy
+  revision: '1'
+  action: Resolve the partition/state mismatch and establish caloric and electronic coverage before combining a
+    justified thermal model with the balanced ATcT anchor.
+  requires:
+  - Consistent versioned partition and state data with correct isotope/statistical conventions
+  - High-energy, rotational and bending coverage checks for Cp, H and S
+  - Electronic-state and isomer treatment; legacy source details and independent thermochemical constraints
+  completion: Record a candidate and defensible temperature domain, then run and archive that exact candidate before
+    any separately versioned production adoption.
+- id: review_c3h_recipient
+  target_kind: claim
+  target: atmospheric_accuracy
+  revision: '1'
+  action: Review the identity and inherited source of the C3H1 carrier in a separate investigation.
+  requires:
+  - Resolve linear/cyclic identity and source ancestry of the fixed network entry
+  - Independent C3H thermochemistry and a separate fixed-network assessment
+  completion: Record the C3H source decision independently; its large carbon share is a priority signal, not physical
+    validation.
+- id: physical_atmosphere_validation
+  target_kind: claim
+  target: atmospheric_accuracy
+  revision: '1'
+  action: Evaluate a justified C3 candidate against physical benchmarks relevant to the intended application.
+  requires:
+  - Defined atmosphere or laboratory target
+  - Appropriate phases and processes and an independently supported model
+  completion: Assess physical accuracy independently of the raw-NASA numerical sensitivity.
+limitations:
+- statement: The energy preference does not certify the legacy or modern thermal model, and the AtLast source inconsistency
+    has no established historical explanation.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: The triangular-triplet energy in Terentyev is not the linear-triplet term origin. Theoretical method
+    spread and TD-DFT systematic deviations are not calibrated thermochemical error bars.
+  evidence:
+  - literature_review
+- statement: The raw-NASA diagnostic is not a scientific adoption, uncertainty interval or the response of a future
+    ATcT/modern-thermal candidate.
+  evidence:
+  - finite_substitution
+- statement: The full external AtLast state file is not vendored and is not re-summed by ordinary offline CI; compact
+    execution evidence and exact input hash are retained.
+  evidence:
+  - source_replay
+- statement: Finite-grid priority, gas-only sensitivity and unchanged neighbouring sources do not establish atmospheric,
+    condensed-phase, kinetic or spectral accuracy.
+  evidence:
+  - finite_substitution
