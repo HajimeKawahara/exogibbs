@@ -66,3 +66,20 @@ Rebuild offline from the repository root::
 The builder uses SciPy only at development time. The runtime evaluates the
 stored coefficients and partition sums with JAX. Changing numerical sources
 requires an explicit dataset-version and pinned-hash review.
+
+Opt-in C2H correction
+--------------------
+
+``c2h_v1.json`` pins the separate ``curated-c2h-v1`` dataset, selected by
+``exogibbs.presets.curated_c2h.chemsetup()``. Only C2H1 changes: NASA CCH
+thermal functions and the balanced ATcT 1.172 atomization energy replace the
+inherited constants. All other species, both network options and the
+1500--4000 K interval are preserved. ``gas_v1.json`` remains frozen.
+
+Rebuild from inspected offline records with
+``python mceg/reviews/build_c2h_correction.py --output /tmp/c2h_v1.json``.
+The source choice is conditional; high-temperature thermal uncertainty and
+whole-mixture physical accuracy remain unquantified. The 75 paired
+ion-inclusive equilibrium conditions are archived under
+``tests/data/validation/c2h_equilibrium_impact/20261102``; neutral-mode
+abundance changes were not evaluated. See ``documents/presets/curated_c2h.rst``.

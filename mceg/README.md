@@ -8,8 +8,8 @@ runtime or test dependency; numerical implementations remain owned by ExoGibbs.
 
 For installed-package and species lookup, see the
 [optional inspection guide](../documents/mceg/optional_inspection.rst).
-`python mceg/build_catalog.py` copies the canonical curated/HCN records and small
-study artifacts into a committed wheel catalog. Both this builder and
+`python mceg/build_catalog.py` copies the canonical curated/HCN and opt-in C2H
+records and study artifacts into a committed wheel catalog. Both this builder and
 `exogibbs.provenance.describe(setup)` work without MCEG. The catalog is a dated
 evidence snapshot; matching declared metadata does not validate a user's run.
 
@@ -75,6 +75,15 @@ source representations and independent equilibrium comparisons. Runtime
 code consumes pinned numerical JSON only; MCEG remains an optional development
 tool. Earlier source-study contracts and their archived results are historical
 evidence and are not rewritten by this implementation.
+
+The [C2H correction contract](contracts/curated_c2h.yaml) records the separate
+[opt-in preset](../documents/presets/curated_c2h.rst), `curated-c2h-v1`:
+NASA thermal functions and balanced ATcT 1.172 atomization energy. Its
+[75-pair comparison](../tests/data/validation/c2h_equilibrium_impact/20261102/README.rst)
+changes C2H alone while re-equilibrating the same 537 species at each fixed
+budget. Source adoption is conditional; numerical verification does not
+establish whole-mixture physical accuracy. The packaged catalog binds this
+study to the new dataset and does not transfer the historical HCN study to it.
 
 The [preliminary FastChem comparison contract](contracts/new_fastchem_logk.yaml)
 adds a v0.2 record for [issue #297](https://github.com/HajimeKawahara/exogibbs/issues/297).

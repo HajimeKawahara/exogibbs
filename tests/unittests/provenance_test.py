@@ -13,7 +13,7 @@ import sys
 import numpy as np
 import pytest
 
-from exogibbs.presets import curated
+from exogibbs.presets import curated, curated_c2h
 from exogibbs.provenance import describe, evidence_catalog
 
 
@@ -38,15 +38,29 @@ def test_catalog_is_reproducible_and_retains_archived_records(tmp_path):
     species = {s["id"]: s["aliases"] for s in model["species"]}
     assert species["C1H1N1_hcn"] == ["HCN"]
     assert species["C1H1N1_hnc"] == ["HNC"]
-    for record in model["records"]:
-        for pin in [record, *record.get("artifacts", [])]:
-            assert hashlib.sha256((packaged / pin["path"]).read_bytes()).hexdigest() == pin["sha256"]
-        assert (packaged / record["path"]).read_bytes() == (ROOT / "mceg" / record["path"]).read_bytes()
+    for item in catalog["models"]:
+        for record in item["records"]:
+            for pin in [record, *record.get("artifacts", [])]:
+                assert hashlib.sha256((packaged / pin["path"]).read_bytes()).hexdigest() == pin["sha256"]
+            assert (packaged / record["path"]).read_bytes() == (ROOT / "mceg" / record["path"]).read_bytes()
     hcn = model["records"][1]
     assert hcn["species"] == ["C1H1N1_hcn"]
     assert "-4.38%" in hcn["summary"] and "-4.67%" in hcn["summary"]
     assert "not accuracy rankings" in hcn["summary"]
     assert "Your conditions have not been evaluated" in hcn["summary"]
+
+
+def test_c2h_correction_has_separate_evidence_identity(setup):
+    corrected = curated_c2h.chemsetup()
+    description = describe(corrected)
+    assert description["model_id"] == "exogibbs.curated_c2h.v1"
+    assert description["model_id"] != describe(setup)["model_id"]
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
+    assert [r["id"] for r in model["records"]] == ["c2h_correction"]
+    assert "whole_mixture_accuracy_review" in model["records"][0]["assessments"]
+    assert "unquantified" in model["records"][0]["summary"]
+    assert describe(curated_c2h.chemsetup(ions=False))["record_match"] == "no_matching_record"
 
 
 def test_describe_identifies_only_declared_metadata(setup):

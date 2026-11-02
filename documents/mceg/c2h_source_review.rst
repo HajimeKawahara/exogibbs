@@ -10,6 +10,11 @@ by source identification; identical thermal populations are not implied.
 This closes the initial literature/attribution review with explicit access
 gaps. Production coefficients and the historical baseline are unchanged.
 
+The subsequent :doc:`C2H correction <../presets/curated_c2h>` implements the
+conditional NASA/ATcT choice as a separate opt-in dataset and records a
+75-pair abundance comparison. The report below describes the initial source
+review; its historical inputs and original curated preset remain frozen.
+
 Sources and identity
 --------------------
 

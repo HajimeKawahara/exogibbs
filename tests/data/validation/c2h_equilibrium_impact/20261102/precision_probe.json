@@ -1,0 +1,15 @@
+{
+  "requested_tolerance": 2e-15,
+  "dataset": "curated-gas-v1",
+  "C_over_O": 0.5888436553555908,
+  "temperature_K": 1500,
+  "pressure_bar": 1e-06,
+  "converged": false,
+  "iterations": 1000,
+  "solver_residual": 1.6710676006692873e-14,
+  "element_relative_residual": 9.916089708220316e-09,
+  "charge_relative_residual": 8.652961809103855e-15,
+  "mass_action_max_abs_ln": 7.283063041541027e-13,
+  "disposition": "Not accepted as a converged result; reran the complete grid with achievable tolerances 1e-13 and 5e-14. No grid points were dropped.",
+  "interpretation": "Floating-point/convergence limit in this trial, not a physical-model error or no-effect result."
+}
