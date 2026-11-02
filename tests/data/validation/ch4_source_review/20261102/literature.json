@@ -1,0 +1,324 @@
+{
+  "identity": {
+    "formula": "CH4",
+    "network_id": "C1H4",
+    "phase": "neutral ideal gas",
+    "ground_state": "Tetrahedral singlet, electronic statistical weight 1",
+    "janaf_symmetry_number": 12,
+    "spectroscopic_isotopologue": "12C1H4",
+    "janaf_molar_mass_g_mol": 16.04276,
+    "nasa_molar_mass_g_mol": 16.04246,
+    "spectroscopic_mass_Da": 16.03130013,
+    "nuclear_spin_product": 16,
+    "spin_note": "Four I=1/2 protons give a spin product 2^4=16. Divide spectroscopic Q by 16 to compare with nuclear-spin-free thermochemistry in the high-temperature equilibrium convention. Td state weights 5,5,2,3,3 are already included. Do not additionally divide by rotational symmetry 12 or confuse the HITRAN state-independent gi=1 with the complete spin product. No isotope-resolved equilibrium is modeled."
+  },
+  "printed_janaf": {
+    "page": 615,
+    "evaluation": "March 1961; current table converted to 1 bar",
+    "Hf0_kJ_mol": -66.911,
+    "Hf298_kJ_mol": -74.873,
+    "reported_uncertainty_kJ_mol": 0.34,
+    "S298_J_mol_K": 186.251,
+    "S298_reported_uncertainty_J_mol_K": 0.04,
+    "uncertainty_definition": "Not separately recovered; do not interpret as 95% limits or propagate independently.",
+    "frequencies_cm-1_with_degeneracy": [
+      [
+        2916.5,
+        1
+      ],
+      [
+        1534.0,
+        2
+      ],
+      [
+        3018.7,
+        3
+      ],
+      [
+        1306,
+        3
+      ]
+    ],
+    "thermal_ancestry": [
+      "Stevenson and Ibers (1960): bond distance and force constants",
+      "Jones and McDowell (1959): vibrational frequencies"
+    ],
+    "energy_ancestry": "Rossini (1931) combustion, recomputed with then-accepted formation enthalpies of water and CO2.",
+    "inspected_nodes_K": [
+      0,
+      298.15,
+      300,
+      1500,
+      2000,
+      3000,
+      4000,
+      6000
+    ]
+  },
+  "atct": {
+    "version": "1.172",
+    "CH4_Hf0_kJ_mol": -66.547,
+    "CH4_Hf298_kJ_mol": -74.516,
+    "CH4_uncertainty_kJ_mol": 0.043,
+    "uncertainty_definition": "Estimated 95% confidence limits; correlated network, not propagated as independent errors.",
+    "top_provenance": [
+      {
+        "reference": "Smith (1946), third-law reanalysis",
+        "contribution_percent": 39.8,
+        "reaction": "2H2(g)+C(graphite)->CH4(g)",
+        "T_K": 1165,
+        "deltaG_kJ_mol": 37.521,
+        "input_uncertainty_kJ_mol": 0.068
+      },
+      {
+        "reference": "Schley (2010), combustion",
+        "contribution_percent": 7.1,
+        "reaction": "CH4(g)+2O2(g)->CO2(g)+2H2O(cr,l)",
+        "T_K": 298.15,
+        "deltaH_kJ_mol": -890.578,
+        "input_uncertainty_kJ_mol": 0.078
+      }
+    ],
+    "correlation_CH3": 0.851,
+    "independence_note": "ATcT combines calorimetry, equilibrium and theory. Thermal functions enter third-law reductions; the energy evaluation does not independently validate the full high-temperature thermal curve."
+  },
+  "wenger2008": {
+    "doi": "10.1016/j.jqsrt.2008.06.006",
+    "source": "HAL hal-00277904 v2, Table 4",
+    "method": "Fitted lower polyads plus statistical rotational and Morse extrapolation of high polyads toward dissociation",
+    "range_K": [
+      100,
+      3000
+    ],
+    "nuclear_spin_included": true,
+    "nodes": [
+      {
+        "T_K": 300,
+        "Q": 602.8,
+        "reported_relative_uncertainty_percent": 0.1
+      },
+      {
+        "T_K": 1000,
+        "Q": 8067.4,
+        "reported_relative_uncertainty_percent": 0.1
+      },
+      {
+        "T_K": 1500,
+        "Q": 40580,
+        "reported_relative_uncertainty_percent": 0.1
+      },
+      {
+        "T_K": 2000,
+        "Q": 191000,
+        "reported_relative_uncertainty_percent": 0.9
+      },
+      {
+        "T_K": 2500,
+        "Q": 897000,
+        "reported_relative_uncertainty_percent": 3.8
+      },
+      {
+        "T_K": 3000,
+        "Q": 4190000,
+        "reported_relative_uncertainty_percent": 8.3
+      }
+    ],
+    "uncertainty_note": "At 300 and 1000 K the reported value is less than 0.1%, represented here as an upper bound. These are model-based estimates, not specified confidence intervals. Nikitin (2015) later questions the high-energy statistical approximation; retain this as a historical diagnostic, not a preferred benchmark."
+  },
+  "mm2024": {
+    "doi": "10.1093/mnras/stae148",
+    "states_count": 9155208,
+    "J_max": 60,
+    "published_partition_range_K": [
+      0,
+      2500
+    ],
+    "downloaded_partition_range_K": [
+      1,
+      5000
+    ],
+    "estimated_completeness_limit_K": 2000,
+    "note": "Calculated energies are replaced by MARVEL energies where available. The downloaded file extends to 5000 K, but the published completeness estimate is 2000 K. No all-state caloric validation to 4000 K is established.",
+    "supplied_publisher_copy_inspected": true,
+    "completeness_estimate_basis": "Section 5.2, p. 3725: agreement with TIPS2021 until about 2000 K, followed by a smaller MM partition sum. TIPS2021 itself uses Qrot * Qvib above 1300 K; agreement is a model comparison, not an independent high-temperature physical or caloric accuracy bound.",
+    "potential_and_energy_provenance": "Owens et al. 2016 ab initio potential refined against MARVEL energies; computed levels replaced by experimental MARVEL energies where available. This is a different potential treatment from the TIPS2021 methane calculation."
+  },
+  "followups": [
+    "Reconcile CH4 TIPS2021 and TIPS2025 arrays against versioned original datasets and generators. The TIPS2021 full-text access gap is closed; inspect its direct-sum/product-approximation transition at 1300/1301 K and the high-temperature product approximation without assuming the cause of the version difference.",
+    "Resolve the residual between the 2017 corrected printed fit and 2015 Tables 3/5, using original numerical data or author clarification; the full papers and corrected coefficients are now inspected.",
+    "Obtain bound-state and near-dissociation coverage with first and second energy moments through 4000 K, using common isotope and spin conventions.",
+    "Then choose a continuous G/H/S/Cp model and evaluate a finite equilibrium substitution."
+  ],
+  "decision": "Retain the existing JANAF molecular thermal functions, NASA atomic thermal functions and balanced ATcT energy operationally. The inspected Nikitin 2015/2017 treatment adds qualified evidence through 3000 K but does not resolve 4000 K coverage, caloric convergence, or its printed-fit/table residual. Neither raw NASA nor a wholesale MM/TIPS/Nikitin replacement is justified over 1500-4000 K. Physical accuracy remains unknown. The supplied Gamache 2021 paper establishes the high-temperature product approximation, and the supplied 2025 NO2 correction and MM publisher copy refine provenance without resolving the remaining methane limitations.",
+  "nikitin2015_2017": {
+    "doi": "10.1016/j.jqsrt.2015.08.004",
+    "correction_doi": "10.1016/j.jqsrt.2017.05.026",
+    "inspection": "Full 2015 paper (pp. 53-63) and one-page 2017 correction inspected from user-supplied PDFs; Tables 3 and 5 and corrected Table 4 checked visually.",
+    "method": "High-order contact transformations from the NRT potential, symmetry-block ratios and high-P/high-J extrapolations, compared with expanded-basis variational calculations using the same potential.",
+    "range_K": [
+      10,
+      3000
+    ],
+    "nuclear_spin_included": true,
+    "fit_equation": "log10(Q) = sum(B[n] * log10(T/K)**n, n=0..4)",
+    "logarithm_convention": "Base 10 reproduces the scale of published Q values; natural logarithms do not. Shared interval endpoints use the higher-temperature interval in the audit.",
+    "corrected_fit_intervals": [
+      {
+        "bounds_K": [
+          10,
+          250
+        ],
+        "B": [
+          2.97466,
+          -5.97197,
+          5.37202,
+          -1.71898,
+          0.2062
+        ]
+      },
+      {
+        "bounds_K": [
+          250,
+          800
+        ],
+        "B": [
+          14.89348,
+          -30.7197,
+          23.75808,
+          -7.60191,
+          0.89634
+        ]
+      },
+      {
+        "bounds_K": [
+          800,
+          3000
+        ],
+        "B": [
+          -245.338,
+          322.1732,
+          -155.982,
+          33.15236,
+          -2.57467
+        ]
+      }
+    ],
+    "table3_totals": [
+      {
+        "T_K": 1500,
+        "Q": 40424.32
+      },
+      {
+        "T_K": 1750,
+        "Q": 86505.35
+      },
+      {
+        "T_K": 2000,
+        "Q": 179153.26
+      },
+      {
+        "T_K": 2250,
+        "Q": 358380.18
+      },
+      {
+        "T_K": 2500,
+        "Q": 693422.17
+      },
+      {
+        "T_K": 2750,
+        "Q": 1296679.14
+      },
+      {
+        "T_K": 3000,
+        "Q": 2346982.58
+      }
+    ],
+    "table5_selected_Q": {
+      "300": 602.8,
+      "1000": 8065,
+      "1500": 40382,
+      "2000": 179153,
+      "2500": 693422,
+      "3000": 2346982
+    },
+    "internal_consistency_note": "The printed 1500 K Table 3 total (40424.32) differs from Table 5 (40382) by 0.1048%. Neither value is silently substituted for the other. The corrected printed fit exceeds Table 3 totals by 0.61-0.80%, larger than the approximately 0.1% interpolation accuracy stated in Section 4.3. The cause is unresolved; distinguish these reproducible representation residuals from physical accuracy.",
+    "reported_accuracy": [
+      {
+        "range_K": [
+          10,
+          1000
+        ],
+        "relative_percent_upper_bound": 0.1
+      },
+      {
+        "T_K": 2000,
+        "relative_percent_estimate": [
+          1,
+          2
+        ]
+      }
+    ],
+    "uncertainty_definition": "Author model estimates, not specified confidence intervals. Above 2000 K the authors explicitly do not quantify reliable error bars, especially because of P,J extrapolation; a 3000 K tabulation does not establish completeness or accuracy at 4000 K.",
+    "convergence_notes": [
+      "Table 1 directly diagonalizes selected symmetry/P/J blocks; asymptotic symmetry ratios and extrapolations fill the remaining contributions. Table 3 is not a fully direct, converged state sum.",
+      "Section 6 reports levels extended to about 25000 cm-1 and J up to 80 for P=10; Table 3 includes extrapolated contributions through P=20.",
+      "Low-J variational basis expansion approaches CT contributions to about 1%; this is a shared-potential numerical comparison, not independent experimental validation of the high-energy tail.",
+      "Section 5 contains apparent exponent slips for the 2500 K variational/CT estimates; use the explicitly printed Table 3/5 totals and preserve the reported 6.5% comparison as an author statement, without repairing raw text.",
+      "No converged first/second energy moments or whole-domain G/H/S/Cp model through 4000 K is supplied."
+    ],
+    "correction_scope": "The 2017 notice adds digits to fitted Table 4 and says the other tables, figures and conclusions are unchanged; no new physical state calculation is reported.",
+    "adoption": "Useful additional Q evidence through 3000 K, with qualified accuracy near 2000 K. Do not adopt the polynomial as a validated thermal model through 4000 K or extrapolate it beyond 3000 K."
+  },
+  "gamache2021": {
+    "doi": "10.1016/j.jqsrt.2021.107713",
+    "inspection_status": "Supplied full paper inspected for the methane methods, partition conventions, recall procedures and relevant references; p. 7 visually checked.",
+    "locations": "Section 2, pp. 2-3; section 3.6, pp. 6-7; section 4, pp. 11-12; references 50-57, p. 14.",
+    "isotopologue": "12CH4",
+    "reported_temperature_range_K": [
+      1,
+      2500
+    ],
+    "direct_rovibrational_sum": {
+      "temperature_range_K": [
+        1,
+        1300
+      ],
+      "J_max": 67,
+      "reported_complete_energy_cm_minus_1_approx": 15000,
+      "reported_convergence_temperature_K_approx": 1300
+    },
+    "product_approximation": {
+      "temperature_range_K": [
+        1301,
+        2500
+      ],
+      "form": "Qrot * Qvib",
+      "rotation": "Direct sum over a ground-vibrational-state effective Hamiltonian, J=0-80, with term values through 30424 cm^-1.",
+      "vibration": "Separate direct sum over variational J=0 vibrational energies; the normal-mode Hamiltonian derives from the Nikitin et al. 2011 PES.",
+      "coupling_limit": "The product approximation does not retain the full state-dependent rotation-vibration coupling of a coupled rovibrational sum."
+    },
+    "source_ancestry": "Section 3.6 cites the Nikitin-Rey-Tyuterev PES (2011), the Rey et al. nuclear-motion formalism (2012), and the Nikitin 2015 contact-transformation calculation with its 2017 correction. Related calculations are not independent experimental evidence.",
+    "code_provenance_lead": {
+      "doi": "10.5281/zenodo.4708099",
+      "reported_programs": [
+        "TIPS_2021_v1p0.for",
+        "BD_TIPS_2021_v1p0.for",
+        "TIPS_2021_v1p0.py"
+      ],
+      "inspection_limit": "Repository identified by the supplied paper; these original code packages have not been retrieved or compared in this update. Existing HAPI arrays remain separately pinned."
+    },
+    "assessment": "The full-text access gap is closed. All TIPS2021 values in the 1500-2500 K comparison use the product approximation. The 1300/1301 K model transition and caloric derivatives require examination before thermodynamic adoption; the cause of the TIPS2021/2025 difference remains unresolved."
+  },
+  "gamache2025_correction": {
+    "doi": "10.1016/j.jqsrt.2025.109618",
+    "corrects_doi": "10.1016/j.jqsrt.2025.109568",
+    "isotopologue": "16O14N18O",
+    "issue": "Omitted + / - symmetry designations excluded half of the term values from the dictionary used to build its partition sums.",
+    "corrected_programs": [
+      "TIPS2024_v1p1.FOR",
+      "TIPS2024_v1p1.py"
+    ],
+    "code_doi": "10.5281/zenodo.16411169",
+    "methane_implication": "No methane correction is reported; this correction cannot be used to explain or repair the archived CH4 version difference. The supplied Gamache.pdf is the 2021 main paper, whereas the 2025 main paper was previously inspected separately from its public author copy."
+  }
+}
