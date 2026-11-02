@@ -1,0 +1,186 @@
+{
+  "review_date": "2026-11-02",
+  "species": {
+    "formula": "AlH",
+    "model_name": "Al1H1",
+    "name": "Aluminum monohydride",
+    "phase": "gas",
+    "charge": 0,
+    "composition": {
+      "Al": 1,
+      "H": 1
+    },
+    "CAS": "13967-22-1",
+    "ground_state": "X1Sigma+",
+    "point_group": "Cinfv",
+    "electronic_multiplicity": 1,
+    "rotational_symmetry_number": 1,
+    "isotopologue_for_exomol": "27Al-1H",
+    "nuclear_spin_statistical_weight_for_exomol": 12,
+    "identity_sources": [
+      "janaf_printed1998",
+      "exomol_aloha_definition"
+    ],
+    "exclusion": "This review does not concern AlH3, AlH ions, or condensed aluminum hydride."
+  },
+  "scope": "Scientific provenance and candidate assessment. No runtime or curated-data adoption is made in this investigation.",
+  "sources": [
+    {
+      "id": "janaf_printed1998",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Aluminum.pdf",
+      "parent_sha256": "7e78dd1eef3a3509f60a9c27c60745ae1e2a9bb0687bfcbed4110d85e2a42a3e",
+      "archived_file": "janaf_alh_printed_114.pdf",
+      "inspection": "Full AlH page (printed p 114, PDF page 56) rendered and visually read, including constants, comments, references, and six tabulated rows.",
+      "evaluation_date": "June 1963",
+      "findings": {
+        "formation_enthalpy_0_K_kJ_mol": 259.512,
+        "formation_enthalpy_298_15_K_kJ_mol": 259.408,
+        "printed_enthalpy_uncertainty_kJ_mol": 20,
+        "entropy_298_15_K_J_mol_K": 187.864,
+        "printed_entropy_uncertainty_J_mol_K": 0.5,
+        "omega_e_cm-1": 1682.56,
+        "omega_ex_e_cm-1": 29.09,
+        "B_e_cm-1": 6.3907,
+        "alpha_e_cm-1": 0.1858,
+        "r_e_angstrom": 1.6477
+      },
+      "ancestry": "The note adopts Gaydon (1953), D0=2.9±0.2 eV, from vibrational extrapolation and A-state predissociation. It mentions a 3.05 eV linear Birge-Sponer extrapolation and a 3.07 eV predissociation limit. Thermal functions use Zeeman and Ritter (1954) molecular constants, X1Sigma+ weight 1 and symmetry 1.",
+      "references": [
+        "A. G. Gaydon, Dissociation Energies, 2nd edition, Chapman and Hall, London (1953).",
+        "P. B. Zeeman and G. J. Ritter, Canadian Journal of Physics 32, 555 (1954)."
+      ],
+      "limit": "The underlying 1953 book and 1954 article were not independently inspected. The review does not reinterpret the printed ±20 kJ/mol estimate as a calibrated statistical confidence interval. Printed/online agreement is demonstrated only at the six transcribed nodes."
+    },
+    {
+      "id": "janaf_constants",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-1Vol1-Intro.pdf",
+      "parent_sha256": "773a6733a42b59752f5a1072345f7e78e4d11e88055dda0dc0044bfd1377a15a",
+      "archived_file": "janaf_constants_printed_10.pdf",
+      "inspection": "Printed pp 3 and 10 visually inspected. The AlH table predates the third edition and therefore uses the 1973 CODATA constants.",
+      "gas_constant_J_mol_K": 8.31441,
+      "limit": "Modern constants may be used for a separate common-convention comparison, but should not be silently presented as the original JANAF constants."
+    },
+    {
+      "id": "nasa2002",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "parent_sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "archived_file": "nasa_selected_records.txt",
+      "inspection": "Official report Appendix D records and bibliography inspected. ALH printed p 49, AL p 46, H p 126.",
+      "record": "ALH, tpis96, mass 27.989478 u, hf298=249250.804 J/mol, H298-H0=8668.104 J/mol, 200–1000 and 1000–6000 K.",
+      "gas_constant_J_mol_K": 8.31451,
+      "ancestry": "ALH cites Gurvich, Veyts and Alcock (1996), Thermodynamic Properties of Individual Substances, volume 3, Begell House, part 1 p 139 and part 2 p 106. AL cites Cox 1989/Kaufman 1991b/Gordon 1999; H cites Herzberg 1970/Moore 1972/Gordon 1999.",
+      "limit": "Gurvich part 1 p 139 and part 2 p 106 were not recovered. The report establishes the NASA record and source citation, not the full primary experimental selection or its uncertainty. The prior major-molecule fixture lists a 300 K lower bound; the official ALH record starts at 200 K."
+    },
+    {
+      "id": "baltayan1979",
+      "doi": "10.1063/1.437749",
+      "url": "https://doi.org/10.1063/1.437749",
+      "metadata_url": "https://api.crossref.org/works/10.1063/1.437749",
+      "metadata_sha256": "bd00c9b8cbed78c8dec42b930cb11c4902aee1a57be474ec56ab35a9afd38b83",
+      "title": "Lifetimes and predissociation in (AlH(AlD) A1Π",
+      "citation": "P. Baltayan and O. Nedelec, Journal of Chemical Physics 70, 2399–2403 (1979).",
+      "inspection": "Publisher abstract and publisher-registered Crossref abstract inspected. Full article PDF access returned HTTP 403.",
+      "findings": "The primary abstract explicitly reports De(X)=3.17±0.01 eV and De(A)=0.24±0.01 eV from lifetime/predissociation measurements. It does not report D0=3.16 eV.",
+      "limit": "The atomic fine-structure reference, detailed potential construction, and uncertainty definition cannot be certified from this abstract. Later quoted 3.16 eV differs from the primary registered 3.17 eV and is retained as a discrepancy."
+    },
+    {
+      "id": "exomol2018",
+      "doi": "10.1093/mnras/sty1524",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/18YuWiLe.pdf",
+      "parent_sha256": "a933af941f29243d989fa831b5799864e0ee36e8e333d02e0112d9eac68a0314",
+      "citation": "Yurchenko et al., MNRAS 479, 1401–1411 (2018), WYLLoT.",
+      "inspection": "Full author-hosted publisher PDF downloaded; Sections 2.2 and 3, Table 4, and the discussion on printed pp 1408–1410 read.",
+      "findings": "The X1Sigma+/A1Pi model fits low rovibrational levels. The authors deliberately allow X-state De=3.644 eV to improve the v=0–8 fit; they explicitly reject its physical asymptote accuracy. They quote Baltayan 1979 as 3.16±0.01 eV. Partition functions are explicit state sums at 1 K spacing to 5000 K, with nuclear spin factors 12, 18, 22 for 27AlH, 27AlD, 26AlH.",
+      "limit": "Use Q/12 for 27AlH in a nuclear-spin-excluded convention. The fitted De is not independent energy evidence. Only X and A are included; higher electronic states and their perturbations are omitted. Agreement with older partition compilations is not proof of complete high-temperature thermochemistry."
+    },
+    {
+      "id": "exomol2024",
+      "doi": "10.1093/mnras/stad3802",
+      "url": "https://arxiv.org/pdf/2312.05958",
+      "parent_sha256": "c1dffd666b3ba02168278a7f6927cf890ea1645e470ddd26d99ee0c884d097d4",
+      "citation": "Yurchenko et al., MNRAS 527, 9736–9756 (2024), AloHa; inspected arXiv 2312.05958v1 preprint.",
+      "inspection": "Full preprint downloaded; Sections 4 and 5.1, state definition, and partition-function discussion read.",
+      "findings": "AloHa improves the X/A rovibronic model and A-state predissociation using laboratory information. Section 5.1 includes bound and quasi-bound states in the partition function and keeps continuum absorption separate. The authors say Q remains close to WYLLoT because the ground state dominates.",
+      "limit": "The official definition file gives a 5000 K maximum. Neither that limit nor successful low-state spectroscopy proves a complete all-electronic-state partition sum. Higher triplets and other omitted states could affect heat capacity; disagreement with NASA cannot be attributed uniquely to a NASA defect without the Gurvich state inventory."
+    },
+    {
+      "id": "exomol_aloha_definition",
+      "url": "https://www.exomol.com/db/AlH/27Al-1H/AloHa/27Al-1H__AloHa.def",
+      "archived_file": "exomol_aloha_27AlH.def",
+      "inspection": "Version 20240307 raw definition and matching partition file inspected.",
+      "partition_url": "https://www.exomol.com/db/AlH/27Al-1H/AloHa/27Al-1H__AloHa.pf",
+      "archived_partition_file": "exomol_aloha_27AlH.pf",
+      "mass_u": 27.98936366,
+      "spin_factor": 12,
+      "states": 1364,
+      "maximum_temperature_K": 5000,
+      "normalization": "The nuclear spin product is (2I_Al+1)(2I_H+1)=6×2=12. The X-state electronic multiplicity remains 1; do not multiply by the atomic Al term degeneracy."
+    },
+    {
+      "id": "qin2021",
+      "doi": "10.3847/1538-4357/ac06d1",
+      "url": "https://dr-zhi-qin.github.io/personal/pdf/Qin_2021_ApJ_917_87.pdf",
+      "parent_sha256": "789f4750a84bc86db3133f1ef3ee023f159d697a51f29d831146ff9641755da4",
+      "citation": "Qin, Bai and Liu, Astrophysical Journal 917, 87 (2021).",
+      "inspection": "Full author-hosted paper read in Sections 2.1 and 3.1 and Tables 1 and 3.",
+      "findings": "Independent icMRCI+Q calculations yield De=3.190, 3.201, 3.198 eV with AVQZ, AV5Z, AV6Z. Table 1 labels the experimental 3.16±0.01 eV as De and attributes it to Baltayan 1979; this quotation is not another measurement. Experimental omega_e=1682.37 and omega_ex_e=29.05 cm^-1 are attributed to Szajna 2011.",
+      "limit": "The dissociation limit is labelled Al(2P)+H(2S) without a resolved atomic J. No numerical thermochemical uncertainty is reported. The theory supports the higher-energy direction but does not determine a precise adopted D0."
+    },
+    {
+      "id": "pavlenko2022",
+      "doi": "10.1093/mnras/stac2588",
+      "url": "https://uhra.herts.ac.uk/id/eprint/9963/1/stac2588.pdf",
+      "parent_sha256": "961d41d6dffd56c11348a271cc4040053b8d36bd91afe5e1aad9812a8e3e1727",
+      "citation": "Pavlenko et al., MNRAS 516, 5655–5673 (2022).",
+      "inspection": "Full repository PDF downloaded; Section 3.3 and nuclear-spin convention read.",
+      "findings": "The atmosphere calculation uses D0=3.16 eV and Q/g_ns. The D0 label conflicts with the De label in the primary abstract and Qin 2021 Table 1.",
+      "limit": "This is an astrophysical application, not an independent threshold measurement. Its D0 value must not override the De/D0 distinction."
+    },
+    {
+      "id": "barklem_collet2016",
+      "doi": "10.1051/0004-6361/201526961",
+      "url": "https://arxiv.org/pdf/1602.03304",
+      "parent_sha256": "252008eac0f212662047afdad6d795d6581a21915453797fd5724018fa100d96",
+      "inspection": "Full preprint downloaded; Section 2.1.1 and Table 1 column definitions read; AlH numerical row is preserved in the existing major_molecule_reference.json fixture.",
+      "findings": "The AlH row lists HH 3.060, Luo 2.949±0.130, G2 3.135, and adopted 2.949±0.130 eV. Thus the adopted threshold follows Luo 2007, not a new 2016 dissociation experiment. Molecular Q excludes nuclear spin products.",
+      "limit": "The specific Luo 2007 AlH original references and uncertainty construction remain uninspected. Do not infer common ancestry with JANAF merely from numerical proximity."
+    },
+    {
+      "id": "nist_al_fine_structure",
+      "url": "https://physics.nist.gov/PhysRefData/Handbook/Tables/aluminumtable3.htm",
+      "inspection": "Official NIST persistent-line level table read on 2026-11-02.",
+      "findings": "The Al(3s2 3p 2P) J=1/2 and 3/2 levels are at 0 and 112.061 cm^-1, with electronic weights 2 and 4. The term center is therefore about 0.0093 eV above the lowest level.",
+      "limit": "This diagnoses the scale of a possible atomic reference shift; it does not establish which convention the uninspected 1979 full paper or Gurvich evaluation uses."
+    },
+    {
+      "id": "atct1172_lookup",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "version": "1.172",
+      "listing_date": "2024-09-01",
+      "lookup_date": "2026-11-02",
+      "inspection": "Official web listing identifies 3286 species. Searches of its rendered full text for AlH, HAl, Aluminum, Aluminium gave no matches. Direct file download returned HTTP 403.",
+      "finding": "No AlH value was located in this inspected version.",
+      "limit": "This is a version-scoped negative lookup, not proof of absence from every ATcT version."
+    }
+  ],
+  "scientific_assessment": {
+    "energy": "Conditionally prefer the NASA-side energy over the old JANAF central value. The primary De=3.17±0.01 eV, with an approximately 0.1034 eV zero-point correction, supports D0 near 3.06 eV. The possible atomic fine-structure reference correction is only approximately 0.0093 eV. These scales distinguish NASA-derived 3.0502 eV from JANAF-derived 2.9418 eV, while leaving exact source normalization and uncertainty certification open.",
+    "thermal": "AloHa Q/12 provides a useful independent spectral-model check through 5000 K, including derivative diagnostics. Agreement or disagreement must be interpreted with its X/A state coverage, quasi-bound treatment, isotope mass, and original physical constants. A few-percent agreement in Q alone does not certify heat capacity.",
+    "separate_limits": "Access uncertainty: 1979 full article and Gurvich/Luo pages remain unread. Reference uncertainty: the exact atomic dissociation limit needs alignment. Spectroscopic uncertainty: the quoted ±0.01 eV and omitted higher zero-point terms need their definitions. High-temperature model uncertainty: electronic state completeness is not certified. These limits do not erase the directional energy evidence.",
+    "next_action": "Before adopting a precise correction, recover the 1979 and Gurvich evaluations, resolve De/D0 and atomic reference conventions, and review complete thermal state contributions. A NASA energy preference is not automatic endorsement of the full NASA thermal function."
+  },
+  "archived_files": {
+    "Al-056.txt": "517cff9f229e9446ff2217c326a515e5d3bdfe51fff69330605a0a59cbbb2063",
+    "Al-005.txt": "666ec06681fe525b68eab0c2f297bd1be28144bd3bb7ab27cc48fc67dc76e5e7",
+    "Al-001.txt": "ce4bb740c061a75998b3b4262bbdabf76c010360a7eeb73188476005878a1e58",
+    "H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "H-050.txt": "091490382968f81736db19f9cf60cc233e47a5130403e100d9d6a5108f65c9f0",
+    "janaf_alh_printed_114.pdf": "2211263f2bf4f5804765b999d4cf8b3335e0e43c7fd2586cee12cec81f70c9ab",
+    "printed_alh_nodes.json": "bfad4142a32bc15ee2896367682f45ba19fe62c7baf8608c4966e0fac23a15ab",
+    "janaf_constants_printed_10.pdf": "2aeb29af2596f48e3148dcdb3cc77b71aeb5168db727741135951e67699cdb5b",
+    "nasa_selected_records.txt": "d1d58617a388caba3f59a67fe477901db53a24f43c4ebb2b11d1359f4943cf9d",
+    "exomol_aloha_27AlH.pf": "273b72ffa36b4db7e930393f35175684ad912e8bebcc722bf90a6843cd95f1ab",
+    "exomol_aloha_27AlH.def": "58aa76d593a6033458d9f692e3082f45ec71824e98942e52b4162b10723f7eec",
+    "dissociation_evidence.json": "0c8e6f63a90ca71373cef8f69f66c77ff731547feaa27d5c191e41e6c6f41c02"
+  }
+}

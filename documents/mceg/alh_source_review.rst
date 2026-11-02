@@ -1,0 +1,184 @@
+AlH source investigation and aluminium redistribution
+=====================================================
+
+AlH is investigated next because it is a major aluminium carrier in the saved
+current-curated grid and its adopted energy is explicitly provisional. At
+2500 K, 100 bar and C/O = 1.5 it holds about 51% of aluminium. Among the remaining
+P1 screening candidates, PO2 has the largest elemental share, but holds at most
+0.0744% of P in this grid; NaOH dimer, N3 and S5 hold still smaller shares.
+These finite-grid results motivate prioritizing AlH over the table's colour
+order. They do not establish a universal atmospheric importance ranking.
+
+The baseline is ``curated-c2h-v1``. This investigation has no dependency on the
+unmerged PH2 review and does not change production coefficients, dataset
+identities or historical evidence.
+
+What the existing decision leaves unresolved
+--------------------------------------------
+
+The identified species is neutral gas-phase diatomic AlH, not alane (AlH3), an
+ion or a condensed hydride. The comparison reaction is Al(g) + H(g) -> AlH(g)
+at standard pressure 1 bar. Its ground electronic state is X1Sigma+.
+
+The existing decision is ``retain_provisionally``: JANAF and NASA have different
+energy thresholds, and the previously inspected Barklem-Collet value of
+2.949 +/- 0.130 eV does not by itself distinguish them. The requested follow-up
+is inspection of the primary dissociation measurement and caloric properties.
+
+JANAF's 1963 AlH evaluation gives Hf(298.15 K) = 259.408 kJ/mol, with a printed
+uncertainty of about 20 kJ/mol. It adopts Gaydon's 1953 estimate of
+D0 = 2.9 +/- 0.2 eV. The NASA record
+cites Gurvich (1996a), part 1 p. 139 and part 2 p. 106, and gives a header value
+of 249.250804 kJ/mol. This roughly 10 kJ/mol difference is the principal source
+of the formation-equilibrium discrepancy. The numerical audit separates
+molecular energy, atomic references, enthalpy increments and entropy terms.
+
+The balanced JANAF-minus-NASA reaction enthalpy at 298.15 K is about
+10.4563 kJ/mol. After aligning that anchor, JANAF/NASA formation-K ratios are
+0.999840 at 1500 K and 0.987108 at 3000 K. Atomic-reference contributions to
+the Gibbs difference are about 0.29 kJ/mol at those temperatures. The current
+FastChem fit agrees with JANAF H/S reconstruction within 0.00414 in ln K
+(about 0.415%) across 26 nodes from 1500 to 4000 K.
+
+Printed and online JANAF AlH agree at the six inspected nodes. The online
+formation columns also close with Al(ref) + 0.5 H2 within tabular rounding;
+Al reference phase changes are retained. There is no corresponding evidence
+of the printed/online mismatch found for PH2.
+
+Dissociation energy definitions matter
+--------------------------------------
+
+De measures dissociation from the bottom of a potential well; D0 measures it
+from the lowest vibrational level. They differ by the zero-point energy.
+Atomic fine-structure reference choices must also agree. A value labelled De
+cannot be used as D0 without those conversions.
+
+The publisher-registered abstract of Baltayan and Nedelec (1979),
+`DOI 10.1063/1.437749 <https://doi.org/10.1063/1.437749>`_, explicitly reports
+De(X) = 3.17 +/- 0.01 eV. Later AlH papers quote values near 3.16 eV with
+different labels. The literature packet distinguishes directly inspected
+material from later quotations and records the limits on recovering the
+original dissociation reference. Neither the quoted precision nor a later
+spectral application automatically resolves the thermochemical convention.
+
+ExoMol partition functions require a separate convention check: the full
+nuclear-spin weight for 27AlH is 12. Comparing these directly with a
+thermochemical partition function that omits nuclear-spin degeneracy would
+introduce a spurious entropy offset. A line list fitted to measured low-lying
+levels also does not, by that fact alone, determine the dissociation asymptote.
+
+The archived AloHa partition function, divided by 12, is compared with internal
+partition functions reconstructed from JANAF and NASA H/S under explicit
+mass, standard-pressure and source-gas-constant conventions. At 1500, 3000
+and 4000 K, ExoMol/JANAF ratios are 1.00076, 1.00983 and 1.02069;
+ExoMol/NASA ratios are 1.00033, 0.99662 and 0.97742. Thus both source partition
+functions are within about 2.3% at these nodes.
+
+That agreement does not imply equally small heat-capacity differences.
+At 4000 K the molecular Cp values are 39.844 J/mol/K (JANAF) and about
+45.560 J/mol/K (NASA). A five-point differentiation of the ExoMol Q table gives
+about 40.603 J/mol/K. Changing the finite-difference step between 10, 20 and
+40 K changes the saved 1500--4000 K diagnostic values by less than 0.01 J/mol/K.
+This is a derivative-stability check, not a physical uncertainty bound.
+The ExoMol model includes the X/A states and quasi-bound levels, so omitted
+electronic states and their treatment still limit the physical interpretation.
+The separate derivative audit of the current fit also distinguishes its
+approximate caloric derivatives from the tabulated JANAF functions: its
+reaction-Cp discrepancy reaches about 0.70 J/mol/K over the 26 audited nodes.
+
+Controlled raw-NASA substitution
+--------------------------------
+
+The sensitivity probe replaces only the AlH formation function with the frozen
+NASA ALH-AL-H reaction. It has a separate diagnostic identity and preserves
+the 537-species ion-inclusive network and each pair's elemental budget.
+Other element/H ratios remain fixed while C/H is changed for the three C/O
+settings, before normalization.
+
+There are 75 paired conditions: temperatures 1500, 2000, 2500, 3000 and 4000 K;
+pressures 1e-6, 1e-4, 0.01, 1 and 100 bar; C/O = reference, 1 and 1.5.
+Both endpoints are cold-solved at tolerances 1e-13 and 5e-14, for 300 accepted
+solutions. The archive retains all species' amounts, logarithms, mole fractions,
+differences, thermochemistry, formula matrix, budgets and elemental allocations.
+
+.. list-table:: C/O = 1.5, 2500 K, 100 bar
+   :header-rows: 1
+
+   * - Quantity
+     - Current curated
+     - Raw-NASA AlH probe
+   * - AlH mole fraction
+     - 2.35246e-6
+     - 2.92937e-6
+   * - Fraction of Al held in AlH
+     - 50.9702%
+     - 63.4698%
+   * - Fraction of Al held in atomic Al
+     - 47.4512%
+     - 35.3773%
+   * - Fraction of Al held in AlOH
+     - 1.14666%
+     - 0.85493%
+
+AlH increases by about 24.5% at this point and competes for aluminium with
+the unchanged atomic and other molecular species. The full aluminium partition
+is retained; these selected rows are not the whole budget. The largest absolute
+AlH mole-fraction change is about +6.93e-7 at C/O = 1.5, 2000 K and 100 bar,
+with a probe/current ratio of 1.593.
+
+At this same 2000 K, 100 bar, C/O = 1.5 point, the largest absolute HCN change
+in the grid is -1.21e-9 (about -0.0351%), while CO changes by +2.49e-7
+(about +0.0443%). The prominent response is redistribution among Al carriers;
+all species and conditions remain in the archived arrays.
+
+Tighter tolerance changes x by less than 9.2e-14 and ln(x) by less than 2.4e-5.
+An independent standalone FastChem comparison uses identical constants and
+budgets at C/O = 1.5, 3000 K, 100 bar, with both endpoints agreeing within
+4.5e-8 dex. This is a different temperature from the highlighted case.
+
+These are ideal-gas equilibrium sensitivities, not an uncertainty interval,
+an observed atmospheric response or validation of a selected source. Condensed
+aluminium phases, nonideality, kinetics, transport and spectral synthesis are
+outside this calculation. The elemental-share ranking depends on this scope.
+
+Scientific assessment
+----------------------
+
+The available spectroscopy conditionally favours the NASA-like, stronger
+binding energy over the old JANAF value. The reconstructed thermochemical D0
+values are about 3.0502 eV for NASA and 2.9418 eV for JANAF. Converting the
+1979 De value with a spectroscopic zero-point estimate of about 0.1034 eV
+gives approximately 3.067 eV before reconciling the atomic dissociation limit.
+Al fine-structure conventions introduce differences of order 0.01 eV, so
+the experiment does not certify NASA's exact value; they also do not explain
+the much larger separation from the old JANAF threshold.
+
+This is stronger evidence than the previously inspected, broad Barklem-Collet
+uncertainty alone. It supports the direction of an energy revision, not using
+3.16 eV directly as D0 or endorsing an entire NASA model from one measurement.
+The original 1979 full-text dissociation limit and uncertainty definition, and
+the Gurvich re-evaluation details, remain to be recovered. Empirical potential
+asymptotes fitted mainly to low-lying levels are not independent dissociation
+measurements.
+
+Production adoption is outside this investigation change. A future correction
+should justify a balanced energy reference and a thermal-function choice under
+a new model identity, with the old dataset remaining reproducible. The present
+raw-NASA substitution provides a numerical sensitivity result for that review.
+
+Evidence and reproduction
+--------------------------
+
+The source and sensitivity packets are
+``tests/data/validation/alh_source_review/20261102`` and
+``tests/data/validation/alh_equilibrium_impact/20261102``. Their READMEs give
+offline reproduction commands. Source provenance, inspection limits, selected
+input/output hashes and execution environments are recorded separately from
+the scientific assessment.
+
+``mceg/contracts/alh_source_review.yaml`` separates source attribution from
+fixed-network sensitivity and physical applicability. Ordinary tests require
+neither network access, MCEG nor a FastChem executable::
+
+   PYTHONPATH=src pytest tests/model_evidence/alh_source_review_test.py \
+     tests/model_evidence/alh_equilibrium_impact_test.py

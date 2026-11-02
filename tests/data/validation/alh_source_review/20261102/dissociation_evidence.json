@@ -1,0 +1,95 @@
+{
+  "schema_version": "1",
+  "review_date": "2026-11-02",
+  "species": "AlH(g), neutral, X1Sigma+",
+  "status": "Diagnostic evidence; not an adopted energy or uncertainty distribution.",
+  "baltayan_nedelec1979": {
+    "doi": "10.1063/1.437749",
+    "inspection": "Publisher-registered Crossref abstract and publisher abstract inspected; complete article PDF returned HTTP 403.",
+    "quantity": "De, measured from the potential minimum",
+    "X_De_eV": 3.17,
+    "X_reported_uncertainty_eV": 0.01,
+    "A_De_eV": 0.24,
+    "A_reported_uncertainty_eV": 0.01,
+    "uncertainty_definition": "Not established from the abstract.",
+    "parent_crossref_json_sha256": "bd00c9b8cbed78c8dec42b930cb11c4902aee1a57be474ec56ab35a9afd38b83"
+  },
+  "later_quotations": [
+    {
+      "source": "Yurchenko et al. 2018, Section 2.2",
+      "doi": "10.1093/mnras/sty1524",
+      "quantity": "De",
+      "value_eV": 3.16,
+      "uncertainty_eV": 0.01,
+      "independent_measurement": false
+    },
+    {
+      "source": "Qin, Bai and Liu 2021, Table 1",
+      "doi": "10.3847/1538-4357/ac06d1",
+      "quantity": "De",
+      "value_eV": 3.16,
+      "uncertainty_eV": 0.01,
+      "independent_measurement": false
+    },
+    {
+      "source": "Pavlenko et al. 2022, Section 3.3",
+      "doi": "10.1093/mnras/stac2588",
+      "quantity": "D0",
+      "value_eV": 3.16,
+      "independent_measurement": false
+    }
+  ],
+  "qin2021_independent_theory": {
+    "method": "icMRCI+Q, Table 1",
+    "quantity": "De",
+    "basis_set_values_eV": {
+      "aug-cc-pVQZ": 3.19,
+      "aug-cc-pV5Z": 3.201,
+      "aug-cc-pV6Z": 3.198
+    },
+    "limitation": "No thermochemical uncertainty is assigned. The first dissociation limit is labelled Al(2P)+H(2S), without a resolved Al J label."
+  },
+  "zero_point_diagnostic": {
+    "constants_source": "Experimental row of Qin et al. 2021 Table 1, attributed to Szajna et al. 2011; not a new fit here.",
+    "omega_e_cm-1": 1682.37,
+    "omega_ex_e_cm-1": 29.05,
+    "formula": "G(0) approximately omega_e/2 - omega_ex_e/4; higher Dunham terms omitted.",
+    "ZPE_eV": 0.10339321271791044,
+    "D0_from_primary_abstract_same_asymptote_eV": 3.0666067872820895,
+    "D0_from_later_De_quote_same_asymptote_eV": 3.0566067872820897,
+    "limitation": "This is a convention and scale check, not a replacement for the full spectroscopic zero-point energy."
+  },
+  "al_atomic_fine_structure_diagnostic": {
+    "source_url": "https://physics.nist.gov/PhysRefData/Handbook/Tables/aluminumtable3.htm",
+    "inspection": "NIST persistent-line level table inspected on 2026-11-02.",
+    "term": "3s2 3p 2P odd",
+    "levels": [
+      {
+        "J": 0.5,
+        "energy_cm-1": 0.0,
+        "electronic_weight_2J_plus_1": 2
+      },
+      {
+        "J": 1.5,
+        "energy_cm-1": 112.061,
+        "electronic_weight_2J_plus_1": 4
+      }
+    ],
+    "term_center_above_lowest_level_eV": 0.009262528840415236,
+    "conditional_D0_from_primary_De_if_term_center_reference_eV": 3.0573442584416743,
+    "interpretation": "The possible term-center correction is about 0.0093 eV. The 1979 abstract does not identify its asymptote convention; this correction is therefore conditional, not applied to the model."
+  },
+  "barklem_collet2016_table1": {
+    "doi": "10.1051/0004-6361/201526961",
+    "record_source": "Frozen major_molecule_reference.json; column meanings checked against original paper Table 1 and Section 2.1.1.",
+    "quantity": "D0",
+    "Huber_Herzberg1979_eV": 3.06,
+    "Luo2007_eV": 2.949,
+    "Luo2007_uncertainty_eV": 0.13,
+    "Curtiss1991_G2_eV": 3.135,
+    "adopted_eV": 2.949,
+    "adopted_uncertainty_eV": 0.13,
+    "limitation": "The specific original sources behind the Luo AlH entry have not been inspected. Its similarity to JANAF is not proof of common ancestry."
+  },
+  "assessment": "The primary De result, after an approximately 0.1034 eV zero-point correction, favors a D0 near the NASA-derived 3.0502 eV over the JANAF-derived 2.9418 eV. A possible approximately 0.0093 eV atomic reference shift is too small to explain the roughly 0.11 eV NASA/JANAF difference. This supports a conditional preference for the NASA-side energy, but does not certify its exact value or the complete NASA thermal function. Do not use the later 3.16 eV D0 quotation as an independently verified threshold."
+}
