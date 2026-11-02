@@ -35,5 +35,6 @@ HCN differences with optional MCEG tooling.
    ohno_p3
    ph2_source_review
    phosphorus_provenance
+   naoh_dimer_source_review
    phosphorus_cold_validation
    build

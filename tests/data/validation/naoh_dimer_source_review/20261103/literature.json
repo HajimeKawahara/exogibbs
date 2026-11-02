@@ -1,0 +1,72 @@
+{
+  "decision": "The Gurvich 1996 evaluation represented by NASA is the scientifically preferred direction among the inspected choices: it revises both the thermal construction and the experimental energy analysis. Production coefficients remain unchanged in this scoped investigation; retaining them is not a claim that JANAF is scientifically superior.",
+  "identity": {
+    "species": "Neutral ideal-gas sodium hydroxide dimer (NaOH)2 = Na2(OH)2 = H2Na2O2 = NASA Na2O2H2; six atoms, twelve vibrational modes.",
+    "excluded": "Not Na2O2 peroxide, NaOH monomer, NaOH(H2O)n hydrate, hydroxide ions, or condensed NaOH. Formula equality alone would not establish a different cluster topology.",
+    "state": "Old C2h and revised D2h empirical molecular representations describe the same nominal dimer. Ground electronic statistical weight is 1 in both evaluations. No experimentally established complete high-temperature state inventory is claimed."
+  },
+  "source_lineage": {
+    "current": "Unchanged FastChem H2Na2O2 row cites JANAF 1998. Official H-062 table retains a December 1970 evaluation date; 1998 is the compilation edition, not new dimer measurements. Current polynomial approximately follows the JANAF values at reviewed in-domain nodes.",
+    "janaf_construction": "Inspected JANAF1974 p449 explains the adopted C2h model, twelve estimated vibrational frequencies, symmetry 2 and molecular inertia. Hf298=-145.2 +/-6.0 kcal/mol, equivalent central value -607.5168 kJ/mol. A mean gas dimerization H298=-50.7 +/-3.0 kcal/mol was combined with the adopted monomer energy. Original 1-atm/cal table is not used as a 1-bar Gibbs table.",
+    "revised_construction": "Gurvich1996 pp1268-1271 prefers a D2h planar rhomboid by analogy, revises empirical vibrational frequencies and thermal functions in a rigid-rotor harmonic-oscillator model with low-temperature quantum corrections, and reanalyzes previous vapor experiments using revised auxiliary data. NASA record explicitly cites Gurvich,1996b. and reproduces selected absolute Table3-27 functions.",
+    "shared_ancestry": "JANAF and Gurvich reuse older vaporization, mass-spectrometric and molecular-beam studies. Neither their agreement nor NASA reproduction is independent experimental validation. Modern monomer-only spectroscopy would not establish the dimer partition function."
+  },
+  "formation_energy_evidence": {
+    "schoonmaker1958": {
+      "doi": "10.1063/1.1744157",
+      "inspection": "Original full text not read; publisher request HTTP403, bibliographic metadata confirmed. Values below are as reported in Gurvich1996.",
+      "temperature_K": 660,
+      "gas_association_reaction": "2 NaOH(g) -> Na2(OH)2(g)",
+      "gas_association_H_kcal_mol": -54,
+      "gas_association_stated_uncertainty_kcal_mol": 5,
+      "vaporization_reaction": "2 NaOH(l) -> Na2(OH)2(g)",
+      "vaporization_H_kcal_mol": 28,
+      "vaporization_stated_uncertainty_kcal_mol": 3
+    },
+    "rao1960": {
+      "doi": "10.1063/1.1731491",
+      "inspection": "Original full text not read; publisher request HTTP403, bibliographic metadata confirmed. Interpretation is Gurvich1996 evaluation.",
+      "temperature_K": 936,
+      "dimer_pressure_mmHg": 0.0029,
+      "interpretation": "Gurvich considers the monomer/dimer pressure ratio more reliable than absolute pressures because systematic errors can cancel. Condensed-phase composition and creeping molten hydroxide can affect vapor experiments."
+    },
+    "gurvich_selected_reaction": "NaOH(l) + NaOH(g) -> Na2(OH)2(g), with extrapolated reaction H0=-4.9 +/-6 kJ/mol; this is neither all-gas association nor total atomization D0.",
+    "gurvich_hf298_kJ_mol": -624,
+    "gurvich_hf298_stated_uncertainty_kJ_mol": 10,
+    "uncertainty": "Evaluated bounds are not identified as Gaussian one-sigma errors and share ancestral data. No probabilistic source-combination error bar is calculated."
+  },
+  "geometry_evidence": {
+    "reported_by_evaluations": "Both inspected evaluations cite Buchler et al.1967 for nonpolarity and a planar Na2O2 fragment. Nonpolarity does not uniquely choose C2h versus D2h or locate H atoms.",
+    "original_doi": "10.1063/1.1840711",
+    "original_access": "Publisher title and Crossref abstract inspected, original full text not read. The title/abstract concern Cs-containing species and do not name NaOH. They do not establish whether the full text also discusses NaOH; no citation error is inferred.",
+    "high_temperature_limit": "Gurvich explicitly uses estimated molecular constants and acknowledges increasing high-temperature approximation uncertainty. D2h is an evaluated assumption, not directly measured molecular geometry in this review."
+  },
+  "numerical_interpretation": {
+    "replay": "Exact modern official JANAF dimer nodes reproduce the frozen comparison using frozen atomic references. Molecular energy, molecular thermal changes and atomic reference changes are separated.",
+    "rrho": "The twelve printed modes explain the Cp difference. Adding the classical rotor inertia/symmetry entropy difference also reproduces the entropy change, within printed precision/approximation. This diagnostic does not recompute a validated high-temperature partition function.",
+    "association": "2NaOH(g)->dimer uses each source own monomer. Atomic references cancel, but switching both monomer and dimer is a different comparison from replacing only the dimer.",
+    "printed_inconsistencies": "Gurvich Table3-24 reports a 1000K entropy difference of15.049 J/mol/K whereas its absolute Table3-27 and official JANAF imply19.052. The absolute table is reproduced by NASA and the RRHO diagnostic. Both printed values are preserved. The inertia-product uncertainty is also5000 in prose and500 in the list, with units1e-117 g^3 cm^6; neither is silently corrected or propagated."
+  },
+  "follow_ups": [
+    {
+      "priority": "next adoption work",
+      "action": "Construct a named candidate replacing only the dimer with the reviewed Gurvich/NASA thermal and energy source, using explicit common atomic references. Check thermodynamic consistency and a focused fixed-network substitution before adoption; keep a monomer+dimer update as a separate model choice.",
+      "requires_new_originals": false
+    },
+    {
+      "priority": "MCEG literature confirmation",
+      "action": "Inspect Rao1960 and Schoonmaker1958 originals to audit pressure ratios, species assignment, condensed-phase conditions and third-law recalculation; verify whether Buchler1967 discusses NaOH in the full text. These remain source-audit gaps, not blockers for merging the completed investigation.",
+      "dois": [
+        "10.1063/1.1731491",
+        "10.1063/1.1744157",
+        "10.1063/1.1840711"
+      ]
+    },
+    {
+      "priority": "higher accuracy if relevant",
+      "action": "If cooler sodium-rich or high-pressure applications make the dimer important, seek independent molecular constants, low-mode anharmonicity and quantified state/structural uncertainty rather than extrapolating the finite-grid result. No exhaustive negative literature claim is made."
+    }
+  ],
+  "production_changed": false,
+  "equilibrium_substitution": "not_run"
+}
