@@ -118,11 +118,41 @@
       "inspection_date": "2026-11-02",
       "inspection": "Complete correction inspected; Table 4 coefficients transcribed and visually verified. Its fit is replayed independently against the 2015 numerical tables.",
       "archival_policy": "User-supplied full PDF remains local and is not required by offline replay; only source metadata, selected numerical inputs and independently authored review notes are committed."
+    },
+    {
+      "url": "https://doi.org/10.1016/j.jqsrt.2021.107713",
+      "local_reference": "ref/refs_exogibbs_202611-2/Gamache.pdf",
+      "sha256": "85e5e9a6ca08f552a07bce2302b7f75c3385c7e901319d1db194d926610b27c0",
+      "bytes": 1154584,
+      "pdf_pages": 16,
+      "inspection_date": "2026-11-02",
+      "inspection": "Full paper available; methods in section 2 (pp. 2-3), methane section 3.6 (pp. 6-7), recall procedures in section 4 and references 50-57 inspected. Page 7 visually checked: the direct 12CH4 rovibrational sum is used through 1300 K, followed by Qrot * Qvib from 1301 to 2500 K. This resolves the earlier failed TIPS2021 PDF access, without resolving the TIPS2021/2025 numerical difference.",
+      "archival_policy": "User-supplied full PDF and extracted text remain local; only source metadata and independently authored review notes are committed. Offline replay does not require the PDF."
+    },
+    {
+      "url": "https://doi.org/10.1016/j.jqsrt.2025.109618",
+      "local_reference": "ref/refs_exogibbs_202611-2/Gamache_Corr.pdf",
+      "sha256": "704c8056e1e0ff27424a78c4dfe7dba7416c52b0d2e8895e98d15b21e3096380",
+      "bytes": 281413,
+      "pdf_pages": 1,
+      "inspection_date": "2026-11-02",
+      "inspection": "Complete correction visually inspected. It corrects missing + / - symmetry labels for 16O14N18O and points to TIPS2024_v1p1 programs at DOI 10.5281/zenodo.16411169. It is a correction to the 2025 HITRAN2024 paper, not to the supplied 2021 paper; no methane correction is reported.",
+      "archival_policy": "User-supplied full PDF and extracted text remain local; only source metadata and independently authored review notes are committed. Offline replay does not require the PDF."
+    },
+    {
+      "url": "https://doi.org/10.1093/mnras/stae148",
+      "local_reference": "ref/refs_exogibbs_202611-2/Yurchenko_2024_2.pdf",
+      "sha256": "7003d63e6d0791bd7064b292784cefda9d9f023d139cf633c5c815e1d3eb10e9",
+      "bytes": 1957957,
+      "pdf_pages": 11,
+      "inspection_date": "2026-11-02",
+      "inspection": "Supplied publisher copy inspected for the PES and MARVEL treatment (sections 1-2), variational basis and line-generation limits (section 4), partition definition and completeness comparison (section 5.2, p. 3725, Figure 4 visually checked), and conclusions. Confirms the prior public-copy review: the approximately 2000 K completeness estimate is derived from comparison with TIPS2021; this does not validate caloric moments or 4000 K coverage.",
+      "archival_policy": "User-supplied full PDF and extracted text remain local; only source metadata and independently authored review notes are committed. Offline replay does not require the PDF."
     }
   ],
   "failed_access": [
     "Fresh direct JANAF C-067.txt download returned 403; use the existing frozen official excerpt and the inspected printed page.",
-    "TIPS2021 PDF URLs returned 404; use the version-labelled official HAPI arrays and the MM2024 reference, not a guessed PDF."
+    "Initial TIPS2021 PDF URL attempts returned 404; resolved on 2026-11-02 by inspection of the user-supplied Gamache.pdf (DOI 10.1016/j.jqsrt.2021.107713). The original version-labelled HAPI arrays remain the numerical input."
   ],
   "search_queries": [
     "methane partition function high temperature MM 10to10",

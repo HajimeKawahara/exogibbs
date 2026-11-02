@@ -138,15 +138,18 @@
       5000
     ],
     "estimated_completeness_limit_K": 2000,
-    "note": "Calculated energies are replaced by MARVEL energies where available. The downloaded file extends to 5000 K, but the published completeness estimate is 2000 K. No all-state caloric validation to 4000 K is established."
+    "note": "Calculated energies are replaced by MARVEL energies where available. The downloaded file extends to 5000 K, but the published completeness estimate is 2000 K. No all-state caloric validation to 4000 K is established.",
+    "supplied_publisher_copy_inspected": true,
+    "completeness_estimate_basis": "Section 5.2, p. 3725: agreement with TIPS2021 until about 2000 K, followed by a smaller MM partition sum. TIPS2021 itself uses Qrot * Qvib above 1300 K; agreement is a model comparison, not an independent high-temperature physical or caloric accuracy bound.",
+    "potential_and_energy_provenance": "Owens et al. 2016 ab initio potential refined against MARVEL energies; computed levels replaced by experimental MARVEL energies where available. This is a different potential treatment from the TIPS2021 methane calculation."
   },
   "followups": [
-    "Reconcile CH4 TIPS2021 and TIPS2025 arrays against versioned original datasets and generators; investigate truncation, models and publication/file differences without assuming their cause.",
+    "Reconcile CH4 TIPS2021 and TIPS2025 arrays against versioned original datasets and generators. The TIPS2021 full-text access gap is closed; inspect its direct-sum/product-approximation transition at 1300/1301 K and the high-temperature product approximation without assuming the cause of the version difference.",
     "Resolve the residual between the 2017 corrected printed fit and 2015 Tables 3/5, using original numerical data or author clarification; the full papers and corrected coefficients are now inspected.",
     "Obtain bound-state and near-dissociation coverage with first and second energy moments through 4000 K, using common isotope and spin conventions.",
     "Then choose a continuous G/H/S/Cp model and evaluate a finite equilibrium substitution."
   ],
-  "decision": "Retain the existing JANAF molecular thermal functions, NASA atomic thermal functions and balanced ATcT energy operationally. The inspected Nikitin 2015/2017 treatment adds qualified evidence through 3000 K but does not resolve 4000 K coverage, caloric convergence, or its printed-fit/table residual. Neither raw NASA nor a wholesale MM/TIPS/Nikitin replacement is justified over 1500-4000 K. Physical accuracy remains unknown.",
+  "decision": "Retain the existing JANAF molecular thermal functions, NASA atomic thermal functions and balanced ATcT energy operationally. The inspected Nikitin 2015/2017 treatment adds qualified evidence through 3000 K but does not resolve 4000 K coverage, caloric convergence, or its printed-fit/table residual. Neither raw NASA nor a wholesale MM/TIPS/Nikitin replacement is justified over 1500-4000 K. Physical accuracy remains unknown. The supplied Gamache 2021 paper establishes the high-temperature product approximation, and the supplied 2025 NO2 correction and MM publisher copy refine provenance without resolving the remaining methane limitations.",
   "nikitin2015_2017": {
     "doi": "10.1016/j.jqsrt.2015.08.004",
     "correction_doi": "10.1016/j.jqsrt.2017.05.026",
@@ -265,5 +268,57 @@
     ],
     "correction_scope": "The 2017 notice adds digits to fitted Table 4 and says the other tables, figures and conclusions are unchanged; no new physical state calculation is reported.",
     "adoption": "Useful additional Q evidence through 3000 K, with qualified accuracy near 2000 K. Do not adopt the polynomial as a validated thermal model through 4000 K or extrapolate it beyond 3000 K."
+  },
+  "gamache2021": {
+    "doi": "10.1016/j.jqsrt.2021.107713",
+    "inspection_status": "Supplied full paper inspected for the methane methods, partition conventions, recall procedures and relevant references; p. 7 visually checked.",
+    "locations": "Section 2, pp. 2-3; section 3.6, pp. 6-7; section 4, pp. 11-12; references 50-57, p. 14.",
+    "isotopologue": "12CH4",
+    "reported_temperature_range_K": [
+      1,
+      2500
+    ],
+    "direct_rovibrational_sum": {
+      "temperature_range_K": [
+        1,
+        1300
+      ],
+      "J_max": 67,
+      "reported_complete_energy_cm_minus_1_approx": 15000,
+      "reported_convergence_temperature_K_approx": 1300
+    },
+    "product_approximation": {
+      "temperature_range_K": [
+        1301,
+        2500
+      ],
+      "form": "Qrot * Qvib",
+      "rotation": "Direct sum over a ground-vibrational-state effective Hamiltonian, J=0-80, with term values through 30424 cm^-1.",
+      "vibration": "Separate direct sum over variational J=0 vibrational energies; the normal-mode Hamiltonian derives from the Nikitin et al. 2011 PES.",
+      "coupling_limit": "The product approximation does not retain the full state-dependent rotation-vibration coupling of a coupled rovibrational sum."
+    },
+    "source_ancestry": "Section 3.6 cites the Nikitin-Rey-Tyuterev PES (2011), the Rey et al. nuclear-motion formalism (2012), and the Nikitin 2015 contact-transformation calculation with its 2017 correction. Related calculations are not independent experimental evidence.",
+    "code_provenance_lead": {
+      "doi": "10.5281/zenodo.4708099",
+      "reported_programs": [
+        "TIPS_2021_v1p0.for",
+        "BD_TIPS_2021_v1p0.for",
+        "TIPS_2021_v1p0.py"
+      ],
+      "inspection_limit": "Repository identified by the supplied paper; these original code packages have not been retrieved or compared in this update. Existing HAPI arrays remain separately pinned."
+    },
+    "assessment": "The full-text access gap is closed. All TIPS2021 values in the 1500-2500 K comparison use the product approximation. The 1300/1301 K model transition and caloric derivatives require examination before thermodynamic adoption; the cause of the TIPS2021/2025 difference remains unresolved."
+  },
+  "gamache2025_correction": {
+    "doi": "10.1016/j.jqsrt.2025.109618",
+    "corrects_doi": "10.1016/j.jqsrt.2025.109568",
+    "isotopologue": "16O14N18O",
+    "issue": "Omitted + / - symmetry designations excluded half of the term values from the dictionary used to build its partition sums.",
+    "corrected_programs": [
+      "TIPS2024_v1p1.FOR",
+      "TIPS2024_v1p1.py"
+    ],
+    "code_doi": "10.5281/zenodo.16411169",
+    "methane_implication": "No methane correction is reported; this correction cannot be used to explain or repair the archived CH4 version difference. The supplied Gamache.pdf is the 2021 main paper, whereas the 2025 main paper was previously inspected separately from its public author copy."
   }
 }

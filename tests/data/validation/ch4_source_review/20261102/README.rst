@@ -25,6 +25,16 @@ paper's stated approximately 0.1% fit accuracy and is distinct from physical
 uncertainty. The paper estimates 1-2% Q accuracy at 2000 K but does not
 quantify higher-temperature errors or validate caloric derivatives to 4000 K.
 
+The second supplied batch adds the Gamache 2021 full paper, the Gamache 2025
+NO2 corrigendum and the published MM2024 paper. Their hashes and inspection
+locations are recorded without redistributing full PDFs or extracted text.
+The TIPS2021 access gap is closed: section 3.6 documents a direct 12CH4
+rovibrational sum through 1300 K and Qrot * Qvib from 1301 to 2500 K. MM's
+approximately 2000 K completeness estimate is based on comparison with that
+TIPS2021 curve. The 2025 corrigendum concerns 16O14N18O only and is not a
+correction to the supplied 2021 paper. This source update leaves the frozen
+numeric comparison and all production coefficients unchanged.
+
 ``exomol_mm.pf`` and ``exomol_mm.def`` preserve downloaded bytes, including
 their different numerical and completeness ranges. ``hitran_q32_20261102.txt``
 is the current 1-2500 K HITRAN table. ``hapi_tips2021_ch4.txt`` is an exact

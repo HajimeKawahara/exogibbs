@@ -159,13 +159,37 @@ does not establish completeness. The 2500 K MM row is therefore a diagnostic
 outside that estimate. Its falling ratios at 3000-4000 K cannot be used to
 select JANAF or NASA. Cp needs energy-moment convergence, beyond Q alone.
 
+The supplied Gamache et al. (2021) full paper closes the earlier TIPS2021
+text-access gap. Section 3.6 (pp. 6-7) distinguishes two calculations for
+12CH4: a direct rovibrational sum through 1300 K, using levels up to J=67
+and complete to about 15000 cm^-1, and a product approximation
+``Qrot * Qvib`` from 1301 to 2500 K. The latter combines a ground-vibrational
+rotational Hamiltonian through J=80 with a separately summed variational
+vibrational model. Thus every TIPS2021 point in the present 1500-2500 K
+comparison uses the product approximation. It is not a complete coupled
+rovibrational sum at those temperatures. Its potential-energy ancestry and
+comparison with Nikitin are recorded explicitly; agreement does not supply
+an independent high-temperature experimental constraint.
+
+The supplied published MM paper confirms that its approximately 2000 K
+completeness estimate is inferred from comparison with this TIPS2021 curve
+(section 5.2 and Figure 4, p. 3725). MM uses a different, empirically refined
+Owens et al. potential and MARVEL energy replacements, making it a useful
+model comparison. That comparison does not quantify physical errors in both
+models or establish convergence of enthalpy and Cp. The next audit must
+therefore test the TIPS product approximation and its 1300/1301 K transition,
+alongside independent state-sum energy moments.
+
 Version labels also matter. The paper compares against TIPS2021 and shows MM
 below that table above 2000 K. We reproduce that ordering with the frozen
 official HAPI TIPS2021 arrays. Current HITRAN q32/TIPS2025 instead gives
 Q2025/Q2021=0.935896 at 2000 K and 0.787143 at 2500 K. These changes exceed
 mere physical-constant rounding. Their cause is unresolved here; no error,
-truncation mechanism or improved accuracy is asserted. The inspected 2025
-corrigendum concerns an NO2 isotopologue and does not explain the CH4 change.
+truncation mechanism or improved accuracy is asserted. The supplied
+``Gamache_Corr.pdf`` is the 2025 correction to the HITRAN2024 paper, not a
+correction to the supplied 2021 paper. It restores omitted symmetry labels
+for 16O14N18O and does not explain the CH4 change. The 2025 main paper was
+already inspected separately from a public author copy.
 Both TIPS tables stop at 2500 K; missing higher-temperature values stay missing.
 
 Wenger, Champion and Boudon (2008) provide a historical alternative to 3000 K,
@@ -252,7 +276,9 @@ This is not a finding that JANAF is physically superior. Before adoption:
 
 1. Reconcile the versioned TIPS methane arrays and their generators, and
    resolve the Nikitin corrected-fit/table residual using original numerical
-   data or author clarification. Both supplied papers have been inspected.
+   data or author clarification. Inspect the TIPS2021 product approximation
+   and its transition from the direct sum; the supplied 2021 full paper,
+   2025 NO2 correction, MM paper and both Nikitin papers are now inspected.
 2. Establish bound-state and near-dissociation coverage through 4000 K with
    common spin/isotope conventions and first/second energy moments.
 3. Construct consistent G, H, S and Cp, then evaluate one-molecule finite
@@ -282,7 +308,9 @@ existing-input hashes; ``literature.json`` records the interpreted evidence.
   `printed Carbon volume <https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf>`_.
 * `ATcT 1.172 methane <https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=22>`_.
 * `Yurchenko et al. 2024 <https://doi.org/10.1093/mnras/stae148>`_.
+* `Gamache et al. 2021 <https://doi.org/10.1016/j.jqsrt.2021.107713>`_.
 * `Gamache et al. 2025 <https://doi.org/10.1016/j.jqsrt.2025.109568>`_ and
+  `its NO2 correction <https://doi.org/10.1016/j.jqsrt.2025.109618>`_;
   `HITRAN partition tables <https://hitran.org/docs/iso-meta/>`_.
 * `Wenger et al. 2008 <https://doi.org/10.1016/j.jqsrt.2008.06.006>`_.
 * `Nikitin et al. 2015 <https://doi.org/10.1016/j.jqsrt.2015.08.004>`_ and
