@@ -187,7 +187,7 @@ def main() -> None:
                   **{m + "_over_curated": float(np.exp(potentials["curated"][i] - potentials[m][i]))
                      for m in MODELS[1:]}} for i, t in enumerate(temperatures)]
     sources = [Path(__file__), PREVIOUS, UPDATED, ROOT / "examples/comparisons/compare_new_fastchem_logk.py",
-               ROOT / "examples/comparisons/demo_curated_atmosphere.py", ROOT / "src/exogibbs/presets/curated.py",
+               ROOT / "examples/comparisons/demo_curated_atmosphere.py", ROOT / "src/exogibbs/presets/curated_v1.py",
                ROOT / "src/exogibbs/presets/fastchem.py", ROOT / "src/exogibbs/data/curated/gas_v1.json",
                ROOT / "src/exogibbs/data/FastChem4/logK/logK.dat",
                ROOT / "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat",
