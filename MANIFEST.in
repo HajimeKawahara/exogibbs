@@ -53,6 +53,7 @@ include src/exogibbs/data/nasa9/NOTICE.txt
 
 # Versioned, reviewed gas thermochemistry
 include src/exogibbs/data/curated/gas_v1.json
+include src/exogibbs/data/curated/c2h_v1.json
 include src/exogibbs/data/curated/README.rst
 
 # Optional scientific records; reading them never requires MCEG at runtime.

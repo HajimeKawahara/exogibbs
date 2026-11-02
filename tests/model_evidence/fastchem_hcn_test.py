@@ -3,6 +3,7 @@
 import hashlib
 import json
 from pathlib import Path
+import sys
 import runpy
 import zipfile
 
@@ -12,6 +13,8 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_history import historical_source
 STUDY = runpy.run_path(str(ROOT / "mceg/reviews/fastchem_hcn_20261028.py"))
 
 
@@ -42,6 +45,7 @@ def test_only_hcn_potential_changes_and_bad_attribution_is_rejected():
     try:
         models = STUDY["setups"]()
         setup = models["curated"]
+        assert setup.metadata["dataset"] == "curated-gas-v1"
         t = np.array([2500., 3400., 4000.])
         h = {m: np.asarray(s.hvector_func(t)) for m, s in models.items()}
         j = setup.species.index(STUDY["HCN"])
@@ -61,7 +65,7 @@ def test_only_hcn_potential_changes_and_bad_attribution_is_rejected():
 def test_recorded_comparison_inputs_and_numerical_gates():
     report = json.loads((ROOT / "tests/data/validation/new_fastchem_hcn/summary.json").read_text())
     for name, expected in report["selected_file_sha256"].items():
-        assert hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
+        assert hashlib.sha256(historical_source(ROOT, name).read_bytes()).hexdigest() == expected, name
     assert report["cases_passed"] == 966
     for audit in report["closure"]:
         STUDY["require_closure"](audit)

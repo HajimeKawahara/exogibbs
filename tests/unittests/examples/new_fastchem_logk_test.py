@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import sys
 import zipfile
 
 import jax
@@ -15,6 +16,8 @@ from exogibbs.presets import fastchem4
 
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_history import historical_source
 RESULTS = ROOT / "tests/data/validation/new_fastchem_logk"
 SPEC = importlib.util.spec_from_file_location(
     "new_fastchem_logk", ROOT / "examples/comparisons/compare_new_fastchem_logk.py")
@@ -91,7 +94,7 @@ def test_receipt_matches_archived_inputs_and_results():
     receipt = json.loads((RESULTS / "receipt.json").read_text())
     assert receipt["cases_passed"] == 966
     for path, digest in receipt["selected_file_sha256"].items():
-        content = (ROOT / path).read_bytes()
+        content = historical_source(ROOT, path).read_bytes()
         if path == "examples/comparisons/compare_new_fastchem_logk.py":
             archived = (RESULTS / "source/compare_new_fastchem_logk.py").read_bytes()
             assert content == archived.replace(

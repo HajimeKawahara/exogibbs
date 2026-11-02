@@ -1,0 +1,57 @@
+[
+  {
+    "lambda": 0.0,
+    "temperature_K": 2000.0,
+    "pressure_bar": 1e-06,
+    "converged": true,
+    "iterations": 301,
+    "solver_residual": 1.8019483761027813e-15,
+    "element_relative_residual": 8.581424407526861e-09,
+    "charge_relative_residual": 1.2456156132892109e-15,
+    "mass_action_max_abs_ln": 5.258016244624741e-13
+  },
+  {
+    "lambda": 0.25,
+    "temperature_K": 2000.0,
+    "pressure_bar": 1e-06,
+    "converged": true,
+    "iterations": 302,
+    "solver_residual": 8.131146015832026e-15,
+    "element_relative_residual": 2.3571006193520825e-08,
+    "charge_relative_residual": 2.8833561181337632e-15,
+    "mass_action_max_abs_ln": 9.663381206337363e-13
+  },
+  {
+    "lambda": 0.5,
+    "temperature_K": 2000.0,
+    "pressure_bar": 1e-06,
+    "converged": true,
+    "iterations": 303,
+    "solver_residual": 9.199597024522583e-15,
+    "element_relative_residual": 8.5813964564744e-09,
+    "charge_relative_residual": 2.3139135060807378e-15,
+    "mass_action_max_abs_ln": 6.821210263296962e-13
+  },
+  {
+    "lambda": 0.75,
+    "temperature_K": 2000.0,
+    "pressure_bar": 1e-06,
+    "converged": true,
+    "iterations": 303,
+    "solver_residual": 1.6349691254922418e-14,
+    "element_relative_residual": 2.241967315994682e-08,
+    "charge_relative_residual": 1.6397715645070804e-14,
+    "mass_action_max_abs_ln": 5.826450433232822e-13
+  },
+  {
+    "lambda": 1.0,
+    "temperature_K": 2000.0,
+    "pressure_bar": 1e-06,
+    "converged": true,
+    "iterations": 303,
+    "solver_residual": 1.0314561457925327e-14,
+    "element_relative_residual": 8.352592388223891e-08,
+    "charge_relative_residual": 3.8020141883628273e-16,
+    "mass_action_max_abs_ln": 5.826450433232822e-13
+  }
+]

@@ -34,7 +34,7 @@ from scipy.special import logsumexp
 
 from examples.comparisons.demo_curated_atmosphere import closure, profiles, require_closure
 from exogibbs.api.gas import EquilibriumOptions, solve_profile
-from exogibbs.presets import curated
+from exogibbs.presets import curated_v1 as curated
 from exogibbs.presets.fastchem import _parse_fastchem_coeffs, _set_element_species, logk
 from exogibbs.thermo.models import ChemicalSetup
 from exogibbs.thermo.stoichiometry import build_formula_matrix
@@ -294,7 +294,7 @@ def main() -> None:
     write_csv(output / "summary.csv", summary)
     write_csv(output / "plotted_abundances.csv", plotted)
     sources = [Path(__file__), ROOT / "examples/comparisons/demo_curated_atmosphere.py",
-               ROOT / "src/exogibbs/presets/curated.py", ROOT / "src/exogibbs/presets/fastchem.py",
+               ROOT / "src/exogibbs/presets/curated_v1.py", ROOT / "src/exogibbs/presets/fastchem.py",
                ROOT / "src/exogibbs/data/curated/gas_v1.json",
                ROOT / "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat",
                ROOT / "src/exogibbs/equilibrium/gas/kernel/solver.py"]

@@ -1,0 +1,40 @@
+{
+  "review_date": "2026-11-02",
+  "species": {"formula": "C2H", "name": "Ethynyl", "connectivity": "CCH/HCC", "phase": "gas", "charge": 0, "ground_state": "X 2Sigma+", "point_group": "C_infinity_v", "CAS": "2122-48-7", "InChI": "InChI=1S/C2H/c1-2/h1H"},
+  "sources": [
+    {
+      "id": "nasa2002", "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf", "local_file": "nasa2002.pdf", "sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "inspection": "Official PDF Appendix D printed page 88 (zero-based PDF page 95), C2H g 6/01 record; references printed pages 282-285.",
+      "facts": {"Hf298_J_mol": 566200.482, "H298_minus_H0_J_mol": 10448.682, "intervals_K": [[200,1000],[1000,6000]], "coefficient_match": "All 18 C2H NASA9 coefficients visually/textually match baseline-001."},
+      "limitations": ["This authenticates the selected record, not acquisition of the historical full local NASA copy.", "The coefficient note names four sources but does not isolate which PAC input derives from each publication."]
+    },
+    {
+      "id": "ervin1990", "authors": "K. M. Ervin, S. Gronert, S. E. Barlow, M. K. Gilles, A. G. Harrison, V. M. Bierbaum, C. H. DePuy, W. C. Lineberger, G. B. Ellison", "title": "Bond strengths of ethylene and acetylene", "journal": "J. Am. Chem. Soc. 112(15), 5750-5759 (1990)", "doi": "10.1021/ja00171a013", "url": "https://doi.org/10.1021/ja00171a013", "local_file": "crossref-ervin.json", "sha256": "2a0a484de98726ed3ec9335b4fb0d7aa97bdf878b693ef23f7503803b31d5b2f",
+      "inspection": "Bibliography verified in official NASA PDF and publisher/Crossref metadata. Publisher full text unavailable (HTTP 403). Search-index excerpts of a public mirror show Table VI p5756, but its PDF timed out; do not treat that table as directly inspected primary evidence.",
+      "limitations": ["Reported Hf values and confidence definitions in full article remain to be directly inspected."]
+    },
+    {
+      "id": "jacox1998", "authors": "Marilyn E. Jacox", "title": "Vibrational and Electronic Energy Levels of Polyatomic Transient Molecules. Supplement A", "journal": "J. Phys. Chem. Ref. Data 27(2), 115-393 (1998)", "doi": "10.1063/1.556017", "url": "https://srd.nist.gov/jpcrdreprint/1.556017.pdf", "inspection": "Official NIST-hosted PDF parsed by web tool, printed pp142-143 (PDF pages28-29); full byte download HTTP403, no local PDF hash.",
+      "facts": {"ground_state": "X 2Sigma+, linear C_infinity_v", "A2Pi_T0_cm_inverse": 3692.61, "A_T0_qualification": "Approximate origin because of extensive mixing with ground-state vibrational levels of 2Pi vibronic symmetry.", "ground_CH_stretch_cm_inverse": 3298.85, "CH_qualification": "Tentative", "ground_bend_cm_inverse": 371.60, "ground_CC_stretch_cm_inverse": 1840.57, "B000_cm_inverse": 1.457},
+      "limitations": ["A compilation citing the same measurements, not independent evidence from its underlying references.", "Provides spectroscopic evidence, not a direct validation of full 1500-4000K NASA thermal functions."]
+    },
+    {
+      "id": "peric1990", "authors": "M. Peric, S. D. Peyerimhoff, R. J. Buenker", "title": "Ab initio investigation of the vibronic structure of the C2H spectrum. III. Calculation of vibronic energies and transition probabilities in the X2Sigma+, A2Pi system", "journal": "Molecular Physics 71(4), 693-719 (1990)", "doi": "10.1080/00268979000102071", "url": "https://doi.org/10.1080/00268979000102071", "local_file": "crossref-peric.json", "sha256": "78081f19c8a1b806db87645227ae45cbe979ba9bcbf99e255278379cf0353da3", "inspection": "Exact bibliography in official NASA Appendix E printed p285; publisher DOI metadata via Crossref; publisher full text HTTP403.", "limitations": ["Do not confuse with part II, pp673-691, DOI10.1080/00268979000102061.", "Detailed basis/corrections/vibronic level tables not inspected."]
+    },
+    {
+      "id": "kanamori1988", "authors": "Hideto Kanamori, Eizi Hirota", "title": "Vibronic bands of the CCH radical observed by infrared diode laser kinetic spectroscopy", "journal": "J. Chem. Phys. 89(7), 3962-3969 (1988)", "doi": "10.1063/1.454877", "url": "https://doi.org/10.1063/1.454877", "local_file": "crossref-kanamori.json", "sha256": "c645d195a09339793a60a7f706ea76354161446a75744ef13ca52aac611ead6b", "inspection": "Official NASA bibliography, Jacox pp142-143 reference26, publisher-registered abstract retrieved via Crossref.", "facts": {"bend_cm_inverse": 371.6034, "quoted_parenthesis": "(3)", "method": "Five infrared bands observed with diode laser kinetic spectroscopy; simultaneous rovibronic analysis."}, "limitations": ["Full paper unavailable; uncertainty convention for parenthesis not established from abstract."]
+    },
+    {
+      "id": "atct1172_cch", "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=103", "local_file": "atct-c2h.html", "sha256": "ccae6bcc55d7982886829b87f6d95d35957f6aa4530781ee542d7de3d9f144e8", "inspection": "Direct official HTML downloaded and parsed; identity, values, provenance, correlations and uncertainty definition inspected.",
+      "facts": {"ATcT_ID": "2122-48-7*0", "Hf0_kJ_mol": 563.73, "Hf298_kJ_mol": 567.85, "uncertainty_kJ_mol": 0.15, "uncertainty_definition": "Estimated 95% confidence limits", "top20_contributors_coverage_percent": 40.0, "contributors_for_90_percent": 445, "correlation_C_percent": 47.9, "correlation_HCCH_percent": 64.5, "largest_provenance_contributor": "Mordaunt1994 6.4%; HCCH -> CCH + H; D0=46074 +/-8 cm^-1, a priori uncertainty multiplied by2.768 in ATcT network."},
+      "limitations": ["Network correlations must be retained for any reaction uncertainty; independent quadrature of molecular and atomic Hf uncertainty is inappropriate.", "ATcT energy anchors do not replace high-temperature Cp/S.", "ATcT contains many shared experimental/theory ancestors; database agreement is not independent replication."]
+    },
+    {
+      "id": "mordaunt1994", "authors": "D. H. Mordaunt, M. N. R. Ashfold", "title": "Near ultraviolet photolysis of C2H2: A precise determination of D0(HCC-H)", "journal": "J. Chem. Phys.101,2630-2631 (1994)", "doi": "10.1063/1.467635", "url": "https://doi.org/10.1063/1.467635", "local_file": "crossref-mordaunt.json", "sha256": "17f32158fa45c91b8f62b5c0d4fb309a971c68c99f16fd5c53358f617878a238", "inspection": "Official ATcT bibliography300 plus publisher-registered abstract via Crossref; full paper not obtained.",
+      "facts": {"D0_HCCH_to_CCH_H_cm_inverse": 46074, "quoted_uncertainty_cm_inverse": 8, "method": "Jet-cooled acetylene H-atom photofragment translational spectroscopy; rotational structure in total fragment kinetic energy spectrum."},
+      "limitations": ["Not independent of ATcT1.172, which incorporates the measurement and inflates its initial uncertainty.", "Original uncertainty convention and later corrections require full-text follow-up."]
+    }
+  ],
+  "searches": ["Ervin 1990 ethynyl C2H enthalpy formation Jacox Peric Kanamori", "site.atct.anl.gov 1.172 CCH ethynyl", "Peric 1990 Peyerimhoff C2H", "Peric 693-719 1990 doi", "Jacox Supplement A 1998 10.1063", "Mordaunt 1994 46074", "C2H enthalpy erratum Ervin", "C2H Mordaunt erratum"],
+  "search_limitations": ["No correction was identified in the limited erratum searches; absence was not established.", "ATcT versions later than1.172 were not adopted; search surfaced1.226/1.228 and these must remain separate records.", "NASA2002 C2H selected coefficient record authenticated; full NASA database ancestry remains outside this inspection."]
+}

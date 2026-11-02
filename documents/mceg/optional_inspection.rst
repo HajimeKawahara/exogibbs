@@ -25,22 +25,31 @@ composition. It does not verify a modified callable that retains the old
 metadata. A different dataset hash or network choice gives
 ``no_matching_record``; that means no matching review, not physical reliability.
 
-The first catalog binds the ion-inclusive curated dataset to its existing
-model record and HCN follow-up. It lists the species with explicit source
-decisions; it is not a complete uncertainty inventory. The neutral network
-does not inherit the 537-species HCN comparison.
+The default ion-inclusive setup matches ``exogibbs.curated_c2h.v1``: the C2H
+substitution and default-adoption record. ``curated_v1.chemsetup()`` matches
+``exogibbs.curated_gas.v1`` and its historical HCN comparison. These studies are
+not rebound across dataset identities. The catalog is not a complete uncertainty
+inventory. Neutral-mode default verification is recorded directly in
+``mceg/contracts/curated_c2h.yaml``; the packaged lookup remains ion-inclusive.
+
+Inspect the default with optional MCEG::
+
+   mceg explain --catalog src/exogibbs/data/mceg/index.json \
+     --model exogibbs.curated_c2h.v1 --species C2H
 
 Inspect HCN with optional MCEG
 ------------------------------
 
-With an MCEG version providing installed-package catalogs, run:
+The following commands inspect **the original curated-gas-v1 HCN study**.
+They do not report evidence for the corrected default. With an MCEG version
+providing installed-package catalogs, run:
 
 .. code-block:: console
 
    mceg explain --package exogibbs --model exogibbs.curated_gas.v1 --species HCN
 
 For an editable checkout, use the ``--catalog`` command printed by
-``describe(setup)`` and append ``--species HCN``. From the repository root this
+``describe(curated_v1.chemsetup())`` and append ``--species HCN``. From the repository root this
 is equivalent to:
 
 .. code-block:: console

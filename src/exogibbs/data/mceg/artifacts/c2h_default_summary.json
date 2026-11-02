@@ -1,0 +1,25 @@
+{
+  "dataset": "curated-c2h-v1",
+  "legacy_dataset": "curated-gas-v1",
+  "epsilon_crit": 5e-14,
+  "method": "vmap_cold",
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_element_relative_residual": 1.3718473247265917e-06,
+      "max_mass_action_abs_ln": 8.526512829121202e-13,
+      "max_charge_relative_residual": 1.632224748230175e-14,
+      "max_abs_delta_ln_x_from_candidate": 0.0
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_element_relative_residual": 1.406725120707487e-06,
+      "max_mass_action_abs_ln": 1.1937117960769683e-12
+    }
+  ],
+  "scope": "Default adoption and numerical closure in both networks; ion mode also replays the archived candidate. No new independent-solver or physical validation."
+}

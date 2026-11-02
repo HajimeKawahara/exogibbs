@@ -4,12 +4,15 @@ import hashlib
 import json
 from pathlib import Path
 import runpy
+import sys
 
 import jax
 import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_history import historical_source
 REPORT = ROOT / "tests/data/validation/mceg/new_fastchem_logk_20261024/attribution.json"
 
 
@@ -29,9 +32,9 @@ def test_attribution_selected_inputs_remain_pinned():
                 b'RESULTS = ROOT / "tests/data/validation/new_fastchem_logk"').replace(
                 b'"results/major_molecule_adoption/decisions.csv"',
                 b'"tests/data/validation/major_molecule_adoption/decisions.csv"')
-            assert (ROOT / name).read_bytes() == relocated, name
+            assert historical_source(ROOT, name).read_bytes() == relocated, name
         else:
-            path = ROOT / name
+            path = historical_source(ROOT, name)
         assert hashlib.sha256(path.read_bytes()).hexdigest() == expected, name
 
 

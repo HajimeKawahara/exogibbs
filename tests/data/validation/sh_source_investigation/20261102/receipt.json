@@ -1,0 +1,52 @@
+{
+  "schema_version": "1",
+  "recorded_utc": "2026-11-01T23:52:33.936793+00:00",
+  "base_revision": "244b55ccea6246154244913427932e6a53815215",
+  "python": "3.12.7",
+  "python_executable": "/home/kawahara/miniconda3/bin/python",
+  "scope": "Fresh SH source-only investigation; no abundance experiment or runtime modification.",
+  "commands": [
+    {
+      "command": "python mceg/reviews/sh_source_investigation.py --check",
+      "result": "passed",
+      "summary": "12 official JANAF nodes match baseline; four source comparisons replayed."
+    },
+    {
+      "command": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 PYTHONPATH=src pytest -q tests/model_evidence/sh_source_investigation_test.py",
+      "result": "passed",
+      "summary": "3 passed in 1.34s"
+    },
+    {
+      "command": "JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 PYTHONPATH=src pytest -q tests/model_evidence",
+      "result": "passed",
+      "summary": "71 passed, 2 skipped in 14.82s",
+      "skips": "Two pre-existing phosphorus NASA9 archive tests require an undistributed fixture."
+    },
+    {
+      "command": "PYTHONPATH=/home/kawahara/mceg/src python -m mceg explain mceg/contracts/sh_source_investigation.yaml --assessment numerical_replay_review --root . --json",
+      "result": "passed",
+      "summary": "All selected input and numerical artifact SHA256 checks match."
+    }
+  ],
+  "selected_file_sha256": {
+    "mceg/reviews/sh_source_investigation.py": "50412460dc837ac658f3d2e157fd013c97961e57b2a945a2e1dcf1b871642379",
+    "mceg/reviews/gas_source_comparison.py": "f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/sh_source_investigation/20261102/sources.json": "bb1e3ad810640db804594b3ffb1c315280db8548b0e221e1ef0010321a86e9f5",
+    "tests/data/validation/sh_source_investigation/20261102/H-046.txt": "7fd41d2fe547008df5e989a0e88c697a168ca4c201bada4ed2da38e09d6d77ce",
+    "tests/data/validation/sh_source_investigation/20261102/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/sh_source_investigation/20261102/S-006.txt": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+    "tests/data/validation/sh_source_investigation/20261102/nasa_sh_appendix_d.txt": "8449438630468f5042426a56bf3e6d62b47b5f683eec549e6deaea6403cee11c",
+    "tests/model_evidence/sh_source_investigation_test.py": "729e9b1d483a79e1972779835c964b35cac7bdcbdccec82457ee056a31317f90",
+    "tests/data/validation/sh_source_investigation/20261102/comparison.json": "b22b94874e28f83486d34fdaa67379a3fc979d2456afa28f6ca6c388ad1b2f8f",
+    "documents/mceg/sh_source_investigation.rst": "844f03448e799e5bfb6c8e1eff4a734bb6d6938d034b78b9c83325ac3dda9d5a",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468"
+  },
+  "limitations": [
+    "Source inspection does not establish physical accuracy or abundance changes.",
+    "Full unit-suite execution coordinated by parent on the unchanged shared base; this receipt claims only checks executed in the SH tree."
+  ]
+}
