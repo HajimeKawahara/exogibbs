@@ -24,6 +24,7 @@ HCN differences with optional MCEG tooling.
    volatile_sources
    new_fastchem_logk
    fastchem_hcn_followup
+   c3_source_review
    gas_source_comparison
    c2h_source_review
    ohno_p3

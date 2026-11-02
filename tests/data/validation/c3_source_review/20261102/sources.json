@@ -1,0 +1,158 @@
+{
+  "schema_version": "1",
+  "review_date": "2026-11-02",
+  "downloads": [
+    {
+      "file": "C-138.txt",
+      "url": "https://janaf.nist.gov/tables/C-138.txt",
+      "inspection": "Official tab-separated bytes; gas/reference identity and evaluation date inspected.",
+      "sha256": "5594a517653790da521f193d1c16a5b2cfd542e5c94357666ebabcf86bbb6bef",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "C-003.txt",
+      "url": "https://janaf.nist.gov/tables/C-003.txt",
+      "inspection": "Official tab-separated bytes; gas/reference identity and evaluation date inspected.",
+      "sha256": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "C-002.txt",
+      "url": "https://janaf.nist.gov/tables/C-002.txt",
+      "inspection": "Official tab-separated bytes; gas/reference identity and evaluation date inspected.",
+      "sha256": "d929a499d9e827487970b654058f81381a652a84d836ec378bff8521cc19a3bf",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "janaf_c3_printed_686.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+      "inspection": "Official PDF page 138, printed p 686, extracted with pdfseparate and visually inspected.",
+      "sha256": "52473971bc75a881ad88d2bc9c21b0b3f6ce24de201b41cc3d59161c7c609d83",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "parent_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c"
+    },
+    {
+      "file": "printed_c3_nodes.json",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+      "inspection": "Seven table nodes and model notes transcribed from the archived printed page; this is a selected review extract.",
+      "sha256": "0bba8db8a26c8fd4a9bf5eed143e6b27f886db6e6abc35fffafde2f8c7a674b3",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "janaf_constants_printed_10.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-1Vol1-Intro.pdf",
+      "inspection": "Official PDF page 16, printed p 10, extracted and inspected.",
+      "sha256": "2aeb29af2596f48e3148dcdb3cc77b71aeb5168db727741135951e67699cdb5b",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "parent_sha256": "773a6733a42b59752f5a1072345f7e78e4d11e88055dda0dc0044bfd1377a15a"
+    },
+    {
+      "file": "nasa_selected_records.txt",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "inspection": "Official Appendix D C (printed p 74) and C3 (p 93) records; leading/trailing layout whitespace removed.",
+      "sha256": "f90ba2908303460a2885377f59549c78d7f6132efd662f17824d0b070ce56b9e",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "parent_sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765"
+    },
+    {
+      "file": "atct_evidence.json",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "inspection": "Selected numerical transcription from official version 1.172 listing and linear-C3 provenance, not original HTML bytes.",
+      "sha256": "ea130d2d2909d061642e4a21e00f3c87a4a7d6463ad1a945cf2d936d7a6797e4",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "exomol_atlast_12C3.pf",
+      "url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.pf",
+      "inspection": "Official original bytes. The definition spin factors and the partition/state-sum mismatch remain unresolved; see literature.json.",
+      "sha256": "c03455acab83c2e8dc2919a9803445510f1af79bcdb0f52ceb9df63885f9f629",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "exomol_atlast_12C3.def",
+      "url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.def",
+      "inspection": "Official original bytes. The definition spin factors and the partition/state-sum mismatch remain unresolved; see literature.json.",
+      "sha256": "2dd3d1fe9deb5088043d0ecc5f8ac92540c744f2c275976fedde812e1f2a48f9",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "exomol_atlast_12C3_states_head.txt",
+      "url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.states.bz2",
+      "inspection": "First eight decompressed records retained verbatim; all actual state weights equal 2J+1.",
+      "sha256": "104adcd00f4b2632b1f5430799fd0ed5427af755027308c2d23b962dcac40c59",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "parent_sha256": "28dfbbbb97877a472abfd308bbdefdbd9f312cc30f858f8ed9be5ea4070395e2"
+    },
+    {
+      "file": "exomol_http_headers.json",
+      "url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.def",
+      "inspection": "Selected HTTP HEAD status and headers for the three official files; modification dates do not identify the cause of the data inconsistency.",
+      "sha256": "55cb661cc56a4b38a470d85c48c7c8c4f1e79bbe94add9b57944879be268ba4c",
+      "retrieved": "2026-11-02",
+      "archived": true
+    },
+    {
+      "file": "state_sum_checks.json",
+      "url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.states.bz2",
+      "inspection": "Derived finite-state moments and coverage diagnostics with source/implementation hashes; full compressed states remain uncommitted.",
+      "sha256": "9caa0aac558265732f8227487ff77eed9d0d529c831f9f829b61de4e4a46983c",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "parent_sha256": "28dfbbbb97877a472abfd308bbdefdbd9f312cc30f858f8ed9be5ea4070395e2"
+    },
+    {
+      "file": "nasa1978_thermal_appendix_21_22.pdf",
+      "url": "https://ntrs.nasa.gov/api/citations/19780012984/downloads/19780012984.pdf",
+      "inspection": "Original government-report PDF pages 23–24, printed pp 21–22, extracted, joined and visually inspected.",
+      "sha256": "8143d8437c0c77d51f448eec0302bb3340952a9bc4b4c8b33c3ece1994182368",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "parent_sha256": "92d6183267df6a279a80418b2cd3ac889315076c7bc7628b56ec3559eee37e09"
+    },
+    {
+      "file": "historical_entropy_evidence.json",
+      "url": "https://ntrs.nasa.gov/api/citations/19780012984/downloads/19780012984.pdf",
+      "inspection": "Selected numbers from Jones (1978) and the visually inspected primary ASMS1972 abstract; their second-temperature disagreement, related ancestry, missing uncertainties and conditional pressure convention are explicit.",
+      "sha256": "6c90a1837fdd5cc3326aa7102a9e64cc131c54d348e0f771561a8dc793fff6aa",
+      "retrieved": "2026-11-02",
+      "archived": true,
+      "additional_url": "https://www.asms.org/docs/default-source/proceedings-archive/1972_asms_20th_conference.pdf?sfvrsn=85f279c3_2",
+      "additional_parent_sha256": "1c682b4334839d34233459faaba141467f34e6906b90af7cce90ed0c4022e0ad"
+    }
+  ],
+  "identity": {
+    "formula": "C3",
+    "model_name": "C3",
+    "name": "Tricarbon (propadienediylidene)",
+    "phase": "gas",
+    "charge": 0,
+    "composition": {
+      "C": 3
+    },
+    "CAS": "12075-35-3",
+    "ground_state": "X1Sigma_g+",
+    "point_group": "Dinfh",
+    "electronic_multiplicity": 1,
+    "rotational_symmetry_number": 2,
+    "isotopologue_for_exomol": "12C3",
+    "nuclear_spin_statistical_weight_for_exomol": 1,
+    "identity_sources": [
+      "janaf_printed1998",
+      "exomol2024",
+      "atct1172"
+    ],
+    "exclusion": "Linear ground-state C3 is distinguished from cyclic singlet/triplet isomers and ions. A thermal ensemble including excited electronic surfaces requires an explicit state inventory."
+  },
+  "additional_source_provenance": "literature.json records parent hashes, inspection scope, access limits, scientific interpretation, and distinctions between direct evidence and later quotations."
+}

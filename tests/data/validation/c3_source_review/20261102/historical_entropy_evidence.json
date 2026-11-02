@@ -1,0 +1,53 @@
+{
+  "schema_version": "1",
+  "inspection_date": "2026-11-02",
+  "source_url": "https://ntrs.nasa.gov/api/citations/19780012984/downloads/19780012984.pdf",
+  "citation": "Jim J. Jones, NASA TP 1141 (1978), Appendix pp 21–22.",
+  "archived_source": "nasa1978_thermal_appendix_21_22.pdf",
+  "evidence_type": "The samples array preserves Jones (1978) secondary quotations. primary_abstract.samples independently transcribes the same authors’ 1972 conference abstract. Their second temperatures disagree; these are related accounts of one experiment, not independent measurements.",
+  "original_citation": "F. M. Wachi and D. E. Gilmartin, Heat of Formation and Entropy of C3 Molecule, High Temperature Science 4(6), 423–431 (1972).",
+  "quantity": "Molar entropy of gaseous C3, inferred from calibrated mass-spectrometer/Knudsen-effusion vapor-pressure measurements.",
+  "calorie_J": 4.184,
+  "samples": [
+    {
+      "temperature_K": 2400,
+      "entropy_cal_mol_K": 81.47
+    },
+    {
+      "temperature_K": 2700,
+      "entropy_cal_mol_K": 82.91
+    }
+  ],
+  "uncertainty": "No uncertainty accompanies these two quoted entropy values on pp 21–22.",
+  "pressure_convention": "The report defines its formation enthalpy standard at 1 atm on printed p 3; p 2 defines cal=4.184 J and eu=cal/(mol K). The quoted entropy paragraph does not independently specify pressure. A 1 atm to 1 bar entropy shift is therefore a conditional convention alignment, not a verified property of the uninspected 1972 journal article.",
+  "historical_interpretation": "Jones regards the newer quoted entropies as consistent with larger theoretical entropies than the earlier measurements that motivated JANAF stiffening. His optical absorption experiment obtains C3 number densities from assumed thermochemical equilibrium, so it does not independently validate those equilibrium abundances.",
+  "lineage_limit": "The Jones calculation uses Lee and Sanborn (1973). Its relationship to the Gurvich 1979 thermal functions cited by NASA 2002 is not established.",
+  "primary_abstract": {
+    "citation": "F. M. Wachi and D. E. Gilmartin, Heat of Formation and Entropy of C3 Molecule, ASMS 20th Conference (1972), abstract D4, printed p 64 (PDF page 65).",
+    "url": "https://www.asms.org/docs/default-source/proceedings-archive/1972_asms_20th_conference.pdf?sfvrsn=85f279c3_2",
+    "parent_sha256": "1c682b4334839d34233459faaba141467f34e6906b90af7cce90ed0c4022e0ad",
+    "inspection": "Original ASMS-hosted proceedings PDF downloaded; abstract D4 rendered and visually inspected. Only selected numerical facts are archived here; the copyrighted page and full proceedings are not committed.",
+    "measurement_temperature_range_K": [
+      2300,
+      2800
+    ],
+    "samples": [
+      {
+        "temperature_K": 2400,
+        "entropy_cal_mol_K": 81.47
+      },
+      {
+        "temperature_K": 2600,
+        "entropy_cal_mol_K": 82.91
+      }
+    ],
+    "third_law_Hf0_kcal_mol": 199.2,
+    "third_law_reported_uncertainty_kcal_mol": 0.4,
+    "second_law_Hf0_kcal_mol": 200.1,
+    "second_law_reported_uncertainty_kcal_mol": 4.0,
+    "third_law_thermal_model": "Strauss and Thiele",
+    "uncertainty_and_convention_limit": "The abstract does not define the confidence level, give entropy uncertainties, or explicitly specify standard pressure.",
+    "publication_scope": "The abstract states that the work was submitted to High Temperature Science. It does not establish which temperature appears in the final journal article."
+  },
+  "temperature_discrepancy": "The same second entropy value, 82.91 cal/(mol K), is assigned to 2600 K in the inspected primary ASMS abstract and 2700 K in Jones (1978). Both are retained as reported. The final 1972 journal article remains unread; do not silently select either temperature as a certified measurement."
+}

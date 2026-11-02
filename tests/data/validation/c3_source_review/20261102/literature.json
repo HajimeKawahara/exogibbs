@@ -1,0 +1,219 @@
+{
+  "schema_version": "1",
+  "review_date": "2026-11-02",
+  "species": {
+    "formula": "C3",
+    "model_name": "C3",
+    "name": "Tricarbon (propadienediylidene)",
+    "phase": "gas",
+    "charge": 0,
+    "composition": {
+      "C": 3
+    },
+    "CAS": "12075-35-3",
+    "ground_state": "X1Sigma_g+",
+    "point_group": "Dinfh",
+    "electronic_multiplicity": 1,
+    "rotational_symmetry_number": 2,
+    "isotopologue_for_exomol": "12C3",
+    "nuclear_spin_statistical_weight_for_exomol": 1,
+    "identity_sources": [
+      "janaf_printed1998",
+      "exomol2024",
+      "atct1172"
+    ],
+    "exclusion": "Linear ground-state C3 is distinguished from cyclic singlet/triplet isomers and ions. A thermal ensemble including excited electronic surfaces requires an explicit state inventory."
+  },
+  "scope": "Scientific source investigation; no runtime or curated adoption. Direct primary inspections and later quotations are distinguished.",
+  "sources": [
+    {
+      "id": "janaf_printed1998",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+      "parent_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+      "archived_file": "janaf_c3_printed_686.pdf",
+      "inspection": "Printed p 686 (PDF page 138) visually inspected, including the species header, seven transcribed nodes, constants, comments and references.",
+      "evaluation_date": "December 1969",
+      "standard_pressure_bar": 1,
+      "findings": {
+        "Hf0_kJ_mol": 811.456,
+        "Hf298_kJ_mol": 820.064,
+        "printed_enthalpy_uncertainty_kJ_mol": 17,
+        "S298_J_mol_K": 237.246,
+        "printed_entropy_uncertainty_J_mol_K": 1.3,
+        "vibration_frequencies_cm-1": [
+          1225,
+          63.5,
+          2040
+        ],
+        "vibration_degeneracies": [
+          1,
+          2,
+          1
+        ],
+        "B0_cm-1": 0.43034,
+        "bond_length_angstrom": 1.277
+      },
+      "ancestry": "The formation enthalpy uses early carbon-vapor mass-spectrometry results. Thermal functions include the measured low bending levels from Gausset et al. (1965), followed by an assumed steep potential above v=6, represented by 650 cm^-1, to fit older high-temperature entropy estimates. The note explicitly describes that high-level assumption as arbitrary; Smith and Barrett (1969) are cited for possible maxima away from linearity.",
+      "limit": "JANAF already includes the 63.5 cm^-1 bend. ExoMol’s criticism of pre-1965 Irwin ancestry must not be assigned to this 1969 JANAF evaluation. The printed uncertainty is not treated as a modern statistical confidence interval. Printed/online agreement is checked only at the seven archived nodes."
+    },
+    {
+      "id": "janaf_online",
+      "url": "https://janaf.nist.gov/tables/C-138.html",
+      "archived_files": [
+        "C-138.txt",
+        "C-003.txt",
+        "C-002.txt"
+      ],
+      "inspection": "Official numerical records for C3(g), C(g), and carbon reference state downloaded. C3 is the December 1969 evaluation; C(ref) follows the table’s declared reference phase.",
+      "limit": "Online tables do not reproduce the printed thermochemical selection notes. Numerical agreement does not independently validate the physical model."
+    },
+    {
+      "id": "janaf_constants",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-1Vol1-Intro.pdf",
+      "parent_sha256": "773a6733a42b59752f5a1072345f7e78e4d11e88055dda0dc0044bfd1377a15a",
+      "archived_file": "janaf_constants_printed_10.pdf",
+      "gas_constant_J_mol_K": 8.31441,
+      "inspection": "Printed p 10 (PDF page 16) inspected. Pre-third-edition evaluations use the 1973 CODATA constants.",
+      "limit": "Common modern constants used in comparisons are distinguished from the original table constants."
+    },
+    {
+      "id": "nasa2002",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "parent_sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "archived_file": "nasa_selected_records.txt",
+      "gas_constant_J_mol_K": 8.31451,
+      "inspection": "Appendix D C3 (printed p 93, PDF page 101), C (printed p 74, PDF page 82), report conventions and bibliography inspected.",
+      "C3_header": {
+        "source": "Gurvich,1979 pt2 p23",
+        "code": "tpis79",
+        "mass_u": 36.0321,
+        "Hf298_J_mol": 839948.646,
+        "H298_minus_H0_J_mol": 12109.146,
+        "intervals_K": [
+          [
+            200,
+            1000
+          ],
+          [
+            1000,
+            6000
+          ],
+          [
+            6000,
+            20000
+          ]
+        ]
+      },
+      "C_header": {
+        "Hf298_J_mol": 716680.0,
+        "H298_minus_H0_J_mol": 6535.895
+      },
+      "ancestry": "Gurvich et al. (1979), Thermodynamic Properties of Individual Substances, volume 2, parts 1 and 2, Nauka, Moscow. The NASA record specifically points to part 2 p 23.",
+      "limit": "The original Russian 1979 pages were not recovered. Do not silently substitute the English 1991 edition or infer the bending/electronic inventory from the source code. The header formation enthalpy, polynomial value with original R, and polynomial value with common R are separate quantities."
+    },
+    {
+      "id": "atct1172",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "provenance_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=201",
+      "archived_file": "atct_evidence.json",
+      "version": "1.172",
+      "listing_date": "2024-09-01",
+      "inspection": "Official versioned listing and linear-C3 provenance read through the web tool; direct HTTP downloads returned 403. Selected numbers are a transcription, not original HTML bytes.",
+      "findings": "Linear C3 Hf0=814.37 and Hf298=823.33±0.49 kJ/mol. Atomic C is 711.381 and 716.866±0.039 kJ/mol. Reported C3–C correlation is +22.8%. Cyclic singlet/triplet are distinct entries. Uncertainties are estimated 95% confidence limits.",
+      "limit": "This network result has substantial high-level theoretical ancestry. The source contributors and the network output are not independent validation. Rounded marginal uncertainties and one rounded correlation do not substitute for the full covariance matrix."
+    },
+    {
+      "id": "karton2009",
+      "doi": "10.1080/00268970802708959",
+      "url": "https://arxiv.org/pdf/0812.3852",
+      "citation": "A. Karton, A. Tarnopolsky and J. M. L. Martin, Molecular Physics 107, 977–990 (2009).",
+      "inspection": "Primary preprint Table I and Table V read. Linear Dinfh C3 equilibrium distance is 1.288 angstrom; W4 atomization at 0 K is 315.83 kcal/mol and the stated ZPVE is 5.07 kcal/mol.",
+      "convention": "Atomization is C3 -> 3 C, not C3 -> C2 + C. The tabulated 0 K atomization already includes a zero-point correction; ZPVE must not be subtracted twice.",
+      "limit": "This is theoretical thermochemistry and a named ATcT input. The quoted 5.07 kcal/mol ZPVE uses scaled B3LYP/pc-2 harmonic frequencies; it is not a separate experimental threshold."
+    },
+    {
+      "id": "exomol2024",
+      "doi": "10.1093/mnras/stae2425",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/24LyPoTe.pdf",
+      "html_url": "https://arxiv.org/html/2410.18250v1",
+      "parent_sha256": "e5cbae25c7d4bffc5228abc1970b709de8d7d565f629ab6c6e6ff91ba8464cce",
+      "citation": "A. E. Lynas-Gray, O. L. Polyansky, J. Tennyson, S. N. Yurchenko and N. F. Zobov, MNRAS 535, 1439–1448 (2024), AtLast.",
+      "inspection": "Full author-hosted publisher PDF inspected, especially Sections 2–5 and Tables 1–3. The paper is CC BY 4.0.",
+      "findings": "An anharmonic variational X1Sigma_g+ model is fitted to empirical rovibrational levels. Table 2 gives 2,166,503 states, energy below 20000 cm^-1, J through 155 and |l2| through 12. Only symmetry-allowed states occur for zero-spin 12C. Q is defined as a finite Boltzmann sum and is explicitly a lower limit because excited electronic states are omitted.",
+      "limit": "Conical intersections, other electronic couplings and predissociation are not included. Claimed Q convergence within this line list does not establish full electronic or high-temperature derivative completeness. The approximate 6.3 eV dissociation discussed in the paper is a fragment dissociation scale, not total atomization. The paper’s order-of-magnitude criticism concerns Irwin (1981), not the inspected JANAF 1969 table."
+    },
+    {
+      "id": "exomol_atlast_files",
+      "url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.def",
+      "archived_files": [
+        "exomol_atlast_12C3.def",
+        "exomol_atlast_12C3.pf",
+        "exomol_atlast_12C3_states_head.txt",
+        "exomol_http_headers.json"
+      ],
+      "states_url": "https://www.exomol.com/db/C3/12C3/AtLast/12C3__AtLast.states.bz2",
+      "states_compressed_sha256": "28dfbbbb97877a472abfd308bbdefdbd9f312cc30f858f8ed9be5ea4070395e2",
+      "definition_version": "20241023",
+      "maximum_temperature_K": 5000,
+      "mass_u": 36.0,
+      "inspection": "Official partition/definition bytes archived; all 2,166,503 states downloaded for a finite-state sum, with only the first eight records archived. state_sum_checks.json records moments and boundary diagnostics.",
+      "normalization": "Actual weights are g=2J+1, including ground J=0 weight 1, consistent with the paper and Q(1 K)=1.1216. The definition file instead lists spin weights 6 for Sigma+ and Sigma-. This is an unresolved metadata inconsistency; no division by 6 is applied.",
+      "partition_discrepancy": "A direct sum using published state energies does not reproduce the official .pf file: Qstates/Qpf is about 0.858 at 300 K and 0.996 at 3000 K. Using auxiliary calculated energies does not remove the difference. This is not rounding error or a single spin factor.",
+      "version_limit": "HTTP Last-Modified is 2024-03-04 for .pf, 2026-01-27 for .states.bz2 and 2026-06-04 for .def. These timestamps establish different file modification times, not the scientific cause of the inconsistency. Revision history remains unverified.",
+      "limit": "Boundary populations measure the contribution from included states near cutoffs, not the missing tail. Neither .pf nor its derived heat capacity is promoted to an adopted complete thermal model."
+    },
+    {
+      "id": "jones1978",
+      "url": "https://ntrs.nasa.gov/api/citations/19780012984/downloads/19780012984.pdf",
+      "citation": "Jim J. Jones, The Optical Absorption of Triatomic Carbon C3 for the Wavelength Range 260 to 560 nm, NASA TP 1141 (1978).",
+      "parent_sha256": "92d6183267df6a279a80418b2cd3ac889315076c7bc7628b56ec3559eee37e09",
+      "archived_file": "nasa1978_thermal_appendix_21_22.pdf",
+      "inspection": "Appendix printed pp 21–22 (PDF pages 23–24) visually inspected; report unit/pressure definitions, equilibrium-derived concentration method and bibliography read.",
+      "findings": "Jones documents JANAF’s arbitrary 650 cm^-1 high-bending-level spacing and quotes newer Wachi–Gilmartin entropy values that favor larger theoretical entropies. His adopted Lee–Sanborn model approaches 308 cm^-1 spacing at high bending excitation, includes Pitzer–Clementi electronic levels and assumes a rigid rotor. The electronic state list is not reproduced in these pages.",
+      "limit": "The 1972 journal experiment and 1973 thermal paper remain uninspected; their numerical results here are secondary quotations. The optical study calculates C3 concentrations from assumed thermochemical equilibrium, so it does not independently validate equilibrium abundance. No lineage from this model to Gurvich 1979/NASA 2002 is established. The quoted entropy pressure is conditional on the report’s general 1 atm convention. The subsequently inspected ASMS1972 abstract assigns the second entropy to 2600 K rather than 2700 K; the final journal temperature is unresolved.",
+      "related_references": [
+        "F. M. Wachi and D. E. Gilmartin, High Temperature Science 4(6), 423–431 (1972).",
+        "E. L. Lee and R. H. Sanborn, High Temperature Science 5(6), 438–453 (1973)."
+      ]
+    },
+    {
+      "id": "terentyev2004",
+      "doi": "10.1063/1.1786291",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/15367001/",
+      "citation": "A. Terentyev, R. Scholz, M. Schreiber and G. Seifert, Journal of Chemical Physics 121, 5767–5776 (2004).",
+      "inspection": "Primary article abstract reproduced by PubMed inspected; full article not recovered.",
+      "findings": "The calculations distinguish linear a3Pi_u near 2.1 eV above linear singlet from a triangular triplet minimum near 0.8 eV above it.",
+      "limit": "Abstract-level theoretical support for distinct electronic/isomer surfaces, not a quantitative complete partition function. The cyclic triplet ATcT entry must not be labelled as the linear triplet. Vibrational/rotational state densities and electronic degeneracies are needed before estimating high-temperature populations."
+    },
+    {
+      "id": "wachi1972_asms",
+      "url": "https://www.asms.org/docs/default-source/proceedings-archive/1972_asms_20th_conference.pdf?sfvrsn=85f279c3_2",
+      "parent_sha256": "1c682b4334839d34233459faaba141467f34e6906b90af7cce90ed0c4022e0ad",
+      "archived_file": "historical_entropy_evidence.json",
+      "citation": "F. M. Wachi and D. E. Gilmartin, ASMS 20th Conference, D4, printed p 64 (1972).",
+      "inspection": "Primary conference abstract, PDF page 65, visually inspected. The journal article was marked as submitted.",
+      "findings": "Knudsen-effusion mass spectrometry over 2300–2800 K gives entropy 81.47 at 2400 K and 82.91 at 2600 K in cal/(mol K). The reported third-law Hf0 is 199.2±0.4 kcal/mol using Strauss–Thiele thermal functions; second-law Hf0 is 200.1±4 kcal/mol.",
+      "limit": "The second temperature disagrees with Jones’s 2700 K quotation. The journal article, entropy uncertainties and pressure remain unverified. This abstract and Jones are accounts of the same experiment; do not double count them or treat its thermal-model-dependent Hf0 as an independent modern energy benchmark."
+    },
+    {
+      "id": "ruscic2014",
+      "doi": "10.1007/s00214-013-1415-z",
+      "url": "https://atct.anl.gov/~ruscic/reprints/Ruscic%202014.pdf",
+      "citation": "B. Ruscic, D. Feller and K. A. Peterson, Theoretical Chemistry Accounts 133, 1415 (2014).",
+      "inspection": "Primary paper Section 3.2 and reference 38 inspected through the author-hosted PDF.",
+      "findings": "For C2 thermochemistry, the paper identifies Wachi–Gilmartin’s C2/C equilibrium measurement as an ATcT network input. The authors explain the small experimental provenance weights through limited accuracy and poor mutual consistency, with theory becoming dominant.",
+      "limit": "This discusses C2 and an earlier network version, not a direct validation or rejection of the two C3 entropy values. It does not identify the disputed second temperature. It supplies no independent C3 measurement and must not be counted alongside its network inputs as new evidence."
+    }
+  ],
+  "scientific_assessment": {
+    "energy": "ATcT supplies the strongest inspected modern energy evaluation for linear C3. It lies closer to JANAF than to raw NASA, but supports neither unchanged central value. Compare atomization on a common atomic reference with ATcT correlation retained; do not confuse fragment dissociation with total atomization.",
+    "thermal": "Modern anharmonic ground-state sums exceed JANAF in the important temperature range even before adding omitted electronic states. The JANAF high-bending stiffening has a documented weak historical basis. Later historical entropy evidence points toward the larger NASA entropy, making NASA a plausible thermal candidate, but its second temperature differs between the primary abstract (2600 K) and later quotation (2700 K). These data do not certify the uninspected Gurvich model. ExoMol’s metadata/state-sum inconsistencies and finite coverage prevent direct adoption of its distributed partition file.",
+    "decision": "Separate the energy and thermal questions. A scientifically motivated next candidate is modern energy anchoring plus a verified anharmonic thermal model. This investigation supports no immediate curated change or blanket adoption of raw NASA.",
+    "remaining_work": [
+      "Recover Gurvich 1979 C3 evaluation and its electronic/bending inventory.",
+      "Resolve ExoMol .def spin metadata and .pf versus .states generation history; inspect convergence beyond the current l2/J/energy bounds.",
+      "Recover Wachi–Gilmartin 1972 and Lee–Sanborn 1973 originals to verify entropy uncertainties and pressure conventions.",
+      "Treat cyclic minima and excited linear electronic states explicitly before claiming complete high-temperature thermochemistry."
+    ]
+  }
+}
