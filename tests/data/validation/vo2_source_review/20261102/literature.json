@@ -1,6 +1,6 @@
 {
   "review_date": "2026-11-02",
-  "status": "Initial L0-L3 assessment complete with specified follow-ups; no production adoption",
+  "status": "Full-text update: Balducci1983 inspected and Gunina2012 SI available; main Gunina article remains pending; no production adoption",
   "decision": "Evidence favours weaker binding than the old JANAF energy, but no single complete energy/thermal replacement is selected. Retain current coefficients operationally while reconciling primary equilibria and state sums.",
   "entries": [
     {
@@ -35,24 +35,30 @@
     {
       "id": "balducci1983",
       "doi": "10.1063/1.445682",
-      "url": "https://api.crossref.org/works/10.1063/1.445682",
-      "locator": "Publisher-deposited abstract; JCP79,5616-5622",
+      "url": "https://doi.org/10.1063/1.445682",
+      "locator": "Full article pp5616-5622; Table I, p5618 selected value/error paragraph, Tables IV-V and Appendix",
       "role": "Primary high-temperature mass-spectrometric all-gas equilibria",
-      "inspection": "Abstract, original full article inaccessible",
+      "inspection": "Full user-supplied eight-page PDF including publisher cover; relevant scans visually checked",
       "findings": [
-        "Total atomization D0=1177+-18 kJ/mol; Hf298=-174+-14 kJ/mol.",
-        "Full equilibrium data, auxiliary atomic/VO/EuO values, temperature interval and covariance still need reconstruction. Do not treat later reevaluations as independent experiments."
+        "Full-text selected D0=1177+/-11 kJ/mol on p5618; abstract reports1177+/-18. Table I separately gives1177+/-18 and1177+/-12 from reactions2 and3. Hf298=-174+/-14 is unchanged. Preserve all locators instead of silently replacing one uncertainty.",
+        "Selected heats at0K for VO+Eu=EuO+V, VO2+V=2VO, VO2+Eu=EuO+VO are158.5+/-6,-74+/-6,84.5+/-6 kJ/mol. With D0(EuO)=467+/-6, both routes giveD0(VO2)=1177 viaD0(VO)=625.5. Reaction temperature ranges are1913-2178,1913-2186,1913-2282K.",
+        "The authors define selected reaction and ancillary errors as estimated standard deviations, assuming normal distributed effects, and state reliability within three times the quoted errors. These are not a common confidence convention for all literature sources.",
+        "The inferred VO2 energies share VO and EuO references. At fixed reaction heats both respond by2 kJ/mol to a1 kJ/mol change inD0(EuO); separate reaction routes do not justify statistically independent final energies. Full covariance is not supplied.",
+        "Appendix/Table V use ground weight2, matrix-derived frequencies983/538/1034cm^-1,95degree angle and estimated0.163nm bonds. V/VO functions remain JANAF-based. The538cm^-1 bend conflicts with later resolved291(2)cm^-1; no excited electronic states included.",
+        "Table IV thermal functions and source-specific uncertainties are now accessible. Reconstructing selected-energy algebra and tabulated enthalpy increments does not redo the raw mass-spectrometric analysis or establish a modern replacement."
       ]
     },
     {
       "id": "gunina2012",
       "doi": "10.1021/ic201644f",
       "url": "https://pubmed.ncbi.nlm.nih.gov/22497535/",
-      "locator": "Primary abstract; Inorganic Chemistry51,4918-4924",
-      "inspection": "Abstract; original full article inaccessible",
+      "locator": "Primary abstract; Inorganic Chemistry51,4918-4924; supplied SI TablesS1-S3 and structure catalogue",
+      "inspection": "Abstract and local supporting-information PDF; main article unavailable",
       "findings": [
         "Authors critically reevaluate literature and adopt Hf298(VO2)=-185+-15 kJ/mol.",
-        "The abstract does not establish a new independent VO2 formation experiment, a confidence convention or complete thermal model."
+        "The abstract does not establish a new independent VO2 formation experiment, a confidence convention or complete thermal model.",
+        "SI gives partial pressures/third-law heats for mixed W/Mo/V oxide equilibria and VMoO4/VWO3/VWO4 structures. It does not supply the main-text VO/VO2 critical reevaluation or its uncertainty/reference choices.",
+        "SI reaction numbering differs between captions(10-14) and column labels/cover(7-11); original main text is required before assigning equations."
       ]
     },
     {
@@ -120,7 +126,7 @@
     }
   ],
   "follow_ups": [
-    "Obtain and reconstruct Balducci1983 and Gunina2012 reaction data with common V/O/VO/EuO references, including current VO dissociation measurements and error covariance.",
+    "Obtain Gunina2012 main text, then reconcile the inspected Balducci1983 reactions using common V/O/VO/EuO references and modern thermal functions; investigate abstract/body uncertainty mismatch and shared-reference covariance. Original EuO auxiliary papers are still uninspected.",
     "Inspect Gurvich1982 original evaluation before attributing every NASA thermal feature.",
     "Rebuild neutral VO2 electronic and rovibrational sums from resolved spectroscopy, audit state completeness and anharmonicity over1500-4000K, and compare Cp as well asQ.",
     "Only after choosing a consistent candidate, run VO2-only finite mixture substitutions and relevant condensation/physical benchmarks."

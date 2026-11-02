@@ -30,3 +30,20 @@ uncertainty illustrations, not adopted VO2 states. The RRHO heat-capacity
 closure checks that reading. Its stated formation-enthalpy uncertainty is
 41.8 kJ/mol, not the 4 kJ/mol assumption used by the inspected 2024 cluster
 manuscript. Both distinctions are intentional parts of the evidence record.
+
+The local-full-text update identifies ``Balducci.pdf`` and
+``Gunina_2012_sup.pdf`` by SHA-256 without committing those supplied files
+or their extracted text. Balducci's full text resolves the three experimental
+reaction paths, their common EuO energy anchor and historical thermal
+assumptions. It also reveals a selected +/-11 kJ/mol uncertainty on p5618,
+compared with +/-18 in the abstract and +/-18/12 for the Table I paths.
+The audit retains this discrepancy, reproduces the selected-energy algebra
+and shows that both VO2 paths shift by twice a change in their common EuO
+anchor. It does not claim an independent-error average or new uncertainty.
+
+Table IV enthalpy increments are compared with JANAF; entropy is
+reconstructed in the printed convention because Table IV does not
+explicitly state standard pressure. No pressure-normalized Q comparison or
+new thermochemical reduction is inferred. The 2012 supplement contains
+mixed-oxide equilibrium data and structures, not the missing main article's
+critical VO/VO2 reevaluation. Its reaction-number mismatch is recorded.

@@ -101,18 +101,18 @@ What the energy evidence supports
      - Original evaluation and tables
    * - Balducci, Gigli and Guido (1983)
      - -174 +/- 14
-     - 1177 +/- 18
-     - Publisher-deposited primary abstract
+     - 1177 +/- 11 in the selected full-text result; +/- 18 in the abstract
+     - Full article, including scanned tables and error discussion
    * - Gunina, Lopatin and Shugurov (2012)
      - -185 +/- 15
      - Not reconstructed
-     - Primary abstract
+     - Primary abstract and supporting information; main article pending
    * - Osina and Gorokhov, MSU online evaluation
      - -160.259 +/- 12.3
      - 1166 +/- 12
      - Full expert reevaluation
 
-The displayed uncertainties are the sources' stated limits. They are not
+The displayed uncertainties retain each source's own definition. They are not
 converted into a shared confidence level, statistically averaged, or
 propagated as independent errors. D0 here is total atomization to V + 2 O,
 not a single VO--O bond energy or electronic well depth De.
@@ -125,9 +125,82 @@ reanalyzes that work, preferring isomolecular pressure ratios to absolute
 pressures and using updated auxiliary data. The
 `2012 paper <https://doi.org/10.1021/ic201644f>`_ reports a critical
 reevaluation of previous VO/VO2 thermochemistry. These are related
-assessments, not three independent measurements. Full 1983/2012 reaction
-data, thermal corrections, V/VO/EuO references and covariances are still
-needed to choose one consistent value.
+assessments, not three independent measurements. The full 1983 article and
+2012 supporting information are now inspected. The 2012 main-text
+reevaluation, a consistent modern set of auxiliary data and thermal
+corrections, and shared-reference covariances remain unresolved.
+
+What the supplied full text resolves
+------------------------------------
+
+Balducci's Table I and the discussion on printed pp5617-5618 identify the
+energy chain. With all species gaseous, the selected reaction enthalpies
+at 0 K are:
+
+.. list-table:: The 1983 experimental paths
+   :header-rows: 1
+
+   * - Reaction
+     - Selected H0 (kJ/mol)
+     - Measured temperatures (K)
+   * - VO + Eu -> EuO + V
+     - 158.5 +/- 6
+     - 1913-2178
+   * - VO2 + V -> 2 VO
+     - -74 +/- 6
+     - 1913-2186
+   * - VO2 + Eu -> EuO + VO
+     - 84.5 +/- 6
+     - 1913-2282
+
+Their common auxiliary value D0(EuO) = 467 +/- 6 kJ/mol first gives
+D0(VO) = 625.5 +/- 8.5 kJ/mol. Both subsequent paths then give
+D0(VO2) = 1177 kJ/mol. The offline audit reproduces that arithmetic and
+the reaction-cycle closure. The experiment uses Knudsen-effusion mass
+spectrometry, with fragmentation corrections and estimated molecular
+ionization cross sections; it is not a direct observation of a dissociation
+threshold.
+
+The **uncertainty differs within the paper**: Table I gives +/-18 and
++/-12 kJ/mol for the two paths, while the selected average on p5618 has
++/-11 kJ/mol. The abstract instead prints +/-18. The authors describe
+selected-reaction and auxiliary errors as estimated standard deviations,
+assume normally distributed effects and describe three times the quoted
+errors as reliable limits. We preserve these distinct statements and do
+not resolve the abstract/body difference by silently choosing one error.
+
+Although the authors call the reaction paths independent, their inferred
+energies share D0(VO) and D0(EuO). At fixed reaction heats, increasing the
+EuO anchor by 1 kJ/mol raises **both** inferred VO2 energies by 2 kJ/mol.
+This checked sensitivity prevents the paths being counted as independent
+absolute-energy determinations. No covariance matrix is supplied, and no
+new combined uncertainty is claimed.
+
+The Appendix and Tables IV-V also expose the thermal assumptions: ground
+electronic weight 2, frequencies **983, 538, 1034 cm^-1**, a 95-degree bond
+angle and estimated 0.163 nm bonds. V and VO thermal functions are taken
+from JANAF; the Eu/EuO functions and energy anchor trace to earlier work.
+The 538 cm^-1 bend differs strongly from the later resolved 291(2) cm^-1
+ground-state bend. Table IV gives H(1500)-H(298.15) = **63.590 kJ/mol**,
+1.088 kJ/mol below JANAF. These historical assumptions must be reconsidered
+when reducing the measured equilibria with a modern thermal model.
+The audit compares enthalpy increments only: Table IV does not explicitly
+state standard pressure, so its reconstructed entropy is kept in its
+printed convention without imposing a pressure-normalized Q ratio.
+
+The supplied **Gunina supporting information does not contain the main-text
+VO/VO2 reevaluation**. Tables S1-S3 contain partial pressures and reaction
+heats for mixed W/Mo/V oxides; the remaining sections describe
+VMoO4/VWO3/VWO4 structures. Captions label reactions 10-14 while column
+labels and the cover use 7-11. The missing article is needed to resolve
+that numbering and the auxiliary references and error definition behind
+Hf298(VO2) = -185 +/- 15 kJ/mol. This supporting information alone does
+not establish an independent VO2 atomization result.
+
+The directional preference for weaker binding is strengthened by this
+inspection, but a replacement still needs the energy and thermal model to
+be evaluated together. Neither the 1983 ground-only model nor an isolated
+1177 kJ/mol substitution is adopted.
 
 The `2024 cluster study <https://doi.org/10.1051/0004-6361/202347693>`_
 also identifies this discrepancy. Its inspected arXiv manuscript gives
@@ -188,7 +261,10 @@ Reproduction and MCEG
 ``tests/data/validation/vo2_source_review/20261102/`` contains official
 tables, selected NASA records, the two relevant JANAF pages, factual
 literature inputs, access limitations and source hashes. Research PDFs
-listed as unarchived are not downloaded by tests. Baseline-001 and the
+listed as unarchived, including the user-provided Balducci article and
+Gunina supplement, remain local and are not downloaded by tests. Their
+basenames and SHA-256 hashes identify the inspected copies; only factual
+inputs and original review notes are committed. Baseline-001 and the
 production coefficients are unchanged.
 
 .. code-block:: bash

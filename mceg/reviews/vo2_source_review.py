@@ -33,6 +33,28 @@ def electronic_partition(levels_K: list, weights: list, temperature: float,
             "Cp_el_J_mol_K": gas_constant * variance / temperature**2}
 
 
+def historical_energy_audit(data: dict, janaf: dict, euo_shift: float = 0.0) -> dict:
+    """Replay the 1983 selected-energy algebra, retaining its shared EuO anchor."""
+    h1, h2, h3 = [row["selected_H0_kJ_mol"] for row in data["reactions"]]
+    euo = data["EuO_D0_kJ_mol"] + euo_shift
+    vo = euo + h1
+    thermal = []
+    h298 = data["table_IV_VO2"][0][2]
+    for t, phi, h0 in data["table_IV_VO2"]:
+        thermal.append({"temperature_K": t,
+                        "printed_convention_S_J_mol_K": phi + 1000*h0/t,
+                        "H_minus_H298_kJ_mol": h0 - h298,
+                        "delta_H_increment_vs_janaf_kJ_mol": h0 - h298 - janaf[t][3]})
+    return {"VO_D0_kJ_mol": vo,
+            "VO2_D0_from_reaction2_kJ_mol": 2*vo + h2,
+            "VO2_D0_from_reaction3_kJ_mol": euo + vo + h3,
+            "reaction_cycle_residual_kJ_mol": h3 - h1 - h2,
+            "EuO_anchor_shift_kJ_mol": euo_shift,
+            "shared_reference": "Both VO2 routes contain 2 D0(EuO); no independent-energy averaging or revised uncertainty is justified here.",
+            "thermal_nodes": thermal,
+            "thermal_scope": "Historical Table IV enthalpy increments versus JANAF; entropy retains the printed pressure convention. No pressure-normalized Q ratio, updated equilibrium reduction or new model."}
+
+
 def footprint() -> dict:
     """Recompute the maximum V share from the existing 75-case gas-only archive."""
     with np.load(GRID, allow_pickle=False) as grid:
@@ -158,6 +180,7 @@ def review() -> dict:
             "printed_node_max_abs_difference": max(printed_errors),
             "current_fit_max_abs_ln_K_error_1500_4000": max(fit_errors),
             "janaf_ground_only_rrho_closure": rrho_closure,
+            "balducci1983_selected_energy_audit": historical_energy_audit(literature["balducci1983"], tables["VO2"]),
             "electronic_only_diagnostic": electronic,
             "electronic_scope": "Isolated electronic-level sums only; identical state rovibrational factors assumed; no full partition model, isotope normalization or adoption.",
             "footprint": footprint(), "equilibrium_source_substitution": "not_run",

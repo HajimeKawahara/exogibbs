@@ -268,6 +268,89 @@
       "delta_Cp_J_mol_K": 0.00023925991304452054
     }
   ],
+  "balducci1983_selected_energy_audit": {
+    "VO_D0_kJ_mol": 625.5,
+    "VO2_D0_from_reaction2_kJ_mol": 1177.0,
+    "VO2_D0_from_reaction3_kJ_mol": 1177.0,
+    "reaction_cycle_residual_kJ_mol": 0.0,
+    "EuO_anchor_shift_kJ_mol": 0.0,
+    "shared_reference": "Both VO2 routes contain 2 D0(EuO); no independent-energy averaging or revised uncertainty is justified here.",
+    "thermal_nodes": [
+      {
+        "temperature_K": 298.15,
+        "printed_convention_S_J_mol_K": 262.29971658561124,
+        "H_minus_H298_kJ_mol": 0.0,
+        "delta_H_increment_vs_janaf_kJ_mol": 0.0
+      },
+      {
+        "temperature_K": 1500,
+        "printed_convention_S_J_mol_K": 344.61633333333333,
+        "H_minus_H298_kJ_mol": 63.589999999999996,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.088000000000001
+      },
+      {
+        "temperature_K": 1600,
+        "printed_convention_S_J_mol_K": 348.2865,
+        "H_minus_H298_kJ_mol": 69.277,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.1110000000000042
+      },
+      {
+        "temperature_K": 1700,
+        "printed_convention_S_J_mol_K": 351.74311764705885,
+        "H_minus_H298_kJ_mol": 74.979,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.1329999999999956
+      },
+      {
+        "temperature_K": 1800,
+        "printed_convention_S_J_mol_K": 355.0096666666667,
+        "H_minus_H298_kJ_mol": 80.69399999999999,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.1520000000000152
+      },
+      {
+        "temperature_K": 1900,
+        "printed_convention_S_J_mol_K": 358.10473684210524,
+        "H_minus_H298_kJ_mol": 86.419,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.168999999999997
+      },
+      {
+        "temperature_K": 2000,
+        "printed_convention_S_J_mol_K": 361.04650000000004,
+        "H_minus_H298_kJ_mol": 92.154,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.1839999999999975
+      },
+      {
+        "temperature_K": 2100,
+        "printed_convention_S_J_mol_K": 363.8477142857143,
+        "H_minus_H298_kJ_mol": 97.896,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.198999999999998
+      },
+      {
+        "temperature_K": 2200,
+        "printed_convention_S_J_mol_K": 366.52245454545454,
+        "H_minus_H298_kJ_mol": 103.646,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.2109999999999985
+      },
+      {
+        "temperature_K": 2300,
+        "printed_convention_S_J_mol_K": 369.0813478260869,
+        "H_minus_H298_kJ_mol": 109.401,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.2240000000000038
+      },
+      {
+        "temperature_K": 2400,
+        "printed_convention_S_J_mol_K": 371.53341666666665,
+        "H_minus_H298_kJ_mol": 115.16199999999999,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.2340000000000089
+      },
+      {
+        "temperature_K": 2500,
+        "printed_convention_S_J_mol_K": 373.88640000000004,
+        "H_minus_H298_kJ_mol": 120.92799999999998,
+        "delta_H_increment_vs_janaf_kJ_mol": -1.244000000000014
+      }
+    ],
+    "thermal_scope": "Historical Table IV enthalpy increments versus JANAF; entropy retains the printed pressure convention. No pressure-normalized Q ratio, updated equilibrium reduction or new model."
+  },
   "electronic_only_diagnostic": [
     {
       "temperature_K": 1500,

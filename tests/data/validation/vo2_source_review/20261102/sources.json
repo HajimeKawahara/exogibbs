@@ -87,6 +87,29 @@
       "sha256": "463ab6351dc8d14513ba32d201fcf9f0e764cbbf2116fcc3cd95f06bc6f28b14",
       "archived": false,
       "scope": "Inspected research download; factual transcriptions and access limits retained in literature packet"
+    },
+    {
+      "file": "Balducci.pdf",
+      "doi": "10.1063/1.445682",
+      "url": "https://doi.org/10.1063/1.445682",
+      "local_source": "ref/refs_exogibbs_202611/Balducci.pdf",
+      "sha256": "10f5ca81d2c8ddc1248844667f60e55cc3b8b99e6dea82a055a57c1baac19755",
+      "archived": false,
+      "acquisition": "User-provided local PDF",
+      "scope": "User-supplied full article: publisher cover plus printed pp5616-5622; all article pages inspected, Tables I, II, IV, V and error paragraph also visually checked.",
+      "retention": "PDF and extracted text remain local; only factual inputs and independently written findings are committed."
+    },
+    {
+      "file": "Gunina_2012_sup.pdf",
+      "doi": "10.1021/ic201644f",
+      "url": "https://doi.org/10.1021/ic201644f",
+      "local_source": "ref/refs_exogibbs_202611/Gunina_2012_sup.pdf",
+      "sha256": "b4243d97da87ccedda4500fc16dd01a3595fef04bf8a2432ce7a593c442c05e5",
+      "archived": false,
+      "acquisition": "User-provided local PDF",
+      "scope": "User-supplied 45-page supporting information: relevant Tables S1-S3 and molecular-structure sections inspected; main article remains unavailable.",
+      "retention": "PDF and extracted text remain local; only factual inputs and independently written findings are committed."
     }
-  ]
+  ],
+  "local_fulltext_update": "2026-11-02"
 }

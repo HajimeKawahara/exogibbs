@@ -74,6 +74,27 @@ def test_saved_footprint_is_not_a_new_substitution(result):
     assert result["equilibrium_source_substitution"] == "not_run"
 
 
+def test_fulltext_energy_routes_share_the_auxiliary_reference(result):
+    data = json.loads((review.DATA / "literature_inputs.json").read_text())
+    source = data["balducci1983"]
+    audit = result["balducci1983_selected_energy_audit"]
+    assert audit["VO_D0_kJ_mol"] == 625.5
+    assert audit["reaction_cycle_residual_kJ_mol"] == 0
+    shifted = review.historical_energy_audit(
+        source, review.read_table(review.DATA / "O-076.txt"), euo_shift=1)
+    for key in ["VO2_D0_from_reaction2_kJ_mol", "VO2_D0_from_reaction3_kJ_mol"]:
+        assert audit[key] == 1177
+        # Independent reaction routes must retain their common auxiliary anchor.
+        assert shifted[key] - audit[key] == 2
+    assert source["VO2_selected_stated_uncertainty_kJ_mol"] == 11
+    assert source["VO2_abstract_stated_uncertainty_kJ_mol"] == 18
+    assert [row["derived_stated_uncertainty_kJ_mol"]
+            for row in source["reactions"][1:]] == [18, 12]
+    row = next(row for row in audit["thermal_nodes"] if row["temperature_K"] == 1500)
+    assert row["H_minus_H298_kJ_mol"] == pytest.approx(63.590)
+    assert row["delta_H_increment_vs_janaf_kJ_mol"] == pytest.approx(-1.088)
+
+
 def test_altered_official_source_is_rejected(tmp_path, monkeypatch):
     import shutil
     shutil.copytree(review.DATA, tmp_path / "data")

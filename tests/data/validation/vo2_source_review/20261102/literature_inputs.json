@@ -93,12 +93,15 @@
       "source": "Balducci_Gigli_Guido1983",
       "quantity": "total_atomization_D0",
       "value_kJ_mol": 1177,
-      "stated_uncertainty_kJ_mol": 18,
+      "stated_uncertainty_kJ_mol": 11,
       "reference_temperature_K": 0,
       "molecular_hf298_kJ_mol": -174,
       "hf298_stated_uncertainty_kJ_mol": 14,
-      "access": "Publisher-deposited abstract; full text unavailable",
-      "caution": "Original atomic references, thermal functions and error covariances not reconstructed"
+      "access": "Full user-provided article inspected, including scanned tables and error paragraph",
+      "caution": "Abstract/body uncertainty mismatch preserved. The two inferred VO2 energies share VO and EuO references; a covariance-aware combined uncertainty is not established.",
+      "uncertainty_locator": "Selected value in full text p5618; abstract instead reports +/-18",
+      "abstract_stated_uncertainty_kJ_mol": 18,
+      "uncertainty_definition": "Selected reaction and ancillary errors are estimated standard deviations under assumed normal errors; authors describe three times the quoted errors as reliable limits."
     },
     {
       "source": "Gunina_Lopatin_Shugurov2012",
@@ -106,7 +109,7 @@
       "value_kJ_mol": -185,
       "stated_uncertainty_kJ_mol": 15,
       "reference_temperature_K": 298,
-      "access": "Primary abstract; full text unavailable",
+      "access": "Primary abstract and local supporting information inspected; main article unavailable",
       "caution": "Critical reevaluation of literature, not an independent new VO2 formation measurement"
     },
     {
@@ -178,5 +181,154 @@
     "Electronic-level-only comparison holds state-specific rovibrational factors identical; it is not a complete partition function or replacement model.",
     "Later formation enthalpies and atomization energies are not interchangeable without their shared atomic references and thermal increments.",
     "Raw NASA comparison is a diagnostic; production data are unchanged."
-  ]
+  ],
+  "balducci1983": {
+    "doi": "10.1063/1.445682",
+    "locator": "Table I p5617, error discussion p5618, Tables IV-V p5620, Appendix p5621 and reference15 p5622",
+    "experiment": "Knudsen-effusion mass spectrometry; molybdenum cell with Eu2O3/V2O5/V mixture, 70 eV electron ionization, optical pyrometry; fragmentation and multiple-ionization corrections, estimated molecular ionization cross sections and silver pressure calibration.",
+    "reactions": [
+      {
+        "id": 1,
+        "reaction": "VO(g) + Eu(g) -> EuO(g) + V(g)",
+        "temperature_min_K": 1913,
+        "temperature_max_K": 2178,
+        "third_law_H0_kJ_mol": 157.5,
+        "third_law_standard_deviation_kJ_mol": 0.5,
+        "second_law_H0_kJ_mol": 158.8,
+        "second_law_standard_deviation_kJ_mol": 4.2,
+        "selected_H0_kJ_mol": 158.5,
+        "selected_estimated_standard_deviation_kJ_mol": 6
+      },
+      {
+        "id": 2,
+        "reaction": "VO2(g) + V(g) -> 2 VO(g)",
+        "temperature_min_K": 1913,
+        "temperature_max_K": 2186,
+        "third_law_H0_kJ_mol": -73.7,
+        "third_law_standard_deviation_kJ_mol": 0.6,
+        "second_law_H0_kJ_mol": -73.8,
+        "second_law_standard_deviation_kJ_mol": 3.1,
+        "selected_H0_kJ_mol": -74,
+        "selected_estimated_standard_deviation_kJ_mol": 6,
+        "derived_VO2_D0_kJ_mol": 1177,
+        "derived_stated_uncertainty_kJ_mol": 18
+      },
+      {
+        "id": 3,
+        "reaction": "VO2(g) + Eu(g) -> EuO(g) + VO(g)",
+        "temperature_min_K": 1913,
+        "temperature_max_K": 2282,
+        "third_law_H0_kJ_mol": 83.8,
+        "third_law_standard_deviation_kJ_mol": 0.5,
+        "second_law_H0_kJ_mol": 85.5,
+        "second_law_standard_deviation_kJ_mol": 2.9,
+        "selected_H0_kJ_mol": 84.5,
+        "selected_estimated_standard_deviation_kJ_mol": 6,
+        "derived_VO2_D0_kJ_mol": 1177,
+        "derived_stated_uncertainty_kJ_mol": 12
+      }
+    ],
+    "EuO_D0_kJ_mol": 467,
+    "EuO_stated_uncertainty_kJ_mol": 6,
+    "EuO_reference": "Reference15: mean of Murad/Hildenbrand and Balducci/Gigli/Guido values listed under reference14; original auxiliary papers not inspected.",
+    "VO_D0_kJ_mol": 625.5,
+    "VO_stated_uncertainty_kJ_mol": 8.5,
+    "VO2_selected_D0_kJ_mol": 1177,
+    "VO2_selected_stated_uncertainty_kJ_mol": 11,
+    "VO2_abstract_stated_uncertainty_kJ_mol": 18,
+    "covariance_note": "Different reaction measurements are not independent inferred atomization energies: both routes use the same VO and EuO anchor. The paper does not provide a covariance matrix. No revised combined uncertainty is claimed.",
+    "thermal_model": {
+      "symmetry_number": 2,
+      "ground_electronic_weight": 2,
+      "vibrations_cm-1": [
+        983,
+        538,
+        1034
+      ],
+      "bond_angle_degrees": 95,
+      "bond_length_nm": 0.163,
+      "references": "V and VO functions from JANAF1975; Eu and EuO from authors previous work; VO2 frequencies and angle from matrix-isolation work by Serebrennikov/Maltsev, estimated bond length.",
+      "limitation": "Constant electronic ground weight; 538 cm^-1 bend differs markedly from the later cryo-SEVI ground-state value291(2) cm^-1. Historical thermal model is not a complete1500-4000K candidate."
+    },
+    "table_IV_columns": [
+      "temperature_K",
+      "minus_G_minus_H0_over_T_J_mol_K",
+      "H_minus_H0_kJ_mol"
+    ],
+    "table_IV_VO2": [
+      [
+        298.15,
+        226.67,
+        10.623
+      ],
+      [
+        1500,
+        295.141,
+        74.213
+      ],
+      [
+        1600,
+        298.349,
+        79.9
+      ],
+      [
+        1700,
+        301.389,
+        85.602
+      ],
+      [
+        1800,
+        304.278,
+        91.317
+      ],
+      [
+        1900,
+        307.03,
+        97.042
+      ],
+      [
+        2000,
+        309.658,
+        102.777
+      ],
+      [
+        2100,
+        312.172,
+        108.519
+      ],
+      [
+        2200,
+        314.582,
+        114.269
+      ],
+      [
+        2300,
+        316.897,
+        120.024
+      ],
+      [
+        2400,
+        319.123,
+        125.785
+      ],
+      [
+        2500,
+        321.266,
+        131.551
+      ]
+    ],
+    "table_IV_pressure_caution": "Pressure measurements are quoted in atm, but the table does not explicitly specify standard pressure. Only enthalpy increments are compared across sources; its entropy is reconstructed in the printed convention without assigning an atm-to-bar correction."
+  },
+  "gunina2012_supporting_information": {
+    "doi": "10.1021/ic201644f",
+    "pages": 45,
+    "inspection": "Tables S1-S3 (S2-S5), B3LYP structures (S6-S7) and ROHF structure-catalogue headings (S8-S45); no main text supplied.",
+    "contents": "Partial pressures and third-law reaction heats for V2O3-W and V2O3-SiO2-Mo systems; VMoO4/VWO3/VWO4 geometries, electronic energies and selected ZPE.",
+    "reaction_numbering_caution": "Cover and table column labels use7-11, whereas captions use10-14. Do not silently map these to main-text reactions without that article.",
+    "does_not_resolve": [
+      "Critical VO/VO2 thermochemical reevaluation leading to Hf298(VO2)=-185+/-15 kJ/mol",
+      "Auxiliary-reference choices, error definitions and covariance for that reevaluation",
+      "A complete VO2 thermal model or independent VO2 atomization measurement"
+    ]
+  }
 }
