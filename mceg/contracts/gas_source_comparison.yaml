@@ -6,7 +6,7 @@ model:
   implementation: &implementation
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
-    entry_points: [mceg/reviews/gas_source_comparison.py]
+    entry_points: [tests/data/validation/curated_default_adoption/20261102/source/mceg/reviews/gas_source_comparison.py]
 assumptions:
 - statement: Compare dimensionless formation Kp from neutral gas atoms at a 1 bar standard pressure, using each raw source's own atomic references.
   evidence: [frozen_inputs, baseline_execution]
@@ -60,7 +60,7 @@ evidence:
   kind: numerical_test
   summary: Fresh portable execution reproduces all 93 historical rows with a maximum difference of 9.450773497121645e-15 dex; archived replay passes for 372 sampled records and all display tables.
   sources:
-  - mceg/reviews/gas_source_comparison.py
+  - tests/data/validation/curated_default_adoption/20261102/source/mceg/reviews/gas_source_comparison.py
   - tests/data/validation/gas_source_comparison/baseline-001/comparison.json
   - tests/data/validation/gas_source_comparison/baseline-001/receipt.json
   - tests/data/validation/gas_source_comparison/baseline-001/table.csv
@@ -95,12 +95,12 @@ subjects:
     src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
     src/exogibbs/data/ykb4/gibbs_matrices.npz: 2a23ba342773165e384124ad1521b7e6ffdc89b8226bd0d1e4713c2547d03dbf
     examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
-    src/exogibbs/presets/curated.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
     src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
     src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
     src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
-    mceg/reviews/gas_source_comparison.py: f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
+    tests/data/validation/curated_default_adoption/20261102/source/mceg/reviews/gas_source_comparison.py: f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
     tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
 contexts:
 - id: screening_samples

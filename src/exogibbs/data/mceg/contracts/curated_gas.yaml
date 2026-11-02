@@ -9,7 +9,7 @@ model:
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
     entry_points:
-    - src/exogibbs/presets/curated.py:chemsetup
+    - src/exogibbs/presets/curated_v1.py:chemsetup
 assumptions:
 - statement: Ideal gas-only equilibrium uses dimensionless formation constants
     at 1 bar, with zero neutral-atom/electron h and signed electron stoichiometry.
@@ -101,7 +101,7 @@ evidence:
   kind: implementation
   summary: Native ChemicalSetup construction, pinned packaged numerical data and gas convergence corrections.
   sources:
-  - src/exogibbs/presets/curated.py
+  - src/exogibbs/presets/curated_v1.py
   - src/exogibbs/data/curated/gas_v1.json
   - src/exogibbs/data/curated/README.rst
   - src/exogibbs/equilibrium/gas/kernel/solver.py
@@ -129,7 +129,7 @@ evidence:
   result: passed
   summary: Two networks, 70 equilibrium cases and 70 independent FastChem comparisons.
   sources:
-  - examples/comparisons/validate_curated_preset.py
+  - tests/data/validation/curated_default_adoption/20261102/source/examples/comparisons/validate_curated_preset.py
   - tests/data/validation/curated_gas_validation/receipt.json
   - tests/data/validation/curated_gas_validation/diagnostics.csv
   - tests/data/validation/curated_gas_validation/default_charge.csv
@@ -160,7 +160,7 @@ evidence:
   summary: Offline prescribed atmosphere columns show large neutral Cu/Ni
     changes together with absolute abundances and electron/H- responses.
   sources:
-  - examples/comparisons/demo_curated_atmosphere.py
+  - tests/data/validation/curated_default_adoption/20261102/source/examples/comparisons/demo_curated_atmosphere.py
   - tests/unittests/examples/curated_atmosphere_test.py
   - tests/data/validation/curated_atmosphere/receipt.json
   - tests/data/validation/curated_atmosphere/summary.csv

@@ -26,7 +26,7 @@ from matplotlib.lines import Line2D
 import numpy as np
 
 from exogibbs.api.gas import EquilibriumOptions, solve_profile
-from exogibbs.presets import curated, fastchem, fastchem4
+from exogibbs.presets import curated_v1 as curated, fastchem, fastchem4
 from exogibbs.thermo.models import ChemicalSetup
 
 
@@ -219,7 +219,7 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(summary)
     files.append("summary.csv")
-    paths = [Path(__file__), ROOT / "src/exogibbs/presets/curated.py",
+    paths = [Path(__file__), ROOT / "src/exogibbs/presets/curated_v1.py",
              ROOT / "src/exogibbs/data/curated/gas_v1.json",
              ROOT / "src/exogibbs/data/fastchem/logK/logK.dat",
              ROOT / "src/exogibbs/data/FastChem4/logK/logK.dat",

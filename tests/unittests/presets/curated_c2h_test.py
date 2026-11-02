@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from exogibbs.api.gas import EquilibriumOptions, solve
-from exogibbs.presets import curated, curated_c2h
+from exogibbs.presets import curated, curated_c2h, curated_v1
 from exogibbs.thermo.standard import _nasa9
 
 
@@ -26,11 +26,12 @@ def float64():
 
 @pytest.fixture(scope="module")
 def models():
-    return curated.chemsetup(), curated_c2h.chemsetup()
+    return curated_v1.chemsetup(), curated.chemsetup()
 
 
 def test_only_c2h_changes_with_identical_network_and_budget(models):
     old, new = models
+    assert curated.chemsetup is curated_c2h.chemsetup
     assert old.species == new.species and old.elements == new.elements
     np.testing.assert_array_equal(old.formula_matrix, new.formula_matrix)
     np.testing.assert_array_equal(old.element_vector_reference, new.element_vector_reference)
@@ -79,10 +80,10 @@ def test_batch_gradients_domain_and_neutral_network(models):
 
 
 def test_correction_rejects_changed_packaged_data(monkeypatch, tmp_path):
-    real = curated.get_data_filepath
+    real = curated_v1.get_data_filepath
     changed = tmp_path / "c2h_v1.json"
     changed.write_text((ROOT / "src/exogibbs/data/curated/c2h_v1.json").read_text()+"\n")
-    monkeypatch.setattr(curated, "get_data_filepath", lambda p: str(changed) if p == "curated/c2h_v1.json" else real(p))
+    monkeypatch.setattr(curated_v1, "get_data_filepath", lambda p: str(changed) if p == "curated/c2h_v1.json" else real(p))
     with pytest.raises(ValueError, match="pinned version"):
         curated_c2h.chemsetup()
 

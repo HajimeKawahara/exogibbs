@@ -25,7 +25,7 @@ from scipy.special import logsumexp
 from compare_gas_thermochemistry import equilibrium_metrics, fastchem_node_text, validate_diagnostics
 from gas_source_comparison import file_hash
 from exogibbs.api.gas import EquilibriumOptions, solve_profile
-from exogibbs.presets import curated, curated_c2h
+from exogibbs.presets import curated_v1 as curated, curated_c2h
 
 
 TEMPERATURES = np.array([1500., 2000., 2500., 3000., 4000.])
@@ -210,7 +210,7 @@ def run(output: Path, executable: Path | None = None) -> None:
     paths = [Path(__file__), ROOT / "mceg/reviews/build_c2h_correction.py",
              ROOT / "examples/comparisons/compare_gas_thermochemistry.py",
              ROOT / "examples/comparisons/data/major_molecule_reference.json"]
-    paths += [ROOT / p for p in ("src/exogibbs/presets/curated.py", "src/exogibbs/presets/curated_c2h.py",
+    paths += [ROOT / p for p in ("src/exogibbs/presets/curated_v1.py", "src/exogibbs/presets/curated_c2h.py",
               "src/exogibbs/thermo/standard.py", "src/exogibbs/data/curated/gas_v1.json",
               "src/exogibbs/data/curated/c2h_v1.json", "src/exogibbs/data/FastChem4/logK/logK.dat",
               "src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat")]

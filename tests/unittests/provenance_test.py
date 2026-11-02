@@ -13,7 +13,7 @@ import sys
 import numpy as np
 import pytest
 
-from exogibbs.presets import curated, curated_c2h
+from exogibbs.presets import curated, curated_c2h, curated_v1
 from exogibbs.provenance import describe, evidence_catalog
 
 
@@ -54,7 +54,8 @@ def test_c2h_correction_has_separate_evidence_identity(setup):
     corrected = curated_c2h.chemsetup()
     description = describe(corrected)
     assert description["model_id"] == "exogibbs.curated_c2h.v1"
-    assert description["model_id"] != describe(setup)["model_id"]
+    assert description["model_id"] == describe(setup)["model_id"]
+    assert describe(curated_v1.chemsetup())["model_id"] == "exogibbs.curated_gas.v1"
     catalog = json.loads(evidence_catalog().read_text())
     model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
     assert [r["id"] for r in model["records"]] == ["c2h_correction"]
@@ -65,7 +66,7 @@ def test_c2h_correction_has_separate_evidence_identity(setup):
 
 def test_describe_identifies_only_declared_metadata(setup):
     description = describe(setup)
-    assert description["model_id"] == "exogibbs.curated_gas.v1"
+    assert description["model_id"] == "exogibbs.curated_c2h.v1"
     assert description["record_match"] == "declared_metadata"
     assert "does not verify a custom setup" in description["notice"]
     assert json.loads(json.dumps(description)) == description

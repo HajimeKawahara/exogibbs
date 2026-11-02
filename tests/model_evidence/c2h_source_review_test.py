@@ -12,6 +12,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_history import historical_source
+sys.path.insert(0, str(ROOT / "mceg/reviews"))
 import gas_source_comparison as baseline
 
 
@@ -80,4 +82,4 @@ def test_official_nasa_coefficients_and_receipt_hashes(study):
     receipt = json.loads((study["DATA"] / "receipt.json").read_text())
     for hashes in (receipt["selected_input_sha256"], receipt["output_sha256"]):
         for path, expected in hashes.items():
-            assert sha256((ROOT / path).read_bytes()).hexdigest() == expected
+            assert sha256(historical_source(ROOT, path).read_bytes()).hexdigest() == expected

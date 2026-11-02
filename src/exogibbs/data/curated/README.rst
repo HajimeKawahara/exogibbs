@@ -2,7 +2,7 @@ Curated gas thermochemistry, version 1
 ====================================
 
 ``gas_v1.json`` is the pinned numerical dataset for
-``exogibbs.presets.curated.chemsetup``. Its evaluation domain is 1500--4000 K
+``exogibbs.presets.curated_v1.chemsetup``. Its evaluation domain is 1500--4000 K
 at a standard pressure of 1 bar. The native runtime needs neither MCEG nor
 a FastChem installation. The packaged FastChem4 gas and Asplund 2021 files
 remain pinned inputs for inherited species and reference abundances.
@@ -67,11 +67,11 @@ The builder uses SciPy only at development time. The runtime evaluates the
 stored coefficients and partition sums with JAX. Changing numerical sources
 requires an explicit dataset-version and pinned-hash review.
 
-Opt-in C2H correction
---------------------
+Default C2H correction
+----------------------
 
 ``c2h_v1.json`` pins the separate ``curated-c2h-v1`` dataset, selected by
-``exogibbs.presets.curated_c2h.chemsetup()``. Only C2H1 changes: NASA CCH
+``exogibbs.presets.curated.chemsetup()`` (also ``curated_c2h.chemsetup``). Only C2H1 changes: NASA CCH
 thermal functions and the balanced ATcT 1.172 atomization energy replace the
 inherited constants. All other species, both network options and the
 1500--4000 K interval are preserved. ``gas_v1.json`` remains frozen.
@@ -82,4 +82,8 @@ The source choice is conditional; high-temperature thermal uncertainty and
 whole-mixture physical accuracy remain unquantified. The 75 paired
 ion-inclusive equilibrium conditions are archived under
 ``tests/data/validation/c2h_equilibrium_impact/20261102``; neutral-mode
-abundance changes were not evaluated. See ``documents/presets/curated_c2h.rst``.
+substitution changes were not evaluated there. An additional 75 cold solves
+per network verify the adopted default in
+``tests/data/validation/curated_default_adoption/20261102``. The original
+opt-in wording inside the frozen correction JSON records its creation policy;
+runtime metadata identifies the subsequent default adoption. See ``documents/presets/curated_c2h.rst``.

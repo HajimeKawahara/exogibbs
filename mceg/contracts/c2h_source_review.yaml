@@ -92,7 +92,7 @@ subjects:
   implementation: *id001
   selected_files:
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
-    mceg/reviews/gas_source_comparison.py: f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
+    tests/data/validation/curated_default_adoption/20261102/source/mceg/reviews/gas_source_comparison.py: f40856bcda0b1602b09350bb01035b9ec98ba105551ea3f786a09467b6c17914
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
     tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c

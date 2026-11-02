@@ -90,22 +90,32 @@ def build_catalog(output: Path = OUTPUT) -> None:
     c2h_summary = copy(f"{impact}/summary.json", "artifacts/c2h_summary.json")
     if c2h_summary["sha256"] != receipt["output_sha256"]["summary.json"]:
         raise ValueError("C2H summary differs from the archived execution")
+    adoption = "tests/data/validation/curated_default_adoption/20261102"
+    default_receipt = copy(f"{adoption}/receipt.json", "artifacts/c2h_default_receipt.json")
+    default_summary = copy(f"{adoption}/summary.json", "artifacts/c2h_default_summary.json")
+    adopted = json.loads((ROOT / adoption / "receipt.json").read_text())
+    if (default_summary["sha256"] != adopted["output_sha256"]["summary.json"]
+            or c2h_digest != adopted["selected_file_sha256"]["src/exogibbs/data/curated/c2h_v1.json"]):
+        raise ValueError("Default adoption differs from the archived execution")
     c2h_species = {s["id"]: s for s in species}
     c2h_species["C2H1"] = {"id": "C2H1", "aliases": ["C2H", "CCH"]}
     catalog["models"].append({
         "id": "exogibbs.curated_c2h.v1",
-        "label": "Curated gas with conditional C2H correction (ion-inclusive study)",
+        "label": "Curated default with reviewed C2H correction (ion-inclusive lookup)",
         "dataset": c2h_data["id"],
         "identity": {"data_sha256": c2h_digest, "settings": {"ions": True}},
         "species": [c2h_species[k] for k in sorted(c2h_species)],
         "records": [{
             "id": "c2h_correction", **c2h_contract, "species": ["*", "C2H1"],
             "assessments": ["conditional_selection_review", "single_species_impact_review",
-                            "whole_mixture_accuracy_review"],
-            "artifacts": [c2h_summary],
+                            "whole_mixture_accuracy_review", "default_adoption_review"],
+            "artifacts": [c2h_summary, default_receipt, default_summary],
             "summary": (
-                "Opt-in C2H-only correction of curated-gas-v1: NASA thermal functions and balanced "
-                "ATcT 1.172 atomization energy. The archived 75 paired gas-only conditions span "
+                "Default curated dataset: NASA C2H thermal functions and balanced ATcT 1.172 "
+                "atomization energy supersede the 1967 JANAF estimate. Energy alignment alone "
+                "does not remove the old thermal discrepancy. curated_v1 preserves the original. "
+                "New cold solves pass in both networks (75 conditions each); ion-inclusive results "
+                "reproduce the archived corrected candidate. The archived 75 paired gas-only conditions span "
                 "1500-4000 K, 1e-6-100 bar and C/O=0.5888436553555908, 1, 1.5. At C/O=1.5, "
                 "2000 K and 1e-6 bar, HCN increases 47.16% and C2H2 increases by a factor of 2.5585. "
                 "All species re-equilibrate; this is source sensitivity, not an accuracy ranking. "

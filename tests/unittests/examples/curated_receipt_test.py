@@ -5,11 +5,14 @@ import json
 from pathlib import Path
 import re
 import shutil
+import sys
 
 import pytest
 
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_history import historical_source
 RESULTS = Path("tests/data/validation/curated_gas_validation")
 CONTRACT = Path("mceg/contracts/curated_gas.yaml")
 BUILD = Path("tests/data/validation/gas_thermochemistry_impact/fastchem_build.json")
@@ -41,7 +44,8 @@ def check_receipt(root: Path) -> None:
     assert set(receipt["output_sha256"]) == set(OUTPUTS)
     for key, parent in (("selected_file_sha256", root), ("output_sha256", root / RESULTS)):
         for path, expected in receipt[key].items():
-            assert hashlib.sha256((parent / path).read_bytes()).hexdigest() == expected, path
+            source = historical_source(root, path) if key == "selected_file_sha256" else parent / path
+            assert hashlib.sha256(source.read_bytes()).hexdigest() == expected, path
     build = json.loads((root / BUILD).read_text())
     assert receipt["fastchem_binary_sha256"] == build["executable_sha256"]
     revision = re.search(r"^    revision: sha256:([0-9a-f]{64})$",
@@ -50,7 +54,7 @@ def check_receipt(root: Path) -> None:
     assert revision[1] == receipt["selected_file_sha256"]["src/exogibbs/presets/curated.py"]
 
 
-def test_curated_receipt_matches_current_inputs_outputs_and_contract():
+def test_curated_v1_receipt_matches_historical_inputs_outputs_and_contract():
     check_receipt(ROOT)
 
 
@@ -61,13 +65,14 @@ def test_curated_receipt_matches_current_inputs_outputs_and_contract():
 def test_stale_or_incomplete_curated_evidence_is_rejected(tmp_path, change):
     paths = [Path(p) for p in INPUTS] + [RESULTS / p for p in OUTPUTS]
     for path in paths + [RESULTS / "receipt.json", CONTRACT, BUILD]:
-        target = tmp_path / path
+        source = historical_source(ROOT, str(path))
+        target = tmp_path / source.relative_to(ROOT)
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(ROOT / path, target)
+        shutil.copyfile(source, target)
     path = tmp_path / RESULTS / "receipt.json"
     receipt = json.loads(path.read_text())
     if change in ("input", "output", "revision"):
-        target = tmp_path / {"input": Path(INPUTS[0]), "output": RESULTS / OUTPUTS[0],
+        target = tmp_path / {"input": historical_source(ROOT, INPUTS[0]).relative_to(ROOT), "output": RESULTS / OUTPUTS[0],
                              "revision": CONTRACT}[change]
         content = target.read_text()
         target.write_text(content.replace("revision: sha256:", "revision: sha256:0")

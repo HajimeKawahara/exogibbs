@@ -33,8 +33,8 @@ def describe(setup: "ChemicalSetup") -> Dict[str, Any]:
     independently identified or validated by this helper.
     Unrecognized metadata field types are reported as ``None``.
 
-    The catalog distinguishes the frozen ion-inclusive curated model from its
-    opt-in C2H correction. Missing records do not establish physical reliability.
+    The catalog distinguishes the corrected curated default from the frozen
+    ion-inclusive original. Missing records do not establish physical reliability.
     """
     catalog_path = evidence_catalog()
     catalog = json.loads(catalog_path.read_text())

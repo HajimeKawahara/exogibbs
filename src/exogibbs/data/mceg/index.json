@@ -411,7 +411,7 @@
         {
           "id": "curated_gas",
           "path": "contracts/curated_gas.yaml",
-          "sha256": "17a2c7656bf7aaf1048b5bc7340c5d07d0043057eec1e807f035ea12392d44b5",
+          "sha256": "d719089b2ba4c1b4aff6e305b1fd1d5c5b82028a79bebb3414c40c0a70ab122e",
           "species": [
             "*"
           ],
@@ -424,7 +424,7 @@
         {
           "id": "hcn_followup",
           "path": "contracts/fastchem_hcn_followup.yaml",
-          "sha256": "aa2d76562180845ff6982062400a0894a9ad4a45219cb0a0e73d5f840549ed02",
+          "sha256": "6e1394880ffbc6a1b69d73ee9a08111dc37884ab9ecebb3512ce64e918b68f80",
           "species": [
             "C1H1N1_hcn"
           ],
@@ -454,7 +454,7 @@
     },
     {
       "id": "exogibbs.curated_c2h.v1",
-      "label": "Curated gas with conditional C2H correction (ion-inclusive study)",
+      "label": "Curated default with reviewed C2H correction (ion-inclusive lookup)",
       "dataset": "curated-c2h-v1",
       "identity": {
         "data_sha256": "b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48",
@@ -867,7 +867,7 @@
         {
           "id": "c2h_correction",
           "path": "contracts/curated_c2h.yaml",
-          "sha256": "be4ba45d1c0d9e3f8ce098800951b60feab7031a2f1e28af78449c91cff09855",
+          "sha256": "d2a28e7555a9e3fa98373d204657784f262643bfab402caa6de7a49335a53914",
           "species": [
             "*",
             "C2H1"
@@ -875,15 +875,24 @@
           "assessments": [
             "conditional_selection_review",
             "single_species_impact_review",
-            "whole_mixture_accuracy_review"
+            "whole_mixture_accuracy_review",
+            "default_adoption_review"
           ],
           "artifacts": [
             {
               "path": "artifacts/c2h_summary.json",
               "sha256": "b7d84e40618e8c3859aa52055ec2f67f35b2c5ede28049f089d9b8d0268e90cf"
+            },
+            {
+              "path": "artifacts/c2h_default_receipt.json",
+              "sha256": "78669938002d13e74384b4966084262e5848dc132e7d78be9ab34e14501970ba"
+            },
+            {
+              "path": "artifacts/c2h_default_summary.json",
+              "sha256": "fdc92c3b0762d9759c161f239e8f908e64013cc2f2a70b31cd2fc872f18d8c92"
             }
           ],
-          "summary": "Opt-in C2H-only correction of curated-gas-v1: NASA thermal functions and balanced ATcT 1.172 atomization energy. The archived 75 paired gas-only conditions span 1500-4000 K, 1e-6-100 bar and C/O=0.5888436553555908, 1, 1.5. At C/O=1.5, 2000 K and 1e-6 bar, HCN increases 47.16% and C2H2 increases by a factor of 2.5585. All species re-equilibrate; this is source sensitivity, not an accuracy ranking. Conditional source adoption leaves thermal and whole-mixture physical uncertainty unquantified. The old HCN study does not validate this changed dataset. Your conditions have not been evaluated.",
+          "summary": "Default curated dataset: NASA C2H thermal functions and balanced ATcT 1.172 atomization energy supersede the 1967 JANAF estimate. Energy alignment alone does not remove the old thermal discrepancy. curated_v1 preserves the original. New cold solves pass in both networks (75 conditions each); ion-inclusive results reproduce the archived corrected candidate. The archived 75 paired gas-only conditions span 1500-4000 K, 1e-6-100 bar and C/O=0.5888436553555908, 1, 1.5. At C/O=1.5, 2000 K and 1e-6 bar, HCN increases 47.16% and C2H2 increases by a factor of 2.5585. All species re-equilibrate; this is source sensitivity, not an accuracy ranking. Conditional source adoption leaves thermal and whole-mixture physical uncertainty unquantified. The old HCN study does not validate this changed dataset. Your conditions have not been evaluated.",
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/310"
           ]

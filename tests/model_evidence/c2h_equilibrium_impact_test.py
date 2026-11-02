@@ -12,6 +12,8 @@ from scipy.special import logsumexp
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_history import historical_source
+sys.path.insert(0, str(ROOT / "mceg/reviews"))
 from gas_source_comparison import file_hash
 
 DATA = ROOT / "tests/data/validation/c2h_equilibrium_impact/20261102"
@@ -40,7 +42,7 @@ def test_correction_rebuild_and_archived_execution_hashes(monkeypatch, summation
     receipt = json.loads((DATA / "receipt.json").read_text())
     assert receipt["result"] == "passed"
     for name, digest in receipt["selected_file_sha256"].items():
-        assert file_hash(ROOT / name) == digest, name
+        assert file_hash(historical_source(ROOT, name)) == digest, name
     for name, digest in receipt["output_sha256"].items():
         assert file_hash(DATA / name) == digest, name
 

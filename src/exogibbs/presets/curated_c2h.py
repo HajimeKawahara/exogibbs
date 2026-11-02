@@ -1,4 +1,4 @@
-"""Opt-in C2H correction of the frozen curated-gas-v1 preset."""
+"""C2H correction adopted by the default curated gas preset."""
 
 from dataclasses import replace
 import json
@@ -6,7 +6,7 @@ import json
 import jax
 import jax.numpy as jnp
 
-from exogibbs.presets import curated
+from exogibbs.presets import curated_v1 as curated
 from exogibbs.thermo.models import ChemicalSetup
 from exogibbs.thermo.standard import _nasa9
 
@@ -46,7 +46,9 @@ def chemsetup(*, ions: bool = True) -> ChemicalSetup:
                                        data["species"]: data["decision"]},
                 "sources": {**base.metadata["sources"], "c2h": data["sources"]},
                 "source_sha256": {**base.metadata["source_sha256"], **data["source_sha256"]},
-                "interpretation": data["interpretation"]}
+                "interpretation": "Default curated dataset with the conditionally preferred NASA/ATcT "
+                "C2H correction. The legacy curated-gas-v1 remains available as curated_v1. "
+                "High-temperature thermal and whole-mixture physical uncertainty are unquantified."}
     return replace(base, hvector_func=jax.jit(hvector_func), metadata=metadata)
 
 

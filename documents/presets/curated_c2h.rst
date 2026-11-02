@@ -1,19 +1,21 @@
 Curated gas with the C2H correction
 ===================================
 
-``exogibbs.presets.curated_c2h.chemsetup()`` selects **curated-c2h-v1**:
+``exogibbs.presets.curated.chemsetup()`` now selects **curated-c2h-v1**:
 NASA CEA thermal functions for neutral ethynyl with balanced ATcT 1.172
-atomization energy. Only C2H changes from :doc:`curated`. The frozen
-``curated.chemsetup()`` retains its original behavior and evidence snapshots.
+atomization energy. ``curated_c2h.chemsetup`` remains an explicit name for the
+same factory. Only C2H changes from the original **curated-gas-v1**, retained
+byte-for-byte as ``curated_v1.chemsetup`` for historical reproduction.
 
-Use the corrected preset explicitly::
+Use the corrected default or explicitly reproduce the original::
 
    import jax
    jax.config.update("jax_enable_x64", True)
    from exogibbs.api.gas import EquilibriumOptions, solve
-   from exogibbs.presets import curated_c2h
+   from exogibbs.presets import curated, curated_v1
 
-   setup = curated_c2h.chemsetup()
+   setup = curated.chemsetup()       # Reviewed C2H correction
+   legacy = curated_v1.chemsetup()   # Original constants and dataset identity
    result = solve(setup, T=2000., P=0.01,
                   b=setup.element_vector_reference,
                   options=EquilibriumOptions(epsilon_crit=1e-13))
@@ -23,29 +25,29 @@ dimensionless formation Kp at 1 bar. Scalar/array temperatures, JAX derivatives,
 537 species with ions and ``ions=False`` (421 neutral species) are supported.
 Values outside the interval are NaN. MCEG and FastChem are optional tools.
 
-Why the existing curated factory is unchanged
----------------------------------------------
+Why the correction is now the default
+--------------------------------------
 
-The separate factory is a compatibility and evidence-versioning decision for
-this PR. ``curated.chemsetup()`` identifies the pinned ``curated-gas-v1``
-dataset. Its saved abundances, comparisons and MCEG assessments refer to those
-exact constants. Replacing C2H under the same dataset identity would silently
-change existing calculations and attach historical evidence to a different
-model. The new identity makes the choice explicit and keeps the old calculation
-reproducible.
+The scientific source comparison favors NASA/ATcT over the inherited fit.
+The old JANAF C2H evaluation dates to March 1967 and uses a formation enthalpy
+at 298.15 K of 476.976 kJ/mol, versus ATcT 1.172's 567.85 kJ/mol: a difference
+of about **90.9 kJ/mol**. In addition, aligning reaction energies does not
+remove the thermal-function discrepancy. The inspected spectroscopy identifies
+outdated estimates for the bending mode and low electronic state in the old
+evaluation. Adopting NASA thermal functions and a balanced ATcT reaction energy
+therefore addresses both identified problems.
 
-The C2H source review **conditionally prefers the correction**. Retaining the
-old default does not endorse its 1967 JANAF estimate. The existing curated
-dataset already contains conditional source choices, so unresolved physical
-uncertainty alone does not require a separate factory. Here the scientific
-limits qualify the new choice, while the factory split controls migration.
+This is a **conditional scientific preference**, not a claim that all NASA
+thermal inputs have been reconstructed or that high-temperature uncertainty is
+quantified. Those limits remain explicit below. They do not make the superseded
+JANAF estimate the preferable default.
 
-Moving the default to the corrected data is technically possible. That would
-be an explicit transition to a new curated dataset version, with the old
-version still reproducible, updated metadata/catalog bindings and validation
-for the supported modes. The current abundance comparison covers ions=True;
-neutral-mode abundance comparisons remain a follow-up. Complete atmospheric
-validation is not an established prerequisite for changing the default.
+The earlier opt-in policy prioritized compatibility while the substitution was
+investigated. It is superseded by this explicit default migration. The numerical
+correction and its ``curated-c2h-v1`` identity are unchanged; the old
+``curated-gas-v1`` identity is never rebound to new constants. Users reproducing
+old calculations must import ``curated_v1``. Historical comparison scripts now
+do so explicitly, and their original source bytes and receipts remain available.
 
 Differences between the presets
 -------------------------------
@@ -54,8 +56,8 @@ Differences between the presets
    :header-rows: 1
 
    * - Item
-     - ``curated.chemsetup()``
-     - ``curated_c2h.chemsetup()``
+     - ``curated_v1.chemsetup()``
+     - ``curated.chemsetup()`` (also ``curated_c2h``)
    * - Dataset identity
      - ``curated-gas-v1``
      - ``curated-c2h-v1``, with a pinned reference to its base
@@ -79,7 +81,7 @@ Differences between the presets
      - 1500--4000 K; 1 bar
    * - Abundance evidence
      - Historical curated and HCN comparison records
-     - New 75-pair C2H substitution study; historical results are not rebound
+     - 75-pair substitution study and 75 new default solves per network; old HCN results are not rebound
 
 Relative to the old curated fit, **both C2H thermal functions and its energy
 anchor change**. The energy-only shift described below is the second step,
@@ -87,7 +89,7 @@ from raw NASA coefficients to the NASA/ATcT candidate. All other entries of
 the formation vector h(T) are unchanged; their equilibrium abundances can
 still change because the molecules share conserved elements.
 
-For C2H, K(corrected)/K(curated) is 0.001898625 at 1500 K and 0.08910022 at
+For C2H, K(corrected)/K(legacy) is 0.001898625 at 1500 K and 0.08910022 at
 3000 K (about 1/527 and 1/11.2). These ratios compare formation constants,
 not mole fractions. The abundance table below shows the result of solving
 the coupled equilibrium equations.
@@ -118,7 +120,7 @@ is applied to HCN or another species.
 This is a **conditional source choice**. High-temperature thermal uncertainty
 is not quantified; original-paper access and vibronic-state completeness gaps
 remain. ATcT energy uncertainties are correlated, not independent errors.
-A future default-dataset migration is separate from this opt-in correction.
+The default migration retains this candidate's data identity and source limits.
 
 Equilibrium impact
 ------------------
@@ -181,8 +183,9 @@ numerical evidence, not a physical uncertainty estimate.
 
 These are ideal, gas-only calculations. Condensation, rainout, high-pressure
 nonideality, photochemistry, quenching and spectra are outside the evidence.
-The 421-species option shares corrected constants but was not used for the
-archived abundance comparison. Whole-atmosphere physical accuracy remains unknown.
+The original paired substitution study covers the 537-species network. The
+additional default-adoption run below covers both networks. Whole-atmosphere
+physical accuracy remains unknown.
 
 Archive: ``tests/data/validation/c2h_equilibrium_impact/20261102``. Replay::
 
@@ -193,3 +196,33 @@ Archive: ``tests/data/validation/c2h_equilibrium_impact/20261102``. Replay::
 
 Optional records are in ``mceg/contracts/curated_c2h.yaml`` and the packaged
 catalog returned by ``exogibbs.provenance.describe(setup)``.
+
+Default-adoption verification
+------------------------------
+
+A separate execution constructs the public ``curated`` default and cold-solves
+75 conditions for **each** supported network: the same five temperatures, five
+pressures and three C/O settings, with tolerance 5e-14 in float64. All 150 solves
+pass. Maximum relative elemental residuals are 1.38e-6 with ions and 1.41e-6
+without ions; mass-action residuals are below 1.2e-12 in natural log units.
+The maximum relative charge residual is 1.64e-14. All 75 ion-inclusive log mole
+fractions exactly reproduce the archived corrected candidate in this environment.
+No new independent-solver comparison is claimed for neutral mode.
+
+Both modes preserve the original formula matrix, reference budget and all
+non-C2H formation functions. The archive retains full log amounts, log mole
+fractions, thermochemistry, budgets, convergence flags and source/output hashes:
+``tests/data/validation/curated_default_adoption/20261102``. Replay into a new
+directory::
+
+   JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 PYTHONPATH=src \
+     python mceg/reviews/curated_default_adoption.py \
+     --output-dir results/curated-default-replay
+
+MCEG's ``default_adoption_review`` supports this numerical claim for both modes.
+``conditional_selection_review`` and ``whole_mixture_accuracy_review`` remain
+``unknown`` for complete primary/thermal support and whole-mixture physical
+accuracy, respectively. The default factory's ion-inclusive catalog entry is
+``exogibbs.curated_c2h.v1``; the earlier HCN study remains attached exclusively
+to ``exogibbs.curated_gas.v1``. Neutral-mode evidence is in the contract directly;
+the packaged lookup still restricts its entry to ``ions=True``.

@@ -8,7 +8,7 @@ runtime or test dependency; numerical implementations remain owned by ExoGibbs.
 
 For installed-package and species lookup, see the
 [optional inspection guide](../documents/mceg/optional_inspection.rst).
-`python mceg/build_catalog.py` copies the canonical curated/HCN and opt-in C2H
+`python mceg/build_catalog.py` copies the legacy curated/HCN and current default C2H
 records and study artifacts into a committed wheel catalog. Both this builder and
 `exogibbs.provenance.describe(setup)` work without MCEG. The catalog is a dated
 evidence snapshot; matching declared metadata does not validate a user's run.
@@ -76,8 +76,8 @@ code consumes pinned numerical JSON only; MCEG remains an optional development
 tool. Earlier source-study contracts and their archived results are historical
 evidence and are not rewritten by this implementation.
 
-The [C2H correction contract](contracts/curated_c2h.yaml) records the separate
-[opt-in preset](../documents/presets/curated_c2h.rst), `curated-c2h-v1`:
+The [C2H correction contract](contracts/curated_c2h.yaml) records the adopted
+[default preset](../documents/presets/curated_c2h.rst), `curated-c2h-v1`:
 NASA thermal functions and balanced ATcT 1.172 atomization energy. Its
 [75-pair comparison](../tests/data/validation/c2h_equilibrium_impact/20261102/README.rst)
 changes C2H alone while re-equilibrating the same 537 species at each fixed
@@ -231,3 +231,15 @@ Run `python -m mceg docs --config mceg/docs.yaml` to generate RST only, or
 `./update_doc.sh` from the repository root to regenerate and build HTML.
 See [the documentation build guide](../documents/mceg/build.rst) for installation,
 input selection and output locations. Generated files are ignored by Git.
+
+The C2H correction is now the `curated` default. The scientific reason is the
+superseded JANAF energy estimate and the thermal discrepancy that persists after
+energy alignment. `curated_v1` preserves the original implementation exactly.
+The default keeps the already reviewed `curated-c2h-v1` data identity and passes
+[150 new cold solves](../tests/data/validation/curated_default_adoption/20261102/summary.json),
+75 per network. `default_adoption_review` supports that numerical claim;
+complete thermal support and whole-mixture physical accuracy remain unknown.
+Original study scripts are archived before their imports were made explicit;
+`reviews/curated_history.py` resolves their recorded paths. Original receipts,
+data hashes and numerical outputs are unchanged, and old HCN results remain
+attached to the original model only.
