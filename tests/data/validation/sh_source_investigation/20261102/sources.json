@@ -1,0 +1,187 @@
+{
+  "schema_version": "1",
+  "species_id": "H1S1",
+  "identity": {
+    "name": "Sulfanyl / mercapto / SH / HS",
+    "CAS": "13940-21-1",
+    "phase": "gas",
+    "charge": 0,
+    "ground_state": "X 2Pi; lower spin-orbit component 2Pi3/2",
+    "janaf_table": "H-046",
+    "janaf_evaluation": "June 1977 (1 bar)",
+    "janaf_pdf_page": 1306,
+    "isotopes": "Natural-element thermochemical species; no isotopologue or nuclear-spin normalization replacement is proposed. Exact NASA/Gurvich high-T state accounting remains a follow-up."
+  },
+  "sources": {
+    "janaf_hs": {
+      "url": "https://janaf.nist.gov/tables/H-046.html",
+      "sha256": "3562eaa37e2efc23924a28c098080fd6a12dcd09a001251427821c1f66538f69",
+      "download_bytes": 21173,
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "janaf_h": {
+      "url": "https://janaf.nist.gov/tables/H-001.html",
+      "sha256": "9b90f5b46ea09dd5f8fa1028a05676f8bbff453ea1fc074ec943d822d08dd0c2",
+      "download_bytes": 21119,
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "janaf_s": {
+      "url": "https://janaf.nist.gov/tables/S-006.html",
+      "sha256": "90a805f34cc8388b2a721d638e86344a9d9b1c84e939026ee5513e2f7b43a251",
+      "download_bytes": 21127,
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "janaf_hydrogen_pdf": {
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Hydrogen.pdf",
+      "sha256": "7c06e41eb753635a560e491c41ed04d2a5608fce3a656843b858aefb8e138427",
+      "download_bytes": 7826886,
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "lodders2004_pdf": {
+      "url": "https://solarsystem.wustl.edu/wp-content/uploads/reprints/2004/Lodders%202004%20J%20Phys%20Chem%20Ref%20Data.pdf",
+      "sha256": "0b9edd5cf4977e6a6db4e9b38890a044adafebf099608e2426b821bc1bcd9a3e",
+      "download_bytes": 110086,
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "atct_sh": {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=344",
+      "sha256": "d8f80d4ea383d086d54d50f7ac3b4f38de71bd907592e75c14bafee0d30e102b",
+      "download_bytes": 55752,
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "atct_h": {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=19",
+      "sha256": "fa02862feca3d9ff38a350af05778ad6480f03c3ecd2c47c351d95d74247a205",
+      "download_bytes": 42593,
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "atct_zhou_bib": {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/bibliography/?bib_number_search%5B%5D=2449",
+      "sha256": "f6d37a9656ae5192c4213e116893661eb94951414a00673cf990b45bba049cb7",
+      "download_bytes": 2254,
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "janaf_SH_txt": {
+      "url": "https://janaf.nist.gov/tables/H-046.txt",
+      "sha256": "7fd41d2fe547008df5e989a0e88c697a168ca4c201bada4ed2da38e09d6d77ce",
+      "download_bytes": 3833,
+      "archive": "tests/data/validation/sh_source_investigation/20261102/H-046.txt",
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "janaf_H_txt": {
+      "url": "https://janaf.nist.gov/tables/H-001.txt",
+      "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+      "download_bytes": 3802,
+      "archive": "tests/data/validation/sh_source_investigation/20261102/H-001.txt",
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "janaf_S_txt": {
+      "url": "https://janaf.nist.gov/tables/S-006.txt",
+      "sha256": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
+      "download_bytes": 3804,
+      "archive": "tests/data/validation/sh_source_investigation/20261102/S-006.txt",
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    },
+    "continetti1991": {
+      "url": "https://escholarship.org/content/qt25w9z95s/qt25w9z95s.pdf",
+      "doi": "10.1016/0009-2614(91)90097-S",
+      "inspection": "Web-rendered institutional preprint, pp 8-9 (PDF pp 12-13), inspected 2026-11-02. Direct downloads returned empty/non-PDF responses; no acquired-file hash asserted.",
+      "sha256": null
+    },
+    "nasa2002": {
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "inspection": "Appendix D SH g10/01 record: all 18 coefficients and both interval bounds equal baseline-001; not authentication of the entire local NASA copy.",
+      "retrieved_date_local": "2026-11-02",
+      "retrieval_timezone": "Asia/Tokyo"
+    }
+  },
+  "search_date": "2026-11-02",
+  "search_queries": [
+    "JANAF SH mercapto H-046",
+    "Lodders 2004 SH erroneous formation columns",
+    "Continetti 1991 SH 193.3 nm",
+    "Zhou 2005 SH 29245 dissociation energy",
+    "ATcT 1.172 sulfanyl provenance"
+  ],
+  "lodders_table3": {
+    "location": "Lodders 2004, p361, Table 3; hf298 142.920 kJ/mol",
+    "hf298_kJ_mol": 142.92,
+    "rows": [
+      [
+        298.15,
+        32.479,
+        195.552,
+        0.0
+      ],
+      [
+        500,
+        31.346,
+        212.031,
+        6.424
+      ],
+      [
+        1000,
+        32.872,
+        234.024,
+        22.335
+      ],
+      [
+        1500,
+        35.037,
+        247.789,
+        39.345
+      ],
+      [
+        3000,
+        38.282,
+        273.232,
+        94.681
+      ]
+    ],
+    "columns": [
+      "temperature_K",
+      "cp_J_mol_K",
+      "entropy_J_mol_K",
+      "enthalpy_increment_kJ_mol"
+    ]
+  },
+  "atct_1_172": {
+    "SH": {
+      "source_formula": "SH (g)",
+      "atct_id": "13940-21-1*0",
+      "hf0_kJ_mol": 142.81,
+      "hf298_kJ_mol": 143.26,
+      "reported_uncertainty_kJ_mol": 0.18,
+      "uncertainty_note": "as reported; correlated network uncertainties not propagated"
+    },
+    "H": {
+      "source_formula": "H (g)",
+      "atct_id": "12385-13-6*0",
+      "hf0_kJ_mol": 216.034,
+      "hf298_kJ_mol": 217.998,
+      "reported_uncertainty_kJ_mol": 0.0,
+      "uncertainty_note": "rounded display; not zero physical uncertainty"
+    },
+    "S": {
+      "source_formula": "S (g)",
+      "atct_id": "7704-34-9*0",
+      "hf0_kJ_mol": 276.83,
+      "hf298_kJ_mol": 279.08,
+      "reported_uncertainty_kJ_mol": 0.14,
+      "uncertainty_note": "as reported; correlated network uncertainties not propagated"
+    }
+  },
+  "source_scope": "L0-L3 source investigation complete with named thermal-function and covariance gaps; production choice retained conditionally. No equilibrium abundance experiment."
+}
