@@ -18,7 +18,9 @@ DATA = ROOT / "tests/data/validation/ph2_equilibrium_impact/20261102"
 
 
 def test_probe_is_only_ph2_and_has_a_distinct_diagnostic_identity():
-    with jax.experimental.enable_x64():
+    previous = jax.config.x64_enabled
+    jax.config.update("jax_enable_x64", True)
+    try:
         base, probe, _ = models()
         assert base.metadata["dataset"] == "curated-c2h-v1"
         assert probe.metadata["dataset"] == "curated-c2h-v1+raw-nasa-ph2-diagnostic"
@@ -37,6 +39,8 @@ def test_probe_is_only_ph2_and_has_a_distinct_diagnostic_identity():
         np.testing.assert_allclose(np.exp(after[[0, 3], i]-before[[0, 3], i]),
                                    [2.535338, 1.625158], rtol=1e-6)
         assert np.isnan(np.asarray(probe.hvector_func(np.array([1499., 4001., np.nan])))[:, i]).all()
+    finally:
+        jax.config.update("jax_enable_x64", previous)
 
 
 def test_archived_execution_hashes_and_all_convergence_checks():
