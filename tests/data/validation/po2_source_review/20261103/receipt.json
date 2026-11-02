@@ -1,0 +1,28 @@
+{
+  "schema_version": "1",
+  "command": "PYTHONPATH=src python mceg/reviews/po2_source_review.py --output tests/data/validation/po2_source_review/20261103/comparison.json",
+  "selected_input_sha256": {
+    "mceg/reviews/po2_source_review.py": "c5e8b3d2972acc982ed0fea0f59dedc2c53741c6363e6e7ac7b7f5487a749a35",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "tests/data/validation/po2_source_review/20261103/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/po2_source_review/20261103/O-032.txt": "a93f51f8dbd7d0e1ac7005519cd33dc41e066acd7d90830de97ec9f38feb8513",
+    "tests/data/validation/po2_source_review/20261103/P-001.txt": "06086a8d0f26ace07c4d0207646987a2cff605380e69b89af9a21da28649c81b",
+    "tests/data/validation/po2_source_review/20261103/P-008.txt": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
+    "tests/data/validation/po2_source_review/20261103/README.rst": "cf0ba21b2721f8acbd8f348106dcb0825c7222cddaba62b78eddb06b07ce1199",
+    "tests/data/validation/po2_source_review/20261103/literature.json": "2ce3a3307e09e1441a1a19c5430d3a630d3629818959c7bf361e8d6f415f13be",
+    "tests/data/validation/po2_source_review/20261103/nasa9_excerpt.txt": "3357b7cb652088545f2699c663bca2347000f44f31f310a6ef85203235f13ecc",
+    "tests/data/validation/po2_source_review/20261103/sources.json": "9c1d62f5d3f260b144d284cf2874dea82cc2dd8ea9977bfd9a0d6b017d9cbab5"
+  },
+  "output_sha256": {
+    "tests/data/validation/po2_source_review/20261103/comparison.json": "c66c1030711fb17056925219170a196f013dda58c3b77e26969726249939cbd7"
+  },
+  "production_change": "none",
+  "equilibrium_substitution": "not_run",
+  "executed_at_utc": "2026-11-02T23:18:50.420398+00:00",
+  "note": "Fresh offline source replay; the 75-case ions.npz grid is reused, not newly solved."
+}
