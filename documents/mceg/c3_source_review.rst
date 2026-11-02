@@ -128,6 +128,37 @@ coverage and caloric convergence; a stable finite-difference step is not a
 physical uncertainty estimate. The source packet records the derivative,
 normalization and state-coverage diagnostics and their limits.
 
+Supplied full texts and electronic-state limits
+-----------------------------------------------
+
+The supplied publisher copy of AtLast confirms Table 2's 2,166,503 states,
+20000 cm^-1 energy limit, J = 155 and l = 12, and the ground-state-only
+partition-function definition in Section 5. Table 3 explicitly uses g = 13
+for J = 6, consistent with a nuclear-spin factor of one for 12C3. This is a
+second copy of the same study, not independent validation. It does not explain
+the archived definition/partition/state-file inconsistencies.
+
+The supplied full text of `Terentyev et al. (2004)
+<https://doi.org/10.1063/1.1786291>`_ closes the former abstract-only access gap.
+Its Tables I and V distinguish optimized electronic-energy differences from
+differences including zero-point motion. Across the four listed B3LYP basis
+sets, the linear 3Pi_u gap is 2.15--2.20 eV without the zero-point correction
+and 2.10--2.12 eV with it. The equilateral triangular 3A2-prime minimum instead
+lies at 0.81--0.83 eV without and 0.82--0.85 eV with that correction, all
+relative to the corresponding linear singlet calculation. The lower triangular
+minimum is not the term origin of the linear triplet.
+
+These tables identify missing surfaces, not an adopted thermal model. Table IV
+also shows substantial basis dependence in the linear-triplet antisymmetric
+stretch (932 to 415 cm^-1) and distinct bending branches. Section V's TD-DFT
+excitation energies use a specified geometry and have systematic deviations
+of order 0.4 eV; they must not be substituted for the optimized, zero-point-
+corrected gaps. Some doubly excited states are excluded. Electronic statistical
+weights, rovibrational state densities and consistent energy zeros remain
+necessary before adding any excited-surface contribution to a hot partition
+function. Neither the ATcT energy preference nor the curated coefficients
+change in this full-text update.
+
 Controlled raw-NASA substitution
 --------------------------------
 

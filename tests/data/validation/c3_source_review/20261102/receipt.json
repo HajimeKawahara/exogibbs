@@ -2,7 +2,7 @@
   "schema_version": "1",
   "study": "c3-source-review-20261102",
   "execution_kind": "fresh_offline_execution",
-  "executed_at_utc": "2026-11-02T05:25:14.275598+00:00",
+  "executed_at_utc": "2026-11-02T09:22:45.880723+00:00",
   "command": [
     "/home/kawahara/miniconda3/bin/python",
     "mceg/reviews/c3_source_review.py",
@@ -12,7 +12,7 @@
     "tests/data/validation/c3_source_review/20261102/receipt.json"
   ],
   "python": "3.12.7",
-  "base_commit": "8f5a7f4c7ac28a1a7b4e958cb0426d9912043035",
+  "base_commit": "6d11cd5ec6fd9c01a0de80e6bf74bb4a47a7db3b",
   "implementation_identity": "Selected file hashes include uncommitted files; HEAD alone does not identify this execution.",
   "selected_input_sha256": {
     "mceg/reviews/c3_source_review.py": "7a5c3fe717951bd95787968f188bb96c260c49bf9b6ab99b52ea6157d902739a",
@@ -21,8 +21,8 @@
     "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
     "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
     "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
-    "tests/data/validation/c3_source_review/20261102/sources.json": "809b3c925acb3d77c54d0453cd5920cd417d11fb47c6af9c9c4358e95a312122",
-    "tests/data/validation/c3_source_review/20261102/literature.json": "cfb451ad6f61f4b7d43701cf3c9f22c4e31ea7384c76973d26dc3a8a7cab166f",
+    "tests/data/validation/c3_source_review/20261102/sources.json": "210edfddb80b91d7d14c4404aadc8695ce12752110978471c2d5ee7fa6e7bce8",
+    "tests/data/validation/c3_source_review/20261102/literature.json": "b78d8eef60cb6ca3a51445bfa2e62ac0be45fe656114a34a24da465779951701",
     "tests/data/validation/c3_source_review/20261102/C-138.txt": "5594a517653790da521f193d1c16a5b2cfd542e5c94357666ebabcf86bbb6bef",
     "tests/data/validation/c3_source_review/20261102/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
     "tests/data/validation/c3_source_review/20261102/C-002.txt": "d929a499d9e827487970b654058f81381a652a84d836ec378bff8521cc19a3bf",

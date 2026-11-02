@@ -88,8 +88,8 @@ claims:
 evidence:
 - id: literature_review
   kind: literature
-  summary: Inspect JANAF bending assumptions, NASA ancestry, the versioned ATcT network and modern AtLast spectroscopy,
-    with explicit original-source and completeness limits.
+  summary: Inspect JANAF bending assumptions, NASA ancestry, the versioned ATcT network, supplied AtLast publisher
+    text and Terentyev electronic surfaces, with distinct geometry and zero-point conventions.
   sources:
   - tests/data/validation/c3_source_review/20261102/sources.json
   - tests/data/validation/c3_source_review/20261102/literature.json
@@ -100,17 +100,17 @@ evidence:
   context: source_comparison
   artifacts:
   - source: tests/data/validation/c3_source_review/20261102/sources.json
-    sha256: 809b3c925acb3d77c54d0453cd5920cd417d11fb47c6af9c9c4358e95a312122
+    sha256: 210edfddb80b91d7d14c4404aadc8695ce12752110978471c2d5ee7fa6e7bce8
   - source: tests/data/validation/c3_source_review/20261102/literature.json
-    sha256: cfb451ad6f61f4b7d43701cf3c9f22c4e31ea7384c76973d26dc3a8a7cab166f
+    sha256: b78d8eef60cb6ca3a51445bfa2e62ac0be45fe656114a34a24da465779951701
   - source: tests/data/validation/c3_source_review/20261102/atct_evidence.json
     sha256: ea130d2d2909d061642e4a21e00f3c87a4a7d6463ad1a945cf2d936d7a6797e4
   provenance:
     role: secondary
     location: Fixed C3 source packet, original source records and declared external-state diagnostics.
     inspection: partial
-    note: Direct inspections, source quotations and uninspected ancestry remain distinct; the full external state
-      file is not vendored.
+    note: Supplied Terentyev full text closes its abstract-only access gap. Optimized electronic and zero-point-corrected
+      gaps are distinct from TD-DFT excitation energies; neither full PDFs nor the external state file are vendored.
 - id: source_replay
   kind: numerical_test
   summary: Reproduce source ratios, reference closure, fit/caloric differences, balanced ATcT energies and partition
@@ -128,7 +128,7 @@ evidence:
   - source: tests/data/validation/c3_source_review/20261102/comparison.json
     sha256: 4769153edec98a99b48cf0a7fa1d1cd1d2a780750ec05b6727769b9576cc06c0
   - source: tests/data/validation/c3_source_review/20261102/receipt.json
-    sha256: 7ca143df277909b92a15b2766a4ca7d5304691ef514113ffc3c7534b8ebec817
+    sha256: f51ca8eb2d79d0ca9574e358d63e0ae228298c6b2d687439bb9d71402b7424ee
   - source: tests/data/validation/c3_source_review/20261102/state_sum_checks.json
     sha256: 9caa0aac558265732f8227487ff77eed9d0d529c831f9f829b61de4e4a46983c
   provenance:
@@ -153,7 +153,7 @@ evidence:
   - source: tests/data/validation/c3_source_review/20261102/atct_evidence.json
     sha256: ea130d2d2909d061642e4a21e00f3c87a4a7d6463ad1a945cf2d936d7a6797e4
   - source: tests/data/validation/c3_source_review/20261102/literature.json
-    sha256: cfb451ad6f61f4b7d43701cf3c9f22c4e31ea7384c76973d26dc3a8a7cab166f
+    sha256: b78d8eef60cb6ca3a51445bfa2e62ac0be45fe656114a34a24da465779951701
   - source: tests/data/validation/c3_source_review/20261102/comparison.json
     sha256: 4769153edec98a99b48cf0a7fa1d1cd1d2a780750ec05b6727769b9576cc06c0
   provenance:
@@ -204,8 +204,8 @@ subjects:
     src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
     tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
     tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
-    tests/data/validation/c3_source_review/20261102/sources.json: 809b3c925acb3d77c54d0453cd5920cd417d11fb47c6af9c9c4358e95a312122
-    tests/data/validation/c3_source_review/20261102/literature.json: cfb451ad6f61f4b7d43701cf3c9f22c4e31ea7384c76973d26dc3a8a7cab166f
+    tests/data/validation/c3_source_review/20261102/sources.json: 210edfddb80b91d7d14c4404aadc8695ce12752110978471c2d5ee7fa6e7bce8
+    tests/data/validation/c3_source_review/20261102/literature.json: b78d8eef60cb6ca3a51445bfa2e62ac0be45fe656114a34a24da465779951701
     tests/data/validation/c3_source_review/20261102/C-138.txt: 5594a517653790da521f193d1c16a5b2cfd542e5c94357666ebabcf86bbb6bef
     tests/data/validation/c3_source_review/20261102/C-003.txt: df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4
     tests/data/validation/c3_source_review/20261102/C-002.txt: d929a499d9e827487970b654058f81381a652a84d836ec378bff8521cc19a3bf
@@ -221,7 +221,7 @@ subjects:
     tests/data/validation/c3_source_review/20261102/state_sum_checks.json: 9caa0aac558265732f8227487ff77eed9d0d529c831f9f829b61de4e4a46983c
     tests/data/validation/c3_source_review/20261102/nasa1978_thermal_appendix_21_22.pdf: 8143d8437c0c77d51f448eec0302bb3340952a9bc4b4c8b33c3ece1994182368
     tests/data/validation/c3_source_review/20261102/historical_entropy_evidence.json: 6c90a1837fdd5cc3326aa7102a9e64cc131c54d348e0f771561a8dc793fff6aa
-    tests/data/validation/c3_source_review/20261102/README.rst: a4d4a36ccbb593a79ec43983ea01206ceec1c03841d3e219487f2e28c6344a55
+    tests/data/validation/c3_source_review/20261102/README.rst: 1359dde04338a4c5459f11c04db9191e0920960530a7f81ce0cff367b7b3ec09
 - id: c3_substitution_20261102
   implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
@@ -375,6 +375,9 @@ assessments:
   - A complete replacement needs consistency between its state and partition data, a verified thermal domain and
     electronic/high-energy coverage. Stable derivatives and source agreement alone do not provide physical accuracy
     bounds.
+  - Supplied Terentyev tables separate the linear and triangular triplets and their zero-point corrections; their
+    method-dependent surfaces do not supply a complete hot state inventory. The supplied AtLast copy confirms
+    its ground-state-only scope without resolving the distributed-file mismatch.
   status: unknown
   origin: reviewed
 - id: atmospheric_accuracy_review
@@ -433,6 +436,10 @@ limitations:
   evidence:
   - literature_review
   - source_replay
+- statement: The triangular-triplet energy in Terentyev is not the linear-triplet term origin. Theoretical method
+    spread and TD-DFT systematic deviations are not calibrated thermochemical error bars.
+  evidence:
+  - literature_review
 - statement: The raw-NASA diagnostic is not a scientific adoption, uncertainty interval or the response of a future
     ATcT/modern-thermal candidate.
   evidence:

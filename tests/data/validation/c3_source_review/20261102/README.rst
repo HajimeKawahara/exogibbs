@@ -58,3 +58,13 @@ replayed receipts; numerical results are tested independently. Offline checks::
 The separate ``c3_equilibrium_impact/20261102`` packet contains the raw-NASA
 C3-only sensitivity, not a prospective ATcT/modern-thermal adoption. Ordinary
 checks require neither MCEG nor an independent FastChem executable.
+
+The supplied ``Terentyev_2004.pdf`` and ``Lynas-Gray_2024.pdf`` in
+``ref/refs_exogibbs_202611-2`` are recorded by SHA256 and inspection location
+in the source manifest; full PDFs and extracted text are not vendored.
+Terentyev's optimized electronic and zero-point-corrected gaps are separated
+in ``literature.json``. The additional AtLast copy confirms the existing
+ground-state model and does not resolve the distributed-file mismatch.
+This source update replays the unchanged numerical review and refreshes its
+current receipt; it does not repeat the large external-state calculation or
+the equilibrium experiment.

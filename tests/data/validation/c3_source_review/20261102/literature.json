@@ -138,9 +138,22 @@
       "html_url": "https://arxiv.org/html/2410.18250v1",
       "parent_sha256": "e5cbae25c7d4bffc5228abc1970b709de8d7d565f629ab6c6e6ff91ba8464cce",
       "citation": "A. E. Lynas-Gray, O. L. Polyansky, J. Tennyson, S. N. Yurchenko and N. F. Zobov, MNRAS 535, 1439–1448 (2024), AtLast.",
-      "inspection": "Full author-hosted publisher PDF inspected, especially Sections 2–5 and Tables 1–3. The paper is CC BY 4.0.",
+      "inspection": "Full author-hosted publisher PDF inspected, especially Sections 2–5 and Tables 1–3. The paper is CC BY 4.0. Supplied publisher copy independently rechecked at the locations recorded below; it confirms the same model and limitations, not a separate calculation.",
       "findings": "An anharmonic variational X1Sigma_g+ model is fitted to empirical rovibrational levels. Table 2 gives 2,166,503 states, energy below 20000 cm^-1, J through 155 and |l2| through 12. Only symmetry-allowed states occur for zero-spin 12C. Q is defined as a finite Boltzmann sum and is explicitly a lower limit because excited electronic states are omitted.",
-      "limit": "Conical intersections, other electronic couplings and predissociation are not included. Claimed Q convergence within this line list does not establish full electronic or high-temperature derivative completeness. The approximate 6.3 eV dissociation discussed in the paper is a fragment dissociation scale, not total atomization. The paper’s order-of-magnitude criticism concerns Irwin (1981), not the inspected JANAF 1969 table."
+      "limit": "Conical intersections, other electronic couplings and predissociation are not included. Claimed Q convergence within this line list does not establish full electronic or high-temperature derivative completeness. The approximate 6.3 eV dissociation discussed in the paper is a fragment dissociation scale, not total atomization. The paper’s order-of-magnitude criticism concerns Irwin (1981), not the inspected JANAF 1969 table.",
+      "supplied_full_text": {
+        "file": "ref/refs_exogibbs_202611-2/Lynas-Gray_2024.pdf",
+        "url": "https://doi.org/10.1093/mnras/stae2425",
+        "doi": "10.1093/mnras/stae2425",
+        "sha256": "219e21b3a6bd35eae2ad0d1b84279a06a27fa8d2c65920082bdf7a69672e5396",
+        "bytes": 2452616,
+        "acquisition": "user_supplied",
+        "received": "2026-11-02",
+        "archived": false,
+        "inspection": "Supplied publisher PDF rechecked against the already inspected author-hosted copy: Sections 3-5, Table 2 (printed p 1442, PDF p 4; visually checked), and partition definition/limitations on printed pp 1443-1444. This is a second copy of the same study, not independent evidence.",
+        "redistribution": "Full supplied PDF and extracted text are not vendored."
+      },
+      "release_reconciliation": "Table 3 displays total state weights 2J+1 (for example J=6 has g=13), consistent with the paper and archived state file. The paper does not identify the generation histories behind the downloaded .def/.pf/.states inconsistencies. Its numerical-convergence statement is conditional on the selected line list and does not resolve those inconsistencies."
     },
     {
       "id": "exomol_atlast_files",
@@ -179,11 +192,98 @@
     {
       "id": "terentyev2004",
       "doi": "10.1063/1.1786291",
-      "url": "https://pubmed.ncbi.nlm.nih.gov/15367001/",
+      "url": "https://doi.org/10.1063/1.1786291",
       "citation": "A. Terentyev, R. Scholz, M. Schreiber and G. Seifert, Journal of Chemical Physics 121, 5767–5776 (2004).",
-      "inspection": "Primary article abstract reproduced by PubMed inspected; full article not recovered.",
-      "findings": "The calculations distinguish linear a3Pi_u near 2.1 eV above linear singlet from a triangular triplet minimum near 0.8 eV above it.",
-      "limit": "Abstract-level theoretical support for distinct electronic/isomer surfaces, not a quantitative complete partition function. The cyclic triplet ATcT entry must not be labelled as the linear triplet. Vibrational/rotational state densities and electronic degeneracies are needed before estimating high-temperature populations."
+      "inspection": "Full supplied article text inspected, especially Sections II, IV-V and Tables I-V. Table I (printed p 5768, supplied PDF p 3) and Tables IV-V (printed p 5772, supplied PDF p 7) visually checked; the supplied PDF has an extra publisher cover page.",
+      "findings": "The full article closes the former abstract-only access gap. Tables I-III distinguish optimized linear singlet-to-triplet gaps with and without zero-point corrections. Table V gives an equilateral triangular triplet minimum on a different electronic surface. Neither the small-basis electronic-structure map nor its TD-DFT transitions define a complete hot partition function.",
+      "limit": "These are method-dependent theoretical values, not measured formation energies or calibrated confidence intervals. The paper itself targets an excited-state landscape, not a benchmark ground-state potential. Table IV stretching frequencies vary strongly with basis; the two linear-triplet bending branches are split by electronic-vibrational coupling. Section V estimates TD-DFT systematic errors of order 0.4 eV and excludes some double excitations. The 0.82-0.85 eV zero-point-corrected triangular gap is not the linear 3Pi_u term origin and must not be appended to the linear rovibrational sum as if it shared the same geometry/state density. Existing ATcT energy evaluation is not replaced by these calculations.",
+      "supplied_full_text": {
+        "file": "ref/refs_exogibbs_202611-2/Terentyev_2004.pdf",
+        "url": "https://doi.org/10.1063/1.1786291",
+        "doi": "10.1063/1.1786291",
+        "sha256": "1ff6a46ea43faf235ff7c4d8109328e74ec91f9e1585ee80acd67e12df0d0bb8",
+        "bytes": 668563,
+        "acquisition": "user_supplied",
+        "received": "2026-11-02",
+        "archived": false,
+        "inspection": "Full supplied article text inspected, especially Sections II, IV-V and Tables I-V. Table I (printed p 5768, supplied PDF p 3) and Tables IV-V (printed p 5772, supplied PDF p 7) visually checked; the supplied PDF has an extra publisher cover page.",
+        "redistribution": "Full supplied PDF and extracted text are not vendored."
+      },
+      "selected_table_values": {
+        "energy_reference": "Linear X1Sigma_g+ singlet ground state evaluated with the same method and basis; optimized total-energy gaps are distinguished from TD-DFT excitations at a fixed geometry.",
+        "basis_order": [
+          "6-31G(d)",
+          "6-31+G(d)",
+          "6-311G(d)",
+          "6-311+G(d)"
+        ],
+        "table_I_linear_3Pi_u_B3LYP": {
+          "gap_without_ZP_eV": [
+            2.15,
+            2.19,
+            2.18,
+            2.2
+          ],
+          "gap_with_ZP_eV": [
+            2.1,
+            2.12,
+            2.12,
+            2.11
+          ]
+        },
+        "table_IV_linear_3Pi_u_B3LYP": {
+          "antisymmetric_stretch_cm-1": [
+            932,
+            812,
+            622,
+            415
+          ],
+          "bending_3_cm-1": [
+            263,
+            264,
+            227,
+            232
+          ],
+          "bending_4_cm-1": [
+            406,
+            398,
+            389,
+            389
+          ]
+        },
+        "table_V_equilateral_3A2prime_B3LYP": {
+          "gap_without_ZP_eV": [
+            0.81,
+            0.82,
+            0.83,
+            0.83
+          ],
+          "gap_with_ZP_eV": [
+            0.82,
+            0.83,
+            0.85,
+            0.85
+          ],
+          "bond_length_angstrom": [
+            1.374,
+            1.3737,
+            1.3694,
+            1.3696
+          ],
+          "a1prime_frequency_cm-1": [
+            1621,
+            1621,
+            1618,
+            1616
+          ],
+          "eprime_frequency_cm-1": [
+            1151,
+            1157,
+            1155,
+            1157
+          ]
+        }
+      }
     },
     {
       "id": "wachi1972_asms",
@@ -213,7 +313,8 @@
       "Recover Gurvich 1979 C3 evaluation and its electronic/bending inventory.",
       "Resolve ExoMol .def spin metadata and .pf versus .states generation history; inspect convergence beyond the current l2/J/energy bounds.",
       "Recover Wachi–Gilmartin 1972 and Lee–Sanborn 1973 originals to verify entropy uncertainties and pressure conventions.",
-      "Treat cyclic minima and excited linear electronic states explicitly before claiming complete high-temperature thermochemistry."
-    ]
+      "Use the now-inspected Terentyev surfaces only as a guide to explicit cyclic/linear electronic-state treatment; establish accurate energy references, rovibrational state densities and convergence before claiming complete hot thermochemistry."
+    ],
+    "supplied_fulltext_update": "Terentyev full-text access is resolved; optimized electronic and zero-point-corrected gaps are now separated. The additional AtLast PDF confirms the previously recorded finite ground-state model. Neither update resolves the distributed partition/state mismatch or justifies a curated replacement."
   }
 }

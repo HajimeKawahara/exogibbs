@@ -129,6 +129,30 @@
       "archived": true,
       "additional_url": "https://www.asms.org/docs/default-source/proceedings-archive/1972_asms_20th_conference.pdf?sfvrsn=85f279c3_2",
       "additional_parent_sha256": "1c682b4334839d34233459faaba141467f34e6906b90af7cce90ed0c4022e0ad"
+    },
+    {
+      "file": "ref/refs_exogibbs_202611-2/Terentyev_2004.pdf",
+      "url": "https://doi.org/10.1063/1.1786291",
+      "doi": "10.1063/1.1786291",
+      "sha256": "1ff6a46ea43faf235ff7c4d8109328e74ec91f9e1585ee80acd67e12df0d0bb8",
+      "bytes": 668563,
+      "acquisition": "user_supplied",
+      "received": "2026-11-02",
+      "archived": false,
+      "inspection": "Full supplied article text inspected, especially Sections II, IV-V and Tables I-V. Table I (printed p 5768, supplied PDF p 3) and Tables IV-V (printed p 5772, supplied PDF p 7) visually checked; the supplied PDF has an extra publisher cover page.",
+      "redistribution": "Full supplied PDF and extracted text are not vendored."
+    },
+    {
+      "file": "ref/refs_exogibbs_202611-2/Lynas-Gray_2024.pdf",
+      "url": "https://doi.org/10.1093/mnras/stae2425",
+      "doi": "10.1093/mnras/stae2425",
+      "sha256": "219e21b3a6bd35eae2ad0d1b84279a06a27fa8d2c65920082bdf7a69672e5396",
+      "bytes": 2452616,
+      "acquisition": "user_supplied",
+      "received": "2026-11-02",
+      "archived": false,
+      "inspection": "Supplied publisher PDF rechecked against the already inspected author-hosted copy: Sections 3-5, Table 2 (printed p 1442, PDF p 4; visually checked), and partition definition/limitations on printed pp 1443-1444. This is a second copy of the same study, not independent evidence.",
+      "redistribution": "Full supplied PDF and extracted text are not vendored."
     }
   ],
   "identity": {
