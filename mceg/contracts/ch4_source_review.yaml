@@ -2,11 +2,11 @@ schema_version: '0.2'
 model:
   id: exogibbs.ch4_source_review.v1
   name: Methane energy and thermal-source investigation
-  description: Review methane energy, thermal functions, versioned partition sums and the existing carbon footprint;
-    retain production coefficients provisionally.
+  description: Review methane energy, thermal functions, versioned partition sums, the inspected Nikitin 2015/2017
+    calculation and the existing carbon footprint; retain production coefficients provisionally.
   implementation: &id001
     repository: https://github.com/HajimeKawahara/exogibbs
-    revision: sha256:ca4e8b3899d428425700d5e6447e8546ac23654d7fcd8e4c5ee9d001051c511c
+    revision: sha256:4b167803031c24ce8b2f45939c2df95576726abfdddcbe1acf3dcb496034e181
     entry_points:
     - mceg/reviews/ch4_source_review.py
 assumptions:
@@ -28,7 +28,7 @@ domains:
   - Source properties at 300, 500, 1000, 1500, 2000, 3000, 4000 and 6000 K; production comparison only at 1500-4000
     K.
   - Partition comparisons at 300, 500, 1000, 1500, 2000, 2500, 3000 and 4000 K. TIPS stops at 2500 K; MM completeness
-    is estimated only through 2000 K.
+    is estimated only through 2000 K; Nikitin fit stops at 3000 K and its seven-node Table 3 residual is retained.
   - 'Reused 75-case, 537-species current-curated ion-inclusive grid: 1500, 2000, 2500, 3000, 4000 K; 1e-6, 1e-4,
     0.01, 1, 100 bar; reference C/O, 1, 1.5.'
   evidence:
@@ -48,10 +48,10 @@ claims:
   scope: Neutral ideal-gas CH4, C(g) + 4 H(g) -> CH4(g), standard pressure 1 bar; frozen source comparison and archived
     footprint only.
 - id: partition_comparison
-  revision: '1'
+  revision: '2'
   kind: numerical_verification
-  statement: Spin-normalized partition comparisons preserve source-version differences and incomplete temperature
-    coverage without extrapolating missing TIPS data.
+  statement: Spin-normalized partition comparisons preserve source-version differences, incomplete temperature coverage
+    and the corrected Nikitin fit/table residual without extrapolating missing data.
   scope: Neutral ideal-gas CH4, C(g) + 4 H(g) -> CH4(g), standard pressure 1 bar; frozen source comparison and archived
     footprint only.
 - id: complete_thermal_accuracy
@@ -69,8 +69,8 @@ claims:
 evidence:
 - id: literature_review
   kind: literature
-  summary: Identify methane, printed JANAF and NASA/ATcT ancestry, nuclear-spin conventions, modern partition coverage
-    and unresolved version differences.
+  summary: Identify source ancestry, spin conventions, modern partition coverage and the fully inspected Nikitin
+    2015/2017 treatment, preserving unresolved fit/table and source-version differences.
   sources:
   - tests/data/validation/ch4_source_review/20261102/sources.json
   - tests/data/validation/ch4_source_review/20261102/literature.json
@@ -80,18 +80,19 @@ evidence:
   context: source_comparison
   artifacts:
   - source: tests/data/validation/ch4_source_review/20261102/sources.json
-    sha256: 8c27565a7459df3752055dae8561604b54ed72a5f12c08629ff92b382c68ed21
+    sha256: 238f104e10b1bcff9bffa42fd60c2e23c2fb8617ac7741576680cc7c0f3495f0
   - source: tests/data/validation/ch4_source_review/20261102/literature.json
-    sha256: 6296fd3131c17f5138d23b76a4c6d8c47f86b2f8228fcdb1571e46daa6e16e0f
+    sha256: 806f8e4c22088b38004979e3fe11b86f7b44d4e16b842dd650caad41a6ecfa6b
   provenance:
     role: secondary
     location: Frozen CH4 source packet with primary excerpts, full-download hashes and explicit access limits.
     inspection: partial
-    note: Source reproduction does not establish physical accuracy.
+    note: Nikitin full paper and correction inspected from user-supplied PDFs, identified by hashes but not redistributed.
+      Other listed source access limits remain; numerical reproduction does not establish physical accuracy.
 - id: source_replay
   kind: numerical_test
-  summary: Reproduce eight-node source decomposition, versioned Q comparisons and the carbon share of the existing
-    75-case grid.
+  summary: Reproduce source decomposition, versioned Q comparisons, the corrected Nikitin polynomial versus seven
+    original table totals and the carbon share of the existing 75-case grid.
   sources:
   - tests/data/validation/ch4_source_review/20261102/comparison.json
   - tests/data/validation/ch4_source_review/20261102/receipt.json
@@ -101,9 +102,9 @@ evidence:
   context: source_comparison
   artifacts:
   - source: tests/data/validation/ch4_source_review/20261102/comparison.json
-    sha256: 27064633e3bbb95b8dca2afcc74af86095df8231ea08cde9706f3dfab35f684e
+    sha256: 3e38219315bac7522f706a788bfcce8b43325d0c4f8942fa888e2eea407a7f0d
   - source: tests/data/validation/ch4_source_review/20261102/receipt.json
-    sha256: aa3c463bc88cf72cd7abf9b816ea75a1759aaa9b94c250954a1eedca0886f49c
+    sha256: 7ef06bd23d1d04f14270693a87540c92d3ad6e4757efb587a85a2fe58e11ea26
   provenance:
     role: primary
     location: Frozen CH4 source packet with primary excerpts, full-download hashes and explicit access limits.
@@ -114,7 +115,7 @@ subjects:
 - id: ch4_sources_20261102
   implementation: *id001
   selected_files:
-    mceg/reviews/ch4_source_review.py: ca4e8b3899d428425700d5e6447e8546ac23654d7fcd8e4c5ee9d001051c511c
+    mceg/reviews/ch4_source_review.py: 4b167803031c24ce8b2f45939c2df95576726abfdddcbe1acf3dcb496034e181
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
@@ -125,16 +126,16 @@ subjects:
     tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
     tests/data/validation/ch4_source_review/20261102/hapi_tips2021_ch4.txt: 83168b056cc621a62137894fdb5b88a21bb0a4fb6a15247319f2a728b6d33c39
     tests/data/validation/ch4_source_review/20261102/exomol_mm.pf: b399c44980d139b11bfb374a033f8c51bb42c12e5ba9bfd1726156b9d441bb7d
-    tests/data/validation/ch4_source_review/20261102/literature.json: 6296fd3131c17f5138d23b76a4c6d8c47f86b2f8228fcdb1571e46daa6e16e0f
+    tests/data/validation/ch4_source_review/20261102/literature.json: 806f8e4c22088b38004979e3fe11b86f7b44d4e16b842dd650caad41a6ecfa6b
     tests/data/validation/ch4_source_review/20261102/mm2024_partition_page.pdf: 0a52d09909791ee5cc93484340c8b8842440caaa25ad62b44c5d447b5e4856be
     tests/data/validation/ch4_source_review/20261102/hitran_q32_20261102.txt: 114694a9c8f5faa79880bb016eff165dabe020b1d96f089d6ef585ca4fb9bc76
     tests/data/validation/ch4_source_review/20261102/wenger2008_table4.pdf: f6e02a38e91f03040f0b725088388379187d37b28bcbea9d6c689ed26d639c65
-    tests/data/validation/ch4_source_review/20261102/README.rst: 48081e8ff11bbebb90aed1610edd0613dd0e35adadbc28e7d96058b9b3d6bd3f
-    tests/data/validation/ch4_source_review/20261102/comparison.json: 27064633e3bbb95b8dca2afcc74af86095df8231ea08cde9706f3dfab35f684e
+    tests/data/validation/ch4_source_review/20261102/README.rst: f987328679b50b137d42f51bebb6f80b80c842bf796a8b46be8b407b05025f42
+    tests/data/validation/ch4_source_review/20261102/comparison.json: 3e38219315bac7522f706a788bfcce8b43325d0c4f8942fa888e2eea407a7f0d
     tests/data/validation/ch4_source_review/20261102/janaf_ch4_615.pdf: 1793f484835571ea092c92cacc9983f597bfb26a956933df21ee26e9d8acd5ff
-    tests/data/validation/ch4_source_review/20261102/sources.json: 8c27565a7459df3752055dae8561604b54ed72a5f12c08629ff92b382c68ed21
+    tests/data/validation/ch4_source_review/20261102/sources.json: 238f104e10b1bcff9bffa42fd60c2e23c2fb8617ac7741576680cc7c0f3495f0
     tests/data/validation/ch4_source_review/20261102/exomol_mm.def: c76449071900b94043128a74575912e20801222f49826ab1d5a6026f1bcff5bb
-    tests/data/validation/ch4_source_review/20261102/receipt.json: aa3c463bc88cf72cd7abf9b816ea75a1759aaa9b94c250954a1eedca0886f49c
+    tests/data/validation/ch4_source_review/20261102/receipt.json: 7ef06bd23d1d04f14270693a87540c92d3ad6e4757efb587a85a2fe58e11ea26
 contexts:
 - id: source_comparison
   scope: Neutral ideal-gas CH4, C(g) + 4 H(g) -> CH4(g), standard pressure 1 bar; frozen source comparison and archived
@@ -158,7 +159,7 @@ assessments:
   context: source_comparison
   method:
     id: review_ch4_source_and_partition_evidence
-    revision: '1'
+    revision: '2'
     description: Separate numerical source replay and version attribution from physical thermal and atmospheric
       accuracy.
   evidence:
@@ -172,20 +173,21 @@ assessments:
 - id: partition_comparison_review
   kind: evidence_support
   claim: partition_comparison
-  claim_revision: '1'
+  claim_revision: '2'
   subject: ch4_sources_20261102
   context: source_comparison
   method:
     id: review_ch4_source_and_partition_evidence
-    revision: '1'
+    revision: '2'
     description: Separate numerical source replay and version attribution from physical thermal and atmospheric
       accuracy.
   evidence:
   - literature_review
   - source_replay
   reasons:
-  - Nuclear-spin normalization, source masses, documented MM completeness and absent TIPS values are explicit; TIPS2025/2021
-    changes are numerically reproduced without assigning an unverified cause.
+  - Spin normalization, source masses and range limits remain explicit; corrected Nikitin coefficients reproduce
+    a 0.61-0.80% excess over the original Table 3 totals, whose cause is unresolved. TIPS2025/2021 differences remain
+    unassigned.
   status: supported
   origin: reviewed
 - id: complete_thermal_accuracy_review
@@ -196,15 +198,16 @@ assessments:
   context: source_comparison
   method:
     id: review_ch4_source_and_partition_evidence
-    revision: '1'
+    revision: '2'
     description: Separate numerical source replay and version attribution from physical thermal and atmospheric
       accuracy.
   evidence:
   - literature_review
   - source_replay
   reasons:
-  - MM completeness is estimated only through 2000 K, TIPS tables end at 2500 K, and the historical 3000 K extrapolation
-    was challenged by later work. A complete 1500-4000 K replacement remains unselected.
+  - The inspected Nikitin treatment estimates 1-2% Q accuracy at 2000 K but leaves higher-temperature error bars
+    unquantified, ends at 3000 K, and does not validate caloric derivatives through 4000 K. Its corrected printed
+    fit/table residual also remains unresolved. MM/TIPS limitations still apply.
   status: unknown
   origin: reviewed
 - id: atmospheric_accuracy_review
@@ -215,7 +218,7 @@ assessments:
   context: source_comparison
   method:
     id: review_ch4_source_and_partition_evidence
-    revision: '1'
+    revision: '2'
     description: Separate numerical source replay and version attribution from physical thermal and atmospheric
       accuracy.
   evidence:
@@ -235,7 +238,8 @@ follow_ups:
     a thermal replacement.
   requires:
   - TIPS2021/2025 methane generators and original datasets
-  - Nikitin 2015 full numerical treatment and 2017 corrected coefficients
+  - Original Nikitin numerical data or author clarification of the corrected printed fit/Table 3 residual; full
+    2015/2017 papers already inspected
   - Bound-state coverage and first/second energy moments through 4000 K with common spin/isotope conventions
   completion: Document justified continuous G/H/S/Cp and uncertainty, then evaluate finite equilibrium substitutions
     under a new model identity.
@@ -249,8 +253,8 @@ follow_ups:
   - Defined atmosphere, observable and physical reference
   completion: Assess physical accuracy separately from solver or source-table agreement.
 limitations:
-- statement: Neither raw NASA nor MM/TIPS is adopted; retaining the current implementation does not establish JANAF
-    superiority.
+- statement: Neither raw NASA nor MM/TIPS/Nikitin is adopted; retaining the current implementation does not establish
+    JANAF superiority.
   evidence:
   - literature_review
   - source_replay
@@ -267,4 +271,10 @@ limitations:
 - statement: The reused carbon footprint is not a new source-sensitivity calculation or physical observation; no
     condensation, nonideality, quenching or spectral validation is performed.
   evidence:
+  - source_replay
+- statement: Nikitin corrected coefficients are replayed only within 10-3000 K. Published fit residuals, model-based
+    Q uncertainty and caloric/atmospheric accuracy are separate questions; no complete state sum is independently
+    reconstructed.
+  evidence:
+  - literature_review
   - source_replay

@@ -142,9 +142,128 @@
   },
   "followups": [
     "Reconcile CH4 TIPS2021 and TIPS2025 arrays against versioned original datasets and generators; investigate truncation, models and publication/file differences without assuming their cause.",
-    "Read Nikitin (2015) and its 2017 corrected Table 4, including convergence to 3000 K. Do not use the insufficiently precise original fitted coefficients.",
+    "Resolve the residual between the 2017 corrected printed fit and 2015 Tables 3/5, using original numerical data or author clarification; the full papers and corrected coefficients are now inspected.",
     "Obtain bound-state and near-dissociation coverage with first and second energy moments through 4000 K, using common isotope and spin conventions.",
     "Then choose a continuous G/H/S/Cp model and evaluate a finite equilibrium substitution."
   ],
-  "decision": "Retain the existing JANAF molecular thermal functions, NASA atomic thermal functions and balanced ATcT energy operationally. Neither raw NASA nor a wholesale MM/TIPS replacement is justified over 1500-4000 K. The physical accuracy of the existing thermal model remains unknown."
+  "decision": "Retain the existing JANAF molecular thermal functions, NASA atomic thermal functions and balanced ATcT energy operationally. The inspected Nikitin 2015/2017 treatment adds qualified evidence through 3000 K but does not resolve 4000 K coverage, caloric convergence, or its printed-fit/table residual. Neither raw NASA nor a wholesale MM/TIPS/Nikitin replacement is justified over 1500-4000 K. Physical accuracy remains unknown.",
+  "nikitin2015_2017": {
+    "doi": "10.1016/j.jqsrt.2015.08.004",
+    "correction_doi": "10.1016/j.jqsrt.2017.05.026",
+    "inspection": "Full 2015 paper (pp. 53-63) and one-page 2017 correction inspected from user-supplied PDFs; Tables 3 and 5 and corrected Table 4 checked visually.",
+    "method": "High-order contact transformations from the NRT potential, symmetry-block ratios and high-P/high-J extrapolations, compared with expanded-basis variational calculations using the same potential.",
+    "range_K": [
+      10,
+      3000
+    ],
+    "nuclear_spin_included": true,
+    "fit_equation": "log10(Q) = sum(B[n] * log10(T/K)**n, n=0..4)",
+    "logarithm_convention": "Base 10 reproduces the scale of published Q values; natural logarithms do not. Shared interval endpoints use the higher-temperature interval in the audit.",
+    "corrected_fit_intervals": [
+      {
+        "bounds_K": [
+          10,
+          250
+        ],
+        "B": [
+          2.97466,
+          -5.97197,
+          5.37202,
+          -1.71898,
+          0.2062
+        ]
+      },
+      {
+        "bounds_K": [
+          250,
+          800
+        ],
+        "B": [
+          14.89348,
+          -30.7197,
+          23.75808,
+          -7.60191,
+          0.89634
+        ]
+      },
+      {
+        "bounds_K": [
+          800,
+          3000
+        ],
+        "B": [
+          -245.338,
+          322.1732,
+          -155.982,
+          33.15236,
+          -2.57467
+        ]
+      }
+    ],
+    "table3_totals": [
+      {
+        "T_K": 1500,
+        "Q": 40424.32
+      },
+      {
+        "T_K": 1750,
+        "Q": 86505.35
+      },
+      {
+        "T_K": 2000,
+        "Q": 179153.26
+      },
+      {
+        "T_K": 2250,
+        "Q": 358380.18
+      },
+      {
+        "T_K": 2500,
+        "Q": 693422.17
+      },
+      {
+        "T_K": 2750,
+        "Q": 1296679.14
+      },
+      {
+        "T_K": 3000,
+        "Q": 2346982.58
+      }
+    ],
+    "table5_selected_Q": {
+      "300": 602.8,
+      "1000": 8065,
+      "1500": 40382,
+      "2000": 179153,
+      "2500": 693422,
+      "3000": 2346982
+    },
+    "internal_consistency_note": "The printed 1500 K Table 3 total (40424.32) differs from Table 5 (40382) by 0.1048%. Neither value is silently substituted for the other. The corrected printed fit exceeds Table 3 totals by 0.61-0.80%, larger than the approximately 0.1% interpolation accuracy stated in Section 4.3. The cause is unresolved; distinguish these reproducible representation residuals from physical accuracy.",
+    "reported_accuracy": [
+      {
+        "range_K": [
+          10,
+          1000
+        ],
+        "relative_percent_upper_bound": 0.1
+      },
+      {
+        "T_K": 2000,
+        "relative_percent_estimate": [
+          1,
+          2
+        ]
+      }
+    ],
+    "uncertainty_definition": "Author model estimates, not specified confidence intervals. Above 2000 K the authors explicitly do not quantify reliable error bars, especially because of P,J extrapolation; a 3000 K tabulation does not establish completeness or accuracy at 4000 K.",
+    "convergence_notes": [
+      "Table 1 directly diagonalizes selected symmetry/P/J blocks; asymptotic symmetry ratios and extrapolations fill the remaining contributions. Table 3 is not a fully direct, converged state sum.",
+      "Section 6 reports levels extended to about 25000 cm-1 and J up to 80 for P=10; Table 3 includes extrapolated contributions through P=20.",
+      "Low-J variational basis expansion approaches CT contributions to about 1%; this is a shared-potential numerical comparison, not independent experimental validation of the high-energy tail.",
+      "Section 5 contains apparent exponent slips for the 2500 K variational/CT estimates; use the explicitly printed Table 3/5 totals and preserve the reported 6.5% comparison as an author statement, without repairing raw text.",
+      "No converged first/second energy moments or whole-domain G/H/S/Cp model through 4000 K is supplied."
+    ],
+    "correction_scope": "The 2017 notice adds digits to fitted Table 4 and says the other tables, figures and conclusions are unchanged; no new physical state calculation is reported.",
+    "adoption": "Useful additional Q evidence through 3000 K, with qualified accuracy near 2000 K. Do not adopt the polynomial as a validated thermal model through 4000 K or extrapolate it beyond 3000 K."
+  }
 }

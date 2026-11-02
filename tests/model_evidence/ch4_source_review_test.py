@@ -84,6 +84,32 @@ def test_version_change_and_source_disagreement_are_preserved(report):
     assert rows[2000]["Q_over_16_over_nasa"]["MM"] < 0.92
 
 
+def test_corrected_nikitin_fit_preserves_published_table_discrepancy(report):
+    rows = {row["temperature_K"]: row for row in report["partition_samples"]}
+    # Published room-temperature Q fixes both the logarithm and spin convention.
+    assert rows[300]["spectroscopic_Q_including_nuclear_spin"]["Nikitin2017_fit"] == pytest.approx(
+        602.8, rel=2e-4)
+    audit = {row["temperature_K"]: row for row in report["nikitin_corrected_fit_audit"]}
+    assert audit[2000]["table3_Q"] == 179153.26
+    assert audit[3000]["table3_Q"] == 2346982.58
+    assert audit[2000]["corrected_fit_Q"] == pytest.approx(180413.7545, abs=1e-4)
+    assert audit[3000]["corrected_fit_Q"] == pytest.approx(2365872.0163, abs=1e-3)
+    # The corrected printed representation still does not meet the stated ~0.1%.
+    assert all(0.006 < row["fit_over_table3_minus_one"] < 0.009 for row in audit.values())
+    assert audit[2000]["table3_Q_over_16_over_janaf"] == pytest.approx(1.09017495, abs=1e-7)
+
+
+def test_nikitin_fit_is_not_extrapolated_to_the_curated_upper_bound(report):
+    literature = json.loads((study.DATA / "literature.json").read_text())["nikitin2015_2017"]
+    for temperature in (9, 3000.01, 4000):
+        with pytest.raises(ValueError, match="outside the Nikitin fit range"):
+            study.nikitin_partition(temperature, literature)
+    high = next(row for row in report["partition_samples"] if row["temperature_K"] == 4000)
+    assert high["spectroscopic_Q_including_nuclear_spin"]["Nikitin2017_fit"] is None
+    assert high["Q_over_16_over_janaf"]["Nikitin2017_fit"] is None
+    assert high["Q_over_16_over_nasa"]["Nikitin2017_fit"] is None
+
+
 def test_archived_grid_footprint_is_a_conserved_carbon_share(report):
     row = report["footprint"]
     assert row["cases"] == 75 and row["all_cases_converged"]

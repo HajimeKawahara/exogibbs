@@ -171,11 +171,76 @@ Both TIPS tables stop at 2500 K; missing higher-temperature values stay missing.
 Wenger, Champion and Boudon (2008) provide a historical alternative to 3000 K,
 combining lower states with statistical extrapolation toward dissociation.
 Their Table 4 gives Q(3000)=4.19e6 with an estimated 8.3% uncertainty, including
-spin. Later Nikitin et al. (2015) question the high-energy extrapolation and
-report a different treatment. Its 2017 erratum restores sufficient precision
-to fitted coefficients. Those corrected coefficients and full convergence
-analysis were not obtained, so the older table is not elevated to a definitive
-3000 K benchmark.
+spin. Nikitin et al. (2015) question that high-energy extrapolation. The
+user-supplied full paper and its 2017 correction are now inspected; the
+previous full-text access blocker is closed.
+
+Nikitin's contact-transformation calculation uses the NRT potential, directly
+diagonalized symmetry blocks, symmetry-ratio approximations and extrapolation
+in polyad number P and angular momentum J. Its Table 3 is therefore not a
+fully direct, converged state sum. Expanded-basis variational calculations
+approach the contact-transformation results at low J, but share the same
+potential. The authors estimate Q accuracy of less than 0.1% through 1000 K
+and about 1-2% at 2000 K. They explicitly leave higher-temperature error bars
+unquantified because of extrapolation and near-dissociation uncertainties.
+The 3000 K endpoint does not provide evidence for 4000 K completeness.
+
+The 2017 correction adds digits to Table 4; it does not report a new physical
+state calculation. We evaluate its three intervals using
+``log10(Q) = sum(B[n] * log10(T)**n)`` with T in kelvin. Both the corrected
+coefficients and selected original table values are retained separately in
+``literature.json``. The full supplied PDFs remain local; their hashes and
+page counts identify the inspected copies, and offline replay needs only the
+transcribed numerical inputs.
+
+.. list-table:: Nikitin table values and corrected printed fit, spin included
+   :header-rows: 1
+
+   * - T, K
+     - 2015 Table 3 Q
+     - 2017 fit Q
+     - Fit minus table, %
+     - Table Q/16 / JANAF
+     - Table Q/16 / NASA
+   * - 1500
+     - 40424.32
+     - 40688.64
+     - +0.654
+     - 1.05258
+     - 0.975059
+   * - 2000
+     - 179153.26
+     - 180413.75
+     - +0.704
+     - 1.09017
+     - 0.947302
+   * - 2500
+     - 693422.17
+     - 697662.19
+     - +0.611
+     - 1.13135
+     - 0.906907
+   * - 3000
+     - 2346982.58
+     - 2365872.02
+     - +0.805
+     - 1.16331
+     - 0.849073
+
+The printed corrected fit exceeds all seven Table 3 totals by 0.61-0.80%,
+larger than the approximately 0.1% interpolation accuracy stated in Section
+4.3. Table 5 also lists 40382 at 1500 K, differing from Table 3 by 0.1048%.
+The table images and coefficient transcription were checked; the cause of
+these representation differences remains unresolved. We preserve them without
+silently changing coefficients or treating a fit residual as a physical error
+bar. A good Q fit alone would also not validate its energy derivatives or Cp.
+
+At 2000 K the Table 3 Q/16 lies 9.0% above JANAF and 5.3% below NASA's
+effective Q. This strengthens the evidence for revisiting the thermal curve,
+while the natural-mass/isotopologue caveat still applies. At 3000 K Nikitin's
+table is only about 56% of Wenger's historical Q, and neither work establishes
+a complete model through 4000 K. The corrected polynomial is not extrapolated
+beyond 3000 K in this audit.
 
 Decision and remaining evidence
 -------------------------------
@@ -185,8 +250,9 @@ but they do not supply a reconciled, complete 1500-4000 K replacement. Retain
 the current implementation operationally and preserve the ATcT energy choice.
 This is not a finding that JANAF is physically superior. Before adoption:
 
-1. Reconcile the versioned TIPS methane arrays and their generators, and read
-   the Nikitin 2015/2017 corrected numerical treatment.
+1. Reconcile the versioned TIPS methane arrays and their generators, and
+   resolve the Nikitin corrected-fit/table residual using original numerical
+   data or author clarification. Both supplied papers have been inspected.
 2. Establish bound-state and near-dissociation coverage through 4000 K with
    common spin/isotope conventions and first/second energy moments.
 3. Construct consistent G, H, S and Cp, then evaluate one-molecule finite

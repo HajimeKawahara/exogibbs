@@ -14,6 +14,17 @@ and historical Wenger table are short primary-source excerpts; parent PDF
 hashes identify the full downloads. Ghostscript discarded irrelevant PDF
 outline links when extracting the MM page; it does not supply numeric inputs.
 
+The user-supplied Nikitin 2015 full paper and 2017 correction were inspected
+on 2026-11-02. Their PDF hashes and local reference names are recorded in
+``sources.json``; full PDFs and extracted text are not redistributed. The
+three corrected Table 4 coefficient sets, Table 3 totals and selected Table 5
+values are transcribed in ``literature.json``. The audit evaluates the
+base-10 fit only through 3000 K and preserves its 0.61-0.80% excess over the
+printed Table 3 totals. This unresolved representation residual exceeds the
+paper's stated approximately 0.1% fit accuracy and is distinct from physical
+uncertainty. The paper estimates 1-2% Q accuracy at 2000 K but does not
+quantify higher-temperature errors or validate caloric derivatives to 4000 K.
+
 ``exomol_mm.pf`` and ``exomol_mm.def`` preserve downloaded bytes, including
 their different numerical and completeness ranges. ``hitran_q32_20261102.txt``
 is the current 1-2500 K HITRAN table. ``hapi_tips2021_ch4.txt`` is an exact

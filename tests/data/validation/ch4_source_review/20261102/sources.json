@@ -100,17 +100,28 @@
       "inspection": "Browser inspection: this corrigendum concerns lost symmetry labels of 16O14N18O, not CH4."
     },
     {
-      "url": "https://www.sciencedirect.com/science/article/abs/pii/S0022407315002794",
-      "inspection": "Publisher abstract and introduction only: Nikitin et al. (2015) question the high-energy statistical extrapolation of Wenger et al. Full numerical tables were not accessed."
+      "url": "https://doi.org/10.1016/j.jqsrt.2015.08.004",
+      "local_reference": "ref/refs_exogibbs_202611/Nikitin2015.pdf",
+      "sha256": "b5fefcd87c06983c2a62bff9c508acbb6b6af87508d5d376c82eaf9dfaef56cf",
+      "bytes": 1466140,
+      "pdf_pages": 13,
+      "inspection_date": "2026-11-02",
+      "inspection": "All 11 original article pages inspected, including numerical Tables 3/5, Eq. (6), convergence and uncertainty discussion. The supplied 13-page file also appends a correction notice and the corrected table.",
+      "archival_policy": "User-supplied full PDF remains local and is not required by offline replay; only source metadata, selected numerical inputs and independently authored review notes are committed."
     },
     {
-      "url": "https://khazna.ku.ac.ae/en/publications/erratum-nikitin-et-al-methane-high-temperature-partition-function/",
-      "inspection": "Author institution erratum abstract: insufficient digits in Table 4 of the 2015 paper; conclusions unchanged. Corrected numerical coefficients were not accessed."
+      "url": "https://doi.org/10.1016/j.jqsrt.2017.05.026",
+      "local_reference": "ref/refs_exogibbs_202611/Nikitin2017.pdf",
+      "sha256": "836dfbf27884d4048695580ea7808754597b976a1169f50d3b0519107dfe05d1",
+      "bytes": 219897,
+      "pdf_pages": 1,
+      "inspection_date": "2026-11-02",
+      "inspection": "Complete correction inspected; Table 4 coefficients transcribed and visually verified. Its fit is replayed independently against the 2015 numerical tables.",
+      "archival_policy": "User-supplied full PDF remains local and is not required by offline replay; only source metadata, selected numerical inputs and independently authored review notes are committed."
     }
   ],
   "failed_access": [
     "Fresh direct JANAF C-067.txt download returned 403; use the existing frozen official excerpt and the inspected printed page.",
-    "Nikitin 2015 full paper and corrected 2017 Table 4 were not obtained.",
     "TIPS2021 PDF URLs returned 404; use the version-labelled official HAPI arrays and the MM2024 reference, not a guessed PDF."
   ],
   "search_queries": [

@@ -29,6 +29,16 @@ def internal_partition(temperature: float, thermal_g_rt: float, mass_u: float) -
     return math.exp(-thermal_g_rt) / translation
 
 
+def nikitin_partition(temperature: float, record: dict) -> float:
+    """Evaluate the 2017 corrected base-10 fit only within its published range."""
+    if not 10 <= temperature <= 3000:
+        raise ValueError("Temperature outside the Nikitin fit range")
+    interval = next(row for row in reversed(record["corrected_fit_intervals"])
+                    if row["bounds_K"][0] <= temperature)
+    x = math.log10(temperature)
+    return 10**sum(value*x**power for power, value in enumerate(interval["B"]))
+
+
 def curated_ln_k(temperature: float, record: dict) -> float:
     """Evaluate the saved methane Hermite free energy and NASA atomic background."""
     knots = record["knots_K"]
@@ -127,6 +137,7 @@ def review() -> dict:
                         (("MM", "exomol_mm.pf"), ("TIPS2021", "hapi_tips2021_ch4.txt"),
                          ("TIPS2025", "hitran_q32_20261102.txt"))}
     wenger = {node["T_K"]: node for node in literature["wenger2008"]["nodes"]}
+    nikitin = literature["nikitin2015_2017"]
     partition_rows = []
     for t in (300, 500, 1000, 1500, 2000, 2500, 3000, 4000):
         if t == 2500:
@@ -142,6 +153,7 @@ def review() -> dict:
         nq = internal_partition(t, ng, literature["identity"]["nasa_molar_mass_g_mol"])
         raw = {name: None if t not in values else float(values[t])
                for name, values in partition_tables.items()}
+        raw["Nikitin2017_fit"] = nikitin_partition(t, nikitin) if t <= 3000 else None
         normalized = {name: None if value is None else value/16 for name, value in raw.items()}
         partition_rows.append({"temperature_K": t, "janaf_effective_Q": jq, "nasa_effective_Q": nq,
                                "spectroscopic_Q_including_nuclear_spin": raw,
@@ -150,11 +162,21 @@ def review() -> dict:
                                "TIPS2025_over_2021": None if raw["TIPS2021"] is None else raw["TIPS2025"]/raw["TIPS2021"],
                                "MM_within_published_completeness_estimate": t <= 2000,
                                "wenger2008_Q_including_nuclear_spin": wenger.get(t, {}).get("Q")})
+    fit_audit = []
+    for node in nikitin["table3_totals"]:
+        t, q = node["T_K"], node["Q"]
+        fit = nikitin_partition(t, nikitin)
+        thermal = next((row for row in partition_rows if row["temperature_K"] == t), None)
+        fit_audit.append({"temperature_K": t, "table3_Q": q, "corrected_fit_Q": fit,
+                          "fit_over_table3_minus_one": fit/q-1,
+                          "table3_Q_over_16_over_janaf": None if thermal is None else q/(16*thermal["janaf_effective_Q"]),
+                          "table3_Q_over_16_over_nasa": None if thermal is None else q/(16*thermal["nasa_effective_Q"])})
     return {"reaction": "C(g) + 4 H(g) -> CH4(g)", "standard_pressure_Pa": 100000,
             "gas_constant_J_mol_K": R, "NASA_header_gas_constant_J_mol_K": NASA_R,
             "delta_convention": "JANAF minus NASA; molecule minus atoms",
             "balanced_H0_reaction_J_mol": energy,
             "source_samples": source_rows, "partition_samples": partition_rows,
+            "nikitin_corrected_fit_audit": fit_audit,
             "partition_caveat": "Natural-mass thermochemical effective Q versus 12CH4; not an isotope-resolved equality or accuracy test.",
             "footprint": footprint(), "adoption": "none; retain current implementation provisionally"}
 

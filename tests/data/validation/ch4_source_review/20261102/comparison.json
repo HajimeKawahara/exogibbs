@@ -363,17 +363,20 @@
       "spectroscopic_Q_including_nuclear_spin": {
         "MM": 602.8526,
         "TIPS2021": 602.8667,
-        "TIPS2025": 602.867
+        "TIPS2025": 602.867,
+        "Nikitin2017_fit": 602.8865225392691
       },
       "Q_over_16_over_janaf": {
         "MM": 1.017605945692039,
         "TIPS2021": 1.017629746275854,
-        "TIPS2025": 1.017630252671254
+        "TIPS2025": 1.017630252671254,
+        "Nikitin2017_fit": 1.0176632064182152
       },
       "Q_over_16_over_nasa": {
         "MM": 1.000000185858338,
         "TIPS2021": 1.0000235746645247,
-        "TIPS2025": 1.0000240722986988
+        "TIPS2025": 1.0000240722986988,
+        "Nikitin2017_fit": 1.000056455907723
       },
       "TIPS2025_over_2021": 1.0000004976224428,
       "MM_within_published_completeness_estimate": true,
@@ -386,17 +389,20 @@
       "spectroscopic_Q_including_nuclear_spin": {
         "MM": 1417.6127,
         "TIPS2021": 1417.645,
-        "TIPS2025": 1417.65
+        "TIPS2025": 1417.65,
+        "Nikitin2017_fit": 1417.5396578226762
       },
       "Q_over_16_over_janaf": {
         "MM": 1.0176189171982402,
         "TIPS2021": 1.017642103426062,
-        "TIPS2025": 1.0176456926254154
+        "TIPS2025": 1.0176456926254154,
+        "Nikitin2017_fit": 1.017566484611118
       },
       "Q_over_16_over_nasa": {
         "MM": 0.9999743080502465,
         "TIPS2021": 0.9999970922494499,
-        "TIPS2025": 1.0000006192152708
+        "TIPS2025": 1.0000006192152708,
+        "Nikitin2017_fit": 0.9999227845976647
       },
       "TIPS2025_over_2021": 1.0000035269760765,
       "MM_within_published_completeness_estimate": true,
@@ -409,17 +415,20 @@
       "spectroscopic_Q_including_nuclear_spin": {
         "MM": 8066.683,
         "TIPS2021": 8066.413,
-        "TIPS2025": 8066.42
+        "TIPS2025": 8066.42,
+        "Nikitin2017_fit": 8110.5442857111475
       },
       "Q_over_16_over_janaf": {
         "MM": 1.0280493650625009,
         "TIPS2021": 1.0280149552154092,
-        "TIPS2025": 1.0280158473225562
+        "TIPS2025": 1.0280158473225562,
+        "Nikitin2017_fit": 1.0336392174127385
       },
       "Q_over_16_over_nasa": {
         "MM": 0.9936179123501874,
         "TIPS2021": 0.9935846549584769,
-        "TIPS2025": 0.9935855171871509
+        "TIPS2025": 0.9935855171871509,
+        "Nikitin2017_fit": 0.9990205492383984
       },
       "TIPS2025_over_2021": 1.000000867795884,
       "MM_within_published_completeness_estimate": true,
@@ -432,17 +441,20 @@
       "spectroscopic_Q_including_nuclear_spin": {
         "MM": 40334.2138,
         "TIPS2021": 40232.89,
-        "TIPS2025": 40092.8
+        "TIPS2025": 40092.8,
+        "Nikitin2017_fit": 40688.642586017406
       },
       "Q_over_16_over_janaf": {
         "MM": 1.0502329521224398,
         "TIPS2021": 1.0475946561555984,
-        "TIPS2025": 1.0439469555956626
+        "TIPS2025": 1.0439469555956626,
+        "Nikitin2017_fit": 1.0594616628170868
       },
       "Q_over_16_over_nasa": {
         "MM": 0.9728855491604905,
         "TIPS2021": 0.970441558029417,
-        "TIPS2025": 0.9670625027871925
+        "TIPS2025": 0.9670625027871925,
+        "Nikitin2017_fit": 0.9814345851187131
       },
       "TIPS2025_over_2021": 0.9965180229409323,
       "MM_within_published_completeness_estimate": true,
@@ -455,17 +467,20 @@
       "spectroscopic_Q_including_nuclear_spin": {
         "MM": 173171.162,
         "TIPS2021": 176573.0,
-        "TIPS2025": 165254.0
+        "TIPS2025": 165254.0,
+        "Nikitin2017_fit": 180413.75449997841
       },
       "Q_over_16_over_janaf": {
         "MM": 1.053772968226273,
         "TIPS2021": 1.0744736719998316,
-        "TIPS2025": 1.0055958283127102
+        "TIPS2025": 1.0055958283127102,
+        "Nikitin2017_fit": 1.0978452497090039
       },
       "Q_over_16_over_nasa": {
         "MM": 0.9156706573269475,
         "TIPS2021": 0.9336584285101183,
-        "TIPS2025": 0.8738073768073888
+        "TIPS2025": 0.8738073768073888,
+        "Nikitin2017_fit": 0.9539670420056301
       },
       "TIPS2025_over_2021": 0.9358962015710216,
       "MM_within_published_completeness_estimate": true,
@@ -478,17 +493,20 @@
       "spectroscopic_Q_including_nuclear_spin": {
         "MM": 597594.6241,
         "TIPS2021": 673290.6,
-        "TIPS2025": 529976.0
+        "TIPS2025": 529976.0,
+        "Nikitin2017_fit": 697662.190676215
       },
       "Q_over_16_over_janaf": {
         "MM": 0.9750056703368829,
         "TIPS2021": 1.0985074602589988,
-        "TIPS2025": 0.8646824859254282
+        "TIPS2025": 0.8646824859254282,
+        "Nikitin2017_fit": 1.138270935608574
       },
       "Q_over_16_over_nasa": {
         "MM": 0.7815768315513928,
         "TIPS2021": 0.8805774226196492,
-        "TIPS2025": 0.6931403767262921
+        "TIPS2025": 0.6931403767262921,
+        "Nikitin2017_fit": 0.9124523255260651
       },
       "TIPS2025_over_2021": 0.7871430256118235,
       "MM_within_published_completeness_estimate": false,
@@ -501,17 +519,20 @@
       "spectroscopic_Q_including_nuclear_spin": {
         "MM": 1629743.7122,
         "TIPS2021": null,
-        "TIPS2025": null
+        "TIPS2025": null,
+        "Nikitin2017_fit": 2365872.016280192
       },
       "Q_over_16_over_janaf": {
         "MM": 0.8078032632749589,
         "TIPS2021": null,
-        "TIPS2025": null
+        "TIPS2025": null,
+        "Nikitin2017_fit": 1.172674648741035
       },
       "Q_over_16_over_nasa": {
         "MM": 0.5895958988368005,
         "TIPS2021": null,
-        "TIPS2025": null
+        "TIPS2025": null,
+        "Nikitin2017_fit": 0.8559066235565093
       },
       "TIPS2025_over_2021": null,
       "MM_within_published_completeness_estimate": false,
@@ -524,21 +545,82 @@
       "spectroscopic_Q_including_nuclear_spin": {
         "MM": 6894657.2368,
         "TIPS2021": null,
-        "TIPS2025": null
+        "TIPS2025": null,
+        "Nikitin2017_fit": null
       },
       "Q_over_16_over_janaf": {
         "MM": 0.4306253507397883,
         "TIPS2021": null,
-        "TIPS2025": null
+        "TIPS2025": null,
+        "Nikitin2017_fit": null
       },
       "Q_over_16_over_nasa": {
         "MM": 0.25232706446916037,
         "TIPS2021": null,
-        "TIPS2025": null
+        "TIPS2025": null,
+        "Nikitin2017_fit": null
       },
       "TIPS2025_over_2021": null,
       "MM_within_published_completeness_estimate": false,
       "wenger2008_Q_including_nuclear_spin": null
+    }
+  ],
+  "nikitin_corrected_fit_audit": [
+    {
+      "temperature_K": 1500,
+      "table3_Q": 40424.32,
+      "corrected_fit_Q": 40688.642586017406,
+      "fit_over_table3_minus_one": 0.0065387020985734345,
+      "table3_Q_over_16_over_janaf": 1.0525791612465294,
+      "table3_Q_over_16_over_nasa": 0.9750589650179174
+    },
+    {
+      "temperature_K": 1750,
+      "table3_Q": 86505.35,
+      "corrected_fit_Q": 87137.26309280212,
+      "fit_over_table3_minus_one": 0.007304901867943636,
+      "table3_Q_over_16_over_janaf": null,
+      "table3_Q_over_16_over_nasa": null
+    },
+    {
+      "temperature_K": 2000,
+      "table3_Q": 179153.26,
+      "corrected_fit_Q": 180413.75449997841,
+      "fit_over_table3_minus_one": 0.007035844616940956,
+      "table3_Q_over_16_over_janaf": 1.0901749481684095,
+      "table3_Q_over_16_over_nasa": 0.9473019725216462
+    },
+    {
+      "temperature_K": 2250,
+      "table3_Q": 358380.18,
+      "corrected_fit_Q": 360870.60664966964,
+      "fit_over_table3_minus_one": 0.00694911936723086,
+      "table3_Q_over_16_over_janaf": null,
+      "table3_Q_over_16_over_nasa": null
+    },
+    {
+      "temperature_K": 2500,
+      "table3_Q": 693422.17,
+      "corrected_fit_Q": 697662.190676215,
+      "fit_over_table3_minus_one": 0.006114630970358137,
+      "table3_Q_over_16_over_janaf": 1.1313531287292349,
+      "table3_Q_over_16_over_nasa": 0.9069069243591464
+    },
+    {
+      "temperature_K": 2750,
+      "table3_Q": 1296679.14,
+      "corrected_fit_Q": 1305097.7141750709,
+      "fit_over_table3_minus_one": 0.00649241120287547,
+      "table3_Q_over_16_over_janaf": null,
+      "table3_Q_over_16_over_nasa": null
+    },
+    {
+      "temperature_K": 3000,
+      "table3_Q": 2346982.58,
+      "corrected_fit_Q": 2365872.016280192,
+      "fit_over_table3_minus_one": 0.008048392195647125,
+      "table3_Q_over_16_over_janaf": 1.1633118586567186,
+      "table3_Q_over_16_over_nasa": 0.8490729514405996
     }
   ],
   "partition_caveat": "Natural-mass thermochemical effective Q versus 12CH4; not an isotope-resolved equality or accuracy test.",
