@@ -38,3 +38,11 @@ bytes. Tests check the frozen source/receipt hashes and numerical reconstruction
 The separate ``ph2_equilibrium_impact/20261102`` archive measures a raw-NASA
 PH2-only substitution against the current C2H-corrected curated model. Its
 solver evidence must not be substituted for source or atmospheric validation.
+
+The supplied ``ref/refs_exogibbs_202611-2/jp811432s.pdf`` now provides a
+byte-identified publisher copy of the 2009 correction. Its complete Table 3
+and relevant footnotes confirm the earlier PH2 transcription. The PDF remains
+local and is not required by CI; its identity and inspection locations are
+recorded in ``matus2009_ph2_table3.json``. This file is not the original 2007
+paper or its supporting data. Numerical comparison and historical equilibrium
+outputs are unchanged; the source receipt records a fresh offline replay.

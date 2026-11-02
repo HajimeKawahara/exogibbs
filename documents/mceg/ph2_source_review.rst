@@ -83,6 +83,19 @@ inspected material. They must not be ranked against the printed JANAF value
 as if all reference states had already been harmonized. The original Gurvich
 pages and the full experimental cycle were not obtained.
 
+The supplied ``jp811432s.pdf`` is the complete one-page 2009 correction,
+not the 2007 main article. Its Table 3 PH2 row and footnotes a--c were
+visually checked against the earlier publisher-indexed transcription:
+32.7 kcal/mol at 0 K, 31.8 kcal/mol at 298 K, an estimated theoretical
+error bar of 1.0 kcal/mol, and the quoted experiment of 33.1 +/- 0.6 kcal/mol.
+The transcription is confirmed without changing these numerical values.
+The correction explicitly concerns nitrogen entries; it is not a second
+PH2 determination. It does not provide the P atomic reference, white/red-P
+convention or full atomization/ZPE/thermal inputs. The next energy review
+still needs the `2007 main article and supporting data
+<https://doi.org/10.1021/jp067892v>`_ and the original
+`1989 experimental cycle <https://doi.org/10.1063/1.456522>`_.
+
 `Jakubek et al. (2006) <https://doi.org/10.1063/1.2168155>`_ provide measured
 ground-state bending and symmetric-stretch levels of 1102 +/- 3 and
 2298 +/- 3 cm^-1, compared with the JANAF estimates of 1020 and 2327 cm^-1.

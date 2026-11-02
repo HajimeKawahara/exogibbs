@@ -2,7 +2,8 @@ schema_version: '0.2'
 model:
   id: exogibbs.ph2_source_review.v1
   name: Phosphino source investigation and sensitivity
-  description: Audit printed/online JANAF PH2 and a finite raw-NASA substitution; retain current production coefficients.
+  description: Audit printed/online JANAF PH2 and a finite raw-NASA substitution; retain current production
+    coefficients.
   implementation: &id001
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:7008d6932b2531ab513088c0b9db7ef8dd1e89cb101e9ade6603fb5b5f452200
@@ -13,8 +14,8 @@ assumptions:
   evidence:
   - literature_review
   - source_replay
-- statement: Ideal-gas equilibrium uses fixed species, formula matrix and budgets within each pair; only PH2 thermochemistry
-    changes.
+- statement: Ideal-gas equilibrium uses fixed species, formula matrix and budgets within each pair; only PH2
+    thermochemistry changes.
   evidence:
   - finite_substitution
 domains:
@@ -26,7 +27,8 @@ domains:
   - 'Fit comparison: 26 exact JANAF nodes over 1500-4000 K.'
   - 'Online reference signature: 64 exact PH2/H2 nodes over 100-6000 K; printed reference closure: five inspected
     nodes.'
-  - 'Equilibrium: 1500, 2000, 2500, 3000, 4000 K; 1e-6, 1e-4, 0.01, 1, 100 bar; C/O = 0.5888436553555908, 1, 1.5.'
+  - 'Equilibrium: 1500, 2000, 2500, 3000, 4000 K; 1e-6, 1e-4, 0.01, 1, 100 bar; C/O = 0.5888436553555908, 1,
+    1.5.'
   evidence:
   - source_replay
   - finite_substitution
@@ -64,8 +66,8 @@ claims:
 evidence:
 - id: literature_review
   kind: literature
-  summary: Identify PH2, JANAF print/web differences, the documented phosphorus-reference correction, NASA/Gurvich
-    ancestry and later energy/spectroscopic work with access limits.
+  summary: Identify PH2, JANAF print/web differences and later source ancestry; visually verify the supplied
+    complete 2009 Matus correction and confirm the prior numerical transcription.
   sources:
   - tests/data/validation/ph2_source_review/20261102/sources.json
   - tests/data/validation/ph2_source_review/20261102/literature.json
@@ -74,14 +76,15 @@ evidence:
   context: source_comparison
   artifacts:
   - source: tests/data/validation/ph2_source_review/20261102/sources.json
-    sha256: 1622d773c7f05c5cf7b27ce65cd59565f06b4775e2868c1e79d7cd62294e8b6c
+    sha256: 42d9ae99a87372b746fc2dcbbfad064f2c90abfa69c6b7893d44149248e40b83
   - source: tests/data/validation/ph2_source_review/20261102/literature.json
-    sha256: 0bea0357815a23d538967fb38614bde29819eb40bde314d34d9c4f5a0ea63e20
+    sha256: 14af088301218da9982744c023b2a0d157e608f5e00794da2878adb03b52d423
   provenance:
     role: secondary
     location: Fixed PH2 review packet; source versions and inspection limits are explicit.
     inspection: partial
-    note: No inference of physical accuracy from numerical agreement.
+    note: The supplied PDF is the one-page 2009 correction, not the 2007 main/SI. PH2 theory/quoted-experiment
+      reference conventions and the original experimental cycle remain unresolved.
 - id: source_replay
   kind: numerical_test
   summary: Reproduce the frozen discrepancy, online 1.5 H2 signature, printed P(ref)+H2 closure and current-fit
@@ -96,7 +99,7 @@ evidence:
   - source: tests/data/validation/ph2_source_review/20261102/comparison.json
     sha256: 9bfc8792910f4abbb5d169b837ffa646f82f6a12c4b0696275b440b067e6ba62
   - source: tests/data/validation/ph2_source_review/20261102/receipt.json
-    sha256: 39f97cba0a08e500ca695ec1c88868f3db4755639c2cf9613012ca6ff4b62327
+    sha256: 868c8bce3197a8c3ee59305afb74369156c0454fb137e6b76d3c7be49f4114d1
   provenance:
     role: primary
     location: Fixed PH2 review packet; source versions and inspection limits are explicit.
@@ -144,16 +147,16 @@ subjects:
     tests/data/validation/ph2_source_review/20261102/printed_ph2_nodes.json: bb553e89a6ee2e78e4a30ae21c7b6a6d244786f1bc04cfa0825016b8905ac050
     tests/data/validation/ph2_source_review/20261102/P-001.txt: 06086a8d0f26ace07c4d0207646987a2cff605380e69b89af9a21da28649c81b
     tests/data/validation/ph2_source_review/20261102/nasa_selected_records.txt: 72beb17ab272e2b12bf9b3a79416f94cfdb746845b9e07a3b5165f783d1bc187
-    tests/data/validation/ph2_source_review/20261102/sources.json: 1622d773c7f05c5cf7b27ce65cd59565f06b4775e2868c1e79d7cd62294e8b6c
-    tests/data/validation/ph2_source_review/20261102/literature.json: 0bea0357815a23d538967fb38614bde29819eb40bde314d34d9c4f5a0ea63e20
+    tests/data/validation/ph2_source_review/20261102/sources.json: 42d9ae99a87372b746fc2dcbbfad064f2c90abfa69c6b7893d44149248e40b83
+    tests/data/validation/ph2_source_review/20261102/literature.json: 14af088301218da9982744c023b2a0d157e608f5e00794da2878adb03b52d423
     tests/data/validation/ph2_source_review/20261102/H-079.txt: 3609186fa0bd468de799bb6fe66c9ef48e1718918e76d6b6e600c443e9113cd4
     tests/data/validation/ph2_source_review/20261102/P-008.txt: a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879
     tests/data/validation/ph2_source_review/20261102/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
     tests/data/validation/ph2_source_review/20261102/H-050.txt: 091490382968f81736db19f9cf60cc233e47a5130403e100d9d6a5108f65c9f0
     tests/data/validation/ph2_source_review/20261102/burcat_ph2_record.txt: 7cdd57e26c64a56c6555af29ac9962d7f8a8d7ee272e314e038d6a5186a12424
     tests/data/validation/ph2_source_review/20261102/janaf_ph2_printed_1339.pdf: a0967cb9dac9298eaccc17faf8ea9cef1c78139d5d736f9ca86a8cf9ca51e220
-    tests/data/validation/ph2_source_review/20261102/matus2009_ph2_table3.json: 22dee30b29b7e1e68039157e3017d046e38be446e7321893022c5197455369cf
-    tests/data/validation/ph2_source_review/20261102/README.rst: 7230ecf07adc4edd3d0f91fc7e4dba471ec519f2c4dd40fde7eb8d4951fc1303
+    tests/data/validation/ph2_source_review/20261102/matus2009_ph2_table3.json: 186b1133573c9b412cbc1e57b61ab84067a6417abd0beed68c93219a7e0fade9
+    tests/data/validation/ph2_source_review/20261102/README.rst: 997698a75dccb3175837f27ec9e35ffb45f4a96941c715bcfe77a3c9511e90ad
 - id: ph2_substitution_20261102
   implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
@@ -220,7 +223,8 @@ contexts:
     C_over_O: 0.5888436553555908, 1, 1.5
     elemental_budget: Asplund 2021 reference; vary only C/H; preserve other element/H ratios before normalization.
     solver: CPU float64; cold starts at epsilon_crit 1e-13 and 5e-14
-    independent_solver: Standalone FastChem 4.0.3 at reference C/O, 3000 K, 100 bar, identical h/A/b for each endpoint
+    independent_solver: Standalone FastChem 4.0.3 at reference C/O, 3000 K, 100 bar, identical h/A/b for each
+      endpoint
     neutral_only: not_run
 assessments:
 - id: source_attribution_review
@@ -231,14 +235,14 @@ assessments:
   context: source_comparison
   method:
     id: review_ph2_sources_and_sensitivity
-    revision: '1'
+    revision: '2'
     description: Distinguish source/version attribution, numerical sensitivity and physical source selection.
   evidence:
   - literature_review
   - source_replay
   reasons:
-  - The online 1.5 H2 signature and printed P(ref)+H2 closure hold within table rounding; current-fit residual is
-    below 0.012 in ln K. Agreement does not identify the historical fit-generation procedure.
+  - The online 1.5 H2 signature and printed P(ref)+H2 closure hold within table rounding; current-fit residual
+    is below 0.012 in ln K. Agreement does not identify the historical fit-generation procedure.
   status: supported
   origin: reviewed
 - id: finite_source_sensitivity_review
@@ -249,13 +253,13 @@ assessments:
   context: fixed_network_sensitivity
   method:
     id: review_ph2_sources_and_sensitivity
-    revision: '1'
+    revision: '2'
     description: Distinguish source/version attribution, numerical sensitivity and physical source selection.
   evidence:
   - finite_substitution
   reasons:
-  - All 300 cold solves pass; maximum tolerance delta-x is below 9.2e-14 and the separate independent-solver comparison
-    is below 5.7e-7 dex. The highlighted PH2 P share falls from 64.2509% to 50.3632%.
+  - All 300 cold solves pass; maximum tolerance delta-x is below 9.2e-14 and the separate independent-solver
+    comparison is below 5.7e-7 dex. The highlighted PH2 P share falls from 64.2509% to 50.3632%.
   status: supported
   origin: reviewed
 - id: preferred_physical_replacement_review
@@ -266,15 +270,15 @@ assessments:
   context: source_comparison
   method:
     id: review_ph2_sources_and_sensitivity
-    revision: '1'
+    revision: '2'
     description: Distinguish source/version attribution, numerical sensitivity and physical source selection.
   evidence:
   - literature_review
   - source_replay
   reasons:
-  - Printed JANAF uses an old estimated energy and thermal model; raw NASA and newer theory/experiment differ. Modern
-    atomic-reference conventions, uncertainty definitions and high-temperature state sums require further reconciliation.
-    Retain the current fit provisionally.
+  - Printed JANAF uses an old estimated energy and thermal model; raw NASA and newer theory/experiment differ.
+    Modern atomic-reference conventions, uncertainty definitions and high-temperature state sums require further
+    reconciliation. Retain the current fit provisionally.
   status: unknown
   origin: reviewed
 - id: atmospheric_accuracy_review
@@ -285,13 +289,13 @@ assessments:
   context: fixed_network_sensitivity
   method:
     id: review_ph2_sources_and_sensitivity
-    revision: '1'
+    revision: '2'
     description: Distinguish source/version attribution, numerical sensitivity and physical source selection.
   evidence:
   - finite_substitution
   reasons:
-  - Source sensitivity and solver agreement are not physical validation; no atmospheric abundance observations or
-    independent physical benchmarks are evaluated.
+  - Source sensitivity and solver agreement are not physical validation; no atmospheric abundance observations
+    or independent physical benchmarks are evaluated.
   status: unknown
   origin: reviewed
 follow_ups:
@@ -299,14 +303,16 @@ follow_ups:
   target_kind: claim
   target: preferred_physical_replacement
   revision: '1'
-  action: Reconcile modern PH2 atomization/formation energies and measured spectroscopy before selecting a replacement.
+  action: Reconcile modern PH2 atomization/formation energies and measured spectroscopy before selecting a
+    replacement.
   requires:
-  - Original experimental/theoretical numerical tables and corrections
+  - Original Matus 2007 main/SI atomization, zero-point and thermal inputs, and Berkowitz 1989 experimental
+    cycle; the supplied 2009 correction is already inspected
   - Consistent P/H atomic references, white/red phosphorus conventions and uncertainty definitions
   - Thermal-state construction from measured vibration/rotation/electronic levels over the declared temperature
     range
-  completion: Record a justified energy/thermal candidate and applicability limits, then evaluate it under a new
-    model identity.
+  completion: Record a justified energy/thermal candidate and applicability limits, then evaluate it under
+    a new model identity.
 - id: physical_abundance_validation
   target_kind: claim
   target: atmospheric_accuracy
@@ -317,14 +323,16 @@ follow_ups:
   - Explicit atmosphere and observable/benchmark definition
   completion: Assess physical accuracy without repurposing the raw-NASA diagnostic as validation.
 limitations:
-- statement: The raw-NASA endpoint is a diagnostic, not an adoption, preferred source ranking or uncertainty interval.
+- statement: The raw-NASA endpoint is a diagnostic, not an adoption, preferred source ranking or uncertainty
+    interval.
   evidence:
   - literature_review
   - finite_substitution
-- statement: The online reference signature does not establish the historical cause; current-fit agreement is numerical
-    attribution rather than a recovered fit-generation record.
+- statement: The online reference signature does not establish the historical cause; current-fit agreement
+    is numerical attribution rather than a recovered fit-generation record.
   evidence:
   - source_replay
-- statement: No neutral-only sensitivity, condensation, nonideality, quenching, photochemistry or spectra are evaluated.
+- statement: No neutral-only sensitivity, condensation, nonideality, quenching, photochemistry or spectra are
+    evaluated.
   evidence:
   - finite_substitution

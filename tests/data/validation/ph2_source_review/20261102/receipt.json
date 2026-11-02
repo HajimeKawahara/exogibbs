@@ -2,7 +2,7 @@
   "schema_version": "1",
   "study": "ph2-source-review-20261102",
   "execution_kind": "fresh_offline_execution",
-  "executed_at_utc": "2026-11-02T03:39:14.073140+00:00",
+  "executed_at_utc": "2026-11-02T09:24:41.250854+00:00",
   "command": [
     "/home/kawahara/miniconda3/bin/python",
     "mceg/reviews/ph2_source_review.py",
@@ -12,7 +12,7 @@
     "tests/data/validation/ph2_source_review/20261102/receipt.json"
   ],
   "python": "3.12.7",
-  "base_commit": "8f5a7f4c7ac28a1a7b4e958cb0426d9912043035",
+  "base_commit": "f87a02c6461eda8b1cfec70c840931972f32c65d",
   "implementation_identity": "Selected file hashes include uncommitted files; HEAD alone does not identify this execution.",
   "selected_input_sha256": {
     "mceg/reviews/ph2_source_review.py": "7008d6932b2531ab513088c0b9db7ef8dd1e89cb101e9ade6603fb5b5f452200",
@@ -24,15 +24,15 @@
     "tests/data/validation/ph2_source_review/20261102/printed_ph2_nodes.json": "bb553e89a6ee2e78e4a30ae21c7b6a6d244786f1bc04cfa0825016b8905ac050",
     "tests/data/validation/ph2_source_review/20261102/P-001.txt": "06086a8d0f26ace07c4d0207646987a2cff605380e69b89af9a21da28649c81b",
     "tests/data/validation/ph2_source_review/20261102/nasa_selected_records.txt": "72beb17ab272e2b12bf9b3a79416f94cfdb746845b9e07a3b5165f783d1bc187",
-    "tests/data/validation/ph2_source_review/20261102/sources.json": "1622d773c7f05c5cf7b27ce65cd59565f06b4775e2868c1e79d7cd62294e8b6c",
-    "tests/data/validation/ph2_source_review/20261102/literature.json": "0bea0357815a23d538967fb38614bde29819eb40bde314d34d9c4f5a0ea63e20",
+    "tests/data/validation/ph2_source_review/20261102/sources.json": "42d9ae99a87372b746fc2dcbbfad064f2c90abfa69c6b7893d44149248e40b83",
+    "tests/data/validation/ph2_source_review/20261102/literature.json": "14af088301218da9982744c023b2a0d157e608f5e00794da2878adb03b52d423",
     "tests/data/validation/ph2_source_review/20261102/H-079.txt": "3609186fa0bd468de799bb6fe66c9ef48e1718918e76d6b6e600c443e9113cd4",
     "tests/data/validation/ph2_source_review/20261102/P-008.txt": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
     "tests/data/validation/ph2_source_review/20261102/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
     "tests/data/validation/ph2_source_review/20261102/H-050.txt": "091490382968f81736db19f9cf60cc233e47a5130403e100d9d6a5108f65c9f0",
     "tests/data/validation/ph2_source_review/20261102/burcat_ph2_record.txt": "7cdd57e26c64a56c6555af29ac9962d7f8a8d7ee272e314e038d6a5186a12424",
     "tests/data/validation/ph2_source_review/20261102/janaf_ph2_printed_1339.pdf": "a0967cb9dac9298eaccc17faf8ea9cef1c78139d5d736f9ca86a8cf9ca51e220",
-    "tests/data/validation/ph2_source_review/20261102/matus2009_ph2_table3.json": "22dee30b29b7e1e68039157e3017d046e38be446e7321893022c5197455369cf"
+    "tests/data/validation/ph2_source_review/20261102/matus2009_ph2_table3.json": "186b1133573c9b412cbc1e57b61ab84067a6417abd0beed68c93219a7e0fade9"
   },
   "output_sha256": {
     "tests/data/validation/ph2_source_review/20261102/comparison.json": "9bfc8792910f4abbb5d169b837ffa646f82f6a12c4b0696275b440b067e6ba62"

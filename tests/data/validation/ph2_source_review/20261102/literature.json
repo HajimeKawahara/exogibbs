@@ -236,8 +236,8 @@
       "doi": "10.1021/jp811432s",
       "original_doi": "10.1021/jp067892v",
       "archived_file": "matus2009_ph2_table3.json",
-      "sha256": "22dee30b29b7e1e68039157e3017d046e38be446e7321893022c5197455369cf",
-      "inspection": "Publisher-indexed 2009 correction with full Table 3 and footnotes read; 2007 publisher abstract and supporting-information description read. Direct download HTTP403.",
+      "sha256": "186b1133573c9b412cbc1e57b61ab84067a6417abd0beed68c93219a7e0fade9",
+      "inspection": "Supplied publisher correction PDF fully inspected and its PH2 row and footnotes visually checked. No change to the transcribed numerical values. The 2007 publisher abstract/SI description were inspected earlier; main/SI numerical content remains unavailable.",
       "facts": {
         "method": "CCSD(T) with complete-basis extrapolation, core-valence and scalar-relativistic corrections and scaled zero-point energies.",
         "PH2_Hf298_kJ_mol": 133.0512,
@@ -247,8 +247,22 @@
       },
       "limitations": [
         "Correction concerns nitrogen entries; count the 2007 and 2009 versions as one theoretical source.",
-        "The original experimental cycle is not inspected. Reference-state identity for these numbers is not established from the accessible table; do not compare them as fully harmonized atomization energies."
-      ]
+        "The original experimental cycle is not inspected. Reference-state identity for these numbers is not established from the accessible table; do not compare them as fully harmonized atomization energies.",
+        "The one-page correction does not identify white versus red-V phosphorus, or provide the atomization/ZPE/thermal-correction inputs needed for a common-reference reconstruction."
+      ],
+      "inspection_history": "Publisher-indexed 2009 correction with full Table 3 and footnotes read; 2007 publisher abstract and supporting-information description read. Direct download HTTP403.",
+      "supplied_pdf": {
+        "local_file": "ref/refs_exogibbs_202611-2/jp811432s.pdf",
+        "doi": "10.1021/jp811432s",
+        "url": "https://doi.org/10.1021/jp811432s",
+        "sha256": "dcd97ee5f895b7ac70f1180d1bc61b35202c36fcdf09be426101de52ed4c0afa",
+        "bytes": 65168,
+        "pages": 1,
+        "provided_date_JST": "2026-11-02",
+        "inspection": "Supplied publisher PDF read; relevant numerical passages visually checked.",
+        "location": "Printed p944, complete replacement Table 3, PH2 row and footnotes a-c; page image visually checked.",
+        "archived": false
+      }
     },
     {
       "id": "berkowitz_cho1989",
@@ -262,7 +276,7 @@
         "caution": "The approximately 0.70 eV splitting in the abstract is between PH2+ cation states; it is not the neutral PH2 electronic gap."
       },
       "limitations": [
-        "The33.1\u00b10.6kcal/mol formation value is verified as quoted by Matus, not rederived from this experiment.",
+        "The33.1±0.6kcal/mol formation value is verified as quoted by Matus, not rederived from this experiment.",
         "The original atom/PH3 anchors, white/red phosphorus reference and statistical interpretation of the uncertainty remain unverified."
       ]
     },
@@ -292,7 +306,7 @@
         "method": "Restricted-reference CCSD(T)/CBS atomization with core-valence, relativistic and core-valence basis-set-superposition corrections; B3LYP geometries/frequencies."
       },
       "limitations": [
-        "The131.8\u00b14.2kJ/mol species value is verified only in the Burcat citation. Abstract method information is insufficient to reconstruct its phosphorus reference."
+        "The131.8±4.2kJ/mol species value is verified only in the Burcat citation. Abstract method information is insufficient to reconstruct its phosphorus reference."
       ]
     },
     {
@@ -361,14 +375,14 @@
     "P-008.txt": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
     "burcat_ph2_record.txt": "7cdd57e26c64a56c6555af29ac9962d7f8a8d7ee272e314e038d6a5186a12424",
     "janaf_ph2_printed_1339.pdf": "a0967cb9dac9298eaccc17faf8ea9cef1c78139d5d736f9ca86a8cf9ca51e220",
-    "matus2009_ph2_table3.json": "22dee30b29b7e1e68039157e3017d046e38be446e7321893022c5197455369cf",
+    "matus2009_ph2_table3.json": "186b1133573c9b412cbc1e57b61ab84067a6417abd0beed68c93219a7e0fade9",
     "nasa_selected_records.txt": "72beb17ab272e2b12bf9b3a79416f94cfdb746845b9e07a3b5165f783d1bc187",
     "printed_ph2_nodes.json": "bb553e89a6ee2e78e4a30ae21c7b6a6d244786f1bc04cfa0825016b8905ac050"
   },
   "search_limitations": [
     "Original Gurvich 1989PH2 pages not recovered.",
     "Original Berkowitz 1989, Ricca 1998, Haworth 2002 full texts not recovered; access status distinguishes direct evidence from subsequent quotations.",
-    "Matus 2009 publisher-indexed table and Jakubek 2006 author PDF were readable through web search/open but not locally downloadable.",
+    "The Matus 2009 correction is now locally supplied and visually inspected; the 2007 main/SI and experimental 1989 paper remain uninspected. The Jakubek 2006 author PDF was readable through the web tool but not locally downloaded.",
     "No exhaustive survey of all post-2009 PH2 energetics or all ATcT versions is claimed.",
     "Solid high-pressure PH2 phases and ligand fragments named PH2 are outside the neutral gas-radical scope."
   ]

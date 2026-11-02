@@ -61,10 +61,10 @@
     {
       "file": "matus2009_ph2_table3.json",
       "url": "https://pubs.acs.org/doi/10.1021/jp811432s",
-      "sha256": "22dee30b29b7e1e68039157e3017d046e38be446e7321893022c5197455369cf",
+      "sha256": "186b1133573c9b412cbc1e57b61ab84067a6417abd0beed68c93219a7e0fade9",
       "retrieved": "2026-11-02",
       "archived": true,
-      "inspection": "Publisher-indexed 2009 correction with full Table 3 and footnotes read; 2007 publisher abstract and supporting-information description read. Direct download HTTP403."
+      "inspection": "Supplied 2009 publisher correction PDF, complete Table 3 and footnotes a-c visually checked; earlier PH2 transcription confirmed. Original 2007 main/SI and 1989 experimental cycle still uninspected."
     },
     {
       "file": "nasa_selected_records.txt",
@@ -81,6 +81,19 @@
       "retrieved": "2026-11-02",
       "archived": true,
       "inspection": "Selected PH2 rows manually transcribed from the archived printed page; source PDF and page identity recorded in the JSON."
+    },
+    {
+      "local_file": "ref/refs_exogibbs_202611-2/jp811432s.pdf",
+      "doi": "10.1021/jp811432s",
+      "url": "https://doi.org/10.1021/jp811432s",
+      "sha256": "dcd97ee5f895b7ac70f1180d1bc61b35202c36fcdf09be426101de52ed4c0afa",
+      "bytes": 65168,
+      "pages": 1,
+      "provided_date_JST": "2026-11-02",
+      "inspection": "Supplied publisher PDF read; relevant numerical passages visually checked.",
+      "location": "Printed p944, complete replacement Table 3, PH2 row and footnotes a-c; page image visually checked.",
+      "archived": false,
+      "file": "ref/refs_exogibbs_202611-2/jp811432s.pdf"
     }
   ],
   "identity": {
