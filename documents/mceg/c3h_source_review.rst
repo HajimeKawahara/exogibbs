@@ -125,6 +125,45 @@ Pi1/2 rotational state. Its tabulated partition function covers 9.375--300 K
 and selected states. It cannot be extended into a complete 1500--4000 K model
 without examining higher vibrational/electronic states and normalization.
 
+The supplied `Caris et al. (2009) full text
+<https://doi.org/10.1016/j.jms.2008.10.006>`_ identifies the energy conventions
+more precisely. Equation (3) defines its excited-state term relative to the
+unsplit Pi term, with the spin-orbit constant set to zero for that reference.
+The approximately 20.35 cm^-1 term is therefore not measured from the lowest
+actual rotational level. Figure 4 instead sets the lowest Pi1/2 level to zero
+and places the Sigma N = 0 level at 27.2 cm^-1, consistent with CDMS's rounded
+27.20. This apparent difference is a reference-convention distinction, not
+evidence for an extra correction to the molecular formation energy.
+
+The printed abstract and Table 5 contain a separate, smaller numerical
+disagreement that is preserved in the evidence:
+
+.. list-table:: Two parameter summaries in the same Caris article
+   :header-rows: 1
+
+   * - Location
+     - Excited-state term E (GHz)
+     - Vibronic coupling beta (MHz)
+   * - Abstract, p. 99
+     - 609.9771(42)
+     - 1231.77(51)
+   * - Table 5, p. 104
+     - 609.9742(41)
+     - 1234.2(19)
+
+Table 5 explicitly defines parentheses as one standard deviation. Both
+summaries are retained without inventing a cause or silently selecting a new
+parameter set. The supplementary fit files were not supplied. Their documented
+Hamiltonian/parity conventions are needed before reconstructing this low-state
+model numerically; line positions alone do not determine the sign of beta.
+
+The experiment measures 44 rotational and eight rovibrational transitions,
+covering the ground Pi ladders and one low Sigma component. Its effective
+Hamiltonian is not a complete 1500--4000 K state inventory. CDMS incorporates
+this study, so agreement between the catalog and paper is not independent
+thermodynamic validation. Tsuji's original species identity and the full hot
+thermal construction remain unresolved.
+
 Decision, MCEG and next evidence
 --------------------------------
 

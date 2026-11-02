@@ -65,8 +65,8 @@ claims:
 evidence:
 - id: literature
   kind: literature
-  summary: Tsuji printed definition, ATcT isomer/energy provenance, Burcat caloric candidate and CDMS low-lying
-    vibronic state with access limits.
+  summary: Tsuji printed definition, ATcT isomer/energy provenance, Burcat caloric candidate and supplied Caris
+    full text resolving the CDMS energy-zero distinction while preserving abstract/Table 5 parameter differences.
   sources:
   - tests/data/validation/c3h_source_review/20261102/sources.json
   - tests/data/validation/c3h_source_review/20261102/literature.json
@@ -76,14 +76,15 @@ evidence:
   context: source_review
   artifacts:
   - source: tests/data/validation/c3h_source_review/20261102/sources.json
-    sha256: e12fd3489f90cbddb5d8ed19ce515fed08fa453b70edc40ed3f76aac1956ee95
+    sha256: 0de3034526f2fa690aae6e49aec226c31d0fe7858150a7a3abc00fc46cc1b52a
   - source: tests/data/validation/c3h_source_review/20261102/literature.json
-    sha256: d37ed157b65c0c07a5d8e9670d4b21160ff364701931b6e6cf20d7e1ce9f2106
+    sha256: a824891eb9f98ae7e7ca6f76e2543880121787ba47ae1f9ef1496221bc262481
   provenance:
     role: secondary
     location: Frozen C3H packet with versioned originals and explicit inspection limits
     inspection: partial
-    note: Source attribution and model calculations are distinct from physical validation.
+    note: Caris Figures 1 and 4 and Eq. (3) distinguish unsplit-Pi and lowest-rotational-level zeros; its abstract
+      and Table 5 remain separately transcribed. Full supplied PDF and supplementary fit files are not vendored.
 - id: source_replay
   kind: numerical_test
   summary: Reproduce the pressure/sign conversion, analytical calorics, ATcT balanced reactions and archived carbon
@@ -99,7 +100,7 @@ evidence:
   - source: tests/data/validation/c3h_source_review/20261102/comparison.json
     sha256: 0f4f1b460e572db1e2ef6b5274e0619aebdb6c45bb9fafbc8bcce19ad7b0a35c
   - source: tests/data/validation/c3h_source_review/20261102/receipt.json
-    sha256: 276a2e6faf983a6dfde19b3aaa6801c13c40364f15a60cf004f0b5be1097a2d6
+    sha256: 92b22c26498ca3c40b16963abafb781b09b38391e1164b1f21cc0bbc15c8e7fd
   provenance:
     role: primary
     location: Frozen C3H packet with versioned originals and explicit inspection limits
@@ -121,7 +122,7 @@ evidence:
   - source: tests/data/validation/c3h_source_review/20261102/inputs.json
     sha256: 2a56dbbfa1ed0747d49cf1f1378e3f4c31d2a5fbdd51420ae0e9cbb0cbc759fe
   - source: tests/data/validation/c3h_source_review/20261102/literature.json
-    sha256: d37ed157b65c0c07a5d8e9670d4b21160ff364701931b6e6cf20d7e1ce9f2106
+    sha256: a824891eb9f98ae7e7ca6f76e2543880121787ba47ae1f9ef1496221bc262481
   provenance:
     role: secondary
     location: Frozen C3H packet with versioned originals and explicit inspection limits
@@ -141,7 +142,7 @@ subjects:
     tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
     src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
     tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
-    tests/data/validation/c3h_source_review/20261102/README.rst: bcc8d9e611c541979b848004c9ef4016204648590c3b17aa2d342d461bf84f87
+    tests/data/validation/c3h_source_review/20261102/README.rst: e17895f63b6dae659e093af7ac0d726f07c202ed4eced1e265b65f2f30eeaab5
     tests/data/validation/c3h_source_review/20261102/aguilera-iparraguirre2008.html: fcc3ac86778bf52909310eb438f60cfdc28e8d4e584a2fb1117dc62848efd45f
     tests/data/validation/c3h_source_review/20261102/atct_cyclic.html: 25a8599992ecd01a750875f568758a0eea47dcea8878ebba951ae789ed2d21f4
     tests/data/validation/c3h_source_review/20261102/atct_linear.html: 8a9655c09cf36664354bf437ebc7cdb19abbf2e2056611b2d5d9f94583414117
@@ -152,11 +153,11 @@ subjects:
     tests/data/validation/c3h_source_review/20261102/costes2009.html: 6f63d597ca6387dcfa7663b8620c267e903b6080e566ceecb9ac13c0945c2ae1
     tests/data/validation/c3h_source_review/20261102/garcia2018.html: cc6a8f4712e6a58da3318890e21153c2e2d1988de66801eed0348c60b26dda18
     tests/data/validation/c3h_source_review/20261102/inputs.json: 2a56dbbfa1ed0747d49cf1f1378e3f4c31d2a5fbdd51420ae0e9cbb0cbc759fe
-    tests/data/validation/c3h_source_review/20261102/literature.json: d37ed157b65c0c07a5d8e9670d4b21160ff364701931b6e6cf20d7e1ce9f2106
-    tests/data/validation/c3h_source_review/20261102/sources.json: e12fd3489f90cbddb5d8ed19ce515fed08fa453b70edc40ed3f76aac1956ee95
+    tests/data/validation/c3h_source_review/20261102/literature.json: a824891eb9f98ae7e7ca6f76e2543880121787ba47ae1f9ef1496221bc262481
+    tests/data/validation/c3h_source_review/20261102/sources.json: 0de3034526f2fa690aae6e49aec226c31d0fe7858150a7a3abc00fc46cc1b52a
     tests/data/validation/c3h_source_review/20261102/tsuji1973_selected_pages.pdf: a27db1548109c75ad7eaf7b2daa4e7f8af4f4eff778fb7e22a8842b7e47581ce
     tests/data/validation/c3h_source_review/20261102/comparison.json: 0f4f1b460e572db1e2ef6b5274e0619aebdb6c45bb9fafbc8bcce19ad7b0a35c
-    tests/data/validation/c3h_source_review/20261102/receipt.json: 276a2e6faf983a6dfde19b3aaa6801c13c40364f15a60cf004f0b5be1097a2d6
+    tests/data/validation/c3h_source_review/20261102/receipt.json: 92b22c26498ca3c40b16963abafb781b09b38391e1164b1f21cc0bbc15c8e7fd
 contexts:
 - id: source_review
   scope: Neutral C3H source attribution and conditional linear-candidate caloric comparison at 1500-4000 K; archived
@@ -226,6 +227,9 @@ assessments:
   reasons:
   - Original Tsuji 1964 structure/state inputs and complete vibronic thermodynamics remain unresolved. Burcat is
     a conditional caloric candidate and CDMS supplies only a partial low-temperature state catalog.
+  - Caris full text resolves the 20.35 versus 27.20 cm-1 reference distinction, but its low-state Hamiltonian does
+    not establish a complete hot partition. Its abstract/Table 5 parameter difference is retained and exact fit
+    reproduction still needs the documented supplementary inputs.
   status: unknown
   origin: reviewed
 - id: atmospheric_accuracy_review
@@ -255,6 +259,7 @@ follow_ups:
   requires:
   - Original C3H geometry, multiplicity and energy definitions
   - Vibronic state coverage, partition normalization and shared energy covariance
+  - Documented low-state Hamiltonian inputs, resolving the Caris abstract/Table 5 parameter distinction
   - A named justified candidate and fixed-network substitution test
   completion: Document a physically supported candidate and domain before production adoption.
 limitations:

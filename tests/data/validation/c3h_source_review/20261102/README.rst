@@ -30,3 +30,12 @@ comparison to Burcat is made while its pressure convention remains unchecked.
 The numerical review verifies source attribution, analytic caloric identities
 and the archived carbon budget. It does not establish the original Tsuji isomer,
 physical accuracy, or the response to adopting either modern isomer.
+
+The supplied ``ref/refs_exogibbs_202611-2/Caris_2009.pdf`` is identified by
+SHA256 and inspected pages in ``sources.json``; its full text is not vendored.
+``literature.json`` records the unsplit-Pi term zero, Figure 4's lowest-level
+zero, and the distinct parameter values printed in the abstract and Table 5.
+The 20.35/27.20 cm^-1 reference distinction is resolved, while supplementary
+fit inputs, higher states and the original Tsuji identity remain open.
+The unchanged numerical review is replayed and its current receipt refreshed;
+no new Hamiltonian state sum or equilibrium substitution is performed.

@@ -96,6 +96,18 @@
       "download_sha256": "6f63d597ca6387dcfa7663b8620c267e903b6080e566ceecb9ac13c0945c2ae1",
       "location": "ATcT source reference and uncertainty note, not full original paper",
       "inspection": "bibliographic record inspected"
+    },
+    {
+      "file": "ref/refs_exogibbs_202611-2/Caris_2009.pdf",
+      "url": "https://doi.org/10.1016/j.jms.2008.10.006",
+      "doi": "10.1016/j.jms.2008.10.006",
+      "sha256": "4055cc5e84afb5f27dd2a5ba410fa518392ce20d82f062f312cc11be42eeb80d",
+      "bytes": 573080,
+      "acquisition": "user_supplied",
+      "received": "2026-11-02",
+      "archived": false,
+      "inspection": "Full supplied article text read. Abstract (printed p 99, PDF p 1), Figure 4 and Table 5 (printed p 104, PDF p 6) visually checked. Figure 1 (p 100) and Section 5 Eq. (3) (p 103) identify the reference energy; the supplementary fit data are not part of this PDF and were not inspected.",
+      "redistribution": "Full supplied PDF and extracted text are not vendored."
     }
   ],
   "unsuccessful_access": [
