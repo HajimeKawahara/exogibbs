@@ -27,8 +27,8 @@ HCN differences with optional MCEG tooling.
    gas_source_comparison
    c2h_source_review
    sh_source_investigation
-   ph2_source_review
    ohno_p3
+   ph2_source_review
    phosphorus_provenance
    phosphorus_cold_validation
    build
