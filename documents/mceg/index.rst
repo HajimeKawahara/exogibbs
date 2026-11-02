@@ -33,6 +33,7 @@ HCN differences with optional MCEG tooling.
    sh_source_investigation
    s2o_source_investigation
    ohno_p3
+   ph2_source_review
    phosphorus_provenance
    phosphorus_cold_validation
    build
