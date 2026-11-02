@@ -1,0 +1,258 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.curated_c2h.v1
+  name: Curated gas with conditional C2H correction
+  description: Opt-in NASA CCH thermal functions plus balanced ATcT 1.172 D0; all other curated-gas-v1 choices are
+    preserved.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:b18ff4dab8a3144ee234ad2feced37645db05a353198f2fd36a1bdb35471d236
+    entry_points:
+    - exogibbs.presets.curated_c2h.chemsetup
+assumptions:
+- statement: Ideal gas formation from 2 C(g) + H(g) to CCH(g), standard pressure 1 bar.
+  evidence:
+  - selected_sources
+- statement: All 537 species are re-equilibrated; only C2H h changes within each identical-network/budget pair.
+  evidence:
+  - finite_substitution
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Continuous evaluation on 1500-4000 K, with 75 paired ion-inclusive equilibrium points.
+  conditions:
+  - Temperatures 1500, 2000, 2500, 3000, 4000 K.
+  - Pressures 1e-6, 1e-4, 0.01, 1, 100 bar.
+  - C/O 0.5888436553555908, 1, 1.5; other element/H ratios fixed.
+  - Neutral mode shares corrected constants; the abundance study uses ions=True.
+  evidence:
+  - finite_substitution
+- kind: scientific_applicability
+  status: unknown
+  description: No whole-mixture accuracy or calibrated thermal uncertainty; conditional source adoption. Condensation,
+    rainout, nonideality, quenching, photochemistry and spectra are not validated.
+  conditions: []
+  evidence:
+  - selected_sources
+claims:
+- id: conditional_selection
+  revision: '1'
+  kind: theoretical
+  statement: The conditional NASA/ATcT source choice has complete primary-source and high-temperature thermal support.
+  scope: Only the stated source choice or sampled gas-only application, never all atmospheres.
+- id: single_species_impact
+  revision: '1'
+  kind: numerical_verification
+  statement: The saved fixed-network changes follow a C2H-only substitution and pass the declared numerical checks.
+  scope: Only the stated source choice or sampled gas-only application, never all atmospheres.
+- id: whole_mixture_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The corrected complete gas model has quantified physical accuracy across its evaluation domain and
+    applications.
+  scope: Only the stated source choice or sampled gas-only application, never all atmospheres.
+evidence:
+- id: selected_sources
+  kind: implementation
+  summary: Pinned NASA CCH/C/H records and balanced ATcT D0=1075.066 kJ/mol; only the reaction energy coefficient
+    shifts; literature access gaps remain.
+  sources:
+  - src/exogibbs/data/curated/c2h_v1.json
+  - tests/data/validation/c2h_source_review/20261102/sources.json
+  - tests/data/validation/c2h_source_review/20261102/literature.json
+  subject: c2h_correction_20261102
+  context: fixed_network_grid
+  scope: C2H correction and the explicitly recorded cases only.
+  artifacts:
+  - source: src/exogibbs/data/curated/c2h_v1.json
+    sha256: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+  - source: tests/data/validation/c2h_source_review/20261102/sources.json
+    sha256: caca02ff6f9c52b8d6444ca3260fe2bc3dc500892e47836007676158a23ce5cf
+  - source: tests/data/validation/c2h_source_review/20261102/literature.json
+    sha256: 2754eb691526157d3cd0bc0ffbafcb3f337938e135daf182bb36d53f525548c3
+  provenance:
+    role: implementation
+    location: Offline source and execution snapshots.
+    inspection: partial
+    note: Sources share ancestry; numerical and physical support are assessed separately.
+- id: finite_substitution
+  kind: numerical_test
+  summary: 150 endpoint and 150 tighter cold solves, 5 finite substitution points and 2 independent FastChem checks
+    pass. HCN rises by 47.16% at the highlighted carbon-rich condition.
+  sources:
+  - tests/data/validation/c2h_equilibrium_impact/20261102/receipt.json
+  - tests/data/validation/c2h_equilibrium_impact/20261102/summary.json
+  - tests/data/validation/c2h_equilibrium_impact/20261102/equilibria.npz
+  - tests/data/validation/c2h_equilibrium_impact/20261102/diagnostics.json
+  - tests/data/validation/c2h_equilibrium_impact/20261102/lambda_diagnostics.json
+  subject: c2h_correction_20261102
+  context: fixed_network_grid
+  scope: C2H correction and the explicitly recorded cases only.
+  artifacts:
+  - source: tests/data/validation/c2h_equilibrium_impact/20261102/receipt.json
+    sha256: 243117443c3b632c7397b4fc15f3b80f049ea6175568316737e3a83bde4cf687
+  - source: tests/data/validation/c2h_equilibrium_impact/20261102/summary.json
+    sha256: b7d84e40618e8c3859aa52055ec2f67f35b2c5ede28049f089d9b8d0268e90cf
+  - source: tests/data/validation/c2h_equilibrium_impact/20261102/equilibria.npz
+    sha256: 15be6827677545227b1c77fabe00f50958b61f8464d765444789139bcc77c2c9
+  - source: tests/data/validation/c2h_equilibrium_impact/20261102/diagnostics.json
+    sha256: d8b61867d90e05206ca8b3dedf8dbe4c0937fb8ae3f9e6194b60a9e4ea15d550
+  - source: tests/data/validation/c2h_equilibrium_impact/20261102/lambda_diagnostics.json
+    sha256: 26efd5a662488097bf43bfca49d24c72053eda298b6675437b47c75d910cc400
+  provenance:
+    role: primary
+    location: Offline source and execution snapshots.
+    inspection: inspected
+    note: Sources share ancestry; numerical and physical support are assessed separately.
+  result: passed
+- id: precision_limit
+  kind: numerical_test
+  summary: Recorded rejected convergence probe at requested tolerance 2e-15; not evidence of zero physical impact.
+  sources:
+  - tests/data/validation/c2h_equilibrium_impact/20261102/precision_probe.json
+  subject: c2h_correction_20261102
+  context: fixed_network_grid
+  scope: C2H correction and the explicitly recorded cases only.
+  artifacts:
+  - source: tests/data/validation/c2h_equilibrium_impact/20261102/precision_probe.json
+    sha256: adea61b4d5518408ecfcdd331d431aeedb9fcf1ac831bc01cb52cc94606f3c39
+  provenance:
+    role: primary
+    location: Offline source and execution snapshots.
+    inspection: inspected
+    note: Sources share ancestry; numerical and physical support are assessed separately.
+  result: failed
+subjects:
+- id: c2h_correction_20261102
+  implementation: *id001
+  selected_files:
+    mceg/reviews/c2h_equilibrium_impact.py: 5f8904ba945f03e467695b401d47527d7a11faad325d0c66e600e970fdc71657
+    mceg/reviews/build_c2h_correction.py: 41eb1ae90f25a4adbbcaf4d39e8f9f14659010b528b362ff2e9ff70db6828fb2
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/presets/curated.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/curated_c2h.py: b18ff4dab8a3144ee234ad2feced37645db05a353198f2fd36a1bdb35471d236
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/autodiff.py: 15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/sensitivities.py: ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    tests/data/validation/c2h_source_review/20261102/sources.json: caca02ff6f9c52b8d6444ca3260fe2bc3dc500892e47836007676158a23ce5cf
+    tests/data/validation/c2h_source_review/20261102/literature.json: 2754eb691526157d3cd0bc0ffbafcb3f337938e135daf182bb36d53f525548c3
+    tests/data/validation/c2h_source_review/20261102/nasa_selected_records.txt: 2d7c62c06fe7f94c719bd5f12cda550f2d2ef04f75499e917e4e7b01bf38f156
+contexts:
+- id: fixed_network_grid
+  scope: Finite single-species substitution, cold restarts and selected independent solver verification.
+  settings:
+    network: 537 species; ions=True
+    temperatures_K: 1500,2000,2500,3000,4000
+    pressures_bar: 1e-6,1e-4,0.01,1,100
+    standard_pressure_bar: 1
+    carbon_to_oxygen: 0.5888436553555908,1,1.5
+    budgets: equilibria.npz budget array, normalized nuclear sum=1; zero net charge
+    formula_matrix: equilibria.npz; identical in each pair
+    primary_tolerance: 1.0e-13
+    strict_tolerance: 5.0e-14
+    endpoint_solves: 150
+    strict_cold_solves: 150
+    lambda_solves: 5
+    independent_fastchem_solves: 2
+    dtype: float64
+    backend: cpu
+assessments:
+- id: conditional_selection_review
+  kind: evidence_support
+  claim: conditional_selection
+  claim_revision: '1'
+  subject: c2h_correction_20261102
+  context: fixed_network_grid
+  method:
+    id: c2h_adoption_review
+    revision: '1'
+    description: Separate conditional source selection, numerical substitution and physical applicability.
+  evidence:
+  - selected_sources
+  reasons:
+  - The old JANAF anchor is superseded as the opt-in choice; original-paper and high-temperature thermal uncertainty
+    gaps remain, so adoption is conditional.
+  status: unknown
+  origin: reviewed
+- id: single_species_impact_review
+  kind: evidence_support
+  claim: single_species_impact
+  claim_revision: '1'
+  subject: c2h_correction_20261102
+  context: fixed_network_grid
+  method:
+    id: c2h_adoption_review
+    revision: '1'
+    description: Separate conditional source selection, numerical substitution and physical applicability.
+  evidence:
+  - selected_sources
+  - finite_substitution
+  reasons:
+  - All 75 pairs, complete amounts, budgets, source constants and residuals are archived; an independent solver
+    agrees at the highlighted case.
+  status: supported
+  origin: reviewed
+- id: whole_mixture_accuracy_review
+  kind: evidence_support
+  claim: whole_mixture_accuracy
+  claim_revision: '1'
+  subject: c2h_correction_20261102
+  context: fixed_network_grid
+  method:
+    id: c2h_adoption_review
+    revision: '1'
+    description: Separate conditional source selection, numerical substitution and physical applicability.
+  evidence:
+  - selected_sources
+  - finite_substitution
+  reasons:
+  - No independent atmospheric measurements, full thermal uncertainty or omitted-physics validation establish this
+    claim.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: thermal_and_application_evidence
+  target_kind: claim
+  target: whole_mixture_accuracy
+  revision: '1'
+  action: Inspect remaining original vibronic/thermochemical sources and validate the intended atmospheric application.
+  requires:
+  - Ervin numerical tables and Peric vibronic-state details
+  - Correlated reaction-energy uncertainty and high-temperature thermal uncertainty
+  - Condensation/nonideality/quenching and spectral constraints when relevant
+  completion: Add independently scoped physical evidence; do not promote solver agreement or a source K ratio to
+    atmospheric accuracy.
+limitations:
+- statement: Conditional selection is supported by identified sources, not by a quantified high-temperature physical
+    error bound.
+  evidence:
+  - selected_sources
+- statement: All results apply to the saved ideal gas network and budgets. Numerical agreement is not evidence for
+    real atmospheric abundances or spectra.
+  evidence:
+  - finite_substitution
+- statement: A 2e-15 tolerance trial did not converge and was not accepted; the complete grid was rerun at declared
+    tolerances without dropping conditions.
+  evidence:
+  - precision_limit

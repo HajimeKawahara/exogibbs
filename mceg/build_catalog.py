@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src/exogibbs/data/mceg"
-RECORD_VERSION = "2026-10-28"
+RECORD_VERSION = "2026-11-02"
 
 
 def build_catalog(output: Path = OUTPUT) -> None:
@@ -78,6 +78,43 @@ def build_catalog(output: Path = OUTPUT) -> None:
             ],
         }],
     }
+    c2h_bytes = (ROOT / "src/exogibbs/data/curated/c2h_v1.json").read_bytes()
+    c2h_digest = hashlib.sha256(c2h_bytes).hexdigest()
+    c2h_data = json.loads(c2h_bytes)
+    impact = "tests/data/validation/c2h_equilibrium_impact/20261102"
+    receipt = json.loads((ROOT / impact / "receipt.json").read_text())
+    if (c2h_digest != receipt["selected_file_sha256"]["src/exogibbs/data/curated/c2h_v1.json"]
+            or data_digest != c2h_data["base_data_sha256"]):
+        raise ValueError("C2H data changed; review new evidence before rebinding the substitution study")
+    c2h_contract = copy("mceg/contracts/curated_c2h.yaml", "contracts/curated_c2h.yaml")
+    c2h_summary = copy(f"{impact}/summary.json", "artifacts/c2h_summary.json")
+    if c2h_summary["sha256"] != receipt["output_sha256"]["summary.json"]:
+        raise ValueError("C2H summary differs from the archived execution")
+    c2h_species = {s["id"]: s for s in species}
+    c2h_species["C2H1"] = {"id": "C2H1", "aliases": ["C2H", "CCH"]}
+    catalog["models"].append({
+        "id": "exogibbs.curated_c2h.v1",
+        "label": "Curated gas with conditional C2H correction (ion-inclusive study)",
+        "dataset": c2h_data["id"],
+        "identity": {"data_sha256": c2h_digest, "settings": {"ions": True}},
+        "species": [c2h_species[k] for k in sorted(c2h_species)],
+        "records": [{
+            "id": "c2h_correction", **c2h_contract, "species": ["*", "C2H1"],
+            "assessments": ["conditional_selection_review", "single_species_impact_review",
+                            "whole_mixture_accuracy_review"],
+            "artifacts": [c2h_summary],
+            "summary": (
+                "Opt-in C2H-only correction of curated-gas-v1: NASA thermal functions and balanced "
+                "ATcT 1.172 atomization energy. The archived 75 paired gas-only conditions span "
+                "1500-4000 K, 1e-6-100 bar and C/O=0.5888436553555908, 1, 1.5. At C/O=1.5, "
+                "2000 K and 1e-6 bar, HCN increases 47.16% and C2H2 increases by a factor of 2.5585. "
+                "All species re-equilibrate; this is source sensitivity, not an accuracy ranking. "
+                "Conditional source adoption leaves thermal and whole-mixture physical uncertainty "
+                "unquantified. The old HCN study does not validate this changed dataset. "
+                "Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/310"],
+        }],
+    })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")
 
 

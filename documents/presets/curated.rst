@@ -7,6 +7,13 @@ The first dataset, ``curated-gas-v1``, covers **1500--4000 K** and uses a standa
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
 
+The optional :doc:`C2H correction <curated_c2h>` provides a separately pinned
+dataset using NASA thermal functions and balanced ATcT atomization energy for
+C2H. Select ``curated_c2h.chemsetup()`` explicitly; the original preset and its
+historical evidence remain unchanged. The correction's guide explains the
+compatibility/versioning reason for this split and compares both datasets;
+the frozen default is not a scientific preference for the old C2H estimate.
+
 Migration from the Ni/Co-only preset
 ------------------------------------
 

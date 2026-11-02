@@ -3,7 +3,8 @@ scope: 2026-10-20 solubility/magma inventory at 7dc3ce1183c0b3d74e24cde502f638ca
   source/data and four explicitly listed archived study scripts. Solubility laws, existing contracts
   and located preset/buffer/connection families are mapped. Other files remain unreviewed, not implicitly
   support-only. The 2026-10-24 extension registers the preliminary FastChem comparison
-  and its molecular-attribution review. Other examples and downloaded inputs are outside scope.
+  and its molecular-attribution review. The 2026-11-02 extension maps the opt-in C2H correction;
+  its abundance study covers only ions=True. Other examples and downloaded inputs are outside scope.
 source_roots:
 - src/exogibbs
 - examples/comparisons/audit_atomic_ions.py
@@ -15,6 +16,14 @@ source_roots:
 contract_roots:
 - mceg/contracts
 files:
+  src/exogibbs/presets/curated_c2h.py:
+    sha256: b18ff4dab8a3144ee234ad2feced37645db05a353198f2fd36a1bdb35471d236
+    role: model
+    note: Opt-in C2H correction; preserves the frozen curated-gas-v1 implementation.
+  src/exogibbs/data/curated/c2h_v1.json:
+    sha256: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    role: model
+    note: NASA CCH thermal functions with balanced ATcT 1.172 atomization energy; conditional adoption.
   examples/comparisons/compare_new_fastchem_logk.py:
     sha256: 59acdaab4be15a42a4a4c61254c11a52aa057ec06b9d6c6d31c0ead943ba0b88
     role: model
@@ -127,6 +136,26 @@ files:
     note: Located model definitions/data and mapped the stated families on 2026-10-20; this is a boundary
       inventory, not physical validation or exhaustive variant review.
 models:
+- id: exogibbs.curated_c2h.ions_true
+  description: Opt-in C2H correction with ions=True; archived fixed-network abundance comparison.
+  bindings:
+  - path: src/exogibbs/presets/curated_c2h.py
+    symbol: chemsetup
+    settings:
+      ions: true
+  - path: src/exogibbs/data/curated/c2h_v1.json
+  contracts:
+  - path: mceg/contracts/curated_c2h.yaml
+    model_id: exogibbs.curated_c2h.v1
+- id: exogibbs.curated_c2h.ions_false
+  description: Neutral option shares corrected constants; not covered by the ion-inclusive abundance study.
+  bindings:
+  - path: src/exogibbs/presets/curated_c2h.py
+    symbol: chemsetup
+    settings:
+      ions: false
+  - path: src/exogibbs/data/curated/c2h_v1.json
+  contracts: []
 - id: exogibbs.new_fastchem_logk_comparison
   description: Preliminary-data source sensitivity with molecular attribution and an unexecuted retrieval follow-up.
   bindings:
