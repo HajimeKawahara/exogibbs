@@ -3,9 +3,23 @@ Curated Gas Preset
 
 ``exogibbs.presets.curated`` provides the approved atomic-ion and major-molecule
 source choices as continuous, JAX-differentiable gas thermochemistry.
-The first dataset, ``curated-gas-v1``, covers **1500--4000 K** and uses a standard
+The current dataset, ``curated-c2h-v1``, covers **1500--4000 K** and uses a standard
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
+
+The :doc:`C2H correction <curated_c2h>` is now the default. It replaces the
+inherited 1967 JANAF-based C2H fit with NASA thermal functions and balanced
+ATcT atomization energy because both the old energy estimate and its thermal
+functions disagree with the reviewed evidence. This is a conditional source
+choice; high-temperature thermal uncertainty remains unquantified.
+
+To reproduce the original ``curated-gas-v1`` calculation, use
+``from exogibbs.presets import curated_v1`` and ``curated_v1.chemsetup()``
+(or ``ions=False``). ``curated_c2h.chemsetup`` is an explicit name for the current
+default. The two dataset identities and their historical evidence remain
+separate. Only C2H's formation function changes; coupled abundances can also
+change, especially in carbon-rich gas. See the correction guide for quantified
+examples, the adoption rationale and both-network verification.
 
 Migration from the Ni/Co-only preset
 ------------------------------------
@@ -197,14 +211,17 @@ The model combines :doc:`../atomic_ion_adoption` and
   Co+, C-, Ca- and Ge- use the adopted partition models. N- and Zn- are excluded.
 * 35 major molecules carry explicit preferred, conditional or provisional
   decisions; 23 change numerical constants and 12 retain the existing fits.
-* 427 other species retain pinned FastChem4 constants and are marked
+* C2H uses NASA thermal functions with balanced ATcT 1.172 atomization energy,
+  conditionally preferred over the inherited fit.
+* 426 other species retain pinned FastChem4 constants and are marked
   ``inherited_unreviewed``. The 27 atoms and electron define the zero reference
   gauge. This is not a claim that all 537 species have been independently audited.
 
 For known thermochemical differences and optional MCEG inspection, see
 :doc:`../mceg/optional_inspection`. ``exogibbs.provenance.describe(setup)``
-provides a record lookup without requiring MCEG. The current HCN comparison
-records dataset-choice sensitivity; its physical accuracy remains unestablished.
+provides a record lookup without requiring MCEG. The default matches the C2H
+correction and adoption record. The earlier HCN comparison belongs to
+``curated_v1``; it is not evidence for the changed default.
 
 Use ``setup.metadata["species_provenance"][species]`` for a species decision,
 ``["sources"]`` for source references, and ``["abundances"]`` for the reference
@@ -239,6 +256,11 @@ absolute charge carried by all species plus the absolute requested net charge.
 Diagonal regularization of signed constraints scales with their own matrix diagonal;
 a fixed absolute shift previously overwhelmed weakly ionized cases.
 
+The corrected default passes 75 cold solves per network; all ion-inclusive
+results reproduce the reviewed C2H candidate. See :doc:`curated_c2h` for the
+new receipt and scope. The following figures describe **curated-gas-v1** and
+remain historical evidence, without being reassigned to the corrected default.
+
 At the default tolerance, all 20 original ion-inclusive test conditions satisfy
 relative charge error below 1e-10 in float64. The explicit ``1e-13`` setting
 in the example also resolves the small elemental budgets used in the broader
@@ -263,6 +285,9 @@ preset's model.
 
 Atmospheric column demonstration
 --------------------------------
+
+This historical demonstration explicitly selects ``curated_v1``. Its figures
+and reported abundance ratios describe the original dataset.
 
 ``examples/comparisons/demo_curated_atmosphere.py`` compares two prescribed
 solar-composition columns, each with 161 layers from 1e-6 to 100 bar. A 4000 K
@@ -368,6 +393,10 @@ and :download:`the inverted column <../../tests/data/validation/curated_atmosphe
 
 Artifacts and reproduction
 --------------------------
+
+Current default evidence and replay are in :doc:`curated_c2h`. The artifacts
+below belong to **curated-gas-v1**; the reproduction scripts explicitly select
+``curated_v1`` and preserve their original numerical scope.
 
 * :download:`Validation receipt <../../tests/data/validation/curated_gas_validation/receipt.json>`
   and :download:`thermal representation checks <../../tests/data/validation/curated_gas_validation/thermal_checks.json>`.

@@ -6,7 +6,7 @@ model:
   implementation: &implementation
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:996b36aa6cfffab5a1640ac5d2467f076a62c11f443262847f5f32b33ae7a861
-    entry_points: [mceg/reviews/fastchem_hcn_20261028.py]
+    entry_points: [tests/data/validation/curated_default_adoption/20261102/source/mceg/reviews/fastchem_hcn_20261028.py]
 assumptions:
 - statement: All equilibria use ExoGibbs, a common 537-species network, normalized Asplund 2021 abundances and dimensionless formation Kp at 1 bar.
   evidence: [comparison_execution]
@@ -71,7 +71,7 @@ evidence:
   kind: benchmark
   summary: Three input audits and 966 layer/model cases pass; maximum HCN factorization residual is 1.81355e-13.
   sources:
-  - mceg/reviews/fastchem_hcn_20261028.py
+  - tests/data/validation/curated_default_adoption/20261102/source/mceg/reviews/fastchem_hcn_20261028.py
   - tests/data/validation/new_fastchem_hcn/summary.json
   - tests/data/validation/new_fastchem_hcn/logK_hcn.zip
   scope: Current default versus previous and revised preliminary coefficients. All curves use one solver; this does not independently validate the source data.
@@ -97,12 +97,12 @@ subjects:
 - id: hcn_comparison_snapshot
   implementation: *implementation
   selected_files:
-    mceg/reviews/fastchem_hcn_20261028.py: 996b36aa6cfffab5a1640ac5d2467f076a62c11f443262847f5f32b33ae7a861
+    tests/data/validation/curated_default_adoption/20261102/source/mceg/reviews/fastchem_hcn_20261028.py: 996b36aa6cfffab5a1640ac5d2467f076a62c11f443262847f5f32b33ae7a861
     tests/data/validation/new_fastchem_logk/logK.zip: f128fd758765fa1d19b6cd9056ce38f52a364294203bfcd4334563f5ad80ab7c
     tests/data/validation/new_fastchem_hcn/logK_hcn.zip: 1eb830a1f3e1fa9b4034c6ed2e2c63652c324a709f63665c2e029df10d28159f
-    examples/comparisons/compare_new_fastchem_logk.py: 72323f7f6eaf9cbcda3cb8721ca22a13f80a677bfbf216da5f9336d0b35ba81f
-    examples/comparisons/demo_curated_atmosphere.py: d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e
-    src/exogibbs/presets/curated.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    tests/data/validation/curated_default_adoption/20261102/source/examples/comparisons/compare_new_fastchem_logk.py: 72323f7f6eaf9cbcda3cb8721ca22a13f80a677bfbf216da5f9336d0b35ba81f
+    tests/data/validation/curated_default_adoption/20261102/source/examples/comparisons/demo_curated_atmosphere.py: d58be2c4e87a2f5b37a6d58fb4eae04a5d7e4e96d84f4785511de56adb33664e
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
     src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
     src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
     src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c

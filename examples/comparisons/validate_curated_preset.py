@@ -26,7 +26,7 @@ import numpy as np
 import build_curated_preset as build
 from exogibbs.api.gas import EquilibriumOptions, solve_profile
 from exogibbs.io.load_data import get_data_filepath
-from exogibbs.presets.curated import chemsetup
+from exogibbs.presets.curated_v1 import chemsetup
 
 
 TEMPERATURES = np.array([1500., 1735., 2000., 2517., 3000., 3973., 4000.])
@@ -220,7 +220,7 @@ def main() -> None:
     if parity:
         write_csv(output/"fastchem_parity.csv", parity)
     paths = [Path(__file__), Path(build.__file__), build.OUTPUT_PATH, build.REFERENCE_PATH,
-             ROOT/"src/exogibbs/presets/curated.py", ROOT/"src/exogibbs/equilibrium/gas/kernel/solver.py",
+             ROOT/"src/exogibbs/presets/curated_v1.py", ROOT/"src/exogibbs/equilibrium/gas/kernel/solver.py",
              ROOT/"src/exogibbs/equilibrium/gas/solve.py", ROOT/"src/exogibbs/equilibrium/gas/types.py"]
     artifacts = ["thermal_checks.json", "diagnostics.csv", "default_charge.csv", "ions.npz", "neutral.npz"]
     if parity:

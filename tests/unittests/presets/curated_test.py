@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 from exogibbs.api.gas import EquilibriumOptions, solve, solve_profile
-from exogibbs.presets import curated, fastchem4
+from exogibbs.presets import curated, curated_v1, fastchem4
 from exogibbs.thermo.standard import _nasa9
 
 
@@ -61,16 +61,16 @@ def test_catalog_and_solar_budget_match_approved_study(setup, neutral):
 
 
 def test_source_choices_and_unreviewed_species_are_explicit(setup, data):
-    assert setup.metadata["dataset"] == "curated-gas-v1"
+    assert setup.metadata["dataset"] == "curated-c2h-v1"
     assert set(setup.metadata["species_provenance"]) == set(setup.species)
     counts = Counter(r["status"] for r in setup.metadata["species_provenance"].values())
-    assert counts["inherited_unreviewed"] == 427
+    assert counts["inherited_unreviewed"] == 426
     assert counts["reference_gauge"] == 28
     assert len(data["decisions"]) == 82
     base = fastchem4.chemsetup(path="FastChem4/logK/logK.dat", silent=True)
     changed = (set(data["nasa9_reactions"]) | set(data["janaf_reactions"])
-               | set(data["partition_reactions"]) | set(data["logk_energy_shifts_K"]))
-    assert len(changed) == 70
+               | set(data["partition_reactions"]) | set(data["logk_energy_shifts_K"]) | {"C2H1"})
+    assert len(changed) == 71
     retained = [name for name in setup.species if name not in changed]
     t = jnp.array([1601., 2527., 3997.])
     # Separate JIT graphs can round the same inherited constants differently.
@@ -88,7 +88,7 @@ def test_continuous_constants_reproduce_approved_nodes(setup):
     # Rounded Ca partition values require a small positive thermal contribution.
     partitions = [setup.species.index(s) for s in ("Co1+", "C1-", "Ca1-", "Ge1-")]
     np.testing.assert_allclose(actual[:, partitions], expected[:, partitions], atol=5e-6, rtol=0)
-    others = [i for i in range(537) if i not in partitions]
+    others = [i for i in range(537) if i not in partitions and setup.species[i] != "C2H1"]
     np.testing.assert_allclose(actual[:, others], expected[:, others], atol=2e-12, rtol=0)
 
 
@@ -184,7 +184,12 @@ def test_equilibrium_closure_and_archived_fastchem_comparison(setup, neutral, io
         with np.load(ROOT / "tests/data/validation/gas_thermochemistry_impact/equilibria.npz") as archive:
             reference = archive["fastchem_ln_n"][3]
         selected = np.isin(np.asarray(temperatures), [1500., 2000., 3000., 4000.])
-        logx = np.asarray(result.ln_n)[selected] - np.log(n.sum(axis=-1))[selected, None]
+        # This independent-solver archive belongs to curated-gas-v1.
+        legacy = curated_v1.chemsetup()
+        legacy_result = solve_profile(legacy, T=temperatures[selected], P=pressures[selected],
+                                      b=legacy.element_vector_reference,
+                                      options=EquilibriumOptions(epsilon_crit=1e-13, method="vmap_cold"))
+        logx = np.asarray(legacy_result.ln_n) - np.log(np.asarray(legacy_result.n).sum(axis=-1))[:, None]
         reference -= np.log(np.exp(reference).sum(axis=-1))[:, None]
         assert np.max(np.abs(logx - reference))/np.log(10) < 1e-3
         electron = model.species.index("e1-")
@@ -194,7 +199,7 @@ def test_equilibrium_closure_and_archived_fastchem_comparison(setup, neutral, io
 def test_invalid_options_and_changed_source_are_rejected(monkeypatch):
     with pytest.raises(TypeError, match="ions must be a bool"):
         curated.chemsetup(ions="false")
-    monkeypatch.setattr(curated, "_DATA_SHA256", "0" * 64)
+    monkeypatch.setattr(curated_v1, "_DATA_SHA256", "0" * 64)
     with pytest.raises(ValueError, match="pinned version"):
         curated.chemsetup()
 

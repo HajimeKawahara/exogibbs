@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 
 import jax
@@ -16,6 +17,8 @@ from exogibbs.presets import fastchem
 
 
 ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_history import historical_source
 RESULTS = ROOT / "tests/data/validation/curated_atmosphere"
 SPEC = importlib.util.spec_from_file_location("curated_atmosphere", ROOT / "examples/comparisons/demo_curated_atmosphere.py")
 demo = importlib.util.module_from_spec(SPEC)
@@ -32,6 +35,7 @@ def models():
 
 def test_thermochemistry_control_and_legacy_catalog_are_distinct(models):
     new, four, old = (models[k] for k in demo.MODELS)
+    assert new.metadata["dataset"] == "curated-gas-v1"
     assert new.species == four.species
     np.testing.assert_array_equal(new.formula_matrix, four.formula_matrix)
     assert (len(new.species), len(old.species)) == (537, 523)
@@ -89,6 +93,6 @@ def test_demo_receipt_pins_data_and_outputs():
     receipt = json.loads((RESULTS / "receipt.json").read_text())
     assert receipt["cases_passed"] == 966
     for path, expected in receipt["selected_file_sha256"].items():
-        assert hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected, path
+        assert hashlib.sha256(historical_source(ROOT, path).read_bytes()).hexdigest() == expected, path
     for path, expected in receipt["output_sha256"].items():
         assert hashlib.sha256((RESULTS / path).read_bytes()).hexdigest() == expected, path

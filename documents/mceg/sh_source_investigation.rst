@@ -159,3 +159,14 @@ and excited-state completeness over 1500--4000 K, and obtain correlated reaction
 uncertainties. A future candidate change requires a separately recorded fixed
 network abundance comparison and numerical diagnostics; source ratios here are
 not abundance errors. The exact historic column-generation bug remains unknown.
+
+Revalidation after the C2H default update
+----------------------------------------
+
+The develop integration reruns the source replay and direct current-curated
+SH check after #310. All recorded SH values are unchanged. The historical
+receipt remains intact; ``merge_revalidation.json`` records the new run and
+the updated comparison-helper dependency. The old helper's exact bytes are
+retained in the #310 historical-source archive. No additional SH correction
+is warranted by this investigation, and no production coefficient changes
+are included in #311.

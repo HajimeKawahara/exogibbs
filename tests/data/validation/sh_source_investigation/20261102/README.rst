@@ -11,6 +11,9 @@ from the freshly downloaded NASA/TP-2002-211556 PDF; the original PDF hash is in
 ``python mceg/reviews/sh_source_investigation.py --output PATH``.
 Use ``--check`` to check the committed output with the baseline numeric tolerances.
 ``receipt.json`` records the fresh check commands and selected file hashes.
+It is preserved as the original run before the C2H default migration.
+``merge_revalidation.json`` records the later develop replay, current
+dependency hashes and the archived location of the original comparison helper.
 
 The scoped source review retains the current conditional SH choice. Physical
 thermal-function accuracy and abundance effects remain unknown. See
