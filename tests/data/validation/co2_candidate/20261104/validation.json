@@ -1,0 +1,105 @@
+{
+  "models": {
+    "nist626": {
+      "off_knot_checks": 90,
+      "maximum_errors": {
+        "ln_K": 2.373152867159417e-08,
+        "H_J_mol": 0.007385884062387049,
+        "S_J_mol_K": 4.379329936909926e-06,
+        "Cp_J_mol_K": 0.00019974127106081596
+      },
+      "minimum_Cp_J_mol_K": 58.44107149563209
+    },
+    "isotope_average": {
+      "off_knot_checks": 90,
+      "maximum_errors": {
+        "ln_K": 2.373396709449394e-08,
+        "H_J_mol": 0.007386030221823603,
+        "S_J_mol_K": 4.3800908997582155e-06,
+        "Cp_J_mol_K": 0.00019977553277072957
+      },
+      "minimum_Cp_J_mol_K": 58.443201151622176
+    }
+  },
+  "thermal_diagnostics": [
+    {
+      "temperature_K": 1500.0,
+      "candidate_over_current_K": 1.0006514746991193,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0042779274720846,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0021296559900889633,
+      "source_constant_delta_ln_Q_first_order": 1.0735589044491028e-06
+    },
+    {
+      "temperature_K": 1750.0,
+      "candidate_over_current_K": 1.001102418982757,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0043324374237654,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0017303038776077528,
+      "source_constant_delta_ln_Q_first_order": 1.1406660911443773e-06
+    },
+    {
+      "temperature_K": 2000.0,
+      "candidate_over_current_K": 1.0016286362951097,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0043771024219197,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0014254343724360297,
+      "source_constant_delta_ln_Q_first_order": 1.1959787791299154e-06
+    },
+    {
+      "temperature_K": 2250.0,
+      "candidate_over_current_K": 1.0022171989037896,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0044142611442646,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0011966879595917135,
+      "source_constant_delta_ln_Q_first_order": 1.2423173856677023e-06
+    },
+    {
+      "temperature_K": 2500.0,
+      "candidate_over_current_K": 1.002865371351213,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0044456102985564,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0010267799828866941,
+      "source_constant_delta_ln_Q_first_order": 1.2817238026726633e-06
+    },
+    {
+      "temperature_K": 2750.0,
+      "candidate_over_current_K": 1.003577405371771,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0044723964284654,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0008980160551601557,
+      "source_constant_delta_ln_Q_first_order": 1.3156919475547514e-06
+    },
+    {
+      "temperature_K": 3000.0,
+      "candidate_over_current_K": 1.0043581916245747,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0044955447421144,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.000785720750762664,
+      "source_constant_delta_ln_Q_first_order": 1.3453244495269732e-06
+    },
+    {
+      "temperature_K": 3250.0,
+      "candidate_over_current_K": 1.0052066764917473,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0045157413505394,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0006521031933317545,
+      "source_constant_delta_ln_Q_first_order": 1.3714331142249065e-06
+    },
+    {
+      "temperature_K": 3500.0,
+      "candidate_over_current_K": 1.0061089705970538,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0045334837818578,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0004463295021039926,
+      "source_constant_delta_ln_Q_first_order": 1.39460070887762e-06
+    },
+    {
+      "temperature_K": 3750.0,
+      "candidate_over_current_K": 1.0070311794142728,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0045491134779982,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.00011299105482009963,
+      "source_constant_delta_ln_Q_first_order": 1.4152204801351244e-06
+    },
+    {
+      "temperature_K": 4000.0,
+      "candidate_over_current_K": 1.007912882878016,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0045628415676533,
+      "isotope_average_minus_main_Cp_J_mol_K": -0.0003941427717606416,
+      "source_constant_delta_ln_Q_first_order": 1.433527113724169e-06
+    }
+  ],
+  "curated_change": "none",
+  "source_precision": "NIST Q/H/Cp columns retain printed precision; caloric fit error is separate from parameter covariance and physical error."
+}
