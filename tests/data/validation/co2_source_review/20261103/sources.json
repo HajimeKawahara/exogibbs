@@ -1,0 +1,217 @@
+{
+  "access_date": "2026-11-03",
+  "downloads": [
+    {
+      "file": "12C-16O2__Dozen.def",
+      "url": "https://www.exomol.com/db/CO2/12C-16O2/Dozen/12C-16O2__Dozen.def",
+      "access_date": "2026-11-03",
+      "sha256": "3bc8bdf928508e7ec546459e438af7df745eceac6a67e605a6dcd5dbfd386761",
+      "bytes": 10461,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "12C-16O2__Dozen.pf",
+      "url": "https://www.exomol.com/db/CO2/12C-16O2/Dozen/12C-16O2__Dozen.pf",
+      "access_date": "2026-11-03",
+      "sha256": "4df6dd0ce5c773a1193e8438cb0a54be06471f165bcfb9b4a3f7e397cdf6f28a",
+      "bytes": 125000,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "12C-16O2__Dozen.states.bz2",
+      "url": "https://www.exomol.com/db/CO2/12C-16O2/Dozen/12C-16O2__Dozen.states.bz2",
+      "access_date": "2026-11-03",
+      "sha256": "2f6fadb90467b5059b05095855556fa2725f8c7309f62a9a9c062e2726295a35",
+      "bytes": 72874512,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "12C-16O2__UCL-4000.cp",
+      "url": "https://www.exomol.com/db/CO2/12C-16O2/UCL-4000/12C-16O2__UCL-4000.cp",
+      "access_date": "2026-11-03",
+      "sha256": "c7c0043be8f5d2f14d58faf59d4ccba0b8794f55dc79a65635a5f432f2d9b037",
+      "bytes": 130427,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "12C-16O2__UCL-4000.def",
+      "url": "https://www.exomol.com/db/CO2/12C-16O2/UCL-4000/12C-16O2__UCL-4000.def",
+      "access_date": "2026-11-03",
+      "sha256": "ea3bf32d6a4e629af1714401147355784c6571aeee4f440d908d180640fd7d5f",
+      "bytes": 10461,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "12C-16O2__UCL-4000.pf",
+      "url": "https://www.exomol.com/db/CO2/12C-16O2/UCL-4000/12C-16O2__UCL-4000.pf",
+      "access_date": "2026-11-03",
+      "sha256": "195e908b723a931e3b56d4e2359cd1eff13b42e2c68811b60a8c6c8a918ff4fd",
+      "bytes": 125000,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "12C-16O2__UCL-4000.states.bz2",
+      "url": "https://www.exomol.com/db/CO2/12C-16O2/UCL-4000/12C-16O2__UCL-4000.states.bz2",
+      "access_date": "2026-11-03",
+      "sha256": "9b1bebf557053c284cc400e4c202c3bffb530e1241069329a705979a657096f9",
+      "bytes": 73069776,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "CO2-total.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/CO2-total.txt",
+      "access_date": "2026-11-03",
+      "sha256": "4e0e057bfd3b92dcb9344c850362a60fa524101eb4235627df33bc1b68dfffba",
+      "bytes": 389225,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "dozen_2026.pdf",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25YuBaBo.pdf",
+      "access_date": "2026-11-03",
+      "sha256": "56e4214057cb451735aef0e3d7028250ad494fc376018514e764a7f6a41e81dc",
+      "bytes": 5806347,
+      "archived": false,
+      "compact_derivative": "literature.json"
+    },
+    {
+      "file": "tashkun_harvey_2025.pdf",
+      "url": "https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=959695",
+      "access_date": "2026-11-03",
+      "sha256": "62aa6bb406454eb5f52081d8c10bd301542b6b3b38c2243373e1b7e16247b983",
+      "bytes": 229181,
+      "archived": false,
+      "compact_derivative": "literature.json"
+    },
+    {
+      "file": "tcfun_626.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_626.txt",
+      "access_date": "2026-11-03",
+      "sha256": "22744b0b14b1ae0fc03062b1b26be039ce4653ea56e4aa67e24c3804b64b05af",
+      "bytes": 672213,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_627.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_627.txt",
+      "access_date": "2026-11-03",
+      "sha256": "e75ee8872de577465b9bf8861c4023f3b3ffb4313809ec267d232d57b264f0fe",
+      "bytes": 654210,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_628.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_628.txt",
+      "access_date": "2026-11-03",
+      "sha256": "8d4cd34f68cb7eade7e0f628352f05929794ebf6d987b63bf8b6b3bf2e4f2bdd",
+      "bytes": 666209,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_636.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_636.txt",
+      "access_date": "2026-11-03",
+      "sha256": "78368ddfc992e7fa671a4be64e92f089ffcadc716cbcb52b3dee6c18c939164f",
+      "bytes": 672216,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_637.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_637.txt",
+      "access_date": "2026-11-03",
+      "sha256": "40eec93ac38cbe5f631863a09a67d6799578873e6bee12383b381c85cbbaf502",
+      "bytes": 672208,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_638.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_638.txt",
+      "access_date": "2026-11-03",
+      "sha256": "ab2b464732d168df8bca11e0d9903ef6143e96ea50caa8cda7af590a7c03dd7b",
+      "bytes": 678212,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_727.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_727.txt",
+      "access_date": "2026-11-03",
+      "sha256": "0435116bd99103853907d8fd2280dc3b63ca3c7ce810a4a83f1f91b0e1c5294e",
+      "bytes": 678207,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_728.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_728.txt",
+      "access_date": "2026-11-03",
+      "sha256": "79d42e513dea83011a188a93db931278a9ceca608588732739c969b440bcc7a2",
+      "bytes": 684214,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_737.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_737.txt",
+      "access_date": "2026-11-03",
+      "sha256": "7e3d5930b9b378b690bb8546a19cb3cdfdf605791a0e6f20641007f642afb1e1",
+      "bytes": 684210,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_738.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_738.txt",
+      "access_date": "2026-11-03",
+      "sha256": "236462911254331bf737dcc456d02fb2f9b6d078a916fe9ebeb1a9267f07a0fc",
+      "bytes": 684206,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_828.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_828.txt",
+      "access_date": "2026-11-03",
+      "sha256": "80dda1035f3ad8ec4d68a2402626e635e7ef198a463c1fc364517370ce0df0c3",
+      "bytes": 672212,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "tcfun_838.txt",
+      "url": "https://data.nist.gov/od/ds/mds2-2364/tcfun_838.txt",
+      "access_date": "2026-11-03",
+      "sha256": "db117ada0b4f6c6c0b5c7969339709aa37572d7db0ff0704a5d8e9a84fbfdb2b",
+      "bytes": 672211,
+      "archived": false,
+      "compact_derivative": "source_nodes.json"
+    },
+    {
+      "file": "ucl4000_2020.pdf",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/20YuMeFr.pdf",
+      "access_date": "2026-11-03",
+      "sha256": "85daad8be73732e015be442ce248c128e81bdf10a7d5668d5e8471a1a9c41c85",
+      "bytes": 3575546,
+      "archived": false,
+      "compact_derivative": "literature.json"
+    }
+  ],
+  "official_checksum_verified": [
+    "CO2-total.txt",
+    "tcfun_626.txt"
+  ],
+  "scope": "Original files stay outside git. Compact numeric source extraction, hashes and inspected-source records are archived. No full paper or transition file is vendored."
+}
