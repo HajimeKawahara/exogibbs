@@ -113,7 +113,7 @@ evidence:
   - source: tests/data/validation/co_source_review/20261103/comparison.json
     sha256: 67c3740335b0a56fd810c5fb01f61264d5790d6554969707d801b314ce1f286a
   - source: tests/data/validation/co_source_review/20261103/receipt.json
-    sha256: 9ca04da804de802bb0a49ec60766d174538ec8f573a3f33c66708483915bde5d
+    sha256: d5f7445a16e4146a50012cab4a44e15ce2cd55e9dc7238a57013598e75692d70
   provenance:
     role: primary
     location: documents/mceg/co_source_review.rst
@@ -138,7 +138,7 @@ subjects:
   selected_files:
     mceg/reviews/co_source_review.py: 08a2a0345a68b8d8a001b8e1a27ec6968aab37484c0b9516792b470d9a17e2ca
     documents/mceg/co_source_review.rst: 0af894f8b357e6a7d268d952f684cc5e7279d313fc2c8d6fdf38c9b6795744bc
-    tests/model_evidence/co_source_review_test.py: a684672f275b3a64f1b1bdead193c5e7323888ebc2a99dd6e6ad501f0b9fbef1
+    tests/model_evidence/co_source_review_test.py: ba5195f4f3a8f9ab14b2edaba89b06b17a6892b64ea403729d89c1e8436fc673
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
@@ -156,7 +156,7 @@ subjects:
     tests/data/validation/co_source_review/20261103/state_inventory.json: 0f82709d792b7074db23f0c9d5fea274a4c535c66b33db12630fd907d03168aa
     tests/data/validation/co_source_review/20261103/states.npz: 85f292eadca1da33054543619b095015c5fb464d88e0089c813501cc5735d599
     tests/data/validation/co_source_review/20261103/comparison.json: 67c3740335b0a56fd810c5fb01f61264d5790d6554969707d801b314ce1f286a
-    tests/data/validation/co_source_review/20261103/receipt.json: 9ca04da804de802bb0a49ec60766d174538ec8f573a3f33c66708483915bde5d
+    tests/data/validation/co_source_review/20261103/receipt.json: d5f7445a16e4146a50012cab4a44e15ce2cd55e9dc7238a57013598e75692d70
 contexts:
 - id: source_review
   scope: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000

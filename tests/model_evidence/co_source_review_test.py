@@ -1,5 +1,6 @@
 """Check balanced CO energy, original state conventions and thermal comparisons."""
 
+from copy import deepcopy
 from hashlib import sha256
 import json
 import math
@@ -16,13 +17,44 @@ import co_source_review as study
 from gas_source_comparison import check_equal
 
 
+def check_co_replay(actual: dict, expected: dict) -> None:
+    """Allow cancellation roundoff only in differences of large enthalpies."""
+    actual, expected = deepcopy(actual), deepcopy(expected)
+    for measured, saved in zip(actual["source_samples"], expected["source_samples"]):
+        for dataset in study.DATASETS:
+            value = measured["modern"][dataset].pop("delta_H_J_mol")
+            reference = saved["modern"][dataset].pop("delta_H_J_mol")
+            # Subtracting O(1e5 J/mol) enthalpies varies by O(1e-11 J/mol)
+            # across platforms. This absolute tolerance is still far below
+            # the smallest physical delta; it does not alter other fields.
+            assert value == pytest.approx(reference, abs=1e-8, rel=0), (
+                f"delta_H_J_mol at {saved['temperature_K']} K, {dataset}")
+    check_equal(actual, expected)
+
+
+def test_co_replay_tolerance_is_limited_to_enthalpy_roundoff():
+    expected = json.loads((study.DATA / "comparison.json").read_text())
+    actual = deepcopy(expected)
+    row = actual["source_samples"][5]["modern"]["4thplus"]
+    # Exact value observed on CI at 3000 K, about 3e-11 J/mol from the archive.
+    row["delta_H_J_mol"] = 3.395813737432707
+    check_co_replay(actual, expected)
+    row["delta_H_J_mol"] += 1e-6
+    with pytest.raises(AssertionError, match="delta_H_J_mol"):
+        check_co_replay(actual, expected)
+    row["delta_H_J_mol"] = expected["source_samples"][5]["modern"]["4thplus"]["delta_H_J_mol"]
+    row["Q_over_nasa_internal"] += 1e-8
+    with pytest.raises(ValueError, match="Q_over_nasa_internal"):
+        check_co_replay(actual, expected)
+
+
 @pytest.fixture(scope="module")
 def report():
     return study.review()
 
 
 def test_balanced_atct_energy_and_hybrid_reproduce_the_original_screen(report):
-    check_equal(report, json.loads((study.DATA / "comparison.json").read_text()))
+    check_co_replay(report, json.loads((study.DATA / "comparison.json").read_text()))
     assert report["balanced_D0_J_mol"] == pytest.approx({
         "atct": (711.381+246.844+113.794)*1000,
         "nasa9": 1071800.005, "janaf": 1071780.0}, abs=1e-6)
