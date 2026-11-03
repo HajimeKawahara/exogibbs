@@ -38,8 +38,8 @@ gives Hf(0) = 450.34, 246.844 and -98.37 kJ/mol for Si, O and SiO:
    D_0 = H_f(\mathrm{Si},0)+H_f(\mathrm{O},0)-H_f(\mathrm{SiO},0)
        = 795.554\ \mathrm{kJ\,mol^{-1}}.
 
-The `Si <https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=54>`_
-and `O <https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=21>`_
+The `Si <https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=54>`__
+and `O <https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=21>`__
 provenance pages were inspected. Si's displayed 20 contributors cover 85.6%
 of its provenance and include SiO atomization calculations from Feller (2008)
 and Karton (2011). Feller's bibliography resolves to
@@ -54,8 +54,8 @@ independent. Later ATcT versions are not mixed into this decision.
 D0 starts at the molecular rovibrational ground level and includes the
 zero-point correction relative to an electronic well depth De. Atomic
 ground levels are Si 3P0 and O 3P2. The inspected NIST
-`Si <https://physics.nist.gov/PhysRefData/Handbook/Tables/silicontable5_a.htm>`_
-and `O <https://physics.nist.gov/PhysRefData/Handbook/Tables/oxygentable5.htm>`_
+`Si <https://physics.nist.gov/PhysRefData/Handbook/Tables/silicontable5_a.htm>`__
+and `O <https://physics.nist.gov/PhysRefData/Handbook/Tables/oxygentable5.htm>`__
 tables show their respective fine-structure levels at (0, 77.112, 223.157)
 and (0, 158.265, 226.977) cm^-1. Thermal populations use 2J+1 weights, not
 a temperature-independent factor of nine. The current NASA atomic thermal

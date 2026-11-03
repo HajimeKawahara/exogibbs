@@ -85,7 +85,7 @@ evidence:
   - source: tests/data/validation/sio_source_review/20261103/sources.json
     sha256: 6e0f35e9244864b5aee22dc5c8f17dee76056f2c61f84e048ec544ede5ab903f
   - source: documents/mceg/sio_source_review.rst
-    sha256: 8bd5ded3e6cb41876b56ec4d917801fca74a5b1a6851245f0f03675e8ff7b755
+    sha256: 790995411f9a9baaec8df822bc1184e410a654f3adb9515389a5804aea95f66c
   provenance:
     role: primary
     location: documents/mceg/sio_source_review.rst
@@ -110,7 +110,7 @@ evidence:
   - source: tests/data/validation/sio_source_review/20261103/comparison.json
     sha256: 8c267b94333f396b54bcceb409ff9604ba89384142a7cf358799e9650de549a1
   - source: tests/data/validation/sio_source_review/20261103/receipt.json
-    sha256: ffe34b35730c2c36f0c06c444057e2fd1d03d8b14932ac081138d4e378297e9c
+    sha256: 946e9aea664f350e59b98d1a4de6e2ccde4930c0aa03ba6664f57fa29dda76e6
   provenance:
     role: primary
     location: documents/mceg/sio_source_review.rst
@@ -123,7 +123,7 @@ subjects:
   implementation: *id001
   selected_files:
     mceg/reviews/sio_source_review.py: 71a57cadc1ee2626b9d54484a80a156133a0adf2d03b5065bd5c1ff5244211b4
-    documents/mceg/sio_source_review.rst: 8bd5ded3e6cb41876b56ec4d917801fca74a5b1a6851245f0f03675e8ff7b755
+    documents/mceg/sio_source_review.rst: 790995411f9a9baaec8df822bc1184e410a654f3adb9515389a5804aea95f66c
     tests/model_evidence/sio_source_review_test.py: f10663af42b35d9627296c7a9e89639d76b19f07715b5a09807cabf10cdf5a7c
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
@@ -144,7 +144,7 @@ subjects:
     tests/data/validation/sio_source_review/20261103/partition_samples.json: ac07044e6dc08cd2bcea05e829752387c8788ba323d783c7b9454f3824289f65
     tests/data/validation/sio_source_review/20261103/sources.json: 6e0f35e9244864b5aee22dc5c8f17dee76056f2c61f84e048ec544ede5ab903f
     tests/data/validation/sio_source_review/20261103/comparison.json: 8c267b94333f396b54bcceb409ff9604ba89384142a7cf358799e9650de549a1
-    tests/data/validation/sio_source_review/20261103/receipt.json: ffe34b35730c2c36f0c06c444057e2fd1d03d8b14932ac081138d4e378297e9c
+    tests/data/validation/sio_source_review/20261103/receipt.json: 946e9aea664f350e59b98d1a4de6e2ccde4930c0aa03ba6664f57fa29dda76e6
 contexts:
 - id: source_review
   scope: Neutral SiO, Si(g)+O(g)->SiO(g), 1 bar; six 500-4000 K diagnostic nodes, curated only 1500-4000
