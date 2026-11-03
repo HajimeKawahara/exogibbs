@@ -1,0 +1,322 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.curated_co2.v1
+  name: Versioned curated gas with NIST 626 CO2 thermodynamics
+  description: Exact adoption of the reviewed CO2 candidate on curated-tio-v1, with scientific selection and
+    production numerical verification separated from unknown physical accuracy.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    entry_points:
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_co2.chemsetup
+assumptions:
+- statement: Ideal-gas C(g) + 2 O(g) -> CO2(g), standard pressure 1 bar; retained ATcT 1.172 total atomization
+    and NASA atom thermal gauge.
+  evidence:
+  - scientific_sources
+  - production_execution
+- statement: Representative 626 ground-relative internal functions at mass 44.0095 u, nuclear-spin factor one,
+    preserved source c2 and current-SI translation. Exchange symmetry is already included; no added ZPE, isotope
+    mixing entropy or thermal-average diagnostic is adopted.
+  evidence:
+  - scientific_sources
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Bounded continuous JAX thermochemistry and saved production cold solves in both networks.
+  conditions:
+  - 1500-4000 K; invalid or out-of-domain temperatures return NaN.
+  - Five temperatures, five pressures and three C/O ratios; 75 cases per network.
+  evidence:
+  - scientific_sources
+  - production_execution
+- kind: scientific_applicability
+  status: unknown
+  description: Complete natural-isotope, high-state/continuum and atmospheric physical accuracy is unquantified.
+  conditions: []
+  evidence:
+  - scientific_sources
+claims:
+- id: scientific_selection
+  revision: '1'
+  kind: theoretical
+  statement: The normalized NIST 626 candidate is scientifically preferred to the preceding CO2 thermal fit
+    for this bounded elemental gas model.
+  scope: Versioned curated-co2-v1 on 1500-4000 K and 1 bar standard pressure; representative 12C16O2 internal
+    thermodynamics at NASA elemental mass, retained ATcT atomization energy and NASA atomic references. Fixed
+    537-species ion-inclusive and 421-species neutral gas networks. No physical atmosphere validation.
+- id: production_adoption
+  revision: '1'
+  kind: numerical_verification
+  statement: The public default at adoption implements the frozen CO2 candidate exactly and preserves all other
+    formation functions, both networks and historical datasets, with saved production verification.
+  scope: Versioned curated-co2-v1 on 1500-4000 K and 1 bar standard pressure; representative 12C16O2 internal
+    thermodynamics at NASA elemental mass, retained ATcT atomization energy and NASA atomic references. Fixed
+    537-species ion-inclusive and 421-species neutral gas networks. No physical atmosphere validation.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The adopted complete gas model has fully quantified thermochemical uncertainty and validated physical
+    atmospheric abundance accuracy.
+  scope: Versioned curated-co2-v1 on 1500-4000 K and 1 bar standard pressure; representative 12C16O2 internal
+    thermodynamics at NASA elemental mass, retained ATcT atomization energy and NASA atomic references. Fixed
+    537-species ion-inclusive and 421-species neutral gas networks. No physical atmosphere validation.
+evidence:
+- id: scientific_sources
+  kind: theory
+  summary: Adopt the explicitly normalized modern NIST 626 thermodynamic model, retaining ATcT energy and NASA
+    atomic references. Parameter-covariance sensitivities, isotope-reference diagnostics and high-temperature
+    source limits are distinct from numerical interpolation error and complete physical uncertainty.
+  sources:
+  - documents/presets/curated_co2.rst
+  - src/exogibbs/data/curated/co2_v1.json
+  - tests/data/validation/co2_source_review/20261103/literature.json
+  - tests/data/validation/co2_source_review/20261103/source_nodes.json
+  - tests/data/validation/co2_candidate/20261104/candidate.json
+  - tests/data/validation/co2_candidate/20261104/scientific_scope.json
+  - tests/data/validation/co2_candidate/20261104/validation.json
+  - tests/data/validation/co2_equilibrium_impact/20261104/summary.json
+  - tests/data/validation/co2_equilibrium_impact/20261104/local_sensitivities.json
+  scope: Versioned curated-co2-v1 on 1500-4000 K and 1 bar standard pressure; representative 12C16O2 internal
+    thermodynamics at NASA elemental mass, retained ATcT atomization energy and NASA atomic references. Fixed
+    537-species ion-inclusive and 421-species neutral gas networks. No physical atmosphere validation.
+  subject: curated_co2_production_20261104
+  context: production_gas_domain
+  artifacts:
+  - source: documents/presets/curated_co2.rst
+    sha256: 4d5f82aaa8f434c9fc334d1acd63261b6e363c378e0912e77179db5ff7fb7535
+  - source: src/exogibbs/data/curated/co2_v1.json
+    sha256: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+  - source: tests/data/validation/co2_source_review/20261103/literature.json
+    sha256: d0b682c70df77feb9b6f0339c93804d472ceae37ba251ad9089c345c670161ae
+  - source: tests/data/validation/co2_source_review/20261103/source_nodes.json
+    sha256: f8e00a305205f658bdb29ae6186bbc65a417374af0af860a8368c0ed0cac4c0f
+  - source: tests/data/validation/co2_candidate/20261104/candidate.json
+    sha256: 9373569f8f6d0a9539f0d8ccf28b137fd0e4eab5b177b764e682aef391065bb2
+  - source: tests/data/validation/co2_candidate/20261104/scientific_scope.json
+    sha256: ecabeb0566b55ec609d2ba095f7e705459187c736ab6a54aa97c4ee919aba6d0
+  - source: tests/data/validation/co2_candidate/20261104/validation.json
+    sha256: e6a70f04b63bb164b7e0855f5a24cfef451b6d8daf38f725c099df8bae34b434
+  - source: tests/data/validation/co2_equilibrium_impact/20261104/summary.json
+    sha256: 75bfebf5ff9596bfbc1df13f11eb0c25068c270233d16450ebb6ac0b4e6e97a6
+  - source: tests/data/validation/co2_equilibrium_impact/20261104/local_sensitivities.json
+    sha256: d7a68ee63d79621192a7d525977f0c5e617796684e10ce35a1c04d2cf79267a8
+  provenance:
+    role: secondary
+    location: documents/presets/curated_co2.rst
+    inspection: inspected
+    note: Numerical production checks are a new execution. Source and candidate evidence retain their original
+      scope and bytes. Scientific selection is a reviewed inference from inspected primary thermodynamic sources;
+      it is not atmospheric validation.
+- id: production_execution
+  kind: numerical_test
+  summary: The actual public CO2 default passes all 150 cold solves, 75 per network. Only CO2 formation functions
+    change; species, matrices and budgets are preserved. Maximum candidate CO2 ln-mole-fraction difference
+    is 3.7162e-12; the all-species maximum of 2.5379e-5 concerns trace-species numerical sensitivity.
+  sources:
+  - tests/data/validation/curated_co2_adoption/20261104/receipt.json
+  - tests/data/validation/curated_co2_adoption/20261104/summary.json
+  - tests/data/validation/curated_co2_adoption/20261104/ions.npz
+  - tests/data/validation/curated_co2_adoption/20261104/neutral.npz
+  - mceg/reviews/curated_co2_adoption.py
+  - tests/model_evidence/curated_co2_adoption_test.py
+  - tests/unittests/presets/curated_co2_test.py
+  - mceg/reviews/curated_adoption_history.py
+  - tests/model_evidence/curated_adoption_history_test.py
+  scope: Versioned curated-co2-v1 on 1500-4000 K and 1 bar standard pressure; representative 12C16O2 internal
+    thermodynamics at NASA elemental mass, retained ATcT atomization energy and NASA atomic references. Fixed
+    537-species ion-inclusive and 421-species neutral gas networks. No physical atmosphere validation.
+  subject: curated_co2_production_20261104
+  context: production_gas_domain
+  artifacts:
+  - source: tests/data/validation/curated_co2_adoption/20261104/receipt.json
+    sha256: d4db585dc04f1ab0165b49a950f147f8f91a62ff6f54d9e36043dc024278cbba
+  - source: tests/data/validation/curated_co2_adoption/20261104/summary.json
+    sha256: 2095c3cd5aa3cc00a2de36ca43773b668bcc79c4b18d69c9dea8f2cd07c32a08
+  - source: tests/data/validation/curated_co2_adoption/20261104/ions.npz
+    sha256: ac317c47074cef3420043a6f8fbf59d0aac2680b91bcb918e1249859d5594919
+  - source: tests/data/validation/curated_co2_adoption/20261104/neutral.npz
+    sha256: 13365dbe444104b250c43eb1524337c23aad4daf1741e6013e1dbf14a5912664
+  - source: mceg/reviews/curated_co2_adoption.py
+    sha256: 1de5eabcc17512354eb779a76bdf0e89440c96006e5da969ebc5da5f497b0d1a
+  - source: tests/model_evidence/curated_co2_adoption_test.py
+    sha256: caf4fab43537d56f7d826030d46380e98d1983faf51ddd7c4c2517afdbe0dbe9
+  - source: tests/unittests/presets/curated_co2_test.py
+    sha256: 411e45ca5136f797be735927fc2418f0847be6f9f3049459ea5f1741191816dc
+  - source: mceg/reviews/curated_adoption_history.py
+    sha256: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
+  - source: tests/model_evidence/curated_adoption_history_test.py
+    sha256: c8580fed821d38c2596cf5cb781082dd401596e1b84e27cf528086e3ec775d71
+  provenance:
+    role: primary
+    location: documents/presets/curated_co2.rst
+    inspection: inspected
+    note: Numerical production checks are a new execution. Source and candidate evidence retain their original
+      scope and bytes. Scientific selection is a reviewed inference from inspected primary thermodynamic sources;
+      it is not atmospheric validation.
+  result: passed
+subjects:
+- id: curated_co2_production_20261104
+  implementation: *id001
+  selected_files:
+    documents/presets/curated_co2.rst: 4d5f82aaa8f434c9fc334d1acd63261b6e363c378e0912e77179db5ff7fb7535
+    mceg/reviews/build_co2_adoption.py: 58487b1abbb75599531e221b8b763de05c759bf2ea68e8e0819d4c0252276d31
+    mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
+    mceg/reviews/curated_co2_adoption.py: 1de5eabcc17512354eb779a76bdf0e89440c96006e5da969ebc5da5f497b0d1a
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/autodiff.py: 15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/sensitivities.py: ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    src/exogibbs/presets/curated.py: 29ef5661740f03851cb6c83516e8959aa343e878fd1f30379198f70c8d3dbd08
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    tests/data/validation/co2_candidate/20261104/candidate.json: 9373569f8f6d0a9539f0d8ccf28b137fd0e4eab5b177b764e682aef391065bb2
+    tests/data/validation/co2_candidate/20261104/scientific_scope.json: ecabeb0566b55ec609d2ba095f7e705459187c736ab6a54aa97c4ee919aba6d0
+    tests/data/validation/co2_candidate/20261104/validation.json: e6a70f04b63bb164b7e0855f5a24cfef451b6d8daf38f725c099df8bae34b434
+    tests/data/validation/co2_equilibrium_impact/20261104/local_sensitivities.json: d7a68ee63d79621192a7d525977f0c5e617796684e10ce35a1c04d2cf79267a8
+    tests/data/validation/co2_equilibrium_impact/20261104/original.npz: e41ba5ec4855e7c0f364e89c7ca5a2294ec0abd7abe3034b3c93ef23be895540
+    tests/data/validation/co2_equilibrium_impact/20261104/summary.json: 75bfebf5ff9596bfbc1df13f11eb0c25068c270233d16450ebb6ac0b4e6e97a6
+    tests/data/validation/co2_source_review/20261103/literature.json: d0b682c70df77feb9b6f0339c93804d472ceae37ba251ad9089c345c670161ae
+    tests/data/validation/co2_source_review/20261103/source_nodes.json: f8e00a305205f658bdb29ae6186bbc65a417374af0af860a8368c0ed0cac4c0f
+    tests/data/validation/curated_co2_adoption/20261104/README.rst: 6590a03beebb7e0d86302bc0f4b4b8c2416e7beb047d1ef1d5091205ebb31943
+    tests/data/validation/curated_co2_adoption/20261104/ions.npz: ac317c47074cef3420043a6f8fbf59d0aac2680b91bcb918e1249859d5594919
+    tests/data/validation/curated_co2_adoption/20261104/neutral.npz: 13365dbe444104b250c43eb1524337c23aad4daf1741e6013e1dbf14a5912664
+    tests/data/validation/curated_co2_adoption/20261104/receipt.json: d4db585dc04f1ab0165b49a950f147f8f91a62ff6f54d9e36043dc024278cbba
+    tests/data/validation/curated_co2_adoption/20261104/summary.json: 2095c3cd5aa3cc00a2de36ca43773b668bcc79c4b18d69c9dea8f2cd07c32a08
+    tests/data/validation/curated_tio_adoption/20261103/ions.npz: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
+    tests/model_evidence/curated_adoption_history_test.py: c8580fed821d38c2596cf5cb781082dd401596e1b84e27cf528086e3ec775d71
+    tests/model_evidence/curated_co2_adoption_test.py: caf4fab43537d56f7d826030d46380e98d1983faf51ddd7c4c2517afdbe0dbe9
+    tests/unittests/presets/curated_co2_test.py: 411e45ca5136f797be735927fc2418f0847be6f9f3049459ea5f1741191816dc
+contexts:
+- id: production_gas_domain
+  scope: Versioned curated-co2-v1 on 1500-4000 K and 1 bar standard pressure; representative 12C16O2 internal
+    thermodynamics at NASA elemental mass, retained ATcT atomization energy and NASA atomic references. Fixed
+    537-species ion-inclusive and 421-species neutral gas networks. No physical atmosphere validation.
+  settings:
+    dataset: curated-co2-v1
+    base_dataset: curated-tio-v1
+    temperature_min_K: 1500
+    temperature_max_K: 4000
+    standard_pressure_bar: 1
+    pressure_min_bar: 1.0e-06
+    pressure_max_bar: 100
+    C_over_O: 0.5888436553555908, 1, 1.5
+    D0_J_mol: 1598180.0
+    molecular_mass_u: 44.0095
+    nuclear_spin_factor: 1
+    network_modes: ions=True (537 species); ions=False (421 species)
+    cases_per_network: 75
+    solver_tolerance: 5.0e-14
+    production_adoption: true
+assessments:
+- id: scientific_selection_review
+  kind: evidence_support
+  claim: scientific_selection
+  claim_revision: '1'
+  subject: curated_co2_production_20261104
+  context: production_gas_domain
+  method:
+    id: curated_co2_adoption_review
+    revision: '1'
+    description: Assess scoped scientific selection, numerical production verification and complete physical
+      accuracy separately.
+  evidence:
+  - scientific_sources
+  reasons:
+  - The inspected modern thermodynamic construction and explicit reference conventions justify the scoped replacement.
+    The high-temperature hydrogen-poor example changes CO2 by +0.4462%, compared with local standard-Q sensitivity
+    of about +/-0.0567%; interpolation error is much smaller. The fixed-isotope-average response is not a physical
+    isotope correction. Existing ATcT energy is unchanged and full physical uncertainty remains unknown.
+  status: supported
+  origin: reviewed
+- id: production_adoption_review
+  kind: evidence_support
+  claim: production_adoption
+  claim_revision: '1'
+  subject: curated_co2_production_20261104
+  context: production_gas_domain
+  method:
+    id: curated_co2_adoption_review
+    revision: '1'
+    description: Assess scoped scientific selection, numerical production verification and complete physical
+      accuracy separately.
+  evidence:
+  - production_execution
+  reasons:
+  - All 150 actual-default cold solves converge. Maximum elemental residual is 1.3522e-6, mass-action residual
+    1.1369e-12 and relative charge residual 4.5328e-14. The unchanged candidate potentials and historical data
+    remain reproducible; both networks preserve their elemental budgets and fixed species.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: curated_co2_production_20261104
+  context: production_gas_domain
+  method:
+    id: curated_co2_adoption_review
+    revision: '1'
+    description: Assess scoped scientific selection, numerical production verification and complete physical
+      accuracy separately.
+  evidence:
+  - scientific_sources
+  - production_execution
+  reasons:
+  - Source parameter covariance and numerical agreement do not bound all isotope energy/fractionation, continuum,
+    electronic-state, cutoff or thermochemical covariance errors. Gas-only ideal equilibrium does not validate
+    condensation, transport, nonideality or observations.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: physical_application_evidence
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Add separately scoped physical evidence when required by a concrete application; this does not suspend
+    adoption.
+  requires:
+  - Assess isotope, upper-state/continuum and correlated energy uncertainties relevant to the application.
+  - Assess omitted atmospheric physics and observational evidence where relevant.
+  completion: Retain numerical and physical claims separately while documenting new application evidence.
+limitations:
+- statement: The fixed-isotope thermal-average diagnostic omits isotope D0, atom/molecule mixing conventions
+    and fractionation. Its response is not an uncertainty bound or natural-isotope correction.
+  evidence:
+  - scientific_sources
+- statement: The source warning above about 3500 K concerns non-dissociating pure CO2. Species thermodynamics
+    can be used in a reacting network, but this does not establish complete high-state or continuum accuracy.
+  evidence:
+  - scientific_sources
+- statement: Production checks cover the saved finite grid. Independent-solver and hydrogen-poor results are
+    earlier candidate evidence, not new production executions.
+  evidence:
+  - production_execution
+  - scientific_sources
