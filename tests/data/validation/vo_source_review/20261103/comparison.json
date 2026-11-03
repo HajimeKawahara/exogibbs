@@ -1,0 +1,277 @@
+{
+  "reaction": "V(g) + O(g) -> VO(g)",
+  "standard_pressure_Pa": 100000,
+  "energy_source": "Merriles2020 neutral D0, not the derived cation value",
+  "balanced_native_D0_J_mol": {
+    "janaf": 631171.0,
+    "nasa9": 612000.0
+  },
+  "D0_kelvin_used": {
+    "janaf": 75912.42260467244,
+    "nasa9": 73606.26182420852,
+    "adopted": 75951.57110554528
+  },
+  "source_samples": [
+    {
+      "temperature_K": 500,
+      "janaf_ln_K": 139.50185998402222,
+      "nasa_ln_K": 134.88961983232215,
+      "hybrid_node_ln_K": 139.5800634493931,
+      "curated_ln_K": null,
+      "raw_janaf_over_nasa": 100.70950169218229,
+      "curated_over_nasa": null,
+      "same_D0_janaf_over_nasa": 0.9998250696994948,
+      "curated_minus_nasa_ln_K_components": {
+        "adopted_minus_nasa_D0": 4.690618562673539,
+        "molecular_thermal": -0.0001749456025947893
+      },
+      "native_janaf_minus_nasa_atomic_thermal_g_RT": {
+        "V": 4.8327960382010815e-05,
+        "O": 4.520841442001711e-05
+      },
+      "raw_janaf_minus_hybrid_ln_K_components": {
+        "native_minus_adopted_D0": -0.07829700174569734,
+        "atomic_thermal": 9.353637480202792e-05
+      },
+      "quoted_D0_only_multiplicative_error": 1.047512255478159,
+      "baseline_closure_ln_K": {
+        "janaf": 0.0,
+        "nasa": 0.0
+      }
+    },
+    {
+      "temperature_K": 1000,
+      "janaf_ln_K": 62.289413493692955,
+      "nasa_ln_K": 59.98392574213115,
+      "hybrid_node_ln_K": 62.3283788689188,
+      "curated_ln_K": null,
+      "raw_janaf_over_nasa": 10.029068753601232,
+      "curated_over_nasa": null,
+      "same_D0_janaf_over_nasa": 0.9991442118466157,
+      "curated_minus_nasa_ln_K_components": {
+        "adopted_minus_nasa_D0": 2.3453092813367693,
+        "molecular_thermal": -0.0008561545491190259
+      },
+      "native_janaf_minus_nasa_atomic_thermal_g_RT": {
+        "V": 9.635888052628161e-05,
+        "O": 8.676676647212389e-05
+      },
+      "raw_janaf_minus_hybrid_ln_K_components": {
+        "native_minus_adopted_D0": -0.03914850087284867,
+        "atomic_thermal": 0.0001831256469984055
+      },
+      "quoted_D0_only_multiplicative_error": 1.0234804616982969,
+      "baseline_closure_ln_K": {
+        "janaf": 0.0,
+        "nasa": 0.0
+      }
+    },
+    {
+      "temperature_K": 1500,
+      "janaf_ln_K": 36.34386015602594,
+      "nasa_ln_K": 34.813266932409675,
+      "hybrid_node_ln_K": 36.369898926469375,
+      "curated_ln_K": 36.36989892646937,
+      "raw_janaf_over_nasa": 4.620917246616701,
+      "curated_over_nasa": 4.742820467397959,
+      "same_D0_janaf_over_nasa": 0.993116275295837,
+      "curated_minus_nasa_ln_K_components": {
+        "adopted_minus_nasa_D0": 1.5635395208911795,
+        "molecular_thermal": -0.006907526831483324
+      },
+      "native_janaf_minus_nasa_atomic_thermal_g_RT": {
+        "V": -7.512631327699637e-06,
+        "O": 6.774276980081595e-05
+      },
+      "raw_janaf_minus_hybrid_ln_K_components": {
+        "native_minus_adopted_D0": -0.026099000581899113,
+        "atomic_thermal": 6.023013847311631e-05
+      },
+      "quoted_D0_only_multiplicative_error": 1.015593012676077,
+      "baseline_closure_ln_K": {
+        "janaf": 0.0,
+        "nasa": 0.0,
+        "curated": 1.4210854715202004e-14
+      }
+    },
+    {
+      "temperature_K": 2000,
+      "janaf_ln_K": 23.282983987123654,
+      "nasa_ln_K": 22.150934981879953,
+      "hybrid_node_ln_K": 23.30243270606469,
+      "curated_ln_K": 23.30243270606469,
+      "raw_janaf_over_nasa": 3.1020060194038157,
+      "curated_over_nasa": 3.162926555553751,
+      "same_D0_janaf_over_nasa": 0.9790653210277357,
+      "curated_minus_nasa_ln_K_components": {
+        "adopted_minus_nasa_D0": 1.1726546406683847,
+        "molecular_thermal": -0.021156916483647592
+      },
+      "native_janaf_minus_nasa_atomic_thermal_g_RT": {
+        "V": -4.036884404712282e-05,
+        "O": 0.0001659003394323122
+      },
+      "raw_janaf_minus_hybrid_ln_K_components": {
+        "native_minus_adopted_D0": -0.019574250436424336,
+        "atomic_thermal": 0.00012553149538518937
+      },
+      "quoted_D0_only_multiplicative_error": 1.011672111752764,
+      "baseline_closure_ln_K": null
+    },
+    {
+      "temperature_K": 3000,
+      "janaf_ln_K": 10.114704605168185,
+      "nasa_ln_K": 9.419983374199543,
+      "hybrid_node_ln_K": 10.127676136340963,
+      "curated_ln_K": 10.127676136340945,
+      "raw_janaf_over_nasa": 2.0031505797525697,
+      "curated_over_nasa": 2.029303766669648,
+      "same_D0_janaf_over_nasa": 0.9286001904485846,
+      "curated_minus_nasa_ln_K_components": {
+        "adopted_minus_nasa_D0": 0.7817697604455898,
+        "molecular_thermal": -0.07407699830417158
+      },
+      "native_janaf_minus_nasa_atomic_thermal_g_RT": {
+        "V": -8.414371847820235e-05,
+        "O": 0.0001621128366515734
+      },
+      "raw_janaf_minus_hybrid_ln_K_components": {
+        "native_minus_adopted_D0": -0.013049500290949556,
+        "atomic_thermal": 7.796911817337104e-05
+      },
+      "quoted_D0_only_multiplicative_error": 1.0077663482554262,
+      "baseline_closure_ln_K": {
+        "janaf": -3.552713678800501e-15,
+        "nasa": -3.552713678800501e-15,
+        "curated": 0.0
+      }
+    },
+    {
+      "temperature_K": 4000,
+      "janaf_ln_K": 3.4522676110576462,
+      "nasa_ln_K": 3.0312770992417306,
+      "hybrid_node_ln_K": 3.4617434216050036,
+      "curated_ln_K": 3.4617434216049823,
+      "raw_janaf_over_nasa": 1.5234698233780468,
+      "curated_over_nasa": 1.5379745482789289,
+      "same_D0_janaf_over_nasa": 0.8556781231002328,
+      "curated_minus_nasa_ln_K_components": {
+        "adopted_minus_nasa_D0": 0.5863273203341923,
+        "molecular_thermal": -0.1558609979709189
+      },
+      "native_janaf_minus_nasa_atomic_thermal_g_RT": {
+        "V": 0.0001600067655260773,
+        "O": 0.00015130790533390837
+      },
+      "raw_janaf_minus_hybrid_ln_K_components": {
+        "native_minus_adopted_D0": -0.009787125218212168,
+        "atomic_thermal": 0.00031131467085998565
+      },
+      "quoted_D0_only_multiplicative_error": 1.0058191247698385,
+      "baseline_closure_ln_K": null
+    }
+  ],
+  "partition_samples": [
+    {
+      "temperature_K": 300,
+      "janaf_implied_Q": 1541.2955683594118,
+      "hyvo_spin_excluded_Q": 1519.2935625,
+      "hyvo_over_janaf_internal_Q": 0.9857249924601864,
+      "fixed_D0_atoms_zero_assumption_K_ratio": 0.9856802452554402,
+      "downloaded_vomyt_over_hyvo": 1.0004547590518735
+    },
+    {
+      "temperature_K": 500,
+      "janaf_implied_Q": 2700.6196040992995,
+      "hyvo_spin_excluded_Q": 2677.8638375,
+      "hyvo_over_janaf_internal_Q": 0.9915738719496969,
+      "fixed_D0_atoms_zero_assumption_K_ratio": 0.9915288592337685,
+      "downloaded_vomyt_over_hyvo": 1.000256869856625
+    },
+    {
+      "temperature_K": 1000,
+      "janaf_implied_Q": 6707.574855876836,
+      "hyvo_spin_excluded_Q": 6682.4534375,
+      "hyvo_over_janaf_internal_Q": 0.996254768837231,
+      "fixed_D0_atoms_zero_assumption_K_ratio": 0.9962095436309497,
+      "downloaded_vomyt_over_hyvo": 1.0000454735678808
+    },
+    {
+      "temperature_K": 1500,
+      "janaf_implied_Q": 12510.918180361943,
+      "hyvo_spin_excluded_Q": 12545.7553,
+      "hyvo_over_janaf_internal_Q": 1.0027845374045161,
+      "fixed_D0_atoms_zero_assumption_K_ratio": 1.0027390157779419,
+      "downloaded_vomyt_over_hyvo": 0.9998613335778994,
+      "paper_outer_level_fraction": 9.37132609345422e-06,
+      "paper_adjusted_hyvo_over_paper_vomyt": 1.0002086756352766,
+      "downloaded_over_paper_vomyt": 1.0000211758844046
+    },
+    {
+      "temperature_K": 2000,
+      "janaf_implied_Q": 20190.030041009624,
+      "hyvo_spin_excluded_Q": 20695.518875,
+      "hyvo_over_janaf_internal_Q": 1.0250365568037114,
+      "fixed_D0_atoms_zero_assumption_K_ratio": 1.0249900250417794,
+      "downloaded_vomyt_over_hyvo": 0.9998661485601432,
+      "paper_outer_level_fraction": 0.00017580333413868085,
+      "paper_adjusted_hyvo_over_paper_vomyt": 1.0002966412951553,
+      "downloaded_over_paper_vomyt": 1.000012021263743
+    },
+    {
+      "temperature_K": 3000,
+      "janaf_implied_Q": 41519.958359908,
+      "hyvo_spin_excluded_Q": 47861.3021125,
+      "hyvo_over_janaf_internal_Q": 1.152730012338241,
+      "fixed_D0_atoms_zero_assumption_K_ratio": 1.1526776839035622,
+      "downloaded_vomyt_over_hyvo": 1.0037202030584433,
+      "paper_outer_level_fraction": 0.003323669983546188,
+      "paper_adjusted_hyvo_over_paper_vomyt": 0.9996684795336854,
+      "downloaded_over_paper_vomyt": 1.0000646568997371
+    },
+    {
+      "temperature_K": 4000,
+      "janaf_implied_Q": 72064.842520605,
+      "hyvo_spin_excluded_Q": 99434.9357875,
+      "hyvo_over_janaf_internal_Q": 1.3797981416398608,
+      "fixed_D0_atoms_zero_assumption_K_ratio": 1.3797355053970703,
+      "downloaded_vomyt_over_hyvo": 1.0178840761389978,
+      "paper_outer_level_fraction": 0.01441771006184945,
+      "paper_adjusted_hyvo_over_paper_vomyt": 0.9974524418734009,
+      "downloaded_over_paper_vomyt": 1.000860189614467
+    },
+    {
+      "temperature_K": 5000,
+      "janaf_implied_Q": 114343.61376428569,
+      "hyvo_spin_excluded_Q": 188359.44765,
+      "hyvo_over_janaf_internal_Q": 1.6473106057177331,
+      "fixed_D0_atoms_zero_assumption_K_ratio": 1.6472358256872799,
+      "downloaded_vomyt_over_hyvo": 1.043998236899693,
+      "paper_outer_level_fraction": 0.03452053885460216,
+      "paper_adjusted_hyvo_over_paper_vomyt": 0.9948430121250798,
+      "downloaded_over_paper_vomyt": 1.003940938098277
+    }
+  ],
+  "molecular_translation_mass_factor": 0.9999546047781191,
+  "partition_diagnostic": "Same D0 and NASA atoms, 51V16O molecular mass; zero alignment assumed, not established. No isotope-resolved reaction or abundance prediction.",
+  "footprint": {
+    "source": "tests/data/validation/curated_default_adoption/20261102/ions.npz",
+    "source_sha256": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "model": "curated-c2h-v1",
+    "cases": 75,
+    "species_count": 537,
+    "all_cases_converged": true,
+    "maximum_abs_archived_h_error": 1.4210854715202004e-14,
+    "maximum_vanadium_share": {
+      "case_index": 28,
+      "temperature_K": 1500.0,
+      "pressure_bar": 1.0,
+      "C_over_O": 1.0,
+      "mole_fraction": 8.017102683033362e-09,
+      "vanadium_fraction": 0.5881173506455909
+    },
+    "interpretation": "Gas-only baseline allocation, not candidate response or optical depth."
+  },
+  "equilibrium_substitution": "not_run",
+  "production_change": "none"
+}
