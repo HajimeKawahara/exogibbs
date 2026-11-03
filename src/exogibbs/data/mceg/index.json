@@ -1,7 +1,7 @@
 {
   "schema_version": "1",
   "provider": "exogibbs",
-  "record_version": "2026-11-03",
+  "record_version": "2026-11-04",
   "models": [
     {
       "id": "exogibbs.curated_gas.v1",
@@ -901,7 +901,7 @@
     },
     {
       "id": "exogibbs.curated_tio.v1",
-      "label": "Curated default with TOTO/Jain TiO (ion-inclusive lookup)",
+      "label": "Versioned curated TOTO/Jain TiO (ion-inclusive lookup)",
       "dataset": "curated-tio-v1",
       "identity": {
         "data_sha256": "52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1",
@@ -1314,7 +1314,7 @@
         {
           "id": "tio_adoption",
           "path": "contracts/curated_tio.yaml",
-          "sha256": "5c160549eed778c99924795552ece2f8682d4af8c6de5c3dc7b0d9b34f0e7de7",
+          "sha256": "aacdf17b48a3a4b425a2ede286e78643011161e786f38a6f65f3822547680e83",
           "species": [
             "*",
             "O1Ti1"
@@ -1334,9 +1334,451 @@
               "sha256": "33366fe8b656aeae38b9a985f40d286dce67b01d25e463384df7e1fe08346154"
             }
           ],
-          "summary": "Default curated-tio-v1 replaces only TiO in curated-c2h-v1 with TOTO state thermodynamics and Jain 2023 D0=6.824 +/- 0.010 eV, on 1500-4000 K. The representative 48Ti16O internal partition uses NASA elemental mass and atomic reference functions. C2H and all other functions are retained. The obsolete JANAF low-singlet assumption motivates the thermal update; the D0 difference is within the former quoted uncertainty. Both factory modes pass 75 new cold solves, and ion-inclusive results reproduce the reviewed candidate. Physical atmospheric accuracy and complete thermochemical uncertainty remain unquantified. curated_c2h and curated_v1 preserve earlier datasets. Your conditions have not been evaluated.",
+          "summary": "Former default, retained as curated_tio: curated-tio-v1 replaces only TiO in curated-c2h-v1 with TOTO state thermodynamics and Jain 2023 D0=6.824 +/- 0.010 eV, on 1500-4000 K. The representative 48Ti16O internal partition uses NASA elemental mass and atomic reference functions. C2H and all other functions are retained. The obsolete JANAF low-singlet assumption motivates the thermal update; the D0 difference is within the former quoted uncertainty. Both factory modes pass 75 new cold solves, and ion-inclusive results reproduce the reviewed candidate. Physical atmospheric accuracy and complete thermochemical uncertainty remain unquantified. curated_c2h and curated_v1 preserve earlier datasets. Your conditions have not been evaluated.",
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/325"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.curated_co2.v1",
+      "label": "Curated default with NIST CO2 (ion-inclusive lookup)",
+      "dataset": "curated-co2-v1",
+      "identity": {
+        "data_sha256": "dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba",
+        "settings": {
+          "ions": true
+        }
+      },
+      "species": [
+        {
+          "id": "Al1+",
+          "aliases": []
+        },
+        {
+          "id": "Al1-",
+          "aliases": []
+        },
+        {
+          "id": "Al1H1",
+          "aliases": [
+            "AlH"
+          ]
+        },
+        {
+          "id": "Ar1+",
+          "aliases": []
+        },
+        {
+          "id": "C1+",
+          "aliases": []
+        },
+        {
+          "id": "C1-",
+          "aliases": []
+        },
+        {
+          "id": "C1H1N1_hcn",
+          "aliases": [
+            "HCN"
+          ]
+        },
+        {
+          "id": "C1H1N1_hnc",
+          "aliases": [
+            "HNC"
+          ]
+        },
+        {
+          "id": "C1H4",
+          "aliases": [
+            "CH4"
+          ]
+        },
+        {
+          "id": "C1O1",
+          "aliases": [
+            "CO"
+          ]
+        },
+        {
+          "id": "C1O1S1",
+          "aliases": [
+            "COS"
+          ]
+        },
+        {
+          "id": "C1O2",
+          "aliases": [
+            "CO2"
+          ]
+        },
+        {
+          "id": "C1S1",
+          "aliases": [
+            "CS"
+          ]
+        },
+        {
+          "id": "C1S2",
+          "aliases": [
+            "CS2"
+          ]
+        },
+        {
+          "id": "C2H1",
+          "aliases": [
+            "C2H",
+            "CCH"
+          ]
+        },
+        {
+          "id": "Ca1+",
+          "aliases": []
+        },
+        {
+          "id": "Ca1-",
+          "aliases": []
+        },
+        {
+          "id": "Ca1H1",
+          "aliases": [
+            "CaH"
+          ]
+        },
+        {
+          "id": "Cl1+",
+          "aliases": []
+        },
+        {
+          "id": "Cl1-",
+          "aliases": []
+        },
+        {
+          "id": "Co1+",
+          "aliases": []
+        },
+        {
+          "id": "Co1-",
+          "aliases": []
+        },
+        {
+          "id": "Co1H1",
+          "aliases": [
+            "CoH"
+          ]
+        },
+        {
+          "id": "Cr1+",
+          "aliases": []
+        },
+        {
+          "id": "Cr1-",
+          "aliases": []
+        },
+        {
+          "id": "Cr1H1",
+          "aliases": [
+            "CrH"
+          ]
+        },
+        {
+          "id": "Cu1+",
+          "aliases": []
+        },
+        {
+          "id": "Cu1-",
+          "aliases": []
+        },
+        {
+          "id": "Cu1H1",
+          "aliases": [
+            "CuH"
+          ]
+        },
+        {
+          "id": "F1+",
+          "aliases": []
+        },
+        {
+          "id": "F1-",
+          "aliases": []
+        },
+        {
+          "id": "Fe1+",
+          "aliases": []
+        },
+        {
+          "id": "Fe1-",
+          "aliases": []
+        },
+        {
+          "id": "Fe1H1",
+          "aliases": [
+            "FeH"
+          ]
+        },
+        {
+          "id": "Ge1+",
+          "aliases": []
+        },
+        {
+          "id": "Ge1-",
+          "aliases": []
+        },
+        {
+          "id": "Ge1H1",
+          "aliases": [
+            "GeH"
+          ]
+        },
+        {
+          "id": "H1+",
+          "aliases": []
+        },
+        {
+          "id": "H1-",
+          "aliases": []
+        },
+        {
+          "id": "H1K1",
+          "aliases": [
+            "KH"
+          ]
+        },
+        {
+          "id": "H1Mg1",
+          "aliases": [
+            "MgH"
+          ]
+        },
+        {
+          "id": "H1Mn1",
+          "aliases": [
+            "MnH"
+          ]
+        },
+        {
+          "id": "H1Na1",
+          "aliases": [
+            "NaH"
+          ]
+        },
+        {
+          "id": "H1Ni1",
+          "aliases": [
+            "NiH"
+          ]
+        },
+        {
+          "id": "H1S1",
+          "aliases": [
+            "SH"
+          ]
+        },
+        {
+          "id": "H1Ti1",
+          "aliases": [
+            "TiH"
+          ]
+        },
+        {
+          "id": "H1Zn1",
+          "aliases": [
+            "ZnH"
+          ]
+        },
+        {
+          "id": "H2",
+          "aliases": []
+        },
+        {
+          "id": "H2O1",
+          "aliases": [
+            "H2O"
+          ]
+        },
+        {
+          "id": "H2S1",
+          "aliases": [
+            "H2S"
+          ]
+        },
+        {
+          "id": "H3N1",
+          "aliases": [
+            "NH3"
+          ]
+        },
+        {
+          "id": "He1+",
+          "aliases": []
+        },
+        {
+          "id": "K1+",
+          "aliases": []
+        },
+        {
+          "id": "K1-",
+          "aliases": []
+        },
+        {
+          "id": "Mg1+",
+          "aliases": []
+        },
+        {
+          "id": "Mn1+",
+          "aliases": []
+        },
+        {
+          "id": "N1+",
+          "aliases": []
+        },
+        {
+          "id": "N2",
+          "aliases": []
+        },
+        {
+          "id": "Na1+",
+          "aliases": []
+        },
+        {
+          "id": "Na1-",
+          "aliases": []
+        },
+        {
+          "id": "Ne1+",
+          "aliases": []
+        },
+        {
+          "id": "Ni1+",
+          "aliases": []
+        },
+        {
+          "id": "Ni1-",
+          "aliases": []
+        },
+        {
+          "id": "O1+",
+          "aliases": []
+        },
+        {
+          "id": "O1-",
+          "aliases": []
+        },
+        {
+          "id": "O1S1",
+          "aliases": [
+            "SO"
+          ]
+        },
+        {
+          "id": "O1Si1",
+          "aliases": [
+            "SiO"
+          ]
+        },
+        {
+          "id": "O1Ti1",
+          "aliases": [
+            "TiO"
+          ]
+        },
+        {
+          "id": "O1V1",
+          "aliases": [
+            "VO"
+          ]
+        },
+        {
+          "id": "O2S1",
+          "aliases": [
+            "SO2"
+          ]
+        },
+        {
+          "id": "O3S1",
+          "aliases": [
+            "SO3"
+          ]
+        },
+        {
+          "id": "P1+",
+          "aliases": []
+        },
+        {
+          "id": "P1-",
+          "aliases": []
+        },
+        {
+          "id": "S1+",
+          "aliases": []
+        },
+        {
+          "id": "S1-",
+          "aliases": []
+        },
+        {
+          "id": "S2",
+          "aliases": []
+        },
+        {
+          "id": "Si1+",
+          "aliases": []
+        },
+        {
+          "id": "Si1-",
+          "aliases": []
+        },
+        {
+          "id": "Ti1+",
+          "aliases": []
+        },
+        {
+          "id": "Ti1-",
+          "aliases": []
+        },
+        {
+          "id": "V1+",
+          "aliases": []
+        },
+        {
+          "id": "V1-",
+          "aliases": []
+        },
+        {
+          "id": "Zn1+",
+          "aliases": []
+        }
+      ],
+      "records": [
+        {
+          "id": "co2_adoption",
+          "path": "contracts/curated_co2.yaml",
+          "sha256": "a8d52bbf31db3560a8ff58c455865c0809f39f47fbcfc236c3ad8ee48dfa9401",
+          "species": [
+            "*",
+            "C1O2"
+          ],
+          "assessments": [
+            "scientific_selection_review",
+            "production_adoption_review",
+            "physical_accuracy_review"
+          ],
+          "artifacts": [
+            {
+              "path": "artifacts/co2_adoption_receipt.json",
+              "sha256": "d4db585dc04f1ab0165b49a950f147f8f91a62ff6f54d9e36043dc024278cbba"
+            },
+            {
+              "path": "artifacts/co2_adoption_summary.json",
+              "sha256": "2095c3cd5aa3cc00a2de36ca43773b668bcc79c4b18d69c9dea8f2cd07c32a08"
+            }
+          ],
+          "summary": "Default curated-co2-v1 adopts the exact reviewed NIST 626 thermal model on curated-tio-v1 at 1500-4000 K. NASA molecular mass 44.0095 u, NASA atomic functions and ATcT 1.172 total atomization 1598.180 kJ/mol are retained. Only CO2 thermochemistry changes; TiO, C2H, all other species and budgets are preserved. Both factory modes pass 75 new cold solves, and ion-inclusive results reproduce the reviewed candidate. Scoped scientific selection and numerical adoption are supported; complete isotope, continuum, high-temperature cutoff and atmospheric physical accuracy remain unknown. The fixed-isotope-average diagnostic is not adopted as a natural-isotope correction. curated_tio, curated_c2h and curated_v1 preserve earlier datasets. Your conditions have not been evaluated.",
+          "links": [
+            "https://github.com/HajimeKawahara/exogibbs/pull/329"
           ]
         }
       ]

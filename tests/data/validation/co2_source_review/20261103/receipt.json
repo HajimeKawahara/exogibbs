@@ -1,0 +1,22 @@
+{
+  "review_date": "2026-11-03",
+  "command": "PYTHONPATH=src python mceg/reviews/co2_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/co2_source_review.py": "cbefe937fe4ad5fd7b6a6dc3db6106f4417a93224292bc940df391c02de89172",
+    "documents/mceg/co2_source_review.rst": "299bfbd0fac4aaba7bb513f060840d9c3f78a66534b7d62eddf5c4dc2406dd78",
+    "tests/model_evidence/co2_source_review_test.py": "d24f5b0c68f109620eae61b4bb6665be716b5e752edd1fd924970bb17878657f",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/curated_tio_adoption/20261103/ions.npz": "39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8",
+    "tests/data/validation/co2_source_review/20261103/source_nodes.json": "f8e00a305205f658bdb29ae6186bbc65a417374af0af860a8368c0ed0cac4c0f",
+    "tests/data/validation/co2_source_review/20261103/literature.json": "d0b682c70df77feb9b6f0339c93804d472ceae37ba251ad9089c345c670161ae",
+    "tests/data/validation/co2_source_review/20261103/sources.json": "9311f6c5978e995413c501b62c25785dbac23783b8c2e27fb92f592077041fe7",
+    "tests/data/validation/co2_source_review/20261103/README.rst": "7f42bfd1953f334fbc9258d3baab9f81c6285e7cd6273764c792a1847496f314"
+  },
+  "output_sha256": {
+    "tests/data/validation/co2_source_review/20261103/comparison.json": "3d0696a20d2e5395ea50c8007a7668cadaf6e5e856465a2ad87f02c5b126327b"
+  },
+  "scope": "Eight sampled thermal nodes, four available production-domain JANAF nodes and75 saved gas endpoints; acquisition sums all current UCL/Dozen states. No new equilibrium solve or adoption."
+}

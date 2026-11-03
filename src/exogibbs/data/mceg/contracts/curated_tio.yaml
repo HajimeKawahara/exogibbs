@@ -122,9 +122,9 @@ evidence:
   - tests/data/validation/curated_tio_adoption/20261103/summary.json
   - tests/data/validation/curated_tio_adoption/20261103/ions.npz
   - tests/data/validation/curated_tio_adoption/20261103/neutral.npz
-  - mceg/reviews/curated_tio_adoption.py
-  - tests/model_evidence/curated_tio_adoption_test.py
-  - tests/unittests/presets/curated_tio_test.py
+  - tests/data/validation/curated_co2_adoption/20261104/source/mceg/reviews/curated_tio_adoption.py
+  - tests/data/validation/curated_co2_adoption/20261104/source/tests/model_evidence/curated_tio_adoption_test.py
+  - tests/data/validation/curated_co2_adoption/20261104/source/tests/unittests/presets/curated_tio_test.py
   scope: The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with
     elemental NASA mass and neutral-atom references; 537 ion-inclusive or 421 neutral species. No physical
     atmosphere validation.
@@ -139,11 +139,11 @@ evidence:
     sha256: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
   - source: tests/data/validation/curated_tio_adoption/20261103/neutral.npz
     sha256: 4fef69416723000ab214ac413d027f10f2bc9a13955f289b195099192f3f1816
-  - source: mceg/reviews/curated_tio_adoption.py
+  - source: tests/data/validation/curated_co2_adoption/20261104/source/mceg/reviews/curated_tio_adoption.py
     sha256: ffa5f13e38082efc7d295a001c7ec7ce742d458d79ae08fda16bf349dcfe03c1
-  - source: tests/model_evidence/curated_tio_adoption_test.py
+  - source: tests/data/validation/curated_co2_adoption/20261104/source/tests/model_evidence/curated_tio_adoption_test.py
     sha256: 13aedd917c2e65bd453dccb17c9dbc18f5e092aa8d3307919866bc1e1d9606dd
-  - source: tests/unittests/presets/curated_tio_test.py
+  - source: tests/data/validation/curated_co2_adoption/20261104/source/tests/unittests/presets/curated_tio_test.py
     sha256: 9ec5e9c0e8109d51598c8ff4003946d780f4a782976306a5b9a21ec21233e3d8
   provenance:
     role: primary
@@ -164,7 +164,7 @@ subjects:
   selected_files:
     documents/presets/curated_tio.rst: abd31e047887445bf07593b82c2b20f0c1aa6dfbfcb9c2f5bc932b5efa9b2e59
     mceg/reviews/build_tio_adoption.py: 44247b90a68c67993e4f793cd72d9d291d3b42799e3bcdb00d1e8bd9294529c2
-    mceg/reviews/curated_tio_adoption.py: ffa5f13e38082efc7d295a001c7ec7ce742d458d79ae08fda16bf349dcfe03c1
+    tests/data/validation/curated_co2_adoption/20261104/source/mceg/reviews/curated_tio_adoption.py: ffa5f13e38082efc7d295a001c7ec7ce742d458d79ae08fda16bf349dcfe03c1
     src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
     src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
     src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
@@ -188,7 +188,7 @@ subjects:
     src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
     src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
     src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
-    src/exogibbs/presets/curated.py: 647455085d3cf906928a2fbd74ddf7498a6e95b9997ee2bba0349ad712a40fb0
+    tests/data/validation/curated_co2_adoption/20261104/source/src/exogibbs/presets/curated.py: 647455085d3cf906928a2fbd74ddf7498a6e95b9997ee2bba0349ad712a40fb0
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
     src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
@@ -207,8 +207,8 @@ subjects:
     tests/data/validation/tio_equilibrium_impact/20261103/equilibria.npz: b36e225f0cb9feb2e9e3e223d8d0039633ae8af160eb2270d3ec588d25638c46
     tests/data/validation/tio_source_review/20261103/literature.json: 761518caaccc4ce5539686b8a06b355092e2d6019c789110535af97285914100
     tests/data/validation/tio_source_review/20261103/sources.json: 8ab46dc6a06067a5a9aba07edb986ecb0525d7285cc195745ed0e8bae19be4ac
-    tests/model_evidence/curated_tio_adoption_test.py: 13aedd917c2e65bd453dccb17c9dbc18f5e092aa8d3307919866bc1e1d9606dd
-    tests/unittests/presets/curated_tio_test.py: 9ec5e9c0e8109d51598c8ff4003946d780f4a782976306a5b9a21ec21233e3d8
+    tests/data/validation/curated_co2_adoption/20261104/source/tests/model_evidence/curated_tio_adoption_test.py: 13aedd917c2e65bd453dccb17c9dbc18f5e092aa8d3307919866bc1e1d9606dd
+    tests/data/validation/curated_co2_adoption/20261104/source/tests/unittests/presets/curated_tio_test.py: 9ec5e9c0e8109d51598c8ff4003946d780f4a782976306a5b9a21ec21233e3d8
 contexts:
 - id: production_gas_domain
   scope: The curated-tio-v1 gas model on 1500-4000 K at standard pressure 1 bar; 48Ti16O internal levels with

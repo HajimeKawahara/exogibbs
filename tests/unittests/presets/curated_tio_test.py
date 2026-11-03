@@ -10,7 +10,7 @@ import pytest
 from scipy.special import logsumexp
 
 from exogibbs.api.gas import EquilibriumOptions, solve
-from exogibbs.presets import curated, curated_c2h, curated_tio, curated_v1
+from exogibbs.presets import curated_c2h, curated_tio, curated_v1
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -33,9 +33,8 @@ def models(float64):
     return curated_c2h.chemsetup(), curated_tio.chemsetup()
 
 
-def test_default_changes_only_tio_and_preserves_c2h_network_and_budget(models):
+def test_versioned_tio_preserves_c2h_network_and_budget(models):
     before, after = models
-    assert curated.chemsetup is curated_tio.chemsetup
     assert after.metadata["dataset"] == "curated-tio-v1"
     assert after.metadata["base_dataset"] == "curated-c2h-v1"
     assert after.metadata["relative_charge_convergence"] is True
