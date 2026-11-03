@@ -1,0 +1,15 @@
+{
+  "off_knot_points": 45,
+  "maximum_absolute_fit_errors": {
+    "ln_K": 1.0234626040389052e-06,
+    "H_J_mol": 0.18922137768822722,
+    "S_J_mol_K": 0.00010329302722311695,
+    "Cp_J_mol_K": 0.002491672304095971
+  },
+  "minimum_molecular_Cp_J_mol_K": 38.51224087929519,
+  "fit_targets": {
+    "ln_K": 1e-05,
+    "Cp_J_mol_K": 0.01
+  },
+  "scope": "Numerical interpolation error against the named finite level model; not physical uncertainty or equilibrium validation"
+}

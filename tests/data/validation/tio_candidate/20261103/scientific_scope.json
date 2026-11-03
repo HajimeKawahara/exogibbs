@@ -1,0 +1,90 @@
+{
+  "source_file_sha256": {
+    "48Ti-16O__Toto.states.bz2": "7d54bf8d3ba2fb1a1f7a5d5f25b9335f0ee381625a873813e6a4ca1979734067",
+    "46Ti-16O__Toto.pf": "e2cf8a02b5ef66e880e8c9518dd9826b8cea90599c75f36b87f660544cd31ec2",
+    "46Ti-16O__Toto.def": "6cfc967c0b4f474e60341d2162b1598ea4e653ee372ca4e612143119dc78f9c1",
+    "47Ti-16O__Toto.pf": "b85a0d740b01c138200693e215fcfe7c7210edb862479cc325d963043b88086f",
+    "47Ti-16O__Toto.def": "793eed3d175ed22339688ffc92c4aa747be71d180e3ed9db03a4b6d20da77d4f",
+    "48Ti-16O__Toto.pf": "38c80b7adaed26bce40f6c31f52280305626c1ea021028474f48b23d08ab9c30",
+    "48Ti-16O__Toto.def": "d556d86736ac0b9ceae94427efd5108f4f9ba93d7d7bc22c414ffed868ffeb88",
+    "49Ti-16O__Toto.pf": "216e5fab2d10d72ef3838f1c248fe46d3b768b0d61fe5314adeb685a3e4af664",
+    "49Ti-16O__Toto.def": "68a9af1836c967edd836d4d953f6a078dfbc4ec1e7eb131d3d33004a912c51b7",
+    "50Ti-16O__Toto.pf": "e9da891f7695a666a8477501cca2d0ab34cfeb6a538cb1eb2d8277fabae5833d",
+    "50Ti-16O__Toto.def": "6dfe5b9828ca59516b001cc307ba8fceeb9b52217e615feff44a83fc77fbaf2e"
+  },
+  "source_url_pattern": "https://www.exomol.com/db/TiO/{isotope}/Toto/{filename}",
+  "ciaaw_titanium": {
+    "url": "https://www.ciaaw.org/titanium.htm",
+    "fractions": {
+      "46": 0.0825,
+      "47": 0.0744,
+      "48": 0.7372,
+      "49": 0.0541,
+      "50": 0.0518
+    }
+  },
+  "ciaaw_oxygen": {
+    "url": "https://www.ciaaw.org/oxygen.htm",
+    "O16_fraction_range": [
+      0.99738,
+      0.99776
+    ]
+  },
+  "electronic_states": 16,
+  "five_approximate_state_count": 64937,
+  "rows": [
+    {
+      "temperature_K": 1500.0,
+      "titanium_fraction_weighted_internal_Q_over_48": 0.9993849958258813,
+      "omit_five_approximate_states_Q_over_full": 0.9999956025900519,
+      "omit_five_approximate_states_delta_Cp_J_mol_K": -0.005008352189264542,
+      "omit_J_above_190_Q_over_full": 0.9999999834180141,
+      "omit_J_above_190_delta_Cp_J_mol_K": -4.2489361995023955e-05
+    },
+    {
+      "temperature_K": 2000.0,
+      "titanium_fraction_weighted_internal_Q_over_48": 0.9993644482491425,
+      "omit_five_approximate_states_Q_over_full": 0.99991770488973,
+      "omit_five_approximate_states_delta_Cp_J_mol_K": -0.05329052767414311,
+      "omit_J_above_190_Q_over_full": 0.9999986964418751,
+      "omit_J_above_190_delta_Cp_J_mol_K": -0.0018174499594252325
+    },
+    {
+      "temperature_K": 2500.0,
+      "titanium_fraction_weighted_internal_Q_over_48": 0.999351133745569,
+      "omit_five_approximate_states_Q_over_full": 0.9995173033523475,
+      "omit_five_approximate_states_delta_Cp_J_mol_K": -0.20489670893922352,
+      "omit_J_above_190_Q_over_full": 0.9999828545768534,
+      "omit_J_above_190_delta_Cp_J_mol_K": -0.014750276027868381
+    },
+    {
+      "temperature_K": 3000.0,
+      "titanium_fraction_weighted_internal_Q_over_48": 0.9993420075571732,
+      "omit_five_approximate_states_Q_over_full": 0.9984099929655429,
+      "omit_five_approximate_states_delta_Cp_J_mol_K": -0.4823095745915964,
+      "omit_J_above_190_Q_over_full": 0.9999071838546961,
+      "omit_J_above_190_delta_Cp_J_mol_K": -0.05339790239881381
+    },
+    {
+      "temperature_K": 3500.0,
+      "titanium_fraction_weighted_internal_Q_over_48": 0.9993357947709565,
+      "omit_five_approximate_states_Q_over_full": 0.9962392426527644,
+      "omit_five_approximate_states_delta_Cp_J_mol_K": -0.8566564369506153,
+      "omit_J_above_190_Q_over_full": 0.9996961443640859,
+      "omit_J_above_190_delta_Cp_J_mol_K": -0.12359340564191257
+    },
+    {
+      "temperature_K": 4000.0,
+      "titanium_fraction_weighted_internal_Q_over_48": 0.9993320306557425,
+      "omit_five_approximate_states_Q_over_full": 0.9927939877059252,
+      "omit_five_approximate_states_delta_Cp_J_mol_K": -1.2649870639232148,
+      "omit_J_above_190_Q_over_full": 0.9992715682560992,
+      "omit_J_above_190_delta_Cp_J_mol_K": -0.21802451133639522
+    }
+  ],
+  "limitations": [
+    "Isotope weighted Q is a terrestrial-ratio sensitivity only; isotope-dependent D0, 17O/18O and network isotope fractionation are omitted.",
+    "Omitting represented high states or last rotational shells is a sensitivity, not an upper bound on unrepresented states or physical error.",
+    "All 16 electronic states, including the five approximate states, are included before the central bound-level cut; no supplement is added twice."
+  ]
+}
