@@ -1,0 +1,108 @@
+{
+  "retrieved_at_utc": "2026-11-02",
+  "review_date": "2026-11-03 JST",
+  "downloads": [
+    {
+      "file": "O-032.txt",
+      "url": "https://janaf.nist.gov/tables/O-032.txt",
+      "status": 200,
+      "sha256": "a93f51f8dbd7d0e1ac7005519cd33dc41e066acd7d90830de97ec9f38feb8513",
+      "archived": true,
+      "inspection": "inspected_relevant_sections"
+    },
+    {
+      "file": "P-001.txt",
+      "url": "https://janaf.nist.gov/tables/P-001.txt",
+      "status": 200,
+      "sha256": "06086a8d0f26ace07c4d0207646987a2cff605380e69b89af9a21da28649c81b",
+      "archived": true,
+      "inspection": "inspected_relevant_sections"
+    },
+    {
+      "file": "O-001.txt",
+      "url": "https://janaf.nist.gov/tables/O-001.txt",
+      "status": 200,
+      "sha256": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+      "archived": true,
+      "inspection": "inspected_relevant_sections"
+    },
+    {
+      "file": "janaf-oxygen.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf",
+      "status": 200,
+      "sha256": "6c786ff5ec1c66c7c9bed29e0c358843ca677bccd8e09a7a19e5db3584ae5d3c",
+      "archived": false,
+      "inspection": "inspected_relevant_sections"
+    },
+    {
+      "file": "nasa-glenn.pdf",
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "status": 200,
+      "sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "archived": false,
+      "inspection": "inspected_relevant_sections"
+    },
+    {
+      "file": "chen2023.pdf",
+      "url": "https://acp.copernicus.org/articles/23/10643/2023/acp-23-10643-2023.pdf",
+      "status": 200,
+      "sha256": "27e3244d3aa9de314f6cf10ad037368c68b01a54e73224d64c3c87d008b5ff57",
+      "archived": false,
+      "inspection": "inspected_relevant_sections"
+    },
+    {
+      "file": "cccbdb.html",
+      "url": "https://cccbdb.nist.gov/exp2x.asp?casno=12164975&charge=0",
+      "status": 200,
+      "sha256": "11aee3cd52b02aafdf9119d944838573bc52c3b7346450698b916d9d3cff032e",
+      "archived": false,
+      "inspection": "inspected_relevant_sections"
+    },
+    {
+      "file": "drowart1972.html",
+      "url": "https://pubs.rsc.org/en/content/articlelanding/1972/f2/f29726801749",
+      "status": 403,
+      "sha256": "46aa8a8b919f119d192a8a5e8754c049313e2c8fc5c8525b36dc15856caf39e4",
+      "archived": false,
+      "inspection": "unavailable_http_403"
+    },
+    {
+      "file": "P-008.txt",
+      "url": "https://janaf.nist.gov/tables/P-008.txt",
+      "status": 200,
+      "sha256": "a71761ba86cfb2b728d22642903bbf44eb7cfcf78fbee07a73930ce652cec879",
+      "archived": true,
+      "inspection": "inspected_relevant_sections"
+    },
+    {
+      "file": "drowart-crossref.json",
+      "url": "https://api.crossref.org/works/10.1039/F29726801749",
+      "status": 200,
+      "sha256": "c6e0fe55b5321dab5c51869a5421587a72ce85380b2288c293d98435aee1b717",
+      "archived": false,
+      "inspection": "metadata_only"
+    },
+    {
+      "file": "webbook.html",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C12164975&Mask=1EBF",
+      "status": 200,
+      "sha256": "c0335f7cb95545033ac4a6863b3c09f606584e28dfb6d9167b3633d935218f39",
+      "archived": false,
+      "inspection": "inspected_relevant_sections"
+    }
+  ],
+  "archiving": "Only public numerical JANAF tables and factual transcriptions are vendored. Full papers, HTML and blocked-response bodies remain outside the repository. Hashes identify the actually inspected downloads, not locally replayable artifacts.",
+  "local_reference_search": {
+    "directories": [
+      "ref/refs_exogibbs_202611",
+      "ref/refs_exogibbs_202611-2"
+    ],
+    "result": "No supplied file was identified as a PO2 primary energy or spectroscopy article; Gunina and related VO2 files concern another molecule."
+  },
+  "searches": [
+    "PO2 thermochemistry enthalpy formation Gurvich Drowart",
+    "PO2 partition function spectroscopy free jet",
+    "10.1039/F29726801749 atomization energy",
+    "PO2 CHIPR Bauschlicher 1999 heat formation"
+  ]
+}
