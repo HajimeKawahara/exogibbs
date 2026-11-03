@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src/exogibbs/data/mceg"
-RECORD_VERSION = "2026-11-02"
+RECORD_VERSION = "2026-11-03"
 
 
 def build_catalog(output: Path = OUTPUT) -> None:
@@ -101,7 +101,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
     c2h_species["C2H1"] = {"id": "C2H1", "aliases": ["C2H", "CCH"]}
     catalog["models"].append({
         "id": "exogibbs.curated_c2h.v1",
-        "label": "Curated default with reviewed C2H correction (ion-inclusive lookup)",
+        "label": "Versioned curated C2H correction (ion-inclusive lookup)",
         "dataset": c2h_data["id"],
         "identity": {"data_sha256": c2h_digest, "settings": {"ions": True}},
         "species": [c2h_species[k] for k in sorted(c2h_species)],
@@ -111,7 +111,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
                             "whole_mixture_accuracy_review", "default_adoption_review"],
             "artifacts": [c2h_summary, default_receipt, default_summary],
             "summary": (
-                "Default curated dataset: NASA C2H thermal functions and balanced ATcT 1.172 "
+                "Former curated default, retained as curated_c2h: NASA C2H thermal functions and balanced ATcT 1.172 "
                 "atomization energy supersede the 1967 JANAF estimate. Energy alignment alone "
                 "does not remove the old thermal discrepancy. curated_v1 preserves the original. "
                 "New cold solves pass in both networks (75 conditions each); ion-inclusive results "
@@ -123,6 +123,45 @@ def build_catalog(output: Path = OUTPUT) -> None:
                 "unquantified. The old HCN study does not validate this changed dataset. "
                 "Your conditions have not been evaluated."),
             "links": ["https://github.com/HajimeKawahara/exogibbs/pull/310"],
+        }],
+    })
+    tio_path = "src/exogibbs/data/curated/tio_v1.json"
+    tio_bytes = (ROOT / tio_path).read_bytes()
+    tio_data = json.loads(tio_bytes)
+    tio_digest = hashlib.sha256(tio_bytes).hexdigest()
+    tio_adoption = "tests/data/validation/curated_tio_adoption/20261103"
+    tio_execution = json.loads((ROOT / tio_adoption / "receipt.json").read_text())
+    if (tio_digest != tio_execution["selected_file_sha256"][tio_path]
+            or c2h_digest != tio_data["base_data_sha256"]):
+        raise ValueError("TiO data changed; review new evidence before rebinding the adoption")
+    tio_contract = copy("mceg/contracts/curated_tio.yaml", "contracts/curated_tio.yaml")
+    tio_receipt = copy(f"{tio_adoption}/receipt.json", "artifacts/tio_adoption_receipt.json")
+    tio_summary = copy(f"{tio_adoption}/summary.json", "artifacts/tio_adoption_summary.json")
+    if tio_summary["sha256"] != tio_execution["output_sha256"]["summary.json"]:
+        raise ValueError("TiO summary differs from the archived execution")
+    catalog["models"].append({
+        "id": "exogibbs.curated_tio.v1",
+        "label": "Curated default with TOTO/Jain TiO (ion-inclusive lookup)",
+        "dataset": tio_data["id"],
+        "identity": {"data_sha256": tio_digest, "settings": {"ions": True}},
+        "species": [c2h_species[k] for k in sorted(c2h_species)],
+        "records": [{
+            "id": "tio_adoption", **tio_contract, "species": ["*", "O1Ti1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [tio_receipt, tio_summary],
+            "summary": (
+                "Default curated-tio-v1 replaces only TiO in curated-c2h-v1 with TOTO "
+                "state thermodynamics and Jain 2023 D0=6.824 +/- 0.010 eV, on 1500-4000 K. "
+                "The representative 48Ti16O internal partition uses NASA elemental mass "
+                "and atomic reference functions. C2H and all other functions are retained. "
+                "The obsolete JANAF low-singlet assumption motivates the thermal update; "
+                "the D0 difference is within the former quoted uncertainty. Both factory "
+                "modes pass 75 new cold solves, and ion-inclusive results reproduce the "
+                "reviewed candidate. Physical atmospheric accuracy and complete "
+                "thermochemical uncertainty remain unquantified. curated_c2h and curated_v1 "
+                "preserve earlier datasets. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/325"],
         }],
     })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")

@@ -22,7 +22,7 @@ from scipy.special import logsumexp
 
 from c2h_equilibrium_impact import carbon_budget, independent_check, solve_cases
 from gas_source_comparison import DEFAULT_INPUT, file_hash, load_inputs
-from exogibbs.presets import curated
+from exogibbs.presets import curated_c2h as curated
 from exogibbs.thermo.standard import _nasa9
 
 

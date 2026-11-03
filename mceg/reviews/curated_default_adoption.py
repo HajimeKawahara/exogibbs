@@ -14,7 +14,7 @@ import numpy as np
 from scipy.special import logsumexp
 
 from exogibbs.api.gas import EquilibriumOptions, solve_profile
-from exogibbs.presets import curated, curated_c2h, curated_v1
+from exogibbs.presets import curated_c2h as curated, curated_c2h, curated_v1
 
 
 ROOT = Path(__file__).resolve().parents[2]

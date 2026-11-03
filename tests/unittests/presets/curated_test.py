@@ -61,7 +61,7 @@ def test_catalog_and_solar_budget_match_approved_study(setup, neutral):
 
 
 def test_source_choices_and_unreviewed_species_are_explicit(setup, data):
-    assert setup.metadata["dataset"] == "curated-c2h-v1"
+    assert setup.metadata["dataset"] == "curated-tio-v1"
     assert set(setup.metadata["species_provenance"]) == set(setup.species)
     counts = Counter(r["status"] for r in setup.metadata["species_provenance"].values())
     assert counts["inherited_unreviewed"] == 426
@@ -88,13 +88,16 @@ def test_continuous_constants_reproduce_approved_nodes(setup):
     # Rounded Ca partition values require a small positive thermal contribution.
     partitions = [setup.species.index(s) for s in ("Co1+", "C1-", "Ca1-", "Ge1-")]
     np.testing.assert_allclose(actual[:, partitions], expected[:, partitions], atol=5e-6, rtol=0)
-    others = [i for i in range(537) if i not in partitions and setup.species[i] != "C2H1"]
+    others = [i for i in range(537) if i not in partitions and setup.species[i] not in {"C2H1", "O1Ti1"}]
     np.testing.assert_allclose(actual[:, others], expected[:, others], atol=2e-12, rtol=0)
 
 
 @pytest.mark.parametrize("species, name", [("C1H4", "CH4"), ("C1O1S1", "COS"),
                                            ("O1Ti1", "TiO"), ("O1V1", "VO")])
 def test_janaf_free_energy_and_derivatives_at_withheld_nodes(setup, data, species, name):
+    # Preserve the legacy JANAF TiO regression; the adopted TOTO model has its own test.
+    if species == "O1Ti1":
+        setup = curated_v1.chemsetup()
     reference = json.loads((ROOT / "examples/comparisons/data/curated_continuous_reference.json").read_text())["janaf"][name]
     record = data["janaf_reactions"][species]
     index = setup.species.index(species)

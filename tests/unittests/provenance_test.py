@@ -54,7 +54,7 @@ def test_c2h_correction_has_separate_evidence_identity(setup):
     corrected = curated_c2h.chemsetup()
     description = describe(corrected)
     assert description["model_id"] == "exogibbs.curated_c2h.v1"
-    assert description["model_id"] == describe(setup)["model_id"]
+    assert describe(setup)["model_id"] == "exogibbs.curated_tio.v1"
     assert describe(curated_v1.chemsetup())["model_id"] == "exogibbs.curated_gas.v1"
     catalog = json.loads(evidence_catalog().read_text())
     model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
@@ -64,9 +64,23 @@ def test_c2h_correction_has_separate_evidence_identity(setup):
     assert describe(curated_c2h.chemsetup(ions=False))["record_match"] == "no_matching_record"
 
 
+
+def test_tio_adoption_has_separate_evidence_identity(setup):
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_tio.v1")
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == "curated-tio-v1"
+    record = model["records"][0]
+    assert record["id"] == "tio_adoption"
+    assert "physical_accuracy_review" in record["assessments"]
+    assert "unquantified" in record["summary"]
+    assert any(s["id"] == "O1Ti1" and "TiO" in s["aliases"] for s in model["species"])
+    assert describe(curated.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+
 def test_describe_identifies_only_declared_metadata(setup):
     description = describe(setup)
-    assert description["model_id"] == "exogibbs.curated_c2h.v1"
+    assert description["model_id"] == "exogibbs.curated_tio.v1"
     assert description["record_match"] == "declared_metadata"
     assert "does not verify a custom setup" in description["notice"]
     assert json.loads(json.dumps(description)) == description
