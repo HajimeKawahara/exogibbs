@@ -55,6 +55,7 @@ include src/exogibbs/data/nasa9/NOTICE.txt
 include src/exogibbs/data/curated/gas_v1.json
 include src/exogibbs/data/curated/c2h_v1.json
 include src/exogibbs/data/curated/tio_v1.json
+include src/exogibbs/data/curated/co2_v1.json
 include src/exogibbs/data/curated/README.rst
 
 # Optional scientific records; reading them never requires MCEG at runtime.
