@@ -1,0 +1,229 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.s5_source_review.v1
+  name: S5 energy and thermal-source investigation
+  description: Separate the large S5 source difference from an unused JANAF-column inconsistency and a tiny existing-grid
+    footprint; retain the current fit provisionally.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:df255e49f0ed412849e43e43968c91e27d4a94413a3180d2a5f8b7ebaaa6836d
+    entry_points:
+    - mceg/reviews/s5_source_review.py
+assumptions:
+- statement: The comparison balances one neutral S5 molecule against five neutral S atoms in each source reference
+    convention, at 1 bar. H298 alignment is diagnostic only.
+  evidence:
+  - literature_review
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Exact source nodes and an existing gas-only equilibrium archive.
+  conditions:
+  - Source decomposition at 500, 1000, 1500, 2000, 3000, 4000 K; curated samples only at 1500 and 3000 K from the
+    frozen baseline.
+  - Eight JANAF molecular rows at 298.15, 300, 500, 1000, 1500, 2000, 3000 and 4000 K; no sub-298 K extrapolation.
+  - 'Reused 75-case, 537-species ion-inclusive grid: 1500-4000 K, 1e-6-100 bar; reference C/O, 1 and 1.5. No new
+    equilibrium solve.'
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: High-temperature state completeness and physical atmosphere accuracy are unresolved; tiny archived
+    abundance is not an uncertainty bound.
+  conditions: []
+  evidence:
+  - literature_review
+  - source_replay
+claims:
+- id: source_attribution
+  revision: '1'
+  kind: numerical_verification
+  statement: The sampled S5 difference is principally molecular and survives balanced H298 alignment; the isolated
+    JANAF free-energy-function inconsistency is not used by the H/S reconstruction.
+  scope: Neutral S5 gas; 5 S(g) -> S5(g), standard pressure 1 bar. Native JANAF/NASA atomic references; archived
+    grid footprint only.
+- id: numerical_replay
+  revision: '1'
+  kind: numerical_verification
+  statement: The official coefficient/node checks, source decomposition and S5 sulfur share in the archived 75-case
+    grid reproduce offline.
+  scope: Neutral S5 gas; 5 S(g) -> S5(g), standard pressure 1 bar. Native JANAF/NASA atomic references; archived
+    grid footprint only.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The chosen S5 thermochemical functions and atmospheric abundances have quantified physical accuracy
+    over the intended applications.
+  scope: Neutral S5 gas; 5 S(g) -> S5(g), standard pressure 1 bar. Native JANAF/NASA atomic references; archived
+    grid footprint only.
+evidence:
+- id: literature_review
+  kind: literature
+  summary: Inspect official JANAF HTML, the NASA report and the Jackson 2016 author manuscript; retain Gurvich/Rau
+    full-text and legacy state-inventory gaps.
+  sources:
+  - tests/data/validation/s5_source_review/20261103/sources.json
+  - documents/mceg/s5_source_review.rst
+  scope: Neutral S5 gas; 5 S(g) -> S5(g), standard pressure 1 bar. Native JANAF/NASA atomic references; archived
+    grid footprint only.
+  subject: s5_sources_20261103
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/s5_source_review/20261103/sources.json
+    sha256: e003253ecb49148e3476e3b73f70926af3a0e3628e51781214f5b446ea69186d
+  - source: documents/mceg/s5_source_review.rst
+    sha256: 2b303ff7481f2f1f28a8e6f15d08cea5aeb77c16b3628f5662b2c17e6aca68c8
+  provenance:
+    role: primary
+    location: documents/mceg/s5_source_review.rst
+    inspection: partial
+    note: Selected official facts and full-download hashes are archived; not all original thermochemical evaluations
+      are inspected. The grid is reused, not a new substitution or physical error bound.
+- id: source_replay
+  kind: numerical_test
+  summary: Replay six native-source nodes, four baseline nodes, 18 NASA coefficients, the unused JANAF-column audit
+    and a reused 75-case/537-species footprint.
+  sources:
+  - tests/data/validation/s5_source_review/20261103/comparison.json
+  - tests/data/validation/s5_source_review/20261103/receipt.json
+  scope: Neutral S5 gas; 5 S(g) -> S5(g), standard pressure 1 bar. Native JANAF/NASA atomic references; archived
+    grid footprint only.
+  subject: s5_sources_20261103
+  context: source_comparison
+  artifacts:
+  - source: tests/data/validation/s5_source_review/20261103/comparison.json
+    sha256: 6e03ca97691160c679aedde7ee167fcf8a2749c06927ad1d9f98865f4198e2fd
+  - source: tests/data/validation/s5_source_review/20261103/receipt.json
+    sha256: f66b60aaf1091b506d5adcb2d909e34f71a06e20715c4ce06833602fdcb2e8b8
+  provenance:
+    role: primary
+    location: documents/mceg/s5_source_review.rst
+    inspection: inspected
+    note: Selected official facts and full-download hashes are archived; not all original thermochemical evaluations
+      are inspected. The grid is reused, not a new substitution or physical error bound.
+  result: passed
+subjects:
+- id: s5_sources_20261103
+  implementation: *id001
+  selected_files:
+    mceg/reviews/s5_source_review.py: df255e49f0ed412849e43e43968c91e27d4a94413a3180d2a5f8b7ebaaa6836d
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    tests/model_evidence/s5_source_review_test.py: f4b84f06b45934d13d4ce1d04b5db1c7860cfbe6c8ec07bcd82b74f1d07b7c67
+    documents/mceg/s5_source_review.rst: 2b303ff7481f2f1f28a8e6f15d08cea5aeb77c16b3628f5662b2c17e6aca68c8
+    tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/s2o_source_investigation/20261102/S-006.txt: a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a
+    tests/data/validation/curated_default_adoption/20261102/ions.npz: d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749
+    tests/data/validation/s5_source_review/20261103/sources.json: e003253ecb49148e3476e3b73f70926af3a0e3628e51781214f5b446ea69186d
+    tests/data/validation/s5_source_review/20261103/janaf_s5_nodes.json: e11d3481f01aaebcc06021f644deb2c82bd5447ec54cebaae8c5a9ae3ce07459
+    tests/data/validation/s5_source_review/20261103/nasa-s5.txt: d2672ca97576a70aef3fd577397f1ad308d24e8a24082e54b67eaaf472770179
+    tests/data/validation/s5_source_review/20261103/comparison.json: 6e03ca97691160c679aedde7ee167fcf8a2749c06927ad1d9f98865f4198e2fd
+    tests/data/validation/s5_source_review/20261103/README.rst: 1b5256fb3a06c646a7b20a34346337d35713b5a1cc1d68b2df5d4868db011f6c
+    tests/data/validation/s5_source_review/20261103/receipt.json: f66b60aaf1091b506d5adcb2d909e34f71a06e20715c4ce06833602fdcb2e8b8
+contexts:
+- id: source_comparison
+  scope: Neutral S5 gas; 5 S(g) -> S5(g), standard pressure 1 bar. Native JANAF/NASA atomic references; archived
+    grid footprint only.
+  settings:
+    reaction: 5 S(g) -> S5(g)
+    standard_pressure_bar: 1
+    source_temperatures_K: 500, 1000, 1500, 2000, 3000, 4000
+    baseline: gas_source_comparison/baseline-001
+    atomic_reference_policy: Native JANAF/NASA; balance molecule minus five atoms
+    grid_reuse: curated_default_adoption/20261102/ions.npz; no new solve
+    curated_change: none
+assessments:
+- id: source_attribution_review
+  kind: evidence_support
+  claim: source_attribution
+  claim_revision: '1'
+  subject: s5_sources_20261103
+  context: source_comparison
+  method: &id002
+    id: s5_source_review
+    revision: '1'
+    description: Keep source reproduction, literature access, model footprint and complete physical accuracy distinct.
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - Balanced energy/thermal terms reproduce the frozen discrepancy. Native atomic differences and small inherited-fit
+    residuals are accounted for; the 298 K unused-column error is retained separately.
+  status: supported
+  origin: reviewed
+- id: numerical_replay_review
+  kind: evidence_support
+  claim: numerical_replay
+  claim_revision: '1'
+  subject: s5_sources_20261103
+  context: source_comparison
+  method: *id002
+  evidence:
+  - source_replay
+  reasons:
+  - Input and artifact hashes pin the offline replay. The existing grid finds a tiny S5 sulfur share, but does not
+    test a replacement or validate real abundances.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: s5_sources_20261103
+  context: source_comparison
+  method: *id002
+  evidence:
+  - literature_review
+  - source_replay
+  reasons:
+  - Gurvich state/energy assumptions and Rau full text remain unreviewed; competing thermal models, isomer counting
+    and uncertainty are unresolved. No candidate substitution is solved.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: reconcile_original_sources
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Review the original S5 energy/state inventory and entropy normalization before selecting a replacement.
+  requires:
+  - Gurvich 1989 volume 1, part 1 page 281 and part 2 page 169; no verified DOI.
+  - Rau et al. 1973 full text, DOI 10.1016/S0021-9614(73)80045-X, and original JANAF S5 evaluation notes.
+  - Geometry, symmetry/electronic weights, vibrational frequencies, isomer counting, energy derivations and correlated
+    uncertainties.
+  completion: Record a scoped assessment of the entropy offset, energy anchor and uncertainty; no requirement to
+    claim complete physical validation to merge this source review.
+- id: evaluate_scoped_candidate
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: If a replacement is preferred, reconstruct individual S5 standard functions and assess them in a domain-relevant
+    fixed network.
+  requires:
+  - Consider Jackson et al. 2016, DOI 10.1039/C5SC03088A; code DOI 10.5281/zenodo.28536 and DFT data DOI 10.6084/m9.figshare.1513736
+    have not been reproduced.
+  - Explicit atomic energy alignment and state/isomer inventory; never substitute mixture chemical potential for
+    one species.
+  - Conservation, mass-action residuals, absolute abundance and sulfur allocation in declared conditions; reassess
+    cooler/sulfur-rich regimes separately.
+  completion: Archive candidate functions, coverage limits and a separate substitution receipt; retain unrun or
+    failed cases. Existing trace footprint is not a physical error bound.
+limitations:
+- statement: Source agreement and numerical replay do not establish that either legacy thermal model is physically
+    correct; current retention is provisional.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: The official 298 K free-energy-function inconsistency is separate from H/S-based constants. Its historical
+    origin and presence in the printed edition are not established.
+  evidence:
+  - literature_review
+  - source_replay
+- statement: Full publications are not committed; public-download hashes identify inspected bytes, and selected
+    factual excerpts support offline reproduction.
+  evidence:
+  - literature_review

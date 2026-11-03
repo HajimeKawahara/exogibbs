@@ -1,0 +1,89 @@
+{
+  "source_url": "https://janaf.nist.gov/tables/S-018.html",
+  "access_date": "2026-11-03",
+  "acquisition": "Selected factual rows transcribed from official HTML accessed by the web reader. Direct text/PDF downloads returned 403 or timed out; this is not a raw downloaded table.",
+  "identity": "Neutral S5(g); September 1977 evaluation, 1 bar version",
+  "columns": [
+    "Cp_J_mol_K",
+    "S_J_mol_K",
+    "minus_G_minus_H298_over_T_J_mol_K",
+    "H_minus_H298_kJ_mol",
+    "formation_H_kJ_mol",
+    "formation_G_kJ_mol",
+    "log10_formation_K"
+  ],
+  "rows": {
+    "298.15": [
+      89.501,
+      308.638,
+      477.413,
+      0,
+      109.37,
+      65.137,
+      -11.412
+    ],
+    "300.0": [
+      89.721,
+      309.192,
+      308.639,
+      0.166,
+      109.325,
+      64.862,
+      -11.294
+    ],
+    "500.0": [
+      101.153,
+      358.419,
+      319.351,
+      19.534,
+      86.068,
+      40.689,
+      -4.251
+    ],
+    "1000.0": [
+      106.415,
+      430.703,
+      358.883,
+      71.82,
+      -202.924,
+      43.391,
+      -2.266
+    ],
+    "1500.0": [
+      107.821,
+      474.152,
+      390.537,
+      125.423,
+      -196.883,
+      165.19,
+      -5.752
+    ],
+    "2000.0": [
+      108.657,
+      505.291,
+      415.514,
+      179.554,
+      -192.143,
+      285.132,
+      -7.447
+    ],
+    "3000.0": [
+      109.935,
+      549.598,
+      453.308,
+      288.872,
+      -185.297,
+      522.188,
+      -9.092
+    ],
+    "4000.0": [
+      111.07,
+      581.382,
+      481.537,
+      399.38,
+      -179.909,
+      757.178,
+      -9.888
+    ]
+  }
+}
