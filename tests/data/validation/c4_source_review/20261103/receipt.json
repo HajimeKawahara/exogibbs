@@ -1,0 +1,24 @@
+{
+  "review_date": "2026-11-03",
+  "command": "python mceg/reviews/c4_source_review.py --output tests/data/validation/c4_source_review/20261103/comparison.json",
+  "interpretation": "Offline source decomposition, native zero-K anchor comparison, isolated electronic-weight diagnostic and existing-grid footprint. No new equilibrium solve, adopted candidate or complete physical validation.",
+  "input_and_artifact_sha256": {
+    "mceg/reviews/c4_source_review.py": "b4be9e95c3f4aac8b0e6ff700f265162567fd1d772e17aa4d971cecbc3b38302",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "tests/model_evidence/c4_source_review_test.py": "00afe4c440a82467a36e50e1eccc5f55f26a4b7ad95ffa367fce854dbdb8b13b",
+    "documents/mceg/c4_source_review.rst": "1b9b3eec535b5f915413a690afe121565219dab53745f8c59e1da0c055d2dd00",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/c3_source_review/20261102/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/c3_source_review/20261102/nasa_selected_records.txt": "f90ba2908303460a2885377f59549c78d7f6132efd662f17824d0b070ce56b9e",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "tests/data/validation/c4_source_review/20261103/nasa-c4.txt": "51273a2d8f3f331c95724e10e182418c7cdef4c5a1c96f0d10eaa71e76067962",
+    "tests/data/validation/c4_source_review/20261103/README.rst": "583d045e6ab88e0e3db63048e8dbbdb0a3c1093cc178b330c93c8ee95a68ff60",
+    "tests/data/validation/c4_source_review/20261103/comparison.json": "68320873fcbdb1046fa53b96997f948f3466b3a92b080e94aade3237ef3f752c",
+    "tests/data/validation/c4_source_review/20261103/sources.json": "49795e8ff0b85823764cfde1fc5625842e60e672a9c8840d340e8bb284644dc6",
+    "tests/data/validation/c4_source_review/20261103/janaf_c4_nodes.json": "2f8f4bb1d79ca3449047a174396f9c535543747438b6eab8dbb3b0695623e394"
+  }
+}
