@@ -1,0 +1,147 @@
+{
+  "identity": {
+    "name": "silicon monoxide",
+    "species_id": "O1Si1",
+    "state": "X1Sigma+",
+    "CAS": "10097-28-6",
+    "reaction": "Si(g) + O(g) -> SiO(g)",
+    "rotational_symmetry_number": 1
+  },
+  "atct_1_172": {
+    "dataset_doi": "10.17038/CSE/2440254",
+    "records": {
+      "SiO": {
+        "source_formula": "SiO (g)",
+        "atct_id": "10097-28-6*0",
+        "hf0_kJ_mol": -98.37,
+        "hf298_kJ_mol": -97.22,
+        "reported_uncertainty_kJ_mol": 0.54,
+        "uncertainty_note": "as reported; correlated network uncertainties not propagated"
+      },
+      "Si": {
+        "source_formula": "Si (g)",
+        "atct_id": "7440-21-3*0",
+        "hf0_kJ_mol": 450.34,
+        "hf298_kJ_mol": 454.68,
+        "reported_uncertainty_kJ_mol": 0.56,
+        "uncertainty_note": "as reported; correlated network uncertainties not propagated"
+      },
+      "O": {
+        "source_formula": "O (g)",
+        "atct_id": "17778-80-2*0",
+        "hf0_kJ_mol": 246.844,
+        "hf298_kJ_mol": 249.229,
+        "reported_uncertainty_kJ_mol": 0.0021,
+        "uncertainty_note": "as reported; correlated network uncertainties not propagated"
+      }
+    },
+    "Si_species_number": 54,
+    "O_species_number": 21,
+    "SiO_species_number": 540,
+    "inspection": "Version 1.172 index and Si/O provenance pages inspected; SiO-specific provenance URL returned 403/cache miss. No later version substituted.",
+    "Si_provenance_coverage_percent": 85.6,
+    "Si_top_contributors_count": 20,
+    "O_provenance_coverage_percent": 96.2,
+    "O_top_contributors_count": 4,
+    "Si_provenance_SiO_atomization_inputs": [
+      {
+        "reference": "Feller2008",
+        "doi": "10.1063/1.3008061",
+        "D0_kcal_mol": 189.99,
+        "prior_uncertainty_kcal_mol": 0.3,
+        "inspection": "ATcT input and bibliography; original full numerical table not inspected"
+      },
+      {
+        "reference": "Karton2011",
+        "D0_kcal_mol": 190.23,
+        "prior_uncertainty_kcal_mol": 0.3,
+        "inspection": "ATcT input only; exact original bibliography unresolved"
+      }
+    ],
+    "uncertainty_note": "Displayed species uncertainties are estimated 95 percent limits, correlated; no reaction uncertainty inferred without covariance."
+  },
+  "atomic_fine_structure": {
+    "Si": {
+      "J": [
+        0,
+        1,
+        2
+      ],
+      "energy_cm-1": [
+        0,
+        77.112,
+        223.157
+      ],
+      "source": "https://physics.nist.gov/PhysRefData/Handbook/Tables/silicontable5_a.htm"
+    },
+    "O": {
+      "J": [
+        2,
+        1,
+        0
+      ],
+      "energy_cm-1": [
+        0,
+        158.265,
+        226.977
+      ],
+      "source": "https://physics.nist.gov/PhysRefData/Handbook/Tables/oxygentable5.htm"
+    },
+    "note": "Ground 3P_J energies and 2J+1 weights; not a complete hot atom partition. NASA atomic thermal anchors retained."
+  },
+  "janaf": {
+    "SiO_table": "O-012",
+    "Si_table": "Si-005",
+    "O_table": "O-001",
+    "SiO_evaluation": "September1967",
+    "SiO_printed_page": 1728,
+    "SiO_Hf298_kJ_mol": -100.42,
+    "SiO_printed_uncertainty_kJ_mol": 8.4,
+    "note": "Official printed note and tables inspected; old selected formation enthalpy combines thermochemical cycles. Original experiments not independently inspected."
+  },
+  "nasa_headers": {
+    "SiO": {
+      "hf298_J_mol": -98842.418,
+      "h298_minus_h0_J_mol": 8715.105,
+      "reference": "Gurvich,1991 pt1 p247 pt2 p227",
+      "mass_u": 44.0849
+    },
+    "Si": {
+      "hf298_J_mol": 450000.0,
+      "h298_minus_h0_J_mol": 7550.258,
+      "reference": "Hf:Cox,1989. NIST data version1.1 [Online]1997. Gordon,1999.",
+      "mass_u": 28.0855
+    },
+    "O": {
+      "hf298_J_mol": 249175.003,
+      "h298_minus_h0_J_mol": 6725.403,
+      "reference": "D0(O2):Brix,1954. Moore,1976. Gordon,1999.",
+      "mass_u": 15.9994
+    }
+  },
+  "nasa_inspection": "NASA/TP-2002-211556 coefficient blocks and headers inspected. Original report lower bound 200 K for Si/SiO; existing major-molecule fixture conservatively starts at 300 K with identical coefficients. Gurvich 1991 original pages not inspected.",
+  "exomol": {
+    "paper_doi": "10.1093/mnras/stab3267",
+    "dataset_doi": "10.5281/zenodo.5910818",
+    "version": 20211105,
+    "isotopologue": "28Si16O",
+    "mass_u": 43.97184115,
+    "nuclear_spin_factor": 1,
+    "states": 174250,
+    "J_max": 250,
+    "electronic_states": 9,
+    "energy_zero": "X1Sigma+,v=0,J=0 at0cm-1",
+    "fixed_De_eV": 8.26,
+    "De_source": "Huber and Herzberg 1979,10.1007/978-1-4757-0961-2; quoted by inspected SiOUVenIR full text, original book not inspected",
+    "line_list_temperature_limit_K": 10000,
+    "inspection": "Full author manuscript, definition, full states, PF and Cp files inspected. Transitions not downloaded. Line-list range is not curated applicability or independent D0 validation."
+  },
+  "atmosphere": {
+    "paper": "Itoetal2015",
+    "doi": "10.1088/0004-637X/801/2/144",
+    "author_manuscript": "https://arxiv.org/abs/1501.05393",
+    "inspection": "Full author PDF, Sections 2.1/2.2 and abstract inspected",
+    "note": "MELTS gas/melt boundary and NASA CEA mineral-gas calculations motivate SiO priority. UV heating and IR bands concern opacity; shared CEA lineage is not independent thermochemical validation."
+  },
+  "curated_decision": "Retain existing NASA thermal plus same-version ATcT balanced D0; new normalized comparison does not establish a necessary replacement. No production change."
+}

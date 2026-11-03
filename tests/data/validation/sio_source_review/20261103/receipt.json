@@ -1,0 +1,31 @@
+{
+  "review_date": "2026-11-03",
+  "command": "PYTHONPATH=src python mceg/reviews/sio_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/sio_source_review.py": "71a57cadc1ee2626b9d54484a80a156133a0adf2d03b5065bd5c1ff5244211b4",
+    "documents/mceg/sio_source_review.rst": "8bd5ded3e6cb41876b56ec4d917801fca74a5b1a6851245f0f03675e8ff7b755",
+    "tests/model_evidence/sio_source_review_test.py": "f10663af42b35d9627296c7a9e89639d76b19f07715b5a09807cabf10cdf5a7c",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "examples/comparisons/data/major_molecule_adoption.json": "2836795c24a7990d9e8b01b896102b405167119d2f72ff0e54dcc8b551abac92",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "tests/data/validation/sio_source_review/20261103/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/sio_source_review/20261103/O-012.txt": "e786b264b198a4e3fce25393c511dca8c24d2049651ff20c8f6f44079f064f45",
+    "tests/data/validation/sio_source_review/20261103/README.rst": "316f6f84781e1a4b8ede7ae0eac5d028a57fd50c48505f6527f526bfa876bbcd",
+    "tests/data/validation/sio_source_review/20261103/Si-005.txt": "269ee0967ede0a7277d9bfd946a1e9fa99f5fa02a8dd605f3ba036f63c3850a8",
+    "tests/data/validation/sio_source_review/20261103/literature.json": "b243f307eecce2f423a00ff42b4014b92eebd93743524da36640db92e1aee54a",
+    "tests/data/validation/sio_source_review/20261103/nasa9_excerpt.txt": "5205c1d82d45e515c76599e35fd46e7ae433215c894816d2c7eeb9323a493b38",
+    "tests/data/validation/sio_source_review/20261103/partition_samples.json": "ac07044e6dc08cd2bcea05e829752387c8788ba323d783c7b9454f3824289f65",
+    "tests/data/validation/sio_source_review/20261103/sources.json": "6e0f35e9244864b5aee22dc5c8f17dee76056f2c61f84e048ec544ede5ab903f"
+  },
+  "output_sha256": {
+    "tests/data/validation/sio_source_review/20261103/comparison.json": "8c267b94333f396b54bcceb409ff9604ba89384142a7cf358799e9650de549a1"
+  },
+  "scope": "Six source/thermal nodes and 75 saved endpoints; full-state summaries regenerated from the hashed ExoMol states file; no new equilibrium solve or adoption."
+}
