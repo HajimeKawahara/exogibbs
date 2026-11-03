@@ -3,22 +3,23 @@ Curated Gas Preset
 
 ``exogibbs.presets.curated`` provides the approved atomic-ion and major-molecule
 source choices as continuous, JAX-differentiable gas thermochemistry.
-The current dataset, ``curated-co2-v1``, covers **1500--4000 K** and uses a standard
+The current dataset, ``curated-h2o-v1``, covers **1500--4000 K** and uses a standard
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
 
-The :doc:`CO2 update <curated_co2>` adopts the normalized NIST 626 thermal
+The :doc:`H2O update <curated_h2o>` adopts the evaluated 2025 water thermal
 model with retained ATcT energy and NASA atomic references. It retains the
-:doc:`TiO update <curated_tio>` and :doc:`C2H correction <curated_c2h>`.
+:doc:`NIST 626 CO2 update <curated_co2>`, :doc:`TiO update <curated_tio>`
+and :doc:`C2H correction <curated_c2h>`.
 The source preference is supported within the declared gas-model domain;
 complete physical uncertainty remains unquantified.
 
-Use ``curated_v1.chemsetup``, ``curated_c2h.chemsetup`` or
-``curated_tio.chemsetup`` to reproduce those earlier datasets, or
-``curated_co2.chemsetup`` to select this version explicitly. Each supports
+Use ``curated_v1.chemsetup``, ``curated_c2h.chemsetup``,
+``curated_tio.chemsetup`` or ``curated_co2.chemsetup`` to reproduce the earlier
+datasets, or ``curated_h2o.chemsetup`` to select this version explicitly. Each supports
 ``ions=False`` and retains its identity and historical evidence. Changing one
 formation function can alter coupled abundances throughout the network.
-See the CO2 guide for the adoption rationale and verification.
+See the H2O guide for the adoption rationale and combined CO2/H2O verification.
 
 Migration from the Ni/Co-only preset
 ------------------------------------
@@ -216,14 +217,17 @@ The model combines :doc:`../atomic_ion_adoption` and
   explicit representative-isotope and neutral-atom reference conventions.
 * CO2 uses the NIST 626 thermal model with unchanged balanced ATcT 1.172
   atomization energy, explicit isotope conventions and consistent derivatives.
+* H2O uses the evaluated 2025 thermal model with unchanged balanced ATcT 1.172
+  total atomization energy, explicit nuclear-spin and isotope conventions,
+  and analytically consistent G, H, S and Cp.
 * 426 other species retain pinned FastChem4 constants and are marked
   ``inherited_unreviewed``. The 27 atoms and electron define the zero reference
   gauge. This is not a claim that all 537 species have been independently audited.
 
 For known thermochemical differences and optional MCEG inspection, see
 :doc:`../mceg/optional_inspection`. ``exogibbs.provenance.describe(setup)``
-provides a record lookup without requiring MCEG. The default matches the CO2
-adoption record and retains the TiO and C2H updates. The earlier HCN comparison belongs to
+provides a record lookup without requiring MCEG. The default matches the H2O
+adoption record and retains the CO2, TiO and C2H updates. The earlier HCN comparison belongs to
 ``curated_v1``; it is not evidence for the changed default.
 
 Use ``setup.metadata["species_provenance"][species]`` for a species decision,
@@ -237,7 +241,9 @@ JANAF CH4/COS/VO H, S and Cp fix the value and first two derivatives of a
 piecewise quintic free energy at 1500, 2000, 3000 and 4000 K. This produces a
 C2 representation, tested against 22 unused JANAF rows per molecule. The
 TiO representation uses six TOTO state-sum knots, spaced by 500 K over the
-same interval, with independent off-knot checks of G, H, S and Cp. The
+same interval, with independent off-knot checks of G, H, S and Cp. CO2 uses
+eleven NIST knots. H2O uses a degree-8 Cp/R polynomial with analytical H/S
+integrals anchored at 1500 K, checked against withheld evaluated rows. The
 five required neutral/cation partition functions use positive Boltzmann sums
 fitted to the adopted BC tables; evaluated anion levels are summed directly.
 The fitted excitation terms are numerical coefficients, not newly identified
@@ -261,7 +267,9 @@ absolute charge carried by all species plus the absolute requested net charge.
 Diagonal regularization of signed constraints scales with their own matrix diagonal;
 a fixed absolute shift previously overwhelmed weakly ionized cases.
 
-The CO2 default's verification and scope are recorded in :doc:`curated_co2`.
+The current default's combined CO2/H2O verification and scope are recorded
+in :doc:`curated_h2o`. The preceding CO2-only execution remains in
+:doc:`curated_co2`.
 The earlier TiO execution remains in :doc:`curated_tio`.
 The previous C2H default's 75 cold solves per network remain in
 :doc:`curated_c2h`. The following figures describe **curated-gas-v1** and
@@ -400,7 +408,7 @@ and :download:`the inverted column <../../tests/data/validation/curated_atmosphe
 Artifacts and reproduction
 --------------------------
 
-Current default evidence is in :doc:`curated_co2`. The artifacts
+Current default evidence is in :doc:`curated_h2o`. The artifacts
 below belong to **curated-gas-v1**; the reproduction scripts explicitly select
 ``curated_v1`` and preserve their original numerical scope.
 

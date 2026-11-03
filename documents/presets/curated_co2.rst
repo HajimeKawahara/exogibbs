@@ -7,7 +7,9 @@ model at adoption. Only C1O2 changes relative to ``curated-tio-v1``; both the
 537-species ion-inclusive and 421-species neutral networks retain their
 species, elemental budgets, standard pressure of 1 bar and **1500--4000 K**
 domain. The earlier ``curated_tio``, ``curated_c2h`` and ``curated_v1`` factories
-remain available for reproducible comparisons.
+remain available for reproducible comparisons. The current public default
+is described in :doc:`curated_h2o`; use ``curated_co2.chemsetup()`` to
+reproduce the CO2-only adoption recorded here.
 
 Scientific decision
 -------------------
@@ -91,8 +93,8 @@ and 0.000200 J/(mol K) in Cp. Runtime tests recover molecular calorics using
 separately evaluated NASA atomic references and automatic differentiation;
 this also tests the atom-energy gauge rather than only comparing coefficients.
 
-The production execution cold-solves **150 cases**, 75 per network, through
-the actual public default: five temperatures (1500, 2000, 2500, 3000, 4000 K),
+The production execution cold-solved **150 cases**, 75 per network, through
+the public default at CO2 adoption: five temperatures (1500, 2000, 2500, 3000, 4000 K),
 five pressures (1e-6, 1e-4, 0.01, 1, 100 bar), and three C/O ratios
 (0.5888436554, 1, 1.5). All converge with ``epsilon_crit=5e-14``. Maximum
 relative elemental residuals are 1.353e-6 with ions and 1.347e-6 without ions,
@@ -117,9 +119,14 @@ Rebuild the immutable payload offline::
 
 The production packet is
 ``tests/data/validation/curated_co2_adoption/20261104``; its receipt pins the
-actual default and every saved numerical output. The ``source`` subdirectory
+CO2 default at adoption and every saved numerical output. The ``source`` subdirectory
 preserves prior TiO-default source bytes so that its older receipts and
 assessments remain independently auditable. The source and candidate packets
 remain unchanged. Production claims are in
 ``mceg/contracts/curated_co2.yaml`` and its packaged mirror; the earlier source
 contract records completion of the production-adoption follow-up.
+
+The replay script selects ``curated_co2`` explicitly after later default changes.
+Its original default-dependent source and this original guide are preserved in
+``tests/data/validation/curated_h2o_adoption/20261104/source``; historical
+receipt hashes and numerical results are unchanged.

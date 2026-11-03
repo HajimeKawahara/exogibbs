@@ -75,7 +75,7 @@ evidence:
     The 0.045 eV energy shift lies within the legacy +/-0.061 eV uncertainty and does not disprove the old
     value.'
   sources:
-  - documents/presets/curated_tio.rst
+  - tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst
   - src/exogibbs/data/curated/tio_v1.json
   - tests/data/validation/tio_source_review/20261103/literature.json
   - tests/data/validation/tio_source_review/20261103/sources.json
@@ -89,7 +89,7 @@ evidence:
   subject: curated_tio_production_20261103
   context: production_gas_domain
   artifacts:
-  - source: documents/presets/curated_tio.rst
+  - source: tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst
     sha256: abd31e047887445bf07593b82c2b20f0c1aa6dfbfcb9c2f5bc932b5efa9b2e59
   - source: src/exogibbs/data/curated/tio_v1.json
     sha256: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
@@ -107,7 +107,7 @@ evidence:
     sha256: 81d8bd1083f4356da7dfde4a9ff726761e7940f0eed2924102d92378000f1afc
   provenance:
     role: secondary
-    location: documents/presets/curated_tio.rst
+    location: tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst
     inspection: inspected
     note: Scientific inference from inspected primary-source records and the finite-state model. Isotope and
       upper-state sensitivities support a proportionate approximation, not a complete uncertainty bound. Missing
@@ -147,7 +147,7 @@ evidence:
     sha256: 9ec5e9c0e8109d51598c8ff4003946d780f4a782976306a5b9a21ec21233e3d8
   provenance:
     role: primary
-    location: documents/presets/curated_tio.rst
+    location: tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst
     inspection: inspected
     note: A new execution of the public default, with retained all-species states and independently recomputable
       closure and mass action. No new independent-solver comparison or observational validation is claimed
@@ -162,7 +162,7 @@ subjects:
     - exogibbs.presets.curated.chemsetup
     - exogibbs.presets.curated_tio.chemsetup
   selected_files:
-    documents/presets/curated_tio.rst: abd31e047887445bf07593b82c2b20f0c1aa6dfbfcb9c2f5bc932b5efa9b2e59
+    tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_tio.rst: abd31e047887445bf07593b82c2b20f0c1aa6dfbfcb9c2f5bc932b5efa9b2e59
     mceg/reviews/build_tio_adoption.py: 44247b90a68c67993e4f793cd72d9d291d3b42799e3bcdb00d1e8bd9294529c2
     tests/data/validation/curated_co2_adoption/20261104/source/mceg/reviews/curated_tio_adoption.py: ffa5f13e38082efc7d295a001c7ec7ce742d458d79ae08fda16bf349dcfe03c1
     src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef

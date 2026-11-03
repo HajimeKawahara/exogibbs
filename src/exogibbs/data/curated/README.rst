@@ -1,9 +1,9 @@
 Curated gas thermochemistry datasets
 ====================================
 
-The current default is ``curated-co2-v1``, adding normalized NIST 626 CO2
-thermodynamics to the TiO/C2H updates. ``gas_v1.json``, ``c2h_v1.json`` and
-``tio_v1.json`` retain the preceding
+The current default is ``curated-h2o-v1``, adding evaluated 2025 H2O
+thermodynamics to the NIST 626 CO2, TiO and C2H updates. ``gas_v1.json``,
+``c2h_v1.json``, ``tio_v1.json`` and ``co2_v1.json`` retain the preceding
 models for explicit historical reproduction. All datasets use 1500--4000 K
 and a standard pressure of 1 bar.
 
@@ -140,3 +140,27 @@ The two-network production packet contains 150 cold solves in
 finite response, high-temperature and isotope limits are in
 ``documents/presets/curated_co2.rst``; the production contract is
 ``mceg/contracts/curated_co2.yaml``. Physical accuracy remains unquantified.
+
+H2O adoption
+-------------
+
+``h2o_v1.json`` pins the current ``curated-h2o-v1`` default, also selected
+explicitly through ``exogibbs.presets.curated_h2o.chemsetup()``. Only H2O1
+changes relative to ``curated-co2-v1``. The exact reviewed evaluated 2025
+degree-8 Cp/R polynomial and analytical H/S integrals retain the ATcT 1.172
+total atomization energy, NASA atomic references and mass 18.01528 u.
+H2(16O) internal thermodynamics represents element-aggregate water. Published
+entropy already removes the proton nuclear-spin product; it is not divided
+again. The source's numerical enthalpy values are J/mol despite kJ/mol labels.
+
+Rebuild with ``python mceg/reviews/build_h2o_adoption.py --output /tmp/h2o_v1.json``.
+The combined CO2/H2O production packet contains 150 cold solves, six tighter
+independently assembled controls and two FastChem comparisons in
+``tests/data/validation/curated_h2o_adoption/20261104``. Earlier source and
+candidate evidence retains its original scope. The CO2 adoption's default
+alias, production script and test are preserved under this packet's
+``source/`` for historical replay, without rewriting its original receipt.
+See ``documents/presets/curated_h2o.rst`` and
+``mceg/contracts/curated_h2o.yaml`` for the scientific choice, joint response,
+scattering-assignment and isotope limitations. Complete physical accuracy
+remains unquantified.

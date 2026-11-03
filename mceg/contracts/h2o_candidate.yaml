@@ -206,6 +206,29 @@ evidence:
     location: documents/mceg/h2o_candidate.rst
     inspection: inspected
     note: Scoped scientific reasoning from the declared evidence; not a complete physical-accuracy validation.
+- id: production_adoption_execution
+  kind: numerical_test
+  summary: The authorized curated-h2o-v1 default adopts the exact evaluated Cp model on curated-co2-v1.
+    All 150 joint production cold solves, six tighter independently assembled controls and two FastChem
+    comparisons pass. The independent reference applies the frozen CO2 and H2O candidates to curated-tio-v1.
+  sources:
+  - mceg/contracts/curated_h2o.yaml
+  - documents/presets/curated_h2o.rst
+  - tests/data/validation/curated_h2o_adoption/20261104/receipt.json
+  - tests/data/validation/curated_h2o_adoption/20261104/summary.json
+  scope: Subsequent production adoption on 1500-4000 K and 1 bar, retaining ATcT total atomization,
+    NASA atomic references and the explicit dominant-isotope/aggregate-mass approximation. Both 537-species
+    ion-inclusive and 421-species neutral networks; the preceding candidate-only endpoints remain unchanged.
+  artifacts:
+  - source: mceg/contracts/curated_h2o.yaml
+    sha256: ad7aaec93d13252842688c99998be7528a657ebde4cd78a4b50c23ca48b9a31b
+  - source: documents/presets/curated_h2o.rst
+    sha256: bda37bb6ca85541eb04d80429718f63399980892cd23e62a4e2506a6c6549c20
+  - source: tests/data/validation/curated_h2o_adoption/20261104/receipt.json
+    sha256: eabd4e991eaee343816877ca1c0b3927d74adee11b28b4d0d7ec8ce9a5ca8ce0
+  - source: tests/data/validation/curated_h2o_adoption/20261104/summary.json
+    sha256: 0cc401ce69b733bb148bc4ef4e32f3ce6c088f2716b7695403184a2a930f92df
+  result: passed
 subjects:
 - id: h2o_candidates_and_finite_substitution_20261104
   implementation: *id001
@@ -422,3 +445,13 @@ limitations:
     not condensation, transport, observational spectra or full atmosphere accuracy.
   evidence:
   - finite_execution
+follow_up_resolutions:
+- follow_up: scoped_production_choice
+  evidence:
+  - production_adoption_execution
+  note: 'Completed: curated-h2o-v1 selects the evaluated 2025 scope and packages the reviewed analytical
+    Cp/H/S representation without refitting, with unchanged ATcT total energy, NASA atomic gauge and bounded
+    domain. This follows the completed continuous_thermal_candidate construction and finite substitution
+    recorded above. Joint CO2/H2O production validation is separate from the original water-only experiment.
+    Scientific selection and numerical implementation are supported in mceg/contracts/curated_h2o.yaml;
+    isotope/scattering assignment and complete physical accuracy remain explicit limitations.'

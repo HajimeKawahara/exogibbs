@@ -1,4 +1,4 @@
-"""Verify the public CO2 curated default with cold solves in both networks."""
+"""Replay versioned CO2 in both networks; its original default run is archived."""
 
 import argparse
 from datetime import datetime, timezone
@@ -14,7 +14,7 @@ import numpy as np
 from scipy.special import logsumexp
 
 from exogibbs.api.gas import EquilibriumOptions, solve_profile
-from exogibbs.presets import curated, curated_co2, curated_tio
+from exogibbs.presets import curated_co2, curated_tio
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -33,10 +33,9 @@ def run(output: Path) -> None:
     if any((output/name).exists() for name in ("ions.npz", "neutral.npz", "summary.json", "receipt.json")):
         raise FileExistsError("Production numerical artifacts already exist")
     summaries = []
-    assert curated.chemsetup is curated_co2.chemsetup
     with np.load(PREVIOUS) as previous, np.load(BASELINE) as baseline:
         for ions in (True, False):
-            setup, legacy = curated.chemsetup(ions=ions), curated_tio.chemsetup(ions=ions)
+            setup, legacy = curated_co2.chemsetup(ions=ions), curated_tio.chemsetup(ions=ions)
             assert setup.metadata["dataset"] == "curated-co2-v1"
             np.testing.assert_array_equal(setup.formula_matrix, legacy.formula_matrix)
             np.testing.assert_array_equal(setup.element_vector_reference, legacy.element_vector_reference)
@@ -98,12 +97,12 @@ def run(output: Path) -> None:
             print(json.dumps(record), flush=True)
     summary = {"dataset": "curated-co2-v1", "legacy_dataset": "curated-tio-v1",
                "epsilon_crit": 5e-14, "method": "vmap_cold", "networks": summaries,
-               "scope": "Actual public CO2 default execution and numerical closure in both networks; ion mode also "
+               "scope": "Versioned CO2 replay and numerical closure in both networks; ion mode also "
                         "replays the archived candidate. No new independent-solver or physical validation."}
     (output / "summary.json").write_text(json.dumps(summary, indent=2)+"\n")
     paths = [Path(__file__), PREVIOUS, BASELINE]
     paths += [ROOT / "src/exogibbs/presets" / f"{name}.py"
-              for name in ("curated", "curated_co2", "curated_tio", "curated_c2h", "curated_v1", "fastchem4", "fastchem")]
+              for name in ("curated_co2", "curated_tio", "curated_c2h", "curated_v1", "fastchem4", "fastchem")]
     paths += [ROOT / "src/exogibbs/data/curated" / f"{name}.json" for name in ("gas_v1", "c2h_v1", "tio_v1", "co2_v1")]
     paths += [ROOT / name for name in ("src/exogibbs/thermo/standard.py", "src/exogibbs/thermo/models.py",
               "src/exogibbs/data/FastChem4/logK/logK.dat",
