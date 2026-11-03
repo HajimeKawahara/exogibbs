@@ -1,0 +1,37 @@
+{
+  "identity": {
+    "species": "neutral gas (KOH)2",
+    "not_equivalent": [
+      "KOH monomer",
+      "K2O2 peroxide",
+      "ions",
+      "hydrate",
+      "condensed KOH"
+    ],
+    "state_weight": 1
+  },
+  "source_ancestry": {
+    "curated": "Unchanged FastChem H2K2O2 fit labelledJANAF1998; underlying official evaluation December1970.",
+    "old_thermal": "JANAF1974p447 C2h sigma2; K2F2 core-frequency analogy and Li-dimer OH-frequency estimates.",
+    "new_thermal": "Gurvich1997pp1059-1062 D2h sigma4; four matrixIR frequencies, six ionic-model frequencies,two estimatedOH stretches. Electron diffraction supports structure but numerical inconsistency noted in evaluation.",
+    "new_energy": "Gusarov1968 and Hastie1984 potassium-specific vapor measurements plus auxiliary KOH(cr/g) references; Na/K exchange is additional and correlated, not sole basis."
+  },
+  "numeric_interpretation": {
+    "energy_alignment": "Balanced reaction H298 diagnostic only; source difference persists and increases after removing energy compensation.",
+    "association": "2KOH(g)->dimer changes both source monomers and dimer; not dimer-only replacement.",
+    "phase_reaction": "Selected H0=+16+/-3kJ/mol for KOH(cr)+KOH(g)->dimer; distinct from gas association/totalatomization.",
+    "reconstructed_pressure": "Thirdlaw totalpressure points share selected16kJ/mol intermediate reaction and are not independent confirmations.",
+    "uncertainty": "Prose Hf298 -641+/-8kJ/mol; Table28 at0/300K lists9. Preserve scopes/values; no probabilistic propagation.",
+    "standard_pressure": "Current comparisons1bar. Atomformation DeltaNu=-5: converting1atm to1bar shifts lnK by -5ln1.01325, not ordersofmagnitude."
+  },
+  "decision": {
+    "preferred_direction": "Gurvich1997/NASA",
+    "reason": "Potassium-specific spectroscopy and vapor analysis replace obsolete estimated thermal construction; preference is conditional, not physicalaccuracy certification.",
+    "curated_change": "none",
+    "next_candidate": "Define consistent atomic references, check thermodynamic identities and focused fixed-network dimer-only substitution. All original old papers need not precede candidate evaluation.",
+    "original_source_confirmation": "unknown",
+    "physical_accuracy": "unknown",
+    "atmospheric_accuracy": "unknown"
+  },
+  "footprint_limit": "75archived idealgas cases only; no substitution,condensation,nonideality,kinetic orobservationalvalidation."
+}

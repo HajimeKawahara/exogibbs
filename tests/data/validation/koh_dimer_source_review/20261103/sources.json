@@ -1,0 +1,72 @@
+{
+  "retrieved_date": "2026-11-03",
+  "sources": [
+    {
+      "id": "gurvich1997",
+      "doi": "10.1063/1.555996",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.555996.pdf",
+      "sha256": "0f2127b5475097394c61762860dcced4d185e78c5fdc79f79e7dc9e7d2408335",
+      "bytes": 1447615,
+      "inspection": "Full text sections2.2.3-2.2.4 pp1059-1067 and bibliography inspected; Tables24,25,28 and selected Hf298 visually checked. Download succeeded with ?download=1 after plain URL403.",
+      "archived": false,
+      "redistribution": "Full PDF and extracted text not committed; numerical excerpts in inputs.json."
+    },
+    {
+      "id": "janaf1974",
+      "doi": "10.1063/1.3253143",
+      "url": "https://srd.nist.gov/jpcrdreprint/1.3253143.pdf",
+      "sha256": "86a3894f0ef2aa0f70fc94b21b1f783fb86a894d6652e1dd472a96cf87c8bd7c",
+      "bytes": 12548829,
+      "inspection": "Printed p447, PDFpage138, numerical constants and explanatory source notes inspected visually and in text.",
+      "archived": false,
+      "redistribution": "Full PDF and extracted text not committed; numerical excerpts in inputs.json."
+    },
+    {
+      "id": "janaf_dimer",
+      "url": "https://janaf.nist.gov/tables/H-054.txt",
+      "html": "https://janaf.nist.gov/tables/H-054.html",
+      "file": "H-054.txt",
+      "sha256": "c1b7f6d9cee0f308260d47f216e61ae8a4e47b1b6ca3c969540345c45722abea",
+      "inspection": "Official neutral gas dimer table at1bar. HTML dates evaluation December1970; exactnodes compared against frozen screen.",
+      "archived": true
+    },
+    {
+      "id": "hastie1984",
+      "doi": "10.1007/978-1-4612-5180-4_19",
+      "url": "https://doi.org/10.1007/978-1-4612-5180-4_19",
+      "metadata": "hastie1984_metadata.json",
+      "inspection": "Publisher abstract, references and Crossref metadata inspected; full chapter subscription-only and uninspected. Same author/title/page range as Gurvich cited HighTempSci17,333; no separate journal DOI assigned.",
+      "archived": false
+    },
+    {
+      "id": "girichev1989",
+      "doi": "10.1007/BF00751899",
+      "url": "https://doi.org/10.1007/BF00751899",
+      "metadata": "girichev1989_metadata.json",
+      "inspection": "Publisher-deposited Crossref metadata inspected; full text uninspected; detailed interpretation is from Gurvich1997.",
+      "archived": false
+    },
+    {
+      "id": "schoonmaker1959",
+      "doi": "10.1063/1.1730469",
+      "url": "https://doi.org/10.1063/1.1730469",
+      "metadata": "schoonmaker1959_metadata.json",
+      "inspection": "Publisher-deposited Crossref metadata inspected; full text uninspected; exchange-reaction interpretation is from Gurvich1997.",
+      "archived": false
+    },
+    {
+      "id": "gusarov1968",
+      "citation": "Gusarov A.V.; Gorokhov L.N. Zh.Fiz.Khim42(4),860-865(1968); English Russ.J.Phys.Chem42,449.",
+      "doi": null,
+      "inspection": "Bibliography of Gurvich1997 and Hastie1984 inspected; original full text not inspected and DOI not verified.",
+      "archived": false
+    },
+    {
+      "id": "belyaeva1978_1991",
+      "citation": "Belyaeva A.A., thesis,Leningrad1978; Opt.Spektrosk.71,88(1991).",
+      "doi": null,
+      "inspection": "Gurvich1997 bibliographic/source account inspected; originals uninspected and DOI not verified.",
+      "archived": false
+    }
+  ]
+}
