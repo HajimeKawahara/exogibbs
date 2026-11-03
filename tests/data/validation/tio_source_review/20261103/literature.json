@@ -1,0 +1,76 @@
+{
+  "identity": {
+    "species": "TiO",
+    "network_id": "O1Ti1",
+    "reaction": "Ti(g) + O(g) -> TiO(g)",
+    "ground_term": "X3Delta",
+    "ground_fine_structure": "Omega=1, v=0, J=1; two parity components",
+    "atomic_asymptote": [
+      "Ti(a3F2)",
+      "O(3P2)"
+    ]
+  },
+  "current_selection": {
+    "thermal": "JANAF",
+    "energy": "Barklem-Collet 2016, Table 1 adopts Luo",
+    "D0_eV": 6.869,
+    "quoted_uncertainty_eV": 0.061,
+    "review_status": "prefer_conditionally",
+    "runtime_bounds_K": [
+      1500,
+      4000
+    ],
+    "curated_update": "none; scientific update remains motivated"
+  },
+  "janaf": {
+    "table_id": "O-022",
+    "evaluation": "December 1973",
+    "printed_pages": [
+      1738,
+      1813
+    ],
+    "mass_u": 63.8794,
+    "hf298_kJ_mol": 54.392,
+    "S298_J_mol_K": 233.474,
+    "ground_spin_orbit_cm-1": [
+      0,
+      96.4,
+      197.5
+    ],
+    "a1Delta_assumed_Te_cm-1": 1000,
+    "a1Delta_assumed_uncertainty_cm-1": 1000,
+    "note": "The notes shift all singlets using the assumed a1Delta origin. They describe this choice as uncertain, discard predicted unobserved 13000/15000 cm-1 levels, omit states near 32000 cm-1, and include rotation-vibration coupling and Q_r/Q_v corrections. Old thermal functions have an identified state-origin assumption, not simply a different D0."
+  },
+  "jain2023": {
+    "doi": "10.1063/5.0146365",
+    "D0_TiO_eV": 6.824,
+    "uncertainty_eV": 0.01,
+    "DR_endothermicity_eV": 0.004,
+    "IE_TiO_eV": 6.8198,
+    "IE_TiO_uncertainty_eV": 0.0001,
+    "neutral_relation": "D0(TiO)=DR endothermicity + IE(TiO)",
+    "ion_D0_eV": 6.832,
+    "isotopologue": "48Ti16O+ mass64; 47Ti16OH+ contamination treated separately",
+    "atomic_zero": "Table I/Figure 1: Ti(a3F2)+O(3P2), not term centroids",
+    "zero_point": "Experimental D0 derives from ground-state ionization threshold and internally cooled ion DR, not the electronic well depth De. Do not subtract molecular ZPE again. Section V distinguishes theoretical De, D0 and spin-orbit corrections.",
+    "fine_structure": "Ion Omega=3/2,5/2, rotational cooling and product atomic fine-structure channels explicitly enter fragment fits.",
+    "uncertainty_scope": "Section IV.A extends beyond purely statistical 1 meV to account for model systematics; authors estimate effective one-sigma +/-10 meV. No covariance with legacy evaluation assumed.",
+    "theory_only_SO_correction_eV": -0.0251,
+    "inspection": "Published primary full text inspected via public ResearchGate text rendering, Sections II-VI and Appendices B/C; publisher PDF download blocked. Theory correction is not an additional correction to the reported experimental D0."
+  },
+  "toto": {
+    "doi_2019": "10.1093/mnras/stz1818",
+    "doi_2024": "10.1093/rasti/rzae037",
+    "partition_scope": "2019 Section 4.2 includes estimated higher D,F,g,h,i states in recommended Q. Current 20240509 states use the 2024 hybrid energies; downloaded PF is audited separately.",
+    "2019_high_states_fraction_at_3000K": 0.00159,
+    "2019_high_states_fraction_at_5000K": 0.0179,
+    "limit": "PF tabulated to8000K is not proof of physical completeness there; line-list metadata recommends5000K maximum. Review diagnostics300-5000K; runtime1500-4000K.",
+    "normalization": "Divide 47Ti16O by6 and49Ti16O by8. 46,48,50 have1. Do not abundance-weight raw Q or confuse isotope state origins with a natural-mixture thermochemical standard."
+  },
+  "assessment": {
+    "modern_direction": "Prefer a complete modern partition plus Jain2023 energy candidate over retaining the 1973 thermal model indefinitely. This review does not yet supply a derivative-consistent production fit or finite equilibrium response.",
+    "curated_adoption": "not_performed",
+    "physical_accuracy": "unknown",
+    "legacy_source_gap": "BC Table1 explicitly selects Luo6.869+/-.061; Luo original entry/citation chain and Gurvich1982 p99/p101 have not been independently inspected. Hildenbrand1976 is cited by Jain2023 and its publisher abstract is inspected; it is not assumed to be the proven direct Luo ancestor."
+  }
+}

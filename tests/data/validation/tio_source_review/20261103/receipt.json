@@ -1,0 +1,26 @@
+{
+  "review_date": "2026-11-03",
+  "command": "PYTHONPATH=src python mceg/reviews/tio_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/tio_source_review.py": "efc95b8b27665a79e935d1a5cfd74dcac396765d9326b71f2a76f76efd15f3a3",
+    "documents/mceg/tio_source_review.rst": "6c9304cdbb12bcbe089a805df4769e21588457cc35a32d4ff90a068370baf98a",
+    "tests/model_evidence/tio_source_review_test.py": "82b257691705d4715d74d358ec32fbc818a6e329fa6b686f6b256cbabc2cd5a7",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "examples/comparisons/data/major_molecule_adoption.json": "2836795c24a7990d9e8b01b896102b405167119d2f72ff0e54dcc8b551abac92",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/tio_source_review/20261103/literature.json": "761518caaccc4ce5539686b8a06b355092e2d6019c789110535af97285914100",
+    "tests/data/validation/tio_source_review/20261103/sources.json": "8ab46dc6a06067a5a9aba07edb986ecb0525d7285cc195745ed0e8bae19be4ac",
+    "tests/data/validation/tio_source_review/20261103/exomol_nodes.json": "97fbab6ef85372a39e66cb87136af3e142175e868d98bbea83df0aba4f810840",
+    "tests/data/validation/tio_source_review/20261103/README.rst": "2230edf4b91a56f655d8e7eb9cba21bf58b882f23ee240c368e9f33fa4d41557"
+  },
+  "output_sha256": {
+    "tests/data/validation/tio_source_review/20261103/comparison.json": "f2821c383188ec2e96ccb5e50ef7faf41b1187294389e2887d0690aa327d60d2"
+  },
+  "scope": "Eight exact source/PF nodes; current hybrid1500-4000K;75 archived gas-only endpoints. No production adoption or new solve."
+}
