@@ -12,7 +12,7 @@ from scipy.special import logsumexp
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
-from curated_tio_history import historical_source
+from curated_adoption_history import historical_source
 import h2o_candidate as candidate
 
 DATA = ROOT / "tests/data/validation/h2o_equilibrium_impact/20261104"

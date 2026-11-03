@@ -237,7 +237,7 @@ subjects:
     mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
     mceg/reviews/tio_equilibrium_impact.py: b2013c6c41f98df6f826c52b725514faf19ee005e502267c765e2155a93738e8
     examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
-    src/exogibbs/presets/curated.py: 647455085d3cf906928a2fbd74ddf7498a6e95b9997ee2bba0349ad712a40fb0
+    tests/data/validation/curated_co2_adoption/20261104/source/src/exogibbs/presets/curated.py: 647455085d3cf906928a2fbd74ddf7498a6e95b9997ee2bba0349ad712a40fb0
     src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
@@ -273,7 +273,7 @@ subjects:
     tests/data/validation/h2o_equilibrium_impact/20261104/summary.json: f7ffabf1a1a830102c90f13eed8fb41179f97ab564d90d61b36a808d1272d392
     tests/data/validation/h2o_equilibrium_impact/20261104/receipt.json: 939de35155c0988d6013780a5b93fcf9824a13b34319e65b8be14cb49d932ebf
     tests/data/validation/h2o_equilibrium_impact/20261104/README.rst: 192549731d20676d41041be608c900f81f155034f14a75c9c550a7eaf233892f
-    tests/model_evidence/h2o_equilibrium_impact_test.py: fd7d397bbce4a06de9522bb9d84313540957d010fd339837954208e44c78b8a5
+    tests/data/validation/curated_h2o_adoption/20261104/source/tests/model_evidence/h2o_equilibrium_impact_test.py: fd7d397bbce4a06de9522bb9d84313540957d010fd339837954208e44c78b8a5
     mceg/contracts/h2o_source_review.yaml: 4a0c0adf7450f192f0d9e2cf8fab8649d4539f0949deb19d731b1da912d84582
 contexts:
 - id: candidate_evaluation
