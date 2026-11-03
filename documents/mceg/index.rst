@@ -21,6 +21,8 @@ HCN differences with optional MCEG tooling.
    _generated/cases
    _generated/catalog
    optional_inspection
+   h2o_source_review
+   h2o_candidate
    sio_source_review
    co2_source_review
    co2_candidate

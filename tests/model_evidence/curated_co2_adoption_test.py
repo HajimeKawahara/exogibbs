@@ -14,13 +14,14 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "tests/data/validation/curated_co2_adoption/20261104"
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
 from build_co2_adoption import build_data
+from curated_adoption_history import historical_source
 
 
 def test_co2_receipt_pins_original_sources_and_completed_outputs():
     receipt = json.loads((DATA / "receipt.json").read_text())
     assert receipt["result"] == "passed"
     for name, expected in receipt["selected_file_sha256"].items():
-        assert sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
+        assert sha256(historical_source(ROOT, name, expected).read_bytes()).hexdigest() == expected, name
     for name, expected in receipt["output_sha256"].items():
         assert sha256((DATA / name).read_bytes()).hexdigest() == expected, name
     summary = json.loads((DATA / "summary.json").read_text())

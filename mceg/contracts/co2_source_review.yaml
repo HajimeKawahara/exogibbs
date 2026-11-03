@@ -360,8 +360,8 @@ evidence:
   - tests/data/validation/curated_co2_adoption/20261104/summary.json
   - tests/data/validation/curated_co2_adoption/20261104/ions.npz
   - tests/data/validation/curated_co2_adoption/20261104/neutral.npz
-  - mceg/reviews/curated_co2_adoption.py
-  - tests/model_evidence/curated_co2_adoption_test.py
+  - tests/data/validation/curated_h2o_adoption/20261104/source/mceg/reviews/curated_co2_adoption.py
+  - tests/data/validation/curated_h2o_adoption/20261104/source/tests/model_evidence/curated_co2_adoption_test.py
   - tests/unittests/presets/curated_co2_test.py
   - mceg/reviews/curated_adoption_history.py
   - tests/model_evidence/curated_adoption_history_test.py
@@ -379,9 +379,9 @@ evidence:
     sha256: ac317c47074cef3420043a6f8fbf59d0aac2680b91bcb918e1249859d5594919
   - source: tests/data/validation/curated_co2_adoption/20261104/neutral.npz
     sha256: 13365dbe444104b250c43eb1524337c23aad4daf1741e6013e1dbf14a5912664
-  - source: mceg/reviews/curated_co2_adoption.py
+  - source: tests/data/validation/curated_h2o_adoption/20261104/source/mceg/reviews/curated_co2_adoption.py
     sha256: 1de5eabcc17512354eb779a76bdf0e89440c96006e5da969ebc5da5f497b0d1a
-  - source: tests/model_evidence/curated_co2_adoption_test.py
+  - source: tests/data/validation/curated_h2o_adoption/20261104/source/tests/model_evidence/curated_co2_adoption_test.py
     sha256: caf4fab43537d56f7d826030d46380e98d1983faf51ddd7c4c2517afdbe0dbe9
   - source: tests/unittests/presets/curated_co2_test.py
     sha256: 411e45ca5136f797be735927fc2418f0847be6f9f3049459ea5f1741191816dc
@@ -391,7 +391,7 @@ evidence:
     sha256: c8580fed821d38c2596cf5cb781082dd401596e1b84e27cf528086e3ec775d71
   provenance:
     role: primary
-    location: documents/presets/curated_co2.rst
+    location: tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_co2.rst
     inspection: inspected
     note: Numerical production checks are a new execution. Source and candidate evidence retain their original
       scope and bytes. Scientific selection is a reviewed inference from inspected primary thermodynamic sources;
@@ -493,10 +493,10 @@ subjects:
     - exogibbs.presets.curated.chemsetup
     - exogibbs.presets.curated_co2.chemsetup
   selected_files:
-    documents/presets/curated_co2.rst: 4d5f82aaa8f434c9fc334d1acd63261b6e363c378e0912e77179db5ff7fb7535
+    tests/data/validation/curated_h2o_adoption/20261104/source/documents/presets/curated_co2.rst: 4d5f82aaa8f434c9fc334d1acd63261b6e363c378e0912e77179db5ff7fb7535
     mceg/reviews/build_co2_adoption.py: 58487b1abbb75599531e221b8b763de05c759bf2ea68e8e0819d4c0252276d31
     mceg/reviews/curated_adoption_history.py: 098671c5edcef7f0f8e072f52b1dacaf1f3489cd098b87c9c80cad00f37c37ff
-    mceg/reviews/curated_co2_adoption.py: 1de5eabcc17512354eb779a76bdf0e89440c96006e5da969ebc5da5f497b0d1a
+    tests/data/validation/curated_h2o_adoption/20261104/source/mceg/reviews/curated_co2_adoption.py: 1de5eabcc17512354eb779a76bdf0e89440c96006e5da969ebc5da5f497b0d1a
     src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
     src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
     src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
@@ -521,7 +521,7 @@ subjects:
     src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
     src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
     src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
-    src/exogibbs/presets/curated.py: 29ef5661740f03851cb6c83516e8959aa343e878fd1f30379198f70c8d3dbd08
+    tests/data/validation/curated_h2o_adoption/20261104/source/src/exogibbs/presets/curated.py: 29ef5661740f03851cb6c83516e8959aa343e878fd1f30379198f70c8d3dbd08
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
@@ -545,7 +545,7 @@ subjects:
     tests/data/validation/curated_co2_adoption/20261104/summary.json: 2095c3cd5aa3cc00a2de36ca43773b668bcc79c4b18d69c9dea8f2cd07c32a08
     tests/data/validation/curated_tio_adoption/20261103/ions.npz: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
     tests/model_evidence/curated_adoption_history_test.py: c8580fed821d38c2596cf5cb781082dd401596e1b84e27cf528086e3ec775d71
-    tests/model_evidence/curated_co2_adoption_test.py: caf4fab43537d56f7d826030d46380e98d1983faf51ddd7c4c2517afdbe0dbe9
+    tests/data/validation/curated_h2o_adoption/20261104/source/tests/model_evidence/curated_co2_adoption_test.py: caf4fab43537d56f7d826030d46380e98d1983faf51ddd7c4c2517afdbe0dbe9
     tests/unittests/presets/curated_co2_test.py: 411e45ca5136f797be735927fc2418f0847be6f9f3049459ea5f1741191816dc
 contexts:
 - id: source_review

@@ -1,0 +1,152 @@
+{
+  "review_date": "2026-11-03",
+  "downloads": [
+    {
+      "file": "pokazatel.def",
+      "url": "https://www.exomol.com/db/H2O/1H2-16O/POKAZATEL/1H2-16O__POKAZATEL.def",
+      "bytes": 13776,
+      "sha256": "50d2248b1fba7ac095b7306864c7a2556d24f989c58494c87ce16f83e7c50c87",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "pokazatel.def.json",
+      "url": "https://www.exomol.com/db/H2O/1H2-16O/POKAZATEL/1H2-16O__POKAZATEL.def.json",
+      "bytes": 7564,
+      "sha256": "6cdc76d30b5d3bf7e46cee9e3569cbfe92a04a67ff3fcd7f76f27ea18189c73a",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "pokazatel.pf",
+      "url": "https://www.exomol.com/db/H2O/1H2-16O/POKAZATEL/1H2-16O__POKAZATEL.pf",
+      "bytes": 260000,
+      "sha256": "39441c486f09e50fcc450e85e321dff968a2db4e8a606af50ae346cb293dae39",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "pokazatel.cp",
+      "url": "https://www.exomol.com/db/H2O/1H2-16O/POKAZATEL/1H2-16O__POKAZATEL.cp",
+      "bytes": 265428,
+      "sha256": "3eda706a0314b8da0cb785df89366108dc8a3b21429b4cf33067ec31738f2ff0",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "pokazatel.states.bz2",
+      "url": "https://www.exomol.com/db/H2O/1H2-16O/POKAZATEL/1H2-16O__POKAZATEL.states.bz2",
+      "bytes": 12667256,
+      "sha256": "72e9067baa46884ec7811be329d5e7710adc17f37ad60f8235df3b5ccfdac092",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "polyansky2018.html",
+      "url": "https://arxiv.org/html/1807.04529v1",
+      "bytes": 308825,
+      "sha256": "941be9faed85f6ac024ca78694ca58b0de564b3aab1aeaf17ddbdac821aeb9d1",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "furtenbacher2016.html",
+      "url": "https://arxiv.org/html/1611.00324v1",
+      "bytes": 386077,
+      "sha256": "956288156aaa88c2c6abc2417e2a92f680cae6b133ea33063996045f4c68a8e8",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "furtenbacher2025.pdf",
+      "url": "https://tsapps.nist.gov/publication/get_pdf.cfm?pub_id=959474",
+      "bytes": 540988,
+      "sha256": "c322fe87d4d80783c1ca4d2931fe0b27629731a5cff027803ff4b9c5a8a1570c",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "figshare29087342.json",
+      "url": "https://api.figshare.com/v2/articles/29087342",
+      "bytes": 3234,
+      "sha256": "e6a9ca3fc9de18e765182fcae1a1593db4334a3f65e8cec06cb990a160ff7259",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "atct-h2o.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=27",
+      "bytes": 55088,
+      "sha256": "9d0c5ee08150018cc6e1850721839ce86f14578c7aa4442124b8fbba543c1535",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "nasa-thermo.inp",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "bytes": 1234323,
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "H216O_ThermoFunctions.csv",
+      "url": "https://ndownloader.figshare.com/files/54603044",
+      "bytes": 293947,
+      "sha256": "e9781396dd878f59cbf80a06cd6410abdc668e55b46b4d8bfd9994591e41cc51",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "atct-h.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=19",
+      "bytes": 42593,
+      "sha256": "fa02862feca3d9ff38a350af05778ad6480f03c3ecd2c47c351d95d74247a205",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "atct-o.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/species/?species_number=21",
+      "bytes": 42179,
+      "sha256": "f2b5461024e511854764e0d352c3bc8f43de9c25b69ea1b6cc73961ea280f4fc",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "atct-atomization.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/reaction/?c1=2&c2=1&c3=-1&species_number%5B%5D=19&species_number%5B%5D=21&species_number%5B%5D=27",
+      "bytes": 15383,
+      "sha256": "6928aadcb3e4c49fb4e7d1d0014167524b0cf266c287b14c76d9f88349deb877",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "PW2024.txt",
+      "url": "https://ndownloader.figshare.com/files/54602993",
+      "bytes": 25010609,
+      "sha256": "f93d783bd15bc364866d4363b12deeabd2340cb48333a351fc64171b935aa4c2",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "ReadMe.txt",
+      "url": "https://ndownloader.figshare.com/files/54602984",
+      "doi": "10.60893/figshare.jpr.29087324.v1",
+      "bytes": 1529,
+      "sha256": "28bb9d25da732fb805649b99c93ad6d0d79e5f122c0cdb7bc3cac1131b1d334f",
+      "status": "retrieved",
+      "archived": false
+    },
+    {
+      "file": "H216O_PartitionFunctions.csv",
+      "url": "https://ndownloader.figshare.com/files/54603002",
+      "doi": "10.60893/figshare.jpr.29087339.v1",
+      "bytes": 284446,
+      "sha256": "470c4dc1ad7eb40c2b286c09d930e2a7996a71eab70c1097f973ae3aebc49a34",
+      "status": "retrieved",
+      "archived": false
+    }
+  ],
+  "scope": "Original downloads are kept outside the packet. The extractor verifies hashes before reading all levels and exact temperature columns; selected table values and derived full-state moments are frozen here."
+}

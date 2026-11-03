@@ -180,7 +180,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
         raise ValueError("CO2 summary differs from the archived execution")
     catalog["models"].append({
         "id": "exogibbs.curated_co2.v1",
-        "label": "Curated default with NIST CO2 (ion-inclusive lookup)",
+        "label": "Versioned curated NIST CO2 (ion-inclusive lookup)",
         "dataset": co2_data["id"],
         "identity": {"data_sha256": co2_digest, "settings": {"ions": True}},
         "species": [c2h_species[k] for k in sorted(c2h_species)],
@@ -190,7 +190,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
                             "physical_accuracy_review"],
             "artifacts": [co2_receipt, co2_summary],
             "summary": (
-                "Default curated-co2-v1 adopts the exact reviewed NIST 626 thermal model "
+                "Former default, retained as curated_co2: curated-co2-v1 adopts the exact reviewed NIST 626 thermal model "
                 "on curated-tio-v1 at 1500-4000 K. NASA molecular mass 44.0095 u, NASA "
                 "atomic functions and ATcT 1.172 total atomization 1598.180 kJ/mol are retained. "
                 "Only CO2 thermochemistry changes; TiO, C2H, all other species and budgets are preserved. "
@@ -201,6 +201,47 @@ def build_catalog(output: Path = OUTPUT) -> None:
                 "adopted as a natural-isotope correction. curated_tio, curated_c2h and curated_v1 "
                 "preserve earlier datasets. Your conditions have not been evaluated."),
             "links": ["https://github.com/HajimeKawahara/exogibbs/pull/329"],
+        }],
+    })
+    h2o_path = "src/exogibbs/data/curated/h2o_v1.json"
+    h2o_bytes = (ROOT / h2o_path).read_bytes()
+    h2o_data = json.loads(h2o_bytes)
+    h2o_digest = hashlib.sha256(h2o_bytes).hexdigest()
+    h2o_adoption = "tests/data/validation/curated_h2o_adoption/20261104"
+    h2o_execution = json.loads((ROOT / h2o_adoption / "receipt.json").read_text())
+    if (h2o_digest != h2o_execution["selected_file_sha256"][h2o_path]
+            or co2_digest != h2o_data["base_data_sha256"]):
+        raise ValueError("H2O data changed; review new evidence before rebinding the adoption")
+    h2o_contract = copy("mceg/contracts/curated_h2o.yaml", "contracts/curated_h2o.yaml")
+    h2o_receipt = copy(f"{h2o_adoption}/receipt.json", "artifacts/h2o_adoption_receipt.json")
+    h2o_summary = copy(f"{h2o_adoption}/summary.json", "artifacts/h2o_adoption_summary.json")
+    if h2o_summary["sha256"] != h2o_execution["output_sha256"]["summary.json"]:
+        raise ValueError("H2O summary differs from the archived execution")
+    catalog["models"].append({
+        "id": "exogibbs.curated_h2o.v1",
+        "label": "Curated default with evaluated H2O and NIST CO2 (ion-inclusive lookup)",
+        "dataset": h2o_data["id"],
+        "identity": {"data_sha256": h2o_digest, "settings": {"ions": True}},
+        "species": [c2h_species[k] for k in sorted(c2h_species)],
+        "records": [{
+            "id": "h2o_adoption", **h2o_contract, "species": ["*", "H2O1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [h2o_receipt, h2o_summary],
+            "summary": (
+                "Default curated-h2o-v1 adopts the exact reviewed evaluated-2025 water "
+                "Cp polynomial and analytic H/S integrals on curated-co2-v1 at 1500-4000 K. "
+                "The representative H2(16O) internal model uses NASA aggregate mass 18.01528 u, "
+                "NASA atoms and retained ATcT 1.172 total atomization 917.819 kJ/mol. "
+                "CO2, TiO, C2H and all other formation functions are preserved from the base. "
+                "Joint CO2/H2O production passes 150 new cold solves across both networks; "
+                "six tighter independently assembled candidate solves and two FastChem "
+                "comparisons check numerical response. Earlier single-species responses "
+                "are not relabeled as joint results. Scoped scientific selection and numerical "
+                "adoption are supported; scattering assignment, complete isotope treatment "
+                "and physical atmospheric accuracy remain unknown. Earlier versioned presets "
+                "and their evidence remain available. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/330"],
         }],
     })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")

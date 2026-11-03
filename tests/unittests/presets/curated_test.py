@@ -61,7 +61,7 @@ def test_catalog_and_solar_budget_match_approved_study(setup, neutral):
 
 
 def test_source_choices_and_unreviewed_species_are_explicit(setup, data):
-    assert setup.metadata["dataset"] == "curated-co2-v1"
+    assert setup.metadata["dataset"] == "curated-h2o-v1"
     assert set(setup.metadata["species_provenance"]) == set(setup.species)
     counts = Counter(r["status"] for r in setup.metadata["species_provenance"].values())
     assert counts["inherited_unreviewed"] == 426
@@ -88,7 +88,7 @@ def test_continuous_constants_reproduce_approved_nodes(setup):
     # Rounded Ca partition values require a small positive thermal contribution.
     partitions = [setup.species.index(s) for s in ("Co1+", "C1-", "Ca1-", "Ge1-")]
     np.testing.assert_allclose(actual[:, partitions], expected[:, partitions], atol=5e-6, rtol=0)
-    others = [i for i in range(537) if i not in partitions and setup.species[i] not in {"C2H1", "O1Ti1", "C1O2"}]
+    others = [i for i in range(537) if i not in partitions and setup.species[i] not in {"C2H1", "O1Ti1", "C1O2", "H2O1"}]
     np.testing.assert_allclose(actual[:, others], expected[:, others], atol=2e-12, rtol=0)
 
 

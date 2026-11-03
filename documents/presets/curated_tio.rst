@@ -1,29 +1,31 @@
 Curated gas with modern TiO thermochemistry
 ===========================================
 
-``exogibbs.presets.curated.chemsetup()`` selects **curated-tio-v1**, also
-available explicitly as ``curated_tio.chemsetup``. It adopts the reviewed
+``exogibbs.presets.curated_tio.chemsetup()`` selects the versioned
+**curated-tio-v1** model. The public default selected this model at its
+2026-11-03 adoption; the current default is described in :doc:`curated_h2o`.
+This version adopts the reviewed
 ExoMol TOTO internal-state model and Jain et al.'s measured dissociation energy
 for TiO. Only TiO's formation function changes from **curated-c2h-v1**; the
 C2H correction, other thermochemistry, species sets and elemental budgets
 are retained. The domain remains **1500--4000 K**, with a standard pressure
 of **1 bar**.
 
-Use the current default or select a historical dataset explicitly::
+Reproduce the TiO version or its predecessors explicitly::
 
    import jax
    jax.config.update("jax_enable_x64", True)
    from exogibbs.api.gas import EquilibriumOptions, solve
-   from exogibbs.presets import curated, curated_c2h, curated_v1
+   from exogibbs.presets import curated_tio, curated_c2h, curated_v1
 
-   setup = curated.chemsetup()          # TOTO/Jain TiO, plus the C2H correction
+   setup = curated_tio.chemsetup()      # TOTO/Jain TiO, before CO2/H2O adoption
    previous = curated_c2h.chemsetup()    # C2H correction, previous TiO hybrid
    original = curated_v1.chemsetup()    # Original curated-gas-v1
    result = solve(setup, T=2000., P=0.01,
                   b=setup.element_vector_reference,
                   options=EquilibriumOptions(epsilon_crit=1e-13))
 
-All three factories support ``ions=False``. The current model retains 537
+All three factories support ``ions=False``. This version retains 537
 species with ions and 421 neutral species without ions. JAX scalar/array
 evaluation and temperature derivatives are supported; nonfinite or
 out-of-domain temperatures return NaN. Runtime evaluation requires neither
@@ -133,7 +135,7 @@ and its consistent numerical representation is already available.
 Production verification
 ------------------------
 
-The public default was independently constructed and cold-solved for
+The public default at TiO adoption was independently constructed and cold-solved for
 **75 cases per network, 150 in total**, with float64 and tolerance 5e-14.
 All cases pass. Maximum relative elemental residuals are below 1.35e-6
 (set by trace elements), the relative charge residual is below 2.15e-14,
@@ -148,7 +150,8 @@ numerical residuals. This production run adds no new independent-solver or
 observational validation; those scopes remain explicit in the earlier study.
 
 The saved full states, input/output hashes and diagnostics are in
-``tests/data/validation/curated_tio_adoption/20261103``. Reproduce into a new
+``tests/data/validation/curated_tio_adoption/20261103``. The replay script now
+selects ``curated_tio`` explicitly. Reproduce into a new
 directory::
 
    JAX_PLATFORMS=cpu JAX_ENABLE_X64=1 PYTHONPATH=src \
@@ -160,7 +163,7 @@ MCEG separately records supported ``scientific_selection_review`` and
 ``unknown``. The packaged ion-inclusive lookup is
 ``exogibbs.curated_tio.v1``; neutral-mode verification is recorded directly
 in the same contract. The earlier C2H and HCN records retain their dataset
-identities and are not rebound to the new default.
+identities and are not rebound to subsequent defaults.
 
 Reproduction and limits
 ------------------------
