@@ -53,6 +53,16 @@ def test_c4_reversal_is_energy_entropy_cancellation_not_a_fit_artifact(report):
 
 
 def test_c4_zero_K_anchors_and_separate_isomer_energies(report):
+    sources = json.loads((study.DATA / "sources.json").read_text())
+    legacy = sources["janaf_printed_notes"]
+    assert legacy["ground_state"] == "1Sigma"
+    assert legacy["frequencies_cm-1"] == [2150, 950, 1700, 550, 550]
+    assert legacy["mode_degeneracies"] == [1, 1, 1, 2, 2]
+    assert sum(legacy["mode_degeneracies"]) == 3*4-5
+    assert legacy["experimental_reduction"]["Hf2400_kcal_mol"] == 226
+    assert legacy["experimental_reduction"]["S2400_cal_mol_K"] == 90.5
+    assert legacy["stated_agreement_range_K"] == [2000, 3000]
+    assert sources["spectroscopy_facts"]["linear_ground_state"] == "3Sigma_g^-"
     energies = report["energy_zero_K"]
     assert energies["janaf_D0_kJ_mol"] == pytest.approx(1880.639)
     assert energies["nasa_D0_kJ_mol"] == pytest.approx(1819.79042)

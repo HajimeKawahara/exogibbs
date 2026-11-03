@@ -21,8 +21,10 @@ of the other, nor counted twice through both an aggregate and explicit species.
   <https://janaf.nist.gov/tables/C-143.html>`_ is actually the December 1969
   evaluation converted to 1 bar. Nine selected rows were transcribed from
   the official HTML/text. All four frozen baseline H/S/Gf nodes agree.
-  The full carbon-volume download returned 403, so its original evaluation
-  notes and precise state construction remain unverified.
+  The `official carbon-volume PDF
+  <https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf>`_ was subsequently
+  inspected for the C4 evaluation notes on printed page 691 (PDF page 143).
+  The underlying experimental papers remain unread.
 * The `NASA 2002 report <https://ntrs.nasa.gov/citations/20020085330>`_
   was inspected using the previously downloaded official copy. All 27 C4
   coefficients match the frozen record. It cites Gurvich 1991, volume 2,
@@ -37,6 +39,39 @@ of the other, nor counted twice through both an aggregate and explicit species.
   state-specific atomization energies and the small linear/cyclic splitting.
   The journal DOI is `10.1080/00268970802708959
   <https://doi.org/10.1080/00268970802708959>`_.
+
+What the original JANAF notes establish
+---------------------------------------
+
+The December 1969 model explicitly assumes linear D-infinity-h C4 with a
+**singlet 1Sigma ground state**, rotational symmetry number two, equal
+1.28 angstrom bonds and B0=0.171328 cm^-1. Its estimated vibrational frequencies
+are 2150, 950 and 1700 cm^-1 (each nondegenerate), plus two doubly degenerate
+550 cm^-1 bends. The notes describe the molecular functions as estimates.
+The evaluators changed the earlier triplet assumption to a singlet and used
+550/550 cm^-1 bending modes instead of Sandborn's 200/440 cm^-1 estimates
+to reproduce the available vapor-pressure observations. They describe agreement
+at 2000-3000 K while warning that the functions outside this interval provide
+only a general trend and may not describe the real molecule.
+
+The original energy reduction uses Drowart et al.'s second-law C4/C ion-intensity
+ratio over 2200-2700 K, yielding Hf(2400 K)=226 +/- 7 **kcal/mol**.
+Absolute pressures rely on the atomic-carbon vapor pressure and an estimated
+ionization cross-section ratio of 4.96; the resulting S(2400 K) is
+90.5 +/- 5 **cal/mol/K**. The notes separately discuss an overall entropy
+uncertainty of +/- 4.5 cal/mol/K from a possible factor-two cross-section uncertainty.
+These historical error statements are retained separately, without combining
+them statistically. The displayed selected uncertainties are Hf(0)=964 +/- 33
+and Hf(298.15)=971 +/- 33 kJ/mol, and S(298.15)=228.3 +/- 16.7 J/mol/K.
+The exact numerical table anchors used by the replay remain unchanged.
+
+Thus the inherited thermal construction has a specific obsolete state
+assumption relative to the observed linear triplet; this is stronger evidence
+than a compilation-date comparison. Multiplying by a triplet weight alone
+would leave the estimated bends and hot-state inventory unresolved. A revised
+state-consistent model is the scientific next step. Drowart et al. (1959),
+Pitzer and Clementi (1959), and Sandborn (1968) were identified in the inspected
+notes but their full papers were not inspected in this investigation.
 
 Numerical cause of the reversal
 -------------------------------
@@ -154,12 +189,15 @@ MCEG records two scoped follow-ups:
 
 1. Reconcile the legacy and modern state/energy inventories. Prioritize
    Gurvich 1991 volume 2 part 1 page 18 and part 2 page 16 (no verified DOI),
-   the original JANAF notes, and `Gingerich et al. 1994
+   and `Gingerich et al. 1994
    <https://doi.org/10.1021/ja00088a025>`_ for pressure calibration, third-law
    corrections and uncertainty. Only its publisher metadata was inspected.
    `Martin et al. 1991 <https://doi.org/10.1063/1.459747>`_ is a supporting
    source for revised partition functions; its institutional abstract was
-   inspected, not the full text. Resolve the Xu singlet-entry discrepancy
+   inspected, not the full text. The JANAF evaluation notes are now inspected;
+   original experimental/calculation papers remain uninspected and can be
+   checked where their reduction assumptions affect the candidate.
+   Resolve the Xu singlet-entry discrepancy
    if that level is used. These are scoped evidence tasks, not an obligation
    to obtain every historical reference before merging this investigation.
 2. Construct a consistent state-resolved or explicitly aggregated candidate,

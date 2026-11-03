@@ -44,8 +44,9 @@ claims:
 - id: source_attribution
   revision: '1'
   kind: numerical_verification
-  statement: The C4 source-ratio reversal is explained by balanced energy/entropy cancellation; the large thermal
-    difference survives H298 alignment and is distinct from small fit residuals.
+  statement: The C4 source-ratio reversal is explained by energy/entropy cancellation, and the inspected JANAF
+    notes use an estimated linear singlet distinct from the observed triplet. The thermal difference survives
+    H298 alignment.
   scope: Neutral C4 gas; 4 C(g) -> C4(g), standard pressure 1 bar. Native JANAF/NASA anchors, separately identified
     linear/cyclic literature energies and reused grid footprint.
 - id: numerical_replay
@@ -65,8 +66,9 @@ claims:
 evidence:
 - id: literature_review
   kind: literature
-  summary: Inspect official JANAF/NASA selected records and Xu/W4 full author papers; preserve the Xu table
-    conflict and legacy state/provenance gaps.
+  summary: Inspect official JANAF C4 evaluation notes, selected JANAF/NASA records and Xu/W4 full author papers;
+    record the obsolete linear singlet assumption and preserve the Xu table conflict and Gurvich inventory
+    gap.
   sources:
   - tests/data/validation/c4_source_review/20261103/sources.json
   - documents/mceg/c4_source_review.rst
@@ -76,16 +78,16 @@ evidence:
   context: source_comparison
   artifacts:
   - source: tests/data/validation/c4_source_review/20261103/sources.json
-    sha256: 49795e8ff0b85823764cfde1fc5625842e60e672a9c8840d340e8bb284644dc6
+    sha256: fb09f4e7202df133bcdc441b671c051ff32836a5775c44153e8be30b3511307a
   - source: documents/mceg/c4_source_review.rst
-    sha256: 1b9b3eec535b5f915413a690afe121565219dab53745f8c59e1da0c055d2dd00
+    sha256: 0468eb49bf683cbf716f7371d2a123e5da337d29dd4f2334ef70143e337490de
   provenance:
     role: primary
     location: documents/mceg/c4_source_review.rst
     inspection: partial
-    note: Official selected rows and full author-paper hashes are recorded; original JANAF/Gurvich evaluation
-      details and some experimental reductions remain uninspected. Isolated state weights and trace grid abundance
-      do not validate a complete model.
+    note: Official selected rows and full author-paper hashes are recorded; JANAF C4 evaluation notes are inspected,
+      while Gurvich state details and underlying experimental papers remain uninspected. Isolated state weights
+      and trace grid abundance do not validate a complete model.
 - id: source_replay
   kind: numerical_test
   summary: Replay six source nodes, four baseline nodes, 27 NASA coefficients, native zero-K atomization energies,
@@ -101,14 +103,14 @@ evidence:
   - source: tests/data/validation/c4_source_review/20261103/comparison.json
     sha256: 68320873fcbdb1046fa53b96997f948f3466b3a92b080e94aade3237ef3f752c
   - source: tests/data/validation/c4_source_review/20261103/receipt.json
-    sha256: 99c80d9416e29b481a76695a0850b60b6a8a1071e977accc5dc883091fa502b5
+    sha256: 3742c08bddbbf9b5c309761471abb35a03ce20cc87abe863419d05b5c4cf885b
   provenance:
     role: primary
     location: documents/mceg/c4_source_review.rst
     inspection: inspected
-    note: Official selected rows and full author-paper hashes are recorded; original JANAF/Gurvich evaluation
-      details and some experimental reductions remain uninspected. Isolated state weights and trace grid abundance
-      do not validate a complete model.
+    note: Official selected rows and full author-paper hashes are recorded; JANAF C4 evaluation notes are inspected,
+      while Gurvich state details and underlying experimental papers remain uninspected. Isolated state weights
+      and trace grid abundance do not validate a complete model.
   result: passed
 subjects:
 - id: c4_sources_20261103
@@ -119,8 +121,8 @@ subjects:
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
     mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
-    tests/model_evidence/c4_source_review_test.py: 00afe4c440a82467a36e50e1eccc5f55f26a4b7ad95ffa367fce854dbdb8b13b
-    documents/mceg/c4_source_review.rst: 1b9b3eec535b5f915413a690afe121565219dab53745f8c59e1da0c055d2dd00
+    tests/model_evidence/c4_source_review_test.py: 310bb789e83010500bc873c558a5e2bdaffe7692154ab4ca07e909a13b386b4d
+    documents/mceg/c4_source_review.rst: 0468eb49bf683cbf716f7371d2a123e5da337d29dd4f2334ef70143e337490de
     tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
     tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
     tests/data/validation/c3_source_review/20261102/C-003.txt: df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4
@@ -129,9 +131,9 @@ subjects:
     tests/data/validation/c4_source_review/20261103/nasa-c4.txt: 51273a2d8f3f331c95724e10e182418c7cdef4c5a1c96f0d10eaa71e76067962
     tests/data/validation/c4_source_review/20261103/README.rst: 583d045e6ab88e0e3db63048e8dbbdb0a3c1093cc178b330c93c8ee95a68ff60
     tests/data/validation/c4_source_review/20261103/comparison.json: 68320873fcbdb1046fa53b96997f948f3466b3a92b080e94aade3237ef3f752c
-    tests/data/validation/c4_source_review/20261103/sources.json: 49795e8ff0b85823764cfde1fc5625842e60e672a9c8840d340e8bb284644dc6
+    tests/data/validation/c4_source_review/20261103/sources.json: fb09f4e7202df133bcdc441b671c051ff32836a5775c44153e8be30b3511307a
     tests/data/validation/c4_source_review/20261103/janaf_c4_nodes.json: 2f8f4bb1d79ca3449047a174396f9c535543747438b6eab8dbb3b0695623e394
-    tests/data/validation/c4_source_review/20261103/receipt.json: 99c80d9416e29b481a76695a0850b60b6a8a1071e977accc5dc883091fa502b5
+    tests/data/validation/c4_source_review/20261103/receipt.json: 3742c08bddbbf9b5c309761471abb35a03ce20cc87abe863419d05b5c4cf885b
 contexts:
 - id: source_comparison
   scope: Neutral C4 gas; 4 C(g) -> C4(g), standard pressure 1 bar. Native JANAF/NASA anchors, separately identified
@@ -161,8 +163,9 @@ assessments:
   - literature_review
   - source_replay
   reasons:
-  - The balanced H298 offset and entropy difference explain the source-ratio reversal. The fit residual and
-    atomic terms are small at the sampled curated nodes; energy alignment does not reconcile thermal functions.
+  - The balanced energy/entropy terms explain the reversal. Original JANAF notes directly document an estimated
+    linear singlet construction fitted to vapor-pressure data, distinct from the measured linear triplet. Energy
+    alignment alone does not reconcile thermal functions.
   status: supported
   origin: reviewed
 - id: numerical_replay_review
@@ -190,9 +193,9 @@ assessments:
   - literature_review
   - source_replay
   reasons:
-  - Legacy state inventories, complete thermal functions and state-resolved energy alignment are not established;
-    original evaluation and experimental reduction details remain uninspected. No candidate substitution has
-    been solved.
+  - Gurvich state inventory, complete hot thermal functions and state-resolved energy alignment are not established;
+    underlying historical experiments remain uninspected. The original JANAF notes are inspected and document
+    an obsolete linear-singlet construction. No candidate substitution has been solved.
   status: unknown
   origin: reviewed
 follow_ups:
@@ -203,8 +206,8 @@ follow_ups:
   action: Reconcile linear/cyclic and electronic-state conventions, zero-point/atomic references and the legacy
     experimental reductions.
   requires:
-  - Gurvich 1991 volume 2 part 1 page 18 and part 2 page 16 (no verified DOI), plus original JANAF C4 evaluation
-    notes.
+  - Gurvich 1991 volume 2 part 1 page 18 and part 2 page 16 (no verified DOI). JANAF C4 evaluation notes are
+    inspected; check underlying historical papers where their reduction assumptions affect the candidate.
   - Gingerich et al. 1994 full paper, DOI 10.1021/ja00088a025, for pressure calibration, third-law thermal
     corrections and uncertainty.
   - Supporting Martin et al. 1991, DOI 10.1063/1.459747; reconcile with inspected W4 DOI 10.1080/00268970802708959
@@ -238,6 +241,7 @@ limitations:
   - literature_review
   - source_replay
 - statement: Full downloaded papers are not committed. Selected facts and acquisition hashes identify inspected
-    sources; primary evaluation pages and some experimental details remain uninspected.
+    sources; Gurvich state-inventory pages and some underlying experimental details remain uninspected. JANAF
+    original evaluation notes are inspected.
   evidence:
   - literature_review

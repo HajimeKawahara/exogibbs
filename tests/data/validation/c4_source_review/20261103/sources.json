@@ -14,7 +14,7 @@
     "phase": "neutral gas",
     "reaction": "4 C(g) -> C4(g)",
     "standard_pressure_Pa": 100000,
-    "legacy_state_inventory": "Not established by formula-only matching; linear triplet and cyclic singlet must be distinguished."
+    "legacy_state_inventory": "JANAF notes explicitly use an estimated linear singlet; measured linear C4 is triplet and cyclic C4 is singlet. Gurvich/NASA inventory remains unverified."
   },
   "existing_inputs": {
     "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
@@ -47,7 +47,8 @@
     "lowest_linear_singlet_T0_eV": 0.332,
     "reported_uncertainty_eV": 0.015,
     "other_singlet_conflict": "1Sigma_g+ is tentatively 0.50 +/- 0.02 eV in section IV B/Table II but 0.93 eV in Table V. This review preserves the conflict and does not select that value.",
-    "diagnostic_scope": "Only the isolated electronic Boltzmann weight (degeneracy2 against ground-triplet3); no rovibrational states, cyclic isomer or completeness estimate."
+    "diagnostic_scope": "Only the isolated electronic Boltzmann weight (degeneracy2 against ground-triplet3); no rovibrational states, cyclic isomer or completeness estimate.",
+    "linear_ground_state": "3Sigma_g^-"
   },
   "sources": [
     {
@@ -55,12 +56,16 @@
       "title": "NIST-JANAF C4(g), table C-143",
       "url": "https://janaf.nist.gov/tables/C-143.html",
       "evaluation": "December 1969, converted to 1 bar",
-      "access": "Official HTML and text inspected; nine selected rows transcribed. Full carbon-volume download returned403, so original evaluation notes were not verified.",
+      "access": "Official HTML/text and nine selected rows inspected. Subsequently retrieved full official carbon PDF with ?download=1 and browser User-Agent; printed C4 page691/PDFpage143 visually inspected. Original experimental and calculation papers remain unread.",
       "findings": [
         "298 K Hf970.688kJ/mol,S228.322J/mol/K.",
         "Four frozen source H/S/Gf nodes match.",
-        "0 K H-H298=-10.791kJ/mol; graphite-reference Hf0=964.101kJ/mol must not be substituted for an H(0) gauge."
-      ]
+        "0 K H-H298=-10.791kJ/mol; graphite-reference Hf0=964.101kJ/mol must not be substituted for an H(0) gauge.",
+        "Original notes explicitly assume a linear singlet, symmetry2 and estimated frequencies2150/950/1700/550(x2)/550(x2)cm^-1.",
+        "The selected singlet and bending modes were chosen to match vapor-pressure observations; notes warn that functions outside2000-3000K may not reflect the real situation.",
+        "This legacy linear singlet differs from the experimentally assigned linear triplet; changing spin weight alone does not repair the remaining thermal model."
+      ],
+      "printed_notes": "Selected factual transcription in janaf_printed_notes; complete PDF hash and inspection scope recorded there."
     },
     {
       "id": "nasa2002",
@@ -132,5 +137,82 @@
       "needed": "Original linear/cyclic partition-function and energy revision; useful with Gurvich and subsequent W4 analysis."
     }
   ],
-  "scope": "Initial source investigation; current curated retained provisionally. Source replay is not complete physical validation or proof that no future correction is needed."
+  "scope": "Initial source investigation; current curated retained provisionally. Source replay is not complete physical validation or proof that no future correction is needed.",
+  "janaf_printed_notes": {
+    "source_url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf",
+    "successful_download_url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Carbon.pdf?download=1",
+    "retrieval": "Browser User-Agent Mozilla/5.0; successful retry after plain URL returned403.",
+    "full_download_sha256": "1cbc4e0c60fa901f67cf711532084fec058af0952867776faf9747a7b27b9d9c",
+    "full_download_bytes": 12474349,
+    "printed_page": 691,
+    "PDF_page_1based": 143,
+    "inspection": "Scanned official C4 evaluation notes and constants visually inspected. Full PDF remains uncommitted; underlying experimental papers not inspected.",
+    "ground_state": "1Sigma",
+    "point_group": "D_infinity_h",
+    "spin_multiplicity": 1,
+    "rotational_symmetry_number": 2,
+    "equal_bond_length_angstrom": 1.28,
+    "rotational_constant_cm-1": 0.171328,
+    "frequencies_cm-1": [
+      2150,
+      950,
+      1700,
+      550,
+      550
+    ],
+    "mode_degeneracies": [
+      1,
+      1,
+      1,
+      2,
+      2
+    ],
+    "parameter_status": "Bracketed estimates in the printed notes; all molecular functions described as estimated.",
+    "changed_assumptions": {
+      "earlier_ground_state": "3Sigma",
+      "selected_ground_state": "1Sigma",
+      "earlier_bends_cm-1": [
+        200,
+        440
+      ],
+      "selected_bends_cm-1": [
+        550,
+        550
+      ],
+      "reason": "Match available vapor-pressure observations; source gives no state-resolved validation."
+    },
+    "stated_agreement_range_K": [
+      2000,
+      3000
+    ],
+    "outside_range_caution": "Functions give a general trend and may not describe the real molecule outside the stated interval.",
+    "experimental_reduction": {
+      "source": "Drowart et al.1959, as described by JANAF; original paper unread",
+      "method": "Second-law C4/C ion-intensity ratio",
+      "temperature_range_K": [
+        2200,
+        2700
+      ],
+      "Hf2400_kcal_mol": 226,
+      "Hf2400_reported_uncertainty_kcal_mol": 7,
+      "estimated_ionization_cross_section_ratio": 4.96,
+      "S2400_cal_mol_K": 90.5,
+      "S2400_reported_uncertainty_cal_mol_K": 5,
+      "cross_section_uncertainty_factor": 2,
+      "cross_section_entropy_uncertainty_cal_mol_K": 4.5,
+      "interpretation": "Separate historical uncertainty statements, not combined as independent Gaussian errors."
+    },
+    "selected_displayed_properties": {
+      "Hf0_kJ_mol": 964,
+      "Hf298_kJ_mol": 971,
+      "reported_Hf_uncertainty_kJ_mol": 33,
+      "S298_J_mol_K": 228.3,
+      "reported_S298_uncertainty_J_mol_K": 16.7
+    },
+    "unread_original_references": [
+      "J.Drowart,R.P.Burns,G.DeMaria,M.G.Inghram,J.Chem.Phys.31,1131(1959).",
+      "K.S.Pitzer,E.Clementi,J.Am.Chem.Soc.81,4477(1959).",
+      "R.H.Sandborn,J.Chem.Phys.49,4219(1968)."
+    ]
+  }
 }
