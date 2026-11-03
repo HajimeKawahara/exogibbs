@@ -1,0 +1,162 @@
+{
+  "schema_version": "1",
+  "species_id": "H2K2O2",
+  "nasa_species": "K2O2H2",
+  "composition": {
+    "H": 2,
+    "K": 2,
+    "O": 2
+  },
+  "charge": 0,
+  "standard_pressure_Pa": 100000,
+  "temperatures_K": [
+    500,
+    1000,
+    1500,
+    3000
+  ],
+  "gurvich1997": {
+    "doi": "10.1063/1.555996",
+    "printed_pages": [
+      1059,
+      1060,
+      1061,
+      1062,
+      1063,
+      1064,
+      1065,
+      1066,
+      1067
+    ],
+    "table_24": {
+      "janaf1985_frequencies_cm-1": [
+        3700,
+        273,
+        150,
+        1250,
+        235,
+        1250,
+        150,
+        1250,
+        1250,
+        255,
+        3700,
+        258
+      ],
+      "adopted_frequencies_cm-1": [
+        3700,
+        360,
+        165,
+        300,
+        250,
+        290,
+        120,
+        295,
+        290,
+        270.5,
+        3700,
+        294.5
+      ],
+      "mode_degeneracies": [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "experimentally_based_modes": [
+        6,
+        9,
+        10,
+        12
+      ],
+      "ionic_model_modes": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "estimated_modes": [
+        1,
+        11
+      ],
+      "janaf1985_geometry": "C2h, square planar K2O2 core; trans out-of-plane H",
+      "adopted_geometry": "D2h planar rhomboid",
+      "adopted_symmetry_number": 4,
+      "adopted_electronic_weight": 1,
+      "adopted_inertia_product_1e-113_g3_cm6": 3.4
+    },
+    "hf298_kJ_mol": -641.0,
+    "hf0_table_28_kJ_mol": -632.061,
+    "hf298_stated_uncertainty_kJ_mol": 8,
+    "table_28_300K_stated_hf_uncertainty_kJ_mol": 9,
+    "uncertainty_convention": "Prose adopts +/-8 kJ/mol at298.15K; Table28 lists9 at0/300K. Preserve both, no independent Gaussian interpretation.",
+    "table_28": [
+      {
+        "temperature_K": 298.15,
+        "Cp_J_mol_K": 105.593,
+        "S_J_mol_K": 342.859,
+        "H_minus_H0_kJ_mol": 22.385
+      },
+      {
+        "temperature_K": 500,
+        "Cp_J_mol_K": 112.357,
+        "S_J_mol_K": 399.452,
+        "H_minus_H0_kJ_mol": 44.537
+      },
+      {
+        "temperature_K": 1000,
+        "Cp_J_mol_K": 117.673,
+        "S_J_mol_K": 479.093,
+        "H_minus_H0_kJ_mol": 102.132
+      },
+      {
+        "temperature_K": 1500,
+        "Cp_J_mol_K": 122.318,
+        "S_J_mol_K": 527.715,
+        "H_minus_H0_kJ_mol": 162.17
+      },
+      {
+        "temperature_K": 2000,
+        "Cp_J_mol_K": 125.647,
+        "S_J_mol_K": 563.394,
+        "H_minus_H0_kJ_mol": 224.22
+      },
+      {
+        "temperature_K": 3000,
+        "Cp_J_mol_K": 129.161,
+        "S_J_mol_K": 615.106,
+        "H_minus_H0_kJ_mol": 351.878
+      },
+      {
+        "temperature_K": 4000,
+        "Cp_J_mol_K": 130.715,
+        "S_J_mol_K": 652.504,
+        "H_minus_H0_kJ_mol": 481.91
+      }
+    ]
+  },
+  "janaf1974": {
+    "doi": "10.1063/1.3253143",
+    "printed_page": 447,
+    "pdf_page": 138,
+    "geometry": "C2h",
+    "symmetry_number": 2,
+    "electronic_weight": 1,
+    "inertia_product_1e-113_g3_cm6": 3.7587,
+    "hf298_kcal_mol": -156.5,
+    "hf298_stated_uncertainty_kcal_mol": 3,
+    "gas_dimerization_H298_kcal_mol": -45.3,
+    "gas_dimerization_stated_uncertainty_kcal_mol": 3,
+    "pressure_note": "1974 uses1atm/cal; present replay uses modern1bar/J table."
+  }
+}

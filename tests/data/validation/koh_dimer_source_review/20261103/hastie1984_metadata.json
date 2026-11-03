@@ -1,0 +1,56 @@
+{
+  "DOI": "10.1007/978-1-4612-5180-4_19",
+  "title": [
+    "Transpiration Mass Spectrometric Analysis of Liquid KCl and KOH Vaporization"
+  ],
+  "author": [
+    {
+      "given": "J. W.",
+      "family": "Hastie",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    },
+    {
+      "given": "K. F.",
+      "family": "Zmbov",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    },
+    {
+      "given": "D. W.",
+      "family": "Bonnell",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [
+        {
+          "role": "author",
+          "vocabulary": "crossref"
+        }
+      ]
+    }
+  ],
+  "published": {
+    "date-parts": [
+      [
+        1984
+      ]
+    ]
+  },
+  "container-title": [
+    "Modern High Temperature Science"
+  ],
+  "page": "333-364",
+  "URL": "https://doi.org/10.1007/978-1-4612-5180-4_19"
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": "1",
+  "command": "python mceg/reviews/koh_dimer_source_review.py --output tests/data/validation/koh_dimer_source_review/20261103/comparison.json",
+  "selected_input_sha256": {
+    "mceg/reviews/koh_dimer_source_review.py": "d1213cd296f32fd522a586db22b346220a76784e5290b4388101793072cc910d",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "documents/mceg/koh_dimer_source_review.rst": "06e93141c6b9b11cd34f0b69e18ea7b4f93675d552f7df4e61ee7e642bc8e8e9",
+    "tests/data/validation/koh_dimer_source_review/20261103/H-054.txt": "c1b7f6d9cee0f308260d47f216e61ae8a4e47b1b6ca3c969540345c45722abea",
+    "tests/data/validation/koh_dimer_source_review/20261103/README.rst": "514db1306e4675f7ef3c6e89e97e76873576e5c1e09f1c6834b655632d970cd3",
+    "tests/data/validation/koh_dimer_source_review/20261103/girichev1989_metadata.json": "48b2d74effa0844d8a940c397ed103fad261a33da64dc94b81167d10e7535035",
+    "tests/data/validation/koh_dimer_source_review/20261103/hastie1984_metadata.json": "8746a58aae6d9c16bb8429ee9c0ce8a55759fad067aebe8d7fbcec3b14376ab2",
+    "tests/data/validation/koh_dimer_source_review/20261103/inputs.json": "f483186f0bf5ad8211af348afbdc471049ad1e68680026fe58cfdf8fe0bfb748",
+    "tests/data/validation/koh_dimer_source_review/20261103/literature.json": "0105fe77106c38dcf80676d4f587f2a7fe7a080afb6839f049e8ce990ac1ebca",
+    "tests/data/validation/koh_dimer_source_review/20261103/schoonmaker1959_metadata.json": "00ed8b69bacb03363d5373889257192a74f582f6b1c182fe6b24e606d3184018",
+    "tests/data/validation/koh_dimer_source_review/20261103/sources.json": "7bd071bc8bec7e335e1f6271ee3b8a41743fca052a0d4b9a85f24c66a0eb9f98"
+  },
+  "output_sha256": {
+    "tests/data/validation/koh_dimer_source_review/20261103/comparison.json": "e39fde6d17ced92ad138cc22921b2ea1014072e50f37603040bd643eeace9218"
+  },
+  "production_change": "none",
+  "equilibrium_substitution": "not_run",
+  "note": "Fresh offline thermochemical replay; reuse of archived 75-case equilibrium endpoints, no new equilibrium solves. Full articles not vendored.",
+  "executed_at_utc": "2026-11-03T01:51:57.792507+00:00"
+}
