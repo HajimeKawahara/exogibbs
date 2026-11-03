@@ -87,7 +87,9 @@ def test_formation_gauge_nasa_proxy_and_energy_only_variants():
 
 def test_jax_api_matches_scalar_and_thermodynamic_derivatives():
     jax = pytest.importorskip("jax")
-    with jax.experimental.enable_x64():
+    previous = jax.config.x64_enabled
+    jax.config.update("jax_enable_x64", True)
+    try:
         temperatures = np.array([1500., 1637., 2253., 3000., 3871., 4000.])
         for thermal in ("states", "nasa"):
             function = jax.jit(lambda t: candidate.formation_h_jax(t, thermal))
@@ -103,6 +105,8 @@ def test_jax_api_matches_scalar_and_thermodynamic_derivatives():
                 assert float(jax.grad(gibbs)(t)) == pytest.approx(-entropy, abs=1e-9)
                 assert float(-t*jax.grad(jax.grad(gibbs))(t)) == pytest.approx(cp, abs=1e-9)
             assert np.isnan(np.asarray(function(np.array([1499., 4001., np.nan])))).all()
+    finally:
+        jax.config.update("jax_enable_x64", previous)
 
 
 def test_bound_cutoff_spin_and_completeness_are_explicit():
