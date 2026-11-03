@@ -11,6 +11,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
 import tio_source_review as study
+from curated_tio_history import historical_source
 from gas_source_comparison import check_equal
 
 
@@ -103,4 +104,4 @@ def test_scoped_input_and_output_receipts():
     receipt = json.loads((study.DATA / "receipt.json").read_text())
     for group in ("selected_input_sha256", "output_sha256"):
         for path, digest in receipt[group].items():
-            assert sha256((ROOT / path).read_bytes()).hexdigest() == digest, path
+            assert sha256(historical_source(ROOT, path, digest).read_bytes()).hexdigest() == digest, path

@@ -1,7 +1,14 @@
 TiO: modern ground energy and partition functions
 =================================================
 
-The current curated TiO model combines JANAF thermal functions with the
+.. note::
+
+   This is the historical source investigation. Its follow-ups were completed
+   in :doc:`tio_candidate`, and the resulting model is now adopted as
+   :doc:`../presets/curated_tio`. The source-only assessments and numerical
+   archive remain attached to the pre-adoption model.
+
+The pre-adoption curated TiO model combines JANAF thermal functions with the
 Barklem--Collet (BC) threshold, 6.869 +/- 0.061 eV. It was already a conditional
 source choice in ``major_molecule_adoption.yaml``, with normalized ExoMol
 partitions explicitly left for follow-up. This investigation advances that

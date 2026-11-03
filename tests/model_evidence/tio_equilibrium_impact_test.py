@@ -3,6 +3,7 @@
 from hashlib import sha256
 import json
 from pathlib import Path
+import sys
 
 import numpy as np
 import pytest
@@ -10,6 +11,8 @@ from scipy.special import logsumexp
 
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_tio_history import historical_source
 DATA = ROOT / "tests/data/validation/tio_equilibrium_impact/20261103"
 BASELINE = ROOT / "tests/data/validation/curated_default_adoption/20261102/ions.npz"
 
@@ -195,6 +198,6 @@ def test_selected_inputs_and_outputs_are_pinned():
     inputs = receipt["selected_file_sha256"]
     assert str(BASELINE.relative_to(ROOT)) in inputs
     for name, digest in inputs.items():
-        assert sha256((ROOT/name).read_bytes()).hexdigest() == digest, name
+        assert sha256(historical_source(ROOT, name, digest).read_bytes()).hexdigest() == digest, name
     for name, digest in receipt["output_sha256"].items():
         assert sha256((DATA/name).read_bytes()).hexdigest() == digest, name

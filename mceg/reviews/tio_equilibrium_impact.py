@@ -15,7 +15,7 @@ import jax.numpy as jnp
 import numpy as np
 from scipy.special import logsumexp
 
-from exogibbs.presets import curated
+from exogibbs.presets import curated_c2h as curated
 
 from c2h_equilibrium_impact import independent_check, solve_cases
 from gas_source_comparison import ROOT, file_hash

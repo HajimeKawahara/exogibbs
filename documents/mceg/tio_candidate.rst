@@ -1,10 +1,18 @@
 TiO candidate and finite equilibrium substitution
 =================================================
 
+.. note::
+
+   The completed candidate is now adopted as :doc:`../presets/curated_tio`.
+   The text and numerical results below describe the preceding candidate
+   stage. Its original receipts and assessments retain that historical scope;
+   production adoption has a separate execution and MCEG contract.
+
 This work completes the candidate construction and finite-substitution tasks
 identified in :doc:`tio_source_review`. It evaluates a named replacement for
-the existing TiO source on the same gas network. **Production curated data
-remain unchanged.** Numerical support for this candidate and physical accuracy
+the existing TiO source on the same gas network. **This candidate-stage
+calculation did not change production curated data.** Numerical support for
+this candidate and physical accuracy
 of an atmosphere are recorded separately in the existing TiO MCEG contract;
 the earlier source-only assessments and receipts remain historical records.
 

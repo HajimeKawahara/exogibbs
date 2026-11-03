@@ -11,6 +11,7 @@ from scipy.special import logsumexp
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_tio_history import historical_source
 from gas_source_comparison import check_equal, file_hash, load_inputs, nasa_g
 from alh_equilibrium_impact import models, prioritization
 
@@ -65,7 +66,7 @@ def test_archived_execution_hashes_and_all_convergence_checks():
     assert receipt["datasets"][1].endswith("raw-nasa-alh-diagnostic")
     assert "not adoption" in receipt["scope"]
     for name, digest in receipt["selected_file_sha256"].items():
-        assert file_hash(ROOT / name) == digest, name
+        assert file_hash(historical_source(ROOT, name, digest)) == digest, name
     for name, digest in receipt["output_sha256"].items():
         assert file_hash(DATA / name) == digest, name
     diagnostics = json.loads((DATA / "diagnostics.json").read_text())

@@ -204,9 +204,9 @@ subjects:
 - id: curated_default_20261102
   implementation: *id001
   selected_files:
-    mceg/reviews/curated_default_adoption.py: 559c926cc993a372a2a00c45ea7ebd0ab6cf844ebb848115e6514bf7583eaeae
+    tests/data/validation/curated_tio_adoption/20261103/source/mceg/reviews/curated_default_adoption.py: 559c926cc993a372a2a00c45ea7ebd0ab6cf844ebb848115e6514bf7583eaeae
     tests/data/validation/c2h_equilibrium_impact/20261102/equilibria.npz: 15be6827677545227b1c77fabe00f50958b61f8464d765444789139bcc77c2c9
-    src/exogibbs/presets/curated.py: 14b6fb44b0380ea0aee97cb9e8096e05d5ebcc691f4f6ef4d8ab97c2593940f1
+    tests/data/validation/curated_tio_adoption/20261103/source/src/exogibbs/presets/curated.py: 14b6fb44b0380ea0aee97cb9e8096e05d5ebcc691f4f6ef4d8ab97c2593940f1
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
     src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76

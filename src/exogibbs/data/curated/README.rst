@@ -1,5 +1,13 @@
-Curated gas thermochemistry, version 1
+Curated gas thermochemistry datasets
 ====================================
+
+The current default is ``curated-tio-v1``, with modern TOTO/Jain TiO on top of
+the C2H-corrected model. ``gas_v1.json`` and ``c2h_v1.json`` retain the preceding
+models for explicit historical reproduction. All datasets use 1500--4000 K
+and a standard pressure of 1 bar.
+
+Original curated-gas-v1
+-----------------------
 
 ``gas_v1.json`` is the pinned numerical dataset for
 ``exogibbs.presets.curated_v1.chemsetup``. Its evaluation domain is 1500--4000 K
@@ -67,11 +75,11 @@ The builder uses SciPy only at development time. The runtime evaluates the
 stored coefficients and partition sums with JAX. Changing numerical sources
 requires an explicit dataset-version and pinned-hash review.
 
-Default C2H correction
-----------------------
+C2H correction
+---------------
 
 ``c2h_v1.json`` pins the separate ``curated-c2h-v1`` dataset, selected by
-``exogibbs.presets.curated.chemsetup()`` (also ``curated_c2h.chemsetup``). Only C2H1 changes: NASA CCH
+``exogibbs.presets.curated_c2h.chemsetup()``. Only C2H1 changes: NASA CCH
 thermal functions and the balanced ATcT 1.172 atomization energy replace the
 inherited constants. All other species, both network options and the
 1500--4000 K interval are preserved. ``gas_v1.json`` remains frozen.
@@ -86,4 +94,31 @@ substitution changes were not evaluated there. An additional 75 cold solves
 per network verify the adopted default in
 ``tests/data/validation/curated_default_adoption/20261102``. The original
 opt-in wording inside the frozen correction JSON records its creation policy;
-runtime metadata identifies the subsequent default adoption. See ``documents/presets/curated_c2h.rst``.
+runtime metadata records that adoption. See ``documents/presets/curated_c2h.rst``.
+
+Default TiO adoption
+---------------------
+
+``tio_v1.json`` pins ``curated-tio-v1``, selected by
+``exogibbs.presets.curated.chemsetup()`` and explicitly by
+``curated_tio.chemsetup()``. Only O1Ti1 changes relative to ``curated-c2h-v1``.
+The production payload preserves the reviewed candidate's six-knot C2 Gibbs
+representation without refitting, using current TOTO 48Ti16O internal levels,
+NASA elemental molecular mass 63.8664 u and neutral-atom references, and
+Jain D0 = 6.824 +/- 0.010 eV. It is an explicit representative-isotope
+approximation, not an isotope-resolved network.
+
+Modern state thermodynamics replace an identified obsolete JANAF singlet
+assumption. The D0 shift from the preceding 6.869 +/- 0.061 eV is within the
+old quoted uncertainty; adoption improves the measurement and conventions
+without claiming that the old central value was statistically excluded.
+High-state, isotope and complete physical uncertainty remain unquantified.
+
+Rebuild offline with
+``python mceg/reviews/build_tio_adoption.py --output /tmp/tio_v1.json``.
+Source and candidate evidence remain under ``tests/data/validation/tio_*``;
+the separate production execution is in
+``tests/data/validation/curated_tio_adoption/20261103``. The production MCEG
+contract is ``mceg/contracts/curated_tio.yaml``. See
+``documents/presets/curated_tio.rst`` for the decision, numerical scope and
+atmospheric limitations. Optional MCEG records are not runtime dependencies.

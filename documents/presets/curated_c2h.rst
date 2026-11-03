@@ -1,20 +1,21 @@
 Curated gas with the C2H correction
 ===================================
 
-``exogibbs.presets.curated.chemsetup()`` now selects **curated-c2h-v1**:
+``exogibbs.presets.curated_c2h.chemsetup()`` selects **curated-c2h-v1**:
 NASA CEA thermal functions for neutral ethynyl with balanced ATcT 1.172
-atomization energy. ``curated_c2h.chemsetup`` remains an explicit name for the
-same factory. Only C2H changes from the original **curated-gas-v1**, retained
+atomization energy. The current ``curated`` default additionally adopts the
+:doc:`TiO update <curated_tio>`; this page preserves the C2H adoption and its
+historical verification. Only C2H changes from the original **curated-gas-v1**, retained
 byte-for-byte as ``curated_v1.chemsetup`` for historical reproduction.
 
-Use the corrected default or explicitly reproduce the original::
+Explicitly reproduce the C2H-corrected model or the original::
 
    import jax
    jax.config.update("jax_enable_x64", True)
    from exogibbs.api.gas import EquilibriumOptions, solve
-   from exogibbs.presets import curated, curated_v1
+   from exogibbs.presets import curated_c2h, curated_v1
 
-   setup = curated.chemsetup()       # Reviewed C2H correction
+   setup = curated_c2h.chemsetup()   # Reviewed C2H correction, before TiO adoption
    legacy = curated_v1.chemsetup()   # Original constants and dataset identity
    result = solve(setup, T=2000., P=0.01,
                   b=setup.element_vector_reference,
@@ -25,8 +26,8 @@ dimensionless formation Kp at 1 bar. Scalar/array temperatures, JAX derivatives,
 537 species with ions and ``ions=False`` (421 neutral species) are supported.
 Values outside the interval are NaN. MCEG and FastChem are optional tools.
 
-Why the correction is now the default
---------------------------------------
+Why the correction was adopted
+------------------------------
 
 The scientific source comparison favors NASA/ATcT over the inherited fit.
 The old JANAF C2H evaluation dates to March 1967 and uses a formation enthalpy
@@ -57,7 +58,7 @@ Differences between the presets
 
    * - Item
      - ``curated_v1.chemsetup()``
-     - ``curated.chemsetup()`` (also ``curated_c2h``)
+     - ``curated_c2h.chemsetup()``
    * - Dataset identity
      - ``curated-gas-v1``
      - ``curated-c2h-v1``, with a pinned reference to its base
@@ -200,7 +201,8 @@ catalog returned by ``exogibbs.provenance.describe(setup)``.
 Default-adoption verification
 ------------------------------
 
-A separate execution constructs the public ``curated`` default and cold-solves
+A separate historical execution constructed the then-public ``curated`` default
+(now available as ``curated_c2h``) and cold-solved
 75 conditions for **each** supported network: the same five temperatures, five
 pressures and three C/O settings, with tolerance 5e-14 in float64. All 150 solves
 pass. Maximum relative elemental residuals are 1.38e-6 with ions and 1.41e-6
@@ -222,7 +224,7 @@ directory::
 MCEG's ``default_adoption_review`` supports this numerical claim for both modes.
 ``conditional_selection_review`` and ``whole_mixture_accuracy_review`` remain
 ``unknown`` for complete primary/thermal support and whole-mixture physical
-accuracy, respectively. The default factory's ion-inclusive catalog entry is
+accuracy, respectively. This dataset's ion-inclusive catalog entry is
 ``exogibbs.curated_c2h.v1``; the earlier HCN study remains attached exclusively
 to ``exogibbs.curated_gas.v1``. Neutral-mode evidence is in the contract directly;
 the packaged lookup still restricts its entry to ``ions=True``.
