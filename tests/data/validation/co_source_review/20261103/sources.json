@@ -1,0 +1,87 @@
+{
+  "downloads": [
+    {
+      "file": "4thplus-paper.pdf",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/26TaAbEl.pdf",
+      "bytes": 1403806,
+      "sha256": "92baa52168ad244deb8bf27610858f15e52ed7b81dee033b2d8c3f8122f760a8",
+      "archived": false,
+      "access_date": "2026-11-03"
+    },
+    {
+      "file": "4thplus.def.json",
+      "url": "https://exomol.com/db/CO/12C-16O/4thplus/12C-16O__4thplus.def.json",
+      "bytes": 5011,
+      "sha256": "3637bdb40ad0aa07140235c90d7805ae535aa1437135584289c27f95358a5b41",
+      "archived": true,
+      "access_date": "2026-11-03",
+      "archive_sha256": "c769f676c3b14c15b31b77e1e732a6c1fa318d51fb38662a51d398fc4c62b4d8",
+      "archive_transformation": "CRLF line endings normalized to LF; JSON contents unchanged. sha256 above identifies original download bytes."
+    },
+    {
+      "file": "4thplus.pf",
+      "url": "https://exomol.com/db/CO/12C-16O/4thplus/12C-16O__4thplus.pf",
+      "bytes": 225000,
+      "sha256": "58dae7e893b1c20ff21600273f2099861c6f070c373dc8ce731b5d2293e204a5",
+      "archived": false,
+      "access_date": "2026-11-03"
+    },
+    {
+      "file": "4thplus.states.bz2",
+      "url": "https://exomol.com/db/CO/12C-16O/4thplus/12C-16O__4thplus.states.bz2",
+      "bytes": 232028,
+      "sha256": "848a3e6c1f7fd23026298b62d737d0efed29280a7d2d121e2d01c0f8daf588d5",
+      "archived": false,
+      "access_date": "2026-11-03"
+    },
+    {
+      "file": "Li2015.def.json",
+      "url": "https://exomol.com/db/CO/12C-16O/Li2015/12C-16O__Li2015.def.json",
+      "bytes": 3028,
+      "sha256": "4708d0fec7d516ec89590908c3c3e01c1a2dd1b341a07adcb17e2572a086dd6c",
+      "archived": true,
+      "access_date": "2026-11-03",
+      "archive_sha256": "79eed38e3219d514e371ab4ef9bc9e716f1878cd11e9fb15f2becc4973950426",
+      "archive_transformation": "CRLF line endings normalized to LF; JSON contents unchanged. sha256 above identifies original download bytes."
+    },
+    {
+      "file": "Li2015.pf",
+      "url": "https://exomol.com/db/CO/12C-16O/Li2015/12C-16O__Li2015.pf",
+      "bytes": 234000,
+      "sha256": "0a6c56318875a4cf6bfc7f8aa9b5609865025c922bf0ccf42f6b017c1ed29b43",
+      "archived": false,
+      "access_date": "2026-11-03"
+    },
+    {
+      "file": "Li2015.states.bz2",
+      "url": "https://exomol.com/db/CO/12C-16O/Li2015/12C-16O__Li2015.states.bz2",
+      "bytes": 54529,
+      "sha256": "83ca303698873576e985482227c33a7b93f119c5bb200f9e7e542273eb6804e1",
+      "archived": false,
+      "access_date": "2026-11-03"
+    }
+  ],
+  "inspected_pages": [
+    {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.172/index.php",
+      "inspection": "Rendered official table: C/O/CO gas entries match frozen 1.172 reference; complete underlying covariance network not reaudited.",
+      "original_html_sha256": null
+    },
+    {
+      "url": "https://janaf.nist.gov/tables/C-093.html",
+      "inspection": "Rendered official thermodynamic table; September 1965 evaluation, one bar. Original txt download returned HTTP 403; frozen reference rows used without claiming a new raw-table hash.",
+      "original_html_sha256": null
+    },
+    {
+      "url": "https://doi.org/10.1088/0067-0049/216/1/15",
+      "inspection": "Publisher-rendered abstract and Section 4 methods inspected; full PDF inaccessible. Official states and PF fully retrieved.",
+      "original_html_sha256": null
+    },
+    {
+      "url": "https://exomol.com/models/CO/12C-16O/4thplus/",
+      "inspection": "Official model description including ZPE 1081.77 cm-1; no duplicate correction applied.",
+      "original_html_sha256": null
+    }
+  ],
+  "access_date": "2026-11-03"
+}

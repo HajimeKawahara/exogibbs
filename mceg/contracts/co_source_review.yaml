@@ -1,0 +1,290 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.co_source_review.v1
+  name: CO energy and normalized thermal review
+  description: Retain NASA thermal plus ATcT energy after modern complete-distribution state and direct
+    thermodynamic comparisons.
+  implementation: &id004
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:08a2a0345a68b8d8a001b8e1a27ec6968aab37484c0b9516792b470d9a17e2ca
+    entry_points:
+    - mceg/reviews/co_source_review.py
+assumptions:
+- statement: Ground-relative D0, a potential De and ZPE are distinct; C/O/CO energies are balanced within
+    the same source and NASA R convention.
+  evidence:
+  - literature
+  - source_replay
+- statement: Actual 12C16O nuclear spin and symmetry factors are one. Natural elemental translation with
+    representative-isotope internal levels is an approximation, not an isotope-balanced reaction.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000
+    K; 75 archived gas-only cases, not atmospheric validation.
+  conditions:
+  - Samples at 500, 1000, 1500, 2000, 2500, 3000, 3500 and 4000 K; actual curated evaluated only on 1500-4000
+    K.
+  - 'Current curated-tio-v1 footprint: 75 cases, 537 species, 1e-6-100 bar, three C/O values; no new solve.'
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete physical uncertainty and planetary atmosphere accuracy are not established.
+  conditions: []
+  evidence:
+  - literature
+  - source_replay
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The unchanged CO reaction polynomial uses NASA thermal functions with same-version atom-balanced
+    ATcT 1.172 energy; native energy and atomic thermal differences are explicit.
+  scope: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000
+    K; 75 archived gas-only cases, not atmospheric validation.
+- id: normalized_thermal_comparison
+  revision: '1'
+  kind: numerical_verification
+  statement: Every distributed 4thplus and Li2015 state reproduces the normalized thermal comparison and
+    direct energy-moment calorics; actual weights, temperature columns and energy limits take precedence
+    over conflicting metadata.
+  scope: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000
+    K; 75 archived gas-only cases, not atmospheric validation.
+- id: scoped_retention
+  revision: '1'
+  kind: theoretical
+  statement: 'Retain the existing CO thermal and energy construction on the sampled domain: modern state
+    moments, JANAF Cp and published partition comparisons show no material thermal correction requiring
+    a new production model.'
+  scope: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000
+    K; 75 archived gas-only cases, not atmospheric validation.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The current CO model has complete quantified energy, isotope, excited-state and planetary
+    abundance accuracy.
+  scope: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000
+    K; 75 archived gas-only cases, not atmospheric validation.
+evidence:
+- id: literature
+  kind: literature
+  summary: Primary author manuscript, publisher-rendered methods, official distributions and thermodynamic
+    tables, with access limits and shared ancestry recorded.
+  sources: &id001
+  - tests/data/validation/co_source_review/20261103/literature.json
+  - tests/data/validation/co_source_review/20261103/sources.json
+  scope: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000
+    K; 75 archived gas-only cases, not atmospheric validation.
+  subject: co_sources_20261103
+  context: source_review
+  artifacts: &id002
+  - source: tests/data/validation/co_source_review/20261103/literature.json
+    sha256: 3e95e1aa52be07e7fed68e622a93a95174c100aac5facadd63b219a8aceb0a10
+  - source: tests/data/validation/co_source_review/20261103/sources.json
+    sha256: c244e0276760cc5386cdc62298f28ad52ad7410c5e366280b0c24b91ea4adb48
+  provenance: &id003
+    role: primary
+    location: documents/mceg/co_source_review.rst
+    inspection: inspected
+    note: Numerical and source agreement are not full physical validation; inspection limits and source
+      dependence remain explicit.
+- id: source_replay
+  kind: numerical_test
+  summary: Full compact state arrays, explicit PF samples, balanced references and saved current-grid
+    potentials reproduce the scoped comparisons.
+  sources:
+  - tests/data/validation/co_source_review/20261103/states.npz
+  - tests/data/validation/co_source_review/20261103/state_inventory.json
+  - tests/data/validation/co_source_review/20261103/comparison.json
+  - tests/data/validation/co_source_review/20261103/receipt.json
+  scope: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000
+    K; 75 archived gas-only cases, not atmospheric validation.
+  subject: co_sources_20261103
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/co_source_review/20261103/states.npz
+    sha256: 85f292eadca1da33054543619b095015c5fb464d88e0089c813501cc5735d599
+  - source: tests/data/validation/co_source_review/20261103/state_inventory.json
+    sha256: 0f82709d792b7074db23f0c9d5fea274a4c535c66b33db12630fd907d03168aa
+  - source: tests/data/validation/co_source_review/20261103/comparison.json
+    sha256: 67c3740335b0a56fd810c5fb01f61264d5790d6554969707d801b314ce1f286a
+  - source: tests/data/validation/co_source_review/20261103/receipt.json
+    sha256: d5f7445a16e4146a50012cab4a44e15ce2cd55e9dc7238a57013598e75692d70
+  provenance:
+    role: primary
+    location: documents/mceg/co_source_review.rst
+    inspection: inspected
+    note: Numerical and source agreement are not full physical validation; inspection limits and source
+      dependence remain explicit.
+  result: passed
+- id: retention_reasoning
+  kind: theory
+  summary: Balanced unchanged energy and independently published caloric comparisons, with explicit state
+    normalization and shared-source limits, justify scoped retention rather than an intensity-driven replacement.
+  sources: *id001
+  scope: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000
+    K; 75 archived gas-only cases, not atmospheric validation.
+  subject: co_sources_20261103
+  context: source_review
+  artifacts: *id002
+  provenance: *id003
+subjects:
+- id: co_sources_20261103
+  implementation: *id004
+  selected_files:
+    mceg/reviews/co_source_review.py: 08a2a0345a68b8d8a001b8e1a27ec6968aab37484c0b9516792b470d9a17e2ca
+    documents/mceg/co_source_review.rst: 0af894f8b357e6a7d268d952f684cc5e7279d313fc2c8d6fdf38c9b6795744bc
+    tests/model_evidence/co_source_review_test.py: ba5195f4f3a8f9ab14b2edaba89b06b17a6892b64ea403729d89c1e8436fc673
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/curated_tio_adoption/20261103/ions.npz: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
+    tests/data/validation/gas_source_comparison/baseline-001/comparison.json: eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c
+    tests/data/validation/co_source_review/20261103/4thplus.def.json: c769f676c3b14c15b31b77e1e732a6c1fa318d51fb38662a51d398fc4c62b4d8
+    tests/data/validation/co_source_review/20261103/Li2015.def.json: 79eed38e3219d514e371ab4ef9bc9e716f1878cd11e9fb15f2becc4973950426
+    tests/data/validation/co_source_review/20261103/README.rst: 3206ac9ea627498b8d71c84b4ea5da0490224d2a6d68c9d887245a4b7c6a7883
+    tests/data/validation/co_source_review/20261103/literature.json: 3e95e1aa52be07e7fed68e622a93a95174c100aac5facadd63b219a8aceb0a10
+    tests/data/validation/co_source_review/20261103/sources.json: c244e0276760cc5386cdc62298f28ad52ad7410c5e366280b0c24b91ea4adb48
+    tests/data/validation/co_source_review/20261103/state_inventory.json: 0f82709d792b7074db23f0c9d5fea274a4c535c66b33db12630fd907d03168aa
+    tests/data/validation/co_source_review/20261103/states.npz: 85f292eadca1da33054543619b095015c5fb464d88e0089c813501cc5735d599
+    tests/data/validation/co_source_review/20261103/comparison.json: 67c3740335b0a56fd810c5fb01f61264d5790d6554969707d801b314ce1f286a
+    tests/data/validation/co_source_review/20261103/receipt.json: d5f7445a16e4146a50012cab4a44e15ce2cd55e9dc7238a57013598e75692d70
+contexts:
+- id: source_review
+  scope: Neutral CO, C(g)+O(g)->CO(g), one bar; eight 500-4000 K thermal nodes, curated only 1500-4000
+    K; 75 archived gas-only cases, not atmospheric validation.
+  settings:
+    reaction: C(g)+O(g)->CO(g)
+    standard_pressure_bar: 1
+    atomic_energy: ATcT 1.172
+    atomic_thermal: NASA for aligned comparisons; native JANAF term separately recorded
+    partition_normalization: Ground zero, g_ns=1, actual g=2J+1, no extra symmetry/electronic factor
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: co_sources_20261103
+  context: source_review
+  method: &id005
+    id: review_co_energy_thermal_and_scope
+    revision: '1'
+    description: Separate balanced energy, normalized state/caloric consistency, scoped retention and
+      full physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - ATcT C+O-CO gives 1072.019 kJ/mol versus native NASA 1071.800005 kJ/mol. The 27.07365 K hybrid shift
+    also includes the NASA R convention. Every archived CO potential is reproduced; carbon/oxygen relative
+    budgets close below 2.26e-13.
+  status: supported
+  origin: reviewed
+- id: normalized_thermal_comparison_review
+  kind: evidence_support
+  claim: normalized_thermal_comparison
+  claim_revision: '1'
+  subject: co_sources_20261103
+  context: source_review
+  method: *id005
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - All 11264 4thplus and 6383 Li2015 states have g=2J+1 and ground zero. Q differs by at most 1.1 ppm
+    between lists; JANAF Cp differs by less than 0.014 J/mol/K. Published PF residuals and printed-temperature
+    sensitivity are recorded, not silently normalized.
+  status: supported
+  origin: reviewed
+- id: scoped_retention_review
+  kind: evidence_support
+  claim: scoped_retention
+  claim_revision: '1'
+  subject: co_sources_20261103
+  context: source_review
+  method: *id005
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - At six 1500-4000 K nodes, common-mass Q/NASA is 1.00014816-1.00025660 and absolute Cp difference is
+    below 0.004442 J/mol/K. Shared spectroscopy limits independence, but direct thermodynamic checks support
+    retention; newer spectral intensities alone do not justify replacement.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: co_sources_20261103
+  context: source_review
+  method: *id005
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - Natural-isotope internal mixtures, correlated energy uncertainty and omitted electronic/rotational
+    states are not bounded. No finite substitution, condensation, transport or observational comparison
+    establishes planetary abundance accuracy.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: distribution_metadata_reconciliation
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Reconcile ExoMol metadata and PF-generation details if future precision requires them; do not
+    change normalized states to force metadata or table agreement.
+  requires:
+  - 4thplus DOI 10.1093/mnras/stag985 and Li2015 DOI 10.1088/0067-0049/216/1/15 official data already
+    retrieved.
+  - Resolve metadata spin factor 2 versus actual 1, 4thplus non-integer printed temperatures/end 9001
+    K and actual upper energy exceeding metadata.
+  - Distinguish PF output rounding from unresolved generator differences, especially Li2015 if its integer-K
+    grid is exact.
+  completion: Record an upstream explanation or corrected version with hashes and rerun the affected comparison;
+    this does not block current scoped retention.
+- id: precision_and_atmosphere_scope
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Before a future precision-driven replacement, quantify the relevant isotope, atomic-energy and
+    omitted-state terms, then evaluate a conserved fixed-network substitution for a named atmosphere.
+  requires:
+  - A defined target accuracy and temperature/composition domain, including condensation or non-equilibrium
+    boundaries when relevant.
+  - Natural-isotope internal weighting and atomic balance, ATcT energy covariance when needed, and omitted
+    triplet/rotational-tail estimates.
+  - The full historical Gurvich monograph or all original energy papers are not blanket merge prerequisites;
+    obtain sources only to resolve a concrete material uncertainty.
+  completion: Archive a scoped candidate assessment and finite abundance response if a material correction
+    is established; no replacement is required by current source differences.
+limitations:
+- statement: 4thplus full author manuscript was inspected; Li2015 rendered methods were inspected but
+    its PDF was unavailable. NASA historical Gurvich original and complete ATcT covariance network were
+    not reaudited.
+  evidence:
+  - literature
+- statement: The two line lists share ground-state potential ancestry. Their excellent agreement and full
+    distributed-state sum are not independent evidence that all physical states are complete.
+  evidence:
+  - literature
+  - source_replay
+- statement: Representative-isotope/natural-mass and isotope-mass ratios are explicit proxies; saved near-unity
+    carbon/oxygen shares are not new responses or atmospheric error bounds.
+  evidence:
+  - source_replay
