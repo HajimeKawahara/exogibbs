@@ -1,0 +1,31 @@
+{
+  "review_date": "2026-11-03",
+  "command": "PYTHONPATH=src python mceg/reviews/vo_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/vo_source_review.py": "83d86d9461044a0e2920be8403c7a79d2a64b4dacfa0d741de6c859f76eeca1b",
+    "documents/mceg/vo_source_review.rst": "7a242ac0b541214cc796baeaf14e8b3a4338b98dc79f483b8a7693a1aae084b3",
+    "tests/model_evidence/vo_source_review_test.py": "98bd721b75e15c04b46c90c277f3c955042c7374cc018f0fbb1592402edeb2b4",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "src/exogibbs/presets/curated_v1.py": "0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/curated_default_adoption/20261102/ions.npz": "d69f27dd28510af63d9c7b6a1fef6f9235a1ea710a35d422fc4255f92998f749",
+    "tests/data/validation/vo_source_review/20261103/O-026.txt": "88369ab3325b6ee6561fbda52124e48407645d6f77cbd75877e0c4597f73a552",
+    "tests/data/validation/vo_source_review/20261103/V-005.txt": "4d69eb5d7ccbad1c8c9bc836ae2c9cee09433ade3e659ee18e259bc5a9ac7f02",
+    "tests/data/validation/vo_source_review/20261103/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e",
+    "tests/data/validation/vo_source_review/20261103/hyvo.def": "3f45e96cd915c74906a43d9018c77fbe40f110e140da181224b713c0bc9a290d",
+    "tests/data/validation/vo_source_review/20261103/partitions.json": "cf6fe8848e96d3533e173885ff0729c3669a104ceeb58d08721b6025840116f8",
+    "tests/data/validation/vo_source_review/20261103/literature.json": "82acdc7df345e62fcf6731ea50629819268509b48c6d60976a65034aeb09b07f",
+    "tests/data/validation/vo_source_review/20261103/sources.json": "77372829ec8081c9c1fcf86cbc833c72eb129543a5cd6ea4311097c4b0872bb0",
+    "tests/data/validation/vo_source_review/20261103/README.rst": "a23d8c83f1e4d0e679a101cac3193360b9ddd13553f8131771e875ac37e2bf99"
+  },
+  "output_sha256": {
+    "tests/data/validation/vo_source_review/20261103/comparison.json": "6094f61be540030f39dca25043ce7804c31ba57084f2c5c7be0f96b49238ed52"
+  },
+  "scope": "Six native-source nodes, normalized modern partition diagnostics and 75 saved endpoints; no new solve or curated change."
+}
