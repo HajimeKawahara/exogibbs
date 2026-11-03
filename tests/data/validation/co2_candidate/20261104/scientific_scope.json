@@ -1,0 +1,155 @@
+{
+  "natural_reaction_constructed": false,
+  "heteronuclear_oxygen_pair_probability": 0.00484974820000017,
+  "isotope_mixing_entropy_difference_over_R": -0.0033615892912556844,
+  "mixing_interpretation": "For random fixed isotope abundances, molecular mixing entropy minus C+2O atomic mixing entropy equals -R*p(heteronuclearO)*ln2. This cancels much of exchange-symmetry entropy; it is an illustration, not an isotope-resolved formation correction. No isotope-dependentD0 or equilibrium fractionation is constructed.",
+  "thermal_diagnostics": [
+    {
+      "temperature_K": 1500.0,
+      "candidate_over_current_K": 1.0006514746991193,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0042779274720846,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0021296559900889633,
+      "source_constant_delta_ln_Q_first_order": 1.0735589044491028e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.0009076255049303
+    },
+    {
+      "temperature_K": 1750.0,
+      "candidate_over_current_K": 1.001102418982757,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0043324374237654,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0017303038776077528,
+      "source_constant_delta_ln_Q_first_order": 1.1406660911443773e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.0009619525241853
+    },
+    {
+      "temperature_K": 2000.0,
+      "candidate_over_current_K": 1.0016286362951097,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0043771024219197,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0014254343724360297,
+      "source_constant_delta_ln_Q_first_order": 1.1959787791299154e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.001006467629041
+    },
+    {
+      "temperature_K": 2250.0,
+      "candidate_over_current_K": 1.0022171989037896,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0044142611442646,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0011966879595917135,
+      "source_constant_delta_ln_Q_first_order": 1.2423173856677023e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.00104350164874
+    },
+    {
+      "temperature_K": 2500.0,
+      "candidate_over_current_K": 1.002865371351213,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0044456102985564,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0010267799828866941,
+      "source_constant_delta_ln_Q_first_order": 1.2817238026726633e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.0010747455969793
+    },
+    {
+      "temperature_K": 2750.0,
+      "candidate_over_current_K": 1.003577405371771,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0044723964284654,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0008980160551601557,
+      "source_constant_delta_ln_Q_first_order": 1.3156919475547514e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.0011014418340967
+    },
+    {
+      "temperature_K": 3000.0,
+      "candidate_over_current_K": 1.0043581916245747,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0044955447421144,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.000785720750762664,
+      "source_constant_delta_ln_Q_first_order": 1.3453244495269732e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.0011245124632673
+    },
+    {
+      "temperature_K": 3250.0,
+      "candidate_over_current_K": 1.0052066764917473,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0045157413505394,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0006521031933317545,
+      "source_constant_delta_ln_Q_first_order": 1.3714331142249065e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.0011446412929756
+    },
+    {
+      "temperature_K": 3500.0,
+      "candidate_over_current_K": 1.0061089705970538,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0045334837818578,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.0004463295021039926,
+      "source_constant_delta_ln_Q_first_order": 1.39460070887762e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.0011623241816618
+    },
+    {
+      "temperature_K": 3750.0,
+      "candidate_over_current_K": 1.0070311794142728,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0045491134779982,
+      "isotope_average_minus_main_Cp_J_mol_K": 0.00011299105482009963,
+      "source_constant_delta_ln_Q_first_order": 1.4152204801351244e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.0011779014253943
+    },
+    {
+      "temperature_K": 4000.0,
+      "candidate_over_current_K": 1.007912882878016,
+      "isotope_average_over_main_K_thermal_diagnostic": 1.0045628415676533,
+      "isotope_average_minus_main_Cp_J_mol_K": -0.0003941427717606416,
+      "source_constant_delta_ln_Q_first_order": 1.433527113724169e-06,
+      "fixed_random_composition_atom_mixing_adjusted_ratio_illustration": 1.001191583444329
+    }
+  ],
+  "whole_source_grid_peer_check": {
+    "full_NIST_rows_checked": 2501,
+    "max_abs_interpolation_errors_lnK_H_S_Cp": [
+      2.3760254856299336e-08,
+      0.007575329305836931,
+      4.451754250567319e-06,
+      0.00019976240103147802
+    ],
+    "fraction_sum": 0.9999999999999999,
+    "random_oxygen_hetero_pair_fraction": 0.00484974820000017,
+    "molecule_minus_atoms_mixing_S_over_R": -0.0033615892912556705,
+    "caveat": "Only a fixed random isotope entropy gauge identity; isotope atomization shifts and equilibrium isotope fractionation remain absent."
+  },
+  "formation_derivative_peer_check": {
+    "nist626": {
+      "max_independent_formation_derivative_errors_G_H_S_Cp": [
+        5.238689482212067e-10,
+        1.3096723705530167e-09,
+        4.547473508864641e-13,
+        8.526512829121202e-13
+      ],
+      "JIT_scalar_batch_max_abs_h": 2.1316282072803006e-14,
+      "invalid_domain": "all NaN"
+    },
+    "isotope_average": {
+      "max_independent_formation_derivative_errors_G_H_S_Cp": [
+        6.984919309616089e-10,
+        1.2514647096395493e-09,
+        4.547473508864641e-13,
+        5.613287612504791e-13
+      ],
+      "JIT_scalar_batch_max_abs_h": 2.842170943040401e-14,
+      "invalid_domain": "all NaN"
+    }
+  },
+  "full_grid_input_sha256": "22744b0b14b1ae0fc03062b1b26be039ce4653ea56e4aa67e24c3804b64b05af",
+  "candidate_coefficients_sha256": "9373569f8f6d0a9539f0d8ccf28b137fd0e4eab5b177b764e682aef391065bb2",
+  "limitations": [
+    "The main candidate is a specified representative-isotope elemental approximation, not exact terrestrial composition.",
+    "NIST parameter covariance does not include all continuum, dissociation-cutoff, electronic-state or extrapolation errors.",
+    "Fixed-isotope thermal mean is a convention sensitivity; its difference is not a physical isotope error bound.",
+    "CurrentATcT1.172 D0 stays fixed; no complete correlated energy uncertainty is inferred."
+  ],
+  "diagnostics": {
+    "original": {
+      "largest_tight_ln_x_difference_species": "F10S2",
+      "largest_tight_ln_x_difference_case": 47,
+      "largest_relative_budget_residual_element": "F",
+      "C_relative_budget_residual": 2.3351740765979563e-13,
+      "O_relative_budget_residual": 1.4367842601898541e-13
+    },
+    "hydrogen_poor": {
+      "largest_tight_ln_x_difference_species": "C5",
+      "largest_tight_ln_x_difference_case": 5,
+      "largest_relative_budget_residual_element": "F",
+      "C_relative_budget_residual": 4.722121654949938e-14,
+      "O_relative_budget_residual": 3.041567081007855e-14
+    }
+  }
+}
