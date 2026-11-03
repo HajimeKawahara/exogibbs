@@ -1,8 +1,9 @@
 Curated gas thermochemistry datasets
 ====================================
 
-The current default is ``curated-tio-v1``, with modern TOTO/Jain TiO on top of
-the C2H-corrected model. ``gas_v1.json`` and ``c2h_v1.json`` retain the preceding
+The current default is ``curated-co2-v1``, adding normalized NIST 626 CO2
+thermodynamics to the TiO/C2H updates. ``gas_v1.json``, ``c2h_v1.json`` and
+``tio_v1.json`` retain the preceding
 models for explicit historical reproduction. All datasets use 1500--4000 K
 and a standard pressure of 1 bar.
 
@@ -96,12 +97,11 @@ per network verify the adopted default in
 opt-in wording inside the frozen correction JSON records its creation policy;
 runtime metadata records that adoption. See ``documents/presets/curated_c2h.rst``.
 
-Default TiO adoption
----------------------
+Versioned TiO adoption
+----------------------
 
 ``tio_v1.json`` pins ``curated-tio-v1``, selected by
-``exogibbs.presets.curated.chemsetup()`` and explicitly by
-``curated_tio.chemsetup()``. Only O1Ti1 changes relative to ``curated-c2h-v1``.
+``exogibbs.presets.curated_tio.chemsetup()``. Only O1Ti1 changes relative to ``curated-c2h-v1``.
 The production payload preserves the reviewed candidate's six-knot C2 Gibbs
 representation without refitting, using current TOTO 48Ti16O internal levels,
 NASA elemental molecular mass 63.8664 u and neutral-atom references, and
@@ -122,3 +122,21 @@ the separate production execution is in
 contract is ``mceg/contracts/curated_tio.yaml``. See
 ``documents/presets/curated_tio.rst`` for the decision, numerical scope and
 atmospheric limitations. Optional MCEG records are not runtime dependencies.
+
+CO2 adoption
+-------------
+
+``co2_v1.json`` pins ``curated-co2-v1``, available explicitly through
+``exogibbs.presets.curated_co2.chemsetup()`` and selected by the public default
+at adoption. Only C1O2 changes relative to ``curated-tio-v1``. The exact
+reviewed NIST 626 eleven-knot C2 Gibbs coefficients retain the ATcT 1.172
+atomization energy, NASA atomic reference and molecular mass 44.0095 u.
+Source internal c2, spin and ground-state conventions are explicit; no
+additional ZPE, exchange-symmetry or isotope mixing correction is applied.
+
+Rebuild with ``python mceg/reviews/build_co2_adoption.py --output /tmp/co2_v1.json``.
+The two-network production packet contains 150 cold solves in
+``tests/data/validation/curated_co2_adoption/20261104``. The scientific rationale,
+finite response, high-temperature and isotope limits are in
+``documents/presets/curated_co2.rst``; the production contract is
+``mceg/contracts/curated_co2.yaml``. Physical accuracy remains unquantified.

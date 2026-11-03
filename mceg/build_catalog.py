@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "src/exogibbs/data/mceg"
-RECORD_VERSION = "2026-11-03"
+RECORD_VERSION = "2026-11-04"
 
 
 def build_catalog(output: Path = OUTPUT) -> None:
@@ -141,7 +141,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
         raise ValueError("TiO summary differs from the archived execution")
     catalog["models"].append({
         "id": "exogibbs.curated_tio.v1",
-        "label": "Curated default with TOTO/Jain TiO (ion-inclusive lookup)",
+        "label": "Versioned curated TOTO/Jain TiO (ion-inclusive lookup)",
         "dataset": tio_data["id"],
         "identity": {"data_sha256": tio_digest, "settings": {"ions": True}},
         "species": [c2h_species[k] for k in sorted(c2h_species)],
@@ -151,7 +151,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
                             "physical_accuracy_review"],
             "artifacts": [tio_receipt, tio_summary],
             "summary": (
-                "Default curated-tio-v1 replaces only TiO in curated-c2h-v1 with TOTO "
+                "Former default, retained as curated_tio: curated-tio-v1 replaces only TiO in curated-c2h-v1 with TOTO "
                 "state thermodynamics and Jain 2023 D0=6.824 +/- 0.010 eV, on 1500-4000 K. "
                 "The representative 48Ti16O internal partition uses NASA elemental mass "
                 "and atomic reference functions. C2H and all other functions are retained. "
@@ -162,6 +162,45 @@ def build_catalog(output: Path = OUTPUT) -> None:
                 "thermochemical uncertainty remain unquantified. curated_c2h and curated_v1 "
                 "preserve earlier datasets. Your conditions have not been evaluated."),
             "links": ["https://github.com/HajimeKawahara/exogibbs/pull/325"],
+        }],
+    })
+    co2_path = "src/exogibbs/data/curated/co2_v1.json"
+    co2_bytes = (ROOT / co2_path).read_bytes()
+    co2_data = json.loads(co2_bytes)
+    co2_digest = hashlib.sha256(co2_bytes).hexdigest()
+    co2_adoption = "tests/data/validation/curated_co2_adoption/20261104"
+    co2_execution = json.loads((ROOT / co2_adoption / "receipt.json").read_text())
+    if (co2_digest != co2_execution["selected_file_sha256"][co2_path]
+            or tio_digest != co2_data["base_data_sha256"]):
+        raise ValueError("CO2 data changed; review new evidence before rebinding the adoption")
+    co2_contract = copy("mceg/contracts/curated_co2.yaml", "contracts/curated_co2.yaml")
+    co2_receipt = copy(f"{co2_adoption}/receipt.json", "artifacts/co2_adoption_receipt.json")
+    co2_summary = copy(f"{co2_adoption}/summary.json", "artifacts/co2_adoption_summary.json")
+    if co2_summary["sha256"] != co2_execution["output_sha256"]["summary.json"]:
+        raise ValueError("CO2 summary differs from the archived execution")
+    catalog["models"].append({
+        "id": "exogibbs.curated_co2.v1",
+        "label": "Curated default with NIST CO2 (ion-inclusive lookup)",
+        "dataset": co2_data["id"],
+        "identity": {"data_sha256": co2_digest, "settings": {"ions": True}},
+        "species": [c2h_species[k] for k in sorted(c2h_species)],
+        "records": [{
+            "id": "co2_adoption", **co2_contract, "species": ["*", "C1O2"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [co2_receipt, co2_summary],
+            "summary": (
+                "Default curated-co2-v1 adopts the exact reviewed NIST 626 thermal model "
+                "on curated-tio-v1 at 1500-4000 K. NASA molecular mass 44.0095 u, NASA "
+                "atomic functions and ATcT 1.172 total atomization 1598.180 kJ/mol are retained. "
+                "Only CO2 thermochemistry changes; TiO, C2H, all other species and budgets are preserved. "
+                "Both factory modes pass 75 new cold solves, and ion-inclusive results reproduce "
+                "the reviewed candidate. Scoped scientific selection and numerical adoption are "
+                "supported; complete isotope, continuum, high-temperature cutoff and atmospheric "
+                "physical accuracy remain unknown. The fixed-isotope-average diagnostic is not "
+                "adopted as a natural-isotope correction. curated_tio, curated_c2h and curated_v1 "
+                "preserve earlier datasets. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/329"],
         }],
     })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")
