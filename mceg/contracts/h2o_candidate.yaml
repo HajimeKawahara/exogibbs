@@ -1,0 +1,424 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.h2o_candidate.v1
+  name: H2O 2025 evaluated candidate and finite substitution
+  description: Construct integrated-Cp evaluated and discrete-state alternatives, compare conserved cold
+    equilibria, and retain explicit scattering/isotope limits without changing production.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
+    entry_points:
+    - mceg/reviews/h2o_candidate.py
+    - mceg/reviews/h2o_equilibrium_impact.py
+assumptions:
+- statement: Both candidates retain ATcT 1.172 total atomization 917.819 kJ/mol, NASA atomic thermal functions,
+    shared para ground zero, 1 bar and aggregate translation mass 18.01528 u. Dominant-isotope internal
+    states do not form a complete isotope-resolved reaction.
+  evidence:
+  - source_scope
+  - candidate_validation
+- statement: Published 2025 S already excludes proton spin product four; its numeric H is J/mol despite
+    kJ/mol header. Discrete state weights 3/1 are retained before dividing Q by four.
+  evidence:
+  - source_scope
+  - candidate_validation
+- statement: Inverse expanded U(Cp) fit weights balance numerical approximation only; no independent error
+    model or new fit uncertainty is inferred.
+  evidence:
+  - candidate_validation
+- statement: Scattering phase-shift density is not simply a duplicate free OH+H population; its interaction
+    assignment in the ideal reacting mixture remains unverified.
+  evidence:
+  - source_scope
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Continuous candidate and retained fixed-network equilibrium response.
+  conditions:
+  - 1500-4000 K only; 251 fitted Cp rows, 2250 withheld Cp rows and 45 withheld direct-state sums.
+  - 75 conditions, 537 ion-inclusive species, five temperatures 1500/2000/2500/3000/4000 K, five pressures
+    1e-6-100 bar, three C/O ratios; 150 new cold endpoints, 9 tighter controls, 5 path points, 6 FastChem
+    comparisons.
+  evidence:
+  - candidate_validation
+  - finite_execution
+- kind: scientific_applicability
+  status: unknown
+  description: Complete isotope/scattering/energy uncertainty and planetary abundance physical accuracy
+    are not established.
+  conditions: []
+  evidence:
+  - source_scope
+  - finite_execution
+claims:
+- id: continuous_thermodynamics
+  revision: '1'
+  kind: numerical_verification
+  statement: Both candidates are continuous derivative-consistent formation models with verified normalization,
+    source fidelity and the retained ATcT/NASA atomic reference.
+  scope: H2(16O) internal states at aggregate mass 18.01528 u, 1 bar, 1500-4000 K, retained ATcT 1.172
+    total D0 / NASA atoms; fixed 537-species / 75-condition curated-tio-v1 gas network; no production
+    adoption.
+- id: finite_substitution
+  revision: '1'
+  kind: numerical_verification
+  statement: Changing H2O alone on the current fixed 537-species network produces conserved and numerically
+    resolved equilibrium responses.
+  scope: H2(16O) internal states at aggregate mass 18.01528 u, 1 bar, 1500-4000 K, retained ATcT 1.172
+    total D0 / NASA atoms; fixed 537-species / 75-condition curated-tio-v1 gas network; no production
+    adoption.
+- id: candidate_direction
+  revision: '1'
+  kind: theoretical
+  statement: Recommend the evaluated 2025 thermal candidate for scoped production adoption on 1500-4000
+    K, retaining the explicit isotope and scattering limitations. The discrete alternative quantifies
+    a smaller scope response on the tested grid.
+  scope: H2(16O) internal states at aggregate mass 18.01528 u, 1 bar, 1500-4000 K, retained ATcT 1.172
+    total D0 / NASA atoms; fixed 537-species / 75-condition curated-tio-v1 gas network; no production
+    adoption.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The complete H2O model has quantified physical accuracy for planetary atmosphere abundances
+    across 1500-4000 K.
+  scope: H2(16O) internal states at aggregate mass 18.01528 u, 1 bar, 1500-4000 K, retained ATcT 1.172
+    total D0 / NASA atoms; fixed 537-species / 75-condition curated-tio-v1 gas network; no production
+    adoption.
+evidence:
+- id: source_scope
+  kind: literature
+  summary: Preserve the inspected 2025/2016 source audit and explicitly distinguish evaluated versus discrete
+    scope, spin, units, isotope mass and scattering assignment.
+  sources:
+  - tests/data/validation/h2o_source_review/20261103/literature.json
+  - tests/data/validation/h2o_source_review/20261103/sources.json
+  - documents/mceg/h2o_candidate.rst
+  scope: H2(16O) internal states at aggregate mass 18.01528 u, 1 bar, 1500-4000 K, retained ATcT 1.172
+    total D0 / NASA atoms; fixed 537-species / 75-condition curated-tio-v1 gas network; no production
+    adoption.
+  subject: h2o_candidates_and_finite_substitution_20261104
+  context: candidate_evaluation
+  artifacts:
+  - source: tests/data/validation/h2o_source_review/20261103/literature.json
+    sha256: 1f996b47dea858258a86cc6fd4c5b7b14efdb69c5e3254c9a28a793edcb81bd1
+  - source: tests/data/validation/h2o_source_review/20261103/sources.json
+    sha256: 53cc7efdcd588b3c94a3a9541c777bf4bd27421a9b88191b417ddb1057313fe4
+  - source: documents/mceg/h2o_candidate.rst
+    sha256: df51253aec5d98e107abc7ce1a22f329728138a4d53c797145344de718137a5f
+  provenance:
+    role: primary
+    location: documents/mceg/h2o_candidate.rst
+    inspection: partial
+    note: The dated source audit is preserved. Numerical completion and scope sensitivity do not establish
+      full physical accuracy.
+- id: candidate_validation
+  kind: numerical_test
+  summary: Verify independent source-table values, withheld Cp/state sums, analytical integrals, positive
+    Cp, scalar/JIT derivatives and formation-gauge closure.
+  sources:
+  - tests/data/validation/h2o_candidate/20261104/candidate.json
+  - tests/data/validation/h2o_candidate/20261104/published_tables.npz
+  - tests/data/validation/h2o_candidate/20261104/discrete_nodes.json
+  - tests/data/validation/h2o_candidate/20261104/discrete_off_knot_reference.json
+  - tests/data/validation/h2o_candidate/20261104/validation.json
+  - tests/data/validation/h2o_candidate/20261104/receipt.json
+  scope: H2(16O) internal states at aggregate mass 18.01528 u, 1 bar, 1500-4000 K, retained ATcT 1.172
+    total D0 / NASA atoms; fixed 537-species / 75-condition curated-tio-v1 gas network; no production
+    adoption.
+  subject: h2o_candidates_and_finite_substitution_20261104
+  context: candidate_evaluation
+  artifacts:
+  - source: tests/data/validation/h2o_candidate/20261104/candidate.json
+    sha256: 0987628c7105024ad100515a71fda2b3270bd24aa13c8b2f4b7fcbe8d999775a
+  - source: tests/data/validation/h2o_candidate/20261104/published_tables.npz
+    sha256: b080fb34a8007c4cecab1127d17f40ef4dde310460ff25948b3c15f531fdb5ba
+  - source: tests/data/validation/h2o_candidate/20261104/discrete_nodes.json
+    sha256: 2699769b9232e8f04ee8574e76d85a1f0469d3ca1a8a8a0fc37adca5d2bf5265
+  - source: tests/data/validation/h2o_candidate/20261104/discrete_off_knot_reference.json
+    sha256: 99d08db47fbedc5867b48a5098e6fb0c01c66451baad7c988a9e5bbd1d9b68e2
+  - source: tests/data/validation/h2o_candidate/20261104/validation.json
+    sha256: c231d88bdf4c8c67d9bba2d5ce4c3be4fbf4f4d3f2fda1a7810a5dffd3f37aa3
+  - source: tests/data/validation/h2o_candidate/20261104/receipt.json
+    sha256: a8d0fbdf76a76b7d55d45d08278074a3e4239d8d9bcba29f572ff178ddf019b3
+  provenance:
+    role: primary
+    location: documents/mceg/h2o_candidate.rst
+    inspection: inspected
+    note: The dated source audit is preserved. Numerical completion and scope sensitivity do not establish
+      full physical accuracy.
+  result: passed
+- id: finite_execution
+  kind: numerical_test
+  summary: Execute 150 cold endpoints with unchanged network/budgets, 9 tighter controls, 5 path points,
+    stationarity/charge/Gibbs exchange checks and 6 independent FastChem comparisons.
+  sources:
+  - tests/data/validation/h2o_equilibrium_impact/20261104/equilibria.npz
+  - tests/data/validation/h2o_equilibrium_impact/20261104/summary.json
+  - tests/data/validation/h2o_equilibrium_impact/20261104/diagnostics.json
+  - tests/data/validation/h2o_equilibrium_impact/20261104/selected_diagnostics.json
+  - tests/data/validation/h2o_equilibrium_impact/20261104/receipt.json
+  scope: H2(16O) internal states at aggregate mass 18.01528 u, 1 bar, 1500-4000 K, retained ATcT 1.172
+    total D0 / NASA atoms; fixed 537-species / 75-condition curated-tio-v1 gas network; no production
+    adoption.
+  subject: h2o_candidates_and_finite_substitution_20261104
+  context: candidate_evaluation
+  artifacts:
+  - source: tests/data/validation/h2o_equilibrium_impact/20261104/equilibria.npz
+    sha256: 8e3d184a87556375a984a7f1555fc172d8c891c313c5807b0425baaf530bc5f7
+  - source: tests/data/validation/h2o_equilibrium_impact/20261104/summary.json
+    sha256: f7ffabf1a1a830102c90f13eed8fb41179f97ab564d90d61b36a808d1272d392
+  - source: tests/data/validation/h2o_equilibrium_impact/20261104/diagnostics.json
+    sha256: 431f8bb3daedb6c28792a2801f9e5f80a22fe18e2a29b17d0f0bd4e508d57a62
+  - source: tests/data/validation/h2o_equilibrium_impact/20261104/selected_diagnostics.json
+    sha256: d742dde72356d7d37227596ae4cfe3be285dfebde98fc224c9ff72f9918b9c06
+  - source: tests/data/validation/h2o_equilibrium_impact/20261104/receipt.json
+    sha256: 939de35155c0988d6013780a5b93fcf9824a13b34319e65b8be14cb49d932ebf
+  provenance:
+    role: primary
+    location: documents/mceg/h2o_candidate.rst
+    inspection: inspected
+    note: The dated source audit is preserved. Numerical completion and scope sensitivity do not establish
+      full physical accuracy.
+  result: passed
+- id: scientific_reasoning
+  kind: theory
+  summary: Modern evaluated spectroscopy, derivative-consistent source approximation and resolved small
+    scope sensitivity support a bounded evaluated-model adoption, with isotope/scattering limitations
+    explicit.
+  sources:
+  - documents/mceg/h2o_candidate.rst
+  - tests/data/validation/h2o_candidate/20261104/validation.json
+  - tests/data/validation/h2o_equilibrium_impact/20261104/summary.json
+  scope: H2(16O) internal states at aggregate mass 18.01528 u, 1 bar, 1500-4000 K, retained ATcT 1.172
+    total D0 / NASA atoms; fixed 537-species / 75-condition curated-tio-v1 gas network; no production
+    adoption.
+  subject: h2o_candidates_and_finite_substitution_20261104
+  context: candidate_evaluation
+  artifacts:
+  - source: documents/mceg/h2o_candidate.rst
+    sha256: df51253aec5d98e107abc7ce1a22f329728138a4d53c797145344de718137a5f
+  - source: tests/data/validation/h2o_candidate/20261104/validation.json
+    sha256: c231d88bdf4c8c67d9bba2d5ce4c3be4fbf4f4d3f2fda1a7810a5dffd3f37aa3
+  - source: tests/data/validation/h2o_equilibrium_impact/20261104/summary.json
+    sha256: f7ffabf1a1a830102c90f13eed8fb41179f97ab564d90d61b36a808d1272d392
+  provenance:
+    role: secondary
+    location: documents/mceg/h2o_candidate.rst
+    inspection: inspected
+    note: Scoped scientific reasoning from the declared evidence; not a complete physical-accuracy validation.
+subjects:
+- id: h2o_candidates_and_finite_substitution_20261104
+  implementation: *id001
+  selected_files:
+    mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
+    documents/mceg/h2o_candidate.rst: df51253aec5d98e107abc7ce1a22f329728138a4d53c797145344de718137a5f
+    tests/model_evidence/h2o_candidate_test.py: 31cacb05e75f1594ed66d49ba51e30aa89e4e9c30476a4c06c749a523eaac393
+    mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    mceg/reviews/tio_candidate.py: 3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    tests/data/validation/h2o_source_review/20261103/sources.json: 53cc7efdcd588b3c94a3a9541c777bf4bd27421a9b88191b417ddb1057313fe4
+    tests/data/validation/h2o_source_review/20261103/published_samples.json: b5402dd5cc887d11586796e5bff2c27562ac5aa0da3de8fd19ecc4435f7582d9
+    tests/data/validation/h2o_source_review/20261103/state_samples.json: d929a23dbaf43f20679ae629a902efdff9284c53e6a09ba5cae549f5ab61e8cd
+    tests/data/validation/h2o_source_review/20261103/receipt.json: 84433207664e5a9a4a0b92a295910186a8705fffe7d863d7af4b21efdfdc695e
+    tests/data/validation/h2o_candidate/20261104/README.rst: b282a70c858705f2bfb84fe0417632c2204cb83028ffbdf087cc56654c61c80b
+    tests/data/validation/h2o_candidate/20261104/candidate.json: 0987628c7105024ad100515a71fda2b3270bd24aa13c8b2f4b7fcbe8d999775a
+    tests/data/validation/h2o_candidate/20261104/published_tables.npz: b080fb34a8007c4cecab1127d17f40ef4dde310460ff25948b3c15f531fdb5ba
+    tests/data/validation/h2o_candidate/20261104/discrete_nodes.json: 2699769b9232e8f04ee8574e76d85a1f0469d3ca1a8a8a0fc37adca5d2bf5265
+    tests/data/validation/h2o_candidate/20261104/discrete_off_knot_reference.json: 99d08db47fbedc5867b48a5098e6fb0c01c66451baad7c988a9e5bbd1d9b68e2
+    tests/data/validation/h2o_candidate/20261104/validation.json: c231d88bdf4c8c67d9bba2d5ce4c3be4fbf4f4d3f2fda1a7810a5dffd3f37aa3
+    tests/data/validation/h2o_candidate/20261104/receipt.json: a8d0fbdf76a76b7d55d45d08278074a3e4239d8d9bcba29f572ff178ddf019b3
+    mceg/reviews/h2o_equilibrium_impact.py: fcaf2af0e14afcf0518731428d7b33b5b2e9f06d26b1fc41efcc421341c4cc72
+    tests/data/validation/curated_tio_adoption/20261103/ions.npz: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/tio_equilibrium_impact.py: b2013c6c41f98df6f826c52b725514faf19ee005e502267c765e2155a93738e8
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    src/exogibbs/presets/curated.py: 647455085d3cf906928a2fbd74ddf7498a6e95b9997ee2bba0349ad712a40fb0
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/autodiff.py: 15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/sensitivities.py: ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    tests/data/validation/h2o_equilibrium_impact/20261104/diagnostics.json: 431f8bb3daedb6c28792a2801f9e5f80a22fe18e2a29b17d0f0bd4e508d57a62
+    tests/data/validation/h2o_equilibrium_impact/20261104/equilibria.npz: 8e3d184a87556375a984a7f1555fc172d8c891c313c5807b0425baaf530bc5f7
+    tests/data/validation/h2o_equilibrium_impact/20261104/selected_diagnostics.json: d742dde72356d7d37227596ae4cfe3be285dfebde98fc224c9ff72f9918b9c06
+    tests/data/validation/h2o_equilibrium_impact/20261104/summary.json: f7ffabf1a1a830102c90f13eed8fb41179f97ab564d90d61b36a808d1272d392
+    tests/data/validation/h2o_equilibrium_impact/20261104/receipt.json: 939de35155c0988d6013780a5b93fcf9824a13b34319e65b8be14cb49d932ebf
+    tests/data/validation/h2o_equilibrium_impact/20261104/README.rst: 192549731d20676d41041be608c900f81f155034f14a75c9c550a7eaf233892f
+    tests/model_evidence/h2o_equilibrium_impact_test.py: fd7d397bbce4a06de9522bb9d84313540957d010fd339837954208e44c78b8a5
+    mceg/contracts/h2o_source_review.yaml: 4a0c0adf7450f192f0d9e2cf8fab8649d4539f0949deb19d731b1da912d84582
+contexts:
+- id: candidate_evaluation
+  scope: H2(16O) internal states at aggregate mass 18.01528 u, 1 bar, 1500-4000 K, retained ATcT 1.172
+    total D0 / NASA atoms; fixed 537-species / 75-condition curated-tio-v1 gas network; no production
+    adoption.
+  settings:
+    reaction: 2H(g)+O(g)->H2O(g)
+    primary: 2025 evaluated Cp polynomial integrated analytically with 1500 K H/S anchors
+    alternative: PW2024 full discrete-state sum represented by C2 quintic Gibbs
+    energy_anchor: ATcT 1.172 total 917.819 kJ/mol
+    production_change: none
+    prior_contract: mceg/contracts/h2o_source_review.yaml
+    prior_follow_up: 'continuous_thermal_candidate: numerical candidate and fixed-network substitution
+      completed here; isotope/scattering scope remains explicit'
+assessments:
+- id: continuous_thermodynamics_review
+  kind: evidence_support
+  claim: continuous_thermodynamics
+  claim_revision: '1'
+  subject: h2o_candidates_and_finite_substitution_20261104
+  context: candidate_evaluation
+  method:
+    id: review_h2o_candidate_and_finite_response
+    revision: '1'
+    description: Separate source conventions, thermodynamic approximation, conserved numerical response
+      and scoped scientific preference from complete physical accuracy.
+  evidence:
+  - source_scope
+  - candidate_validation
+  reasons:
+  - Evaluated fit reproduces 2501 rows with H/S/Cp error below 0.484/0.238/0.055 of published expanded
+    U; 2250 withheld Cp maximum error 0.001159 J/mol/K. Discrete 45 off-node max |delta ln K| 8.64e-7;
+    JAX derivatives and C2 joins pass.
+  status: supported
+  origin: reviewed
+- id: finite_substitution_review
+  kind: evidence_support
+  claim: finite_substitution
+  claim_revision: '1'
+  subject: h2o_candidates_and_finite_substitution_20261104
+  context: candidate_evaluation
+  method:
+    id: review_h2o_candidate_and_finite_response
+    revision: '1'
+    description: Separate source conventions, thermodynamic approximation, conserved numerical response
+      and scoped scientific preference from complete physical accuracy.
+  evidence:
+  - candidate_validation
+  - finite_execution
+  reasons:
+  - 150 new cold endpoints converge. Evaluated water/current ratio 0.98207135-0.99999970; maximum absolute
+    water response at case 24 reduces x by 7.8141e-7 and O share by 0.0997396 percentage points. Tight
+    water response is stable to 1.21e-13 and 6 FastChem comparisons agree within 5.89e-9 dex.
+  status: supported
+  origin: reviewed
+- id: candidate_direction_review
+  kind: evidence_support
+  claim: candidate_direction
+  claim_revision: '1'
+  subject: h2o_candidates_and_finite_substitution_20261104
+  context: candidate_evaluation
+  method:
+    id: review_h2o_candidate_and_finite_response
+    revision: '1'
+    description: Separate source conventions, thermodynamic approximation, conserved numerical response
+      and scoped scientific preference from complete physical accuracy.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+  - scientific_reasoning
+  reasons:
+  - Evaluated/discrete water response differs at most 0.00423 percent and any species absolute fraction
+    at most 1.8334e-9, below the main NASA-to-modern effect. This supports scoped evaluated-model adoption
+    without asserting identical scattering definitions; the present study does not change production.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: h2o_candidates_and_finite_substitution_20261104
+  context: candidate_evaluation
+  method:
+    id: review_h2o_candidate_and_finite_response
+    revision: '1'
+    description: Separate source conventions, thermodynamic approximation, conserved numerical response
+      and scoped scientific preference from complete physical accuracy.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+  reasons:
+  - A complete natural-isotope reaction, unique scattering interaction assignment, correlated energy uncertainty
+    and atmospheric physical validation remain absent. Numerical completion does not establish this claim.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: scoped_production_choice
+  target_kind: claim
+  target: candidate_direction
+  revision: '1'
+  action: Make a separately authorized production choice naming evaluated or discrete thermal scope, then
+    package the continuous representation and preserve the demonstrated domain/derivative/inventory checks.
+  requires:
+  - The continuous candidate and finite-substitution parts of h2o_source_review/continuous_thermal_candidate
+    are completed by this study.
+  - Retain the dominant-isotope/aggregate-mass approximation explicitly or implement a justified isotope
+    treatment.
+  - Document chemical or cluster assignment of scattering contributions when making a stronger physical
+    claim; the measured small scope sensitivity is useful but does not prove that assignment.
+  completion: Record a scoped production decision and runtime validation without treating every historical
+    paper as a prerequisite.
+- id: physical_scope_and_covariance
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Resolve physical limitations only to the precision and application actually claimed.
+  requires:
+  - Distinguish retained 2025 evaluated contributions from discrete PW2024 and ideal reacting-gas interaction
+    conventions; no unique scattering reconstruction was performed.
+  - Same-version ATcT reaction covariance remains the historical source audit follow-up; this study changed
+    thermal functions only.
+  - Define planetary composition, condensation/transport/radiative scope before asserting atmospheric
+    physical accuracy.
+  completion: Supply application-specific physical evidence or retain the explicit unknown classification.
+limitations:
+- statement: Fit residuals and expanded source uncertainties are distinct from complete physical model
+    uncertainty; spectroscopy and potential-energy inputs are shared.
+  evidence:
+  - source_scope
+  - candidate_validation
+- statement: The evaluated-discrete 4000 K Cp difference ~0.06778 J/mol/K exceeds published expanded U
+    0.042; continuous construction and small finite response do not uniquely identify the missing central-value
+    contribution.
+  evidence:
+  - source_scope
+  - candidate_validation
+  - finite_execution
+- statement: The largest element residual ~1.35e-6 is trace fluorine; H/C/O closure and water response
+    have separate stricter checks. Tightening changes visible F ln(x) ~1.35e-6 but water ln(x) only 1.21e-13.
+  evidence:
+  - finite_execution
+- statement: Fixed-network cold solves, Gibbs exchange checks and FastChem agreement verify implementation,
+    not condensation, transport, observational spectra or full atmosphere accuracy.
+  evidence:
+  - finite_execution
