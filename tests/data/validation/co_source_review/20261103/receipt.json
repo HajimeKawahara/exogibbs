@@ -1,0 +1,29 @@
+{
+  "review_date": "2026-11-03",
+  "command": "PYTHONPATH=src python mceg/reviews/co_source_review.py",
+  "selected_input_sha256": {
+    "mceg/reviews/co_source_review.py": "08a2a0345a68b8d8a001b8e1a27ec6968aab37484c0b9516792b470d9a17e2ca",
+    "documents/mceg/co_source_review.rst": "0af894f8b357e6a7d268d952f684cc5e7279d313fc2c8d6fdf38c9b6795744bc",
+    "tests/model_evidence/co_source_review_test.py": "a684672f275b3a64f1b1bdead193c5e7323888ebc2a99dd6e6ad501f0b9fbef1",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c",
+    "mceg/reviews/curated_history.py": "3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf",
+    "examples/comparisons/audit_atomic_ions.py": "190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468",
+    "examples/comparisons/select_major_molecules.py": "d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4",
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/curated_tio_adoption/20261103/ions.npz": "39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c",
+    "tests/data/validation/co_source_review/20261103/4thplus.def.json": "c769f676c3b14c15b31b77e1e732a6c1fa318d51fb38662a51d398fc4c62b4d8",
+    "tests/data/validation/co_source_review/20261103/Li2015.def.json": "79eed38e3219d514e371ab4ef9bc9e716f1878cd11e9fb15f2becc4973950426",
+    "tests/data/validation/co_source_review/20261103/README.rst": "3206ac9ea627498b8d71c84b4ea5da0490224d2a6d68c9d887245a4b7c6a7883",
+    "tests/data/validation/co_source_review/20261103/literature.json": "3e95e1aa52be07e7fed68e622a93a95174c100aac5facadd63b219a8aceb0a10",
+    "tests/data/validation/co_source_review/20261103/sources.json": "c244e0276760cc5386cdc62298f28ad52ad7410c5e366280b0c24b91ea4adb48",
+    "tests/data/validation/co_source_review/20261103/state_inventory.json": "0f82709d792b7074db23f0c9d5fea274a4c535c66b33db12630fd907d03168aa",
+    "tests/data/validation/co_source_review/20261103/states.npz": "85f292eadca1da33054543619b095015c5fb464d88e0089c813501cc5735d599"
+  },
+  "output_sha256": {
+    "tests/data/validation/co_source_review/20261103/comparison.json": "67c3740335b0a56fd810c5fb01f61264d5790d6554969707d801b314ce1f286a"
+  },
+  "scope": "Eight source nodes (six on 1500-4000 K), every distributed 4thplus/Li2015 state and 75 saved curated-tio-v1 endpoints. No production change or equilibrium substitution."
+}
