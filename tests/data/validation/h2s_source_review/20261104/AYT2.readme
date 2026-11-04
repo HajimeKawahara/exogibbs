@@ -1,0 +1,78 @@
+ExoMol XVI:  The hot line list for H2S AYT2
+(updated on 18.09.2022)
+
+===============================================================================
+
+Description: 
+
+The data are in two parts. The first, H2S_AYT2.dat contains 
+a list of rovibrational states. Each state is labelled with 3 vibrational 
+(v1, v2, v3) and 3 rotational (J, Ka, Kc) quantum numbers and total symmetry. 
+An additional column indicates the source of the quantum numbers, empirical (e) 
+or calculated (c). "NaN" indicates that the quantum numbers are not available. 
+The total degeneracy is given to facilitate the intensity calculations and 
+the lifetmes (s) are given in the column 5.
+
+Because of their size, the transitions are listed in 20 separate
+files, each containing all the transitions in a 1000 cm-1 frequency
+range. These and their contents are ordered by increasing frequency.
+The name of the file includes the lowest frequency in the range; thus 
+the a_05000.dat file contains all the transitions in the frequency range 
+5000-6000 cm-1 but not including 6000 cm-1.
+
+The transition files a_xxxxx.dat contain three columns: 
+the reference number in the energy file of the upper state, that of the 
+lower state and the Einstein A coefficient of the transition. The energy file 
+and the transitions files are bzipped, and need to be extracted before use.
+
+File Summary:
+-------------------------------------------------------------------------------
+ FileName          Explanations
+-------------------------------------------------------------------------------
+ReadMe.dat                     This file
+H2S_AYT2.dat                   labelled rovibrational states
+a_xxxxx.dat                    21 Transition files (Einstein coefficients, 1/s) 
+                               divided into 100 cm-1 frequency pieces. 
+                               The transitions are sorted according with 
+                               wavenumber. xxxxx is the lower wavenumber bound.
+                               See below for the description of columns.
+-------------------------------------------------------------------------------
+
+Byte-by-byte description of file: a_xxxxx.dat
+-------------------------------------------------------------------------------
+  Bytes   Format   Units   Label  Explanations
+-------------------------------------------------------------------------------
+  1 - 12   I12     ---     i"    Upper state ID
+ 14 - 25   I12     ---     i'    Lower state ID
+ 27 - 36   E10.4   s-1     A     Einstein A-coefficient of the transition
+-------------------------------------------------------------------------------
+
+Byte-by-byte description of files: H2S_AYT2.dat
+-------------------------------------------------------------------------------
+  Bytes   Format  Units   Label  Explanations
+-------------------------------------------------------------------------------
+  1 - 12   I12     ---    i       Energy level index
+ 14 - 25   F12.6   cm-1   E       State energy in wavenumbers (Ca or Ma)
+ 27 - 32   I6      ---    Gtot    Total state degeneracy
+ 34 - 40   I7      ---    J      Rotational quantum number
+ 42 - 53   F12.6   ---    unc    Uncertainty
+ 54 - 66   E12.4   ---    tau    Life time (s)
+ 69 - 70   A2      ---    Gamma  Total symemtry: A1,A2,B1,B2
+ 73 - 75   I3	   ---    Ka	 Asymmetric top quantum number (QN)
+                                 NaN if not present
+ 77 - 79   I3	   ---    Kc	 Asymmetric top quantum number
+                                 NaN if not present
+ 83 - 84   I3 	   ---    v1	 Symmetric stretch quantum number
+                                 NaN if not present
+ 86 - 88   I3	   ---    v2	 Symmetric bend quantum number
+                                 NaN if not present
+ 90 - 92   I3	   ---    v3	 Asymmetric stretch quantum number
+                                 NaN if not present
+ 96 - 97   A3	   ---    Ca/Ma  A label for MARVEL/Calculated
+ 99 -110   F12.6   cm-1   E      State energy in wavenumbers (Calculated originally)
+-------------------------------------------------------------------------------
+
+Contacts:
+   S.N. Yurchenko, s.yurchenko@ucl.ac.uk
+   J. Tennyson,  j.tennyson@ucl.ac.uk
+===============================================================================
