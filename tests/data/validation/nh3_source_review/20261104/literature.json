@@ -1,0 +1,152 @@
+{
+  "identity": {
+    "species_id": "H3N1",
+    "name": "NH3",
+    "phase": "gas",
+    "reaction": "N(g) + 3 H(g) -> NH3(g)",
+    "standard_pressure_Pa": 100000,
+    "nasa_mass_u": 17.03052,
+    "normalization": "Divide HITRAN/ExoMol total nuclear-spin Q by 24. Do not add another symmetry, inversion or electronic multiplicity factor. This is a thermal ortho/para equilibrium convention, not a frozen ratio."
+  },
+  "NASA": {
+    "reference": "Gurvich,1989 pt1 p354 pt2 p219. Haar,1968.",
+    "intervals_K": [
+      [
+        200,
+        1000
+      ],
+      [
+        1000,
+        6000
+      ]
+    ],
+    "current_domain_K": [
+      1500,
+      4000
+    ],
+    "inspection": "Pinned CEA record and source header inspected. Historical Gurvich/Haar originals not newly inspected; not required for this source-only merge.",
+    "source_R_J_mol_K": 8.31451
+  },
+  "ATcT": {
+    "version": "1.172",
+    "inspection": "Pinned same-version N, H, NH3 gas records; independent root audit confirms balanced D0. Complete covariance network not audited.",
+    "uncertainty": "No independent-error quadrature is claimed; atomic/molecular network errors can be correlated."
+  },
+  "CoYuTe": {
+    "doi": "10.1093/mnras/stz2778",
+    "author_manuscript": "https://arxiv.org/abs/1911.10369",
+    "inspection": "Full author PDF acquired; methods, completeness Figure2 and Table1 states inspected. Official Zenodo 20200730 .pf and .def acquired. Full 5,095,730-state distribution not downloaded or summed.",
+    "mass_u": 17.026549,
+    "symmetry_group": "D3h(M)",
+    "symmetries": [
+      "A1 prime",
+      "A2 prime",
+      "E prime",
+      "A1 double prime",
+      "A2 double prime",
+      "E double prime"
+    ],
+    "nuclear_weights": [
+      0,
+      12,
+      6,
+      0,
+      12,
+      6
+    ],
+    "chemical_spin_divisor": 24,
+    "paper_opacity_limit_K": 1500,
+    "definition_maximum_K": 2000,
+    "distributed_pf_domain_K": [
+      1,
+      2000
+    ],
+    "lowest_allowed_example": {
+      "state_id": 7779,
+      "energy_cm-1": 0.793374,
+      "gtot": 12,
+      "J": 0,
+      "symmetry_index": 5
+    },
+    "energy_zero": "Formal J=0 vibrational zero has forbidden A1 symmetry. Published allowed J=0 inversion partner is at 0.793374 cm-1; distributed Q(1K)=3.8321 agrees with 12 exp(-c2 E). Shifting Q to allowed-state zero also requires shifting the energy anchor; source conventions are not silently aligned.",
+    "completeness": "Line-list opacity completeness concerns its lower-state cutoff, not automatically the sum of every distributed state. Paper cites a ~0.99 effective/full Q ratio at1500K. Neither .pf availability to2000K nor .def metadata establishes complete4000K thermodynamic moments."
+  },
+  "SousaSilva2014": {
+    "doi": "10.1016/j.jqsrt.2014.03.012",
+    "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/14SoHeYu.pdf",
+    "inspection": "Full PDF acquired; methods, moment definitions, convergence, Table1 and AppendixA/B inspected. Table1 visually checked. Separate electronic 1K Q and first/second-moment tables not acquired: publisher supplement returned403.",
+    "J_max": 45,
+    "states_approximate": 7500000,
+    "cutoff_cm-1": 41051,
+    "cutoff_caveat": "This source labels a dissociation cutoff. It is not the full ATcT atomization N+3H energy; do not replace the latter with it.",
+    "Q_convergence_summary_K": 3000,
+    "thermodynamic_moment_convergence_summary_K": 2000,
+    "reported_Q296": 1725.24,
+    "printed_coefficients": [
+      0.5992996,
+      -1.472838,
+      11.7419,
+      -23.25519,
+      21.53,
+      -10.42394,
+      2.727102,
+      -0.3635381,
+      0.01926157
+    ],
+    "coefficient_half_last_digits": [
+      5e-08,
+      5e-07,
+      5e-06,
+      5e-06,
+      5e-06,
+      5e-06,
+      5e-07,
+      5e-08,
+      5e-09
+    ],
+    "fit_log_base": 10,
+    "fit_equation": "log10 Q = sum_i a_i (log10 T)^i",
+    "declared_fit_accuracy": 0.004,
+    "fit_policy": "Printed fit is diagnostic only: its296K result disagrees with the explicitly reported direct sum by more than declared fit tolerance and last-digit rounding. Obtain supplement or corrected coefficients before treating it as a direct-sum replacement. Do not infer Cp by differentiating this unreconciled fit.",
+    "printed_locations": {
+      "Eq18": "printedp71, PDFp6",
+      "coefficients": "Table1 printedp73, PDFp8; independently visually inspected by root and molecule reviewer",
+      "Q296": "printedp70, PDFp5, section3.1",
+      "supplement": "AppendixA/B printedpp73-74, PDFpp8-9"
+    },
+    "erratum_search": "Targeted DOI/title corrigendum/erratum web search on2026-11-04 found no correction. No claim of absence."
+  },
+  "TIPS2025": {
+    "doi": "10.1016/j.jqsrt.2025.109568",
+    "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25GaViTe.pdf",
+    "inspection": "Full PDF acquired previously; Table1, conventions and section3.3 NH3 methods reinspected. Pinned official HAPI TIPS2021/TIPS2025 arrays M=11,I=1 extracted exactly by AST.",
+    "HAPI_commit": "5353f4021d4b344eb9dd3484feeab9d483f30faa",
+    "NH3_14_crossover_K": 692,
+    "NH3_15_crossover_K": 947,
+    "published_domain_K": [
+      1,
+      5000
+    ],
+    "method_below_crossover": "Inherited direct summation",
+    "method_at_and_above_crossover": "McDowell analytical rotation times harmonic-oscillator vibrational product approximation, not a newly complete variational state sum.",
+    "selection_caveat": "Newest publication does not establish superiority over NASA or converged dedicated NH3 thermodynamics. High-temperature source spread is not a calibrated uncertainty."
+  },
+  "follow_up": {
+    "required_for_candidate": [
+      "Obtain the electronic NH3 Q, Q first moment and Q second moment supplement to10.1016/j.jqsrt.2014.03.012, or author-confirmed corrected data; resolve the printed fit mismatch.",
+      "Compare direct thermodynamic moments where converged, then quantify or extend rotational/vibrational tail beyond3000K if retaining a4000K production endpoint.",
+      "Align formal/lowest-allowed energy zero with the existing ATcT anchor, keep isotope translation separate, and validate any candidate with fixed-network finite substitutions."
+    ],
+    "not_merge_requirements": [
+      "All historical Gurvich/Haar originals or all original ATcT network papers.",
+      "New atmospheric observations or full covariance determination for a source-only record."
+    ],
+    "classification": "Source-only review can merge with unchanged curated. A full-domain replacement is scientifically unresolved, not demonstrated unnecessary."
+  },
+  "TIPS2021": {
+    "doi": "10.1016/j.jqsrt.2021.107713",
+    "inspection": "Full user-provided PDF available; section3.11 NH3 inspected.",
+    "method": "Direct sum of ExoMol14NH3 terms, described in2021 as converged to6000K. HAPI2021 arrays reproduced, but2025 changes the high-T construction. No raw moments were obtained here to establish6000K completeness independently.",
+    "independence": "TIPS direct sums and2014/CoYuTe share ExoMol ancestry and are not independent experimental validation."
+  }
+}

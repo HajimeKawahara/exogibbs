@@ -1,0 +1,96 @@
+{
+  "retrieval_date": "2026-11-04",
+  "downloads": [
+    {
+      "id": "CoYuTe.pf",
+      "url": "https://zenodo.org/records/5716876/files/14N-1H3__CoYuTe.pf?download=1",
+      "retrieved_date": "2026-11-04",
+      "file": "CoYuTe.pf",
+      "archive_sha256": "671bcb85a59500feaee1898f49c64e590c5cb0bbe565b12bf00df0e460627b68",
+      "full_download_sha256": "671bcb85a59500feaee1898f49c64e590c5cb0bbe565b12bf00df0e460627b68",
+      "full_download_bytes": 50000,
+      "inspection": "Official archived20200730 distribution; exact file retained."
+    },
+    {
+      "id": "CoYuTe.def",
+      "url": "https://zenodo.org/records/5716876/files/14N-1H3__CoYuTe.def?download=1",
+      "retrieved_date": "2026-11-04",
+      "file": "CoYuTe.def",
+      "archive_sha256": "0ff5897c999ecb0230233b67771314c0a36cad553a0bda0f9c3513e674d5124a",
+      "full_download_sha256": "0ff5897c999ecb0230233b67771314c0a36cad553a0bda0f9c3513e674d5124a",
+      "full_download_bytes": 16895,
+      "inspection": "Official archived20200730 distribution; exact file retained."
+    },
+    {
+      "id": "HAPI2021",
+      "url": "https://raw.githubusercontent.com/hitranonline/hapi/5353f4021d4b344eb9dd3484feeab9d483f30faa/hapi/hapi.py",
+      "retrieved_date": "2026-11-02",
+      "file": "hapi_tips2021_nh3.txt",
+      "archive_sha256": "358c2a6830bc59fbd276a47b41cf257e3e2ffa0286e86fe8cfc1fcb6d0b5bb5d",
+      "full_download_sha256": "3b3a18a8b173eda3b3b1c972e2c51dcc9c39054f50f90b7553f93be29cde0b20",
+      "full_download_bytes": 4073469,
+      "inspection": "Original official HAPI acquired2026-11-02 for CH4 review; NH3 exact arrays extracted2026-11-04 without interpolation. Full source not vendored."
+    },
+    {
+      "id": "HAPI2025",
+      "url": "https://raw.githubusercontent.com/hitranonline/hapi/5353f4021d4b344eb9dd3484feeab9d483f30faa/hapi/hapi.py",
+      "retrieved_date": "2026-11-02",
+      "file": "hapi_tips2025_nh3.txt",
+      "archive_sha256": "f7640cb661c11b30bf4d4184a5008ad747972d8327e7ac434db04434f18de024",
+      "full_download_sha256": "3b3a18a8b173eda3b3b1c972e2c51dcc9c39054f50f90b7553f93be29cde0b20",
+      "full_download_bytes": 4073469,
+      "inspection": "Original official HAPI acquired2026-11-02 for CH4 review; NH3 exact arrays extracted2026-11-04 without interpolation. Full source not vendored."
+    },
+    {
+      "id": "thermo2014",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/14SoHeYu.pdf",
+      "retrieved_date": "2026-11-04",
+      "file": null,
+      "full_download_sha256": "c10f6daf83d552bab3ef6f9b06aa12c16e4c0c895a0a16b31011afe4fb46fcc5",
+      "full_download_bytes": 879697,
+      "inspection": "Full PDF obtained. Inspected printedp73 containing Table1 and convergence summary, visually inspected."
+    },
+    {
+      "id": "CoYuTe_paper",
+      "url": "https://arxiv.org/pdf/1911.10369",
+      "retrieved_date": "2026-11-04",
+      "file": null,
+      "full_download_sha256": "efebf6d77b91d013a6b4805240c44992269d045f240f8505cbea8025e0848dbc",
+      "full_download_bytes": 2450193,
+      "inspection": "Full author PDF obtained. Inspected PDFp5 Table1 allowed inversion ground state."
+    },
+    {
+      "id": "TIPS2025_paper",
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/25GaViTe.pdf",
+      "retrieved_date": "2026-11-02",
+      "file": null,
+      "full_download_sha256": "9e10ce2fc4b90b486768bece3c21f6deaf0d96852ed85fd028e5b545225f1161",
+      "full_download_bytes": 773909,
+      "inspection": "Previously acquired PDF reinspected. Inspected PDFp8 with NH3 direct-sum/product-approximation transition."
+    },
+    {
+      "id": "TIPS2021_paper",
+      "url": "https://doi.org/10.1016/j.jqsrt.2021.107713",
+      "retrieved_date": "user-provided before2026-11-04; inspected2026-11-04",
+      "file": null,
+      "full_download_sha256": "85e5e9a6ca08f552a07bce2302b7f75c3385c7e901319d1db194d926610b27c0",
+      "full_download_bytes": 1154584,
+      "inspection": "User-provided full PDF; section3.11 NH3 methods inspected. It describes direct sums as converged to6000K. The2025 evaluation switches to product approximation above692K; neither statement is used as independent state-moment convergence proof."
+    }
+  ],
+  "existing_inputs": {
+    "examples/comparisons/data/major_molecule_reference.json": "0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f",
+    "src/exogibbs/data/curated/gas_v1.json": "7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38",
+    "tests/data/validation/curated_h2o_adoption/20261104/ions.npz": "c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532",
+    "tests/data/validation/gas_source_comparison/baseline-001/comparison.json": "eb84560b0e9ba99d70105f905174f2ff0ced8078a9e7a7755cf618e28647655c"
+  },
+  "acquisition_limits": [
+    {
+      "doi": "10.1016/j.jqsrt.2014.03.012",
+      "attempt": "https://ars.els-cdn.com/content/image/1-s2.0-S0022407314001289-mmc1.zip",
+      "result": "HTTP403; electronic supplement not acquired, guessed filename not independently verified.",
+      "consequence": "No fabricated moment/table values and no current printed-fit substitution."
+    }
+  ],
+  "notes": "Only factual data are vendored. Full papers remain outside the repository; original full-download hashes and inspection locations are recorded."
+}
