@@ -25,20 +25,20 @@ composition. It does not verify a modified callable that retains the old
 metadata. A different dataset hash or network choice gives
 ``no_matching_record``; that means no matching review, not physical reliability.
 
-The default ion-inclusive setup matches ``exogibbs.curated_h2o.v1``: evaluated
-H2O thermodynamics on the NIST CO2, TOTO/Jain TiO and C2H updates. Its record
-includes the joint CO2/H2O production verification. Explicit ``curated_co2``,
+The default ion-inclusive setup matches ``exogibbs.curated_oh.v1``: NASA/ATcT
+OH thermodynamics on the evaluated H2O, NIST CO2, TOTO/Jain TiO and C2H updates.
+Its record includes the OH production verification. Explicit ``curated_h2o``, ``curated_co2``,
 ``curated_tio`` and ``curated_c2h`` factories match their own versioned records.
 ``curated_v1.chemsetup()`` matches ``exogibbs.curated_gas.v1`` and its historical
 HCN comparison. These studies are not rebound across dataset identities.
 The catalog is not a complete uncertainty inventory. Neutral-mode default
-verification is recorded directly in ``mceg/contracts/curated_h2o.yaml``;
+verification is recorded directly in ``mceg/contracts/curated_oh.yaml``;
 the packaged lookup remains ion-inclusive.
 
 Inspect the default with optional MCEG::
 
    mceg explain --catalog src/exogibbs/data/mceg/index.json \
-     --model exogibbs.curated_h2o.v1 --species H2O
+     --model exogibbs.curated_oh.v1 --species OH
 
 Inspect HCN with optional MCEG
 ------------------------------

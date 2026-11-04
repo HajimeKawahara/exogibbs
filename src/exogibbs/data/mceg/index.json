@@ -1,7 +1,7 @@
 {
   "schema_version": "1",
   "provider": "exogibbs",
-  "record_version": "2026-11-04",
+  "record_version": "2026-11-05",
   "models": [
     {
       "id": "exogibbs.curated_gas.v1",
@@ -1785,7 +1785,7 @@
     },
     {
       "id": "exogibbs.curated_h2o.v1",
-      "label": "Curated default with evaluated H2O and NIST CO2 (ion-inclusive lookup)",
+      "label": "Versioned curated evaluated H2O and NIST CO2 (ion-inclusive lookup)",
       "dataset": "curated-h2o-v1",
       "identity": {
         "data_sha256": "6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6",
@@ -2198,7 +2198,7 @@
         {
           "id": "h2o_adoption",
           "path": "contracts/curated_h2o.yaml",
-          "sha256": "ad7aaec93d13252842688c99998be7528a657ebde4cd78a4b50c23ca48b9a31b",
+          "sha256": "74635901ee8eee959f646b8d7c749cf5403edca4864f2006d119b7c6f630995e",
           "species": [
             "*",
             "H2O1"
@@ -2218,9 +2218,457 @@
               "sha256": "0cc401ce69b733bb148bc4ef4e32f3ce6c088f2716b7695403184a2a930f92df"
             }
           ],
-          "summary": "Default curated-h2o-v1 adopts the exact reviewed evaluated-2025 water Cp polynomial and analytic H/S integrals on curated-co2-v1 at 1500-4000 K. The representative H2(16O) internal model uses NASA aggregate mass 18.01528 u, NASA atoms and retained ATcT 1.172 total atomization 917.819 kJ/mol. CO2, TiO, C2H and all other formation functions are preserved from the base. Joint CO2/H2O production passes 150 new cold solves across both networks; six tighter independently assembled candidate solves and two FastChem comparisons check numerical response. Earlier single-species responses are not relabeled as joint results. Scoped scientific selection and numerical adoption are supported; scattering assignment, complete isotope treatment and physical atmospheric accuracy remain unknown. Earlier versioned presets and their evidence remain available. Your conditions have not been evaluated.",
+          "summary": "Former default, retained as curated_h2o: curated-h2o-v1 adopts the exact reviewed evaluated-2025 water Cp polynomial and analytic H/S integrals on curated-co2-v1 at 1500-4000 K. The representative H2(16O) internal model uses NASA aggregate mass 18.01528 u, NASA atoms and retained ATcT 1.172 total atomization 917.819 kJ/mol. CO2, TiO, C2H and all other formation functions are preserved from the base. Joint CO2/H2O production passes 150 new cold solves across both networks; six tighter independently assembled candidate solves and two FastChem comparisons check numerical response. Earlier single-species responses are not relabeled as joint results. Scoped scientific selection and numerical adoption are supported; scattering assignment, complete isotope treatment and physical atmospheric accuracy remain unknown. Earlier versioned presets and their evidence remain available. Your conditions have not been evaluated.",
           "links": [
             "https://github.com/HajimeKawahara/exogibbs/pull/330"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "exogibbs.curated_oh.v1",
+      "label": "Curated default with NASA/ATcT OH (ion-inclusive lookup)",
+      "dataset": "curated-oh-v1",
+      "identity": {
+        "data_sha256": "f393ed490972af06f39d7804f53a68777967c7e91fda1e8da1ed713faaccd081",
+        "settings": {
+          "ions": true
+        }
+      },
+      "species": [
+        {
+          "id": "Al1+",
+          "aliases": []
+        },
+        {
+          "id": "Al1-",
+          "aliases": []
+        },
+        {
+          "id": "Al1H1",
+          "aliases": [
+            "AlH"
+          ]
+        },
+        {
+          "id": "Ar1+",
+          "aliases": []
+        },
+        {
+          "id": "C1+",
+          "aliases": []
+        },
+        {
+          "id": "C1-",
+          "aliases": []
+        },
+        {
+          "id": "C1H1N1_hcn",
+          "aliases": [
+            "HCN"
+          ]
+        },
+        {
+          "id": "C1H1N1_hnc",
+          "aliases": [
+            "HNC"
+          ]
+        },
+        {
+          "id": "C1H4",
+          "aliases": [
+            "CH4"
+          ]
+        },
+        {
+          "id": "C1O1",
+          "aliases": [
+            "CO"
+          ]
+        },
+        {
+          "id": "C1O1S1",
+          "aliases": [
+            "COS"
+          ]
+        },
+        {
+          "id": "C1O2",
+          "aliases": [
+            "CO2"
+          ]
+        },
+        {
+          "id": "C1S1",
+          "aliases": [
+            "CS"
+          ]
+        },
+        {
+          "id": "C1S2",
+          "aliases": [
+            "CS2"
+          ]
+        },
+        {
+          "id": "C2H1",
+          "aliases": [
+            "C2H",
+            "CCH"
+          ]
+        },
+        {
+          "id": "Ca1+",
+          "aliases": []
+        },
+        {
+          "id": "Ca1-",
+          "aliases": []
+        },
+        {
+          "id": "Ca1H1",
+          "aliases": [
+            "CaH"
+          ]
+        },
+        {
+          "id": "Cl1+",
+          "aliases": []
+        },
+        {
+          "id": "Cl1-",
+          "aliases": []
+        },
+        {
+          "id": "Co1+",
+          "aliases": []
+        },
+        {
+          "id": "Co1-",
+          "aliases": []
+        },
+        {
+          "id": "Co1H1",
+          "aliases": [
+            "CoH"
+          ]
+        },
+        {
+          "id": "Cr1+",
+          "aliases": []
+        },
+        {
+          "id": "Cr1-",
+          "aliases": []
+        },
+        {
+          "id": "Cr1H1",
+          "aliases": [
+            "CrH"
+          ]
+        },
+        {
+          "id": "Cu1+",
+          "aliases": []
+        },
+        {
+          "id": "Cu1-",
+          "aliases": []
+        },
+        {
+          "id": "Cu1H1",
+          "aliases": [
+            "CuH"
+          ]
+        },
+        {
+          "id": "F1+",
+          "aliases": []
+        },
+        {
+          "id": "F1-",
+          "aliases": []
+        },
+        {
+          "id": "Fe1+",
+          "aliases": []
+        },
+        {
+          "id": "Fe1-",
+          "aliases": []
+        },
+        {
+          "id": "Fe1H1",
+          "aliases": [
+            "FeH"
+          ]
+        },
+        {
+          "id": "Ge1+",
+          "aliases": []
+        },
+        {
+          "id": "Ge1-",
+          "aliases": []
+        },
+        {
+          "id": "Ge1H1",
+          "aliases": [
+            "GeH"
+          ]
+        },
+        {
+          "id": "H1+",
+          "aliases": []
+        },
+        {
+          "id": "H1-",
+          "aliases": []
+        },
+        {
+          "id": "H1K1",
+          "aliases": [
+            "KH"
+          ]
+        },
+        {
+          "id": "H1Mg1",
+          "aliases": [
+            "MgH"
+          ]
+        },
+        {
+          "id": "H1Mn1",
+          "aliases": [
+            "MnH"
+          ]
+        },
+        {
+          "id": "H1Na1",
+          "aliases": [
+            "NaH"
+          ]
+        },
+        {
+          "id": "H1Ni1",
+          "aliases": [
+            "NiH"
+          ]
+        },
+        {
+          "id": "H1O1",
+          "aliases": [
+            "OH"
+          ]
+        },
+        {
+          "id": "H1S1",
+          "aliases": [
+            "SH"
+          ]
+        },
+        {
+          "id": "H1Ti1",
+          "aliases": [
+            "TiH"
+          ]
+        },
+        {
+          "id": "H1Zn1",
+          "aliases": [
+            "ZnH"
+          ]
+        },
+        {
+          "id": "H2",
+          "aliases": []
+        },
+        {
+          "id": "H2O1",
+          "aliases": [
+            "H2O"
+          ]
+        },
+        {
+          "id": "H2S1",
+          "aliases": [
+            "H2S"
+          ]
+        },
+        {
+          "id": "H3N1",
+          "aliases": [
+            "NH3"
+          ]
+        },
+        {
+          "id": "He1+",
+          "aliases": []
+        },
+        {
+          "id": "K1+",
+          "aliases": []
+        },
+        {
+          "id": "K1-",
+          "aliases": []
+        },
+        {
+          "id": "Mg1+",
+          "aliases": []
+        },
+        {
+          "id": "Mn1+",
+          "aliases": []
+        },
+        {
+          "id": "N1+",
+          "aliases": []
+        },
+        {
+          "id": "N2",
+          "aliases": []
+        },
+        {
+          "id": "Na1+",
+          "aliases": []
+        },
+        {
+          "id": "Na1-",
+          "aliases": []
+        },
+        {
+          "id": "Ne1+",
+          "aliases": []
+        },
+        {
+          "id": "Ni1+",
+          "aliases": []
+        },
+        {
+          "id": "Ni1-",
+          "aliases": []
+        },
+        {
+          "id": "O1+",
+          "aliases": []
+        },
+        {
+          "id": "O1-",
+          "aliases": []
+        },
+        {
+          "id": "O1S1",
+          "aliases": [
+            "SO"
+          ]
+        },
+        {
+          "id": "O1Si1",
+          "aliases": [
+            "SiO"
+          ]
+        },
+        {
+          "id": "O1Ti1",
+          "aliases": [
+            "TiO"
+          ]
+        },
+        {
+          "id": "O1V1",
+          "aliases": [
+            "VO"
+          ]
+        },
+        {
+          "id": "O2S1",
+          "aliases": [
+            "SO2"
+          ]
+        },
+        {
+          "id": "O3S1",
+          "aliases": [
+            "SO3"
+          ]
+        },
+        {
+          "id": "P1+",
+          "aliases": []
+        },
+        {
+          "id": "P1-",
+          "aliases": []
+        },
+        {
+          "id": "S1+",
+          "aliases": []
+        },
+        {
+          "id": "S1-",
+          "aliases": []
+        },
+        {
+          "id": "S2",
+          "aliases": []
+        },
+        {
+          "id": "Si1+",
+          "aliases": []
+        },
+        {
+          "id": "Si1-",
+          "aliases": []
+        },
+        {
+          "id": "Ti1+",
+          "aliases": []
+        },
+        {
+          "id": "Ti1-",
+          "aliases": []
+        },
+        {
+          "id": "V1+",
+          "aliases": []
+        },
+        {
+          "id": "V1-",
+          "aliases": []
+        },
+        {
+          "id": "Zn1+",
+          "aliases": []
+        }
+      ],
+      "records": [
+        {
+          "id": "oh_adoption",
+          "path": "contracts/curated_oh.yaml",
+          "sha256": "2f25a98d934b0512140a18601698b2b41d095957df4a22bc0bbb5dd1e1b29665",
+          "species": [
+            "*",
+            "H1O1"
+          ],
+          "assessments": [
+            "scientific_selection_review",
+            "production_adoption_review",
+            "physical_accuracy_review"
+          ],
+          "artifacts": [
+            {
+              "path": "artifacts/oh_adoption_receipt.json",
+              "sha256": "3f219f3e8b722d4a72b5c97b761aae67a10df85d5f3a021b9ffdca5347acf1f5"
+            },
+            {
+              "path": "artifacts/oh_adoption_summary.json",
+              "sha256": "dd273b74ff02b40b7892d3fd3c9001414191a4f7443ada2f924e81ffdee67c20"
+            }
+          ],
+          "summary": "Default curated-oh-v1 replaces the inherited JANAF OH electronic/caloric defect with the exact NASA9 reaction and balanced ATcT 1.172 D0=425.604 kJ/mol, on curated-h2o-v1 at 1500-4000 K. Only OH changes; H2O, CO2, TiO, C2H, other formation functions, species and budgets are retained. MYTHOS is a finite-state thermal control, differing by less than 0.098 percent in K; it is not adopted. Both network modes pass 75 fresh cold solves, six tighter candidate controls and two independent FastChem comparisons. Scoped source selection and numerical adoption are supported; complete isotope, continuum, energy covariance and atmospheric physical accuracy remain unknown. Earlier versioned presets and immutable evidence remain available. Your conditions have not been evaluated.",
+          "links": [
+            "https://github.com/HajimeKawahara/exogibbs/pull/334"
           ]
         }
       ]

@@ -43,6 +43,7 @@ Contents
    presets/curated_tio.rst
    presets/curated_co2.rst
    presets/curated_h2o.rst
+   presets/curated_oh.rst
    presets/ykb4.rst
    presets/fastchem.rst
    presets/fastchem4.rst

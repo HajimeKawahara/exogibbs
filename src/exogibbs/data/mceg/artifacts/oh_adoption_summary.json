@@ -1,0 +1,103 @@
+{
+  "dataset": "curated-oh-v1",
+  "base_dataset": "curated-h2o-v1",
+  "epsilon_crit": 5e-14,
+  "strict_epsilon_crit": 2e-14,
+  "method": "vmap_cold",
+  "new_production_solves": 150,
+  "tighter_reference_solves": 6,
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_dense_h_difference_from_candidate": 1.0658141036401503e-14,
+      "tighter_case_indices": [
+        23,
+        50,
+        70
+      ],
+      "archived_candidate": {
+        "max_abs_delta_ln_x": 7.16227077646181e-12,
+        "max_oh_abs_delta_ln_x": 7.247535904753022e-13,
+        "max_absolute_delta_x": 1.1657341758564144e-15
+      },
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.4629240524755005e-05,
+        "max_oh_abs_delta_ln_x": 2.8421709430404007e-13,
+        "max_absolute_delta_x": 3.390821901137593e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.464280537955821e-06,
+        "mass_action_max_abs_ln": 1.8474111129762605e-12,
+        "major_element_relative_residual": 2.0420048812796426e-13,
+        "charge_relative_residual": 4.958712694973247e-14
+      },
+      "oh_response": {
+        "min_x_ratio": 1.0388109427722145,
+        "max_x_ratio": 1.1291411020827495,
+        "case23_x_before": 6.091162874263638e-05,
+        "case23_x_after": 6.327566647992921e-05
+      }
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_dense_h_difference_from_candidate": 1.0658141036401503e-14,
+      "tighter_case_indices": [
+        21,
+        23,
+        50
+      ],
+      "archived_candidate": {
+        "max_abs_delta_ln_x": 1.1567635738174431e-10,
+        "max_oh_abs_delta_ln_x": 1.155697759713803e-11,
+        "max_absolute_delta_x": 7.66053886991358e-15
+      },
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.3727149905662372e-05,
+        "max_oh_abs_delta_ln_x": 1.7763568394002505e-13,
+        "max_absolute_delta_x": 3.178907230242678e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.373872137717251e-06,
+        "mass_action_max_abs_ln": 1.1937117960769683e-12,
+        "major_element_relative_residual": 8.812596614252961e-13
+      },
+      "oh_response": {
+        "min_x_ratio": 1.0388116875638655,
+        "max_x_ratio": 1.1291411020828057,
+        "case23_x_before": 6.090491444569973e-05,
+        "case23_x_after": 6.326873695627018e-05
+      }
+    }
+  ],
+  "independent_solver": [
+    {
+      "case_index": 23,
+      "comparisons": [
+        {
+          "dataset": "curated-oh-v1",
+          "max_abs_delta_log10_x": 1.1891919681748916e-08,
+          "element_relative_residual": 2.8454323027420647e-11,
+          "charge_relative_residual": 7.150765434471239e-12,
+          "mass_action_max_abs_ln": 3.241886759042245e-10
+        }
+      ]
+    },
+    {
+      "case_index": 50,
+      "comparisons": [
+        {
+          "dataset": "curated-oh-v1",
+          "max_abs_delta_log10_x": 8.722037978957024e-09,
+          "element_relative_residual": 3.222023842219482e-11,
+          "charge_relative_residual": 8.521290744874315e-13,
+          "mass_action_max_abs_ln": 3.9199221646413207e-10
+        }
+      ]
+    }
+  ],
+  "scope": "OH-only NASA/ATcT adoption at 1500-4000 K on two fixed gas networks. Agreement with the reviewed candidate and numerical closure do not establish full physical accuracy."
+}

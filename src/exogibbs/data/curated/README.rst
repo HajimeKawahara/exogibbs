@@ -1,9 +1,9 @@
 Curated gas thermochemistry datasets
 ====================================
 
-The current default is ``curated-h2o-v1``, adding evaluated 2025 H2O
-thermodynamics to the NIST 626 CO2, TiO and C2H updates. ``gas_v1.json``,
-``c2h_v1.json``, ``tio_v1.json`` and ``co2_v1.json`` retain the preceding
+The current default is ``curated-oh-v1``, adding NASA/ATcT OH thermodynamics
+to the evaluated 2025 H2O, NIST 626 CO2, TiO and C2H updates. ``gas_v1.json``,
+``c2h_v1.json``, ``tio_v1.json``, ``co2_v1.json`` and ``h2o_v1.json`` retain the preceding
 models for explicit historical reproduction. All datasets use 1500--4000 K
 and a standard pressure of 1 bar.
 
@@ -144,7 +144,7 @@ finite response, high-temperature and isotope limits are in
 H2O adoption
 -------------
 
-``h2o_v1.json`` pins the current ``curated-h2o-v1`` default, also selected
+``h2o_v1.json`` pins the former ``curated-h2o-v1`` default, selected
 explicitly through ``exogibbs.presets.curated_h2o.chemsetup()``. Only H2O1
 changes relative to ``curated-co2-v1``. The exact reviewed evaluated 2025
 degree-8 Cp/R polynomial and analytical H/S integrals retain the ATcT 1.172
@@ -164,3 +164,24 @@ See ``documents/presets/curated_h2o.rst`` and
 ``mceg/contracts/curated_h2o.yaml`` for the scientific choice, joint response,
 scattering-assignment and isotope limitations. Complete physical accuracy
 remains unquantified.
+
+OH adoption
+------------
+
+``oh_v1.json`` pins the current ``curated-oh-v1`` default, also selected
+explicitly through ``exogibbs.presets.curated_oh.chemsetup()``. Only H1O1
+changes relative to ``curated-h2o-v1``. The exact reviewed NASA9 OH-H-O
+reaction receives balanced ATcT 1.172 D0=425.604 kJ/mol once, replacing
+the inherited JANAF electronic/caloric defect. No new fit or additional
+spin, symmetry, ZPE or atomic correction is applied. MYTHOS remains a
+thermal sensitivity control, with less than 0.098 percent difference in K.
+
+Rebuild with ``python mceg/reviews/build_oh_adoption.py --output /tmp/oh_v1.json``.
+The production packet contains 150 new cold solves, six tighter candidate
+controls and two FastChem comparisons in
+``tests/data/validation/curated_oh_adoption/20261105``. Earlier default-dependent
+sources are preserved in its ``source/`` directory and historical receipts
+are unchanged. See ``documents/presets/curated_oh.rst`` and
+``mceg/contracts/curated_oh.yaml`` for the scientific rationale, finite response,
+isotope/continuum and energy-covariance limitations. Full physical accuracy
+remains unknown.

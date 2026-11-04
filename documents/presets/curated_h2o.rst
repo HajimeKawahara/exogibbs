@@ -1,8 +1,9 @@
 Curated gas with evaluated H2O and CO2 thermochemistry
 ======================================================
 
-``exogibbs.presets.curated.chemsetup()`` selects **curated-h2o-v1**, also
-available as ``curated_h2o.chemsetup``. It adopts the evaluated 2025 H2O
+``curated_h2o.chemsetup()`` preserves **curated-h2o-v1**, the public
+default at its 2026-11-04 adoption. The current default is described in
+:doc:`curated_oh`. This version adopts the evaluated 2025 H2O
 thermal model on **curated-co2-v1**, inheriting the adopted CO2, TiO and C2H
 updates. Only H2O's formation function changes relative to that immediate
 CO2 base. Species sets, elemental budgets, charge handling and atomic
@@ -14,7 +15,7 @@ standard pressure **1 bar**.
    import jax
    jax.config.update("jax_enable_x64", True)
    from exogibbs.api.gas import EquilibriumOptions, solve
-   from exogibbs.presets import curated, curated_co2, curated_tio
+   from exogibbs.presets import curated_h2o as curated, curated_co2, curated_tio
 
    setup = curated.chemsetup()       # Evaluated H2O and CO2, plus TiO and C2H
    before_water = curated_co2.chemsetup()
@@ -106,7 +107,7 @@ not a condition for this specified thermal improvement.
 Combined production verification
 ---------------------------------
 
-The actual public default was cold-solved at **75 conditions per network,
+The public default at H2O adoption was cold-solved at **75 conditions per network,
 150 production cases in total**, with convergence required in every case.
 The production tolerance is 5e-14. Separately applying the two frozen
 candidate evaluators to ``curated_tio`` constructs an independent reference
@@ -141,7 +142,7 @@ one-species experiments. At 4000 K, 100 bar and reference C/O:
 
    * - Mole fraction
      - Previous curated-tio-v1
-     - Current curated-h2o-v1
+     - Adopted curated-h2o-v1
    * - H2O
      - 0.0002718623980
      - 0.0002710808608

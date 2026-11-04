@@ -84,7 +84,7 @@ evidence:
   summary: Adopt the inspected evaluated 2025 source and its exact reviewed continuous model, retaining
     the balanced energy, explicit isotope approximation and measured alternative-scope sensitivity.
   sources:
-  - documents/presets/curated_h2o.rst
+  - tests/data/validation/curated_oh_adoption/20261105/source/documents/presets/curated_h2o.rst
   - src/exogibbs/data/curated/h2o_v1.json
   - tests/data/validation/h2o_source_review/20261103/literature.json
   - tests/data/validation/h2o_source_review/20261103/sources.json
@@ -97,7 +97,7 @@ evidence:
   subject: curated_h2o_production_20261104
   context: production_gas_domain
   artifacts:
-  - source: documents/presets/curated_h2o.rst
+  - source: tests/data/validation/curated_oh_adoption/20261105/source/documents/presets/curated_h2o.rst
     sha256: bda37bb6ca85541eb04d80429718f63399980892cd23e62a4e2506a6c6549c20
   - source: src/exogibbs/data/curated/h2o_v1.json
     sha256: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
@@ -113,7 +113,7 @@ evidence:
     sha256: f7ffabf1a1a830102c90f13eed8fb41179f97ab564d90d61b36a808d1272d392
   provenance:
     role: secondary
-    location: documents/presets/curated_h2o.rst
+    location: tests/data/validation/curated_oh_adoption/20261105/source/documents/presets/curated_h2o.rst
     inspection: inspected
     note: Dated source and candidate records are preserved; their physical-accuracy unknown status is
       not changed by production numerical verification.
@@ -129,9 +129,9 @@ evidence:
   - tests/data/validation/curated_h2o_adoption/20261104/neutral.npz
   - tests/data/validation/curated_h2o_adoption/20261104/diagnostics.json
   - tests/data/validation/curated_h2o_adoption/20261104/README.rst
-  - mceg/reviews/curated_h2o_adoption.py
-  - tests/model_evidence/curated_h2o_adoption_test.py
-  - tests/unittests/presets/curated_h2o_test.py
+  - tests/data/validation/curated_oh_adoption/20261105/source/mceg/reviews/curated_h2o_adoption.py
+  - tests/data/validation/curated_oh_adoption/20261105/source/tests/model_evidence/curated_h2o_adoption_test.py
+  - tests/data/validation/curated_oh_adoption/20261105/source/tests/unittests/presets/curated_h2o_test.py
   scope: curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O)
     internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both
     537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
@@ -150,15 +150,15 @@ evidence:
     sha256: 456b13c3a2f12f52bf2ccd7973f4ffcc3895f7e7c51bf151bdb43a2b7ffb58b9
   - source: tests/data/validation/curated_h2o_adoption/20261104/README.rst
     sha256: e180a082525b873bc5ebc4fe1789d7d1fe57b7a39013d659113eaa9b3446a2a4
-  - source: mceg/reviews/curated_h2o_adoption.py
+  - source: tests/data/validation/curated_oh_adoption/20261105/source/mceg/reviews/curated_h2o_adoption.py
     sha256: 2baa9b0abc350fd6629701583ca2e85ebab6c3dcabd14aa85f5cfb86f89b62d6
-  - source: tests/model_evidence/curated_h2o_adoption_test.py
+  - source: tests/data/validation/curated_oh_adoption/20261105/source/tests/model_evidence/curated_h2o_adoption_test.py
     sha256: b8f1335c6b5dabef1cf8a8b171518c0f064cbf82bd4cdf96af4a1d4205554c02
-  - source: tests/unittests/presets/curated_h2o_test.py
+  - source: tests/data/validation/curated_oh_adoption/20261105/source/tests/unittests/presets/curated_h2o_test.py
     sha256: e07c0d51b8b40dc704314437105b5392946dc5972baddf98f9036d118072167a
   provenance:
     role: primary
-    location: documents/presets/curated_h2o.rst
+    location: tests/data/validation/curated_oh_adoption/20261105/source/documents/presets/curated_h2o.rst
     inspection: inspected
     note: Dated source and candidate records are preserved; their physical-accuracy unknown status is
       not changed by production numerical verification.
@@ -172,14 +172,14 @@ subjects:
     - exogibbs.presets.curated.chemsetup
     - exogibbs.presets.curated_h2o.chemsetup
   selected_files:
-    mceg/reviews/curated_h2o_adoption.py: 2baa9b0abc350fd6629701583ca2e85ebab6c3dcabd14aa85f5cfb86f89b62d6
+    tests/data/validation/curated_oh_adoption/20261105/source/mceg/reviews/curated_h2o_adoption.py: 2baa9b0abc350fd6629701583ca2e85ebab6c3dcabd14aa85f5cfb86f89b62d6
     mceg/reviews/co2_candidate.py: 522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea
     mceg/reviews/co2_source_review.py: cbefe937fe4ad5fd7b6a6dc3db6106f4417a93224292bc940df391c02de89172
     mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
     mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
     mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
-    src/exogibbs/presets/curated.py: bafa08eff9a4bc125e3010ad80dc13a4359e79f8548b42c0b68850732fc9690f
+    tests/data/validation/curated_oh_adoption/20261105/source/src/exogibbs/presets/curated.py: bafa08eff9a4bc125e3010ad80dc13a4359e79f8548b42c0b68850732fc9690f
     src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
@@ -224,7 +224,7 @@ subjects:
     src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
     src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
     src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
-    documents/presets/curated_h2o.rst: bda37bb6ca85541eb04d80429718f63399980892cd23e62a4e2506a6c6549c20
+    tests/data/validation/curated_oh_adoption/20261105/source/documents/presets/curated_h2o.rst: bda37bb6ca85541eb04d80429718f63399980892cd23e62a4e2506a6c6549c20
     tests/data/validation/h2o_source_review/20261103/literature.json: 1f996b47dea858258a86cc6fd4c5b7b14efdb69c5e3254c9a28a793edcb81bd1
     tests/data/validation/h2o_source_review/20261103/sources.json: 53cc7efdcd588b3c94a3a9541c777bf4bd27421a9b88191b417ddb1057313fe4
     tests/data/validation/h2o_candidate/20261104/validation.json: c231d88bdf4c8c67d9bba2d5ce4c3be4fbf4f4d3f2fda1a7810a5dffd3f37aa3
@@ -235,8 +235,8 @@ subjects:
     tests/data/validation/curated_h2o_adoption/20261104/neutral.npz: 0f04e08e51ee29c354ad45ea7ab24f28d2ae77d742222f4abe1087274b06412e
     tests/data/validation/curated_h2o_adoption/20261104/diagnostics.json: 456b13c3a2f12f52bf2ccd7973f4ffcc3895f7e7c51bf151bdb43a2b7ffb58b9
     tests/data/validation/curated_h2o_adoption/20261104/README.rst: e180a082525b873bc5ebc4fe1789d7d1fe57b7a39013d659113eaa9b3446a2a4
-    tests/model_evidence/curated_h2o_adoption_test.py: b8f1335c6b5dabef1cf8a8b171518c0f064cbf82bd4cdf96af4a1d4205554c02
-    tests/unittests/presets/curated_h2o_test.py: e07c0d51b8b40dc704314437105b5392946dc5972baddf98f9036d118072167a
+    tests/data/validation/curated_oh_adoption/20261105/source/tests/model_evidence/curated_h2o_adoption_test.py: b8f1335c6b5dabef1cf8a8b171518c0f064cbf82bd4cdf96af4a1d4205554c02
+    tests/data/validation/curated_oh_adoption/20261105/source/tests/unittests/presets/curated_h2o_test.py: e07c0d51b8b40dc704314437105b5392946dc5972baddf98f9036d118072167a
     mceg/reviews/build_h2o_adoption.py: 7b82f09cee711c260ec757f9f097f603d104e41afedd9ea1e3106428cf19389f
 contexts:
 - id: production_gas_domain

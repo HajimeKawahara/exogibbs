@@ -16,6 +16,7 @@ BASELINE = ROOT / "tests/data/validation/curated_tio_adoption/20261103"
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
 import co2_candidate
 import h2o_candidate
+from curated_adoption_history import historical_source
 
 
 def test_production_receipt_identifies_current_inputs_and_completed_outputs():
@@ -23,7 +24,7 @@ def test_production_receipt_identifies_current_inputs_and_completed_outputs():
     assert receipt["result"] == "passed"
     assert receipt["backend"] == "cpu" and receipt["dtype"] == "float64"
     for name, expected in receipt["selected_file_sha256"].items():
-        assert sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
+        assert sha256(historical_source(ROOT, name, expected).read_bytes()).hexdigest() == expected, name
     for name, expected in receipt["output_sha256"].items():
         assert sha256((DATA / name).read_bytes()).hexdigest() == expected, name
     summary = json.loads((DATA / "summary.json").read_text())
