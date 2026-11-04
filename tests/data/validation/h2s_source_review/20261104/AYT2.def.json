@@ -1,0 +1,145 @@
+{
+    "isotopologue": {
+        "iso_formula": "(1H)2(32S)",
+        "iso_slug": "1H2-32S",
+        "inchi": "InChI=1S/H2S/h1H2",
+        "inchikey": "RWSOTUBLDIXVET-UHFFFAOYSA-N",
+        "cas_registry_number": "7783-06-04",
+        "mass_in_Da": 33.98772106,
+        "point_group": "C2v"
+    },
+    "atoms": {
+        "number_of_atoms": 3,
+        "element": {
+            "H": 1,
+            "S": 32
+        }
+    },
+    "irreducible_representations": {
+        "A1": 1,
+        "A2": 1,
+        "B1": 3,
+        "B2": 3
+    },
+    "dataset": {
+        "name": "AYT2",
+        "version": 20241204,
+        "doi": "10.5281/zenodo.5716826",
+        "max_temperature": 1500.0,
+        "num_pressure_broadeners": 0,
+        "cooling_function_available": false,
+        "specific_heat_available": true,
+        "continuum": false,
+        "states": {
+            "number_of_states": 220630,
+            "max_energy": 10000.0,
+            "hyperfine_resolved_dataset": false,
+            "uncertainty_description": null,
+            "uncertainties_available": true,
+            "lifetime_available": true,
+            "lande_g_available": false,
+            "quantum_case_label": "asymcs",
+            "num_quanta": 6,
+            "num_quantum_types": 1,
+            "states_file_fields": [
+                {
+                    "name": "ID",
+                    "desc": "Unique integer identifier for the energy level",
+                    "ffmt": "I12",
+                    "cfmt": "%12d"
+                },
+                {
+                    "name": "E",
+                    "desc": "State energy in cm-1",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f"
+                },
+                {
+                    "name": "gtot",
+                    "desc": "Total energy level degeneracy",
+                    "ffmt": "I6",
+                    "cfmt": "%6d"
+                },
+                {
+                    "name": "J",
+                    "desc": "Total rotational quantum number, excluding nuclear spin",
+                    "ffmt": "I7",
+                    "cfmt": "%7d"
+                },
+                {
+                    "name": "unc",
+                    "desc": "Energy uncertainty in cm-1",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f"
+                },
+                {
+                    "name": "tau",
+                    "desc": "Lifetime in s",
+                    "ffmt": "ES12.4",
+                    "cfmt": "%12.4e"
+                },
+                {
+                    "name": "Grve",
+                    "ffmt": "A3",
+                    "cfmt": "%3s",
+                    "desc": "Total (rovibronic) symmetry"
+                },
+                {
+                    "name": "Herzberg:Ka",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "Ka rotational quantum number"
+                },
+                {
+                    "name": "Herzberg:Kc",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "Kc rotational quantum number"
+                },
+                {
+                    "name": "Herzberg:v1",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "v1 symmetric stretch quantum number(3)"
+                },
+                {
+                    "name": "Herzberg:v2",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "v2 bend quantum number"
+                },
+                {
+                    "name": "Herzberg:v3",
+                    "ffmt": "I2",
+                    "cfmt": "%2d",
+                    "desc": "v3 asymmetrics stretch quantum number"
+                },
+                {
+                    "name": "Auxiliary:SourceType",
+                    "ffmt": "A2",
+                    "cfmt": "%2s",
+                    "desc": "Ma=MARVEL,Ca=Calculated,EH=Effective Hamiltonian,IE=Isotopologue extrapolation"
+                },
+                {
+                    "name": "Auxiliary:Ecal",
+                    "ffmt": "F12.6",
+                    "cfmt": "%12.6f",
+                    "desc": "Calculated energy in cm-1"
+                }
+            ]
+        },
+        "transitions": {
+            "number_of_transitions": 115032941,
+            "number_of_transition_files": 35,
+            "max_wavenumber": 35000.0
+        }
+    },
+    "partition_function": {
+        "max_partition_function_temperature": 3000.0,
+        "partition_function_step_size": 1.0
+    },
+    "broad": {
+        "default_Lorentzian_half-width": 0.07,
+        "default_temperature_exponent": 0.5
+    }
+}
