@@ -165,10 +165,14 @@ def validate() -> dict:
     actual = np.array([formation_h(t) for t in t_grid])
     molecular = np.array([[molecular_properties(t)[k] for k in PROPERTY_KEYS] for t in t_grid])
     ratio = np.exp(actual - control)
-    with jax.experimental.enable_x64():
+    previous = jax.config.x64_enabled
+    jax.config.update("jax_enable_x64", True)
+    try:
         evaluated = np.asarray(jax.jit(formation_h_jax)(t_grid))
         first = np.asarray(jax.jit(jax.vmap(jax.grad(formation_h_jax)))(t_grid))
         second = np.asarray(jax.jit(jax.vmap(jax.grad(jax.grad(formation_h_jax))))(t_grid))
+    finally:
+        jax.config.update("jax_enable_x64", previous)
     samples = [{"temperature_K": float(t), "nasa_ATcT_over_current_K": math.exp(-source.curated_ln_k(t) - formation_h(t)),
                 "mythos_ATcT_over_current_K": math.exp(-source.curated_ln_k(t) - formation_h(t, "mythos")),
                 "mythos_over_nasa_K": float(ratio[int(t - 1500)]),

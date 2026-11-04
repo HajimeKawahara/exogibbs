@@ -42,6 +42,9 @@ Rebuild the candidate and its validation report from the frozen sources::
    PYTHONPATH=src python mceg/reviews/oh_candidate.py --build \
        --output tests/data/validation/oh_candidate/20261105/validation.json
 
+Validation uses the stable ``jax.config.update`` API and restores the
+caller's 64-bit setting, avoiding the removed experimental context manager.
+
 The original NASA records, official source identifiers and compact state
 array are pinned in the historical source packet. No new download or full
 paper redistribution is needed. The companion

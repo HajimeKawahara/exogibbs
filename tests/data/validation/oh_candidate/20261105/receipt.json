@@ -5,9 +5,9 @@
     "PYTHONPATH=src pytest tests/model_evidence/oh_candidate_test.py"
   ],
   "selected_input_sha256": {
-    "mceg/reviews/oh_candidate.py": "1c0295971846cceb3b5fc6fd88846ffc498760e8832297a4ffb2a77cc175fe89",
+    "mceg/reviews/oh_candidate.py": "094fe414773c7927e273c7cd3cb98acd764236d35c97539d05dba34f1f2d1eb1",
     "documents/mceg/oh_candidate.rst": "9bc792c2300b2b595d1ac8a22430aa5574d78a0aec6f4b2bbd62321410a792cc",
-    "tests/model_evidence/oh_candidate_test.py": "8fe9afa4e6b38c35d7c0c5346b981fdd06eb87017ebef47e1479bd30013fd96e",
+    "tests/model_evidence/oh_candidate_test.py": "da80272565fb892e8f23f03f230f182c84919eb285f8f494f546cc566f3e28bc",
     "mceg/reviews/oh_source_review.py": "a9450f7616d87089293851446c5fa4241b4b29f9ef1a0a84543b4a588223c90d",
     "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
     "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
@@ -27,7 +27,7 @@
     "tests/data/validation/oh_source_review/20261105/receipt.json": "efd8ef8a1af36a7c14a4c4cf1bbacd605aa0d1dc6b09c591f925868bad3aee38",
     "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
     "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
-    "tests/data/validation/oh_candidate/20261105/README.rst": "5ded6b63c76c08e2ea90d970be550ae80620fd7ea9d0147c1d208d2e8106fa2e"
+    "tests/data/validation/oh_candidate/20261105/README.rst": "7d2afc17eda5a8a067f21bf98508ccea44b1281f19c3bbb25c3857c1e96a2461"
   },
   "output_sha256": {
     "tests/data/validation/oh_candidate/20261105/candidate.json": "5c2eea21282fc1cee77723c0e5774e0b2b52a401e45d62a17a726f76b9c7780d",

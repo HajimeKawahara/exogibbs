@@ -16,7 +16,20 @@ import oh_candidate as candidate
 
 @pytest.fixture(scope="module")
 def report():
-    return candidate.validate()
+    import jax
+
+    previous = jax.config.x64_enabled
+    try:
+        jax.config.update("jax_enable_x64", False)
+        # Newer JAX removes this experimental context manager. Exercise the
+        # supported configuration path and verify callers keep their setting.
+        with pytest.MonkeyPatch.context() as monkeypatch:
+            monkeypatch.delattr(jax.experimental, "enable_x64", raising=False)
+            result = candidate.validate()
+        assert not jax.config.x64_enabled
+        return result
+    finally:
+        jax.config.update("jax_enable_x64", previous)
 
 
 def test_rebuild_preserves_sources_and_changes_only_the_balanced_energy():
@@ -106,7 +119,9 @@ def test_jax_array_vmap_and_mythos_derivatives_match_independent_atom_calorics()
     records = json.loads(candidate.INPUTS[0].read_text())["nasa9_records"]
     headers = json.loads(candidate.INPUTS[2].read_text())["nasa_headers"]
     temperatures = np.array([1500., 1637., 2253., 3000., 3871., 4000.])
-    with jax.experimental.enable_x64():
+    previous = jax.config.x64_enabled
+    jax.config.update("jax_enable_x64", True)
+    try:
         for thermal in candidate.THERMAL:
             f = jax.jit(lambda t: candidate.formation_h_jax(t, thermal))
             expected = [candidate.formation_h(t, thermal) for t in temperatures]
@@ -127,6 +142,8 @@ def test_jax_array_vmap_and_mythos_derivatives_match_independent_atom_calorics()
                 assert float(g(t) - t * slope) == pytest.approx(reaction_h, abs=1e-8, rel=0)
                 assert float(-slope) == pytest.approx(mol["S_J_mol_K"] - atoms[1], abs=1e-10, rel=0)
                 assert float(-t * curvature) == pytest.approx(mol["Cp_J_mol_K"] - atoms[2], abs=1e-10, rel=0)
+    finally:
+        jax.config.update("jax_enable_x64", previous)
 
 
 def test_declared_domain_and_unknown_thermal_selector():
@@ -138,10 +155,14 @@ def test_declared_domain_and_unknown_thermal_selector():
             for function in (candidate.formation_h, candidate.molecular_properties):
                 with pytest.raises(ValueError, match="outside"):
                     function(t, thermal)
-        with jax.experimental.enable_x64():
+        previous = jax.config.x64_enabled
+        jax.config.update("jax_enable_x64", True)
+        try:
             f = jax.jit(lambda t: candidate.formation_h_jax(t, thermal))
             assert np.isnan(np.asarray(f(np.array(invalid)))).all()
             assert np.isfinite(np.asarray(f(np.array([1500., 4000.])))).all()
+        finally:
+            jax.config.update("jax_enable_x64", previous)
     for function in (candidate.formation_h, candidate.molecular_properties, candidate.formation_h_jax):
         with pytest.raises(ValueError, match="thermal"):
             function(2500., "other")
