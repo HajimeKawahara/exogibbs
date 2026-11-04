@@ -1,0 +1,103 @@
+{
+  "temperature_count": 2501,
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "step_K": 1,
+  "maximum_absolute_formation_h_reconstruction_error": 2.3092638912203256e-14,
+  "maximum_absolute_molecular_property_reconstruction_errors": {
+    "G_relative_J_mol": 4.656612873077393e-10,
+    "H_relative_J_mol": 8.731149137020111e-11,
+    "S_J_mol_K": 5.684341886080802e-14,
+    "Cp_J_mol_K": 1.4210854715202004e-14
+  },
+  "jax_float64_maximum_absolute_errors": {
+    "formation_h": 2.4868995751603507e-14,
+    "reaction_H_J_mol": 4.656612873077393e-10,
+    "reaction_Cp_J_mol_K": 4.440892098500626e-13
+  },
+  "mythos_over_nasa_K": {
+    "minimum": 0.9990247892018854,
+    "minimum_temperature_K": 4000.0,
+    "maximum": 1.0000729347959787,
+    "maximum_temperature_K": 1500.0,
+    "maximum_absolute_relative_difference": 0.0009752107981145786
+  },
+  "thermal_comparison": [
+    {
+      "temperature_K": 1500.0,
+      "nasa_ATcT_over_current_K": 1.1291411020829702,
+      "mythos_ATcT_over_current_K": 1.1292234557588818,
+      "mythos_over_nasa_K": 1.0000729347959787,
+      "mythos_minus_nasa_molecular_properties": {
+        "G_relative_J_mol": -0.909587282279972,
+        "H_relative_J_mol": -3.155498344618536,
+        "S_J_mol_K": -0.0014972740415544195,
+        "Cp_J_mol_K": -0.015418383754301601
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "nasa_ATcT_over_current_K": 1.0946539032605935,
+      "mythos_ATcT_over_current_K": 1.0945873198315192,
+      "mythos_over_nasa_K": 0.9999391739901752,
+      "mythos_minus_nasa_molecular_properties": {
+        "G_relative_J_mol": 1.0115019327495247,
+        "H_relative_J_mol": -10.622465153472149,
+        "S_J_mol_K": -0.005816983543098786,
+        "Cp_J_mol_K": -0.013097922315097321
+      }
+    },
+    {
+      "temperature_K": 2500.0,
+      "nasa_ATcT_over_current_K": 1.076463968768883,
+      "mythos_ATcT_over_current_K": 1.0762193015450505,
+      "mythos_over_nasa_K": 0.9997727121102694,
+      "mythos_minus_nasa_molecular_properties": {
+        "G_relative_J_mol": 4.724978642305359,
+        "H_relative_J_mol": -18.18482591722568,
+        "S_J_mol_K": -0.009163921823869714,
+        "Cp_J_mol_K": -0.019921985447503232
+      }
+    },
+    {
+      "temperature_K": 3000.0,
+      "nasa_ATcT_over_current_K": 1.0658234558910942,
+      "mythos_ATcT_over_current_K": 1.0653747904793387,
+      "mythos_over_nasa_K": 0.9995790434060391,
+      "mythos_minus_nasa_molecular_properties": {
+        "G_relative_J_mol": 10.50229425332509,
+        "H_relative_J_mol": -32.58909540082095,
+        "S_J_mol_K": -0.014363796551378982,
+        "Cp_J_mol_K": -0.03871231765671013
+      }
+    },
+    {
+      "temperature_K": 3500.0,
+      "nasa_ATcT_over_current_K": 1.059015175679446,
+      "mythos_ATcT_over_current_K": 1.0583068496461088,
+      "mythos_over_nasa_K": 0.9993311464749475,
+      "mythos_minus_nasa_molecular_properties": {
+        "G_relative_J_mol": 19.470563912182115,
+        "H_relative_J_mol": -56.81895647487545,
+        "S_J_mol_K": -0.021797005824851112,
+        "Cp_J_mol_K": -0.05714773278162255
+      }
+    },
+    {
+      "temperature_K": 4000.0,
+      "nasa_ATcT_over_current_K": 1.0544824584776964,
+      "mythos_ATcT_over_current_K": 1.0534541157977666,
+      "mythos_over_nasa_K": 0.9990247892018854,
+      "mythos_minus_nasa_molecular_properties": {
+        "G_relative_J_mol": 32.44923990033567,
+        "H_relative_J_mol": -88.0605692511017,
+        "S_J_mol_K": -0.03012745228784297,
+        "Cp_J_mol_K": -0.06586093616256505
+      }
+    }
+  ],
+  "uncertainty_scope": "Numerical reproduction and a finite-state thermal comparison; no new physical uncertainty or ATcT covariance estimate",
+  "production_change": "none"
+}
