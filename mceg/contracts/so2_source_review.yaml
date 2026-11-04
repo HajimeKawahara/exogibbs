@@ -1,0 +1,311 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.so2_source_review.v1
+  name: SO2 energy and thermal-completeness source review
+  description: Retain NASA thermal functions plus ATcT energy pending converged high-temperature anharmonic
+    evidence.
+  implementation: &id002
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:c2de41cf8f5179cd8b3767d5c87e3db0c2167ca977437bf4b0edf253a81d7d9a
+    entry_points:
+    - mceg/reviews/so2_source_review.py
+assumptions:
+- statement: Ground-relative balanced D0 is distinct from De/ZPE and single-species formation enthalpy;
+    NASA native R is preserved.
+  evidence:
+  - literature
+  - source_replay
+- statement: 32S16O2 has nuclear-spin product one and exchange symmetry represented by allowed states.
+    Natural-mass translation with representative-isotope internal Q is an explicit approximation.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Neutral SO2, S(g) + 2 O(g) -> SO2(g), one bar; nine 300-4000 K thermal nodes, curated 1500-4000
+    K. ExoAmes above 2000 K is a completeness diagnostic outside its distributed PF range. The 75 saved
+    curated-h2o-v1 cases are not a new substitution.
+  conditions:
+  - NASA source validity is 300-6000 K; production is 1500-4000 K.
+  - TIPS has a 1-5000 K product approximation; ExoAmes published PF is 1-2000 K, with larger T evaluated
+    only as diagnostics.
+  - No new abundance substitution; the current 75-case archive is hot, hydrogen-rich and gas-only.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete physical uncertainty and planetary atmosphere accuracy are not established.
+  conditions: []
+  evidence:
+  - literature
+  - source_replay
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The unchanged SO2 polynomial combines NASA thermal functions with same-version atom-balanced
+    ATcT 1.172 D0; energy conventions and atomic fine-structure checks are explicit.
+  scope: Neutral SO2, S(g) + 2 O(g) -> SO2(g), one bar; nine 300-4000 K thermal nodes, curated 1500-4000
+    K. ExoAmes above 2000 K is a completeness diagnostic outside its distributed PF range. The 75 saved
+    curated-h2o-v1 cases are not a new substitution.
+- id: normalized_diagnostics
+  revision: '1'
+  kind: numerical_verification
+  statement: The pinned compact state moments, published PF and exact TIPS tables reproduce normalized
+    Q/G/H/S/Cp/K diagnostics and distinguish cutoff and derivative limitations.
+  scope: Neutral SO2, S(g) + 2 O(g) -> SO2(g), one bar; nine 300-4000 K thermal nodes, curated 1500-4000
+    K. ExoAmes above 2000 K is a completeness diagnostic outside its distributed PF range. The 75 saved
+    curated-h2o-v1 cases are not a new substitution.
+- id: scoped_retention
+  revision: '1'
+  kind: theoretical
+  statement: Retain the current SO2 thermal and energy construction pending a completed anharmonic high-temperature
+    evaluation. Neither the finite ExoAmes distribution nor TIPS product approximation establishes a superior
+    replacement over 1500-4000 K.
+  scope: Neutral SO2, S(g) + 2 O(g) -> SO2(g), one bar; nine 300-4000 K thermal nodes, curated 1500-4000
+    K. ExoAmes above 2000 K is a completeness diagnostic outside its distributed PF range. The 75 saved
+    curated-h2o-v1 cases are not a new substitution.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The current SO2 model has complete quantified thermal, isotope, energy and planetary abundance
+    accuracy.
+  scope: Neutral SO2, S(g) + 2 O(g) -> SO2(g), one bar; nine 300-4000 K thermal nodes, curated 1500-4000
+    K. ExoAmes above 2000 K is a completeness diagnostic outside its distributed PF range. The 75 saved
+    curated-h2o-v1 cases are not a new substitution.
+evidence:
+- id: literature
+  kind: literature
+  summary: Full Underwood, Gamache 2021/2025 and corrigendum manuscripts, official ATcT/NIST data and
+    inspection limits are recorded.
+  sources:
+  - tests/data/validation/so2_source_review/20261104/literature.json
+  - tests/data/validation/so2_source_review/20261104/sources.json
+  scope: Neutral SO2, S(g) + 2 O(g) -> SO2(g), one bar; nine 300-4000 K thermal nodes, curated 1500-4000
+    K. ExoAmes above 2000 K is a completeness diagnostic outside its distributed PF range. The 75 saved
+    curated-h2o-v1 cases are not a new substitution.
+  subject: so2_sources_20261104
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/so2_source_review/20261104/literature.json
+    sha256: 696aef986affd0deadbbad5ee818b2fbcd9c8dbfcba82c7a2190c88e6c01d462
+  - source: tests/data/validation/so2_source_review/20261104/sources.json
+    sha256: 380cecba5065c99d469f8f8210444f9bce49e965e13d3fb14e864bf51b2725d1
+  provenance: &id001
+    role: primary
+    location: documents/mceg/so2_source_review.rst
+    inspection: inspected
+    note: Primary manuscripts and official data inspected; compact moment replay is not an independent
+      full-state resummation. Scientific completeness and physical accuracy remain distinct from reproducibility.
+- id: source_replay
+  kind: numerical_test
+  summary: Offline compact moment/table replay, zero/spin/mass checks, balanced energy and current saved
+    sulphur endpoints. Re-extraction from original states is separately guarded by hashes.
+  sources:
+  - tests/data/validation/so2_source_review/20261104/state_samples.json
+  - tests/data/validation/so2_source_review/20261104/tips_tables.json
+  - tests/data/validation/so2_source_review/20261104/exoames.pf
+  - tests/data/validation/so2_source_review/20261104/exoames.def.json
+  - tests/data/validation/so2_source_review/20261104/comparison.json
+  - tests/data/validation/so2_source_review/20261104/receipt.json
+  scope: Neutral SO2, S(g) + 2 O(g) -> SO2(g), one bar; nine 300-4000 K thermal nodes, curated 1500-4000
+    K. ExoAmes above 2000 K is a completeness diagnostic outside its distributed PF range. The 75 saved
+    curated-h2o-v1 cases are not a new substitution.
+  subject: so2_sources_20261104
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/so2_source_review/20261104/state_samples.json
+    sha256: d9c41017912e9069645d6f7cf2b73fa7d7b6297d4e6898ffb391567d5822ae3f
+  - source: tests/data/validation/so2_source_review/20261104/tips_tables.json
+    sha256: e3b0e0d21720da0df90f7562762333e715755bce2a36f04378fc6bfe2f8daf9f
+  - source: tests/data/validation/so2_source_review/20261104/exoames.pf
+    sha256: 184e8d11657b795c6c3165c024194d92b9284f441d98063d2e97523c753c5ef4
+  - source: tests/data/validation/so2_source_review/20261104/exoames.def.json
+    sha256: 22ebf0fdcabe5ef50c8e01d1cde86253b6e11ed04900906b7bb10f704d817a24
+  - source: tests/data/validation/so2_source_review/20261104/comparison.json
+    sha256: 9363db0dacbf710c2b4076dd7b5c12385f39366991883e9f15b10ce0d14e8e5e
+  - source: tests/data/validation/so2_source_review/20261104/receipt.json
+    sha256: e9792f6db8bd47d400504de46985af28dfab7d0c960f3985b1a73685fb6164f5
+  provenance: *id001
+  result: passed
+- id: retention_reasoning
+  kind: theory
+  summary: Modern alternatives have demonstrated cutoff or product-approximation limits. Retention does
+    not require every historical original and does not assert exact NASA accuracy.
+  sources:
+  - tests/data/validation/so2_source_review/20261104/literature.json
+  - tests/data/validation/so2_source_review/20261104/comparison.json
+  scope: Neutral SO2, S(g) + 2 O(g) -> SO2(g), one bar; nine 300-4000 K thermal nodes, curated 1500-4000
+    K. ExoAmes above 2000 K is a completeness diagnostic outside its distributed PF range. The 75 saved
+    curated-h2o-v1 cases are not a new substitution.
+  subject: so2_sources_20261104
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/so2_source_review/20261104/literature.json
+    sha256: 696aef986affd0deadbbad5ee818b2fbcd9c8dbfcba82c7a2190c88e6c01d462
+  - source: tests/data/validation/so2_source_review/20261104/comparison.json
+    sha256: 9363db0dacbf710c2b4076dd7b5c12385f39366991883e9f15b10ce0d14e8e5e
+  provenance: *id001
+subjects:
+- id: so2_sources_20261104
+  implementation: *id002
+  selected_files:
+    mceg/reviews/so2_source_review.py: c2de41cf8f5179cd8b3767d5c87e3db0c2167ca977437bf4b0edf253a81d7d9a
+    documents/mceg/so2_source_review.rst: 99321e7b87a0a0a9bc12d1efa7fd605330d7a3a80d6f30a55ef053f40eb076ca
+    tests/model_evidence/so2_source_review_test.py: 4aa2052ccdda5c64e2e7f001753bb2f9010cda6629327df8852615366e0f2788
+    mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
+    examples/comparisons/audit_atomic_ions.py: 190308927737117b9f503e3e80b626ef7d9fbe658e0a9cd9096f893fd800f468
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    tests/data/validation/curated_h2o_adoption/20261104/ions.npz: c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532
+    tests/data/validation/so2_source_review/20261104/README.rst: 1bca583bce5035a6ec1c708f1f7d6ff4f433247db8b0daf5708f3ec4579deaef
+    tests/data/validation/so2_source_review/20261104/exoames.def.json: 22ebf0fdcabe5ef50c8e01d1cde86253b6e11ed04900906b7bb10f704d817a24
+    tests/data/validation/so2_source_review/20261104/exoames.pf: 184e8d11657b795c6c3165c024194d92b9284f441d98063d2e97523c753c5ef4
+    tests/data/validation/so2_source_review/20261104/literature.json: 696aef986affd0deadbbad5ee818b2fbcd9c8dbfcba82c7a2190c88e6c01d462
+    tests/data/validation/so2_source_review/20261104/sources.json: 380cecba5065c99d469f8f8210444f9bce49e965e13d3fb14e864bf51b2725d1
+    tests/data/validation/so2_source_review/20261104/state_samples.json: d9c41017912e9069645d6f7cf2b73fa7d7b6297d4e6898ffb391567d5822ae3f
+    tests/data/validation/so2_source_review/20261104/tips_tables.json: e3b0e0d21720da0df90f7562762333e715755bce2a36f04378fc6bfe2f8daf9f
+    tests/data/validation/so2_source_review/20261104/comparison.json: 9363db0dacbf710c2b4076dd7b5c12385f39366991883e9f15b10ce0d14e8e5e
+    tests/data/validation/so2_source_review/20261104/receipt.json: e9792f6db8bd47d400504de46985af28dfab7d0c960f3985b1a73685fb6164f5
+contexts:
+- id: source_review
+  scope: Neutral SO2, S(g) + 2 O(g) -> SO2(g), one bar; nine 300-4000 K thermal nodes, curated 1500-4000
+    K. ExoAmes above 2000 K is a completeness diagnostic outside its distributed PF range. The 75 saved
+    curated-h2o-v1 cases are not a new substitution.
+  settings:
+    reaction: S(g)+2O(g)->SO2(g)
+    standard_pressure_bar: 1
+    atomic_energy: ATcT 1.172
+    atomic_thermal: NASA for aligned comparisons; native JANAF separately
+    partition_normalization: Ground zero, actual g=2J+1, spin product 1, no additional oxygen exchange
+      factor
+    curated_change: none
+    equilibrium_substitution: not_run
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: so2_sources_20261104
+  context: source_review
+  method: &id003
+    id: review_so2_energy_completeness_and_scope
+    revision: '1'
+    description: Separate source construction, normalized completeness diagnostics, scoped retention and
+      unestablished physical accuracy.
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - ATcT balanced D0 is 1064718 J/mol versus NASA 1062769.902. The native-R-aware shift is 235.030751838
+    K; curated/NASA K is 1.169629659 at 1500 K and 1.060518233 at 4000 K. The S five-level sum agrees
+    with NASA within 0.008%; archived SO2 potentials reproduce exactly.
+  status: supported
+  origin: reviewed
+- id: normalized_diagnostics_review
+  kind: evidence_support
+  claim: normalized_diagnostics
+  claim_revision: '1'
+  subject: so2_sources_20261104
+  context: source_review
+  method: *id003
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - 'The current file contains 3270270 states, Emax 14999.996460 cm-1, Jmax 165 and all g=2J+1. Metadata
+    count 3270271/max 8000 are preserved. At 4000 K the highest 1000 cm-1 shell contributes 5.8601% of
+    Q; full Cp is 33.416 versus NASA 60.144. TIPS2025 differs from 2021 by at most 2.02 ppm. Its derivative-window
+    sensitivity is below 0.047 J/mol/K (2021: 0.052).'
+  status: supported
+  origin: reviewed
+- id: scoped_retention_review
+  kind: evidence_support
+  claim: scoped_retention
+  claim_revision: '1'
+  subject: so2_sources_20261104
+  context: source_review
+  method: *id003
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - ExoAmes Q/NASA is 1.003256 and 0.999126 at 1500/2000 K, while Cp differs by -0.328/-3.454 J/mol/K.
+    The high-T state deficit is not a NASA error estimate. TIPS2025 Q/NASA at 4000 K is 0.961466, from
+    a harmonic product rather than demonstrated complete anharmonic physics. The JANAF/NASA thermal residual
+    remains explicit.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: so2_sources_20261104
+  context: source_review
+  method: *id003
+  evidence:
+  - literature
+  - source_replay
+  - retention_reasoning
+  reasons:
+  - Complete high-T states, energy covariance, isotope mixtures, omitted electronic-state bounds and targeted
+    atmospheric substitutions are absent. The saved maximum SO2 mole fraction of 1.09251e-10 does not
+    measure photochemical SO2 or bound oxidizing, cooler or high-metallicity atmospheres.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: complete_anharmonic_thermal_evaluation
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Reconcile the published ExoAmes convergence claim with the current distribution; extend energy/J
+    coverage and test Q/H/S/Cp before constructing a thermal candidate.
+  requires:
+  - Underwood 2016 DOI 10.1093/mnras/stw849 and ExoAmes DOI 10.5281/zenodo.5716834; the full paper and
+    current files are already inspected.
+  - Partition-generation provenance or corrected/extended states with hashes; separate the opacity lower-state
+    8000 cm-1 limit from the full upper-state 15000 cm-1 limit.
+  - Quantify higher states, isotopes and atomic covariance for a stated accuracy; compare NASA, JANAF
+    and TIPS with common conventions.
+  completion: Archive converged high-temperature diagnostics and an explicit candidate decision. Unresolved
+    complete physical accuracy does not block scoped retention.
+- id: named_atmosphere_response
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: If a material thermal correction is supported, fit and assess a conserved finite replacement
+    for a defined planetary domain.
+  requires:
+  - A stated temperature, pressure, metallicity, C/O and oxidizing/reducing domain.
+  - A kinetic/irradiation model for photochemical SO2; equilibrium alone does not represent the observed
+    production pathway.
+  - Additional Gurvich pages or primary constants only when a concrete discrepancy requires them, not
+    as a blanket merge prerequisite.
+  completion: Record separate candidate-fit, numerical-conservation and scoped abundance-response evidence.
+limitations:
+- statement: Compact CI replay checks recorded moments. Independent resummation requires the hashed original
+    3.27-million-state file; full papers and large files are not vendored.
+  evidence:
+  - source_replay
+- statement: The paper high-T convergence claim, current state inventory and metadata disagree. Shell
+    tests demonstrate material edge contributions but do not measure missing states beyond the cutoff.
+  evidence:
+  - literature
+  - source_replay
+- statement: TIPS calorics are local derivatives of rounded PF values, not published Cp. Product-approximation,
+    isotope and electronic-state uncertainties remain.
+  evidence:
+  - literature
+  - source_replay
+- statement: The historical Gurvich monograph and complete ATcT covariance were not reaudited. The hot
+    hydrogen-rich archive does not validate photochemical, cooler, oxidizing or high-metallicity atmospheres.
+  evidence:
+  - literature
+  - source_replay
