@@ -56,7 +56,6 @@ HCN differences with optional MCEG tooling.
    ho2_candidate
    gas_source_comparison
    cs_source_review
-   p2_source_review
    cs_candidate
    cos_source_review
    cos_candidate
@@ -72,6 +71,7 @@ HCN differences with optional MCEG tooling.
    ph2_source_review
    ph3_source_review
    ph3_thermal_supplement_review
+   p2_source_review
    phosphorus_provenance
    naoh_dimer_source_review
    naoh_source_review
