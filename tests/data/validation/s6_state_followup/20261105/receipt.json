@@ -1,0 +1,15 @@
+{
+  "command": "python mceg/reviews/sulfur_state_followup.py s6",
+  "python": "3.12.7",
+  "numpy": "2.1.0",
+  "selected_input_sha256": {
+    "mceg/reviews/sulfur_state_followup.py": "ce339158fb3f7dcd1730de5608e8a925a77c267423b3e400f6c19c9e8db777e2",
+    "tests/data/validation/s6_state_followup/20261105/inputs.json": "bd60d2f31591d24145bd1b90cd4f4a8fb4757465d6b93b4c17374f5003ad3df1",
+    "tests/data/validation/s6_state_followup/20261105/sources.json": "a351d5351c7920b4345353a7b8203df5ac3d1bcbf0b99369209502844affeee0",
+    "tests/data/validation/s6_source_review/20261105/comparison.json": "dabc64e0bca3b864747e5243c9065d987dae4ff77fa84f80da29fb428f2deadc"
+  },
+  "output_sha256": {
+    "diagnostic.json": "a7b80831da6ea21d86d1d6345b98e1af2a7a0b98c968ac969456d4ab637c7b70"
+  },
+  "scope": "Independent mathematical reconstruction of selected published numerical facts, not execution of author code."
+}

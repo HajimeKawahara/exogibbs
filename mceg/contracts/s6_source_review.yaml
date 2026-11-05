@@ -15,6 +15,11 @@ assumptions:
   evidence:
   - literature_review
   - source_replay
+- statement: The new RRHO calculation includes one well and one electronic component per archived record. Missing
+    states, enantiomer counting, anharmonic/hindered motion and dissociation coverage are not inferred from numerical
+    replay.
+  evidence:
+  - state_replay
 domains:
 - kind: numerical_evaluation
   status: documented
@@ -43,10 +48,11 @@ claims:
   scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
     curated-cos footprint only.
 - id: modern_source_screen
-  revision: '1'
+  revision: '2'
   kind: numerical_verification
-  statement: The inspected full 2023 article supports an S6 isomer-gap fact, not a replacement D0 or complete partition
-    model.
+  statement: In the original source packet, the inspected full 2023 article supports an S6 isomer-gap fact, not
+    a replacement D0 or complete partition model. The separate state_reconstruction assessment records subsequent
+    progress.
   scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
     curated-cos footprint only.
 - id: numerical_replay
@@ -68,6 +74,13 @@ claims:
   statement: S6 standard functions and atmospheric abundances have quantified physical accuracy over intended applications.
   scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
     curated-cos footprint only.
+- id: state_reconstruction
+  revision: '1'
+  kind: numerical_verification
+  statement: Four recovered numerical structures support a reproducible RRHO sensitivity, while missing armchair
+    data and soft modes prevent treating that sum as a complete physical model.
+  scope: S6 selected Jackson v1.0 PBE0/0.96 records, one RRHO well and one electronic component per stored record;
+    formal 250-4000 K diagnostic at 1 bar, no complete state-count or adoption claim.
 evidence:
 - id: literature_review
   kind: literature
@@ -113,6 +126,36 @@ evidence:
     inspection: inspected
     note: Access is recorded per source. The archived grid is not a new substitution; convergence and trace abundance
       do not quantify physical uncertainty.
+  result: passed
+- id: state_replay
+  kind: numerical_test
+  summary: Independent RRHO reconstruction from selected primary numerical facts, with source access and limitations
+    recorded separately from the unchanged historical source packet.
+  sources:
+  - documents/mceg/s6_state_followup.rst
+  - tests/data/validation/s6_state_followup/20261105/sources.json
+  - tests/data/validation/s6_state_followup/20261105/diagnostic.json
+  - tests/data/validation/s6_state_followup/20261105/receipt.json
+  scope: S6 selected Jackson v1.0 PBE0/0.96 records, one RRHO well and one electronic component per stored record;
+    formal 250-4000 K diagnostic at 1 bar, no complete state-count or adoption claim.
+  subject: s6_states_20261105
+  context: state_reconstruction
+  artifacts:
+  - source: documents/mceg/s6_state_followup.rst
+    sha256: 7ec92e2a9c93fb9bcb2ddc16330e697c21f3dc326475dde5faa3bb57f1596fd9
+  - source: tests/data/validation/s6_state_followup/20261105/sources.json
+    sha256: a351d5351c7920b4345353a7b8203df5ac3d1bcbf0b99369209502844affeee0
+  - source: tests/data/validation/s6_state_followup/20261105/diagnostic.json
+    sha256: a7b80831da6ea21d86d1d6345b98e1af2a7a0b98c968ac969456d4ab637c7b70
+  - source: tests/data/validation/s6_state_followup/20261105/receipt.json
+    sha256: 148750d34c92148c41460bd2fbd755c27597968f56bf6a309e177a6393622b74
+  provenance:
+    role: primary
+    location: documents/mceg/s6_state_followup.rst
+    inspection: inspected
+    note: Only selected numerical molecular facts are archived; author code is neither copied nor executed. Initial-submission
+      data is not asserted to reproduce every final-paper result. This is a restricted-state diagnostic, not a new
+      production candidate.
   result: passed
 subjects:
 - id: s6_sources_20261105
@@ -167,6 +210,22 @@ subjects:
     tests/data/validation/s6_source_review/20261105/sources.json: ad76f54768d9b4d153e586018ea06b3af51643c918f4d8cbd6f12ec4d2743d05
     tests/model_evidence/s6_source_review_test.py: ee48ce6037e593bdc4abbe4cc7a2fa4695ba34eb00adaa1f55ade1e62f7be537
     tests/data/validation/s6_source_review/20261105/receipt.json: bf7b44d0cee25c6b2d8ebf98f71383dcd57cadf77b931d22a6c0de7448c771ab
+- id: s6_states_20261105
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:ce339158fb3f7dcd1730de5608e8a925a77c267423b3e400f6c19c9e8db777e2
+    entry_points:
+    - mceg/reviews/sulfur_state_followup.py
+  selected_files:
+    mceg/reviews/sulfur_state_followup.py: ce339158fb3f7dcd1730de5608e8a925a77c267423b3e400f6c19c9e8db777e2
+    documents/mceg/s6_state_followup.rst: 7ec92e2a9c93fb9bcb2ddc16330e697c21f3dc326475dde5faa3bb57f1596fd9
+    tests/model_evidence/s6_state_followup_test.py: a34e85112536c0f065fb6c3f41484f79fbaecf5c4326af5b65e6c527ea8bffea
+    tests/data/validation/s6_source_review/20261105/comparison.json: dabc64e0bca3b864747e5243c9065d987dae4ff77fa84f80da29fb428f2deadc
+    tests/data/validation/s6_state_followup/20261105/README.rst: 8fa144430703b3a60ace7c8ba30973b5c86bbdebda9447db0368f4afc7e08abd
+    tests/data/validation/s6_state_followup/20261105/diagnostic.json: a7b80831da6ea21d86d1d6345b98e1af2a7a0b98c968ac969456d4ab637c7b70
+    tests/data/validation/s6_state_followup/20261105/inputs.json: bd60d2f31591d24145bd1b90cd4f4a8fb4757465d6b93b4c17374f5003ad3df1
+    tests/data/validation/s6_state_followup/20261105/receipt.json: 148750d34c92148c41460bd2fbd755c27597968f56bf6a309e177a6393622b74
+    tests/data/validation/s6_state_followup/20261105/sources.json: a351d5351c7920b4345353a7b8203df5ac3d1bcbf0b99369209502844affeee0
 contexts:
 - id: source_comparison
   scope: Neutral S6 gas; 6 S(g) -> S6(g), 1 bar; declared source nodes, labelled modern diagnostic and archived
@@ -179,8 +238,21 @@ contexts:
       with molecular Hf.
     grid_reuse: curated_cos_adoption/20261105/ions.npz; no new solve
     curated_change: none
-    modern_diagnostic: The inspected full 2023 article supports an S6 isomer-gap fact, not a replacement D0 or complete
-      partition model.
+    modern_diagnostic: 'Historical source-packet status: The inspected full 2023 article supports an S6 isomer-gap
+      fact, not a replacement D0 or complete partition model.'
+- id: state_reconstruction
+  scope: S6 selected Jackson v1.0 PBE0/0.96 records, one RRHO well and one electronic component per stored record;
+    formal 250-4000 K diagnostic at 1 bar, no complete state-count or adoption claim.
+  settings:
+    temperature_K: 250-4000; formal RRHO diagnostic, not physical applicability
+    standard_pressure_bar: 1
+    atomic_mass_u: 32.065
+    electronic_components_per_record: 1
+    rotational_symmetry: Archived value; no extra enantiomer factor. One well per recorded geometry.
+    energy_reference: Relative electronic energy plus already-scaled harmonic ZPE among same-size records; no absolute
+      DFT calibration adoption.
+    new_equilibrium_solves: 0
+    curated_change: none
 assessments:
 - id: source_attribution_review
   kind: evidence_support
@@ -204,7 +276,7 @@ assessments:
 - id: modern_source_screen_review
   kind: evidence_support
   claim: modern_source_screen
-  claim_revision: '1'
+  claim_revision: '2'
   subject: s6_sources_20261105
   context: source_comparison
   method: *id002
@@ -212,8 +284,9 @@ assessments:
   - literature_review
   - source_replay
   reasons:
-  - The inspected full 2023 article supports an S6 isomer-gap fact, not a replacement D0 or complete partition model.
-    The diagnostic does not claim a full high-temperature partition calculation.
+  - This assessment concerns the unchanged historical packet. The inspected full 2023 article supports an S6 isomer-gap
+    fact, not a replacement D0 or complete partition model. The diagnostic does not claim a full high-temperature
+    partition calculation.
   status: supported
   origin: reviewed
 - id: numerical_replay_review
@@ -260,13 +333,32 @@ assessments:
     are not established; tiny archived abundance is not an error bound.
   status: unknown
   origin: reviewed
+- id: state_reconstruction_review
+  kind: evidence_support
+  claim: state_reconstruction
+  claim_revision: '1'
+  subject: s6_states_20261105
+  context: state_reconstruction
+  method:
+    id: sulfur_state_followup
+    revision: '1'
+    description: Reconstruct explicit RRHO wells, verify thermodynamic derivatives and geometry invariance, separate
+      conditional state counting and energy conventions from physical adoption.
+  evidence:
+  - state_replay
+  reasons:
+  - Four stored S6 structures produce a large formal thermal response. No armchair-labelled entry is present; unknown
+    inventory completeness and soft-mode treatment prevent adopting that sum.
+  status: supported
+  origin: reviewed
 follow_ups:
 - id: candidate_step_1
   target_kind: claim
   target: candidate_adoption
   revision: '1'
-  action: Recover S6 individual coordinates, frequencies, isomer energies and symmetry factors from Fedyaeva 2023
-    supporting information (10.1039/D2CP05498A) and Jackson 2016 data (10.1039/C5SC03088A).
+  action: Obtain missing armchair and other relevant S6 coordinates, frequencies and consistent isomer energies,
+    especially Fedyaeva 2023 supporting data (10.1039/D2CP05498A); four Jackson v1.0 numerical structures are now
+    archived separately.
   requires:
   - Keep neutral-atom references, 1 bar, gas constant, zero-point and energy units consistent.
   - State electronic, rotational/vibrational, symmetry and isomer counting; retain unquantified uncertainties explicitly.
@@ -276,8 +368,8 @@ follow_ups:
   target_kind: claim
   target: candidate_adoption
   revision: '1'
-  action: Construct a state-counted RRHO candidate with a declared atomic energy reference; compare S298, H increments
-    and Cp, including isomer contributions and temperature coverage.
+  action: Extend the recovered four-record RRHO diagnostic with a justified complete state inventory, soft-mode
+    treatment and atomic energy reference before a production candidate or fixed-network substitution.
   requires:
   - Keep neutral-atom references, 1 bar, gas constant, zero-point and energy units consistent.
   - State electronic, rotational/vibrational, symmetry and isomer counting; retain unquantified uncertainties explicitly.
@@ -309,3 +401,7 @@ limitations:
     or new equilibrium substitution.
   evidence:
   - source_replay
+- statement: The follow-up has recovered a restricted numerical subset, not a physically complete partition function.
+    High-temperature conditional weights are a formal diagnostic, not atmospheric populations or accuracy bounds.
+  evidence:
+  - state_replay
