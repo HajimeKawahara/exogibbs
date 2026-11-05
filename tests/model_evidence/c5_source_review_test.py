@@ -103,4 +103,3 @@ def test_reversal_and_state_identity_preclude_an_energy_only_replacement(report)
     assert rows[1500]["legacy_janaf"]["native_source_D0_kJ_mol"] == pytest.approx(2583.528)
     assert rows[1500]["legacy_janaf"]["native_nasa_D0_kJ_mol"] == pytest.approx(2515.988024)
     assert "state-consistent" in report["decision"]
-
