@@ -40,7 +40,9 @@ def build() -> dict:
     balance = lambda values: sum(n*values[e] for e, n in source.COMPOSITION.items())-values["CH2O"]
     original_d0 = balance(h0)
     atct = inputs["atct_1.228"]
-    d0 = 1000*balance({name: row["hf0_kJ_mol"] for name, row in atct.items()})
+    # The published millikJ values are integral J/mol. Balance those exact
+    # values before division, independent of Python's float-sum algorithm.
+    d0 = balance({name: 1000*row["hf0_kJ_mol"] for name, row in atct.items()})
     lines = FASTCHEM.read_text().splitlines()
     index = next(i for i, line in enumerate(lines) if line.startswith(source.SPECIES+" "))
     coefficients = np.array(list(map(float, lines[index+1].split())))

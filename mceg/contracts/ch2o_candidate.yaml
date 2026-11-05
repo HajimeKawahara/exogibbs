@@ -6,7 +6,7 @@ model:
     scope and numerical-resolution limits.
   implementation: &id001
     repository: https://github.com/HajimeKawahara/exogibbs
-    revision: sha256:fe69f0a9498e33aa03092b725728d8a2c7113d62b2fa1bb7e183aa763f289a97
+    revision: sha256:7b92c1651e57c4e9deef9528de3f35f11922e1923edc91b8c120c04a0366206d
     entry_points:
     - mceg/reviews/ch2o_candidate.py
     - mceg/reviews/ch2o_equilibrium_impact.py
@@ -120,7 +120,7 @@ evidence:
   - source: tests/data/validation/ch2o_candidate/20261105/validation.json
     sha256: 1119bdc9f2269fd6934e2b2fb3762dab621ce01aa4d0c41bb53e8c91c516fc19
   - source: tests/data/validation/ch2o_candidate/20261105/receipt.json
-    sha256: ce7cc1490207bc494108deaf822516ee73a20e585dc0f02e0da78969fc56398c
+    sha256: ca9df7d9a2c677eab2a5c916bb9ecad4d362a8b34df1ea47fca4db3a9bb8efd9
   provenance:
     role: primary
     location: documents/mceg/ch2o_candidate.rst
@@ -155,7 +155,7 @@ evidence:
   - source: tests/data/validation/ch2o_equilibrium_impact/20261105/selected_diagnostics.json
     sha256: 1d9bfc92e8a3623ce2a90d580bb1ef0f5ee98b15b874f72a1fc935bc5597f704
   - source: tests/data/validation/ch2o_equilibrium_impact/20261105/receipt.json
-    sha256: 7cd2a637c320fa1929fa351043440b11902f7c936d816f2ff425e37da2466f36
+    sha256: 585123b6cd9c995141c6ae7ae7410798b4253acff457f5e872edd06c8b7d99f1
   provenance:
     role: primary
     location: documents/mceg/ch2o_candidate.rst
@@ -204,7 +204,7 @@ subjects:
     mceg/reviews/build_cos_adoption.py: 55da578ac4c97ebb66d16246983605569f626a7e98d9741369d8d6223d5e2d75
     mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
-    mceg/reviews/ch2o_candidate.py: fe69f0a9498e33aa03092b725728d8a2c7113d62b2fa1bb7e183aa763f289a97
+    mceg/reviews/ch2o_candidate.py: 7b92c1651e57c4e9deef9528de3f35f11922e1923edc91b8c120c04a0366206d
     mceg/reviews/ch2o_equilibrium_impact.py: 2a545480bc7f70dcc7144fa64f51f8eba20e7323848a72964cee21c0c5b088de
     mceg/reviews/ch2o_source_review.py: 323766dcf2346ecc2113dd4331228cbf6e37aab37e699b962d345ba01e87e371
     mceg/reviews/co2_candidate.py: 522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea
@@ -397,13 +397,13 @@ subjects:
     tests/data/validation/c3_source_review/20261102/C-003.txt: df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4
     tests/data/validation/ch2o_candidate/20261105/README.rst: 14b22f0a21f80476bfd4eaa1e9cdf3ffb7193a929c2af23ec9ffc3b3501a7c78
     tests/data/validation/ch2o_candidate/20261105/candidate.json: 89f9657071dc4873ba06162647a675a2940354dd776f7b8e4570d01d5a42ff2f
-    tests/data/validation/ch2o_candidate/20261105/receipt.json: ce7cc1490207bc494108deaf822516ee73a20e585dc0f02e0da78969fc56398c
+    tests/data/validation/ch2o_candidate/20261105/receipt.json: ca9df7d9a2c677eab2a5c916bb9ecad4d362a8b34df1ea47fca4db3a9bb8efd9
     tests/data/validation/ch2o_candidate/20261105/validation.json: 1119bdc9f2269fd6934e2b2fb3762dab621ce01aa4d0c41bb53e8c91c516fc19
     tests/data/validation/ch2o_equilibrium_impact/20261105/README.rst: 1d2e55441787e4c5786977a0cf4d74cbd733f7e27b83e5667705c5e55254c0b5
     tests/data/validation/ch2o_equilibrium_impact/20261105/diagnostics.json: d3504621b0eb88f97a6251d64107f7b8015c5befc72801757ea0fdfb6d98847d
     tests/data/validation/ch2o_equilibrium_impact/20261105/ions.npz: bbd97a84ad39b94bad025bc64cbb73e45301b4935a6653e431effbae09b506f1
     tests/data/validation/ch2o_equilibrium_impact/20261105/neutral.npz: 80f1118694066599dc3bd8b24f5c3b1ef6166b6d534709b8dd30943424f62226
-    tests/data/validation/ch2o_equilibrium_impact/20261105/receipt.json: 7cd2a637c320fa1929fa351043440b11902f7c936d816f2ff425e37da2466f36
+    tests/data/validation/ch2o_equilibrium_impact/20261105/receipt.json: 585123b6cd9c995141c6ae7ae7410798b4253acff457f5e872edd06c8b7d99f1
     tests/data/validation/ch2o_equilibrium_impact/20261105/selected_diagnostics.json: 1d9bfc92e8a3623ce2a90d580bb1ef0f5ee98b15b874f72a1fc935bc5597f704
     tests/data/validation/ch2o_equilibrium_impact/20261105/summary.json: 86479fe409798cec896cd82636a6dbb0d064c8cc6858e584cc0f3fe317d32912
     tests/data/validation/ch2o_source_review/20261105/AYTY.def: 9b2fcb7d21ba83076984b306a4cd6098a710e5954f2ae29531dd923d2a83beba
@@ -430,7 +430,7 @@ subjects:
     tests/data/validation/gas_source_comparison/baseline-001/inputs.json: 90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385
     tests/data/validation/oh_source_review/20261105/H-001.txt: dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be
     tests/data/validation/oh_source_review/20261105/O-001.txt: cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e
-    tests/model_evidence/ch2o_candidate_test.py: 56a8072b516b1e0451606e005022b0d8d6c64d53e6a411cfb1b5cc0f72ba6e0a
+    tests/model_evidence/ch2o_candidate_test.py: dfcca029067d3264efda3c3f5e5d92efba9d30453eb9c3b07e02f3754ea8296a
     tests/model_evidence/ch2o_equilibrium_impact_test.py: a72191eeb10ba429cb71445d7fe4505917c9346d15d166ad5ec91a1459613a25
 contexts:
 - id: candidate_evaluation

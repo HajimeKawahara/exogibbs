@@ -1,7 +1,9 @@
 """Verify the CH2O candidate's energy normalization and continuous calorics."""
 
 from hashlib import sha256
+from functools import reduce
 import json
+from operator import add
 from pathlib import Path
 import sys
 
@@ -26,8 +28,12 @@ def report():
         jax.config.update('jax_enable_x64',previous)
 
 
-def test_exact_energy_shift_preserves_the_inherited_thermal_coefficients():
+def test_exact_energy_shift_preserves_the_inherited_thermal_coefficients(monkeypatch):
     model=candidate.load_candidate()
+    assert candidate.build()==model
+    # Python 3.11 accumulates floats sequentially; 3.12 uses a more accurate
+    # algorithm. The printed ATcT millikJ energy must reconstruct identically.
+    monkeypatch.setattr(candidate, 'sum', lambda values: reduce(add, values, 0), raising=False)
     assert candidate.build()==model
     assert model['atct_version']=='1.228'
     assert model['same_version_hf0_kJ_mol']=={'H':216.034,'C':711.370,'O':246.843,'CH2O':-105.386}
