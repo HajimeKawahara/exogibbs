@@ -8,7 +8,7 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from exogibbs.presets import curated, curated_kh, curated_oh, curated_v1
+from exogibbs.presets import curated_kh, curated_oh, curated_v1
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -25,12 +25,11 @@ def float64():
 
 @pytest.fixture(scope="module")
 def models(float64):
-    return curated_oh.chemsetup(), curated.chemsetup()
+    return curated_oh.chemsetup(), curated_kh.chemsetup()
 
 
 def test_adoption_changes_only_kh_and_preserves_the_oh_base(models):
     before, after = models
-    assert curated.chemsetup is curated_kh.chemsetup
     assert after.metadata["dataset"] == "curated-kh-v1"
     assert after.metadata["base_dataset"] == "curated-oh-v1"
     assert after.metadata["relative_charge_convergence"] is True
@@ -85,7 +84,7 @@ def test_batch_domain_gradients_and_neutral_projection(models):
               - model.hvector_func(edges+2*step)[:, kh])/(2*step)
     np.testing.assert_allclose(gradient(edges), finite, atol=2e-9, rtol=2e-8)
     assert np.isnan(model.hvector_func(jnp.array([-1., 1499., 4001., np.nan, np.inf]))).all()
-    neutral, base = curated.chemsetup(ions=False), curated_oh.chemsetup(ions=False)
+    neutral, base = curated_kh.chemsetup(ions=False), curated_oh.chemsetup(ions=False)
     assert len(neutral.species) == 421 and "e-" not in neutral.elements
     assert neutral.species == base.species and neutral.elements == base.elements
     np.testing.assert_array_equal(neutral.formula_matrix, base.formula_matrix)
@@ -93,7 +92,7 @@ def test_batch_domain_gradients_and_neutral_projection(models):
     keep = [model.species.index(name) for name in neutral.species]
     np.testing.assert_allclose(neutral.hvector_func(temperatures), np.asarray(actual)[..., keep], atol=1e-12, rtol=0)
     with pytest.raises(TypeError, match="ions"):
-        curated.chemsetup(ions=1)
+        curated_kh.chemsetup(ions=1)
 
 
 def test_modified_packaged_kh_data_are_rejected(monkeypatch, tmp_path):
@@ -103,4 +102,4 @@ def test_modified_packaged_kh_data_are_rejected(monkeypatch, tmp_path):
     changed.write_text(Path(real(name)).read_text()+"\n")
     monkeypatch.setattr(curated_v1, "get_data_filepath", lambda p: str(changed) if p == name else real(p))
     with pytest.raises(ValueError, match="pinned version"):
-        curated.chemsetup()
+        curated_kh.chemsetup()

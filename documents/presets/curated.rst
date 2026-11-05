@@ -3,10 +3,12 @@ Curated Gas Preset
 
 ``exogibbs.presets.curated`` provides the approved atomic-ion and major-molecule
 source choices as continuous, JAX-differentiable gas thermochemistry.
-The current dataset, ``curated-kh-v1``, covers **1500--4000 K** and uses a standard
+The current dataset, ``curated-ho2-v1``, covers **1500--4000 K** and uses a standard
 pressure of **1 bar**. It returns the same native ``ChemicalSetup`` type as
 the other presets and requires neither MCEG nor a FastChem executable.
 
+The :doc:`HO2 update <curated_ho2>` replaces the obsolete JANAF formation energy
+with exact NASA thermal functions and balanced ATcT energy on the KH base.
 The :doc:`KH update <curated_kh>` adopts the spectroscopic KH energy while
 retaining its thermal functions, layered over the OH version.
 The :doc:`OH update <curated_oh>` replaces inherited JANAF OH with the
@@ -20,11 +22,11 @@ complete physical uncertainty remains unquantified.
 Use ``curated_v1.chemsetup``, ``curated_c2h.chemsetup``,
 ``curated_tio.chemsetup``, ``curated_co2.chemsetup`` or ``curated_h2o.chemsetup``
 to reproduce the earlier datasets, or ``curated_oh.chemsetup`` for the preceding OH version, and
-``curated_kh.chemsetup`` to select this
+``curated_kh.chemsetup`` for its KH version. Use ``curated_ho2.chemsetup`` to select this
 version explicitly. Each supports
 ``ions=False`` and retains its identity and historical evidence. Changing one
 formation function can alter coupled abundances throughout the network.
-See the OH guide for the adoption rationale and production verification.
+See the HO2 guide for the adoption rationale and production verification.
 
 Migration from the Ni/Co-only preset
 ------------------------------------
@@ -416,7 +418,7 @@ and :download:`the inverted column <../../tests/data/validation/curated_atmosphe
 Artifacts and reproduction
 --------------------------
 
-Current default evidence is in :doc:`curated_kh`. The artifacts
+Current default evidence is in :doc:`curated_ho2`. The artifacts
 below belong to **curated-gas-v1**; the reproduction scripts explicitly select
 ``curated_v1`` and preserve their original numerical scope.
 
