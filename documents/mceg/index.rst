@@ -68,6 +68,7 @@ HCN differences with optional MCEG tooling.
    po2_source_review
    c5_source_review
    cs2_source_review
+   cs2_candidate
    h2so4_source_review
    ns_source_review
    nah_source_review
