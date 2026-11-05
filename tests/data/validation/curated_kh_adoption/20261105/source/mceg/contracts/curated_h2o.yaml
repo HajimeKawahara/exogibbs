@@ -1,0 +1,345 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.curated_h2o.v1
+  name: Curated gas default with evaluated H2O and NIST CO2
+  description: Adopt the exact reviewed evaluated H2O analytic thermal model on the pinned CO2-corrected
+    base. Scientific selection and joint production numerical verification are supported within scope;
+    complete physical accuracy remains unknown.
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    entry_points:
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_h2o.chemsetup
+assumptions:
+- statement: Only H2O changes from curated-co2-v1. The combined production model differs from curated-tio-v1
+    in H2O and CO2 alone, with retained species, budgets, charge treatment, pressure and atomic gauge.
+  evidence:
+  - scientific_sources
+  - production_execution
+- statement: Water retains ATcT 1.172 total atomization 917.819 kJ/mol and NASA atomic thermal functions.
+    H2(16O) internal thermodynamics at mass 18.01528 u is an explicit dominant-isotope approximation.
+  evidence:
+  - scientific_sources
+- statement: The evaluated Cp polynomial and exact H/S integrals are transferred without refitting. Source
+    H numbers are J/mol despite their CSV labels, and source S already removes the spin product four;
+    no extra spin, symmetry or ZPE factor is added.
+  evidence:
+  - scientific_sources
+  - production_execution
+- statement: Evaluated scattering contributions are retained in the source scope. Their interaction assignment
+    in the ideal reacting mixture remains unverified; separate OH/H species do not alone establish simple
+    double counting.
+  evidence:
+  - scientific_sources
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: Continuous packaged thermochemistry and joint production cold solves in both network modes.
+  conditions:
+  - No extrapolation outside 1500-4000 K; nonfinite/out-of-range inputs return NaN.
+  - '75 conditions per network: five temperatures 1500/2000/2500/3000/4000 K, five pressures 1e-6/1e-4/0.01/1/100
+    bar and three C/O ratios 0.5888436553555908/1/1.5.'
+  - Production potentials match an independent assembly of both frozen candidates on 2501 temperatures;
+    all other species match curated-tio-v1.
+  evidence:
+  - scientific_sources
+  - production_execution
+- kind: scientific_applicability
+  status: unknown
+  description: Complete isotopic, scattering and energy uncertainty, condensation, transport and atmospheric
+    observations are outside the validated scope.
+  conditions: []
+  evidence:
+  - scientific_sources
+  - production_execution
+claims:
+- id: scientific_selection
+  revision: '1'
+  kind: theoretical
+  statement: The evaluated 2025 water thermal source is scientifically preferred for this explicitly bounded
+    gas model, with retained ATcT energy and documented isotope/scattering scope.
+  scope: curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O)
+    internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both
+    537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
+- id: production_adoption
+  revision: '1'
+  kind: numerical_verification
+  statement: The public curated default implements the exact reviewed H2O candidate on curated-co2-v1
+    and passes joint ion-inclusive and neutral production verification.
+  scope: curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O)
+    internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both
+    537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: The complete adopted gas model has quantified physical uncertainty and validated planetary
+    atmospheric abundance accuracy.
+  scope: curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O)
+    internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both
+    537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
+evidence:
+- id: scientific_sources
+  kind: theory
+  summary: Adopt the inspected evaluated 2025 source and its exact reviewed continuous model, retaining
+    the balanced energy, explicit isotope approximation and measured alternative-scope sensitivity.
+  sources:
+  - documents/presets/curated_h2o.rst
+  - src/exogibbs/data/curated/h2o_v1.json
+  - tests/data/validation/h2o_source_review/20261103/literature.json
+  - tests/data/validation/h2o_source_review/20261103/sources.json
+  - tests/data/validation/h2o_candidate/20261104/candidate.json
+  - tests/data/validation/h2o_candidate/20261104/validation.json
+  - tests/data/validation/h2o_equilibrium_impact/20261104/summary.json
+  scope: curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O)
+    internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both
+    537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
+  subject: curated_h2o_production_20261104
+  context: production_gas_domain
+  artifacts:
+  - source: documents/presets/curated_h2o.rst
+    sha256: bda37bb6ca85541eb04d80429718f63399980892cd23e62a4e2506a6c6549c20
+  - source: src/exogibbs/data/curated/h2o_v1.json
+    sha256: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+  - source: tests/data/validation/h2o_source_review/20261103/literature.json
+    sha256: 1f996b47dea858258a86cc6fd4c5b7b14efdb69c5e3254c9a28a793edcb81bd1
+  - source: tests/data/validation/h2o_source_review/20261103/sources.json
+    sha256: 53cc7efdcd588b3c94a3a9541c777bf4bd27421a9b88191b417ddb1057313fe4
+  - source: tests/data/validation/h2o_candidate/20261104/candidate.json
+    sha256: 0987628c7105024ad100515a71fda2b3270bd24aa13c8b2f4b7fcbe8d999775a
+  - source: tests/data/validation/h2o_candidate/20261104/validation.json
+    sha256: c231d88bdf4c8c67d9bba2d5ce4c3be4fbf4f4d3f2fda1a7810a5dffd3f37aa3
+  - source: tests/data/validation/h2o_equilibrium_impact/20261104/summary.json
+    sha256: f7ffabf1a1a830102c90f13eed8fb41179f97ab564d90d61b36a808d1272d392
+  provenance:
+    role: secondary
+    location: documents/presets/curated_h2o.rst
+    inspection: inspected
+    note: Dated source and candidate records are preserved; their physical-accuracy unknown status is
+      not changed by production numerical verification.
+- id: production_execution
+  kind: numerical_test
+  summary: Execute 150 fresh production cold solves in both networks and compare both adopted species
+    with an independently assembled frozen-candidate reference. Retain 6 tighter controls, closure/mass
+    action, all-species states and available new FastChem comparisons.
+  sources:
+  - tests/data/validation/curated_h2o_adoption/20261104/receipt.json
+  - tests/data/validation/curated_h2o_adoption/20261104/summary.json
+  - tests/data/validation/curated_h2o_adoption/20261104/ions.npz
+  - tests/data/validation/curated_h2o_adoption/20261104/neutral.npz
+  - tests/data/validation/curated_h2o_adoption/20261104/diagnostics.json
+  - tests/data/validation/curated_h2o_adoption/20261104/README.rst
+  - mceg/reviews/curated_h2o_adoption.py
+  - tests/model_evidence/curated_h2o_adoption_test.py
+  - tests/unittests/presets/curated_h2o_test.py
+  scope: curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O)
+    internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both
+    537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
+  subject: curated_h2o_production_20261104
+  context: production_gas_domain
+  artifacts:
+  - source: tests/data/validation/curated_h2o_adoption/20261104/receipt.json
+    sha256: eabd4e991eaee343816877ca1c0b3927d74adee11b28b4d0d7ec8ce9a5ca8ce0
+  - source: tests/data/validation/curated_h2o_adoption/20261104/summary.json
+    sha256: 0cc401ce69b733bb148bc4ef4e32f3ce6c088f2716b7695403184a2a930f92df
+  - source: tests/data/validation/curated_h2o_adoption/20261104/ions.npz
+    sha256: c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532
+  - source: tests/data/validation/curated_h2o_adoption/20261104/neutral.npz
+    sha256: 0f04e08e51ee29c354ad45ea7ab24f28d2ae77d742222f4abe1087274b06412e
+  - source: tests/data/validation/curated_h2o_adoption/20261104/diagnostics.json
+    sha256: 456b13c3a2f12f52bf2ccd7973f4ffcc3895f7e7c51bf151bdb43a2b7ffb58b9
+  - source: tests/data/validation/curated_h2o_adoption/20261104/README.rst
+    sha256: e180a082525b873bc5ebc4fe1789d7d1fe57b7a39013d659113eaa9b3446a2a4
+  - source: mceg/reviews/curated_h2o_adoption.py
+    sha256: 2baa9b0abc350fd6629701583ca2e85ebab6c3dcabd14aa85f5cfb86f89b62d6
+  - source: tests/model_evidence/curated_h2o_adoption_test.py
+    sha256: b8f1335c6b5dabef1cf8a8b171518c0f064cbf82bd4cdf96af4a1d4205554c02
+  - source: tests/unittests/presets/curated_h2o_test.py
+    sha256: e07c0d51b8b40dc704314437105b5392946dc5972baddf98f9036d118072167a
+  provenance:
+    role: primary
+    location: documents/presets/curated_h2o.rst
+    inspection: inspected
+    note: Dated source and candidate records are preserved; their physical-accuracy unknown status is
+      not changed by production numerical verification.
+  result: passed
+subjects:
+- id: curated_h2o_production_20261104
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    entry_points:
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_h2o.chemsetup
+  selected_files:
+    mceg/reviews/curated_h2o_adoption.py: 2baa9b0abc350fd6629701583ca2e85ebab6c3dcabd14aa85f5cfb86f89b62d6
+    mceg/reviews/co2_candidate.py: 522e229ca33b545076f56f5fbbdb71f5b0dcf37a47e7fb5a32324f28e96043ea
+    mceg/reviews/co2_source_review.py: cbefe937fe4ad5fd7b6a6dc3db6106f4417a93224292bc940df391c02de89172
+    mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
+    mceg/reviews/h2o_source_review.py: aaa5aae2467bfdf9fcb6bec9554857e470206fb5009dac0a62d5e53f00d38007
+    mceg/reviews/c2h_equilibrium_impact.py: a4aa762a8b16c78d6689e030205c2adb834139b42af5d0f2f96cfa4c25718aeb
+    mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
+    src/exogibbs/presets/curated.py: bafa08eff9a4bc125e3010ad80dc13a4359e79f8548b42c0b68850732fc9690f
+    src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
+    src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
+    src/exogibbs/presets/curated_tio.py: 3aed1f224d37606a2afcf2cb54f4fbe63ac09d5e4f596f97b8b5ddc798bd6651
+    src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
+    src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
+    src/exogibbs/presets/fastchem4.py: 9da0fd631d12d348748334770289688ac89cf7847b2372e23c93217239f0cf76
+    src/exogibbs/presets/fastchem.py: c1e70bc930536467a95397e40ab288e2b8ce81bb2109aaddaa774d98ba4a81d3
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/curated/c2h_v1.json: b2df12855bc20a27e3bed06e8ad4d6a421e5f47a8a682d6e3fdd74e3f698de48
+    src/exogibbs/data/curated/tio_v1.json: 52311c1ad348dc0098a34c17cfced9a175ff0b551bcbfc3819292271762c27d1
+    src/exogibbs/data/curated/co2_v1.json: dfac2e1ac79ff0c0dadb9010d9f187b7d4a84fd3158916e44cc60e72f94f87ba
+    src/exogibbs/data/curated/h2o_v1.json: 6f79a001d34b1b107a34db322d642f0210ae6218b4f659be1cd8b193cbb1d6d6
+    tests/data/validation/curated_tio_adoption/20261103/ions.npz: 39963f614b84d55cbbd166ae7d033aa0c62104ab805e7968c0f6d6470d79a0a8
+    tests/data/validation/curated_tio_adoption/20261103/neutral.npz: 4fef69416723000ab214ac413d027f10f2bc9a13955f289b195099192f3f1816
+    tests/data/validation/co2_candidate/20261104/candidate.json: 9373569f8f6d0a9539f0d8ccf28b137fd0e4eab5b177b764e682aef391065bb2
+    tests/data/validation/h2o_candidate/20261104/candidate.json: 0987628c7105024ad100515a71fda2b3270bd24aa13c8b2f4b7fcbe8d999775a
+    src/exogibbs/api/gas.py: 9951108eebd6d2da03f68dc260495171a662f22e91a3636e48696daceac50dba
+    src/exogibbs/thermo/standard.py: b3952552bae42925c9d339d39472c713b43587fdff06dc1192e8c4859b51bfe1
+    src/exogibbs/thermo/models.py: 33780f1e210695eba86ef13ff6a4ee9295d34495fc29ccfc462dc0a8e0885c48
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    src/exogibbs/data/FastChem4/element_abundances/asplund_2021.dat: 06d13aad90e576147bececd1210e27b4fd525ee17ddb1721a0ec9e8755d407ef
+    examples/comparisons/compare_gas_thermochemistry.py: f605005c8ffcf864c9c5eb6f77e0069aed1edc34f5e2ccd02e04f60c2bd94228
+    examples/comparisons/select_major_molecules.py: d1ecfd4cb69946ad6d784f84d420456e9ef555ccfe56b29c4f72eb32a43e4df4
+    examples/comparisons/data/major_molecule_reference.json: 0d505b8a61fada1032b916155261f7650a01523b55acce815207517ab5bf646f
+    benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
+    benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
+    src/exogibbs/equilibrium/gas/__init__.py: 54176e1fcfc487e6d783c5e1e7079409659b40f889a60075fe2bd00134f179c5
+    src/exogibbs/equilibrium/gas/grid/__init__.py: 04095b7dfceb5a25f68d383323c361d69b6a9068fe827a320ae9899e25e4372e
+    src/exogibbs/equilibrium/gas/grid/build.py: 7ca8979261767b68634363880b0387793f1bfecc900541a3e0659875b6ad1161
+    src/exogibbs/equilibrium/gas/grid/initialization.py: afd7403a7ab984689006927c2daf4cfc564f61573286a6447bfcb47b1780f380
+    src/exogibbs/equilibrium/gas/grid/interpolation.py: 8dca41b9213fabba00e88ad1db207f1f42c92373c6ffd3b799164d6016ed77f6
+    src/exogibbs/equilibrium/gas/grid/service.py: 2fd9309725a91fecdf434e5903da198f6f531a27aeed9c7453eba7f4bbef9836
+    src/exogibbs/equilibrium/gas/grid/storage.py: 689dbc4bda37d01c3b36c73d3336261c1c13e3b337bb4ebc430598e3650b9d75
+    src/exogibbs/equilibrium/gas/grid/types.py: 6c9067705ba22243d88b685af9eb078ad203dac1a453649a7ceb5116758e3d23
+    src/exogibbs/equilibrium/gas/initialization.py: dcfc56f9bd0970a054106d10a7a59cb04f7d064a1952b2c1466b3134261c56e3
+    src/exogibbs/equilibrium/gas/kernel/__init__.py: e20cbe9c4e77124616a1c49e4c356bfc24049364cd244ea92b7664159f6678db
+    src/exogibbs/equilibrium/gas/kernel/autodiff.py: 15d9073264755db912b57bd9558484d1bda63c3a83440ebb3cba03ea2bbe2376
+    src/exogibbs/equilibrium/gas/kernel/diagnostics.py: d6815841c980efd2bbe2656d0b0b6875850b263cccf9137162d7d21ae13b9732
+    src/exogibbs/equilibrium/gas/kernel/equations.py: 120c3d5615b2b1ef146231aff7e82444953a2baf65e0ba448f931b57e2b99366
+    src/exogibbs/equilibrium/gas/kernel/sensitivities.py: ab51e893a0d0687a6fe57d9588cc2fcd77b19a1f08a427ddf36e00b543ff50b1
+    src/exogibbs/equilibrium/gas/kernel/solver.py: aa45cda12204f3ee354a0277b1933f6c1eed8f099a957a8162e73c2c7060d6d0
+    src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
+    src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
+    src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
+    documents/presets/curated_h2o.rst: bda37bb6ca85541eb04d80429718f63399980892cd23e62a4e2506a6c6549c20
+    tests/data/validation/h2o_source_review/20261103/literature.json: 1f996b47dea858258a86cc6fd4c5b7b14efdb69c5e3254c9a28a793edcb81bd1
+    tests/data/validation/h2o_source_review/20261103/sources.json: 53cc7efdcd588b3c94a3a9541c777bf4bd27421a9b88191b417ddb1057313fe4
+    tests/data/validation/h2o_candidate/20261104/validation.json: c231d88bdf4c8c67d9bba2d5ce4c3be4fbf4f4d3f2fda1a7810a5dffd3f37aa3
+    tests/data/validation/h2o_equilibrium_impact/20261104/summary.json: f7ffabf1a1a830102c90f13eed8fb41179f97ab564d90d61b36a808d1272d392
+    tests/data/validation/curated_h2o_adoption/20261104/receipt.json: eabd4e991eaee343816877ca1c0b3927d74adee11b28b4d0d7ec8ce9a5ca8ce0
+    tests/data/validation/curated_h2o_adoption/20261104/summary.json: 0cc401ce69b733bb148bc4ef4e32f3ce6c088f2716b7695403184a2a930f92df
+    tests/data/validation/curated_h2o_adoption/20261104/ions.npz: c9908126195abbee9d3568db73e2ea2649fd42005685749a6bd3085b36ef3532
+    tests/data/validation/curated_h2o_adoption/20261104/neutral.npz: 0f04e08e51ee29c354ad45ea7ab24f28d2ae77d742222f4abe1087274b06412e
+    tests/data/validation/curated_h2o_adoption/20261104/diagnostics.json: 456b13c3a2f12f52bf2ccd7973f4ffcc3895f7e7c51bf151bdb43a2b7ffb58b9
+    tests/data/validation/curated_h2o_adoption/20261104/README.rst: e180a082525b873bc5ebc4fe1789d7d1fe57b7a39013d659113eaa9b3446a2a4
+    tests/model_evidence/curated_h2o_adoption_test.py: b8f1335c6b5dabef1cf8a8b171518c0f064cbf82bd4cdf96af4a1d4205554c02
+    tests/unittests/presets/curated_h2o_test.py: e07c0d51b8b40dc704314437105b5392946dc5972baddf98f9036d118072167a
+    mceg/reviews/build_h2o_adoption.py: 7b82f09cee711c260ec757f9f097f603d104e41afedd9ea1e3106428cf19389f
+contexts:
+- id: production_gas_domain
+  scope: curated-h2o-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-co2-v1. H2(16O)
+    internal thermodynamics at aggregate mass 18.01528 u, retained ATcT total energy and NASA atoms. Both
+    537-species ion-inclusive and 421-species neutral networks; no complete atmospheric physical validation.
+  settings:
+    dataset: curated-h2o-v1
+    base_dataset: curated-co2-v1
+    comparison_dataset: curated-tio-v1
+    temperature_range_K: 1500-4000
+    standard_pressure_bar: 1
+    networks: ions and neutral
+    energy_anchor: ATcT 1.172 retained 917.819 kJ/mol
+    thermal_source: 2025 evaluated Cp and analytical H/S integrals, exact reviewed coefficients
+    previous_follow_up: h2o_candidate/scoped_production_choice completed by the authorized production
+      adoption; physical-scope limits remain
+assessments:
+- id: scientific_selection_review
+  kind: evidence_support
+  claim: scientific_selection
+  claim_revision: '1'
+  subject: curated_h2o_production_20261104
+  context: production_gas_domain
+  method:
+    id: review_h2o_scoped_production_adoption
+    revision: '1'
+    description: Distinguish justified source adoption and joint production numerical closure from complete
+      physical accuracy.
+  evidence:
+  - scientific_sources
+  reasons:
+  - The modern thermodynamic evaluation, derivative-consistent representation and finite sensitivity support
+    the source choice. The evaluated/discrete water difference is at most 0.00423 percent on the candidate
+    grid, much smaller than the NASA-to-modern effect; this does not erase physical-scope limitations.
+  status: supported
+  origin: reviewed
+- id: production_adoption_review
+  kind: evidence_support
+  claim: production_adoption
+  claim_revision: '1'
+  subject: curated_h2o_production_20261104
+  context: production_gas_domain
+  method:
+    id: review_h2o_scoped_production_adoption
+    revision: '1'
+    description: Distinguish justified source adoption and joint production numerical closure from complete
+      physical accuracy.
+  evidence:
+  - scientific_sources
+  - production_execution
+  reasons:
+  - All 150 production cold cases and 6 tighter independently assembled candidate controls pass. Both
+    adopted molecular potentials agree with the frozen candidate assembly over 2501 temperatures, while
+    all non-H2O/non-CO2 functions, species and elemental budgets are retained.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: curated_h2o_production_20261104
+  context: production_gas_domain
+  method:
+    id: review_h2o_scoped_production_adoption
+    revision: '1'
+    description: Distinguish justified source adoption and joint production numerical closure from complete
+      physical accuracy.
+  evidence:
+  - scientific_sources
+  - production_execution
+  reasons:
+  - The application-specific isotope/scattering/energy uncertainty and observational atmospheric validation
+    are not established by numerical or source-choice evidence.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: scattering_and_isotope_scope
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Resolve interaction and isotope conventions to the precision required by a named physical application,
+    while retaining the recorded bounded gas adoption.
+  requires:
+  - The measured evaluated/discrete finite sensitivity is small but is not proof of a unique scattering
+    assignment or a complete uncertainty interval.
+  - The dominant-isotope approximation does not model isotope-dependent reaction energies or fractionation.
+  - Same-version ATcT covariance remains the historical source-audit follow-up; a thermal update does
+    not supply that covariance.
+  completion: Provide application-specific physical evidence or retain the explicit unknown classification
+    without requiring every historical paper for the adopted thermal model.
+limitations:
+- statement: The preceding H2O-only and CO2-only source substitutions are distinct from the joint production
+    run; their endpoints are not relabeled as the final two-species update.
+  evidence:
+  - production_execution
+- statement: Numerical derivative closure, finite substitutions and FastChem parity do not establish complete
+    thermochemical uncertainty or observed planetary abundance accuracy.
+  evidence:
+  - scientific_sources
+  - production_execution
+- statement: Trace-element residuals must be separated from H/C/O conservation and the water/carbon-dioxide
+    response precision. Condensation, rainout, nonideality, transport and radiative transfer remain outside
+    this ideal-gas model.
+  evidence:
+  - production_execution

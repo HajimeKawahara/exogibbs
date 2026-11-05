@@ -16,6 +16,7 @@ DATA = ROOT / "tests/data/validation/curated_oh_adoption/20261105"
 BASELINE = ROOT / "tests/data/validation/curated_h2o_adoption/20261104"
 CANDIDATE = ROOT / "tests/data/validation/oh_equilibrium_impact/20261105"
 sys.path.insert(0, str(ROOT / "mceg/reviews"))
+from curated_adoption_history import historical_source
 import oh_candidate
 from oh_equilibrium_impact import constraints
 
@@ -25,7 +26,7 @@ def test_production_receipt_pins_current_inputs_and_completed_outputs():
     assert receipt["result"] == "passed"
     assert receipt["backend"] == "cpu" and receipt["dtype"] == "float64"
     for name, expected in receipt["selected_file_sha256"].items():
-        assert sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
+        assert sha256(historical_source(ROOT, name, expected).read_bytes()).hexdigest() == expected, name
     for name, expected in receipt["output_sha256"].items():
         assert sha256((DATA / name).read_bytes()).hexdigest() == expected, name
     summary = json.loads((DATA / "summary.json").read_text())

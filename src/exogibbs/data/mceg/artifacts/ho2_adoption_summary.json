@@ -1,0 +1,93 @@
+{
+  "dataset": "curated-ho2-v1",
+  "base_dataset": "curated-kh-v1",
+  "epsilon_crit": 5e-14,
+  "strict_epsilon_crit": 2e-14,
+  "method": "vmap_cold",
+  "new_production_solves": 150,
+  "tighter_reference_solves": 6,
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_dense_h_difference_from_candidate": 3.552713678800501e-14,
+      "tighter_case_indices": [
+        23,
+        50,
+        70
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.4613295604704035e-05,
+        "max_ho2_abs_delta_ln_x": 3.268496584496461e-13,
+        "max_absolute_delta_x": 3.387126193818327e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.4626860671374526e-06,
+        "mass_action_max_abs_ln": 1.4210854715202004e-12,
+        "major_element_relative_residual": 2.274097160906641e-13,
+        "charge_relative_residual": 3.123870968301152e-14
+      },
+      "ho2_response": {
+        "min_x_ratio": 0.44639282102901656,
+        "max_x_ratio": 0.7551618284988791,
+        "case23_x_before": 8.9112967029329e-12,
+        "case23_x_after": 6.729471112482841e-12
+      }
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_dense_h_difference_from_candidate": 3.552713678800501e-14,
+      "tighter_case_indices": [
+        21,
+        23,
+        50
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.3748270646374294e-05,
+        "max_ho2_abs_delta_ln_x": 9.947598300641403e-14,
+        "max_absolute_delta_x": 3.1837982770745545e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.375984196793677e-06,
+        "mass_action_max_abs_ln": 1.1368683772161603e-12,
+        "major_element_relative_residual": 8.942123075104802e-13
+      },
+      "ho2_response": {
+        "min_x_ratio": 0.44639282102921957,
+        "max_x_ratio": 0.755161828494007,
+        "case23_x_before": 8.909294180389092e-12,
+        "case23_x_after": 6.727958883853643e-12
+      }
+    }
+  ],
+  "independent_solver": [
+    {
+      "case_index": 23,
+      "comparisons": [
+        {
+          "dataset": "curated-ho2-v1",
+          "max_abs_delta_log10_x": 1.1988050015310733e-08,
+          "element_relative_residual": 3.922248763511153e-11,
+          "charge_relative_residual": 7.782241925087863e-12,
+          "mass_action_max_abs_ln": 3.629878619904048e-10
+        }
+      ]
+    },
+    {
+      "case_index": 50,
+      "comparisons": [
+        {
+          "dataset": "curated-ho2-v1",
+          "max_abs_delta_log10_x": 8.72581505677802e-09,
+          "element_relative_residual": 3.222023842219482e-11,
+          "charge_relative_residual": 1.393666688772078e-11,
+          "mass_action_max_abs_ln": 3.9244696381501853e-10
+        }
+      ]
+    }
+  ],
+  "scope": "HO2-only NASA/ATcT adoption on curated-kh-v1 at 1500-4000 K. The old candidate used curated-oh-v1, so only its HO2 thermodynamics are reused; compositions are verified with fresh candidate-on-KH controls. Agreement with the reviewed candidate and numerical closure do not establish full physical accuracy."
+}

@@ -271,7 +271,7 @@ def build_catalog(output: Path = OUTPUT) -> None:
                             "physical_accuracy_review"],
             "artifacts": [oh_receipt, oh_summary],
             "summary": (
-                "Default curated-oh-v1 replaces the inherited JANAF OH electronic/caloric defect "
+                "Former default, retained as curated_oh: curated-oh-v1 replaces the inherited JANAF OH electronic/caloric defect "
                 "with the exact NASA9 reaction and balanced ATcT 1.172 D0=425.604 kJ/mol, "
                 "on curated-h2o-v1 at 1500-4000 K. Only OH changes; H2O, CO2, TiO, C2H, "
                 "other formation functions, species and budgets are retained. MYTHOS is a "
@@ -283,6 +283,88 @@ def build_catalog(output: Path = OUTPUT) -> None:
                 "Earlier versioned presets and immutable evidence remain available. "
                 "Your conditions have not been evaluated."),
             "links": ["https://github.com/HajimeKawahara/exogibbs/pull/334"],
+        }],
+    })
+    kh_path = "src/exogibbs/data/curated/kh_v1.json"
+    kh_bytes = (ROOT / kh_path).read_bytes()
+    kh_data = json.loads(kh_bytes)
+    kh_digest = hashlib.sha256(kh_bytes).hexdigest()
+    kh_adoption = "tests/data/validation/curated_kh_adoption/20261105"
+    kh_execution = json.loads((ROOT / kh_adoption / "receipt.json").read_text())
+    if (kh_digest != kh_execution["selected_file_sha256"][kh_path]
+            or oh_digest != kh_data["base_data_sha256"]):
+        raise ValueError("KH data changed; review new evidence before rebinding the adoption")
+    kh_contract = copy("mceg/contracts/curated_kh.yaml", "contracts/curated_kh.yaml")
+    kh_receipt = copy(f"{kh_adoption}/receipt.json", "artifacts/kh_adoption_receipt.json")
+    kh_summary = copy(f"{kh_adoption}/summary.json", "artifacts/kh_adoption_summary.json")
+    if kh_summary["sha256"] != kh_execution["output_sha256"]["summary.json"]:
+        raise ValueError("KH summary differs from the archived execution")
+    kh_species = {**oh_species, "H1K1": {"id": "H1K1", "aliases": ["KH"]}}
+    catalog["models"].append({
+        "id": "exogibbs.curated_kh.v1",
+        "label": "Curated with spectroscopic KH energy (ion-inclusive lookup)",
+        "dataset": kh_data["id"],
+        "identity": {"data_sha256": kh_digest, "settings": {"ions": True}},
+        "species": [kh_species[k] for k in sorted(kh_species)],
+        "records": [{
+            "id": "kh_adoption", **kh_contract, "species": ["*", "H1K1"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [kh_receipt, kh_summary],
+            "summary": (
+                "Former default, retained as curated_kh: curated-kh-v1 adopts spectroscopic KH D0=170857.838639 J/mol "
+                "on curated-oh-v1 at 1500-4000 K, reducing the inherited balanced energy "
+                "by 9532.161361 J/mol while retaining thermal functions, S/Cp and atomic "
+                "conventions. Only KH changes; OH, H2O, CO2, TiO, C2H, species and "
+                "budgets remain fixed. Both networks pass 75 fresh cold solves, six tighter "
+                "candidate controls and two FastChem comparisons. The 1988 abstract's "
+                "De uncertainty is not a D0 uncertainty. NASA thermal-reference controls "
+                "change molecular and atomic thermal functions and are not adopted. "
+                "Scoped source selection and numerical adoption are supported; complete "
+                "D0/thermal/isotope/continuum and atmospheric physical accuracy remain unknown. "
+                "Earlier versioned presets and immutable evidence remain available. "
+                "Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/339"],
+        }],
+    })
+    ho2_path = "src/exogibbs/data/curated/ho2_v1.json"
+    ho2_bytes = (ROOT / ho2_path).read_bytes()
+    ho2_data = json.loads(ho2_bytes)
+    ho2_digest = hashlib.sha256(ho2_bytes).hexdigest()
+    ho2_adoption = "tests/data/validation/curated_ho2_adoption/20261105"
+    ho2_execution = json.loads((ROOT / ho2_adoption / "receipt.json").read_text())
+    if (ho2_digest != ho2_execution["selected_file_sha256"][ho2_path]
+            or kh_digest != ho2_data["base_data_sha256"]):
+        raise ValueError("HO2 data changed; review new evidence before rebinding the adoption")
+    ho2_contract = copy("mceg/contracts/curated_ho2.yaml", "contracts/curated_ho2.yaml")
+    ho2_receipt = copy(f"{ho2_adoption}/receipt.json", "artifacts/ho2_adoption_receipt.json")
+    ho2_summary = copy(f"{ho2_adoption}/summary.json", "artifacts/ho2_adoption_summary.json")
+    if ho2_summary["sha256"] != ho2_execution["output_sha256"]["summary.json"]:
+        raise ValueError("HO2 summary differs from the archived execution")
+    ho2_species = {**kh_species, "H1O2": {"id": "H1O2", "aliases": ["HO2"]}}
+    catalog["models"].append({
+        "id": "exogibbs.curated_ho2.v1",
+        "label": "Curated default with NASA/ATcT HO2 (ion-inclusive lookup)",
+        "dataset": ho2_data["id"],
+        "identity": {"data_sha256": ho2_digest, "settings": {"ions": True}},
+        "species": [ho2_species[k] for k in sorted(ho2_species)],
+        "records": [{
+            "id": "ho2_adoption", **ho2_contract, "species": ["*", "H1O2"],
+            "assessments": ["scientific_selection_review", "production_adoption_review",
+                            "physical_accuracy_review"],
+            "artifacts": [ho2_receipt, ho2_summary],
+            "summary": (
+                "Default curated-ho2-v1 adopts the exact NASA HO2 thermal reaction and "
+                "balanced ATcT 1.172 D0=694662 J/mol on curated-kh-v1 at 1500-4000 K. "
+                "Only HO2 changes; KH, OH, H2O, CO2, TiO, C2H and all inventories are retained. "
+                "The obsolete JANAF formation energy is replaced without refitting. "
+                "Both networks pass 75 fresh cold solves, six tighter candidate-on-KH controls "
+                "and two FastChem comparisons. The old candidate abundances are not reused "
+                "as new-background results. JANAF original-node controls use the same energy "
+                "and atoms. Scoped selection and numerical verification are supported; full "
+                "physical accuracy remain unknown. Earlier versions and immutable evidence "
+                "remain available. Your conditions have not been evaluated."),
+            "links": ["https://github.com/HajimeKawahara/exogibbs/pull/342"],
         }],
     })
     (output / "index.json").write_text(json.dumps(catalog, indent=2) + "\n")

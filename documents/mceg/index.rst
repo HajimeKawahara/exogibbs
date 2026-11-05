@@ -61,6 +61,13 @@ HCN differences with optional MCEG tooling.
    koh_dimer_source_review
    phosphorus_cold_validation
    po2_source_review
+   c5_source_review
+   cs2_source_review
+   h2so4_source_review
+   ns_source_review
+   nah_source_review
+   nao_source_review
+   ko_source_review
    build
 
    kh_source_review

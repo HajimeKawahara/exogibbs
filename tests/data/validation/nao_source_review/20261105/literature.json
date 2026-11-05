@@ -1,0 +1,34 @@
+{
+  "decision": "Retain production provisionally; prioritize a complete NaOUCMe-based thermal candidate after resolving version and 2500-4000 K completeness.",
+  "primary": [
+    {
+      "doi": "10.1093/mnras/stab3357",
+      "inspection": "Full published paper, sections 2-3 and Tables 2-6; official current states/PF/definition inspected.",
+      "findings": "Coupled X2Pi/A2Sigma+ states; gns=4; documented J convergence and applicability through 2500 K. The paper table and current distribution differ. A line list is not a thermochemical D0 determination."
+    },
+    {
+      "doi": "10.1021/jp9034826",
+      "inspection": "Publisher abstract only; full article and supplementary tables unavailable in this review.",
+      "findings": "Calculated neutral NaO ground-state hf298=86.4 kJ/mol; this cannot be installed as D0 without its thermal and atomic-reference conventions."
+    }
+  ],
+  "paper_Q_including_nuclear_spin": {
+    "300": 7027.4727,
+    "150": 2734.0243
+  },
+  "paper_potential_depth_cm-1": {
+    "X": 21735.7,
+    "A": 35496.4
+  },
+  "modern_hf298_kJ_mol": 86.4,
+  "limitations": [
+    "No formal missing-state bound above 2500 K. Top-J population is a local boundary diagnostic, not a completeness certificate.",
+    "Current PF/table discrepancy has not been diagnosed; no artificial constant shift is applied.",
+    "JANAF and NASA ancestral Gurvich/OHare measurements were not independently reaudited."
+  ],
+  "followups": [
+    "Reconcile current NaOUCMe distribution with paper Table 4 and converge coupled electronic/rovibrational thermal moments to 4000 K before fitting a candidate.",
+    "Inspect the full neutral NaO thermochemistry in DOI 10.1021/jp9034826 if selecting a new energy; balance to the same neutral-atom ground references.",
+    "Run a fixed-network finite substitution only after the candidate is defined; historical source full texts are not a condition for merging this scoped audit."
+  ]
+}

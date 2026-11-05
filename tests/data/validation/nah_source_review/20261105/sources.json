@@ -1,0 +1,60 @@
+{
+  "review_date": "2026-11-05",
+  "downloads": {
+    "NaH.pdf": {
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/15RiLoYu.pdf",
+      "sha256": "6eeb4fb429cccdef495c0c429086627e58b88df80e2007ff5df359a58c526f79",
+      "archived": false,
+      "inspection": "Full paper read; numerical distributions parsed completely."
+    },
+    "NaH.states.bz2": {
+      "url": "https://exomol.com/db/NaH/23Na-1H/Rivlin/23Na-1H__Rivlin.states.bz2",
+      "sha256": "0cd6de75db6862edc81cf75b60822969d2c7ee22113a923904fee51a9ae5ad7b",
+      "archived": false,
+      "inspection": "All rows inspected computationally; source definition read."
+    },
+    "NaH.pf": {
+      "url": "https://exomol.com/db/NaH/23Na-1H/Rivlin/23Na-1H__Rivlin.pf",
+      "sha256": "fe360b51349e097faf506dbd7daff368b1ad44bb89301a5f257778d69e2e1abf",
+      "archived": false,
+      "inspection": "All rows inspected computationally; source definition read."
+    },
+    "NaH.def.json": {
+      "url": "https://exomol.com/db/NaH/23Na-1H/Rivlin/23Na-1H__Rivlin.def.json",
+      "sha256": "3734ae12a0546fcf49e43d500cded2b93f541c6c2ee4bb785a9912d2ba42c2bb",
+      "archived": false,
+      "inspection": "All rows inspected computationally; source definition read."
+    },
+    "H-janaf.txt": {
+      "url": "https://janaf.nist.gov/tables/H-001.txt",
+      "sha256": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+      "archived": false,
+      "inspection": "Official numerical table; all 0-4000 K rows transcribed into inputs.json."
+    },
+    "Na-janaf.txt": {
+      "url": "https://janaf.nist.gov/tables/Na-005.txt",
+      "sha256": "56df39453bc3895f80161d7ca0146b344669da2d1a9918b27139e917d491c255",
+      "archived": false,
+      "inspection": "Official numerical table; all 0-4000 K rows transcribed into inputs.json."
+    },
+    "NaH-janaf.txt": {
+      "url": "https://janaf.nist.gov/tables/H-032.txt",
+      "sha256": "cee964f422ffe36b81f88d5111bdcd375e5e706e1c27ed277c87900162f21f61",
+      "archived": false,
+      "inspection": "Official numerical table; all 0-4000 K rows transcribed into inputs.json."
+    },
+    "Walji2015.pdf": {
+      "url": "https://jupiter.chem.uoa.gr/thanost/papers/papers4/JCP_142%282015%29044305.pdf",
+      "sha256": "1741f1fb85ad7f067923d0c1edbe580c56b5fcc8121dd328260eea517c37a058",
+      "archived": false,
+      "inspection": "Full text, Table II and III; potential depth De explicitly distinguished from D0. Public server certificate chain failed; read-only download used verification disabled."
+    }
+  },
+  "NASA": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "inspection": "Molecule header, native H(298)-H(0), mass and both intervals inspected; neutral atoms reuse pinned existing records. Gurvich book originals not reaudited."
+  },
+  "primary_doi": "10.1093/mnras/stv979",
+  "scope": "Primary electronic publication and current distribution inspected; this does not establish full physical uncertainty."
+}

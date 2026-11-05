@@ -5,7 +5,7 @@ model:
   description: Adopt the exact reviewed NASA OH thermal reaction and balanced ATcT energy on the pinned
     H2O base. Scoped scientific selection and production verification are supported; complete physical
     accuracy remains unknown.
-  implementation: &id001
+  implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
     entry_points:
@@ -136,8 +136,8 @@ evidence:
   - tests/data/validation/curated_oh_adoption/20261105/README.rst
   - mceg/reviews/build_oh_adoption.py
   - mceg/reviews/curated_oh_adoption.py
-  - tests/model_evidence/curated_oh_adoption_test.py
-  - tests/unittests/presets/curated_oh_test.py
+  - tests/data/validation/curated_kh_adoption/20261105/source/tests/model_evidence/curated_oh_adoption_test.py
+  - tests/data/validation/curated_kh_adoption/20261105/source/tests/unittests/presets/curated_oh_test.py
   scope: curated-oh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-h2o-v1. Only OH
     changes, with NASA dimensionless thermal functions, original atomic gauge and balanced ATcT 1.172
     D0=425.604 kJ/mol. Both 537-species ion-inclusive and 421-species neutral networks; no complete atmospheric
@@ -161,9 +161,9 @@ evidence:
     sha256: 31f5ef6b75a9a0fb617c63798eee583eae174f516f7b08dfeb3df9e69e6ddb79
   - source: mceg/reviews/curated_oh_adoption.py
     sha256: 2a9b741d86a4fb0a90a5f7a9b6bef30845c5608f315f4028364ecd02768e0db2
-  - source: tests/model_evidence/curated_oh_adoption_test.py
+  - source: tests/data/validation/curated_kh_adoption/20261105/source/tests/model_evidence/curated_oh_adoption_test.py
     sha256: 6c6bb304a097c221948b506c65e48e25882ea8699d1ac57a4595d2a2865cbc03
-  - source: tests/unittests/presets/curated_oh_test.py
+  - source: tests/data/validation/curated_kh_adoption/20261105/source/tests/unittests/presets/curated_oh_test.py
     sha256: f5def955af57789ff81dc18e873d560f46e8e25c742599b850b32218ebf664fd
   provenance:
     role: primary
@@ -198,7 +198,12 @@ evidence:
       coverage, not a missing justification for bounded adoption.
 subjects:
 - id: curated_oh_production_20261105
-  implementation: *id001
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
+    entry_points:
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_oh.chemsetup
   selected_files:
     benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
     benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
@@ -248,7 +253,7 @@ subjects:
     src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
     src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
     src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
-    src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
+    tests/data/validation/curated_kh_adoption/20261105/source/src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
@@ -292,8 +297,8 @@ subjects:
     tests/data/validation/curated_oh_adoption/20261105/neutral.npz: f21a9f1ce4c2b737e5af6dc93a82faad01a6547cbb7f3f56369e05d46e121bf1
     tests/data/validation/curated_oh_adoption/20261105/diagnostics.json: 4f1d11f735dc933f97d1e81e2c9e8c4893e2dbcce9cec03d36447499a3326d43
     tests/data/validation/curated_oh_adoption/20261105/README.rst: 7f246c147c1d7a3033f0fecac527be947f6bffb50e9262ae3639108758ca2679
-    tests/model_evidence/curated_oh_adoption_test.py: 6c6bb304a097c221948b506c65e48e25882ea8699d1ac57a4595d2a2865cbc03
-    tests/unittests/presets/curated_oh_test.py: f5def955af57789ff81dc18e873d560f46e8e25c742599b850b32218ebf664fd
+    tests/data/validation/curated_kh_adoption/20261105/source/tests/model_evidence/curated_oh_adoption_test.py: 6c6bb304a097c221948b506c65e48e25882ea8699d1ac57a4595d2a2865cbc03
+    tests/data/validation/curated_kh_adoption/20261105/source/tests/unittests/presets/curated_oh_test.py: f5def955af57789ff81dc18e873d560f46e8e25c742599b850b32218ebf664fd
 contexts:
 - id: production_gas_domain
   scope: curated-oh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-h2o-v1. Only OH
