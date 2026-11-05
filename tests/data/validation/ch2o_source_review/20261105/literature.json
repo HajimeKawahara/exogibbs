@@ -1,0 +1,61 @@
+[
+  {
+    "id": "janaf",
+    "url": "https://janaf.nist.gov/tables/C-061.txt",
+    "access": "Official numeric table and NIST WebBook evaluation date inspected.",
+    "findings": [
+      "JANAF Hf298 is -115.897 kJ/mol; the WebBook identifies the underlying assessment as March 1961.",
+      "Full historical derivation was not independently recovered; modern measurements and evaluation support a less negative molecular formation enthalpy."
+    ]
+  },
+  {
+    "id": "nasa",
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "access": "Pinned complete official CEA file inspected; selected original blocks archived.",
+    "findings": [
+      "Molecular Hf298=-108.580 kJ/mol; H298-H0=10.019717 kJ/mol.",
+      "The actual low interval starts at 300 K, while the old screening excerpt declares 200 K. Coefficients agree; this review uses original bounds and never evaluates below 300 K."
+    ]
+  },
+  {
+    "id": "atct",
+    "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=39",
+    "access": "Versioned evaluation and species provenance page inspected.",
+    "findings": [
+      "Balance C+2H+O->CH2O with all four version-1.228 Hf0 values.",
+      "The molecular printed uncertainty is not a balanced-reaction uncertainty; covariance is not available here."
+    ]
+  },
+  {
+    "id": "da_silva2006",
+    "doi": "10.1002/cphc.200500667",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/16596698/",
+    "access": "Primary author abstract inspected; full text not obtained.",
+    "findings": [
+      "Analyzes the competing -26.0 and -27.7 kcal/mol molecular formation enthalpies; reaction analysis gives -26.05 +/-0.42 kcal/mol at 298 K.",
+      "Supports the modern direction but is not used as a separate statistically independent uncertainty estimate."
+    ]
+  },
+  {
+    "id": "ayty2015",
+    "doi": "10.1093/mnras/stv091",
+    "url": "https://arxiv.org/html/1506.00172",
+    "access": "Full author manuscript, official PF and definition file inspected.",
+    "findings": [
+      "Paper states 1500 K line-list applicability and 18000 cm-1 state cutoff; PF deficit versus HITRAN grows at 3000 K.",
+      "Para and ortho symmetry weights are 1 and 3; remove total proton spin factor 4 for thermochemical comparison.",
+      "The live .def gives 3000 K, exceeding the publication applicability statement; a table or polynomial extending to 3000 K is not completeness evidence."
+    ]
+  },
+  {
+    "id": "marvel2021",
+    "doi": "10.1016/j.jqsrt.2021.107563",
+    "url": "https://arxiv.org/html/2102.07423",
+    "access": "Full author manuscript inspected.",
+    "findings": [
+      "Empirical levels improve AYTY line positions; this does not independently demonstrate complete high-temperature thermodynamic sums.",
+      "Current PF differs from rounded 2015 printed values; the downloaded bytes and version are pinned rather than silently equated."
+    ]
+  }
+]

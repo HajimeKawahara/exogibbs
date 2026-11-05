@@ -1,0 +1,137 @@
+EXOMOL.def                                                                      # ID
+(1H)2(12C)(16O)                                                                 # IsoFormula
+1H2-12C-16O                                                                     # Iso-slug
+AYTY                                                                            # Isotopologue dataset name
+20230430                                                                        # Version number with format YYYYMMDD
+50-00-0                                                                         # CAS Registry Number
+InChI=1S/CH2O/c1-2/h1H2                                                         # In-ChI of molecule
+WSFSSNUMVMOOMR-UHFFFAOYSA-N                                                     # In-ChI key of molecule
+4                                                                               # Number of atoms
+1                                                                               # Isotope number 1
+H                                                                               # Element symbol 1
+12                                                                              # Isotope number 2
+C                                                                               # Element symbol 2
+16                                                                              # Isotope number 3
+O                                                                               # Element symbol 3
+30.01056468 4.98337151e-26                                                      # Isotopologue mass (Da) and (kg)
+C2v                                                                             # Symmetry group
+4                                                                               # Number of irreducible representations
+A1                                                                              # Irreducible representation label 1
+1                                                                               # Nuclear spin degeneracy 1
+A2                                                                              # Irreducible representation label 2
+1                                                                               # Nuclear spin degeneracy 2
+B1                                                                              # Irreducible representation label 3
+3                                                                               # Nuclear spin degeneracy 3
+B2                                                                              # Irreducible representation label 4
+3                                                                               # Nuclear spin degeneracy 4
+3000.00                                                                         # Maximum temperature of linelist
+0                                                                               # No. of pressure broadeners available
+0                                                                               # Cooling function availability (1=yes, 0=no)
+1                                                                               # Specific heat availability (1=yes, 0=no)
+0                                                                               # Photo-absorption continuum cross-sections availability (1=yes, 0=no)
+10297025.0                                                                      # No. of states in .states file
+0                                                                               # Hyperfine resolved dataset (1=yes, 0=no)
+1                                                                               # Uncertainty availability (1=yes, 0=no)
+1                                                                               # Lifetime availability (1=yes, 0=no)
+0                                                                               # Lande g-factor availability (1=yes, 0=no)
+asymcs                                                                          # Quantum case label
+2                                                                               # No. of quantum number types
+18                                                                              # No. of quanta defined
+Grve                                                                            # Quantum label 1
+A3 %3s                                                                          # Format quantum label 1
+Total (rovibronic) symmetry                                                     # Description quantum label 1
+Herzberg:v1                                                                     # Quantum label 2
+I2 %2d                                                                          # Format quantum label 2
+v1 symmetric C-H normal mode QN                                                 # Description quantum label 2
+Herzberg:v2                                                                     # Quantum label 3
+I2 %2d                                                                          # Format quantum label 3
+v2 symmetric bend OCH normal mode QN                                            # Description quantum label 3
+Herzberg:v3                                                                     # Quantum label 4
+I2 %2d                                                                          # Format quantum label 4
+v3 stretch  O-C normal mode QN                                                  # Description quantum label 4
+Herzberg:v4                                                                     # Quantum label 5
+I2 %2d                                                                          # Format quantum label 5
+v4 out-of-plane bend normal mode QN                                             # Description quantum label 5
+Herzberg:v5                                                                     # Quantum label 6
+I2 %2d                                                                          # Format quantum label 6
+v5 asymmetric C-H normal mode QN                                                # Description quantum label 6
+Herzberg:v6                                                                     # Quantum label 7
+I2 %2d                                                                          # Format quantum label 7
+v6 asymmetric bend OCH normal mode QN                                           # Description quantum label 7
+TROVE:Gvib                                                                      # Quantum label 8
+A3 %3s                                                                          # Format quantum label 8
+Vibrational symmetry                                                            # Description quantum label 8
+Herzberg:Ka                                                                     # Quantum label 9
+I2 %2d                                                                          # Format quantum label 9
+Ka rotational quantum number                                                    # Description quantum label 9
+Herzberg:Kb                                                                     # Quantum label 10
+I2 %2d                                                                          # Format quantum label 10
+Rotational Kb quantum number                                                    # Description quantum label 10
+TROVE:Grot                                                                      # Quantum label 11
+A3 %3s                                                                          # Format quantum label 11
+Rotational symmetry                                                             # Description quantum label 11
+TROVE:Coef                                                                      # Quantum label 12
+F5.2 %5.2f                                                                      # Format quantum label 12
+Coefficient with the largest contribution                                       # Description quantum label 12
+TROVE:n1                                                                        # Quantum label 13
+I2 %2d                                                                          # Format quantum label 13
+Local mode stretch vibrational quantum number                                   # Description quantum label 13
+TROVE:n2                                                                        # Quantum label 14
+I2 %2d                                                                          # Format quantum label 14
+Local mode stretch vibrational quantum number                                   # Description quantum label 14
+TROVE:n3                                                                        # Quantum label 15
+I2 %2d                                                                          # Format quantum label 15
+Local mode stretch vibrational quantum number                                   # Description quantum label 15
+TROVE:n4                                                                        # Quantum label 16
+I2 %2d                                                                          # Format quantum label 16
+Local mode bend vibrational quantum number                                      # Description quantum label 16
+TROVE:n5                                                                        # Quantum label 17
+I2 %2d                                                                          # Format quantum label 17
+Local mode bend vibrational quantum number                                      # Description quantum label 17
+TROVE:n6                                                                        # Quantum label 18
+I2 %2d                                                                          # Format quantum label 18
+Local mode out-of-plane bend vibrational quantum number                         # Description quantum label 18
+SourceType                                                                      # Auxiliary title 1
+A2 %2s                                                                          # Format title 1
+Ma=MARVEL,Ca=Calculated,EH=Effective Hamiltonian,IE=Isotopologue extrapolation  # Description title 1
+Ecal                                                                            # Auxiliary title 2
+F12.6 %12.6f                                                                    # Format title 2
+Calculated energy in cm-1                                                       # Description title 2
+12688112669                                                                     # Total number of transitions
+100                                                                             # No. of transition files
+10000.00                                                                        # Maximum wavenumber (in cm-1)
+8000.00                                                                         # Higher energy with complete set of transitions (in cm-1)
+3000.00                                                                         # Maximum temperature of partition function
+3.00                                                                            # Step size of temperature
+0.1000                                                                          # Default value of Lorentzian half-width for all lines (in cm-1/bar)
+0.500                                                                           # Default value of temperature exponent for all lines
+H2                                                                              # Label for a particular broadener
+1H2-12C-16O__H2.broad                                                           # Filename of particular broadener
+9                                                                               # Maximum J for which pressure broadening parameters provided
+0.1370                                                                          # Value of Lorentzian half-width for J" > Jmax
+0.500                                                                           # Value of temperature exponent for lines with J" > Jmax
+2                                                                               # Number of defined quantum number sets
+a3                                                                              # A code that defines this set of quantum numbers
+12                                                                              # No. of lines in the broad that contain this code
+3                                                                               # No. of quantum numbers defined
+J'                                                                              # Defined quantum number
+K"                                                                              # Defined quantum number
+K'                                                                              # Defined quantum number
+a0                                                                              # A code that defines this set of quantum numbers
+10                                                                              # No. of lines in the broad that contain this code
+0                                                                               # No. of quantum numbers defined
+He                                                                              # Label for a particular broadener
+1H2-12C-16O__He.broad                                                           # Filename of particular broadener
+9                                                                               # Maximum J for which pressure broadening parameters provided
+0.0840                                                                          # Value of Lorentzian half-width for J" > Jmax
+0.500                                                                           # Value of temperature exponent for lines with J" > Jmax
+2                                                                               # Number of defined quantum number sets
+a3                                                                              # A code that defines this set of quantum numbers
+12                                                                              # No. of lines in the broad that contain this code
+3                                                                               # No. of quantum numbers defined
+J'                                                                              # Defined quantum number
+K"                                                                              # Defined quantum number
+K'                                                                              # Defined quantum number
+a0                                                                              # A code that defines this set of quantum numbers
+10                                                                              # No. of lines in the broad that contain this code
+0                                                                               # No. of quantum numbers defined

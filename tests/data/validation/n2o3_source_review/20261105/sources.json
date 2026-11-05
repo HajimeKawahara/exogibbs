@@ -1,0 +1,85 @@
+{
+  "retrieved_date": "2026-11-05",
+  "molecule": "N2O3",
+  "sources": [
+    {
+      "id": "nasa-thermo.inp",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "bytes": 1234323,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "atct-1.228.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+      "bytes": 4289738,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "N-028.txt",
+      "url": "https://janaf.nist.gov/tables/N-028.txt",
+      "sha256": "4f321fdc454493b2ab46073b16de7241e78a22dd567e990b9201b70a27370899",
+      "bytes": 3967,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "janaf-nitrogen.pdf",
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Nitrogen.pdf",
+      "sha256": "f31c7ca73924a8992795918ef49c20d67a6e04d950c682f505843f6b64c125ca",
+      "bytes": 2903637,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "atct-n2o3.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=401",
+      "sha256": "9bb3b8a69dc97a82ad7ec1efdbc5f930ba9ed95d92ee81f260610ead9805150c",
+      "bytes": 54900,
+      "access": "Species identity and provenance table inspected; full HTML not committed."
+    },
+    {
+      "id": "beattie-crossref.json",
+      "url": "https://api.crossref.org/works/10.1039/JR9570001681",
+      "sha256": "488349289db551ffb768ec28de770ef79cb85e025ffa77111de8915da5fcb4ed",
+      "bytes": 1739,
+      "access": "DOI/title metadata only; experimental full text not read."
+    },
+    {
+      "id": "vosper-crossref.json",
+      "url": "https://api.crossref.org/works/10.1039/DT9760000135",
+      "sha256": "6f38d1f230413900cefa86172f11d85b619f9d86b9396ad3019d811383f8845d",
+      "bytes": 1839,
+      "access": "DOI/title metadata only; experimental full text not read."
+    },
+    {
+      "id": "nist_cccbdb",
+      "url": "https://cccbdb.nist.gov/exp2x.asp?casno=10544737&charge=0",
+      "access": "Browser HTML inspected: identity, Gurvich-attributed thermochemistry and bibliographic references. Original Gurvich book and 1988 spectroscopy paper not read."
+    }
+  ],
+  "atomic_janaf_tables": {
+    "O": "tests/data/validation/oh_source_review/20261105/O-001.txt",
+    "N": "tests/data/validation/n3_source_review/20261103/N-002.txt"
+  },
+  "source_node_units": [
+    "Cp J/mol/K",
+    "S J/mol/K",
+    "-[G-H298]/T J/mol/K",
+    "H-H298 kJ/mol",
+    "Hf kJ/mol",
+    "Gf kJ/mol",
+    "log10 Kf"
+  ],
+  "atct_conventions": "Same-version 1.228 molecule and neutral atom Hf(0); tabulated H uncertainty rounded 0.000 is not exact zero. Reaction covariance not propagated.",
+  "access_limit": "NASA source headers do not establish independent recovery of Gurvich inputs; current FastChem source attribution does not recover its original fit objective or atomic basis.",
+  "full_papers_committed": false,
+  "paper_dois": [
+    "10.1039/JR9570001681",
+    "10.1039/DT9760000135",
+    "10.1080/00268978800100601"
+  ]
+}
