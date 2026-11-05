@@ -1,0 +1,67 @@
+{
+  "retrieved_utc": "2026-11-05T05:31:00.260996+00:00",
+  "downloads": {
+    "AYTY.pf": {
+      "url": "https://www.exomol.com/db/H2CO/1H2-12C-16O/AYTY/1H2-12C-16O__AYTY.pf",
+      "status": 200,
+      "bytes": 75000,
+      "sha256": "334d19b2bd2e46d2691264f229e57527196f55a7dc1f9c470d4ade382f060667"
+    },
+    "AYTY.def": {
+      "url": "https://www.exomol.com/db/H2CO/1H2-12C-16O/AYTY/1H2-12C-16O__AYTY.def",
+      "status": 200,
+      "bytes": 15286,
+      "sha256": "9b2fcb7d21ba83076984b306a4cd6098a710e5954f2ae29531dd923d2a83beba"
+    },
+    "AYTY2015.html": {
+      "url": "https://arxiv.org/html/1506.00172",
+      "status": 200,
+      "bytes": 343277,
+      "sha256": "ee8d0f3731b7c3929dbfcffa3e45fe395d835948de0bc7418b327aa3725f2e7b"
+    },
+    "MARVEL2021.html": {
+      "url": "https://arxiv.org/html/2102.07423",
+      "status": 200,
+      "bytes": 673748,
+      "sha256": "3cc430531c0d5d720c88dd8860bf53970d7fa7191f1f36802cf797a09946f666"
+    },
+    "atct1228.html": {
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/",
+      "status": 200,
+      "bytes": 4289738,
+      "sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf"
+    },
+    "webbook.html": {
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C50000&Units=SI&Mask=1",
+      "status": 200,
+      "bytes": 37278,
+      "sha256": "2db2eb9312bb6e4605a51082a2ecf25ca140cd670bd469a437ca0d725315deb5"
+    },
+    "AYTY-page.html": {
+      "url": "https://www.exomol.com/data/molecules/H2CO/1H2-12C-16O/AYTY/",
+      "status": 200,
+      "bytes": 62778,
+      "sha256": "ad061b6ffd9de33311fb236d4ebb1acf4bb3de40e27b8346334d8eadb723f791"
+    },
+    "C-061.txt": {
+      "url": "https://janaf.nist.gov/tables/C-061.txt",
+      "status": 200,
+      "bytes": 3893,
+      "sha256": "cea35990692155fde725b444246c4acd644c3628a02b658cf3473ebb6c7f7c9c"
+    }
+  },
+  "archive_policy": "Selected numerical data and derived facts only; full article HTML and whole ATcT network are not committed.",
+  "archived_files": {
+    "C-061.txt": "cea35990692155fde725b444246c4acd644c3628a02b658cf3473ebb6c7f7c9c",
+    "AYTY.pf": "334d19b2bd2e46d2691264f229e57527196f55a7dc1f9c470d4ade382f060667",
+    "AYTY.def": "9b2fcb7d21ba83076984b306a4cd6098a710e5954f2ae29531dd923d2a83beba",
+    "nasa_selected_records.txt": "565a1cbbb3acf8fc53e6605b50f9c160431506112892cb998f30a98b835b3675",
+    "inputs.json": "b0a15ff73229c10bc2676398be90d3554bf0856d6da8c844c7f7af5d3971bf6b",
+    "literature.json": "46ff144598ed1e0e5132444fe16f6693b9082f46c5b1f37d3f2236a30494aaf8"
+  },
+  "existing_inputs": {
+    "tests/data/validation/c3_source_review/20261102/C-003.txt": "df9d51b1fd89984f5c7bce53fb445d34aa688209d15a228c396ed52b793d27d4",
+    "tests/data/validation/oh_source_review/20261105/H-001.txt": "dceb73414db8ba3270e51c70b217570a6a96c8c24be61e4c0ba2ca96a4f084be",
+    "tests/data/validation/oh_source_review/20261105/O-001.txt": "cece32f5b417e5df12f22357934d4eeaa9cbacf751a8f76a17a62e41a57cca5e"
+  }
+}
