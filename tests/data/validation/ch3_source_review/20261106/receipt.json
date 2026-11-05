@@ -38,7 +38,7 @@
     "tests/data/validation/ch3_source_review/20261106/nasa_records.json": "c5e991fe22e4e8943c83b148242acf4f6654b9c1368f7f8ad2d082b968a95bee",
     "tests/data/validation/ch3_source_review/20261106/nasa_selected_records.txt": "74506d5452114bfe51b48b588a3d6e3ff171d12d8eed8b3f354ff4b1945ac248",
     "tests/data/validation/ch3_source_review/20261106/partition.pf": "f1cf341fa7779cb5d172b2835358c2be4e32765ed89e6992975f99d9a61213a5",
-    "tests/data/validation/ch3_source_review/20261106/sources.json": "617f486fd475aca40aae3847fc89f8f5d263cc85f7b8ca63d01bb8d3a0a16320",
+    "tests/data/validation/ch3_source_review/20261106/sources.json": "fbc1ba5adb38a7c1b28915228a040269707b28e18b7f736148049598a329e9ba",
     "tests/data/validation/curated_cos_adoption/20261105/ions.npz": "5b7f4bfe6aca3e5e69e7ec84afdcacf9585430c96efb15e9c2db82d485e9ff49",
     "tests/data/validation/curated_cos_adoption/20261105/receipt.json": "08e9a07dc13b644e55a2a16a8dee6bd320ae4ba06e06c5011c4c37a817529385",
     "tests/data/validation/gas_source_comparison/baseline-001/inputs.json": "90380ae7d3f8b3c03be534f205139d9ddc050eae6d93cf44ae6fdfb4c4e33385",
