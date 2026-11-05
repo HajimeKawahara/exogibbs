@@ -42,7 +42,7 @@ That separate DFT gap cannot be inserted into the Jackson PBE0 dataset
 without identifying matching geometries and consistent energy/ZPE conventions.
 
 What the restricted sum demonstrates
------------------------------------
+------------------------------------
 
 .. list-table:: Formal RRHO sensitivity to the archived isomer set
    :header-rows: 1

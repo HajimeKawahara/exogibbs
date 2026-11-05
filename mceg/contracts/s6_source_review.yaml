@@ -142,7 +142,7 @@ evidence:
   context: state_reconstruction
   artifacts:
   - source: documents/mceg/s6_state_followup.rst
-    sha256: 7ec92e2a9c93fb9bcb2ddc16330e697c21f3dc326475dde5faa3bb57f1596fd9
+    sha256: e255e13575650a70ffbd9334870cb222866cfbca63e6acf3681eedb608675124
   - source: tests/data/validation/s6_state_followup/20261105/sources.json
     sha256: a351d5351c7920b4345353a7b8203df5ac3d1bcbf0b99369209502844affeee0
   - source: tests/data/validation/s6_state_followup/20261105/diagnostic.json
@@ -218,7 +218,7 @@ subjects:
     - mceg/reviews/sulfur_state_followup.py
   selected_files:
     mceg/reviews/sulfur_state_followup.py: ce339158fb3f7dcd1730de5608e8a925a77c267423b3e400f6c19c9e8db777e2
-    documents/mceg/s6_state_followup.rst: 7ec92e2a9c93fb9bcb2ddc16330e697c21f3dc326475dde5faa3bb57f1596fd9
+    documents/mceg/s6_state_followup.rst: e255e13575650a70ffbd9334870cb222866cfbca63e6acf3681eedb608675124
     tests/model_evidence/s6_state_followup_test.py: a34e85112536c0f065fb6c3f41484f79fbaecf5c4326af5b65e6c527ea8bffea
     tests/data/validation/s6_source_review/20261105/comparison.json: dabc64e0bca3b864747e5243c9065d987dae4ff77fa84f80da29fb428f2deadc
     tests/data/validation/s6_state_followup/20261105/README.rst: 8fa144430703b3a60ace7c8ba30973b5c86bbdebda9447db0368f4afc7e08abd
