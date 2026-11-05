@@ -250,7 +250,7 @@ subjects:
     src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
     src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
     src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
-    src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
+    tests/data/validation/curated_kh_adoption/20261105/source/src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
@@ -307,7 +307,7 @@ subjects:
     tests/data/validation/oh_source_review/20261105/state_inventory.json: 7d09a1ac26b21de19fbe8aa2530fb25869c8e1e3eb6a3cc2a6b9e6b8fa1bd927
     tests/data/validation/oh_source_review/20261105/states.npz: c1d1a042b137ee52100e2f63f298ac5c7cd3b22d4410362e5ecfbb684ec2e7bb
     tests/model_evidence/ho2_candidate_test.py: b5a61a5361e5de413cce22a6725c0a65b72292362f56ed589a050f511301b76f
-    tests/model_evidence/ho2_equilibrium_impact_test.py: daf0da6f449a6635e00959ad1a6430d7df61ca48a2b07b8dfaf0349df9562e81
+    tests/data/validation/curated_ho2_adoption/20261105/source/tests/model_evidence/ho2_equilibrium_impact_test.py: daf0da6f449a6635e00959ad1a6430d7df61ca48a2b07b8dfaf0349df9562e81
 contexts:
 - id: candidate_evaluation
   scope: H(g)+2O(g)->HO2(g), 1 bar, 1500-4000 K; exact NASA thermal functions and balanced ATcT 1.172
@@ -410,6 +410,8 @@ follow_ups:
   target: candidate_direction
   revision: '1'
   action: Make a separately authorized curated decision and package the exact candidate without refitting.
+    Completed for the bounded production choice by curated-ho2-v1 on curated-kh-v1; see mceg/contracts/curated_ho2.yaml.
+    Full physical scope remains unknown.
   requires:
   - Preserve balanced ATcT energy, native NASA normalization, bounded domain and derivative/inventory
     checks.
