@@ -245,6 +245,7 @@ follow_ups:
   requires:
   - Source access and candidate scope as recorded in literature.json; no unconditional historical-paper merge gate.
   completion: A reviewable candidate calculation or a documented source-limit resolution; separate adoption decision.
+    Completed 2026-11-05 by mceg/contracts/kh_candidate.yaml with an exact bounded energy-only candidate; production adoption remains separate.
 - id: followup_2
   target_kind: claim
   target: physical_accuracy
@@ -263,6 +264,7 @@ follow_ups:
   requires:
   - Source access and candidate scope as recorded in literature.json; no unconditional historical-paper merge gate.
   completion: A reviewable candidate calculation or a documented source-limit resolution; separate adoption decision.
+    Completed 2026-11-05 by mceg/contracts/kh_candidate.yaml with 150 fresh KH-only endpoints on both curated-oh-v1 networks, K redistribution and numerical controls.
 limitations:
 - statement: Published PF includes noninteger rounded temperature knots. Replay uses the actual nearest knot, not
     an invented exact integer value; remaining small mismatch is not claimed to be fully explained by rounding.
@@ -279,6 +281,7 @@ limitations:
   evidence:
   - literature
   - source_replay
-- statement: No new finite equilibrium substitution or observational physical validation.
+- statement: The dated source-review packet contains no new finite substitution or observational physical validation.
+    Finite substitution is subsequently completed in mceg/contracts/kh_candidate.yaml; full physical validation remains unknown.
   evidence:
   - source_replay

@@ -1,0 +1,129 @@
+{
+  "temperature_count": 2501,
+  "temperature_range_K": [
+    1500,
+    4000
+  ],
+  "maximum_absolute_reconstruction_error": {
+    "retained_h": 2.6645352591003757e-15,
+    "nasa_h": 6.106226635438361e-14
+  },
+  "jax_float64_derivative_errors": {
+    "retained": {
+      "H_J_mol": 2.9103830456733704e-11,
+      "S_J_mol_K": 2.842170943040401e-14,
+      "Cp_J_mol_K": 2.1760371282653068e-14
+    },
+    "nasa": {
+      "H_J_mol": 5.820766091346741e-11,
+      "S_J_mol_K": 2.842170943040401e-14,
+      "Cp_J_mol_K": 3.730349362740526e-14
+    }
+  },
+  "thermal_comparison": [
+    {
+      "temperature_K": 1500.0,
+      "candidate_over_current_K": 0.465658072734226,
+      "nasa_control_over_primary_K": 1.00816779178361,
+      "retained_reaction_properties": {
+        "G_J_mol": -50003.632058488234,
+        "H_J_mol": -181129.10971215743,
+        "S_J_mol_K": -87.41698510244612,
+        "Cp_J_mol_K": -3.3205301097292286
+      },
+      "nasa_control_reaction_properties": {
+        "G_J_mol": -50105.084498196375,
+        "H_J_mol": -180775.4945767767,
+        "S_J_mol_K": -87.11360671905354,
+        "Cp_J_mol_K": -2.7154603877991517
+      }
+    },
+    {
+      "temperature_K": 2000.0,
+      "candidate_over_current_K": 0.5637030079871986,
+      "nasa_control_over_primary_K": 1.0187405221311736,
+      "retained_reaction_properties": {
+        "G_J_mol": -6066.116518812626,
+        "H_J_mol": -182585.23825354828,
+        "S_J_mol_K": -88.25956086736782,
+        "Cp_J_mol_K": -2.6352531891518467
+      },
+      "nasa_control_reaction_properties": {
+        "G_J_mol": -6374.867138912143,
+        "H_J_mol": -181823.94461156966,
+        "S_J_mol_K": -87.72453873632877,
+        "Cp_J_mol_K": -1.6166674345566372
+      }
+    },
+    {
+      "temperature_K": 2500.0,
+      "candidate_over_current_K": 0.6321793153820109,
+      "nasa_control_over_primary_K": 1.0312639354622,
+      "retained_reaction_properties": {
+        "G_J_mol": 38214.299680434415,
+        "H_J_mol": -183895.63203462708,
+        "S_J_mol_K": -88.84397268602459,
+        "Cp_J_mol_K": -2.737591068481145
+      },
+      "nasa_control_reaction_properties": {
+        "G_J_mol": 37574.39428114332,
+        "H_J_mol": -182571.3840930203,
+        "S_J_mol_K": -88.05831134966543,
+        "Cp_J_mol_K": -1.582310957094784
+      }
+    },
+    {
+      "temperature_K": 3000.0,
+      "candidate_over_current_K": 0.682391436592097,
+      "nasa_control_over_primary_K": 1.044373104027808,
+      "retained_reaction_properties": {
+        "G_J_mol": 82775.31980963021,
+        "H_J_mol": -185454.09845534718,
+        "S_J_mol_K": -89.4098060883258,
+        "Cp_J_mol_K": -3.6275437477171293
+      },
+      "nasa_control_reaction_properties": {
+        "G_J_mol": 81692.357604295,
+        "H_J_mol": -183632.20112575442,
+        "S_J_mol_K": -88.44151957668315,
+        "Cp_J_mol_K": -2.8960935337537324
+      }
+    },
+    {
+      "temperature_K": 3500.0,
+      "candidate_over_current_K": 0.7206809766871117,
+      "nasa_control_over_primary_K": 1.055963027380413,
+      "retained_reaction_properties": {
+        "G_J_mol": 127642.5766070028,
+        "H_J_mol": -187654.44491566197,
+        "S_J_mol_K": -90.08486329218994,
+        "Cp_J_mol_K": -5.3051112268597915
+      },
+      "nasa_control_reaction_properties": {
+        "G_J_mol": 126057.95556540939,
+        "H_J_mol": -185701.6127039667,
+        "S_J_mol_K": -89.07416236267889,
+        "Cp_J_mol_K": -5.608385544802252
+      }
+    },
+    {
+      "temperature_K": 4000.0,
+      "candidate_over_current_K": 0.7508015769743679,
+      "nasa_control_over_primary_K": 1.0640231840958314,
+      "retained_reaction_properties": {
+        "G_J_mol": 172891.24451450247,
+        "H_J_mol": -190890.47881552475,
+        "S_J_mol_K": -90.94543083250679,
+        "Cp_J_mol_K": -7.770293505909142
+      },
+      "nasa_control_reaction_properties": {
+        "G_J_mol": 170827.35609313517,
+        "H_J_mol": -189451.10976237972,
+        "S_J_mol_K": -90.06961646387872,
+        "Cp_J_mol_K": -9.578018455368634
+      }
+    }
+  ],
+  "production_change": "none",
+  "fit_error": "No new fit; original inherited thermal fit retained"
+}

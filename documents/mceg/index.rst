@@ -60,3 +60,4 @@ HCN differences with optional MCEG tooling.
    build
 
    kh_source_review
+   kh_candidate
