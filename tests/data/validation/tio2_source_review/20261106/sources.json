@@ -1,0 +1,110 @@
+{
+  "review_date": "2026-11-06",
+  "scope": "Selected numeric facts and source access; no full copyrighted papers committed.",
+  "downloads": {
+    "brunken2008.pdf": {
+      "url": "https://lweb.cfa.harvard.edu/mmw/mmwlab/websitepdf/148.pdf",
+      "sha256": "3319dad8304543f8fbd7de3683c6c5c022a492d3910a828beb9a8cfd879c1a54",
+      "bytes": 192121
+    },
+    "O-046.txt": {
+      "url": "https://janaf.nist.gov/tables/O-046.txt",
+      "sha256": "7dd56850c1ce8f2b74327202af8db7a6f4e4f50ee8635ef5982cbdf4aa21c122",
+      "bytes": 3948
+    },
+    "Ti-index.html": {
+      "url": "https://janaf.nist.gov/tables/Ti-index.html",
+      "sha256": "a7ee57aa15311c4a654cc8ef4f0e79dc87ef4aa360e9bc292526e6a87146291e",
+      "bytes": 20789
+    },
+    "sindel2022.pdf": {
+      "url": "https://arxiv.org/pdf/2207.04987",
+      "sha256": "94fe05fd5f669cc9c58970d1e17e7fba6670451865a412d19910105c84ab0e56",
+      "bytes": 4394691
+    },
+    "janaf-oxygen.pdf": {
+      "url": "https://janaf.nist.gov/pdf/JANAF-FourthEd-1998-Oxygen.pdf",
+      "sha256": "6c786ff5ec1c66c7c9bed29e0c358843ca677bccd8e09a7a19e5db3584ae5d3c",
+      "bytes": 8225185
+    },
+    "nasa.pdf": {
+      "url": "https://ntrs.nasa.gov/api/citations/20020085330/downloads/20020085330.pdf",
+      "sha256": "0ab4154b0fdeac29581f8d047a4cb6836c138c0b41da8f28990ef7d3e2756765",
+      "bytes": 1619440
+    }
+  },
+  "sources": [
+    {
+      "id": "janaf_molecule",
+      "url": "https://janaf.nist.gov/tables/O-046.html",
+      "access": "Official full numerical table downloaded; printed pages1762 and1815 visually inspected.",
+      "evaluation": "December1973, converted to1bar",
+      "limitations": "Ancestral experiments not all obtained; inherited Hf298 uncertainty12.6kJ/mol and S298 uncertainty4.2J/mol/K are not new reaction covariance.",
+      "local_file": "tests/data/validation/tio2_source_review/20261106/O-046.txt",
+      "local_sha256": "7dd56850c1ce8f2b74327202af8db7a6f4e4f50ee8635ef5982cbdf4aa21c122"
+    },
+    {
+      "id": "janaf_ti",
+      "url": "https://janaf.nist.gov/tables/Ti-006.html",
+      "access": "Official full gas-atom table downloaded.",
+      "local_file": "tests/data/validation/tio2_source_review/20261106/Ti-006.txt",
+      "local_sha256": "66f195c514cbc4378faf2d5d7978015c92230777fb77e0947d7204672879b69d"
+    },
+    {
+      "id": "janaf_o",
+      "url": "https://janaf.nist.gov/tables/O-001.html",
+      "access": "Previously archived official gas-atom table reused, pinned by receipt.",
+      "local_file": "tests/data/validation/oh_source_review/20261105/O-001.txt"
+    },
+    {
+      "id": "nasa",
+      "url": "https://ntrs.nasa.gov/citations/20020085330",
+      "access": "Official full report downloaded, selected AppendixD TiO2 coefficients inspected; all18 match frozen source.",
+      "attribution": "Chase1998 p1762 12/73; Jacox1998",
+      "local_file": "tests/data/validation/tio2_source_review/20261106/nasa-record.txt",
+      "local_sha256": "01471b6c054a9dc743e55c35f6b17f7f3a4e365304e0d0ee3edafd8449c09202"
+    },
+    {
+      "id": "brunken2008",
+      "doi": "10.1086/528934",
+      "url": "https://lweb.cfa.harvard.edu/mmw/mmwlab/websitepdf/148.pdf",
+      "access": "Full author-hosted article inspected, Table2 and ground-state symmetry discussion.",
+      "facts": "48Ti16O2 A/B/C=30520.54148/8471.75838/6613.58731MHz; closed-shell, symmetry2, half rotational levels absent because oxygen bosons."
+    },
+    {
+      "id": "wang2009",
+      "doi": "10.1039/B821849H",
+      "url": "https://pubs.rsc.org/en/content/articlelanding/2009/cp/b821849h",
+      "access": "Primary publisher abstract only.",
+      "facts": "Ground bend322+/-6cm-1; excited-state geometry must not be substituted for ground geometry."
+    },
+    {
+      "id": "nist_vibrations",
+      "url": "https://webbook.nist.gov/cgi/cbook.cgi?ID=C13463677&Mask=3EE9&Units=SI",
+      "access": "Gas spectroscopy section of evaluated compilation inspected; original DeVore/Gallaher1983 article not obtained.",
+      "facts": "Gas ground stretches959 and944cm-1; no matrix frequencies substituted."
+    },
+    {
+      "id": "hildenbrand1976",
+      "doi": "10.1016/0009-2614(76)80510-6",
+      "url": "https://www.sciencedirect.com/science/article/pii/0009261476805106",
+      "access": "Primary publisher abstract only.",
+      "facts": "TiO2 atomization D0=1271.9+/-11.7kJ/mol.",
+      "limitations": "Complete reaction cycle/thermal assumptions not verified; sensitivity only."
+    },
+    {
+      "id": "sindel2022",
+      "doi": "10.1051/0004-6361/202243306",
+      "url": "https://arxiv.org/pdf/2207.04987",
+      "access": "Full author manuscript downloaded; section2.3, Table2, AppendixC inspected. CDS metadata inspected but raw table connection timed out; no CDS numbers used.",
+      "facts": "DFT method calibrated against JANAF monomer binding energy;0.22kJ/mol agreement not independent;4kJ/mol selection tolerance not adopted as JANAF Hf uncertainty."
+    },
+    {
+      "id": "balducci1985",
+      "doi": "10.1063/1.449377",
+      "url": "https://iris.uniroma1.it/handle/11573/388370",
+      "access": "Institutional primary metadata only; no full text or numerical results inspected.",
+      "role": "Optional next energy-cycle follow-up, not current review merge requirement."
+    }
+  ]
+}
