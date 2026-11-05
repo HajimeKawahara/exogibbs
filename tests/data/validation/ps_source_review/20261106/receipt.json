@@ -197,9 +197,9 @@
     "tests/data/validation/ps_source_review/20261106/state_inventory.json": "dda7153c98aba828f34ade1dc57a21171acc7db3be3d076872f51260aeb39a6b",
     "tests/data/validation/ps_source_review/20261106/states.npz": "8d6b3c12d64da9b1dc0cbb85b521dd60ad6899bbb6608eb7156679c9869ed65b",
     "tests/data/validation/s2o_source_investigation/20261102/S-006.txt": "a85fdb5db4289f30ef7a39f951c1bc79b79e843c7522d4310ce1a27bcc89ce9a",
-    "tests/model_evidence/ps_source_review_test.py": "f7b2054a92a02a24fcc38083c57fa6d369c42813e69fc5b56dd53370c4a42dce"
+    "tests/model_evidence/ps_source_review_test.py": "851f904883045aff709cb91e45080762c256938ce26d7684d92ccfbe778fa1aa"
   },
   "curated_change": "none",
   "new_equilibrium_solves": 0,
-  "numerical_tolerance": "2e-11 absolute,2e-12 relative; selected hashes refer to bytes, not worktree paths"
+  "numerical_tolerance": "2e-11 absolute,2e-12 relative, except modern.samples[*].delta_Hthermal_J_mol uses 1e-8 J/mol absolute for cancellation after large-energy BLAS sums; all other comparisons unchanged. Selected hashes refer to bytes, not worktree paths."
 }

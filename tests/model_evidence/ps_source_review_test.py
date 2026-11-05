@@ -1,4 +1,5 @@
 """Offline phosphorus-source balance, convention and caloric checks."""
+from copy import deepcopy
 from hashlib import sha256
 import json
 import math
@@ -15,8 +16,20 @@ DATA=ROOT/f"tests/data/validation/{SLUG}_source_review/20261106"
 @pytest.fixture(scope="module")
 def report(): return study.review(SLUG)
 
+def assert_replay_equal(actual, expected):
+    """Allow cancellation noise only in the dimensional thermal-H difference."""
+    actual, expected = deepcopy(actual), deepcopy(expected)
+    for left, right in zip(actual["modern"]["samples"], expected["modern"]["samples"]):
+        # This subtracts large enthalpies after a state-moment BLAS reduction.
+        # Platform-dependent last bits can exceed the generic absolute tolerance
+        # near cancellation; 1e-8 J/mol still rejects physically relevant changes.
+        assert left.pop("delta_Hthermal_J_mol") == pytest.approx(
+            right.pop("delta_Hthermal_J_mol"), rel=0, abs=1e-8)
+    check_equal(actual, expected)
+
+
 def test_pinned_replay(report):
-    check_equal(report,json.loads((DATA/"comparison.json").read_text()))
+    assert_replay_equal(report,json.loads((DATA/"comparison.json").read_text()))
     receipt=json.loads((DATA/"receipt.json").read_text())
     for path,expected in receipt["selected_input_sha256"].items():
         assert sha256((ROOT/path).read_bytes()).hexdigest()==expected,path
@@ -61,3 +74,10 @@ def test_state_moments_and_spin_convention(report):
     t=2000; original=study.moments(states,t); change=study.moments(shifted,t)
     assert change["Q"]/original["Q"]==pytest.approx(math.exp(-100*study.C2/t),rel=1e-12)
     assert change["Cp_J_mol_K"]==pytest.approx(original["Cp_J_mol_K"],abs=1e-12)
+
+
+def test_thermal_enthalpy_tolerance_rejects_a_changed_result(report):
+    altered = deepcopy(report)
+    altered["modern"]["samples"][0]["delta_Hthermal_J_mol"] += 1e-5
+    with pytest.raises(AssertionError):
+        assert_replay_equal(altered, report)
