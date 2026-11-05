@@ -70,6 +70,7 @@ HCN differences with optional MCEG tooling.
    s8_candidate
    ohno_p3
    ph2_source_review
+   ph_source_review
    ph3_source_review
    ph3_thermal_supplement_review
    p2_source_review

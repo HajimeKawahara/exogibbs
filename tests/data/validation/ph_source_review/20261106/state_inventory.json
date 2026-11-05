@@ -1,0 +1,19 @@
+{
+  "source_sha256": "77f9dba9af10fcb7d78970535ba628bba8d7e0a5e85532d7df7733fa74821dd3",
+  "columns": [
+    "energy_cm-1",
+    "gtot",
+    "J",
+    "electronic_index"
+  ],
+  "electronic_labels": [
+    "X3Sigma-",
+    "a1Delta"
+  ],
+  "states": 2528,
+  "maximum_energy_cm-1": 28296.189596,
+  "maximum_J": 80.0,
+  "gtot_over_2Jplus1": [
+    4.0
+  ]
+}
