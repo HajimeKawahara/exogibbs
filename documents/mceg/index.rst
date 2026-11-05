@@ -42,8 +42,10 @@ HCN differences with optional MCEG tooling.
    fastchem_hcn_followup
    c3_source_review
    c4_source_review
+   c5_source_review
    gas_source_comparison
    cs_source_review
+   cs2_source_review
    co_source_review
    alh_source_review
    c2h_source_review
@@ -57,6 +59,11 @@ HCN differences with optional MCEG tooling.
    koh_dimer_source_review
    phosphorus_cold_validation
    po2_source_review
+   h2so4_source_review
+   ns_source_review
+   nah_source_review
+   nao_source_review
+   ko_source_review
    build
 
    kh_source_review
