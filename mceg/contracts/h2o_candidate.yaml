@@ -220,7 +220,7 @@ evidence:
     NASA atomic references and the explicit dominant-isotope/aggregate-mass approximation. Both 537-species
     ion-inclusive and 421-species neutral networks; the preceding candidate-only endpoints remain unchanged.
   artifacts:
-  - source: mceg/contracts/curated_h2o.yaml
+  - source: tests/data/validation/curated_kh_adoption/20261105/source/mceg/contracts/curated_h2o.yaml
     sha256: ad7aaec93d13252842688c99998be7528a657ebde4cd78a4b50c23ca48b9a31b
   - source: documents/presets/curated_h2o.rst
     sha256: bda37bb6ca85541eb04d80429718f63399980892cd23e62a4e2506a6c6549c20

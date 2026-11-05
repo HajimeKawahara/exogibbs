@@ -1,0 +1,40 @@
+{
+  "columns": [
+    "energy_cm-1",
+    "gtot",
+    "J",
+    "v",
+    "electronic_label_index"
+  ],
+  "labels": [
+    "A(2SIGMA+)",
+    "X(2PI)"
+  ],
+  "number_of_states": 36120,
+  "energy_bounds_cm-1": [
+    0.0,
+    42756.074219
+  ],
+  "maximum_J": 200.5,
+  "gtot_over_2Jplus1": [
+    4.0
+  ],
+  "by_label": {
+    "A(2SIGMA+)": {
+      "states": 12161,
+      "minimum_energy_cm-1": 2045.653564,
+      "maximum_v": 29.0
+    },
+    "X(2PI)": {
+      "states": 23959,
+      "minimum_energy_cm-1": 0.0,
+      "maximum_v": 29.0
+    }
+  },
+  "metadata_maximum_temperature_K": 2500.0,
+  "metadata_version": 20211117,
+  "published_pf_first_last_K": [
+    1.0,
+    2500.0
+  ]
+}

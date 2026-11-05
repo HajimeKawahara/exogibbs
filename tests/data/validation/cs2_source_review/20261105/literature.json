@@ -1,0 +1,28 @@
+{
+  "current": "NASA molecular and atomic thermal functions with balanced ATcT1.172 D0; continuous NASA9 reaction coefficients in gas_v1.json.",
+  "primary_sources": [
+    {
+      "doi": "10.1016/j.jqsrt.2025.109568",
+      "access": "Full author PDF sections3.4 and3.7, table3 inspected; published correction10.1016/j.jqsrt.2025.109618 tracked. Pinned official HAPI numerical arrays inspected offline.",
+      "finding": "Principal CS2 changes from direct sum to symmetry-aware triple product approximation at2098K; offered through5000K. Its direct levels alone do not converge throughout5000K."
+    },
+    {
+      "doi": "10.1016/j.jms.2025.111998",
+      "access": "Full author arXiv2502.19447v1 sectionsI\u2013IV inspected; publisher DOI/abstract verified.",
+      "finding": "4279 MARVEL empirical levels across138bands; useful energy checks but not a complete thermal state ensemble. High bending excitations show discrepancies against Ames."
+    },
+    {
+      "doi": "10.3847/1538-4365/ad3809",
+      "access": "NASA NTRS20240000689 abstract/metadata inspected; full paper not downloaded in this review.",
+      "finding": "Ames-296K spectral list and isotope-resolved term values feed TIPS. Spectral accuracy at room temperature is not high-temperature thermodynamic validation."
+    }
+  ],
+  "decision": "Retain NASA thermal functions provisionally; prioritize a same-version ATcT1.228 energy-only candidate. TIPS crossover and high-temperature caloric differences require a separate smooth thermal-model assessment before any replacement.",
+  "limitations": [
+    "Old Gurvich volumes and original JANAF evaluation derivations were not independently reaudited; source attribution and numerical reproduction are narrower claims.",
+    "ATcT version changes are evaluated-network differences, not statistically independent measurements; covariance and full physical uncertainty are absent.",
+    "One principal isotope partition function plus natural-mass translation is an elemental proxy, not an isotopic mixture.",
+    "Finite differences of rounded PF tables are caloric diagnostics with rounding and step checks, not a production derivative model. The direct/product crossover is not smooth.",
+    "No new equilibrium substitution; the archived hot gas grid does not establish relevance across all planetary atmospheres."
+  ]
+}
