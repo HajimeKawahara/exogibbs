@@ -1,0 +1,177 @@
+{
+  "doi": "10.1016/j.jqsrt.2014.03.012",
+  "retrieved_on": "2026-11-05",
+  "sources": [
+    {
+      "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0022407314001289-mmc8.zip",
+      "http_status": 200,
+      "archive_sha256": "24b34eb3f62d790ae425c7611ef1ae6fb67f799752a0fb870eb114fc10afa31b",
+      "member": "PCP.DAT",
+      "member_sha256": "da6f23fceb68da0d2e1ce99b3f6f4771c2f1f0782db9b8c584088620b9e2fa9f",
+      "rows": 10000,
+      "column_counts": [
+        2
+      ]
+    },
+    {
+      "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0022407314001289-mmc9.zip",
+      "http_status": 200,
+      "archive_sha256": "c9f0f27ae42625bacdaff6a5688e4b2dfcb41fda5cc18a97920f3e98c8c8dff3",
+      "member": "PGEF.DAT",
+      "member_sha256": "f30c38c6e94217319397b34951cd882055732a4b0d7662b61974ae49a7510957",
+      "rows": 9999,
+      "column_counts": [
+        2
+      ]
+    },
+    {
+      "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0022407314001289-mmc10.zip",
+      "http_status": 200,
+      "archive_sha256": "29a16396ebc689d80ba9807d4b5e699900328d3eb72168b62d347d2b4f30d674",
+      "member": "PHCF.DAT",
+      "member_sha256": "ea69af2d0ab63d0d6243bfdefc04d463aeb2fbe7b04e3642de3b32e3a08737a6",
+      "rows": 10000,
+      "column_counts": [
+        2
+      ]
+    },
+    {
+      "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0022407314001289-mmc11.zip",
+      "http_status": 200,
+      "archive_sha256": "51cc234edea143ab303edb20124c7386fd9f1b5cb6ca79b1adfc7bd1a34af84b",
+      "member": "PJQ.DAT",
+      "member_sha256": "e136c778517d63d9fe5a9df0a5930c1fee6d7c1ffd5f64fabed277ff3463d6a2",
+      "rows": 100,
+      "column_counts": [
+        10001
+      ]
+    },
+    {
+      "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0022407314001289-mmc12.zip",
+      "http_status": 200,
+      "archive_sha256": "b78fa965a659e21d1153206ef580640f776c3ce1ebc33f1daeb1ee4d55e68ce7",
+      "member": "PJQP.DAT",
+      "member_sha256": "8437d3bfdaf1e823481714046f32fe387f9776125defc3304d0e71dee753fa8b",
+      "rows": 100,
+      "column_counts": [
+        10001
+      ]
+    },
+    {
+      "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0022407314001289-mmc13.zip",
+      "http_status": 200,
+      "archive_sha256": "6fbf2f517a0282e9e865525f12f684ca4e937263fb0fd3ff7ee256f744de5a4f",
+      "member": "PJQPP.DAT",
+      "member_sha256": "b454c484eedab4ba765c2e8f732a367ecdaa2fd55a2ca988a32bbf749a013ee7",
+      "rows": 100,
+      "column_counts": [
+        10001
+      ]
+    },
+    {
+      "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0022407314001289-mmc14.zip",
+      "http_status": 200,
+      "archive_sha256": "09a6505ad7ba88a7aa657162052fb7bc6f8c887bb9f0a965720e1a0e469e5a5e",
+      "member": "PS.DAT",
+      "member_sha256": "e1ce7cff276a5f6bbee56a5d9fc676244a02ffd4d0ba7403194933b58855fc5c",
+      "rows": 10000,
+      "column_counts": [
+        2
+      ]
+    }
+  ],
+  "paper_url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/14SoHeYu.pdf",
+  "paper_sha256": "c10f6daf83d552bab3ef6f9b06aa12c16e4c0c895a0a16b31011afe4fb46fcc5",
+  "extraction": {
+    "moments": "Whitespace-split ASCII lines: select rows by first-column labels; column T after the label is temperature T kelvin. Preserve numeric tokens exactly. No header or separator rows. Labels are not reinterpreted as physical J.",
+    "calorics": "Whitespace-split two-column tables: select exact first-column integer temperature and preserve second-column tokens. PGEF has no 1 K row.",
+    "row_labels": [
+      1,
+      2,
+      40,
+      41,
+      42,
+      100
+    ],
+    "temperature_nodes_K": [
+      1,
+      180,
+      240,
+      270,
+      296,
+      298,
+      299,
+      300,
+      330,
+      360,
+      380,
+      420,
+      440,
+      470,
+      500,
+      530,
+      560,
+      620,
+      880,
+      940,
+      970,
+      1000,
+      1030,
+      1060,
+      1120,
+      1380,
+      1440,
+      1470,
+      1500,
+      1530,
+      1560,
+      1620,
+      1880,
+      1940,
+      1970,
+      2000,
+      2030,
+      2060,
+      2120,
+      2880,
+      2940,
+      2970,
+      3000,
+      3030,
+      3060,
+      3120,
+      3880,
+      3940,
+      3970,
+      4000,
+      4030,
+      4060,
+      4120
+    ],
+    "diagnostic_centers_K": [
+      300,
+      500,
+      1000,
+      1500,
+      2000,
+      3000,
+      4000
+    ],
+    "significant_digits": 5
+  },
+  "interpretation_limits": [
+    "Appendix A describes cumulative partition values and first/second energy moments; row-label to physical-J indexing is not assumed.",
+    "Appendix A describes internal functions, but PCP at 1 K is close to 5R/2 and suggests translation is already included. Both conventions fail the high-temperature caloric identity checks.",
+    "Only retrieved distributed files are diagnosed; underlying state calculations and corrected author files have not been validated."
+  ],
+  "failed_access_attempts": [
+    {
+      "url": "https://www.sciencedirect.com/science/article/pii/S0022407314001289",
+      "status": 403
+    },
+    {
+      "url": "https://www.exomol.com/db/PH3/",
+      "status": 403
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1",
+  "executed_at_utc": "2026-11-05T13:07:07.826232+00:00",
+  "command": "python mceg/reviews/ph3_thermal_supplement_review.py --output tests/data/validation/ph3_thermal_supplement/20261105/comparison.json",
+  "selected_input_sha256": {
+    "mceg/reviews/ph3_thermal_supplement_review.py": "2ccc828f43ff6018bfe61bd6a9bd9110badbfab0301d41ad4764a409428a8adf",
+    "documents/mceg/ph3_thermal_supplement_review.rst": "83864775590c07505fa95f60d4a697b8d45229e30a272a7f90aa37e3eda1c95c",
+    "tests/model_evidence/ph3_thermal_supplement_review_test.py": "894c9150e664a82c8a0fe51772e8dda2af27a8d91dc6351c93289f930ec5b65d",
+    "tests/data/validation/ph3_thermal_supplement/20261105/README.rst": "7084354689d1bf4613404654e31c6cc750d5ff2d5bac7b725d4750ff07c5138b",
+    "tests/data/validation/ph3_thermal_supplement/20261105/sources.json": "d98ae3d7ce97a08c1dfb86178ccbab0939fc1aa88e1588b1288afa87b6fc1972",
+    "tests/data/validation/ph3_thermal_supplement/20261105/moments.csv": "bcc89cf0d1f99806665e8bf94a8de61fa51df66b33c5aacb831ae8f2b04c17a8",
+    "tests/data/validation/ph3_thermal_supplement/20261105/calorics.csv": "4495eee927bf55f101a7fdb11830afd0af0a31df977a1d5e268e0f10b49b321f"
+  },
+  "output_sha256": {
+    "tests/data/validation/ph3_thermal_supplement/20261105/comparison.json": "0880c50281952dac3ec43c7b0ba052cfd976ac1e49e402f4f97601eb3b9bd8c6"
+  },
+  "production_change": "none",
+  "candidate_created": false,
+  "equilibrium_substitution": "not_run",
+  "note": "New follow-up; original PH3 source packet, source-review document and receipt are unchanged. Source-file inconsistencies are bounded diagnostics, not validation of underlying calculations."
+}

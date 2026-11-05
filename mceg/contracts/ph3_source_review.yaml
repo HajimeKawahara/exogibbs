@@ -2,8 +2,8 @@ schema_version: '0.2'
 model:
   id: exogibbs.ph3_source_review.v1
   name: PH3 source review
-  description: Retain the already corrected Lodders PH3 model; obtain2014 electronic thermodynamic moments
-    before a high-temperature thermal candidate.
+  description: Retain the already corrected Lodders PH3 model; the recovered 2014 distributed moment and caloric
+    files require consistency clarification before a thermal candidate.
   implementation: &id001
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:246aacd6c10ab0718d70042acb60668a95e93c0e9c60e28f11abd82daff89ec8
@@ -18,8 +18,8 @@ assumptions:
 domains:
 - kind: numerical_evaluation
   status: documented
-  description: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000\
-    \ K where provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  description: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where
+    provided, named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
   conditions:
   - Downloaded partition tables are finite and derivative diagnostics are not production models.
   - Archived grid is reused and no equilibrium substitution is run.
@@ -36,33 +36,40 @@ claims:
   revision: '1'
   kind: numerical_verification
   statement: Current and alternate source construction, conventions and access limitations are documented.
-  scope: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000 K where\
-    \ provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  scope: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where provided,
+    named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
 - id: numerical_replay
   revision: '1'
   kind: numerical_verification
   statement: Pinned thermochemical diagnostics and archived elemental inventory are reproducible offline.
-  scope: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000 K where\
-    \ provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  scope: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where provided,
+    named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
 - id: scoped_decision
-  revision: '1'
+  revision: '2'
   kind: theoretical
-  statement: Retain the already corrected Lodders PH3 model; obtain2014 electronic thermodynamic moments before
-    a high-temperature thermal candidate.
-  scope: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000 K where\
-    \ provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  statement: Retain the already corrected Lodders PH3 model; the recovered 2014 distributed moment and caloric
+    files require consistency clarification before a thermal candidate.
+  scope: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where provided,
+    named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
 - id: historical_source_completeness
   revision: '1'
   kind: physical_validation
   statement: All original experimental inputs and historical fits are independently recovered.
-  scope: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000 K where\
-    \ provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  scope: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where provided,
+    named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
 - id: physical_accuracy
   revision: '1'
   kind: physical_validation
   statement: Complete thermochemical uncertainty and planetary abundance accuracy are established.
-  scope: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000 K where\
-    \ provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  scope: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where provided,
+    named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
+- id: supplement_consistency_obstacle
+  revision: '1'
+  kind: numerical_verification
+  statement: Retrieved supplementary data violate nonnegative energy-moment and caloric-closure checks under
+    the documented interpretation; the direct 296 K partition value is recovered.
+  scope: Retrieved PH3 2014 supplementary files, exact selected 1–4120 K nodes and published cumulative row
+    labels; seven 300–4000 K consistency diagnostics; no candidate or substitution.
 evidence:
 - id: literature
   kind: literature
@@ -70,8 +77,8 @@ evidence:
   sources:
   - tests/data/validation/ph3_source_review/20261105/sources.json
   - tests/data/validation/ph3_source_review/20261105/inputs.json
-  scope: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000 K where\
-    \ provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  scope: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where provided,
+    named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
   subject: ph3_sources_20261105
   context: source_review
   artifacts:
@@ -91,8 +98,8 @@ evidence:
   sources:
   - tests/data/validation/ph3_source_review/20261105/comparison.json
   - tests/data/validation/ph3_source_review/20261105/receipt.json
-  scope: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000 K where\
-    \ provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  scope: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where provided,
+    named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
   subject: ph3_sources_20261105
   context: source_review
   artifacts:
@@ -109,22 +116,51 @@ evidence:
   result: passed
 - id: decision_reasoning
   kind: theory
-  summary: Scoped retention and concrete candidate follow-ups.
+  summary: Scoped retention including the separately archived recovered-supplement consistency obstacles.
   sources:
   - documents/mceg/ph3_source_review.rst
-  scope: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000 K where\
-    \ provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  - documents/mceg/ph3_thermal_supplement_review.rst
+  scope: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where provided,
+    named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
   subject: ph3_sources_20261105
   context: source_review
   artifacts:
   - source: documents/mceg/ph3_source_review.rst
     sha256: 3580e6bad74b5bafeaca7a87af59ffa652721302c93266738390cc35d621d932
+  - source: documents/mceg/ph3_thermal_supplement_review.rst
+    sha256: 83864775590c07505fa95f60d4a697b8d45229e30a272a7f90aa37e3eda1c95c
   provenance:
     role: primary
     location: documents/mceg/ph3_source_review.rst
     inspection: inspected
     note: Source access is recorded individually. Evaluation-level reasoning does not independently validate
       every ancestral experiment.
+- id: supplement_replay
+  kind: numerical_test
+  summary: 'Exact-token publisher supplement extracts: cumulative-moment positivity, direct Q296, and two-step
+    caloric closure with source-rounding bounds.'
+  sources:
+  - tests/data/validation/ph3_thermal_supplement/20261105/sources.json
+  - tests/data/validation/ph3_thermal_supplement/20261105/comparison.json
+  - tests/data/validation/ph3_thermal_supplement/20261105/receipt.json
+  scope: Retrieved PH3 2014 supplementary files, exact selected 1–4120 K nodes and published cumulative row
+    labels; seven 300–4000 K consistency diagnostics; no candidate or substitution.
+  subject: ph3_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/ph3_thermal_supplement/20261105/sources.json
+    sha256: d98ae3d7ce97a08c1dfb86178ccbab0939fc1aa88e1588b1288afa87b6fc1972
+  - source: tests/data/validation/ph3_thermal_supplement/20261105/comparison.json
+    sha256: 0880c50281952dac3ec43c7b0ba052cfd976ac1e49e402f4f97601eb3b9bd8c6
+  - source: tests/data/validation/ph3_thermal_supplement/20261105/receipt.json
+    sha256: 10fd68a2993dc56cfadd86a4cde57cff87e07f00dbb6c4a862132c94bdda1775
+  provenance:
+    role: primary
+    location: documents/mceg/ph3_thermal_supplement_review.rst
+    inspection: inspected
+    note: Seven publisher ZIP members inspected; interpretation applies to retrieved distributed files, not
+      every result or underlying method. Original review packet remains unchanged.
+  result: passed
 subjects:
 - id: ph3_sources_20261105
   implementation: *id001
@@ -322,10 +358,19 @@ subjects:
     tests/data/validation/curated_cos_adoption/20261105/neutral.npz: c9f73bc7201344a34ae08944f8fb3a17166bda0d3dbd1b79bf204a4633f124d1
     tests/data/validation/ph3_source_review/20261105/comparison.json: 757a9f4e75428e9a30de29150ea77e2ec929bc145e7660c2393676984d98c092
     tests/data/validation/ph3_source_review/20261105/receipt.json: 6ffea6479ab5949451fa66efc272f38ef3d5a6c260a3f7e890c547eb41b6aa0b
+    mceg/reviews/ph3_thermal_supplement_review.py: 2ccc828f43ff6018bfe61bd6a9bd9110badbfab0301d41ad4764a409428a8adf
+    documents/mceg/ph3_thermal_supplement_review.rst: 83864775590c07505fa95f60d4a697b8d45229e30a272a7f90aa37e3eda1c95c
+    tests/model_evidence/ph3_thermal_supplement_review_test.py: 894c9150e664a82c8a0fe51772e8dda2af27a8d91dc6351c93289f930ec5b65d
+    tests/data/validation/ph3_thermal_supplement/20261105/README.rst: 7084354689d1bf4613404654e31c6cc750d5ff2d5bac7b725d4750ff07c5138b
+    tests/data/validation/ph3_thermal_supplement/20261105/sources.json: d98ae3d7ce97a08c1dfb86178ccbab0939fc1aa88e1588b1288afa87b6fc1972
+    tests/data/validation/ph3_thermal_supplement/20261105/moments.csv: bcc89cf0d1f99806665e8bf94a8de61fa51df66b33c5aacb831ae8f2b04c17a8
+    tests/data/validation/ph3_thermal_supplement/20261105/calorics.csv: 4495eee927bf55f101a7fdb11830afd0af0a31df977a1d5e268e0f10b49b321f
+    tests/data/validation/ph3_thermal_supplement/20261105/comparison.json: 0880c50281952dac3ec43c7b0ba052cfd976ac1e49e402f4f97601eb3b9bd8c6
+    tests/data/validation/ph3_thermal_supplement/20261105/receipt.json: 10fd68a2993dc56cfadd86a4cde57cff87e07f00dbb6c4a862132c94bdda1775
 contexts:
 - id: source_review
-  scope: "Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300\u20134000 K where\
-    \ provided, named production domain1500\u20134000 K, archived75+75 ideal-gas endpoints; no replacement."
+  scope: Neutral PH3, one bar; source nodes500/1000/1500/3000 K, partition diagnostics300–4000 K where provided,
+    named production domain1500–4000 K, archived75+75 ideal-gas endpoints; no replacement.
   settings:
     model: curated-cos-v1
     production_change: none
@@ -376,7 +421,7 @@ assessments:
 - id: scoped_decision_review
   kind: evidence_support
   claim: scoped_decision
-  claim_revision: '1'
+  claim_revision: '2'
   subject: ph3_sources_20261105
   context: source_review
   method:
@@ -388,14 +433,18 @@ assessments:
   - literature
   - source_replay
   - decision_reasoning
+  - supplement_replay
   reasons:
-  - Retain the already corrected Lodders PH3 model; obtain2014 electronic thermodynamic moments before a high-temperature
-    thermal candidate.
+  - Retain the already corrected Lodders PH3 model; the recovered 2014 distributed moment and caloric files
+    require consistency clarification before a thermal candidate.
   - No replacement model or finite abundance response is asserted. Outstanding source and thermal work does
     not block merging this bounded review.
   - Lodders white-P Hf298=5.440 agrees with NASA5.439kJ/mol; the17.45kJ/mol correction must not be repeated
     on curated. Printed2014 PH3 fit misses direct Q296 by1.015%, exceeding0.4% declared fit error plus0.01035%
     coefficient rounding. SAlTY is not the complete2014 thermodynamic state set.
+  - The original electronic-data access follow-up is complete. Final-row Q296 matches the direct paper value,
+    but Q2 decreases between row labels 41 and 42 and gives negative variance at selected 300–2000 K nodes.
+    At 3000 K dH/dT is 62.000 versus supplied Cp 57.938 J/mol/K.
   status: supported
   origin: reviewed
 - id: historical_source_completeness_review
@@ -438,20 +487,46 @@ assessments:
     disequilibrium atmospheric behavior remain unvalidated.
   status: unknown
   origin: reviewed
+- id: supplement_consistency_obstacle_review
+  kind: evidence_support
+  claim: supplement_consistency_obstacle
+  claim_revision: '1'
+  subject: ph3_sources_20261105
+  context: source_review
+  method:
+    id: review_ph3_supplement
+    revision: '1'
+    description: Check exact positive-state-sum inequalities independently of row-to-J offset; compare caloric
+      derivatives at 30 and 60 K steps with five-digit rounding bounds.
+  evidence:
+  - supplement_replay
+  - decision_reasoning
+  reasons:
+  - Source rows and temperature columns were inspected directly; no interpolation, repair, or physical-J relabelling
+    is used.
+  - The room-temperature polynomial obstacle is bypassed by recovered direct Q, but cumulative moment monotonicity
+    and nonnegative energy variance fail by far more than rounding.
+  - High-temperature H/S/Cp closure also fails; uniform translation or spin normalization does not remove the
+    discrepancy. The underlying state calculations remain unvalidated.
+  status: supported
+  origin: reviewed
 follow_ups:
 - id: evaluate_thermal_candidate
   target_kind: claim
   target: physical_accuracy
   revision: '1'
-  action: Retain the already corrected Lodders PH3 model; obtain2014 electronic thermodynamic moments before
-    a high-temperature thermal candidate. Reconstruct continuous H/S/Cp, align atomic and molecular energy
-    references, then run a fixed-network one-species substitution.
+  action: Retain the already corrected Lodders PH3 model; the recovered 2014 distributed moment and caloric
+    files require consistency clarification before a thermal candidate. Reconstruct continuous H/S/Cp and perform
+    a fixed-network substitution only after resolving these source-data inconsistencies.
   completion: Archive a candidate, independently verified thermodynamic derivatives and finite abundance response
     with a scoped scientific selection.
   requires:
-  - Electronic PH3 tables and first/second moments from DOI10.1016/j.jqsrt.2014.03.012; current printed polynomial
-    mismatch remains unresolved.
-  - Keep2014 thermodynamic extension distinct from2015 SAlTY; do not repeat the white-P reference correction.
+  - Corrected PJQPP.DAT and cumulative row definition, plus mutually consistent Q/moments/H/S/Cp tables or
+    author clarification resolving the documented discrepancies; alternatively an independently recomputed
+    complete state sum with checked moments.
+  - Keep the 2014 thermodynamic extension distinct from 2015 SAlTY; do not repeat the white-P reference correction.
+  - Obtaining the electronic supplement is complete. Original ancestral experimental papers are not a prerequisite
+    for merging this bounded source review.
 - id: extend_historical_provenance
   target_kind: claim
   target: historical_source_completeness
@@ -471,8 +546,10 @@ limitations:
   evidence:
   - literature
   - source_replay
-- statement: Rounded-table derivatives and alternate-step checks assess numerical sensitivity only. Source-state
-    completeness and the unacquired thermodynamic supplement retain their stated limits.
+- statement: The original source packet records historical access limits; the recovered supplement is a separate
+    audit. Two derivative steps measure sensitivity only. The actual distributed-file inconsistencies block
+    candidate validation, not this bounded investigation merge.
   evidence:
   - literature
   - source_replay
+  - supplement_replay
