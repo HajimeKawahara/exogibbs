@@ -37,5 +37,6 @@
     "doi": "10.1063/1.556046",
     "url": "https://srd.nist.gov/jpcrdreprint/1.556046.pdf",
     "inspection": "Full NIST-hosted PDF via web; Tables 2/3 and section 2.1 inspected. Selected Cp,S,free-energy-function,H-H298 nodes transcribed. Hf298=236.09 +/-33.5 kJ/mol white-P; current FastChem fit already cites this correction."
-  }
+  },
+  "NASA_line_number_note": "screening_baseline_source_line_1based preserves the original screening file locator. It is not a line number in the official NASA download or nasa-selected.txt; the official source hash and selected species/header records identify the inspected source."
 }

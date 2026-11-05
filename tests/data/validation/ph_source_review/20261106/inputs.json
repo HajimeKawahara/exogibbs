@@ -22,7 +22,6 @@
         "H": 1
       },
       "reference": "Gurvich,1989 pt1 p420 pt2 p272.",
-      "source_line_1based": 8180,
       "intervals": [
         {
           "bounds_K": [
@@ -62,14 +61,14 @@
       "source_name": "PH",
       "hf298_J_mol": 230752.104,
       "h298_minus_h0_J_mol": 8648.104,
-      "mass_u": 31.981701
+      "mass_u": 31.981701,
+      "screening_baseline_source_line_1based": 8180
     },
     "P": {
       "composition": {
         "P": 1
       },
       "reference": "Hf:Cox,1989. Martin,W.C.,1985. Gordon,1999.",
-      "source_line_1based": 7981,
       "intervals": [
         {
           "bounds_K": [
@@ -126,14 +125,14 @@
       "source_name": "P",
       "hf298_J_mol": 316500.0,
       "h298_minus_h0_J_mol": 6197.428,
-      "mass_u": 30.973761
+      "mass_u": 30.973761,
+      "screening_baseline_source_line_1based": 7981
     },
     "H": {
       "composition": {
         "H": 1
       },
       "reference": "D0(H2):Herzberg,1970. Moore,1972. Gordon,1999.",
-      "source_line_1based": 5330,
       "intervals": [
         {
           "bounds_K": [
@@ -190,7 +189,8 @@
       "source_name": "H",
       "hf298_J_mol": 217998.828,
       "h298_minus_h0_J_mol": 6197.428,
-      "mass_u": 1.00794
+      "mass_u": 1.00794,
+      "screening_baseline_source_line_1based": 5330
     }
   },
   "janaf_paths": {
