@@ -5,11 +5,11 @@ model:
   description: Retain current JANAF thermal functions provisionally; prioritize a same-version balanced ATcT1.228
     energy-only candidate. Neither finite OYT8 levels nor joined TIPS tables justify immediate full-domain
     thermal replacement.
-  implementation: &id001
+  implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:33a5a3f77fd021668e2587c7b59d1b72bb45b8f9c40b57c3e7d0f5920ca6a1f5
     entry_points:
-    - mceg/reviews/cos_source_review.py
+    - tests/data/validation/curated_cos_adoption/20261105/source/mceg/reviews/cos_source_review.py
 assumptions:
 - statement: Same-version balanced molecular and atomic energy anchors; source native R, one bar and ground-relative
     state sums. Partial literature availability remains explicit.
@@ -137,9 +137,13 @@ evidence:
     note: See individual access limits in literature.json; source agreement is not physical validation.
 subjects:
 - id: cos_sources_20261105
-  implementation: *id001
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:33a5a3f77fd021668e2587c7b59d1b72bb45b8f9c40b57c3e7d0f5920ca6a1f5
+    entry_points:
+    - tests/data/validation/curated_cos_adoption/20261105/source/mceg/reviews/cos_source_review.py
   selected_files:
-    mceg/reviews/cos_source_review.py: 33a5a3f77fd021668e2587c7b59d1b72bb45b8f9c40b57c3e7d0f5920ca6a1f5
+    tests/data/validation/curated_cos_adoption/20261105/source/mceg/reviews/cos_source_review.py: 33a5a3f77fd021668e2587c7b59d1b72bb45b8f9c40b57c3e7d0f5920ca6a1f5
     mceg/reviews/c2h_source_review.py: 099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     mceg/reviews/curated_history.py: 3e0748a160b6e45324088a9be08262f82a2121019d727b841f6f7e1a88424baf
@@ -159,14 +163,14 @@ subjects:
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_oh.py: 323f0753b3d4462ba87e626939dea9b21fc5030329881e24800c4e00f4cc7444
     src/exogibbs/presets/curated_v1.py: 0d84d900747386e31a75e05574e5d64c5192a444a90fa01518477fd9183bf546
-    src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
+    tests/data/validation/curated_kh_adoption/20261105/source/src/exogibbs/presets/curated.py: 2670fd3449d4df2b2d3bc0ca577c1429ddcf4bcd10651dc9d05510d2d2bcf665
     tests/data/validation/cos_source_review/20261105/literature.json: 6cf3d52109b231e6356b168ea2ef5f43bbe47e3fe1d3079593d24fd4f21c49d3
     tests/data/validation/cos_source_review/20261105/OYT8.pf: b7d71d0574c9b3285f2ba3460628a26c7176f1f93b93036cde60fbdf759a18f2
     tests/data/validation/cos_source_review/20261105/inputs.json: 60ae967242507e50d4164818101a2d63bddd09dbf525115f84904a35107aa5fa
     tests/data/validation/cos_source_review/20261105/TIPS2025.pf: 3145c4811c74aa378a39b4474fac778c373be6de17bdd6694a5969b1bb1b5aaa
     tests/data/validation/cos_source_review/20261105/sources.json: 68e59b0addef88af4460e196f742ee417f9bb56154c47decafb67a34df692d08
     documents/mceg/cos_source_review.rst: b88b14fdd13918cccfde005eaddaee7a7e4c0e008a6ba0e9338eb9cc9e4870bb
-    tests/model_evidence/cos_source_review_test.py: 52adde170b3d66241228bf66beea3b6ada8557a9edba8ad635766baa4ba40d59
+    tests/data/validation/curated_cos_adoption/20261105/source/tests/model_evidence/cos_source_review_test.py: 52adde170b3d66241228bf66beea3b6ada8557a9edba8ad635766baa4ba40d59
     tests/data/validation/cos_source_review/20261105/README.rst: 88642b11519ebedc5d90dc4f93c6eb4ee146c5bead3c37677a2254c085b0078d
     tests/data/validation/cos_source_review/20261105/comparison.json: dbd6e325af049a260c08a63824f4cd8317e4e9d3abf85b4234ff210b9d1db9cc
     tests/data/validation/cos_source_review/20261105/receipt.json: 7ddbd4bf6cc46a8d86046ec68b957df4707f4876c1ada74a9933aaf484b9255d
@@ -289,12 +293,11 @@ follow_ups:
   action: Build an energy-only candidate from the inspected same-version ATcT1.228 molecule and atomic Hf0
     values, retaining current thermal functions; solve fixed-network substitutions and verify conservation
     before adoption.
-  completion: >-
-    Completed 2026-11-05 in mceg/contracts/cos_candidate.yaml and
-    documents/mceg/cos_candidate.rst: balanced ATcT 1.228 energy-only candidate,
-    150 fresh endpoints, conservation/stationarity, stricter cold/path and
-    FastChem checks. Original source-only claims and limitations remain dated
-    history; no production adoption.
+  completion: 'Completed 2026-11-05 in mceg/contracts/cos_candidate.yaml and documents/mceg/cos_candidate.rst:
+    balanced ATcT 1.228 energy-only candidate, 150 fresh endpoints, conservation/stationarity, stricter cold/path
+    and FastChem checks. Original source-only claims and limitations remain dated history; no production adoption.
+    Subsequently, authorized production adoption is recorded in mceg/contracts/curated_cos.yaml; the preceding
+    no-adoption statement describes the candidate stage.'
   requires:
   - No mandatory missing paper for the energy-only candidate.
   - Treat TIPS crossover and caloric disagreement as a separate thermal-model follow-up.

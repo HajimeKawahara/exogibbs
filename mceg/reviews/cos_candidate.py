@@ -85,7 +85,7 @@ def reaction_properties(temperature_K: float, updated: bool = True) -> dict:
 def validate() -> dict:
     """Check dense production replay, exact energy-only calorics and knot matching."""
     import jax
-    from exogibbs.presets import curated
+    from exogibbs.presets import curated_oh as curated
 
     model = load_candidate()
     assert model == build()

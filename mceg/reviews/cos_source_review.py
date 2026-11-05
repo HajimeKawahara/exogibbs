@@ -22,9 +22,9 @@ C2 = PLANCK*29979245800/KB
 
 @lru_cache(maxsize=1)
 def setup():
-    """Load the current packaged model once; float64 is required for replay."""
+    """Load the historical reviewed OH model; float64 is required for replay."""
     import jax
-    from exogibbs.presets import curated
+    from exogibbs.presets import curated_oh as curated
     jax.config.update("jax_enable_x64", True)
     return curated.chemsetup(ions=True)
 

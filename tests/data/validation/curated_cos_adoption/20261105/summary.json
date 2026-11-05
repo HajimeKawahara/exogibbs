@@ -1,0 +1,151 @@
+{
+  "dataset": "curated-cos-v1",
+  "base_dataset": "curated-ho2-v1",
+  "epsilon_crit": 5e-14,
+  "strict_epsilon_crit": 2e-14,
+  "method": "vmap_cold",
+  "new_production_solves": 150,
+  "tighter_reference_solves": 6,
+  "networks": [
+    {
+      "ions": true,
+      "cases_passed": 75,
+      "species": 537,
+      "max_dense_h_difference_from_candidate_on_ho2": 2.842170943040401e-14,
+      "tighter_case_indices": [
+        3,
+        50,
+        70
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.4575859552223847e-05,
+        "max_cos_abs_delta_ln_x": 1.5631940186722204e-13,
+        "max_absolute_delta_x": 3.378448968276611e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.4589423859629291e-06,
+        "mass_action_max_abs_ln": 1.6484591469634324e-12,
+        "HCOS_element_relative_residual": 2.936294173637456e-12,
+        "charge_relative_residual": 1.9516399694714846e-14
+      },
+      "cos_incremental_response": {
+        "min_x_ratio": 1.183812029225326,
+        "max_x_ratio": 1.5682792057523045,
+        "highlighted_case_index": 3,
+        "temperature_K": 1500.0,
+        "pressure_bar": 1.0,
+        "C_over_O": 0.5888436553555908,
+        "x_before": 2.8492083134923354e-10,
+        "x_after": 4.468320120325625e-10,
+        "sulfur_share_before": 1.259152812393847e-05,
+        "sulfur_share_after": 1.974688133384549e-05
+      },
+      "cumulative_response_from_curated_oh": {
+        "H1K1": {
+          "production_over_old_oh_min": 0.46565840748793974,
+          "production_over_old_oh_max": 0.7533211796256328,
+          "max_absolute_delta_x": 3.651799348041529e-09
+        },
+        "H1O2": {
+          "production_over_old_oh_min": 0.4463921660249016,
+          "production_over_old_oh_max": 0.755161828473966,
+          "max_absolute_delta_x": 2.830581667640891e-12
+        },
+        "C1O1S1": {
+          "production_over_old_oh_min": 1.183812020995158,
+          "production_over_old_oh_max": 1.568279205752048,
+          "max_absolute_delta_x": 1.619111804089293e-10
+        }
+      },
+      "background_effect_relative_to_old_cos_only_candidate": {
+        "COS_ratio_min": 0.9999998093873299,
+        "COS_ratio_max": 1.0000000029862761,
+        "max_absolute_delta_x_all_species": 3.651799366312048e-09,
+        "scope": "Additional KH and HO2 adoption changes the background; this is a physical model difference, not a numerical reproduction error."
+      }
+    },
+    {
+      "ions": false,
+      "cases_passed": 75,
+      "species": 421,
+      "max_dense_h_difference_from_candidate_on_ho2": 2.842170943040401e-14,
+      "tighter_case_indices": [
+        3,
+        21,
+        50
+      ],
+      "tighter_reference": {
+        "max_abs_delta_ln_x": 1.3643589909406728e-05,
+        "max_cos_abs_delta_ln_x": 1.6342482922482304e-13,
+        "max_absolute_delta_x": 3.159556435330003e-14
+      },
+      "closure": {
+        "element_relative_residual": 1.3655160654929207e-06,
+        "mass_action_max_abs_ln": 1.0231815394945443e-12,
+        "HCOS_element_relative_residual": 2.9534215119671097e-12
+      },
+      "cos_incremental_response": {
+        "min_x_ratio": 1.1838120291540808,
+        "max_x_ratio": 1.5682792057522152,
+        "highlighted_case_index": 3,
+        "temperature_K": 1500.0,
+        "pressure_bar": 1.0,
+        "C_over_O": 0.5888436553555908,
+        "x_before": 2.849208571718515e-10,
+        "x_after": 4.468320525290716e-10,
+        "sulfur_share_before": 1.2591529263543421e-05,
+        "sulfur_share_after": 1.9746883121039188e-05
+      },
+      "cumulative_response_from_curated_oh": {
+        "H1K1": {
+          "production_over_old_oh_min": 0.46565854912020727,
+          "production_over_old_oh_max": 0.7682708993599358,
+          "max_absolute_delta_x": 4.320756652266786e-09
+        },
+        "H1O2": {
+          "production_over_old_oh_min": 0.4463921660296974,
+          "production_over_old_oh_max": 0.7551618282697349,
+          "max_absolute_delta_x": 2.830542266421462e-12
+        },
+        "C1O1S1": {
+          "production_over_old_oh_min": 1.1838120239529282,
+          "production_over_old_oh_max": 1.5682792057520927,
+          "max_absolute_delta_x": 1.6191119509514357e-10
+        }
+      },
+      "background_effect_relative_to_old_cos_only_candidate": {
+        "COS_ratio_min": 0.9999998096080315,
+        "COS_ratio_max": 1.0000000023689068,
+        "max_absolute_delta_x_all_species": 4.320756653615157e-09,
+        "scope": "Additional KH and HO2 adoption changes the background; this is a physical model difference, not a numerical reproduction error."
+      }
+    }
+  ],
+  "independent_solver": [
+    {
+      "case_index": 3,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 7.472862065099414e-09,
+          "element_relative_residual": 2.932003683503375e-11,
+          "charge_relative_residual": 2.558673451013405e-12,
+          "mass_action_max_abs_ln": 1.4287593330664095e-10
+        }
+      ]
+    },
+    {
+      "case_index": 50,
+      "comparisons": [
+        {
+          "dataset": "curated-cos-v1",
+          "max_abs_delta_log10_x": 8.729197146068716e-09,
+          "element_relative_residual": 4.25738287013141e-11,
+          "charge_relative_residual": 1.3936666778601872e-11,
+          "mass_action_max_abs_ln": 3.9244696381501853e-10
+        }
+      ]
+    }
+  ],
+  "scope": "COS-only energy adoption on the cumulative KH/HO2 base at 1500-4000 K. Target potentials match the earlier COS candidate; whole-composition differences from the OH-only candidate include KH/HO2 background changes. Numerical checks do not establish full physical accuracy."
+}

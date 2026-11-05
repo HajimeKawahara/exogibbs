@@ -14,7 +14,7 @@ import jax
 import numpy as np
 from scipy.special import logsumexp
 
-from exogibbs.presets import curated
+from exogibbs.presets import curated_oh as curated
 from c2h_equilibrium_impact import carbon_budget, independent_check
 from co2_equilibrium_impact import gibbs_ordering
 from curated_h2o_adoption import solve_cases
