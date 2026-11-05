@@ -26,7 +26,7 @@ def test_production_receipt_pins_current_inputs_and_completed_outputs():
     assert receipt["result"] == "passed"
     assert receipt["backend"] == "cpu" and receipt["dtype"] == "float64"
     for name, expected in receipt["selected_file_sha256"].items():
-        assert sha256((ROOT / name).read_bytes()).hexdigest() == expected, name
+        assert sha256(historical_source(ROOT, name, expected).read_bytes()).hexdigest() == expected, name
     for name, expected in receipt["output_sha256"].items():
         assert sha256((DATA / name).read_bytes()).hexdigest() == expected, name
     summary = json.loads((DATA / "summary.json").read_text())

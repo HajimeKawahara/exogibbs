@@ -13,7 +13,7 @@ import sys
 import numpy as np
 import pytest
 
-from exogibbs.presets import curated, curated_c2h, curated_co2, curated_h2o, curated_kh, curated_oh, curated_tio, curated_v1
+from exogibbs.presets import curated, curated_c2h, curated_co2, curated_h2o, curated_ho2, curated_kh, curated_oh, curated_tio, curated_v1
 from exogibbs.provenance import describe, evidence_catalog
 
 
@@ -54,7 +54,7 @@ def test_c2h_correction_has_separate_evidence_identity(setup):
     corrected = curated_c2h.chemsetup()
     description = describe(corrected)
     assert description["model_id"] == "exogibbs.curated_c2h.v1"
-    assert describe(setup)["model_id"] == "exogibbs.curated_kh.v1"
+    assert describe(setup)["model_id"] == "exogibbs.curated_ho2.v1"
     assert describe(curated_v1.chemsetup())["model_id"] == "exogibbs.curated_gas.v1"
     catalog = json.loads(evidence_catalog().read_text())
     model = next(m for m in catalog["models"] if m["id"] == description["model_id"])
@@ -130,8 +130,8 @@ def test_oh_adoption_has_separate_evidence_identity():
     assert describe(curated_oh.chemsetup(ions=False))["record_match"] == "no_matching_record"
 
 
-def test_kh_adoption_has_separate_evidence_identity(setup):
-    assert curated.chemsetup is curated_kh.chemsetup
+def test_kh_adoption_has_separate_evidence_identity():
+    setup = curated_kh.chemsetup()
     catalog = json.loads(evidence_catalog().read_text())
     model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_kh.v1")
     assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
@@ -145,10 +145,27 @@ def test_kh_adoption_has_separate_evidence_identity(setup):
     assert any(s["id"] == "H1K1" and "KH" in s["aliases"] for s in model["species"])
     assert describe(curated_kh.chemsetup(ions=False))["record_match"] == "no_matching_record"
 
+def test_ho2_adoption_has_separate_evidence_identity():
+    assert curated.chemsetup is curated_ho2.chemsetup
+    setup = curated.chemsetup()
+    catalog = json.loads(evidence_catalog().read_text())
+    model = next(m for m in catalog["models"] if m["id"] == "exogibbs.curated_ho2.v1")
+    assert model["identity"]["data_sha256"] == setup.metadata["data_sha256"]
+    assert model["dataset"] == "curated-ho2-v1"
+    record = model["records"][0]
+    assert record["id"] == "ho2_adoption"
+    assert record["assessments"] == ["scientific_selection_review", "production_adoption_review",
+                                     "physical_accuracy_review"]
+    assert "physical accuracy remain unknown" in record["summary"]
+    assert "old candidate abundances are not reused" in record["summary"]
+    assert any(s["id"] == "H1O2" and "HO2" in s["aliases"] for s in model["species"])
+    assert describe(curated_ho2.chemsetup(ions=False))["record_match"] == "no_matching_record"
+
+
 
 def test_describe_identifies_only_declared_metadata(setup):
     description = describe(setup)
-    assert description["model_id"] == "exogibbs.curated_kh.v1"
+    assert description["model_id"] == "exogibbs.curated_ho2.v1"
     assert description["record_match"] == "declared_metadata"
     assert "does not verify a custom setup" in description["notice"]
     assert json.loads(json.dumps(description)) == description

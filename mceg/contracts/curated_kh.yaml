@@ -5,7 +5,7 @@ model:
   description: Adopt the reviewed KH energy on the pinned OH base without changing thermal functions.
     Scoped scientific choice and production verification are supported; full physical accuracy remains
     unknown.
-  implementation: &id001
+  implementation:
     repository: https://github.com/HajimeKawahara/exogibbs
     revision: sha256:cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
     entry_points:
@@ -123,9 +123,9 @@ evidence:
   - tests/data/validation/curated_kh_adoption/20261105/diagnostics.json
   - tests/data/validation/curated_kh_adoption/20261105/README.rst
   - mceg/reviews/build_kh_adoption.py
-  - mceg/reviews/curated_kh_adoption.py
-  - tests/model_evidence/curated_kh_adoption_test.py
-  - tests/unittests/presets/curated_kh_test.py
+  - tests/data/validation/curated_ho2_adoption/20261105/source/mceg/reviews/curated_kh_adoption.py
+  - tests/data/validation/curated_ho2_adoption/20261105/source/tests/model_evidence/curated_kh_adoption_test.py
+  - tests/data/validation/curated_ho2_adoption/20261105/source/tests/unittests/presets/curated_kh_test.py
   scope: 'curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH
     energy changes: spectroscopic D0=170857.838639 J/mol replaces balanced JANAF 180390 J/mol; thermal
     functions and atomic convention are retained. Both 537-species ion-inclusive and 421-species neutral
@@ -147,11 +147,11 @@ evidence:
     sha256: 52849c4e5f8bd2bcfb6b324f005ea9f72a774c3932c21ac816501eade0547524
   - source: mceg/reviews/build_kh_adoption.py
     sha256: 17037830f52b5a443b512b8ed5f135e60c3ff94b2104e4022d9cfe3828b32284
-  - source: mceg/reviews/curated_kh_adoption.py
+  - source: tests/data/validation/curated_ho2_adoption/20261105/source/mceg/reviews/curated_kh_adoption.py
     sha256: a1577a28ee3e686021b0f340fdce88f67afce7d8eb452fdf77d80b52ad448fd2
-  - source: tests/model_evidence/curated_kh_adoption_test.py
+  - source: tests/data/validation/curated_ho2_adoption/20261105/source/tests/model_evidence/curated_kh_adoption_test.py
     sha256: e41e23a9170e5c657032a92093ed7d45ae3fb59f1ade693555c21ad7161c7cd6
-  - source: tests/unittests/presets/curated_kh_test.py
+  - source: tests/data/validation/curated_ho2_adoption/20261105/source/tests/unittests/presets/curated_kh_test.py
     sha256: 94b586ab002734312c8852830ecc55f9b209d31c2c1c48cb76dc2017c2d4fb1a
   provenance:
     role: primary
@@ -186,7 +186,12 @@ evidence:
       to De, not a complete D0 error bar. Related source consistency is not independent uncertainty evidence.
 subjects:
 - id: curated_kh_production_20261105
-  implementation: *id001
+  implementation:
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:cbddb94fe757cf2370854a1093cb4da339ca9c5c701049f66ab353eeb4d50f10
+    entry_points:
+    - exogibbs.presets.curated.chemsetup
+    - exogibbs.presets.curated_kh.chemsetup
   selected_files:
     benchmarks/fastchem4/comparison.py: 063a0c67e5bbf6a31e4b191aba18469ff4774d444a21be62c96e4af7963b3371
     benchmarks/fastchem4/fastchem_executable.py: b4b1c8682a48c043c7ce7ba84c30dfc8c37d782096ec0e437da7602b8f670e99
@@ -201,7 +206,7 @@ subjects:
     mceg/reviews/co2_equilibrium_impact.py: e51449ffd5858fc9bd4ca2454952b9e3d2dc1055c4462c942149959899931e0f
     mceg/reviews/co2_source_review.py: cbefe937fe4ad5fd7b6a6dc3db6106f4417a93224292bc940df391c02de89172
     mceg/reviews/curated_h2o_adoption.py: c6310b5abf669355597f57fb2d638fead3b645d45c568f89cd51eb17c3ad0194
-    mceg/reviews/curated_kh_adoption.py: a1577a28ee3e686021b0f340fdce88f67afce7d8eb452fdf77d80b52ad448fd2
+    tests/data/validation/curated_ho2_adoption/20261105/source/mceg/reviews/curated_kh_adoption.py: a1577a28ee3e686021b0f340fdce88f67afce7d8eb452fdf77d80b52ad448fd2
     mceg/reviews/curated_oh_adoption.py: 2a9b741d86a4fb0a90a5f7a9b6bef30845c5608f315f4028364ecd02768e0db2
     mceg/reviews/gas_source_comparison.py: 65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c
     mceg/reviews/h2o_candidate.py: 3cd13c858b16eeadab73f9dd007777453d4596842338280dc29280b2f2b00113
@@ -242,7 +247,7 @@ subjects:
     src/exogibbs/equilibrium/gas/profile.py: a869f887d7b2f3d271c2620a8e52d43aea34103729e7c303779f49e7ad657b3f
     src/exogibbs/equilibrium/gas/solve.py: 609fec8eefaa9a9d92bea407617928d7e40b1851f1aeb1ae5a9176ad53610b95
     src/exogibbs/equilibrium/gas/types.py: ab11f07182ef7caa0e28251390fc6380a70996f00d5340b3f541fa082daf4543
-    src/exogibbs/presets/curated.py: 339e22ac6eb9513a22e25ef15da3ca0a535df0597a0364ae804ac96a211adc32
+    tests/data/validation/curated_ho2_adoption/20261105/source/src/exogibbs/presets/curated.py: 339e22ac6eb9513a22e25ef15da3ca0a535df0597a0364ae804ac96a211adc32
     src/exogibbs/presets/curated_c2h.py: d1e846815bb8929f9c4de64f5c2132022cae79531fa4e8c7650b23979efe8282
     src/exogibbs/presets/curated_co2.py: 0bcc187f18fa7f6fdb350d68a6dae6ed99dbb1c904376ae34f071685e7e23e6e
     src/exogibbs/presets/curated_h2o.py: 83ede67521dbf1a0b8c8127316c5b619b65fd73a7ad553a78f6bf42309b09b6f
@@ -300,8 +305,8 @@ subjects:
     tests/data/validation/curated_kh_adoption/20261105/neutral.npz: be8928ef17dd8ce1110577342da4b7cbfac16ce3e5fbd476624f8683893d4869
     tests/data/validation/curated_kh_adoption/20261105/diagnostics.json: 5d3597f6e8519f4f12229856bfb962dbf5edc5686329acee3663f876a283a5d3
     tests/data/validation/curated_kh_adoption/20261105/README.rst: 52849c4e5f8bd2bcfb6b324f005ea9f72a774c3932c21ac816501eade0547524
-    tests/model_evidence/curated_kh_adoption_test.py: e41e23a9170e5c657032a92093ed7d45ae3fb59f1ade693555c21ad7161c7cd6
-    tests/unittests/presets/curated_kh_test.py: 94b586ab002734312c8852830ecc55f9b209d31c2c1c48cb76dc2017c2d4fb1a
+    tests/data/validation/curated_ho2_adoption/20261105/source/tests/model_evidence/curated_kh_adoption_test.py: e41e23a9170e5c657032a92093ed7d45ae3fb59f1ade693555c21ad7161c7cd6
+    tests/data/validation/curated_ho2_adoption/20261105/source/tests/unittests/presets/curated_kh_test.py: 94b586ab002734312c8852830ecc55f9b209d31c2c1c48cb76dc2017c2d4fb1a
 contexts:
 - id: production_gas_domain
   scope: 'curated-kh-v1 on 1500-4000 K and 1 bar standard pressure, inheriting curated-oh-v1. Only KH
