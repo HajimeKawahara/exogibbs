@@ -1,0 +1,24 @@
+{
+  "command": "env JAX_PLATFORMS=cpu OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=src taskset -c 10-11 /home/kawahara/miniconda3/bin/python mceg/reviews/koh_candidate.py --build",
+  "python": "3.12.7",
+  "dtype": "float64",
+  "backend": "cpu",
+  "result": "passed",
+  "input_sha256": {
+    "tests/data/validation/koh_source_review/20261105/inputs.json": "773fa6266b1b29f36de2981679707135a070af570f3be532ef5d35f146acf5d1",
+    "tests/data/validation/koh_source_review/20261105/janaf.txt": "507eb58e7340de15c7f05207be0f22af9a08d177f8d3c4fd973115e49ae251ab",
+    "src/exogibbs/data/FastChem4/logK/logK.dat": "eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c",
+    "tests/data/validation/nao_source_review/20261105/inputs.json": "f2225f8e2efe7c7f95878a1b879698d913ae5f60502c48f4167ac758b5ea578d",
+    "tests/data/validation/kh_source_review/20261105/inputs.json": "69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587",
+    "mceg/reviews/koh_candidate.py": "c0603c40653fa27e4e540b81cbe99d82fd9ac5cd5421ee2441e06e3193bbceb8",
+    "mceg/reviews/koh_source_review.py": "e98dc7bfe4f7d0dc254a907e3449787d8103259f57c1dd5bac97a2a79d1e0379",
+    "mceg/reviews/tio_candidate.py": "3c2bc52e0b4766e2b38c203e95d90e9fceca9e302b6fae21afce5633e0199f22",
+    "mceg/reviews/c2h_source_review.py": "099e7f24c8fa76c645dde486f3165e70cfa2420b733a191b87c006d5065f9ca4",
+    "mceg/reviews/gas_source_comparison.py": "65cf6f5caca9ddd3ad929bb42498412bf5ca15c40ec51e9f03b1ea61004c465c"
+  },
+  "output_sha256": {
+    "candidate.json": "aac3a125c68c74433881b93292d71aac3dc0063aed83c88fde82f328a7fc3152",
+    "validation.json": "b2540f516699006f4b4fe25ba09a34f73ee2927b30241ea9b6f726dd49b6f216"
+  },
+  "scope": "Dense source reconstruction and analytic/JAX derivatives. No source-history mutation or production adoption."
+}
