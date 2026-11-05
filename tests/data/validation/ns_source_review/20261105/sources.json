@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-05",
+  "downloads": {
+    "NS.states.bz2": {
+      "url": "https://exomol.com/db/NS/14N-32S/SNaSH/14N-32S__SNaSH.states.bz2",
+      "bytes": 542921,
+      "sha256": "f39fd65761268567b4b6b3c9ccb62b20e6ac449488473017f6dd06dc308fe9cc",
+      "retrieved_utc": "2026-11-05T00:37:45.877482+00:00"
+    },
+    "NS.pf": {
+      "url": "https://exomol.com/db/NS/14N-32S/SNaSH/14N-32S__SNaSH.pf",
+      "bytes": 130000,
+      "sha256": "252f4d834945e2dc33eea0ce6353dcf3d18babbf565c63c960847e355139db61",
+      "retrieved_utc": "2026-11-05T00:37:45.407166+00:00"
+    },
+    "NS.def.json": {
+      "url": "https://exomol.com/data/molecules/NS/14N-32S/SNaSH/?export=json",
+      "bytes": 4747,
+      "sha256": "00c198f0e0a81f2b599674b8dfa2a870fe57885a5d95692c29f1bf75c8bbd3aa",
+      "retrieved_utc": "2026-11-05T00:37:45.492340+00:00"
+    },
+    "NS-paper.pdf": {
+      "url": "https://www.homepages.ucl.ac.uk/~ucapsy0/pdf/18YuBoGo.pdf",
+      "bytes": 3308443,
+      "sha256": "d193c7e2f9383e4fd108f08e49ae2b52aaae09db6effc1ab448b5a2697b05ece",
+      "retrieved_utc": "2026-11-05T00:38:01.886401+00:00"
+    },
+    "Lodders2004.pdf": {
+      "url": "https://solarsystem.wustl.edu/wp-content/uploads/reprints/2004/Lodders%202004%20J%20Phys%20Chem%20Ref%20Data.pdf",
+      "bytes": 110086,
+      "sha256": "0b9edd5cf4977e6a6db4e9b38890a044adafebf099608e2426b821bc1bcd9a3e",
+      "retrieved_utc": "2026-11-05T00:39:30.973710+00:00"
+    },
+    "Peebles2002.pdf": {
+      "url": "https://digital.library.unt.edu/ark:/67531/metadc501383/m2/1/high_res_d/NS%20CPL%20paper.pdf",
+      "bytes": 98961,
+      "sha256": "ea4322b8fb80718230776508c3ff4df1c3c904195539e6bc7d5bcf0b8d913668",
+      "retrieved_utc": "2026-11-05T00:42:42.538176+00:00"
+    }
+  },
+  "official_nasa": {
+    "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+    "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+    "local_verified_file": "/tmp/h2o-sources-20261103/nasa-thermo.inp",
+    "selected_header": "nasa_SN.txt",
+    "inspection": "All SN coefficients agree with broad screen; official lower bound is 300 K, not modified-copy 200 K."
+  },
+  "extraction": {
+    "NS.states.bz2": "All nonblank rows; zero-based columns [1,2,3,10] -> energy_cm-1,gtot,J,v; no truncation. np.savez_compressed stores states.",
+    "Lodders2004.pdf": "Table 7 exact nodes; columns Cp,S,free-energy-function,H-H298 transcribed to inputs.json. Table 6 confirms selected 283.40 +/-24 kJ/mol at 298 K."
+  },
+  "local_ref_search": "The supplied ref/refs_exogibbs_202611 and -2 collections contain no NS-specific primary papers; open author copies were obtained."
+}

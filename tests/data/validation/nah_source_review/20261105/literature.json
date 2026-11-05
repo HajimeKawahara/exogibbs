@@ -1,0 +1,49 @@
+{
+  "decision": "Retain production provisionally; the main next calculation is a version-explicit thermal candidate, not an unqualified energy replacement.",
+  "primary": [
+    {
+      "doi": "10.1093/mnras/stv979",
+      "inspection": "Full published paper including Tables 1-3 and sections 2-4; current official states/PF/definition inspected.",
+      "findings": "X/A singlet states; nuclear spin product 8. The paper separates bound and quasi-bound partition sums; the current distribution reproduces the quasi-bound-inclusive column."
+    },
+    {
+      "doi": "10.1063/1.4906086",
+      "inspection": "Full published paper, particularly Table II/III and potential/confidence-limit discussion. Supplementary potential solver input not obtained.",
+      "findings": "Direct potential fit gives De=15797.4 +/-4.3 cm-1. This is a potential minimum depth, NOT ground rovibrational D0; subtract the consistent zero-point energy before a thermochemical update."
+    },
+    {
+      "doi": "10.1051/0004-6361/201526961",
+      "inspection": "Existing pinned BC2016 numerical excerpts and curated source record reused; original article ancestry not freshly reaudited.",
+      "findings": "Inherited production D0 is 1.886 +/-0.003 eV, and the current fit follows the BC partition convention."
+    }
+  ],
+  "paper_Q_including_nuclear_spin": {
+    "1500": {
+      "with_quasibound": 2764.91,
+      "bound_only": 2764.89
+    },
+    "3000": {
+      "with_quasibound": 9692.63,
+      "bound_only": 9633.66
+    },
+    "4000": {
+      "with_quasibound": 17363.28,
+      "bound_only": 16941.48
+    }
+  },
+  "Walji2015": {
+    "De_cm-1": 15797.4,
+    "uncertainty_cm-1": 4.3,
+    "D0_cm-1": null
+  },
+  "limitations": [
+    "Current states include the quasi-bound-inclusive scope; it is not automatically a data error. A physical resonance policy is needed for an adopted thermal function.",
+    "Metadata maximum temperature 9000 K, paper line-list claim about 7000 K and distributed PF ending 5000 K are distinct scopes.",
+    "The last approximately 1000 cm-1 of the A potential was not experimentally constrained in Rivlin 2015; a complete uncertainty budget is unavailable."
+  ],
+  "followups": [
+    "Use the Walji 2015 supplementary potential/LEVEL input to obtain the same-isotope ground zero and D0; do not substitute De for D0.",
+    "Compare derivative-consistent Rivlin bound-only and quasi-bound-inclusive candidates with consistent atomic thermal anchors, then run finite Na redistribution.",
+    "No historical-paper acquisition is a condition for merging the scoped audit; supplement DOI 10.1063/1.4906086 is needed only for a refined energy candidate."
+  ]
+}
