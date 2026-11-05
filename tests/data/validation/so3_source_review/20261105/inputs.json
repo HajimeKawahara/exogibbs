@@ -1,0 +1,62 @@
+{
+  "molecule": "SO3",
+  "species_id": "O3S1",
+  "composition": {
+    "S": 1,
+    "O": 3
+  },
+  "footprint_element": "S",
+  "temperatures_K": [
+    300,
+    500,
+    800,
+    1000,
+    1500,
+    2000,
+    2500,
+    3000,
+    3500,
+    4000
+  ],
+  "atomic_tables": {
+    "O": "tests/data/validation/oh_source_review/20261105/O-001.txt",
+    "S": "tests/data/validation/sh_source_investigation/20261102/S-006.txt"
+  },
+  "molecular_janaf_table": "O-058.txt",
+  "atct_version": "1.228",
+  "atct": {
+    "O": {
+      "name": "Oxygen atom",
+      "formula": "O  (g)",
+      "atct_id": "17778-80-2*0",
+      "hf0_kJ_mol": 246.843,
+      "hf298_kJ_mol": 249.229,
+      "uncertainty_95pct_kJ_mol": 0.0021,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=22"
+    },
+    "S": {
+      "name": "Sulfur",
+      "formula": "S  (g)",
+      "atct_id": "7704-34-9*0",
+      "hf0_kJ_mol": 276.85,
+      "hf298_kJ_mol": 279.1,
+      "uncertainty_95pct_kJ_mol": 0.12,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=138"
+    },
+    "SO3": {
+      "name": "Sulfur trioxide",
+      "formula": "OS(O)O  (g)",
+      "atct_id": "7446-11-9*0",
+      "hf0_kJ_mol": -389.68,
+      "hf298_kJ_mol": -395.42,
+      "uncertainty_95pct_kJ_mol": 0.22,
+      "species_url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=144"
+    }
+  },
+  "partition": {
+    "file": "UYT2.pf",
+    "nuclear_spin_divisor": 1,
+    "mass_u": 79.95681584,
+    "scope": "Principal isotope; nuclear-spin-normalized elemental proxy, not a natural isotope mixture."
+  }
+}

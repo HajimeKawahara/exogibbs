@@ -1,0 +1,72 @@
+{
+  "retrieved_date": "2026-11-05",
+  "molecule": "SO3",
+  "sources": [
+    {
+      "id": "nasa-thermo.inp",
+      "url": "https://raw.githubusercontent.com/nasa/cea/2f79a647e85737742fb08a127da00d1ea1d069da/data/thermo.inp",
+      "sha256": "fa7746572952d74e249e818a82a35c113829742fb421a308e167185528884363",
+      "bytes": 1234323,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "atct-1.228.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/index.php",
+      "sha256": "0e41bca4d80cdfa1ef8e8dfbfc427172f1d194b0e507d164d26af6314c46dbbf",
+      "bytes": 4289738,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "O-058.txt",
+      "url": "https://janaf.nist.gov/tables/O-058.txt",
+      "sha256": "2aed254dada89b6aa58272ff6373048acd516b24e3756a3029988eab8eb7437e",
+      "bytes": 3945,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "UYT2.pf",
+      "url": "https://www.exomol.com/db/SO3/32S-16O3/UYT2/32S-16O3__UYT2.pf",
+      "sha256": "06c33011be11f17834d5b810ebedd6606f1b047b7d01d55945ecd3565e7ec0d7",
+      "bytes": 25000,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "so3-2016.pdf",
+      "url": "https://arxiv.org/pdf/1607.01242",
+      "sha256": "6be8f07b9b45e7c71c8a726ad409e0b4a23fa2fbe46e32bdea17ab61ded48f8e",
+      "bytes": 2214774,
+      "status": 200,
+      "access": "Full downloaded source inspected; only selected factual/numerical data retained in repository."
+    },
+    {
+      "id": "atct-so3.html",
+      "url": "https://atct.anl.gov/Thermochemical%20Data/version%201.228/species/?species_number=144",
+      "sha256": "1a18811f8d7b6b77c7b0dfd382b30057a3f464ab973ae2547e3f313a347728da",
+      "bytes": 55980,
+      "access": "Species identity and provenance table inspected; full HTML not committed."
+    }
+  ],
+  "atomic_janaf_tables": {
+    "O": "tests/data/validation/oh_source_review/20261105/O-001.txt",
+    "S": "tests/data/validation/sh_source_investigation/20261102/S-006.txt"
+  },
+  "source_node_units": [
+    "Cp J/mol/K",
+    "S J/mol/K",
+    "-[G-H298]/T J/mol/K",
+    "H-H298 kJ/mol",
+    "Hf kJ/mol",
+    "Gf kJ/mol",
+    "log10 Kf"
+  ],
+  "atct_conventions": "Same-version 1.228 molecule and neutral atom Hf(0); tabulated H uncertainty rounded 0.000 is not exact zero. Reaction covariance not propagated.",
+  "access_limit": "NASA source headers do not establish independent recovery of Gurvich inputs; current FastChem source attribution does not recover its original fit objective or atomic basis.",
+  "full_papers_committed": false,
+  "paper_dois": [
+    "10.1093/mnras/stw1828"
+  ]
+}
