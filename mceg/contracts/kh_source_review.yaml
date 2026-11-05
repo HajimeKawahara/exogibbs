@@ -1,0 +1,284 @@
+schema_version: '0.2'
+model:
+  id: exogibbs.kh_source_review.v1
+  name: KH source audit and candidate priorities
+  description: Retain production in this source PR; prioritize a spectroscopic-D0 candidate because modern evidence
+    favors a smaller dissociation energy D0, while thermal/state selection must be explicit.
+  implementation: &id001
+    repository: https://github.com/HajimeKawahara/exogibbs
+    revision: sha256:b7ea9d5cc02088ee090cd71e26039dd02879f9e55e5bc799e0276fd1dc381631
+    entry_points:
+    - mceg/reviews/kh_source_review.py
+assumptions:
+- statement: Neutral gas-phase molecule and atoms, one bar, common ground-relative zeros; source-native NASA R retained.
+  evidence:
+  - literature
+  - source_replay
+domains:
+- kind: numerical_evaluation
+  status: documented
+  description: KH; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production
+    change or finite substitution.
+  conditions:
+  - Saved allocation is not a finite-substitution response.
+  - Modern state-sum ranges and published-table mismatches are diagnostic limits, not certified physical completeness.
+  evidence:
+  - source_replay
+- kind: scientific_applicability
+  status: unknown
+  description: Complete physical uncertainty and planetary accuracy remain unestablished.
+  conditions: []
+  evidence:
+  - literature
+claims:
+- id: source_construction
+  revision: '1'
+  kind: numerical_verification
+  statement: The unchanged inherited formation fit reproduces all saved species potentials; same-reference energy,
+    molecular thermal and atomic thermal contributions are separated.
+  scope: KH; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+- id: modern_source_scope
+  revision: '1'
+  kind: numerical_verification
+  statement: Modern source access limits, conventions and numerical diagnostics are explicit; paper values are not
+    silently substituted for current distributions.
+  scope: KH; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+- id: provisional_retention
+  revision: '1'
+  kind: theoretical
+  statement: Retain production in this source PR; prioritize a spectroscopic-D0 candidate because modern evidence
+    favors a smaller dissociation energy D0, while thermal/state selection must be explicit.
+  scope: KH; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+- id: physical_accuracy
+  revision: '1'
+  kind: physical_validation
+  statement: KH has complete quantified physical uncertainty and validated planetary abundance accuracy.
+  scope: KH; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+evidence:
+- id: literature
+  kind: literature
+  summary: Primary publications and official evaluated data inspected to individually recorded limits.
+  sources:
+  - tests/data/validation/kh_source_review/20261105/sources.json
+  - tests/data/validation/kh_source_review/20261105/literature.json
+  - tests/data/validation/kh_source_review/20261105/inputs.json
+  scope: KH; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+  subject: kh_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/kh_source_review/20261105/sources.json
+    sha256: 070fbcef6aae57dcf08c37b347b462df56ad9e7a0a33ce1982b4db6bb0a39a9a
+  - source: tests/data/validation/kh_source_review/20261105/literature.json
+    sha256: 3b5799aaaa51d7bebfb9524b1c60dde4782f09a8f1b709f75591bcbee11ba8dc
+  - source: tests/data/validation/kh_source_review/20261105/inputs.json
+    sha256: 69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587
+  provenance:
+    role: primary
+    location: documents/mceg/kh_source_review.rst
+    inspection: inspected
+    note: This review inspects the numerical and textual evidence to the explicit limits in literature.json; unavailable
+      ancestry is not claimed as inspected.
+- id: source_replay
+  kind: numerical_test
+  summary: Offline caloric, source-energy, state-distribution and archived-footprint replay.
+  sources:
+  - tests/data/validation/kh_source_review/20261105/comparison.json
+  - tests/data/validation/kh_source_review/20261105/receipt.json
+  - tests/data/validation/kh_source_review/20261105/states.npz
+  - tests/data/validation/kh_source_review/20261105/state_inventory.json
+  scope: KH; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+  subject: kh_sources_20261105
+  context: source_review
+  artifacts:
+  - source: tests/data/validation/kh_source_review/20261105/comparison.json
+    sha256: 0992a97b9cdae7730f6d65749196847fac6416b333803382d3940a457fbcd3e1
+  - source: tests/data/validation/kh_source_review/20261105/receipt.json
+    sha256: e5361d7c807ecef2bed2ee9af5bac6206bdb6616e2287036aa7ebf75ae39bed3
+  - source: tests/data/validation/kh_source_review/20261105/states.npz
+    sha256: 1ec7157febd67ecf587ac256abfb70d2bb9fc7ca3e124988667ed01b2877db06
+  - source: tests/data/validation/kh_source_review/20261105/state_inventory.json
+    sha256: 7d7f8bb1a6b334a6ed77745a959b5bb795b4145f7e5cf3c7d6b4aa84cb54acd1
+  provenance:
+    role: primary
+    location: documents/mceg/kh_source_review.rst
+    inspection: inspected
+    note: This review inspects the numerical and textual evidence to the explicit limits in literature.json; unavailable
+      ancestry is not claimed as inspected.
+  result: passed
+- id: decision_reasoning
+  kind: theory
+  summary: Scoped retention and explicit candidate priorities.
+  sources:
+  - documents/mceg/kh_source_review.rst
+  - tests/data/validation/kh_source_review/20261105/literature.json
+  scope: KH; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+  subject: kh_sources_20261105
+  context: source_review
+  artifacts:
+  - source: documents/mceg/kh_source_review.rst
+    sha256: b3d2b071a0f9bc14a04bd21b0aa0976e847d7406c7ba1b975b866f0e78154b61
+  - source: tests/data/validation/kh_source_review/20261105/literature.json
+    sha256: 3b5799aaaa51d7bebfb9524b1c60dde4782f09a8f1b709f75591bcbee11ba8dc
+  provenance:
+    role: primary
+    location: documents/mceg/kh_source_review.rst
+    inspection: inspected
+    note: This review inspects the numerical and textual evidence to the explicit limits in literature.json; unavailable
+      ancestry is not claimed as inspected.
+subjects:
+- id: kh_sources_20261105
+  implementation: *id001
+  selected_files:
+    mceg/reviews/kh_source_review.py: b7ea9d5cc02088ee090cd71e26039dd02879f9e55e5bc799e0276fd1dc381631
+    documents/mceg/kh_source_review.rst: b3d2b071a0f9bc14a04bd21b0aa0976e847d7406c7ba1b975b866f0e78154b61
+    tests/model_evidence/kh_source_review_test.py: 38d99779c02906b0f5ad610996e03e624afe0d264fea0e81f3d960177727515a
+    src/exogibbs/data/curated/gas_v1.json: 7ff5818ed9fd5dd0ab7787a4137893ef2a72cacc7b249df5b640950e93b00a38
+    src/exogibbs/data/FastChem4/logK/logK.dat: eda9b9d7e62ccf7398036ee84349bd0a721b779acdc9d191cbf9fe1dd01f619c
+    tests/data/validation/curated_oh_adoption/20261105/ions.npz: a46212422d304e48c28d7fb8784d0cf958024e92b6f06493252a9a329b540d0d
+    tests/data/validation/kh_source_review/20261105/README.rst: 1ad939cae809fb2ae22d8000013f8106b697b63ca53a355f5de05ab62e18104e
+    tests/data/validation/kh_source_review/20261105/inputs.json: 69dbd47c163324dc1765186b51ad1707296cf10482c428497298668be2090587
+    tests/data/validation/kh_source_review/20261105/literature.json: 3b5799aaaa51d7bebfb9524b1c60dde4782f09a8f1b709f75591bcbee11ba8dc
+    tests/data/validation/kh_source_review/20261105/sources.json: 070fbcef6aae57dcf08c37b347b462df56ad9e7a0a33ce1982b4db6bb0a39a9a
+    tests/data/validation/kh_source_review/20261105/state_inventory.json: 7d7f8bb1a6b334a6ed77745a959b5bb795b4145f7e5cf3c7d6b4aa84cb54acd1
+    tests/data/validation/kh_source_review/20261105/states.npz: 1ec7157febd67ecf587ac256abfb70d2bb9fc7ca3e124988667ed01b2877db06
+    tests/data/validation/kh_source_review/20261105/comparison.json: 0992a97b9cdae7730f6d65749196847fac6416b333803382d3940a457fbcd3e1
+    tests/data/validation/kh_source_review/20261105/receipt.json: e5361d7c807ecef2bed2ee9af5bac6206bdb6616e2287036aa7ebf75ae39bed3
+contexts:
+- id: source_review
+  scope: KH; 300-4000 K source diagnostics, curated 1500-4000 K, 75 saved current endpoints; no production change
+    or finite substitution.
+  settings:
+    reaction: H(g) + K(g) -> KH(g)
+    standard_pressure_bar: 1
+    production_change: none
+    finite_substitution: not_run
+    current_grid_model: curated-oh-v1
+assessments:
+- id: source_construction_review
+  kind: evidence_support
+  claim: source_construction
+  claim_revision: '1'
+  subject: kh_sources_20261105
+  context: source_review
+  method:
+    id: review_kh_sources
+    revision: '1'
+    description: Separate construction, numerical scope, scientific decision and complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Balanced NASA/JANAF D0=177.999972/180.390000 kJ/mol; all 75 current potentials replay; no new equilibrium solve.
+  status: supported
+  origin: reviewed
+- id: modern_source_scope_review
+  kind: evidence_support
+  claim: modern_source_scope
+  claim_revision: '1'
+  subject: kh_sources_20261105
+  context: source_review
+  method:
+    id: review_kh_sources
+    revision: '1'
+    description: Separate construction, numerical scope, scientific decision and complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Finite state sums retain all distributed states and nuclear-spin normalization; revision and applicability limits
+    remain explicit.
+  status: supported
+  origin: reviewed
+- id: provisional_retention_review
+  kind: evidence_support
+  claim: provisional_retention
+  claim_revision: '1'
+  subject: kh_sources_20261105
+  context: source_review
+  method:
+    id: review_kh_sources
+    revision: '1'
+    description: Separate construction, numerical scope, scientific decision and complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Retain production in this source PR; prioritize a spectroscopic-D0 candidate because modern evidence favors
+    a smaller dissociation energy D0, while thermal/state selection must be explicit.
+  status: supported
+  origin: reviewed
+- id: physical_accuracy_review
+  kind: evidence_support
+  claim: physical_accuracy
+  claim_revision: '1'
+  subject: kh_sources_20261105
+  context: source_review
+  method:
+    id: review_kh_sources
+    revision: '1'
+    description: Separate construction, numerical scope, scientific decision and complete physical validation.
+  evidence:
+  - literature
+  - source_replay
+  - decision_reasoning
+  reasons:
+  - Complete energy covariance, missing-state/continuum bounds, isotope mixing and planetary validation are unestablished.
+  status: unknown
+  origin: reviewed
+follow_ups:
+- id: followup_1
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Build a provisional energy-only candidate using the inspected D0=14282.6 cm-1, explicitly retaining abstract-only
+    uncertainty limits; use the full 1988 paper if a precision uncertainty claim is needed.
+  requires:
+  - Source access and candidate scope as recorded in literature.json; no unconditional historical-paper merge gate.
+  completion: A reviewable candidate calculation or a documented source-limit resolution; separate adoption decision.
+- id: followup_2
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Reconcile Khan PF generation, MARVELization and X/A/B/C bound/quasi-bound selection, then compare Q/H/S/Cp
+    with production and NASA thermal candidates.
+  requires:
+  - Source access and candidate scope as recorded in literature.json; no unconditional historical-paper merge gate.
+  completion: A reviewable candidate calculation or a documented source-limit resolution; separate adoption decision.
+- id: followup_3
+  target_kind: claim
+  target: physical_accuracy
+  revision: '1'
+  action: Run fixed-network K redistribution, conserving K/H and recording convergence. Source-review merger does
+    not require completing candidate adoption.
+  requires:
+  - Source access and candidate scope as recorded in literature.json; no unconditional historical-paper merge gate.
+  completion: A reviewable candidate calculation or a documented source-limit resolution; separate adoption decision.
+limitations:
+- statement: Published PF includes noninteger rounded temperature knots. Replay uses the actual nearest knot, not
+    an invented exact integer value; remaining small mismatch is not claimed to be fully explained by rounding.
+  evidence:
+  - literature
+  - source_replay
+- statement: Paper PF discussion names X/A/B while distributed states also include C. C contribution and boundary
+    populations are quantified without discarding states or declaring completeness.
+  evidence:
+  - literature
+  - source_replay
+- statement: Metadata maximum 5000 K and tabulated PF through 10001 K are distinct; no global omitted-state or isotope-mixture
+    bound is established.
+  evidence:
+  - literature
+  - source_replay
+- statement: No new finite equilibrium substitution or observational physical validation.
+  evidence:
+  - source_replay

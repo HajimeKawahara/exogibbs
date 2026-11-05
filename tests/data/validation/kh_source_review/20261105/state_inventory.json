@@ -1,0 +1,52 @@
+{
+  "columns": [
+    "energy_cm-1",
+    "gtot",
+    "J",
+    "v",
+    "electronic_label_index"
+  ],
+  "labels": [
+    "A1Sigma+",
+    "B1Pi",
+    "C1Sigma+",
+    "X1Sigma+"
+  ],
+  "number_of_states": 13081,
+  "energy_bounds_cm-1": [
+    0.0,
+    39934.532129
+  ],
+  "maximum_J": 130.0,
+  "gtot_over_2Jplus1": [
+    8.0
+  ],
+  "by_label": {
+    "A1Sigma+": {
+      "states": 2579,
+      "minimum_energy_cm-1": 18683.93457,
+      "maximum_v": 35.0
+    },
+    "B1Pi": {
+      "states": 28,
+      "minimum_energy_cm-1": 27194.059217,
+      "maximum_v": 4.0
+    },
+    "C1Sigma+": {
+      "states": 7195,
+      "minimum_energy_cm-1": 28749.689535,
+      "maximum_v": 77.0
+    },
+    "X1Sigma+": {
+      "states": 3279,
+      "minimum_energy_cm-1": 0.0,
+      "maximum_v": 30.0
+    }
+  },
+  "metadata_maximum_temperature_K": 5000.0,
+  "metadata_version": 20260604,
+  "published_pf_first_last_K": [
+    1.0,
+    10001.0
+  ]
+}
